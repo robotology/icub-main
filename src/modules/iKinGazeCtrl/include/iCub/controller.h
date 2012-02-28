@@ -24,7 +24,6 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -55,6 +54,7 @@ protected:
     iKinChain        *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver       *drvTorso,  *drvHead;
     IEncoders        *encTorso,  *encHead;
+    IPositionControl *posHead;
     IVelocityControl *velHead;
     exchangeData     *commData;
     xdPort           *port_xd;
@@ -66,7 +66,8 @@ protected:
     Port port_x;
     Port port_q;
 
-    Semaphore mutex;
+    Semaphore mutexChain;
+    Semaphore mutexCtrl;
     string robotName;
     string localName;
     string camerasFile;
@@ -97,6 +98,7 @@ public:
                const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
                const unsigned int _period);
 
+    void   doSaccade(const Vector &ang, const Vector &vel);
     void   stopLimbsVel();
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);

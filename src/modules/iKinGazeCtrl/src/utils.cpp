@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <yarp/os/Time.h>
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
@@ -35,9 +36,9 @@ xdPort::xdPort(const Vector &xd0, void *_slv)
     xdDelayed=xd=xd0;
     isNewDelayed=isNew=false;
     closing=false;
+    rx=0;
 
     slv=_slv;
-
     if (slv!=NULL)
         start();
 }
@@ -57,16 +58,17 @@ xdPort::~xdPort()
 /************************************************************************/
 void xdPort::onRead(Bottle &b)
 {
+    mutex_0.wait();
+
     int bLen=b.size();
     int xdLen=xd.length();
-    int n=bLen>xdLen ? xdLen : bLen;
-
-    mutex_0.wait();
+    int n=bLen>xdLen ? xdLen : bLen;    
 
     for (int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
 
     isNew=true;
+    rx++;
 
     mutex_0.post();
 
@@ -78,12 +80,9 @@ void xdPort::onRead(Bottle &b)
 void xdPort::set_xd(const Vector &_xd)
 {
     mutex_0.wait();
-
     xd=_xd;
     isNew=true;
-
     mutex_0.post();
-
     syncEvent.signal();
 }
 
@@ -94,7 +93,6 @@ Vector xdPort::get_xd()
     mutex_0.wait();
     Vector _xd=xd;
     mutex_0.post();
-
     return _xd;
 }
 
@@ -105,7 +103,6 @@ Vector xdPort::get_xdDelayed()
     mutex_1.wait();
     Vector _xdDelayed=xdDelayed;
     mutex_1.post();
-
     return _xdDelayed;
 }
 
@@ -142,6 +139,7 @@ exchangeData::exchangeData()
 {
     isCtrlActive=false;
     canCtrlBeDisabled=true;
+    saccadeUnderway=false;
     minAllowedVergence=0.0;
 }
 

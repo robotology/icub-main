@@ -133,6 +133,10 @@ Factors</a>.
 - Resource finder default configuration file; if not specified, 
   \e config.ini is assumed.
  
+--saccades \e switch 
+- Enable/disable saccadic movements; the parameter \e switch can
+  be therefore ["on"|"off"], being "on" by default.
+ 
 --vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
   in compute the final counter-rotation of the eyes due to
@@ -281,6 +285,7 @@ following ports:
     - [get] [Teyes]: returns the eyes movements execution time.
     - [get] [vor]: returns the vor gain.
     - [get] [ocr]: returns the ocr gain.
+    - [get] [sacc]: returns the saccades control status (0/1).
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
@@ -334,6 +339,8 @@ following ports:
       for eyes movements.
     - [set] [vor] <val>: sets a new vor gain for VOR.
     - [set] [ocr] <val>: sets a new ocr gain for OCR.
+    - [set] [sacc] <val>: enables/disables saccades; val can be
+      0/1.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
@@ -416,6 +423,7 @@ Windows, Linux
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -460,6 +468,7 @@ protected:
         double neckYawMin;
         double neckYawMax;
         Vector counterRotGain;
+        bool   saccadesOn;
 
         // localizer part
         Bottle pidOptions;
@@ -519,8 +528,9 @@ protected:
         // solver part
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
-        slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
+        slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);        
         context.counterRotGain=eyesRefGen->getCounterRotGain();
+        context.saccadesOn=eyesRefGen->isSaccadesOn();
 
         // localizer part
         loc->getPidOptions(context.pidOptions);
@@ -546,6 +556,7 @@ protected:
             slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
             slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
+            eyesRefGen->setSaccades(context.saccadesOn);
 
             // localizer part
             loc->setPidOptions(context.pidOptions);
@@ -588,9 +599,10 @@ public:
         double eyesTime;
         double eyeTiltMin;
         double eyeTiltMax;
-        double minAbsVel;        
-        bool   Robotable;
+        double minAbsVel;
+        bool   saccadesOn;
         bool   headV2;
+        bool   Robotable;
         double ping_robot_tmo;
         Vector counterRotGain(2);
 
@@ -607,9 +619,12 @@ public:
         eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
+        //saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
+        // experimental
+        saccadesOn=(rf.check("saccades",Value("off")).asString()=="on");
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
-        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
-        headV2=rf.check("headV2");        
+        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();        
+        headV2=rf.check("headV2");
         Robotable=!rf.check("simulation");
 
         // minAbsVel is given in absolute form
@@ -693,9 +708,9 @@ public:
 
         loc=new Localizer(&commData,localHeadName,camerasFile,headV2,10);
 
-        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,
-                                     localHeadName,camerasFile,eyeTiltMin,
-                                     eyeTiltMax,counterRotGain,headV2,20);
+        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,ctrl,
+                                     localHeadName,camerasFile,eyeTiltMin,eyeTiltMax,
+                                     saccadesOn,counterRotGain,headV2,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
                        localHeadName,camerasFile,eyeTiltMin,eyeTiltMax,headV2,20);
@@ -889,16 +904,22 @@ public:
                             reply.addDouble(gain[1]);
                             return true;
                         }
-                        else if (type==VOCAB4('d','o','n','e'))
+                        else if (type==VOCAB4('s','a','c','c'))
                         {
                             reply.addVocab(ack);
-                            reply.addInt((int)ctrl->isMotionDone());
+                            reply.addInt((int)eyesRefGen->isSaccadesOn());
                             return true;
                         }
                         else if (type==VOCAB4('t','r','a','c'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->getTrackingMode());
+                            return true;
+                        }
+                        else if (type==VOCAB4('d','o','n','e'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addInt((int)ctrl->isMotionDone());
                             return true;
                         }
                         else if (type==VOCAB4('p','i','t','c'))
@@ -1168,6 +1189,13 @@ public:
                             Vector gain=eyesRefGen->getCounterRotGain();
                             gain[1]=command.get(2).asDouble();
                             eyesRefGen->setCounterRotGain(gain);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB4('s','a','c','c'))
+                        {
+                            bool mode=(command.get(2).asInt()>0);
+                            eyesRefGen->setSaccades(mode);
                             reply.addVocab(ack);
                             return true;
                         }

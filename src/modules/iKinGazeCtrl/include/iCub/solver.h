@@ -24,7 +24,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Time.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -35,7 +35,9 @@
 #include <iCub/localizer.h>
 #include <iCub/controller.h>
 
-#define EYEPINVREFGEN_GAIN                  12.5
+#define EYEPINVREFGEN_GAIN                  12.5    // [-]
+#define SACCADES_FREQ                       5.0     // [Hz]
+#define SACCADES_ACTIVATIONANGLE            10.0    // [deg]
 #define GYRO_BIAS_STABILITY                 5.0     // [deg/s]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
@@ -66,10 +68,12 @@ protected:
     PolyDriver           *drvTorso,  *drvHead;
     IEncoders            *encTorso,  *encHead;
     exchangeData         *commData;
+    Controller           *ctrl;
     xdPort               *port_xd;
-    Integrator           *I;
+    Integrator           *I;    
 
     BufferedPort<Vector> port_inertial;
+    Semaphore mutex;
 
     unsigned int period;
     string robotName;
@@ -77,11 +81,14 @@ protected:
     string camerasFile;
     bool Robotable;
     bool headV2;
+    bool saccadesOn;
     bool genOn;
     int nJointsTorso;
     int nJointsHead;
     double eyeTiltMin;
     double eyeTiltMax;
+    int    saccadesRxTargets;
+    double saccadesClock;
     double Ts;
     
     Vector fbTorso;
@@ -94,19 +101,20 @@ protected:
     Vector getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp);
 
 public:
-    EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
-                  exchangeData *_commData, const string &_robotName,
-                  const string &_localName, const string &_camerasFile,
-                  const double _eyeTiltMin, const double _eyeTiltMax,
-                  const Vector &_counterRotGain, const bool _headV2,
+    EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+                  const string &_robotName, Controller *_ctrl, const string &_localName,
+                  const string &_camerasFile, const double _eyeTiltMin, const double _eyeTiltMax,
+                  const bool _saccadesOn, const Vector &_counterRotGain, const bool _headV2,
                   const unsigned int _period);
 
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd;      }
     void   enable()                     { genOn=true;            }
     void   disable()                    { genOn=false;           }    
     Vector getCounterRotGain() const    { return counterRotGain; }
+    void   setSaccades(const bool sw)   { saccadesOn=sw;         }
+    bool   isSaccadesOn() const         { return saccadesOn;     }
     void   setCounterRotGain(const Vector &gain);
-    bool   getGyro(Vector &data);
+    bool   getGyro(Vector &data);    
     bool   threadInit();
     void   afterStart(bool s);
     void   run();
@@ -135,6 +143,7 @@ protected:
     Localizer          *loc;
     Controller         *ctrl;
     xdPort             *port_xd;
+    Semaphore           mutex;
 
     string localName;
     string camerasFile;
@@ -177,9 +186,9 @@ public:
     void   bindNeckPitch(const double min_deg, const double max_deg);
     void   bindNeckRoll(const double min_deg, const double max_deg);
     void   bindNeckYaw(const double min_deg, const double max_deg);
-    void   getCurNeckPitchRange(double &min_deg, double &max_deg) const;
-    void   getCurNeckRollRange(double &min_deg, double &max_deg) const;
-    void   getCurNeckYawRange(double &min_deg, double &max_deg) const;
+    void   getCurNeckPitchRange(double &min_deg, double &max_deg);
+    void   getCurNeckRollRange(double &min_deg, double &max_deg);
+    void   getCurNeckYawRange(double &min_deg, double &max_deg);
     void   clearNeckPitch();
     void   clearNeckRoll();
     void   clearNeckYaw();    

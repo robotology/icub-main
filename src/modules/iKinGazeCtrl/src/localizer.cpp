@@ -176,8 +176,9 @@ Vector Localizer::getAbsAngles(const Vector &x)
     fph.pop_back();
 
     Vector ang(3);
-    ang[0]=atan2(fph[0],fph[2]);
-    ang[1]=-atan2(fph[1],fph[2]);
+    double fphz=fabs(fph[2]);
+    ang[0]=atan2(fph[0],fphz);
+    ang[1]=-atan2(fph[1],fphz);
     ang[2]=2.0*atan2(eyesHalfBaseline,norm(fph));
 
     return ang;
@@ -233,7 +234,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 
     // compute rotational matrix to
     // account for elevation and azimuth
-    Vector x(4); Vector y(4);
+    Vector x(4), y(4);
     x[0]=1.0;    y[0]=0.0;
     x[1]=0.0;    y[1]=1.0;
     x[2]=0.0;    y[2]=0.0;

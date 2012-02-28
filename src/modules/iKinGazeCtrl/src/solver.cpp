@@ -17,6 +17,7 @@
 */
 
 #include <algorithm>
+#include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
 
@@ -24,14 +25,16 @@
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              exchangeData *_commData, const string &_robotName,
-                             const string &_localName, const string &_camerasFile,
-                             const double _eyeTiltMin, const double _eyeTiltMax,
+                             Controller *_ctrl, const string &_localName,
+                             const string &_camerasFile, const double _eyeTiltMin,
+                             const double _eyeTiltMax, const bool _saccadesOn,
                              const Vector &_counterRotGain, const bool _headV2,
                              const unsigned int _period) :
-                             RateThread(_period),       drvTorso(_drvTorso),     drvHead(_drvHead),
-                             commData(_commData),       robotName(_robotName),   localName(_localName),
-                             camerasFile(_camerasFile), eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax),
-                             headV2(_headV2),           period(_period),         Ts(_period/1000.0)
+                             RateThread(_period),     drvTorso(_drvTorso),       drvHead(_drvHead),
+                             commData(_commData),     robotName(_robotName),     ctrl(_ctrl),
+                             localName(_localName),   camerasFile(_camerasFile), eyeTiltMin(_eyeTiltMin),
+                             eyeTiltMax(_eyeTiltMax), saccadesOn(_saccadesOn),   headV2(_headV2),
+                             period(_period),         Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
     counterRotGain=_counterRotGain;
@@ -149,7 +152,9 @@ bool EyePinvRefGen::getGyro(Vector &data)
 {
     if (port_inertial.getInputCount()>0)
     {
+        mutex.wait();
         data=gyro;
+        mutex.post();
         return true;
     }
     else
@@ -184,9 +189,11 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     H(2,3)=fp[2]-H(2,3);
 
     // gyro rate [deg/s]
-    double &gyrX=gyro[6];
-    double &gyrY=gyro[7];
-    double &gyrZ=gyro[8];
+    mutex.wait();
+    double gyrX=gyro[6];
+    double gyrY=gyro[7];
+    double gyrZ=gyro[8];
+    mutex.post();
 
     // to filter out the noise on the gyro readouts
     Vector vor_fprelv;
@@ -225,6 +232,10 @@ bool EyePinvRefGen::threadInit()
         fprintf(stdout,"Unable to connect to %s\n",robotPortInertial.c_str());
 
     fprintf(stdout,"Starting Pseudoinverse Reference Generator at %d ms\n",period);
+
+    saccadesRxTargets=0;
+    saccadesClock=Time::now();
+
     return true;
 }
 
@@ -248,6 +259,7 @@ void EyePinvRefGen::run()
         {
             // read encoders
             getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+            updateTorsoBlockedJoints(chainNeck,fbTorso);
             updateTorsoBlockedJoints(chainEyeL,fbTorso);
             updateTorsoBlockedJoints(chainEyeR,fbTorso);
         }
@@ -256,7 +268,11 @@ void EyePinvRefGen::run()
 
         // read gyro data
         if (Vector *_gyro=port_inertial.read(false))
+        {
+            mutex.wait();
             gyro=*_gyro;
+            mutex.post();
+        }
 
         // get current target
         Vector xd=port_xd->get_xd();
@@ -291,6 +307,27 @@ void EyePinvRefGen::run()
             {
                 Vector zeros=commData->get_counterv(); zeros=0.0;
                 commData->set_counterv(zeros);
+            }
+
+            // ask for saccades iff possible
+            if (Robotable && saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) &&
+                !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>1.0/SACCADES_FREQ))
+            {
+                Vector fph=xd; fph.push_back(1.0);
+                fph=SE3inv(chainNeck->getH())*fph;
+
+                // estimate geometrically the target tilt and pan of the eyes
+                Vector ang(2), vel(2);
+                double fphz=fabs(fph[2]);
+                ang[0]=-atan2(fph[1],fphz); vel[0]=SACCADES_FREQ*fabs(ang[0]-fbHead[3]);
+                ang[1]=atan2(fph[0],fphz);  vel[1]=SACCADES_FREQ*fabs(ang[1]-fbHead[4]);
+
+                // favor the smooth-pursuit in case saccades are small
+                if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
+                    ctrl->doSaccade(ang,vel);
+
+                saccadesRxTargets=port_xd->get_rx();
+                saccadesClock=Time::now();
             }
 
             // update reference
@@ -479,8 +516,10 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     double cur_rad=(*chainNeck)(0).getAng();
     bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
+    mutex.wait();
     (*chainNeck)(0).setMin(min_rad);
     (*chainNeck)(0).setMax(max_rad);    
+    mutex.post();
 
     fprintf(stdout,"\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -498,8 +537,10 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     double cur_rad=(*chainNeck)(1).getAng();
     bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
+    mutex.wait();
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
+    mutex.post();
 
     fprintf(stdout,"\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -517,42 +558,52 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     double cur_rad=(*chainNeck)(2).getAng();
     bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
+    mutex.wait();
     (*chainNeck)(2).setMin(min_rad);
     (*chainNeck)(2).setMax(max_rad);
+    mutex.post();
 
     fprintf(stdout,"\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
 
 
 /************************************************************************/
-void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg) const
+void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg)
 {
+    mutex.wait();
     min_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMax();
+    mutex.post();
 }
 
 
 /************************************************************************/
-void Solver::getCurNeckRollRange(double &min_deg, double &max_deg) const
+void Solver::getCurNeckRollRange(double &min_deg, double &max_deg)
 {
+    mutex.wait();
     min_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMax();
+    mutex.post();
 }
 
 
 /************************************************************************/
-void Solver::getCurNeckYawRange(double &min_deg, double &max_deg) const
+void Solver::getCurNeckYawRange(double &min_deg, double &max_deg)
 {
+    mutex.wait();
     min_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMax();
+    mutex.post();
 }
 
 
 /************************************************************************/
 void Solver::clearNeckPitch()
 {
+    mutex.wait();
     (*chainNeck)(0).setMin(neckPitchMin);
     (*chainNeck)(0).setMax(neckPitchMax);
+    mutex.post();
 
     fprintf(stdout,"\nneck pitch cleared\n\n");
 }
@@ -561,8 +612,10 @@ void Solver::clearNeckPitch()
 /************************************************************************/
 void Solver::clearNeckRoll()
 {
+    mutex.wait();
     (*chainNeck)(1).setMin(neckRollMin);
     (*chainNeck)(1).setMax(neckRollMax);
+    mutex.post();
 
     fprintf(stdout,"\nneck roll cleared\n\n");
 }
@@ -571,8 +624,10 @@ void Solver::clearNeckRoll()
 /************************************************************************/
 void Solver::clearNeckYaw()
 {
+    mutex.wait();
     (*chainNeck)(2).setMin(neckYawMin);
     (*chainNeck)(2).setMax(neckYawMax);
+    mutex.post();
 
     fprintf(stdout,"\nneck yaw cleared\n\n");
 }
@@ -598,7 +653,7 @@ Vector Solver::getGravityDirection(const Vector &gyro)
 
     // compute rotational matrix to
     // account for roll and pitch
-    Vector x(4); Vector y(4);
+    Vector x(4), y(4);
     x[0]=1.0;    y[0]=0.0;
     x[1]=0.0;    y[1]=1.0;
     x[2]=0.0;    y[2]=0.0;
@@ -624,30 +679,16 @@ Vector Solver::getGravityDirection(const Vector &gyro)
 
 /************************************************************************/
 Vector Solver::neckTargetRotAngles(const Vector &xd)
-{    
-    Matrix H=chainNeck->getH();
+{
+    Vector fph=xd; fph.push_back(1.0);
+    fph=SE3inv(commData->get_fpFrame())*fph;
 
-    for (int i=0; i<3; i++)
-        H(i,3)-=xd[i];
+    Vector ang(2);
+    double fphz=fabs(fph[2]);
+    ang[0]=fabs(-atan2(fph[1],fphz));
+    ang[1]=fabs(atan2(fph[0],fphz));
 
-    H(3,3)=0.0;
-
-    // projection on the transverse and sagittal planes
-    double x=dot(H,0,H,3);
-    double y=dot(H,1,H,3);
-    double z=dot(H,2,H,3);
-
-    Vector res(2);
-    res[0]=atan2(x,-z);
-    res[1]=atan2(y,-z);
-
-    if (res[0]<0.0)
-        res[0]=-res[0];
-
-    if (res[1]<0.0)
-        res[1]=-res[1];
-
-    return res;
+    return ang;
 }
 
 
@@ -702,6 +743,8 @@ void Solver::afterStart(bool s)
 /************************************************************************/
 void Solver::run()
 {
+    mutex.wait();
+
     // get the current target
     Vector xd=port_xd->get_xdDelayed();
 
@@ -786,6 +829,8 @@ void Solver::run()
     // latch quantities
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
+
+    mutex.post();
 }
 
 
@@ -816,11 +861,12 @@ void Solver::suspend()
 /************************************************************************/
 void Solver::resume()
 {
+    mutex.wait();
+
     if (Robotable)
     {
         // read encoders
         getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
-
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);        
@@ -846,9 +892,11 @@ void Solver::resume()
 
     // update latched quantities
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;
+    fbHeadOld=fbHead;    
 
     fprintf(stdout,"\nSolver has been resumed!\n\n");
+
+    mutex.post();
 
     RateThread::resume();
 }

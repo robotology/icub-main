@@ -24,7 +24,6 @@
 #include <yarp/os/Thread.h>
 #include <yarp/os/Event.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -62,10 +61,11 @@ protected:
     Semaphore mutex_1;
     Event     syncEvent;
     Vector    xd;
-    Vector    xdDelayed;
+    Vector    xdDelayed;    
     bool      isNew;
     bool      isNewDelayed;
     bool      closing;
+    int       rx;
 
     void onRead(Bottle &b);
     void run();
@@ -74,8 +74,9 @@ public:
     xdPort(const Vector &xd0, void *_slv);
     ~xdPort();
 
+    int     get_rx() const   { return rx;           }
     bool   &get_new()        { return isNew;        }
-    bool   &get_newDelayed() { return isNewDelayed; }
+    bool   &get_newDelayed() { return isNewDelayed; }    
     void    set_xd(const Vector &_xd);
     Vector  get_xd();
     Vector  get_xdDelayed();
@@ -95,6 +96,7 @@ protected:
     Matrix S;
     bool   isCtrlActive;
     bool   canCtrlBeDisabled;
+    bool   saccadeUnderway;
     double minAllowedVergence;
 
 public:
@@ -124,6 +126,7 @@ public:
 
     bool   &get_isCtrlActive()       { return isCtrlActive;       }
     bool   &get_canCtrlBeDisabled()  { return canCtrlBeDisabled;  }
+    bool   &get_isSaccadeUnderway()  { return saccadeUnderway;    }
     double &get_minAllowedVergence() { return minAllowedVergence; }
 };
 

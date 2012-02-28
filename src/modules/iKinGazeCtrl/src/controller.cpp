@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <yarp/os/Time.h>
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
@@ -67,6 +68,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
             encTorso=NULL;
 
         ok&=drvHead->view(encHead);
+        ok&=drvHead->view(posHead);
         ok&=drvHead->view(velHead);
 
         if (!ok)
@@ -145,9 +147,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     qddeg=CTRL_RAD2DEG*qd;
     vdeg =CTRL_RAD2DEG*v;
 
-    commData->get_isCtrlActive()=false;
-    commData->get_canCtrlBeDisabled()=true;
-
     port_xd=NULL;
 }
 
@@ -197,7 +196,9 @@ void Controller::stopLimbsVel()
         // which travels on a different connection.
         Time::delay(2*Ts);
 
+        mutexCtrl.wait();
         velHead->stop();
+        mutexCtrl.post();
     }
 }
 
@@ -245,10 +246,33 @@ void Controller::afterStart(bool s)
 
 
 /************************************************************************/
+void Controller::doSaccade(const Vector &ang, const Vector &vel)
+{
+    mutexCtrl.wait();
+    posHead->setRefSpeed(3,CTRL_RAD2DEG*vel[0]);  posHead->setRefSpeed(4,CTRL_RAD2DEG*vel[1]);
+    posHead->positionMove(3,CTRL_RAD2DEG*ang[0]); posHead->positionMove(4,CTRL_RAD2DEG*ang[1]);
+    commData->get_isSaccadeUnderway()=true;
+    mutexCtrl.post();    
+}
+
+
+/************************************************************************/
 void Controller::run()
 {
+    // verify if any saccade is still underway
+    mutexCtrl.wait();
+    if (commData->get_isSaccadeUnderway())
+    {
+        bool tiltDone, panDone;
+        posHead->checkMotionDone(3,&tiltDone);
+        posHead->checkMotionDone(4,&panDone);
+        commData->get_isSaccadeUnderway()=!(tiltDone&&panDone);
+    }
+    mutexCtrl.post();
+
     Vector new_qd=commData->get_qd();
-    bool swOffCond=(norm(new_qd-fbHead)<GAZECTRL_MOTIONDONE_QTHRES*CTRL_DEG2RAD);
+    bool swOffCond=!commData->get_isSaccadeUnderway() &&
+                   (norm(new_qd-fbHead)<GAZECTRL_MOTIONDONE_QTHRES*CTRL_DEG2RAD);
 
     // verify control switching conditions
     if (commData->get_isCtrlActive())
@@ -257,11 +281,10 @@ void Controller::run()
         if (swOffCond)
         {
             stopLimbsVel();
-
             commData->get_isCtrlActive()=false;
             port_xd->get_new()=false;
         }
-    }       
+    }
     else if (!swOffCond)
     {
         // switch-on condition
@@ -344,8 +367,10 @@ void Controller::run()
 
     // send velocities to the robot
     if (Robotable && !(vdeg==vdegOld))
-    {    
+    {
+        mutexCtrl.wait();
         velHead->velocityMove(vdeg.data());
+        mutexCtrl.post();
         vdegOld=vdeg;
     }
 
@@ -367,7 +392,7 @@ void Controller::run()
         port_q.write(q);
 
     // update pose information
-    mutex.wait();
+    mutexChain.wait();
 
     for (int i=0; i<nJointsTorso; i++)
     {
@@ -384,7 +409,7 @@ void Controller::run()
     chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
     chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
-    mutex.post();
+    mutexChain.post();
 
     // update joints angles
     fbHead=Int->integrate(v);
@@ -536,23 +561,23 @@ bool Controller::getPose(const string &poseSel, Vector &x)
 {
     if (poseSel=="left")
     {
-        mutex.wait();
+        mutexChain.wait();
         x=chainEyeL->EndEffPose();
-        mutex.post();
+        mutexChain.post();
         return true;
     }
     else if (poseSel=="right")
     {
-        mutex.wait();
+        mutexChain.wait();
         x=chainEyeR->EndEffPose();
-        mutex.post();
+        mutexChain.post();
         return true;
     }
     else if (poseSel=="head")
     {
-        mutex.wait();
+        mutexChain.wait();
         x=chainNeck->EndEffPose();
-        mutex.post();
+        mutexChain.post();
         return true;
     }
     else
