@@ -187,6 +187,11 @@ private:
     BufferedPort<Vector> *port_monitor;
     BufferedPort<iCub::skinDynLib::dynContactList> *port_dyn_contacts;
     BufferedPort<Vector> *port_dumpvel;
+    // ports outputing the external dynamics seen at the F/T sensor
+    BufferedPort<Vector> *port_external_ft_arm_left;
+    BufferedPort<Vector> *port_external_ft_arm_right;
+    BufferedPort<Vector> *port_external_ft_leg_left;
+    BufferedPort<Vector> *port_external_ft_leg_right;
 
     bool first;
     thread_status_enum thread_status;
@@ -227,6 +232,8 @@ private:
     Vector F_LLeg, F_RLeg; 
     Vector F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
     Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
+    Vector F_ext_sens_right_arm, F_ext_sens_left_arm;       // external wrench seen at the F/T sensors
+    Vector F_ext_sens_right_leg, F_ext_sens_left_leg;       // external wrench seen at the F/T sensors
 
 
     // icub model

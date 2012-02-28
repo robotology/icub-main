@@ -233,6 +233,10 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_monitor = new BufferedPort<Vector>;
     port_dyn_contacts = new BufferedPort<dynContactList>;
     port_dumpvel = new BufferedPort<Vector>;
+    port_external_ft_arm_left = new BufferedPort<Vector>;
+    port_external_ft_arm_right = new BufferedPort<Vector>;
+    port_external_ft_leg_left = new BufferedPort<Vector>;
+    port_external_ft_leg_right = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
     port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -273,6 +277,10 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_monitor->open(string("/"+local_name+"/monitor:o").c_str());
     port_dyn_contacts->open(string("/"+local_name+"/dyn_contacts:o").c_str());
     port_dumpvel->open(string("/"+local_name+"/va:o").c_str());
+    port_external_ft_arm_left->open(string("/"+local_name+"/left_arm/ext_ft_sens:o").c_str());
+    port_external_ft_arm_right->open(string("/"+local_name+"/right_arm/ext_ft_sens:o").c_str());
+    port_external_ft_leg_left->open(string("/"+local_name+"/left_leg/ext_ft_sens:o").c_str());
+    port_external_ft_leg_right->open(string("/"+local_name+"/right_leg/ext_ft_sens:o").c_str());
 
     if (autoconnect)
     {
@@ -595,10 +603,21 @@ void inverseDynamics::run()
     F_ext_left_leg  = icub->lowerTorso->leftSensor->getForceMomentEndEff();
     F_ext_right_leg = icub->lowerTorso->rightSensor->getForceMomentEndEff();
 
+    // EXTERNAL DYNAMICS AT THE F/T SENSORS
+    Matrix F_sensor_up = icub_sens->upperTorso->estimateSensorsWrench(zeros(6,3));
+    F_ext_sens_right_arm = F_RArm - F_sensor_up.getCol(0);  // measured wrench - internal wrench = external wrench
+    F_ext_sens_left_arm = F_LArm - F_sensor_up.getCol(1);   // measured wrench - internal wrench = external wrench
+
 #ifdef TEST_LEG_SENSOR
     setUpperMeasure(true);
     setLowerMeasure(true);
+#endif
+
     Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
+    F_ext_sens_right_leg = F_RLeg - F_sensor_low.getCol(0);
+    F_ext_sens_left_leg = F_LLeg - F_sensor_low.getCol(1);
+
+#ifdef TEST_LEG_SENSOR
     F_mdl_right_leg = F_sensor_low.getCol(0);
     F_mdl_left_leg  = F_sensor_low.getCol(1);
     F_sns_right_leg = F_RLeg;
@@ -670,7 +689,10 @@ void inverseDynamics::run()
     broadcastData<Vector> (F_ext_cartesian_right_leg,               port_external_cartesian_wrench_RL);
     broadcastData<Vector> (F_ext_cartesian_left_leg,                port_external_cartesian_wrench_LL);
     broadcastData<iCub::skinDynLib::dynContactList>( contactList,   port_dyn_contacts);
-
+    broadcastData<Vector> (F_ext_sens_right_arm,                    port_external_ft_arm_right);
+    broadcastData<Vector> (F_ext_sens_left_arm,                     port_external_ft_arm_left);
+    broadcastData<Vector> (F_ext_sens_right_leg,                    port_external_ft_leg_right);
+    broadcastData<Vector> (F_ext_sens_left_leg,                     port_external_ft_leg_left);
 }
 
 void inverseDynamics::threadRelease()
@@ -771,6 +793,15 @@ void inverseDynamics::threadRelease()
     closePort(port_dumpvel);
     fprintf(stderr, "Closing dyn_contacts port\n");
     closePort(port_dyn_contacts);
+    fprintf(stderr, "Closing external_ft_arm_left port\n");
+    closePort(port_external_ft_arm_left);
+    fprintf(stderr, "Closing external_ft_arm_right port\n");
+    closePort(port_external_ft_arm_right);
+    fprintf(stderr, "Closing external_ft_leg_left port\n");
+    closePort(port_external_ft_leg_left);
+    fprintf(stderr, "Closing external_ft_leg_right port\n");
+    closePort(port_external_ft_leg_right);
+    
 
     if (icub)      {delete icub; icub=0;}
     if (icub_sens) {delete icub_sens; icub=0;}
@@ -831,7 +862,7 @@ void inverseDynamics::calibrateOffset()
     for (it=previous_status.begin() ; it != previous_status.end(); it++ )
     {
         /*
-        // TO BE VERIEFIED IF USEFUL
+        // TO BE VERIFIED IF USEFUL
         setZeroJntAngVelAcc();
         */
 
