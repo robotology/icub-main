@@ -189,6 +189,8 @@ private:
     bool     dummy_ft;
     bool     dump_vel_enabled;
     bool     auto_drift_comp;
+    bool     default_ee_cont;       // true: when skin detects no contact, the ext contact is supposed at the end effector
+                                    // false: ext contact is supposed at the last location where skin detected a contact
     
     dataFilter *port_inertial_input;
     BufferedPort<Vector> port_filtered_output;    
@@ -222,6 +224,7 @@ public:
         dummy_ft = false;
         dump_vel_enabled = false;
         auto_drift_comp = false;
+        default_ee_cont = false;
     }
 
     virtual bool createDriver(PolyDriver *&_dd, Property options)
@@ -418,6 +421,12 @@ public:
             fprintf(stderr,"Enabling automatic drift compensation (experimental)\n");
         }
 
+        if (rf.check("default_ee_cont"))
+        {
+            default_ee_cont = true;
+            fprintf(stderr,"Default contact at the end effector\n");
+        }
+
         //---------------------DEVICES--------------------------//
 
         OptionsHead.put("device","remote_controlboard");
@@ -514,6 +523,7 @@ public:
         inv_dyn->dummy_ft=dummy_ft;
         inv_dyn->w0_dw0_enabled=w0_dw0_enabled;
         inv_dyn->dumpvel_enabled=dump_vel_enabled;
+        inv_dyn->default_ee_cont=default_ee_cont;
 
         fprintf(stderr,"ft thread istantiated...\n");
         Time::delay(5.0);

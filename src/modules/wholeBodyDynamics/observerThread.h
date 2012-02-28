@@ -122,6 +122,7 @@ public:
     bool       w0_dw0_enabled;
     bool       dumpvel_enabled;
     bool       auto_drift_comp;
+    bool       default_ee_cont;
 
 private:
     string     robot_name;
