@@ -889,7 +889,7 @@ void inverseDynamics::calibrateOffset()
     
     it=previous_status.begin();
     fprintf(stderr,"\n");
-    fprintf(stderr, "Ntrials: %d\n", Ntrials);
+    fprintf(stderr, "Ntrials: %d\n", (int)Ntrials);
     fprintf(stderr, "F_LArm:      %s\n", it->ft_arm_left.toString().c_str());
     fprintf(stderr, "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
     fprintf(stderr, "F_RArm:      %s\n", it->ft_arm_right.toString().c_str());

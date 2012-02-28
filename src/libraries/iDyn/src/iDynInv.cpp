@@ -1020,7 +1020,7 @@ bool FinalLinkNewtonEuler::setForce(const Vector &_F)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"FinalLink error, could not set force due to wrong dimension: %d instead of 3.\n",_F.length());
+			fprintf(stderr,"FinalLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.length());
 
 		return false;
 	}
@@ -1036,7 +1036,7 @@ bool FinalLinkNewtonEuler::setMoment(const Vector &_Mu)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"FinalLink error, could not set moment due to wrong dimension: %d instead of 3.\n",_Mu.length());
+			fprintf(stderr,"FinalLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.length());
 
 		return false;
 	}
@@ -1138,7 +1138,7 @@ bool SensorLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
 		Mu.resize(3);	Mu.zero();
 	
 		if(verbose)
-			fprintf(stderr,"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3). Default zero is set.\n",_F.length(),_Mu.length());
+			fprintf(stderr,"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3). Default zero is set.\n",(int)_F.length(),(int)_Mu.length());
 
 		return false;
 	}
@@ -1271,7 +1271,7 @@ bool	SensorLinkNewtonEuler::setForce		(const Vector &_F)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"SensorLink error, could not set force due to wrong dimension: %d instead of 3.\n",_F.length());
+			fprintf(stderr,"SensorLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.length());
 
 		return false;
 	}
@@ -1287,7 +1287,7 @@ bool	SensorLinkNewtonEuler::setMoment	(const Vector &_Mu)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"SensorLink error, could not set moment due to wrong dimension: %d instead of 3.\n",_Mu.length());
+			fprintf(stderr,"SensorLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.length());
 
 		return false;
 	}
@@ -1305,7 +1305,7 @@ bool	SensorLinkNewtonEuler::setAngVel	(const Vector &_w)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"SensorLink error, could not set w due to wrong size: %d instead of 3. \n",_w.length());
+			fprintf(stderr,"SensorLink error, could not set w due to wrong size: %d instead of 3.\n",(int)_w.length());
 
 		return false;
 	}
@@ -1321,7 +1321,7 @@ bool	SensorLinkNewtonEuler::setAngAcc	(const Vector &_dw)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"SensorLink error, could not set dw due to wrong size: %d instead of 3. \n",_dw.length());
+			fprintf(stderr,"SensorLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.length());
 
 		return false;
 	}
@@ -1337,7 +1337,7 @@ bool	SensorLinkNewtonEuler::setLinAcc	(const Vector &_ddp)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3. \n",_ddp.length());
+			fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3.\n",(int)_ddp.length());
 
 		return false;
 	}
@@ -1353,7 +1353,7 @@ bool	SensorLinkNewtonEuler::setLinAccC	(const Vector &_ddpC)
 	else
 	{
 		if(verbose)
-			fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3. \n",_ddpC.length());
+			fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3.\n",(int)_ddpC.length());
 
 		return false;
 	}
@@ -2376,7 +2376,7 @@ bool iDynSensor::setSensorMeasures(const Vector &FM)
 	{
 		if(verbose)
         {
-            fprintf(stderr,"iDynSensor error: could not set sensor measures due to wrong sized vector: %d instead of 6 (3+3). \n",FM.length());
+            fprintf(stderr,"iDynSensor error: could not set sensor measures due to wrong sized vector: %d instead of 6 (3+3).\n",(int)FM.length());
         }
 		return false;
 	}
