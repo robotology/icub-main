@@ -342,9 +342,11 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                         return true;
                     }
                     if(myThread->setTaxelPose(bp, sp, taxelId, pose))
-                        reply.addString("pose set");
-                    else
+                        reply.addInt(skin_manager_ok);
+                    else{
+                        reply.addInt(skin_manager_error);
                         reply.addString("ERROR: pose was not set");
+                    }
                 }
                 else{
                     Vector poses;
@@ -353,9 +355,11 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                         return true;
                     }
                     if(myThread->setTaxelPoses(bp, sp, poses))
-                        reply.addString("pose set");
-                    else
+                        reply.addInt(skin_manager_ok);
+                    else{
+                        reply.addInt(skin_manager_error);
                         reply.addString("ERROR: pose was not set");
+                    }
                 }
                 return true;
             }
