@@ -17,6 +17,7 @@
  */
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
+#include <yarp/math/Rand.h> // TEMP
 #include "math.h"
 #include <algorithm>
 #include "iCub/skinManager/compensator.h"
@@ -238,7 +239,14 @@ void Compensator::calibrationFinish(){
 bool Compensator::readInputData(Vector& skin_values){
     int err;
     if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
-        readErrorCounter++;        
+        readErrorCounter++;
+        
+        //TEMP
+        /*{    
+            readErrorCounter--; 
+            skin_values = yarp::math::Rand::vector(skinDim)*255;
+            return true;
+        }*/
 
         stringstream msg;
         if(err == IAnalogSensor::AS_TIMEOUT)            
@@ -466,43 +474,27 @@ skinContactList Compensator::getContacts(){
     //printf("Clustering finished\n");
 
     skinContactList contactList;
-    Vector CoP(3);
+    Vector CoP(3), geoCenter(3);
+    double pressure;
     for( deque<deque<int> >::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
         int activeTaxels = it->size();
         //printf("Contact size: %d\n", activeTaxels);
         if(activeTaxels==0) continue;        
         
         CoP.zero();
+        geoCenter.zero();
+        pressure = 0.0;
         for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++){
-            CoP = CoP+taxelPos[(*tax)];
+            CoP         += taxelPos[(*tax)] * compensatedData[(*tax)];
+            geoCenter   += taxelPos[(*tax)];
+            pressure    += compensatedData[(*tax)];
         }
-        CoP = CoP/activeTaxels;
-        skinContact c(bodyPart, skinPart, linkNum, CoP, CoP, activeTaxels, 0.0);
+        CoP         /= pressure;
+        geoCenter   /= activeTaxels;
+        pressure    /= activeTaxels;
+        skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, activeTaxels, pressure);
         contactList.push_back(c);
     }
-
-
-    // temporarily suppose there is only one contact
-    /*Vector CoP(3);
-    CoP.zero();
-    int taxelsTouched = 0;
-    for(int i=0; i!=touchDetectedFilt.size(); i++){
-        if(touchDetectedFilt[i]){
-	        taxelsTouched++;
-            if(taxelPosOri != NULL){
-	            CoP[0]+=taxelPosOri[i][0];
-	            CoP[1]+=taxelPosOri[i][1];
-	            CoP[2]+=taxelPosOri[i][2];
-            }
-        }
-    }
-    if(taxelsTouched>0){
-        CoP[0]=CoP[0]/taxelsTouched;
-        CoP[1]=CoP[1]/taxelsTouched;
-        CoP[2]=CoP[2]/taxelsTouched;
-        skinContact c(bodyPart, skinPart, linkNum, CoP, CoP, taxelsTouched, 0.0);
-        contactList.push_back(c);
-    }*/
     
     return contactList;
 }
@@ -693,17 +685,19 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath, double maxNeighbor
     }
     poseSem.wait();
     {
-	    for(int i= 0; getline(posFile,posLine); i++) {
+	    for(unsigned int i= 0; getline(posFile,posLine); i++) {
 		    posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
 		    if(posLine.empty())
 			    continue;
 		    string number;
 		    istringstream iss(posLine, istringstream::in);
-		    for(int j = 0; iss >> number; j++ ){
-                if(j<3)
-			        taxelPos[i][j] = strtod(number.c_str(),NULL);
-                else
-                    taxelOri[i][j-3] = strtod(number.c_str(),NULL);
+		    for(unsigned int j = 0; iss >> number; j++ ){
+                if(i<taxelPos.size()){
+                    if(j<3)
+			            taxelPos[i][j] = strtod(number.c_str(),NULL);
+                    else
+                        taxelOri[i][j-3] = strtod(number.c_str(),NULL);
+                }
 		    }
 	    }
         computeNeighbors(maxNeighborDist);
