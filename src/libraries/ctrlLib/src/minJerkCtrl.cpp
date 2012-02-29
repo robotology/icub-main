@@ -88,6 +88,13 @@ Vector minJerkVelCtrlForIdealPlant::computeCmd(const double _T, const Vector &e)
 
 
 /*******************************************************************************************/
+void minJerkVelCtrlForIdealPlant::reset(const Vector &u0)
+{
+    F->init(u0);
+}
+
+
+/*******************************************************************************************/
 minJerkVelCtrlForIdealPlant::~minJerkVelCtrlForIdealPlant()
 {
     if (F!=NULL)
@@ -183,6 +190,18 @@ Vector minJerkVelCtrlForNonIdealPlant::computeCmd(const double _T, const Vector 
     }
 
     return y;
+}
+
+
+/*******************************************************************************************/
+void minJerkVelCtrlForNonIdealPlant::reset(const Vector &u0)
+{
+    Vector _u0(1);
+    for (int i=0; i<dim; i++)
+    {
+        _u0[0]=u0[i];
+        F[i]->init(_u0);
+    }
 }
 
 

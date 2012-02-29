@@ -66,6 +66,12 @@ public:
     virtual yarp::sig::Vector computeCmd(const double _T, const yarp::sig::Vector &e) = 0;
 
     /**
+    * Resets the controller to a given value.
+    * @param u0 the initial output of the controller.
+    */
+    virtual void reset(const yarp::sig::Vector &u0) = 0;
+
+    /**
     * Destructor. 
     */
     virtual ~minJerkVelCtrl() { }
@@ -110,6 +116,12 @@ public:
     * @return the velocity command.
     */
     virtual yarp::sig::Vector computeCmd(const double _T, const yarp::sig::Vector &e);
+
+    /**
+    * Resets the controller to a given value.
+    * @param u0 the initial output of the controller.
+    */
+    virtual void reset(const yarp::sig::Vector &u0);
 
     /**
     * Destructor. 
@@ -162,6 +174,12 @@ public:
     * @return the velocity command.
     */
     virtual yarp::sig::Vector computeCmd(const double _T, const yarp::sig::Vector &e);
+
+    /**
+    * Resets the controller to a given value.
+    * @param u0 the initial output of the controller.
+    */
+    virtual void reset(const yarp::sig::Vector &u0);
 
     /** 
     * Allows user to assign values to plant parameters.

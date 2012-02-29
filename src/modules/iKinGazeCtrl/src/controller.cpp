@@ -147,6 +147,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vdeg =CTRL_RAD2DEG*v;
 
     port_xd=NULL;
+    unplugCtrlEyes=false;
 }
 
 
@@ -251,7 +252,19 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     posHead->setRefSpeed(3,CTRL_RAD2DEG*vel[0]);  posHead->setRefSpeed(4,CTRL_RAD2DEG*vel[1]);
     posHead->positionMove(3,CTRL_RAD2DEG*ang[0]); posHead->positionMove(4,CTRL_RAD2DEG*ang[1]);
     commData->get_isSaccadeUnderway()=true;
+    unplugCtrlEyes=true;
     mutexCtrl.post();    
+}
+
+
+/************************************************************************/
+void Controller::resetCtrlEyes()
+{
+    mutexCtrl.wait();
+    Vector zeros(3); zeros=0.0;
+    mjCtrlEyes->reset(zeros);
+    unplugCtrlEyes=false;
+    mutexCtrl.post();
 }
 
 
@@ -324,7 +337,11 @@ void Controller::run()
     {
         // control loop
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
-        vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
+
+        if (unplugCtrlEyes)
+            vEyes=commData->get_counterv();
+        else
+            vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
     }
     else
     {

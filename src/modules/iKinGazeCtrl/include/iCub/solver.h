@@ -82,6 +82,7 @@ protected:
     bool Robotable;
     bool headV2;
     bool saccadesOn;
+    bool saccadeUnderWayOld;
     bool genOn;
     int nJointsTorso;
     int nJointsHead;

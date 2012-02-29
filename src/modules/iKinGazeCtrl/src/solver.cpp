@@ -143,6 +143,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     eyesJ.zero();
 
     genOn=false;
+    saccadeUnderWayOld=false;
     port_xd=NULL;
 }
 
@@ -277,10 +278,6 @@ void EyePinvRefGen::run()
         // get current target
         Vector xd=port_xd->get_xd();
 
-        // beware of too small vergence
-        if (qd[2]<commData->get_minAllowedVergence())
-            qd[2]=commData->get_minAllowedVergence();
-
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
         chainNeck->setAng(nJointsTorso+1,fbHead[1]);
@@ -329,6 +326,17 @@ void EyePinvRefGen::run()
                 saccadesRxTargets=port_xd->get_rx();
                 saccadesClock=Time::now();
             }
+            
+            // reset eyes controller and integral on transition on=>off
+            if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
+            {                
+                ctrl->resetCtrlEyes();
+
+                qd[0]=fbHead[3];
+                qd[1]=fbHead[4];
+                qd[2]=fbHead[5];
+                I->reset(qd);
+            }
 
             // update reference
             qd=I->integrate(v+commData->get_counterv());
@@ -346,6 +354,8 @@ void EyePinvRefGen::run()
         commData->set_qd(4,qd[1]);
         commData->set_qd(5,qd[2]);
         commData->set_fpFrame(chainNeck->getH());
+
+        saccadeUnderWayOld=commData->get_isSaccadeUnderway();
     }
 }
 
