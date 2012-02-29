@@ -525,7 +525,8 @@ bool ClientGazeController::getHeadPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientGazeController::get2DPixel(const int camSel, const Vector &x, Vector &px)
+bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
+                                      Vector &px)
 {
     if (!connected || (x.length()<3))
         return false;
@@ -985,7 +986,8 @@ bool ClientGazeController::setStereoOptions(const Bottle &options)
 
 
 /************************************************************************/
-bool ClientGazeController::blockNeckJoint(const string &joint, const double min, const double max)
+bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
+                                          const double max)
 {
     if (!connected)
         return false;
@@ -1031,7 +1033,8 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const int j)
 
 
 /************************************************************************/
-bool ClientGazeController::getNeckJointRange(const string &joint, double *min, double *max)
+bool ClientGazeController::getNeckJointRange(const string &joint, double *min,
+                                             double *max)
 {
     if (!connected || (min==NULL) || (max==NULL))
         return false;
