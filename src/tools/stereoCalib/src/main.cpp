@@ -46,7 +46,7 @@ numberOfPairs N
 MonoCalib value
 \endcode
 
-See below for the parameter description. Calibration results will be saved in $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini.
+This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini.
 
 \note If you are using low resolution images (320x240) you should use a big chessboard pattern (i.e. with square side length of ~4cm). 
 \note Make sure to show the pattern horizontally.
