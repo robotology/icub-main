@@ -579,7 +579,7 @@ bool iDynNode::setKinematicMeasure(const Vector &w0, const Vector &dw0, const Ve
 		if(verbose)
         {
             fprintf(stderr,"iDynNode: error, could not set Kinematic measures due to wrong sized vectors: \n");
-			fprintf(stderr," w,dw,ddp have lenght %d,%d,%d instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
+			fprintf(stderr," w,dw,ddp have lenght %d,%d,%d instead of 3,3,3. \n",(int)w0.length(),(int)dw0.length(),(int)ddp0.length());
         }
 		return false;
 	}
@@ -1760,7 +1760,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM right/left have lenght %d,%d instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_right.length(),FM_left.length());
+		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM right/left have lenght %d,%d instead of 6,6. Setting everything to zero. \n",name.c_str(),(int)FM_right.length(),(int)FM_left.length());
 		setWrenchMeasure(FM,true);
 		return false;
 	}
@@ -1779,7 +1779,7 @@ bool iDynSensorTorsoNode::setSensorMeasurement(const Vector &FM_right, const Vec
 	}
 	else
 	{
-		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM up/right/left have lenght %d,%d,%d instead of 6,6. Setting everything to zero. \n",name.c_str(),FM_up.length(),FM_right.length(),FM_left.length());
+		if(verbose) fprintf(stderr,"Node <%s> could not set sensor measurements properly due to wrong sized vectors. FM up/right/left have lenght %d,%d,%d instead of 6,6. Setting everything to zero. \n",name.c_str(),(int)FM_up.length(),(int)FM_right.length(),(int)FM_left.length());
 		setWrenchMeasure(FM);
 		return false;
 	}
@@ -1808,8 +1808,8 @@ bool iDynSensorTorsoNode::update(const Vector &w0, const Vector &dw0, const Vect
 		if(verbose)
         {
             fprintf(stderr,"Node <%s> error, could not update() due to wrong sized vectors. ",name.c_str());
-			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. \n",w0.length(),dw0.length(),ddp0.length());
-			fprintf(stderr," FM up/right/left have size %d,%d,%d instead of 6,6,6. \n",FM_up.length(),FM_right.length(),FM_left.length());
+			fprintf(stderr," w0,dw0,ddp0 have size %d,%d,%d instead of 3,3,3. \n",(int)w0.length(),(int)dw0.length(),(int)ddp0.length());
+			fprintf(stderr," FM up/right/left have size %d,%d,%d instead of 6,6,6. \n",(int)FM_up.length(),(int)FM_right.length(),(int)FM_left.length());
 			fprintf(stderr," Updating without new values.\n");
         }
 		update();
@@ -1844,7 +1844,7 @@ bool iDynSensorTorsoNode::update(const Vector &FM_right, const Vector &FM_left, 
 		if(verbose)
         {
             fprintf(stderr,"Node <%s> error, could not update() due to wrong sized vectors. ",name.c_str());
-			fprintf(stderr,"FM right/left have size %d,%d instead of 6,6. Updating without new values. \n",FM_right.length(),FM_left.length());
+			fprintf(stderr,"FM right/left have size %d,%d instead of 6,6. Updating without new values. \n",(int)FM_right.length(),(int)FM_left.length());
         }
 		update();
 		return false;
