@@ -1180,8 +1180,7 @@ void inverseDynamics::addSkinContacts(){
                 icub->upperTorso->rightSensor->addContact((*it));
             }
         }
-    }else if(default_ee_cont && Time::now()-skinContactsTimestamp>SKIN_EVENTS_TIMEOUT &&
-                skinContactsTimestamp!=0.0){
+    }else if(Time::now()-skinContactsTimestamp>SKIN_EVENTS_TIMEOUT && skinContactsTimestamp!=0.0){
         // if time is up, remove all the contacts
         //fprintf(stderr, "Skin event timeout (%3.3f sec)\n", SKIN_EVENTS_TIMEOUT);
         icub->upperTorso->leftSensor->clearContactList();
