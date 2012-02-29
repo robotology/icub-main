@@ -324,7 +324,7 @@ void Controller::run()
         Int->reset(fbHead);
     }
     
-    for (unsigned int i=0; i<3; i++)
+    for (int i=0; i<3; i++)
     {
         qdNeck[i]=qd[i];
         qdEyes[i]=qd[3+i];
@@ -349,7 +349,7 @@ void Controller::run()
         vEyes=0.0;
     }
 
-    for (unsigned int i=0; i<3; i++)
+    for (int i=0; i<3; i++)
     {
         v[i]  =vNeck[i];
         v[3+i]=vEyes[i];
@@ -473,7 +473,7 @@ void Controller::resume()
     {
         getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
     
-        for (unsigned int i=0; i<3; i++)
+        for (int i=0; i<3; i++)
         {
             fbNeck[i]=fbHead[i];
             fbEyes[i]=fbHead[3+i];
