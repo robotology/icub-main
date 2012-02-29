@@ -279,10 +279,11 @@ void CompensationThread::sendSkinEvents(){
     skinContactList &skinEvents = skinEventsPort.prepare();
     skinEvents.clear();
 
+    skinContactList temp;
     FOR_ALL_PORTS(i){
         if(compWorking[i]){
-            skinContactList temp = compensators[i]->getContacts();
-            skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());            
+            temp = compensators[i]->getContacts();
+            skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());
         }
     }
     //printf("%d contacts (timestamp %.3f)\n", skinEvents.size(), Time::now());
