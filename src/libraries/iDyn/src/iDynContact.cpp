@@ -309,6 +309,7 @@ dynContactList iDynContactSolver::getContactList() const{
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynContactSolver::getForceMomentEndEff() const{
+    // returns the end effector wrench, if any, otherwise return zeros
     int eeInd = chain->getN()-1;
     for(dynContactList::const_iterator it=contactList.begin(); it!=contactList.end();it++)
         if(it->getLinkNumber() == eeInd)
