@@ -196,7 +196,7 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     double gyrZ=gyro[8];
     mutex.post();
 
-    // to filter out the noise on the gyro readouts
+    // filter out the noise on the gyro readouts
     Vector vor_fprelv;
     if ((fabs(gyrX)<GYRO_BIAS_STABILITY) && (fabs(gyrY)<GYRO_BIAS_STABILITY) &&
         (fabs(gyrZ)<GYRO_BIAS_STABILITY))
