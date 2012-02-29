@@ -327,7 +327,7 @@ void EyePinvRefGen::run()
                 saccadesClock=Time::now();
             }
             
-            // reset eyes controller and integral on transition on=>off
+            // reset eyes controller and integral upon transition on=>off
             if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
             {                
                 ctrl->resetCtrlEyes();
