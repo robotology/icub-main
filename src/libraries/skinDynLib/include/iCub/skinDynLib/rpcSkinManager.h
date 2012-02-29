@@ -7,7 +7,8 @@ namespace iCub{
 
 namespace skinManager{
 
-// the last element of the enum (COMMANDS_COUNT) represents the total number of commands accepted by this module
+// Enum containing all the commands accepted by the rpc port of the SkinManager.
+// The last element of the enum (SkinManagerCommandSize) represents the total number of commands accepted by the module.
 typedef enum { 
 	calibrate,          get_touch_thr,		
     set_binarization,	get_binarization, 
@@ -18,8 +19,14 @@ typedef enum {
     get_pose,           set_pose,
     help,				quit,               
     SkinManagerCommandSize} SkinManagerCommand;
+    
+// Enum containing the responses to the the set commands
+typedef enum{
+    skin_manager_ok,
+    skin_manager_error
+} SkinManagerResponse;
 
-// the order of the command in this list MUST correspond to the order of the enum SkinDriftCompensation::SkinDriftCompCommand
+// the order of the command in this list MUST correspond to the order of the enum SkinManagerCommand
 const std::string SkinManagerCommandList[]  = {
 	"calib",                "get touch thr",
     "set binarization",		"get binarization", 
