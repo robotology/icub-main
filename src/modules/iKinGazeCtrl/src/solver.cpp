@@ -283,14 +283,34 @@ void EyePinvRefGen::run()
         chainNeck->setAng(nJointsTorso+1,fbHead[1]);
         chainNeck->setAng(nJointsTorso+2,fbHead[2]);
 
+        // ask for saccades (iff possible)
+        if (Robotable && saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) &&
+            !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>1.0/SACCADES_FREQ))
+        {
+            Vector fph=xd; fph.push_back(1.0);
+            fph=SE3inv(chainNeck->getH())*fph;
+
+            // estimate geometrically the target tilt and pan of the eyes
+            Vector ang(2), vel(2);
+            double fphz=fabs(fph[2]);
+            ang[0]=-atan2(fph[1],fphz); vel[0]=SACCADES_FREQ*fabs(ang[0]-fbHead[3]);
+            ang[1]=atan2(fph[0],fphz);  vel[1]=SACCADES_FREQ*fabs(ang[1]-fbHead[4]);
+
+            // favor the smooth-pursuit in case saccades are small
+            if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
+                ctrl->doSaccade(ang,vel);
+            
+            saccadesClock=Time::now();
+        }
+
         // update eyes chains for convergence purpose
         updateNeckBlockedJoints(chainEyeL,fbHead);         updateNeckBlockedJoints(chainEyeR,fbHead);
         chainEyeL->setAng(nJointsTorso+3,qd[0]);           chainEyeR->setAng(nJointsTorso+3,qd[0]);
         chainEyeL->setAng(nJointsTorso+4,qd[1]+qd[2]/2.0); chainEyeR->setAng(nJointsTorso+4,qd[1]-qd[2]/2.0);
-        
+
+        // converge on target
         if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
         {
-            // converge
             Vector v=EYEPINVREFGEN_GAIN*(pinv(eyesJ)*(xd-fp));
 
             // update eyes chains in actual configuration for velocity compensation
@@ -302,32 +322,11 @@ void EyePinvRefGen::run()
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             else
             {
-                Vector zeros=commData->get_counterv(); zeros=0.0;
+                Vector zeros(3); zeros=0.0;
                 commData->set_counterv(zeros);
             }
-
-            // ask for saccades iff possible
-            if (Robotable && saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) &&
-                !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>1.0/SACCADES_FREQ))
-            {
-                Vector fph=xd; fph.push_back(1.0);
-                fph=SE3inv(chainNeck->getH())*fph;
-
-                // estimate geometrically the target tilt and pan of the eyes
-                Vector ang(2), vel(2);
-                double fphz=fabs(fph[2]);
-                ang[0]=-atan2(fph[1],fphz); vel[0]=SACCADES_FREQ*fabs(ang[0]-fbHead[3]);
-                ang[1]=atan2(fph[0],fphz);  vel[1]=SACCADES_FREQ*fabs(ang[1]-fbHead[4]);
-
-                // favor the smooth-pursuit in case saccades are small
-                if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
-                    ctrl->doSaccade(ang,vel);
-
-                saccadesRxTargets=port_xd->get_rx();
-                saccadesClock=Time::now();
-            }
             
-            // reset eyes controller and integral upon transition on=>off
+            // reset eyes controller and integral upon saccades transition on=>off
             if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
             {                
                 ctrl->resetCtrlEyes();
@@ -343,7 +342,7 @@ void EyePinvRefGen::run()
         }
         else
         {
-            Vector zeros=commData->get_counterv(); zeros=0.0;
+            Vector zeros(3); zeros=0.0;
             commData->set_counterv(zeros);
         }
 
@@ -354,9 +353,11 @@ void EyePinvRefGen::run()
         commData->set_qd(4,qd[1]);
         commData->set_qd(5,qd[2]);
         commData->set_fpFrame(chainNeck->getH());
-
-        saccadeUnderWayOld=commData->get_isSaccadeUnderway();
     }
+
+    // latch the saccades status
+    saccadeUnderWayOld=commData->get_isSaccadeUnderway();
+    saccadesRxTargets=port_xd->get_rx();
 }
 
 
