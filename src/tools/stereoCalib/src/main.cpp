@@ -34,8 +34,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 \section intro_sec Description
 The module performs the stereo calibration (both intrinsic and extrinsic parameters). It also computes the rototranslation matrix used by \ref iKinGazeCtrl "Gaze Controller".
 A chessboard pattern is required, for convenience, a chessboard calibration image is provided in the 
-$ICUB_ROOT/main/app/cameraCalibration/data directory. In the config file  (DEFAULT $ICUB_ROOT/main/app/cameraCalibration/conf/icubEyes.ini)
-you should add the following group:
+$ICUB_ROOT/main/app/cameraCalibration/data directory. In the config file calibrationConf.ini
+you should have the following group:
 
 \code
 [STEREO_CALIBRATION_CONFIGURATION]
@@ -46,7 +46,7 @@ numberOfPairs N
 MonoCalib value
 \endcode
 
-This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini.
+This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini. You should replace your old calibration file (e.g. icubEyes.ini) with this new one.
 
 \note If you are using low resolution images (320x240) you should use a big chessboard pattern (i.e. with square side length of ~4cm). 
 \note Make sure to show the pattern horizontally.
