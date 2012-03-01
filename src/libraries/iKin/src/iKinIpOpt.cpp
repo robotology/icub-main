@@ -162,10 +162,16 @@ void iKin_NLP::computeQuantities(const Number *x)
         q=new_q;
 
         yarp::sig::Vector v(4);
-        v[0]=xd[3];
-        v[1]=xd[4];
-        v[2]=xd[5];
-        v[3]=xd[6];
+        if (xd.length()>=7)
+        {
+            v[0]=xd[3];
+            v[1]=xd[4];
+            v[2]=xd[5];
+            v[3]=xd[6];
+        }
+        else
+            v=0.0;
+
         yarp::sig::Matrix Des=axis2dcm(v);
         Des(0,3)=xd[0];
         Des(1,3)=xd[1];
