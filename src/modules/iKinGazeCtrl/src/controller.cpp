@@ -147,6 +147,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vdeg =CTRL_RAD2DEG*v;
 
     port_xd=NULL;
+    waitForCheckMotionDone=false;
     unplugCtrlEyes=false;
 }
 
@@ -264,6 +265,7 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
     posHead->positionMove(5,CTRL_RAD2DEG*ang[2]);
 
     commData->get_isSaccadeUnderway()=true;
+    waitForCheckMotionDone=true;
     unplugCtrlEyes=true;
 
     mutexCtrl.post();    
@@ -288,6 +290,12 @@ void Controller::run()
     mutexCtrl.wait();
     if (commData->get_isSaccadeUnderway())
     {
+        if (waitForCheckMotionDone)
+        {
+            Time::delay(0.005);
+            waitForCheckMotionDone=false;
+        }
+
         bool tiltDone, panDone, verDone;
         posHead->checkMotionDone(3,&tiltDone);
         posHead->checkMotionDone(4,&panDone);

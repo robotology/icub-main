@@ -72,6 +72,7 @@ protected:
     string localName;
     string camerasFile;
     unsigned int period;
+    bool waitForCheckMotionDone;
     bool unplugCtrlEyes;
     bool Robotable;
     bool headV2;
