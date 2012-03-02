@@ -258,7 +258,7 @@ void EyePinvRefGen::afterStart(bool s)
 void EyePinvRefGen::run()
 {
     if (genOn)
-    {        
+    {
         if (Robotable)
         {
             // read encoders
@@ -374,11 +374,11 @@ void EyePinvRefGen::run()
         commData->set_qd(4,qd[1]);
         commData->set_qd(5,qd[2]);
         commData->set_fpFrame(chainNeck->getH());
-    }
 
-    // latch the saccades status
-    saccadeUnderWayOld=commData->get_isSaccadeUnderway();
-    saccadesRxTargets=port_xd->get_rx();
+        // latch the saccades status
+        saccadeUnderWayOld=commData->get_isSaccadeUnderway();
+        saccadesRxTargets=port_xd->get_rx();
+    }
 }
 
 
