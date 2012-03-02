@@ -16,6 +16,8 @@
  * Public License for more details
 */
 
+#include <algorithm>
+
 #include <yarp/os/Time.h>
 #include <iCub/solver.h>
 #include <iCub/controller.h>
@@ -54,8 +56,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     // add aligning matrices read from configuration file
     getAlignHN(camerasFile,"ALIGN_KIN_LEFT",eyeL->asChain());
     getAlignHN(camerasFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
-
-    Matrix lim;
 
     if (Robotable)
     {
@@ -117,7 +117,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     }
 
     // find minimum allowed vergence
-    findMinimumAllowedVergence(lim);
+    findMinimumAllowedVergence();
 
     // reinforce vergence min bound
     lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
@@ -152,7 +152,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
 
 /************************************************************************/
-void Controller::findMinimumAllowedVergence(const Matrix &lim)
+void Controller::findMinimumAllowedVergence()
 {
     iKinChain cl(*chainEyeL), cr(*chainEyeR);
     Vector zeros(cl.getDOF()); zeros=0.0;
@@ -246,13 +246,26 @@ void Controller::afterStart(bool s)
 
 
 /************************************************************************/
-void Controller::doSaccade(const Vector &ang, const Vector &vel)
+void Controller::doSaccade(Vector &ang, Vector &vel)
 {
     mutexCtrl.wait();
-    posHead->setRefSpeed(3,CTRL_RAD2DEG*vel[0]);  posHead->setRefSpeed(4,CTRL_RAD2DEG*vel[1]);
-    posHead->positionMove(3,CTRL_RAD2DEG*ang[0]); posHead->positionMove(4,CTRL_RAD2DEG*ang[1]);
+
+    posHead->setRefSpeed(3,CTRL_RAD2DEG*vel[0]);
+    posHead->setRefSpeed(4,CTRL_RAD2DEG*vel[1]);
+    posHead->setRefSpeed(5,CTRL_RAD2DEG*vel[2]);
+
+    // enforce joints bounds
+    ang[0]=std::min(std::max(lim(3,0),ang[0]),lim(3,1));
+    ang[1]=std::min(std::max(lim(4,0),ang[1]),lim(4,1));
+    ang[2]=std::min(std::max(lim(5,0),ang[2]),lim(5,1));
+
+    posHead->positionMove(3,CTRL_RAD2DEG*ang[0]);
+    posHead->positionMove(4,CTRL_RAD2DEG*ang[1]);
+    posHead->positionMove(5,CTRL_RAD2DEG*ang[2]);
+
     commData->get_isSaccadeUnderway()=true;
     unplugCtrlEyes=true;
+
     mutexCtrl.post();    
 }
 
@@ -275,10 +288,11 @@ void Controller::run()
     mutexCtrl.wait();
     if (commData->get_isSaccadeUnderway())
     {
-        bool tiltDone, panDone;
+        bool tiltDone, panDone, verDone;
         posHead->checkMotionDone(3,&tiltDone);
         posHead->checkMotionDone(4,&panDone);
-        commData->get_isSaccadeUnderway()=!(tiltDone&&panDone);
+        posHead->checkMotionDone(5,&verDone);
+        commData->get_isSaccadeUnderway()=!(tiltDone&&panDone&&verDone);
     }
     mutexCtrl.post();
     

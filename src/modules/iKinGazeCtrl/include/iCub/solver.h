@@ -88,6 +88,7 @@ protected:
     double eyeTiltMax;
     int    saccadesRxTargets;
     double saccadesClock;
+    double eyesHalfBaseline;
     double Ts;
     
     Vector fbTorso;

@@ -17,6 +17,7 @@
 */
 
 #include <algorithm>
+
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
@@ -61,8 +62,10 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     getAlignHN(camerasFile,"ALIGN_KIN_LEFT",eyeL->asChain());
     getAlignHN(camerasFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
-    Matrix lim;
+    // get the lenght of the half of the eyes baseline
+    eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
 
+    Matrix lim;
     if (Robotable)
     {
         // create interfaces
@@ -283,7 +286,7 @@ void EyePinvRefGen::run()
         chainNeck->setAng(nJointsTorso+1,fbHead[1]);
         chainNeck->setAng(nJointsTorso+2,fbHead[2]);
 
-        // ask for saccades (iff possible)
+        // ask for saccades (if possible)
         if (Robotable && saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) &&
             !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>1.0/SACCADES_FREQ))
         {
@@ -292,15 +295,33 @@ void EyePinvRefGen::run()
 
             // estimate geometrically the target tilt and pan of the eyes
             Vector ang(2), vel(2);
-            double fphz=fabs(fph[2]);
-            ang[0]=-atan2(fph[1],fphz); vel[0]=SACCADES_FREQ*fabs(ang[0]-fbHead[3]);
-            ang[1]=atan2(fph[0],fphz);  vel[1]=SACCADES_FREQ*fabs(ang[1]-fbHead[4]);
+            ang[0]=-atan2(fph[1],fabs(fph[2])); vel[0]=SACCADES_FREQ*fabs(ang[0]-fbHead[3]);
+            ang[1]=atan2(fph[0],fph[2]);        vel[1]=SACCADES_FREQ*fabs(ang[1]-fbHead[4]);
 
             // favor the smooth-pursuit in case saccades are small
             if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
+            {
+                // get rid of the tilt of the eyes
+                Vector x(4); x[0]=1.0; x[1]=0.0; x[2]=0.0; x[3]=-ang[0];
+                fph=axis2dcm(x)*fph;
+
+                // go on iff the point is in front of us
+                if (fph[2]>0.0)
+                {
+                    // estimate geometrically the target vergence Vg=L-R
+                    double fphx=fabs(fph[0]);   // account for symmetry along the sagittal plane
+                    ang.push_back(atan2(fph[2],fphx-eyesHalfBaseline)-atan2(fph[2],fphx+eyesHalfBaseline));
+                    vel.push_back(SACCADES_FREQ*fabs(ang[2]-fbHead[5]));
+                }
+                else    // do not touch the vergence
+                {                    
+                    ang.push_back(fbHead[5]);
+                    vel.push_back(vel[1]);
+                }
+
                 ctrl->doSaccade(ang,vel);
-            
-            saccadesClock=Time::now();
+                saccadesClock=Time::now();
+            }
         }
 
         // update eyes chains for convergence purpose
@@ -695,9 +716,8 @@ Vector Solver::neckTargetRotAngles(const Vector &xd)
     fph=SE3inv(commData->get_fpFrame())*fph;
 
     Vector ang(2);
-    double fphz=fabs(fph[2]);
-    ang[0]=fabs(-atan2(fph[1],fphz));
-    ang[1]=fabs(atan2(fph[0],fphz));
+    ang[0]=-atan2(fph[1],fabs(fph[2]));
+    ang[1]=atan2(fph[0],fph[2]);
 
     return ang;
 }

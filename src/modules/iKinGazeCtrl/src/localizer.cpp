@@ -16,11 +16,11 @@
  * Public License for more details
 */
 
+#include <stdio.h>
+
 #include <yarp/math/SVD.h>
 #include <iCub/localizer.h>
 #include <iCub/solver.h>
-
-#include <stdio.h>
 
 
 /************************************************************************/
@@ -176,9 +176,8 @@ Vector Localizer::getAbsAngles(const Vector &x)
     fph.pop_back();
 
     Vector ang(3);
-    double fphz=fabs(fph[2]);
-    ang[0]=atan2(fph[0],fphz);
-    ang[1]=-atan2(fph[1],fphz);
+    ang[0]=atan2(fph[0],fph[2]);
+    ang[1]=-atan2(fph[1],fabs(fph[2]));
     ang[2]=2.0*atan2(eyesHalfBaseline,norm(fph));
 
     return ang;

@@ -61,7 +61,7 @@ protected:
 
     minJerkVelCtrl   *mjCtrlNeck;
     minJerkVelCtrl   *mjCtrlEyes;
-    Integrator       *Int;
+    Integrator       *Int;    
 
     Port port_x;
     Port port_q;
@@ -85,12 +85,13 @@ protected:
     double minAbsVel;
     double Ts;
 
+    Matrix lim;
     Vector qddeg,qdeg,vdeg,xd,fp;
     Vector v,vNeck,vEyes,vdegOld;
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
 
-    void findMinimumAllowedVergence(const Matrix &lim);
+    void findMinimumAllowedVergence();
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
@@ -100,7 +101,7 @@ public:
                const unsigned int _period);
 
     void   resetCtrlEyes();
-    void   doSaccade(const Vector &ang, const Vector &vel);
+    void   doSaccade(Vector &ang, Vector &vel);
     void   stopLimbsVel();
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
