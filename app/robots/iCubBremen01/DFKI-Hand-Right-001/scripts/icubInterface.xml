@@ -1,9 +1,9 @@
 <application>
-<name>icubRobotName01</name>
+<name>DFKI Right Hand</name>
 <module>
       <name>iCubInterface</name>
-      <parameters></parameters>
-	  <node>pc104</node>
+      <parameters>--config /usr/local/src/robot/iCub/main/app/robots/iCubBremen01/DFKI-Hand-Right-001/conf/icub.ini</parameters>
+	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>	
 	<tag>iCubInterface</tag>
    </module>
