@@ -1310,7 +1310,7 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     qdot=0.0;
     xdot=0.0;    
 
-    Vector zeros(6); zeros=0.0;
+    Vector zeros(7); zeros=0.0;
     mjCtrlTask->reset(zeros);
     mjCtrlJoint->reset(qdot);
 }

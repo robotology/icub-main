@@ -366,7 +366,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
                         {
                             bool flag;
-
                             if (getTrackingMode(&flag))
                             {   
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -386,7 +385,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
                             double time;
-
                             if (getTrajTime(&time))
                             {   
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -402,7 +400,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_TOL:
                         {
                             double tol;
-    
                             if (getInTargetTol(&tol))
                             {   
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -418,7 +415,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_MOTIONDONE:
                         {
                             bool flag;
-
                             if (checkMotionDone(&flag))
                             {   
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -474,7 +470,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_DOF:
                         {
                             Vector curDof;
-
                             if (getDOF(curDof))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -493,7 +488,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_REST_POS:
                         {
                             Vector curRestPos;
-    
                             if (getRestPos(curRestPos))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -512,7 +506,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS:
                         {
                             Vector curRestWeights;
-    
                             if (getRestWeights(curRestWeights))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -536,10 +529,12 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             int cnt=0;
 
                             for (unsigned int i=0; i<chain->getN(); i++)
+                            {
                                 if ((*chain)[i].isBlocked())
                                     q[i]=CTRL_RAD2DEG*chain->getAng(i);
                                 else
                                     q[i]=CTRL_RAD2DEG*qdes[cnt++];
+                            }
 
                             addVectorOption(reply,IKINCARTCTRL_VOCAB_OPT_X,xdes);
                             addVectorOption(reply,IKINCARTCTRL_VOCAB_OPT_Q,q);
@@ -551,7 +546,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_QDOT:
                         {
                             Vector qdot;
-    
                             if (getJointsVelocities(qdot))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -570,7 +564,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_XDOT:
                         {
                             Vector xdot, odot;
-
                             if (getTaskVelocities(xdot,odot))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -636,7 +629,6 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
                         {
                             int mode=command.get(2).asVocab();
-    
                             if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_TRACK)
                             {    
                                 if (setTrackingMode(true))
@@ -660,20 +652,22 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
-                            mutex.wait();
-                            setTrajTime(command.get(2).asDouble());
-                            mutex.post();
-                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            if (setTrajTime(command.get(2).asDouble()))
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
                             break;
                         }
 
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TOL:
                         {
-                            mutex.wait();
-                            setInTargetTol(command.get(2).asDouble());
-                            mutex.post();
-                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            if (setInTargetTol(command.get(2).asDouble()))
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
                             break;
                         }
 
@@ -1137,14 +1131,15 @@ void ServerCartesianController::run()
 
         // get the current target pose
         if (getNewTarget())
-        {    
+        {
             if (!executingTraj)
             {
                 ctrl->restart(fb);
                 smithPredictor.restart(fb);
             }
 
-            executingTraj=true; // onset of new trajectory
+            // onset of new trajectory
+            executingTraj=true;
         }
             
         if (executingTraj)
@@ -1190,7 +1185,7 @@ void ServerCartesianController::run()
             portState.prepare()=chain->EndEffPose();
             portState.setEnvelope(txInfo);
             portState.write();
-        }        
+        }
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
@@ -1687,7 +1682,7 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
 
         // update trajectory execution time just if required
         if (t>0.0)
-            setTrajTime(t);
+            setTrajTimeNoMutex(t);
 
         Bottle &b=portSlvOut.prepare();
         b.clear();
@@ -2312,7 +2307,7 @@ bool ServerCartesianController::getTrajTime(double *t)
 
 
 /************************************************************************/
-bool ServerCartesianController::setTrajTime(const double t)
+bool ServerCartesianController::setTrajTimeNoMutex(const double t)
 {
     if (attached)
     {
@@ -2321,6 +2316,16 @@ bool ServerCartesianController::setTrajTime(const double t)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setTrajTime(const double t)
+{
+    mutex.wait();
+    bool ret=setTrajTimeNoMutex(t);
+    mutex.post();
+    return ret;
 }
 
 
@@ -2338,7 +2343,7 @@ bool ServerCartesianController::getInTargetTol(double *tol)
 
 
 /************************************************************************/
-bool ServerCartesianController::setInTargetTol(const double tol)
+bool ServerCartesianController::setInTargetTolNoMutex(const double tol)
 {
     if (attached)
     {
@@ -2348,6 +2353,16 @@ bool ServerCartesianController::setInTargetTol(const double tol)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setInTargetTol(const double tol)
+{
+    mutex.wait();
+    bool ret=setInTargetTolNoMutex(tol);
+    mutex.post();
+    return ret;
 }
 
 
@@ -2586,10 +2601,8 @@ bool ServerCartesianController::restoreContext(const int id)
                 setLimits(axis,context.limits(axis,0),context.limits(axis,1));
 
             setTrackingMode(context.mode);
-            mutex.wait();
             setTrajTime(context.trajTime);
             setInTargetTol(context.tol);
-            mutex.post();
 
             return true;
         }

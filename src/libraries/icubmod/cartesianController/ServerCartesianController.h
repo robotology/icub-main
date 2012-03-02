@@ -212,6 +212,8 @@ protected:
     friend class CartesianCtrlCommandPort;
 
     bool stopControlNoMutex();
+    bool setTrajTimeNoMutex(const double t);
+    bool setInTargetTolNoMutex(const double tol);
 
 public:
     ServerCartesianController();
