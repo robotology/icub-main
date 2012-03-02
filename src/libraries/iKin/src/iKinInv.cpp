@@ -1308,7 +1308,7 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     iKinCtrl::restart(q0);
 
     qdot=0.0;
-    xdot=0.0;    
+    xdot=0.0;
 
     Vector zeros(x.length()); zeros=0.0;
     mjCtrlTask->reset(zeros);
