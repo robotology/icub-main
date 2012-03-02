@@ -116,10 +116,9 @@ void xdPort::run()
         syncEvent.wait();
 
         Vector theta=static_cast<Solver*>(slv)->neckTargetRotAngles(xd);
-        double timeDelay=0.0;
 
-        if ((theta[0]<NECKSOLVER_RESTORINGANGLE_TRA*CTRL_DEG2RAD) &&
-            (theta[1]<NECKSOLVER_RESTORINGANGLE_SAG*CTRL_DEG2RAD))
+        double timeDelay=0.0;
+        if (norm(theta)<NECKSOLVER_RESTORINGANGLE*CTRL_DEG2RAD)
             timeDelay=NECKSOLVER_ACTIVATIONDELAY;
 
         Time::delay(timeDelay);

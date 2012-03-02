@@ -789,8 +789,7 @@ void Solver::run()
 
     // 1) compute the distance in the transverse and sagittal planes
     Vector theta=neckTargetRotAngles(xd);
-    bool doSolve=(theta[0]>NECKSOLVER_ACTIVATIONANGLE_TRA*CTRL_DEG2RAD) ||
-                 (theta[1]>NECKSOLVER_ACTIVATIONANGLE_SAG*CTRL_DEG2RAD);
+    bool doSolve=(norm(theta)>NECKSOLVER_ACTIVATIONANGLE*CTRL_DEG2RAD);
 
     // 2) skip if controller is active and no torso motion is detected
     doSolve&=!(commData->get_isCtrlActive() && !torsoChanged);

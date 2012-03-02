@@ -370,13 +370,13 @@ public:
     * Returns the actual cartesian position of the End-Effector.
     * @return actual cartesian position of the End-Effector.
     */
-    virtual yarp::sig::Vector get_x() { return x; }
+    virtual yarp::sig::Vector get_x() const { return x; }
 
     /**
     * Returns the actual cartesian position error.
     * @return actual cartesian position error.
     */
-    virtual yarp::sig::Vector get_e() { return e; }
+    virtual yarp::sig::Vector get_e() const { return e; }
 
     /**
     * Sets the joint angles values.
@@ -388,26 +388,26 @@ public:
     * Returns the actual joint angles values.
     * @return actual joint angles values.
     */
-    virtual yarp::sig::Vector get_q() { return q; }
+    virtual yarp::sig::Vector get_q() const { return q; }
 
     /**
     * Returns the actual gradient.
     * @return actual gradient.
     */
-    virtual yarp::sig::Vector get_grad() { return grad; }
+    virtual yarp::sig::Vector get_grad() const { return grad; }
 
     /**
     * Returns the actual Jacobian used in computation.
     * @return actual Jacobian.
     */
-    virtual yarp::sig::Matrix get_J() { return J; }
+    virtual yarp::sig::Matrix get_J() const { return J; }
 
     /**
     * Returns the actual distance from the target in cartesian space
     * (euclidean norm is used). 
     * @return actual distance from the target.
     */
-    virtual double dist() { return yarp::math::norm(e); }
+    virtual double dist() const { return yarp::math::norm(e); }
 
     /**
     * Default destructor.
@@ -494,13 +494,13 @@ public:
     * Returns the actual derivative of joint angles.
     * @return the actual derivative of joint angles. 
     */
-    yarp::sig::Vector get_qdot() { return qdot; }
+    yarp::sig::Vector get_qdot() const { return qdot; }
 
     /**
     * Returns the actual value of Gradient Projected.
     * @return the actual value of Gradient Projected.
     */
-    yarp::sig::Vector get_gpm() { return gpm; }
+    yarp::sig::Vector get_gpm() const { return gpm; }
 
     /**
     * Returns the gain.
@@ -675,13 +675,13 @@ public:
     * Returns the actual derivative of joint angles.
     * @return the actual derivative of joint angles. 
     */
-    yarp::sig::Vector get_qdot() { return qdot; }
+    yarp::sig::Vector get_qdot() const { return qdot; }
 
     /**
     * Returns the actual value of Gradient Projected.
     * @return the actual value of Gradient Projected.
     */
-    yarp::sig::Vector get_gpm() { return gpm; }
+    yarp::sig::Vector get_gpm() const { return gpm; }
 
     /**
     * Returns the current weighting factor mu.
@@ -866,7 +866,7 @@ public:
     * Returns the controlled joint angles target values. 
     * @return the vector of actual target joint angles.
     */
-    yarp::sig::Vector get_qf() { return q_set; }
+    yarp::sig::Vector get_qf() const { return q_set; }
 
     virtual void set_q(const yarp::sig::Vector &q0) { iKinCtrl::set_q(q0); reset(q0); }
     virtual yarp::sig::Vector get_x();
@@ -1047,13 +1047,14 @@ public:
     * Returns the actual derivative of joint angles.
     * @return the actual derivative of joint angles. 
     */
-    yarp::sig::Vector get_qdot() { return qdot; }
+    yarp::sig::Vector get_qdot() const { return qdot; }
 
     /**
-    * Returns the actual derivative of End-Effector Pose.
+    * Returns the actual derivative of End-Effector Pose (6 
+    * components; xdot=J*qdot). 
     * @return the actual derivative of End-Effector Pose. 
     */
-    yarp::sig::Vector get_xdot() { return xdot; }
+    yarp::sig::Vector get_xdot() const { return xdot; }
 
     /**
     * Sets the guard ratio (in [0 1]). 

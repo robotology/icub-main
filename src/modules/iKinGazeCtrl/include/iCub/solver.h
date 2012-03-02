@@ -41,10 +41,8 @@
 #define GYRO_BIAS_STABILITY                 5.0     // [deg/s]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
-#define NECKSOLVER_ACTIVATIONANGLE_TRA      2.5     // [deg]
-#define NECKSOLVER_ACTIVATIONANGLE_SAG      2.5     // [deg]
-#define NECKSOLVER_RESTORINGANGLE_TRA       5.0     // [deg]
-#define NECKSOLVER_RESTORINGANGLE_SAG       5.0     // [deg]
+#define NECKSOLVER_ACTIVATIONANGLE          2.5     // [deg]
+#define NECKSOLVER_RESTORINGANGLE           5.0     // [deg]
 
 using namespace std;
 using namespace yarp::os;

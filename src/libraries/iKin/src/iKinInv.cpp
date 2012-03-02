@@ -62,7 +62,7 @@ iKinCtrl::iKinCtrl(iKinChain &c, unsigned int _ctrlPose) : chain(c)
     // randomly initialize x_set in order to avoid a precalculated grad equal
     // to zero (which is bad in some special cases), because of the call to _fdf()
     // made by gsl_multimin_fdfminimizer_set()
-    for (unsigned int i=0; i<7; i++)
+    for (int i=0; i<7; i++)
         x_set[i]=(rand() % 1000) / 1000.0;
 
     x=chain.EndEffPose(q);
@@ -612,7 +612,7 @@ Vector LMCtrl::iterate(Vector &xd, const unsigned int verbose)
         grad=-1.0*(Jt*e);
 
         Matrix LM=J*Jt;
-        for (unsigned int i=0; i<6; i++)
+        for (int i=0; i<6; i++)
             LM(i,i)+=mu*LM(i,i);
 
         if (LM.rows()>=LM.cols())
@@ -1308,7 +1308,11 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     iKinCtrl::restart(q0);
 
     qdot=0.0;
-    xdot=0.0;
+    xdot=0.0;    
+
+    Vector zeros(6); zeros=0.0;
+    mjCtrlTask->reset(zeros);
+    mjCtrlJoint->reset(qdot);
 }
 
 
