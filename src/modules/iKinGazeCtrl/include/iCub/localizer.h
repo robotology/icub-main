@@ -25,6 +25,9 @@
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/sig/Matrix.h>
+#include <yarp/math/Math.h>
 
 #include <iCub/ctrl/pids.h>
 #include <iCub/gazeNlp.h>
