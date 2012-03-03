@@ -305,7 +305,6 @@ void Controller::run()
     mutexCtrl.post();
     
     Vector new_qd=commData->get_qd();
-    bool triggerCtrlReset=false;
     bool swOffCond=!commData->get_isSaccadeUnderway() &&
                    (norm(new_qd-fbHead)<GAZECTRL_MOTIONDONE_QTHRES*CTRL_DEG2RAD);
 
@@ -327,7 +326,13 @@ void Controller::run()
                                      (commData->get_canCtrlBeDisabled() ?
                                       port_xd->get_new() : (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
 
-        triggerCtrlReset=commData->get_isCtrlActive();
+        // reset controllers
+        if (commData->get_isCtrlActive())
+        {
+            Vector zeros(3); zeros=0.0;
+            mjCtrlNeck->reset(zeros);
+            mjCtrlEyes->reset(zeros);
+        }
     }
 
     // get data
@@ -360,14 +365,6 @@ void Controller::run()
 
     if (commData->get_isCtrlActive())
     {
-        // reset controllers
-        if (triggerCtrlReset)
-        {
-            Vector zeros(3); zeros=0.0;
-            mjCtrlNeck->reset(zeros);
-            mjCtrlEyes->reset(zeros);
-        }
-
         // control loop
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
 
