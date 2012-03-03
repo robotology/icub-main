@@ -197,7 +197,7 @@ Property Obstacle_Gaussian::toProperty() const
 /************************************************************************/
 Vector Obstacle_Gaussian::getField(const Vector &x, const Vector &xdot)
 {
-    Vector zeros(x.length()); zeros=0.0;
+    Vector zeros(x.length(),0.0);
     if (!active)
         return zeros;
 

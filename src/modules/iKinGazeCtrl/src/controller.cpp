@@ -156,7 +156,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 void Controller::findMinimumAllowedVergence()
 {
     iKinChain cl(*chainEyeL), cr(*chainEyeR);
-    Vector zeros(cl.getDOF()); zeros=0.0;
+    Vector zeros(cl.getDOF(),0.0);
     cl.setAng(zeros); cr.setAng(zeros);
 
     double minVer=0.5*CTRL_DEG2RAD;
@@ -276,8 +276,7 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
 void Controller::resetCtrlEyes()
 {
     mutexCtrl.wait();
-    Vector zeros(3); zeros=0.0;
-    mjCtrlEyes->reset(zeros);
+    mjCtrlEyes->reset(zeros(3));
     unplugCtrlEyes=false;
     mutexCtrl.post();
 }
@@ -329,7 +328,7 @@ void Controller::run()
         // reset controllers
         if (commData->get_isCtrlActive())
         {
-            Vector zeros(3); zeros=0.0;
+            Vector zeros(3,0.0);
             mjCtrlNeck->reset(zeros);
             mjCtrlEyes->reset(zeros);
         }

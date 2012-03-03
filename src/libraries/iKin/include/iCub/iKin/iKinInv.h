@@ -625,7 +625,7 @@ protected:
     virtual void   deadLockRecoveryFcn() { }
     virtual void   printIter(const unsigned int verbose);
 
-    virtual yarp::sig::Matrix pinv(const yarp::sig::Matrix &A, double tol=0.0);
+    virtual yarp::sig::Matrix pinv(const yarp::sig::Matrix &A, const double tol=0.0);
 
 public:
     /**
@@ -1118,7 +1118,7 @@ public:
 
     /**
     * Destructor.
-    */                                                         
+    */
     virtual ~MultiRefMinJerkCtrl();
 };
 

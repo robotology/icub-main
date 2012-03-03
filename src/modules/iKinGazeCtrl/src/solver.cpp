@@ -342,10 +342,7 @@ void EyePinvRefGen::run()
             if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             else
-            {
-                Vector zeros(3); zeros=0.0;
-                commData->set_counterv(zeros);
-            }
+                commData->set_counterv(zeros(3));
             
             // reset eyes controller and integral upon saccades transition on=>off
             if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
@@ -362,10 +359,7 @@ void EyePinvRefGen::run()
             qd=I->integrate(v+commData->get_counterv());
         }
         else
-        {
-            Vector zeros(3); zeros=0.0;
-            commData->set_counterv(zeros);
-        }
+            commData->set_counterv(zeros(3));
 
         // set a new target position
         commData->set_xd(xd);

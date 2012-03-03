@@ -532,30 +532,29 @@ void LMCtrl::setChainConstraints(bool _constrained)
 
 
 /************************************************************************/
-Matrix LMCtrl::pinv(const Matrix &A, double tol)
+Matrix LMCtrl::pinv(const Matrix &A, const double tol)
 {
-	int m=A.rows();
-	int n=A.cols();
-	Matrix U(m,n);
-	Vector Sdiag(n);
-	Matrix V(n,n);
+    int m=A.rows();
+    int n=A.cols();
+    Matrix U(m,n);
+    Vector Sdiag(n);
+    Matrix V(n,n);
 
-	SVD(A,U,Sdiag,V);
+    SVD(A,U,Sdiag,V);
 
-	Matrix Spinv=zeros(n,n);    
-	for (int c=0; c<n; c++)
+    Matrix Spinv=zeros(n,n);
+    for (int c=0; c<n; c++)
     {    
-		for (int r=0; r<n; r++)
+        for (int r=0; r<n; r++)
         {    
             if (r==c && Sdiag[c]>tol)
                 Spinv(r,c)=1.0/Sdiag[c];
-			else
-				Spinv(r,c)=0.0;
+            else
+                Spinv(r,c)=0.0;
         }
     }
 
     svMin=Sdiag[n-1];
-
     return V*Spinv*U.transposed();
 }
 
@@ -1310,9 +1309,8 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     qdot=0.0;
     xdot=0.0;
 
-    Vector zeros(x.length()); zeros=0.0;
     mjCtrlJoint->reset(qdot);
-    mjCtrlTask->reset(zeros);
+    mjCtrlTask->reset(zeros(x.length()));
 }
 
 
