@@ -80,6 +80,7 @@ using namespace iCub::ctrl;
 using namespace iCub::pmp;
 
 
+/************************************************************************/
 class ClientModule: public RFModule
 {
 protected:
@@ -99,6 +100,7 @@ protected:
 
 public:
 
+    /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
         int verbosity=rf.check("verbosity",Value(0)).asInt();
@@ -119,7 +121,7 @@ public:
         Property optCtrl;
         optCtrl.put("device","cartesiancontrollerclient");
         optCtrl.put("remote",("/"+robot+"/cartesianController/"+part).c_str());
-        optCtrl.put("local",("/"+local+"/cartesian").c_str());
+        optCtrl.put("local",(local+"/cartesian").c_str());
 
         if (dCtrl.open(optCtrl))
             dCtrl.view(iCtrl);
@@ -140,6 +142,7 @@ public:
         return client.open(options);
     }
 
+    /************************************************************************/
     bool close()
     {
         if (!closing) 
@@ -157,6 +160,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     bool updateModule()
     {
         if (init)
@@ -250,6 +254,7 @@ public:
         }
     }
 
+    /************************************************************************/
     double getPeriod()
     {
         return 0.1;
@@ -257,6 +262,7 @@ public:
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     Network yarp;
