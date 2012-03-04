@@ -2164,7 +2164,7 @@ bool PmpServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
         unsigned int iteration=0;
         while (iteration++<maxIterations)
         {
-            Vector field; field.resize(x.length(),0.0);
+            Vector field(x.length(),0.0);
             for (map<int,Item*>::const_iterator it=table.begin(); it!=table.end(); it++) 
                 field=field+it->second->getField(xOffline,xdotOffline);
 

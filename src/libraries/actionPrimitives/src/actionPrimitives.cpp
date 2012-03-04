@@ -148,7 +148,7 @@ public:
 
         if ((cartCtrl!=NULL) && (len>=3))
         {
-            Vector halves(len); halves=0.5;
+            Vector halves(len,0.5);
             Vector randOffs=L*(Rand::vector(len)-halves);
     
             cartCtrl->goToPosition(restPos+randOffs);
@@ -254,8 +254,7 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
     {
         bool sw=opt.find(key.c_str()).asString()=="on"?true:false;
 
-        Vector newDof, dummyRet;
-        newDof.resize(3,2.0);
+        Vector newDof(3,2.0), dummyRet;
         newDof[j]=sw?1.0:0.0;
 
         printMessage("%s %s\n",key.c_str(),sw?"enabled":"disabled");
