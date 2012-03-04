@@ -78,12 +78,14 @@ using namespace yarp::os;
 using namespace iCub::pmp;
 
 
+/************************************************************************/
 class ServerModule: public RFModule
 {
 protected:
     PmpServer server;
 
 public:
+    /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
         int verbosity=rf.check("verbosity",Value(0)).asInt();
@@ -104,17 +106,28 @@ public:
         return server.open(options);
     }
 
+    /************************************************************************/
     bool close()
     {
         server.close();
         return true;
     }
 
-    double getPeriod()    { return 1.0;  }
-    bool   updateModule() { return true; }
+    /************************************************************************/
+    double getPeriod()
+    {
+        return 1.0;
+    }
+
+    /************************************************************************/
+    bool updateModule()
+    {
+        return true;
+    }
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     Network yarp;

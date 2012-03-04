@@ -150,32 +150,35 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
+#include <iostream>
+#include <iomanip>
+#include <string>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 
 #include <iCub/iKin/iKinSlv.h>
-
-#include <iostream>
-#include <iomanip>
-#include <string>
 
 using namespace std;
 using namespace yarp::os;
 using namespace iCub::iKin;
 
 
+/************************************************************************/
 class SolverModule: public RFModule
 {
 protected:
     CartesianSolver *slv;
 
 public:
+    /************************************************************************/
     SolverModule()
     {
         slv=NULL;
     }
 
-    virtual bool configure(ResourceFinder &rf)
+    /************************************************************************/
+    bool configure(ResourceFinder &rf)
     {                
         string part, slvName;
 
@@ -203,9 +206,9 @@ public:
             return false;
         }
 
-        if (part=="left_arm" || part=="right_arm")
+        if ((part=="left_arm") || (part=="right_arm"))
             slv=new iCubArmCartesianSolver(slvName);
-        else if (part=="left_leg" || part=="right_leg")
+        else if ((part=="left_leg") || (part=="right_leg"))
             slv=new iCubLegCartesianSolver(slvName);
         else
         {
@@ -222,7 +225,8 @@ public:
         }
     }
 
-    virtual bool close()
+    /************************************************************************/
+    bool close()
     {
         if (slv!=NULL)
             delete slv;
@@ -230,12 +234,14 @@ public:
         return true;
     }
 
-    virtual double getPeriod()
+    /************************************************************************/
+    double getPeriod()
     {
         return 1.0;
     }
 
-    virtual bool updateModule()
+    /************************************************************************/
+    bool updateModule()
     {
         if (slv->isClosed() || slv->getTimeoutFlag())
             return false;
@@ -245,6 +251,7 @@ public:
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     Network yarp;
