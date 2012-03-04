@@ -152,7 +152,6 @@ iKin_NLP::iKin_NLP(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector
 void iKin_NLP::computeQuantities(const Number *x)
 {
     yarp::sig::Vector new_q(dim);
-
     for (Index i=0; i<(int)dim; i++)
         new_q[i]=x[i];
 
@@ -161,7 +160,7 @@ void iKin_NLP::computeQuantities(const Number *x)
         firstGo=false;
         q=new_q;
 
-        yarp::sig::Vector v(4);
+        yarp::sig::Vector v(4,0.0);
         if (xd.length()>=7)
         {
             v[0]=xd[3];
@@ -169,8 +168,6 @@ void iKin_NLP::computeQuantities(const Number *x)
             v[2]=xd[5];
             v[3]=xd[6];
         }
-        else
-            v=0.0;
 
         yarp::sig::Matrix Des=axis2dcm(v);
         Des(0,3)=xd[0];
@@ -442,14 +439,13 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
             for (Index col=0; col<=row; col++)
             {
                 yarp::sig::Vector h=chain.fastHessian_ij(row,col);
-                yarp::sig::Vector h_xyz(3), h_ang(3), h_zero(3);
+                yarp::sig::Vector h_xyz(3), h_ang(3), h_zero(3,0.0);
                 h_xyz[0]=h[0];
                 h_xyz[1]=h[1];
                 h_xyz[2]=h[2];
                 h_ang[0]=h[3];
                 h_ang[1]=h[4];
                 h_ang[2]=h[5];
-                h_zero=0.0;
             
                 yarp::sig::Vector *h_1st;
                 if (ctrlPose==IKINCTRL_POSE_FULL)

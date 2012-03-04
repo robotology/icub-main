@@ -47,7 +47,6 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
                          unsigned int verbose)
 {
     Vector v(3);
-
     if ((A.rows()>=3) && (B.rows()>=3))
     {
         v[0]=A(1,colA)*B(2,colB)-A(2,colA)*B(1,colB);
@@ -66,7 +65,6 @@ Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
                           const Vector &Db, unsigned int verbose)
 {
     Vector Dv(3);
-
     if ((a.length()>=3) && (b.length()>=3) && (Da.length()>=3) && (Db.length()>=3))
     {
         Dv[0]=Da[1]*b[2]+a[1]*Db[2]-Da[2]*b[1]-a[2]*Db[1];
@@ -86,7 +84,6 @@ Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
                           unsigned int verbose)
 {
     Vector Dv(3);
-
     if ((A.rows()>=3) && (B.rows()>=3) && (DA.rows()>=3) && (DB.rows()>=3))
     {
         Dv[0]=DA(1,colA)*B(2,colB)+A(1,colA)*DB(2,colB)-DA(2,colA)*B(1,colB)-A(2,colA)*DB(1,colB);
@@ -111,10 +108,11 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
         return Vector(0);
     }
 
-    Vector v(4); v=0.0;
+    Vector v(4);
     v[0]=R(2,1)-R(1,2);
     v[1]=R(0,2)-R(2,0);
     v[2]=R(1,0)-R(0,1);
+    v[3]=0.0;
     double r=yarp::math::norm(v);
     double theta=atan2(0.5*r,0.5*(R(0,0)+R(1,1)+R(2,2)-1));
 
@@ -289,7 +287,6 @@ Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 Vector iCub::ctrl::sign(const Vector &v)
 {
     Vector ret(v.length());
-
     for (size_t i=0; i<v.length(); i++)
         ret[i]=sign(v[i]);
 

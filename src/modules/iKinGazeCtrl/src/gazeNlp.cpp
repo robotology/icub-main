@@ -197,7 +197,6 @@ void HeadCenter_NLP::setGravityDirection(const Vector &gDir)
 void HeadCenter_NLP::computeQuantities(const Ipopt::Number *x)
 {
     Vector new_q(dim);
-
     for (Ipopt::Index i=0; i<(int)dim; i++)
         new_q[i]=x[i];
 

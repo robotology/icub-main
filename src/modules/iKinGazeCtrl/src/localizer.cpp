@@ -50,7 +50,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     getAlignHN(camerasFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     // get the absolute reference frame of the head
-    Vector q(eyeC.getDOF()); q=0.0;
+    Vector q(eyeC.getDOF(),0.0);
     eyeCAbsFrame=eyeC.getH(q);
     // ... and its inverse
     invEyeCAbsFrame=SE3inv(eyeCAbsFrame);
@@ -82,26 +82,17 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     else
         PrjR=invPrjR=NULL;
 
-    Vector Kp(1), Ki(1), Kd(1);
-    Vector Wp(1), Wi(1), Wd(1);
-    Vector N(1),  Tt(1);
+    Vector Kp(1,0.001), Ki(1,0.001), Kd(1,0.0);
+    Vector Wp(1,1.0),   Wi(1,1.0),   Wd(1,1.0);
+    Vector N(1,10.0),   Tt(1,1.0);
     Matrix satLim(1,2);
-
-    Kp=0.001;
-    Ki=0.001;
-    Kd=0.0;
-
-    Wp=Wi=Wd=1.0;
-
-    N=10.0;
-    Tt=1.0;
 
     satLim(0,0)=0.05;
     satLim(0,1)=10.0;
 
     pid=new parallelPID(0.05,Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
 
-    Vector z0(1); z0[0]=0.5;
+    Vector z0(1,0.5);
     pid->reset(z0);
     dominantEye="left";
 
@@ -191,7 +182,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     double ele=ang[1];
     double ver=ang[2];
 
-    Vector q(8);
+    Vector q(8,0.0);
     if (type=="rel")
     {
         Vector torso=commData->get_torso();
@@ -208,8 +199,6 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 
         ver+=head[5];
     }
-    else
-        q=0.0;
     
     // impose vergence != 0.0
     if (ver<commData->get_minAllowedVergence())
@@ -383,7 +372,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
     if (projectPoint(type,u,v,1.0,x))
     {
         // pick up a point belonging to the plane
-        Vector p0(3); p0=0.0;
+        Vector p0(3,0.0);
         if (plane[0]!=0.0)
             p0[0]=-plane[3]/plane[0];
         else if (plane[1]!=0.0)

@@ -277,7 +277,6 @@ ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin(Property &options) :
 Vector ff2LayNN_tansig_purelin::hiddenLayerFcn(const Vector &x)
 {
     Vector y(x.length());
-
     for (size_t i=0; i<x.length(); i++)
         y[i]=2.0/(1.0+exp(-2.0*x[i]))-1.0;
 

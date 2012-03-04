@@ -100,7 +100,6 @@ protected:
     void appendVectorValue(Vector &dest, double val)
     {
         Vector tmp(dest.length()+1);
-
         for (size_t i=0; i<dest.length(); i++)
             tmp[i]=dest[i];
 
@@ -1861,8 +1860,8 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
 Vector iCubArmCartesianSolver::solve(Vector &xd)
 {
     // try to keep elbow height as low as possible
-    Vector w_2nd(3); w_2nd=0.0; w_2nd[2]=1.0;
-    Vector xdElb(3); xdElb=0.0; xdElb[2]=-1.0;
+    Vector w_2nd(3,0.0); w_2nd[2]=1.0;
+    Vector xdElb(3,0.0); xdElb[2]=-1.0;
 
     // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,

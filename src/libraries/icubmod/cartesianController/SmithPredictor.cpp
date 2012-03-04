@@ -74,10 +74,10 @@ void SmithPredictor::configure(Property &options, iKinChain &chain)
     dealloc();
 
     // default values
-    Vector Kp(chain.getDOF());   Kp=1.0;
-    Vector Tz(chain.getDOF());   Tz=0.0;
-    Vector Tw(chain.getDOF());   Tw=0.0;
-    Vector Zeta(chain.getDOF()); Zeta=0.0;
+    Vector Kp(chain.getDOF(),1.0);
+    Vector Tz(chain.getDOF(),0.0);
+    Vector Tw(chain.getDOF(),0.0);
+    Vector Zeta(chain.getDOF(),0.0);
     for (unsigned int i=0; i<chain.getDOF(); i++)
         tappedDelays.push_back(new deque<double>);
 

@@ -182,7 +182,7 @@ parallelPID::parallelPID(const double _Ts,
 
     Int=new Integrator(Ts,uSat);
 
-    Vector u0(1); u0=0.0;
+    Vector u0(1,0.0);
     for (unsigned int i=0; i<dim; i++)
     {
         double tau=1e12;
@@ -214,13 +214,8 @@ Vector parallelPID::compute(const Vector &ref, const Vector &fb)
     Vector inputD=Kd*(Wd*ref-fb);
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector inputDi(1);
-        Vector outputDi(1);
-        
-        inputDi[0]=inputD[i];
-        outputDi=Der[i]->filt(inputDi);
-
-        D[i]=outputDi[0];
+        Vector inputDi(1,inputD[i]);
+        D[i]=Der[i]->filt(inputDi);
     }
 
     // cumul output
@@ -240,7 +235,7 @@ void parallelPID::reset(const Vector &u0)
     int len=u0.length()>(int)dim?dim:u0.length();
 
     Vector y=Int->get();
-    Vector z1(1); z1=0.0;
+    Vector z1(1,0.0);
     for (int i=0; i<len; i++)
     {
         y[i]=u0[i];
@@ -327,7 +322,7 @@ void parallelPID::setOptions(const Bottle &options)
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
     
-        Vector u0(1); u0=0.0;
+        Vector u0(1,0.0);
         for (unsigned int i=0; i<dim; i++)
         {
             double tau=1e12;
@@ -381,7 +376,7 @@ seriesPID::seriesPID(const double _Ts,
     for (unsigned int i=0; i<dim; i++)
         uSat[i]=PID_SAT(u[i],satLim(i,0),satLim(i,1));
 
-    Vector u0(1); u0=0.0;
+    Vector u0(1,0.0);
     for (unsigned int i=0; i<dim; i++)
     {
         Vector num(2),den(2);
@@ -415,13 +410,8 @@ Vector seriesPID::compute(const Vector &ref, const Vector &fb)
     // derivative part
     for (unsigned int i=0; i<dim; i++)
     {
-        Vector inputDi(1);
-        Vector outputDi(1);
-
-        inputDi[0]=Kd[i]*e[i];
-        outputDi=Der[i]->filt(inputDi);
-
-        D[i]=outputDi[0];
+        Vector inputDi(1,Kd[i]*e[i]);
+        D[i]=Der[i]->filt(inputDi);
     }
 
     // proportional part
@@ -453,7 +443,7 @@ Vector seriesPID::compute(const Vector &ref, const Vector &fb)
 /************************************************************************/
 void seriesPID::reset()
 {
-    Vector u0(1); u0=0.0;
+    Vector u0(1,0.0);
     for (unsigned int i=0; i<dim; i++)
     {
         Int[i]->init(u0);    
@@ -531,7 +521,7 @@ void seriesPID::setOptions(const Bottle &options)
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
     
-        Vector u0(1); u0=0.0;
+        Vector u0(1,0.0);
         for (unsigned int i=0; i<dim; i++)
         {
             Vector num(2),den(2);

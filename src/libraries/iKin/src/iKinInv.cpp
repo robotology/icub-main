@@ -741,8 +741,8 @@ Vector LMCtrl_GPM::computeGPM()
 
     for (unsigned int i=0; i<dim; i++)
     {
-        w[i] =d_min[i]>0 ? 0.0 : 2.0*d_min[i]/(span[i]*span[i]);
-        w[i]+=d_max[i]<0 ? 0.0 : 2.0*d_max[i]/(span[i]*span[i]);
+        w[i] =d_min[i]>0.0 ? 0.0 : 2.0*d_min[i]/(span[i]*span[i]);
+        w[i]+=d_max[i]<0.0 ? 0.0 : 2.0*d_max[i]/(span[i]*span[i]);
     }
 
     return (Eye-pinvLM*J)*((-K)*w);
@@ -883,9 +883,7 @@ GSLMinCtrl::GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const unsigned int 
         des2.f     =&_f;
         des2.params=(void*)this;
 
-        Vector size(dim);
-        size=step_size;
-
+        Vector size(dim,step_size);
         gsl_multimin_fminimizer_set(s2,&des2,(const gsl_vector*)chain.getAng().getGslVector(),
                                     (const gsl_vector*)size.getGslVector());
     }
@@ -970,9 +968,7 @@ void GSLMinCtrl::reset(const Vector &q0)
         gsl_multimin_fdfminimizer_set(s1,&des1,(const gsl_vector*)q0.getGslVector(),step_size,tol);
     else
     {
-        Vector size(dim);
-        size=step_size;
-
+        Vector size(dim,step_size);
         gsl_multimin_fminimizer_set(s2,&des2,(const gsl_vector*)q0.getGslVector(),(const gsl_vector*)size.getGslVector());
     }
 }

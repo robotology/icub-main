@@ -93,7 +93,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
         // exclude acceleration constraints by fixing
         // thresholds at high values
-        Vector a_robHead(nJointsHead); a_robHead=1e9;
+        Vector a_robHead(nJointsHead,1e9);
         velHead->setRefAccelerations(a_robHead.data());
     }
     else
