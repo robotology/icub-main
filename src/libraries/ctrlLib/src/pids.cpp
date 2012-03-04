@@ -215,7 +215,8 @@ Vector parallelPID::compute(const Vector &ref, const Vector &fb)
     for (unsigned int i=0; i<dim; i++)
     {
         Vector inputDi(1,inputD[i]);
-        D[i]=Der[i]->filt(inputDi);
+        Vector outputDi=Der[i]->filt(inputDi);
+        D[i]=outputDi[0];
     }
 
     // cumul output
@@ -411,7 +412,8 @@ Vector seriesPID::compute(const Vector &ref, const Vector &fb)
     for (unsigned int i=0; i<dim; i++)
     {
         Vector inputDi(1,Kd[i]*e[i]);
-        D[i]=Der[i]->filt(inputDi);
+        Vector outputDi=Der[i]->filt(inputDi);
+        D[i]=outputDi[0];
     }
 
     // proportional part
