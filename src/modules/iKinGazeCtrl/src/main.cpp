@@ -81,7 +81,7 @@ href="http://eris.liralab.it/wiki/ControlBoard_configuration_file#Shifts">Shifts
 Factors</a>. 
 
 \note A video on iCub gazing at a target can be seen <a 
-      href="http://eris.liralab.it/misc/icubvideos/gazing_IIT_ISR.wmv">here</a>.
+      href="http://www.youtube.com/watch?v=ZF3LOlg4fuA">here</a>.
 
 \section lib_sec Libraries 
 - YARP libraries. 
