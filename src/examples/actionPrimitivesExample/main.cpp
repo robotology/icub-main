@@ -177,6 +177,7 @@ using namespace iCub::perception;
 using namespace iCub::action;
 
 
+/************************************************************************/
 class ExampleModule: public RFModule
 {
 protected:
@@ -194,6 +195,7 @@ protected:
     bool firstRun;
 
 public:
+    /************************************************************************/
     ExampleModule()
     {
         graspOrien.resize(4);
@@ -230,6 +232,7 @@ public:
         firstRun=true;
     }
 
+    /************************************************************************/
     void getArmDependentOptions(Bottle &b, Vector &_gOrien, Vector &_gDisp,
                                 Vector &_dOffs, Vector &_dLift, Vector &_home_x)
     {
@@ -284,7 +287,8 @@ public:
         }
     }
 
-    virtual bool configure(ResourceFinder &rf)
+    /************************************************************************/
+    bool configure(ResourceFinder &rf)
     {
         string name=rf.find("name").asString().c_str();
         setName(name.c_str());
@@ -365,7 +369,8 @@ public:
         return true;
     }
 
-    virtual bool close()
+    /************************************************************************/
+    bool close()
     {
         if (action!=NULL)
             delete action;
@@ -379,11 +384,13 @@ public:
         return true;
     }
 
-    virtual double getPeriod()
+    /************************************************************************/
+    double getPeriod()
     {
         return 0.1;
     }
 
+    /************************************************************************/
     void init()
     {
         bool f;
@@ -395,7 +402,8 @@ public:
 
     // we don't need a thread since the actions library already
     // incapsulates one inside dealing with all the tight time constraints
-    virtual bool updateModule()
+    /************************************************************************/
+    bool updateModule()
     {
         // do it only once
         if (firstRun)
@@ -461,6 +469,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     bool interruptModule()
     {
         // since a call to checkActionsDone() blocks
@@ -476,6 +485,7 @@ public:
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     Network yarp;

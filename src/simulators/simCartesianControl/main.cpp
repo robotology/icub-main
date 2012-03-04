@@ -83,6 +83,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 
+/************************************************************************/
 class SimCartCtrlModule: public RFModule
 {
 protected:
@@ -91,7 +92,8 @@ protected:
     PolyDriver serverR, serverL;
 
 public:
-    virtual bool configure(ResourceFinder &rf)
+    /************************************************************************/
+    bool configure(ResourceFinder &rf)
     {   
         Property optTorso("(device remote_controlboard)");
         Property optArmR("(device remote_controlboard)"); 
@@ -144,7 +146,8 @@ public:
         return true;
     }
 
-    virtual bool close()
+    /************************************************************************/
+    bool close()
     {
         if (serverR.isValid())
             serverR.close();
@@ -164,11 +167,21 @@ public:
         return true;
     }
 
-    virtual double getPeriod()    { return 1.0;  }
-    virtual bool   updateModule() { return true; }
+    /************************************************************************/
+    double getPeriod()
+    {
+        return 1.0;
+    }
+
+    /************************************************************************/
+    bool updateModule()
+    {
+        return true;
+    }
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
