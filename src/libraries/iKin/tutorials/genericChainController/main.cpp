@@ -226,7 +226,7 @@ public:
 
             // minimize also against the current joints position
             Vector q0=chain->getAng();
-            Vector w_3rd(chain->getDOF()); w_3rd=1.0;
+            Vector w_3rd(chain->getDOF(),1.0);
 
             // call the solver and start the convergence from the current point
             Vector dummyVect(1);
@@ -358,8 +358,7 @@ public:
     virtual void threadRelease()
     {
         // make sure that the limb is stopped before closing
-        Vector v_zero(chain->getDOF()); v_zero=0.0;
-        port_v.write(v_zero);
+        port_v.write(zeros(chain->getDOF()));
 
         port_v.interrupt();
         port_x.interrupt();

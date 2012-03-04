@@ -109,8 +109,7 @@ int main()
     cout<<endl;
 
     // ask the same but with torso enabled
-    Vector dof(3);
-    dof=1;
+    Vector dof(3,1.0);
     CartesianHelper::addDOFOption(cmd,dof);
     out.write(cmd);
     in.read(reply);
