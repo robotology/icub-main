@@ -151,8 +151,8 @@ public:
             // compute offset to shoulder's axes
             // given the blocked/release status of
             // previous link
-            unsigned int offs=0;
-            for (unsigned int i=0; i<3; i++)
+            int offs=0;
+            for (int i=0; i<3; i++)
                 if (!(*chain)[i].isBlocked())
                     offs++;
 
@@ -202,8 +202,8 @@ public:
             // compute offset to elbow's axis
             // given the blocked/release status of
             // previous link
-            unsigned int offs=0;
-            for (unsigned int i=0; i<(3+3); i++)
+            int offs=0;
+            for (int i=0; i<(3+3); i++)
                 if (!(*chain)[i].isBlocked())
                     offs++;
 
@@ -618,7 +618,7 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
     if (unctrlJointsNum)
     {
         joints.resize(unctrlJointsNum);
-        unsigned int j=0;
+        int j=0;
         
         for (unsigned int i=0; i<prt->chn->getN(); i++)
             if ((*prt->chn)[i].isBlocked())
@@ -1422,7 +1422,6 @@ bool CartesianSolver::open(Searchable &options)
     if (Bottle *v=options.find("dof").asList())
     {            
         Vector _dof(v->size());
-
         for (size_t i=0; i<_dof.length(); i++)
             _dof[i]=v->get(i).asInt();
 
@@ -1608,17 +1607,13 @@ void CartesianSolver::close()
     if (clb!=NULL)
         delete clb;
 
-    for (unsigned int i=0; i<drv.size(); i++)
-    {
+    for (size_t i=0; i<drv.size(); i++)
         if (drv[i]!=NULL)
             delete drv[i];
-    }
 
-    for (unsigned int i=0; i<rmp.size(); i++)
-    {
+    for (size_t i=0; i<rmp.size(); i++)
         if (rmp[i]!=NULL)
             delete[] rmp[i];
-    }
 
     drv.clear();
     lim.clear();
