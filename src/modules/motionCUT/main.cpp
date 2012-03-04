@@ -56,7 +56,7 @@ also - and especially - with moving cameras.
       the OpenCV documentation for the details.
  
 \note A video on iCub employing \e motionCUT can be seen <a
-      href="http://eris.liralab.it/misc/icubvideos/motionCUT.mpeg">here</a>.
+      href="http://www.youtube.com/watch?v=Ql8Qe0oxHaY">here</a>.
  
 \section lib_sec Libraries 
 YARP libraries and OpenCV
