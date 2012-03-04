@@ -45,13 +45,13 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
   configuration file (e.g. left_arm, right_arm, ...).
 
 --context \e directory [optional]
-- allow to specify a different path where to search the 
+- allow specifying a different path where to search the 
   configuration file in the form of
   <i> $ICUB_ROOT/app/<directory></i>. Directory default value is
   \e cartesianSolver/conf.
  
 --from \e file [optional]
-- allow to specify a different configuration file from the 
+- allow specifying a different configuration file from the 
   default one which is \e cartesianSolver.ini.
  
 \section portsa_sec Ports Accessed
