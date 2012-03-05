@@ -147,7 +147,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vdeg =CTRL_RAD2DEG*v;
 
     port_xd=NULL;
-    waitForCheckMotionDone=false;
+    saccadeStartTime=0.0;
     unplugCtrlEyes=false;
 }
 
@@ -264,8 +264,8 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
     posHead->positionMove(4,CTRL_RAD2DEG*ang[1]);
     posHead->positionMove(5,CTRL_RAD2DEG*ang[2]);
 
+    saccadeStartTime=Time::now();
     commData->get_isSaccadeUnderway()=true;
-    waitForCheckMotionDone=true;
     unplugCtrlEyes=true;
 
     mutexCtrl.post();    
@@ -287,14 +287,8 @@ void Controller::run()
 {
     // verify if any saccade is still underway
     mutexCtrl.wait();
-    if (commData->get_isSaccadeUnderway())
+    if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
     {
-        if (waitForCheckMotionDone)
-        {
-            Time::delay(0.005);
-            waitForCheckMotionDone=false;
-        }
-
         bool tiltDone, panDone, verDone;
         posHead->checkMotionDone(3,&tiltDone);
         posHead->checkMotionDone(4,&panDone);
@@ -368,7 +362,10 @@ void Controller::run()
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
 
         if (unplugCtrlEyes)
-            vEyes=commData->get_counterv();
+        {
+            if (Time::now()-saccadeStartTime>=Ts)
+                vEyes=commData->get_counterv();
+        }
         else
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
     }

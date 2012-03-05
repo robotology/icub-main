@@ -74,12 +74,12 @@ protected:
     string localName;
     string camerasFile;
     unsigned int period;
-    bool waitForCheckMotionDone;
     bool unplugCtrlEyes;
     bool Robotable;
     bool headV2;
     int nJointsTorso;
     int nJointsHead;
+    double saccadeStartTime;
     double printAccTime;
     double neckTime;
     double eyesTime;
