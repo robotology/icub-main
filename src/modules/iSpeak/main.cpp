@@ -82,11 +82,13 @@ using namespace std;
 using namespace yarp::os;
 
 
+/************************************************************************/
 class MouthHandler : public RateThread
 {
     string state;
     Port emotions;
 
+    /************************************************************************/
     void send()
     {
         Bottle cmd, reply;
@@ -96,6 +98,7 @@ class MouthHandler : public RateThread
         emotions.write(cmd,reply);
     }
 
+    /************************************************************************/
     void run()
     {
         if (state=="sur")
@@ -106,6 +109,7 @@ class MouthHandler : public RateThread
         send();
     }
 
+    /************************************************************************/
     void threadRelease()
     {
         emotions.interrupt();
@@ -113,8 +117,10 @@ class MouthHandler : public RateThread
     }
 
 public:
+    /************************************************************************/
     MouthHandler() : RateThread(200) { }
 
+    /************************************************************************/
     void configure(ResourceFinder &rf)
     {
         string name=rf.find("name").asString().c_str();
@@ -125,6 +131,7 @@ public:
         state="sur";
     }
 
+    /************************************************************************/
     void suspend()
     {
         state="hap";
@@ -135,6 +142,7 @@ public:
 };
 
 
+/************************************************************************/
 class iSpeak : protected BufferedPort<Bottle>,
                public    RateThread
 {
@@ -146,6 +154,7 @@ class iSpeak : protected BufferedPort<Bottle>,
     bool speaking;
     MouthHandler mouth;
 
+    /************************************************************************/
     void onRead(Bottle &request)
     {
         mutex.wait();
@@ -153,6 +162,7 @@ class iSpeak : protected BufferedPort<Bottle>,
         mutex.post();
     }
 
+    /************************************************************************/
     bool threadInit()
     {
         open(("/"+name).c_str());
@@ -160,6 +170,7 @@ class iSpeak : protected BufferedPort<Bottle>,
         return true;
     }
 
+    /************************************************************************/
     void threadRelease()
     {
         mouth.stop();
@@ -167,11 +178,13 @@ class iSpeak : protected BufferedPort<Bottle>,
         close();
     }
 
+    /************************************************************************/
     void speak(const string &phrase)
     {
         system(("echo \""+phrase+"\" | festival --tts").c_str());        
     }
 
+    /************************************************************************/
     void run()
     {
         string phrase;
@@ -208,17 +221,20 @@ class iSpeak : protected BufferedPort<Bottle>,
     }
 
 public:
+    /************************************************************************/
     iSpeak() : RateThread(200)
     {
         speaking=false;
     }
 
+    /************************************************************************/
     void configure(ResourceFinder &rf)
     {
         name=rf.find("name").asString().c_str();
         mouth.configure(rf);
     }
     
+    /************************************************************************/
     bool isSpeaking() const
     {
         return speaking;
@@ -226,6 +242,7 @@ public:
 };
 
 
+/************************************************************************/
 class Launcher: public RFModule
 {
 protected:
@@ -233,6 +250,7 @@ protected:
     Port   rpc;
 
 public:
+    /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();
@@ -248,6 +266,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     bool close()
     {
         rpc.interrupt();
@@ -258,6 +277,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     bool respond(const Bottle &command, Bottle &reply)
     {
         if (command.get(0).asVocab()==VOCAB4('s','t','a','t'))
@@ -269,11 +289,13 @@ public:
             return RFModule::respond(command,reply);
     }
 
+    /************************************************************************/
     double getPeriod()
     {
         return 1.0;
     }
 
+    /************************************************************************/
     bool updateModule()
     {
         return true;
@@ -281,6 +303,7 @@ public:
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     Network yarp;
