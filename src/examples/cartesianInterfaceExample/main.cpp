@@ -138,6 +138,7 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 
+/************************************************************************/
 class CtrlThread: public RateThread
 {
 protected:
@@ -159,11 +160,13 @@ protected:
     double t0;
 
 public:
+    /************************************************************************/
     CtrlThread(unsigned int _period, ResourceFinder &_rf,
                string _remoteName, string _localName) :
                RateThread(_period),     rf(_rf),
                remoteName(_remoteName), localName(_localName) { }
 
+    /************************************************************************/
     bool threadInit()
     {
         // get params from the RF
@@ -246,6 +249,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     void afterStart(bool s)
     {
         if (s)
@@ -256,6 +260,7 @@ public:
         t0=Time::now();
     }
 
+    /************************************************************************/
     void run()
     {
         if (Bottle *b=port_xd.read(false))
@@ -283,6 +288,7 @@ public:
         printStatus();
     }
 
+    /************************************************************************/
     void threadRelease()
     {    
         iarm->stopControl();
@@ -293,6 +299,7 @@ public:
         port_xd.close();
     }
 
+    /************************************************************************/
     void limitTorsoPitch()
     {
         int axis=0; // pitch joint
@@ -302,6 +309,7 @@ public:
         iarm->setLimits(axis,min,MAX_TORSO_PITCH);
     }
 
+    /************************************************************************/
     double calcExecTime(const Vector &xd)
     {
         Vector x,o;
@@ -313,6 +321,7 @@ public:
             return 1.5*defaultExecTime;
     }
 
+    /************************************************************************/
     void printStatus()
     {
         double t=Time::now();
@@ -352,7 +361,7 @@ public:
 };
 
 
-
+/************************************************************************/
 class CtrlModule: public RFModule
 {
 protected:
@@ -360,6 +369,7 @@ protected:
     Port        rpcPort;
 
 public:
+    /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
         string slash="/";
@@ -392,6 +402,7 @@ public:
         return true;
     }
 
+    /************************************************************************/
     bool close()
     {
         thr->stop();
@@ -403,12 +414,21 @@ public:
         return true;
     }
 
-    double getPeriod()    { return 1.0;  }
-    bool   updateModule() { return true; }
+    /************************************************************************/
+    double getPeriod()
+    {
+        return 1.0;
+    }
+
+    /************************************************************************/
+    bool updateModule()
+    {
+        return true;
+    }
 };
 
 
-
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
@@ -431,14 +451,15 @@ int main(int argc, char *argv[])
     }
 
     Network yarp;
-
     if (!yarp.checkNetwork())
+    {
+        printf("YARP server not available!\n");
         return -1;
+    }
 
     YARP_REGISTER_DEVICES(icubmod)
 
     CtrlModule mod;
-
     return mod.runModule(rf);
 }
 
