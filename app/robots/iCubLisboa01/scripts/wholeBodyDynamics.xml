@@ -9,14 +9,14 @@
         </dependencies>
         <module>
                 <name>wholeBodyDynamics</name>
-                <parameters></parameters>
-                <node>chico3</node>
+                <parameters>--headV2 --autoconnect</parameters>
+                <node>icubbrain1</node>
                 <stdio>chico3</stdio>
                 <tag>wholeBodyDynamicsTag</tag>
         </module>
         <module>
                 <name>gravityCompensator</name>
-                <node>chico3</node>
+                <node>icubbrain2</node>
                 <stdio>chico3</stdio>
                 <tag>gravityCompensatorTag</tag>
         </module>
