@@ -1,9 +1,9 @@
 <!-- instantiation of
-     $ICUB_ROOT/main/app/cartesianSolver/scripts/cartesianSolver.xml.template
+     $ICUB_ROOT/main/app/iCubStartup/scripts/iCubStartup.xml.template
      for iCubLisboa01 -->
 
 <application>
-<name>iCubInterface and Cartesian Solvers Launcher for iCubLisboa01 (Chico)</name>
+<name>iCubStartup for iCubLisboa01 (Chico)</name>
 
         <dependencies>
         </dependencies>
@@ -64,10 +64,28 @@
                 <tag>gazeController</tag>
         </module>
 
+        <module>
+                <name>wholeBodyDynamics</name>
+                <parameters>--headV2 --autoconnect</parameters>
+                <node>icubbrain1</node>
+                <stdio>chico3</stdio>
+                <tag>wholeBodyDynamicsTag</tag>
+        </module>
+
+        <module>
+                <name>gravityCompensator</name>
+                <parameters>--headV2</parameters>
+                <node>icubbrain2</node>
+                <stdio>chico3</stdio>
+                <tag>gravityCompensatorTag</tag>
+        </module>
+
+	<!--	
         <connection>
                 <from>/icubinterfacegui/client</from>
                 <to>/icubinterfacegui/server</to>
                 <protocol>tcp</protocol>
         </connection>
+	-->
 
 </application>

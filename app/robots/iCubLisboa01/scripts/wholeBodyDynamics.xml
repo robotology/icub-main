@@ -16,6 +16,7 @@
         </module>
         <module>
                 <name>gravityCompensator</name>
+                <parameters>--headV2</parameters>
                 <node>icubbrain2</node>
                 <stdio>chico3</stdio>
                 <tag>gravityCompensatorTag</tag>
