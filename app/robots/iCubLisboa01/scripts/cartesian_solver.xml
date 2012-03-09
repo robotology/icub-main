@@ -14,13 +14,15 @@
                 <stdio>chico3</stdio>
                 <tag>icubInterface</tag>
         </module>
-		
-	    <module>
+
+	<!--		
+	<module>
                 <name>iCubInterfaceGuiClient</name>
                 <node>chico3</node>
                 <stdio>chico3</stdio>
                 <tag>iCubInterfaceGuiClient</tag>
         </module>
+	-->
    
         <module>
                 <name>iKinCartesianSolver</name>
