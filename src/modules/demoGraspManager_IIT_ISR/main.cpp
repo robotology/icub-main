@@ -1166,8 +1166,8 @@ protected:
             obj.addString("delete");
             obj.addString("ball");
             outportGui.write(obj);
-	    }
-	}
+        }
+    }
 
     void close()
     {
@@ -1218,7 +1218,7 @@ public:
         drvGazeCtrl=NULL;        
     }
 
-    virtual bool threadInit()
+    bool threadInit()
     {
         // general part
         Bottle &bGeneral=rf.findGroup("general");
@@ -1516,7 +1516,7 @@ public:
         return true;
     }
 
-    virtual void run()
+    void run()
     {
         getSensorData();
         doIdle();
@@ -1529,7 +1529,7 @@ public:
         commandFace();
     }
 
-    virtual void threadRelease()
+    void threadRelease()
     {
         steerHeadToHome();
         stopControl();
@@ -1591,7 +1591,7 @@ protected:
 public:
     managerModule() { }
 
-    virtual bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf)
     {
         Time::turboBoost();            
 
@@ -1608,7 +1608,7 @@ public:
         return true;
     }
 
-    virtual bool close()
+    bool close()
     {
         rpcPort.interrupt();
         rpcPort.close();
@@ -1619,8 +1619,8 @@ public:
         return true;
     }
 
-    virtual double getPeriod()    { return 1.0;  }
-    virtual bool   updateModule() { return true; }
+    double getPeriod()    { return 1.0;  }
+    bool   updateModule() { return true; }
 };
 
 
@@ -1631,7 +1631,7 @@ protected:
     Bottle order;
 
 public:
-    virtual void report(const SearchReport& report, const char *context)
+    void report(const SearchReport& report, const char *context)
     {
         string ctx=context;
         string key=report.key.c_str();
