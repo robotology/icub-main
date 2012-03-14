@@ -73,6 +73,9 @@ interface implemented) and \ref iKinGazeCtrl are running.
   the face expression high level interface in order to give an
   emotional representation of the current robot state.
  
+- \e /demoGraspManager_IIT_ISR/gui:o sends out info to update target
+  within the \ref icub_gui.
+
 - \e /demoGraspManager_IIT_ISR/rpc remote procedure 
     call. Recognized remote commands:
     -'quit' quit the module
@@ -326,6 +329,7 @@ protected:
     BufferedPort<Bottle> inportTrackTarget;
     BufferedPort<Bottle> inportIMDTargetLeft;
     BufferedPort<Bottle> inportIMDTargetRight;
+    Port outportGui;
     Port outportCmdFace;
 
     Vector leftArmReachOffs;
@@ -672,6 +676,7 @@ protected:
             steerArmToHome(RIGHTARM);
 
             wentHome=true;
+            deleteGuiTarget();
             state=STATE_IDLE;
         }
     }
@@ -683,7 +688,41 @@ protected:
     void commandHead()
     {
         if (state!=STATE_IDLE)
+        {
             gazeCtrl->lookAtFixationPoint(targetPos);
+            
+            if (outportGui.getOutputCount()>0)
+            {
+                Bottle obj;
+                obj.addString("object");
+                obj.addString("ball");
+             
+                // size 
+                obj.addDouble(50.0);
+                obj.addDouble(50.0);
+                obj.addDouble(50.0);
+            
+                // positions
+                obj.addDouble(1000.0*targetPos[0]);
+                obj.addDouble(1000.0*targetPos[1]);
+                obj.addDouble(1000.0*targetPos[2]);
+            
+                // orientation
+                obj.addDouble(0.0);
+                obj.addDouble(0.0);
+                obj.addDouble(0.0);
+            
+                // color
+                obj.addInt(255);
+                obj.addInt(0);
+                obj.addInt(0);
+            
+                // transparency
+                obj.addDouble(1.0);
+            
+                outportGui.write(obj);
+            }
+        }
     }
 
     void steerHeadToHome()
@@ -984,6 +1023,7 @@ protected:
                 if ((Time::now()-latchTimer)>idleTmo)
                 {
                     fprintf(stdout,"--- Timeout elapsed => IDLING\n");
+                    deleteGuiTarget();
                     state=STATE_IDLE;
                 }
             }
@@ -1117,6 +1157,17 @@ protected:
 
         return Rz;
     }
+    
+    void deleteGuiTarget()
+    {
+        if (outportGui.getOutputCount()>0)
+        {
+            Bottle obj;
+            obj.addString("delete");
+            obj.addString("ball");
+            outportGui.write(obj);
+	    }
+	}
 
     void close()
     {
@@ -1151,7 +1202,11 @@ protected:
         inportIMDTargetRight.close();
 
         outportCmdFace.interrupt();
-        outportCmdFace.close();
+        outportCmdFace.close();      
+
+        deleteGuiTarget();
+        outportGui.interrupt();
+        outportGui.close();
     }
 
 public:
@@ -1254,6 +1309,7 @@ public:
         inportIMDTargetLeft.open((name+"/imdTargetLeft:i").c_str());
         inportIMDTargetRight.open((name+"/imdTargetRight:i").c_str());
         outportCmdFace.open((name+"/cmdFace:rpc").c_str());
+        outportGui.open((name+"/gui:o").c_str());
 
         string fwslash="/";
 
