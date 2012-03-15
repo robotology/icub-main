@@ -489,7 +489,8 @@ skinContactList Compensator::getContacts(){
             geoCenter   += taxelPos[(*tax)];
             pressure    += compensatedData[(*tax)];
         }
-        CoP         /= pressure;
+        if(pressure!=0.0)
+        	CoP         /= pressure;
         geoCenter   /= activeTaxels;
         pressure    /= activeTaxels;
         skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, activeTaxels, pressure);
