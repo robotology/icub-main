@@ -1,0 +1,36 @@
+
+
+existing behaviour
+---------------------------------------------------------------------------------------------------
+
+the e-updater has the following network services:
+- a udp socket open on port 1001 and also registered to multicast group 239.0.0.1,
+- a password protected ftp server which uses an embedded flash file system to store files
+  which the user wants to send to the device,
+- a password protected telnet server which execute commands or give back information.
+
+the e-updater replies to a message of format {0x01, 0x00, HTONS(0xf001)} which asks its
+ip address with a message {0x02, 0x00, HTONS(0xf001), HTONS(ownipaddress)}. this mechanism
+is implemented so that any master can discover all the devices in the network by sending
+in multicast or broadcast a proper command.
+
+the master can then use teh ftp server to send a .bin or .hex file for fw upgrade.
+
+then, the telnet server is used to perform operation such as: query existing partitions,
+remove the application partition, program a .bin/hex file into the application partition,
+change mac address, change ipaddress, etc., force a restart.
+
+
+possible improvements
+---------------------------------------------------------------------------------------------------
+
+1. implement some other upd-based messages for querying the device.
+2. make the fw-update available also using an udp (or a tcp) socket, so that it can be done 
+   in an automated mechanism w/out human intervention (i.e., a pc program discovers the devices, 
+   stores their addresses, and for every device it opens a socket, streams the .bin file into the 
+   flash, forces a restart).
+3. write size and address of the file system in a dedicated partition so that it can be changed
+   over network? useless. what for? much better to improve size of the flash or to use an external
+   spi-flash.
+x. make possible also to update the INFO shalib? NO! better not to do it because we should remove
+   any shalinfo_ function and access data directly .... dont want to do that.

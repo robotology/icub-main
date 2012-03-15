@@ -1,0 +1,27 @@
+#<SYMDEFS># ARM Linker, 4.1 [Build 894]: Last Updated: Thu Jan 12 19:04:35 2012
+
+0x0803e469 T shalpart_init
+0x0803e51f T shalpart_reset
+0x0803e54b T shalpart_deinit
+
+0x0803e66f T shalpart_proc_synchronise
+0x0803e6cf T shalpart_proc_def2run_set
+0x0803e6b1 T shalpart_proc_def2run_get
+0x0803e781 T shalpart_proc_runaddress_get
+
+0x0803e6ef T shalpart_proc_allavailable_get
+
+0x0803e613 T shalpart_proc_add
+0x0803e709 T shalpart_proc_rem
+0x0803e57f T shalpart_proc_set
+0x0803e753 T shalpart_proc_get
+
+0x0803e387 T shalpart_shal_synchronise
+
+0x0803e7b1 T shalpart_shal_allavailable_get
+
+0x0803e339 T shalpart_shal_add
+0x0803e7cb T shalpart_shal_rem
+0x0803e2a5 T shalpart_shal_set
+0x0803e80b T shalpart_shal_get
+

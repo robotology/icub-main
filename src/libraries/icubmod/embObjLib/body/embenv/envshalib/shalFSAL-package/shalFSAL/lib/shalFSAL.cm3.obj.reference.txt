@@ -1,0 +1,26 @@
+#<SYMDEFS># ARM Linker, 4.1 [Build 644]: Last Updated: Thu Mar 31 18:11:44 2011
+
+0x08038035 T shalfsal_init
+
+0x08038273 T fsal_memory_getsize
+0x080382cd T fsal_initialise
+
+0x08038453 T fsal_start
+
+0x08038455 T fsal_defrag
+0x08038479 T fsal_format
+0x08031571 T fsal_freespace
+0x0803849d T fsal_delete
+0x080384c1 T fsal_rename
+0x080384e9 T fsal_find
+
+0x0803857d T fsal_retarget_fopen
+0x08038599 T fsal_retarget_fclose
+0x080385b1 T fsal_retarget_write
+0x080385e9 T fsal_retarget_read
+0x080385d1 T fsal_retarget_flushbuf
+0x08038609 T fsal_retarget_setfpos
+0x08038625 T fsal_retarget_get_flen
+0x0803863b T fsal_retarget_stdio_putchar
+0x08038657 T fsal_retarget_stdio_getchar
+

@@ -1,0 +1,5 @@
+
+if the memory mapping inside .\shalPART.sct is not coherent with the mapping in shalib.h, then there may be
+problems, thus ... double check.
+
+even better: use macros in shalib.h for the scatter file. see posting in keil.

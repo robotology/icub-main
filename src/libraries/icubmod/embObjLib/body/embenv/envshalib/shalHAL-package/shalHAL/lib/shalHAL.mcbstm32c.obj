@@ -1,0 +1,70 @@
+#<SYMDEFS># ARM Linker, 4.1 [Build 644]: Last Updated: Wed Apr 06 12:34:08 2011
+
+
+0x0802bf90 D hal_flash_BASEADDR
+0x0802bf94 D hal_flash_TOTALSIZE
+
+0x0802b22d T shalhal_init
+
+0x08029237 T hal_memory_getsize
+0x080292a1 T hal_initialise
+
+0x08029d3d T hal_sys_systeminit
+0x08029d5d T hal_sys_systemreset
+0x08029d77 T hal_sys_canexecuteataddress
+0x08029da1 T hal_sys_executenowataddress
+0x08029dd9 T hal_sys_vectortable_relocate
+0x08029de3 T hal_sys_systick_sethandler
+0x08029e3d T hal_sys_systick_gethandler
+0x08029e43 T hal_sys_irq_disable
+0x08029e47 T hal_sys_irq_enable
+0x08029e4b T hal_sys_criticalsection_take
+0x08029e63 T hal_sys_criticalsection_release
+0x08029e79 T hal_sys_atomic_bitwiseOR
+0x08029ea9 T hal_sys_atomic_bitwiseAND
+0x08029ed9 T hal_sys_itm_init
+0x08029ee1 T hal_sys_itm_getchar
+0x08029efb T hal_sys_itm_putchar
+
+0x08029c75 T hal_gpio_init
+0x08029ceb T hal_gpio_setval
+0x08029d17 T hal_gpio_getval
+
+0x08029acd T hal_flash_setlatency
+0x08029ad7 T hal_flash_lock
+0x08029ae1 T hal_flash_unlock
+0x08029aeb T hal_flash_erase
+0x08029b3f T hal_flash_write
+0x08029c5d T hal_flash_get_baseaddress
+0x08029c63 T hal_flash_get_pagesize
+0x08029c69 T hal_flash_get_totalsize
+
+
+0x08029553 T hal_eth_init
+0x0802991d T hal_eth_enable
+0x08029927 T hal_eth_disable
+0x08029931 T hal_eth_sendframe
+0x080299b3 T hal_eth_get_network_cfg
+
+
+0x08029f5d T hal_can_init
+0x0802a07d T hal_can_enable
+0x0802a19d T hal_can_disable
+0x0802a1c3 T hal_isr_sendframe_canx
+0x0802a2a9 T hal_can_put
+0x0802a2fd T hal_can_transmit
+0x0802a32b T hal_can_get
+
+0x080291bd T hal_eeprom_init
+0x080291cf T hal_eeprom_write
+0x080291e5 T hal_eeprom_read
+0x080291fb T hal_eeprom_waitstandbystate
+
+0x0802a505 T hal_spi_init
+0x0802a5f3 T hal_spi_encoder_read_block
+0x0802a6d5 T hal_spi_encoder_read_start
+0x0802a753 T hal_spi_encoder_get_value
+
+0x0802ad81 T hal_i2c_init
+
+

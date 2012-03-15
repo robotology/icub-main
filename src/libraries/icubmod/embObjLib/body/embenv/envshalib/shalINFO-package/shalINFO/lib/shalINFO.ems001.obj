@@ -1,0 +1,16 @@
+#<SYMDEFS># ARM Linker, 4.1 [Build 894]: Last Updated: Thu Jan 12 09:41:03 2012
+
+0x0803f241 T shalinfo_init
+0x0803f303 T shalinfo_deinit
+0x0803f307 T shalinfo_erase
+
+0x0803f391 T shalinfo_boardinfo_synchronise
+0x0803f481 T shalinfo_boardinfo_get
+
+0x0803f31f T shalinfo_deviceinfo_clr
+0x0803f4b5 T shalinfo_deviceinfo_get
+0x0803f4eb T shalinfo_deviceinfo_set
+
+0x0803f69f T shalinfo_deviceinfo_part_clr
+0x0803f54d T shalinfo_deviceinfo_part_get
+0x0803f5cd T shalinfo_deviceinfo_part_set

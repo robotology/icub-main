@@ -1,0 +1,76 @@
+#<SYMDEFS># ARM Linker, 4.1 [Build 644]: Last Updated: Thu Mar 31 17:01:40 2011
+
+
+0x08032f90 D hal_flash_BASEADDR
+0x08032f98 D hal_flash_PAGESIZE
+0x08032f94 D hal_flash_TOTALSIZE
+
+0x0803222d T shalhal_init
+
+0x08030237 T hal_memory_getsize
+0x080302a1 T hal_initialise
+
+0x08030d3d T hal_sys_systeminit
+0x08030d5d T hal_sys_systemreset
+0x08030d77 T hal_sys_canexecuteataddress
+0x08030da1 T hal_sys_executenowataddress
+0x08030dd9 T hal_sys_vectortable_relocate
+0x08030de3 T hal_sys_systick_sethandler
+0x08030e3d T hal_sys_systick_gethandler
+0x08030e43 T hal_sys_irq_disable
+0x08030e47 T hal_sys_irq_enable
+0x08030e4b T hal_sys_criticalsection_take
+0x08030e63 T hal_sys_criticalsection_release
+0x08030e79 T hal_sys_atomic_bitwiseOR
+0x08030ea9 T hal_sys_atomic_bitwiseAND
+0x08030ea9 T hal_sys_itm_init
+0x08030ea9 T hal_sys_itm_getchar
+0x08030ea9 T hal_sys_itm_putchar
+
+0x08030c75 T hal_gpio_init
+0x08030ceb T hal_gpio_setval
+0x08030d17 T hal_gpio_getval
+
+0x08030acd T hal_flash_setlatency
+0x08030ad7 T hal_flash_lock
+0x08030ae1 T hal_flash_unlock
+0x08030ae3 T hal_flash_erase
+0x08030ae5 T hal_flash_write
+0x08030c5d T hal_flash_get_baseaddress
+0x08030c63 T hal_flash_get_pagesize
+0x08030c69 T hal_flash_get_totalsize
+
+0x08030c69 T hal_display_init
+0x08030c69 T hal_display_clear
+0x08030c69 T hal_display_settext
+0x08030c69 T hal_display_clearline
+0x08030c69 T hal_display_putchar
+0x08030c69 T hal_display_putstring
+
+0x08030553 T hal_eth_init
+0x0803091d T hal_eth_enable
+0x08030927 T hal_eth_disable
+0x08030931 T hal_eth_sendframe
+0x080309b3 T hal_eth_get_network_cfg
+
+
+0x08030f5d T hal_can_init
+0x0803107d T hal_can_enable
+0x0803119d T hal_can_disable
+0x080311c3 T hal_isr_sendframe_canx
+0x080312a9 T hal_can_put
+0x080312fd T hal_can_transmit
+0x0803132b T hal_can_get
+
+0x080301bd T hal_eeprom_init
+0x080301cf T hal_eeprom_write
+0x080301e5 T hal_eeprom_read
+0x080301fb T hal_eeprom_waitstandbystate
+
+0x08031505 T hal_spi_init
+0x080315f3 T hal_spi_encoder_read_block
+0x080316d5 T hal_spi_encoder_read_start
+0x08031753 T hal_spi_encoder_get_value
+
+0x08031d81 T hal_i2c_init
+

@@ -1,0 +1,76 @@
+#<SYMDEFS># ARM Linker, 4.1 [Build 644]: Last Updated: Thu Jun 16 15:13:45 2011
+
+0x08030cb8 D osal_timeZERO
+0x08030cbc D osal_timeMAX
+0x08030cc0 D osal_timeINFINITE
+0x08030cc8 D osal_lifetimeNONE
+
+0x0802d155 T shalosal_init
+
+0x0802d22d T osal_get_status
+
+
+0x0802d29d T osal_memory_getsize
+0x0802d3cf T osal_initialise
+
+0x0802d79f T osal_start
+
+0x0802d7fd T osal_entities_get_stats
+
+0x0802d8ab T osal_system_launcherbuffer_get
+0x0802d8f1 T osal_system_time_get
+0x0802d93d T osal_system_time_set
+0x0802d957 T osal_system_idletime_get
+0x0802d975 T osal_system_nanotime_get
+0x0802d35d T osal_system_scheduling_suspend
+0x0802d985 T osal_system_scheduling_restart
+
+0x0802da71 T osal_system_task_wait
+0x0802da85 T osal_system_task_pass
+0x0802dcb7 T osal_system_task_get
+0x0802dab1 T osal_system_task_period_set
+0x0802dac5 T osal_system_task_period_wait
+
+0x0802d99d T osal_task_new
+0x0802dacf T osal_task_priority_get
+0x0802dae3 T osal_task_priority_set
+0x0802dca3 T osal_task_id_get
+
+
+0x0802dcd7 T osal_messagequeue_new
+0x0802dd39 T osal_messagequeue_get
+0x0802ddbb T osal_messagequeue_getquick
+0x0802ddf3 T osal_messagequeue_available
+0x0802de15 T osal_messagequeue_size
+0x0802de35 T osal_messagequeue_put
+
+0x0802de95 T osal_eventflag_set
+0x0802dec5 T osal_eventflag_get
+0x0802df3b T osal_eventflag_getany
+
+0x0802d5e9 T osal_mutex_new
+0x0802d5ad T osal_mutex_take
+0x0802d563 T osal_mutex_release
+
+0x0802df5f T osal_semaphore_new
+0x0802dfb7 T osal_semaphore_set
+0x0802dfd1 T osal_semaphore_decrement
+0x0802e00d T osal_semaphore_increment
+
+0x0802e02f T osal_timer_new
+0x0802e165 T osal_timer_start
+0x0802e1e1 T osal_timer_stop
+0x0802e213 T osal_timer_isactive
+0x0802e245 T osal_timer_delete
+
+0x0802e2e5 T osal_archdep_armc99stdlib_getlibspace
+0x0802e323 T osal_archdep_armc99stdlib_mutex_initialize
+0x0802e363 T osal_archdep_armc99stdlib_mutex_acquire
+0x0802e381 T osal_archdep_armc99stdlib_mutex_release
+
+0x0802d065 T SVC_Handler
+0x0802d0f5 T PendSV_Handler
+0x0802d0f5 T Sys_Handler
+0x0802d141 T SysTick_Handler
+
+
