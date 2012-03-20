@@ -204,7 +204,7 @@ Matrix iKinLink::getH(double _Ang, bool c_override)
 /************************************************************************/
 Matrix iKinLink::getDnH(unsigned int n, bool c_override)
 {
-    if (!n)
+    if (n==0)
         return getH(c_override);
     else
     {
