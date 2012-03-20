@@ -456,9 +456,20 @@ void inverseDynamics::run()
     F_up=0.0;
     icub->upperTorso->setInertialMeasure(current_status.inertial_w0,current_status.inertial_dw0,current_status.inertial_d2p0);
     icub->upperTorso->setSensorMeasurement(F_RArm,F_LArm,F_up);
+
+//#define DEBUG_PERFORMANCE
+#ifdef DEBUG_PERFORMANCE
+    static double meanTime = 0.0;
+    static double startTime = 0;
+    startTime = Time::now();
+#endif
     icub->upperTorso->solveKinematics();
     addSkinContacts();
     icub->upperTorso->solveWrench();
+#ifdef DEBUG_PERFORMANCE
+    meanTime += Time::now()-startTime;
+    printf("Mean uppertorso NE time: %.4f\n", meanTime/getIterations());
+#endif
 
 //#define DEBUG_KINEMATICS
 #ifdef DEBUG_KINEMATICS
@@ -614,8 +625,8 @@ void inverseDynamics::run()
 #endif
 
     Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
-    F_ext_sens_right_leg = F_RLeg - F_sensor_low.getCol(0);
-    F_ext_sens_left_leg = F_LLeg - F_sensor_low.getCol(1);
+    F_ext_sens_right_leg = F_RLeg - F_sensor_low.getCol(0); // measured wrench - internal wrench = external wrench
+    F_ext_sens_left_leg = F_LLeg - F_sensor_low.getCol(1);  // measured wrench - internal wrench = external wrench
 
 #ifdef TEST_LEG_SENSOR
     F_mdl_right_leg = F_sensor_low.getCol(0);
@@ -1172,8 +1183,7 @@ void inverseDynamics::addSkinContacts(){
                     it->fixMoment();
             }
         }
-        dynContactList cl = skinContacts->toDynContactList();
-        for(dynContactList::iterator it=cl.begin(); it!=cl.end(); it++){
+        for(skinContactList::iterator it=skinContacts->begin(); it!=skinContacts->end(); it++){
             if(it->getBodyPart()==LEFT_ARM){
                 icub->upperTorso->leftSensor->addContact((*it));
             }else if(it->getBodyPart() == RIGHT_ARM){
