@@ -91,6 +91,7 @@ using namespace yarp::dev;
 using namespace iCub::perception;
 
 
+/************************************************************************/
 class ExampleModule: public RFModule
 {
     Model *model;
@@ -105,8 +106,10 @@ class ExampleModule: public RFModule
     int joint;
 
 public:
+    /************************************************************************/
     ExampleModule() : calibrate(true) { }
 
+    /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
         string name=rf.find("name").asString().c_str();
@@ -181,6 +184,7 @@ public:
         }
     }
 
+    /************************************************************************/
     bool close()
     {
         driver.close();
@@ -192,11 +196,13 @@ public:
         return true;
     }
 
+    /************************************************************************/
     double getPeriod()
     {
         return 0.1;
     }
 
+    /************************************************************************/
     bool updateModule()
     {
         if (calibrate)
@@ -243,6 +249,7 @@ public:
 };
 
 
+/************************************************************************/
 int main(int argc, char *argv[])
 {
     Network yarp;
@@ -263,7 +270,5 @@ int main(int argc, char *argv[])
     ExampleModule mod;
     return mod.runModule(rf);
 }
-
-
 
 
