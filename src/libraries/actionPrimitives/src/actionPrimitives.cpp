@@ -393,6 +393,10 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                     }
                 }
 
+                // override some information
+                modelProp.put("robot",robot.c_str());
+                modelProp.put("name",(local+"/"+modelProp.find("name").asString().c_str()).c_str());
+
                 return graspModel->fromProperty(modelProp);
             }
             else

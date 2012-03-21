@@ -199,7 +199,7 @@ public:
     ExampleModule()
     {
         graspOrien.resize(4);
-        graspDisp.resize(4);
+        graspDisp.resize(3);
         dOffs.resize(3);
         dLift.resize(3);
         home_x.resize(3);
@@ -309,19 +309,7 @@ public:
         }
 
         // parsing general config options
-        Property option;
-        for (int i=1; i<bGeneral.size(); i++)
-        {
-            Bottle *pB=bGeneral.get(i).asList();
-            if (pB->size()==2)
-                option.put(pB->get(0).asString().c_str(),pB->get(1));
-            else
-            {
-                cout<<"Error: invalid option!"<<endl;
-                return false;
-            }
-        }
-
+        Property option(bGeneral.toString().c_str());
         option.put("local",name.c_str());
         option.put("part",rf.find("part").asString().c_str());
         option.put("grasp_model_type",rf.find("grasp_model_type").asString().c_str());
@@ -355,15 +343,18 @@ public:
         // check whether the grasp model is calibrated,
         // otherwise calibrate it and save the results
         Model *model; action->getGraspModel(model);
-        if (!model->isCalibrated())
+        if (model!=NULL)
         {
-            Property prop("(finger all)");
-            model->calibrate(prop);
+            if (!model->isCalibrated())
+            {
+                Property prop("(finger all)");
+                model->calibrate(prop);
 
-            ofstream fout;
-            fout.open(option.find("grasp_model_file").asString().c_str());
-            model->toStream(fout);
-            fout.close();
+                ofstream fout;
+                fout.open(option.find("grasp_model_file").asString().c_str());
+                model->toStream(fout);
+                fout.close();
+            }
         }
 
         return true;
