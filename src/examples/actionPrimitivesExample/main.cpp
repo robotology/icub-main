@@ -191,7 +191,6 @@ protected:
     Vector dLift;
     Vector home_x;
 
-    bool openPorts;
     bool firstRun;
 
 public:
@@ -227,8 +226,6 @@ public:
         home_x[2]= 0.11;
 
         action=NULL;
-
-        openPorts=false;
         firstRun=true;
     }
 
@@ -338,8 +335,6 @@ public:
         rpcPort.open((fwslash+name+"/rpc").c_str());
         attach(rpcPort);
 
-        openPorts=true;
-
         // check whether the grasp model is calibrated,
         // otherwise calibrate it and save the results
         Model *model; action->getGraspModel(model);
@@ -366,11 +361,8 @@ public:
         if (action!=NULL)
             delete action;
 
-        if (openPorts)
-        {
-            inPort.close();
-            rpcPort.close();
-        }
+        inPort.close();
+        rpcPort.close();
 
         return true;
     }
