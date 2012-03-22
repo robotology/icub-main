@@ -107,13 +107,13 @@ bool MotorThread::setImpedance(bool turn_on)
         for(int i=0; i<5; i++)
         {
             if(action[LEFT]!=NULL)
-                done=done && armCtrlMode[LEFT]->setImpedanceVelocityMode(i);
+                done=done && ctrl_mode_arm[LEFT]->setImpedanceVelocityMode(i);
             if(action[RIGHT]!=NULL)
-                done=done && armCtrlMode[RIGHT]->setImpedanceVelocityMode(i);
+                done=done && ctrl_mode_arm[RIGHT]->setImpedanceVelocityMode(i);
         }
         
-        done=done && torsoCtrlMode->setVelocityMode(0);
-        done=done && torsoCtrlMode->setVelocityMode(2);
+        done=done && ctrl_mode_torso->setVelocityMode(0);
+        done=done && ctrl_mode_torso->setVelocityMode(2);
 
         //update the system status
         status_impedance_on=done;
@@ -127,14 +127,14 @@ bool MotorThread::setImpedance(bool turn_on)
         for(int i=0; i<5; i++)
         {
             if(action[LEFT]!=NULL)
-                done=done && armCtrlMode[LEFT]->setVelocityMode(i);
+                done=done && ctrl_mode_arm[LEFT]->setVelocityMode(i);
             if(action[RIGHT]!=NULL)
-                done=done && armCtrlMode[RIGHT]->setVelocityMode(i);
+                done=done && ctrl_mode_arm[RIGHT]->setVelocityMode(i);
         }
 
         for(int i=0; i<3; i++)
-            if(torsoCtrlMode!=NULL)
-                done=done && torsoCtrlMode->setVelocityMode(i);
+            if(ctrl_mode_torso!=NULL)
+                done=done && ctrl_mode_torso->setVelocityMode(i);
 
         status_impedance_on=!done;
     }
@@ -157,10 +157,10 @@ bool MotorThread::setTorque(bool turn_on, int arm)
         done=true;
 
         for(int i=0; i<4; i++)
-            done=done && armCtrlMode[arm]->setTorqueMode(i);
+            done=done && ctrl_mode_arm[arm]->setTorqueMode(i);
 
-        done=done && torsoCtrlMode->setTorqueMode(0);
-        done=done && torsoCtrlMode->setImpedanceVelocityMode(2);
+        done=done && ctrl_mode_torso->setTorqueMode(0);
+        done=done && ctrl_mode_torso->setImpedanceVelocityMode(2);
     }
 
     //if the system is asked to turn off impedance control
@@ -363,7 +363,7 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         for(int j=0; j<b->size(); j++)
             v[j]=b->get(j).asDouble();
         fprintf(stdout,"%s\n",v.toString().c_str());
-        torsoPoses.push_back(v);
+        pos_torsoes.push_back(v);
     }
 
     fprintf(stdout,"\nHAND\n");
@@ -408,9 +408,9 @@ Vector MotorThread::eye2root(const Vector &out, bool forehead)
 
     Vector eyePos,eyeOrient;
     if(forehead)
-        gazeCtrl->getHeadPose(eyePos,eyeOrient);
+        ctrl_gaze->getHeadPose(eyePos,eyeOrient);
     else
-        gazeCtrl->getLeftEyePose(eyePos,eyeOrient);
+        ctrl_gaze->getLeftEyePose(eyePos,eyeOrient);
 
     Matrix T=axis2dcm(eyeOrient);
     T(0,3)=eyePos[0];
@@ -452,7 +452,7 @@ bool MotorThread::stereoToCartesianHomography(const Vector &stereo, Vector &xd)
     px[0]=stereo[2*eye_in_use];
     px[1]=stereo[2*eye_in_use+1];
 
-    gazeCtrl->get3DPointOnPlane(eye_in_use,px,table,xd);
+    ctrl_gaze->get3DPointOnPlane(eye_in_use,px,table,xd);
 
     return true;
 }
@@ -492,7 +492,7 @@ bool MotorThread::stereoToCartesianNetwork(const Vector &stereo, Vector &xd)
         return false;
 
     Vector h(6);
-    headEnc->getEncoders(h.data());
+    enc_head->getEncoders(h.data());
 
     Vector in(7);
     in[0]=stereo[0];
@@ -574,7 +574,6 @@ bool MotorThread::loadKinematicOffsets(string _kinematics_path)
 
     defaultKinematicOffset[LEFT].resize(3);
     defaultKinematicOffset[RIGHT].resize(3);
-
 
     return true;
 }
@@ -774,36 +773,36 @@ void MotorThread::close()
     //set the system back to velocity mode
     setImpedance(false);
     
-    if(drvHead!=NULL)
+    if(drv_head!=NULL)
     {
-        delete drvHead;
-        drvHead=NULL;
+        delete drv_head;
+        drv_head=NULL;
     }
 
-    if(drvTorso!=NULL)
+    if(drv_torso!=NULL)
     {
-        delete drvTorso;
-        drvTorso=NULL;
+        delete drv_torso;
+        drv_torso=NULL;
     }
 
-    if(drvArm[LEFT]!=NULL)
+    if(drv_arm[LEFT]!=NULL)
     {
-        delete drvArm[LEFT];
-        drvArm[LEFT]=NULL;
+        delete drv_arm[LEFT];
+        drv_arm[LEFT]=NULL;
     }
         
-    if(drvArm[RIGHT]!=NULL)
+    if(drv_arm[RIGHT]!=NULL)
     {
-        delete drvArm[RIGHT];
-        drvArm[RIGHT]=NULL;
+        delete drv_arm[RIGHT];
+        drv_arm[RIGHT]=NULL;
     }
 
-    if(drvGazeCtrl!=NULL)
+    if(drv_ctrl_gaze!=NULL)
     {
-        if(gazeCtrl!=NULL)
-            gazeCtrl->restoreContext(initial_gaze_context);
-        delete drvGazeCtrl;
-        drvGazeCtrl=NULL;
+        if(ctrl_gaze!=NULL)
+            ctrl_gaze->restoreContext(initial_gaze_context);
+        delete drv_ctrl_gaze;
+        drv_ctrl_gaze=NULL;
     }
 
     if (action[LEFT]!=NULL)
@@ -871,7 +870,7 @@ bool MotorThread::threadInit()
     Property optLeftArm("(device remote_controlboard)");
     Property optRightArm("(device remote_controlboard)");
     Property optTorso("(device remote_controlboard)");
-    Property optGazeCtrl("(device gazecontrollerclient)");
+    Property optctrl_gaze("(device gazecontrollerclient)");
 
     optHead.put("remote",("/"+robot+"/head").c_str());
     optHead.put("local",("/"+name+"/head").c_str());
@@ -885,69 +884,71 @@ bool MotorThread::threadInit()
     optTorso.put("remote",("/"+robot+"/torso").c_str());
     optTorso.put("local",("/"+name+"/torso").c_str());
 
-    optGazeCtrl.put("remote","/iKinGazeCtrl");
-    optGazeCtrl.put("local",("/"+name+"/gaze").c_str());
+    optctrl_gaze.put("remote","/iKinctrl_gaze");
+    optctrl_gaze.put("local",("/"+name+"/gaze").c_str());
 
-    drvHead=new PolyDriver;
-    drvTorso=new PolyDriver;
-    drvGazeCtrl=new PolyDriver;
-    if (!drvHead->open(optHead)             ||
-        !drvTorso->open(optTorso)           ||
-        !drvGazeCtrl->open(optGazeCtrl)       )
+    drv_head=new PolyDriver;
+    drv_torso=new PolyDriver;
+    drv_ctrl_gaze=new PolyDriver;
+    if (!drv_head->open(optHead)             ||
+        !drv_torso->open(optTorso)           ||
+        !drv_ctrl_gaze->open(optctrl_gaze)       )
     {
         close();
         return false;
     }
 
     // open views
-    drvHead->view(headEnc);
-    drvTorso->view(torsoEnc);
-    drvTorso->view(torsoPos);
-    drvTorso->view(torsoVel);
-    drvTorso->view(torsoCtrlMode);
-    drvTorso->view(torsoImpedenceCtrl);
+    drv_head->view(enc_head);
+    drv_torso->view(enc_torso);
+    drv_torso->view(pos_torso);
+    drv_torso->view(vel_torso);
+    drv_torso->view(ctrl_mode_torso);
+    drv_torso->view(ctrl_impedance_torso);
 
     if(partUsed=="both_arms" || partUsed=="left_arm")
     {
-        drvArm[LEFT]=new PolyDriver;
-        if(!drvArm[LEFT]->open(optLeftArm))
+        drv_arm[LEFT]=new PolyDriver;
+        if(!drv_arm[LEFT]->open(optLeftArm))
         {   
             close();
             return false;
         }        
 
-        drvArm[LEFT]->view(armCtrlMode[LEFT]);
-        drvArm[LEFT]->view(armImpedenceCtrl[LEFT]);
+        drv_arm[LEFT]->view(ctrl_mode_arm[LEFT]);
+        drv_arm[LEFT]->view(ctrl_impedance_arm[LEFT]);
+        drv_arm[LEFT]->view(pos_arm[LEFT]);
     }
 
     if(partUsed=="both_arms" || partUsed=="right_arm")
     {
-        drvArm[RIGHT]=new PolyDriver;
-        if(!drvArm[RIGHT]->open(optRightArm))
+        drv_arm[RIGHT]=new PolyDriver;
+        if(!drv_arm[RIGHT]->open(optRightArm))
         {   
             close();
             return false;
         }        
 
-        drvArm[RIGHT]->view(armCtrlMode[RIGHT]);
-        drvArm[RIGHT]->view(armImpedenceCtrl[RIGHT]);
+        drv_arm[RIGHT]->view(ctrl_mode_arm[RIGHT]);
+        drv_arm[RIGHT]->view(ctrl_impedance_arm[RIGHT]);
+        drv_arm[RIGHT]->view(pos_arm[RIGHT]);
     }
 
-    drvGazeCtrl->view(gazeCtrl);
+    drv_ctrl_gaze->view(ctrl_gaze);
 
     Vector vels(3),accs(3);
     vels=5.0; accs=6000.0;
-    torsoPos->setRefSpeeds(vels.data());
-    torsoPos->setRefAccelerations(accs.data());
+    pos_torso->setRefSpeeds(vels.data());
+    pos_torso->setRefAccelerations(accs.data());
 
     // initialize the gaze controller
 
     //store the current context
-    gazeCtrl->storeContext(&initial_gaze_context);
+    ctrl_gaze->storeContext(&initial_gaze_context);
 
-    gazeCtrl->setTrackingMode(false);
-    gazeCtrl->setEyesTrajTime(eyesTrajTime);
-    gazeCtrl->setNeckTrajTime(neckTrajTime);
+    ctrl_gaze->setTrackingMode(false);
+    ctrl_gaze->setEyesTrajTime(eyesTrajTime);
+    ctrl_gaze->setNeckTrajTime(neckTrajTime);
 
 
     // set the values for the stereo PID controller
@@ -975,35 +976,35 @@ bool MotorThread::threadInit()
     bDominantEye.addString("dominantEye");
     dominant_eye==LEFT?bDominantEye.addString("left"):bDominantEye.addString("right");
 
-    gazeCtrl->setStereoOptions(stereoOpt);
+    ctrl_gaze->setStereoOptions(stereoOpt);
 
     //bind neck pitch and roll;
     if(neckPitchRange!=NULL && neckPitchRange->size()==1)
     {
         double neckPitchBlock=neckPitchRange->get(0).asDouble();
-        gazeCtrl->blockNeckPitch(neckPitchBlock);
+        ctrl_gaze->blockNeckPitch(neckPitchBlock);
     }
     else if(neckPitchRange!=NULL && neckPitchRange->size()>1)
     {
         double neckPitchMin=neckPitchRange->get(0).asDouble();
         double neckPitchMax=neckPitchRange->get(1).asDouble();
-        gazeCtrl->bindNeckPitch(neckPitchMin,neckPitchMax);
+        ctrl_gaze->bindNeckPitch(neckPitchMin,neckPitchMax);
     }
     if(neckRollRange!=NULL && neckRollRange->size()==1)
     {
         double neckRollBlock=neckRollRange->get(0).asDouble();
-        gazeCtrl->blockNeckRoll(neckRollBlock);
+        ctrl_gaze->blockNeckRoll(neckRollBlock);
     }
     else if(neckRollRange!=NULL && neckRollRange->size()>1)
     {
         double neckRollMin=neckRollRange->get(0).asDouble();
         double neckRollMax=neckRollRange->get(1).asDouble();
-        gazeCtrl->bindNeckRoll(neckRollMin,neckRollMax);
+        ctrl_gaze->bindNeckRoll(neckRollMin,neckRollMax);
     }
 
     //store the current context and restore the initial one
-    gazeCtrl->storeContext(&default_gaze_context);
-    gazeCtrl->restoreContext(initial_gaze_context);
+    ctrl_gaze->storeContext(&default_gaze_context);
+    ctrl_gaze->restoreContext(initial_gaze_context);
     gazeUnderControl=false;
 
     //-------------------------------
@@ -1084,7 +1085,7 @@ bool MotorThread::threadInit()
     }
 
     for(int i=0; i<bImpedanceTorsoStiff->size(); i++)
-        torsoImpedenceCtrl->setImpedance(i,torso_stiffness[i],torso_damping[i]);
+        ctrl_impedance_torso->setImpedance(i,torso_stiffness[i],torso_damping[i]);
 
 
     //arm impedence values
@@ -1175,7 +1176,7 @@ bool MotorThread::threadInit()
             armInUse=arm;
 
             for(int i=0; i<bImpedanceArmStiff->size(); i++)
-                armImpedenceCtrl[arm]->setImpedance(i,arm_stiffness[i],arm_damping[i]);
+                ctrl_impedance_arm[arm]->setImpedance(i,arm_stiffness[i],arm_damping[i]);
         }
     }
 
@@ -1214,6 +1215,8 @@ bool MotorThread::threadInit()
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
 
+    random_pos_y=bMotor.check("random_pos_y",Value(0.1)).asDouble();
+
     closed=false;
     interrupted=false;
 
@@ -1229,11 +1232,11 @@ void MotorThread::run()
         {
             if(!gazeUnderControl)
             {
-                gazeCtrl->restoreContext(default_gaze_context);
+                ctrl_gaze->restoreContext(default_gaze_context);
                 gazeUnderControl=true;
             }
 
-            gazeCtrl->lookAtFixationPoint(homeFix);
+            ctrl_gaze->lookAtFixationPoint(homeFix);
             break;
         }
 
@@ -1242,13 +1245,13 @@ void MotorThread::run()
             if(!gazeUnderControl)
             {
                 gazeUnderControl=true;
-                gazeCtrl->restoreContext(default_gaze_context);
+                ctrl_gaze->restoreContext(default_gaze_context);
             }
 
 
             Vector x,o;
             action[armInUse]->getPose(x,o);
-            gazeCtrl->lookAtFixationPoint(x);
+            ctrl_gaze->lookAtFixationPoint(x);
             break;
         }
 
@@ -1256,7 +1259,7 @@ void MotorThread::run()
         {
             if(!gazeUnderControl)
             {
-                gazeCtrl->restoreContext(default_gaze_context);
+                ctrl_gaze->restoreContext(default_gaze_context);
                 gazeUnderControl=true;
             }
 
@@ -1277,7 +1280,7 @@ void MotorThread::run()
                     px[RIGHT][0]=stereo[2];
                     px[RIGHT][1]=stereo[3];
 
-                    gazeCtrl->lookAtStereoPixels(px[LEFT],px[RIGHT]);
+                    ctrl_gaze->lookAtStereoPixels(px[LEFT],px[RIGHT]);
                 }
                 else
                 {
@@ -1297,7 +1300,7 @@ void MotorThread::run()
                     px[1]=stereo[2*eye_in_use+1];
 
                     fprintf(stdout,"px[dominant_eye]=%s\n",px.toString().c_str());
-                    gazeCtrl->lookAtMonoPixel(dominant_eye,px,0.4);
+                    ctrl_gaze->lookAtMonoPixel(dominant_eye,px,0.4);
                 }
             }
             break;
@@ -1309,9 +1312,9 @@ void MotorThread::run()
             //if(!gazeUnderControl)
             {
                 gazeUnderControl=true;
-                gazeCtrl->restoreContext(default_gaze_context);
-                //gazeCtrl->setTrackingMode(true);
-                gazeCtrl->lookAtFixationPoint(gaze_fix_point);
+                ctrl_gaze->restoreContext(default_gaze_context);
+                //ctrl_gaze->setTrackingMode(true);
+                ctrl_gaze->lookAtFixationPoint(gaze_fix_point);
             }
             break;
         }
@@ -1319,11 +1322,11 @@ void MotorThread::run()
         case(HEAD_MODE_LOOK):
         {
             bool done;
-            gazeCtrl->checkMotionDone(&done);
+            ctrl_gaze->checkMotionDone(&done);
             if(done)
             {
                 gazeUnderControl=false;
-                gazeCtrl->restoreContext(initial_gaze_context);
+                ctrl_gaze->restoreContext(initial_gaze_context);
                 head_mode=HEAD_MODE_IDLE;
             }
         }
@@ -1378,9 +1381,9 @@ void MotorThread::run()
 
             //fprintf(stdout,"desired torso positions = %f\t%f\t%f\n\n",qd[0],qd[1],qd[2]);
 
-            //torsopos->positionmove(0,qd[0]);
-            //torsopos->positionmove(1,qd[1]);
-            //torsopos->positionmove(2,qd[2]);
+            //pos_torso->positionmove(0,qd[0]);
+            //pos_torso->positionmove(1,qd[1]);
+            //pos_torso->positionmove(2,qd[2]);
 
 
             break;
@@ -1462,7 +1465,7 @@ void MotorThread::run()
                         action[arm]->getPose(x,o);
                         
                         Vector head_x,head_o;
-                        gazeCtrl->getHeadPose(head_x,head_o);
+                        ctrl_gaze->getHeadPose(head_x,head_o);
                         
                     	if(fabs(x[1]-head_x[1])<0.2)
                     		x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
@@ -1592,7 +1595,7 @@ bool MotorThread::push(Bottle &options)
         keepFixation();
     }
 
-    gazeCtrl->waitMotionDone(0.1,2.0);
+    ctrl_gaze->waitMotionDone(0.1,2.0);
 
     double push_direction=checkOptions(options,"away")?-1.0:1.0;
     Vector tmpDisp=push_direction*reachSideDisp[arm];
@@ -1643,7 +1646,7 @@ bool MotorThread::point(Bottle &options)
         setGazeIdle();
         keepFixation();
         look(options);
-        gazeCtrl->setTrackingMode(true);
+        ctrl_gaze->setTrackingMode(true);
     }
 
     arm=checkArm(arm,target);
@@ -1686,7 +1689,7 @@ bool MotorThread::point(Bottle &options)
     if(!checkOptions(options,"no_head"))
     {
         setGazeIdle();
-        gazeCtrl->setTrackingMode(false);
+        ctrl_gaze->setTrackingMode(false);
     }
 
     return true;
@@ -1702,18 +1705,18 @@ bool MotorThread::look(Bottle &options)
         return false;
 
     setGazeIdle();
-    gazeCtrl->restoreContext(default_gaze_context);
+    ctrl_gaze->restoreContext(default_gaze_context);
 
     if(checkOptions(options,"fixate"))
     {
     	gaze_fix_point=xd;
     	head_mode=HEAD_MODE_TRACK_FIX;
-        //gazeCtrl->setTrackingMode(true);
+        //ctrl_gaze->setTrackingMode(true);
 
 	}
 	
 	
-    gazeCtrl->lookAtFixationPoint(xd);
+    ctrl_gaze->lookAtFixationPoint(xd);
 
     return true;
 }
@@ -1779,7 +1782,7 @@ bool MotorThread::goHome(Bottle &options)
 
 
     bool head_fixing=false;
-    gazeCtrl->getTrackingMode(&head_fixing);
+    ctrl_gaze->getTrackingMode(&head_fixing);
 
     if(head_home)
     //if(!head_fixing && head_mode!=HEAD_MODE_TRACK_TEMP && head_home)
@@ -1841,7 +1844,7 @@ bool MotorThread::goHome(Bottle &options)
 
     if(head_home)
     {
-        gazeCtrl->waitMotionDone(0.1,2.0);
+        ctrl_gaze->waitMotionDone(0.1,2.0);
 
         if(!head_fixing && head_mode!=HEAD_MODE_TRACK_TEMP)
             setGazeIdle();
@@ -1901,7 +1904,7 @@ bool MotorThread::deploy(Bottle &options)
         deployFixZone[2]=table_height;
         setGazeIdle();
         keepFixation();
-        gazeCtrl->lookAtFixationPoint(deployFixZone);
+        ctrl_gaze->lookAtFixationPoint(deployFixZone);
     }
 
     Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:reachAboveCata[arm]);
@@ -1924,7 +1927,7 @@ bool MotorThread::deploy(Bottle &options)
     action[arm]->disableContactDetection();
 
     if(!checkOptions(options,"no_head"))
-        gazeCtrl->lookAtFixationPoint(x);
+        ctrl_gaze->lookAtFixationPoint(x);
 
     release(options);
 
@@ -2023,7 +2026,7 @@ bool MotorThread::calibTable(Bottle &options)
     setGazeIdle();
 
     keepFixation();
-    gazeCtrl->lookAtFixationPoint(deployEnd);
+    ctrl_gaze->lookAtFixationPoint(deployEnd);
 
     if(isHolding(options))
         action[arm]->pushAction("open_hand");
@@ -2056,7 +2059,7 @@ bool MotorThread::calibTable(Bottle &options)
         Vector x,o;
         action[arm]->getPose(x,o);
 
-        gazeCtrl->lookAtFixationPoint(x);
+        ctrl_gaze->lookAtFixationPoint(x);
 
         table_height=x[2];
         table[3]=-table_height;
@@ -2130,7 +2133,7 @@ bool MotorThread::calibFingers(Bottle &options)
     if(!no_head)
     {
         head_mode=HEAD_MODE_GO_HOME;
-        gazeCtrl->waitMotionDone(0.1,1.0);
+        ctrl_gaze->waitMotionDone(0.1,1.0);
     }
 
     setArmInUse(currentArm);
@@ -2141,19 +2144,19 @@ bool MotorThread::calibFingers(Bottle &options)
 
 bool MotorThread::avoidTable(bool avoid)
 {
-	for(int arm=0; arm<2; arm++)
-	{
-		if(action[arm]!=NULL)
-    	{
-    		action[arm]->setTrackingMode(false);
-    		action[arm]->disableTorsoDof();
-    	
-    		Vector x,o;
-    		action[arm]->getPose(x,o);
-    		avoid_table_height[arm]=x[2];
-  		}
+    for(int arm=0; arm<2; arm++)
+    {
+        if(action[arm]!=NULL)
+        {
+            action[arm]->setTrackingMode(false);
+            action[arm]->disableTorsoDof();
+
+            Vector x,o;
+            action[arm]->getPose(x,o);
+            avoid_table_height[arm]=x[2];
+        }
     }
-    
+
     avoid_table=avoid;
     return true;
 }
@@ -2162,14 +2165,14 @@ bool MotorThread::avoidTable(bool avoid)
 
 bool MotorThread::exploreTorso(Bottle &options)
 {
-	int dbg_cnt=0;
+    int dbg_cnt=0;
     this->avoidTable(true);
     // avoid torso controlDisp
 
 
     //get the torso initial position
     Vector torso_init_joints(3);
-    torsoEnc->getEncoders(torso_init_joints.data());
+    enc_torso->getEncoders(torso_init_joints.data());
 
     //initialization for the random walker
     //the iKinTorso needs the 0 2 joints switched
@@ -2211,7 +2214,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     
         //generate random next random step
         Vector random_pos(3);
-        double tmp_rnd=Rand::scalar(-0.4,0.4);
+        double tmp_rnd=Rand::scalar(-random_pos_y,random_pos_y);
 		if(fabs(tmp_rnd)<0.5 && tmp_rnd<0.0)
 			tmp_rnd-=0.1;
 
@@ -2252,7 +2255,7 @@ bool MotorThread::exploreTorso(Bottle &options)
         {
 			//set the current torso joints to the iKinTorso
             Vector torso_joints(3);
-    		torsoEnc->getEncoders(torso_joints.data());
+    		enc_torso->getEncoders(torso_joints.data());
             
             Vector tmp_joints(8);
             tmp_joints=0.0;
@@ -2301,7 +2304,7 @@ bool MotorThread::exploreTorso(Bottle &options)
 			
 			if(norm(q_dot)<1.0)
 			{
-				torsoVel->stop();
+				vel_torso->stop();
 				break;
 			}
 			
@@ -2315,21 +2318,105 @@ bool MotorThread::exploreTorso(Bottle &options)
 			//fprintf(stdout,"x_dot=%s\n",q_dot.toString().c_str());
 			//fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
 
-	        torsoVel->velocityMove(q_dot.data());
+	        vel_torso->velocityMove(q_dot.data());
 	        Time::delay(0.01);
         }
     }
 
     //go back to torso initial position
-    torsoPos->positionMove(torso_init_joints.data());
+    pos_torso->positionMove(torso_init_joints.data());
     bool done=false;
     while(isRunning() && !done)
     {
         Time::delay(0.1);
-        torsoPos->checkMotionDone(&done);
+        pos_torso->checkMotionDone(&done);
     }
 
     this->avoidTable(false);
+    return true;
+}
+
+
+
+
+//************************************************************************************************
+bool MotorThread::exploreHand(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    if(!checkOptions(options,"no_head"))
+    {
+        setGazeIdle();
+        lookAtHand();
+    }
+
+    //the new position is approximately at the center of
+    Vector xd(3);
+    xd[0]=-0.25;
+    xd[1]=0.0;
+    xd[2]=table_height>0.1?table_height:0.1;
+
+    //set the new orientation
+    Vector x_o(3),y_o(3),z_o(3);
+    x_o=y_o=z_o=0.0;
+
+    if(arm==LEFT)
+    {
+        x_o[1]=1.0;
+        y_o[0]=1.0;
+        z_o[2]=1.0;
+    }
+    else
+    {
+        x_o[1]=-1.0;
+        y_o[0]=1.0;
+        z_o[2]=-1.0;
+    }
+
+    Matrix R(3,3);
+    R.setCol(0,x_o);
+    R.setCol(1,y_o);
+    R.setCol(2,z_o);
+
+    Vector od=dcm2axis(R);
+
+
+    //reach for the position
+    action[arm]->pushAction(xd,od,"open_hand");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+
+    //move the hand back
+    double exec_time=10.0;
+    double init_time=Time::now();
+
+    int flip=1;
+    double flip_max_time=0.25;
+    double flip_angle=15.0;
+    double flip_time=Time::now();
+
+    while(Time::now()-init_time<exec_time)
+    {
+        if ((Time::now()-flip_time)>flip_max_time)
+        {
+            flip_time=Time::now();
+            //hand->positionMove(5,-20.0+flip*20.0);    // forearm rotation
+            pos_arm[arm]->positionMove(6,flip*flip_angle);    // forearm rotation
+            flip=-flip;
+        }
+    }
+
+
+    if(!checkOptions(options,"no_head"))
+        setGazeIdle();
+
+
     return true;
 }
 
@@ -2709,7 +2796,7 @@ void MotorThread::interrupt()
     suspendLearningModeKinOffset(bInterrupt);
 
     setGazeIdle();
-    gazeCtrl->stopControl();
+    ctrl_gaze->stopControl();
 
     if(action[LEFT]!=NULL)
     {

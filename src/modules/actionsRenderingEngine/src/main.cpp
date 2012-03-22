@@ -40,6 +40,9 @@ estimate of the 2D target.
 -- network: which uses a previously trained neural network structure to predict the
 3D cartesian coordinate from the stereo input.
 
+
+\section cmd_port Issuing commands
+
 The commands sent as bottles to the module port /<modName>/cmd:io
 are described in the following. Note that all commands can be supplied 
 with the optional parameter "left" or "right" to select the arm in use
@@ -68,13 +71,6 @@ the action required. In these cases the parameter [target] can be expressed as f
   property, whereas the relevant 3D information are available through the "position_3d" property.
 
 The commands:
-
-<b>GET</b> 
-format: [get] <request>
-action: the system returns the requested element. <request> can be of the form:
-
---[s2c] [target]: returns the current cartesian coordinates of a visual 
-target wrt to the robot root reference frame.
 
 <b>IDLE</b> 
 format: [idle]
@@ -176,20 +172,36 @@ whether correct grasp has been achieved.
 admittance control and the robot arm can be moved around by the human user. When the [calib] [kinematics] [stop]
 command is received, the system is set to velocity mode and the offset between the initial and the current
 position is stored.
-
+ 
 
 <b>EXPLORATION</b>
 different types of explorations can be requested by issuing commands of the form: [explore] [exploration_type]
 In the following a short description of the possible values of [exploration_type]:
-
+ 
 --[torso] the robot will start moving its torso exploring different positions (specified in the file exploration_poses.ini).
 then it will go back to the initial position.
-
-
+ 
+\section get_port The "Get" Port
+ 
+The actionsRenderingEngine can be queried via the port /<modName>/get:io in order to obtain 
+the following data:
+ 
+ 
+<b>GET</b> 
+format: [get] <request>
+action: the system returns the requested element. <request> can be of the form:
+ 
+--[s2c] [target_1] ... [target_n]: returns the current cartesian coordinates of the n visual 
+targets wrt to the robot root reference frame. The number of targets is not predefined.
+ 
+--[table] : returns the current height of the table in front of the robot
+ 
+ 
+ 
 \section lib_sec Libraries 
 - YARP libraries. 
 - \ref ActionPrimitives library. 
-
+ 
 \section portsa_sec Ports Accessed
 Assumes that \ref icub_iCubInterface (with ICartesianControl interface implemented) is running together with the
 cartesian controllers \ref icub_cartesianController.
@@ -204,14 +216,14 @@ library, we also have:
  
 - \e /<modName>/rpc remote procedure call. 
     Recognized remote commands:
-    -[help]: returns the list of available rpc commands.
-    -[get]: get requests
-        * [status]:returns the bottle (gaze <status>) (left_arm <status>) (right_arm <status>) where
-                   <status> can be equal to "idle", "busy" or "unavailable".
-    -[impedance] [on]/[off]: enable/disable (if available) impedance velocity control.
-    -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.
-    -[interrupt] : interrupts any action deleting also the action queue for both arms.
-    -[reinstate] : if the module was interrupted reinstate it.
+    -[help]: returns the list of available rpc commands.\n
+    -[get]: get requests\n
+        * [status]:returns the bottle (gaze <status>) (left_arm <status>) (right_arm <status>) where\n
+                   <status> can be equal to "idle", "busy" or "unavailable".\n
+    -[impedance] [on]/[off]: enable/disable (if available) impedance velocity control.\n
+    -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.\n
+    -[interrupt] : interrupts any action deleting also the action queue for both arms.\n
+    -[reinstate] : if the module was interrupted reinstate it.\n
  
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
@@ -251,6 +263,7 @@ Windows, Linux
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RpcServer.h>
+#include <yarp/os/PortReader.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
 
@@ -287,7 +300,6 @@ Windows, Linux
 #define CMD_LEARN_MIL               VOCAB4('l','e','a','r')
 
 #define CMD_GET                     VOCAB3('g','e','t')
-#define CMD_GET_S2C                 VOCAB3('s','2','c')
 #define CMD_TAKE                    VOCAB4('t','a','k','e')
 #define CMD_TOUCH                   VOCAB4('t','o','u','c')
 #define CMD_PICK                    VOCAB4('p','i','c','k')
@@ -301,11 +313,24 @@ Windows, Linux
 #define CMD_ACTION_IMITATE          VOCAB4('i','m','i','t')
 
 
+//sub commands: get
+#define GET_S2C                     VOCAB3('s','2','c')
+#define GET_TABLE                   VOCAB4('t','a','b','l')
+
+//sub commands: calib
 #define CALIB_TABLE                 VOCAB4('t','a','b','l')
 #define CALIB_FINGERS               VOCAB4('f','i','n','g')
 #define CALIB_KIN_OFFSET            VOCAB4('k','i','n','e')
 
+//sub commands: explore
 #define EXPLORE_TORSO               VOCAB4('t','o','r','s')
+#define EXPLORE_HAND                VOCAB4('h','a','n','d')
+
+
+
+
+#define PORT_TAG_CMD                0
+#define PORT_TAG_GET                1
 
 
 
@@ -324,16 +349,13 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::action;
 
-class ActionsRenderingEngineModule: public RFModule
+class ActionsRenderingEngine
 {
 protected:
     MotorThread                 *motorThr;
     VisuoThread                 *visuoThr;
 
     Initializer                 *initializer;
-
-    RpcServer                   cmdPort;
-    Port                        rpcPort;
 
     bool                        interrupted;
     volatile bool               closing;
@@ -355,21 +377,14 @@ protected:
     }
 
 
+
 public:
-    ActionsRenderingEngineModule()
+    ActionsRenderingEngine()
     {}
 
-    virtual bool configure(ResourceFinder &rf)
+    bool initialize(ResourceFinder &rf)
     {
-        Bottle bManager=rf.findGroup("manager");
-
         string name=rf.check("name",Value("actionsRenderingEngine")).asString().c_str();
-        setName(name.c_str());
-
-        cmdPort.open(("/"+name+"/cmd:io").c_str());
-
-        rpcPort.open(("/"+name+"/rpc").c_str());
-        attach(rpcPort);
 
         initializer=new Initializer(rf);
 
@@ -388,29 +403,9 @@ public:
         return true;
     }
 
-    virtual bool interruptModule()
+
+    bool close()
     {
-        closing=true;
-
-        cmdPort.interrupt();
-        rpcPort.interrupt();
-
-        initializer->interrupt();
-
-        if(visuoThr!=NULL)
-            visuoThr->interrupt();
-
-         if(motorThr!=NULL)
-            motorThr->interrupt();
-
-        return true;
-    }
-
-    virtual bool close()
-    {
-        cmdPort.close();
-        rpcPort.close();
-        
         if(motorThr!=NULL)
         {
             motorThr->reinstate();
@@ -432,506 +427,22 @@ public:
         return true;
     }
 
-    virtual double getPeriod()
+    bool interrupt()
     {
-        return 0.1;
+        closing=true;
+
+        initializer->interrupt();
+
+        if(visuoThr!=NULL)
+            visuoThr->interrupt();
+
+         if(motorThr!=NULL)
+            motorThr->interrupt();
+
+         return true;
     }
 
-    virtual bool updateModule()
-    {
-        Bottle command,reply;
-        command.clear();
-        reply.clear();
-
-
-        if(isStopping() || closing)
-            return true;
-
-        //wait for a command. will provide reply
-        cmdPort.read(command,true);
-
-        if(command.size()==0)
-        {
-            reply.addVocab(NACK);
-            reply.addString("No command received.");
-        }
-        else if(interrupted)
-        {
-            reply.addVocab(NACK);
-            reply.addString("Module currently interrupted. Reinstate for action.");
-        }
-        else
-        {
-            motorThr->update();
-
-            switch(command.get(0).asVocab())
-            {
-                case CMD_IDLE:
-                {
-                    motorThr->setGazeIdle();
-                    reply.addVocab(ACK);
-                    break;
-                }
-
-                case CMD_HOME:
-                {
-                    motorThr->goHome(command);
-                    reply.addVocab(ACK);
-
-                    break;
-                }
-
-                case CMD_GET:
-                {
-                    if(command.size()>1)
-                    {
-                        switch(command.get(1).asVocab())
-                        {
-                            case CMD_GET_S2C:
-                            {
-                                if(command.size()>2)
-                                {
-                                    Vector xd;
-                                    visuoThr->getTarget(command.get(2),command);
-                                    if(motorThr->targetToCartesian(command.find("target").asList(),xd))
-                                    {
-                                        reply.clear();
-                                        for(size_t i=0; i<xd.size(); i++)
-                                            reply.addDouble(xd[i]);
-                                    }
-                                    else
-                                        reply.addVocab(NACK);
-                                }
-
-                                break;
-                            }
-                        }
-
-                        break;
-                    }
-
-                    break;
-                }
-
-                case CMD_EXPLORE:
-                {
-                    if(command.size()>1)
-                    {
-                        switch(command.get(1).asVocab())
-                        {
-                            case EXPLORE_TORSO:
-                            {
-                                if(motorThr->exploreTorso(command))
-                                    reply.addVocab(ACK);
-                                else
-                                    reply.addVocab(NACK);
-
-                                break;
-                            }
-
-                            default:
-                            {
-                                string rep=command.get(1).asString().c_str();
-                                reply.addVocab(NACK);
-                                reply.addString(("parameter '"+rep+"' not supported by 'explore' command.").c_str());
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        reply.addVocab(NACK);
-                        reply.addString("explore command needs further parameter (e.g. 'torso')");
-                    }
-                    break;
-                }
-                
-                case CMD_CALIBRATE:
-                {
-                    switch(command.get(1).asVocab())
-                    {
-                        case CALIB_TABLE:
-                        {
-                            if(motorThr->calibTable(command))
-                                reply.addVocab(ACK);
-                            else
-                                reply.addVocab(NACK);
-
-                            break;
-                        }
-
-                         case CALIB_FINGERS:
-                        {
-                            if(motorThr->calibFingers(command))
-                                reply.addVocab(ACK);
-                            else
-                                reply.addVocab(NACK);
-
-                            break;
-                        }
-
-                         case CALIB_KIN_OFFSET:
-                        {
-                            if(command.get(2).asString()=="start")
-                            {
-                                if(motorThr->startLearningModeKinOffset(command))
-                                {
-                                    reply.addVocab(ACK);
-                                    reply.addString("learn kinematic offset mode: on");
-                                }
-                                else
-                                    reply.addVocab(NACK);
-                            }
-                            else if(command.get(2).asString()=="stop")
-                            {
-                                if(motorThr->suspendLearningModeKinOffset(command))
-                                {
-                                    reply.addVocab(ACK);
-                                    reply.addString("learn kinematic offset mode: off");
-                                }
-                                else
-                                    reply.addVocab(NACK);
-                            }
-
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-
-                //------ action "learning" ---------//
-                case CMD_ACTION_TEACH:
-                {
-                    if(check(command,"start"))
-                    {
-                        string action_name=command.get(1).asString().c_str();
-
-                        Bottle &action=command.addList();
-                        action.addString("action_name");
-                        action.addString(action_name.c_str());
-
-                        if(!motorThr->startLearningModeAction(command))
-                        {
-                            reply.addVocab(NACK);
-                            reply.addString(("action "+action_name+" already known").c_str());
-                        }
-                        else
-                        {
-                            motorThr->setGazeIdle();
-                            motorThr->lookAtHand();
-                            reply.addVocab(ACK);
-                            reply.addString("start teaching");
-                        }
-                    }
-
-                    if(check(command,"stop"))
-                    {
-                        if(motorThr->suspendLearningModeAction(command))
-                        {
-                            motorThr->setGazeIdle();
-                            reply.addVocab(ACK);
-                            reply.addString("stop teaching");
-                        }
-                        else
-                            reply.addVocab(NACK);
-                    }
-
-                    break;
-                }
-
-                case CMD_ACTION_IMITATE:
-                {
-                    string action_name=command.get(1).asString().c_str();
-
-                    Bottle &action=command.addList();
-                    action.addString("action_name");
-                    action.addString(action_name.c_str());
-
-                    motorThr->lookAtHand();
-
-                    if(!motorThr->imitateAction(command))
-                    {
-                        reply.addVocab(ACK);
-                        reply.addString(("action "+action_name+" unkown").c_str());
-                    }
-                    else
-                    {
-                        reply.addVocab(NACK);
-                        reply.addString(("action "+action_name+" done").c_str());
-                    }
-                    motorThr->setGazeIdle();
-
-                    break;
-                }
-                //-----------------------------------//
-
-
-                case CMD_LEARN_MIL:
-                {
-                    string obj_name=command.get(1).asString().c_str();
-                    if(motorThr->isHolding(command)) // 
-                    {
-                        fprintf(stdout,"Deploying %s.\n",obj_name.c_str());
-                        motorThr->deploy(command);
-                    }
-
-                    //if it is not currently tracking anything, start learning what it has in fixation
-                    Vector stereo;
-                    if(!visuoThr->isTracking())
-                    {
-                        Value v("fix");
-                                visuoThr->getTarget(v,command);
-                    }
-                    visuoThr->startLearningMIL(obj_name.c_str());
-
-                    fprintf(stdout,"Looking at %s.\n",obj_name.c_str());
-                    motorThr->exploreTorso(command);
-
-                    visuoThr->trainMIL();
-
-                    reply.addString((obj_name + " learned").c_str());
-                    fprintf(stdout,"'%s' learned.\n",obj_name.c_str());
-
-                    break;
-                }
-
-                case CMD_OBSERVE:
-                {
-                    if(!motorThr->isHolding(command))
-                    {
-                        reply.addVocab(NACK);
-                        reply.addString("Nothing to drop. Not holding anything");
-                        motorThr->release(command);
-                        motorThr->goHome(command);
-                        break;
-                    }
-
-                    motorThr->lookAtHand();
-                    motorThr->drawNear(command);
-                    motorThr->setGazeIdle();
-
-                    reply.addVocab(ACK);
-
-                    break;
-                }
-
-                case CMD_DROP:
-                {
-                    if(!motorThr->isHolding(command))
-                    {
-                        reply.addVocab(NACK);
-                        reply.addString("Nothing to drop. Not holding anything");
-                        motorThr->release(command);
-                        motorThr->goHome(command);
-                        break;
-                    }
-
-                    if(check(command,"over") && command.size()>2)
-                        visuoThr->getTarget(command.get(2),command);
-
-                    motorThr->setGazeIdle();
-
-                    motorThr->deploy(command);
-
-                    motorThr->keepFixation();
-
-                    motorThr->goHome(command);
-                    motorThr->setGazeIdle();
-
-                    reply.addVocab(ACK);
-
-                    break;
-                }
-
-                case CMD_TAKE:
-                {
-                    if(command.size()<2)
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    visuoThr->getTarget(command.get(1),command);
-
-                    if(!motorThr->reach(command))
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    motorThr->lookAtHand();
-                    motorThr->shift(command);
-                    motorThr->grasp(command);
-
-                    if(motorThr->isHolding(command))
-                    {
-                        if(check(command,"near"))
-                        {
-                            motorThr->drawNear(command);
-                            motorThr->setGazeIdle();
-                        }
-                        else
-                        {
-                            motorThr->setGazeIdle();
-                            Bottle b;
-                            b.addString("head");
-                            b.addString("arms");
-                            motorThr->goHome(b);
-                        }
-
-                        reply.addVocab(ACK);
-                    }
-                    else
-                    {
-                       motorThr->setGazeIdle();
-                       motorThr->release(command);
-                       motorThr->goHome(command);
-                       reply.addVocab(NACK);
-                    }
-
-                    break;
-                }
-
-                case CMD_TOUCH:
-                {
-                     if(command.size()<2)
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    visuoThr->getTarget(command.get(1),command);
-
-                    if(!motorThr->reach(command))
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    if(!check(command,"still"))
-                    {
-                        Time::delay(2.0);
-                        motorThr->goHome(command);
-                    }
-
-                    reply.addVocab(ACK);
-                    break;
-                } 
-
-                case CMD_PUSH:
-                {
-                    if(command.size()<2)
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    visuoThr->getTarget(command.get(1),command);
-
-                    if(!motorThr->push(command))
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    motorThr->goHome(command);
-                    motorThr->setGazeIdle();
-
-                    reply.addVocab(ACK);
-                    break;
-                }
-
-                case CMD_POINT:
-                {
-                    if(command.size()<2)
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    visuoThr->getTarget(command.get(1),command);
-
-                    if(!motorThr->point(command))
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    if(!check(command,"still"))
-                    {
-                        Time::delay(2.0);
-                        motorThr->goHome(command);
-                    }
-
-                    reply.addVocab(ACK);
-                    break;
-                }
-
-                case CMD_LOOK:
-                {
-                    if(command.size()<2)
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    visuoThr->getTarget(command.get(1),command);
-
-                    if(!motorThr->look(command))
-                    {
-                        reply.addVocab(NACK);
-                        break;
-                    }
-
-                    reply.addVocab(ACK);
-                    break;
-                }
-
-                case CMD_TRACK:
-                {
-                    //motion tracking is handled differently (temporary cheat)
-                    if(command.get(1).asVocab()!=Vocab::encode("motion"))
-                    {
-                        if(command.size()<2)
-                        {
-                            reply.addVocab(NACK);
-                            break;
-                        }
-
-                        visuoThr->getTarget(command.get(1),command);
-                    }
-                    else
-                        visuoThr->trackMotion();
-                        
-                    motorThr->trackTemplate();
-
-                    reply.addVocab(ACK);
-
-                    break;
-                }
-
-                default:
-                {
-                    reply.addVocab(NACK);
-                    break;
-                }
-            }
-        }
-
-        if(reply.isNull() || reply.size()==0)
-        {
-            reply.addVocab(NACK);
-            reply.addString("Random Error");
-        }
-
-        if(!closing)
-            cmdPort.reply(reply);
-
-        return true;
-    }
-
-    virtual bool respond(const Bottle &command, Bottle &reply)
+    bool respond(const Bottle &command, Bottle &reply)
     {
         if(command.size()==0)
         {
@@ -1023,6 +534,690 @@ public:
             }
         }
         return true;
+    }
+
+    bool process(int &port_tag, Bottle &command, Bottle &reply)
+    {
+        if(closing)
+        {
+            reply.addVocab(NACK);
+            reply.addString("Sorry. Module closing.");
+            return true;
+        }
+
+        if(command.size()==0)
+        {
+            reply.addVocab(NACK);
+            reply.addString("No command received.");
+        }
+        else if(interrupted)
+        {
+            reply.addVocab(NACK);
+            reply.addString("Module currently interrupted. Reinstate for action.");
+        }
+        else
+        {
+            if(port_tag==PORT_TAG_GET && command.get(0).asVocab()==CMD_GET)
+            {
+                if(command.size()>1)
+                {
+                    switch(command.get(1).asVocab())
+                    {
+                        case GET_S2C:
+                        {
+                            if(command.size()>2)
+                            {
+                                for(int target_idx=2; target_idx<command.size(); target_idx++)
+                                {
+                                    Vector xd;
+                                    Bottle tmp_command;
+                                    visuoThr->getTarget(command.get(target_idx),tmp_command);
+
+                                    Bottle &tmp_reply=reply.addList();
+                                    if(motorThr->targetToCartesian(tmp_command.find("target").asList(),xd))
+                                    {
+                                        for(size_t i=0; i<xd.size(); i++)
+                                            tmp_reply.addDouble(xd[i]);
+                                    }
+                                    else
+                                        tmp_reply.addVocab(NACK);
+                                }
+                            }
+
+                            break;
+                        }
+
+                        case GET_TABLE:
+                        {
+                            reply.clear();
+                            double table_height;
+                            if(motorThr->getTableHeight(&table_height))
+                            {
+                                Bottle &tmp_reply=reply.addList();
+                                tmp_reply.addString("table_height");
+                                tmp_reply.addDouble(table_height);
+                            }
+                            else
+                                reply.addVocab(NACK);
+
+                            break;
+                        }
+
+                        default:
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+                    }
+                }
+                else
+                    reply.addVocab(NACK);
+            }
+            else if(port_tag==PORT_TAG_CMD)
+            {
+                motorThr->update();
+
+                switch(command.get(0).asVocab())
+                {
+                    case CMD_IDLE:
+                    {
+                        motorThr->setGazeIdle();
+                        reply.addVocab(ACK);
+                        break;
+                    }
+
+                    case CMD_HOME:
+                    {
+                        motorThr->goHome(command);
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+
+                    //----------- for retro_compatibility -----------------
+                    case CMD_GET:
+                    {
+                        if(command.size()>1)
+                        {
+                            switch(command.get(1).asVocab())
+                            {
+                                case GET_S2C:
+                                {
+                                    if(command.size()>2)
+                                    {
+                                        Vector xd;
+                                        visuoThr->getTarget(command.get(2),command);
+                                        if(motorThr->targetToCartesian(command.find("target").asList(),xd))
+                                        {
+                                            reply.clear();
+                                            for(size_t i=0; i<xd.size(); i++)
+                                                reply.addDouble(xd[i]);
+                                        }
+                                        else
+                                            reply.addVocab(NACK);
+                                    }
+
+                                    break;
+                                }
+                            }
+
+                            break;
+                        }
+
+                        break;
+                    }
+                    //-----------------------------------------------------
+
+                    case CMD_EXPLORE:
+                    {
+                        if(command.size()>1)
+                        {
+                            switch(command.get(1).asVocab())
+                            {
+                                case EXPLORE_TORSO:
+                                {
+                                    if(motorThr->exploreTorso(command))
+                                        reply.addVocab(ACK);
+                                    else
+                                        reply.addVocab(NACK);
+
+                                    break;
+                                }
+
+                                case EXPLORE_HAND:
+                                {
+                                    if(motorThr->exploreHand(command))
+                                        reply.addVocab(ACK);
+                                    else
+                                        reply.addVocab(NACK);
+
+                                    break;
+                                }
+
+                                default:
+                                {
+                                    string rep=command.get(1).asString().c_str();
+                                    reply.addVocab(NACK);
+                                    reply.addString(("parameter '"+rep+"' not supported by 'explore' command.").c_str());
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            reply.addVocab(NACK);
+                            reply.addString("explore command needs further parameter (e.g. 'torso')");
+                        }
+                        break;
+                    }
+                    
+                    case CMD_CALIBRATE:
+                    {
+                        switch(command.get(1).asVocab())
+                        {
+                            case CALIB_TABLE:
+                            {
+                                if(motorThr->calibTable(command))
+                                    reply.addVocab(ACK);
+                                else
+                                    reply.addVocab(NACK);
+
+                                break;
+                            }
+
+                             case CALIB_FINGERS:
+                            {
+                                if(motorThr->calibFingers(command))
+                                    reply.addVocab(ACK);
+                                else
+                                    reply.addVocab(NACK);
+
+                                break;
+                            }
+
+                             case CALIB_KIN_OFFSET:
+                            {
+                                if(command.get(2).asString()=="start")
+                                {
+                                    if(motorThr->startLearningModeKinOffset(command))
+                                    {
+                                        reply.addVocab(ACK);
+                                        reply.addString("learn kinematic offset mode: on");
+                                    }
+                                    else
+                                        reply.addVocab(NACK);
+                                }
+                                else if(command.get(2).asString()=="stop")
+                                {
+                                    if(motorThr->suspendLearningModeKinOffset(command))
+                                    {
+                                        reply.addVocab(ACK);
+                                        reply.addString("learn kinematic offset mode: off");
+                                    }
+                                    else
+                                        reply.addVocab(NACK);
+                                }
+
+                                break;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    //------ action "learning" ---------//
+                    case CMD_ACTION_TEACH:
+                    {
+                        if(check(command,"start"))
+                        {
+                            string action_name=command.get(1).asString().c_str();
+
+                            Bottle &action=command.addList();
+                            action.addString("action_name");
+                            action.addString(action_name.c_str());
+
+                            if(!motorThr->startLearningModeAction(command))
+                            {
+                                reply.addVocab(NACK);
+                                reply.addString(("action "+action_name+" already known").c_str());
+                            }
+                            else
+                            {
+                                motorThr->setGazeIdle();
+                                motorThr->lookAtHand();
+                                reply.addVocab(ACK);
+                                reply.addString("start teaching");
+                            }
+                        }
+
+                        if(check(command,"stop"))
+                        {
+                            if(motorThr->suspendLearningModeAction(command))
+                            {
+                                motorThr->setGazeIdle();
+                                reply.addVocab(ACK);
+                                reply.addString("stop teaching");
+                            }
+                            else
+                                reply.addVocab(NACK);
+                        }
+
+                        break;
+                    }
+
+                    case CMD_ACTION_IMITATE:
+                    {
+                        string action_name=command.get(1).asString().c_str();
+
+                        Bottle &action=command.addList();
+                        action.addString("action_name");
+                        action.addString(action_name.c_str());
+
+                        motorThr->lookAtHand();
+
+                        if(!motorThr->imitateAction(command))
+                        {
+                            reply.addVocab(ACK);
+                            reply.addString(("action "+action_name+" unkown").c_str());
+                        }
+                        else
+                        {
+                            reply.addVocab(NACK);
+                            reply.addString(("action "+action_name+" done").c_str());
+                        }
+                        motorThr->setGazeIdle();
+
+                        break;
+                    }
+                    //-----------------------------------//
+
+
+                    case CMD_LEARN_MIL:
+                    {
+                        string obj_name=command.get(1).asString().c_str();
+                        if(motorThr->isHolding(command)) // 
+                        {
+                            fprintf(stdout,"Deploying %s.\n",obj_name.c_str());
+                            motorThr->deploy(command);
+                        }
+
+                        //if it is not currently tracking anything, start learning what it has in fixation
+                        Vector stereo;
+                        if(!visuoThr->isTracking())
+                        {
+                            Value v("fix");
+                                    visuoThr->getTarget(v,command);
+                        }
+                        visuoThr->startLearningMIL(obj_name.c_str());
+
+                        fprintf(stdout,"Looking at %s.\n",obj_name.c_str());
+                        motorThr->exploreTorso(command);
+
+                        visuoThr->trainMIL();
+
+                        reply.addString((obj_name + " learned").c_str());
+                        fprintf(stdout,"'%s' learned.\n",obj_name.c_str());
+
+                        break;
+                    }
+
+                    case CMD_OBSERVE:
+                    {
+                        if(!motorThr->isHolding(command))
+                        {
+                            reply.addVocab(NACK);
+                            reply.addString("Nothing to drop. Not holding anything");
+                            motorThr->release(command);
+                            motorThr->goHome(command);
+                            break;
+                        }
+
+                        motorThr->lookAtHand();
+                        motorThr->drawNear(command);
+                        motorThr->setGazeIdle();
+
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+
+                    case CMD_DROP:
+                    {
+                        if(!motorThr->isHolding(command))
+                        {
+                            reply.addVocab(NACK);
+                            reply.addString("Nothing to drop. Not holding anything");
+                            motorThr->release(command);
+                            motorThr->goHome(command);
+                            break;
+                        }
+
+                        if(check(command,"over") && command.size()>2)
+                            visuoThr->getTarget(command.get(2),command);
+
+                        motorThr->setGazeIdle();
+
+                        motorThr->deploy(command);
+
+                        motorThr->keepFixation();
+
+                        motorThr->goHome(command);
+                        motorThr->setGazeIdle();
+
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+
+                    case CMD_TAKE:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+
+                        if(!motorThr->reach(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        motorThr->lookAtHand();
+                        motorThr->shift(command);
+                        motorThr->grasp(command);
+
+                        if(motorThr->isHolding(command))
+                        {
+                            if(check(command,"near"))
+                            {
+                                motorThr->drawNear(command);
+                                motorThr->setGazeIdle();
+                            }
+                            else
+                            {
+                                motorThr->setGazeIdle();
+                                Bottle b;
+                                b.addString("head");
+                                b.addString("arms");
+                                motorThr->goHome(b);
+                            }
+
+                            reply.addVocab(ACK);
+                        }
+                        else
+                        {
+                           motorThr->setGazeIdle();
+                           motorThr->release(command);
+                           motorThr->goHome(command);
+                           reply.addVocab(NACK);
+                        }
+
+                        break;
+                    }
+
+                    case CMD_TOUCH:
+                    {
+                         if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+
+                        if(!motorThr->reach(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        if(!check(command,"still"))
+                        {
+                            Time::delay(2.0);
+                            motorThr->goHome(command);
+                        }
+
+                        reply.addVocab(ACK);
+                        break;
+                    } 
+
+                    case CMD_PUSH:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+
+                        if(!motorThr->push(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        motorThr->goHome(command);
+                        motorThr->setGazeIdle();
+
+                        reply.addVocab(ACK);
+                        break;
+                    }
+
+                    case CMD_POINT:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+
+                        if(!motorThr->point(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        if(!check(command,"still"))
+                        {
+                            Time::delay(2.0);
+                            motorThr->goHome(command);
+                        }
+
+                        reply.addVocab(ACK);
+                        break;
+                    }
+
+                    case CMD_LOOK:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+
+                        if(!motorThr->look(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        reply.addVocab(ACK);
+                        break;
+                    }
+
+                    case CMD_TRACK:
+                    {
+                        //motion tracking is handled differently (temporary cheat)
+                        if(command.get(1).asVocab()!=Vocab::encode("motion"))
+                        {
+                            if(command.size()<2)
+                            {
+                                reply.addVocab(NACK);
+                                break;
+                            }
+
+                            visuoThr->getTarget(command.get(1),command);
+                        }
+                        else
+                            visuoThr->trackMotion();
+                            
+                        motorThr->trackTemplate();
+
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+
+                    default:
+                    {
+                        reply.addVocab(NACK);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(reply.isNull() || reply.size()==0)
+        {
+            reply.addVocab(NACK);
+            reply.addString("Random Error");
+        }
+
+        return true;
+    }
+
+
+};
+
+
+
+
+
+class ARE_PortReader: public PortReader
+{
+protected:
+    ActionsRenderingEngine                      *are;
+
+    int                                         port_tag;
+
+
+    bool read(ConnectionReader &connection)
+    {
+        Bottle command, reply;
+
+        if (!command.read(connection))
+            return false;
+
+        //do stuff with the ARE here
+        are->process(port_tag,command,reply);
+        //-------------
+
+        if (ConnectionWriter *writer=connection.getWriter())
+            reply.write(*writer);
+
+        return true;
+    }
+
+public:
+    ARE_PortReader(ActionsRenderingEngine *_are, int _port_tag)
+        :are(_are),port_tag(_port_tag)
+    {}
+
+};
+
+
+
+class ActionsRenderingEngineModule: public RFModule
+{
+protected:
+    ActionsRenderingEngine      *are;
+
+    ARE_PortReader              *port_reader_cmd;
+    ARE_PortReader              *port_reader_get;
+
+    RpcServer                   port_cmd;
+    RpcServer                   port_get;
+    RpcServer                   port_rpc;
+
+
+public:
+    ActionsRenderingEngineModule()
+    {}
+
+    virtual bool configure(ResourceFinder &rf)
+    {
+        string name=rf.check("name",Value("actionsRenderingEngine")).asString().c_str();
+        setName(name.c_str());
+
+        are=new ActionsRenderingEngine();
+        are->initialize(rf);
+
+        port_reader_cmd=new ARE_PortReader(are,PORT_TAG_CMD);
+        port_reader_get=new ARE_PortReader(are,PORT_TAG_GET);
+
+        port_cmd.setReader(*port_reader_cmd);
+        port_cmd.setReader(*port_reader_get);
+
+        port_cmd.open(("/"+name+"/cmd:io").c_str());
+        port_get.open(("/"+name+"/get:io").c_str());
+        port_rpc.open(("/"+name+"/rpc").c_str());
+
+        attach(port_rpc);
+
+        return true;
+    }
+
+    virtual bool interruptModule()
+    {
+        port_cmd.interrupt();
+        port_get.interrupt();
+        port_rpc.interrupt();
+
+        are->interrupt();
+
+        return true;
+    }
+
+    virtual bool close()
+    {
+        port_cmd.close();
+        port_get.close();
+        port_rpc.close();
+
+        are->close();
+
+        delete port_reader_cmd;
+        delete port_reader_get;
+
+        delete are;
+
+        return true;
+    }
+
+    virtual double getPeriod()
+    {
+        return 0.1;
+    }
+
+    virtual bool updateModule()
+    {
+        return true;
+    }
+
+    virtual bool respond(const Bottle &command, Bottle &reply)
+    {
+        if(are->respond(command,reply))
+            return true;
+
+        return RFModule::respond(command,reply);
     }
 };
 

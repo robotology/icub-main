@@ -123,24 +123,26 @@ private:
 
     ObjectPropertiesCollectorPort       &opcPort;
 
-    PolyDriver                          *drvHead;
-    PolyDriver                          *drvTorso;
-    PolyDriver                          *drvGazeCtrl;
-    PolyDriver                          *drvArm[2];
-    PolyDriver                          *drvCartArm[2];
+    PolyDriver                          *drv_head;
+    PolyDriver                          *drv_torso;
+    PolyDriver                          *drv_ctrl_gaze;
+    PolyDriver                          *drv_arm[2];
+    PolyDriver                          *drv_car_arm[2];
 
-    IEncoders                           *headEnc;
-    IEncoders                           *torsoEnc;
-    IGazeControl                        *gazeCtrl;
+    IEncoders                           *enc_arm[2];
+    IEncoders                           *enc_head;
+    IEncoders                           *enc_torso;
+    IGazeControl                        *ctrl_gaze;
 
-    IPositionControl                    *torsoPos;
-    IVelocityControl                    *torsoVel;
-    IControlMode                        *torsoCtrlMode;
-    IImpedanceControl                   *torsoImpedenceCtrl;
+    IPositionControl                    *pos_arm[2];
+    IPositionControl                    *pos_torso;
+    IVelocityControl                    *vel_torso;
+    IControlMode                        *ctrl_mode_torso;
+    IImpedanceControl                   *ctrl_impedance_torso;
 
 
-    IControlMode                        *armCtrlMode[2];
-    IImpedanceControl                   *armImpedenceCtrl[2];
+    IControlMode                        *ctrl_mode_arm[2];
+    IImpedanceControl                   *ctrl_impedance_arm[2];
 
     int                                 initial_gaze_context;
     int                                 default_gaze_context;
@@ -184,7 +186,7 @@ private:
     bool                                neuralNetworkAvailable;
     Port                                disparityPort;
 
-    vector<Vector>                      torsoPoses;
+    vector<Vector>                      pos_torsoes;
     vector<Vector>                      handPoses;
     vector<Vector>                      headPoses;
 
@@ -220,6 +222,8 @@ private:
     
     double								avoid_table_height[2];
 
+    double                              random_pos_y;
+
 
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
@@ -242,12 +246,12 @@ public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
         :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
     {
-        gazeCtrl=NULL;
-        torsoCtrlMode=NULL;
-        drvHead=drvTorso=drvGazeCtrl=NULL;
-        drvArm[LEFT]=drvArm[RIGHT]=NULL;
-        drvCartArm[LEFT]=drvCartArm[RIGHT]=NULL;
-        armCtrlMode[LEFT]=armCtrlMode[RIGHT]=NULL;
+        ctrl_gaze=NULL;
+        ctrl_mode_torso=NULL;
+        drv_head=drv_torso=drv_ctrl_gaze=NULL;
+        drv_arm[LEFT]=drv_arm[RIGHT]=NULL;
+        drv_car_arm[LEFT]=drv_car_arm[RIGHT]=NULL;
+        ctrl_mode_arm[LEFT]=ctrl_mode_arm[RIGHT]=NULL;
         action[LEFT]=action[RIGHT]=NULL;
         closed=false;
     }
@@ -277,7 +281,7 @@ public:
     void setGazeIdle()
     {
         head_mode=HEAD_MODE_IDLE;
-        gazeCtrl->restoreContext(initial_gaze_context);
+        ctrl_gaze->restoreContext(initial_gaze_context);
         gazeUnderControl=false;
     }
 
@@ -294,6 +298,12 @@ public:
     void interrupt();
     void reinstate();
 
+    //get the table height
+    bool getTableHeight(double *_table_height)
+    {
+        *_table_height=table_height-table_height_tolerance;
+        return true;
+    }
 
     //transforms stereo coordinates to cartesian space
     bool stereoToCartesian(const Vector &stereo, Vector &xd);
@@ -310,7 +320,11 @@ public:
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
     bool shift(Bottle &options);
+
+    // explore
     bool exploreTorso(Bottle &options);
+    bool exploreHand(Bottle &options);
+
 
     bool isHolding(Bottle &options);
     bool calibTable(Bottle &options);
