@@ -1177,6 +1177,9 @@ bool MotorThread::threadInit()
 
             for(int i=0; i<bImpedanceArmStiff->size(); i++)
                 ctrl_impedance_arm[arm]->setImpedance(i,arm_stiffness[i],arm_damping[i]);
+
+
+            delete action[arm];
         }
     }
 
