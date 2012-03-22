@@ -557,9 +557,14 @@ public:
         }
         else
         {
-            if(port_tag==PORT_TAG_GET && command.get(0).asVocab()==CMD_GET)
+            if(port_tag==PORT_TAG_GET)
             {
-                if(command.size()>1)
+                if(command.get(0).asVocab()!=CMD_GET)
+                {
+                    reply.addVocab(NACK);
+                    reply.addString("This port can only process [get] commands");
+                }
+                else if(command.size()>1)
                 {
                     switch(command.get(1).asVocab())
                     {
@@ -1158,13 +1163,18 @@ public:
         setName(name.c_str());
 
         are=new ActionsRenderingEngine();
-        are->initialize(rf);
+
+        if(!are->initialize(rf))
+        {
+            fprintf(stdout,"[ARE][Error] ARE could not initialize\n");
+            return false;
+        }
 
         port_reader_cmd=new ARE_PortReader(are,PORT_TAG_CMD);
         port_reader_get=new ARE_PortReader(are,PORT_TAG_GET);
 
         port_cmd.setReader(*port_reader_cmd);
-        port_cmd.setReader(*port_reader_get);
+        port_get.setReader(*port_reader_get);
 
         port_cmd.open(("/"+name+"/cmd:io").c_str());
         port_get.open(("/"+name+"/get:io").c_str());
@@ -1182,12 +1192,17 @@ public:
         port_rpc.interrupt();
 
         are->interrupt();
+        fprintf(stdout,"Debug interrupt end\n");
 
         return true;
     }
 
     virtual bool close()
     {
+        fprintf(stdout,"Debug close pre-start\n");
+        Time::delay(10.0);
+        fprintf(stdout,"Debug close start\n");
+
         port_cmd.close();
         port_get.close();
         port_rpc.close();

@@ -884,7 +884,7 @@ bool MotorThread::threadInit()
     optTorso.put("remote",("/"+robot+"/torso").c_str());
     optTorso.put("local",("/"+name+"/torso").c_str());
 
-    optctrl_gaze.put("remote","/iKinctrl_gaze");
+    optctrl_gaze.put("remote","/iKinGazeCtrl");
     optctrl_gaze.put("local",("/"+name+"/gaze").c_str());
 
     drv_head=new PolyDriver;
@@ -1177,6 +1177,9 @@ bool MotorThread::threadInit()
 
             for(int i=0; i<bImpedanceArmStiff->size(); i++)
                 ctrl_impedance_arm[arm]->setImpedance(i,arm_stiffness[i],arm_damping[i]);
+
+
+            delete action[arm];
         }
     }
 
