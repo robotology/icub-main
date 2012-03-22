@@ -1192,17 +1192,12 @@ public:
         port_rpc.interrupt();
 
         are->interrupt();
-        fprintf(stdout,"Debug interrupt end\n");
 
         return true;
     }
 
     virtual bool close()
     {
-        fprintf(stdout,"Debug close pre-start\n");
-        Time::delay(10.0);
-        fprintf(stdout,"Debug close start\n");
-
         port_cmd.close();
         port_get.close();
         port_rpc.close();
