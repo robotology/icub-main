@@ -1226,6 +1226,8 @@ bool MotorThread::threadInit()
 
 void MotorThread::run()
 {
+    update();
+
     switch(head_mode)
     {
         case(HEAD_MODE_GO_HOME):
@@ -1698,6 +1700,22 @@ bool MotorThread::point(Bottle &options)
 
 bool MotorThread::look(Bottle &options)
 {
+    if(checkOptions(options,"hand"))
+    {
+        setGazeIdle();
+        ctrl_gaze->restoreContext(default_gaze_context);
+        
+        int arm=ARM_IN_USE;
+        if(checkOptions(options,"left") || checkOptions(options,"right"))
+            arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+        arm=checkArm(arm);
+        
+        lookAtHand();
+        
+        return true;
+    }
+
     Bottle *bTarget=options.find("target").asList();
 
     Vector xd;

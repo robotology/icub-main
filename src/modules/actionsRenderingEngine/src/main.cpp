@@ -620,8 +620,6 @@ public:
             }
             else if(port_tag==PORT_TAG_CMD)
             {
-                motorThr->update();
-
                 switch(command.get(0).asVocab())
                 {
                     case CMD_IDLE:
@@ -1045,8 +1043,9 @@ public:
                             reply.addVocab(NACK);
                             break;
                         }
-
-                        visuoThr->getTarget(command.get(1),command);
+                        
+                        if(!check(command,"hand"))
+                            visuoThr->getTarget(command.get(1),command);
 
                         if(!motorThr->look(command))
                         {
