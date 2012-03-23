@@ -6,7 +6,7 @@
 
 <module>
       <name>robotMotorGui</name>
-      <parameters>--from /usr/local/src/robot/iCub/iCubLausanne01/conf/robotmotorgui.ini</parameters>
+      <parameters>--from /usr/local/src/robot/iCub/main/app/robots/iCubLausanne01/conf/robotMotorGui.ini</parameters>
 	  <node>icubsrv</node>
 	  <stdio>icubsrv</stdio>	
 	<tag>robotMotorGui</tag>

@@ -2,7 +2,7 @@
 <name>icubRobotName01</name>
 <module>
       <name>iCubInterface</name>
-      <parameters>--config /usr/local/src/robot/iCub/iCubLausanne01/conf/icub.ini</parameters>
+      <parameters>--config /usr/local/src/robot/iCub/main/app/robots/iCubLausanne01/conf/icub.ini</parameters>
 	  <node>pc104</node>
 	  <stdio>icubsrv</stdio>	
 	<tag>iCubInterface</tag>
