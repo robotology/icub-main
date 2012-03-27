@@ -210,6 +210,7 @@ int main(int argc, char *argv[])
             printf("type [get] and one of the following:\n");
             printf("	[%s] to read the number of controlled axes\n", Vocab::decode(VOCAB_AXES).c_str());
             printf("	[%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
+            printf("	[%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
             printf("	[%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
             printf("	[%s] <int> to read the limit values for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
             printf("	[%s] to read the PID error for all axes\n", Vocab::decode(VOCAB_ERRS).c_str());
@@ -303,6 +304,27 @@ int main(int argc, char *argv[])
                     printf("off %.2f ", pd.offset);
                     printf("scale %.2f ", pd.scale);
                     printf("\n");
+                }
+                break;
+
+               case VOCAB_PIDS: {
+                    Pid *p = new Pid[jnts];
+                    ok = pid->getPids(p);
+                    Bottle& b = response.addList();
+                    int i;
+                    for (i = 0; i < jnts; i++)
+                        {
+                          Bottle& c = b.addList();
+                          c.addDouble(p[i].kp);
+                          c.addDouble(p[i].kd);
+                          c.addDouble(p[i].ki);
+                          c.addDouble(p[i].max_int);
+                          c.addDouble(p[i].max_output);
+                          c.addDouble(p[i].offset);
+                          c.addDouble(p[i].scale);
+                        }
+                    printf("%s\n", b.toString().c_str());
+                    delete[] p;
                 }
                 break;
 
