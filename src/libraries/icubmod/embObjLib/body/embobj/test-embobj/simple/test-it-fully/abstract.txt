@@ -1,3 +1,0 @@
-
-This is a simple application which can be used to debug the embobj 
-by inclusion of the source code
