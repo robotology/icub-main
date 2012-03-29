@@ -3,10 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-
-SET(PROJECTNAME actionsRenderingEngine)
-
+set(PROJECTNAME actionsRenderingEngine)
 project(${PROJECTNAME})
 
 set(folder_source src/main.cpp
@@ -18,14 +15,10 @@ set(folder_header include/iCub/utils.h
                   include/iCub/VisuoThread.h
                   include/iCub/MotorThread.h)
                   
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${YARP_INCLUDE_DIRS} ${iKin_INCLUDE_DIRS} ${actionPrimitives_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
-
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
-
-TARGET_LINK_LIBRARIES(${PROJECTNAME} iKin actionPrimitives ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
-
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+include_directories(${PROJECT_SOURCE_DIR}/include ${YARP_INCLUDE_DIRS} ${iKin_INCLUDE_DIRS} ${actionPrimitives_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
+target_link_libraries(${PROJECTNAME} iKin actionPrimitives ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
