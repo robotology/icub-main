@@ -1,4 +1,6 @@
-
+2012-30-03 Andrea Del Prete <andrea.delprete@iit.it>
+       * minJerkCtrl: add class minJerkTrajGen that can generate approximately minimum 
+                      jerk pos/vel/acc trajectories using a third order LTI dynamical system.
 2011-19-01 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * "ctrlMath.*" changed into "math.*"
 

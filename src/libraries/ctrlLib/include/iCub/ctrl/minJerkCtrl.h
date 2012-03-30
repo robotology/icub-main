@@ -225,6 +225,123 @@ public:
     virtual ~minJerkVelCtrlForNonIdealPlant();
 };
 
+/**
+* \ingroup minJerkCtrl
+*
+* Generator of approximately minimum jerk trajectories.
+* The min jerk trajectory is approximated using a 3rd order LTI 
+* dynamical system (for more details see <a 
+* href="http://pasa.liralab.it/pasapdf/699_Pattacini_etal2010.pdf">Pataccini2010</a>). 
+* Position, velocity and acceleration trajectories are computed.
+* The main advantage with respect to the standard polynomial form
+* is that if the reference value yd changes there is no need to 
+* recompute the filter coefficients.
+*/
+class minJerkTrajGen
+{
+protected:
+    Filter* posFilter;          // filter used to compute the position
+    Filter* velFilter;          // filter used to compute the velocity
+    Filter* accFilter;          // filter used to compute the acceleration
+
+    yarp::sig::Vector pos;      // current position
+    yarp::sig::Vector vel;      // current velocity
+    yarp::sig::Vector acc;      // current acceleration
+
+    double Ts;                  // sample time in seconds
+    double T;                   // trajectory reference time in seconds
+    unsigned int dim;           // dimension of the controlled variable
+
+    void computeCoeffs();       // compute the filter coefficients
+
+public:
+    /**
+    * Constructor.
+    * @param _dim number of variables
+    * @param _Ts sample time in seconds
+    * @param _T trajectory reference time (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T)
+    */
+    minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T);
+
+    /**
+    * Constructor with initial value.
+    * @param _y0 initial value of the trajectory
+    * @param _Ts sample time in seconds
+    * @param _T trajectory reference time (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T)
+    */
+    minJerkTrajGen(const yarp::sig::Vector& y0, const double _Ts, const double _T);
+
+    /**
+    * Copy constructor.
+    */
+    minJerkTrajGen(const minJerkTrajGen& o);
+
+    /*
+    * Assignment operator.
+    */
+    minJerkTrajGen& operator=(const minJerkTrajGen& z);
+
+    /**
+    * Destructor. 
+    */
+    ~minJerkTrajGen();
+
+    /**
+    * Initialize the trajectory.
+    * @param y0 initial value of the trajectory
+    */
+    void init(const yarp::sig::Vector& y0);
+
+    /**
+    * Compute the next position, velocity and acceleration.
+    * @param yd desired final value of the trajectory
+    */
+    void computeNextValues(const yarp::sig::Vector &yd);
+
+    /**
+    * Get the current position.
+    */
+    yarp::sig::Vector getPos();
+    
+    /**
+    * Get the current velocity.
+    */
+    yarp::sig::Vector getVel();
+
+    /**
+    * Get the current acceleration.
+    */
+    yarp::sig::Vector getAcc();
+
+    /**
+    * Set the trajectory reference time
+    * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
+    * @param _T trajectory reference time in seconds
+    * @return true if operation succeeded, false otherwise
+    */
+    bool setT(const double _T);
+
+    /**
+    * Set the sample time.
+    * @param _Ts sample time in seconds
+    * @return true if operation succeeded, false otherwise
+    */
+    bool setTs(const double _Ts);
+
+    /**
+    * Get the trajectory reference time in seconds
+    * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
+    */
+    double getT();
+
+    /**
+    * Get the sample time in seconds.
+    */
+    double getTs();
+
+};
+
+
 }
 
 }
