@@ -1150,14 +1150,6 @@ void iKinChain::prepareForHessian()
 /************************************************************************/
 Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            fprintf(stderr,"fastHessian_ij() failed since DOF==0\n");
-
-        return Vector(0);
-    }
-
     if ((i>=DOF) || (j>=DOF))
     {
         if (verbose)
