@@ -438,7 +438,9 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
         {
             for (Index col=0; col<=row; col++)
             {
-                yarp::sig::Vector h=chain.fastHessian_ij(row,col);
+                // warning: row and col are swapped due to asymmetry
+                // of orientation part within the hessian 
+                yarp::sig::Vector h=chain.fastHessian_ij(col,row);
                 yarp::sig::Vector h_xyz(3), h_ang(3), h_zero(3,0.0);
                 h_xyz[0]=h[0];
                 h_xyz[1]=h[1];
@@ -458,7 +460,9 @@ bool iKin_NLP::eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
             
                 if ((weight2ndTask!=0.0) && (row<(int)dim_2nd) && (col<(int)dim_2nd))
                 {    
-                    yarp::sig::Vector h2=chain2ndTask.fastHessian_ij(row,col);
+                    // warning: row and col are swapped due to asymmetry
+                    // of orientation part within the hessian 
+                    yarp::sig::Vector h2=chain2ndTask.fastHessian_ij(col,row);
                     yarp::sig::Vector h_2nd(3);
                     h_2nd[0]=(w_2nd[0]*w_2nd[0])*h2[0];
                     h_2nd[1]=(w_2nd[1]*w_2nd[1])*h2[1];

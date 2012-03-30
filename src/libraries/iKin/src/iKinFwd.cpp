@@ -259,8 +259,6 @@ void iKinLink::addCumH(const Matrix &_cumH)
 iKinChain::iKinChain()
 {
     N=DOF=verbose=0;
-    hess_DH=NULL;
-
     H0=HN=eye(4,4);
 }
 
@@ -274,13 +272,13 @@ void iKinChain::clone(const iKinChain &c)
     HN     =c.HN;
     curr_q =c.curr_q;    
     verbose=c.verbose;
+    hess_Jl=c.hess_Jl;
+    hess_Jo=c.hess_Jo;
 
     allList.assign(c.allList.begin(),c.allList.end());
     quickList.assign(c.quickList.begin(),c.quickList.end());
     hash.assign(c.hash.begin(),c.hash.end());
     hash_dof.assign(c.hash_dof.begin(),c.hash_dof.end());
-
-    hess_DH=NULL;
 }
 
 
@@ -1127,52 +1125,8 @@ Matrix iKinChain::GeoJacobian(const Vector &q)
 /************************************************************************/
 Vector iKinChain::Hessian_ij(const unsigned int i, const unsigned int j)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            fprintf(stderr,"Hessian_ij() failed since DOF==0\n");
-
-        return Vector(0);
-    }
-
-    if ((i>=DOF) || (j>=DOF))
-    {
-        if (verbose)
-            fprintf(stderr,"Hessian_ij() failed due to out of range index\n");
-
-        return Vector(0);
-    }
-
-    deque<Matrix> intH;
-    deque<Matrix> intDH;
-    intH.push_back(H0);
-    intDH.push_back(H0);
-
-    for (unsigned int k=0; k<N; k++)
-    {
-        intH.push_back(intH[k]*allList[k]->getH(true));
-
-        if (k==hash[i])
-            intDH.push_back(intDH[k]*allList[k]->getDnH(1,true));
-        else
-            intDH.push_back(intDH[k]*allList[k]->getH(true));
-    }
-
-    unsigned int k=hash[j];
-
-    Matrix DZ=intDH[k];
-
-    Vector Dw=Dcross(intH[k],DZ,2,intH[N]*HN-intH[k],intDH[N]*HN-DZ,3,verbose);
-    Vector h(6);
-
-    h[0]=Dw[0];
-    h[1]=Dw[1];
-    h[2]=Dw[2];
-    h[3]=DZ(0,2);
-    h[4]=DZ(1,2);
-    h[5]=DZ(2,2);
-
-    return h;
+    prepareForHessian();
+    return fastHessian_ij(i,j);
 }
 
 
@@ -1187,29 +1141,9 @@ void iKinChain::prepareForHessian()
         return;
     }
 
-    if (hess_DH!=NULL)
-        delete[] hess_DH;
-
-    hess_H.clear();
-    hess_DH=new deque<Matrix>[DOF];
-
-    hess_H.push_back(H0);
-
-    for (unsigned int i=0; i<DOF; i++)
-        hess_DH[i].push_back(H0);
-
-    for (unsigned int k=0; k<N; k++)
-    {
-        hess_H.push_back(hess_H[k]*allList[k]->getH(true));
-
-        for (unsigned int i=0; i<DOF; i++)
-        {
-            if (k==hash[i])
-                hess_DH[i].push_back(hess_DH[i][k]*allList[k]->getDnH(1,true));
-            else
-                hess_DH[i].push_back(hess_DH[i][k]*allList[k]->getH(true));
-        }
-    }
+    Matrix J=GeoJacobian();
+    hess_Jl=J.submatrix(0,2,0,J.cols()-1);
+    hess_Jo=J.submatrix(3,J.rows()-1,0,J.cols()-1);
 }
 
 
@@ -1232,19 +1166,16 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
         return Vector(0);
     }
 
-    unsigned int k=hash[j];
-
-    Matrix DZ=hess_DH[i][k];
-
-    Vector Dw=Dcross(hess_H[k],DZ,2,hess_H[N]*HN-hess_H[k],hess_DH[i][N]*HN-hess_DH[i][k],3,verbose);
-    Vector h(6);
-
-    h[0]=Dw[0];
-    h[1]=Dw[1];
-    h[2]=Dw[2];
-    h[3]=DZ(0,2);
-    h[4]=DZ(1,2);
-    h[5]=DZ(2,2);
+    // ref. E.D. Pohl, H. Lipkin, "A New Method of Robotic Motion Control Near Singularities",
+    // Advanced Robotics, 1991
+    Vector h(6,0.0);
+    if (i<j)
+    {
+        h.setSubvector(0,cross(hess_Jo,i,hess_Jl,j));
+        h.setSubvector(3,cross(hess_Jo,i,hess_Jo,j));
+    }
+    else
+        h.setSubvector(0,cross(hess_Jo,j,hess_Jl,i));
 
     return h;
 }
@@ -1262,12 +1193,6 @@ void iKinChain::dispose()
 {
     allList.clear();
     quickList.clear();
-
-    if (hess_DH!=NULL)
-    {
-        delete[] hess_DH;
-        hess_DH=NULL;
-    }
 }
 
 
