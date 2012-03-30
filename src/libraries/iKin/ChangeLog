@@ -1,8 +1,7 @@
 2012-03-30 Andrea Del Prete <andrea.delprete@iit.it>
            * iKinFwd.cpp/h: add method DJacobian that computes the time derivative of
                             the geometric jacobian;
-                            replace the hessian with more correct and efficient method
-                        
+                            replace the hessian with more correct and efficient method.
 
 2011-03-04 Ugo Pattacini <ugo.pattacini@iit.it>
 	   * Structure prepared for dealing with head v2
