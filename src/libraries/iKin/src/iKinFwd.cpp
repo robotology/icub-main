@@ -1174,6 +1174,27 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 
 
 /************************************************************************/
+Matrix iKinChain::DJacobian(const Vector &dq)
+{
+    prepareForHessian();
+    Matrix dJ(6,DOF);
+    Vector temp(6, 0.0);
+
+    for(unsigned int i=0; i<DOF; i++)
+    {
+        for(unsigned int j=0; j<DOF; j++)
+        {
+            temp += fastHessian_ij(j,i) * dq(j);
+        }
+        dJ.setCol(i, temp);
+        temp.zero();
+    }
+    
+    return dJ;
+}
+
+
+/************************************************************************/
 iKinChain::~iKinChain()
 {
     dispose();

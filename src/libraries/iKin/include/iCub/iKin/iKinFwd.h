@@ -771,6 +771,15 @@ public:
     yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j);
 
     /**
+    * Compute the time derivative of the geometric jacobian.
+    * @param dq the joint velocities
+    * @return the 6xn matrix \f$ 
+    *         \partial{^2}F\left(q\right)/\partial t \partial q.
+    *                 \f$
+    */
+    yarp::sig::Matrix DJacobian(const yarp::sig::Vector &dq);
+
+    /**
     * Destructor. 
     */
     virtual ~iKinChain();
