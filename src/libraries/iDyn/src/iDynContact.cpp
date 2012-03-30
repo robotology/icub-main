@@ -134,12 +134,7 @@ dynContactList iDynContactSolver::computeExternalContacts(){
     // the reference frame is the <firstContactLink-1> 
     Matrix A = buildA(firstContactLink, lastContactLink);
     Vector B = buildB(firstContactLink, lastContactLink);
-	Matrix pinv_A;
-	
-	if(A.rows() < A.cols())	// SVD is not implemented for "fat" matrixes in GSL
-		pinv_A = pinv(A.transposed(), TOLLERANCE).transposed();
-	else
-		pinv_A = pinv(A, TOLLERANCE);
+	Matrix pinv_A = pinv(A, TOLLERANCE);
     Vector X = pinv_A * B;
 	
     /*if(verbose){
@@ -353,9 +348,9 @@ Matrix iDynContactSolver::getHFromAtoB(unsigned int a, unsigned int b){
         Matrix identity(4,4);
         return identity.eye();
     }
-    Matrix H = chain->refLink(a+1)->getH(true);     // initialize H with the rototranslation from <a> to <a+1>
+    Matrix H = chain->refLink(a+1)->getH();     // initialize H with the rototranslation from <a> to <a+1>
     for(unsigned int i=a+2; i<=b; i++){
-        H = H * chain->refLink(i)->getH(true);
+        H = H * chain->refLink(i)->getH();
     }
     return H;
 }
