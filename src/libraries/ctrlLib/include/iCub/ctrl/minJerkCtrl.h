@@ -277,7 +277,7 @@ public:
     */
     minJerkTrajGen(const minJerkTrajGen& o);
 
-    /*
+    /**
     * Assignment operator.
     */
     minJerkTrajGen& operator=(const minJerkTrajGen& z);
