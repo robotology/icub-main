@@ -863,7 +863,7 @@ protected:
 
 	/// number of links
 	unsigned int nLinks;		
-	/// the index f the end-effector in the chain (the last frame)
+	/// the index of the end-effector in the chain (the last frame)
 	unsigned int nEndEff;		
 
 	/// static/dynamic/dynamicWrotor
