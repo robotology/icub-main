@@ -407,18 +407,6 @@ void minJerkTrajGen::computeNextValues(const Vector &ref)
 
 
 /*******************************************************************************************/
-Vector minJerkTrajGen::getPos(){ return pos; }
-
-
-/*******************************************************************************************/
-Vector minJerkTrajGen::getVel(){ return vel; }
-
-
-/*******************************************************************************************/
-Vector minJerkTrajGen::getAcc(){ return acc; }
-
-
-/*******************************************************************************************/
 bool minJerkTrajGen::setT(const double _T)
 {
     if(_T<=0.0)
@@ -448,11 +436,4 @@ void minJerkTrajGen::init(const Vector& y0)
     accFilter->init(zeros(dim));
 }
 
-
-/*******************************************************************************************/
-double minJerkTrajGen::getT(){ return T; }
-
-
-/*******************************************************************************************/
-double minJerkTrajGen::getTs(){ return Ts; }
 

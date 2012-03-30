@@ -225,13 +225,14 @@ public:
     virtual ~minJerkVelCtrlForNonIdealPlant();
 };
 
+
 /**
 * \ingroup minJerkCtrl
 *
 * Generator of approximately minimum jerk trajectories.
 * The min jerk trajectory is approximated using a 3rd order LTI 
 * dynamical system (for more details see <a 
-* href="http://pasa.liralab.it/pasapdf/699_Pattacini_etal2010.pdf">Pataccini2010</a>). 
+* href="http://pasa.liralab.it/pasapdf/699_Pattacini_etal2010.pdf">Pattacini2010</a>). 
 * Position, velocity and acceleration trajectories are computed.
 * The main advantage with respect to the standard polynomial form
 * is that if the reference value yd changes there is no need to 
@@ -301,17 +302,28 @@ public:
     /**
     * Get the current position.
     */
-    yarp::sig::Vector getPos();
+    yarp::sig::Vector getPos() const { return pos; }
     
     /**
     * Get the current velocity.
     */
-    yarp::sig::Vector getVel();
+    yarp::sig::Vector getVel() const { return vel; }
 
     /**
     * Get the current acceleration.
     */
-    yarp::sig::Vector getAcc();
+    yarp::sig::Vector getAcc() const { return acc; }
+
+    /**
+    * Get the trajectory reference time in seconds
+    * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
+    */
+    double getT() const { return T; }
+
+    /**
+    * Get the sample time in seconds.
+    */
+    double getTs() const { return Ts; }
 
     /**
     * Set the trajectory reference time
@@ -327,18 +339,6 @@ public:
     * @return true if operation succeeded, false otherwise
     */
     bool setTs(const double _Ts);
-
-    /**
-    * Get the trajectory reference time in seconds
-    * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
-    */
-    double getT();
-
-    /**
-    * Get the sample time in seconds.
-    */
-    double getTs();
-
 };
 
 
