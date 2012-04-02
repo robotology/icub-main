@@ -122,6 +122,10 @@ class iDynLink : public iKin::iKinLink
 	friend class OneLinkNewtonEuler;
 
 protected:
+    // DH rototranslation matrix (it's the same matrix you get calling iKinLink->getH(true) but it's stored here for performance reason)
+    yarp::sig::Matrix H_store;
+    // flag that is true is if H_store is valid, false otherwise
+    bool H_store_valid;
 
 	/// m_i, mass
 	double m;	
@@ -236,6 +240,13 @@ public:
     * @param _m is the mass
     */
 	 void setMass(const double _m);
+
+    /**
+    * Sets the joint position (position constraints are evaluated).
+    * @param _teta is the new angle value 
+    * @return current joint angle
+    */
+    double setAng(const double _teta);
 
 	/**
     * Sets the joint velocity 
@@ -394,6 +405,11 @@ public:
 	* @return Tau the joint torque
 	*/	
 	 double				getTorque()		const;
+    /**
+    * Redefine the getH of iKinLink so that it does not compute the H matrix if the
+    * joint angles have not changed since the last call to this method.
+    */	
+    yarp::sig::Matrix		getH();
 	/**
 	* Get the link rotational matrix, from the Denavit-Hartenberg matrix
 	* @return R the link rotational matrix (3x3)
@@ -573,6 +589,14 @@ public:
     */
     iDynChain &operator=(const iDynChain &c);
 
+    /**
+    * Sets the free joint angles to values of q[i].
+    * @param q is a vector containing values for DOF.
+    * @return the actual DOF values (angles constraints are 
+    *         evaluated).
+    */
+    yarp::sig::Vector setAng(const yarp::sig::Vector &q);
+
 	/**
     * Sets the free joint angles velocity to values of dq[i]
     * @param dq is a vector containing values for each DOF's velocity
@@ -610,6 +634,15 @@ public:
     * @return the max joint bounds
     */
     yarp::sig::Vector getJointBoundMax();
+
+    /**
+    * Sets the ith joint angle. 
+    * @param i is the Link position. 
+    * @param Ang the new angle's value. 
+    * @return current ith joint angle (angle constraint is 
+    *         evaluated).
+    */
+    double setAng(const unsigned int i, double q);
 
     /**
     * Sets the ith joint angle velocity 

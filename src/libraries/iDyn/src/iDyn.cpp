@@ -266,6 +266,12 @@ void iDynLink::setMass(const double _m)
 	m = _m;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynLink::setAng(const double _teta)
+{
+	H_store_valid = false;          // invalidate the stored rototranslation matrix H
+	return iKinLink::setAng(_teta);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double iDynLink::setDAng(const double _dteta)
 {
 	dq = _dteta;
@@ -383,6 +389,8 @@ void iDynLink::zero()
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
 	Im = 0.0; kr = 0.0;	Fv = 0.0;	Fs = 0.0;	
+    H_store = eye(4,4);
+    H_store_valid = false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -410,12 +418,22 @@ Vector	iDynLink::getForce()	const	{return F;}
 Vector	iDynLink::getMoment()	const	{return Mu;}
 double	iDynLink::getTorque()	const	{return Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix  iDynLink::getR()			{return (getH(true).submatrix(0,2,0,2));}
+Matrix  iDynLink::getR()			{return (getH().submatrix(0,2,0,2));}
 Matrix  iDynLink::getRC()			{return getCOM().submatrix(0,2,0,2);}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix  iDynLink::getH()
+{
+    if(!H_store_valid)
+    {
+        H_store = iKinLink::getH(true);
+        H_store_valid = true;
+    }
+    return H_store;
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	iDynLink::getr(bool proj) 	
 {
-    Matrix H = getH(true);
+    Matrix H = getH();
     Vector r = H.getCol(3).subVector(0,2);
 	if(proj==false)
 		return r;
@@ -490,6 +508,23 @@ iDynChain &iDynChain::operator=(const iDynChain &c)
 {
     clone(c);
     return *this;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::setAng(const Vector &q)
+{
+    if (DOF==0)
+    {
+        if (verbose)
+            fprintf(stderr,"setAng() failed since DOF==0\n");
+
+        return Vector(0);
+    }
+
+    int sz=(q.length()>(int)DOF)?DOF:q.length();
+    for (int i=0; i<sz; i++)    // cast to iDynLink so calling setAng invalidates the H matrix
+        curr_q[i] = dynamic_cast<iDynLink*>(quickList[hash_dof[i]])->setAng(q[i]);
+
+    return curr_q;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::setDAng(const Vector &dq)
@@ -576,6 +611,18 @@ Vector iDynChain::getJointBoundMax()
     for(unsigned int i=0; i<DOF; i++)
         jointBounds[i]=quickList[hash_dof[i]]->getMax();
     return jointBounds;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynChain::setAng(const unsigned int i, double _Ang)
+{
+    double res=0.0;
+
+    if (i<N)
+        res = dynamic_cast<iDynLink*>(allList[i])->setAng(_Ang);
+    else if (verbose)
+        fprintf(stderr,"setAng() failed due to out of range index: %d>=%d\n",i,N);
+
+    return res;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double iDynChain::setDAng(const unsigned int i, double _dq)
