@@ -1,4 +1,7 @@
 2012-04-02 Andrea Del Prete <andrea.delprete@iit.it>
+        * iDynInv.cpp: improving implementation of wrench and kinematics propagation (for performance)
+
+2012-04-02 Andrea Del Prete <andrea.delprete@iit.it>
         * iDyn.cpp: storing rototranslation matrix in iDynLink for performance
                     
 2012-04-02 Andrea Del Prete <andrea.delprete@iit.it>

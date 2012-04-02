@@ -427,6 +427,10 @@ public:
 	*/
   	 virtual yarp::sig::Matrix	getInertia() const;
     /**
+	* @return H = (4x4) the Denavit-Hartenberg roto-translational matrix describing the link
+	*/
+ 	 virtual yarp::sig::Matrix	getH();
+    /**
 	* @return R = (3x3) rotational matrix from the Denavit-Hartenberg roto-translational matrix describing the link
 	*/
  	 virtual yarp::sig::Matrix	getR();
@@ -663,6 +667,7 @@ public:
 	yarp::sig::Vector	getLinAcc()		const;
 	yarp::sig::Vector	getLinAccC()	const;
 	double				getTorque()		const;
+ 	yarp::sig::Matrix	getH();
 	yarp::sig::Matrix	getR();		
 	yarp::sig::Matrix	getRC();	
 	double				getIm()		const;

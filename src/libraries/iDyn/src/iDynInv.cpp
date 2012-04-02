@@ -353,6 +353,8 @@ double OneLinkNewtonEuler::getTorque() const		{ return link->Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string OneLinkNewtonEuler::getInfo() const			{ return info;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix OneLinkNewtonEuler::getH()					{ return link->getH();}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix OneLinkNewtonEuler::getR()					{ return link->getR();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix OneLinkNewtonEuler::getRC()					{ return link->getRC();}
@@ -453,34 +455,44 @@ void OneLinkNewtonEuler::computeAngAccBackward(OneLinkNewtonEuler *next)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAcc(OneLinkNewtonEuler *prev)
 {
+    Matrix H = getH();
+    Matrix RT = H.submatrix(0,2,0,2).transposed();
 	switch(mode)
 	{
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		setLinAcc( (getR()).transposed() * prev->getLinAcc() 
-			+ cross(getAngAcc(),getr(true))
-			+ cross(getAngVel(),cross(getAngVel(),getr(true))) );
-		break;
+        {
+            Vector r = -1.0 * RT * H.getCol(3).subVector(0,2);
+		    setLinAcc( RT * prev->getLinAcc() 
+			    + cross(getAngAcc(), r)
+			    + cross(getAngVel(), cross(getAngVel(), r)) );
+		    break;
+        }
 	case STATIC:
-		setLinAcc( (getR()).transposed() * prev->getLinAcc() );
+		setLinAcc( RT * prev->getLinAcc() );
 		break;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAccBackward(OneLinkNewtonEuler *next)
 {
+    Matrix H = next->getH();
+    Matrix R = H.submatrix(0,2,0,2);
 	switch(mode)
 	{
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		setLinAcc(next->getR() * (next->getLinAcc() 
-			- cross(next->getAngAcc(),next->getr(true)) 
-			- cross(next->getAngVel(),cross(next->getAngVel(),next->getr(true))) ));
-		break;
+        {
+            Vector r = -1.0 * R.transposed() * H.getCol(3).subVector(0,2);
+		    setLinAcc(R * (next->getLinAcc() 
+			    - cross(next->getAngAcc(), r) 
+			    - cross(next->getAngVel(), cross(next->getAngVel(), r)) ));
+		    break;
+        }
 	case STATIC:
-		setLinAcc( next->getR() * next->getLinAcc() );
+		setLinAcc( R * next->getLinAcc() );
 		break;
 	}
 }
@@ -531,58 +543,68 @@ void OneLinkNewtonEuler::computeForceForward(OneLinkNewtonEuler *prev)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeMomentBackward(OneLinkNewtonEuler *next)
 {
+    Matrix Hn = next->getH();
+    Vector rn = Hn.getCol(3).subVector(0,2);
+    Matrix Rn = Hn.submatrix(0,2,0,2);
 	switch(mode)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:		
-	setMoment( cross(next->getr() , next->getR() * next->getForce()) 
-			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment(false)
-			+ next->getR() * next->getInertia() * next->getAngAcc() 
-			+ next->getR() * cross( next->getAngVel() , next->getInertia() * next->getAngVel())
+	setMoment( cross(rn , Rn * next->getForce()) 
+			+ cross(rn + Rn * next->getrC() , Rn * (next->getMass() * next->getLinAccC())) 
+			+ Rn * (next->getMoment(false)
+			        + next->getInertia() * next->getAngAcc() 
+			        + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
 			);
 		break;
 	case DYNAMIC_W_ROTOR:
-	setMoment( cross(next->getr() , next->getR() * next->getForce()) 
-			+ cross(next->getr() + next->getR() * next->getrC() , next->getR() * (next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment()
-			+ next->getR() * next->getInertia() * next->getAngAcc() 
-			+ next->getR() * cross( next->getAngVel() , next->getInertia() * next->getAngVel())
+	setMoment( cross(rn , Rn * next->getForce()) 
+			+ cross(rn + Rn * next->getrC() , Rn * (next->getMass() * next->getLinAccC())) 
+			+ Rn * (next->getMoment()
+			        + next->getInertia() * next->getAngAcc() 
+			        + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
 			+ next->getKr() * next->getD2q() * next->getIm() * next->getZM()
 			+ next->getKr() * next->getDq() * next->getIm() * cross(next->getAngVel(),next->getZM()) );
 		break;
 	case STATIC:
-	setMoment( cross(next->getr(),next->getR()*next->getForce()) 
-			+ cross(next->getr()+next->getR()*next->getrC(),next->getR()*(next->getMass() * next->getLinAccC())) 
-			+ next->getR() * next->getMoment(false));
+	setMoment( cross(rn, Rn*next->getForce()) 
+			+ cross(rn + Rn*next->getrC(), Rn*(next->getMass() * next->getLinAccC())) 
+			+ Rn * next->getMoment(false));
 		break;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeMomentForward( OneLinkNewtonEuler *prev)
 {
+    Matrix H = getH();
+    Vector r = H.getCol(3).subVector(0,2);
+    Matrix R = H.submatrix(0,2,0,2);
+    Matrix RT = R.transposed();
+    Vector RTr = RT*r;
 	switch(mode)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:
-		setMoment( getR().transposed() * ( prev->getMoment(false) - cross(getr(),getR()*getForce())
-			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
-			- getR() * getInertia() * getAngAcc()
-			- getR() * cross( getAngVel() , getInertia() * getAngVel())	) );
+		setMoment( RT*prev->getMoment(false) - cross(RTr, getForce())
+			- cross(RTr + getrC(), getMass() * getLinAccC())
+			- getInertia() * getAngAcc()
+			- cross( getAngVel(), getInertia()*getAngVel())
+            );
 		break;
 	case DYNAMIC_W_ROTOR:
-		setMoment( getR().transposed() * ( prev->getMoment(false) - cross(getr(),getR()*getForce())
-			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
-			- getR() * getInertia() * getAngAcc()
-			- getR() * cross( getAngVel() , getInertia() * getAngVel())	
-			- getKr() * getD2q() * getIm() * getZM()
-			- getKr() * getDq() * getIm() * cross(getAngVel(),getZM())	
-			));
+		setMoment( RT*(prev->getMoment(false)
+			      - getKr() * getD2q() * getIm() * getZM()
+			      - getKr() * getDq() * getIm() * cross(getAngVel(),getZM()))
+            - cross(RTr, getForce())
+			- cross(RTr + getrC(), getMass() * getLinAccC())
+			- getInertia() * getAngAcc()
+			- cross( getAngVel(), getInertia()*getAngVel())
+			);
 		break;
 	case STATIC:
-		setMoment( getR().transposed() * ( prev->getMoment(false) - cross(getr(),getR()*getForce())
-			- cross(getr()+getR()*getrC(),getR()*(getMass() * getLinAccC()))
-			) );
+		setMoment( RT*prev->getMoment(false) - cross(RTr, getForce())
+			- cross(RTr + getrC(), getMass() * getLinAccC())
+			);
 		break;
 	}
 }
@@ -594,10 +616,10 @@ void OneLinkNewtonEuler::computeTorque(OneLinkNewtonEuler *prev)
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:
 	case STATIC:
-		setTorque( dot(prev->getMoment(true),z0) );
+        setTorque( prev->getMoment(true)[2] );
 		break;
 	case DYNAMIC_W_ROTOR:
-		setTorque( dot(prev->getMoment(true),z0) + getKr() * getIm() * dot(getAngAccM(),zm) 
+		setTorque( prev->getMoment(true)[2] + getKr() * getIm() * dot(getAngAccM(),zm) 
 			+ getFv() * getDq() + getFs() * sign(getDq()) );
 		break;		
 	}
@@ -997,6 +1019,7 @@ Vector	FinalLinkNewtonEuler::getAngAccM()	const	{return zeros(3);}
 Vector	FinalLinkNewtonEuler::getLinAcc()	const	{return ddp;}
 Vector	FinalLinkNewtonEuler::getLinAccC()	const	{return zeros(3);}
 double	FinalLinkNewtonEuler::getTorque()	const	{return 0.0;}
+Matrix	FinalLinkNewtonEuler::getH()				{return eye(4,4);}
 Matrix	FinalLinkNewtonEuler::getR()				{return eye(3,3);}	
 Matrix	FinalLinkNewtonEuler::getRC()				{return eye(3,3);}
 double	FinalLinkNewtonEuler::getIm()		const	{return 0.0;}
