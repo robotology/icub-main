@@ -605,13 +605,14 @@ class axisTorqueHelper
 	}
 };
 
+//#define __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public os::RateThread, 
             public IPidControlRaw, 
             public IPositionControlRaw,
             public IControlCalibration2Raw,
             public IVelocityControlRaw, 
-            public IEncodersRaw, 
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
             public IDebugInterfaceRaw,
@@ -623,7 +624,13 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
             public ImplementVelocityControl<CanBusMotionControl, IVelocityControl>,
             public ImplementPidControl<CanBusMotionControl, IPidControl>,
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+            public IEncodersTimedRaw,
+            public ImplementEncodersTimed,
+#else
+            public IEncodersRaw,
             public ImplementEncoders<CanBusMotionControl, IEncoders>,
+#endif
             public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
             public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
@@ -880,6 +887,11 @@ public:
     virtual bool getEncoderAccelerationsRaw(double *accs);
     //
     ///////////////////////// END Encoder Interface
+
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    virtual bool getEncodersTimedRaw(double *v, double *t);
+    virtual bool getEncoderTimedRaw(int j, double *v, double *t);
+#endif
 
     ////// Amplifier interface
     //

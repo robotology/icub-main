@@ -79,6 +79,7 @@ bool SubDevice::configure(int b, int t, int n, const std::string &key)
         }
 
     encoders.resize(axes);
+    encodersTimes.resize(axes);
 
     configuredF=true;
     return true;
@@ -135,7 +136,6 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
             subdevice->view(pid);
             subdevice->view(pos);
             subdevice->view(vel);
-            subdevice->view(enc);
             subdevice->view(amp);
             subdevice->view(lim);
             subdevice->view(calib);
@@ -147,6 +147,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
             subdevice->view(iMode);
             subdevice->view(iOpenLoop);
 			subdevice->view(iDbg);
+            subdevice->view(enc);
         }
     else
         {
@@ -1673,7 +1674,11 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
     pid = dynamic_cast<yarp::dev::IPidControl *> (caller);
     pos = dynamic_cast<yarp::dev::IPositionControl *> (caller);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (caller);
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    enc = dynamic_cast<yarp::dev::IEncodersTimed *> (caller);
+#else
     enc = dynamic_cast<yarp::dev::IEncoders *> (caller);
+#endif
     amp = dynamic_cast<yarp::dev::IAmplifierControl *> (caller);
     lim = dynamic_cast<yarp::dev::IControlLimits *> (caller);
     info = dynamic_cast<yarp::dev::IAxisInfo *> (caller);
@@ -1836,6 +1841,8 @@ void ControlBoardWrapper2::run()
 
     //getEncoders for all subdevices
     double *encoders=v.data();
+    double timeStamp=0.0;
+
     for(unsigned int k=0;k<device.subdevices.size();k++)
         {
             int axes=device.subdevices[k].axes;
@@ -1843,14 +1850,17 @@ void ControlBoardWrapper2::run()
             device.subdevices[k].refreshEncoders();
 
             for(int l=0;l<axes;l++)
+            {
                 encoders[l]=device.subdevices[k].encoders[l+base];
+                timeStamp+=device.subdevices[k].encoders[l+base];
+            }
 
             encoders+=device.subdevices[k].axes; //jump to next group
         }
 
-    //warning: this timestamp is not very accurate
-    lastStateStamp.update();
-    state_p.setEnvelope(lastStateStamp);
+    yarp::os::Stamp time;
+    time.update(timeStamp/controlledJoints);
+    state_p.setEnvelope(time);
 
     state_buffer.write();
 }

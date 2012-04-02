@@ -24,7 +24,6 @@
 //#define CAN_DEBUG
 //#define CANBUSMC_DEBUG
 
-
 #include "ThreadTable2.h"
 #include "ThreadPool2.h"
 
@@ -1771,7 +1770,11 @@ RateThread(10),
 ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
 ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
 ImplementPidControl<CanBusMotionControl, IPidControl>(this),
-ImplementEncoders<CanBusMotionControl, IEncoders>(this),
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    ImplementEncodersTimed(this),
+#else
+    ImplementEncoders<CanBusMotionControl, IEncoders>(this),
+#endif 
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
 ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
@@ -1853,8 +1856,12 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementPidControl<CanBusMotionControl, IPidControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+#else
     ImplementEncoders<CanBusMotionControl, IEncoders>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+#endif
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -2244,7 +2251,13 @@ bool CanBusMotionControl::close (void)
 
         ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
         ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
+
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+        ImplementEncodersTimed::uninitialize();
+#else
         ImplementEncoders<CanBusMotionControl, IEncoders>::uninitialize();
+#endif
+
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
         ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
@@ -5484,4 +5497,40 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
     return 0;
 }
 
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    
+    double stamp=0;
+    for (i = 0; i < r.getJoints(); i++) {
+        v[i] = double(r._bcastRecvBuffer[i]._position._value);
+        t[i] = r._bcastRecvBuffer[i]._position._stamp;
+
+        if (stamp<r._bcastRecvBuffer[i]._position._stamp)
+            stamp=r._bcastRecvBuffer[i]._position._stamp;
+    }
+
+    stampEncoders.update(stamp);
+
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *v = double(r._bcastRecvBuffer[axis]._position._value);
+    *t = r._bcastRecvBuffer[axis]._position._stamp;
+    _mutex.post();
+
+    return true;
+}
+#endif
 

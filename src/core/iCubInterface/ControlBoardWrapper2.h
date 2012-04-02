@@ -35,6 +35,8 @@
 #include <string>
 #include <vector>
 
+// #define __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+
 //
 //#define CONTROLBOARDWRAPPER2_DEBUG
 const int DEBUG_PRINTF_BUFFER_LENGTH=255;
@@ -85,7 +87,12 @@ protected:
     yarp::dev::IPidControl          *pid;
     yarp::dev::IPositionControl     *pos;
     yarp::dev::IVelocityControl     *vel;
+
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    yarp::dev::IEncodersTimed       *enc;
+#else    
     yarp::dev::IEncoders            *enc;
+#endif
     yarp::dev::IAmplifierControl    *amp;
     yarp::dev::IControlLimits       *lim;
     yarp::dev::ITorqueControl       *torque;
@@ -167,7 +174,11 @@ public:
     IPidControl       *pid;
     IPositionControl  *pos;
     IVelocityControl  *vel;
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    IEncodersTimed *enc;
+#else
     IEncoders         *enc;
+#endif
     IAmplifierControl *amp;
     IControlLimits    *lim;
     IControlCalibration *calib;
@@ -181,6 +192,7 @@ public:
     IAxisInfo          *info;
 
     yarp::sig::Vector encoders;
+    yarp::sig::Vector encodersTimes;
 
     SubDevice();
 
@@ -191,7 +203,14 @@ public:
 
     inline void refreshEncoders()
     {
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+        enc->getEncodersTimed(encoders.data(), encodersTimes.data());
+#else
         enc->getEncoders(encoders.data());
+        double time=Time::now();
+        for(int k=0;k<axes;k++)
+            encodersTimes[k]=Time::now();
+#endif
     }
 
     bool isAttached()
@@ -236,7 +255,11 @@ class ControlBoardWrapper2 : public DeviceDriver,
                              public IPidControl,
                              public IPositionControl,
                              public IVelocityControl,
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+                             public IEncodersTimed,
+#else 
                              public IEncoders,
+#endif
                              public IAmplifierControl,
                              public IControlLimits,
 							 public IDebugInterface,
@@ -252,8 +275,6 @@ class ControlBoardWrapper2 : public DeviceDriver,
 private:
     bool spoke;
     bool verb;
-
-    yarp::os::Stamp lastStateStamp;
 
     WrappedDevice device;
 
@@ -1505,6 +1526,46 @@ public:
         return ret;
     }
 
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    virtual bool getEncodersTimed(double *encs, double *t) {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->enc)
+            {
+                ret=ret&&p->enc->getEncoderTimed(off+base, encs+l, t+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
+    virtual bool getEncoderTimed(int j, double *v, double *t) {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->pos)
+        {
+            return p->enc->getEncoderTimed(off+base, v, t);
+        }        
+        *v=0.0;
+        return false; 
+    }
+
+#endif
 
     /**
     * Read the istantaneous speed of an axis.
