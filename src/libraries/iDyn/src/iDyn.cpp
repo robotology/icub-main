@@ -410,27 +410,23 @@ Vector	iDynLink::getForce()	const	{return F;}
 Vector	iDynLink::getMoment()	const	{return Mu;}
 double	iDynLink::getTorque()	const	{return Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix	iDynLink::getR()			{return (getH(true).submatrix(0,2,0,2));}
-Matrix	iDynLink::getRC()			{return getCOM().submatrix(0,2,0,2);}
+Matrix  iDynLink::getR()			{return (getH(true).submatrix(0,2,0,2));}
+Matrix  iDynLink::getRC()			{return getCOM().submatrix(0,2,0,2);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	iDynLink::getr(bool proj) 	
 {
+    Matrix H = getH(true);
+    Vector r = H.getCol(3).subVector(0,2);
 	if(proj==false)
-		return getH(true).submatrix(0,2,0,3).getCol(3);
-        //SEREDEBUG
-        //return (getR().transposed() * getH(true).submatrix(0,2,0,3).getCol(3));
-	else
-		return (-1.0 * getR().transposed() * getH(true).submatrix(0,2,0,3).getCol(3));
+		return r;
+	return (-1.0 * H.submatrix(0,2,0,2).transposed() * r);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	iDynLink::getrC(bool proj) 	
 {
 	if(proj==false)
-		return getCOM().submatrix(0,2,0,3).getCol(3);
-        //SEREDEBUG
-        //return getCOM().submatrix(0,2,0,3).getCol(3);
-	else
-		return (-1.0 * getRC().transposed() * getCOM().submatrix(0,2,0,3).getCol(3));
+		return getCOM().getCol(3).subVector(0,2);
+	return (-1.0 * getRC().transposed() * getCOM().submatrix(0,2,0,3).getCol(3));
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -529,7 +525,7 @@ Vector iDynChain::setD2Ang(const Vector &ddq)
 	}
     else 
 		if(verbose)
-        fprintf(stderr,"iDynChain error: setVel() failed: %d joint angles needed \n",DOF);
+            fprintf(stderr,"iDynChain error: setD2Ang() failed: %d joint angles needed \n",DOF);
 
     return curr_ddq;
 }
@@ -862,13 +858,9 @@ void iDynChain::prepareNewtonEuler(const NewEulMode NewEulMode_s)
 	int j = sprintf(buffer,"DOF=%d N=%d",DOF,N);
 	info.append(buffer);
 
-	if( NE == NULL)
-		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,NewEulMode_s,verbose);
-	else
-	{
-		delete NE;
-		NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,NewEulMode_s,verbose);
-	}
+	if( NE != NULL)
+        delete NE;
+	NE = new OneChainNewtonEuler(const_cast<iDynChain *>(this),info,NewEulMode_s,verbose);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &F0, const Vector &Mu0 )
@@ -1043,13 +1035,8 @@ void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler()
 {
-	Vector w0(3); w0.zero();
-	Vector dw0(3); dw0.zero();
-	Vector ddp0(3); ddp0.zero();
-	Vector Fend(3); Fend.zero();
-	Vector Muend(3); Muend.zero();
-
-	return initNewtonEuler(w0,dw0,ddp0,Fend,Muend);
+    Vector z3(3, 0.0);
+	return initNewtonEuler(z3, z3, z3, z3, z3);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &Fend, const Vector &Muend)
@@ -1571,31 +1558,134 @@ Matrix iDynChain::getHCOM(unsigned int iLink)
     return getH(iLink,true) * allList[iLink]->getCOM();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    //---------------
-	// mass matrix
-	//---------------
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::TESTING_computeMassMatrix()
+Matrix iDynChain::computeMassMatrix()
 {
-    Matrix JP, JO, Jac;
-    Jac.resize(6,N);
-    // mass matrix and its inverse
-    Matrix B(N,N); B.zero();
-    for(unsigned int i=0; i<N; i++)
-    { 
-        Jac = TESTING_computeCOMJacobian(i);
-        JP = Jac.submatrix(0,2,0,N-1);
-        JO = Jac.submatrix(3,5,0,N-1);
-        B = B + getMass(i) * JP.transposed() * JP + JO.transposed() * getInertia(i) * JO; 
+    Matrix M(DOF,DOF);          // mass matrix
+    iKinLink* l;
+    int hash_i;
+    setDAng(zeros(DOF));        // set to zero the joint vel
+    setD2Ang(zeros(DOF));       // set to zero the joint acc
+
+    if(NE==NULL || NE->getMode()!=DYNAMIC)
+        prepareNewtonEuler(DYNAMIC);
+    initNewtonEuler();                  // init with zero w, dw, ddp, F, Mu
+    NE->ForwardKinematicFromBase();     // propagate zero kinematics from base
+    
+    for(int i=DOF-1; i>=0; i--) // start from the end of the chain
+    {
+        l = quickList[hash_dof[i]];
+        hash_i = hash[i];
+        l->setD2Ang(1.0);       // set i-th accelleration to 1
+        
+        // forward kinematics from link i-1 to end
+        for(unsigned int j=1+hash_i; j<N+1; j++)
+		    NE->neChain[j]->ForwardKinematics(NE->neChain[j-1]);
+
+        // backward wrench from end to link i
+	    for(int j=N; j>=hash_i; j--)
+		    NE->neChain[j]->BackwardWrench(NE->neChain[j+1]);
+
+        // copy the joint torques in the i-th column of M
+        for(unsigned int j=i; j<DOF; j++)
+            M(j,i) = M(i,j) = NE->neChain[hash[j]]->getMoment(true)[2]; 
+        //same as quickList[hash_dof[j]]->getTorque(), but in this way you do not need to call computeTorque
+
+        l->setD2Ang(0.0);          // set i-th accelleration to 0
     }
-    return B;
+
+    return M;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynChain::computeMassMatrix(const Vector& q)
+{
+    setAng(q);
+    return computeMassMatrix();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// This is a simpler version of the method, just to understand what the method does.
+// The new version is about 2 times faster than this, because it exploits the fact that
+// the mass matrix is symmetric (but it is a little harder to understand the code).
+//Matrix iDynChain::computeMassMatrix()
+//{
+//    // mass matrix
+//    Matrix M(DOF,DOF);
+//    setDAng(zeros(DOF));        // set to zero the joint vel
+//    setD2Ang(zeros(DOF));       // set to zero the joint acc
+//    prepareNewtonEuler(DYNAMIC);
+//    initNewtonEuler();
+//
+//    for(unsigned int i=0; i<DOF; i++)
+//    {
+//        quickList[hash_dof[i]]->setD2Ang(1.0);          // set i-th accelleration to 1
+//        computeNewtonEuler();                           // gravity and ext wrench are zero
+//        for(unsigned int j=0; j<DOF; j++)
+//            M(j,i) = quickList[hash_dof[j]]->getTorque();
+//        quickList[hash_dof[i]]->setD2Ang(0.0);          // set i-th accelleration to 0
+//    }
+//
+//    return M;
+//}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::computeCcTorques()
+{
+    Vector cc(DOF);             // cc torque vector
+    setD2Ang(zeros(DOF));       // set to zero the joint acc
 
+    if(NE==NULL || NE->getMode()!=DYNAMIC)
+        prepareNewtonEuler(DYNAMIC);
+    initNewtonEuler();                  // init with zero w, dw, ddp, F, Mu
+    computeNewtonEuler();
+    for(unsigned int i=0; i<DOF; i++)
+        cc(i) = quickList[hash_dof[i]]->getTorque();
+    
+    return cc;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::computeCcTorques(const Vector& q, const Vector& dq)
+{
+    setAng(q);
+    setDAng(dq);
+    return computeCcTorques();
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::computeGravityTorques(const Vector& ddp0)
+{
+    Vector g(DOF), zero3(3, 0.0);
+    if(NE==NULL || NE->getMode()!=STATIC)
+        prepareNewtonEuler(STATIC);
+    initNewtonEuler(zero3, zero3, ddp0, zero3, zero3);      // init with zero w, dw, F, Mu
+    computeNewtonEuler();
+    for(unsigned int i=0; i<DOF; i++)
+        g(i) = quickList[hash_dof[i]]->getTorque();
+    return g;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::computeGravityTorques(const Vector& ddp0, const Vector& q)
+{
+    setAng(q);
+    return computeGravityTorques(ddp0);
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::computeCcGravityTorques(const Vector& ddp0)
+{
+    Vector ccg(DOF), zero3(3, 0.0);
+    setD2Ang(zeros(DOF));       // set to zero the joint acc
 
-
+    if(NE==NULL || NE->getMode()!=DYNAMIC)
+        prepareNewtonEuler(DYNAMIC);
+    initNewtonEuler(zero3, zero3, ddp0, zero3, zero3);  // init with zero w, dw, F, Mu
+    computeNewtonEuler();
+    for(unsigned int i=0; i<DOF; i++)
+        ccg(i) = quickList[hash_dof[i]]->getTorque();
+    return ccg;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector iDynChain::computeCcGravityTorques(const Vector& ddp0, const Vector& q, const Vector& dq)
+{
+    setAng(q);
+    setDAng(dq);
+    return computeCcGravityTorques(ddp0);
+}
 
 
 //================================
@@ -1603,6 +1693,7 @@ Matrix iDynChain::TESTING_computeMassMatrix()
 //		I DYN LIMB
 //
 //================================
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynLimb::iDynLimb()

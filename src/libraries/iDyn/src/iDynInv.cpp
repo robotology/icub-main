@@ -993,12 +993,12 @@ Vector	FinalLinkNewtonEuler::getMoment(bool isBase)	const	{return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	FinalLinkNewtonEuler::getAngVel()	const	{return w;}
 Vector	FinalLinkNewtonEuler::getAngAcc()	const	{return dw;}
-Vector	FinalLinkNewtonEuler::getAngAccM()	const	{Vector v(3); v.zero(); return v;}
+Vector	FinalLinkNewtonEuler::getAngAccM()	const	{return zeros(3);}
 Vector	FinalLinkNewtonEuler::getLinAcc()	const	{return ddp;}
-Vector	FinalLinkNewtonEuler::getLinAccC()	const	{Vector v(3); v.zero(); return v;}
+Vector	FinalLinkNewtonEuler::getLinAccC()	const	{return zeros(3);}
 double	FinalLinkNewtonEuler::getTorque()	const	{return 0.0;}
-Matrix	FinalLinkNewtonEuler::getR()				{Matrix ret(3,3); ret.eye(); return ret;}	
-Matrix	FinalLinkNewtonEuler::getRC()				{Matrix ret(3,3); ret.eye(); return ret;}
+Matrix	FinalLinkNewtonEuler::getR()				{return eye(3,3);}	
+Matrix	FinalLinkNewtonEuler::getRC()				{return eye(3,3);}
 double	FinalLinkNewtonEuler::getIm()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getFs()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getFv()		const	{return 0.0;}
@@ -1006,9 +1006,9 @@ double	FinalLinkNewtonEuler::getD2q()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getDq()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getKr()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getMass()		const	{return 0.0;}
-Matrix	FinalLinkNewtonEuler::getInertia()const		{Matrix ret(3,3); ret.zero(); return ret;}
-Vector	FinalLinkNewtonEuler::getr(bool proj)		{Vector v(3); v.zero(); return v;}
-Vector	FinalLinkNewtonEuler::getrC(bool proj)		{Vector v(3); v.zero(); return v;}
+Matrix	FinalLinkNewtonEuler::getInertia()const		{return zeros(3,3);}
+Vector	FinalLinkNewtonEuler::getr(bool proj)		{return zeros(3);}
+Vector	FinalLinkNewtonEuler::getrC(bool proj)		{return zeros(3);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setForce(const Vector &_F)
 {
@@ -1718,12 +1718,8 @@ void OneChainNewtonEuler::BackwardKinematicFromEnd(const Vector &_w, const Vecto
 void OneChainNewtonEuler::BackwardWrenchFromEnd()
 {    
     for(int i=nEndEff-1; i>=0; i--){
-        /*stringstream ss;
-        ss<< "Moment link "<< i+1;
-        printVector(neChain[i+1]->getMoment(), ss.str());*/
 		neChain[i]->BackwardWrench(neChain[i+1]);
     }
-    //printVector(neChain[0]->getMoment(), "Moment link 0");
 
 	for(int i=nEndEff-1; i>0; i--)
 		neChain[i]->computeTorque(neChain[i-1]);
@@ -1732,7 +1728,6 @@ void OneChainNewtonEuler::BackwardWrenchFromEnd()
 void OneChainNewtonEuler::computeTorques()
 {
     for(int i=nEndEff-1; i>0; i--){
-        //fprintf(stdout, "Computing torque of link %d\n", i-1);
 		neChain[i]->computeTorque(neChain[i-1]);
     }
 }

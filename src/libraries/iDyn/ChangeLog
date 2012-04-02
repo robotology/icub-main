@@ -1,3 +1,6 @@
+2012-04-02 Andrea Del Prete <andrea.delprete@iit.it>
+        * iDyn.cpp: add methods to compute lagrangian dynamics (mass matrix, coriolis
+                    and centrifugal torques, gravity torques)
 
 2011-03-03 Matteo Fumagalli <matteo.fumagalli@iit.it>
 	   * iDyn.cpp: modified kinematic parameter on iCubArmDyn and iCubArmNoTorsoDyn
