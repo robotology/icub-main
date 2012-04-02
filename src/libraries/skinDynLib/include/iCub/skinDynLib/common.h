@@ -1,5 +1,5 @@
 /**
- * \defgroup iCubCommons
+ * \defgroup skinDynLib
  *  
  * 
  * 

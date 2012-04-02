@@ -6,7 +6,7 @@
  */
 
 /**
- * \defgroup iCubCommons
+ * \defgroup skinDynLib
  *    
  * @ingroup iCubDev
  *  
