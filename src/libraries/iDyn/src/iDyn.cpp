@@ -437,14 +437,14 @@ Vector	iDynLink::getr(bool proj)
     Vector r = H.getCol(3).subVector(0,2);
 	if(proj==false)
 		return r;
-	return (-1.0 * H.submatrix(0,2,0,2).transposed() * r);
+	return H.submatrix(0,2,0,2).transposed() * r;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	iDynLink::getrC(bool proj) 	
 {
 	if(proj==false)
 		return getCOM().getCol(3).subVector(0,2);
-	return (-1.0 * getRC().transposed() * getCOM().submatrix(0,2,0,3).getCol(3));
+	return getRC().transposed() * getCOM().getCol(3).subVector(0,2);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,3 +1,10 @@
+2012-04-03 Andrea Del Prete <andrea.delprete@iit.it>
+        * iDyn.cpp:     bug fix in iDynLink::getr() and getrC(): remove -1.0 premultiplying R^T
+        * iDynInv.cpp:  bug fix in SensorLinkNewtonEuler::getr() and getrC(), bug fix in computeLinAcc() 
+                        computeLinAccBackward() and computeLinAccC(), improve performance, 
+                        remove call to computeAngAccM() because useless
+        * iDynBody.cpp: bug fix in RigidBodyTransformation::getr()
+        
 2012-04-02 Andrea Del Prete <andrea.delprete@iit.it>
         * iDynInv.cpp: improving implementation of wrench and kinematics propagation (for performance)
 

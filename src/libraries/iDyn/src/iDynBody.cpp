@@ -143,8 +143,7 @@ Vector RigidBodyTransformation::getr(bool proj)
 {
 	if(proj==false)
 		return H.submatrix(0,2,0,3).getCol(3);
-	else
-		return (-1.0 * getR().transposed() * (H.submatrix(0,2,0,3)).getCol(3));
+	return getR().transposed() * H.getCol(3).subVector(0,2);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void RigidBodyTransformation::getKinematic(Vector &wNode, Vector &dwNode, Vector &ddpNode)
@@ -205,7 +204,7 @@ void RigidBodyTransformation::computeKinematic()
 		case DYNAMIC_CORIOLIS_GRAVITY:
 		case DYNAMIC_W_ROTOR:
 			ddp = getR() * ( ddp - cross(dw,getr(true)) - cross(w,cross(w,getr(true))) ) ;
-			w	= getR() * w ;	
+			w	= getR() * w ;
 			dw	= getR() * dw ;	
 			break;
 		case STATIC:	
@@ -228,7 +227,7 @@ void RigidBodyTransformation::computeKinematic()
 		case DYNAMIC_CORIOLIS_GRAVITY:
 		case DYNAMIC_W_ROTOR:
 			ddp = getR().transposed() * (ddp + cross(dw,getr(true)) + cross(w,cross(w,getr(true))) );
-			w	= getR().transposed() * w ;			
+			w	= getR().transposed() * w ;
 			dw	= getR().transposed() * dw ;
 			break;
 		case STATIC:	
