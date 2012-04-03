@@ -1416,12 +1416,12 @@ bool	SensorLinkNewtonEuler::setAngAccM	(const Vector &_dwM)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeAngVel( iDynLink *link)
 {
-	w = link->getW();
+	w = getR().transposed() * link->getW();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeAngAcc( iDynLink *link)
 {
-	dw = link->getdW();
+	dw = getR().transposed() * link->getdW();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
@@ -1432,8 +1432,8 @@ void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
 		ddp = getR().transposed() * link->getLinAcc() 
-			+ cross(dw,getr(true))
-			+ cross(w,cross(w,getr(true)));
+			- cross(dw,getr(true))
+			- cross(w,cross(w,getr(true)));
 		break;
 	case STATIC:
 		ddp = getR().transposed() * link->getLinAcc();
@@ -1448,7 +1448,7 @@ void SensorLinkNewtonEuler::computeLinAccC()
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		ddpC = getLinAcc() + cross(getAngAcc(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC()));
+		ddpC = ddp + cross(dw,getrC()) + cross(w,cross(w,getrC()));
 		break;
 	case STATIC:
 		ddpC = ddp;
@@ -1472,14 +1472,14 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:	
-		link->setMoment( getR()*( Mu - cross(getr(true),getR().transposed()*link->getForce())
+		link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
 			- cross(getrC(),(m * getLinAccC()))
 			- getInertia() * getR().transposed() * getAngAcc() 
 			- cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
 			));
 		break;
 	case DYNAMIC_W_ROTOR:
-		link->setMoment( getR()*( Mu - cross(getr(true),getR().transposed()*link->getForce())
+		link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
 			- cross(getrC(),(m * getLinAccC()))
 			- getInertia() * getR().transposed() * getAngAcc() 
 			- cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
@@ -1488,7 +1488,7 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 			));
 		break;
 	case STATIC:
-		link->setMoment( getR() * ( Mu - cross(getr(true),getR().transposed()*link->getForce()) )			
+		link->setMoment( getR() * ( Mu + cross(getr(true),getR().transposed()*link->getForce()) )			
 			- cross(getrC(), m*getLinAccC()) );
 	break;
 	}
@@ -1500,15 +1500,15 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:		
-	Mu = cross(getr(true),getR().transposed()*link->getForce()) 
-			+ cross(getrC(),(m * getLinAccC()))  
+	Mu = cross(getrC(),(m * getLinAccC()))  
+            - cross(getr(true),getR().transposed()*link->getForce()) 
 			+ getR().transposed() * link->getMoment()
 			+ getInertia() * getR().transposed() * getAngAcc() 
 			+ cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel());
 		break;
 	case DYNAMIC_W_ROTOR:
-	Mu = cross(getr(true),getR().transposed()*link->getForce()) 
-			+ cross(getrC(),(m * getLinAccC()))  
+	Mu =    cross(getrC(),(m * getLinAccC()))  
+            - cross(getr(true),getR().transposed()*link->getForce()) 
 			+ getR().transposed() * link->getMoment()
 			+ getInertia() * getR().transposed() * getAngAcc() 
 			+ cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
@@ -1517,8 +1517,8 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 
 		break;
 	case STATIC:
-		Mu = cross(getr(true),getR().transposed()*link->getForce()) 
-			+ cross(getrC(), m*getLinAccC()) 
+		Mu = cross(getrC(), m*getLinAccC()) 
+            - cross(getr(true),getR().transposed()*link->getForce()) 
 			+ getR().transposed() * link->getMoment();
 	break;
 	}
