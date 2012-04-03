@@ -188,6 +188,8 @@ void iDynLink::clone(const iDynLink &c)
 	m = c.getMass();
 	I = c.getInertia();
 	HC = c.getCOM();
+    RC = c.getRC();
+    rc = c.getrC();
 	Im = c.getIm();
 	Fv = c.getFv();
 	Fs = c.getFs();
@@ -296,11 +298,15 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
 	if((_HC.rows()==4) && (_HC.cols()==4))
 	{
 		HC = _HC;
+        RC = HC.submatrix(0,2,0,2);
+        rc = HC.getCol(3).subVector(0,2);
 		return true;
 	}
 	else
 	{
-		HC.resize(4,4); HC.eye();
+		HC = eye(4,4);
+        RC = eye(3,3);
+        rc = zeros(3);
 		if(verbose)
 			fprintf(stderr,"iDynLink: error in setting COM roto-translation due to wrong matrix size: (%d,%d) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
 		return false;
@@ -311,10 +317,12 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 {
 	if(_rC.length()==3)
 	{
-		HC.resize(4,4); HC.eye();
+		HC = eye(4,4);
 		HC(0,3) = _rC(0);
 		HC(1,3) = _rC(1);
 		HC(2,3) = _rC(2);
+        RC = eye(3,3);
+        rc = _rC;
 		return true;
 	}
 	else	
@@ -327,10 +335,12 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynLink::setCOM(const double _rCx, const double _rCy, const double _rCz)
 {
-	HC.resize(4,4); HC.eye();
+	HC = eye(4,4);
 	HC(0,3) = _rCx;
 	HC(1,3) = _rCy;
 	HC(2,3) = _rCz;
+    RC = eye(3,3);
+    rc = cat(_rCx, _rCy, _rCz);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLink::setForce(const yarp::sig::Vector &_F)
@@ -388,7 +398,8 @@ void iDynLink::zero()
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
-	Im = 0.0; kr = 0.0;	Fv = 0.0;	Fs = 0.0;	
+	Im = 0.0; kr = 0.0;	Fv = 0.0;	Fs = 0.0;
+    HC = eye(4,4); RC = eye(3,3); rc = zeros(3);
     H_store = eye(4,4);
     H_store_valid = false;
 }
@@ -418,8 +429,8 @@ Vector	iDynLink::getForce()	const	{return F;}
 Vector	iDynLink::getMoment()	const	{return Mu;}
 double	iDynLink::getTorque()	const	{return Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix  iDynLink::getR()			{return (getH().submatrix(0,2,0,2));}
-Matrix  iDynLink::getRC()			{return getCOM().submatrix(0,2,0,2);}
+Matrix  iDynLink::getR()			    {return getH().submatrix(0,2,0,2);}
+Matrix  iDynLink::getRC()		const	{return RC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix  iDynLink::getH()
 {
@@ -433,18 +444,22 @@ Matrix  iDynLink::getH()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector	iDynLink::getr(bool proj) 	
 {
-    Matrix H = getH();
-    Vector r = H.getCol(3).subVector(0,2);
+    if(!H_store_valid)
+    {
+        H_store = iKinLink::getH(true);
+        H_store_valid = true;
+    }
+    Vector r = H_store.getCol(3).subVector(0,2);
 	if(proj==false)
 		return r;
-	return H.submatrix(0,2,0,2).transposed() * r;
+	return H_store.submatrix(0,2,0,2).transposed() * r;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynLink::getrC(bool proj) 	
+Vector	iDynLink::getrC(bool proj) const
 {
 	if(proj==false)
-		return getCOM().getCol(3).subVector(0,2);
-	return getRC().transposed() * getCOM().getCol(3).subVector(0,2);
+		return rc;
+	return RC.transposed() * rc;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1868,6 +1883,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
 				}
 			}
 		}
+
 		//create iDynLink from parameters
 		pushLink(new iDynLink(mass,HC,I,A,D,alpha,offset,min,max));
 

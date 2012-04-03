@@ -130,7 +130,11 @@ protected:
 	/// m_i, mass
 	double m;	
 	///4x4, H^i_{C_i} = R^i_{C_i}, r^i_{i,C_i}, roto-translation matrix from i to Ci, constant
-	yarp::sig::Matrix HC;	
+	yarp::sig::Matrix HC;
+    ///3x3, R^i_{C_i} rotational part of HC, constant
+	yarp::sig::Matrix RC;
+    ///3x1, r^i_{i,C_i}, translational part of HC, constant
+    yarp::sig::Vector rc;
 	///3x3, I^i_i, inertia matrix, constant
 	yarp::sig::Matrix I;	
 	/// dq, joint vel
@@ -419,7 +423,7 @@ public:
 	* Get the link COM's rotational matrix, from the COM matrix
 	* @return R the COM rotational matrix (3x3)
 	*/	
-	yarp::sig::Matrix		getRC();
+	yarp::sig::Matrix		getRC()     const;
 
 	/**
 	* Get the link distance vector r, or r*R if projection is specified
@@ -432,7 +436,7 @@ public:
 	* @param proj true/false enables or disable the projection along the rotation of the link
 	* @return rC if false, rC*R if true
 	*/	
-	yarp::sig::Vector		getrC(bool proj=false);
+	yarp::sig::Vector		getrC(bool proj=false) const;
 
 	 //~~~~~~~~~~~~~~~~~~~~~~
 	 //   basic functions
