@@ -190,6 +190,7 @@ void iDynLink::clone(const iDynLink &c)
 	HC = c.getCOM();
     RC = c.getRC();
     rc = c.getrC();
+    rc_proj = rc*RC;
 	Im = c.getIm();
 	Fv = c.getFv();
 	Fs = c.getFs();
@@ -206,6 +207,7 @@ void iDynLink::clone(const iDynLink &c)
 	F = c.getForce();
 	Mu = c.getMoment();
 	Tau = c.getTorque();
+    H_store_valid = false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -300,6 +302,7 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
 		HC = _HC;
         RC = HC.submatrix(0,2,0,2);
         rc = HC.getCol(3).subVector(0,2);
+        rc_proj = rc*RC;
 		return true;
 	}
 	else
@@ -323,6 +326,7 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
 		HC(2,3) = _rC(2);
         RC = eye(3,3);
         rc = _rC;
+        rc_proj = rc*RC;
 		return true;
 	}
 	else	
@@ -341,6 +345,7 @@ void iDynLink::setCOM(const double _rCx, const double _rCy, const double _rCz)
 	HC(2,3) = _rCz;
     RC = eye(3,3);
     rc = cat(_rCx, _rCy, _rCz);
+    rc_proj = rc*RC;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLink::setForce(const yarp::sig::Vector &_F)
@@ -400,7 +405,7 @@ void iDynLink::zero()
 	Tau = 0.0;
 	Im = 0.0; kr = 0.0;	Fv = 0.0;	Fs = 0.0;
     HC = eye(4,4); RC = eye(3,3); rc = zeros(3);
-    H_store = eye(4,4);
+    H_store = eye(4,4); R_store = eye(3,3); r_store = zeros(3);
     H_store_valid = false;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -409,57 +414,64 @@ void iDynLink::zero()
 	 //   get methods
 	 //~~~~~~~~~~~~~~~~~~~~~~
 	     
-Matrix	iDynLink::getInertia()	const	{return I;}
+const Matrix&	iDynLink::getInertia()	const	{return I;}
 double	iDynLink::getMass()		const	{return m;}
 double	iDynLink::getIm()		const	{return Im;}
 double	iDynLink::getKr()		const	{return kr;}
 double	iDynLink::getFs()		const	{return Fs;}
 double	iDynLink::getFv()		const	{return Fv;}
-Matrix	iDynLink::getCOM()		const	{return HC;}
+const Matrix&	iDynLink::getCOM()		const	{return HC;}
 double	iDynLink::getDAng()		const	{return dq;}
 double	iDynLink::getD2Ang()	const	{return ddq;}
-Vector	iDynLink::getW()		const	{return w;}
-Vector	iDynLink::getdW()		const	{return dw;}
-Vector	iDynLink::getdWM()		const	{return dwM;}
-Vector  iDynLink::getLinVel()   const   {return dp;}
-Vector  iDynLink::getLinVelC()	const	{return dpC;}
-Vector	iDynLink::getLinAcc()	const	{return ddp;}
-Vector	iDynLink::getLinAccC()	const	{return ddpC;}
-Vector	iDynLink::getForce()	const	{return F;}
-Vector	iDynLink::getMoment()	const	{return Mu;}
+const Vector&	iDynLink::getW()		const	{return w;}
+const Vector&	iDynLink::getdW()		const	{return dw;}
+const Vector&	iDynLink::getdWM()		const	{return dwM;}
+const Vector&  iDynLink::getLinVel()   const   {return dp;}
+const Vector&  iDynLink::getLinVelC()	const	{return dpC;}
+const Vector&	iDynLink::getLinAcc()	const	{return ddp;}
+const Vector&	iDynLink::getLinAccC()	const	{return ddpC;}
+const Vector&	iDynLink::getForce()	const	{return F;}
+const Vector&	iDynLink::getMoment()	const	{return Mu;}
 double	iDynLink::getTorque()	const	{return Tau;}
+const Matrix&  iDynLink::getRC()		const	{return RC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix  iDynLink::getR()			    {return getH().submatrix(0,2,0,2);}
-Matrix  iDynLink::getRC()		const	{return RC;}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix  iDynLink::getH()
+void iDynLink::updateHstore()
 {
     if(!H_store_valid)
     {
         H_store = iKinLink::getH(true);
+        R_store = H_store.submatrix(0,2,0,2);
+        r_store = H_store.subcol(0,3,3);
         H_store_valid = true;
     }
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+const Matrix& iDynLink::getR()
+{
+    updateHstore();
+    return R_store;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+const Matrix& iDynLink::getH()
+{
+    updateHstore();
     return H_store;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynLink::getr(bool proj) 	
+const Vector& iDynLink::getr(bool proj) 	
 {
-    if(!H_store_valid)
-    {
-        H_store = iKinLink::getH(true);
-        H_store_valid = true;
-    }
-    Vector r = H_store.getCol(3).subVector(0,2);
+    updateHstore();
 	if(proj==false)
-		return r;
-	return H_store.submatrix(0,2,0,2).transposed() * r;
+		return r_store;
+	r_proj_store = r_store*R_store;
+    return r_proj_store;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	iDynLink::getrC(bool proj) const
+const Vector& iDynLink::getrC(bool proj) const
 {
 	if(proj==false)
 		return rc;
-	return RC.transposed() * rc;
+    return rc_proj;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

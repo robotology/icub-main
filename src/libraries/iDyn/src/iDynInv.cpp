@@ -335,29 +335,29 @@ NewEulMode OneLinkNewtonEuler::getMode() const		{ return mode;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector OneLinkNewtonEuler::getZM() const			{ return zm;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getAngVel()	const		{ return link->w;}
+const Vector& OneLinkNewtonEuler::getAngVel()	const		{ return link->w;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getAngAcc()	const		{ return link->dw;}
+const Vector& OneLinkNewtonEuler::getAngAcc()	const		{ return link->dw;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getAngAccM() const		{ return link->dwM;}
+const Vector& OneLinkNewtonEuler::getAngAccM() const		{ return link->dwM;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getLinAcc() const		{ return link->ddp;}
+const Vector& OneLinkNewtonEuler::getLinAcc() const		{ return link->ddp;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getLinAccC() const		{ return link->ddpC;}
+const Vector& OneLinkNewtonEuler::getLinAccC() const		{ return link->ddpC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getForce() const			{ return link->F;}
+const Vector& OneLinkNewtonEuler::getForce() const			{ return link->F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector OneLinkNewtonEuler::getMoment(bool isBase) const		{ return link->Mu;}
+const Vector& OneLinkNewtonEuler::getMoment(bool isBase) const		{ return link->Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double OneLinkNewtonEuler::getTorque() const		{ return link->Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string OneLinkNewtonEuler::getInfo() const			{ return info;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix OneLinkNewtonEuler::getH()					{ return link->getH();}
+const Matrix& OneLinkNewtonEuler::getH()					{ return link->getH();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix OneLinkNewtonEuler::getR()					{ return link->getR();}
+const Matrix& OneLinkNewtonEuler::getR()					{ return link->getR();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix OneLinkNewtonEuler::getRC()					{ return link->getRC();}
+const Matrix& OneLinkNewtonEuler::getRC()					{ return link->getRC();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double OneLinkNewtonEuler::getIm() const			{ return link->Im;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -373,11 +373,11 @@ double OneLinkNewtonEuler::getFv() const			{ return link->Fv;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double OneLinkNewtonEuler::getMass()const			{ return link->m;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix	OneLinkNewtonEuler::getInertia()const		{ return link->getInertia();}
+const Matrix&	OneLinkNewtonEuler::getInertia()const		{ return link->getInertia();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	OneLinkNewtonEuler::getr(bool proj)			{ return link->getr(proj);}
+const Vector&	OneLinkNewtonEuler::getr(bool proj)			{ return link->getr(proj);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	OneLinkNewtonEuler::getrC(bool proj)		{ return link->getrC(proj);} 
+const Vector&	OneLinkNewtonEuler::getrC(bool proj)		{ return link->getrC(proj);} 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	 //~~~~~~~~~~~~~~~~~~~~~~
@@ -395,7 +395,7 @@ void OneLinkNewtonEuler::computeAngVel(OneLinkNewtonEuler *prev)
         {
             Vector w = prev->getAngVel();
             w[2] += getDq();
-		    setAngVel(getR().transposed() * w);
+		    setAngVel(w*getR());
 		    //setAngVel( getR().transposed() * ( prev->getAngVel() + getDq() * z0 ));
 		    break;
         }
@@ -433,21 +433,21 @@ void OneLinkNewtonEuler::computeAngAcc(OneLinkNewtonEuler *prev)
 	case DYNAMIC_W_ROTOR:
         {
             Vector dw = prev->getAngAcc();
-            Vector prevW = prev->getAngVel();
+            const Vector& prevW = prev->getAngVel();
             dw[0] += getDq()*prevW[1];
             dw[1] -= getDq()*prevW[0];
             dw[2] += getD2q();
-            setAngAcc(getR().transposed() * dw);
+            setAngAcc(dw * getR());
 		    //setAngAcc( (getR()).transposed() * ( prev->getAngAcc() + getD2q()*z0 + getDq() * cross(prev->getAngVel(),z0));
 		    break;
         }
 	case DYNAMIC_CORIOLIS_GRAVITY:
         {
             Vector dw = prev->getAngAcc();
-            Vector prevW = prev->getAngVel();
+            const Vector& prevW = prev->getAngVel();
             dw[0] += getDq()*prevW[1];
             dw[1] -= getDq()*prevW[0];
-            setAngAcc(getR().transposed() * dw);
+            setAngAcc(dw * getR());
 		    //setAngAcc( (getR()).transposed() * ( prev->getAngAcc() + getDq() * cross(prev->getAngVel(),z0) ));
 		    break;
         }
@@ -463,11 +463,26 @@ void OneLinkNewtonEuler::computeAngAccBackward(OneLinkNewtonEuler *next)
 	{
 	case DYNAMIC:
 	case DYNAMIC_W_ROTOR:
-		setAngAcc( next->getR() * next->getAngAcc() - next->getD2q() * z0 - next->getDq() * cross(getAngVel(),z0) );
-		break;
+        {
+            Vector nextDw = next->getR() * next->getAngAcc();
+            const Vector& w = getAngVel();
+            nextDw[0] -= getDq()*w[1];
+            nextDw[1] += getDq()*w[0];
+            nextDw[2] -= getD2q();
+            setAngAcc(nextDw);
+		    //setAngAcc( next->getR() * next->getAngAcc() - next->getD2q() * z0 - next->getDq() * cross(getAngVel(),z0) );
+		    break;
+        }
 	case DYNAMIC_CORIOLIS_GRAVITY:
-		setAngAcc( next->getR() * next->getAngAcc() - next->getDq() * cross(getAngVel(),z0) );
-		break;
+        {
+            Vector nextDw = next->getR() * next->getAngAcc();
+            const Vector& w = getAngVel();
+            nextDw[0] -= getDq()*w[1];
+            nextDw[1] += getDq()*w[0];
+            setAngAcc(nextDw);
+		    //setAngAcc( next->getR() * next->getAngAcc() - next->getDq() * cross(getAngVel(),z0) );
+		    break;
+        }
 	case STATIC:
 		setAngAcc(zeros(3));
 		break;
@@ -476,37 +491,39 @@ void OneLinkNewtonEuler::computeAngAccBackward(OneLinkNewtonEuler *next)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAcc(OneLinkNewtonEuler *prev)
 {
-    Matrix H = getH();
-    Matrix RT = H.submatrix(0,2,0,2).transposed();
+    const Matrix& R = getR();
 	switch(mode)
 	{
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
         {
-            Vector r = RT * H.getCol(3).subVector(0,2);
-		    setLinAcc( RT * prev->getLinAcc() 
+            const Vector& r = getr(true);
+            Vector temp = prev->getLinAcc()*R;
+            temp += cross(link->dw, r);
+            temp += cross(link->w, cross(link->w, r));
+            setLinAcc(temp);
+		    /*setLinAcc( prev->getLinAcc()*R
 			    + cross(getAngAcc(), r)
-			    + cross(getAngVel(), cross(getAngVel(), r)) );
+			    + cross(getAngVel(), cross(getAngVel(), r)) );*/
 		    break;
         }
 	case STATIC:
-		setLinAcc( RT * prev->getLinAcc() );
+		setLinAcc( prev->getLinAcc()*R );
 		break;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAccBackward(OneLinkNewtonEuler *next)
 {
-    Matrix H = next->getH();
-    Matrix R = H.submatrix(0,2,0,2);
+    const Matrix& R = getR();
 	switch(mode)
 	{
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
         {
-            Vector r = R.transposed() * H.getCol(3).subVector(0,2);
+            Vector r = getr(true);
 		    setLinAcc(R * (next->getLinAcc() 
 			    - cross(next->getAngAcc(), r) 
 			    - cross(next->getAngVel(), cross(next->getAngVel(), r)) ));
@@ -525,8 +542,14 @@ void OneLinkNewtonEuler::computeLinAccC()
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		setLinAccC( getLinAcc() + cross(getAngAcc(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC())));
-		break;
+        {
+            Vector temp = getLinAcc();
+            temp += cross(getAngAcc(),getrC());
+            temp += cross(getAngVel(),cross(getAngVel(),getrC()));
+            setLinAccC(temp);
+		    //setLinAccC( getLinAcc() + cross(getAngAcc(),getrC()) + cross(getAngVel(),cross(getAngVel(),getrC())));
+		    break;
+        }
 	case STATIC:
 		setLinAccC( getLinAcc());
 		break;
@@ -546,87 +569,117 @@ void OneLinkNewtonEuler::computeAngAccM(OneLinkNewtonEuler *prev)
 			+ (getKr() * getDq()) * cross(prev->getAngVel(),zm) );
 		break;
 	case STATIC:
-		Vector aaM(3); aaM.zero();
-		setAngAccM( aaM );
+		setAngAccM(zeros(3)); 
 		break;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeForceBackward(OneLinkNewtonEuler *next)
 {
-	setForce( next->getR() * ( next->getForce() + next->getMass() * next->getLinAccC() ) );
+    Vector temp = next->getMass() * next->getLinAccC();
+    temp += next->getForce();
+	setForce(next->getR() * temp);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeForceForward(OneLinkNewtonEuler *prev)
 {
-	setForce( getR().transposed() * prev->getForce() - getMass() * getLinAccC() );
+	setForce( prev->getForce()*getR() - getMass() * getLinAccC() );
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeMomentBackward(OneLinkNewtonEuler *next)
 {
-    Matrix Hn = next->getH();
-    Vector rn = Hn.getCol(3).subVector(0,2);
-    Matrix Rn = Hn.submatrix(0,2,0,2);
+    const Vector& rn = next->getr();
+    const Matrix& Rn = next->getR();
+    const Vector& rnp = next->getr(true);
 	switch(mode)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
-	case DYNAMIC:		
-	setMoment( cross(rn , Rn * next->getForce()) 
-			+ cross(rn + Rn * next->getrC() , Rn * (next->getMass() * next->getLinAccC())) 
-			+ Rn * (next->getMoment(false)
-			        + next->getInertia() * next->getAngAcc() 
-			        + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
-			);
-		break;
+	case DYNAMIC:
+        {
+            Vector temp = cross(rnp , next->getForce());
+            temp += cross(rnp + next->getrC() , next->getMass() * next->getLinAccC());
+            temp += next->getMoment(false);
+            temp += next->getInertia() * next->getAngAcc();
+            temp += cross( next->getAngVel() , next->getInertia() * next->getAngVel());
+            setMoment(Rn*temp);
+	        /*setMoment( Rn * ( cross(rnp , next->getForce()) 
+			                + cross(rnp + next->getrC() , next->getMass() * next->getLinAccC())
+			                + next->getMoment(false)
+			                + next->getInertia() * next->getAngAcc() 
+			                + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
+			        );*/
+		    break;
+        }
 	case DYNAMIC_W_ROTOR:
-	setMoment( cross(rn , Rn * next->getForce()) 
-			+ cross(rn + Rn * next->getrC() , Rn * (next->getMass() * next->getLinAccC())) 
-			+ Rn * (next->getMoment()
+	setMoment( Rn * ( cross(rnp , next->getForce()) 
+			        + cross(rnp + next->getrC() , next->getMass() * next->getLinAccC())
+			        + next->getMoment(false)
 			        + next->getInertia() * next->getAngAcc() 
 			        + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
 			+ next->getKr() * next->getD2q() * next->getIm() * next->getZM()
 			+ next->getKr() * next->getDq() * next->getIm() * cross(next->getAngVel(),next->getZM()) );
 		break;
 	case STATIC:
-	setMoment( cross(rn, Rn*next->getForce()) 
-			+ cross(rn + Rn*next->getrC(), Rn*(next->getMass() * next->getLinAccC())) 
-			+ Rn * next->getMoment(false));
+	setMoment( Rn * ( cross(rnp , next->getForce()) 
+			        + cross(rnp + next->getrC() , next->getMass() * next->getLinAccC())
+			        + next->getMoment(false)));
 		break;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeMomentForward( OneLinkNewtonEuler *prev)
 {
-    Matrix H = getH();
-    Vector r = H.getCol(3).subVector(0,2);
-    Matrix R = H.submatrix(0,2,0,2);
-    Matrix RT = R.transposed();
-    Vector RTr = RT*r;
+    const Matrix& R = link->getR();
+    const Vector& RTr = link->getr(true);
 	switch(mode)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC:
-		setMoment( RT*prev->getMoment(false) - cross(RTr, getForce())
-			- cross(RTr + getrC(), getMass() * getLinAccC())
-			- getInertia() * getAngAcc()
-			- cross( getAngVel(), getInertia()*getAngVel())
-            );
-		break;
+        {
+            Vector temp = prev->getMoment(false)*R;
+            temp -= cross(RTr, link->F);
+            temp -= cross(RTr + link->rc, link->m * link->ddpC);
+            temp -= link->I * link->dw;
+            temp -= cross( link->w, link->I * link->w);
+            link->Mu = temp;
+		    /*setMoment( prev->getMoment(false)*R- cross(RTr, getForce())
+			    - cross(RTr + getrC(), getMass() * getLinAccC())
+			    - getInertia() * getAngAcc()
+			    - cross( getAngVel(), getInertia()*getAngVel())
+                );*/
+		    break;
+        }
 	case DYNAMIC_W_ROTOR:
-		setMoment( RT*(prev->getMoment(false)
-			      - getKr() * getD2q() * getIm() * getZM()
-			      - getKr() * getDq() * getIm() * cross(getAngVel(),getZM()))
-            - cross(RTr, getForce())
-			- cross(RTr + getrC(), getMass() * getLinAccC())
-			- getInertia() * getAngAcc()
-			- cross( getAngVel(), getInertia()*getAngVel())
-			);
-		break;
+        {
+            Vector temp = prev->getMoment(false);
+            temp -= getKr() * getD2q() * getIm() * getZM();
+            temp -= getKr() * getDq() * getIm() * cross(getAngVel(),getZM());
+            temp *= R;
+            temp -= cross(RTr, getForce());
+            temp -= cross(RTr + getrC(), getMass() * getLinAccC());
+            temp -= getInertia() * getAngAcc();
+            temp -= cross( getAngVel(), getInertia()*getAngVel());
+            link->Mu = temp;
+		    /*setMoment( (prev->getMoment(false)
+			          - getKr() * getD2q() * getIm() * getZM()
+			          - getKr() * getDq() * getIm() * cross(getAngVel(),getZM()))*R
+                - cross(RTr, getForce())
+			    - cross(RTr + getrC(), getMass() * getLinAccC())
+			    - getInertia() * getAngAcc()
+			    - cross( getAngVel(), getInertia()*getAngVel())
+			    );*/
+		    break;
+        }
 	case STATIC:
-		setMoment( RT*prev->getMoment(false) - cross(RTr, getForce())
-			- cross(RTr + getrC(), getMass() * getLinAccC())
-			);
-		break;
+        {
+            Vector temp = prev->getMoment(false)*R;
+            temp -= cross(RTr, getForce());
+            temp -= cross(RTr + getrC(), getMass() * getLinAccC());
+            link->Mu = temp;
+		    /*setMoment( prev->getMoment(false)*R - cross(RTr, getForce())
+			    - cross(RTr + getrC(), getMass() * getLinAccC()));*/
+		    break;
+        }
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -711,6 +764,9 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const NewEulMode _mo
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
+    eye3x3 = eye(3,3);
+    zeros3x3 = zeros(3,3);
+    zeros3 = zeros(3);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, const Vector &_dw, const Vector &_ddp, const NewEulMode _mode, unsigned int verb)
@@ -733,6 +789,9 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, co
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
+    eye3x3 = eye(3,3);
+    zeros3x3 = zeros(3,3);
+    zeros3 = zeros(3);
 	setAsBase(_w,_dw,_ddp);			
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -805,21 +864,26 @@ string BaseLinkNewtonEuler::toString() const
 	 //~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	BaseLinkNewtonEuler::getAngVel()		const	{return w;}
+const Vector&	BaseLinkNewtonEuler::getAngVel()		const	{return w;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	BaseLinkNewtonEuler::getAngAcc()		const	{return dw;}
+const Vector&	BaseLinkNewtonEuler::getAngAcc()		const	{return dw;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	BaseLinkNewtonEuler::getAngAccM()		const	{return dw;}
+const Vector&	BaseLinkNewtonEuler::getAngAccM()		const	{return dw;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	BaseLinkNewtonEuler::getLinAcc()		const	{return ddp; }
+const Vector&	BaseLinkNewtonEuler::getLinAcc()		const	{return ddp; }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	BaseLinkNewtonEuler::getLinAccC()		const	{return getLinAcc();}
+const Vector&	BaseLinkNewtonEuler::getLinAccC()		const	{return getLinAcc();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	BaseLinkNewtonEuler::getForce()	const	{return F;}
-Vector	BaseLinkNewtonEuler::getMoment(bool isBase)const	{ if(isBase==false) return Mu; else return H0.submatrix(0,2,0,2).transposed() * Mu;}
+const Vector&	BaseLinkNewtonEuler::getForce()	const	{return F;}
+const Vector&	BaseLinkNewtonEuler::getMoment(bool isBase) const	
+{ 
+    if(isBase==false) 
+        return Mu; 
+    return Mu0;
+}
 double	BaseLinkNewtonEuler::getTorque()const	{return Tau;}
-Matrix	BaseLinkNewtonEuler::getR()				{return eye(3,3);}
-Matrix	BaseLinkNewtonEuler::getRC()			{return eye(3,3);}
+const Matrix&	BaseLinkNewtonEuler::getR()				{return eye3x3;}
+const Matrix&	BaseLinkNewtonEuler::getRC()			{return eye3x3;}
 double	BaseLinkNewtonEuler::getIm()	const	{return 0.0;}
 double	BaseLinkNewtonEuler::getFs()	const	{return 0.0;}
 double	BaseLinkNewtonEuler::getFv()	const	{return 0.0;}
@@ -827,9 +891,9 @@ double	BaseLinkNewtonEuler::getD2q()	const	{return 0.0;}
 double	BaseLinkNewtonEuler::getDq()	const	{return 0.0;}
 double	BaseLinkNewtonEuler::getKr()	const	{return 0.0;}
 double	BaseLinkNewtonEuler::getMass()	const	{return 0.0;}
-Matrix	BaseLinkNewtonEuler::getInertia()const	{return zeros(3,3);}
-Vector	BaseLinkNewtonEuler::getr(bool proj) {return zeros(3);}
-Vector	BaseLinkNewtonEuler::getrC(bool proj){return zeros(3);}
+const Matrix&	BaseLinkNewtonEuler::getInertia()const	{return zeros3x3;}
+const Vector&	BaseLinkNewtonEuler::getr(bool proj) {return zeros3;}
+const Vector&	BaseLinkNewtonEuler::getrC(bool proj){return zeros3;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setForce(const Vector &_F)	
 {
@@ -851,7 +915,8 @@ bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)
 {
 	if(_Mu.length()==3)
 	{
-		Mu=H0.submatrix(0,2,0,2)*_Mu;
+		Mu = H0.submatrix(0,2,0,2)*_Mu;
+        Mu0 = _Mu;
 		return true;
 	}
 	else
@@ -946,6 +1011,10 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int 
 	w.resize(3);	w.zero();
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
+    eye4x4 = eye(4,4);
+    eye3x3 = eye(3,3);
+    zeros3x3 = zeros(3,3);
+    zeros3 = zeros(3);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, const NewEulMode _mode, unsigned int verb)
@@ -957,8 +1026,11 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, 
 	w.resize(3);	w.zero();
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
+    eye4x4 = eye(4,4);
+    eye3x3 = eye(3,3);
+    zeros3x3 = zeros(3,3);
+    zeros3 = zeros(3);
 	setAsFinal(_F,_Mu);
-			
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
@@ -1030,19 +1102,19 @@ string FinalLinkNewtonEuler::toString() const
 	 //~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getForce()		        const	{return F;}
+const Vector&	FinalLinkNewtonEuler::getForce()		        const	{return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getMoment(bool isBase)	const	{return Mu;}
+const Vector&	FinalLinkNewtonEuler::getMoment(bool isBase)	const	{return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	FinalLinkNewtonEuler::getAngVel()	const	{return w;}
-Vector	FinalLinkNewtonEuler::getAngAcc()	const	{return dw;}
-Vector	FinalLinkNewtonEuler::getAngAccM()	const	{return zeros(3);}
-Vector	FinalLinkNewtonEuler::getLinAcc()	const	{return ddp;}
-Vector	FinalLinkNewtonEuler::getLinAccC()	const	{return zeros(3);}
+const Vector&	FinalLinkNewtonEuler::getAngVel()	const	{return w;}
+const Vector&	FinalLinkNewtonEuler::getAngAcc()	const	{return dw;}
+const Vector&	FinalLinkNewtonEuler::getAngAccM()	const	{return zeros3;}
+const Vector&	FinalLinkNewtonEuler::getLinAcc()	const	{return ddp;}
+const Vector&	FinalLinkNewtonEuler::getLinAccC()	const	{return zeros3;}
 double	FinalLinkNewtonEuler::getTorque()	const	{return 0.0;}
-Matrix	FinalLinkNewtonEuler::getH()				{return eye(4,4);}
-Matrix	FinalLinkNewtonEuler::getR()				{return eye(3,3);}	
-Matrix	FinalLinkNewtonEuler::getRC()				{return eye(3,3);}
+const Matrix&	FinalLinkNewtonEuler::getH()				{return eye4x4;}
+const Matrix&	FinalLinkNewtonEuler::getR()				{return eye3x3;}	
+const Matrix&	FinalLinkNewtonEuler::getRC()				{return eye3x3;}
 double	FinalLinkNewtonEuler::getIm()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getFs()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getFv()		const	{return 0.0;}
@@ -1050,9 +1122,9 @@ double	FinalLinkNewtonEuler::getD2q()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getDq()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getKr()		const	{return 0.0;}
 double	FinalLinkNewtonEuler::getMass()		const	{return 0.0;}
-Matrix	FinalLinkNewtonEuler::getInertia()const		{return zeros(3,3);}
-Vector	FinalLinkNewtonEuler::getr(bool proj)		{return zeros(3);}
-Vector	FinalLinkNewtonEuler::getrC(bool proj)		{return zeros(3);}
+const Matrix&	FinalLinkNewtonEuler::getInertia()const		{return zeros3x3;}
+const Vector&	FinalLinkNewtonEuler::getr(bool proj)		{return zeros3;}
+const Vector&	FinalLinkNewtonEuler::getrC(bool proj)		{return zeros3;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setForce(const Vector &_F)
 {
@@ -1137,7 +1209,7 @@ bool FinalLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SensorLinkNewtonEuler::SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
+: OneLinkNewtonEuler(_mode,verb,NULL), zeros0(0,0.0)
 {
 	info = "sensor";
 	F.resize(3);	F.zero();
@@ -1148,12 +1220,14 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const NewEulMode _mode, unsigned in
 	ddpC.resize(3);	ddpC.zero();
 	H.resize(4,4); H.eye();
 	COM.resize(4,4); COM.eye();
+    R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3);
+	RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3);
 	I.resize(3,3); I.zero();
 	m=0.0;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SensorLinkNewtonEuler::SensorLinkNewtonEuler(const Matrix &_H, const Matrix &_COM, const double _m, const Matrix &_I, const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
+: OneLinkNewtonEuler(_mode,verb,NULL), zeros0(0,0.0)
 {
 	info = "sensor";
 	F.resize(3);	F.zero();
@@ -1164,6 +1238,8 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const Matrix &_H, const Matrix &_CO
 	ddpC.resize(3);	ddpC.zero();
 	H.resize(4,4); H.eye();
 	COM.resize(4,4); COM.eye();
+    R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3);
+	RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3);
 	I.resize(3,3); I.zero();
 	setSensor(_H,_COM,_m,_I);
 }
@@ -1193,8 +1269,8 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
 	if((_COM.rows()==4)&&(_COM.cols()==4) && (_H.cols()==4) && (_H.rows()==4) && (_I.rows()==3) && (_I.cols()==3))
 	{
 		H.resize(4,4); COM.resize(4,4); I.resize(3,3);
-		H = _H;
-		COM = _COM;
+		H = _H; R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3);
+		COM = _COM; RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3);
 		I = _I;
 		m = _m;
 		return true;
@@ -1204,6 +1280,8 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
 		m = _m;
 		H.resize(4,4); H.eye();
 		COM.resize(4,4); COM.eye();
+        R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3);
+		RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3);
 		I.resize(3,3); I.zero();
 		if(verbose)
         {
@@ -1259,38 +1337,40 @@ void SensorLinkNewtonEuler::ForwardForcesMomentsToLink(iDynLink *link)
 	 //~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getForce()	const	{ return F;}
+const Vector&	SensorLinkNewtonEuler::getForce()	const	{ return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getMoment(bool isBase)	const	{ return Mu;}
+const Vector&	SensorLinkNewtonEuler::getMoment(bool isBase)	const	{ return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getAngVel()	const	{ return w;}
+const Vector&	SensorLinkNewtonEuler::getAngVel()	const	{ return w;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getAngAcc()	const	{ return dw;}
+const Vector&	SensorLinkNewtonEuler::getAngAcc()	const	{ return dw;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getLinAcc()	const	{ return ddp;}
+const Vector&	SensorLinkNewtonEuler::getLinAcc()	const	{ return ddp;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getLinAccC()	const	{ return ddpC;}
+const Vector&	SensorLinkNewtonEuler::getLinAccC()	const	{ return ddpC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double	SensorLinkNewtonEuler::getMass()	const	{ return m;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix	SensorLinkNewtonEuler::getInertia()	const	{ return I;}
+const Matrix&	SensorLinkNewtonEuler::getInertia()	const	{ return I;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix	SensorLinkNewtonEuler::getR()				{ return H.submatrix(0,2,0,2);}
+const Matrix&	SensorLinkNewtonEuler::getR()				{ return R;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix	SensorLinkNewtonEuler::getRC()				{ return COM.submatrix(0,2,0,2);}
+const Matrix&	SensorLinkNewtonEuler::getRC()				{ return RC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getr(bool proj)		
+const Vector&	SensorLinkNewtonEuler::getr(bool proj)		
 {
 	if(proj==false)
-		return H.getCol(3).subVector(0,2);
-	return getR().transposed() * H.getCol(3).subVector(0,2);
+		return r;
+    r_proj = r*R;
+	return r_proj;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	SensorLinkNewtonEuler::getrC(bool proj)	
+const Vector&	SensorLinkNewtonEuler::getrC(bool proj)	
 {
 	if(proj==false)
-		return COM.getCol(3).subVector(0,2);
-	return getR().transposed() * COM.getCol(3).subVector(0,2);
+		return rc;
+    rc_proj = rc * RC;
+	return rc_proj;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 double  SensorLinkNewtonEuler::getIm()		const	{return 0.0;}
@@ -1299,9 +1379,9 @@ double	SensorLinkNewtonEuler::getFv()		const	{return 0.0;}
 double	SensorLinkNewtonEuler::getD2q()		const	{return 0.0;}
 double	SensorLinkNewtonEuler::getDq()		const	{return 0.0;}
 double	SensorLinkNewtonEuler::getKr()		const	{return 0.0;}
-Vector	SensorLinkNewtonEuler::getAngAccM()	const	{return Vector(0);}
+const Vector&	SensorLinkNewtonEuler::getAngAccM()	const	{return zeros0;}
 double	SensorLinkNewtonEuler::getTorque()	const	{return 0.0;}
-Matrix	SensorLinkNewtonEuler::getH()		const	{return H;}
+const Matrix&	SensorLinkNewtonEuler::getH()		const	{return H;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool	SensorLinkNewtonEuler::setForce		(const Vector &_F)
 {

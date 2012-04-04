@@ -365,31 +365,31 @@ public:
  	/**
 	* @return w = angular velocity (3x1)
 	*/
-	 virtual yarp::sig::Vector	getAngVel()		const;
+	 virtual const yarp::sig::Vector&	getAngVel()		const;
  	/**
 	* @return dw = angular acceleration (3x1)
 	*/
-	 virtual yarp::sig::Vector	getAngAcc()		const;
+	 virtual const yarp::sig::Vector&	getAngAcc()		const;
  	/**
 	* @return dwM = angular acceleration of the rotor (3x1)
 	*/
-	 virtual yarp::sig::Vector	getAngAccM()	const;
+	 virtual const yarp::sig::Vector&	getAngAccM()	const;
  	/**
 	* @return ddp = d2p = linear acceleration (3x1)
 	*/
-	 virtual yarp::sig::Vector	getLinAcc()		const;
+	 virtual const yarp::sig::Vector&	getLinAcc()		const;
  	/**
 	* @return ddpC = d2pC = linear acceleration of the center of mass (3x1)
 	*/
-	 virtual yarp::sig::Vector	getLinAccC()	const;
+	 virtual const yarp::sig::Vector&	getLinAccC()	const;
   	/**
 	* @return F = force (3x1)
 	*/
-	 virtual yarp::sig::Vector	getForce()		const;
+	 virtual const yarp::sig::Vector&	getForce()		const;
    	/**
 	* @return Mu = moment (3x1)
 	*/
-	 virtual yarp::sig::Vector	getMoment(bool isBase = false)		const;
+	 virtual const yarp::sig::Vector&	getMoment(bool isBase = false)		const;
    	/**
 	* @return Tau = torque (1x1)
 	*/
@@ -425,27 +425,27 @@ public:
     /**
 	* @return I = inertia of the link
 	*/
-  	 virtual yarp::sig::Matrix	getInertia() const;
+  	 virtual const yarp::sig::Matrix&	getInertia() const;
     /**
 	* @return H = (4x4) the Denavit-Hartenberg roto-translational matrix describing the link
 	*/
- 	 virtual yarp::sig::Matrix	getH();
+ 	 virtual const yarp::sig::Matrix&	getH();
     /**
 	* @return R = (3x3) rotational matrix from the Denavit-Hartenberg roto-translational matrix describing the link
 	*/
- 	 virtual yarp::sig::Matrix	getR();
+ 	 virtual const yarp::sig::Matrix&	getR();
     /**
 	* @return RC = (3x3) rotational matrix from the roto-translational matrix of the link COM
 	*/
-	virtual yarp::sig::Matrix	getRC();
+	virtual const yarp::sig::Matrix&	getRC();
 	/**
 	* @return r = (3x1) distance vector from the Denavit-Hartenberg roto-translational matrix describing the distance vector between frames <i> and <i-1>
 	*/
-	 virtual yarp::sig::Vector	getr(bool proj=false);
+	 virtual const yarp::sig::Vector&	getr(bool proj=false);
      /**
 	* @return rC = (3x1) distance vector from the roto-translational matrix of the link COM, describing the distance vector between COM and frame <i>
 	*/
-	 virtual yarp::sig::Vector	getrC(bool proj=false);
+	 virtual const yarp::sig::Vector&	getrC(bool proj=false);
 
 
 	 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -507,8 +507,15 @@ protected:
 	yarp::sig::Vector F;
 	///initial moment
 	yarp::sig::Vector Mu;
+    ///initial moment
+	yarp::sig::Vector Mu0;
 	///corresponding torque
-	double Tau;				
+	double Tau;			
+
+    // dummy matrixes/vectors
+    yarp::sig::Matrix eye3x3;
+    yarp::sig::Matrix zeros3x3;
+    yarp::sig::Vector zeros3;
 
 public:
 
@@ -550,20 +557,20 @@ public:
 	//   get methods
 	//~~~~~~~~~~~~~~~~~~~~~~
 
-	 yarp::sig::Vector	getAngVel()		const;
-	 yarp::sig::Vector	getAngAcc()		const;
-	 yarp::sig::Vector	getAngAccM()	const;
-	 yarp::sig::Vector	getLinAcc()		const;
-	 yarp::sig::Vector	getLinAccC()	const;
+	 const yarp::sig::Vector&	getAngVel()		const;
+	 const yarp::sig::Vector&	getAngAcc()		const;
+	 const yarp::sig::Vector&	getAngAccM()	const;
+	 const yarp::sig::Vector&	getLinAcc()		const;
+	 const yarp::sig::Vector&	getLinAccC()	const;
 	 	
 	 // redefine the other unuseful methods 
 	 // to avoid errors due to missing link
 
-	 yarp::sig::Vector	getForce()		const;
-	 yarp::sig::Vector	getMoment(bool isBase = false)		const;
+	 const yarp::sig::Vector&	getForce()		const;
+	 const yarp::sig::Vector&	getMoment(bool isBase = false) const;
 	 double				getTorque()		const;
-	 yarp::sig::Matrix	getR();		
-	 yarp::sig::Matrix	getRC();	
+	 const yarp::sig::Matrix&	getR();		
+	 const yarp::sig::Matrix&	getRC();	
 	 double				getIm()		const;
 	 double				getD2q()	const;
 	 double				getDq()		const;
@@ -571,9 +578,9 @@ public:
   	 double				getFs()		const;
  	 double				getFv()		const;
 	 double				getMass()	const;
-   	 yarp::sig::Matrix	getInertia()const;
-	 yarp::sig::Vector	getr(bool proj=false);
-	 yarp::sig::Vector	getrC(bool proj=false);
+   	 const yarp::sig::Matrix&	getInertia()const;
+	 const yarp::sig::Vector&	getr(bool proj=false);
+	 const yarp::sig::Vector&	getrC(bool proj=false);
 
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   set methods
@@ -618,6 +625,12 @@ protected:
 	///final moment
 	yarp::sig::Vector Mu;	
 
+    // dummy matrices/vectors
+    yarp::sig::Matrix eye4x4;
+    yarp::sig::Matrix eye3x3;
+    yarp::sig::Matrix zeros3x3;
+    yarp::sig::Vector zeros3;
+
 public:
 
 	/**
@@ -657,19 +670,19 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
 	//~~~~~~~~~~~~~~~~~~~~~~
-	yarp::sig::Vector	getForce()		const;
-	yarp::sig::Vector	getMoment(bool isBase = false)		const;
+	const yarp::sig::Vector&	getForce()		const;
+	const yarp::sig::Vector&	getMoment(bool isBase = false)		const;
 
 	// redefine the other unuseful methods to avoid errors due to missing link
-	yarp::sig::Vector	getAngVel()		const;
-	yarp::sig::Vector	getAngAcc()		const;
-	yarp::sig::Vector	getAngAccM()	const;
-	yarp::sig::Vector	getLinAcc()		const;
-	yarp::sig::Vector	getLinAccC()	const;
+	const yarp::sig::Vector&	getAngVel()		const;
+	const yarp::sig::Vector&	getAngAcc()		const;
+	const yarp::sig::Vector&	getAngAccM()	const;
+	const yarp::sig::Vector&	getLinAcc()		const;
+	const yarp::sig::Vector&	getLinAccC()	const;
 	double				getTorque()		const;
- 	yarp::sig::Matrix	getH();
-	yarp::sig::Matrix	getR();		
-	yarp::sig::Matrix	getRC();	
+ 	const yarp::sig::Matrix&	getH();
+	const yarp::sig::Matrix&	getR();		
+	const yarp::sig::Matrix&	getRC();	
 	double				getIm()		const;
   	double				getFs()		const;
  	double				getFv()		const;
@@ -677,9 +690,9 @@ public:
 	double				getDq()		const;
 	double				getKr()		const;
 	double				getMass()	const;
-   	yarp::sig::Matrix	getInertia()const;
-	yarp::sig::Vector	getr(bool proj=false);
-	yarp::sig::Vector	getrC(bool proj=false);
+   	const yarp::sig::Matrix&	getInertia()const;
+	const yarp::sig::Vector&	getr(bool proj=false);
+	const yarp::sig::Vector&	getrC(bool proj=false);
 	bool setForce(const yarp::sig::Vector &_F);
 	bool setMoment(const yarp::sig::Vector &_Mu);
 	void setTorque(const double _Tau);
@@ -728,6 +741,14 @@ protected:
 	yarp::sig::Matrix I;	
 	/// the semi-link mass (the portion of link defined by the sensor)
 	double m;				
+
+    yarp::sig::Matrix R;
+    yarp::sig::Matrix RC;
+    yarp::sig::Vector r;
+    yarp::sig::Vector r_proj;
+    yarp::sig::Vector rc;
+    yarp::sig::Vector rc_proj;
+    const yarp::sig::Vector zeros0;
 
 public:
 
@@ -793,13 +814,13 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~
 	//   get methods
 	//~~~~~~~~~~~~~~~~~~~~~~
-	yarp::sig::Vector	getAngVel()		const;
-	yarp::sig::Vector	getAngAcc()		const;
-	yarp::sig::Vector	getLinAcc()		const;
-	yarp::sig::Vector	getLinAccC()	const;
+	const yarp::sig::Vector&	getAngVel()		const;
+	const yarp::sig::Vector&	getAngAcc()		const;
+	const yarp::sig::Vector&	getLinAcc()		const;
+	const yarp::sig::Vector&	getLinAccC()	const;
 
-	yarp::sig::Vector	getForce()		const;
-	yarp::sig::Vector	getMoment(bool isBase = false)		const;
+	const yarp::sig::Vector&	getForce()		const;
+	const yarp::sig::Vector&	getMoment(bool isBase = false)		const;
 	
 	double				getIm()		const;
  	double				getFs()		const;
@@ -807,16 +828,16 @@ public:
 	double				getD2q()	const;
 	double				getDq()		const;
 	double				getKr()		const;
-	yarp::sig::Vector	getAngAccM()const;
+	const yarp::sig::Vector&	getAngAccM()const;
 	double				getTorque()	const;
-	yarp::sig::Matrix	getH()		const;
+	const yarp::sig::Matrix&	getH()		const;
 
 	double				getMass()	const;
-  	yarp::sig::Matrix	getInertia()const;
- 	yarp::sig::Matrix	getR();
-	yarp::sig::Matrix	getRC();
-	yarp::sig::Vector	getr(bool proj=false);
-	yarp::sig::Vector	getrC(bool proj=false);
+  	const yarp::sig::Matrix&	getInertia()const;
+ 	const yarp::sig::Matrix&	getR();
+	const yarp::sig::Matrix&	getRC();
+	const yarp::sig::Vector&	getr(bool proj=false);
+	const yarp::sig::Vector&	getrC(bool proj=false);
 
 	bool setForce(const yarp::sig::Vector &_F);
 	bool setMoment(const yarp::sig::Vector &_Mu);

@@ -110,6 +110,9 @@ protected:
     yarp::sig::Matrix cumH;
     yarp::sig::Matrix DnH;
 
+    const yarp::sig::Matrix zeros1x1;
+    const yarp::sig::Vector zeros1;
+
     friend class iKinChain;
 
     // Default constructor: not implemented.
@@ -324,28 +327,28 @@ public:
     virtual void   setTorque(const double)                                        { notImplemented(verbose);               }
 
     // get
-    virtual yarp::sig::Matrix getInertia() const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+    virtual const yarp::sig::Matrix& getInertia() const { notImplemented(verbose); return zeros1x1; }
     virtual double            getMass()	   const { notImplemented(verbose); return 0.0;                                }
     virtual double            getIm()      const { notImplemented(verbose); return 0.0;                                }
     virtual double            getKr()      const { notImplemented(verbose); return 0.0;                                }
     virtual double            getFs()      const { notImplemented(verbose); return 0.0;                                }
     virtual double            getFv()      const { notImplemented(verbose); return 0.0;                                }
-    virtual yarp::sig::Matrix getCOM()     const { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
+    virtual const yarp::sig::Matrix& getCOM()     const { notImplemented(verbose); return zeros1x1; }
     virtual double            getDAng()    const { notImplemented(verbose); return 0.0;                                }
     virtual double            getD2Ang()   const { notImplemented(verbose); return 0.0;                                }
-    virtual yarp::sig::Matrix getR()             { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-    virtual yarp::sig::Matrix getRC()            { notImplemented(verbose); yarp::sig::Matrix M(1,1); M=0.0; return M; }
-    virtual yarp::sig::Vector getr()             { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getrC()            { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getW()       const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getdW()      const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getdWM()     const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getLinAcc()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getLinAccC() const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getLinVel()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getLinVelC() const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getForce()   const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
-    virtual yarp::sig::Vector getMoment()  const { notImplemented(verbose); yarp::sig::Vector v(1);   v=0.0; return v; }
+    virtual const yarp::sig::Matrix& getR()             { notImplemented(verbose); return zeros1x1; }
+    virtual const yarp::sig::Matrix& getRC()            { notImplemented(verbose); return zeros1x1; }
+    virtual const yarp::sig::Vector& getr()             { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getrC()            { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getW()       const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getdW()      const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getdWM()     const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getLinAcc()  const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getLinAccC() const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getLinVel()  const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getLinVelC() const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getForce()   const { notImplemented(verbose); return zeros1; }
+    virtual const yarp::sig::Vector& getMoment()  const { notImplemented(verbose); return zeros1; }
     virtual double            getTorque()  const { notImplemented(verbose); return 0.0;                                }
 };
 

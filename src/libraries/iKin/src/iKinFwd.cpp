@@ -40,7 +40,7 @@ void iCub::iKin::notImplemented(const unsigned int verbose)
 
 /************************************************************************/
 iKinLink::iKinLink(double _A, double _D, double _Alpha, double _Offset,
-                   double _Min, double _Max)
+                   double _Min, double _Max): zeros1x1(zeros(1,1)), zeros1(zeros(1))
 {
     A     =_A;
     D     =_D;

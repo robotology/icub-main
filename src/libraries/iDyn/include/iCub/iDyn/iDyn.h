@@ -124,6 +124,9 @@ class iDynLink : public iKin::iKinLink
 protected:
     // DH rototranslation matrix (it's the same matrix you get calling iKinLink->getH(true) but it's stored here for performance reason)
     yarp::sig::Matrix H_store;
+    yarp::sig::Matrix R_store;
+    yarp::sig::Vector r_store;
+    yarp::sig::Vector r_proj_store;
     // flag that is true is if H_store is valid, false otherwise
     bool H_store_valid;
 
@@ -134,7 +137,7 @@ protected:
     ///3x3, R^i_{C_i} rotational part of HC, constant
 	yarp::sig::Matrix RC;
     ///3x1, r^i_{i,C_i}, translational part of HC, constant
-    yarp::sig::Vector rc;
+    yarp::sig::Vector rc, rc_proj;
 	///3x3, I^i_i, inertia matrix, constant
 	yarp::sig::Matrix I;	
 	/// dq, joint vel
@@ -184,6 +187,8 @@ protected:
 	* Clone function
 	*/
 	virtual void clone(const iDynLink &l);  
+
+    virtual void updateHstore();
 
 public:
 
@@ -270,13 +275,13 @@ public:
     * Gets the linear velocity of the link 
     * @return current link velocity (the computation is not implemented at the moment)
     */
- 	 yarp::sig::Vector getLinVel()  const;
+ 	 const yarp::sig::Vector& getLinVel()  const;
 
  	 /**
     * Gets the linear velocity of the COM 
     * @return current COM velocity (the computation is not implemented at the moment)
     */
-	 yarp::sig::Vector getLinVelC() const;
+	 const yarp::sig::Vector& getLinVelC() const;
 
 	 /**
     * Sets the joint angle position, velocity, acceleration. constraints are automatically checked if present.
@@ -344,7 +349,7 @@ public:
 	* Get the inertia matrix
 	* @return I the inertia matrix (4x4)
 	*/
-	 yarp::sig::Matrix		getInertia()	const;
+	 const yarp::sig::Matrix&		getInertia()	const;
      /**
 	* Get the link mass
 	* @return m the link mass
@@ -358,7 +363,7 @@ public:
 	* Get the roto-translational matrix describing the COM
 	* @return HC the roto-translational matrix of the COM (4x4)
 	*/
-	 yarp::sig::Matrix		getCOM()		const;
+	 const yarp::sig::Matrix&		getCOM()		const;
     /**
 	* Get the joint velocity
 	* @return dq the joint velocity
@@ -373,37 +378,37 @@ public:
 	* Get the angular velocity of the link
 	* @return w the angular velocity of the link (3x1)
 	*/
-	 yarp::sig::Vector	getW()		const;
+	 const yarp::sig::Vector&	getW()		const;
     /**
 	* Get the angular acceleration of the link
 	* @return dW the angular acceleration of the link (3x1)
 	*/	
-	 yarp::sig::Vector	getdW()		const;
+	 const yarp::sig::Vector&	getdW()		const;
    	/**
 	* Get the angular acceleration of the motor
 	* @return dWM the angular acceleration of the motor (3x1)
 	*/	
-	 yarp::sig::Vector	getdWM()	const;
+	 const yarp::sig::Vector&	getdWM()	const;
    	/**
 	* Get the linear acceleration of the link
 	* @return ddpC the linear acceleration of the link (3x1)
 	*/	
-	 yarp::sig::Vector	getLinAcc()		const;
+	 const yarp::sig::Vector&	getLinAcc()		const;
   	/**
 	* Get the linear acceleration of the COM
 	* @return ddpC the linear acceleration of the COM (3x1)
 	*/	
-	 yarp::sig::Vector	getLinAccC()	const;
+	 const yarp::sig::Vector&	getLinAccC()	const;
   	/**
 	* Get the link force
 	* @return Mu the link force (3x1)
 	*/	
-	 yarp::sig::Vector	getForce()		const;
+	 const yarp::sig::Vector&	getForce()		const;
  	/**
 	* Get the link moment
 	* @return Mu the link moment (3x1)
 	*/	
-	 yarp::sig::Vector	getMoment()		const;
+	 const yarp::sig::Vector&	getMoment()		const;
 	/**
 	* Get the joint torque
 	* @return Tau the joint torque
@@ -413,30 +418,30 @@ public:
     * Redefine the getH of iKinLink so that it does not compute the H matrix if the
     * joint angles have not changed since the last call to this method.
     */	
-    yarp::sig::Matrix		getH();
+    const yarp::sig::Matrix&    getH();
 	/**
 	* Get the link rotational matrix, from the Denavit-Hartenberg matrix
 	* @return R the link rotational matrix (3x3)
 	*/	
-	yarp::sig::Matrix		getR();
+	const yarp::sig::Matrix&		getR();
 	/**
 	* Get the link COM's rotational matrix, from the COM matrix
 	* @return R the COM rotational matrix (3x3)
 	*/	
-	yarp::sig::Matrix		getRC()     const;
+	const yarp::sig::Matrix&		getRC()     const;
 
 	/**
 	* Get the link distance vector r, or r*R if projection is specified
 	* @param proj true/false enables or disable the projection along the rotation of the link
 	* @return r if false, r*R if true
 	*/	
-	yarp::sig::Vector		getr(bool proj=false);
+	const yarp::sig::Vector&		getr(bool proj=false);
 	/**
 	* Get the COM distance vector rC, or rC*R if projection is specified
 	* @param proj true/false enables or disable the projection along the rotation of the link
 	* @return rC if false, rC*R if true
 	*/	
-	yarp::sig::Vector		getrC(bool proj=false) const;
+	const yarp::sig::Vector&		getrC(bool proj=false) const;
 
 	 //~~~~~~~~~~~~~~~~~~~~~~
 	 //   basic functions

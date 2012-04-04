@@ -1,3 +1,6 @@
+2012-04-04 Andrea Del Prete <andrea.delprete@iit.it>
+        * iDyn.cpp/h:    optimazing the code, get methods return const reference, exploiting +=
+        * iDynInv.cpp/h: optimazing the code, get methods return const reference, exploiting +=
 2012-04-03 Andrea Del Prete <andrea.delprete@iit.it>
         * iDyn.cpp:     bug fix in iDynLink::getr() and getrC(): remove -1.0 premultiplying R^T
         * iDynInv.cpp:  bug fix in SensorLinkNewtonEuler::getr() and getrC(), bug fix in computeLinAcc() 

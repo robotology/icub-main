@@ -1,3 +1,7 @@
+2012-04-04 Andrea Del Prete <andrea.delprete@iit.it>
+        * iKinFwd.cpp/h: changing signature of iDynLink get methods,
+                         now they return const references
+                         
 2012-03-30 Andrea Del Prete <andrea.delprete@iit.it>
            * iKinFwd.cpp/h: add method DJacobian that computes the time derivative of
                             the geometric jacobian;
