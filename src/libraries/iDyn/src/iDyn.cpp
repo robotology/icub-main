@@ -442,6 +442,7 @@ void iDynLink::updateHstore()
         H_store = iKinLink::getH(true);
         R_store = H_store.submatrix(0,2,0,2);
         r_store = H_store.subcol(0,3,3);
+        r_proj_store = r_store*R_store;
         H_store_valid = true;
     }
 }
@@ -463,7 +464,6 @@ const Vector& iDynLink::getr(bool proj)
     updateHstore();
 	if(proj==false)
 		return r_store;
-	r_proj_store = r_store*R_store;
     return r_proj_store;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
