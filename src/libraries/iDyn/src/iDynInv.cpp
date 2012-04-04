@@ -1369,7 +1369,7 @@ const Vector&	SensorLinkNewtonEuler::getrC(bool proj)
 {
 	if(proj==false)
 		return rc;
-    rc_proj = rc * RC;
+    rc_proj = rc * R;
 	return rc_proj;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
