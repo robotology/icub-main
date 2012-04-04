@@ -67,7 +67,7 @@ bool VisuoThread::checkTracker(Vector *vec)
     bool track=false;
 
     trackBuffer.push_back(*vec);
-
+    
     if(isTracking() && trackBuffer.size()>minTrackBufSize)
     {
         double speed_avg[2];
@@ -114,9 +114,11 @@ bool VisuoThread::checkTracker(Vector *vec)
         // check that both images are tracking similar things
 
 
-        while(trackBuffer.size()>maxTrackBufSize)
-            trackBuffer.pop_front();
     }
+        
+    
+    while(trackBuffer.size()>maxTrackBufSize)
+        trackBuffer.pop_front();
 
     return track;
 }
@@ -697,6 +699,15 @@ bool VisuoThread::getTrack(Bottle &bStereo)
 
     for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
+        
+        
+    trackMutex.wait();
+    tracking=true;
+    trackMutex.post();
+
+    trackMode=MODE_TRACK_TEMPLATE;
+        
+    
 
     return ok;
 }
