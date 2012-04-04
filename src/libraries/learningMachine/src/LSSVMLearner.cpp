@@ -203,6 +203,14 @@ void LSSVMLearner::writeBottle(yarp::os::Bottle& bot) {
     }
     bot.addInt(this->inputs.size());
 
+    // write outputs
+    for(unsigned int i = 0; i < this->outputs.size(); i++) {
+        for(unsigned int d = 0; d < this->getCoDomainSize(); d++) {
+            bot.addDouble(this->outputs[i](d));
+        }
+    }
+    bot.addInt(this->outputs.size());
+
     // make sure to call the superclass's method
     this->IFixedSizeLearner::writeBottle(bot);
 }
@@ -210,6 +218,15 @@ void LSSVMLearner::writeBottle(yarp::os::Bottle& bot) {
 void LSSVMLearner::readBottle(yarp::os::Bottle& bot) {
     // make sure to call the superclass's method
     this->IFixedSizeLearner::readBottle(bot);
+
+    // read outputs
+    this->outputs.resize(bot.pop().asInt());
+    for(int i = this->outputs.size() - 1; i >= 0; i--) {
+        this->outputs[i].resize(this->getCoDomainSize());
+        for(int d = this->getCoDomainSize() - 1; d >= 0; d--) {
+            this->outputs[i](d) = bot.pop().asDouble();
+        }
+    }
 
     // read inputs
     this->inputs.resize(bot.pop().asInt());
@@ -219,6 +236,7 @@ void LSSVMLearner::readBottle(yarp::os::Bottle& bot) {
             this->inputs[i](d) = bot.pop().asDouble();
         }
     }
+
     double c;
     double gamma;
     bot >> this->alphas >> this->bias >> c >> gamma;
