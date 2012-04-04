@@ -203,7 +203,7 @@ void RigidBodyTransformation::computeKinematic()
 		case DYNAMIC:
 		case DYNAMIC_CORIOLIS_GRAVITY:
 		case DYNAMIC_W_ROTOR:
-			ddp = getR() * ( ddp - cross(dw,getr(true)) - cross(w,cross(w,getr(true))) ) ;
+			ddp = getR() * ( ddp + cross(dw,getr(true)) + cross(w,cross(w,getr(true))) ) ;
 			w	= getR() * w ;
 			dw	= getR() * dw ;	
 			break;
@@ -226,7 +226,7 @@ void RigidBodyTransformation::computeKinematic()
 		case DYNAMIC:
 		case DYNAMIC_CORIOLIS_GRAVITY:
 		case DYNAMIC_W_ROTOR:
-			ddp = getR().transposed() * (ddp + cross(dw,getr(true)) + cross(w,cross(w,getr(true))) );
+			ddp = getR().transposed() * (ddp - cross(dw,getr(true)) - cross(w,cross(w,getr(true))) );
 			w	= getR().transposed() * w ;
 			dw	= getR().transposed() * dw ;
 			break;
