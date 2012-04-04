@@ -513,9 +513,9 @@ protected:
 	double Tau;			
 
     // dummy matrixes/vectors
-    yarp::sig::Matrix eye3x3;
-    yarp::sig::Matrix zeros3x3;
-    yarp::sig::Vector zeros3;
+    const yarp::sig::Matrix eye3x3;
+    const yarp::sig::Matrix zeros3x3;
+    const yarp::sig::Vector zeros3;
 
 public:
 
@@ -626,10 +626,10 @@ protected:
 	yarp::sig::Vector Mu;	
 
     // dummy matrices/vectors
-    yarp::sig::Matrix eye4x4;
-    yarp::sig::Matrix eye3x3;
-    yarp::sig::Matrix zeros3x3;
-    yarp::sig::Vector zeros3;
+    const yarp::sig::Matrix eye4x4;
+    const yarp::sig::Matrix eye3x3;
+    const yarp::sig::Matrix zeros3x3;
+    const yarp::sig::Vector zeros3;
 
 public:
 

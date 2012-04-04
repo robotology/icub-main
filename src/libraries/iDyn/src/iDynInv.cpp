@@ -757,7 +757,7 @@ void OneLinkNewtonEuler::ForwardWrench( OneLinkNewtonEuler *prev)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
+: OneLinkNewtonEuler(_mode,verb,NULL), eye3x3(eye(3,3)), zeros3x3(zeros(3,3)), zeros3(zeros(3))
 {
 	info = "base";
 	w.resize(3);	w.zero();
@@ -776,13 +776,10 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const NewEulMode _mo
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
-    eye3x3 = eye(3,3);
-    zeros3x3 = zeros(3,3);
-    zeros3 = zeros(3);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, const Vector &_dw, const Vector &_ddp, const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
+: OneLinkNewtonEuler(_mode,verb,NULL), eye3x3(eye(3,3)), zeros3x3(zeros(3,3)), zeros3(zeros(3))
 {
 	info = "base";
 	w.resize(3);	w.zero();
@@ -801,9 +798,6 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, co
 	F.resize(3);	F.zero();
 	Mu.resize(3);	Mu.zero();
 	Tau = 0.0;
-    eye3x3 = eye(3,3);
-    zeros3x3 = zeros(3,3);
-    zeros3 = zeros(3);
 	setAsBase(_w,_dw,_ddp);			
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1015,7 +1009,7 @@ bool BaseLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 FinalLinkNewtonEuler::FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
+: OneLinkNewtonEuler(_mode,verb,NULL), eye4x4(eye(4,4)), eye3x3(eye(3,3)), zeros3x3(zeros(3,3)), zeros3(zeros(3))
 {
 	info = "final";
 	F.resize(3);	F.zero();
@@ -1023,14 +1017,10 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int 
 	w.resize(3);	w.zero();
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
-    eye4x4 = eye(4,4);
-    eye3x3 = eye(3,3);
-    zeros3x3 = zeros(3,3);
-    zeros3 = zeros(3);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, const NewEulMode _mode, unsigned int verb)
-: OneLinkNewtonEuler(_mode,verb,NULL)
+: OneLinkNewtonEuler(_mode,verb,NULL), eye4x4(eye(4,4)), eye3x3(eye(3,3)), zeros3x3(zeros(3,3)), zeros3(zeros(3))
 {
 	info = "final";
 	F.resize(3);	F.zero();
@@ -1038,10 +1028,6 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, 
 	w.resize(3);	w.zero();
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
-    eye4x4 = eye(4,4);
-    eye3x3 = eye(3,3);
-    zeros3x3 = zeros(3,3);
-    zeros3 = zeros(3);
 	setAsFinal(_F,_Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1232,8 +1218,8 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const NewEulMode _mode, unsigned in
 	ddpC.resize(3);	ddpC.zero();
 	H.resize(4,4); H.eye();
 	COM.resize(4,4); COM.eye();
-    R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
-	RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3); rc_proj = rc*R;
+    R = RC = eye(3,3); 
+    r = rc = r_proj = rc_proj = zeros(3);
 	I.resize(3,3); I.zero();
 	m=0.0;
 }
@@ -1248,11 +1234,6 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const Matrix &_H, const Matrix &_CO
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
 	ddpC.resize(3);	ddpC.zero();
-	H.resize(4,4); H.eye();
-	COM.resize(4,4); COM.eye();
-    R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
-	RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3); rc_proj = rc*R;
-	I.resize(3,3); I.zero();
 	setSensor(_H,_COM,_m,_I);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1280,7 +1261,6 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
 {
 	if((_COM.rows()==4)&&(_COM.cols()==4) && (_H.cols()==4) && (_H.rows()==4) && (_I.rows()==3) && (_I.cols()==3))
 	{
-		H.resize(4,4); COM.resize(4,4); I.resize(3,3);
 		H = _H; R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
 		COM = _COM; RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3); rc_proj = rc*R;
 		I = _I;
@@ -1292,8 +1272,8 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
 		m = _m;
 		H.resize(4,4); H.eye();
 		COM.resize(4,4); COM.eye();
-        R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
-		RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3); rc_proj = rc*R;
+        R = RC = eye(3,3); 
+        r = rc = r_proj = rc_proj = zeros(3);
 		I.resize(3,3); I.zero();
 		if(verbose)
         {
@@ -1373,7 +1353,7 @@ const Vector&	SensorLinkNewtonEuler::getr(bool proj)
 {
 	if(proj==false)
 		return r;
-	return r_proj;
+ 	return r_proj;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const Vector&	SensorLinkNewtonEuler::getrC(bool proj)	
@@ -2224,9 +2204,11 @@ iCubArmSensorLink::iCubArmSensorLink(const string &_type, const NewEulMode _mode
 		COM.eye(); COM(0,3) = -1.5906019e-04; COM(1,3) =   8.2873258e-05; COM(2,3) =  2.9882773e-02;
 		I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
 		I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
-		m = 7.29e-01; 
-	
+		m = 7.29e-01;
 	}
+    R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
+	RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3); rc_proj = rc*R;
+
 	//then the sensor information
 	info.clear(); info = "FT sensor " + type + " arm";
 }
@@ -2396,8 +2378,10 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 		I.zero(); 
 		
 		m = 0.0;
-	
 	}
+    R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
+	RC = COM.submatrix(0,2,0,2); rc = COM.subcol(0,3,3); rc_proj = rc*R;
+
 	//then the sensor information
 	info.clear(); info = "FT sensor " + type + " leg";
 }
