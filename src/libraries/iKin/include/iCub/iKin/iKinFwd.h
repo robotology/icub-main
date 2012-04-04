@@ -320,36 +320,36 @@ public:
     virtual bool   setStaticParameters(const double, const yarp::sig::Matrix&)    { notImplemented(verbose); return false; }
     virtual bool   setInertia(const yarp::sig::Matrix &)                          { notImplemented(verbose); return false; }
     virtual void   setMass(const double)                                          { notImplemented(verbose);               }
-    virtual bool   setCOM(const yarp::sig::Matrix&)	                              { notImplemented(verbose); return false; }
-    virtual bool   setCOM(const yarp::sig::Vector&)	                              { notImplemented(verbose); return false; }
+    virtual bool   setCOM(const yarp::sig::Matrix&)                               { notImplemented(verbose); return false; }
+    virtual bool   setCOM(const yarp::sig::Vector&)                               { notImplemented(verbose); return false; }
     virtual bool   setForce(const yarp::sig::Vector&, const yarp::sig::Vector&)   { notImplemented(verbose); return false; }
     virtual bool   setMoment(const yarp::sig::Vector&)                            { notImplemented(verbose); return false; }
     virtual void   setTorque(const double)                                        { notImplemented(verbose);               }
 
     // get
-    virtual const yarp::sig::Matrix& getInertia() const { notImplemented(verbose); return zeros1x1; }
-    virtual double            getMass()	   const { notImplemented(verbose); return 0.0;                                }
-    virtual double            getIm()      const { notImplemented(verbose); return 0.0;                                }
-    virtual double            getKr()      const { notImplemented(verbose); return 0.0;                                }
-    virtual double            getFs()      const { notImplemented(verbose); return 0.0;                                }
-    virtual double            getFv()      const { notImplemented(verbose); return 0.0;                                }
-    virtual const yarp::sig::Matrix& getCOM()     const { notImplemented(verbose); return zeros1x1; }
-    virtual double            getDAng()    const { notImplemented(verbose); return 0.0;                                }
-    virtual double            getD2Ang()   const { notImplemented(verbose); return 0.0;                                }
-    virtual const yarp::sig::Matrix& getR()             { notImplemented(verbose); return zeros1x1; }
-    virtual const yarp::sig::Matrix& getRC()            { notImplemented(verbose); return zeros1x1; }
-    virtual const yarp::sig::Vector& getr()             { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getrC()            { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getW()       const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getdW()      const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getdWM()     const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getLinAcc()  const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getLinAccC() const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getLinVel()  const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getLinVelC() const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getForce()   const { notImplemented(verbose); return zeros1; }
-    virtual const yarp::sig::Vector& getMoment()  const { notImplemented(verbose); return zeros1; }
-    virtual double            getTorque()  const { notImplemented(verbose); return 0.0;                                }
+    virtual const  yarp::sig::Matrix &getInertia() const { notImplemented(verbose); return zeros1x1; }
+    virtual double                    getMass()    const { notImplemented(verbose); return 0.0;      }
+    virtual double                    getIm()      const { notImplemented(verbose); return 0.0;      }
+    virtual double                    getKr()      const { notImplemented(verbose); return 0.0;      }
+    virtual double                    getFs()      const { notImplemented(verbose); return 0.0;      }
+    virtual double                    getFv()      const { notImplemented(verbose); return 0.0;      }
+    virtual const  yarp::sig::Matrix &getCOM()     const { notImplemented(verbose); return zeros1x1; }
+    virtual double                    getDAng()    const { notImplemented(verbose); return 0.0;      }
+    virtual double                    getD2Ang()   const { notImplemented(verbose); return 0.0;      }
+    virtual const  yarp::sig::Matrix &getR()             { notImplemented(verbose); return zeros1x1; }
+    virtual const  yarp::sig::Matrix &getRC()            { notImplemented(verbose); return zeros1x1; }
+    virtual const  yarp::sig::Vector &getr()             { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getrC()            { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getW()       const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getdW()      const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getdWM()     const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getLinAcc()  const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getLinAccC() const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getLinVel()  const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getLinVelC() const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getForce()   const { notImplemented(verbose); return zeros1;   }
+    virtual const  yarp::sig::Vector &getMoment()  const { notImplemented(verbose); return zeros1;   }
+    virtual double                    getTorque()  const { notImplemented(verbose); return 0.0;      }
 };
 
 
