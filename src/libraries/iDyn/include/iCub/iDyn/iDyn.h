@@ -555,6 +555,8 @@ protected:
 	///pointer to OneChainNewtonEuler class, to be used for computing forces and torques
 	OneChainNewtonEuler *NE;
 
+    const yarp::sig::Vector zero0;
+
 	/**
 	* Clone function
 	*/
@@ -735,13 +737,13 @@ public:
     * Returns the i-th link force
     * @return the i-th link force
     */
-	yarp::sig::Vector getForce(const unsigned int iLink) const;
+	const yarp::sig::Vector& getForce(const unsigned int iLink) const;
 
 	/**
     * Returns the i-th link moment
     * @return the i-th link moment
     */
-	yarp::sig::Vector getMoment(const unsigned int iLink) const;
+	const yarp::sig::Vector& getMoment(const unsigned int iLink) const;
 
 	/**
     * Returns the i-th link torque
@@ -771,7 +773,7 @@ public:
     * Returns the i-th link linear acceleration of the COM
     * @return the i-th link linear acceleration of the COM
     */
-	yarp::sig::Vector getLinAccCOM(const unsigned int i) const;
+	const yarp::sig::Vector& getLinAccCOM(const unsigned int i) const;
 
 	/**
     * Returns the i-th link angular velocity

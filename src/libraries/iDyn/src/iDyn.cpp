@@ -730,14 +730,14 @@ Vector iDynChain::getLinAcc(const unsigned int i) const
     }	
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynChain::getLinAccCOM(const unsigned int i) const
+const Vector& iDynChain::getLinAccCOM(const unsigned int i) const
 {
     if(i<N)
 		return allList[i]->getLinAccC();
     else 
     {
 		if(verbose)	fprintf(stderr,"iDynChain error: getLinAccCOM() failed due to out of range index: %d >= %d \n",i,N);
-		return Vector(0);
+		return zero0;
     }	
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -774,25 +774,25 @@ iDynLink * iDynChain::refLink(const unsigned int i)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynChain::getForce(const unsigned int iLink)	const		
+const Vector& iDynChain::getForce(const unsigned int iLink)	const		
 {
 	if(iLink<N)
 		return allList[iLink]->getForce();
 	else 
 	{
 		if(verbose) fprintf(stderr,"iDynChain error: getForce() failed due to out of range index: %d >= %d \n",iLink,N);
-		return Vector(0);
+		return zero0;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynChain::getMoment(const unsigned int iLink) const	
+const Vector& iDynChain::getMoment(const unsigned int iLink) const	
 {
 	if(iLink<N)
 		return allList[iLink]->getMoment();
 	else 
 	{
 		if(verbose) fprintf(stderr,"iDynChain error: getMoment() failed due to out of range index: %d >= %d \n",iLink,N);
-		return Vector(0);
+		return zero0;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
