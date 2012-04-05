@@ -21,7 +21,7 @@ using namespace iCub::skinDynLib;
 dynContactList::dynContactList()
 :vector<dynContact>(){}
 
-dynContactList::dynContactList(size_type n, const dynContact& value)
+dynContactList::dynContactList(const size_type &n, const dynContact& value)
 :vector<dynContact>(n, value){}
 
 

@@ -30,6 +30,7 @@
 #define __SKINCONTLIST_H__
 
 #include <vector>
+#include <map>
 #include <yarp/os/Portable.h>
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/dynContactList.h"
@@ -51,7 +52,19 @@ public:
 	//   CONSTRUCTORS
 	//~~~~~~~~~~~~~~~~~~~~~~
     skinContactList();
-    skinContactList( size_type n, const skinContact& value = skinContact());
+    skinContactList(const size_type &n, const skinContact& value = skinContact());
+
+    /**
+    * Select all the contacts that have the specified body part.
+    * @param bp the interested body part
+    * @return a list containing only the skin contacts with the specified body part
+    */
+    virtual skinContactList filterBodyPart(const BodyPart &bp);
+
+    /**
+    * Split the list in N lists dividing the contacts per body part.
+    */
+    virtual std::map<BodyPart, skinContactList> splitPerBodyPart();
 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,6 +87,12 @@ public:
      * to dynContact.
      */
     virtual dynContactList toDynContactList() const;
+
+    /**
+    * Create a skinContactList starting from a dynContactList.
+    * @return true if operation succeeded, false otherwise
+    */
+    //virtual bool fromDynContactList(dynContactList &l);
     
     /**
      * Useful to print some information.
@@ -85,5 +104,4 @@ public:
 
 }
 #endif
-
 

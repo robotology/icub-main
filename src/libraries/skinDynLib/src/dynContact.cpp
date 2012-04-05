@@ -26,30 +26,32 @@ using namespace iCub::skinDynLib;
 //~~~~~~~~~~~~~~~~~~~~~~
 //   DYN CONTACT
 //~~~~~~~~~~~~~~~~~~~~~~
+unsigned long dynContact::ID = 1;
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dynContact::dynContact(){
-    Vector pos(3);
-    pos.zero();
-    init(UNKNOWN_BODY_PART, 0, pos);
+    init(UNKNOWN_BODY_PART, 0, zeros(3));
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dynContact::dynContact(BodyPart _bodyPart, unsigned int _linkNumber, const Vector &_CoP){
+dynContact::dynContact(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const Vector &_CoP){
     init(_bodyPart, _linkNumber, _CoP);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dynContact::dynContact(BodyPart _bodyPart, unsigned int _linkNumber, const Vector &_CoP, const Vector &_Mu){
+dynContact::dynContact(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const Vector &_CoP, const Vector &_Mu){
     init(_bodyPart, _linkNumber, _CoP, _Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dynContact::dynContact(BodyPart _bodyPart, unsigned int _linkNumber, const Vector &_CoP, const Vector &_Mu, const Vector &_Fdir){
+dynContact::dynContact(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const Vector &_CoP, const Vector &_Mu, const Vector &_Fdir){
     init(_bodyPart, _linkNumber, _CoP, _Mu, _Fdir);    
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void dynContact::init(BodyPart _bodyPart, unsigned int _linkNumber, const Vector &_CoP, const Vector &_Mu, const Vector &_Fdir){
+void dynContact::init(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const Vector &_CoP, const Vector &_Mu, const Vector &_Fdir){
+    contactId = ID++;
     setBodyPart(_bodyPart);
     setLinkNumber(_linkNumber); 
     setCoP(_CoP);
     Mu.resize(3, 0.0);
     Fdir.resize(3, 0.0);
+    F.resize(3, 0.0);
     Fmodule = 0.0;
 
     if(_Mu.size()==0)
@@ -65,29 +67,25 @@ void dynContact::init(BodyPart _bodyPart, unsigned int _linkNumber, const Vector
 //~~~~~~~~~~~~~~~~~~~~~~
 //   GET methods
 //~~~~~~~~~~~~~~~~~~~~~~
-Vector dynContact::getForceMoment() const{
-	Vector ret(6); ret.zero();
-    Vector F = Fmodule*Fdir;
-	ret[0]=F[0]; ret[1]=F[1]; ret[2]=F[2];
-	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];
-	return ret;
-}
+Vector dynContact::getForceMoment() const{ return cat(F, Mu); }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector dynContact::getForce() const{ return Fmodule*Fdir;}
+const Vector& dynContact::getForce() const{ return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector	dynContact::getForceDirection() const{ return Fdir;}
+const Vector& dynContact::getForceDirection() const{ return Fdir;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double dynContact::getForceModule() const{ return Fmodule;}
+const double& dynContact::getForceModule() const{ return Fmodule;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector dynContact::getMoment() const{ return Mu;}
+const Vector& dynContact::getMoment() const{ return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector dynContact::getCoP() const{ return CoP;}
+const Vector& dynContact::getCoP() const{ return CoP;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-unsigned int dynContact::getLinkNumber() const{ return linkNumber;}
+const unsigned int& dynContact::getLinkNumber() const{ return linkNumber;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-BodyPart dynContact::getBodyPart() const{ return bodyPart;}
+const BodyPart& dynContact::getBodyPart() const{ return bodyPart;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string dynContact::getBodyPartName() const{ return BodyPart_s[bodyPart];}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+const unsigned long& dynContact::getId() const{ return contactId;}
 
 //~~~~~~~~~~~~~~~~~~~~~~
 //   IS methods
@@ -101,19 +99,21 @@ bool dynContact::isForceDirectionKnown() const{ return fDirKnown;}
 bool dynContact::setForce(const Vector &_F){
     if(!checkVectorDim(_F, 3, "force"))
         return false;
+    F = _F;
     Fmodule = norm(_F);
     if(Fmodule!=0.0)
         Fdir = _F / Fmodule;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool dynContact::setForceModule(double _Fmodule){
+bool dynContact::setForceModule(const double &_Fmodule){
     if(_Fmodule<0){
         if(verbose)
             fprintf(stderr, "Error in dynContact: negative force module, %f\n", _Fmodule);
         return false;
     }
     Fmodule = _Fmodule;
+    F=Fmodule*Fdir;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,6 +123,7 @@ bool dynContact::setForceDirection(const Vector &_Fdir){
     double FdirNorm = norm(_Fdir);
     if(FdirNorm != 0.0)
         Fdir = _Fdir / FdirNorm;
+    F=Fmodule*Fdir;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,11 +152,11 @@ bool dynContact::setCoP(const Vector &_CoP){
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void dynContact::setLinkNumber(unsigned int _linkNum){
+void dynContact::setLinkNumber(const unsigned int &_linkNum){
     linkNumber = _linkNum;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void dynContact::setBodyPart(BodyPart _bodyPart){
+void dynContact::setBodyPart(const BodyPart &_bodyPart){
     bodyPart = _bodyPart;
 }
 //~~~~~~~~~~~~~~~~~~~~~~
@@ -219,18 +220,18 @@ bool dynContact::read(ConnectionReader& connection){
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string dynContact::toString(int precision) const{
+string dynContact::toString(const int &precision) const{
     stringstream res;
     res<< "Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<< CoP.toString(precision)
         << ", F: "<< getForce().toString(precision)<< ", M: "<< Mu.toString(precision);
     return res.str();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void dynContact::setVerbose(unsigned int verb){
+void dynContact::setVerbose(const unsigned int &verb){
     verbose = verb;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool dynContact::checkVectorDim(const Vector &v, unsigned int dim, const string &descr){
+bool dynContact::checkVectorDim(const Vector &v, const unsigned int &dim, const string &descr){
     if(v.length() != dim){
         if(verbose)
             fprintf(stderr, "Error in dynContact: unexpected dimension of vector %s, %d\n", descr.c_str(), (int)v.length());

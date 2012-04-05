@@ -50,7 +50,7 @@ public:
 	//   CONSTRUCTORS
 	//~~~~~~~~~~~~~~~~~~~~~~
     dynContactList();
-    dynContactList( size_type n, const dynContact& value = dynContact());
+    dynContactList(const size_type &n, const dynContact& value = dynContact());
 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~

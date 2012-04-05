@@ -30,11 +30,11 @@ namespace iCub
 namespace skinDynLib
 {
 
-// print a matrix nicely
-void printMatrix(yarp::sig::Matrix &m, std::string description="", unsigned int precision=3);
-
-// print a vector nicely
-void printVector(yarp::sig::Vector &v, std::string description="", unsigned int precision=3);
+//// print a matrix nicely
+//void printMatrix(yarp::sig::Matrix &m, std::string description="", unsigned int precision=3);
+//
+//// print a vector nicely
+//void printVector(yarp::sig::Vector &v, std::string description="", unsigned int precision=3);
 
 enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 

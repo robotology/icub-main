@@ -15,25 +15,25 @@ using namespace yarp::sig;
 using namespace iCub::skinDynLib;
 
 // print a matrix nicely
-void iCub::skinDynLib::printMatrix(Matrix &m, std::string description, unsigned int precision)
-{
-    if(description.compare("") != 0)
-        cout<<description<<endl;
-    for(int i=0;i<m.rows();i++){
-	    for(int j=0;j<m.cols();j++)
-		    cout<< setiosflags(ios::fixed)<< setprecision(precision)<< setw(precision+3)<<m(i,j)<<"\t";
-	    cout<<endl;
-    }
-}
-
-// print a vector nicely
-void iCub::skinDynLib::printVector(yarp::sig::Vector &v, std::string description, unsigned int precision)
-{
-    if(description.compare("") != 0)
-        cout<<description<<endl;
-    for(size_t j=0;j<v.length();j++)
-	    cout<< setiosflags(ios::fixed)<< setprecision(precision)<< setw(precision+3)<<v(j)<<"\t";
-    cout<<endl;
-}
+//void iCub::skinDynLib::printMatrix(Matrix &m, std::string description, unsigned int precision)
+//{
+//    if(description.compare("") != 0)
+//        cout<<description<<endl;
+//    for(int i=0;i<m.rows();i++){
+//	    for(int j=0;j<m.cols();j++)
+//		    cout<< setiosflags(ios::fixed)<< setprecision(precision)<< setw(precision+3)<<m(i,j)<<"\t";
+//	    cout<<endl;
+//    }
+//}
+//
+//// print a vector nicely
+//void iCub::skinDynLib::printVector(yarp::sig::Vector &v, std::string description, unsigned int precision)
+//{
+//    if(description.compare("") != 0)
+//        cout<<description<<endl;
+//    for(size_t j=0;j<v.length();j++)
+//	    cout<< setiosflags(ios::fixed)<< setprecision(precision)<< setw(precision+3)<<v(j)<<"\t";
+//    cout<<endl;
+//}
 
 

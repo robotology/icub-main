@@ -20,13 +20,13 @@ using namespace std;
 //~~~~~~~~~~~~~~~~~~~~~~
 //   CONSTRUCTORS
 //~~~~~~~~~~~~~~~~~~~~~~
-skinContact::skinContact(BodyPart _bodyPart, SkinPart _skinPart, unsigned int _linkNumber, const Vector &_CoP, 
-                         const Vector &_geoCenter, unsigned int _activeTaxels, double _pressure)
+skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, const unsigned int &_activeTaxels, const double &_pressure)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
 geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-skinContact::skinContact(BodyPart _bodyPart, SkinPart _skinPart, unsigned int _linkNumber, const Vector &_CoP, 
-                         const Vector &_geoCenter, unsigned int _activeTaxels, double _pressure, const Vector &_normalDir)
+skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, const unsigned int &_activeTaxels, const double &_pressure, const Vector &_normalDir)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
 geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure), normalDir(_normalDir){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,11 +35,11 @@ skinContact::skinContact()
 //~~~~~~~~~~~~~~~~~~~~~~
 //   GET methods
 //~~~~~~~~~~~~~~~~~~~~~~
-Vector skinContact::getGeoCenter() const{ return geoCenter; }
-Vector skinContact::getNormalDir() const{ return normalDir; }
-double skinContact::getPressure() const{ return pressure; }
-unsigned int skinContact::getActiveTaxels() const{ return activeTaxels; }
-SkinPart skinContact::getSkinPart() const{ return skinPart; }
+const Vector& skinContact::getGeoCenter() const{ return geoCenter; }
+const Vector& skinContact::getNormalDir() const{ return normalDir; }
+const double& skinContact::getPressure() const{ return pressure; }
+const unsigned int& skinContact::getActiveTaxels() const{ return activeTaxels; }
+const SkinPart& skinContact::getSkinPart() const{ return skinPart; }
 string skinContact::getSkinPartName() const{ return SkinPart_s[skinPart]; }
 //~~~~~~~~~~~~~~~~~~~~~~
 //   SET methods
@@ -58,21 +58,21 @@ bool skinContact::setNormalDir(const Vector &_normalDir){
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool skinContact::setPressure(double _pressure){
+bool skinContact::setPressure(const double &_pressure){
     if(pressure<=0)
         return false;
     pressure = _pressure;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool skinContact::setActiveTaxels(unsigned int _activeTaxels){
+bool skinContact::setActiveTaxels(const unsigned int &_activeTaxels){
     if(_activeTaxels==0)
         return false;
     activeTaxels = _activeTaxels;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void skinContact::setSkinPart(SkinPart _skinPart){
+void skinContact::setSkinPart(const SkinPart &_skinPart){
     skinPart = _skinPart;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,7 +102,7 @@ bool skinContact::read(ConnectionReader& connection){
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string skinContact::toString(int precision) const{
+string skinContact::toString(const int &precision) const{
     stringstream res;
     res<< dynContact::toString(precision)<< ", Skin part: "<< SkinPart_s[skinPart]<< ", geometric center: "<< 
         geoCenter.toString(precision)<< ", normal direction: "<< normalDir.toString(precision)<< 
