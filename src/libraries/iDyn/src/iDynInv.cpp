@@ -1486,12 +1486,12 @@ bool	SensorLinkNewtonEuler::setAngAccM	(const Vector &_dwM)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeAngVel( iDynLink *link)
 {
-	w = getR().transposed() * link->getW();
+	w = link->getW() * R;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeAngAcc( iDynLink *link)
 {
-	dw = getR().transposed() * link->getdW();
+	dw = link->getdW() * R;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
@@ -1501,9 +1501,12 @@ void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		ddp = getR().transposed() * link->getLinAcc() 
+        ddp = link->getLinAcc() * R;
+        ddp -= cross(dw, r_proj);
+        ddp -= cross(w, cross(w, r_proj));
+		/*ddp = getR().transposed() * link->getLinAcc() 
 			- cross(dw,getr(true))
-			- cross(w,cross(w,getr(true)));
+			- cross(w,cross(w,getr(true)));*/
 		break;
 	case STATIC:
 		ddp = getR().transposed() * link->getLinAcc();
@@ -1518,7 +1521,10 @@ void SensorLinkNewtonEuler::computeLinAccC()
 	case DYNAMIC:
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
-		ddpC = ddp + cross(dw,getrC()) + cross(w,cross(w,getrC()));
+        ddpC = ddp;
+        ddpC += cross(dw,rc);
+        ddpC += cross(w,cross(w,rc));
+		//ddpC = ddp + cross(dw,rc) + cross(w,cross(w,rc));
 		break;
 	case STATIC:
 		ddpC = ddp;
@@ -1528,12 +1534,17 @@ void SensorLinkNewtonEuler::computeLinAccC()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeForce(iDynLink *link)
 {
-	F = getR().transposed() * link->getForce() + m * getLinAccC()  ;
+    F = link->getForce() * R;
+    F += m * ddpC;
+	//F = getR().transposed() * link->getForce() + m * getLinAccC()  ;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeForceToLink ( iDynLink *link)
 {
-	link->setForce( getR()*( F - m * getLinAccC() ) );
+    Vector temp = F;
+    temp -= m*ddpC;
+    link->setForce(R*temp);
+	//link->setForce( R*( F - m * ddpC ) );
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
@@ -1541,13 +1552,21 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 	switch(mode)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
-	case DYNAMIC:	
-		link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
-			- cross(getrC(),(m * getLinAccC()))
-			- getInertia() * getR().transposed() * getAngAcc() 
-			- cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
-			));
-		break;
+	case DYNAMIC:
+        {
+            Vector temp = Mu;
+            temp += cross(r_proj, link->getForce()*R);
+			temp -= cross(rc, m*ddpC);
+			temp -= I * (dw*R);
+			temp -= cross( w*R , I*(w*R));
+            link->setMoment(R*temp);
+		    /*link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
+			    - cross(getrC(),(m * getLinAccC()))
+			    - getInertia() * getR().transposed() * getAngAcc() 
+			    - cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
+			    ));*/
+		    break;
+        }
 	case DYNAMIC_W_ROTOR:
 		link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
 			- cross(getrC(),(m * getLinAccC()))
@@ -1558,9 +1577,15 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 			));
 		break;
 	case STATIC:
-		link->setMoment( getR() * ( Mu + cross(getr(true),getR().transposed()*link->getForce()) )			
-			- cross(getrC(), m*getLinAccC()) );
-	break;
+        {
+            Vector temp = Mu;
+            temp += cross(r_proj, link->getForce()*R);
+            temp -= cross(rc, m*ddpC);
+            link->setMoment(R*temp);
+		    /*link->setMoment( getR() * ( Mu + cross(getr(true),getR().transposed()*link->getForce()) )			
+			    - cross(getrC(), m*getLinAccC()) );*/
+	        break;
+        }
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1569,13 +1594,18 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 	switch(mode)
 	{
 	case DYNAMIC_CORIOLIS_GRAVITY:
-	case DYNAMIC:		
-	Mu = cross(getrC(),(m * getLinAccC()))  
-            - cross(getr(true),getR().transposed()*link->getForce()) 
-			+ getR().transposed() * link->getMoment()
-			+ getInertia() * getR().transposed() * getAngAcc() 
-			+ cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel());
-		break;
+	case DYNAMIC:
+            Mu = cross(rc, m*ddpC);
+            Mu -= cross(r_proj, link->getForce()*R);
+            Mu += link->getMoment()*R;
+            Mu += I * (dw*R);
+            Mu += cross( w*R , I*(w*R));
+	        /*Mu = cross(getrC(),(m * getLinAccC()))
+                - cross(getr(true),getR().transposed()*link->getForce()) 
+			    + getR().transposed() * link->getMoment()
+			    + getInertia() * getR().transposed() * getAngAcc() 
+			    + cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel());*/
+		    break;
 	case DYNAMIC_W_ROTOR:
 	Mu =    cross(getrC(),(m * getLinAccC()))  
             - cross(getr(true),getR().transposed()*link->getForce()) 
@@ -1587,19 +1617,22 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 
 		break;
 	case STATIC:
-		Mu = cross(getrC(), m*getLinAccC()) 
+        Mu = cross(rc, m*ddpC);
+        Mu -= cross(r_proj, link->getForce()*R);
+        Mu += link->getMoment()*R;
+		/*Mu = cross(getrC(), m*getLinAccC()) 
             - cross(getr(true),getR().transposed()*link->getForce()) 
-			+ getR().transposed() * link->getMoment();
-	break;
+			+ getR().transposed() * link->getMoment();*/
+	    break;
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector SensorLinkNewtonEuler::getForceMoment() const
 {
-	Vector ret(6); ret.zero();
+	/*Vector ret(6); ret.zero();
 	ret[0]=F[0]; ret[1]=F[1]; ret[2]=F[2];
-	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];
-	return ret;
+	ret[3]=Mu[0]; ret[4]=Mu[1]; ret[5]=Mu[2];*/
+	return cat(F, Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string SensorLinkNewtonEuler::getType() const 
@@ -1829,9 +1862,8 @@ void OneChainNewtonEuler::BackwardKinematicFromEnd(const Vector &_w, const Vecto
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardWrenchFromEnd()
 {    
-    for(int i=nEndEff-1; i>=0; i--){
+    for(int i=nEndEff-1; i>=0; i--)
 		neChain[i]->BackwardWrench(neChain[i+1]);
-    }
 
 	for(int i=nEndEff-1; i>0; i--)
 		neChain[i]->computeTorque(neChain[i-1]);
