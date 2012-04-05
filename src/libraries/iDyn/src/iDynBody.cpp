@@ -2208,6 +2208,11 @@ unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void iDynSensorTorsoNode::clearContactList()
+{
+    leftSensor->clearContactList();
+    rightSensor->clearContactList();
+}
 
 
 

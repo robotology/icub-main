@@ -1369,6 +1369,9 @@ public:
 	yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false) 
     { return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); }
 
+
+    void clearContactList();
+
 	
 };
 
