@@ -604,17 +604,25 @@ void inverseDynamics::run()
     dynContacts = icub->upperTorso->leftSensor->getContactList();
     const dynContactList& contactListR = icub->upperTorso->rightSensor->getContactList();
     dynContacts.insert(dynContacts.begin(), contactListR.begin(), contactListR.end());
-    // for each dynContact find the related skinContact and set the wrench in it
+    // for each dynContact find the related skinContact (if any) and set the wrench in it
     unsigned long cId;
+    bool contactFound=false;
     for(unsigned int i=0; i<dynContacts.size(); i++)
     {
         cId = dynContacts[i].getId();
         for(unsigned int j=0; j<skinContacts.size(); j++)
+        {
             if(cId == skinContacts[j].getId())
             {
                 skinContacts[j].setForceMoment( dynContacts[i].getForceMoment() );
+                contactFound = true;
                 j = skinContacts.size();    // break from the inside for loop
             }
+        }
+        // if there is no associated skin contact, create one
+        if(!contactFound)
+            skinContacts.push_back(skinContact(dynContacts[i]));
+        contactFound = false;
     }
 
     F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
