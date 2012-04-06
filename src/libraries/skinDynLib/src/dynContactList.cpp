@@ -52,10 +52,10 @@ bool dynContactList::write(ConnectionWriter& connection){
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string dynContactList::toString() const{
+string dynContactList::toString(const int &precision) const{
     stringstream ss;
     for(const_iterator it=begin();it!=end();it++)
-        ss<<"- "<<it->toString()<<";\n";
+        ss<<"- "<<it->toString(precision)<<";\n";
     return ss.str();
 }
 

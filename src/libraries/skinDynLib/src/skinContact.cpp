@@ -20,10 +20,13 @@ using namespace std;
 //~~~~~~~~~~~~~~~~~~~~~~
 //   CONSTRUCTORS
 //~~~~~~~~~~~~~~~~~~~~~~
+skinContact::skinContact(const dynContact &c)
+    :dynContact(c), skinPart(UNKNOWN_SKIN_PART), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, const unsigned int &_activeTaxels, const double &_pressure)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure){}
+geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure), normalDir(zeros(3)){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, const unsigned int &_activeTaxels, const double &_pressure, const Vector &_normalDir)
@@ -31,7 +34,7 @@ skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, c
 geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure), normalDir(_normalDir){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact()
-: skinPart(UNKNOWN_SKIN_PART), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
+: dynContact(), skinPart(UNKNOWN_SKIN_PART), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
 //~~~~~~~~~~~~~~~~~~~~~~
 //   GET methods
 //~~~~~~~~~~~~~~~~~~~~~~

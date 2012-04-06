@@ -67,6 +67,8 @@ public:
     */
     skinContact();
 
+    skinContact(const dynContact &c);
+
     /**
     * Constructor
     * @param _bodyPart the part of the body

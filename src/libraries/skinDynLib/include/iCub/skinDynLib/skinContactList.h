@@ -97,7 +97,7 @@ public:
     /**
      * Useful to print some information.
      */
-	virtual std::string toString() const;
+	virtual std::string toString(const int &precision=-1) const;
 };
 
 }

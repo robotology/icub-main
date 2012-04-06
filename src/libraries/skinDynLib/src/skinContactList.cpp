@@ -90,11 +90,11 @@ dynContactList skinContactList::toDynContactList() const
 //    return true;
 //}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string skinContactList::toString() const
+string skinContactList::toString(const int &precision) const
 {
     stringstream ss;
     for(const_iterator it=begin();it!=end();it++)
-        ss<<"- "<<it->toString()<<";\n";
+        ss<<"- "<<it->toString(precision)<<";\n";
     return ss.str();
 }
 

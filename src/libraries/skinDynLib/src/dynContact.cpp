@@ -192,6 +192,7 @@ void dynContact::unfixMoment(){ muKnown=false;}
 bool dynContact::write(ConnectionWriter& connection){
     //connection.declareSizes();
 
+    connection.appendInt(contactId);
     connection.appendInt(bodyPart);    // left_arm, right_arm, ...
     connection.appendInt(linkNumber);
     for(int i=0;i<3;i++) connection.appendDouble(CoP[i]);
@@ -210,6 +211,7 @@ bool dynContact::read(ConnectionReader& connection){
     // auto-convert text mode interaction
     connection.convertTextMode();
     // populate the object
+    contactId   = connection.expectInt();
     bodyPart    = (BodyPart)connection.expectInt();
     linkNumber  = connection.expectInt();
     for(int i=0;i<3;i++) CoP[i] = connection.expectDouble();
