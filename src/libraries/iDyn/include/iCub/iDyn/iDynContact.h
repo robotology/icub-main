@@ -54,6 +54,8 @@ class iDynContactSolver : public iDynSensor
 protected:        
     /// list of contacts acting on the link chain
     iCub::skinDynLib::dynContactList contactList;
+    // empty list
+    const iCub::skinDynLib::dynContactList nullList;
     // body part related to this solver
     iCub::skinDynLib::BodyPart      bodyPart;
 
@@ -117,13 +119,6 @@ public:
     bool addContacts(const iCub::skinDynLib::dynContactList &contacts);
 
     /**
-     * Remove the specified contact from the contact list.
-     * @param contactId id of the contact to remove
-     * @return true if operation succeeded, false otherwise
-     */
-    bool removeContact(const int contactId);
-
-    /**
      * Clear the contact list.
      */
     void clearContactList();
@@ -133,14 +128,14 @@ public:
      * @param FMsens the wrench measured by the F/T sensor
      * @return A copy of the external contact list
      */
-    iCub::skinDynLib::dynContactList computeExternalContacts(const yarp::sig::Vector &FMsens);
+    const iCub::skinDynLib::dynContactList& computeExternalContacts(const yarp::sig::Vector &FMsens);
 
     /**
      * Compute an estimate of the external contact wrenches 
      * (assuming the F/T sensor measure have already been set)
      * @return A copy of the external contact list
      */
-    iCub::skinDynLib::dynContactList computeExternalContacts();
+    const iCub::skinDynLib::dynContactList& computeExternalContacts();
 
     /**
      * Compute an estimate of the external and internal contact wrenches (joint torques included).
@@ -154,7 +149,7 @@ public:
     /**
      * @return A copy of the external contact list
      */
-    iCub::skinDynLib::dynContactList getContactList() const;
+    const iCub::skinDynLib::dynContactList& getContactList() const;
 
     /**
 	 * Returns the end effector force-moment as a single (6x1) vector
