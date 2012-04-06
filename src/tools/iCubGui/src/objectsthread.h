@@ -22,7 +22,7 @@
 #include <qthread.h>
 #include <vector>
 #include <yarp/sig/Vector.h>
-#include <iCub/skinDynLib/dynContactList.h>
+#include <iCub/skinDynLib/skinContactList.h>
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
@@ -75,7 +75,7 @@ public:
 
     inline void manage(yarp::os::Bottle *msg);
     inline void manage(yarp::sig::VectorOf<unsigned char> *img);
-    inline void manage(iCub::skinDynLib::dynContactList &forces);
+    inline void manage(iCub::skinDynLib::skinContactList &forces);
 
     void draw()
     {
@@ -91,7 +91,7 @@ public:
             manage(imgTex);
         }
 
-        for (iCub::skinDynLib::dynContactList *forces; forces=mForcePort.read(false);) 
+        for (iCub::skinDynLib::skinContactList *forces; forces=mForcePort.read(false);) 
         {        
             manage(*forces);
         }
@@ -171,7 +171,7 @@ protected:
 
     yarp::os::BufferedPort<yarp::os::Bottle> mObjPort;
     yarp::os::BufferedPort<yarp::sig::VectorOf<unsigned char> > mTexPort;
-    yarp::os::BufferedPort<iCub::skinDynLib::dynContactList> mForcePort;
+    yarp::os::BufferedPort<iCub::skinDynLib::skinContactList> mForcePort;
 };
 
 void ObjectsManager::manage(yarp::os::Bottle *msg)
@@ -362,7 +362,7 @@ void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
     }
 }
 
-void ObjectsManager::manage(iCub::skinDynLib::dynContactList &forces)
+void ObjectsManager::manage(iCub::skinDynLib::skinContactList &forces)
 {
     for (int p=0; p<8; ++p)
     {

@@ -186,7 +186,7 @@ private:
     BufferedPort<Vector> *port_com_hd;
     BufferedPort<Vector> *port_com_to;
     BufferedPort<Vector> *port_monitor;
-    BufferedPort<iCub::skinDynLib::dynContactList> *port_dyn_contacts;
+    BufferedPort<iCub::skinDynLib::skinContactList> *port_contacts;
     BufferedPort<Vector> *port_dumpvel;
     // ports outputing the external dynamics seen at the F/T sensor
     BufferedPort<Vector> *port_external_ft_arm_left;
@@ -235,6 +235,9 @@ private:
     Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
     Vector F_ext_sens_right_arm, F_ext_sens_left_arm;       // external wrench seen at the F/T sensors
     Vector F_ext_sens_right_leg, F_ext_sens_left_leg;       // external wrench seen at the F/T sensors
+
+    iCub::skinDynLib::skinContactList skinContacts;
+    iCub::skinDynLib::dynContactList dynContacts;
 
 
     // icub model
