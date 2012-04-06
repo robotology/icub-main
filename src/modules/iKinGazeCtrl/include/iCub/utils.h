@@ -20,6 +20,7 @@
 #define __UTILS_H__
 
 #include <string>
+#include <algorithm>
 
 #include <yarp/os/Thread.h>
 #include <yarp/os/Event.h>
@@ -130,6 +131,13 @@ public:
     bool   &get_isSaccadeUnderway()  { return saccadeUnderway;    }
     double &get_minAllowedVergence() { return minAllowedVergence; }
 };
+
+
+// saturate value val between min and max
+inline double sat(const double val, const double min, const double max)
+{
+    return std::min(std::max(val,min),max);
+}
 
 
 // Allocates Projection Matrix Prj for the camera read from camerasFile

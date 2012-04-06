@@ -533,13 +533,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 /************************************************************************/
 void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 {
-    double min_rad=CTRL_DEG2RAD*min_deg;
-    double max_rad=CTRL_DEG2RAD*max_deg;
-
-    min_rad=(min_rad<neckPitchMin)?neckPitchMin:(min_rad>neckPitchMax?neckPitchMax:min_rad);
-    max_rad=(max_rad<neckPitchMin)?neckPitchMin:(max_rad>neckPitchMax?neckPitchMax:max_rad);
-
+    double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
+    double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
     double cur_rad=(*chainNeck)(0).getAng();
+
     bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.wait();
@@ -554,13 +551,10 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 {
-    double min_rad=CTRL_DEG2RAD*min_deg;
-    double max_rad=CTRL_DEG2RAD*max_deg;
-
-    min_rad=(min_rad<neckRollMin)?neckRollMin:(min_rad>neckRollMax?neckRollMax:min_rad);
-    max_rad=(max_rad<neckRollMin)?neckRollMin:(max_rad>neckRollMax?neckRollMax:max_rad);
-
+    double min_rad=sat(CTRL_DEG2RAD*min_deg,neckRollMin,neckRollMax);
+    double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
     double cur_rad=(*chainNeck)(1).getAng();
+
     bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.wait();
@@ -575,13 +569,10 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 {
-    double min_rad=CTRL_DEG2RAD*min_deg;
-    double max_rad=CTRL_DEG2RAD*max_deg;
-
-    min_rad=(min_rad<neckYawMin)?neckYawMin:(min_rad>neckYawMax?neckYawMax:min_rad);
-    max_rad=(max_rad<neckYawMin)?neckYawMin:(max_rad>neckYawMax?neckYawMax:max_rad);
-
+    double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
+    double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
     double cur_rad=(*chainNeck)(2).getAng();
+
     bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.wait();
