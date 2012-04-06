@@ -433,10 +433,10 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
                         break;
                 
                 for (++j; j<=(int)i; j++)
-                    H=H*allList[j]->getH(true);
+                    H*=allList[j]->getH(true);
     
                 for (; j<(int)N && !allList[j]->isCumulative(); j++)
-                    H=H*allList[j]->getH(true);
+                    H*=allList[j]->getH(true);
     
                 allList[j]->addCumH(H);
             } 
@@ -536,7 +536,7 @@ void iKinChain::build()
             }
             else
             {
-                H=H*allList[i]->getH();
+                H*=allList[i]->getH();
                 cumulOn=true;
             }
         }
@@ -771,10 +771,10 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
     if (i<n)
     {
         for (unsigned int j=0; j<=_i; j++)
-            H=H*((*l)[j]->getH(c_override));
+            H*=((*l)[j]->getH(c_override));
 
         if (cumulHN)
-            H=H*HN;
+            H*=HN;
     }
     else if (verbose)
         fprintf(stderr,"getH() failed due to out of range index: %d>=%d\n",i,n);
@@ -792,7 +792,7 @@ Matrix iKinChain::getH()
     Matrix H=H0;
 
     for (unsigned int i=0; i<n; i++)
-        H=H*quickList[i]->getH();
+        H*=quickList[i]->getH();
 
     return H*HN;
 }
@@ -927,18 +927,18 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
         for (unsigned int k=0; k<i; k++)
         {
             _H=allList[k]->getH();
-            H=H*_H;
+            H*=_H;
 
             if (j==k)
-                dH=dH*allList[k]->getDnH();
+                dH*=allList[k]->getDnH();
             else
-                dH=dH*_H;
+                dH*=_H;
         }
 
         if (i>=N-1)
         {
-            H=H*HN;
-            dH=dH*HN;
+            H*=HN;
+            dH*=HN;
         }
 
         dr=dRotAng(H,dH);
@@ -982,16 +982,16 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
         for (unsigned int j=0; j<n; j++)
         {
             _H=quickList[j]->getH();
-            H=H*_H;
+            H*=_H;
 
             if (hash_dof[i]==j)
-                dH=dH*quickList[j]->getDnH();
+                dH*=quickList[j]->getDnH();
             else
-                dH=dH*_H;
+                dH*=_H;
         }
 
-        H=H*HN;
-        dH=dH*HN;
+        H*=HN;
+        dH*=HN;
         dr=dRotAng(H,dH);
 
         J(0,i)=dH(0,col);
