@@ -770,10 +770,11 @@ bool Compensator::setTaxelOrientation(unsigned int taxelId, Vector orientation){
 void Compensator::computeNeighbors(double maxDist){
     neighborsXtaxel.clear();
     neighborsXtaxel.resize(skinDim, vector<int>(0));
+    Vector v;
     for(unsigned int i=0; i<skinDim; i++){
         for(unsigned int j=i+1; j<skinDim; j++){
             if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
-                Vector v = taxelPos[i]-taxelPos[j];
+                v = taxelPos[i]-taxelPos[j];
                 if( dot(v,v) <= (maxDist*maxDist)){
                     neighborsXtaxel[i].push_back(j);
                     neighborsXtaxel[j].push_back(i);

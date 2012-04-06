@@ -311,7 +311,7 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                 }
                 BodyPart bp = (BodyPart) params.get(0).asInt();
                 SkinPart sp = (SkinPart) params.get(1).asInt();
-                if(params.get(2).isInt()){
+                if(params.size()>2 && params.get(2).isInt()){
                     unsigned int taxelId = params.get(2).asInt();
                     Vector res = myThread->getTaxelPose(bp, sp, taxelId);
                     if(res.size()>0)
