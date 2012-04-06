@@ -8,7 +8,7 @@
   </module>
 
   <connection>
-    <from>/wholeBodyDynamics/dyn_contacts:o</from>
+    <from>/wholeBodyDynamics/contacts:o</from>
     <to>/iCubGui/forces</to>
     <protocol>udp</protocol>
   </connection>
