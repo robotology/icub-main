@@ -476,10 +476,11 @@ skinContactList Compensator::getContacts(){
     skinContactList contactList;
     Vector CoP(3), geoCenter(3);
     double pressure;
+    int activeTaxels;
     for( deque<deque<int> >::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
-        int activeTaxels = it->size();
+        activeTaxels = it->size();
         //printf("Contact size: %d\n", activeTaxels);
-        if(activeTaxels==0) continue;        
+        if(activeTaxels==0) continue;
         
         CoP.zero();
         geoCenter.zero();
@@ -487,7 +488,7 @@ skinContactList Compensator::getContacts(){
         for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++){
             CoP         += taxelPos[(*tax)] * compensatedData[(*tax)];
             geoCenter   += taxelPos[(*tax)];
-            pressure    += compensatedData[(*tax)];
+            pressure    += max(compensatedData[(*tax)], 0.0);
         }
         if(pressure!=0.0)
         	CoP         /= pressure;
