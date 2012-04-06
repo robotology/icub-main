@@ -44,17 +44,17 @@ href="http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf">PDF</a>)
 which finds the best linear or quadratic regressor upon a 
 certain window of the input samples. The window's length is 
 adaptable, i.e. it varies according the smoothness of the input 
-signal. Therefore, the more smooth is the input signal the 
-larger will be the window and the delay introduced by the 
-computation will be negligible. For fast change in the input 
-signal, the window's length is reduced in order to best capture 
-the derivative and to limit the latency. 
+signal. Therefore, the smoother is the input signal the larger
+will be the window and the delay introduced by the computation 
+will be negligible. For fast change in the input signal, the 
+window's length is reduced in order to best capture the 
+derivative and to limit the latency. 
  
 Note that no knowledge of the sampling time is required since to
-perform the computation the module relies on the time
+perform the computation the module relies on the time 
 information stored by the sender within the envelope of the 
 message. If the envelope is not available, then the Time Stamp 
-is the reference time of the machine where the module is running
+is the reference time of the machine where the module is running 
 (i.e. the arrival time): of course in this case the computation 
 will be much less precise due to the variable YARP communication
 latencies. 
