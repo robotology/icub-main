@@ -124,9 +124,9 @@ public:
 *
 * The base class defining actions. 
 *  
-* It allows to execute arm (in task-space, e.g. reach()) and 
-* hand (in joint-space) primitive actions and to combine them in 
-* the actions queue. 
+* It allows executing arm (in task-space, e.g. reach()) and hand
+* (in joint-space) primitive actions and to combine them in the 
+* actions queue. 
 */
 class ActionPrimitives : protected yarp::os::RateThread
 {
