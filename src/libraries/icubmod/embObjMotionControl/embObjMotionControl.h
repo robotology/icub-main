@@ -32,6 +32,7 @@ using namespace std;
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include "yarp/dev/ControlBoardInterfacesImpl.inl" //ControlBoardHelper
@@ -45,83 +46,30 @@ using namespace std;
 
 
 // ACE udp socket
-#include "udp.h"
-#include "DSocket.h"
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
 // Boards configurations
-#include "rem-embobj-cfg/eOcfg_EPs_rem_board.h"
+#include "eOcfg_EPs_rem_board.h"
 
-
-#include "../ethManager/ethManager.h"
-
-
-#define SKELETON_MODE
-
-#define _local_pc104_
-// #undef 	_local_pc104_
+#include "../embObjLib/hostTransceiver.hpp"
 
 // indirizzi ip
-#ifdef _local_pc104_
-#define DEFAULT_LAPTOP_IP	"10.0.0.1" // da usare col pc104
-#define DEFAULT_EMS_IP 		"10.0.0.2"
-
-#else
-#define DEFAULT_LAPTOP_IP	"10.255.37.155" // <- dhcp;   "10.0.0.1" da usare col pc104
-#define DEFAULT_EMS_IP 		"10.255.39.152" // ip della workstation qui dietro.
-#endif
-
-
+#define DEFAULT_LAPTOP_IP	"10.255.37.155" // da usare col pc104
+#define DEFAULT_EMS_IP 		"127.0.0.1"		// "10.255.39.152"  ip della workstation qui dietro.
 #define DEFAULT_EMS_PORT	33333
-#define SIZE 				512
-
-/* ETH dummy payload
- *
- * Now it's a dummy structure. It'll be modified in the near future
- * to adapt this data to the AceMor EmbObj since EMS and 2FOC boards will use that
- * protocol. The interface toward the "upper side", i.e. the iCubInterface, has to
- * be the same as others drivers.
- * */
-
-typedef struct
-{
-	int            			id;
-	int            			len;
-	timeval    				send_time;
-	timeval            		recv_time;
-	unsigned char			data[50];
-} __attribute__((__packed__)) ETHCAN_MSG;
-
-typedef struct
-{
-	uint32_t            	a;
-	uint32_t            	b;
-	timeval    				c;								// send time either from pc104 or from EMS
-	timeval            		d;
-	char					e[32];
-} __attribute__((__packed__)) ETHCAN_STAT;
-
-
-/* ETH device handle */
-typedef struct __ETHCAN_HANDLE
-{
-	struct sockaddr_in udp_addr;
-    int port;
-} ETHCAN_HANDLE;
 
 namespace yarp{
     namespace dev{
         class embObjMotionControl;
-        class embObjMessage;
     }
 }
 
+void copyPid2eo(Pid in, eOmc_PID_t *out);
 
 class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public os::RateThread,
 							public IPidControlRaw,
-				            public IControlCalibrationRaw,
 							public IControlCalibration2Raw,
 							public IAmplifierControlRaw,
 							public IEncodersRaw,
@@ -131,7 +79,6 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
 							public ImplementPositionControl<embObjMotionControl, IPositionControl>,
 							public ImplementEncoders<embObjMotionControl, IEncoders>,
-							public ImplementControlCalibration<embObjMotionControl, IControlCalibration>,
 							public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
 				            public ImplementPidControl<embObjMotionControl, IPidControl>,
 				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
@@ -139,8 +86,6 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 {
 private:
      int 					ret, tot_packet_recv, errors;
-    ETHCAN_MSG 				Recv_tmp;
-    ETHCAN_MSG 				msg;
     tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
     char 					recv_time_string[40];
@@ -149,21 +94,29 @@ private:
     uint8_t 				*udppkt_data;
 	uint16_t 				udppkt_size;
 
+	hostTransceiver 		*transceiver;
+    yarp::os::Semaphore 	_mutex;
+
 	// Joint/Mechanical data
-	int					_njoints;	// Number of joints handled by this EMS; this values will be extracted by the config file
+	int						_njoints;	// Number of joints handled by this EMS; this values will be extracted by the config file
 
 public:
     embObjMotionControl();
     ~embObjMotionControl();
 
-    ethResources *resource;
+    char					info[126];
+//    ethResources *resource;
 
     yarp::os::ConstString ethDevName;
     PolyDriver polyDriver;
 
+
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
+
+    // _AC_
+    bool configureTransceiver(ITransceiver *trans);
 
     bool __init(void);
     ///////// 	PID INTERFACE		/////////
@@ -275,54 +228,6 @@ protected:
    virtual void run(void);
    virtual bool threadInit();
    virtual void threadRelease();
-};
-
-class yarp::dev::embObjMessage // : public yarp::dev::CanMessage
-{
- public:
-    ETHCAN_MSG *msg;
-
- public:
-    embObjMessage()
-    {
-        msg=0;
-    }
-    
-    virtual ~embObjMessage()
-    {
-    }
-
-    //virtual CanMessage &operator=(const CanMessage &l);
-
-    virtual unsigned int getId() const
-        { return msg->id;}
-
-    virtual unsigned char getLen() const
-        { return msg->len;}
-
-    virtual void setLen(unsigned char len)
-        { msg->len=len;}
-
-    virtual void setId(unsigned int id)
-        { msg->id=id;}
-
-    virtual const unsigned char *getData() const
-        { return msg->data; }
-
-    virtual unsigned char *getData()
-        { return msg->data; }
-
-    virtual unsigned char *getPointer()
-        { return (unsigned char *) msg; }
-
-    virtual const unsigned char *getPointer() const
-        { return (const unsigned char *) msg; }
-
-    virtual void setBuffer(unsigned char *b)
-    { 
-        if (b!=0)
-            msg=(ETHCAN_MSG *)(b);
-    }
 };
 
 #endif // include guard

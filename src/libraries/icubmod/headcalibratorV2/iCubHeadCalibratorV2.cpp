@@ -258,6 +258,11 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     int torsoSetOfJoints[] = {6, 7, 8}; // these are BLL motors
     int eyeSetOfJoints[] =   {3, 4, 5}; // these are NOT BLL motors
 
+    int nj_h;	// i giunti delle testa sono (al max) i primi 3
+    if ( nj <= 3)
+    	nj_h = nj;
+    else
+    	nj_h = 3;
     /////////////////////////////////////
     //calibrate the torso set of joints//
     /////////////////////////////////////
@@ -291,12 +296,12 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     //calibrate the head set of joints //
     /////////////////////////////////////
     calibration_ok = true;
-    for (k =0; k < 3; k++)
+    for (k =0; k < nj_h; k++)
     {
         //fprintf(logfile, "HEADCALIB::Moving joint %d to zero\n", k);
         goToZero(headSetOfJoints[k]);
     }
-    for (k = 0; k < 3; k++)
+    for (k = 0; k < nj_h; k++)
     {
         //fprintf(logfile, "HEADCALIB::Waiting for joint %d movement\n", k);
         calibration_ok &= checkGoneToZeroThreshold(headSetOfJoints[k]);
@@ -304,7 +309,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     if (calibration_ok)
     {
         fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
-    for (k = 0; k < 3; k++)
+    for (k = 0; k < nj_h; k++)
         iPids->setPid(headSetOfJoints[k],original_pid[headSetOfJoints[k]]);
     }
     else
@@ -336,6 +341,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
         checkGoneToZero(eyeSetOfJoints[k]);
     }
 */
+#if 0
     for (k =0; k < 3; k++)
     {
         calibrateJoint(eyeSetOfJoints[k]); 
@@ -344,7 +350,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
         checkGoneToZero(eyeSetOfJoints[k]);
         Time::delay(0.010);
     }
-
+#endif
 
     /////////////////////////////////////
     //finished!                        //
