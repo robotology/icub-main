@@ -203,11 +203,16 @@ protected:
 public:
     /**
     * Creates a filter with specified parameters
-    * @param cutFrequency cut frequency.
-    * @param sampleTime sample time.
+    * @param cutFrequency cut frequency (Hz).
+    * @param sampleTime sample time (s).
     * @param y0 initial output.
     */ 
     FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime, const yarp::sig::Vector &y0);
+
+    /**
+    * Destructor. 
+    */
+    ~FirstOrderLowPassFilter();
 
     /**
     * Change the cut frequency of the filter. 

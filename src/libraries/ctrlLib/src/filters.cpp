@@ -154,10 +154,12 @@ Vector RateLimiter::filt(const Vector &u)
 {
     uD=u-uLim;
     for (size_t i=0; i<n; i++)
+    {
         if (uD[i]>rateUpperLim[i])
             uD[i]=rateUpperLim[i];
         else if (uD[i]<rateLowerLim[i])
             uD[i]=rateLowerLim[i];
+    }
 
     uLim=uLim+uD;
 
@@ -173,7 +175,16 @@ FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double cutFrequency,
     fc = cutFrequency;
     Ts = sampleTime;
     y = y0;
+    filter = NULL;
     computeCoeff();
+}
+
+
+/**********************************************************************/
+FirstOrderLowPassFilter::~FirstOrderLowPassFilter()
+{
+    if(filter != NULL)
+        delete filter;
 }
 
 
@@ -210,10 +221,10 @@ const Vector& FirstOrderLowPassFilter::filt(const Vector &u)
 /**********************************************************************/
 void FirstOrderLowPassFilter::computeCoeff()
 {
-    double tau = 1.0/(2*M_PI*fc);
+    double tau = 1.0/(2.0*M_PI*fc);
     Vector num = cat(Ts, Ts);
-    Vector den = cat(2*tau+Ts, Ts-2*tau);
-    if(filter)
+    Vector den = cat(2.0*tau+Ts, Ts-2.0*tau);
+    if(filter!=NULL)
         filter->adjustCoeffs(num, den);
     else
         filter = new Filter(num, den, y);
