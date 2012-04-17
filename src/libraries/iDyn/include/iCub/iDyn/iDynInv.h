@@ -1225,7 +1225,7 @@ protected:
 	/// the link where the sensor is attached to
 	unsigned int lSens;		
 	/// the sensor
-	SensorLinkNewtonEuler * sens;	
+	SensorLinkNewtonEuler * sens;
 	/// the iDynChain describing the robotic chain
 	iDynChain * chain;	
 	/// static/dynamic/etc..
