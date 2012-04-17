@@ -60,11 +60,24 @@ protected:
     iCub::skinDynLib::BodyPart      bodyPart;
 
     void findContactSubChain(unsigned int &firstLink, unsigned int &lastLink);
-    yarp::sig::Matrix crossProductMatrix(const yarp::sig::Vector &v);
     
     yarp::sig::Matrix buildA(unsigned int firstContactLink, unsigned int lastContactLink);
     yarp::sig::Vector buildB(unsigned int firstContactLink, unsigned int lastContactLink);
     
+    //***************************************************************************************
+    // UTILITY METHODS
+    //***************************************************************************************
+
+	/**
+	 * Compute the rototraslation matrix from frame a to frame b.
+	 */
+	yarp::sig::Matrix getHFromAtoB(unsigned int a, unsigned int b);
+
+	/**
+	 * Compute the wrench of the specified contact expressed w.r.t. the root reference
+	 * frame of the chain (not the 0th frame, but the root).
+	 */
+	yarp::sig::Vector projectContact2Root(const iCub::skinDynLib::dynContact &c);
 
 public:
 	
@@ -161,21 +174,6 @@ public:
      * @return the number of unknowns in the current contact list
      */
     unsigned int getUnknownNumber() const;
-
-	//***************************************************************************************
-    // UTILITY METHODS
-    //***************************************************************************************
-
-	/**
-	 * Compute the rototraslation matrix from frame a to frame b.
-	 */
-	yarp::sig::Matrix getHFromAtoB(unsigned int a, unsigned int b);
-
-	/**
-	 * Compute the wrench of the specified contact expressed w.r.t. the root reference
-	 * frame of the chain (not the 0th frame, but the root).
-	 */
-	yarp::sig::Vector projectContact2Root(const iCub::skinDynLib::dynContact &c);
 
 };
 

@@ -328,20 +328,6 @@ void iDynContactSolver::findContactSubChain(unsigned int &firstLink, unsigned in
             firstLink = l;
     }
 }
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynContactSolver::crossProductMatrix(const Vector &v)
-{
-    Matrix res = zeros(3,3);
-    res(1,0) = v(2); 
-    res(0,1) = -v(2); 
-    res(2,0) = -v(1); 
-    res(0,2) = v(1);
-    res(2,1) = v(0); 
-    res(1,2) = -v(0);
-    return res;
-}
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynContactSolver::getHFromAtoB(unsigned int a, unsigned int b)
 {
