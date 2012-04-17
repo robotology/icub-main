@@ -112,11 +112,11 @@ Usage syntax:
 
 yarpdev --device grabber --subdevice dragonfly2 --name <yarp port name> 
 [--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
-[--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <value>] [...]
+[--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 yarpdev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
 [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
-[--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <value>] [...]
+[--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 Example:
 
