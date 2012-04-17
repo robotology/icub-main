@@ -401,9 +401,14 @@ void minJerkTrajGen::computeCoeffs()
 /*******************************************************************************************/
 void minJerkTrajGen::computeNextValues(const Vector &ref)
 {
-    pos = posFilter->filt(ref);
-    vel = velFilter->filt(ref);
-    acc = accFilter->filt(ref);
+    if (posFilter!=NULL)
+        pos = posFilter->filt(ref);
+
+    if (velFilter!=NULL)
+        vel = velFilter->filt(ref);
+
+    if (accFilter!=NULL)
+        acc = accFilter->filt(ref);
 }
 
 
@@ -432,9 +437,14 @@ bool minJerkTrajGen::setTs(const double _Ts)
 /*******************************************************************************************/
 void minJerkTrajGen::init(const Vector &y0)
 {
-    posFilter->init(y0);
-    velFilter->init(zeros(dim));
-    accFilter->init(zeros(dim));
+    if (posFilter!=NULL)
+        posFilter->init(y0);
+
+    if (velFilter!=NULL)
+        velFilter->init(zeros(dim));
+
+    if (accFilter!=NULL)
+        accFilter->init(zeros(dim));
 }
 
 
