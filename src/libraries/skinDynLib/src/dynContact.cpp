@@ -218,6 +218,7 @@ bool dynContact::read(ConnectionReader& connection){
     Fmodule = connection.expectDouble();
     for(int i=0;i<3;i++) Fdir[i] = connection.expectDouble();
     for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
+    F = Fmodule * Fdir;
      
     return !connection.isError();
 }
@@ -225,7 +226,7 @@ bool dynContact::read(ConnectionReader& connection){
 string dynContact::toString(const int &precision) const{
     stringstream res;
     res<< "Contact id: "<< contactId<< "Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<< 
-        CoP.toString(precision)<< ", F: "<< getForce().toString(precision)<< ", M: "<< Mu.toString(precision);
+        CoP.toString(precision)<< ", F: "<< F.toString(precision)<< ", M: "<< Mu.toString(precision);
     return res.str();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
