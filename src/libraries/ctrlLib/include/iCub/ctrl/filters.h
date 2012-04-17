@@ -182,6 +182,61 @@ public:
     yarp::sig::Vector filt(const yarp::sig::Vector &u);
 };
 
+
+/**
+* \ingroup Filters
+*
+* First order low pass filter implementing the transfer function
+* H(s) = \frac{1}{1+\tau s}
+*
+*/
+class FirstOrderLowPassFilter
+{
+protected:
+    Filter *filter;         // low pass filter
+    double fc;              // cut frequency
+    double Ts;              // sample time
+    yarp::sig::Vector y;    // filter current output
+
+    void computeCoeff();
+
+public:
+    /**
+    * Creates a filter with specified parameters
+    * @param cutFrequency cut frequency.
+    * @param sampleTime sample time.
+    * @param y0 initial output.
+    */ 
+    FirstOrderLowPassFilter(const double &cutFrequency, const double &sampleTime, const yarp::sig::Vector &y0);
+
+    /**
+    * Change the cut frequency of the filter.
+    */
+    bool setCutFrequency(const double &cutFrequency);
+
+    /*
+    * Change the sample time of the filter.
+    */
+    bool setSampleTime(const double &sampleTime);
+
+    const double& getCutFrequency();
+    const double& getSampleTime();
+
+    /**
+    * Performs filtering on the actual input.
+    * @param u reference to the actual input. 
+    * @return the corresponding output. 
+    */ 
+    const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+
+    /**
+    * Return current filter output.
+    * @return the filter output. 
+    */ 
+    const yarp::sig::Vector& output();
+
+};
+
 }
 
 }
