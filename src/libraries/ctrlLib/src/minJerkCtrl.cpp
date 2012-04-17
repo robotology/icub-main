@@ -349,8 +349,8 @@ void minJerkTrajGen::computeCoeffs()
     double a = -150.765868956161/(T*T*T);
     double b = -84.9812819469538/(T*T);
     double c = -15.9669610709384/T;
-    double m = 4*c*Ts;
-    double n = 2*b*Ts*Ts;
+    double m = 4.0*c*Ts;
+    double n = 2.0*b*Ts*Ts;
     double p = a*Ts*Ts*Ts;
 
     // implementing F(s)=-a/(s^3-c*s^2-b*s-a)
