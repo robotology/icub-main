@@ -148,6 +148,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     port_xd=NULL;
     saccadeStartTime=0.0;
+    tiltDone=panDone=verDone=false;
     unplugCtrlEyes=false;
 }
 
@@ -265,6 +266,7 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
     posHead->positionMove(5,CTRL_RAD2DEG*ang[2]);
 
     saccadeStartTime=Time::now();
+    tiltDone=panDone=verDone=false;
     commData->get_isSaccadeUnderway()=true;
     unplugCtrlEyes=true;
 
@@ -289,10 +291,15 @@ void Controller::run()
     mutexCtrl.wait();
     if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
     {
-        bool tiltDone, panDone, verDone;
-        posHead->checkMotionDone(3,&tiltDone);
-        posHead->checkMotionDone(4,&panDone);
-        posHead->checkMotionDone(5,&verDone);
+        if (!tiltDone)
+            posHead->checkMotionDone(3,&tiltDone);
+
+        if (!panDone)
+            posHead->checkMotionDone(4,&panDone);
+
+        if (!verDone)
+            posHead->checkMotionDone(5,&verDone);
+
         commData->get_isSaccadeUnderway()=!(tiltDone&&panDone&&verDone);
     }
     mutexCtrl.post();

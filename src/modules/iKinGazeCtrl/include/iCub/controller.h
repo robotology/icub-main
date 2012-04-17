@@ -74,6 +74,9 @@ protected:
     string localName;
     string camerasFile;
     unsigned int period;
+    bool tiltDone;
+    bool panDone;
+    bool verDone;
     bool unplugCtrlEyes;
     bool Robotable;
     bool headV2;
