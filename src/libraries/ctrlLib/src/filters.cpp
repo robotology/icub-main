@@ -183,7 +183,7 @@ FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double cutFrequency,
 /**********************************************************************/
 FirstOrderLowPassFilter::~FirstOrderLowPassFilter()
 {
-    if(filter != NULL)
+    if(filter!=NULL)
         delete filter;
 }
 
@@ -213,7 +213,8 @@ bool FirstOrderLowPassFilter::setSampleTime(const double sampleTime)
 /**********************************************************************/
 const Vector& FirstOrderLowPassFilter::filt(const Vector &u)
 {
-    y = filter->filt(u);
+    if(filter!=NULL)
+        y = filter->filt(u);
     return y;
 }
 
