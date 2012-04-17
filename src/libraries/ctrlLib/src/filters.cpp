@@ -166,7 +166,9 @@ Vector RateLimiter::filt(const Vector &u)
 
 
 /**********************************************************************/
-FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double &cutFrequency, const double &sampleTime, const Vector &y0)
+FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double cutFrequency,
+                                                 const double sampleTime,
+                                                 const Vector &y0)
 {
     fc = cutFrequency;
     Ts = sampleTime;
@@ -176,7 +178,7 @@ FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double &cutFrequency, con
 
 
 /**********************************************************************/
-bool FirstOrderLowPassFilter::setCutFrequency(const double &cutFrequency)
+bool FirstOrderLowPassFilter::setCutFrequency(const double cutFrequency)
 {
     if(cutFrequency<=0.0)
         return false;
@@ -187,7 +189,7 @@ bool FirstOrderLowPassFilter::setCutFrequency(const double &cutFrequency)
 
 
 /**********************************************************************/
-bool FirstOrderLowPassFilter::setSampleTime(const double &sampleTime)
+bool FirstOrderLowPassFilter::setSampleTime(const double sampleTime)
 {
     if(sampleTime<=0.0)
         return false;
@@ -198,30 +200,9 @@ bool FirstOrderLowPassFilter::setSampleTime(const double &sampleTime)
 
 
 /**********************************************************************/
-const double& FirstOrderLowPassFilter::getCutFrequency()
-{
-    return fc;
-}
-
-
-/**********************************************************************/
-const double& FirstOrderLowPassFilter::getSampleTime()
-{
-    return Ts;
-}
-
-
-/**********************************************************************/
 const Vector& FirstOrderLowPassFilter::filt(const Vector &u)
 {
     y = filter->filt(u);
-    return y;
-}
-
-
-/**********************************************************************/
-const Vector& FirstOrderLowPassFilter::output()
-{
     return y;
 }
 

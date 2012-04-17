@@ -207,20 +207,31 @@ public:
     * @param sampleTime sample time.
     * @param y0 initial output.
     */ 
-    FirstOrderLowPassFilter(const double &cutFrequency, const double &sampleTime, const yarp::sig::Vector &y0);
+    FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime, const yarp::sig::Vector &y0);
 
     /**
-    * Change the cut frequency of the filter.
+    * Change the cut frequency of the filter. 
+    * @param cutFrequency the new cut frequency (Hz). 
     */
-    bool setCutFrequency(const double &cutFrequency);
+    bool setCutFrequency(const double cutFrequency);
 
-    /*
-    * Change the sample time of the filter.
+    /**
+    * Change the sample time of the filter. 
+    * @param sampleTime the new sample time (s). 
     */
-    bool setSampleTime(const double &sampleTime);
+    bool setSampleTime(const double sampleTime);
 
-    const double& getCutFrequency();
-    const double& getSampleTime();
+    /**
+    * Retrieve the cut frequency of the filter. 
+    * @return the cut frequency (Hz). 
+    */
+    double getCutFrequency() { return fc; }
+
+    /**
+    * Retrieve the sample time of the filter. 
+    * @return the sample time (s). 
+    */
+    double getSampleTime() { return Ts; }
 
     /**
     * Performs filtering on the actual input.
@@ -233,8 +244,7 @@ public:
     * Return current filter output.
     * @return the filter output. 
     */ 
-    const yarp::sig::Vector& output();
-
+    const yarp::sig::Vector& output() { return y; }
 };
 
 }

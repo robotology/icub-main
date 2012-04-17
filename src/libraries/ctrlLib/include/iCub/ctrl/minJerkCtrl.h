@@ -262,7 +262,7 @@ public:
     * @param _Ts sample time in seconds
     * @param _T trajectory reference time (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T)
     */
-    minJerkTrajGen(const unsigned int &_dim, const double &_Ts, const double &_T);
+    minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T);
 
     /**
     * Constructor with initial value.
@@ -270,17 +270,17 @@ public:
     * @param _Ts sample time in seconds
     * @param _T trajectory reference time (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T)
     */
-    minJerkTrajGen(const yarp::sig::Vector& y0, const double &_Ts, const double &_T);
+    minJerkTrajGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
     * Copy constructor.
     */
-    minJerkTrajGen(const minJerkTrajGen& o);
+    minJerkTrajGen(const minJerkTrajGen &o);
 
     /**
     * Assignment operator.
     */
-    minJerkTrajGen& operator=(const minJerkTrajGen& z);
+    minJerkTrajGen& operator=(const minJerkTrajGen &z);
 
     /**
     * Destructor. 
@@ -291,7 +291,7 @@ public:
     * Initialize the trajectory.
     * @param y0 initial value of the trajectory
     */
-    void init(const yarp::sig::Vector& y0);
+    void init(const yarp::sig::Vector &y0);
 
     /**
     * Compute the next position, velocity and acceleration.
@@ -318,12 +318,12 @@ public:
     * Get the trajectory reference time in seconds
     * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
     */
-    const double& getT() const { return T; }
+    double getT() const { return T; }
 
     /**
     * Get the sample time in seconds.
     */
-    const double& getTs() const { return Ts; }
+    double getTs() const { return Ts; }
 
     /**
     * Set the trajectory reference time
@@ -331,14 +331,14 @@ public:
     * @param _T trajectory reference time in seconds
     * @return true if operation succeeded, false otherwise
     */
-    bool setT(const double &_T);
+    bool setT(const double _T);
 
     /**
     * Set the sample time.
     * @param _Ts sample time in seconds
     * @return true if operation succeeded, false otherwise
     */
-    bool setTs(const double &_Ts);
+    bool setTs(const double _Ts);
 };
 
 

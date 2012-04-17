@@ -279,7 +279,7 @@ minJerkVelCtrlForNonIdealPlant::~minJerkVelCtrlForNonIdealPlant()
 
 
 /*******************************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const unsigned int &_dim, const double &_Ts, const double &_T)
+minJerkTrajGen::minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T)
     :dim(_dim), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
@@ -289,7 +289,7 @@ minJerkTrajGen::minJerkTrajGen(const unsigned int &_dim, const double &_Ts, cons
 
 
 /*******************************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const Vector& y0, const double &_Ts, const double &_T)
+minJerkTrajGen::minJerkTrajGen(const Vector &y0, const double _Ts, const double _T)
     :dim(y0.size()), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
@@ -300,7 +300,7 @@ minJerkTrajGen::minJerkTrajGen(const Vector& y0, const double &_Ts, const double
 
 
 /*******************************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen& z)
+minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen &z)
 {
     pos = z.pos;
     vel = z.vel;
@@ -326,7 +326,8 @@ minJerkTrajGen::~minJerkTrajGen()
 
 
 /*******************************************************************************************/
-minJerkTrajGen& minJerkTrajGen::operator=(const minJerkTrajGen& z){
+minJerkTrajGen& minJerkTrajGen::operator=(const minJerkTrajGen &z)
+{
     pos = z.pos;
     vel = z.vel;
     acc = z.acc;
@@ -407,7 +408,7 @@ void minJerkTrajGen::computeNextValues(const Vector &ref)
 
 
 /*******************************************************************************************/
-bool minJerkTrajGen::setT(const double &_T)
+bool minJerkTrajGen::setT(const double _T)
 {
     if(_T<=0.0)
         return false;
@@ -418,7 +419,7 @@ bool minJerkTrajGen::setT(const double &_T)
 
 
 /*******************************************************************************************/
-bool minJerkTrajGen::setTs(const double &_Ts)
+bool minJerkTrajGen::setTs(const double _Ts)
 {
     if(_Ts<=0.0)
         return false;
@@ -429,7 +430,7 @@ bool minJerkTrajGen::setTs(const double &_Ts)
 
 
 /*******************************************************************************************/
-void minJerkTrajGen::init(const Vector& y0)
+void minJerkTrajGen::init(const Vector &y0)
 {
     posFilter->init(y0);
     velFilter->init(zeros(dim));
