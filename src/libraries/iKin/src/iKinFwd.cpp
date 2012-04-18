@@ -266,14 +266,16 @@ iKinChain::iKinChain()
 /************************************************************************/
 void iKinChain::clone(const iKinChain &c)
 {
-    N      =c.N;
-    DOF    =c.DOF;
-    H0     =c.H0;
-    HN     =c.HN;
-    curr_q =c.curr_q;    
-    verbose=c.verbose;
-    hess_Jl=c.hess_Jl;
-    hess_Jo=c.hess_Jo;
+    N         =c.N;
+    DOF       =c.DOF;
+    H0        =c.H0;
+    HN        =c.HN;
+    curr_q    =c.curr_q;    
+    verbose   =c.verbose;
+    hess_Jl   =c.hess_Jl;
+    hess_Jo   =c.hess_Jo;
+    hess_Jlnkl=c.hess_Jlnkl;
+    hess_Jlnko=c.hess_Jlnko;
 
     allList.assign(c.allList.begin(),c.allList.end());
     quickList.assign(c.quickList.begin(),c.quickList.end());
@@ -1168,6 +1170,59 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
     }
     else
         h.setSubvector(0,cross(hess_Jo,j,hess_Jl,i));
+
+    return h;
+}
+
+
+/************************************************************************/
+Vector iKinChain::Hessian_ij(const unsigned int lnk, const unsigned int i,
+                             const unsigned int j)
+{
+    prepareForHessian(lnk);
+    return fastHessian_ij(lnk,i,j);
+}
+
+
+/************************************************************************/
+void iKinChain::prepareForHessian(const unsigned int lnk)
+{
+    if (lnk>=N)
+    {
+        if (verbose)
+            fprintf(stderr,"prepareForHessian() failed due to out of range index: %d>=%d\n",lnk,N);
+
+        return;
+    }
+
+    Matrix Jlnk=GeoJacobian(lnk);
+    hess_Jlnkl=Jlnk.submatrix(0,2,0,Jlnk.cols()-1);
+    hess_Jlnko=Jlnk.submatrix(3,Jlnk.rows()-1,0,Jlnk.cols()-1);
+}
+
+
+/************************************************************************/
+Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
+                                 const unsigned int j)
+{
+    if ((i>=lnk) || (j>=lnk))
+    {
+        if (verbose)
+            fprintf(stderr,"fastHessian_ij() failed due to out of range index\n");
+
+        return Vector(0);
+    }
+
+    // ref. E.D. Pohl, H. Lipkin, "A New Method of Robotic Motion Control Near Singularities",
+    // Advanced Robotics, 1991
+    Vector h(6,0.0);
+    if (i<j)
+    {
+        h.setSubvector(0,cross(hess_Jlnko,i,hess_Jlnkl,j));
+        h.setSubvector(3,cross(hess_Jlnko,i,hess_Jlnko,j));
+    }
+    else
+        h.setSubvector(0,cross(hess_Jlnko,j,hess_Jlnkl,i));
 
     return h;
 }

@@ -374,8 +374,8 @@ protected:
     std::deque<unsigned int> hash;
     std::deque<unsigned int> hash_dof;
 
-    yarp::sig::Matrix hess_Jl;
-    yarp::sig::Matrix hess_Jo;
+    yarp::sig::Matrix hess_Jl,hess_Jo;
+    yarp::sig::Matrix hess_Jlnkl,hess_Jlnko;
 
     virtual void clone(const iKinChain &c);
     virtual void build();
@@ -772,6 +772,54 @@ public:
     *                 \f$
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j);
+
+    /**
+    * Returns the 6x1 vector \f$ 
+    * \partial{^2}F\left(q\right)/\partial q_i \partial q_j, \f$
+    * where \f$ F\left(q\right) \f$ is the forward kinematic 
+    * function and \f$ \left(q_i,q_j\right) \f$ is the couple of 
+    * links. 
+    * @param lnk is the Link number up to which consider the 
+    *            computation.
+    * @param i is the index of the first link. 
+    * @param j is the index of the second link.
+    * @return the 6x1 vector \f$ 
+    *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
+    *                 \f$
+    */
+    yarp::sig::Vector Hessian_ij(const unsigned int lnk, const unsigned int i,
+                                 const unsigned int j);
+
+    /**
+    * Prepares computation for a successive call to 
+    * fastHessian_ij() (link version). 
+    * @see fastHessian_ij(lnk,...) 
+    * @param lnk is the Link number up to which consider the 
+    *            computation.
+    */
+    void prepareForHessian(const unsigned int lnk);
+
+    /**
+    * Returns the 6x1 vector \f$ 
+    * \partial{^2}F\left(q\right)/\partial q_i \partial q_j, \f$
+    * where \f$ F\left(q\right) \f$ is the forward kinematic 
+    * function and \f$ \left(q_i,q_j\right) \f$ is the couple of 
+    * links. 
+    * <i>Fast Version</i>: to be used in conjunction with 
+    * prepareForHessian(lnk). 
+    * @note It is advisable to use this version when successive 
+    * computations with different indexes values are needed. 
+    * @see prepareForHessian() 
+    * @param lnk is the Link number up to which consider the 
+    *            computation. 
+    * @param i is the index of the first link. 
+    * @param j is the index of the second link.
+    * @return the 6x1 vector \f$ 
+    *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
+    *                 \f$
+    */
+    yarp::sig::Vector fastHessian_ij(const unsigned int lnk, const unsigned int i,
+                                     const unsigned int j);
 
     /**
     * Compute the time derivative of the geometric Jacobian.
