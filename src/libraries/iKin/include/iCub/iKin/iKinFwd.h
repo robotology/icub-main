@@ -420,7 +420,7 @@ public:
 
     /**
     * Returns a reference to the ith Link of the Chain.
-    * @param i is the Link position within the Chain.
+    * @param i is the Link number within the Chain.
     * @return a reference to the ith Link object.
     */
     iKinLink &operator[](const unsigned int i) { return *allList[i]; }
@@ -428,7 +428,7 @@ public:
     /**
     * Returns a reference to the ith Link of the Chain considering 
     * only those Links related to DOF.
-    * @param i is the Link position within the Chain (in DOF order)
+    * @param i is the Link number within the Chain (in DOF order)
     * @return a reference to the ith Link object.
     */
     iKinLink &operator()(const unsigned int i) { return *quickList[hash_dof[i]]; }
@@ -470,7 +470,7 @@ public:
     /**
     * Blocks the ith Link at the a certain value of its joint angle.
     * Chain DOF reduced by one. 
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @param Ang is the value of joint angle to which the Link is 
     *            blocked.
     * @return true if successful (e.g. param i is in range).
@@ -480,7 +480,7 @@ public:
     /**
     * Blocks the ith Link at the current value of its joint angle.
     * Chain DOF reduced by one. 
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @return true if successful (e.g. param i is in range).
     */
     bool blockLink(const unsigned int i) { return blockLink(i,getAng(i)); }
@@ -488,7 +488,7 @@ public:
     /**
     * Changes the value of the ith blocked Link. Avoid the overhead 
     * required for DOFs handling. 
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @param Ang is the new value of joint angle to which the Link 
     *            is blocked.
     * @return true if successful (e.g. param i is in range and the 
@@ -499,14 +499,14 @@ public:
     /**
     * Releases the ith Link. 
     * Chain DOF augmented by one.
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @return true if successful (e.g. param i is in range).
     */
     bool releaseLink(const unsigned int i);
 
     /**
     * Queries whether the ith Link is blocked.
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @return true if blocked && (param i is in range).
     */
     bool isLinkBlocked(const unsigned int i);
@@ -609,7 +609,7 @@ public:
 
     /**
     * Sets the ith joint angle. 
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @param Ang the new angle's value. 
     * @return current ith joint angle (angle constraint is 
     *         evaluated).
@@ -618,7 +618,7 @@ public:
 
     /**
     * Returns the current angle of ith joint. 
-    * @param i is the Link position.  
+    * @param i is the Link number.  
     * @return current ith joint angle.
     */
     double getAng(const unsigned int i);
@@ -628,7 +628,7 @@ public:
     * reference frame to the ith frame in Denavit-Hartenberg 
     * notation. The second parameter if true enables the spannig 
     * over the full set of links, i.e. the blocked links as well. 
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @param allLink if true enables the spanning over the full set 
     *                of links (false by default).
     * @return Hi 
@@ -657,7 +657,7 @@ public:
     * provided: the first with Euler Angles (XYZ form=>6x1 output 
     * vector) and second with axis/angle representation 
     * (default=>7x1 output vector). 
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @param axisRep if true returns the axis/angle notation. 
     * @return the ith Link Pose.
     */
@@ -686,7 +686,7 @@ public:
 
     /**
     * Returns the analitical Jacobian of the ith link.
-    * @param i is the Link position. 
+    * @param i is the Link number. 
     * @param col selects the part of the derived homogeneous matrix 
     *            to be put in the upper side of the Jacobian
     *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
@@ -716,7 +716,7 @@ public:
 
     /**
     * Returns the geometric Jacobian of the ith link. 
-    * @param i is the Link position.
+    * @param i is the Link number.
     * @return the geometric Jacobian.
     */
     yarp::sig::Matrix GeoJacobian(const unsigned int i);
