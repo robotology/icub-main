@@ -1195,9 +1195,9 @@ void iKinChain::prepareForHessian(const unsigned int lnk)
         return;
     }
 
-    Matrix Jlnk=GeoJacobian(lnk);
-    hess_Jlnkl=Jlnk.submatrix(0,2,0,Jlnk.cols()-1);
-    hess_Jlnko=Jlnk.submatrix(3,Jlnk.rows()-1,0,Jlnk.cols()-1);
+    Matrix J=GeoJacobian(lnk);
+    hess_Jlnkl=J.submatrix(0,2,0,J.cols()-1);
+    hess_Jlnko=J.submatrix(3,J.rows()-1,0,J.cols()-1);
 }
 
 
