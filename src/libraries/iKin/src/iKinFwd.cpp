@@ -1213,8 +1213,6 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
         return Vector(0);
     }
 
-    // ref. E.D. Pohl, H. Lipkin, "A New Method of Robotic Motion Control Near Singularities",
-    // Advanced Robotics, 1991
     Vector h(6,0.0);
     if (i<j)
     {
