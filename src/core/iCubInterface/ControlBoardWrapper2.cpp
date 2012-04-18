@@ -1852,13 +1852,12 @@ void ControlBoardWrapper2::run()
             for(int l=0;l<axes;l++)
             {
                 encoders[l]=device.subdevices[k].encoders[l+base];
-                timeStamp+=device.subdevices[k].encoders[l+base];
+                timeStamp+=device.subdevices[k].encodersTimes[l+base];
             }
 
             encoders+=device.subdevices[k].axes; //jump to next group
         }
-
-    yarp::os::Stamp time;
+    
     time.update(timeStamp/controlledJoints);
     state_p.setEnvelope(time);
 

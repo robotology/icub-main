@@ -281,6 +281,7 @@ private:
     Port state_p;   // out port to read the state
     Port control_p; // in port to command the robot
     Port rpc_p;     // RPC to configure the robot
+    Stamp time;     // envelope to attach to the state port
 
     PortWriterBuffer<yarp::sig::Vector> state_buffer;
     PortReaderBuffer<CommandMessage> control_buffer;
@@ -293,7 +294,7 @@ private:
     PortReaderBuffer<Bottle> command_buffer;
 
     Vector            encoders;
-	std::string      partName;
+    std::string       partName;
 
     int               controlledJoints;
     int               base;
