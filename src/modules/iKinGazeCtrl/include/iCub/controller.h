@@ -34,8 +34,8 @@
 #include <iCub/ctrl/pids.h>
 #include <iCub/utils.h>
 
-#define GAZECTRL_MOTIONDONE_QTHRES      2e-1    // [deg]
-#define GAZECTRL_MOTIONSTART_XTHRES     1e-3    // [m]
+#define GAZECTRL_MOTIONDONE_QTHRES      5e-1    // [deg]
+#define GAZECTRL_MOTIONSTART_XTHRES     2e-3    // [m]
 
 using namespace std;
 using namespace yarp::os;
