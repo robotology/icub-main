@@ -34,8 +34,8 @@
 #include <iCub/ctrl/pids.h>
 #include <iCub/utils.h>
 
-#define GAZECTRL_MOTIONDONE_NECK_QTHRES     0.25    // [deg]
-#define GAZECTRL_MOTIONDONE_EYES_QTHRES     0.05    // [deg]
+#define GAZECTRL_MOTIONDONE_NECK_QTHRES     0.300   // [deg]
+#define GAZECTRL_MOTIONDONE_EYES_QTHRES     0.100   // [deg]
 #define GAZECTRL_MOTIONSTART_XTHRES         0.001   // [m]
 
 using namespace std;
