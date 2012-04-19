@@ -103,7 +103,7 @@ The following key-value pairs can be specified as command-line parameters by pre
     \t- y(t) = (1-alpha)*x(t) + alpha*y(t-1)
  - \c smoothFactor \c [0.5] \n
    alpha value of the smoothing filter, in [0, 1] where 0 is no smoothing at all and 1 is the max smoothing possible.
-
+.
 An optional section called SKIN_EVENTS may be specified in the configuration file.
 These are the parameters of this section:
  - \c bodyParts \c [emptyList] \n
@@ -162,19 +162,19 @@ will be accessed.
 	- "get smooth filter": get the smooth filter state (on, off)
 	- "set smooth factor": set the value of the smooth factor (in [0,1])
 	- "get smooth factor": get the smooth factor value
-    - "set threshold": set the safety threshold that is added to the touch thresholds (int in [0, 254])
-    - "get threshold": get the safety threshold that is added to the touch thresholds (int in [0, 254])
-    - "set gain": set the compensation gain
-    - "get gain": get the compensation gain
-    - "set contact gain": set the contact compensation gain
-    - "get contact gain": get the contact compensation gain
+	- "set threshold": set the safety threshold that is added to the touch thresholds (int in [0, 254])
+	- "get threshold": get the safety threshold that is added to the touch thresholds (int in [0, 254])
+	- "set gain": set the compensation gain
+	- "get gain": get the compensation gain
+	- "set contact gain": set the contact compensation gain
+	- "get contact gain": get the contact compensation gain
 	- "is calibrating": tell whether the skin calibration is in progress
-    - "get pose": get taxel pose(s) with input params: body part, skin part, taxel index (if taxel index is not specified return all taxel positions),
-    - "set pose": set taxel pose(s) with input params: body part, skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions),
+	- "get pose": get taxel pose(s) with input params: body part, skin part, taxel index (if taxel index is not specified return all taxel positions),
+	- "set pose": set taxel pose(s) with input params: body part, skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions),
 	- "get info": get information about the module (module name, robot name, input ports, num of taxels)
 	- "help": get a list of the commands accepted by this module
 	- "quit": quit the module
-    All the commands accepted by this module are defined in the file "main/src/lib/skinDynLib/include/iCub/skinDynLib/rpcSkinManager.h".
+	All the commands accepted by this module are defined in the file "main/src/lib/skinDynLib/include/iCub/skinDynLib/rpcSkinManager.h".
 
 \section in_files_sec Input Data Files
 None.
