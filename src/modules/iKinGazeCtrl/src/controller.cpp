@@ -305,9 +305,11 @@ void Controller::run()
     mutexCtrl.post();
     
     Vector new_qd=commData->get_qd();
+    double errNeck=norm(new_qd.subVector(0,2)-fbHead.subVector(0,2));
+    double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1));
     bool swOffCond=!commData->get_isSaccadeUnderway() &&
-                   (norm(new_qd.subVector(0,2)-fbHead.subVector(0,2))<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
-                   (norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1))<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD);
+                   (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
+                   (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD);
 
     // verify control switching conditions
     if (commData->get_isCtrlActive())
