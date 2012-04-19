@@ -304,7 +304,9 @@ void Controller::run()
     }
     mutexCtrl.post();
     
+    Vector x=commData->get_x();
     Vector new_qd=commData->get_qd();
+
     double errNeck=norm(new_qd.subVector(0,2)-fbHead.subVector(0,2));
     double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1));
     bool swOffCond=!commData->get_isSaccadeUnderway() &&
@@ -327,7 +329,7 @@ void Controller::run()
         // switch-on condition
         commData->get_isCtrlActive()=(new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
                                      (commData->get_canCtrlBeDisabled() ?
-                                      port_xd->get_new() : (norm(port_xd->get_xd()-fp)>GAZECTRL_MOTIONSTART_XTHRES));
+                                      port_xd->get_new() : (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES));
 
         // reset controllers
         if (commData->get_isCtrlActive())
@@ -337,11 +339,6 @@ void Controller::run()
             mjCtrlEyes->reset(zeros);
         }
     }
-
-    // get data
-    xd=commData->get_xd();
-    fp=commData->get_x();
-    qd=new_qd;
 
     // Introduce the feedback within the control computation
     if (Robotable)
@@ -356,7 +353,8 @@ void Controller::run()
 
         Int->reset(fbHead);
     }
-    
+
+    qd=new_qd;
     for (int i=0; i<3; i++)
     {
         qdNeck[i]=qd[i];
@@ -427,7 +425,7 @@ void Controller::run()
     }
 
     // print info
-    printIter(xd,fp,qddeg,qdeg,vdeg,1.0);
+    printIter(commData->get_xd(),x,qddeg,qdeg,vdeg,1.0);
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);
@@ -438,7 +436,7 @@ void Controller::run()
         q[j]=qdeg[j-nJointsTorso];
 
     if (port_x.getOutputCount()>0)
-        port_x.write(fp);
+        port_x.write(x);
 
     if (port_q.getOutputCount()>0)
         port_q.write(q);
@@ -580,8 +578,8 @@ void Controller::setTrackingMode(const bool f)
 {
     commData->get_canCtrlBeDisabled()=!f;
 
-    if (port_xd && f)
-        port_xd->set_xd(fp);
+    if ((port_xd!=NULL) && f)
+        port_xd->set_xd(commData->get_x());
 }
 
 

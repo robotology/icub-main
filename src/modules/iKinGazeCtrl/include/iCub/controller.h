@@ -93,7 +93,7 @@ protected:
     double Ts;
 
     Matrix lim;
-    Vector qddeg,qdeg,vdeg,xd,fp;
+    Vector qddeg,qdeg,vdeg;
     Vector v,vNeck,vEyes,vdegOld;
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
