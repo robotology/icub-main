@@ -319,6 +319,10 @@ void EyePinvRefGen::run()
                     vel.push_back(vel[1]);
                 }
 
+                commData->set_qd(3,ang[0]);
+                commData->set_qd(4,ang[1]);
+                commData->set_qd(5,ang[2]);
+
                 ctrl->doSaccade(ang,vel);
                 saccadesClock=Time::now();
             }
@@ -364,10 +368,13 @@ void EyePinvRefGen::run()
         // set a new target position
         commData->set_xd(xd);
         commData->set_x(fp);
-        commData->set_qd(3,qd[0]);
-        commData->set_qd(4,qd[1]);
-        commData->set_qd(5,qd[2]);
         commData->set_fpFrame(chainNeck->getH());
+        if (!commData->get_isSaccadeUnderway())
+        {
+            commData->set_qd(3,qd[0]);
+            commData->set_qd(4,qd[1]);
+            commData->set_qd(5,qd[2]);
+        }
 
         // latch the saccades status
         saccadeUnderWayOld=commData->get_isSaccadeUnderway();

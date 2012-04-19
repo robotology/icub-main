@@ -306,7 +306,8 @@ void Controller::run()
     
     Vector new_qd=commData->get_qd();
     bool swOffCond=!commData->get_isSaccadeUnderway() &&
-                   (norm(new_qd-fbHead)<GAZECTRL_MOTIONDONE_QTHRES*CTRL_DEG2RAD);
+                   (norm(new_qd.subVector(0,2)-fbHead.subVector(0,2))<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
+                   (norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1))<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD);
 
     // verify control switching conditions
     if (commData->get_isCtrlActive())
