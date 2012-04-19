@@ -174,7 +174,8 @@ will be accessed.
 	- "get info": get information about the module (module name, robot name, input ports, num of taxels)
 	- "help": get a list of the commands accepted by this module
 	- "quit": quit the module
-	All the commands accepted by this module are defined in the file "main/src/lib/skinDynLib/include/iCub/skinDynLib/rpcSkinManager.h".
+    .
+	All the commands accepted by this module are defined in rpcSkinManager.h .
 
 \section in_files_sec Input Data Files
 None.
