@@ -23,6 +23,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <list>
 #include <fstream>//duarte code
 #include <deque>
 
@@ -73,7 +74,8 @@ public:
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
-    bool setTaxelPosesFromFile(const char *filePath, double maxNeighborDist);
+    bool setMaxNeighborDistance(double d);
+    bool setTaxelPosesFromFile(const char *filePath);
     bool setTaxelPoses(vector<Vector> poses);
     bool setTaxelPose(unsigned int taxelId, Vector pose);
     bool setTaxelPositions(vector<Vector> positions);
@@ -129,9 +131,10 @@ private:
     unsigned int linkNum;                       // number of the link
 
     // SKIN CONTACTS
-    vector< vector<int> >   neighborsXtaxel;    // list of neighbors for each taxel    
+    vector< list<int> >   neighborsXtaxel;    // list of neighbors for each taxel    
 	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
+    double                  maxNeighDist;       // max distance between two neighbor taxels
     Semaphore               poseSem;            // mutex to access taxel poses
 
 	// COMPENSATION
@@ -180,8 +183,9 @@ private:
     bool init(string name, string robotName, string outputPortName, string inputPortName);
     bool readInputData(Vector& skin_values);
     void sendInfoMsg(string msg);
-    void computeNeighbors(double maxDist=MAX_NEIGHBOR_DISTANCE);
-	
+    void computeNeighbors();
+	void updateNeighbors(unsigned int taxelId);
+
 };
 
 } //namespace iCub

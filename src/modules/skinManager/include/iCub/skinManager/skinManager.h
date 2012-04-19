@@ -29,7 +29,8 @@ The module can manage many input ports at the same time (see parameter "inputPor
 For each input port the compensated tactile data are written on the corresponding output port (see parameter "outputPorts").
 Optionally, the module also can apply a smoothing filter (low pass filter) and/or a binarization filter to the data.
 The \ref icub_skinManagerGui can be used to control and monitor an instance of the skinManager module.
-
+If the 3d position of the tactile sensors is provided, then this module computes the skinContacts (see library skinDynLib),
+ which can be used by \ref icub_wholeBodyDynamics to compute the contact forces.
 
 \section intro_sec Description
 When launched the module executes the skin sensor calibration, assuming that the sensors are not in contact 
@@ -52,6 +53,12 @@ The intensity of the filter can be tuned by setting the parameter alpha, also ca
 The smoothed output is a weighted average of the current input and the previous output:
 y(t) = (1-alpha)*x(t) + alpha*y(t-1)
 
+If the module is properly configured then it performs contact clustering, that is it determines how many contacts are
+detected by the tactile sensors. When tactile sensors that are neighbors detect contact, they are clustered together.
+When tactile sensors that are not neighbors detect contact, they are considered as independent contacts. The result of
+this operation is a skinContactList (see skinDynLib) that is written on the output port "\moduleName\skin_events:o".
+Tipically this port is connected to an input port of the module \ref icub_wholeBodyDynamics which uses this data
+to estimate the contact forces.
 
 \section lib_sec Libraries
 YARP.
@@ -96,7 +103,24 @@ The following key-value pairs can be specified as command-line parameters by pre
     \t- y(t) = (1-alpha)*x(t) + alpha*y(t-1)
  - \c smoothFactor \c [0.5] \n
    alpha value of the smoothing filter, in [0, 1] where 0 is no smoothing at all and 1 is the max smoothing possible.
-
+An optional section called SKIN_EVENTS may be specified in the configuration file.
+These are the parameters of this section:
+- \c bodyParts \c [empthList] \n
+    list of the body parts corresponding to the specified inputPorts (see common.h in skinDynLib for the definition of BodyPart).
+    For each input port there has to be a body part, e.g. UNKNOWN_BODY_PART, HEAD, TORSO, LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG.
+- \c skinParts \c [emptyList] \n
+    list of the skin part corresponding to the specified inputPorts (see skinDynLib for the definition of SkinPart).
+    For each input port there has to be a skin part, e.g. UNKNOWN_SKIN_PART, HAND, FOREARM, UPPER_ARM.
+- \c linkList \c [emptyList] \n
+    list of the link number corresponding to the specified inputPorts.
+    For each input port there has to be a link number (2: upperArm link, 4: forearm link, 6: hand link).
+- \c taxelPositionFiles [emptyList] \n
+    list of the files containing the 3d position and orientation of the tactile sensors for each input port.
+    The files contain a line for each tactile sensor. In each line there are 6 values, the first three are
+    the position, the last three are the orientation.
+    For each input port there has to be a taxel position file (which may not exist though).
+- \c maxNeighborDist \c 0.015 \n
+    maximum distance between two neighbor tactile sensors (in meters).
  
 
 \section portsa_sec Ports Accessed
@@ -121,30 +145,35 @@ will be accessed.
     outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
     such as warning or error messages (used to communicate with the SkinManagerGui). Possible messages may regard 
     an error in the sensor reading or an excessive drift of the baseline of a taxel.\n
+- "/"+moduleName+"/skin_events:o": \n
+    outputs a iCub::skinDynLib::skinContactList containing the list of contacts.
 
 <b>Input ports</b>
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
 - "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used). 
     This port accepts a yarp::os::Bottle that contains one of these commands:
-	- “force calibration”: force the sensor calibration
-	- "get percentile": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
+	- “calib”: force the sensor calibration
+	- "get touch thr": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
 	- "set binarization": enable or disable the binarization (specifying the value on/off)
 	- "get binarization": get the binarization filter state (on, off)
 	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
 	- "get smooth filter": get the smooth filter state (on, off)
 	- "set smooth factor": set the value of the smooth factor (in [0,1])
 	- "get smooth factor": get the smooth factor value
+    - "set threshold": set the safety threshold that is added to the touch thresholds (int in [0, 254])
+    - "get threshold": get the safety threshold that is added to the touch thresholds (int in [0, 254])
     - "set gain": set the compensation gain
     - "get gain": get the compensation gain
     - "set contact gain": set the contact compensation gain
     - "get contact gain": get the contact compensation gain
-    - "set threshold": set the safety threshold
-    - "get threshold": get the safety threshold
 	- "is calibrating": tell whether the skin calibration is in progress
+    - "get pose": get taxel pose(s) with input params: body part, skin part, taxel index (if taxel index is not specified return all taxel positions),
+    - "set pose": set taxel pose(s) with input params: body part, skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions),
 	- "get info": get information about the module (module name, robot name, input ports, num of taxels)
 	- "help": get a list of the commands accepted by this module
 	- "quit": quit the module
+    All the commands accepted by this module are defined in the file "main/src/lib/skinDynLib/include/iCub/skinDynLib/rpcSkinManager.h".
 
 \section in_files_sec Input Data Files
 None.

@@ -110,9 +110,12 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     compensatedDataOld.resize(skinDim);    
     taxelPos.resize(skinDim, zeros(3));
     taxelOri.resize(skinDim, zeros(3));
+    maxNeighDist = MAX_NEIGHBOR_DISTANCE;
     // by default every taxel is neighbor with all the other taxels
-    vector<int> defaultNeighbors(skinDim);
-    for(unsigned int i=0;i<skinDim;i++) defaultNeighbors[i]=i;
+    list<int> defaultNeighbors(skinDim);
+    int i=0;
+    for(list<int>::iterator it=defaultNeighbors.begin();it!=defaultNeighbors.end();it++, i++) 
+        *it = i;
     neighborsXtaxel.resize(skinDim, defaultNeighbors);
 
     // test read to check if the skin is broken (all taxel output is 0)
@@ -240,13 +243,6 @@ bool Compensator::readInputData(Vector& skin_values){
     int err;
     if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
         readErrorCounter++;
-        
-        //TEMP
-        /*{    
-            readErrorCounter--; 
-            skin_values = yarp::math::Rand::vector(skinDim)*255;
-            return true;
-        }*/
 
         stringstream msg;
         if(err == IAnalogSensor::AS_TIMEOUT)            
@@ -435,42 +431,45 @@ skinContactList Compensator::getContacts(){
     int                 contactId = 0;                  // id of the next contact to create
     int                 neighCont;                      // id of the contact of the current neighbor
 
-    for(unsigned int i=0; i<skinDim; i++){
-        if(touchDetectedFilt[i] ){ // && contactXtaxel[i]<0 (second condition should always be true)
-            vector<int> *neighbors = &(neighborsXtaxel[i]);
-            //printf("Taxel %d active. Going to check its %d neighbors\n", i, neighbors->size());
-            for(unsigned int n=0; n<neighbors->size(); n++){
-                
-                neighCont = contactXtaxel[(*neighbors)[n]];
-                if(neighCont >= 0){                                     // ** if neighbor belongs to a contact
-                    if(contactXtaxel[i]<0){                             // ** add taxel to pre-existing contact
-                        contactXtaxel[i] = neighCont;
-                        taxelsXcontact[neighCont].push_back(i);
-                        //printf("Add taxel to pre existing contact %d (neighbor %d)\n", neighCont, (*neighbors)[n]);
-                    }else if(contactXtaxel[i]!=neighCont){              // ** merge 2 contacts
-                        //mergeContacts(contactXtaxel[i], neighCont);
-                        int newId = min(contactXtaxel[i], neighCont);
-                        int oldId = max(contactXtaxel[i], neighCont);
-                        deque<int> tax2move = taxelsXcontact[oldId];
-                        for(deque<int>::iterator it=tax2move.begin(); it!=tax2move.end(); it++){
-                            contactXtaxel[(*it)] = newId;               // assign new contact id
-                            taxelsXcontact[newId].push_back((*it));     // add taxel ids to contact
+    poseSem.wait();
+    {
+        for(unsigned int i=0; i<skinDim; i++){
+            if(touchDetectedFilt[i] ){ // && contactXtaxel[i]<0 (second condition should always be true)
+                list<int> *neighbors = &(neighborsXtaxel[i]);
+                //printf("Taxel %d active. Going to check its %d neighbors\n", i, neighbors->size());
+                for(list<int>::iterator it=neighbors->begin(); it!=neighbors->end(); it++){
+                    neighCont = contactXtaxel[(*it)];
+                    if(neighCont >= 0){                                     // ** if neighbor belongs to a contact
+                        if(contactXtaxel[i]<0){                             // ** add taxel to pre-existing contact
+                            contactXtaxel[i] = neighCont;
+                            taxelsXcontact[neighCont].push_back(i);
+                            //printf("Add taxel to pre existing contact %d (neighbor %d)\n", neighCont, (*neighbors)[n]);
+                        }else if(contactXtaxel[i]!=neighCont){              // ** merge 2 contacts
+                            //mergeContacts(contactXtaxel[i], neighCont);
+                            int newId = min(contactXtaxel[i], neighCont);
+                            int oldId = max(contactXtaxel[i], neighCont);
+                            deque<int> tax2move = taxelsXcontact[oldId];
+                            for(deque<int>::iterator it=tax2move.begin(); it!=tax2move.end(); it++){
+                                contactXtaxel[(*it)] = newId;               // assign new contact id
+                                taxelsXcontact[newId].push_back((*it));     // add taxel ids to contact
+                            }
+                            taxelsXcontact[oldId].clear();      // clear the list of taxels belonging to the merged contact
+                            //printf("Merge two contacts: %d and %d\n", oldId, newId);
                         }
-                        taxelsXcontact[oldId].clear();      // clear the list of taxels belonging to the merged contact
-                        //printf("Merge two contacts: %d and %d\n", oldId, newId);
                     }
-                }
 
-            }
-            if(contactXtaxel[i]<0){            // ** if no neighbor belongs to a contact -> create new contact
-                contactXtaxel[i] = contactId;
-                taxelsXcontact.resize(contactId+1);
-                taxelsXcontact[contactId].push_back(i);
-                contactId++;
-                //printf("New contact created: %d\n", contactId-1);
+                }
+                if(contactXtaxel[i]<0){            // ** if no neighbor belongs to a contact -> create new contact
+                    contactXtaxel[i] = contactId;
+                    taxelsXcontact.resize(contactId+1);
+                    taxelsXcontact[contactId].push_back(i);
+                    contactId++;
+                    //printf("New contact created: %d\n", contactId-1);
+                }
             }
         }
     }
+    poseSem.post();
     //printf("Clustering finished\n");
 
     skinContactList contactList;
@@ -665,7 +664,14 @@ bool Compensator::isWorking(){
     return _isWorking;
 }
 
-bool Compensator::setTaxelPosesFromFile(const char *filePath, double maxNeighborDist){
+bool Compensator::setMaxNeighborDistance(double d){
+    if(d<0.0)
+        return false;
+    maxNeighDist = d;
+    return true;
+}
+
+bool Compensator::setTaxelPosesFromFile(const char *filePath){
 	ifstream posFile;
 	posFile.open(filePath);	
 	if (!posFile.is_open())
@@ -702,7 +708,7 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath, double maxNeighbor
                 }
 		    }
 	    }
-        computeNeighbors(maxNeighborDist);
+        computeNeighbors();
     }
     poseSem.post();
 
@@ -730,7 +736,7 @@ bool Compensator::setTaxelPose(unsigned int taxelId, Vector pose){
         taxelPos[taxelId] = pose.subVector(0,2);
         taxelOri[taxelId] = pose.subVector(3,5);
     }
-    computeNeighbors();
+    updateNeighbors(taxelId);
     poseSem.post();
     return true;
 }
@@ -748,7 +754,7 @@ bool Compensator::setTaxelPosition(unsigned int taxelId, Vector position){
         return false;
     poseSem.wait();
     taxelPos[taxelId] = position;
-    computeNeighbors();
+    updateNeighbors(taxelId);
     poseSem.post();
     return true;
 }
@@ -768,15 +774,16 @@ bool Compensator::setTaxelOrientation(unsigned int taxelId, Vector orientation){
     poseSem.post();
     return true;
 }
-void Compensator::computeNeighbors(double maxDist){
+void Compensator::computeNeighbors(){
     neighborsXtaxel.clear();
-    neighborsXtaxel.resize(skinDim, vector<int>(0));
+    neighborsXtaxel.resize(skinDim, list<int>(0));
     Vector v;
+    double d2 = maxNeighDist*maxNeighDist;
     for(unsigned int i=0; i<skinDim; i++){
         for(unsigned int j=i+1; j<skinDim; j++){
             if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
                 v = taxelPos[i]-taxelPos[j];
-                if( dot(v,v) <= (maxDist*maxDist)){
+                if( dot(v,v) <= d2){
                     neighborsXtaxel[i].push_back(j);
                     neighborsXtaxel[j].push_back(i);
                     //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());
@@ -797,6 +804,25 @@ void Compensator::computeNeighbors(double maxDist){
         }
     }
     printf("[%s] min neighbors: %d; max neighbors: %d\n", getSkinPartName().c_str(), minNeighbors, maxNeighbors);
+}
+void Compensator::updateNeighbors(unsigned int taxelId){
+    Vector v;
+    double d2 = maxNeighDist*maxNeighDist;
+    // remove all the neighbors of the taxel with id=taxelId
+    neighborsXtaxel[taxelId].clear();
+
+    for(unsigned int i=0; i<skinDim; i++){
+        if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
+            // remove taxelId from the neighbor list (if there is)
+            neighborsXtaxel[i].remove(taxelId);
+            // check whether they are neighbors
+            v = taxelPos[i]-taxelPos[taxelId];
+            if( dot(v,v) <= d2){
+                neighborsXtaxel[i].push_back(taxelId);
+                neighborsXtaxel[taxelId].push_back(i);
+            }
+        }
+    }
 }
 void Compensator::sendInfoMsg(string msg){
     printf("[%s]: %s\n", getInputPortName().c_str(), msg.c_str());

@@ -200,12 +200,14 @@ bool CompensationThread::threadInit()
                 sendInfoMsg(msg.str());
             }
             else{
-                double maxNeighborDist = skinEventsConf.check("maxNeighborDist", Value(0.012)).asDouble();
+                double maxNeighborDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asDouble();
+
                 printf("Max neighbor distance: %f m\n", maxNeighborDist);
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
-	                compensators[i]->setTaxelPosesFromFile(filePath.c_str(), maxNeighborDist);
+                    compensators[i]->setMaxNeighborDistance(maxNeighborDist);
+	                compensators[i]->setTaxelPosesFromFile(filePath.c_str());
 	            }
             }
         }
