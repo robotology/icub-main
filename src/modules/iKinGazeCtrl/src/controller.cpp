@@ -304,6 +304,8 @@ void Controller::run()
     }
     mutexCtrl.post();
     
+    // get data
+    Vector xd=commData->get_xd();
     Vector x=commData->get_x();
     Vector new_qd=commData->get_qd();
 
@@ -425,7 +427,7 @@ void Controller::run()
     }
 
     // print info
-    printIter(commData->get_xd(),x,qddeg,qdeg,vdeg,1.0);
+    printIter(xd,x,qddeg,qdeg,vdeg,1.0);
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);
