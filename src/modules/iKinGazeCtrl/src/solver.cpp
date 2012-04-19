@@ -302,8 +302,9 @@ void EyePinvRefGen::run()
             if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
             {
                 // get rid of the tilt of the eyes
-                Vector x(4); x[0]=1.0; x[1]=0.0; x[2]=0.0; x[3]=-ang[0];
-                fph=axis2dcm(x)*fph;
+                Vector axis(4);
+                axis[0]=1.0; axis[1]=0.0; axis[2]=0.0; axis[3]=-ang[0];
+                fph=axis2dcm(axis)*fph;
 
                 // go on iff the point is in front of us
                 if (fph[2]>0.0)
@@ -350,7 +351,7 @@ void EyePinvRefGen::run()
             
             // reset eyes controller and integral upon saccades transition on=>off
             if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
-            {                
+            {
                 ctrl->resetCtrlEyes();
 
                 qd[0]=fbHead[3];
