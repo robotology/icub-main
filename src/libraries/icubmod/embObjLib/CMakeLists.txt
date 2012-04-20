@@ -39,12 +39,23 @@ set(NVS_REMOTE_SOURCE		${NVS_REMOTE_FOLDER}/eOcfg_EPs_rem_board.c
 set(NVS_REMOTE_HEADER		${NVS_REMOTE_FOLDER}/eOcfg_EPs_rem_board.h
 							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_base_usr_rem_anydev.h
 							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_mngmnt_usr_rem_board.h
-							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_jopint_usr_rem_board.h)
+							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_joint_usr_rem_board.h)
 
-# Mio tentativo di improvvisare una scheda EMS fake da usare come test per l'applicazione... rimandato a quando avrò fatto un po' di codice in più. 
-set(CFG_BOARD01_SOURCE 				${CFG_FOLDER}/eOcfg_EPs_FakeBoard01.c
-						${CFG_FOLDER}/eOcfg_nvsEP_base_FakeBoard01.c
-						${CFG_FOLDER}/eOcfg_nvsEP_mngmnt_FakeBoard01.c)
+set(NVS_MC_EP_SOURCE 		${NVS_MC_EP}eOcfg_nvsEP_mc_any_con_bodypart.c
+							${NVS_MC_EP}eOcfg_nvsEP_mc_any_con_jxxdefault.c
+							${NVS_MC_EP}eOcfg_nvsEP_mc_any_con_mxxdefault.c
+							${NVS_MC_EP}eOcfg_nvsEP_mc_leftleg_con.c
+							${NVS_MC_EP}eOcfg_nvsEP_mc_leftleg_usr_rem_ebx.c
+																			)
+
+set(NVS_MC_EP_HEADER 		${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_bodypart.h
+							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_jxx.h
+							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_jxxdefault.h
+							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_mxx.h
+							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_mxxdefault.h
+							${NVS_MC_EP}/eOcfg_nvsEP_mc_leftleg_con.h
+							${NVS_MC_EP}/eOcfg_nvsEP_mc_leftleg_usr_rem_ebx.h)
+
 
 # EmbObj-src
 set(CORE_FOLDER_SOURCE  			${CORE_FOLDER}/EOarray.c
@@ -145,25 +156,28 @@ set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp)
 
 set(embobj_source 		${BODY_COMMON_SOURCE} 
 				${CORE_FOLDER_SOURCE} 
-				${CORE_VEE_SOURCE} 
-				${NVS_COMMON_SOURCE} 
-				${NVS_REMOTE_SOURCE} 
+				${CORE_VEE_SOURCE}  
 				${PROT_SOURCE} 
 				${IPNET_SOURCE} 
 				${HAL_FAKE_SOURCE} 
 				${EXTRA_SOURCE}
-				${PROT_FOLDER})
+				${PROT_FOLDER}
+				${NVS_COMMON_SOURCE} 
+				${NVS_REMOTE_SOURCE}
+				${NVS_MC_EP_SOURCE})
 
 
 set(embobj_header 		${BODY_COMMON_SOURCE} 
-				${CORE_API_HEADER} 
-				${PROT_HEADER} 
-				${IPNET_HEADER})
+						${CORE_API_HEADER} 
+						${PROT_HEADER} 
+						${IPNET_HEADER}
+						${NVS_COMMON_HEADER} 
+						${NVS_REMOTE_HEADER}
+						${NVS_MC_EP_HEADER})
 
 SOURCE_GROUP("EmbObj Source Files" FILES ${folder_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${folder_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
-# ${embobj_header})
 
 icub_export_library(${PROJECTNAME})

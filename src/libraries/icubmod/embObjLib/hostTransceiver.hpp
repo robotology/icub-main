@@ -10,7 +10,7 @@
     @date       04/20/2011
  **/
 
-/** @defgroup eo_cedcew Library hostTransceiver
+/** @defgroup  Library hostTransceiver
     It is an example of how the embOBJ can operate as host trasceiver.
 
     @{        
