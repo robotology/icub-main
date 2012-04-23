@@ -168,7 +168,7 @@ static Bottle sendRpcCommand(bool responseExpected, SkinManagerCommand cmd){
 	
 	//g_print("Going to send rpc msg: %s\n", b.toString().c_str());
 	if(responseExpected){		
-		guiRpcPort.write(b, resp);		
+		guiRpcPort.write(b, resp);
 	}else{
 		guiRpcPort.write(b);
 	}
