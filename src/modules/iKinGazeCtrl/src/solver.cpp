@@ -317,7 +317,7 @@ void EyePinvRefGen::run()
                 {
                     // estimate geometrically the target vergence Vg=L-R
                     double fphx=fabs(fph[0]);   // account for symmetry along the sagittal plane
-                    //ang[2]=atan2(fph[2],fphx-eyesHalfBaseline)-atan2(fph[2],fphx+eyesHalfBaseline);
+                    ang[2]=atan2(fph[2],fabs(fphx-eyesHalfBaseline))-atan2(fph[2],fphx+eyesHalfBaseline);
                 }
 
                 // enforce joints bounds
