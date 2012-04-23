@@ -77,9 +77,9 @@ protected:
 	unsigned int verbose;
 
 
-    void init(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, 
+    void init(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_Mu=yarp::sig::Vector(0), const yarp::sig::Vector &_Fdir=yarp::sig::Vector(0));
-    bool checkVectorDim(const yarp::sig::Vector &v, const unsigned int &dim, const std::string &descr="");
+    bool checkVectorDim(const yarp::sig::Vector &v, unsigned int dim, const std::string &descr="");
 
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -92,15 +92,15 @@ public:
     /**
     * Constructor with unknown moment and force direction
     */
-    dynContact(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP);
+    dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP);
     /**
     * Constructor with known moment (usually zero) and unknown force direction
     */
-    dynContact(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, const yarp::sig::Vector &_Mu);
+    dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, const yarp::sig::Vector &_Mu);
     /**
     * Constructor with known moment (usually zero) and known force direction
     */
-    dynContact(const BodyPart &_bodyPart, const unsigned int &_linkNumber, const yarp::sig::Vector &_CoP, 
+    dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_Mu, const yarp::sig::Vector &_Fdir);
 
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -113,13 +113,13 @@ public:
 	virtual yarp::sig::Vector           getForceMoment()        const;
     virtual const yarp::sig::Vector&    getForce()		        const;
     virtual const yarp::sig::Vector&    getForceDirection()	    const;
-    virtual const double&               getForceModule()	    const;
+    virtual double                      getForceModule()	    const;
 	virtual const yarp::sig::Vector&    getMoment()		        const;
 	virtual const yarp::sig::Vector&    getCoP()                const;
-    virtual const unsigned int&         getLinkNumber()         const;
-    virtual const BodyPart&             getBodyPart()           const;
+    virtual unsigned int                getLinkNumber()         const;
+    virtual BodyPart                    getBodyPart()           const;
     virtual std::string                 getBodyPartName()       const;
-    virtual const unsigned long&        getId()                 const;
+    virtual unsigned long               getId()                 const;
  	
     //~~~~~~~~~~~~~~~~~~~~~~
 	//   IS methods
@@ -131,14 +131,14 @@ public:
 	//   SET methods
 	//~~~~~~~~~~~~~~~~~~~~~~    
     virtual bool setForce(const yarp::sig::Vector &_F);
-    virtual bool setForceModule(const double &_Fmodule);
+    virtual bool setForceModule(double _Fmodule);
     virtual bool setForceDirection(const yarp::sig::Vector &_Fdir);
 	virtual bool setMoment(const yarp::sig::Vector &_Mu);
     virtual bool setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
     virtual bool setForceMoment(const yarp::sig::Vector &_FMu);
     virtual bool setCoP(const yarp::sig::Vector &_CoP);
-    virtual void setLinkNumber(const unsigned int &_linkNum);
-    virtual void setBodyPart(const BodyPart &_bodyPart);
+    virtual void setLinkNumber(unsigned int _linkNum);
+    virtual void setBodyPart(BodyPart _bodyPart);
 
     //~~~~~~~~~~~~~~~~~~~~~~
 	//   FIX/UNFIX methods
@@ -168,11 +168,11 @@ public:
     /**
      * Useful to print some information.
      */
-	virtual std::string toString(const int &precision=-1) const;
+	virtual std::string toString(int precision=-1) const;
     /**
 	* Set the verbosity level of comments during operations
 	*/
-	virtual void setVerbose(const unsigned int &verb = VERBOSE);
+	virtual void setVerbose(unsigned int verb = VERBOSE);
 };
 
 }
