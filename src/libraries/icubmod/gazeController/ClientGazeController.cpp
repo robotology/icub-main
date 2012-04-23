@@ -1230,6 +1230,50 @@ bool ClientGazeController::waitMotionDone(const double period, const double time
 
 
 /************************************************************************/
+bool ClientGazeController::checkSaccadeDone(bool *f)
+{
+    if (!connected || (f==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("sdon");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        *f=(reply.get(1).asInt()>0);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::waitSaccadeDone(const double period, const double timeout)
+{
+    bool done=false;
+    double t0=Time::now();
+
+    while (!done)
+    {
+        Time::delay(period);
+
+        if (!checkSaccadeDone(&done) || (timeout>0.0) && ((Time::now()-t0)>timeout))
+            return false;
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::stopControl()
 {
     if (!connected)

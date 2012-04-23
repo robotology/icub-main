@@ -141,6 +141,8 @@ public:
     bool clearNeckYaw();
     bool checkMotionDone(bool *f);
     bool waitMotionDone(const double period=0.1, const double timeout=0.0);
+    bool checkSaccadeDone(bool *f)=0;
+    bool waitSaccadeDone(const double period=0.1, const double timeout=0.0)=0;
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);

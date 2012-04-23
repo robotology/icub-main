@@ -289,6 +289,8 @@ following ports:
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
+    - [get] [sdon]: returns 1 iff saccade is done, 0 if still
+      underway.
     - [get] [pitch]: returns in degrees the current range of
       neck pitch joint.
     - [get] [roll]: returns in degrees the current range of
@@ -920,6 +922,12 @@ public:
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->isMotionDone());
+                            return true;
+                        }
+                        else if (type==VOCAB4('s','d','o','n'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addInt((int)!commData.get_isSaccadeUnderway());
                             return true;
                         }
                         else if (type==VOCAB4('p','i','t','c'))

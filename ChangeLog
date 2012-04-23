@@ -1,6 +1,8 @@
+2012-04-23  Ugo Pattacini  <ugo.pattacini@iit.it>
+    gaze interface: added a couple of new methods to check saccades termination
+
 2012-04-02 Lorenzo Natale <lorenzo.natale@iit.it>
     handle precise time stampes for encoders in iCubInterface
-
 
 2012-02-23 Ugo Pattacini <ugo.pattacini@iit.it>
     dataDumper: now the name of the source connection
