@@ -315,9 +315,31 @@ void EyePinvRefGen::run()
                 // go on iff the point is in front of us
                 if (fph[2]>0.0)
                 {
-                    // estimate geometrically the target vergence Vg=L-R
-                    double fphx=fabs(fph[0]);   // account for symmetry along the sagittal plane
-                    ang[2]=atan2(fph[2],fabs(fphx-eyesHalfBaseline))-atan2(fph[2],fphx+eyesHalfBaseline);
+                    double L,R;
+
+                    // estimate geometrically the target vergence Vg=L-R                    
+                    if (fph[0]>=eyesHalfBaseline)
+                    {
+                        L=M_PI/2.0-atan2(fph[2],fph[0]+eyesHalfBaseline);
+                        R=M_PI/2.0-atan2(fph[2],fph[0]-eyesHalfBaseline);
+                    }
+                    else if ((fph[0]>=0.0) && (fph[0]<eyesHalfBaseline))
+                    {
+                        L=M_PI/2.0-atan2(fph[2],fph[0]+eyesHalfBaseline);
+                        R=-(M_PI/2.0-atan2(fph[2],eyesHalfBaseline-fph[0]));
+                    }
+                    else if ((fph[0]<0.0) && (fph[0]>-eyesHalfBaseline))
+                    {
+                        L=M_PI/2.0-atan2(fph[2],fph[0]+eyesHalfBaseline);
+                        R=-(M_PI/2.0-atan2(fph[2],eyesHalfBaseline-fph[0]));
+                    }
+                    else
+                    {
+                        L=-(M_PI/2.0-atan2(fph[2],-fph[0]-eyesHalfBaseline));
+                        R=-(M_PI/2.0-atan2(fph[2],eyesHalfBaseline-fph[0]));
+                    }
+
+                    ang[2]=L-R;
                 }
 
                 // enforce joints bounds

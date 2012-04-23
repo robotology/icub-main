@@ -40,7 +40,7 @@
 #define EYEPINVREFGEN_GAIN                  12.5    // [-]
 #define SACCADES_FREQ                       5.0     // [Hz]
 #define SACCADES_VEL                        1000.0  // [deg/s]
-#define SACCADES_ACTIVATIONANGLE            20.0    // [deg]
+#define SACCADES_ACTIVATIONANGLE            10.0    // [deg]
 #define GYRO_BIAS_STABILITY                 5.0     // [deg/s]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
