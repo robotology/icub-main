@@ -91,10 +91,10 @@ Vector Filter::filt(const Vector &u)
     y=b[0]*u;
     
     for (int i=1; i<m; i++)
-        y=y+b[i]*uold[i-1];
+        y+=b[i]*uold[i-1];
     
     for (int i=1; i<n; i++)
-        y=y-a[i]*yold[i-1];
+        y-=a[i]*yold[i-1];
     
     y=(1.0/a[0])*y;
     
