@@ -311,12 +311,13 @@ void EyePinvRefGen::run()
                 {
                     // estimate geometrically the target vergence Vg=L-R
                     double fphx=fabs(fph[0]);   // account for symmetry along the sagittal plane
-                    ang.push_back(atan2(fph[2],fphx-eyesHalfBaseline)-atan2(fph[2],fphx+eyesHalfBaseline));
+                    double ver=atan2(fph[2],fphx-eyesHalfBaseline)-atan2(fph[2],fphx+eyesHalfBaseline);
+                    ang.push_back(std::max(ver,commData->get_minAllowedVergence()));
                     vel.push_back(SACCADES_FREQ*fabs(ang[2]-fbHead[5]));
                 }
                 else    // do not touch the vergence
-                {                    
-                    ang.push_back(fbHead[5]);
+                {
+                    ang.push_back(std::max(fbHead[5],commData->get_minAllowedVergence()));
                     vel.push_back(vel[1]);
                 }
 
