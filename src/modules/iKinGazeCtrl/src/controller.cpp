@@ -394,23 +394,9 @@ void Controller::run()
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
     if (Robotable)
-    {
         for (size_t i=0; i<v.length(); i++)
-        {
             if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && (v[i]!=0.0))
-            {
-                // current error in the joint space
-                double e=qd[i]-fbHead[i];
-
-                if (e>0.0)
-                    v[i]=minAbsVel;
-                else if (e<0.0)
-                    v[i]=-minAbsVel;
-                else
-                    v[i]=0.0;
-            }
-        }
-    }
+                v[i]=iCub::ctrl::sign(qd[i]-fbHead[i])*minAbsVel;
 
     // convert to degrees
     qddeg=CTRL_RAD2DEG*qd;
