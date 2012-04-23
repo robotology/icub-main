@@ -462,6 +462,32 @@ bool ClientGazeController::getSaccadesStatus(bool *f)
 
 
 /************************************************************************/
+bool ClientGazeController::getSaccadesInhibitionPeriod(double *period)
+{
+    if (!connected || (period==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("sinh");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        *period=reply.get(1).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
 {
     if (!connected)
@@ -953,6 +979,27 @@ bool ClientGazeController::setSaccadesStatus(const bool f)
     command.addString("set");
     command.addString("sacc");
     command.addInt((int)f);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setSaccadesInhibitionPeriod(const double period)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("sinh");
+    command.addDouble(period);
 
     if (!portRpc.write(command,reply))
     {

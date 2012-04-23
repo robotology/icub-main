@@ -286,6 +286,7 @@ following ports:
     - [get] [vor]: returns the vor gain.
     - [get] [ocr]: returns the ocr gain.
     - [get] [sacc]: returns the saccades control status (0/1).
+    - [get] [sinh]: returns the saccades inhibition period (s).
     - [get] [track]: returns the current controller's tracking
       mode (0/1).
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
@@ -343,6 +344,8 @@ following ports:
     - [set] [ocr] <val>: sets a new ocr gain for OCR.
     - [set] [sacc] <val>: enables/disables saccades; val can be
       0/1.
+    - [set] [sinh] <val>: sets the saccades inhibition period
+      (s).
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
@@ -912,6 +915,12 @@ public:
                             reply.addInt((int)eyesRefGen->isSaccadesOn());
                             return true;
                         }
+                        else if (type==VOCAB4('s','i','n','h'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addDouble(eyesRefGen->getSaccadesInhibitionPeriod());
+                            return true;
+                        }
                         else if (type==VOCAB4('t','r','a','c'))
                         {
                             reply.addVocab(ack);
@@ -1204,6 +1213,13 @@ public:
                         {
                             bool mode=(command.get(2).asInt()>0);
                             eyesRefGen->setSaccades(mode);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB4('s','i','n','h'))
+                        {
+                            double inhiPeriod=command.get(2).asDouble();
+                            eyesRefGen->setSaccadesInhibitionPeriod(inhiPeriod);
                             reply.addVocab(ack);
                             return true;
                         }

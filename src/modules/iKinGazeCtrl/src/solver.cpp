@@ -146,6 +146,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 
     genOn=false;
     saccadeUnderWayOld=false;
+    saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
     port_xd=NULL;
 }
 
@@ -287,7 +288,7 @@ void EyePinvRefGen::run()
 
         // ask for saccades (if possible)
         if (Robotable && saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) &&
-            !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>1.0/SACCADES_FREQ))
+            !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>saccadesInhibitionPeriod))
         {
             Vector fph=xd; fph.push_back(1.0);
             fph=SE3inv(chainNeck->getH())*fph;

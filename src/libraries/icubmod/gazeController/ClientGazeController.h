@@ -106,6 +106,7 @@ public:
     bool getVORGain(double *gain);
     bool getOCRGain(double *gain);
     bool getSaccadesStatus(bool *f);
+    bool getSaccadesInhibitionPeriod(double *period);
     bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
     bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
@@ -123,6 +124,7 @@ public:
     bool setVORGain(const double gain);
     bool setOCRGain(const double gain);
     bool setSaccadesStatus(const bool f);
+    bool setSaccadesInhibitionPeriod(const double period);
     bool setStereoOptions(const yarp::os::Bottle &options);
     bool bindNeckPitch(const double min, const double max);
     bool blockNeckPitch(const double val);

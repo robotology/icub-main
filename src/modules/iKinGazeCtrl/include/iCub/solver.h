@@ -38,7 +38,7 @@
 #include <iCub/controller.h>
 
 #define EYEPINVREFGEN_GAIN                  12.5    // [-]
-#define SACCADES_FREQ                       5.0     // [Hz]
+#define SACCADES_INHIBITION_PERIOD          0.2     // [s]
 #define SACCADES_VEL                        1000.0  // [deg/s]
 #define SACCADES_ACTIVATIONANGLE            10.0    // [deg]
 #define GYRO_BIAS_STABILITY                 5.0     // [deg/s]
@@ -91,6 +91,7 @@ protected:
     double eyeTiltMax;
     int    saccadesRxTargets;
     double saccadesClock;
+    double saccadesInhibitionPeriod;
     double eyesHalfBaseline;
     double Ts;
     
@@ -111,12 +112,14 @@ public:
                   const bool _saccadesOn, const Vector &_counterRotGain, const bool _headV2,
                   const unsigned int _period);
 
-    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd;      }
-    void   enable()                     { genOn=true;            }
-    void   disable()                    { genOn=false;           }    
-    Vector getCounterRotGain() const    { return counterRotGain; }
-    void   setSaccades(const bool sw)   { saccadesOn=sw;         }
-    bool   isSaccadesOn() const         { return saccadesOn;     }
+    void   set_xdport(xdPort *_port_xd)                        { port_xd=_port_xd;                   }
+    void   enable()                                            { genOn=true;                         }
+    void   disable()                                           { genOn=false;                        }    
+    Vector getCounterRotGain() const                           { return counterRotGain;              }
+    void   setSaccades(const bool sw)                          { saccadesOn=sw;                      }
+    bool   isSaccadesOn() const                                { return saccadesOn;                  }
+    void   setSaccadesInhibitionPeriod(const double inhPeriod) { saccadesInhibitionPeriod=inhPeriod; }
+    double getSaccadesInhibitionPeriod() const                 { return saccadesInhibitionPeriod;    }
     void   setCounterRotGain(const Vector &gain);
     bool   getGyro(Vector &data);    
     bool   threadInit();
