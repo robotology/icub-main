@@ -1208,7 +1208,7 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
     if ((i>=lnk) || (j>=lnk))
     {
         if (verbose)
-            fprintf(stderr,"fastHessian_ij() failed due to out of range index\n");
+            fprintf(stderr,"fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d\n", i, lnk, j, lnk);
 
         return Vector(0);
     }
@@ -1238,6 +1238,27 @@ Matrix iKinChain::DJacobian(const Vector &dq)
         for(unsigned int j=0; j<DOF; j++)
         {
             temp += fastHessian_ij(j,i) * dq(j);
+        }
+        dJ.setCol(i, temp);
+        temp.zero();
+    }
+    
+    return dJ;
+}
+
+
+/************************************************************************/
+Matrix iKinChain::DJacobian(const unsigned int lnk, const Vector &dq)
+{
+    prepareForHessian(lnk);
+    Matrix dJ(6,lnk-1);
+    Vector temp(6, 0.0);
+
+    for(unsigned int i=0; i<lnk; i++)
+    {
+        for(unsigned int j=0; j<lnk; j++)
+        {
+            temp += fastHessian_ij(lnk, j,i) * dq(j);
         }
         dJ.setCol(i, temp);
         temp.zero();

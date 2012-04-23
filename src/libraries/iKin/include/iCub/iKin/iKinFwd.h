@@ -717,13 +717,15 @@ public:
     /**
     * Returns the geometric Jacobian of the ith link. 
     * @param i is the Link number.
-    * @return the geometric Jacobian.
+    * @return the 6x(i-1) geometric Jacobian matrix.
+    * @note All the links are considered.
     */
     yarp::sig::Matrix GeoJacobian(const unsigned int i);
 
     /**
     * Returns the geometric Jacobian of the end-effector.
-    * @return the geometric Jacobian.
+    * @return the 6xDOF geometric Jacobian matrix.
+    * @note The blocked links are not considered.
     */
     yarp::sig::Matrix GeoJacobian();
 
@@ -732,6 +734,7 @@ public:
     * q. 
     * @param q is the vector of new DOF values. 
     * @return the geometric Jacobian.
+    * @note The blocked links are not considered.
     */
     yarp::sig::Matrix GeoJacobian(const yarp::sig::Vector &q);
 
@@ -824,11 +827,23 @@ public:
     /**
     * Compute the time derivative of the geometric Jacobian.
     * @param dq the joint velocities.
-    * @return the 6xn matrix \f$ 
+    * @return the 6xDOF matrix \f$ 
     *         \partial{^2}F\left(q\right)/\partial t \partial q.
     *                 \f$
     */
     yarp::sig::Matrix DJacobian(const yarp::sig::Vector &dq);
+
+    /**
+    * Compute the time derivative of the geometric Jacobian
+    * (link version).
+    * @param lnk is the Link number up to which consider the 
+    *            computation. 
+    * @param dq the (lnk-1)x1 joint velocity vector.
+    * @return the 6x(lnk-1) matrix \f$ 
+    *         \partial{^2}F\left(q\right)/\partial t \partial q.
+    *                 \f$
+    */
+    yarp::sig::Matrix DJacobian(const unsigned int lnk, const yarp::sig::Vector &dq);
 
     /**
     * Destructor. 
