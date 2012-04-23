@@ -366,6 +366,8 @@ void Controller::run()
         fbEyes[i]=fbHead[3+i];
     }
 
+    vNeck=0.0;
+    vEyes=0.0;
     if (commData->get_isCtrlActive())
     {
         // control loop
@@ -378,11 +380,6 @@ void Controller::run()
         }
         else
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
-    }
-    else
-    {
-        vNeck=0.0;
-        vEyes=0.0;
     }
 
     for (int i=0; i<3; i++)
