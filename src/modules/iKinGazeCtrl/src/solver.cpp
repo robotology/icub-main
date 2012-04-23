@@ -307,7 +307,7 @@ void EyePinvRefGen::run()
                 // init vergence
                 ang[2]=fbHead[5];
 
-                // get rid of the tilt of the eyes
+                // get rid of eyes tilt
                 Vector axis(4);
                 axis[0]=1.0; axis[1]=0.0; axis[2]=0.0; axis[3]=-ang[0];
                 fph=axis2dcm(axis)*fph;
