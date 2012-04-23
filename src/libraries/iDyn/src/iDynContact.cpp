@@ -342,7 +342,7 @@ Matrix iDynContactSolver::getHFromAtoB(unsigned int a, unsigned int b)
     
     Matrix H = chain->refLink(a+1)->getH();     // initialize H with the rototranslation from <a> to <a+1>
     for(unsigned int i=a+2; i<=b; i++)
-        H = H * chain->refLink(i)->getH();
+        H *= chain->refLink(i)->getH();
     return H;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
