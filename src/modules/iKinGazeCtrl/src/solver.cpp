@@ -64,8 +64,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 
     // get the lenght of the half of the eyes baseline
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
-
-    Matrix lim;
+    
     if (Robotable)
     {
         // create interfaces
@@ -294,13 +293,20 @@ void EyePinvRefGen::run()
             fph=SE3inv(chainNeck->getH())*fph;
 
             // estimate geometrically the target tilt and pan of the eyes
-            Vector ang(2), vel(2);
-            ang[0]=-atan2(fph[1],fabs(fph[2])); vel[0]=SACCADES_FREQ*fabs(ang[0]-fbHead[3]);
-            ang[1]=atan2(fph[0],fph[2]);        vel[1]=SACCADES_FREQ*fabs(ang[1]-fbHead[4]);
+            Vector ang(3,0.0);
+            ang[0]=-atan2(fph[1],fabs(fph[2]));
+            ang[1]=atan2(fph[0],fph[2]);
+
+            // enforce joints bounds
+            ang[0]=std::min(std::max(lim(3,0),ang[0]),lim(3,1));
+            ang[1]=std::min(std::max(lim(4,0),ang[1]),lim(4,1));
 
             // favor the smooth-pursuit in case saccades are small
             if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
             {
+                // init vergence
+                ang[2]=fbHead[5];
+
                 // get rid of the tilt of the eyes
                 Vector axis(4);
                 axis[0]=1.0; axis[1]=0.0; axis[2]=0.0; axis[3]=-ang[0];
@@ -311,21 +317,17 @@ void EyePinvRefGen::run()
                 {
                     // estimate geometrically the target vergence Vg=L-R
                     double fphx=fabs(fph[0]);   // account for symmetry along the sagittal plane
-                    double ver=atan2(fph[2],fphx-eyesHalfBaseline)-atan2(fph[2],fphx+eyesHalfBaseline);
-                    ang.push_back(std::max(ver,commData->get_minAllowedVergence()));
-                    vel.push_back(SACCADES_FREQ*fabs(ang[2]-fbHead[5]));
+                    //ang[2]=atan2(fph[2],fphx-eyesHalfBaseline)-atan2(fph[2],fphx+eyesHalfBaseline);
                 }
-                else    // do not touch the vergence
-                {
-                    ang.push_back(std::max(fbHead[5],commData->get_minAllowedVergence()));
-                    vel.push_back(vel[1]);
-                }
+
+                // enforce joints bounds
+                ang[2]=std::min(std::max(lim(5,0),ang[2]),lim(5,1));
 
                 commData->set_qd(3,ang[0]);
                 commData->set_qd(4,ang[1]);
                 commData->set_qd(5,ang[2]);
 
-                ctrl->doSaccade(ang,vel);
+                ctrl->doSaccade(ang,Vector(3,SACCADES_VEL));
                 saccadesClock=Time::now();
             }
         }
