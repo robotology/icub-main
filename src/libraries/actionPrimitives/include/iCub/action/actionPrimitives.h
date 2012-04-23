@@ -293,9 +293,6 @@ public:
     *  
     * @b reach_tol <double>: the reaching tolerance [m]. 
     *  
-    * @b jntmotiondone_tol <double>: the tolerance [deg] for 
-    *    detecting the end of fingers motion in joint space.
-    *  
     * @b tracking_mode <string>: enable/disable the tracking mode; 
     *    possible values: "on"/"off".
     * @note In tracking mode the cartesian position is mantained on 
