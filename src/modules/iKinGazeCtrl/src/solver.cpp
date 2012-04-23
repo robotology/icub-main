@@ -327,7 +327,8 @@ void EyePinvRefGen::run()
                 commData->set_qd(4,ang[1]);
                 commData->set_qd(5,ang[2]);
 
-                ctrl->doSaccade(ang,Vector(3,SACCADES_VEL));
+                Vector vel(3,SACCADES_VEL);
+                ctrl->doSaccade(ang,vel);
                 saccadesClock=Time::now();
             }
         }
