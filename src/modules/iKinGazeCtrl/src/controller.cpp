@@ -366,8 +366,7 @@ void Controller::run()
         fbEyes[i]=fbHead[3+i];
     }
 
-    vNeck=0.0;
-    vEyes=0.0;
+    vNeck=0.0; vEyes=0.0;
     if (commData->get_isCtrlActive())
     {
         // control loop
