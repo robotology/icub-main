@@ -26,24 +26,25 @@ skinContact::skinContact(const dynContact &c)
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure), normalDir(zeros(3)){}
+geoCenter(_geoCenter), activeTaxels(_activeTaxels), taxelList(vector<unsigned int>(activeTaxels, 0)), pressure(_pressure), normalDir(zeros(3)){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure, const Vector &_normalDir)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), activeTaxels(_activeTaxels), pressure(_pressure), normalDir(_normalDir){}
+geoCenter(_geoCenter), activeTaxels(_activeTaxels), taxelList(vector<unsigned int>(activeTaxels, 0)), pressure(_pressure), normalDir(_normalDir){}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, vector<unsigned int> _taxelList, double _pressure)
+:dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
+geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(taxelList.size()), pressure(_pressure), normalDir(zeros(3)){}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, vector<unsigned int> _taxelList, double _pressure, const Vector &_normalDir)
+:dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
+geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(taxelList.size()), pressure(_pressure), normalDir(_normalDir){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact()
 : dynContact(), skinPart(UNKNOWN_SKIN_PART), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
-//~~~~~~~~~~~~~~~~~~~~~~
-//   GET methods
-//~~~~~~~~~~~~~~~~~~~~~~
-const Vector& skinContact::getGeoCenter() const{ return geoCenter; }
-const Vector& skinContact::getNormalDir() const{ return normalDir; }
-double skinContact::getPressure() const{ return pressure; }
-unsigned int skinContact::getActiveTaxels() const{ return activeTaxels; }
-SkinPart skinContact::getSkinPart() const{ return skinPart; }
-string skinContact::getSkinPartName() const{ return SkinPart_s[skinPart]; }
 //~~~~~~~~~~~~~~~~~~~~~~
 //   SET methods
 //~~~~~~~~~~~~~~~~~~~~~~    
@@ -62,21 +63,24 @@ bool skinContact::setNormalDir(const Vector &_normalDir){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool skinContact::setPressure(double _pressure){
-    if(pressure<=0)
+    if(pressure<=0.0)
         return false;
     pressure = _pressure;
     return true;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool skinContact::setActiveTaxels(unsigned int _activeTaxels){
-    if(_activeTaxels==0)
-        return false;
+void skinContact::setActiveTaxels(unsigned int _activeTaxels){
     activeTaxels = _activeTaxels;
-    return true;
+    taxelList.resize(activeTaxels);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void skinContact::setSkinPart(SkinPart _skinPart){
     skinPart = _skinPart;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void skinContact::setTaxelList(const vector<unsigned int> &list){
+    taxelList = list;
+    activeTaxels = list.size();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //   SERIALIZATION methods
@@ -88,6 +92,7 @@ bool skinContact::write(ConnectionWriter& connection){
     for(int i=0;i<3;i++) connection.appendDouble(geoCenter[i]);
     for(int i=0;i<3;i++) connection.appendDouble(normalDir[i]);
     connection.appendInt(activeTaxels);
+    for(unsigned int i=0;i<activeTaxels;i++) connection.appendInt(taxelList[i]);
     connection.appendDouble(pressure);
     
     return !connection.isError();
@@ -100,6 +105,8 @@ bool skinContact::read(ConnectionReader& connection){
     for(int i=0;i<3;i++) geoCenter[i]   = connection.expectDouble();
     for(int i=0;i<3;i++) normalDir[i]   = connection.expectDouble();
     activeTaxels                        = connection.expectInt();
+    taxelList.resize(activeTaxels);
+    for(unsigned int i=0;i<activeTaxels;i++) taxelList[i] = connection.expectInt();
     pressure                            = connection.expectDouble();
      
     return !connection.isError();
