@@ -71,6 +71,7 @@ protected:
 
     Semaphore mutexChain;
     Semaphore mutexCtrl;
+    Semaphore mutexData;
     string robotName;
     string localName;
     string camerasFile;
@@ -125,8 +126,8 @@ public:
     bool   isMotionDone() const;
     void   setTrackingMode(const bool f);
     bool   getTrackingMode() const;
-    bool   getDesired(Vector &des) const;
-    bool   getVelocity(Vector &vel) const;
+    bool   getDesired(Vector &des);
+    bool   getVelocity(Vector &vel);
     bool   getPose(const string &poseSel, Vector &x);
 };
 

@@ -390,14 +390,18 @@ void Controller::run()
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
     if (Robotable)
+    {
         for (size_t i=0; i<v.length(); i++)
             if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && (v[i]!=0.0))
                 v[i]=iCub::ctrl::sign(qd[i]-fbHead[i])*minAbsVel;
+    }
 
     // convert to degrees
+    mutexData.wait();
     qddeg=CTRL_RAD2DEG*qd;
     qdeg =CTRL_RAD2DEG*fbHead;
     vdeg =CTRL_RAD2DEG*v;
+    mutexData.post();
 
     // send velocities to the robot
     if (Robotable && !(vdeg==vdegOld))
@@ -575,17 +579,21 @@ bool Controller::getTrackingMode() const
 
 
 /************************************************************************/
-bool Controller::getDesired(Vector &des) const
+bool Controller::getDesired(Vector &des)
 {
+    mutexData.wait();
     des=qddeg;
+    mutexData.post();
     return true;
 }
 
 
 /************************************************************************/
-bool Controller::getVelocity(Vector &vel) const
+bool Controller::getVelocity(Vector &vel)
 {
+    mutexData.wait();
     vel=vdeg;
+    mutexData.post();
     return true;
 }
 
