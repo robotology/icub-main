@@ -21,7 +21,7 @@
 \defgroup iSpeak iSpeak
  
 Acquire sentences over a yarp port and then let the robot
-pronounce them, also controlling the facial expressions. 
+utter them, also controlling the facial expressions. 
 
 \section intro_sec Description
 
