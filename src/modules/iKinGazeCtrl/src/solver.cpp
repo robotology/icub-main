@@ -324,7 +324,7 @@ void EyePinvRefGen::run()
                         L=M_PI/2.0-atan2(fph[2],fph[0]+eyesHalfBaseline);
                         R=M_PI/2.0-atan2(fph[2],fph[0]-eyesHalfBaseline);
                     }
-                    else if ((fph[0]>-eyesHalfBaseline) && (fph[0]<eyesHalfBaseline))
+                    else if (fph[0]>-eyesHalfBaseline)
                     {
                         L=M_PI/2.0-atan2(fph[2],fph[0]+eyesHalfBaseline);
                         R=-(M_PI/2.0-atan2(fph[2],eyesHalfBaseline-fph[0]));
