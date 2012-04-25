@@ -1,3 +1,6 @@
+2012-04-25  Ugo Pattacini  <ugo.pattacini@iit.it>
+    added calibration library
+
 2012-04-23  Ugo Pattacini  <ugo.pattacini@iit.it>
     gaze interface: added a couple of new methods to check saccades termination
 
