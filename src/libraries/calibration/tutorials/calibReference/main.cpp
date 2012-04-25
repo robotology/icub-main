@@ -77,6 +77,7 @@ int main()
     calibrator.calibrate(Hcap,error);
     double dt=Time::now()-t0;
 
+    // the final report
     cout<<endl;
     cout<<"H"<<endl<<H.toString(3,3).c_str()<<endl;
     cout<<"Hcap"<<endl<<Hcap.toString(3,3).c_str()<<endl;
