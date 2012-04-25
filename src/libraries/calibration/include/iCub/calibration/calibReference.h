@@ -114,7 +114,7 @@ public:
     * @param H the final roto-translation matrix that links the two 
     *          reference frames of 3D points.
     * @param error returns the residual error computed as 
-    *              norm(p0[i]-H*p1[i]) over the whole set of points
+    *              norm(p1[i]-H*p0[i]) over the whole set of points
     *              pairs.
     * @return true/false on success/fail. 
     */
