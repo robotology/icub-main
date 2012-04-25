@@ -15,6 +15,10 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ICUB_MODULE_PATH})
 INCLUDE(iCubOptions)
 INCLUDE(iCubHelpers)
 
+IF(NOT ICUB_USE_IPOPT)
+    MESSAGE(FATAL_ERROR "IPOPT is required")
+ENDIF(NOT ICUB_USE_IPOPT)
+
 SET(folder_source main.cpp)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 
