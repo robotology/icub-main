@@ -74,7 +74,7 @@ int main()
     calibrator.calibrate(Hcap,error);
     double dt=Time::now()-t0;
 
-    cout<<"calibration performed in "<<dt<<" seconds"<<endl;
+    cout<<"calibration performed in "<<dt<<" [s]"<<endl;
     cout<<"H"<<endl<<H.toString(3,3).c_str()<<endl;
     cout<<"Hcap"<<endl<<Hcap.toString(3,3).c_str()<<endl;
     cout<<"residual = "<<error<<endl;
