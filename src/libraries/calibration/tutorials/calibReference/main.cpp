@@ -59,7 +59,7 @@ int main()
         Vector p0=Rand::vector(min,max);
         p0.push_back(1.0);
 
-        Vector p1=H*p;
+        Vector p1=H*p0;
 
         calibrator.addPoints(p0,p1);
     }
@@ -72,8 +72,9 @@ int main()
     double dt=Time::now()-t0;
 
     cout<<"calibration performed in "<<dt<<" seconds"<<endl;
-    cout<<"H    = "<<H.toString(3,3).c_str()<<endl;
-    cout<<"Hcap = "<<Hcap.toString(3,3).c_str()<<endl;
+    cout<<"H"<<endl<<H.toString(3,3).c_str()<<endl;
+    cout<<"Hcap"<<endl<<Hcap.toString(3,3).c_str()<<endl;
+    cout<<"residual = "<<error<<endl;
 
     return 0;
 }
