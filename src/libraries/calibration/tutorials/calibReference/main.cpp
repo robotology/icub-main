@@ -65,12 +65,15 @@ int main()
     }
 
     // carry out the calibration
-    Matrix Hcap,error;
+    Matrix Hcap;
+    double error;
     double t0=Time::now();
     calibrator.calibrate(Hcap,error);
-    double dt=Time-now()-t0;
+    double dt=Time::now()-t0;
 
     cout<<"calibration performed in "<<dt<<" seconds"<<endl;
+    cout<<"H    = "<<H.toString(3,3).c_str()<<endl;
+    cout<<"Hcap = "<<Hcap.toString(3,3).c_str()<<endl;
 
     return 0;
 }
