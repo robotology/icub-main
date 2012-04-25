@@ -77,7 +77,7 @@ int main()
     cout<<"calibration performed in "<<dt<<" [s]"<<endl;
     cout<<"H"<<endl<<H.toString(3,3).c_str()<<endl;
     cout<<"Hcap"<<endl<<Hcap.toString(3,3).c_str()<<endl;
-    cout<<"residual = "<<error<<endl;
+    cout<<"residual = "<<error<<" [m]"<<endl;
 
     return 0;
 }

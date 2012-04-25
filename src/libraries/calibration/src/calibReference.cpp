@@ -256,7 +256,7 @@ double CalibReferenceWithMatchedPoints::evalError(const Vector &x)
 
     double error=0.0;
     for (size_t i=0; i<p0.size(); i++)
-        error+=0.5*norm2(p1[i]-H*p0[i]);
+        error+=norm(p1[i]-H*p0[i]);
 
     return error;
 }

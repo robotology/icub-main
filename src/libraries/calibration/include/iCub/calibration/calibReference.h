@@ -104,7 +104,8 @@ public:
     * Perform reference calibration to determine the matrix H. 
     * @param H is the final roto-translation matrix that links the 
     *          two reference frames of 3D points.
-    * @param error returns the residual of the computation. 
+    * @param error returns the residual error norm(p0[i]-H*p1[i])
+    *              computed over the whole set of points pairs.
     * @return true/false on success/fail. 
     */
     bool calibrate(yarp::sig::Matrix &H, double &error);
