@@ -858,12 +858,14 @@ Vector iKinChain::Pose(const unsigned int i, const bool axisRep)
 /************************************************************************/
 Vector iKinChain::Position(const unsigned int i)
 {
-    if(i>=N)
+    if (i>=N)
     {
         if (verbose)
             fprintf(stderr,"Position() failed due to out of range index: %d>=%d\n",i,N);
-        return Vector();
+
+        return Vector(0);
     }
+
     return getH(i,true).subcol(0,3,3);
 }
 
