@@ -30,3 +30,10 @@ add_subdirectory(actionPrimitives)
 add_subdirectory(icubmod)
 add_subdirectory(pmp)
 
+if(ICUB_USE_IPOPT)
+    add_subdirectory(calibration)
+else(ICUB_USE_IPOPT)
+    message(STATUS "IPOPT not found/selected, skipping calibration")
+endif(ICUB_USE_IPOPT)
+
+
