@@ -302,9 +302,8 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
         app->Options()->SetIntegerValue("max_iter",100);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
         app->Options()->SetStringValue("hessian_approximation","limited-memory");
-        //app->Options()->SetIntegerValue("print_level",5);
-        //app->Options()->SetStringValue("derivative_test","first-order");
-        //app->Options()->SetStringValue("derivative_test_print_all","yes");
+        app->Options()->SetIntegerValue("print_level",0);
+        app->Options()->SetStringValue("derivative_test","none");
         app->Initialize();
 
         Ipopt::SmartPtr<CalibReferenceWithMatchedPointsNLP> nlp=new CalibReferenceWithMatchedPointsNLP(p0,p1,min,max);
