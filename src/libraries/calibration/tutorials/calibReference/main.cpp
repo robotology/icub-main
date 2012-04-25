@@ -62,7 +62,10 @@ int main()
         Vector p0=Rand::vector(min,max);
         p0.push_back(1.0);
 
-        Vector p1=H*p0;
+        // make data a bit dirty (add up noise in the range (-1,1) [cm])
+        Vector eps=Rand::vector(Vector(3,-0.01),Vector(3,0.01));
+        eps.push_back(0.0);
+        Vector p1=H*p0+eps;
 
         calibrator.addPoints(p0,p1);
     }
