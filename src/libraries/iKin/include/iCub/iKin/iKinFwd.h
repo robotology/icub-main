@@ -664,6 +664,13 @@ public:
     yarp::sig::Vector Pose(const unsigned int i, const bool axisRep=true);
 
     /**
+    * Returns the 3D position coordinates of ith Link. 
+    * @param i is the Link number. 
+    * @return the ith Link Position.
+    */
+    yarp::sig::Vector Position(const unsigned int i);
+
+    /**
     * Returns the coordinates of end-effector. Two notations are 
     * provided: the first with Euler Angles (XYZ form=>6x1 output 
     * vector) and second with axis/angle representation 
@@ -683,6 +690,19 @@ public:
     * @return the end-effector pose.
     */
     yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true);
+
+    /**
+    * Returns the 3D coordinates of end-effector position.
+    * @return the end-effector position.
+    */
+    yarp::sig::Vector EndEffPosition();
+
+    /**
+    * Returns the 3D coordinates of end-effector position computed in q.
+    * @param q is the vector of new DOF values. 
+    * @return the end-effector position.
+    */
+    yarp::sig::Vector EndEffPosition(const yarp::sig::Vector &q);
 
     /**
     * Returns the analitical Jacobian of the ith link.

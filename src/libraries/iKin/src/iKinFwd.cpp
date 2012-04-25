@@ -856,6 +856,19 @@ Vector iKinChain::Pose(const unsigned int i, const bool axisRep)
 
 
 /************************************************************************/
+Vector iKinChain::Position(const unsigned int i)
+{
+    if(i>=N)
+    {
+        if (verbose)
+            fprintf(stderr,"Position() failed due to out of range index: %d>=%d\n",i,N);
+        return Vector();
+    }
+    return getH(i,true).subcol(0,3,3);
+}
+
+
+/************************************************************************/
 Vector iKinChain::EndEffPose(const bool axisRep)
 {
     Matrix H=getH();
@@ -902,6 +915,29 @@ Vector iKinChain::EndEffPose(const Vector &q, const bool axisRep)
 
     setAng(q);
     return EndEffPose(axisRep);
+}
+
+
+/************************************************************************/
+Vector iKinChain::EndEffPosition()
+{
+    return getH().subcol(0,3,3);
+}
+
+
+/************************************************************************/
+Vector iKinChain::EndEffPosition(const Vector &q)
+{
+    if (DOF==0)
+    {
+        if (verbose)
+            fprintf(stderr,"EndEffPosition() failed since DOF==0\n");
+    
+        return Vector(0);
+    }
+
+    setAng(q);
+    return EndEffPosition();
 }
 
 
