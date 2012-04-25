@@ -298,8 +298,8 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
         app->Options()->SetNumericValue("tol",1e-8);
         app->Options()->SetNumericValue("acceptable_tol",1e-8);
         app->Options()->SetIntegerValue("acceptable_iter",10);
-        app->Options()->SetStringValue("mu_strategy","adaptive");        
-        app->Options()->SetIntegerValue("max_iter",100);
+        app->Options()->SetStringValue("mu_strategy","adaptive");
+        app->Options()->SetIntegerValue("max_iter",300);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
         app->Options()->SetStringValue("hessian_approximation","limited-memory");
         app->Options()->SetIntegerValue("print_level",0);
