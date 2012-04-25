@@ -60,7 +60,7 @@ protected:
     std::deque<yarp::sig::Vector> p0;
     std::deque<yarp::sig::Vector> p1;
 
-    double evalError(const yarp::sig::Vector &x);
+    double evalError(const yarp::sig::Matrix &H);
 
 public:
     /**

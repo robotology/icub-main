@@ -264,10 +264,8 @@ void CalibReferenceWithMatchedPoints::setBounds(const Vector &min,
 
 
 /****************************************************************/
-double CalibReferenceWithMatchedPoints::evalError(const Vector &x)
+double CalibReferenceWithMatchedPoints::evalError(const Matrix &H)
 {
-    Matrix H=computeH(x);
-
     double error=0.0;
     for (size_t i=0; i<p0.size(); i++)
         error+=norm(p1[i]-H*p0[i]);
@@ -343,7 +341,7 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
 
         Vector x=nlp->get_result();
         H=computeH(x);
-        error=evalError(x);
+        error=evalError(H);
 
         return (status==Ipopt::Solve_Succeeded);
     }
