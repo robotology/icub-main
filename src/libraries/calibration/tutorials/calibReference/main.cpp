@@ -38,7 +38,7 @@ int main()
     min[1]=-5.0; max[1]=5.0;
     min[2]=-5.0; max[2]=5.0;
 
-    // define the "unknown" transformation    
+    // define the "unknown" transformation:
     // translation
     Vector p(3);
     p[0]=0.3; p[1]=-2.0; p[2]=3.1;
@@ -55,8 +55,7 @@ int main()
     // set the working bounding box where the solution is seeked
     calibrator.setBounds(min,max);
 
-    // produce the two clouds of matching 3D points
-    // and feed the calibrator
+    // generate randomly the two clouds of matching 3D points
     for (int i=0; i<10; i++)
     {
         Vector p0=Rand::vector(min,max);
@@ -67,6 +66,7 @@ int main()
         eps.push_back(0.0);
         Vector p1=H*p0+eps;
 
+        // feed the calibrator with the matching pair
         calibrator.addPoints(p0,p1);
     }
 
