@@ -308,7 +308,7 @@ bool CalibReferenceWithMatchedPoints::setInitialGuess(const Matrix &H)
 {
     if ((H.rows()>=4) && (H.cols()>=4))
     {        
-        Vector euler=dcm2euler(H.submatrix(0,2,0,2));
+        Vector euler=dcm2euler(H);
         x0[0]=H(0,3);   x0[1]=H(1,3);   x0[2]=H(2,3);
         x0[3]=euler[0]; x0[4]=euler[1]; x0[5]=euler[2];
 
