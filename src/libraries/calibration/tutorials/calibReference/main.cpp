@@ -53,11 +53,7 @@ int main()
     CalibReferenceWithMatchedPoints calibrator;
 
     // set the working bounding box where the solution is seeked
-    Vector _min=min; Vector _max=max;
-    _min.push_back(-M_PI); _max.push_back(M_PI);
-    _min.push_back(-M_PI); _max.push_back(M_PI);
-    _min.push_back(-M_PI); _max.push_back(M_PI);
-    calibrator.setBounds(_min,_max);
+    calibrator.setBounds(min,max);
 
     // produce the two clouds of matching 3D points
     // and feed the calibrator
