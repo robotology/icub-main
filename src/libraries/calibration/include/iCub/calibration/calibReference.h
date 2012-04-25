@@ -55,6 +55,7 @@ class CalibReferenceWithMatchedPoints
 protected:
     yarp::sig::Vector min;
     yarp::sig::Vector max;
+    yarp::sig::Vector x0;
 
     std::deque<yarp::sig::Vector> p0;
     std::deque<yarp::sig::Vector> p1;
@@ -101,9 +102,17 @@ public:
     void clearPoints();
 
     /**
+    * Allow specifiying the initial guess for the roto-translation 
+    * matrix we seek for.
+    * @param H the 4x4 homogeneous matrix used as initial guess.
+    * @return true/false on success/fail. 
+    */
+    bool setInitialGuess(const yarp::sig::Matrix &H);
+
+    /**
     * Perform reference calibration to determine the matrix H. 
-    * @param H is the final roto-translation matrix that links the 
-    *          two reference frames of 3D points.
+    * @param H the final roto-translation matrix that links the two 
+    *          reference frames of 3D points.
     * @param error returns the residual error computed as 
     *              norm(p0[i]-H*p1[i]) over the whole set of points
     *              pairs.

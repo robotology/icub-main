@@ -67,6 +67,7 @@ protected:
     const Vector        &min;
     const Vector        &max;
 
+    Vector x0;
     Vector x;
 
 public:
@@ -74,7 +75,18 @@ public:
     CalibReferenceWithMatchedPointsNLP(const deque<Vector> &_p0,
                                        const deque<Vector> &_p1,
                                        const Vector &_min, const Vector &_max) :
-                                       p0(_p0), p1(_p1), min(_min), max(_max) {  }
+                                       p0(_p0), p1(_p1), min(_min), max(_max)
+    {
+        x0=0.5*(min+max);
+    }
+
+    /****************************************************************/
+    void set_x0(const Vector &x0)
+    {
+        size_t len=std::min(this->x0.length(),x0.length());
+        for (size_t i=0; i<len; i++)
+            this->x0[i]=x0[i];
+    }
 
     /****************************************************************/
     Vector get_result() const
@@ -112,7 +124,7 @@ public:
                             Ipopt::Index m, bool init_lambda, Ipopt::Number *lambda)
     {
         for (Ipopt::Index i=0; i<n; i++)
-            x[i]=0.5*(min[i]+max[i]);
+            x[i]=x0[i];
 
         return true;
     }
@@ -231,6 +243,8 @@ CalibReferenceWithMatchedPoints::CalibReferenceWithMatchedPoints()
     min[3]=-M_PI;  max[3]=M_PI;
     min[4]=-M_PI;  max[4]=M_PI;
     min[5]=-M_PI;  max[5]=M_PI;
+
+    x0=0.5*(min+max);
 }
 
 
@@ -290,6 +304,22 @@ void CalibReferenceWithMatchedPoints::clearPoints()
 
 
 /****************************************************************/
+bool CalibReferenceWithMatchedPoints::setInitialGuess(const Matrix &H)
+{
+    if ((H.rows()>=4) && (H.cols()>=4))
+    {        
+        Vector euler=dcm2euler(H.submatrix(0,2,0,2));
+        x0[0]=H(0,3);   x0[1]=H(1,3);   x0[2]=H(2,3);
+        x0[3]=euler[0]; x0[4]=euler[1]; x0[5]=euler[2];
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/****************************************************************/
 bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
 {
     if (p0.size()>0)
@@ -307,13 +337,15 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
         app->Initialize();
 
         Ipopt::SmartPtr<CalibReferenceWithMatchedPointsNLP> nlp=new CalibReferenceWithMatchedPointsNLP(p0,p1,min,max);
+
+        nlp->set_x0(x0);
         Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
 
         Vector x=nlp->get_result();
         H=computeH(x);
         error=evalError(x);
 
-        return true;
+        return (status==Ipopt::Solve_Succeeded);
     }
     else
         return false;
