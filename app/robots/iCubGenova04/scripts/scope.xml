@@ -1,0 +1,15 @@
+<application>
+<name>Visualization Strain Torque sensor on Oscilloscope</name>
+<module>
+      <name>portScope</name>
+      <parameters>--local /strainScope --index "(0 1 2 3 4 5)"</parameters>
+	  <node>icubsrv</node>
+	<stdio>icubsrv</stdio>
+	<tag>portscope</tag>
+   </module>
+<connection>
+  <from>/icub/right_arm/analog:o</from>
+  <to>/strainScope00</to>
+  <protocol>tcp</protocol>
+</connection>
+</application>

@@ -1,0 +1,11 @@
+<application>
+<name>robotMotorGui</name>
+<module>
+      <name>robotMotorGui</name>
+      <parameters>--from /usr/local/src/robot/iCub/main/app/robots/iCubBremen01/DFKI-Hand-Right-001/conf/robotMotorGui.ini</parameters>
+	  <node>icubsrv</node>
+	  <stdio>icubsrv</stdio>	
+	<tag>robotMotorGui</tag>
+   </module>
+   </application>
+
