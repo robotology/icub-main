@@ -20,6 +20,7 @@
 #include <yarp/dev/CanBusInterface.h>
 
 #include "include/Triangle.h"
+#include "include/Triangle_10pad.h"
 #include "include/Fingertip.h"
 
 using namespace yarp::os;
@@ -79,7 +80,7 @@ public:
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
-            if (type=="triangle" || type=="fingertip")
+            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad")
             {
                 int id=sensorConfig.get(1).asInt();
                 double xc=sensorConfig.get(2).asDouble();
@@ -103,7 +104,11 @@ public:
                         {
                             sensor[id]=new Triangle(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        else
+		                if (type=="triangle_10pad")
+                        {
+                            sensor[id]=new Triangle_10pad(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
+                        if (type=="fingertip")
                         {
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
                         }
@@ -117,7 +122,7 @@ public:
             }
             else
             {
-                printf("WARNING: sensor type %s unknown, discarded.\n",type.c_str());
+                printf("WARNING: sensor of type %s unknown, discarded.\n",type.c_str());
             }
         }
 

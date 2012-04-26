@@ -190,7 +190,7 @@ public:
 		}
     }
 
-    void draw(unsigned char *image)
+    virtual void draw(unsigned char *image)
     {
         for (int i=0; i<nVerts; ++i)
         {

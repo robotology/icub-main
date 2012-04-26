@@ -22,6 +22,7 @@
 
 #include "include/Triangle.h"
 #include "include/Fingertip.h"
+#include "include/Triangle_10pad.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -78,7 +79,7 @@ public:
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
-            if (type=="triangle" || type=="fingertip")
+            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad")
             {
                 int id=sensorConfig.get(1).asInt();
                 double xc=sensorConfig.get(2).asDouble();
@@ -103,7 +104,12 @@ public:
                             sensor[id]=new Triangle(xc,yc,th,gain,layoutNum,lrMirror);
 							sensor[id]->setCalibrationFlag(useCalibration);
                         }
-                        else
+						if (type=="triangle_10pad")
+                        {
+                            sensor[id]=new Triangle_10pad(xc,yc,th,gain,layoutNum,lrMirror);
+							sensor[id]->setCalibrationFlag(useCalibration);
+                        }
+                        if (type=="fingertip")
                         {
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
 							sensor[id]->setCalibrationFlag(useCalibration);
