@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-// #define __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+//#define __ICUBINTERFACE_PRECISE_TIMESTAMPS__
 
 //
 //#define CONTROLBOARDWRAPPER2_DEBUG
@@ -207,9 +207,7 @@ public:
         enc->getEncodersTimed(encoders.data(), encodersTimes.data());
 #else
         enc->getEncoders(encoders.data());
-        double time=Time::now();
-        for(int k=0;k<axes;k++)
-            encodersTimes[k]=Time::now();
+        
 #endif
     }
 
