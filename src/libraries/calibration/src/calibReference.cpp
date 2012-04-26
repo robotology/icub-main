@@ -139,6 +139,8 @@ public:
         for (size_t i=0; i<p0.size(); i++)
             obj_value+=0.5*norm2(p1[i]-H*p0[i]);
 
+        obj_value/=p0.size();
+
         return true;
     }
     
@@ -184,6 +186,9 @@ public:
             grad_f[4]-=dot(d,(dHdx4*p0[i]));
             grad_f[5]-=dot(d,(dHdx5*p0[i]));
         }
+
+        for (Ipopt::Index i=0; i<n; i++)
+            grad_f[i]/=p0.size();
 
         return true;
     }
@@ -269,6 +274,8 @@ double CalibReferenceWithMatchedPoints::evalError(const Matrix &H)
     double error=0.0;
     for (size_t i=0; i<p0.size(); i++)
         error+=norm(p1[i]-H*p0[i]);
+
+    error/=p0.size();
 
     return error;
 }
