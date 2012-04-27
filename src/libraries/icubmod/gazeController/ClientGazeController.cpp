@@ -656,6 +656,9 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
         return false;
     }
 
+	fprintf(stdout,"Debug: Cmd to server %s \n", command.toString().c_str());
+	fprintf(stdout,"Debug: Reply from server %s \n", reply.toString().c_str());
+
     if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPoint=reply.get(1).asList())
