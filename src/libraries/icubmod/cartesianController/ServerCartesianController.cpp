@@ -19,13 +19,14 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
+#include <stdio.h>
+#include <algorithm>
+
 #include <yarp/os/Time.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Network.h>
 
 #include <iCub/iKin/iKinVocabs.h>
-
-#include <stdio.h>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
@@ -893,12 +894,12 @@ double ServerCartesianController::getFeedback(Vector &_fb)
                 _fbCnt++;
         }
 
-        // retrieve the mean stamp
+        // retrieve the highest stamp
         if (stamp>=0.0)
         {
             Stamp s=lTim[i]->getLastInputStamp();
             if (s.isValid())
-                stamp+=s.getTime()/numDrv;
+                stamp=std::max(stamp,s.getTime());
             else
                 stamp=-1.0;
         }
