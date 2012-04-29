@@ -137,6 +137,7 @@ protected:
     std::deque<DriverDescriptor>             lDsc;
     std::deque<yarp::dev::IControlLimits*>   lLim;
     std::deque<yarp::dev::IEncoders*>        lEnc;
+    std::deque<yarp::dev::IPreciselyTimed*>  lTim;
     std::deque<yarp::dev::IVelocityControl*> lVel;
     std::deque<int>                          lJnt;
     std::deque<int*>                         lRmp;
@@ -190,18 +191,18 @@ protected:
     int contextIdCnt;
     std::map<int,Context> contextMap;
 
-    void init();
-    void openPorts();
-    void closePorts();
-    bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
-    void stopLimbVel();
-    void alignJointsBounds();
-    void getFeedback(yarp::sig::Vector &_fb);
-    void newController();
-    bool getNewTarget();
-    void sendVelocity(const yarp::sig::Vector &v);
-    bool goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
-    bool deleteContexts(yarp::os::Bottle *contextIdList);
+    void   init();
+    void   openPorts();
+    void   closePorts();
+    bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
+    void   stopLimbVel();
+    void   alignJointsBounds();
+    double getFeedback(yarp::sig::Vector &_fb);
+    void   newController();
+    bool   getNewTarget();
+    void   sendVelocity(const yarp::sig::Vector &v);
+    bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
+    bool   deleteContexts(yarp::os::Bottle *contextIdList);
 
     virtual bool threadInit();
     virtual void afterStart(bool s);

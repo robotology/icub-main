@@ -864,11 +864,12 @@ void ServerCartesianController::alignJointsBounds()
 
 
 /************************************************************************/
-void ServerCartesianController::getFeedback(Vector &_fb)
+double ServerCartesianController::getFeedback(Vector &_fb)
 {
     Vector fbTmp(maxPartJoints);
     int chainCnt=0;
     int _fbCnt=0;
+    double stamp=0.0;
 
     for (int i=0; i<numDrv; i++)
     {
@@ -891,7 +892,19 @@ void ServerCartesianController::getFeedback(Vector &_fb)
             if (!(*chain)[chainCnt++].isBlocked())
                 _fbCnt++;
         }
+
+        // retrieve the mean stamp
+        if (stamp>=0.0)
+        {
+            Stamp s=lTim[i]->getLastInputStamp();
+            if (s.isValid())
+                stamp+=s.getTime()/numDrv;
+            else
+                stamp=-1.0;
+        }
     }
+
+    return stamp;
 }
 
 
@@ -1094,7 +1107,7 @@ void ServerCartesianController::run()
         mutex.wait();
 
         // read the feedback
-        getFeedback(fb);
+        double stamp=getFeedback(fb);
         ctrl->set_q(fb);
 
         // manage the virtual target yielded by a
@@ -1173,7 +1186,10 @@ void ServerCartesianController::run()
             mutex.post();
     
         // update the stamp anyway
-        txInfo.update();
+        if (stamp>=0.0)
+            txInfo.update(stamp);
+        else
+            txInfo.update();
 
         // streams out the end-effector pose
         if (portState.getOutputCount()>0)
@@ -1275,7 +1291,8 @@ bool ServerCartesianController::open(Searchable &config)
 
     if (optGeneral.check("NumberOfDrivers"))
     {
-        if (!(numDrv=optGeneral.find("NumberOfDrivers").asInt()))
+        numDrv=optGeneral.find("NumberOfDrivers").asInt();
+        if (numDrv<=0)
         {
             fprintf(stdout,"NumberOfDrivers shall be positive\n");
             close();
@@ -1448,6 +1465,7 @@ bool ServerCartesianController::close()
     lDsc.clear();
     lLim.clear();
     lEnc.clear();
+    lTim.clear();
     lVel.clear();
     lJnt.clear();
     lRmp.clear();
@@ -1506,11 +1524,13 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             IControlLimits   *lim;
             IEncoders        *enc;
+            IPreciselyTimed  *tim;
             IVelocityControl *vel;
             int               joints;
 
             drivers[j]->poly->view(lim);
             drivers[j]->poly->view(enc);
+            drivers[j]->poly->view(tim);
             drivers[j]->poly->view(vel);
 
             enc->getAxes(&joints);
@@ -1544,6 +1564,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             lLim.push_back(lim);
             lEnc.push_back(enc);
+            lTim.push_back(tim);
             lVel.push_back(vel);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
