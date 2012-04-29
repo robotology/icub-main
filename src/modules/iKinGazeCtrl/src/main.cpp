@@ -457,6 +457,7 @@ protected:
     PolyDriver    *drvTorso, *drvHead;
     exchangeData   commData;
     Port           rpcPort;
+    bool           interrupting;
 
     struct Context
     {
@@ -490,7 +491,7 @@ protected:
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
-        while ((Time::now()-t0)<ping_robot_tmo)
+        while (!interrupting && (Time::now()-t0)<ping_robot_tmo)
         {
             if (pDrv!=NULL)
                 delete pDrv;
@@ -512,7 +513,7 @@ protected:
                         dt>0.0?dt:0.0);
 
                 double t1=Time::now();
-                while ((Time::now()-t1)<1.0)
+                while (!interrupting && (Time::now()-t1)<1.0)
                     Time::delay(0.1);
             }
         }
@@ -592,6 +593,9 @@ protected:
     }
 
 public:
+    /************************************************************************/
+    CtrlModule() : interrupting(false) { }
+
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
@@ -1251,6 +1255,13 @@ public:
         }
 
         reply.addVocab(nack);
+        return true;
+    }
+
+    /************************************************************************/
+    bool interruptModule()
+    {
+        interrupting=true;
         return true;
     }
 

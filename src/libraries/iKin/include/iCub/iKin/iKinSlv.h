@@ -333,6 +333,7 @@ protected:
     bool          fullDOF;
     bool          configured;
     bool          closed;
+    bool          interrupting;
     bool          verbosity;
     bool          timeout_detected;
     int           maxPartJoints;
@@ -485,6 +486,12 @@ public:
     * @return true/false if successful/failed
     */
     virtual bool open(yarp::os::Searchable &options);
+
+    /**
+    * Interrupt the open() method waiting for motor parts to be 
+    * ready. 
+    */
+    virtual void interrupt();
 
     /**
     * Stop the solver and dispose it. Called by destructor.

@@ -479,6 +479,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     slvName=_slvName;
     configured=false;
     closed=false;
+    interrupting=false;
     verbosity=false;
     timeout_detected=false;
     maxPartJoints=0;
@@ -514,7 +515,7 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
     PolyDriver *pDrv=NULL;
 
     double t0=Time::now();
-    while ((Time::now()-t0)<ping_robot_tmo)
+    while (!interrupting && (Time::now()-t0)<ping_robot_tmo)
     {
         if (pDrv!=NULL)
             delete pDrv;
@@ -537,7 +538,7 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
                     dt>0.0?dt:0.0);
 
             double t1=Time::now();
-            while ((Time::now()-t1)<1.0)
+            while (!interrupting && (Time::now()-t1)<1.0)
                 Time::delay(0.1);
         }
     }
@@ -1575,6 +1576,13 @@ Vector CartesianSolver::solve(Vector &xd)
                       0.0,dummy,dummy,
                       CARTSLV_WEIGHT_3RD_TASK,qd_3rdTask,w_3rdTask,
                       NULL,NULL,clb);
+}
+
+
+/************************************************************************/
+void CartesianSolver::interrupt()
+{
+    interrupting=true;
 }
 
 
