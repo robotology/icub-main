@@ -19,14 +19,14 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
-#include <stdio.h>
-#include <algorithm>
-
 #include <yarp/os/Time.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Network.h>
 
 #include <iCub/iKin/iKinVocabs.h>
+
+#include <stdio.h>
+#include <algorithm>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"

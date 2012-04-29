@@ -222,7 +222,9 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
     {
         pose=*v;
         lastPoseMsgArrivalTime=now;
+        mutex.wait();
         portState.getEnvelope(rxInfo);
+        mutex.post();
     }
 
     x.resize(3);
@@ -1136,7 +1138,11 @@ bool ClientCartesianController::deleteContexts()
 /************************************************************************/
 Stamp ClientCartesianController::getLastInputStamp()
 {
-    return rxInfo;
+    mutex.wait();
+    Stamp s=rxInfo;
+    mutex.post();
+
+    return s;
 }
 
 
