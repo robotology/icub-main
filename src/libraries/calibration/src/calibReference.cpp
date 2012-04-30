@@ -233,6 +233,112 @@ public:
     }
 };
 
+
+/****************************************************************/
+class CalibReferenceWithScaledMatchedPointsNLP : public CalibReferenceWithMatchedPointsNLP
+{
+protected:
+
+public:
+    /****************************************************************/
+    CalibReferenceWithScaledMatchedPointsNLP(const deque<Vector> &_p0,
+                                             const deque<Vector> &_p1,
+                                             const Vector &_min, const Vector &_max) :
+                                             CalibReferenceWithMatchedPointsNLP(_p0,_p1,_min,_max) { }
+
+    /****************************************************************/
+    bool get_nlp_info(Ipopt::Index &n, Ipopt::Index &m, Ipopt::Index &nnz_jac_g,
+                      Ipopt::Index &nnz_h_lag, IndexStyleEnum &index_style)
+    {
+        CalibReferenceWithMatchedPointsNLP::get_nlp_info(n,m,nnz_jac_g,nnz_h_lag,index_style);
+        n=6+3;
+
+        return true;
+    }
+
+    /****************************************************************/
+    bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
+                Ipopt::Number &obj_value)
+    {
+        Matrix H=computeH(x);
+        Vector s(4);
+        s[0]=x[6];
+        s[1]=x[7];
+        s[2]=x[8];
+        s[3]=1.0;
+
+        obj_value=0.0;
+        for (size_t i=0; i<p0.size(); i++)
+            obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
+
+        obj_value/=p0.size();
+
+        return true;
+    }
+    
+    /****************************************************************/
+    bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
+                     Ipopt::Number *grad_f)
+    {
+        double ca=cos(x[3]);  double sa=sin(x[3]);
+        double cb=cos(x[4]);  double sb=sin(x[4]);
+        double cg=cos(x[5]);  double sg=sin(x[5]);
+
+        Matrix Rza=eye(4,4);
+        Rza(0,0)=ca;   Rza(1,1)=ca;   Rza(1,0)=sa;   Rza(0,1)=-sa;
+        Matrix dRza=zeros(4,4);
+        dRza(0,0)=-sa; dRza(1,1)=-sa; dRza(1,0)=ca;  dRza(0,1)=-ca;
+
+        Matrix Rzg=eye(4,4);
+        Rzg(0,0)=cg;   Rzg(1,1)=cg;   Rzg(1,0)=sg;   Rzg(0,1)=-sg;
+        Matrix dRzg=zeros(4,4);
+        dRzg(0,0)=-sg; dRzg(1,1)=-sg; dRzg(1,0)=cg;  dRzg(0,1)=-cg;
+
+        Matrix Ryb=eye(4,4);
+        Ryb(0,0)=cb;   Ryb(2,2)=cb;   Ryb(2,0)=-sb;  Ryb(0,2)=sb;
+        Matrix dRyb=zeros(4,4);
+        dRyb(0,0)=-sb; dRyb(2,2)=-sb; dRyb(2,0)=-cb; dRyb(0,2)=cb;
+
+        Matrix dHdx0=zeros(4,4); dHdx0(0,3)=1.0;
+        Matrix dHdx1=zeros(4,4); dHdx1(1,3)=1.0;
+        Matrix dHdx2=zeros(4,4); dHdx2(2,3)=1.0;
+        Matrix dHdx3=dRza*Ryb*Rzg;
+        Matrix dHdx4=Rza*dRyb*Rzg;
+        Matrix dHdx5=Rza*Ryb*dRzg;
+
+        Matrix H=computeH(x);
+        Matrix dHdx6=zeros(4,4); dHdx6(0,0)=1.0; dHdx6*=H;
+        Matrix dHdx7=zeros(4,4); dHdx7(1,1)=1.0; dHdx7*=H;
+        Matrix dHdx8=zeros(4,4); dHdx8(2,2)=1.0; dHdx8*=H;
+
+        Vector s(4);
+        s[0]=x[6];
+        s[1]=x[7];
+        s[2]=x[8];
+        s[3]=1.0;
+
+        grad_f[0]=grad_f[1]=grad_f[2]=grad_f[3]=grad_f[4]=grad_f[5]=0.0;
+        for (size_t i=0; i<p0.size(); i++)
+        {
+            Vector d=p1[i]-s*(H*p0[i]);
+            grad_f[0]-=dot(d,(dHdx0*p0[i]));
+            grad_f[1]-=dot(d,(dHdx1*p0[i]));
+            grad_f[2]-=dot(d,(dHdx2*p0[i]));
+            grad_f[3]-=dot(d,(dHdx3*p0[i]));
+            grad_f[4]-=dot(d,(dHdx4*p0[i]));
+            grad_f[5]-=dot(d,(dHdx5*p0[i]));
+            grad_f[6]-=dot(d,(dHdx6*p0[i]));
+            grad_f[7]-=dot(d,(dHdx7*p0[i]));
+            grad_f[8]-=dot(d,(dHdx8*p0[i]));
+        }
+
+        for (Ipopt::Index i=0; i<n; i++)
+            grad_f[i]/=p0.size();
+
+        return true;
+    }
+};
+
 }
 
 }
@@ -249,7 +355,13 @@ CalibReferenceWithMatchedPoints::CalibReferenceWithMatchedPoints()
     min[4]=-M_PI;  max[4]=M_PI;
     min[5]=-M_PI;  max[5]=M_PI;
 
+    min_s.resize(3); max_s.resize(3);
+    min_s[0]=0.1;    max_s[0]=10.0;
+    min_s[1]=0.1;    max_s[1]=10.0;
+    min_s[2]=0.1;    max_s[2]=10.0;
+
     x0=0.5*(min+max);
+    s0.resize(3,1.0);
 }
 
 
@@ -265,6 +377,21 @@ void CalibReferenceWithMatchedPoints::setBounds(const Vector &min,
 
     for (size_t i=0; i<len_max; i++)
         this->max[i]=max[i];
+}
+
+
+/****************************************************************/
+void CalibReferenceWithMatchedPoints::setScalingBounds(const Vector &min,
+                                                       const Vector &max)
+{
+    size_t len_min=std::min(this->min_s.length(),min.length());
+    size_t len_max=std::min(this->max_s.length(),max.length());
+
+    for (size_t i=0; i<len_min; i++)
+        this->min_s[i]=min[i];
+
+    for (size_t i=0; i<len_max; i++)
+        this->max_s[i]=max[i];
 }
 
 
@@ -325,6 +452,19 @@ bool CalibReferenceWithMatchedPoints::setInitialGuess(const Matrix &H)
 
 
 /****************************************************************/
+bool CalibReferenceWithMatchedPoints::setScalingInitialGuess(const Vector &s)
+{
+    if (s.length()>=s0.length())
+    {
+        s0=s.subVector(0,s0.length()-1);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/****************************************************************/
 bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
 {
     if (p0.size()>0)
@@ -356,5 +496,41 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
         return false;
 }
 
+
+/****************************************************************/
+bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, Vector &s,
+                                                double &error)
+{
+    if (p0.size()>0)
+    {
+        Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
+        app->Options()->SetNumericValue("tol",1e-8);
+        app->Options()->SetNumericValue("acceptable_tol",1e-8);
+        app->Options()->SetIntegerValue("acceptable_iter",10);
+        app->Options()->SetStringValue("mu_strategy","adaptive");
+        app->Options()->SetIntegerValue("max_iter",300);
+        app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
+        app->Options()->SetStringValue("hessian_approximation","limited-memory");
+        app->Options()->SetIntegerValue("print_level",0);
+        app->Options()->SetStringValue("derivative_test","none");
+        app->Initialize();
+
+        Ipopt::SmartPtr<CalibReferenceWithScaledMatchedPointsNLP> nlp=new CalibReferenceWithScaledMatchedPointsNLP(p0,p1,cat(min,min_s),cat(max,max_s));
+
+        nlp->set_x0(cat(x0,s0));
+        Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
+
+        Vector x=nlp->get_result();
+        H=computeH(x);
+        s=x.subVector(6,8);
+        Matrix S=eye(4,4);
+        S(0,0)=s[0]; S(1,1)=s[1]; S(2,2)=s[2];
+        error=evalError(S*H);
+
+        return (status==Ipopt::Solve_Succeeded);
+    }
+    else
+        return false;
+}
 
 

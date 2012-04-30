@@ -47,15 +47,19 @@ namespace calibration
 * @ingroup References
 *
 * A class that deals with the problem of determining the 
-* roto-translation matrix H between two sets of matching 3D 
-* points employing IpOpt. 
+* roto-translation matrix H and scaling factors S between two 
+* sets of matching 3D points employing IpOpt. 
+*  
+* The problem solved is of the form: 
+* 
+* H^*=\arg\min_{H\in SE\left(3\right)}\left(\frac{1}{2N}\sum_{i=1}^{N} \left \| p_i^{O_1}-S \cdot H \cdot p_i^{O_2} \right \|^2 \right)\right.
 */
 class CalibReferenceWithMatchedPoints
 {
 protected:
-    yarp::sig::Vector min;
-    yarp::sig::Vector max;
-    yarp::sig::Vector x0;
+    yarp::sig::Vector min, min_s;
+    yarp::sig::Vector max, max_s;
+    yarp::sig::Vector x0,  s0;
 
     std::deque<yarp::sig::Vector> p0;
     std::deque<yarp::sig::Vector> p1;
@@ -87,6 +91,15 @@ public:
     void setBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
 
     /**
+    * Allow specifying the bounds for the 3D scaling factors.
+    * @param min the 3x1 Vector containining the minimum bounds.
+    * @param max the 3x1 Vector containining the maximums bounds. 
+    *  
+    * @note by default min=(0.1,0.1,0.1) and max=(10.0,10.0,10.0). 
+                                                                 */
+    void setScalingBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
+
+    /**
     * Add to the internal databse the 3D-point p0 and the 3D-point 
     * p1 which is supposed to correspond to H*p0, whose matrix H has 
     * to be found. 
@@ -110,6 +123,13 @@ public:
     bool setInitialGuess(const yarp::sig::Matrix &H);
 
     /**
+    * Allow specifiying the initial guess for the scaling factors.
+    * @param s the 3x1 vector of scaling factors.
+    * @return true/false on success/fail. 
+    */
+    bool setScalingInitialGuess(const yarp::sig::Vector &s);
+
+    /**
     * Perform reference calibration to determine the matrix H. 
     * @param H the final roto-translation matrix that links the two 
     *          reference frames of 3D points.
@@ -119,6 +139,20 @@ public:
     * @return true/false on success/fail. 
     */
     bool calibrate(yarp::sig::Matrix &H, double &error);
+
+    /**
+    * Perform reference calibration to determine the matrix H and 
+    * the scaling factors S. 
+    * @param H the final roto-translation matrix that links the two 
+    *          reference frames of 3D points.
+    * @param s the 3x1 vector containing the found scaling factors.
+    * @param error returns the residual error computed as 
+    *              norm(p1[i]-S*H*p0[i]) over the whole set of
+    *              points pairs, where S is the diagonal 3x3 matrix
+    *              containing the scaling factors.
+    * @return true/false on success/fail. 
+    */
+    bool calibrate(yarp::sig::Matrix &H, yarp::sig::Vector &s, double &error);
 };
 
 }
