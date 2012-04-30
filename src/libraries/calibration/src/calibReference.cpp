@@ -64,9 +64,9 @@ class CalibReferenceWithMatchedPointsNLP : public Ipopt::TNLP
 protected:
     const deque<Vector> &p0;
     const deque<Vector> &p1;
-    const Vector        &min;
-    const Vector        &max;
 
+    Vector min;
+    Vector max;
     Vector x0;
     Vector x;
 
@@ -75,13 +75,15 @@ public:
     CalibReferenceWithMatchedPointsNLP(const deque<Vector> &_p0,
                                        const deque<Vector> &_p1,
                                        const Vector &_min, const Vector &_max) :
-                                       p0(_p0), p1(_p1), min(_min), max(_max)
+                                       p0(_p0), p1(_p1)
     {
+        min=_min;
+        max=_max;
         x0=0.5*(min+max);
     }
 
     /****************************************************************/
-    void set_x0(const Vector &x0)
+    virtual void set_x0(const Vector &x0)
     {
         size_t len=std::min(this->x0.length(),x0.length());
         for (size_t i=0; i<len; i++)
@@ -89,7 +91,7 @@ public:
     }
 
     /****************************************************************/
-    Vector get_result() const
+    virtual Vector get_result() const
     {
         return x;
     }
@@ -175,7 +177,8 @@ public:
         Matrix dHdx5=Rza*Ryb*dRzg;
 
         Matrix H=computeH(x);
-        grad_f[0]=grad_f[1]=grad_f[2]=grad_f[3]=grad_f[4]=grad_f[5]=0.0;
+        grad_f[0]=grad_f[1]=grad_f[2]=0.0;
+        grad_f[3]=grad_f[4]=grad_f[5]=0.0;
         for (size_t i=0; i<p0.size(); i++)
         {
             Vector d=p1[i]-H*p0[i];
@@ -237,8 +240,6 @@ public:
 /****************************************************************/
 class CalibReferenceWithScaledMatchedPointsNLP : public CalibReferenceWithMatchedPointsNLP
 {
-protected:
-
 public:
     /****************************************************************/
     CalibReferenceWithScaledMatchedPointsNLP(const deque<Vector> &_p0,
@@ -317,7 +318,9 @@ public:
         s[2]=x[8];
         s[3]=1.0;
 
-        grad_f[0]=grad_f[1]=grad_f[2]=grad_f[3]=grad_f[4]=grad_f[5]=0.0;
+        grad_f[0]=grad_f[1]=grad_f[2]=0.0;
+        grad_f[3]=grad_f[4]=grad_f[5]=0.0;
+        grad_f[6]=grad_f[7]=grad_f[8]=0.0;
         for (size_t i=0; i<p0.size(); i++)
         {
             Vector d=p1[i]-s*(H*p0[i]);
