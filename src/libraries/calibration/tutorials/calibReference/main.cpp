@@ -49,11 +49,14 @@ int main()
     Matrix H=euler2dcm(euler);
     H(0,3)=p[0]; H(1,3)=p[1]; H(2,3)=p[2];
 
-    // create the calibration
-    CalibReferenceWithMatchedPoints calibrator;
+    // ansisotropic scale
+    Vector scale(3);
+    scale[0]=0.9; scale[1]=0.8; scale[2]=1.1;
+    Vector h_scale=scale;
+    h_scale.push_back(1.0);
 
-    // set the working bounding box where the solution is seeked
-    calibrator.setBounds(min,max);
+    // create the calibrator
+    CalibReferenceWithMatchedPoints calibrator;
 
     // generate randomly the two clouds of matching 3D points
     for (int i=0; i<10; i++)
@@ -64,23 +67,30 @@ int main()
         // make data a bit dirty (add up noise in the range (-1,1) [cm])
         Vector eps=Rand::vector(Vector(3,-0.01),Vector(3,0.01));
         eps.push_back(0.0);
-        Vector p1=H*p0+eps;
+        Vector p1=h_scale*(H*p0)+eps;
 
         // feed the calibrator with the matching pair
         calibrator.addPoints(p0,p1);
     }
 
+    // set the working bounding box where the solution is seeked
+    calibrator.setBounds(min,max);
+
     // carry out the calibration
     Matrix Hcap;
+    Vector scalecap;
     double error;
     double t0=Time::now();
-    calibrator.calibrate(Hcap,error);
+    calibrator.calibrate(Hcap,scalecap,error);
     double dt=Time::now()-t0;
 
     // the final report
     cout<<endl;
     cout<<"H"<<endl<<H.toString(3,3).c_str()<<endl;
+    cout<<"scale = "<<scale.toString(3,3).c_str()<<endl;
+    cout<<endl;
     cout<<"Hcap"<<endl<<Hcap.toString(3,3).c_str()<<endl;
+    cout<<"scalecap = "<<scalecap.toString(3,3).c_str()<<endl;
     cout<<endl;
     cout<<"residual error = "<<error<<" [m]"<<endl;
     cout<<"calibration performed in "<<dt<<" [s]"<<endl;
