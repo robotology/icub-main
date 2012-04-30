@@ -53,7 +53,7 @@ namespace calibration
 * The problem solved is of the form: 
 *  
 * \f[ 
-* (H,S)^*=\arg\min_{H\in SE\left(3\right),S\in diag\left(s_1,s_2,s_3,1\right)}\left(\frac{1}{2N}\sum_{i=1}^{N} \left \| p_i^{O_1}-S \cdot H \cdot p_i^{O_2} \right \|^2 \right)\right. 
+* (H,S)=\arg\min_{H\in SE\left(3\right),S\in diag\left(s_1,s_2,s_3,1\right)}\left(\frac{1}{2N}\sum_{i=1}^{N} \left \| p_i^{O_1}-S \cdot H \cdot p_i^{O_2} \right \|^2 \right)
 * \f] 
 */
 class CalibReferenceWithMatchedPoints
