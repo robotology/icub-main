@@ -23,6 +23,7 @@
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
@@ -54,6 +55,7 @@ protected:
     BufferedPort<Bottle>  port_stereo;
     BufferedPort<Bottle>  port_anglesIn;
     BufferedPort<Vector>  port_anglesOut;
+    Stamp txInfo_ang;
 
     string localName;
     string camerasFile;

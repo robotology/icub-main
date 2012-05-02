@@ -41,6 +41,8 @@
 #define __CLIENTGAZECONTROLLER_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
@@ -51,6 +53,7 @@
 
 
 class ClientGazeController : public yarp::dev::DeviceDriver,
+                             public yarp::dev::IPreciselyTimed,
                              public yarp::dev::IGazeControl
 {
 protected:
@@ -61,8 +64,17 @@ protected:
     double lastFpMsgArrivalTime;
     double lastAngMsgArrivalTime;
 
-    yarp::sig::Vector fixationPoint;
-    yarp::sig::Vector angles;
+    int stampSelector;
+    yarp::sig::Vector   fixationPoint;
+    yarp::os::Stamp     rxInfo_fp;
+    yarp::os::Semaphore mutex_fp;
+
+    yarp::sig::Vector   angles;
+    yarp::os::Stamp     rxInfo_ang;
+    yarp::os::Semaphore mutex_ang;
+
+    yarp::os::Stamp     rxInfo_pose;
+    yarp::os::Semaphore mutex_pose;
 
     yarp::os::BufferedPort<yarp::sig::Vector> portStateFp;
     yarp::os::BufferedPort<yarp::sig::Vector> portStateAng;
@@ -148,6 +160,9 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
+    bool setStampSelector(const int selector);
+
+    yarp::os::Stamp getLastInputStamp();
 
     virtual ~ClientGazeController();
 };

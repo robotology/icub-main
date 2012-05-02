@@ -67,7 +67,6 @@ protected:
     iKinChain            *chainNeck, *chainEyeL, *chainEyeR;
     iCubInertialSensor    inertialSensor;
     PolyDriver           *drvTorso,  *drvHead;
-    IEncoders            *encTorso,  *encHead;
     exchangeData         *commData;
     Controller           *ctrl;
     xdPort               *port_xd;
@@ -144,7 +143,6 @@ protected:
     iCubInertialSensor  inertialSensor;
     GazeIpOptMin       *invNeck;
     PolyDriver         *drvTorso,  *drvHead;
-    IEncoders          *encTorso,  *encHead;
     exchangeData       *commData;
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;

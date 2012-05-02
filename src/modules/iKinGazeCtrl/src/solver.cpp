@@ -67,25 +67,16 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     
     if (Robotable)
     {
-        // create interfaces
-        bool ok=true;
-
-        if (drvTorso!=NULL)
-            ok&=drvTorso->view(encTorso);
-        else
-            encTorso=NULL;
-
-        ok&=drvHead->view(encHead);
-
-        if (!ok)
-            fprintf(stdout,"Problems acquiring interfaces!\n");
-
         // read number of joints
-        if (encTorso!=NULL)
+        if (drvTorso!=NULL)
+        {
+            IEncoders *encTorso; drvTorso->view(encTorso);
             encTorso->getAxes(&nJointsTorso);
+        }
         else
             nJointsTorso=3;
 
+        IEncoders *encHead; drvHead->view(encHead);
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
@@ -102,7 +93,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     }
     else
     {
@@ -259,16 +250,20 @@ void EyePinvRefGen::run()
 {
     if (genOn)
     {
+        double timeStamp;
         if (Robotable)
         {
             // read encoders
-            getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+            getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&timeStamp);
             updateTorsoBlockedJoints(chainNeck,fbTorso);
             updateTorsoBlockedJoints(chainEyeL,fbTorso);
             updateTorsoBlockedJoints(chainEyeR,fbTorso);
         }
         else
+        {
             fbHead=commData->get_q();
+            timeStamp=Time::now();
+        }
 
         // read gyro data
         if (Vector *_gyro=port_inertial.read(false))
@@ -390,7 +385,7 @@ void EyePinvRefGen::run()
 
         // set a new target position
         commData->set_xd(xd);
-        commData->set_x(fp);
+        commData->set_x(fp,timeStamp);
         commData->set_fpFrame(chainNeck->getH());
         if (!commData->get_isSaccadeUnderway())
         {
@@ -479,24 +474,16 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
     if (Robotable)
     {
-        // create interfaces
-        bool ok=true;
-
+        // read number of joints
         if (drvTorso!=NULL)
-            ok&=drvTorso->view(encTorso);
-        else
-            encTorso=NULL;
-
-        ok&=drvHead->view(encHead);
-
-        if (!ok)
-            fprintf(stdout,"Problems acquiring interfaces!\n");
-
-        if (encTorso!=NULL)
+        {
+            IEncoders *encTorso; drvTorso->view(encTorso);
             encTorso->getAxes(&nJointsTorso);
+        }
         else
             nJointsTorso=3;
 
+        IEncoders *encHead; drvHead->view(encHead);
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
@@ -507,7 +494,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
-        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     }
     else
     {
@@ -802,7 +789,7 @@ void Solver::run()
     if (Robotable)
     {
         // read encoders
-        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
@@ -911,7 +898,7 @@ void Solver::resume()
     if (Robotable)
     {
         // read encoders
-        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);        

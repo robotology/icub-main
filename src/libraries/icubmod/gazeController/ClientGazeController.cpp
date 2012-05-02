@@ -24,6 +24,7 @@
 #include <yarp/math/Math.h>
 
 #include <stdio.h>
+#include <algorithm>
 
 #include "ClientGazeController.h"
 
@@ -44,6 +45,7 @@ ClientGazeController::ClientGazeController()
     connected=false;
     closed=false;
 
+    stampSelector=0;
     timeout=GAZECTRL_DEFAULT_TMO;
     lastFpMsgArrivalTime=0.0;
     lastAngMsgArrivalTime=0.0;
@@ -199,6 +201,9 @@ bool ClientGazeController::getFixationPoint(Vector &fp)
     {
         fixationPoint=*v;
         lastFpMsgArrivalTime=now;
+        mutex_fp.wait();
+        portStateFp.getEnvelope(rxInfo_fp);
+        mutex_fp.post();
     }
 
     fp=fixationPoint;
@@ -218,6 +223,9 @@ bool ClientGazeController::getAngles(Vector &ang)
     {
         angles=*v;
         lastAngMsgArrivalTime=now;
+        mutex_ang.wait();
+        portStateAng.getEnvelope(rxInfo_ang);
+        mutex_ang.post();
     }
 
     ang=angles;
@@ -520,6 +528,20 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
                 for (size_t i=0; i<o.length(); i++)
                     o[i]=bPose->get(x.length()+i).asDouble();
         
+                if (reply.size()>2)
+                {
+                    if (Bottle *bStamp=reply.get(2).asList())
+                    {
+                        if (bStamp->size()>1)
+                        {
+                            Stamp stamp(bStamp->get(0).asInt(),bStamp->get(1).asDouble());
+                            mutex_pose.wait();
+                            rxInfo_pose=stamp;
+                            mutex_pose.post();
+                        }
+                    }
+                }
+
                 return true;
             }
         }
@@ -1406,6 +1428,46 @@ bool ClientGazeController::deleteContexts()
     contextIdList.clear();
 
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setStampSelector(const int selector)
+{
+    if (connected)
+    {
+        stampSelector=std::min(3,std::max(0,selector));
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+Stamp ClientGazeController::getLastInputStamp()
+{
+    Stamp stamp;
+    if (stampSelector==0)
+    {
+        mutex_fp.wait();
+        stamp=rxInfo_fp;
+        mutex_fp.post();
+    }
+    else if (stampSelector==1)
+    {
+        mutex_ang.wait();
+        stamp=rxInfo_ang;
+        mutex_ang.post();
+    }
+    else if (stampSelector==2)
+    {
+        mutex_pose.wait();
+        stamp=rxInfo_pose;
+        mutex_pose.post();
+    }
+
+    return stamp;
 }
 
 

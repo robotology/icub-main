@@ -306,7 +306,10 @@ following ports:
       eye pose if type=="left", the right eye pose if
       type=="right" and the head-centered pose if type=="head".
       The pose is given in axis/angle representation (i.e.
-      7-componenets vector).
+      7-componenets vector). Additionally, a stamp is appended
+      as further element (i.e. as second list), accounting for
+      the time relative to the encoders positions used to
+      compute the pose.
     - [get] [2D] (<type> <x> <y> <z>): returns the 2D pixel
       point whose cartesian coordinates (x,y,z) are given wrt
       the root reference frame as the result of its projection
@@ -429,6 +432,7 @@ Windows, Linux
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -1003,13 +1007,18 @@ public:
                         {
                             string poseSel=command.get(2).asString().c_str();
                             Vector x;
+                            Stamp  stamp;
 
-                            if (ctrl->getPose(poseSel,x))
+                            if (ctrl->getPose(poseSel,x,stamp))
                             {
                                 reply.addVocab(ack);
                                 Bottle &bPose=reply.addList();
                                 for (size_t i=0; i<x.length(); i++)
                                     bPose.addDouble(x[i]);
+
+                                Bottle &bStamp=reply.addList();
+                                bStamp.addInt(stamp.getCount());
+                                bStamp.addDouble(stamp.getTime());
 
                                 return true;
                             }

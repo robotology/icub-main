@@ -24,6 +24,7 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
@@ -56,7 +57,6 @@ protected:
     iCubEye          *eyeL,      *eyeR;
     iKinChain        *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver       *drvTorso,  *drvHead;
-    IEncoders        *encTorso,  *encHead;
     IPositionControl *posHead;
     IVelocityControl *velHead;
     exchangeData     *commData;
@@ -66,8 +66,11 @@ protected:
     minJerkVelCtrl   *mjCtrlEyes;
     Integrator       *Int;    
 
-    Port port_x;
-    Port port_q;
+    Port  port_x;
+    Port  port_q;
+    Stamp txInfo_x;
+    Stamp txInfo_q;
+    Stamp txInfo_pose;
 
     Semaphore mutexChain;
     Semaphore mutexCtrl;
@@ -128,7 +131,7 @@ public:
     bool   getTrackingMode() const;
     bool   getDesired(Vector &des);
     bool   getVelocity(Vector &vel);
-    bool   getPose(const string &poseSel, Vector &x);
+    bool   getPose(const string &poseSel, Vector &x, Stamp &stamp);
 };
 
 

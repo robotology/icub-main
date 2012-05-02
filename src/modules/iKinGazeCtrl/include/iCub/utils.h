@@ -28,7 +28,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <iCub/gazeNlp.h>
@@ -100,6 +99,7 @@ protected:
     bool   canCtrlBeDisabled;
     bool   saccadeUnderway;
     double minAllowedVergence;
+    double x_stamp;
 
 public:
     exchangeData();
@@ -111,6 +111,7 @@ public:
     void    set_qd(const Vector &_qd);
     void    set_qd(const int i, const double val);
     void    set_x(const Vector &_x);
+    void    set_x(const Vector &_x, const double stamp);
     void    set_q(const Vector &_q);
     void    set_torso(const Vector &_torso);
     void    set_v(const Vector &_v);
@@ -120,6 +121,7 @@ public:
     Vector  get_xd();
     Vector  get_qd();
     Vector  get_x();
+    Vector  get_x(double &stamp);
     Vector  get_q();
     Vector  get_torso();
     Vector  get_v();
@@ -172,8 +174,8 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 
 // Reads encoders values.
 // Returns true if communication with robot is stable, false otherwise.
-bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead,
-                 exchangeData *commData=NULL);
+bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
+                 PolyDriver *drvHead, exchangeData *commData, double *timeStamp=NULL);
 
 
 #endif

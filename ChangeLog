@@ -1,3 +1,6 @@
+2012-05-02  Ugo Pattacini  <ugo.pattacini@iit.it>
+    iKinGazeCtrl + gaze I/F: time stamps now available.
+
 2012-04-25  Ugo Pattacini  <ugo.pattacini@iit.it>
     added calibration library
 

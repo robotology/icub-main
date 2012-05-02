@@ -1139,10 +1139,10 @@ bool ClientCartesianController::deleteContexts()
 Stamp ClientCartesianController::getLastInputStamp()
 {
     mutex.wait();
-    Stamp s=rxInfo;
+    Stamp stamp=rxInfo;
     mutex.post();
 
-    return s;
+    return stamp;
 }
 
 

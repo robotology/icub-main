@@ -59,28 +59,20 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     if (Robotable)
     {
-        // create interfaces
-        bool ok=true;
-
-        if (drvTorso!=NULL)
-            ok&=drvTorso->view(encTorso);
-        else
-            encTorso=NULL;
-
-        ok&=drvHead->view(encHead);
-        ok&=drvHead->view(posHead);
-        ok&=drvHead->view(velHead);
-
-        if (!ok)
-            fprintf(stdout,"Problems acquiring interfaces!\n");
-
         // read number of joints
-        if (encTorso!=NULL)
+        if (drvTorso!=NULL)
+        {
+            IEncoders *encTorso; drvTorso->view(encTorso);
             encTorso->getAxes(&nJointsTorso);
+        }
         else
             nJointsTorso=3;
-
+        
+        IEncoders *encHead; drvHead->view(encHead);
         encHead->getAxes(&nJointsHead);
+
+        drvHead->view(posHead);
+        drvHead->view(velHead);
 
         // joints bounds alignment
         lim=alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
@@ -123,7 +115,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
 
     if (Robotable)
-        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     else
         fbHead[5]=commData->get_minAllowedVergence();
 
@@ -305,8 +297,9 @@ void Controller::run()
     mutexCtrl.post();
     
     // get data
+    double x_stamp;
     Vector xd=commData->get_xd();
-    Vector x=commData->get_x();
+    Vector x=commData->get_x(x_stamp);
     Vector new_qd=commData->get_qd();
 
     double errNeck=norm(new_qd.subVector(0,2)-fbHead.subVector(0,2));
@@ -343,9 +336,10 @@ void Controller::run()
     }
 
     // Introduce the feedback within the control computation
+    double q_stamp=Time::now();
     if (Robotable)
     {
-        if (!getFeedback(fbTorso,fbHead,encTorso,encHead,commData))
+        if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
         {
             fprintf(stdout,"\nCommunication timeout detected!\n\n");
             suspend();
@@ -423,11 +417,19 @@ void Controller::run()
     for (; (size_t)j<q.length(); j++)
         q[j]=qdeg[j-nJointsTorso];
 
+    txInfo_x.update(x_stamp);
     if (port_x.getOutputCount()>0)
+    {        
+        port_x.setEnvelope(txInfo_x);
         port_x.write(x);
+    }
 
+    txInfo_q.update(q_stamp);
     if (port_q.getOutputCount()>0)
+    {        
+        port_q.setEnvelope(txInfo_q);
         port_q.write(q);
+    }
 
     // update pose information
     mutexChain.wait();
@@ -446,6 +448,8 @@ void Controller::run()
     }
     chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
     chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
+
+    txInfo_pose.update(q_stamp);
 
     mutexChain.post();
 
@@ -493,7 +497,7 @@ void Controller::resume()
 {
     if (Robotable)
     {
-        getFeedback(fbTorso,fbHead,encTorso,encHead,commData);
+        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     
         for (int i=0; i<3; i++)
         {
@@ -599,12 +603,13 @@ bool Controller::getVelocity(Vector &vel)
 
 
 /************************************************************************/
-bool Controller::getPose(const string &poseSel, Vector &x)
+bool Controller::getPose(const string &poseSel, Vector &x, Stamp &stamp)
 {
     if (poseSel=="left")
     {
         mutexChain.wait();
         x=chainEyeL->EndEffPose();
+        stamp=txInfo_pose;
         mutexChain.post();
         return true;
     }
@@ -612,6 +617,7 @@ bool Controller::getPose(const string &poseSel, Vector &x)
     {
         mutexChain.wait();
         x=chainEyeR->EndEffPose();
+        stamp=txInfo_pose;
         mutexChain.post();
         return true;
     }
@@ -619,6 +625,7 @@ bool Controller::getPose(const string &poseSel, Vector &x)
     {
         mutexChain.wait();
         x=chainNeck->EndEffPose();
+        stamp=txInfo_pose;
         mutexChain.post();
         return true;
     }

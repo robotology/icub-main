@@ -597,9 +597,14 @@ void Localizer::handleAnglesInput()
 /************************************************************************/
 void Localizer::handleAnglesOutput()
 {
+    double x_stamp;
+    Vector x=commData->get_x(x_stamp);
+    txInfo_ang.update(x_stamp);
+
     if (port_anglesOut.getOutputCount()>0)
     {
-        port_anglesOut.prepare()=CTRL_RAD2DEG*getAbsAngles(commData->get_x());
+        port_anglesOut.prepare()=CTRL_RAD2DEG*getAbsAngles(x);
+        port_anglesOut.setEnvelope(txInfo_ang);
         port_anglesOut.write();
     }
 }

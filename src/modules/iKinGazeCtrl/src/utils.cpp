@@ -16,7 +16,11 @@
  * Public License for more details
 */
 
+#include <algorithm>
+
 #include <yarp/os/Time.h>
+#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/PreciselyTimed.h>
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
@@ -198,6 +202,16 @@ void exchangeData::set_x(const Vector &_x)
 
 
 /************************************************************************/
+void exchangeData::set_x(const Vector &_x, const double stamp)
+{
+    mutex[MUTEX_X].wait();
+    x=_x;
+    x_stamp=stamp;
+    mutex[MUTEX_X].post();
+}
+
+
+/************************************************************************/
 void exchangeData::set_q(const Vector &_q)
 {
     mutex[MUTEX_Q].wait();
@@ -269,6 +283,18 @@ Vector exchangeData::get_x()
 {
     mutex[MUTEX_X].wait();
     Vector _x=x;
+    mutex[MUTEX_X].post();
+
+    return _x;
+}
+
+
+/************************************************************************/
+Vector exchangeData::get_x(double &stamp)
+{
+    mutex[MUTEX_X].wait();
+    Vector _x=x;
+    stamp=x_stamp;
     mutex[MUTEX_X].post();
 
     return _x;
@@ -514,8 +540,8 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 
 
 /************************************************************************/
-bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders *encHead,
-                 exchangeData *commData)
+bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
+                 PolyDriver *drvHead, exchangeData *commData, double *timeStamp)
 {
     int nJointsTorso=fbTorso.length();
     int nJointsHead=fbHead.length();
@@ -523,8 +549,10 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
     Vector fb(nJointsTorso<nJointsHead?nJointsHead:nJointsTorso);
     bool ret=true;
 
-    if (encTorso!=NULL)
+    Stamp stampTorso;
+    if (drvTorso!=NULL)
     {
+        IEncoders *encTorso; drvTorso->view(encTorso);
         if (encTorso->getEncoders(fb.data()))
         {
             for (int i=0; i<nJointsTorso; i++)
@@ -532,10 +560,14 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
         }
         else
             ret=false;
+
+        IPreciselyTimed *timTorso; drvTorso->view(timTorso);
+        stampTorso=timTorso->getLastInputStamp();
     }
     else
         fbTorso=0.0;
 
+    IEncoders *encHead; drvHead->view(encHead);
     if (encHead->getEncoders(fb.data()))
     {
         for (int i=0; i<nJointsHead; i++)
@@ -544,10 +576,22 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, IEncoders *encTorso, IEncoders
     else
         ret=false;
 
+    IPreciselyTimed *timHead; drvHead->view(timHead);
+    Stamp stampHead=timHead->getLastInputStamp();
+
     // impose vergence != 0.0
     if (commData!=NULL)
         if (fbHead[nJointsHead-1]<commData->get_minAllowedVergence())
             fbHead[nJointsHead-1]=commData->get_minAllowedVergence();
+    
+    if (timeStamp!=NULL)
+    {
+        // retrieve the highest encoders time stamp
+        if (stampTorso.isValid() && stampHead.isValid())
+            *timeStamp=std::max(stampTorso.getTime(),stampHead.getTime());
+        else
+            *timeStamp=Time::now();
+    }
 
     return ret;
 }
