@@ -486,11 +486,8 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
         // limit eye's tilt due to eyelids
         if (i==3)
         {
-            if (min<eyeTiltMin)
-                min=eyeTiltMin;
-
-            if (max>eyeTiltMax)
-                max=eyeTiltMax;
+            min=std::max(min,eyeTiltMin);
+            max=std::min(max,eyeTiltMax);
         }
 
         lim(i,0)=CTRL_DEG2RAD*min;
