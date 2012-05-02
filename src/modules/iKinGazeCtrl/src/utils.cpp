@@ -543,6 +543,9 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
                  PolyDriver *drvHead, exchangeData *commData, double *timeStamp)
 {
+    IEncoders       *encs;
+    IPreciselyTimed *time;
+
     int nJointsTorso=fbTorso.length();
     int nJointsHead=fbHead.length();
 
@@ -552,8 +555,10 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     Stamp stampTorso;
     if (drvTorso!=NULL)
     {
-        IEncoders *encTorso; drvTorso->view(encTorso);
-        if (encTorso->getEncoders(fb.data()))
+        drvTorso->view(encs);
+        drvTorso->view(time);
+
+        if (encs->getEncoders(fb.data()))
         {
             for (int i=0; i<nJointsTorso; i++)
                 fbTorso[i]=CTRL_DEG2RAD*fb[nJointsTorso-1-i];    // reversed order
@@ -561,23 +566,23 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
         else
             ret=false;
 
-        IPreciselyTimed *timTorso; drvTorso->view(timTorso);
-        stampTorso=timTorso->getLastInputStamp();
+        stampTorso=time->getLastInputStamp();
     }
     else
         fbTorso=0.0;
 
-    IEncoders *encHead; drvHead->view(encHead);
-    if (encHead->getEncoders(fb.data()))
+    drvHead->view(encs);
+    drvHead->view(time);
+
+    if (encs->getEncoders(fb.data()))
     {
         for (int i=0; i<nJointsHead; i++)
             fbHead[i]=CTRL_DEG2RAD*fb[i];
     }
     else
         ret=false;
-
-    IPreciselyTimed *timHead; drvHead->view(timHead);
-    Stamp stampHead=timHead->getLastInputStamp();
+    
+    Stamp stampHead=time->getLastInputStamp();
 
     // impose vergence != 0.0
     if (commData!=NULL)
