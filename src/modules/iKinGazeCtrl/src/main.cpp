@@ -495,7 +495,7 @@ protected:
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
-        while (!interrupting && (Time::now()-t0)<ping_robot_tmo)
+        while (Time::now()-t0<ping_robot_tmo)
         {
             if (pDrv!=NULL)
                 delete pDrv;
@@ -517,9 +517,12 @@ protected:
                         dt>0.0?dt:0.0);
 
                 double t1=Time::now();
-                while (!interrupting && (Time::now()-t1)<1.0)
+                while (Time::now()-t1<1.0)
                     Time::delay(0.1);
             }
+
+            if (interrupting)
+                break;
         }
 
         return pDrv;
