@@ -114,7 +114,7 @@
 *
 * CopyPolicy: Released under the terms of the GNU GPL v2.0.
 *
-* This file can be edited at src/tools/iCubGui/src/main.cpp.
+* This file can be edited at src/gui/iCubGui/src/main.cpp.
 */
 
 #include <signal.h>

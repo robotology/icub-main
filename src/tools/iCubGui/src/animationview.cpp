@@ -72,14 +72,8 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
             skinParams.find("torque_thr").asDouble()
         );
     }
-		
-	std::string moduleName = "/" ;
-	moduleName += config.check("name",Value("iCubGui")).asString().c_str();
-	std::string objPortName = config.check("objport", Value( (moduleName+"/objects").c_str())).asString().c_str();
-	std::string texPortName = config.check("texport", Value( (moduleName+"/textures").c_str())).asString().c_str();
-	std::string forcePortName = config.check("forceport", Value( (moduleName+"/forces").c_str())).asString().c_str();
 
-    mObjectsManager=new ObjectsManager(objPortName.c_str(),texPortName.c_str(),texPortName.c_str());
+    mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str(),config.find("forceport").asString().c_str());
     //printf("objport=%s\n",config.find("objport").asString().c_str());
 
     leftMouseButton=false;

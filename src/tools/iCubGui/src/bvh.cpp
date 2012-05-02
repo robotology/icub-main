@@ -142,14 +142,13 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
     tokenPos=0;
   
     Network::init();
-	std::string moduleName = "/" ;
-	moduleName += config.check("name",Value("iCubGui")).asString().c_str();
-    portEncTorso.open( (moduleName + "/torso:i").c_str() );
-    portEncHead.open((moduleName + "/head:i").c_str());
-    portEncLeftArm.open((moduleName + "/left_arm:i").c_str());
-    portEncRightArm.open((moduleName + "/right_arm:i").c_str());
-    portEncLeftLeg.open((moduleName + "/left_leg:i").c_str());
-    portEncRightLeg.open((moduleName + "/right_leg:i").c_str());
+
+    portEncTorso.open("/iCubGui/torso:i");
+    portEncHead.open("/iCubGui/head:i");
+    portEncLeftArm.open("/iCubGui/left_arm:i");
+    portEncRightArm.open("/iCubGui/right_arm:i");
+    portEncLeftLeg.open("/iCubGui/left_leg:i");
+    portEncRightLeg.open("/iCubGui/right_leg:i");
 
     dEncTorso=dEncHead=dEncLeftArm=dEncRightArm=dEncLeftLeg=dEncRightLeg=0;
 
