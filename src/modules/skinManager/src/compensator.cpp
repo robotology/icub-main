@@ -473,7 +473,7 @@ skinContactList Compensator::getContacts(){
     //printf("Clustering finished\n");
 
     skinContactList contactList;
-    Vector CoP(3), geoCenter(3);
+    Vector CoP(3), geoCenter(3), normal(3);
     double pressure;
     int activeTaxels;
     vector<unsigned int> taxelList;
@@ -485,21 +485,26 @@ skinContactList Compensator::getContacts(){
         taxelList.resize(activeTaxels);
         CoP.zero();
         geoCenter.zero();
+        normal.zero();
         pressure = 0.0;
         int i=0;
         for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++, i++){
             CoP         += taxelPos[(*tax)] * compensatedData[(*tax)];
+            normal      += taxelOri[(*tax)] * compensatedData[(*tax)];
             geoCenter   += taxelPos[(*tax)];
             pressure    += max(compensatedData[(*tax)], 0.0);
             taxelList[i] = *tax;
         }
-        if(pressure!=0.0)
+        if(pressure!=0.0){
         	CoP         /= pressure;
+            normal      /= pressure;
+        }
         geoCenter   /= activeTaxels;
         pressure    /= activeTaxels;
-        skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, taxelList, pressure);
+        skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, taxelList, pressure, normal);
         contactList.push_back(c);
     }
+    //printf("ContactList: %s\n", contactList.toString().c_str());
     
     return contactList;
 }
