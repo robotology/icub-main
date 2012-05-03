@@ -23,10 +23,17 @@ prefix_dir="./main/src/"
 #`cd $prefix svn up`
 file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "*.hpp" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
 
+### this is to avoid splitting file names that contain blank spaces
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
 for f in $file_list
 do
     ./admin/scripts/license-collect.pl $prefix_dir/$f >> licenses-all.txt
 done
+
+#restore old value of $IFS
+IFS=$SAVEIFS
 
 ./admin/scripts/license-aggregate.pl licenses-all.txt
 
@@ -69,7 +76,7 @@ equivalent to the following list of institutions:
 
 EOF
 
-) > main/COPYING_new
+) > $prefix_dir/COPYING_new
 
 (
  echo "This is the list of authors who contributed code to the iCub main package:"
@@ -77,6 +84,6 @@ EOF
  cat licenses-authors-compact.txt
  echo
 
-) > main/AUTHORS_new
+) > $prefix_dir/AUTHORS_new
 
 
