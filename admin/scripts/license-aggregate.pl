@@ -65,7 +65,7 @@ while(!eof(FILE) && defined (my $line=<FILE>)) {
         print BAD "$filename: missing copyright information\n";
     }
     else {
-         my @names=split('\s*\,\s*|\sand\s+', $copyright);
+         my @names=split('\s*\,\s*|\sand\s+^\s*Brain and Cognitive\s+', $copyright);
 
         foreach my $name (@names)
         {
