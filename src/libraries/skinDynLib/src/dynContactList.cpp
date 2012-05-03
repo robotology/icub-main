@@ -28,26 +28,36 @@ dynContactList::dynContactList(const size_type &n, const dynContact& value)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool dynContactList::read(ConnectionReader& connection){
+bool dynContactList::read(ConnectionReader& connection)
+{
+    // A dynContactList is represented as a list of list
+    // where each list is a skinContact
+    if(connection.expectInt()!=BOTTLE_TAG_LIST)
+        return false;
+
     int listLength = connection.expectInt();
     if(listLength<0)
         return false;
-    if(listLength!=this->size())
-        this->resize(listLength);
+    if(listLength!=size())
+        resize(listLength);
 
-    for(iterator it=begin(); it!=end(); it++){
-        it->read(connection);
-    }
+    for(iterator it=begin(); it!=end(); it++)
+        if(!it->read(connection))
+            return false;
 
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool dynContactList::write(ConnectionWriter& connection){
-    connection.appendInt(this->size());
-    for(iterator it=begin(); it!=end(); it++){
+bool dynContactList::write(ConnectionWriter& connection)
+{
+    // A dynContactList is represented as a list of list
+    // where each list is a skinContact
+    connection.appendInt(BOTTLE_TAG_LIST);
+    connection.appendInt(size());
+
+    for(iterator it=begin(); it!=end(); it++)
         if(!it->write(connection))
             return false;
-    }
 
     return !connection.isError();
 }

@@ -48,21 +48,31 @@ map<BodyPart, skinContactList> skinContactList::splitPerBodyPart()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool skinContactList::read(ConnectionReader& connection)
 {
+    // A skinContactList is represented as a list of list
+    // where each list is a skinContact
+    if(connection.expectInt()!=BOTTLE_TAG_LIST)
+        return false;
+
     int listLength = connection.expectInt();
     if(listLength<0)
         return false;
-    if(listLength!=this->size())
-        this->resize(listLength);
+    if(listLength!=size())
+        resize(listLength);
 
     for(iterator it=begin(); it!=end(); it++)
-        it->read(connection);
+        if(!it->read(connection))
+            return false;
 
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool skinContactList::write(ConnectionWriter& connection)
 {
-    connection.appendInt(this->size());
+    // A skinContactList is represented as a list of list
+    // where each list is a skinContact
+    connection.appendInt(BOTTLE_TAG_LIST);
+    connection.appendInt(size());
+
     for(iterator it=begin(); it!=end(); it++)
         if(!it->write(connection))
             return false;

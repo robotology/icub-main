@@ -86,29 +86,122 @@ void skinContact::setTaxelList(const vector<unsigned int> &list){
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool skinContact::write(ConnectionWriter& connection){
-    dynContact::write(connection);
+    // represent a skinContact as a list of 8 elements that are:
+    // - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
+    // - a list of 3 double, i.e. the CoP
+    // - a list of 3 double, i.e. the force
+    // - a list of 3 double, i.e. the moment
+    // - a list of 3 double, i.e. the geometric center
+    // - a list of 3 double, i.e. the normal direction
+    // - a list of N int, i.e. the active taxel ids
+    // - a double, i.e. the pressure
 
+    connection.appendInt(BOTTLE_TAG_LIST);
+    connection.appendInt(8);
+    // list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
+    connection.appendInt(4);
+    connection.appendInt(contactId);
+    connection.appendInt(bodyPart);    // left_arm, right_arm, ...
+    connection.appendInt(linkNumber);
     connection.appendInt(skinPart);
+    // list of 3 double, i.e. the CoP
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
+    for(int i=0;i<3;i++) connection.appendDouble(CoP[i]);
+    // list of 3 double, i.e. the force
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
+    for(int i=0;i<3;i++) connection.appendDouble(F[i]);
+    // list of 3 double, i.e. the moment
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
+    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);
+    // - a list of 3 double, i.e. the geometric center
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
     for(int i=0;i<3;i++) connection.appendDouble(geoCenter[i]);
+    // - a list of 3 double, i.e. the normal direction
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
     for(int i=0;i<3;i++) connection.appendDouble(normalDir[i]);
+    // - a list of N int, i.e. the active taxel ids
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
     connection.appendInt(activeTaxels);
     for(unsigned int i=0;i<activeTaxels;i++) connection.appendInt(taxelList[i]);
+    // - a double, i.e. the pressure
+    connection.appendInt(BOTTLE_TAG_DOUBLE);
     connection.appendDouble(pressure);
+
+    // if someone is foolish enough to connect in text mode,
+    // let them see something readable.
+    connection.convertTextMode();
     
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool skinContact::read(ConnectionReader& connection){
-    dynContact::read(connection);
+    // auto-convert text mode interaction
+    connection.convertTextMode();
 
-    skinPart                            = (SkinPart) connection.expectInt();
+    // represent a skinContact as a list of 8 elements that are:
+    // - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
+    // - a list of 3 double, i.e. the CoP
+    // - a list of 3 double, i.e. the force
+    // - a list of 3 double, i.e. the moment
+    // - a list of 3 double, i.e. the geometric center
+    // - a list of 3 double, i.e. the normal direction
+    // - a list of N int, i.e. the active taxel ids
+    // - a double, i.e. the pressure
+    if(connection.expectInt() != BOTTLE_TAG_LIST || connection.expectInt() != 8)
+        return false;
+
+    // - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT || connection.expectInt()!=4)
+        return false;
+    contactId   = connection.expectInt();
+    bodyPart    = (BodyPart)connection.expectInt();
+    linkNumber  = connection.expectInt();
+    skinPart    = (SkinPart) connection.expectInt();
+
+    // - a list of 3 double, i.e. the CoP
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
+    for(int i=0;i<3;i++) CoP[i] = connection.expectDouble();
+
+    // - a list of 3 double, i.e. the force
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
+    for(int i=0;i<3;i++) F[i] = connection.expectDouble();
+    setForce(F);
+
+    // - a list of 3 double, i.e. the moment
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
+    for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
+
+    // - a list of 3 double, i.e. the geometric center
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
     for(int i=0;i<3;i++) geoCenter[i]   = connection.expectDouble();
+
+    // - a list of 3 double, i.e. the normal direction
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
     for(int i=0;i<3;i++) normalDir[i]   = connection.expectDouble();
+
+    // - a list of N int, i.e. the active taxel ids
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT)
+        return false;
     activeTaxels                        = connection.expectInt();
     taxelList.resize(activeTaxels);
     for(unsigned int i=0;i<activeTaxels;i++) taxelList[i] = connection.expectInt();
+
+    // - a double, i.e. the pressure
+    if(connection.expectInt()!=BOTTLE_TAG_DOUBLE)
+        return false;
     pressure                            = connection.expectDouble();
-     
+
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

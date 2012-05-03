@@ -190,14 +190,31 @@ void dynContact::unfixMoment(){ muKnown=false;}
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::write(ConnectionWriter& connection){
-    //connection.declareSizes();
+    // represent a dynContact as a list of 4 elements that are:
+    // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
+    // - a list of 3 double, i.e. the CoP
+    // - a list of 3 double, i.e. the force
+    // - a list of 3 double, i.e. the moment
 
+    connection.appendInt(BOTTLE_TAG_LIST);
+    connection.appendInt(4);
+    // list of 3 int, i.e. contactId, bodyPart, linkNumber
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
+    connection.appendInt(3);
     connection.appendInt(contactId);
     connection.appendInt(bodyPart);    // left_arm, right_arm, ...
     connection.appendInt(linkNumber);
+    // list of 3 double, i.e. the CoP
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
     for(int i=0;i<3;i++) connection.appendDouble(CoP[i]);
-    connection.appendDouble(Fmodule);
-    for(int i=0;i<3;i++) connection.appendDouble(Fdir[i]);
+    // list of 3 double, i.e. the force
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
+    for(int i=0;i<3;i++) connection.appendDouble(F[i]);
+    // list of 3 double, i.e. the moment
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
+    connection.appendInt(3);
     for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);  
 
     // if someone is foolish enough to connect in text mode,
@@ -210,15 +227,33 @@ bool dynContact::write(ConnectionWriter& connection){
 bool dynContact::read(ConnectionReader& connection){
     // auto-convert text mode interaction
     connection.convertTextMode();
-    // populate the object
+
+    // represent a dynContact as a list of 4 elements that are:
+    // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
+    // - a list of 3 double, i.e. the CoP
+    // - a list of 3 double, i.e. the force
+    // - a list of 3 double, i.e. the moment
+    if(connection.expectInt()!= BOTTLE_TAG_LIST || connection.expectInt()!=4)
+        return false;
+    // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT || connection.expectInt()!=3)
+        return false;
     contactId   = connection.expectInt();
     bodyPart    = (BodyPart)connection.expectInt();
     linkNumber  = connection.expectInt();
+    // - a list of 3 double, i.e. the CoP
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
     for(int i=0;i<3;i++) CoP[i] = connection.expectDouble();
-    Fmodule = connection.expectDouble();
-    for(int i=0;i<3;i++) Fdir[i] = connection.expectDouble();
+    // - a list of 3 double, i.e. the force
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
+    for(int i=0;i<3;i++) F[i] = connection.expectDouble();
+    setForce(F);
+    // - a list of 3 double, i.e. the moment
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+        return false;
     for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
-    F = Fmodule * Fdir;
      
     return !connection.isError();
 }
