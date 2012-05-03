@@ -18,10 +18,17 @@ prefix_dir="./firmware"
 #`cd $prefix svn up`
 file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "*.hpp" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
 
+### this is to avoid splitting file names that contain blank spaces
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
 for f in $file_list
 do
     ./admin/scripts/license-collect.pl $prefix_dir/$f >> licenses-all.txt
 done
+
+#restore old value of $IFS
+IFS=$SAVEIFS
 
 ./admin/scripts/license-aggregate.pl licenses-all.txt
 
