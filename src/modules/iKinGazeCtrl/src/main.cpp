@@ -307,8 +307,8 @@ following ports:
       type=="right" and the head-centered pose if type=="head".
       The pose is given in axis/angle representation (i.e.
       7-componenets vector). Additionally, a stamp is appended
-      as further element (i.e. as second list), accounting for
-      the time relative to the encoders positions used to
+      as further list accounting for the time (second element of
+      the list) relative to the encoders positions used to
       compute the pose.
     - [get] [2D] (<type> <x> <y> <z>): returns the 2D pixel
       point whose cartesian coordinates (x,y,z) are given wrt
