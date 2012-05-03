@@ -38,6 +38,8 @@ sub fix_names {
         $names=~s/\sall rights reserved//;
 
         $names=~s/\$YOUR_NAME/unknown/;
+        $names=~s/\, Inc/ Inc/;
+        $names=~s/UNIS\, spol/UNIS spol/;
 
         return $names;
 }
@@ -56,21 +58,22 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
 	# remove comments 
     $line=~s/^\s*//;             #remove empty characters at beginning of line
     $line=~s/\s*$/ /;            #substitute trailing eof or spaces with single space
-	$line =~s/^\#+//;            #remove comments like #
+    $line =~s/^\#+//;            #remove comments like #
     $line =~s/^\/\*+//;          #remove /*
     $line =~s/\**\/*//;          #remove /* or ////
-	$line =~s/^\*+//;            #remove * or ***
+    $line =~s/^\*+//;            #remove * or ***
     $line=~s/^\s*//;             #now remove all empty characters at beginning of line
     $line=~s/\*+$//;             #remove * or *** at the end
 	
-	$text .= $line;
+    $text .= $line;
 
     # now skip some tricky sentences that contain the word "author"
     # in licensing context
     next if $line=~m/The name of the author may not be used/i;
     next if $line=~m/BE LIABLE FOR ANY/i;
     next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
-    
+    next if $line=~m/copyright laws. All/i;    
+
     # and word copyright
     next if $line=~m/copyright notice/i;
 
@@ -85,6 +88,7 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
 
 	# remove html links
 	$author=~s/\s*<A HREF.*?A>\.?//i;
+        $author=~s/\*+/unknown/;
     
         $author=fix_names($author);
     }
