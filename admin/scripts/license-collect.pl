@@ -61,7 +61,7 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
     $line =~s/\**\/*//;          #remove /* or ////
 	$line =~s/^\*+//;            #remove * or ***
     $line=~s/^\s*//;             #now remove all empty characters at beginning of line
-    $line=~s/*\*$//;             #remove * or *** at the end
+    $line=~s/\*+$//;             #remove * or *** at the end
 	
 	$text .= $line;
 
@@ -72,7 +72,6 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
     next if $line=~m/\`*AS IS\'* AND ANY EXPRESS/i;
     
     # and word copyright
-	next if $line=~m/applicable copyright laws/i;
     next if $line=~m/copyright notice/i;
 
     if ($line=~m/authors?\s*(of changes)?\s*:?\s*/i && $author eq "unknown"){
@@ -80,12 +79,12 @@ while(!eof(FILE) && defined (my $line=<FILE>) && $line_num<$max_lines) {
 #       $author=~s/of changes\b*:?\b*//i; #remove pattern "of changes" (could not incoroprate it in prev. match
         $author=~s/\.?\s*$//;  #remove trailing . and eof ...
 
-        # remove email addresses, reg exp from http://www.regular-expressions.info/email.html
+	# remove email addresses, reg exp from http://www.regular-expressions.info/email.html
         # adapted by adding spaces on top and optional quotes <>
-        $author=~s/\s*<?\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b>?//i;
+	$author=~s/\s*<?\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b>?//i;
 
-	    # remove html links
-	    $author=~s/\s*<A HREF.*?A>\.?//i;
+	# remove html links
+	$author=~s/\s*<A HREF.*?A>\.?//i;
     
         $author=fix_names($author);
     }
