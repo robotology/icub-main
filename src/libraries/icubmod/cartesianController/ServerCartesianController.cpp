@@ -1174,24 +1174,21 @@ void ServerCartesianController::run()
                 motionDone   =true;
 
                 stopLimbVel();
-                mutex.post();
 
                 // switch the solver status to one shot mode
                 // if it is the case
                 if (!trackingMode && (rxToken==txToken))
                     setTrackingMode(false);
             }
-            else
-                mutex.post();
         }
-        else
-            mutex.post();
-    
+
         // update the stamp anyway
         if (stamp>=0.0)
             txInfo.update(stamp);
         else
             txInfo.update();
+
+        mutex.post();
 
         // streams out the end-effector pose
         if (portState.getOutputCount()>0)
@@ -2656,7 +2653,10 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 /************************************************************************/
 Stamp ServerCartesianController::getLastInputStamp()
 {
-    return txInfo;
+    mutex.wait();
+    Stamp ret=txInfo;
+    mutex.post();
+    return ret;
 }
 
 

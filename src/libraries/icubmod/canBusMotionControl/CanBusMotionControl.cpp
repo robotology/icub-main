@@ -4738,9 +4738,8 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
 
 Stamp CanBusMotionControl::getLastInputStamp()
 {
-    Stamp ret;
     _mutex.wait();
-    ret=stampEncoders;
+    Stamp ret=stampEncoders;
     _mutex.post();
 
     return ret;
