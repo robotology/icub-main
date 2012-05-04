@@ -1151,6 +1151,12 @@ void ServerCartesianController::run()
             // onset of new trajectory
             executingTraj=true;
         }
+
+        // update the stamp anyway
+        if (stamp>=0.0)
+            txInfo.update(stamp);
+        else
+            txInfo.update();
             
         if (executingTraj)
         {
@@ -1174,20 +1180,18 @@ void ServerCartesianController::run()
 
                 stopLimbVel();
 
+                mutex.post();
+
                 // switch the solver status to one shot mode
                 // if it is the case
                 if (!trackingMode && (rxToken==txToken))
                     setTrackingMode(false);
             }
+            else
+                mutex.post();
         }
-
-        // update the stamp anyway
-        if (stamp>=0.0)
-            txInfo.update(stamp);
         else
-            txInfo.update();
-
-        mutex.post();
+            mutex.post();
 
         // streams out the end-effector pose
         if (portState.getOutputCount()>0)
