@@ -930,7 +930,7 @@ public:
     virtual bool getLimitsRaw(int axis, double *min, double *max);
 
     /////// IPreciselyTimed interface
-    virtual Stamp getLastInputStamp();
+    virtual yarp::os::Stamp getLastInputStamp();
 
     // Firmware version
 	bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
