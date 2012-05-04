@@ -870,8 +870,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
     Vector fbTmp(maxPartJoints);
     int chainCnt=0;
     int _fbCnt=0;
-    //double stamp=0.0;
-    double stamp=-1.0;  // debug
+    double stamp=0.0;
 
     for (int i=0; i<numDrv; i++)
     {
