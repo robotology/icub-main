@@ -1858,13 +1858,16 @@ void ControlBoardWrapper2::run()
 
             encoders+=device.subdevices[k].axes; //jump to next group
         }
-    #ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
-        time.update(timeStamp/controlledJoints);
-    #else    
-        time.update(Time::now());    
-    #endif
-    state_p.setEnvelope(time);
 
+    timeMutex.wait();
+#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
+    time.update(timeStamp/controlledJoints);
+#else    
+    time.update(Time::now());
+#endif
+    timeMutex.post();
+
+    state_p.setEnvelope(time);
     state_buffer.write();
 }
 

@@ -106,8 +106,7 @@ protected:
     Vector vect;
 
     yarp::os::Stamp lastRpcStamp;
-    Semaphore mutex;
-
+    
 public:
     /**
     * Constructor.
@@ -268,7 +267,8 @@ class ControlBoardWrapper2 : public DeviceDriver,
 							 public IImpedanceControl,
                              public IControlMode,
                              public IMultipleWrapper,
-                             public IAxisInfo
+                             public IAxisInfo,
+                             public IPreciselyTimed
 {
 private:
     bool spoke;
@@ -280,6 +280,7 @@ private:
     Port control_p; // in port to command the robot
     Port rpc_p;     // RPC to configure the robot
     Stamp time;     // envelope to attach to the state port
+    Semaphore timeMutex;
 
     PortWriterBuffer<yarp::sig::Vector> state_buffer;
     PortReaderBuffer<CommandMessage> control_buffer;
@@ -2815,8 +2816,12 @@ public:
         return ret;
     }
 
-
-
+    virtual Stamp getLastInputStamp() {
+        timeMutex.wait();
+        Stamp ret=time;
+        timeMutex.post();
+        return ret;
+    }
 };
 
 #endif

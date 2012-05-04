@@ -4741,7 +4741,6 @@ Stamp CanBusMotionControl::getLastInputStamp()
     _mutex.wait();
     Stamp ret=stampEncoders;
     _mutex.post();
-
     return ret;
 }
 
