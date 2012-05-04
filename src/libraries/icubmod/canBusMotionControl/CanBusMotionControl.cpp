@@ -4736,6 +4736,16 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     return true;
 }
 
+Stamp CanBusMotionControl::getLastInputStamp()
+{
+    Stamp ret;
+    _mutex.wait();
+    ret=stampEncoders;
+    _mutex.post();
+
+    return ret;
+}
+
 bool CanBusMotionControl::getEncoderRaw(int axis, double *v)
 {
     CanBusResources& r = RES(system_resources);

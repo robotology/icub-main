@@ -34,10 +34,10 @@
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/CanBusInterface.h>
+#include <yarp/dev/PreciselyTimed.h>
 #include <iCub/DebugInterfaces.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
 #include <string>
 #include <list>
 
@@ -621,6 +621,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
 			public IImpedanceControlRaw,
 			public IOpenLoopControlRaw,
             public IControlModeRaw,
+            public IPreciselyTimed,
             public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
             public ImplementVelocityControl<CanBusMotionControl, IVelocityControl>,
             public ImplementPidControl<CanBusMotionControl, IPidControl>,
@@ -928,7 +929,10 @@ public:
     virtual bool setLimitsRaw(int axis, double min, double max);
     virtual bool getLimitsRaw(int axis, double *min, double *max);
 
-	// Firmware version
+    /////// IPreciselyTimed interface
+    virtual Stamp getLastInputStamp();
+
+    // Firmware version
 	bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
 
 protected:
