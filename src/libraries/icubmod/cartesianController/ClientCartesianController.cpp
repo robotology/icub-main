@@ -26,6 +26,7 @@
 #include <iCub/iKin/iKinInv.h>
 
 #include <stdio.h>
+#include <algorithm>
 
 #include "CommonCartesianController.h"
 #include "ClientCartesianController.h"
