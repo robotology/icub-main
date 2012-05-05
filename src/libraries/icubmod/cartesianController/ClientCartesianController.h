@@ -64,9 +64,11 @@ protected:
 
     double timeout;
     double lastPoseMsgArrivalTime;
+    int    stampSelector;
 
     yarp::sig::Vector   pose;
     yarp::os::Stamp     rxInfo;
+    yarp::os::Stamp     poseInfo;
     yarp::os::Semaphore mutex;
 
     yarp::os::BufferedPort<yarp::sig::Vector> portState;
@@ -75,7 +77,8 @@ protected:
 
     std::set<int> contextIdList;
 
-    virtual bool deleteContexts();
+    void init();
+    bool deleteContexts();
 
 public:
     ClientCartesianController();
@@ -121,6 +124,7 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
+    bool setStampSelector(const int selector);
 
     yarp::os::Stamp getLastInputStamp();
 

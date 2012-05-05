@@ -83,7 +83,7 @@ class CartesianCtrlRpcProcessor : public yarp::os::PortReader
 protected:
     ServerCartesianController *ctrl;
 
-    virtual bool read(yarp::os::ConnectionReader &connection);
+    bool read(yarp::os::ConnectionReader &connection);
 
 public:
     CartesianCtrlRpcProcessor(ServerCartesianController *_ctrl);
@@ -95,7 +95,7 @@ class CartesianCtrlCommandPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 protected:
     ServerCartesianController *ctrl;
 
-    virtual void onRead(yarp::os::Bottle &command);
+    void onRead(yarp::os::Bottle &command);
 
 public:
     CartesianCtrlCommandPort(ServerCartesianController *_ctrl);
@@ -149,6 +149,7 @@ protected:
     double       trajTime;
     int          taskRefVelPeriodFactor;
     int          taskRefVelPeriodCnt;
+    int          stampSelector;
 
     double       txToken;
     double       rxToken;
@@ -160,6 +161,7 @@ protected:
     yarp::os::Semaphore mutex;
     yarp::os::Event     syncEvent;
     yarp::os::Stamp     txInfo;
+    yarp::os::Stamp     poseInfo;
 
     yarp::sig::Vector xdes;
     yarp::sig::Vector qdes;
@@ -201,13 +203,14 @@ protected:
     void   newController();
     bool   getNewTarget();
     void   sendVelocity(const yarp::sig::Vector &v);
+    bool   getPoseStamp(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp &stamp);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
 
-    virtual bool threadInit();
-    virtual void afterStart(bool s);
-    virtual void run();
-    virtual void threadRelease();
+    bool   threadInit();
+    void   afterStart(bool s);
+    void   run();
+    void   threadRelease();
 
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
@@ -266,6 +269,7 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
+    bool setStampSelector(const int selector);
 
     yarp::os::Stamp getLastInputStamp();
 

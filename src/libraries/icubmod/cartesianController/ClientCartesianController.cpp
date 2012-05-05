@@ -42,26 +42,29 @@ using namespace yarp::math;
 /************************************************************************/
 ClientCartesianController::ClientCartesianController()
 {
-    connected=false;
-    closed=false;
-
-    timeout=CARTCTRL_DEFAULT_TMO;
-    lastPoseMsgArrivalTime=0.0;
-
-    pose.resize(7,0.0);
+    init();
 }
 
 
 /************************************************************************/
 ClientCartesianController::ClientCartesianController(Searchable &config)
 {
+    init();
     open(config);
 }
 
 
-ClientCartesianController::~ClientCartesianController()
+/************************************************************************/
+void ClientCartesianController::init()
 {
-    close();
+    connected=false;
+    closed=false;
+
+    timeout=CARTCTRL_DEFAULT_TMO;
+    lastPoseMsgArrivalTime=0.0;
+    stampSelector=0;
+
+    pose.resize(7,0.0);
 }
 
 
@@ -270,6 +273,19 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
 
             for (size_t i=0; i<o.length(); i++)
                 o[i]=posePart->get(x.length()+i).asDouble();
+
+            if (reply.size()>2)
+            {
+                if (Bottle *stampPart=reply.get(2).asList())
+                {
+                    Stamp stamp(stampPart->get(0).asInt(),
+                                stampPart->get(1).asDouble());
+
+                    mutex.wait();
+                    poseInfo=stamp;
+                    mutex.post();
+                }
+            }
 
             return true;
         }
@@ -1136,13 +1152,38 @@ bool ClientCartesianController::deleteContexts()
 
 
 /************************************************************************/
+bool ClientCartesianController::setStampSelector(const int selector)
+{
+    if (connected)
+    {
+        stampSelector=std::min(1,std::max(0,selector));
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 Stamp ClientCartesianController::getLastInputStamp()
 {
+    Stamp stamp;
     mutex.wait();
-    Stamp stamp=rxInfo;
-    mutex.post();
 
+    if (stampSelector==0)
+        stamp=rxInfo;
+    else if (stampSelector==1)
+        stamp=poseInfo;
+
+    mutex.post();
     return stamp;
+}
+
+
+/************************************************************************/
+ClientCartesianController::~ClientCartesianController()
+{
+    close();
 }
 
 

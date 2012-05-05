@@ -63,8 +63,8 @@ protected:
     double timeout;
     double lastFpMsgArrivalTime;
     double lastAngMsgArrivalTime;
+    int    stampSelector;
 
-    int stampSelector;
     yarp::sig::Vector   fixationPoint;
     yarp::os::Stamp     rxInfo_fp;
     yarp::os::Semaphore mutex_fp;

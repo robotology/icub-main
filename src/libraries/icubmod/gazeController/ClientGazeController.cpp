@@ -532,13 +532,12 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
                 {
                     if (Bottle *bStamp=reply.get(2).asList())
                     {
-                        if (bStamp->size()>1)
-                        {
-                            Stamp stamp(bStamp->get(0).asInt(),bStamp->get(1).asDouble());
-                            mutex_pose.wait();
-                            rxInfo_pose=stamp;
-                            mutex_pose.post();
-                        }
+                        Stamp stamp(bStamp->get(0).asInt(),
+                                    bStamp->get(1).asDouble());
+
+                        mutex_pose.wait();
+                        rxInfo_pose=stamp;
+                        mutex_pose.post();
                     }
                 }
 
@@ -1436,7 +1435,7 @@ bool ClientGazeController::setStampSelector(const int selector)
 {
     if (connected)
     {
-        stampSelector=std::min(3,std::max(0,selector));
+        stampSelector=std::min(2,std::max(0,selector));
         return true;
     }
     else
