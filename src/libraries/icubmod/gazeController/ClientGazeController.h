@@ -89,12 +89,13 @@ protected:
 
     std::set<int> contextIdList;
 
-    virtual bool deleteContexts();
-    virtual bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
-    virtual bool blockNeckJoint(const std::string &joint, const double min, const double max);
-    virtual bool blockNeckJoint(const std::string &joint, const int j);
-    virtual bool getNeckJointRange(const std::string &joint, double *min, double *max);
-    virtual bool clearNeckJoint(const std::string &joint);
+    void init();
+    bool deleteContexts();
+    bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool blockNeckJoint(const std::string &joint, const double min, const double max);
+    bool blockNeckJoint(const std::string &joint, const int j);
+    bool getNeckJointRange(const std::string &joint, double *min, double *max);
+    bool clearNeckJoint(const std::string &joint);
 
 public:
     ClientGazeController();

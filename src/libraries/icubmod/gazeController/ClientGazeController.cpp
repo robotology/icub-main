@@ -42,6 +42,21 @@ using namespace yarp::math;
 /************************************************************************/
 ClientGazeController::ClientGazeController()
 {
+    init();
+}
+
+
+/************************************************************************/
+ClientGazeController::ClientGazeController(Searchable &config)
+{
+    init();
+    open(config);
+}
+
+
+/************************************************************************/
+void ClientGazeController::init()
+{
     connected=false;
     closed=false;
 
@@ -52,19 +67,6 @@ ClientGazeController::ClientGazeController()
 
     fixationPoint.resize(3,0.0);
     angles.resize(3,0.0);
-}
-
-
-/************************************************************************/
-ClientGazeController::ClientGazeController(Searchable &config)
-{
-    open(config);
-}
-
-
-ClientGazeController::~ClientGazeController()
-{
-    close();
 }
 
 
@@ -1467,6 +1469,13 @@ Stamp ClientGazeController::getLastInputStamp()
     }
 
     return stamp;
+}
+
+
+/************************************************************************/
+ClientGazeController::~ClientGazeController()
+{
+    close();
 }
 
 
