@@ -526,8 +526,8 @@ public:
                             ActionPrimitivesCallback *clb=NULL);
 
     /**
-    * Insert a trajectory parametrized in terms of waypoints in the 
-    * actions queue. 
+    * Insert in the actions queue a trajectory in the operational 
+    * space parametrized in terms of waypoints. 
     * @param wayPoints the list of waypoints that will be used to 
     *                  generate the trajectory.
     * @param clb action callback that is executed when the action 
