@@ -180,7 +180,7 @@ public:
     }
 
     /************************************************************************/
-    void beforeStart()
+    void afterStart(bool success)
     {
         cartCtrl->getRestPos(q0);
         cartCtrl->getRestWeights(w0);
@@ -236,7 +236,6 @@ public:
     void run()
     {
         int len=restPos.length();
-
         if ((cartCtrl!=NULL) && (len>=3))
         {
             Vector halves(len,0.5);
