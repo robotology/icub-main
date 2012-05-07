@@ -1104,14 +1104,8 @@ bool ActionPrimitives::stopJntTraj(const int jnt)
 bool ActionPrimitives::handCheckMotionDone(const int jnt)
 {
     double fb;
-
     if (encCtrl->getEncoder(jnt,&fb))
-    {
-        if (fabs(curHandFinalPoss[jnt-jHandMin]-fb)<curHandTols[jnt-jHandMin])
-            return true;
-        else
-            return false;
-    }
+        return (fabs(curHandFinalPoss[jnt-jHandMin]-fb)<curHandTols[jnt-jHandMin]);
     else
         return false;
 }
