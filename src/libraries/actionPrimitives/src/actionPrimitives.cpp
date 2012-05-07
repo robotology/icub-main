@@ -955,7 +955,7 @@ bool ActionPrimitives::execQueuedAction()
     Action action;
 
     mutex.wait();
-    if (actionsQueue.size())
+    if (actionsQueue.size()>0)
     {
         action=actionsQueue.front();
         actionsQueue.pop_front();
@@ -988,7 +988,7 @@ bool ActionPrimitives::execPendingHandSequences()
     Action action;
 
     mutex.wait();
-    if (actionsQueue.size())
+    if (actionsQueue.size()>0)
     {
         // polling on the first action in the queue
         action=actionsQueue.front();
