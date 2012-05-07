@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sstream>
-#include <string>
+#include <algorithm>
 
 #define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
                                                     
@@ -61,7 +61,97 @@ using namespace iCub::perception;
 using namespace iCub::action;
 
 
+/************************************************************************/
+ActionPrimitivesWayPoint::ActionPrimitivesWayPoint()
+{
+    x.resize(3,0.0);
+    o.resize(4,0.0);
+    oEnabled=false;
+    duration=2.0;
+    trajTime=ACTIONPRIM_DISABLE_EXECTIME;
+    granularity=ACTIONPRIM_DEFAULT_PER/1000.0;
+}
+
+
+// This class handles the arm way points
+/************************************************************************/
+class ArmWayPoints : public RateThread
+{
+    ICartesianControl *cartCtrl;
+    deque<ActionPrimitivesWayPoint> wayPoints;
+    Vector x0,o0,x1,o1;
+    double t0;
+    size_t i;
+
+    double checkTime(const double time) const
+    {
+        return std::max(time,0.01);
+    }
+
+public:
+    /************************************************************************/
+    ArmWayPoints(ICartesianControl *_cartCtrl, const deque<ActionPrimitivesWayPoint> &_wayPoints) :
+                 RateThread(ACTIONPRIM_DEFAULT_PER)
+    {
+        cartCtrl=_cartCtrl;
+        wayPoints=_wayPoints;
+    }
+
+    /************************************************************************/
+    bool threadInit()
+    {
+        return ((cartCtrl!=NULL) && (wayPoints.size()>0));
+    }
+
+    /************************************************************************/
+    void beforeStart()
+    {
+        cartCtrl->getPose(x0,o0);
+        x1=wayPoints[0].x;
+        o1=wayPoints[0].o;
+        setRate((int)(1000.0*checkTime(wayPoints[0].granularity)));
+
+        t0=0.0;
+        i=0;
+    }
+
+    /************************************************************************/
+    void run()
+    {
+        double t=Time::now()-t0;
+        double r=t/checkTime(wayPoints[i].duration);
+        if (r<1.0)
+        {
+            Vector x=x0+r*(x1-x0);
+            Vector o=o0+r*(o1-o0);
+
+            if (wayPoints[i].oEnabled)
+                cartCtrl->goToPose(x,o,wayPoints[i].trajTime);
+            else
+                cartCtrl->goToPosition(x,wayPoints[i].trajTime);
+        }
+        else if (++i<wayPoints.size())
+        {
+            x0=x1; o0=o1;
+            x1=wayPoints[i].x; o1=wayPoints[i].o;
+            setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
+            t0=t;
+        }
+        else
+            stop();
+    }
+
+    /************************************************************************/
+    virtual ~ArmWayPoints()
+    {
+        if (isRunning())
+            stop();
+    }
+};
+
+
 // This class handles the automatic arm-waving
+/************************************************************************/
 class ArmWavingMonitor : public RateThread
 {
     ICartesianControl *cartCtrl;
@@ -72,7 +162,7 @@ class ArmWavingMonitor : public RateThread
 public:
     /************************************************************************/
     ArmWavingMonitor(ICartesianControl *_cartCtrl) :
-                     RateThread((int)(1000*ACTIONPRIM_BALANCEARM_PERIOD))
+                     RateThread((int)(1000.0*ACTIONPRIM_BALANCEARM_PERIOD))
     {
         cartCtrl=_cartCtrl;
         L=ACTIONPRIM_BALANCEARM_LENGTH;
@@ -89,7 +179,7 @@ public:
     }
 
     /************************************************************************/
-    virtual void afterStart(bool s)
+    void beforeStart()
     {
         cartCtrl->getRestPos(q0);
         cartCtrl->getRestWeights(w0);
@@ -99,7 +189,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool enable()
+    bool enable()
     {
         if (isSuspended())
         {
@@ -126,7 +216,7 @@ public:
     }
 
     /************************************************************************/
-    virtual bool disable()
+    bool disable()
     {
         if (!isSuspended())
         {
@@ -142,7 +232,7 @@ public:
     }
 
     /************************************************************************/
-    virtual void run()
+    void run()
     {
         int len=restPos.length();
 
@@ -163,6 +253,20 @@ public:
         cartCtrl->stopControl();
     }
 };
+
+
+/************************************************************************/
+void ActionPrimitives::ActionsQueue::clear()
+{
+    for (size_t i=0; i<this->size(); i++)
+    {
+        Action &action=(*this)[i];
+        if (action.execWayPoints)
+            delete action.wayPointsThr;
+    }
+
+    deque<Action>::clear();
+}
 
 
 /************************************************************************/
@@ -187,6 +291,7 @@ void ActionPrimitives::init()
 {
     armWaver=NULL;
     actionClb=NULL;
+    actionWP=NULL;
     graspModel=NULL;
 
     armMoveDone =latchArmMoveDone =true;
@@ -562,6 +667,8 @@ void ActionPrimitives::close()
         graspModel=NULL;
     }
 
+    actionsQueue.clear();
+
     closed=true;
 }
 
@@ -631,10 +738,7 @@ bool ActionPrimitives::isHandSeqEnded()
     // update the moving fingers set
     fingersMovingJntsSet=tmpSet;
 
-    if (fingersMovingJntsSet.size())
-        return false;
-    else
-        return true;
+    return (fingersMovingJntsSet.size()==0);
 }
 
 
@@ -714,6 +818,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
         action.execHand=execHand;
         action.handWP=handWP;
         action.handSeqTerminator=handSeqTerminator;
+        action.execWayPoints=false;
         action.clb=clb;
 
         actionsQueue.push_back(action);
@@ -736,9 +841,8 @@ bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
         map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
         if (itr!=handSeqMap.end())
         {
-            deque<HandWayPoint> &q=itr->second;            
-
-            if (q.size())
+            deque<HandWayPoint> &q=itr->second;
+            if (q.size()>0)
             {   
                 Vector vectDummy(1);
 
@@ -747,7 +851,7 @@ bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
 
                 if (q.size()>1)
                 {
-                    unsigned int i;                    
+                    size_t i;
 
                     // decompose hand action in sum of fingers sequences
                     for (i=1; i<q.size()-1; i++)
@@ -788,7 +892,6 @@ bool ActionPrimitives::pushAction(const Vector &x, const string &handSeqKey,
                                   const double execTime, ActionPrimitivesCallback *clb)
 {
     Vector vectDummy(1);
-
     return _pushAction(x,vectDummy,handSeqKey,execTime,clb,false);
 }
 
@@ -866,6 +969,33 @@ bool ActionPrimitives::pushAction(const string &handSeqKey,
 
 
 /************************************************************************/
+bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoints,
+                                  ActionPrimitivesCallback *clb)
+{
+    if (configured && !locked)
+    {
+        mutex.wait();
+        Action action;
+
+        action.waitState=false;
+        action.execArm=false;
+        action.execHand=false;
+        action.handSeqTerminator=false;
+        action.execWayPoints=true;
+        action.wayPointsThr=new ArmWayPoints(cartCtrl,wayPoints);
+        action.clb=clb;
+
+        actionsQueue.push_back(action);
+        mutex.post();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback *clb)
 {
     if (configured && !locked)
@@ -878,6 +1008,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
         action.execArm=false;
         action.execHand=false;
         action.handSeqTerminator=false;
+        action.execWayPoints=false;        
         action.clb=clb;
 
         actionsQueue.push_back(action);
@@ -973,6 +1104,14 @@ bool ActionPrimitives::execQueuedAction()
         if (action.execHand)
             cmdHand(action);
 
+        if (action.execWayPoints)
+        {
+            actionWP=action.wayPointsThr;
+            actionWP->start();
+        }
+        else
+            actionWP=NULL;
+
         actionClb=action.clb;
     }
 
@@ -1025,7 +1164,17 @@ void ActionPrimitives::run()
             latchTimerReachLog=t;
         }
 
-        cartCtrl->checkMotionDone(&armMoveDone);
+        if (actionWP!=NULL)
+        {
+            if (!actionWP->isRunning())
+            {
+                cartCtrl->checkMotionDone(&armMoveDone);
+                delete actionWP;
+                actionWP=NULL;
+            }
+        }
+        else
+            cartCtrl->checkMotionDone(&armMoveDone);
 
         // check if timeout has expired
         if (reachTmoEnabled && !armMoveDone)
@@ -1802,13 +1951,6 @@ bool ActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 
 
 /************************************************************************/
-ActionPrimitivesLayer1::~ActionPrimitivesLayer1()
-{
-    close();
-}
-
-
-/************************************************************************/
 void liftAndGraspCallback::exec()
 {
     // lift up the hand iff contact detected
@@ -1836,8 +1978,7 @@ void touchCallback::exec()
 
 
 /************************************************************************/
-ActionPrimitivesLayer2::ActionPrimitivesLayer2() :
-                        ActionPrimitivesLayer1()
+ActionPrimitivesLayer2::ActionPrimitivesLayer2()
 {
     init();
 }
@@ -1903,6 +2044,13 @@ void ActionPrimitivesLayer2::run()
     // stop the arm iff contact detected while reaching
     if (!armMoveDone && contactDetectionOn && (forceExternalAbs>ext_force_thres))
     {
+        if (actionWP!=NULL)
+        {
+            actionWP->stop();
+            delete actionWP;
+            actionWP=NULL;
+        }
+
         cartCtrl->stopControl();
 
         printMessage("contact detected on arm: external force [%s], (%g>%g) => stopping arm\n",

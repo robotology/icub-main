@@ -92,7 +92,7 @@
 #include <set>
 #include <map>
 
-#define ACTIONPRIM_DISABLE_EXECTIME    -1
+#define ACTIONPRIM_DISABLE_EXECTIME    -1.0
 
 
 namespace iCub
@@ -110,12 +110,64 @@ namespace action
 class ActionPrimitivesCallback
 {
 public:
+    /**
+    * Default Constructor. 
+    */
     ActionPrimitivesCallback() { }
 
     /**
     * Defines the callback body to be called at the action end.
     */ 
     virtual void exec() = 0;
+};
+
+
+/**
+* \ingroup ActionPrimitives
+*
+* Struct for defining way points used for movements in the 
+* operational space. 
+*/
+struct ActionPrimitivesWayPoint
+{
+    /**
+     * the 3x1 Vector specifyng the position of the waypoint [m].
+     */
+    yarp::sig::Vector x;
+
+    /**
+     * the 4x1 Vector specifying the orientation of the waypoint in 
+     * axis-angle representation. 
+     */
+    yarp::sig::Vector o;
+
+    /**
+     * if this flag is set to true then orientation will be taken 
+     * into account. 
+     */
+    bool oEnabled;
+
+    /**
+     * the time duration [s] to achieve the waypoint.
+     */
+    double duration;
+
+    /**
+     * the arm execution time [s] accounting for the controller's 
+     * responsivity. 
+     */
+    double trajTime;
+
+    /**
+     * the time granularity [s] used by the trajectory generator 
+     * [s]. 
+     */
+    double granularity;
+
+    /**
+    * Default Constructor. 
+    */
+    ActionPrimitivesWayPoint();
 };
 
 
@@ -141,12 +193,12 @@ protected:
     yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
-    perception::Model    *graspModel;
-
-    yarp::os::RateThread *armWaver;
-    yarp::os::Semaphore   mutex;
-    yarp::os::Event       motionStartEvent;
-    yarp::os::Event       motionDoneEvent;
+    perception::Model            *graspModel;
+                                 
+    yarp::os::RateThread         *armWaver;
+    yarp::os::Semaphore           mutex;
+    yarp::os::Event               motionStartEvent;
+    yarp::os::Event               motionDoneEvent;
 
     bool armMoveDone;
     bool handMoveDone;
@@ -213,13 +265,20 @@ protected:
         bool execHand;
         HandWayPoint handWP;
         bool handSeqTerminator;
+        // reach way points action
+        bool execWayPoints;
+        yarp::os::RateThread *wayPointsThr;
         // action callback
         ActionPrimitivesCallback *clb;
     };
 
     ActionPrimitivesCallback *actionClb;
-
-    std::deque<Action> actionsQueue;
+    yarp::os::RateThread     *actionWP;
+    class ActionsQueue : public std::deque<Action>
+    {
+    public:
+        void clear();
+    } actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
 
     virtual std::string toCompactString(const yarp::sig::Vector &v);
@@ -232,9 +291,9 @@ protected:
                              const yarp::sig::Vector &o, const double execTime,
                              const bool oEnabled, const bool execHand, const HandWayPoint &handWP,
                              const bool handSeqTerminator, ActionPrimitivesCallback *clb);
-    virtual bool  _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
-                              const std::string &handSeqKey, const double execTime,
-                              ActionPrimitivesCallback *clb, const bool oEnabled);
+    virtual bool _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
+                             const std::string &handSeqKey, const double execTime,
+                             ActionPrimitivesCallback *clb, const bool oEnabled);
     virtual bool stopJntTraj(const int jnt);
     virtual bool handCheckMotionDone(const int jnt);
     virtual bool wait(const Action &action);
@@ -463,6 +522,18 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool pushAction(const std::string &handSeqKey,
+                            ActionPrimitivesCallback *clb=NULL);
+
+    /**
+    * Insert a trajectory parametrized in terms of waypoints in the 
+    * actions queue. 
+    * @param wayPoints the list of waypoints that will be used to 
+    *                  generate the trajectory.
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default. 
+    * @return true/false on success/fail. 
+    */
+    virtual bool pushAction(const std::deque<ActionPrimitivesWayPoint> &wayPoints,
                             ActionPrimitivesCallback *clb=NULL);
 
     /**
@@ -831,13 +902,6 @@ public:
     *            creation.
     */
     ActionPrimitivesLayer1(yarp::os::Property &opt) : ActionPrimitives(opt) { }
-
-    /**
-    * Destructor. 
-    *  
-    * @note it calls the close() method. 
-    */
-    virtual ~ActionPrimitivesLayer1();
 
     /**
     * Grasp the given target (combined action).
