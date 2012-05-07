@@ -100,19 +100,20 @@ public:
     /************************************************************************/
     bool threadInit()
     {
-        return ((cartCtrl!=NULL) && (wayPoints.size()>0));
-    }
+        if ((cartCtrl!=NULL) && (wayPoints.size()>0))
+        {
+            cartCtrl->getPose(x0,o0);
+            x1=wayPoints[0].x;
+            o1=wayPoints[0].o;
+            setRate((int)(1000.0*checkTime(wayPoints[0].granularity)));
 
-    /************************************************************************/
-    void beforeStart()
-    {
-        cartCtrl->getPose(x0,o0);
-        x1=wayPoints[0].x;
-        o1=wayPoints[0].o;
-        setRate((int)(1000.0*checkTime(wayPoints[0].granularity)));
+            i=0;
+            t0=Time::now();
 
-        t0=0.0;
-        i=0;
+            return true;
+        }
+        else
+            return false;
     }
 
     /************************************************************************/
@@ -135,10 +136,10 @@ public:
             x0=x1; o0=o1;
             x1=wayPoints[i].x; o1=wayPoints[i].o;
             setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
-            t0=t;
+            t0=Time::now();
         }
         else
-            stop();
+            askToStop();
     }
 
     /************************************************************************/
@@ -1101,16 +1102,16 @@ bool ActionPrimitives::execQueuedAction()
         if (action.execArm)
             cmdArm(action);
 
-        if (action.execHand)
-            cmdHand(action);
-
         if (action.execWayPoints)
         {
             actionWP=action.wayPointsThr;
-            actionWP->start();
+            cmdArmWP(action);
         }
         else
             actionWP=NULL;
+
+        if (action.execHand)
+            cmdHand(action);
 
         actionClb=action.clb;
     }
@@ -1342,6 +1343,24 @@ bool ActionPrimitives::cmdArm(const Action &action)
 
         postReachCallback();
 
+        latchTimerReachLog=latchTimerReach=Time::now();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::cmdArmWP(const Action &action)
+{
+    if (configured && action.execWayPoints)
+    {
+        disableArmWaving();
+        enableTorsoDof();
+        action.wayPointsThr->start();
+        postReachCallback();
         latchTimerReachLog=latchTimerReach=Time::now();
 
         return true;

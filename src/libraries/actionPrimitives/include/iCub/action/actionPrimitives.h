@@ -298,6 +298,7 @@ protected:
     virtual bool handCheckMotionDone(const int jnt);
     virtual bool wait(const Action &action);
     virtual bool cmdArm(const Action &action);
+    virtual bool cmdArmWP(const Action &action);
     virtual bool cmdHand(const Action &action);
     virtual bool isHandSeqEnded();
     virtual void postReachCallback();
