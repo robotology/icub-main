@@ -187,7 +187,6 @@ void ActionPrimitives::init()
 {
     armWaver=NULL;
     actionClb=NULL;
-
     graspModel=NULL;
 
     armMoveDone =latchArmMoveDone =true;
@@ -1065,7 +1064,7 @@ void ActionPrimitives::run()
     if (latchArmMoveDone && latchHandMoveDone && (t-latchTimerWait>waitTmo))
     {    
         // execute action-end callback
-        if (actionClb)
+        if (actionClb!=NULL)
         {
             printMessage("executing action-end callback ...\n");
             actionClb->exec();            
