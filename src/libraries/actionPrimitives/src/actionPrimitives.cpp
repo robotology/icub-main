@@ -80,6 +80,7 @@ class ArmWayPoints : public RateThread
     ICartesianControl *cartCtrl;
     deque<ActionPrimitivesWayPoint> wayPoints;
     Vector x0,o0,x1,o1;
+    double default_exec_time;
     double t0;
     size_t i;
 
@@ -95,6 +96,13 @@ public:
     {
         cartCtrl=_cartCtrl;
         wayPoints=_wayPoints;
+        default_exec_time=ACTIONPRIM_DEFAULT_EXECTIME;
+    }
+
+    /************************************************************************/
+    void set_default_exec_time(const double exec_time)
+    {
+        default_exec_time=exec_time;
     }
 
     /************************************************************************/
@@ -125,11 +133,13 @@ public:
         {
             Vector x=x0+r*(x1-x0);
             Vector o=o0+r*(o1-o0);
+            const double trajTime=wayPoints[i].trajTime>0.0 ?
+                                  wayPoints[i].trajTime : default_exec_time;
 
             if (wayPoints[i].oEnabled)
-                cartCtrl->goToPose(x,o,wayPoints[i].trajTime);
+                cartCtrl->goToPose(x,o,trajTime);
             else
-                cartCtrl->goToPosition(x,wayPoints[i].trajTime);
+                cartCtrl->goToPosition(x,trajTime);
         }
         else if (++i<wayPoints.size())
         {
@@ -976,13 +986,15 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
     {
         mutex.wait();
         Action action;
+        ArmWayPoints *thr=new ArmWayPoints(cartCtrl,wayPoints);
+        thr->set_default_exec_time(default_exec_time);
 
         action.waitState=false;
         action.execArm=false;
         action.execHand=false;
         action.handSeqTerminator=false;
         action.execWayPoints=true;
-        action.wayPointsThr=new ArmWayPoints(cartCtrl,wayPoints);
+        action.wayPointsThr=thr;
         action.clb=clb;
 
         actionsQueue.push_back(action);
@@ -1008,8 +1020,10 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
             deque<HandWayPoint> &q=itr->second;
             if (q.size()>0)
             {
-                // combined action                
+                // combined action
                 Action action;
+                ArmWayPoints *thr=new ArmWayPoints(cartCtrl,wayPoints);
+                thr->set_default_exec_time(default_exec_time);
 
                 action.waitState=false;
                 action.execArm=false;
@@ -1017,7 +1031,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
                 action.handWP=q[0];
                 action.handSeqTerminator=(q.size()==1);
                 action.execWayPoints=true;
-                action.wayPointsThr=new ArmWayPoints(cartCtrl,wayPoints);
+                action.wayPointsThr=thr;
                 action.clb=(q.size()==1?clb:NULL);
 
                 actionsQueue.push_back(action);                
@@ -1092,7 +1106,7 @@ bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
 
         enableTorsoDof();
 
-        cartCtrl->goToPose(x,o,t);        
+        cartCtrl->goToPose(x,o,t);
 
         printMessage("reach at %g [s] for [%s], [%s]\n",t,
                      toCompactString(x).c_str(),
