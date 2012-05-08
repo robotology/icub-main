@@ -79,10 +79,11 @@ class ArmWayPoints : public RateThread
 {
     ICartesianControl *cartCtrl;
     deque<ActionPrimitivesWayPoint> wayPoints;
-    Vector x0,o0,x1,o1;
     double default_exec_time;
     double t0;
+    bool firstRun;
     size_t i;
+    Vector x0;
 
     /************************************************************************/
     double checkTime(const double time) const
@@ -104,6 +105,7 @@ public:
         cartCtrl=_cartCtrl;
         wayPoints=_wayPoints;
         default_exec_time=ACTIONPRIM_DEFAULT_EXECTIME;
+        firstRun=true;
     }
 
     /************************************************************************/
@@ -117,13 +119,10 @@ public:
     {
         if ((cartCtrl!=NULL) && (wayPoints.size()>0))
         {
-            cartCtrl->getPose(x0,o0);
-            x1=wayPoints[0].x;
-            o1=wayPoints[0].o;
+            Vector o;
+            cartCtrl->getPose(x0,o);
             setRate((int)(1000.0*checkTime(wayPoints[0].granularity)));
-
             i=0;
-            t0=Time::now();
 
             return true;
         }
@@ -134,23 +133,27 @@ public:
     /************************************************************************/
     void run()
     {
+        if (firstRun)
+        {
+            t0=Time::now();
+            firstRun=false;
+        }
+
         double t=Time::now()-t0;
         double r=t/checkTime(checkDefaultTime(wayPoints[i].duration));
         if (r<1.0)
         {
             const double trajTime=checkDefaultTime(wayPoints[i].trajTime);
-            Vector x=x0+r*(x1-x0);
-            Vector o=o0+r*(o1-o0);
+            Vector x=x0+r*(wayPoints[i].x-x0);
 
             if (wayPoints[i].oEnabled)
-                cartCtrl->goToPose(x,o,trajTime);
+                cartCtrl->goToPose(x,wayPoints[i].o,trajTime);
             else
                 cartCtrl->goToPosition(x,trajTime);
         }
         else if (++i<wayPoints.size())
         {
-            x0=x1; o0=o1;
-            x1=wayPoints[i].x; o1=wayPoints[i].o;
+            x0=wayPoints[i-1].x;
             setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
             t0=Time::now();
         }
@@ -1237,8 +1240,9 @@ void ActionPrimitives::run()
 
         if ((t-latchTimerReachLog)>ACTIONPRIM_DUMP_PERIOD)
         {
-            printMessage("reaching... xdhat=[%s] |e|=%.3f [m]\n",
-                         toCompactString(xdhat).c_str(),norm(xdhat-x));
+            printMessage("reaching... xdhat=[%s] |e|=%.3f [m]; odhat=[%s] |e|=%.3f\n",
+                         toCompactString(xdhat).c_str(),norm(xdhat-x),
+                         toCompactString(odhat).c_str(),norm(odhat-o));
 
             latchTimerReachLog=t;
         }
