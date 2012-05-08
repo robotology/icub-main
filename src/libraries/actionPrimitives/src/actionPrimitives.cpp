@@ -179,7 +179,16 @@ public:
             t0=Time::now();
         }
         else
+        {
+            if (wayPoints[i].callback!=NULL)
+            {
+                action->printMessage("executing waypoint(%d)-end callback ...\n",i);
+                wayPoints[i].callback->exec();
+                action->printMessage("... waypoint(%d)-end callback executed\n",i);
+            }
+
             askToStop();
+        }
     }
 
     /************************************************************************/
