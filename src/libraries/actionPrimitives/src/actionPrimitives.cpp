@@ -61,22 +61,17 @@ using namespace iCub::perception;
 using namespace iCub::action;
 
 
-/************************************************************************/
-ActionPrimitivesWayPoint::ActionPrimitivesWayPoint()
+namespace iCub
 {
-    x.resize(3,0.0);
-    o.resize(4,0.0);
-    oEnabled=false;
-    duration=ACTIONPRIM_DISABLE_EXECTIME;
-    trajTime=ACTIONPRIM_DISABLE_EXECTIME;
-    granularity=ACTIONPRIM_DEFAULT_PER/1000.0;
-}
 
+namespace action
+{
 
 // This class handles the arm way points
 /************************************************************************/
 class ArmWayPoints : public RateThread
 {
+    ActionPrimitives  *action;
     ICartesianControl *cartCtrl;
     deque<ActionPrimitivesWayPoint> wayPoints;
     double default_exec_time;
@@ -99,10 +94,11 @@ class ArmWayPoints : public RateThread
 
 public:
     /************************************************************************/
-    ArmWayPoints(ICartesianControl *_cartCtrl, const deque<ActionPrimitivesWayPoint> &_wayPoints) :
+    ArmWayPoints(ActionPrimitives *_action, const deque<ActionPrimitivesWayPoint> &_wayPoints) :
                  RateThread(ACTIONPRIM_DEFAULT_PER)
     {
-        cartCtrl=_cartCtrl;
+        action=_action;
+        action->getCartesianIF(cartCtrl);
         wayPoints=_wayPoints;
         default_exec_time=ACTIONPRIM_DEFAULT_EXECTIME;
         firstRun=true;
@@ -135,6 +131,14 @@ public:
     {
         if (firstRun)
         {
+            if (wayPoints[i].oEnabled)
+                action->printMessage("reaching waypoint %d: x=[%s]; o=[%s]\n",i,
+                                     wayPoints[i].x.toString(3,3).c_str(),
+                                     wayPoints[i].o.toString(3,3).c_str());
+            else
+                action->printMessage("reaching waypoint %d: x=[%s]\n",i,
+                                     wayPoints[i].x.toString(3,3).c_str());
+
             t0=Time::now();
             firstRun=false;
         }
@@ -151,9 +155,26 @@ public:
             else
                 cartCtrl->goToPosition(x,trajTime);
         }
-        else if (++i<wayPoints.size())
+        else if (i+1<wayPoints.size())
         {
-            x0=wayPoints[i-1].x;
+            if (wayPoints[i].callback!=NULL)
+            {
+                action->printMessage("executing action-end waypoint %d callback ...\n",i);
+                wayPoints[i].callback->exec();
+                action->printMessage("... action-end waypoint %d callback executed\n",i);
+            }
+
+            x0=wayPoints[i].x;
+
+            i++;
+            if (wayPoints[i].oEnabled)
+                action->printMessage("reaching waypoint %d: x=[%s]; o=[%s]\n",i,
+                                     wayPoints[i].x.toString(3,3).c_str(),
+                                     wayPoints[i].o.toString(3,3).c_str());
+            else
+                action->printMessage("reaching waypoint %d: x=[%s]\n",i,
+                                     wayPoints[i].x.toString(3,3).c_str());
+
             setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
             t0=Time::now();
         }
@@ -273,6 +294,23 @@ public:
     }
 };
 
+}
+
+}
+
+
+/************************************************************************/
+ActionPrimitivesWayPoint::ActionPrimitivesWayPoint()
+{
+    x.resize(3,0.0);
+    o.resize(4,0.0);
+    oEnabled=false;
+    duration=ACTIONPRIM_DISABLE_EXECTIME;
+    trajTime=ACTIONPRIM_DISABLE_EXECTIME;
+    granularity=ACTIONPRIM_DEFAULT_PER/1000.0;
+    callback=NULL;
+}
+
 
 /************************************************************************/
 void ActionPrimitives::ActionsQueue::clear()
@@ -334,19 +372,6 @@ void ActionPrimitives::init()
 bool ActionPrimitives::isValid() const
 {
     return configured;
-}
-
-
-/************************************************************************/
-string ActionPrimitives::toCompactString(const Vector &v)
-{
-    ostringstream ret;
-    ret.precision(3);
-    for (size_t i=0; i<v.length()-1; i++)
-        ret<<std::fixed<<v[i]<<" ";
-
-    ret<<std::fixed<<v[v.length()-1];
-    return ret.str();
 }
 
 
@@ -995,7 +1020,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
     {
         mutex.wait();
         Action action;
-        ArmWayPoints *thr=new ArmWayPoints(cartCtrl,wayPoints);
+        ArmWayPoints *thr=new ArmWayPoints(this,wayPoints);
         thr->set_default_exec_time(default_exec_time);
 
         action.waitState=false;
@@ -1031,7 +1056,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
             {
                 // combined action
                 Action action;
-                ArmWayPoints *thr=new ArmWayPoints(cartCtrl,wayPoints);
+                ArmWayPoints *thr=new ArmWayPoints(this,wayPoints);
                 thr->set_default_exec_time(default_exec_time);
 
                 action.waitState=false;
@@ -1118,8 +1143,8 @@ bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
         cartCtrl->goToPose(x,o,t);
 
         printMessage("reach at %g [s] for [%s], [%s]\n",t,
-                     toCompactString(x).c_str(),
-                     toCompactString(o).c_str());
+                     x.toString(3,3).c_str(),
+                     o.toString(3,3).c_str());
 
         postReachCallback();
 
@@ -1147,7 +1172,7 @@ bool ActionPrimitives::reachPosition(const Vector &x, const double execTime)
 
 
         printMessage("reach at %g [s] for [%s]\n",t,
-                     toCompactString(x).c_str());
+                     x.toString(3,3).c_str());
 
         postReachCallback();
 
@@ -1241,8 +1266,8 @@ void ActionPrimitives::run()
         if ((t-latchTimerReachLog)>ACTIONPRIM_DUMP_PERIOD)
         {
             printMessage("reaching... xdhat=[%s] |e|=%.3f [m]; odhat=[%s] |e|=%.3f\n",
-                         toCompactString(xdhat).c_str(),norm(xdhat-x),
-                         toCompactString(odhat).c_str(),norm(odhat-o));
+                         xdhat.toString(3,3).c_str(),norm(xdhat-x),
+                         odhat.toString(3,3).c_str(),norm(odhat-o));
 
             latchTimerReachLog=t;
         }
@@ -1407,9 +1432,9 @@ bool ActionPrimitives::cmdArm(const Action &action)
                 return false;
             }
             
-            printMessage("reach at %g [s] for [%s], [%s]\n",
-                         t,toCompactString(x).c_str(),
-                         toCompactString(o).c_str());
+            printMessage("reach at %g [s] for [%s], [%s]\n",t,
+                         x.toString(3,3).c_str(),
+                         o.toString(3,3).c_str());
         }
         else
         {
@@ -1419,8 +1444,8 @@ bool ActionPrimitives::cmdArm(const Action &action)
                 return false;
             }
 
-            printMessage("reach at %g [s] for [%s]\n",
-                         t,toCompactString(x).c_str());
+            printMessage("reach at %g [s] for [%s]\n",t,
+                         x.toString(3,3).c_str());
         }
 
         postReachCallback();
@@ -1486,8 +1511,8 @@ bool ActionPrimitives::cmdHand(const Action &action)
         handSeqTerminator=action.handSeqTerminator;
         fingersInPosition=true;
         printMessage("\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)\n",
-                     tag.c_str(),toCompactString(poss).c_str(),
-                     toCompactString(thres).c_str(),tmo);
+                     tag.c_str(),poss.toString(3,3).c_str(),
+                     thres.toString(3,3).c_str(),tmo);
 
         latchTimerHand=Time::now();
 
@@ -1864,7 +1889,7 @@ bool ActionPrimitives::enableArmWaving(const Vector &restPos)
     {
         RES_WAVER(armWaver)->setRestPosition(restPos);
         printMessage("setting waving position to %s\n",
-                     toCompactString(restPos).c_str());
+                     restPos.toString(3,3).c_str());
 
         if (RES_WAVER(armWaver)->enable())
             printMessage("arm waving enabled\n");
@@ -2060,7 +2085,7 @@ void liftAndGraspCallback::exec()
         Vector x,o;
         action->cartCtrl->getPose(x,o);
         action->printMessage("logged 3-d pos: [%s]\n",
-                             action->toCompactString(x).c_str());
+                             x.toString(3,3).c_str());
     
         action->pushAction(x+action->grasp_d2,action->grasp_o);
     }
@@ -2155,7 +2180,7 @@ void ActionPrimitivesLayer2::run()
         cartCtrl->stopControl();
 
         printMessage("contact detected on arm: external force [%s], (%g>%g) => stopping arm\n",
-                     toCompactString(forceExternal).c_str(),forceExternalAbs,ext_force_thres);
+                     forceExternal.toString(3,3).c_str(),forceExternalAbs,ext_force_thres);
 
         disableTorsoDof();
 

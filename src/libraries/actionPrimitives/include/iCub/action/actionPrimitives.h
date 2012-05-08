@@ -168,6 +168,12 @@ struct ActionPrimitivesWayPoint
     double granularity;
 
     /**
+     * Action callback that is executed when the waypoint is 
+     * reached. 
+     */
+    ActionPrimitivesCallback *callback;
+
+    /**
     * Default Constructor. 
     */
     ActionPrimitivesWayPoint();
@@ -243,6 +249,8 @@ protected:
     std::set<int>          fingersMovingJntsSet;
     std::multimap<int,int> fingers2JntsMap;
 
+    friend class ArmWayPoints;
+
     struct HandWayPoint
     {
         std::string       tag;
@@ -284,7 +292,6 @@ protected:
     } actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
 
-    virtual std::string toCompactString(const yarp::sig::Vector &v);
     virtual int  printMessage(const char *format, ...);
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
                                 const int j);
