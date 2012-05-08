@@ -71,14 +71,14 @@ namespace action
 /************************************************************************/
 class ArmWayPoints : public RateThread
 {
+    deque<ActionPrimitivesWayPoint> wayPoints;
     ActionPrimitives  *action;
     ICartesianControl *cartCtrl;
-    deque<ActionPrimitivesWayPoint> wayPoints;
     double default_exec_time;
-    double t0;
     bool firstRun;
-    size_t i;
+    double t0;
     Vector x0;
+    size_t i;
 
     /************************************************************************/
     double checkTime(const double time) const
