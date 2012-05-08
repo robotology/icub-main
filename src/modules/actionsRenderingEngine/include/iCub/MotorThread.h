@@ -163,6 +163,7 @@ private:
     Vector                              pushAboveRelief;
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
+    double                              reachingTimeout;
 
     Vector                              homePos[2];
     Vector                              homeOrient[2];

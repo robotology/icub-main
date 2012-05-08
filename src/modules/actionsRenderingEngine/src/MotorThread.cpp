@@ -1102,7 +1102,7 @@ bool MotorThread::threadInit()
 
     option.put("local",name.c_str());
 
-    double reachingTimeout=2.0*option.check("default_exec_time",Value("3.0")).asDouble();
+    reachingTimeout=2.0*option.check("default_exec_time",Value("3.0")).asDouble();
 
     string arm_name[]={"left_arm","right_arm"};
 
@@ -1537,20 +1537,24 @@ bool MotorThread::reach(Bottle &options)
         tmpDisp=reachAboveDisp;
     }
 
-    action[arm]->pushAction(xd+tmpDisp,tmpOrient);
-
     action[arm]->enableContactDetection();
 
-    action[arm]->pushAction(xd,tmpOrient);
-
-
+    ActionPrimitivesWayPoint wp;
+    wp.x=xd+tmpDisp; wp.o=tmpOrient; wp.oEnabled=true;
+    deque<ActionPrimitivesWayPoint> wpList;
+    wpList.push_back(wp);
+    wp.x=xd;
+    wpList.push_back(wp);
+    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
+    action[arm]->pushAction(wpList);
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-
     action[arm]->checkContact(f); 
-
     action[arm]->disableContactDetection();
+
+    action[arm]->enableReachingTimeout(reachingTimeout);
+
     if(f)
     {
         Vector x,o;
