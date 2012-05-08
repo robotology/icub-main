@@ -169,7 +169,6 @@ void ServerCartesianController::init()
     motionDone   =true;    
 
     connectCnt=0;
-    stampSelector=0;
     ctrlPose=IKINCTRL_POSE_FULL;
     maxPartJoints=0;
     targetTol=CARTCTRL_DEFAULT_TOL;
@@ -592,7 +591,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 Vector x,o;
                                 Stamp stamp;
 
-                                if (getPoseStamp(axis,x,o,stamp))
+                                if (getPose(axis,x,o,&stamp))
                                 {
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &posePart=reply.addList();
@@ -1787,7 +1786,7 @@ bool ServerCartesianController::getTrackingMode(bool *f)
 
 
 /************************************************************************/
-bool ServerCartesianController::getPose(Vector &x, Vector &o)
+bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (attached)
     {
@@ -1802,6 +1801,9 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
     
         for (size_t i=0; i<o.length(); i++)
             o[i]=pose[x.length()+i];
+
+        if (stamp!=NULL)
+            *stamp=txInfo;
     
         mutex.post();
         return true;
@@ -1812,16 +1814,8 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ServerCartesianController::getPose(const int axis, Vector &x, Vector &o)
-{
-    Stamp stamp;
-    return getPoseStamp(axis,x,o,stamp);
-}
-
-
-/************************************************************************/
-bool ServerCartesianController::getPoseStamp(const int axis, Vector &x,
-                                             Vector &o, Stamp &stamp)
+bool ServerCartesianController::getPose(const int axis, Vector &x,
+                                        Vector &o, Stamp *stamp)
 {
     if (attached)
     {
@@ -1837,8 +1831,11 @@ bool ServerCartesianController::getPoseStamp(const int axis, Vector &x,
                 x[i]=H(i,3);
     
             o=dcm2axis(H);
+
             poseInfo.update(txInfo.getTime());
-            stamp=poseInfo;
+            if (stamp!=NULL)
+                *stamp=poseInfo;
+
             ret=true;
         }
 
@@ -2667,35 +2664,6 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
     }
     else
         return false;
-}
-
-
-/************************************************************************/
-bool ServerCartesianController::setStampSelector(const int selector)
-{
-    if (connected)
-    {
-        stampSelector=std::min(1,std::max(0,selector));
-        return true;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-Stamp ServerCartesianController::getLastInputStamp()
-{
-    Stamp stamp;
-    mutex.wait();
-
-    if (stampSelector==0)
-        stamp=txInfo;
-    else if (stampSelector==1)
-        stamp=poseInfo;
-
-    mutex.post();
-    return stamp;
 }
 
 

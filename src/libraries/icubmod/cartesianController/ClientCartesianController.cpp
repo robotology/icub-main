@@ -63,7 +63,6 @@ void ClientCartesianController::init()
 
     timeout=CARTCTRL_DEFAULT_TMO;
     lastPoseMsgArrivalTime=0.0;
-    stampSelector=0;
 
     pose.resize(7,0.0);
 }
@@ -214,7 +213,7 @@ bool ClientCartesianController::getTrackingMode(bool *f)
 
 
 /************************************************************************/
-bool ClientCartesianController::getPose(Vector &x, Vector &o)
+bool ClientCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (!connected)
         return false;
@@ -226,9 +225,9 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
     {
         pose=*v;
         lastPoseMsgArrivalTime=now;
-        mutex.wait();
-        portState.getEnvelope(rxInfo);
-        mutex.post();
+
+        if (stamp!=NULL)
+            portState.getEnvelope(*stamp);
     }
 
     x.resize(3);
@@ -245,7 +244,8 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
+bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
+                                        Stamp *stamp)
 {
     if (!connected)
         return false;
@@ -275,16 +275,14 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o)
             for (size_t i=0; i<o.length(); i++)
                 o[i]=posePart->get(x.length()+i).asDouble();
 
-            if (reply.size()>2)
+            if ((reply.size()>2) && (stamp!=NULL))
             {
                 if (Bottle *stampPart=reply.get(2).asList())
                 {
-                    Stamp stamp(stampPart->get(0).asInt(),
-                                stampPart->get(1).asDouble());
+                    Stamp tmpStamp(stampPart->get(0).asInt(),
+                                   stampPart->get(1).asDouble());
 
-                    mutex.wait();
-                    poseInfo=stamp;
-                    mutex.post();
+                    *stamp=tmpStamp;
                 }
             }
 
@@ -1149,35 +1147,6 @@ bool ClientCartesianController::deleteContexts()
     contextIdList.clear();
 
     return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
-}
-
-
-/************************************************************************/
-bool ClientCartesianController::setStampSelector(const int selector)
-{
-    if (connected)
-    {
-        stampSelector=std::min(1,std::max(0,selector));
-        return true;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-Stamp ClientCartesianController::getLastInputStamp()
-{
-    Stamp stamp;
-    mutex.wait();
-
-    if (stampSelector==0)
-        stamp=rxInfo;
-    else if (stampSelector==1)
-        stamp=poseInfo;
-
-    mutex.post();
-    return stamp;
 }
 
 

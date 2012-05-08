@@ -41,8 +41,6 @@
 #define __CLIENTGAZECONTROLLER_H__
 
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
@@ -53,7 +51,6 @@
 
 
 class ClientGazeController : public yarp::dev::DeviceDriver,
-                             public yarp::dev::IPreciselyTimed,
                              public yarp::dev::IGazeControl
 {
 protected:
@@ -63,18 +60,9 @@ protected:
     double timeout;
     double lastFpMsgArrivalTime;
     double lastAngMsgArrivalTime;
-    int    stampSelector;
 
-    yarp::sig::Vector   fixationPoint;
-    yarp::os::Stamp     rxInfo_fp;
-    yarp::os::Semaphore mutex_fp;
-
-    yarp::sig::Vector   angles;
-    yarp::os::Stamp     rxInfo_ang;
-    yarp::os::Semaphore mutex_ang;
-
-    yarp::os::Stamp     rxInfo_pose;
-    yarp::os::Semaphore mutex_pose;
+    yarp::sig::Vector fixationPoint;
+    yarp::sig::Vector angles;
 
     yarp::os::BufferedPort<yarp::sig::Vector> portStateFp;
     yarp::os::BufferedPort<yarp::sig::Vector> portStateAng;
@@ -91,7 +79,7 @@ protected:
 
     void init();
     bool deleteContexts();
-    bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool getPose(const std::string &poseSel, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool blockNeckJoint(const std::string &joint, const double min, const double max);
     bool blockNeckJoint(const std::string &joint, const int j);
     bool getNeckJointRange(const std::string &joint, double *min, double *max);
@@ -106,8 +94,8 @@ public:
 
     bool setTrackingMode(const bool f);
     bool getTrackingMode(bool *f);
-    bool getFixationPoint(yarp::sig::Vector &fp);
-    bool getAngles(yarp::sig::Vector &ang);
+    bool getFixationPoint(yarp::sig::Vector &fp, yarp::os::Stamp *stamp=NULL);
+    bool getAngles(yarp::sig::Vector &ang, yarp::os::Stamp *stamp=NULL);
     bool lookAtFixationPoint(const yarp::sig::Vector &fp);
     bool lookAtAbsAngles(const yarp::sig::Vector &ang);
     bool lookAtRelAngles(const yarp::sig::Vector &ang);
@@ -120,9 +108,9 @@ public:
     bool getOCRGain(double *gain);
     bool getSaccadesStatus(bool *f);
     bool getSaccadesInhibitionPeriod(double *period);
-    bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
+    bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
+    bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool get2DPixel(const int camSel, const yarp::sig::Vector &x, yarp::sig::Vector &px);
     bool get3DPoint(const int camSel, const yarp::sig::Vector &px, const double z, yarp::sig::Vector &x);    
     bool get3DPointOnPlane(const int camSel, const yarp::sig::Vector &px, const yarp::sig::Vector &plane, yarp::sig::Vector &x);
@@ -161,9 +149,6 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
-    bool setStampSelector(const int selector);
-
-    yarp::os::Stamp getLastInputStamp();
 
     virtual ~ClientGazeController();
 };

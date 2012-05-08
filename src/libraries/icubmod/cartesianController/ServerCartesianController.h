@@ -105,7 +105,6 @@ public:
 class ServerCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::IMultipleWrapper,
                                   public    yarp::dev::ICartesianControl,
-                                  public    yarp::dev::IPreciselyTimed,
                                   public    yarp::os::RateThread,
                                   protected iCub::iKin::CartesianHelper
 {
@@ -149,7 +148,6 @@ protected:
     double       trajTime;
     int          taskRefVelPeriodFactor;
     int          taskRefVelPeriodCnt;
-    int          stampSelector;
 
     double       txToken;
     double       rxToken;
@@ -203,7 +201,6 @@ protected:
     void   newController();
     bool   getNewTarget();
     void   sendVelocity(const yarp::sig::Vector &v);
-    bool   getPoseStamp(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp &stamp);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
 
@@ -234,8 +231,8 @@ public:
 
     bool setTrackingMode(const bool f);
     bool getTrackingMode(bool *f);
-    bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
+    bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
     bool goToPosition(const yarp::sig::Vector &xd, const double t=0.0);
     bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
@@ -269,9 +266,6 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
-    bool setStampSelector(const int selector);
-
-    yarp::os::Stamp getLastInputStamp();
 
     virtual ~ServerCartesianController();
 };

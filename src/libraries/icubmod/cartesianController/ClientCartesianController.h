@@ -41,11 +41,9 @@
 #define __CLIENTCARTESIANCONTROLLER_H__
 
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/CartesianControl.h>
 
 #include <iCub/iKin/iKinHlp.h>
@@ -54,7 +52,6 @@
 
 
 class ClientCartesianController : public    yarp::dev::DeviceDriver,
-                                  public    yarp::dev::IPreciselyTimed,
                                   public    yarp::dev::ICartesianControl,
                                   protected iCub::iKin::CartesianHelper
 {
@@ -64,12 +61,8 @@ protected:
 
     double timeout;
     double lastPoseMsgArrivalTime;
-    int    stampSelector;
 
-    yarp::sig::Vector   pose;
-    yarp::os::Stamp     rxInfo;
-    yarp::os::Stamp     poseInfo;
-    yarp::os::Semaphore mutex;
+    yarp::sig::Vector pose;
 
     yarp::os::BufferedPort<yarp::sig::Vector> portState;
     yarp::os::Port                            portCmd;
@@ -89,8 +82,8 @@ public:
 
     bool setTrackingMode(const bool f);
     bool getTrackingMode(bool *f);
-    bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o);
-    bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
+    bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
     bool goToPosition(const yarp::sig::Vector &xd, const double t=0.0);
     bool goToPoseSync(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);
@@ -124,9 +117,6 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
-    bool setStampSelector(const int selector);
-
-    yarp::os::Stamp getLastInputStamp();
 
     virtual ~ClientCartesianController();
 };

@@ -60,7 +60,6 @@ void ClientGazeController::init()
     connected=false;
     closed=false;
 
-    stampSelector=0;
     timeout=GAZECTRL_DEFAULT_TMO;
     lastFpMsgArrivalTime=0.0;
     lastAngMsgArrivalTime=0.0;
@@ -193,7 +192,7 @@ bool ClientGazeController::getTrackingMode(bool *f)
 
 
 /************************************************************************/
-bool ClientGazeController::getFixationPoint(Vector &fp)
+bool ClientGazeController::getFixationPoint(Vector &fp, Stamp *stamp)
 {
     if (!connected)
         return false;
@@ -203,9 +202,9 @@ bool ClientGazeController::getFixationPoint(Vector &fp)
     {
         fixationPoint=*v;
         lastFpMsgArrivalTime=now;
-        mutex_fp.wait();
-        portStateFp.getEnvelope(rxInfo_fp);
-        mutex_fp.post();
+
+        if (stamp!=NULL)
+            portStateFp.getEnvelope(*stamp);
     }
 
     fp=fixationPoint;
@@ -215,7 +214,7 @@ bool ClientGazeController::getFixationPoint(Vector &fp)
 
 
 /************************************************************************/
-bool ClientGazeController::getAngles(Vector &ang)
+bool ClientGazeController::getAngles(Vector &ang, Stamp *stamp)
 {
     if (!connected)
         return false;
@@ -225,9 +224,9 @@ bool ClientGazeController::getAngles(Vector &ang)
     {
         angles=*v;
         lastAngMsgArrivalTime=now;
-        mutex_ang.wait();
-        portStateAng.getEnvelope(rxInfo_ang);
-        mutex_ang.post();
+
+        if (stamp!=NULL)
+            portStateAng.getEnvelope(*stamp);
     }
 
     ang=angles;
@@ -498,7 +497,8 @@ bool ClientGazeController::getSaccadesInhibitionPeriod(double *period)
 
 
 /************************************************************************/
-bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
+bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
+                                   Stamp *stamp)
 {
     if (!connected)
         return false;
@@ -530,16 +530,14 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
                 for (size_t i=0; i<o.length(); i++)
                     o[i]=bPose->get(x.length()+i).asDouble();
         
-                if (reply.size()>2)
+                if ((reply.size()>2) && (stamp!=NULL))
                 {
                     if (Bottle *bStamp=reply.get(2).asList())
                     {
-                        Stamp stamp(bStamp->get(0).asInt(),
-                                    bStamp->get(1).asDouble());
+                        Stamp tmpStamp(bStamp->get(0).asInt(),
+                                       bStamp->get(1).asDouble());
 
-                        mutex_pose.wait();
-                        rxInfo_pose=stamp;
-                        mutex_pose.post();
+                        *stamp=tmpStamp;
                     }
                 }
 
@@ -553,23 +551,23 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o)
 
 
 /************************************************************************/
-bool ClientGazeController::getLeftEyePose(Vector &x, Vector &o)
+bool ClientGazeController::getLeftEyePose(Vector &x, Vector &o, Stamp *stamp)
 {
-    return getPose("left",x,o);
+    return getPose("left",x,o,stamp);
 }
 
 
 /************************************************************************/
-bool ClientGazeController::getRightEyePose(Vector &x, Vector &o)
+bool ClientGazeController::getRightEyePose(Vector &x, Vector &o, Stamp *stamp)
 {
-    return getPose("right",x,o);
+    return getPose("right",x,o,stamp);
 }
 
 
 /************************************************************************/
-bool ClientGazeController::getHeadPose(Vector &x, Vector &o)
+bool ClientGazeController::getHeadPose(Vector &x, Vector &o, Stamp *stamp)
 {
-    return getPose("head",x,o);
+    return getPose("head",x,o,stamp);
 }
 
 
@@ -1429,46 +1427,6 @@ bool ClientGazeController::deleteContexts()
     contextIdList.clear();
 
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
-}
-
-
-/************************************************************************/
-bool ClientGazeController::setStampSelector(const int selector)
-{
-    if (connected)
-    {
-        stampSelector=std::min(2,std::max(0,selector));
-        return true;
-    }
-    else
-        return false;
-}
-
-
-/************************************************************************/
-Stamp ClientGazeController::getLastInputStamp()
-{
-    Stamp stamp;
-    if (stampSelector==0)
-    {
-        mutex_fp.wait();
-        stamp=rxInfo_fp;
-        mutex_fp.post();
-    }
-    else if (stampSelector==1)
-    {
-        mutex_ang.wait();
-        stamp=rxInfo_ang;
-        mutex_ang.post();
-    }
-    else if (stampSelector==2)
-    {
-        mutex_pose.wait();
-        stamp=rxInfo_pose;
-        mutex_pose.post();
-    }
-
-    return stamp;
 }
 
 
