@@ -131,35 +131,38 @@ public:
 struct ActionPrimitivesWayPoint
 {
     /**
-     * the 3x1 Vector specifyng the position of the waypoint [m].
+     * The 3x1 Vector specifyng the position of the waypoint [m]. 
      */
     yarp::sig::Vector x;
 
     /**
-     * the 4x1 Vector specifying the orientation of the waypoint in 
+     * The 4x1 Vector specifying the orientation of the waypoint in 
      * axis-angle representation. 
      */
     yarp::sig::Vector o;
 
     /**
-     * if this flag is set to true then orientation will be taken 
-     * into account. 
+     * If this flag is set to true then orientation will be taken 
+     * into account.
      */
     bool oEnabled;
 
     /**
-     * the time duration [s] to achieve the waypoint.
+     * The time duration [s] to achieve the waypoint. Non-positive 
+     * values indicate that a duration equal to default one will be 
+     * employed. \n 
      */
     double duration;
 
     /**
-     * the arm execution time [s] accounting for the controller's 
-     * responsivity. 
+     * The arm execution time [s] accounting for the controller's 
+     * responsivity. Non-positive values indicate that the default 
+     * time will be employed.
      */
     double trajTime;
 
     /**
-     * the time granularity [s] used by the trajectory generator 
+     * The time granularity [s] used by the trajectory generator 
      * [s]. 
      */
     double granularity;
@@ -530,6 +533,9 @@ public:
     * space parametrized in terms of waypoints. 
     * @param wayPoints the list of waypoints that will be used to 
     *                  generate the trajectory.
+    * @note The first waypoint will act as the end-point of the path
+    *       whose stating point is the current position of robot
+    *       end-effector.
     * @param clb action callback that is executed when the action 
     *            ends; none by default. 
     * @return true/false on success/fail. 
@@ -543,6 +549,9 @@ public:
     * waypoints. 
     * @param wayPoints the list of waypoints that will be used to 
     *                  generate the trajectory.
+    * @note The first waypoint will act as the end-point of the path
+    *       whose stating point is the current position of robot
+    *       end-effector. 
     * @param handSeqKey the hand sequence key.  
     * @param clb action callback that is executed when the action 
     *            ends; none by default. 

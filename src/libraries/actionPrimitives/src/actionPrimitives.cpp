@@ -67,7 +67,7 @@ ActionPrimitivesWayPoint::ActionPrimitivesWayPoint()
     x.resize(3,0.0);
     o.resize(4,0.0);
     oEnabled=false;
-    duration=2.0;
+    duration=ACTIONPRIM_DISABLE_EXECTIME;
     trajTime=ACTIONPRIM_DISABLE_EXECTIME;
     granularity=ACTIONPRIM_DEFAULT_PER/1000.0;
 }
@@ -84,9 +84,16 @@ class ArmWayPoints : public RateThread
     double t0;
     size_t i;
 
+    /************************************************************************/
     double checkTime(const double time) const
     {
         return std::max(time,0.01);
+    }
+
+    /************************************************************************/
+    double checkDefaultTime(const double time) const
+    {
+        return (time>0.0?time:default_exec_time);
     }
 
 public:
@@ -128,13 +135,12 @@ public:
     void run()
     {
         double t=Time::now()-t0;
-        double r=t/checkTime(wayPoints[i].duration);
+        double r=t/checkTime(checkDefaultTime(wayPoints[i].duration));
         if (r<1.0)
         {
+            const double trajTime=checkDefaultTime(wayPoints[i].trajTime);
             Vector x=x0+r*(x1-x0);
             Vector o=o0+r*(o1-o0);
-            const double trajTime=wayPoints[i].trajTime>0.0 ?
-                                  wayPoints[i].trajTime : default_exec_time;
 
             if (wayPoints[i].oEnabled)
                 cartCtrl->goToPose(x,o,trajTime);
