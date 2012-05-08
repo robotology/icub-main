@@ -92,6 +92,29 @@ class ArmWayPoints : public RateThread
         return (time>0.0?time:default_exec_time);
     }
 
+    /************************************************************************/
+    void printWayPoint()
+    {
+        if (wayPoints[i].oEnabled)
+            action->printMessage("reaching waypoint %d: x=[%s]; o=[%s]\n",i,
+                                 wayPoints[i].x.toString(3,3).c_str(),
+                                 wayPoints[i].o.toString(3,3).c_str());
+        else
+            action->printMessage("reaching waypoint %d: x=[%s]\n",i,
+                                 wayPoints[i].x.toString(3,3).c_str());
+    }
+
+    /************************************************************************/
+    void execCallback()
+    {
+        if (wayPoints[i].callback!=NULL)
+        {
+            action->printMessage("executing waypoint(%d)-end callback ...\n",i);
+            wayPoints[i].callback->exec();
+            action->printMessage("... waypoint(%d)-end callback executed\n",i);
+        }
+    }
+
 public:
     /************************************************************************/
     ArmWayPoints(ActionPrimitives *_action, const deque<ActionPrimitivesWayPoint> &_wayPoints) :
@@ -131,14 +154,7 @@ public:
     {
         if (firstRun)
         {
-            if (wayPoints[i].oEnabled)
-                action->printMessage("reaching waypoint %d: x=[%s]; o=[%s]\n",i,
-                                     wayPoints[i].x.toString(3,3).c_str(),
-                                     wayPoints[i].o.toString(3,3).c_str());
-            else
-                action->printMessage("reaching waypoint %d: x=[%s]\n",i,
-                                     wayPoints[i].x.toString(3,3).c_str());
-            
+            printWayPoint();
             firstRun=false;
             t0=Time::now();
         }
@@ -157,36 +173,17 @@ public:
         }
         else if (i+1<wayPoints.size())
         {
-            if (wayPoints[i].callback!=NULL)
-            {
-                action->printMessage("executing waypoint(%d)-end callback ...\n",i);
-                wayPoints[i].callback->exec();
-                action->printMessage("... waypoint(%d)-end callback executed\n",i);
-            }
-
+            execCallback();
             x0=wayPoints[i].x;
 
             i++;
-            if (wayPoints[i].oEnabled)
-                action->printMessage("reaching waypoint %d: x=[%s]; o=[%s]\n",i,
-                                     wayPoints[i].x.toString(3,3).c_str(),
-                                     wayPoints[i].o.toString(3,3).c_str());
-            else
-                action->printMessage("reaching waypoint %d: x=[%s]\n",i,
-                                     wayPoints[i].x.toString(3,3).c_str());
-
+            printWayPoint();
             setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
             t0=Time::now();
         }
         else
         {
-            if (wayPoints[i].callback!=NULL)
-            {
-                action->printMessage("executing waypoint(%d)-end callback ...\n",i);
-                wayPoints[i].callback->exec();
-                action->printMessage("... waypoint(%d)-end callback executed\n",i);
-            }
-
+            execCallback();
             askToStop();
         }
     }
