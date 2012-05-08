@@ -138,9 +138,9 @@ public:
             else
                 action->printMessage("reaching waypoint %d: x=[%s]\n",i,
                                      wayPoints[i].x.toString(3,3).c_str());
-
-            t0=Time::now();
+            
             firstRun=false;
+            t0=Time::now();
         }
 
         double t=Time::now()-t0;
