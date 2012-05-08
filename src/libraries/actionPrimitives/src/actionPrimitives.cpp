@@ -843,7 +843,7 @@ bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
         {
             deque<HandWayPoint> &q=itr->second;
             if (q.size()>0)
-            {   
+            {
                 Vector vectDummy(1);
 
                 // combined action
@@ -989,6 +989,65 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
         mutex.post();
 
         return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoints,
+                                  const string &handSeqKey, ActionPrimitivesCallback *clb)
+{
+    if (configured && !locked)
+    {
+        mutex.wait();
+        map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
+        if (itr!=handSeqMap.end())
+        {
+            deque<HandWayPoint> &q=itr->second;
+            if (q.size()>0)
+            {
+                // combined action                
+                Action action;
+
+                action.waitState=false;
+                action.execArm=false;
+                action.execHand=true;
+                action.handWP=q[0];
+                action.handSeqTerminator=(q.size()==1);
+                action.execWayPoints=true;
+                action.wayPointsThr=new ArmWayPoints(cartCtrl,wayPoints);
+                action.clb=(q.size()==1?clb:NULL);
+
+                actionsQueue.push_back(action);                
+
+                if (q.size()>1)
+                {
+                    Vector vectDummy(1);
+                    size_t i;
+
+                    // decompose hand action in sum of fingers sequences
+                    for (i=1; i<q.size()-1; i++)
+                        _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],false,NULL);
+    
+                    // reserve the callback whenever the last hand WP is achieved
+                    if (i<q.size())
+                        _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],true,clb);
+                }
+            }
+
+            mutex.post();
+            return true;
+        }
+        else
+        {
+            printMessage("WARNING: \"%s\" hand sequence key not found\n",
+                         handSeqKey.c_str());    
+
+            mutex.post();
+            return false;
+        }
     }
     else
         return false;

@@ -538,14 +538,27 @@ public:
                             ActionPrimitivesCallback *clb=NULL);
 
     /**
+    * Insert in the actions queue a combination of hand and arm 
+    * trajectory in the operational space parametrized in terms of 
+    * waypoints. 
+    * @param wayPoints the list of waypoints that will be used to 
+    *                  generate the trajectory.
+    * @param handSeqKey the hand sequence key.  
+    * @param clb action callback that is executed when the action 
+    *            ends; none by default. 
+    * @return true/false on success/fail. 
+    */
+    virtual bool pushAction(const std::deque<ActionPrimitivesWayPoint> &wayPoints,
+                            const std::string &handSeqKey, ActionPrimitivesCallback *clb=NULL);
+
+    /**
     * Insert a wait state in the actions queue.
     * @param tmo is the wait timeout [s]. 
     * @param clb callback that is executed when the timeout expires;
     *            none by default.
     * @return true/false on success/fail. 
     */
-    virtual bool pushWaitState(const double tmo,
-                               ActionPrimitivesCallback *clb=NULL);
+    virtual bool pushWaitState(const double tmo, ActionPrimitivesCallback *clb=NULL);
 
     /**
     * Immediately update the current reaching target (without 
