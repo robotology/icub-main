@@ -15,8 +15,8 @@ using namespace std;
 #include "stdint.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include "string.h"
 
+#include "string.h"
 #include "hostTransceiver.hpp"
 #include <yarp/os/impl/Logger.h>
 
@@ -25,8 +25,8 @@ extern "C" {
 #include "EOnv_hid.h"
 
 // the endpoints on that particular ems
-#include "eOcfg_EPs_rem_board.h"
 }
+#include "eOcfg_EPs_eb7.h"
 
 // mutex
 #include <pthread.h>
@@ -57,7 +57,7 @@ using namespace yarp::os::impl;
 
 hostTransceiver::hostTransceiver()
 {
-
+	YARP_INFO(Logger::get(), "hostTransceiver::hostTransceiver()", Logger::get().log_files.f3);
 }
 
 hostTransceiver::~hostTransceiver()
@@ -72,8 +72,8 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     // the configuration of the transceiver: it is specific of a given remote board
     eOhosttransceiver_cfg_t hosttxrxcfg = 
     {
-        EO_INIT(.vectorof_endpoint_cfg) 	eo_cfg_EPs_vectorof_rem_board,
-        EO_INIT(.hashfunction_ep2index)		eo_cfg_nvsEP_rem_board_fptr_hashfunction_ep2index,
+        EO_INIT(.vectorof_endpoint_cfg) 	eo_cfg_EPs_vectorof_eb7,
+        EO_INIT(.hashfunction_ep2index)		eo_cfg_nvsEP_eb7_fptr_hashfunction_ep2index,
         EO_INIT(remoteboardipv4addr)    	_remoteipaddr,
         EO_INIT(.remoteboardipv4port)   	_ipport,
         EO_INIT(.tobedefined)           	0
@@ -111,6 +111,7 @@ void hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
 
 void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regular_rops_on_board(void)
 {
+#if 0
     EOarray *upto10 = (EOarray*) & eo_cfg_nvsEP_mngmnt_usr_rem_board_mem_local->upto10rop2signal;
     eOropSIGcfg_t sigcfg;
     char str[128];
@@ -175,8 +176,8 @@ void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regul
         printf("added a set<__upto10rop2signal, list>");
     }
 
-
     reset = (0==reset) ? (1) : (0);
+#endif
 }
 
 // vecchio //
@@ -190,7 +191,7 @@ void hostTransceiver::hostTransceiver_ConfigureRegularsOnRemote(void)
     //       pair (endpoint, id) which we wnat to manipulate, and then to use the methods of EOnv to set the value of that variable.
     //       we shall use this mode in function hostTransceiver_AddSetROP()
     
-    EOarray *upto15 = (EOarray*) & eo_cfg_nvsEP_mngmnt_usr_rem_board_mem_local->upto10rop2signal;
+//    EOarray *upto15 = (EOarray*) & eo_cfg_nvsEP_mngmnt_usr_rem_board_mem_local->upto10rop2signal;
 #warning "cambiato?? per compilare scommentato definizione eOnvEPID_t in EOnv.h"
 //    eOnvEPID_t epid;
 
@@ -326,15 +327,15 @@ void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint1
 	// eo mutex
 	//eOresult_t res = eov_mutex_Take(nv->mtx, eok_reltimeINFINITE);
 
-	pthread_mutex_t mutex;
-	pthread_mutex_init(&mutex, NULL);
-	nv->mtx = &mutex;
-	pthread_mutex_lock(&mutex);
-	pthread_mutex_lock(&mutex);
+	//pthread_mutex_t mutex;
+	//pthread_mutex_init(&mutex, NULL);
+	//nv->mtx = &mutex;
+	//pthread_mutex_lock(&mutex);
+	//pthread_mutex_lock(&mutex);
 
 
 	// now, get the value
-	getNVvalue(nv, data, size);
+	//getNVvalue(nv, data, size);
 }
 
 EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
@@ -344,6 +345,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 	uint8_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
 	EOtreenode	*nvTreenodeRoot;
 	EOnv 		*nvRoot;
+	EOnv		tmp;
     eOresult_t res;
 
     // convetire come parametro, oppure mettere direttam l'indirizzo ip come parametro...
@@ -367,7 +369,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 
 		// più diretta e restituisce solo il puntatore che è ciò che mi serve qui, ma non ho accesso a nvsCfg_allnvs
 		//nvRoot = eo_matrix3d_At(pc104nvscfg->allnvs, ondevindex, onendpointindex, onidindex);
-		nvRoot = eo_nvscfg_GetNVhandler(this->pc104nvscfg, ondevindex, onendpointindex, onidindex, nvTreenodeRoot);
+		nvRoot = eo_nvscfg_GetNV(this->pc104nvscfg, ondevindex, onendpointindex, onidindex, nvTreenodeRoot, &tmp);
 
 		//getNVvalue(nvRoot, data, size);
 	}
