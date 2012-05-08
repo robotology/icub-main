@@ -159,9 +159,9 @@ public:
         {
             if (wayPoints[i].callback!=NULL)
             {
-                action->printMessage("executing action-end waypoint %d callback ...\n",i);
+                action->printMessage("executing waypoint(%d)-end callback ...\n",i);
                 wayPoints[i].callback->exec();
-                action->printMessage("... action-end waypoint %d callback executed\n",i);
+                action->printMessage("... waypoint(%d)-end callback executed\n",i);
             }
 
             x0=wayPoints[i].x;
