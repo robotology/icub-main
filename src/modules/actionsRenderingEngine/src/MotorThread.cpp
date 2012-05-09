@@ -2014,24 +2014,6 @@ bool MotorThread::calibTable(Bottle &options)
 
     arm=checkArm(arm);
 
-    ICartesianControl *ctrl;
-
-
-    action[arm]->getCartesianIF(ctrl);
-
-    Vector currDOF;
-    ctrl->getDOF(currDOF);
-
-    fprintf(stdout,"\n\ncurr DOF: %s\n",currDOF.toString().c_str());
-
-
-
-    double min,max;
-    ctrl->getLimits(2,&min,&max);
-
-    fprintf(stdout,"limits: [%f %f]\n",min,max);
-
-
     Vector deployZone=deployPos[arm];
     deployZone=deployZone+randomDeployOffset();
 
@@ -2052,23 +2034,22 @@ bool MotorThread::calibTable(Bottle &options)
 
     action[arm]->enableTorsoDof();
 
-    action[arm]->pushAction(deployPrepare,reachAboveCata[arm]);
-    action[arm]->checkActionsDone(f,true);
-
-
-    Vector test,o;
-    action[arm]->getPose(test,o);
-    fprintf(stdout,"\n\nReach Above Cata: %s\n",reachAboveCata[arm].toString().c_str());
-    fprintf(stdout,"Actual orient: %s\n\n",o.toString().c_str());
-
-
     action[arm]->enableContactDetection();
-    action[arm]->pushWaitState(1.0);
 
-    action[arm]->pushAction(deployEnd,reachAboveCata[arm],3.0);
+    ActionPrimitivesWayPoint wp;
+    wp.x=deployPrepare; wp.o=reachAboveCata[arm]; wp.oEnabled=true;
+    deque<ActionPrimitivesWayPoint> wpList;
+    wpList.push_back(wp);
+    wp.x=deployEnd; wp.duration=3.0;
+    wpList.push_back(wp);
+    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
+    action[arm]->pushAction(wpList);
+
     action[arm]->checkActionsDone(f,true);
     action[arm]->pushWaitState(2.0);
     action[arm]->disableContactDetection();
+
+    action[arm]->enableReachingTimeout(reachingTimeout);
 
     bool found;
     action[arm]->checkContact(found);
