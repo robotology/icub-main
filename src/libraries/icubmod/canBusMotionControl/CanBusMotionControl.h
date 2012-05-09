@@ -605,8 +605,6 @@ class axisTorqueHelper
 	}
 };
 
-//#define __ICUBINTERFACE_PRECISE_TIMESTAMPS__
-
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public os::RateThread, 
             public IPidControlRaw, 
