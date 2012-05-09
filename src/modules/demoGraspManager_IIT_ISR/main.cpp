@@ -752,6 +752,20 @@ protected:
         posTorso->positionMove(homeTorso.data());
     }
 
+    void checkTorsoHome()
+    {
+        fprintf(stdout,"*** Checking torso home position... ");
+
+        bool done=false;
+        while (!done)
+        {
+            posTorso->checkMotionDone(&done);
+            Time::delay(0.1);
+        }
+
+        fprintf(stdout,"*** done\n");
+    }
+
     void steerArmToHome(const int sel=USEDARM)
     {
         IPositionControl *ipos=posArm;
@@ -781,7 +795,6 @@ protected:
             return;
 
         fprintf(stdout,"*** Homing %s\n",type.c_str());
-
         for (size_t j=0; j<homeVels.length(); j++)
         {
             ipos->setRefSpeed(j,homeVels[j]);
@@ -789,6 +802,46 @@ protected:
         }
 
         openHand(sel);
+    }
+
+    void checkArmHome(const int sel=USEDARM)
+    {
+        IPositionControl *ipos=posArm;
+        string type;
+
+        if (sel==LEFTARM)
+        {
+            if (useLeftArm)
+                drvLeftArm->view(ipos);
+            else
+                return;
+
+            type="left_arm";
+        }
+        else if (sel==RIGHTARM)
+        {
+            if (useRightArm)
+                drvRightArm->view(ipos);
+            else
+                return;
+
+            type="right_arm";
+        }
+        else if (armSel!=NOARM)
+            type=armSel==LEFTARM?"left_arm":"right_arm";
+        else
+            return;
+
+        fprintf(stdout,"*** Checking %s home position... ",type.c_str());
+
+        bool done=false;
+        while (!done)
+        {
+            ipos->checkMotionDone(&done);
+            Time::delay(0.1);
+        }
+
+        fprintf(stdout,"*** done\n");
     }
 
     void stopArmJoints(const int sel=USEDARM)
@@ -827,7 +880,6 @@ protected:
             return;
 
         fprintf(stdout,"*** Stopping %s joints\n",type.c_str());
-
         for (size_t j=0; j<homeVels.length(); j++)
         {
             double fb;
@@ -1536,6 +1588,10 @@ public:
         steerTorsoToHome();
         steerArmToHome(LEFTARM);
         steerArmToHome(RIGHTARM);
+
+        checkTorsoHome();
+        checkArmHome(LEFTARM);
+        checkArmHome(RIGHTARM);
 
         if (useLeftArm)
         {
