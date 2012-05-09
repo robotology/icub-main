@@ -2033,7 +2033,6 @@ bool MotorThread::calibTable(Bottle &options)
         action[arm]->pushAction("open_hand");
 
     action[arm]->enableTorsoDof();
-
     action[arm]->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;
@@ -2048,7 +2047,6 @@ bool MotorThread::calibTable(Bottle &options)
     action[arm]->checkActionsDone(f,true);
     action[arm]->pushWaitState(2.0);
     action[arm]->disableContactDetection();
-
     action[arm]->enableReachingTimeout(reachingTimeout);
 
     bool found;
