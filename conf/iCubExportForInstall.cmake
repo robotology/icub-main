@@ -61,9 +61,15 @@ if(include_dirs)
 endif(include_dirs)
 
 set(ICUB_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${include_dirs})
-file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\" \"${include_dirs}\" CACHE STRING \"include dir for target ${t}\")\n")
+file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\" \"${include_dirs}\" CACHE STRING \"include dir for target ${t}\")\n\n")
 
 #message(STATUS "Header files global directory: ${ICUB_INCLUDE_DIRS}")
+
+### now write to file the list of dependencies with which iCub was compiled 
+get_property(dependency_flags GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS)
+foreach (t ${dependency_flags})
+		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t} \"${${t}}\" CACHE BOOL \"dependency flag\" FORCE)\n")
+endforeach()
 
 install(EXPORT icub-targets DESTINATION lib/ICUB FILE ${EXPORT_CONFIG_FILE} COMPONENT Development)
 

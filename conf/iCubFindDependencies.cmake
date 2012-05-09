@@ -17,6 +17,10 @@ macro(checkandset_dependency package)
     if (NOT ${package}_FOUND AND ICUB_USE_${package})
         message("Warning: you requested to use the package ${package}, but it is unavailable (or was not found). This might lead to compile errors, we recommend you turn off the ICUB_USE_${package} flag.") 
     endif (NOT ${package}_FOUND AND ICUB_USE_${package})
+	
+	#store all dependency flags for later export
+	set_property(GLOBAL APPEND PROPERTY ICUB_DEPENDENCIES_FLAGS ICUB_USE_${package})
+	
 endmacro (checkandset_dependency)
 
 

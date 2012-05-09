@@ -52,6 +52,9 @@ else(YARP_HAS_MATH_LIB)
      message(FATAL_ERROR "YARP was found, but no libYARP_math was detected, please recompile yarp")
 endif(YARP_HAS_MATH_LIB) 
 
+set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
+set_property(GLOBAL PROPERTY ICUB_TARGETS) 
+set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFindDependencies.cmake
 
 ############# Options and definitions
 # Important: all these have to come before all calls to add_subdirectory()
@@ -111,8 +114,7 @@ make_directory(${EXECUTABLE_OUTPUT_PATH})
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 
-set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
-set_property(GLOBAL PROPERTY ICUB_TARGETS)
+
 
 # clean up:
 # icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-install-includes.cmake
