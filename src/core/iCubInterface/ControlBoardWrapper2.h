@@ -35,8 +35,6 @@
 #include <string>
 #include <vector>
 
-//#define __ICUBINTERFACE_PRECISE_TIMESTAMPS__
-
 //
 //#define CONTROLBOARDWRAPPER2_DEBUG
 const int DEBUG_PRINTF_BUFFER_LENGTH=255;
