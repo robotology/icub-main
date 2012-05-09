@@ -188,6 +188,14 @@ FirstOrderLowPassFilter::~FirstOrderLowPassFilter()
 }
 
 
+/***************************************************************************/
+void FirstOrderLowPassFilter::init(const Vector &y0)
+{
+    if(filter!=NULL)
+        filter->init(y0);
+}
+
+
 /**********************************************************************/
 bool FirstOrderLowPassFilter::setCutFrequency(const double cutFrequency)
 {

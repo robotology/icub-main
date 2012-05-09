@@ -215,6 +215,12 @@ public:
     ~FirstOrderLowPassFilter();
 
     /**
+    * Internal state reset. 
+    * @param y0 new internal state.
+    */ 
+    void init(const yarp::sig::Vector &y0);
+
+    /**
     * Change the cut frequency of the filter. 
     * @param cutFrequency the new cut frequency (Hz). 
     */
