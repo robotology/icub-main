@@ -98,12 +98,12 @@ void FakeBoard::run()
     reply.id=canId<<4;
     reply.id=reply.id|0x100;   //bcast
     reply.id=reply.id|CAN_BCAST_POSITION;   //position
-    reply.data[0]=static_cast<char>((100*(1-0.5*rand()/(double)RAND_MAX)+0.5));
+    reply.data[0]=canId;// static_cast<char>((100*(1-0.5*rand()/(double)RAND_MAX)+0.5));
     reply.data[1]=0;
     reply.data[2]=0;
     reply.data[3]=0;
 
-    reply.data[4]=static_cast<char>((100*(1-0.5*rand()/(double)RAND_MAX)+0.5));
+    reply.data[4]=-canId;// static_cast<char>((100*(1-0.5*rand()/(double)RAND_MAX)+0.5));
     reply.data[5]=0;
     reply.data[6]=0;
     reply.data[7]=0;
