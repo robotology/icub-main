@@ -2020,7 +2020,7 @@ bool MotorThread::calibTable(Bottle &options)
     Vector deployPrepare,deployEnd;
     deployPrepare=deployEnd=deployZone;
 
-    deployPrepare[2]=0.1;
+    deployPrepare[2]=0.0;
     deployEnd[2]=-0.25;
 
     bool f=false;
@@ -2036,7 +2036,8 @@ bool MotorThread::calibTable(Bottle &options)
     action[arm]->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;
-    wp.x=deployPrepare; wp.o=reachAboveCata[arm]; wp.oEnabled=true;
+    wp.x=deployPrepare; wp.o=reachAboveCata[arm];
+    wp.oEnabled=true; wp.duration=1.0;
     deque<ActionPrimitivesWayPoint> wpList;
     wpList.push_back(wp);
     wp.x=deployEnd; wp.duration=3.0;
@@ -2045,7 +2046,7 @@ bool MotorThread::calibTable(Bottle &options)
     action[arm]->pushAction(wpList);
 
     action[arm]->checkActionsDone(f,true);
-    action[arm]->pushWaitState(2.0);
+    action[arm]->pushWaitState(1.0);
     action[arm]->disableContactDetection();
     action[arm]->enableReachingTimeout(reachingTimeout);
 
