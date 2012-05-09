@@ -29,7 +29,7 @@ extern "C" {
 #include "eOcfg_EPs_eb7.h"
 
 // mutex
-#include <pthread.h>
+//#include <pthread.h>
 
 using namespace yarp::os::impl;
 
@@ -315,7 +315,7 @@ void hostTransceiver::s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id)
     eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
 }
 
-
+// meglio nn usare?? il meccanismo di wait con tabella fare nel embObjMotCtrl anzichè qui
 void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size)
 {
 	// add the rop to the ropframe
@@ -324,15 +324,10 @@ void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint1
 	// wait fot the packet to be sent and for the reply to reach me!!
 	EOnv	*nv = getNVhandler( endpoint,  id);
 
-	// eo mutex
-	//eOresult_t res = eov_mutex_Take(nv->mtx, eok_reltimeINFINITE);
 
 	//pthread_mutex_t mutex;
 	//pthread_mutex_init(&mutex, NULL);
-	//nv->mtx = &mutex;
 	//pthread_mutex_lock(&mutex);
-	//pthread_mutex_lock(&mutex);
-
 
 	// now, get the value
 	//getNVvalue(nv, data, size);

@@ -21,11 +21,110 @@
 
 // embObj includes
 
+// Boards configurations
+extern "C" {
+#include "EOnv_hid.h"
+#include "eOcfg_EPs_eb7.h"
+#include "EoMotionControl.h"
+}
+
 #include "embObjMotionControl.h"
+
 
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
+
+///////////////////////////////////////////////////
+//  	Helper functions
+///////////////////////////////////////////////////
+/*
+ * simple helper template to alloc memory.
+
+template <class T>
+inline T* allocAndCheck(int size)
+{
+    T* t = new T[size];
+    _YARP_ASSERT (t != 0);
+    memset(t, 0, sizeof(T) * size);
+    return t;
+}
+*/
+
+bool embObjMotionControl::alloc(int nj)
+{
+    _networkN = 0;
+    _destinations = allocAndCheck<unsigned char> (EMS_MAX_CARDS);
+    _axisMap = allocAndCheck<int>(nj);
+    _angleToEncoder = allocAndCheck<double>(nj);
+    _zeros = allocAndCheck<double>(nj);
+    _torqueSensorId= allocAndCheck<int>(nj);
+	_torqueSensorChan= allocAndCheck<int>(nj);
+	_maxTorque=allocAndCheck<double>(nj);
+	_newtonsToSensor=allocAndCheck<double>(nj);
+
+    _pids=allocAndCheck<Pid>(nj);
+	_tpids=allocAndCheck<Pid>(nj);
+/*
+	_debug_params=allocAndCheck<DebugParameters>(nj);
+	_impedance_params=allocAndCheck<ImpedanceParameters>(nj);
+	_impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
+	_estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
+*/
+    _limitsMax=allocAndCheck<double>(nj);
+    _limitsMin=allocAndCheck<double>(nj);
+    _currentLimits=allocAndCheck<double>(nj);
+    _velocityShifts=allocAndCheck<int>(EMS_MAX_CARDS);
+    _velocityTimeout=allocAndCheck<int>(EMS_MAX_CARDS);
+    memset(_limitsMin, 0, sizeof(double)*nj);
+    memset(_limitsMax, 0, sizeof(double)*nj);
+    memset(_currentLimits, 0, sizeof(double)*nj);
+    memset(_velocityShifts, 0, sizeof(int)*nj);
+    memset(_velocityTimeout, 0, sizeof(int)*nj);
+
+
+    _polling_interval = 10;
+    _timeout = 20;
+    _njoints = nj;
+
+    // followings should not be useful now
+
+    /*_my_address = 0;
+    _txQueueSize = -1; // 2047;  // max len of the buffer for the esd driver
+    _rxQueueSize = -1; //2047;
+    _txTimeout = 20;  // 20ms timeout
+    _rxTimeout = 20;
+
+    _broadcast_mask=allocAndCheck<int>(nj);
+    for(int j=0;j<nj;j++)
+    {
+        _broadcast_mask[j]=CAN_BCAST_NONE;
+    }*/
+
+    return true;
+}
+
+//generic function that check is key1 is present in input bottle and that the result has size elements
+// return true/false
+bool readAndCheckFromConfigData(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+{
+    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
+    if (tmp.isNull())
+    {
+        fprintf(stderr, "%s not found\n", key1.c_str());
+        return false;
+    }
+
+    if(tmp.size()!=size)
+    {
+        fprintf(stderr, "%s incorrect number of entries\n", key1.c_str());
+        return false;
+    }
+
+    out=tmp;
+
+    return true;
+}
 
 
 embObjMotionControl::embObjMotionControl() : 	RateThread(10),
@@ -38,8 +137,7 @@ embObjMotionControl::embObjMotionControl() : 	RateThread(10),
 				        ImplementControlMode(this),
 				        _mutex(1)
 {
-	sprintf(info, "embObjMotionControl::embObjMotionControl()");
-	YARP_INFO(Logger::get(), info, Logger::get().log_files.f3);
+	YARP_INFO(Logger::get(), "embObjMotionControl::embObjMotionControl()", Logger::get().log_files.f3);
 	transceiver = 0x00;
 	udppkt_data = 0x00;
 	udppkt_size = 0x00;
@@ -61,19 +159,26 @@ embObjMotionControl::~embObjMotionControl()
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
 	YARP_INFO(Logger::get(), "embObjMotionControl::open", Logger::get().log_files.f3);
+	// Debug info
+	memset(info, 0x00, SIZE_INFO);
+	Bottle xtmp, xtmp2;
+	ACE_TCHAR address[64];
+	xtmp = Bottle(config.findGroup("ETH"));
+	xtmp2 = xtmp.findGroup("IpAddress");
+	strcpy(address, xtmp2.get(1).asString().c_str());
+	sprintf(info, "embObjMotionControl - referred to EMS: %s", address);
+
 
 	//
 	//	CONFIGURATION
 	//
 
 	int i;
-	int _axisMap[100];
-	double _angleToEncoder[100];
-	double _zeros[100];
-    int port;
-	char address[16];
-	using namespace std;
-	Bottle xtmp, xtmp2;
+//	int _axisMap[100];
+//	double _angleToEncoder[100];
+//	double _zeros[100];
+
+
 	ACE_TCHAR tmp[126];
 	string str=config.toString().c_str();
 
@@ -85,23 +190,25 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	Bottle& general = config.findGroup("GENERAL");
 	_njoints = config.findGroup("GENERAL").check("Joints",Value(1),   "Number of degrees of freedom").asInt();
 
+	alloc(_njoints);
+
 	// leggere i valori da file
-	//Bottle xtmp;
-//	if (!validate(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints+1))
-//		return false;
+
+	if (!readAndCheckFromConfigData(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints+1))
+		return false;
 
 	for (i = 1; i < xtmp.size(); i++)
 		_axisMap[i-1] = xtmp.get(i).asInt();
 
-//	if (!validate(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints+1))
-//		return false;
+	if (!readAndCheckFromConfigData(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints+1))
+		return false;
 
-	int test = xtmp.size();
+
 	for (i = 1; i < xtmp.size(); i++)
 		_angleToEncoder[i-1] = xtmp.get(i).asDouble();
 
-//	if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", _njoints+1))
-//		return false;
+	if (!readAndCheckFromConfigData(general, xtmp, "Zeros","a list of offsets for the zero point", _njoints+1))
+		return false;
 
 	for (i = 1; i < xtmp.size(); i++)
 		_zeros[i-1] = xtmp.get(i).asDouble();
@@ -118,67 +225,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
-    //this part has been moved into the ethResources open
-#ifdef _CIAO_
-    //
-    // Get ip addresses and port from config file, in order to correctly configure the transceiver.
-    // Is it really needed here? The same thing is redone in the ethResources open, because it needs to know how to configure the
-    // real udp socket through ACE.
-    //
-	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
-	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
-	ACE_UINT16 loc_port, rem_port;
-
-    xtmp = Bottle(config.findGroup("ETH"));
-	xtmp2 = xtmp.findGroup("IpAddress");
-	strcpy(address, xtmp2.get(1).asString().c_str());
-	YARP_INFO(Logger::get(), String("IpAddress:\t") + address, Logger::get().log_files.f3);
-	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
-
-	// Get EMS CmdPort from config file
-	xtmp2 = xtmp.findGroup("CmdPort");
-	rem_port = xtmp2.get(1).asInt();
-
-	// Get PC104 ip address from config file
-	xtmp2 = config.findGroup("PC104IpAddress");
-	strcpy(address, xtmp2.get(1).asString().c_str());
-	YARP_INFO(Logger::get(), String("PC104IpAddress:\t") + address, Logger::get().log_files.f3);
-	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
-
-    //
-    //	EMBOBJ INIT
-    //
-    // Init  -- nel pc104 quale utilità hanno gli indirizzi ip utilizzati qui??
-
-   // transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, 512);
-
-	// Create an ASK rop, just for test
- //   transceiver->load_occasional_rop(eo_ropcode_ask, EOK_cfg_nvsEP_base_endpoint, EOK_cfg_nvsEP_base_NVID__applicationinfo);
-#endif
-
-    //
-    // CREATE EthResources -> EthManager OBJECTS  -> no, al contrario
-    //
- //   polyDriver.open(prop);
-//    if (!polyDriver.isValid())
-////    {
-//    	fprintf(stderr, "Warning could not instantiate eth device\n");
- //   	return false;
- //   }
-
-
-
-    //
-    // Send a dummy package to test the configuration -> non nella open, ma solo dopo che la classe ethResources
-	// ha chiamato la setTransceiver - cosa che può fare solo dopo che questa embObjMotionControl è stata creata,
-	// ergo dopo che la open è completata.
-    //
-	// Create an ASK rop, just for test		-> sì, da fare
-	//	transceiver.load_occasional_rop(eo_ropcode_ask, EOK_cfg_nvsEP_base_endpoint, EOK_cfg_nvsEP_base_NVID__applicationinfo);
-
-	//	transceiver->getTransmit(&udppkt_data, &udppkt_size);
-	//	resource->send(&udppkt_data, udppkt_size);
-	//	printf("Sent EmbObj packet, size = %d\n", udppkt_size);
 
 	return true;
 }
@@ -279,8 +325,14 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 	// Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
 	// the EMS I'm referring to.
 
-	eOmc_joint_config_t *cfg =  &eo_cfg_nvsEP_joint_usr_rem_board_mem_local->cfg;
-	copyPid2eo(pid, &cfg->pidpos);
+	EOnv tmp;
+//	EOnv = eo_nvscfg_GetNV;
+// 	using new file
+//	eo_nv_remoteSet();
+
+	// old using my test joint e.p.
+//	eOmc_joint_config_t *cfg =  &eo_cfg_nvsEP_joint_usr_rem_board_mem_local->cfg;
+//	copyPid2eo(pid, &cfg->pidposition);
 
   //  transceiver->load_occasional_rop(eo_ropcode_set, EOK_cfg_nvsEP_joint_endpoint, EOK_cfg_nvsEP_joint_NVID__cfg);
 
@@ -288,6 +340,7 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 
 	//transceiver->hostTransceiver_AddSetROP(EOK_cfg_nvsEP_base_endpoint, EOK_cfg_nvsEP_base_NVID__localise, &tmp, 1);
 //	printf("Sent EmbObj packet, size = %d\n", udppkt_size);
+
 }
 
 bool embObjMotionControl::setPidsRaw(const Pid *pids)
@@ -339,27 +392,18 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
 	YARP_INFO(Logger::get(),"embObjMotionControl::getPidRaw", Logger::get().log_files.f3);
 
-	eo_cfg_nvsEP_joint_t 		a;
+	eOmc_joint_config_t				a;
 	uint16_t						sizze;
 
-	transceiver->askNV(EOK_cfg_nvsEP_joint_endpoint, EOK_cfg_nvsEP_joint_NVID__cfg, (uint8_t *)&a, &sizze);
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(endpoint_mc_leftlowerleg, (eo_cfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
 
+	// la chiamata seguente va sostituita dalle linee successive
+//	transceiver->askNV(endpoint_mc_leftlowerleg, nvid, (uint8_t *)&a, &sizze);
 
-//	EOnv					*nv = NULL;
-//	transceiver->load_occasional_rop(eo_ropcode_ask, EOK_cfg_nvsEP_joint_endpoint, EOK_cfg_nvsEP_joint_NVID__cfg);
-	//sleep(10);
-	//_mutex.wait();
-//	nv = transceiver->getNVhandler(EOK_cfg_nvsEP_joint_endpoint, EOK_cfg_nvsEP_joint_NVID__cfg);
-//	transceiver->getNVvalue(nv, (uint8_t *)&a, &sizze);
-
-	pid->kp = 1;
-	pid->ki = 2;
-	pid->kd = 3;
-	pid->max_int = -1;
-	pid->max_output = -2;
-	pid->offset = 42;
-	pid->scale = 14;
-
+	EOnv					*nv = NULL;
+	load_occasional_rop(eo_ropcode_ask, endpoint, id);
+	//_mutex.wait();		// meccanismo di wait
+	transceiver->getNVvalue(nv, (uint8_t *)&a, &sizze);
 }
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)

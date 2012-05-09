@@ -46,7 +46,7 @@ namespace yarp{
 
 class yarp::dev::iCubDeviceInterface
 {
-private:
+public:
     static int					i;
 	char 						info[126];
 //	TheEthManager  				*theEthManager_h;
@@ -58,6 +58,8 @@ private:
 //   	PolyDriver					createProtocolHandler;
 //   	ITransceiver 				*transceiver;
 
+		PolyDriver				*motionCtrl;
+
 //   	PolyDriver					createMotionControlHandler;
 //   	embObjMotionControl			*motionCtrl;
 
@@ -65,10 +67,9 @@ private:
 //   	PolyDriver					createAnalogHandler;
 
 
-public:
 
     virtual bool open(yarp::os::Searchable &par) =0;
-    virtual void setCalibrator(ICalibrator *icalibrator) =0;
+//    virtual void setCalibrator(ICalibrator *icalibrator) =0;
     virtual void getControlCalibration(IControlCalibration2 **icalib) =0;
 };
 

@@ -49,15 +49,17 @@ using namespace std;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-// Boards configurations
-#include "eOcfg_EPs_rem_board.h"
-
+#include "EoMotionControl.h"
 #include "../embObjLib/hostTransceiver.hpp"
 
 // indirizzi ip
 #define DEFAULT_LAPTOP_IP	"10.255.37.155" // da usare col pc104
 #define DEFAULT_EMS_IP 		"127.0.0.1"		// "10.255.39.152"  ip della workstation qui dietro.
 #define DEFAULT_EMS_PORT	33333
+
+
+#define SIZE_INFO			128
+#define EMS_MAX_CARDS		1				// TO BE REMOVED
 
 namespace yarp{
     namespace dev{
@@ -67,7 +69,7 @@ namespace yarp{
 
 void copyPid2eo(Pid in, eOmc_PID_t *out);
 
-class yarp::dev::embObjMotionControl: 	public DeviceDriver,
+class yarp::dev::embObjMotionControl: 	public PolyDriver,
 							public os::RateThread,
 							public IPidControlRaw,
 							public IControlCalibration2Raw,
@@ -100,11 +102,38 @@ private:
 	// Joint/Mechanical data
 	int						_njoints;	// Number of joints handled by this EMS; this values will be extracted by the config file
 
+    int _networkN;								/** network number */
+    unsigned char *_destinations;       		/** destination addresses */
+    unsigned char _my_address;					/** my address */
+    int _polling_interval;						/** thread polling interval [ms] */
+    int _timeout;								/** number of cycles before timing out */
+
+    int *_axisMap;                              /** axis remapping lookup-table */
+    double *_angleToEncoder;                    /** angle to encoder conversion factors */
+    double *_zeros;                             /** encoder zeros */
+    Pid *_pids;                                 /** initial gains */
+	Pid *_tpids;								/** initial torque gains */
+	bool _tpidsEnabled;							/** abilitation for torque gains */
+//	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
+//	DebugParameters *_debug_params;             /** debug parameters */
+//	ImpedanceParameters *_impedance_params;		/** impedance parameters */
+//	ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+    double *_limitsMin;                         /** joint limits, max*/
+    double *_limitsMax;                         /** joint limits, min*/
+    double *_currentLimits;                     /** current limits */
+	int *_velocityShifts;                       /** velocity shifts */
+	int *_velocityTimeout;                      /** velocity shifts */
+	int *_torqueSensorId;						/** Id of associated Joint Torque Sensor */
+	int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
+	double *_maxTorque;						    /** Max torque of a joint */
+	double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
+
+
 public:
     embObjMotionControl();
     ~embObjMotionControl();
 
-    char					info[126];
+    char					info[SIZE_INFO];
 //    ethResources *resource;
 
     yarp::os::ConstString ethDevName;
@@ -117,6 +146,7 @@ public:
 
     // _AC_
     bool configureTransceiver(ITransceiver *trans);
+    bool alloc(int nj);
 
     bool __init(void);
     ///////// 	PID INTERFACE		/////////

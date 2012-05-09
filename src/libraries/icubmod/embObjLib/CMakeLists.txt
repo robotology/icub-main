@@ -10,7 +10,9 @@ PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
 
-include(embObjLib.conf)
+# temporary using demo embObjLib.conf...
+ include(embObjLib.conf)
+#include ($ENV{ICUB_ROOT}/firmware/emBODY/arch-host/demo/hostTransceiver2/src/embObjLib.conf)
 
 # Debug messages
 # message(INFO " BASE=${BASE}")
@@ -22,34 +24,96 @@ include(embObjLib.conf)
 set(BODY_COMMON_SOURCE 		${BODY_COMMON_FOLDER}/eEcommon.c)
 set(BODY_COMMON_HEADER 		${BODY_COMMON_FOLDER}/eEcommon.h)
 
-# Network Variable configuration
-set(NVS_COMMON_SOURCE 		${NVS_COMMON_FOLDER}/eOcfg_nvsEP_base_con.c
-							${NVS_COMMON_FOLDER}/eOcfg_nvsEP_mngmnt_con.c)
+# Network Variable configuration# Network Variable configuration
+set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb1.c  
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb2.c
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb3.c  
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb4.c
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb5.c
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb6.c  
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb7.c  
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb8.c
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb9.c  )
 
-set(NVS_COMMON_HEADER 		${NVS_COMMON_FOLDER}/eOcfg_nvsEP_base_con.h
-							${NVS_COMMON_FOLDER}/eOcfg_nvsEP_mngmnt_con.h)
 
-set(NVS_REMOTE_SOURCE		${NVS_REMOTE_FOLDER}/eOcfg_EPs_rem_board.c
-							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_base_usr_rem_anydev.c
-							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_mngmnt_usr_rem_board.c)
+#set(NVS_EB_HEADER 		${NVS_EB_FOLDER}eOcfg_EPs_eb1.h  eOcfg_EPs_eb3.h  eOcfg_EPs_eb5.h  eOcfg_EPs_eb7.h  eOcfg_EPs_eb9.h  _eOcfg_EPs_loc_ebx.h 		eOcfg_EPs_eb2.h  eOcfg_EPs_eb4.h  eOcfg_EPs_eb6.h  eOcfg_EPs_eb8.h  eOcfg_EPs_ebx.h  _eOcfg_EPs_rem_ebx.h)
 
-set(NVS_REMOTE_HEADER		${NVS_REMOTE_FOLDER}/eOcfg_EPs_rem_board.h
-							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_base_usr_rem_anydev.h
-							${NVS_REMOTE_FOLDER}/eOcfg_nvsEP_mngmnt_usr_rem_board.h)
+	
+set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_bodypart.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_jxx.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_jxxdefault.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_jxxmacro.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_mxx.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_mxxdefault.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_mxxmacro.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_jxxmacro.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_mxxmacro.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_nvmacro.c
 
-set(NVS_MC_EP_SOURCE 		${NVS_MC_EP}eOcfg_nvsEP_mc_any_con_bodypart.c
-							${NVS_MC_EP}eOcfg_nvsEP_mc_any_con_jxxdefault.c
-							${NVS_MC_EP}eOcfg_nvsEP_mc_any_con_mxxdefault.c
-							${NVS_MC_EP}eOcfg_nvsEP_mc_leftleg_con.c
-							${NVS_MC_EP}eOcfg_nvsEP_mc_leftleg_usr_rem_ebx.c)
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_con.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_usr.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_usr_pippo.c
+							
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerarm_con.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerarm_usr.c
 
-set(NVS_MC_EP_HEADER 		${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_bodypart.h
-							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_jxx.h
-							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_jxxdefault.h
-							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_mxx.h
-							${NVS_MC_EP}/eOcfg_nvsEP_mc_any_con_mxxdefault.h
-							${NVS_MC_EP}/eOcfg_nvsEP_mc_leftleg_con.h
-							${NVS_MC_EP}/eOcfg_nvsEP_mc_leftleg_usr_rem_ebx.h)
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerleg_con.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerleg_usr.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerleg_usr_pippo.c
+
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_pippo.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_torso_con.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_torso_usr.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperarm_con.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperarm_usr.c
+
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_con.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_usr.c
+#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_usr_pippo.c  
+							)						
+
+set(NVS_MNGMNT_SOURCE		${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_con.c
+							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usr.c
+#							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usr_loc_board.c  
+							)
+
+set(NVS_SENSORS_SOURCE		${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as.c
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_body.c  
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_mxx.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_mxxdefault.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_mxxmacro.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_sxx.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_sxxdefault.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_sxxmacro.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_usr_mxxmacro.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_usr_nvmacro.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_usr_sxxmacro.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onemais_con.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onemais_usr.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onestrain_con.c 
+							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onestrain_usr.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_upperarm_con.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_upperarm_usr.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_con.c 
+#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_usr.c 
+							)
+
+set(NVS_SKIN_SOURCE			${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk.c
+							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_con.c							
+							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_usr.c )
+
+#set(NVS_USR_SOURCE			${NVS_USR_SRC_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c
+#							${NVS_USR_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c
+#							${NVS_USR_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usrcbk_ebx.c  )
+
+set(NVS_CBK_SOURCE			${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c
+							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c
+							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_pippo.c
+							${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
+							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
+							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c 
+							)
 
 
 # EmbObj-src
@@ -157,18 +221,19 @@ set(embobj_source 		${BODY_COMMON_SOURCE}
 				${HAL_FAKE_SOURCE} 
 				${EXTRA_SOURCE}
 				${PROT_FOLDER}
-				${NVS_COMMON_SOURCE} 
-				${NVS_REMOTE_SOURCE}
-				${NVS_MC_EP_SOURCE})
+				${NVS_EB_SOURCE} 
+				${NVS_MC_SOURCE} 
+				${NVS_MNGMNT_SOURCE} 
+				${NVS_SENSORS_SOURCE} 
+				${NVS_SKIN_SOURCE} 
+				${NVS_USR_SOURCE} )
 
 
 set(embobj_header 		${BODY_COMMON_SOURCE} 
 						${CORE_API_HEADER} 
 						${PROT_HEADER} 
 						${IPNET_HEADER}
-						${NVS_COMMON_HEADER} 
-						${NVS_REMOTE_HEADER}
-						${NVS_MC_EP_HEADER})
+						${NVS_EB_SRC_FOLDER})
 
 SOURCE_GROUP("EmbObj Source Files" FILES ${folder_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${folder_header})
