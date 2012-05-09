@@ -752,12 +752,13 @@ protected:
         posTorso->positionMove(homeTorso.data());
     }
 
-    void checkTorsoHome()
+    void checkTorsoHome(const double timeout=10.0)
     {
         fprintf(stdout,"*** Checking torso home position... ");
 
         bool done=false;
-        while (!done)
+        double t0=Time::now();
+        while (!done && (Time::now()-t0<timeout))
         {
             posTorso->checkMotionDone(&done);
             Time::delay(0.1);
@@ -804,7 +805,7 @@ protected:
         openHand(sel);
     }
 
-    void checkArmHome(const int sel=USEDARM)
+    void checkArmHome(const int sel=USEDARM, const double timeout=10.0)
     {
         IPositionControl *ipos=posArm;
         string type;
@@ -835,7 +836,8 @@ protected:
         fprintf(stdout,"*** Checking %s home position... ",type.c_str());
 
         bool done=false;
-        while (!done)
+        double t0=Time::now();
+        while (!done && (Time::now()-t0<timeout))
         {
             ipos->checkMotionDone(&done);
             Time::delay(0.1);
@@ -1589,9 +1591,9 @@ public:
         steerArmToHome(LEFTARM);
         steerArmToHome(RIGHTARM);
 
-        checkTorsoHome();
-        checkArmHome(LEFTARM);
-        checkArmHome(RIGHTARM);
+        checkTorsoHome(3.0);
+        checkArmHome(LEFTARM,3.0);
+        checkArmHome(RIGHTARM,3.0);
 
         if (useLeftArm)
         {
