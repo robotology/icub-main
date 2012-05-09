@@ -2078,10 +2078,7 @@ bool MotorThread::calibTable(Bottle &options)
     else
         fprintf(stdout,"########## Table height not found.\n");
 
-    action[arm]->pushAction(deployPrepare,reachAboveOrient[arm]);
-
     setGazeIdle();
-
     goHome(options);
 
     return found;
