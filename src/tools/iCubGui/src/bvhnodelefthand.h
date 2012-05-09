@@ -110,7 +110,7 @@ public:
         // middle
         glPushMatrix();
         glTranslated(15.0,-7.5,11.0);
-        glRotated(-7.5+0.25*encoders[nEnc+1],0.0,0.0,1.0);
+        glRotated(-10.0+0.1666*encoders[nEnc+1],0.0,0.0,1.0);
         glRotated(90.0+encoders[nEnc+7],0.0,1.0,0.0);
         FingerSegment(35.0);        
         
@@ -124,7 +124,7 @@ public:
         // index
         glPushMatrix();
         glTranslated(15.0,-22.5,11.0);
-        glRotated(-22.5+0.75*encoders[nEnc+1],0.0,0.0,1.0);
+        glRotated(-30.0+0.5*encoders[nEnc+1],0.0,0.0,1.0);
         glRotated(90.0+encoders[nEnc+5],0.0,1.0,0.0);
         FingerSegment(31.0);
                 
@@ -138,7 +138,7 @@ public:
         // ring
         glPushMatrix();
         glTranslated(15.0,7.5,11.0);
-        glRotated(7.5-0.25*encoders[nEnc+1],0.0,0.0,1.0);
+        glRotated(10.0-0.1666*encoders[nEnc+1],0.0,0.0,1.0);
         glRotated(90.0+encoders[nEnc+9],0.0,1.0,0.0);
         FingerSegment(31.0);
                 
@@ -152,7 +152,7 @@ public:
         // pinky
         glPushMatrix();
         glTranslated(15.0,22.5,11.0);
-        glRotated(22.5-0.75*encoders[nEnc+1],0.0,0.0,1.0);
+        glRotated(30.0-0.5*encoders[nEnc+1],0.0,0.0,1.0);
         glRotated(90.0+encoders[nEnc+9],0.0,1.0,0.0);
         FingerSegment(27.0);
                 
