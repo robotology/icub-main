@@ -105,13 +105,14 @@ public:
    * @param num vector of numerator elements given as increasing 
    *            power of z^-1.
    * @param den vector of denominator elements given as increasing 
-   *            power of z^-1. 
+   *            power of z^-1.
+   * @return true/false on success/fail. 
    * @note den[0] shall not be 0. 
    * @note the adjustment is carried out iff num.size() and 
    *       den.size() match the existing numerator and denominator
    *       lenghts.
    */ 
-   void adjustCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
+   bool adjustCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 
    /**
    * Performs filtering on the actual input.

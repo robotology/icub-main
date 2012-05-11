@@ -42,7 +42,7 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
 void Filter::init(const Vector &y0)
 {
     y=y0;
-    for (size_t i=0; i<n-1; i++)
+    for (size_t i=0; i<yold.size(); i++)
         yold[i]=y;
 
     double sum_b=0.0;
@@ -54,7 +54,7 @@ void Filter::init(const Vector &y0)
         sum_a+=a[i];
 
     double gain=sum_a/sum_b;
-    for (size_t i=0; i<m-1; i++)
+    for (size_t i=0; i<uold.size(); i++)
         uold[i]=gain*y;
 }
 
@@ -84,13 +84,17 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
 
 
 /***************************************************************************/
-void Filter::adjustCoeffs(const Vector &num, const Vector &den)
+bool Filter::adjustCoeffs(const Vector &num, const Vector &den)
 {
     if ((num.length()==b.length()) && (den.length()==a.length()))
     {
         b=num;
         a=den;
+
+        return true;
     }
+    else
+        return false;
 }
 
 
