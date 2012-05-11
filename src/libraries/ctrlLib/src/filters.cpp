@@ -53,9 +53,9 @@ void Filter::init(const Vector &y0)
     for (size_t i=0; i<a.length(); i++)
         sum_a+=a[i];
 
-    double gain=sum_a/sum_b;
+    Vector u0=(sum_a/sum_b)*y;
     for (size_t i=0; i<uold.size(); i++)
-        uold[i]=gain*y;
+        uold[i]=u0;
 }
 
 
