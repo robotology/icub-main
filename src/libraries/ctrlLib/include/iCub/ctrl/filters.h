@@ -55,8 +55,8 @@ protected:
 
    std::deque<yarp::sig::Vector> uold;
    std::deque<yarp::sig::Vector> yold;
-   int n;
-   int m;
+   size_t n;
+   size_t m;
 
 public:
    /**
