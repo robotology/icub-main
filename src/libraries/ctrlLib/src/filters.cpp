@@ -53,7 +53,12 @@ void Filter::init(const Vector &y0)
     for (size_t i=0; i<a.length(); i++)
         sum_a+=a[i];
 
-    Vector u0=(sum_a/sum_b)*y;
+    Vector u0;
+    if (sum_b!=0.0)
+        u0=(sum_a/sum_b)*y;
+    else
+        u0.resize(y.length(),0.0);
+
     for (size_t i=0; i<uold.size(); i++)
         uold[i]=u0;
 }
