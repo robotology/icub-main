@@ -383,7 +383,7 @@ void minJerkTrajGen::computeCoeffs()
         velFilter=new Filter(num,den,vel);
     else
         velFilter->adjustCoeffs(num,den);
-    velFilter->init(vel, pos);  //init filter to avoid spikes at the start
+    velFilter->init(zeros(dim), pos);  //init filter to avoid spikes at the start
 
     // implementing F(s)=-a*s^2/(s^3-c*s^2-b*s-a)
     p = 4.0*a*Ts;
@@ -396,7 +396,7 @@ void minJerkTrajGen::computeCoeffs()
         accFilter=new Filter(num,den,acc);
     else
         accFilter->adjustCoeffs(num,den);
-    accFilter->init(acc, pos);  //init filter to avoid spikes at the start
+    accFilter->init(zeros(dim), pos);  //init filter to avoid spikes at the start
 }
 
 
