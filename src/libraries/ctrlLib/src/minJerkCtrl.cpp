@@ -443,10 +443,10 @@ void minJerkTrajGen::init(const Vector &y0)
         posFilter->init(y0);
 
     if (velFilter!=NULL)
-        velFilter->init(zeros(dim));
+        velFilter->init(zeros(dim), y0);
 
     if (accFilter!=NULL)
-        accFilter->init(zeros(dim));
+        accFilter->init(zeros(dim), y0);
 }
 
 
