@@ -79,6 +79,15 @@ public:
    void init(const yarp::sig::Vector &y0);
 
    /**
+   * Internal state reset for filter with zero gain.
+   * @param y0 new internal state.
+   * @param u0 expected next input.
+   * @note The gain of a digital filter is the sum of the coefficients of its 
+   *       numerator divided by the sum of the coefficients of its denumerator.
+   */ 
+   void init(const yarp::sig::Vector &y0, const yarp::sig::Vector &u0);
+
+   /**
    * Returns the current filter coefficients.
    * @param num vector of numerator elements returned as increasing
    *            power of z^-1.

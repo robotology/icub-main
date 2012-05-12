@@ -41,9 +41,20 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
 /***************************************************************************/
 void Filter::init(const Vector &y0)
 {
+    // if there is a last input then take it as guess for the next input
+    if(uold[0].size()>0)
+        return init(y0, uold[0]);
+    // otherwise use zero
+    return init(y0, zeros(y0.size()));
+}
+
+
+/***************************************************************************/
+void Filter::init(const Vector &y0, const Vector &u0)
+{
+    Vector u_init(y0.size(), 0.0);
+    Vector y_init=y0;
     y=y0;
-    for (size_t i=0; i<yold.size(); i++)
-        yold[i]=y;
 
     double sum_b=0.0;
     for (size_t i=0; i<b.length(); i++)
@@ -52,15 +63,25 @@ void Filter::init(const Vector &y0)
     double sum_a=0.0;
     for (size_t i=0; i<a.length(); i++)
         sum_a+=a[i];
-
-    Vector u0;
-    if (sum_b!=0.0)
-        u0=(sum_a/sum_b)*y;
+    
+    if(fabs(sum_b)>1e-9)    // if filter DC gain is not zero
+        u_init=(sum_a/sum_b)*y0;
     else
-        u0.resize(y.length(),0.0);
-
+    {
+        // if filter gain is zero then you need to know in advance what
+        // the next input is going to be for initializing (that is u0)
+        // Note that, unless y0=0, the filter output is not going to be stable
+        u_init=u0;
+        if(fabs(sum_a-a[0])>1e-9)
+            y_init=a[0]/(a[0]-sum_a)*y;
+        // if sum_a==a[0] then the filter can only be initialized to zero
+    }
+    
+    for (size_t i=0; i<yold.size(); i++)
+        yold[i]=y_init;
+    
     for (size_t i=0; i<uold.size(); i++)
-        uold[i]=u0;
+        uold[i]=u_init;
 }
 
 
