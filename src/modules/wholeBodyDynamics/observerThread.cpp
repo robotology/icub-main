@@ -1191,8 +1191,12 @@ void inverseDynamics::addSkinContacts()
     if(scl)
     {
         skinContactsTimestamp = Time::now();
-        if(scl->empty() && !default_ee_cont)   // if no skin contacts => leave the old contacts
+        if(scl->empty() && !default_ee_cont)   // if no skin contacts => leave the old contacts but reset the pressure
+        {
+            for(skinContactList::iterator it=skinContacts.begin(); it!=skinContacts.end(); it++)
+                it->setPressure(0.0);
             return;
+        }
         
         map<BodyPart, skinContactList> contactsPerBp = scl->splitPerBodyPart();
         // if there are more than 1 contact and less than 10 taxels are active then suppose zero moment
