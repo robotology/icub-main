@@ -98,7 +98,7 @@ public:
     * @param max the 3x1 Vector containining the maximums bounds. 
     *  
     * @note by default min=(0.1,0.1,0.1) and max=(10.0,10.0,10.0). 
-                                                                 */
+    */
     void setScalingBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
 
     /**
