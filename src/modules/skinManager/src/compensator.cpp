@@ -503,7 +503,7 @@ skinContactList Compensator::getContacts(){
         pressure    /= activeTaxels;
         skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, taxelList, pressure, normal);
         // set an estimate of the force that is with normal direction and intensity equal to the pressure
-        c.setForce(pressure*normal);
+        c.setForce(-1.0*pressure*normal);
         contactList.push_back(c);
     }
     //printf("ContactList: %s\n", contactList.toString().c_str());
