@@ -224,10 +224,8 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
     if (Vector *v=portState.read(false))
     {
         pose=*v;
+        portState.getEnvelope(poseStamp);
         lastPoseMsgArrivalTime=now;
-
-        if (stamp!=NULL)
-            portState.getEnvelope(*stamp);
     }
 
     x.resize(3);
@@ -238,6 +236,9 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 
     for (size_t i=0; i<o.length(); i++)
         o[i]=pose[x.length()+i];
+
+    if (stamp!=NULL)
+        *stamp=poseStamp;
 
     return (now-lastPoseMsgArrivalTime<timeout);
 }

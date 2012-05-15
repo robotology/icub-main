@@ -41,6 +41,7 @@
 #define __CLIENTGAZECONTROLLER_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 
 #include <yarp/dev/PolyDriver.h>
@@ -63,6 +64,9 @@ protected:
 
     yarp::sig::Vector fixationPoint;
     yarp::sig::Vector angles;
+
+    yarp::os::Stamp   fpStamp;
+    yarp::os::Stamp   anglesStamp;
 
     yarp::os::BufferedPort<yarp::sig::Vector> portStateFp;
     yarp::os::BufferedPort<yarp::sig::Vector> portStateAng;

@@ -201,13 +201,13 @@ bool ClientGazeController::getFixationPoint(Vector &fp, Stamp *stamp)
     if (Vector *v=portStateFp.read(false))
     {
         fixationPoint=*v;
+        portStateFp.getEnvelope(fpStamp);
         lastFpMsgArrivalTime=now;
-
-        if (stamp!=NULL)
-            portStateFp.getEnvelope(*stamp);
     }
 
     fp=fixationPoint;
+    if (stamp!=NULL)
+        *stamp=fpStamp;
 
     return (now-lastFpMsgArrivalTime<timeout);
 }
@@ -223,13 +223,13 @@ bool ClientGazeController::getAngles(Vector &ang, Stamp *stamp)
     if (Vector *v=portStateAng.read(false))
     {
         angles=*v;
+        portStateAng.getEnvelope(anglesStamp);
         lastAngMsgArrivalTime=now;
-
-        if (stamp!=NULL)
-            portStateAng.getEnvelope(*stamp);
     }
 
     ang=angles;
+    if (stamp!=NULL)
+        *stamp=anglesStamp;
 
     return (now-lastAngMsgArrivalTime<timeout);
 }
