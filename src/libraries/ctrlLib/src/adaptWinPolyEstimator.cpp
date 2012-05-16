@@ -150,12 +150,14 @@ Vector AWPolyEstimator::estimate()
             // test the regressor upon all the elements
             // belonging to the actual window
             for (unsigned int k=N-n; k<N; k++)
+            {
                 if (fabs(x[k]-eval(t[k]))>D)
                 {
                     // exit if the max deviation is not verified
                     _stop=true;
                     break;
                 }
+            }
 
             // set the new window's length in case of
             // crossing of max deviation threshold
@@ -169,8 +171,9 @@ Vector AWPolyEstimator::estimate()
         esteem[i]=getEsteeme();
     }
 
-    if (delta>10)
-        elemList.pop_front();
+    int margin=delta-10;
+    if (margin>0)
+        elemList.erase(elemList.begin(),elemList.begin()+margin);
 
     return esteem;
 }
