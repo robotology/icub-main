@@ -209,8 +209,8 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindGLUT.cmake
                         FindOpenGL.cmake
                         iCubHelpers.cmake
-                        iCubOptions.cmake
-                        iCubFindDependencies.cmake)
+                        iCubOptions.cmake)
+                        #iCubFindDependencies.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   # in YARP we used to copy Find* scripts to the build directory
