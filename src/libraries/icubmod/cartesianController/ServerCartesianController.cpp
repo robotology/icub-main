@@ -2438,7 +2438,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 
             Vector _odot=taskVel.subVector(3,taskVel.length()-1);
             double thetadot=norm(_odot);
-            if (thetadot!=0.0)
+            if (thetadot>0.0)
                 _odot=(1.0/thetadot)*_odot;
 
             taskVel[3]=_odot[0];
