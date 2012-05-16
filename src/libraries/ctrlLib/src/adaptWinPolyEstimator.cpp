@@ -190,11 +190,9 @@ Vector AWPolyEstimator::estimate(const AWPolyElement &el)
 /***************************************************************************/
 void AWPolyEstimator::reset()
 {
-    if (elemList.size())
+    if (elemList.size()>0)
     {
-        size_t dim=elemList[0].data.length();
-
-        winLen.resize(dim,N);
+        winLen.resize(elemList[0].data.length(),N);
         elemList.clear();
     }
 }
