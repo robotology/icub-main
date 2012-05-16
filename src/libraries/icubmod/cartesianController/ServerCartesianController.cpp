@@ -873,16 +873,19 @@ void ServerCartesianController::alignJointsBounds()
 double ServerCartesianController::getFeedback(Vector &_fb)
 {
     Vector fbTmp(maxPartJoints);
-    Vector stamps(chain->getN(),0.0);
+    Vector stamps(maxPartJoints);
     int chainCnt=0;
     int _fbCnt=0;
-    int stampsOffs=0;
+    double timeStamp=-1.0;
 
     for (int i=0; i<numDrv; i++)
     {
         bool ok;
         if (encTimedEnabled)
-            ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data()+stampsOffs);
+        {            
+            ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data());
+            timeStamp=std::max(timeStamp,findMax(stamps.subVector(0,lJnt[i]-1)));
+        }
         else
             ok=lEnc[i]->getEncoders(fbTmp.data());
 
@@ -905,14 +908,9 @@ double ServerCartesianController::getFeedback(Vector &_fb)
             if (!(*chain)[chainCnt++].isBlocked())
                 _fbCnt++;
         }
-
-        stampsOffs+=lJnt[i];
     }
 
-    if (encTimedEnabled)
-        return findMax(stamps);
-    else
-        return -1.0;
+    return timeStamp;
 }
 
 
@@ -1588,6 +1586,8 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             return false;
         }
     }
+
+    fprintf(stdout,"IEncodersTimed %s\n",encTimedEnabled?"available":"not available!");
 
     // exclude acceleration constraints by fixing
     // thresholds at high values
