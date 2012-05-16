@@ -873,23 +873,18 @@ void ServerCartesianController::alignJointsBounds()
 double ServerCartesianController::getFeedback(Vector &_fb)
 {
     Vector fbTmp(maxPartJoints);
+    Vector stamps(chain->getN(),0.0);
     int chainCnt=0;
     int _fbCnt=0;
-
     int stampsOffs=0;
-    bool stampsEnabled=true;
-    Vector stamps(chain->getN(),0.0);
 
     for (int i=0; i<numDrv; i++)
     {
         bool ok;
-        if (lEnt[i]==NULL)
-        {
-            ok=lEnc[i]->getEncoders(fbTmp.data());
-            stampsEnabled=false;
-        }
-        else
+        if (encTimedEnabled)
             ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data()+stampsOffs);
+        else
+            ok=lEnc[i]->getEncoders(fbTmp.data());
 
         if (ok)
         {
@@ -914,7 +909,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
         stampsOffs+=lJnt[i];
     }
 
-    if (stampsEnabled)
+    if (encTimedEnabled)
         return findMax(stamps);
     else
         return -1.0;
@@ -1532,6 +1527,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         }
 
         // acquire interfaces and driver's info
+        encTimedEnabled=true;
         if (drivers[j]->poly->isValid())
         {
             fprintf(stdout,"ok\n");
@@ -1544,8 +1540,8 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             drivers[j]->poly->view(lim);
             drivers[j]->poly->view(enc);
-            drivers[j]->poly->view(ent);
             drivers[j]->poly->view(vel);
+            encTimedEnabled&=drivers[j]->poly->view(ent);
 
             enc->getAxes(&joints);
 

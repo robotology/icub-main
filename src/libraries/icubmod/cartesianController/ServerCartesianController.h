@@ -117,6 +117,7 @@ protected:
     bool executingTraj;
     bool taskVelModeOn;
     bool motionDone;
+    bool encTimedEnabled;
 
     yarp::os::ConstString ctrlName;
     yarp::os::ConstString slvName;
