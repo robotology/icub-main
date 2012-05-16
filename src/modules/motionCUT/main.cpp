@@ -85,7 +85,7 @@ YARP libraries and OpenCV
  
 --recogThres \e thres
 - The parameter \e thres, given in percentage, specifies the 
-  error threshold that allows to discriminate between background
+  error threshold that allows discriminating between background
   and independent moving nodes as result of a matching carried
   out on the windows whose size is determined by \e winSize
   parameter. Usually very small values, such as 0.5%, have to be
@@ -95,27 +95,27 @@ YARP libraries and OpenCV
   independent moving node.
  
 --adjNodesThres \e min 
-- This parameter allows to filter out the \e salt-and-pepper
+- This parameter allows filtering out the \e salt-and-pepper 
   noise over the output image, by specifying the minimum number
   of adjacent nodes that must be active (i.e. that undergo the
   motion) in the neighbourhood of any single node to keep it
   active.
  
 --blobMinSizeThres \e min 
-- This parameter allows to filter out blobs whose nodes number 
+- This parameter allows filtering out blobs whose nodes number 
   is lower than <min>.
  
 --framesPersistence \e frames
-- This parameter allows to increase the node persistence over 
+- This parameter allows increasing the node persistence over 
   consecutive frames implementing a sort of low-pass filter. The
   value \e frames specifies the number of consecutive frames for
   which if a node gets active it is kept on.
  
 --numThreads \e threads
-- This parameter allows to control the maximum number of threads
-  allocated by parallelized OpenCV functions. This option is
-  available only if the OpenMP layer is supported. By contrast,
-  the TBB layer automatically determines the number of
+- This parameter allows controlling the maximum number of 
+  threads allocated by parallelized OpenCV functions. This
+  option is available only if the OpenMP layer is supported. By
+  contrast, the TBB layer automatically determines the number of
   threads.\n
   \e #  > 0 : assign # threads to OpenCV; \n
   \e # == 0 : assign all threads to OpenCV; \n
