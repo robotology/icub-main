@@ -1060,7 +1060,7 @@ void ServerCartesianController::sendVelocity(const Vector &v)
     {
         if (!(*chain)[i].isBlocked())
         {    
-            double v_cnt=v[cnt];
+            double v_cnt=CTRL_RAD2DEG*v[cnt];
 
             // send only if changed
             if (v_cnt!=velCmd[cnt])
@@ -1194,8 +1194,8 @@ void ServerCartesianController::run()
                 else
                     ctrl->iterate(xdes,qdes);
 
-                // send joints velocities to the robot [deg/s]
-                sendVelocity(CTRL_RAD2DEG*qdot);
+                // send joints velocities to the robot
+                sendVelocity(qdot);
 
                 mutex.post();
             }
@@ -2430,7 +2430,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         Matrix J=ctrl->get_J();
         Vector taskVel;
 
-        if (!J.rows() || (J.cols()!=velCmd.length()))
+        if ((J.rows()==0) || (J.cols()!=velCmd.length()))
             taskVel.resize(7,0.0);
         else
         {
