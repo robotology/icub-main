@@ -20,7 +20,6 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PreciselyTimed.h>
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
@@ -540,38 +539,31 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
                  PolyDriver *drvHead, exchangeData *commData, double *timeStamp)
 {
-    IEncoders       *encs;
-    IPreciselyTimed *time;
+    IEncodersTimed *encs;
 
     int nJointsTorso=fbTorso.length();
     int nJointsHead=fbHead.length();
 
-    Vector fb(nJointsTorso<nJointsHead?nJointsHead:nJointsTorso);
+    Vector fb(std::max(nJointsTorso,nJointsHead));
+    Vector stamps(nJointsTorso+nJointsHead,0.0);
     bool ret=true;
-
-    Stamp stampTorso;
+    
     if (drvTorso!=NULL)
     {
         drvTorso->view(encs);
-        drvTorso->view(time);
-
-        if (encs->getEncoders(fb.data()))
+        if (encs->getEncodersTimed(fb.data(),stamps.data()))
         {
             for (int i=0; i<nJointsTorso; i++)
                 fbTorso[i]=CTRL_DEG2RAD*fb[nJointsTorso-1-i];    // reversed order
         }
         else
             ret=false;
-
-        stampTorso=time->getLastInputStamp();
     }
     else
         fbTorso=0.0;
 
     drvHead->view(encs);
-    drvHead->view(time);
-
-    if (encs->getEncoders(fb.data()))
+    if (encs->getEncodersTimed(fb.data(),stamps.data()+nJointsTorso))
     {
         for (int i=0; i<nJointsHead; i++)
             fbHead[i]=CTRL_DEG2RAD*fb[i];
@@ -579,21 +571,14 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     else
         ret=false;
     
-    Stamp stampHead=time->getLastInputStamp();
-
     // impose vergence != 0.0
     if (commData!=NULL)
         if (fbHead[nJointsHead-1]<commData->get_minAllowedVergence())
             fbHead[nJointsHead-1]=commData->get_minAllowedVergence();
     
+    // retrieve the highest encoders time stamp
     if (timeStamp!=NULL)
-    {
-        // retrieve the highest encoders time stamp
-        if (stampTorso.isValid() && stampHead.isValid())
-            *timeStamp=std::max(stampTorso.getTime(),stampHead.getTime());
-        else
-            *timeStamp=Time::now();
-    }
+        *timeStamp=findMax(stamps);
 
     return ret;
 }

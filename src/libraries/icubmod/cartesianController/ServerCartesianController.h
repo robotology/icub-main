@@ -51,7 +51,6 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/Wrapper.h>
-#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/CartesianControl.h>
 
 #include <iCub/ctrl/pids.h>
@@ -136,7 +135,7 @@ protected:
     std::deque<DriverDescriptor>             lDsc;
     std::deque<yarp::dev::IControlLimits*>   lLim;
     std::deque<yarp::dev::IEncoders*>        lEnc;
-    std::deque<yarp::dev::IPreciselyTimed*>  lTim;
+    std::deque<yarp::dev::IEncodersTimed*>   lEnt;
     std::deque<yarp::dev::IVelocityControl*> lVel;
     std::deque<int>                          lJnt;
     std::deque<int*>                         lRmp;

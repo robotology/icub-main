@@ -875,11 +875,23 @@ double ServerCartesianController::getFeedback(Vector &_fb)
     Vector fbTmp(maxPartJoints);
     int chainCnt=0;
     int _fbCnt=0;
-    double stamp=0.0;
+
+    int stampsOffs=0;
+    bool stampsEnabled=true;
+    Vector stamps(chain->getN(),0.0);
 
     for (int i=0; i<numDrv; i++)
     {
-        if (lEnc[i]->getEncoders(fbTmp.data()))
+        bool ok;
+        if (lEnt[i]==NULL)
+        {
+            ok=lEnc[i]->getEncoders(fbTmp.data());
+            stampsEnabled=false;
+        }
+        else
+            ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data()+stampsOffs);
+
+        if (ok)
         {
             for (int j=0; j<lJnt[i]; j++)
             {
@@ -899,18 +911,13 @@ double ServerCartesianController::getFeedback(Vector &_fb)
                 _fbCnt++;
         }
 
-        // retrieve the highest stamp
-        if (stamp>=0.0)
-        {
-            Stamp s=lTim[i]->getLastInputStamp();
-            if (s.isValid())
-                stamp=std::max(stamp,s.getTime());
-            else
-                stamp=-1.0;
-        }
+        stampsOffs+=lJnt[i];
     }
 
-    return stamp;
+    if (stampsEnabled)
+        return findMax(stamps);
+    else
+        return -1.0;
 }
 
 
@@ -1472,7 +1479,7 @@ bool ServerCartesianController::close()
     lDsc.clear();
     lLim.clear();
     lEnc.clear();
-    lTim.clear();
+    lEnt.clear();
     lVel.clear();
     lJnt.clear();
     lRmp.clear();
@@ -1531,13 +1538,13 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             IControlLimits   *lim;
             IEncoders        *enc;
-            IPreciselyTimed  *tim;
+            IEncodersTimed   *ent;
             IVelocityControl *vel;
             int               joints;
 
             drivers[j]->poly->view(lim);
             drivers[j]->poly->view(enc);
-            drivers[j]->poly->view(tim);
+            drivers[j]->poly->view(ent);
             drivers[j]->poly->view(vel);
 
             enc->getAxes(&joints);
@@ -1571,7 +1578,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
             lLim.push_back(lim);
             lEnc.push_back(enc);
-            lTim.push_back(tim);
+            lEnt.push_back(ent);
             lVel.push_back(vel);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
