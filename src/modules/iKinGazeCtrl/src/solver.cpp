@@ -290,8 +290,8 @@ void EyePinvRefGen::run()
 
             // estimate geometrically the target tilt and pan of the eyes
             Vector ang(3,0.0);
-            ang[0]=-atan2(fph[1],fabs(fph[2]));
-            ang[1]=atan2(fph[0],fph[2]);
+            ang[0]=-atan2(fabs(fph[2]),fph[1]);
+            ang[1]=M_PI/2.0-atan2(fph[0],fph[2]);
 
             // enforce joints bounds
             ang[0]=std::min(std::max(lim(0,0),ang[0]),lim(0,1));
