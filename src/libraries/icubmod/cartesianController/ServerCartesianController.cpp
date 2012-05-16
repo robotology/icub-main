@@ -1185,7 +1185,8 @@ void ServerCartesianController::run()
             else
             {
                 // add the contribution of the Smith Predictor block
-                ctrl->add_compensation(-1.0*smithPredictor.computeCmd(ctrl->get_qdot()));
+                Vector qdot=ctrl->get_qdot();
+                ctrl->add_compensation(-1.0*smithPredictor.computeCmd(qdot));
 
                 // limb control loop
                 if (taskVelModeOn)
@@ -1194,7 +1195,7 @@ void ServerCartesianController::run()
                     ctrl->iterate(xdes,qdes);
 
                 // send joints velocities to the robot [deg/s]
-                sendVelocity(CTRL_RAD2DEG*(ctrl->get_qdot()));
+                sendVelocity(CTRL_RAD2DEG*qdot);
 
                 mutex.post();
             }
