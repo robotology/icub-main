@@ -2428,11 +2428,9 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         mutex.wait();
 
         Matrix J=ctrl->get_J();
-        Vector taskVel;
+        Vector taskVel(7,0.0);
 
-        if ((J.rows()==0) || (J.cols()!=velCmd.length()))
-            taskVel.resize(7,0.0);
-        else
+        if ((J.rows()>0) && (J.cols()==velCmd.length()))
         {
             taskVel=J*(CTRL_DEG2RAD*velCmd);
 
