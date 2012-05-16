@@ -106,7 +106,7 @@ void AWPolyEstimator::feedData(const AWPolyElement &el)
 /***************************************************************************/
 Vector AWPolyEstimator::estimate()
 {
-    if (!elemList.size())
+    if (elemList.size()==0)
         return Vector(0);   // generate error
 
     size_t dim=elemList[0].data.length();
