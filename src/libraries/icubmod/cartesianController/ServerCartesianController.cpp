@@ -1165,6 +1165,19 @@ void ServerCartesianController::run()
             
         if (executingTraj)
         {
+            // add the contribution of the Smith Predictor block
+            Vector qdot=ctrl->get_qdot();
+            ctrl->add_compensation(-1.0*smithPredictor.computeCmd(qdot));
+
+            // limb control loop
+            if (taskVelModeOn)
+                ctrl->iterate(xdes,qdes,xdot_set);
+            else
+                ctrl->iterate(xdes,qdes);
+
+            // send joints velocities to the robot
+            sendVelocity(qdot);
+
             // handle the end-trajectory event
             if (ctrl->isInTarget())
             {
@@ -1181,22 +1194,7 @@ void ServerCartesianController::run()
                     setTrackingMode(false);
             }
             else
-            {
-                // add the contribution of the Smith Predictor block
-                Vector qdot=ctrl->get_qdot();
-                ctrl->add_compensation(-1.0*smithPredictor.computeCmd(qdot));
-
-                // limb control loop
-                if (taskVelModeOn)
-                    ctrl->iterate(xdes,qdes,xdot_set);
-                else
-                    ctrl->iterate(xdes,qdes);
-
-                // send joints velocities to the robot
-                sendVelocity(qdot);
-
                 mutex.post();
-            }
         }
         else
             mutex.post();
