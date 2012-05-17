@@ -882,7 +882,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
     {
         bool ok;
         if (encTimedEnabled)
-        {            
+        {
             ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data());
             timeStamp=std::max(timeStamp,findMax(stamps.subVector(0,lJnt[i]-1)));
         }
