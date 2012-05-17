@@ -1586,7 +1586,8 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         }
     }
 
-    fprintf(stdout,"IEncodersTimed %s\n",encTimedEnabled?"available":"not available!");
+    fprintf(stdout,"%s interface will be used\n",
+            encTimedEnabled?"IEncodersTimed":"IEncoders");
 
     // exclude acceleration constraints by fixing
     // thresholds at high values
