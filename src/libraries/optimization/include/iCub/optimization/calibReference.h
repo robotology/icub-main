@@ -16,15 +16,15 @@
 */
 
 /**
- * @defgroup calibration calibration
+ * @defgroup optimization optimization
  * @ingroup icub_libraries 
  *  
- * Tools designed to deal with calibration tasks.
+ * Tools designed to deal with optimization tasks.
  *  
  * @author Ugo Pattacini
  *  
  * @defgroup References References Calibration 
- * @ingroup calibration
+ * @ingroup optimization
  *
  * Given two sets of 3D points, the aim is to find out the 
  * transformation matrix between them. 
@@ -40,7 +40,7 @@
 namespace iCub
 {
 
-namespace calibration
+namespace optimization
 {
 
 /**

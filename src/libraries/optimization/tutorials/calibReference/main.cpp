@@ -20,14 +20,14 @@
 #include <yarp/math/Rand.h>
 
 #include <iCub/ctrl/math.h>
-#include <iCub/calibration/calibReference.h>
+#include <iCub/optimization/calibReference.h>
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
-using namespace iCub::calibration;
+using namespace iCub::optimization;
 
 
 int main()

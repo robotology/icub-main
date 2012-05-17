@@ -19,7 +19,7 @@
 
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
-#include <iCub/calibration/calibReference.h>
+#include <iCub/optimization/calibReference.h>
 
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -28,13 +28,13 @@ using namespace std;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
-using namespace iCub::calibration;
+using namespace iCub::optimization;
 
 
 namespace iCub
 {
 
-namespace calibration
+namespace optimization
 {
 
 /****************************************************************/
