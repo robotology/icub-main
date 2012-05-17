@@ -31,9 +31,9 @@ add_subdirectory(icubmod)
 add_subdirectory(pmp)
 
 if(ICUB_USE_IPOPT)
-    add_subdirectory(calibration)
+    add_subdirectory(optimization)
 else(ICUB_USE_IPOPT)
-    message(STATUS "IPOPT not found/selected, skipping calibration")
+    message(STATUS "IPOPT not found/selected, skipping optimization")
 endif(ICUB_USE_IPOPT)
 
 

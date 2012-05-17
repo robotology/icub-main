@@ -25,6 +25,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ICUB_LINK_FLAGS}")
 
 include_directories(${ICUB_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${folder_source})
-target_link_libraries(${PROJECTNAME} calibration ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} optimization ${YARP_LIBRARIES})
 
 

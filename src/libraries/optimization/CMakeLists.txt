@@ -2,11 +2,11 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-set(PROJECTNAME calibration)
+set(PROJECTNAME optimization)
 project(${PROJECTNAME})
 
 set(folder_source src/calibReference.cpp)
-set(folder_header include/iCub/calibration/calibReference.h)
+set(folder_header include/iCub/optimization/calibReference.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
@@ -25,7 +25,7 @@ target_link_libraries(${PROJECTNAME} ${IPOPT_LIBRARIES}
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    EXTERNAL_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS}
                                    DEPENDS ctrlLib
-                                   DESTINATION include/iCub/calibration
+                                   DESTINATION include/iCub/optimization
                                    FILES ${folder_header})
 
 
