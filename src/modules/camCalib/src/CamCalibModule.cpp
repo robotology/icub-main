@@ -109,6 +109,19 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
         }
     }
 
+    if (yarp::os::Network::exists(getName("/in")))
+    {
+        cout << "====> warning: port " << getName("/in") << " already in use" << endl;
+    }
+    if (yarp::os::Network::exists(getName("/out")))
+    {
+        cout << "====> warning: port " << getName("/out") << " already in use" << endl;    
+    }
+    if (yarp::os::Network::exists(getName("/conf")))
+    {
+        cout << "====> warning: port " << getName("/conf") << " already in use" << endl;    
+    }
+     
     _prtImgIn.open(getName("/in"));
     _prtImgIn.setPointers(&_prtImgOut,_calibTool);
     _prtImgIn.setVerbose(rf.check("verbose"));
