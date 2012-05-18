@@ -109,6 +109,9 @@ Please notice that ''exposure'' is an auto mode, if set it controls ''gain'' and
 None.
 
 \section portsc_sec Ports Created
+
+The dragonfly device driver is usually executed combined with a network wrapper grabber (called \a grabber, see examples below) which reads images from the driver and streams them on the network. The grabber opens the followig ports: 
+
 Output ports:
 - <as specified by --name> streams out a yarp::sig::ImageOf<yarp::sig::PixelRgb> which contains the image grabbed by the Dragonfly camera.
 
