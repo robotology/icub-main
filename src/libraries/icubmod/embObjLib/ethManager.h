@@ -30,7 +30,7 @@ using namespace std;
 
 #include <iostream>				// string type
 #include <vector>
-
+#include <list>
 #include <string>
 
 #include <ace/ACE.h>
@@ -43,9 +43,9 @@ using namespace std;
 
 // _AC_
 // to clean creating an Interface with some common method for ethResources and something like that for the canBus
-#include "../ethManager/iCubDeviceInterface.h"
-#include "../embObjMotionControl/embObjMotionControl.h"
-//#include "../embObjLib/hostTransceiver.hpp"
+//#include "../ethManager/iCubDeviceInterface.h"
+//#include "../embObjMotionControl/embObjMotionControl.h"
+#include "../embObjLib/hostTransceiver.hpp"
 #include "../embObjLib/transceiverInterface.h"
 
 // Boards configurations
@@ -79,28 +79,23 @@ namespace yarp{
     namespace dev{
         class TheEthManager;
         class ethResources;
+        class ethResCreator;
     }
 }
 
 using namespace yarp::os;
-
-typedef struct
-{
-	ACE_TCHAR					id[64];
-	yarp::dev::ethResources 	*resource;
-}DeviceEntry;
-
-static std::vector<DeviceEntry> 		deviceList;  // needs a mutex to avoid segfault between ethManager and classes in initialization, and probably other mess somewhere else
+using namespace yarp::dev;
 
 
 class yarp::dev::ethResources:  //public DeviceDriver,	// needed if I want to create this interface through the polydriver open (I guess)
-								public PolyDriver,
-								public iCubDeviceInterface
-								//public embObjMotionControl
+								public PolyDriver
+								//public iCubDeviceInterface
 {
 private:
-    static int					how_many;
 	char 						info[SIZE_INFO];
+	static int					how_many_boards;
+
+
 	TheEthManager  				*theEthManager_h;
 //	embObjMotionControl			*controller;
 
@@ -112,7 +107,7 @@ private:
 
    	// Protocol handlers
    	PolyDriver					createProtocolHandler;
-   	ITransceiver 				*transceiver;
+
 
    	// Motion control handlers
    	PolyDriver					createMotionControlHandler;
@@ -122,23 +117,46 @@ private:
 
 public:
 
-   	embObjMotionControl			*motionCtrl;
+   	hostTransceiver				*transceiver;
+	ACE_TCHAR					address[64];
+   	/*embObjMotionControl*/ DeviceDriver			*motionCtrl;
 	ethResources();
-	//ethResources(ACE_UINT16 loc_port, ACE_UINT32 loc_ip, ACE_UINT16 rem_port, ACE_UINT32 rem_ip);
+
     ~ethResources();
 
     uint8_t 					recv_msg[512];
 	ACE_UINT16 					recv_size;
 
+	ethResources* already_exists(yarp::os::Searchable &config);
     virtual bool open(yarp::os::Searchable &par);
 
     int send(void *data, size_t len);
     ACE_INET_Addr	getRemoteAddress();
     void getPack(uint8_t **pack, uint16_t *size);
 //    void setCalibrator(ICalibrator *icalibrator);
-    void getControlCalibration(IControlCalibration2 **icalib);
+//    void getControlCalibration(IControlCalibration2 **icalib);
+//    void getMotorController(DeviceDriver **iMC);
     void onMsgReception(uint8_t *data, uint16_t size);
 };
+
+
+class yarp::dev::ethResCreator:public std::list<ethResources *>
+{
+	private:
+	static ethResCreator 		*handle;
+	static int					how_many;
+
+	public:
+	static ethResources* getResource(yarp::os::Searchable &config);
+	ethResCreator *find(const std::string &id);
+};
+
+typedef std::list<ethResources *>::iterator ethResIt;
+
+static ethResCreator ethResList;
+
+
+
 
 
 // -------------------------------------------------------------------\\

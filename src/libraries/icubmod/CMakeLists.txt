@@ -36,7 +36,7 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(embObjLib)
   add_subdirectory(embObjMotionControl)
-  add_subdirectory(ethManager)
+  add_subdirectory(embObjSkin) 
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 

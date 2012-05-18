@@ -50,6 +50,8 @@ using namespace std;
 #include <ace/SOCK_Dgram_Bcast.h>
 
 #include "EoMotionControl.h"
+#include <ethManager.h>
+//#include "../ethManager/ethManager.h"
 #include "../embObjLib/hostTransceiver.hpp"
 
 // indirizzi ip
@@ -69,13 +71,15 @@ namespace yarp{
 
 void copyPid2eo(Pid in, eOmc_PID_t *out);
 
-class yarp::dev::embObjMotionControl: 	public PolyDriver,
+class yarp::dev::embObjMotionControl: 	public DeviceDriver,
+							// public PolyDriver,
 							public os::RateThread,
 							public IPidControlRaw,
 							public IControlCalibration2Raw,
 							public IAmplifierControlRaw,
 							public IEncodersRaw,
 							public IPositionControlRaw,
+				            public IVelocityControlRaw,
 							public IControlModeRaw,
 							public ImplementControlMode,
 							public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
@@ -96,7 +100,7 @@ private:
     uint8_t 				*udppkt_data;
 	uint16_t 				udppkt_size;
 
-	hostTransceiver 		*transceiver;
+	//hostTransceiver 		*transceiver;
     yarp::os::Semaphore 	_mutex;
 
 	// Joint/Mechanical data
@@ -137,8 +141,8 @@ public:
 //    ethResources *resource;
 
     yarp::os::ConstString ethDevName;
-    PolyDriver polyDriver;
-
+    PolyDriver resource;
+    ethResources *res;
 
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
@@ -146,6 +150,7 @@ public:
 
     // _AC_
     bool configureTransceiver(ITransceiver *trans);
+    void getMotorController(DeviceDriver *iMC);
     bool alloc(int nj);
 
     bool __init(void);

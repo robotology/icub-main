@@ -138,7 +138,6 @@ embObjMotionControl::embObjMotionControl() : 	RateThread(10),
 				        _mutex(1)
 {
 	YARP_INFO(Logger::get(), "embObjMotionControl::embObjMotionControl()", Logger::get().log_files.f3);
-	transceiver = 0x00;
 	udppkt_data = 0x00;
 	udppkt_size = 0x00;
 
@@ -168,6 +167,23 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	strcpy(address, xtmp2.get(1).asString().c_str());
 	sprintf(info, "embObjMotionControl - referred to EMS: %s", address);
 
+	//
+	// open ethResource, if needed
+	//
+
+	Property prop;
+	ACE_TCHAR tmp[126];
+	string str=config.toString().c_str();
+	xtmp = Bottle(config.findGroup("FEATURES"));
+	prop.fromString(str.c_str());
+	prop.unput("device");
+	prop.unput("subdevice");
+	// look for Ethernet device driver to use and put it into the "device" field.
+	Value &device=xtmp.find("device");
+	prop.put("device", device.asString().c_str());
+
+	res = ethResCreator::getResource(prop);
+
 
 	//
 	//	CONFIGURATION
@@ -179,8 +195,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 //	double _zeros[100];
 
 
-	ACE_TCHAR tmp[126];
-	string str=config.toString().c_str();
+
 
     // get the pc104 ip address from config
     Value PC104IpAddress=config.find("PC104IpAddress");
@@ -239,10 +254,15 @@ bool embObjMotionControl::close()
     ImplementPidControl<embObjMotionControl, IPidControl>::uninitialize();
 }
 
-bool embObjMotionControl::configureTransceiver(ITransceiver *trans)
+/*bool embObjMotionControl::configureTransceiver(ITransceiver *trans)
 {
 	transceiver = (hostTransceiver *) trans;
 	return 1;
+}*/
+
+void embObjMotionControl::getMotorController(DeviceDriver *iMC)
+{
+
 }
 
 // Thread
@@ -401,9 +421,9 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 //	transceiver->askNV(endpoint_mc_leftlowerleg, nvid, (uint8_t *)&a, &sizze);
 
 	EOnv					*nv = NULL;
-	load_occasional_rop(eo_ropcode_ask, endpoint, id);
+	res->transceiver->load_occasional_rop(eo_ropcode_ask, endpoint_mc_leftlowerleg, nvid);
 	//_mutex.wait();		// meccanismo di wait
-	transceiver->getNVvalue(nv, (uint8_t *)&a, &sizze);
+	res->transceiver->getNVvalue(nv, (uint8_t *)&a, &sizze);
 }
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)

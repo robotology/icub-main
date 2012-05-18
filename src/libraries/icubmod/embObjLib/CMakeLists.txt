@@ -1,16 +1,19 @@
-# Create a library for all embObj stuff
+# Copyright: (C) 2010 RobotCub Consortium
+# Authors: Alberto Cardellino
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME hostTransceiver)
+SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
 PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}
-    INCLUDE hostTransceiver.hpp
-    WRAPPER " ")
+    			INCLUDE ethManager.h )
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
 
-# temporary using demo embObjLib.conf...
+#add_definitions( -DMYDEFINE=CIAO )
+
+# using embObjLib.conf...
  include(embObjLib.conf)
 #include ($ENV{ICUB_ROOT}/firmware/emBODY/arch-host/demo/hostTransceiver2/src/embObjLib.conf)
 
@@ -60,35 +63,25 @@ set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
 
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerleg_con.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerleg_usr.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerleg_usr_pippo.c
 
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_pippo.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_torso_con.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_torso_usr.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperarm_con.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperarm_usr.c
 
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_con.c
-							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_usr.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_usr_pippo.c  
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_usr.c 
 							)						
 
 set(NVS_MNGMNT_SOURCE		${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_con.c
-							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usr.c
-#							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usr_loc_board.c  
-							)
+							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usr.c	)
 
 set(NVS_SENSORS_SOURCE		${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as.c
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_body.c  
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_mxx.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_mxxdefault.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_mxxmacro.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_sxx.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_sxxdefault.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_sxxmacro.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_usr_mxxmacro.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_usr_nvmacro.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_usr_sxxmacro.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onemais_con.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onemais_usr.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onestrain_con.c 
@@ -103,41 +96,38 @@ set(NVS_SKIN_SOURCE			${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk.c
 							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_con.c							
 							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_usr.c )
 
-#set(NVS_USR_SOURCE			${NVS_USR_SRC_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c
-#							${NVS_USR_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c
-#							${NVS_USR_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usrcbk_ebx.c  )
 
 set(NVS_CBK_SOURCE			${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c
-							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c
+#							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c
 							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_pippo.c
-							${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
-							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
-							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c 
+#							${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
+#							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
+#							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c 
 							)
 
 
 # EmbObj-src
-set(CORE_FOLDER_SOURCE  			${CORE_FOLDER}/EOarray.c
-						${CORE_FOLDER}/EoCommon.c
-						${CORE_FOLDER}/EOconstarray.c
-						${CORE_FOLDER}/EOconstvector.c
-						${CORE_FOLDER}/EOdeque.c
-						${CORE_FOLDER}/EOfifo.c
-						${CORE_FOLDER}/EOfifoByte.c
-						${CORE_FOLDER}/EOfifoWord.c
-						${CORE_FOLDER}/EOlist.c
-						${CORE_FOLDER}/EOtheErrorManager.c
-						${CORE_FOLDER}/EOtheMemoryPool.c
-						${CORE_FOLDER}/EOvector.c)
+set(CORE_FOLDER_SOURCE  	${CORE_FOLDER}/EOarray.c
+							${CORE_FOLDER}/EoCommon.c
+							${CORE_FOLDER}/EOconstarray.c
+							${CORE_FOLDER}/EOconstvector.c
+							${CORE_FOLDER}/EOdeque.c
+							${CORE_FOLDER}/EOfifo.c
+							${CORE_FOLDER}/EOfifoByte.c
+							${CORE_FOLDER}/EOfifoWord.c
+							${CORE_FOLDER}/EOlist.c
+							${CORE_FOLDER}/EOtheErrorManager.c
+							${CORE_FOLDER}/EOtheMemoryPool.c
+							${CORE_FOLDER}/EOvector.c)
 
-set(CORE_VEE_SOURCE				${CORE_VEE_FOLDER}/EOVmutex.c
-						${CORE_VEE_FOLDER}/EOVtask.c
-						${CORE_VEE_FOLDER}/EOVtheSystem.c
-#						${CORE_API}/EOVmutex_hid.h
-#						${CORE_API}/EOVstorage_hid.h
-#						${CORE_API}/EOVtask_hid.h
-#						${CORE_API}/EOVtheSystem_hid.h
-						)
+set(CORE_VEE_SOURCE			${CORE_VEE_FOLDER}/EOVmutex.c
+							${CORE_VEE_FOLDER}/EOVtask.c
+							${CORE_VEE_FOLDER}/EOVtheSystem.c
+#							${CORE_API}/EOVmutex_hid.h
+#							${CORE_API}/EOVstorage_hid.h
+#							${CORE_API}/EOVtask_hid.h
+#							${CORE_API}/EOVtheSystem_hid.h
+							)
 						
 set(CORE_API_HEADER	  			${CORE_API}/EOarray.h
 						${CORE_API}/EoCommon.h
@@ -204,29 +194,30 @@ set(PROT_HEADER  				${PROT_FOLDER}/EOhostTransceiver_hid.h
 						${PROT_FOLDER}/EOtreenode_hid.h)
 
 
-set(IPNET_SOURCE				${IPNET_FOLDER}/EOpacket.c)
-
-set(IPNET_HEADER				${IPNET_FOLDER}/EOpacket_hid.h)
+set(IPNET_SOURCE		${IPNET_FOLDER}/EOpacket.c)
+set(IPNET_HEADER		${IPNET_FOLDER}/EOpacket_hid.h)
 
 
 set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
 
-set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp)
+set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
+						${EXTRA_FOLDER}/ethManager.cpp)
 
 set(embobj_source 		${BODY_COMMON_SOURCE} 
-				${CORE_FOLDER_SOURCE} 
-				${CORE_VEE_SOURCE}  
-				${PROT_SOURCE} 
-				${IPNET_SOURCE} 
-				${HAL_FAKE_SOURCE} 
-				${EXTRA_SOURCE}
-				${PROT_FOLDER}
-				${NVS_EB_SOURCE} 
-				${NVS_MC_SOURCE} 
-				${NVS_MNGMNT_SOURCE} 
-				${NVS_SENSORS_SOURCE} 
-				${NVS_SKIN_SOURCE} 
-				${NVS_USR_SOURCE} )
+						${CORE_FOLDER_SOURCE} 
+						${CORE_VEE_SOURCE}  
+						${PROT_SOURCE} 
+						${IPNET_SOURCE} 
+						${HAL_FAKE_SOURCE} 
+						${EXTRA_SOURCE}
+						${PROT_FOLDER}
+						${NVS_EB_SOURCE} 
+						${NVS_MC_SOURCE} 
+						${NVS_MNGMNT_SOURCE} 
+						${NVS_SENSORS_SOURCE} 
+						${NVS_SKIN_SOURCE} 
+						${NVS_USR_SOURCE} 
+						${NVS_CBK_SOURCE})
 
 
 set(embobj_header 		${BODY_COMMON_SOURCE} 

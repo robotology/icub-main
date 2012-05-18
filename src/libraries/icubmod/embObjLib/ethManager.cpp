@@ -30,8 +30,10 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 TheEthManager* TheEthManager::handle = 0x00;
+
 int TheEthManager::i = 0;
-int ethResources::how_many = 0;
+int ethResources::how_many_boards = 0;
+int ethResCreator::how_many = 0;
 
 ethResources::ethResources()
 {
@@ -49,7 +51,7 @@ ethResources::ethResources()
 
    	// Motion control handlers
    	//createMotionControlHandler = 0x00;
-   	motionCtrl = 0x00;
+   	//motionCtrl = 0x00;
 
    	//createSkinHandler = 0x00;
    	//createAnalogHandler = 0x00;
@@ -58,14 +60,70 @@ ethResources::ethResources()
 ethResources::~ethResources()
 {
 	char tmp[126];
-	sprintf(tmp, "\nethResources::~ethResources() 1 handle= %p - i=%d", theEthManager_h, how_many);
+	sprintf(tmp, "\nethResources::~ethResources() 1 handle= %p - i=%d", theEthManager_h, how_many_boards);
 	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 
 }
 
-bool ethResources::open(yarp::os::Searchable &config)
+ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 {
 	ACE_TCHAR tmp[126], address[64];
+	Bottle xtmp, xtmp2;
+//	string str=config.toString().c_str();
+	ACE_UINT16 loc_port, rem_port;
+	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
+	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
+
+	YARP_INFO(Logger::get(), " ethResCreator::getResource", Logger::get().log_files.f3);
+
+    //
+    // Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
+	//	a pointer to an already existing object
+    //
+
+	xtmp = Bottle(config.findGroup("ETH"));
+	xtmp2 = xtmp.findGroup("IpAddress");
+	strcpy(address, xtmp2.get(1).asString().c_str());
+	YARP_INFO(Logger::get(), String("IpAddress:\t") + address, Logger::get().log_files.f3);
+
+	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
+	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
+	YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
+	// Get EMS CmdPort from config file
+	xtmp2 = xtmp.findGroup("CmdPort");
+	rem_port = xtmp2.get(1).asInt();
+
+	// ACE format
+	ACE_INET_Addr tmp_addr;
+	tmp_addr.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
+
+	ethResources *newRes = NULL;
+	ethResIt iterator = ethResList.begin();
+
+	while(iterator!=ethResList.end())
+	{
+		if(tmp_addr == (*iterator)->getRemoteAddress() )
+		{
+			// device already exist.
+			newRes = (*iterator);
+		}
+		iterator++;
+	}
+
+	if ( NULL == newRes)
+	{
+		// device doesn't exist yet, create it
+		newRes = new ethResources;
+		newRes->open(config);
+		ethResList.push_back(newRes);
+	}
+
+	return newRes;
+}
+
+bool ethResources::open(yarp::os::Searchable &config)
+{
+	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
 //	string str=config.toString().c_str();
 	ACE_UINT16 loc_port, rem_port;
@@ -128,6 +186,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 
 	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
 	// Clean device and subdevice fileds
+#if 0
 	Property prop;
 	string str=config.toString().c_str();
 	xtmp = Bottle(config.findGroup("FEATURES"));
@@ -138,20 +197,26 @@ bool ethResources::open(yarp::os::Searchable &config)
 	Value &motionControl=xtmp.find("motionControl");
 	strcpy(tmp, motionControl.asString().c_str());
 	prop.put("device", motionControl.asString().c_str());
+
 	createMotionControlHandler.open(prop);
 	createMotionControlHandler.view(motionCtrl);
 	motionCtrl->configureTransceiver(transceiver);
 
+	//motionCtrl.open(prop);
+
+
     IPidControl       		*pipid;
     IPositionControl       	*popod;
     IVelocityControl		*vevel;
-    motionCtrl->view(pipid);
-    motionCtrl->view(popod);
-    motionCtrl->view(vevel);
+   // motionCtrl->view(pipid);
+   // motionCtrl->view(popod);
+   // motionCtrl->view(vevel);
 
-    view(pipid);
+    pipid = (IPidControl *) motionCtrl;
+    Pid p;
     view(popod);
     view(vevel);
+#endif
 	return true;
 }
 
@@ -167,17 +232,23 @@ void ethResources::getPack(uint8_t **pack, uint16_t *size)
 		transceiver->getTransmit(pack, size);
 }
 
+
 /*
 void ethResources::setCalibrator(ICalibrator *icalibrator)
 {
 	motionCtrl->setCalibrator(icalibrator);
 }
 */
-void ethResources::getControlCalibration(IControlCalibration2 **icalib)
-{
-	createMotionControlHandler.view(*icalib);
-
-}
+//void ethResources::getControlCalibration(IControlCalibration2 **icalib)
+//{
+//	createMotionControlHandler.view(*icalib);
+//
+//}
+//
+//void ethResources::getMotorController(DeviceDriver **iMC)
+//{
+//	*iMC =  this->motionCtrl;
+//}
 
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
@@ -194,7 +265,7 @@ ACE_INET_Addr	ethResources::getRemoteAddress()
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
-SendThread::SendThread() : RateThread(1000)
+SendThread::SendThread() : RateThread(5*1000)
 {
 	YARP_INFO(Logger::get(), "SendThread::SendThread()", Logger::get().log_files.f3);
 }
@@ -206,18 +277,21 @@ SendThread::~SendThread()
 
 void SendThread::run()
 {
-	for( int i=0; i<deviceList.size(); i++)
+	ethResIt iterator = ethResList.begin();
+
+	while(iterator!=ethResList.end())
 	{
 		data = 0;
 		size = 0;
-		deviceList[i].resource->getPack(&data, &size);
-		ACE_INET_Addr addr = deviceList[i].resource->getRemoteAddress();
+		(*iterator)->getPack(&data, &size);
+		ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
 		TheEthManager::instance()->send(data, size, addr);
+		iterator++;
 	}
 }
 
 
-TheEthManager::TheEthManager() : RateThread(10)
+TheEthManager::TheEthManager() : RateThread(1000)
 {
 	char tmp[126];
 	sprintf(tmp, "Error!!! Called constructor of ethResources without parameters!!! BTW, how can this be possible ???");
@@ -284,24 +358,24 @@ TheEthManager::~TheEthManager()
 
 bool TheEthManager::register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler)
 {
-	// put this device handler in a list somehow
-		deviceList.resize(deviceNum +1);
-
-#ifdef _DEBUG_
-	DeviceEntry	dev;
-	strcpy(dev.id, "0");
-	dev.resource = 0x00;
-	int t=deviceList.size();
-	void *p=&deviceList;
-#endif
-	strcpy(deviceList[deviceNum].id, new_dev_id);
-	deviceList[deviceNum].resource = new_dev_handler;
-	deviceNum++;
-
-#ifdef _DEBUG_
-	for (int i=0; i<t; i++)
-		dev=deviceList[i];
-#endif
+//	// put this device handler in a list somehow
+//		deviceList.resize(deviceNum +1);
+//
+//#ifdef _DEBUG_
+//	DeviceEntry	dev;
+//	strcpy(dev.id, "0");
+//	dev.resource = 0x00;
+//	int t=deviceList.size();
+//	void *p=&deviceList;
+//#endif
+//	strcpy(deviceList[deviceNum].id, new_dev_id);
+//	deviceList[deviceNum].resource = new_dev_handler;
+//	deviceNum++;
+//
+//#ifdef _DEBUG_
+//	for (int i=0; i<t; i++)
+//		dev=deviceList[i];
+//#endif
 	return true;
 }
 
@@ -323,19 +397,21 @@ void TheEthManager::run()
 
 	sender_addr.addr_to_string(address, 64);
 	printf("Received new packet from address %s, size = %d\n", address, recv_size);
-	int nDev = deviceList.size();
+
 	if( recv_size > 0)
 	{
-		for( int i=0; i<nDev; i++)
+		ethResIt iterator = ethResList.begin();
+
+		while(iterator!=ethResList.end())
 		{
-			if(strcmp(deviceList[i].id, address) == 0)
+			if(strcmp((*iterator)->address, address) == 0)
 			{
-				ethRes = deviceList[i].resource;
 				// come fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
 				memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-				ethRes->onMsgReception(ethRes->recv_msg, recv_size);
+				(*iterator)->onMsgReception(ethRes->recv_msg, recv_size);
 				//continue; // to skip remaining part of the for cycle
 			}
+			iterator++;
 		}
 	}
 
