@@ -7,6 +7,11 @@
  *
  */
 
+ /**
+* \file fggui2_main.cpp icub_framegrabbergui2 a graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
+*/
+
+
 /**
  * \defgroup icub_framegrabbergui2 frameGrabberGui2
  * @ingroup icub_guis
@@ -30,7 +35,7 @@
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * This file can be edited at src/gui/frameGrabberGui2/fggui2_main.cpp.
+ * This file can be edited at /src/tools/frameGrabberGui2/srcfggui2_main.cpp
  *
  */
 

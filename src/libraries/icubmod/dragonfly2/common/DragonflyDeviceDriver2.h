@@ -44,19 +44,22 @@ The dragonfly2 framegrabber device driver can acquire RGB color images in 320x24
 The dragonfly2raw framegrabber device driver can acquire raw format images in 640x480 resolution.
 
 \section intro_sec Description
-The dragonfly2 framegrabber device driver is based on libdc1394-2. 
+The dragonfly framegrabber device driver is based on libdc1394-2. 
+
 It can acquire RGB color images in 320x240 or 640x480 resolutions. 
 In 640x480 there are two options: Bayer decoding performed on board by the camera or Bayer pattern decoding performed by the driver. In the second mode the bandwidth required to the Firewire bus is lower, and thus the framerate can be up to 60 fps. In the first mode the framerate is limited to 15 fps with two cameras on the same channel. Moreover, once the resolution is chosen, 
 the image can be cropped on board by the camera before the transfer on the Firewire bus.
 
-The dragonfly2raw driver is the raw version (Bayer pattern image format) of dragonfly2. The image is transmitted in 
-yarp::sig::ImageOf<yarp::sig::PixelMono> format. 
+These functionalities are made availabe thought two YARP devices: dragonfly2 (for RGB images) and dragondly2raw (for raw images with Bayer encoding).
+
+Runtime parameters can be changed using the graphical interface: \ref icub_framegrabbergui2.
 
 \section lib_sec Libraries
 libdc1394-2 (Linux)
 PGRFlyCapture (Windows)
 
 \section parameters_sec Parameters
+
 --name             // image output port
 
 --video_type       // 1: RGB 320x240, 2: RGB 640x480, 3: RGB 640x480 (default) software Bayer decoding (higher fps) 
@@ -73,7 +76,20 @@ PGRFlyCapture (Windows)
 
 --feature          // camera feature setting, normalized between 0.0 and 1.0 (features listed below)
 
-Features:
+
+\subsection video_type The video_type parameter
+
+The video_type parameter determines how images are acquired by the dragonfly chip.
+
+-video_type 1: the image is acquired by the Dragonfly2 camera in 320x240 resolution as RGB color image, and transferred to the framegrabber driver memory buffer in this format. The Firewire bandwidth allows maximum framerate (60 fps) with two cameras. If specified, the --width and --height parameters will '''crop''' the image to the specified dimension.
+-video_type 2: the image is acquired by the Dragonfly2 camera in 640x480 resolution as RGB color image, and transferred to the framegrabber driver memory buffer in this format. The Firewire bandwidth allows 15 fps with two cameras. If specified, the --width and --height parameters will '''crop''' the image to the specified dimension.
+-video_type 3: the image is acquired as a raw Bayer pattern 640x480 image, and transferred in this format to the framegrabber driver memory buffer. In this way, the bandwidth required to the Firewire bus is lower than in the previous format, allowing 60 fps. The Bayer decoding to the usual RGB format provided by the DragonflyDeviceDriver2 framegrabber is performed at software level by the driver itself. If specified, the --width and --height parameters will '''crop''' the original 640 x 480 image to the specified dimension.
+
+\subsection port_units Port and Unit number
+
+Many cameras can coexist on the same Firewire bus (port), sharing the available bandwidth. Each camera connected to the same Firewire bus will be identified by a unit number. Port numbers, as well as unit numbers, are assigned increasingly starting from 0. The iCub robot has one only Firewire card, and thus its port number is always 0 (can be omitted). The two left and right cameras will be unit 0 and 1. Unfortunately, there is no way to fix, for instance, the left camera as unit 0 and the right to unit 1: it depends on the starting order. Thus, if launching the driver you notice that the right and left camera Yarp port names are inverted, you will have to stop and restart the driver inverting the names.
+
+\subsection features Features
 
 - brightness
 - exposure
@@ -84,6 +100,8 @@ Features:
 - shutter
 - gain
 - iris
+
+Please notice that ''exposure'' is an auto mode, if set it controls ''gain'' and ''shutter'' parameters in order to match the desired ''exposure''.
 
 \section portsa_sec Ports Accessed
 None.
@@ -110,39 +128,36 @@ Linux and Windows.
 \section example_sec Example Instantiation of the Module
 Usage syntax:
 
-yarpdev --device grabber --subdevice dragonfly2 --name <yarp port name> 
+icubmoddev --device grabber --subdevice dragonfly2 --name <yarp port name> 
 [--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
 [--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
-yarpdev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
+icubmoddev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
 [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
 [--unit_number|d <un>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 Example:
 
-yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
+icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
 
-yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
+icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
 
-yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
 
-yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
 
-\author Paul Fitzpatrick, Giorgio Metta, Alessandro Scalzo
+\author Paul Fitzpatrick, Lorenzo Natale, Giorgio Metta, Alessandro Scalzo
 
 Copyright (C) 2008 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at src/modules/dragonfly2/DragonflyDeviceDriver2.h
+This file can be edited at /src/libraries/icubmod/dragonfly2/common/DragonflyDeviceDriver2.h
 **/
 
 /**
 * dragonfly2 and dragonfly2raw device driver implementation.
 */
-
-
-
 class yarp::dev::DragonflyDeviceDriver2 : 
     public IPreciselyTimed,
     public virtual IFrameGrabber,
