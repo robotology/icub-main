@@ -8,7 +8,7 @@
  */
 
  /**
-* \file fggui2_main.cpp icub_framegrabbergui2 a graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
+* \file fggui2_main.cpp A graphical interface to set gain, shutter, brightness and color balance on a remote framegrabber.
 */
 
 
