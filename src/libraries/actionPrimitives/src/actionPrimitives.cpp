@@ -96,11 +96,11 @@ class ArmWayPoints : public RateThread
     void printWayPoint()
     {
         if (wayPoints[i].oEnabled)
-            action->printMessage("reaching waypoint %d: x=[%s]; o=[%s]\n",i,
+            action->printMessage("reaching waypoint(%d): x=[%s]; o=[%s]\n",i,
                                  wayPoints[i].x.toString(3,3).c_str(),
                                  wayPoints[i].o.toString(3,3).c_str());
         else
-            action->printMessage("reaching waypoint %d: x=[%s]\n",i,
+            action->printMessage("reaching waypoint(%d): x=[%s]\n",i,
                                  wayPoints[i].x.toString(3,3).c_str());
     }
 
