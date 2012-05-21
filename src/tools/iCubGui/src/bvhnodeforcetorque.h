@@ -34,7 +34,7 @@ class BVHNodeForceTorque : public BVHNodeDH
     BVHNodeForceTorque(const QString& name,const QString& portName,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
         : BVHNodeDH(name,enc,a,d,alpha,theta0,mesh)
     {
-        mPort.open(portName.ascii());
+        mPort.open((GUI_NAME+portName.ascii()).c_str());
 
         if (pMesh)
         {

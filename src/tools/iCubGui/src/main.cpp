@@ -130,6 +130,8 @@
 
 qavimator* mw=NULL;
 
+std::string GUI_NAME("/iCubGui");
+
 void sig_handler(int sig)
 {
     if (mw) mw->fileExit();

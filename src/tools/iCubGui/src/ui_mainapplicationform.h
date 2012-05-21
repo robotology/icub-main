@@ -119,6 +119,8 @@ public:
         int width=850;
         int height=600;
 
+        if (config.check("name")) GUI_NAME=std::string(config.find("name").asString().c_str());
+        if (GUI_NAME[0]!='/') GUI_NAME=std::string("/")+GUI_NAME;
         if (config.check("width")) width=config.find("width").asInt();
         if (config.check("height")) height=config.find("height").asInt();
         

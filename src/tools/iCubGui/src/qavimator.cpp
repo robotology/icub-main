@@ -38,7 +38,7 @@ qavimator::qavimator(yarp::os::ResourceFinder& config) : QMainWindow(0)
 
     setupUi(this,config);
 
-    setCaption("iCubGui");
+    setCaption(GUI_NAME.c_str());
 
     readSettings();
 

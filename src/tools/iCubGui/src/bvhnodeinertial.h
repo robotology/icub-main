@@ -20,6 +20,9 @@
 
 #include "bvhnodeend.h"
 
+#include <string.h>
+extern std::string GUI_NAME;
+
 class BVHNodeINERTIAL : public BVHNodeEND 
 {
 public:
@@ -29,7 +32,7 @@ public:
         { 
             memset(dInertial,0,sizeof(dInertial));
             
-            portIMU.open("/iCubGui/inertial:i");
+            portIMU.open((GUI_NAME+"/inertial:i").c_str());
         }
         
 	virtual ~BVHNodeINERTIAL()

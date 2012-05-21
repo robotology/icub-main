@@ -30,6 +30,9 @@
 #include <GL/glu.h>
 #endif
 
+#include <string.h>
+extern std::string GUI_NAME;
+
 class ObjectsManager
 {
 public:
@@ -37,9 +40,9 @@ public:
     {
         bReset=false;
 
-        mObjPort.open(objPortName);
-        mTexPort.open(texPortName);
-        mForcePort.open(forcePortName);
+        mObjPort.open((GUI_NAME+objPortName).c_str());
+        mTexPort.open((GUI_NAME+texPortName).c_str());
+        mForcePort.open((GUI_NAME+forcePortName).c_str());
 
         mObjPort.setStrict();
         mTexPort.setStrict();

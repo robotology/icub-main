@@ -25,6 +25,8 @@
 
 #include "bvh.h"
 
+extern std::string GUI_NAME;
+
 BVH::BVH(ObjectsManager *objManager)
 {
     pRoot=NULL;
@@ -143,12 +145,12 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
   
     Network::init();
 
-    portEncTorso.open("/iCubGui/torso:i");
-    portEncHead.open("/iCubGui/head:i");
-    portEncLeftArm.open("/iCubGui/left_arm:i");
-    portEncRightArm.open("/iCubGui/right_arm:i");
-    portEncLeftLeg.open("/iCubGui/left_leg:i");
-    portEncRightLeg.open("/iCubGui/right_leg:i");
+    portEncTorso.open((GUI_NAME+"/torso:i").c_str());
+    portEncHead.open((GUI_NAME+"/head:i").c_str());
+    portEncLeftArm.open((GUI_NAME+"/left_arm:i").c_str());
+    portEncRightArm.open((GUI_NAME+"/right_arm:i").c_str());
+    portEncLeftLeg.open((GUI_NAME+"/left_leg:i").c_str());
+    portEncRightLeg.open((GUI_NAME+"/right_leg:i").c_str());
 
     dEncTorso=dEncHead=dEncLeftArm=dEncRightArm=dEncLeftLeg=dEncRightLeg=0;
 
@@ -354,41 +356,5 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     return node;
 }
 
-/*
-PolyDriver* BVH::OpenDriver(QString part)
-{
-    Property options;
-    if (robot=="/icubSim") 
-        options.put("robot","icubSim");
-    else
-        options.put("robot","icub");
-    options.put("device","remote_controlboard");
-    options.put("local",(QString("/iCubGui")+part).latin1());
-    options.put("remote",(robot+part).latin1());
-   
-    PolyDriver *pDriver=new PolyDriver(options);
-   
-    if (!pDriver->isValid()) 
-    {
-        pDriver->close();
-        delete pDriver;
-        pDriver=0; 
-        //Network::fini();
-        //exit(-1);
-    }
-   
-    return pDriver;
-}
-
-void BVH::CloseDriver(PolyDriver* &pDriver)
-{
-    if (pDriver)
-    {
-        pDriver->close();
-        delete pDriver;
-        pDriver=0;
-    }
-}
-*/
 
 
