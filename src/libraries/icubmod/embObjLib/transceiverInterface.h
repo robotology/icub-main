@@ -16,7 +16,7 @@ public:
 	virtual ~ITransceiver(){}
 
 	// initialize the transceiver
-	virtual void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize) =0;
+	virtual void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t borad_n) =0;
 
 	// Do something with the packet received from the socket
 	virtual void onMsgReception(uint8_t *data, uint16_t size) =0;

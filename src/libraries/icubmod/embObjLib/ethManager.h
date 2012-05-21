@@ -45,11 +45,9 @@ using namespace std;
 // to clean creating an Interface with some common method for ethResources and something like that for the canBus
 //#include "../ethManager/iCubDeviceInterface.h"
 //#include "../embObjMotionControl/embObjMotionControl.h"
-#include "../embObjLib/hostTransceiver.hpp"
-#include "../embObjLib/transceiverInterface.h"
+#include "hostTransceiver.hpp"
+#include "transceiverInterface.h"
 
-// Boards configurations
-#include "eOcfg_EPs_eb7.h"
 
 
 // ACE stuff

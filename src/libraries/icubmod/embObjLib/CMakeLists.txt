@@ -53,7 +53,8 @@ set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
 #							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_jxxmacro.c
 #							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_mxxmacro.c
 #							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_nvmacro.c
-
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_cxx.c
+							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_cxxdefault.c
 #							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_con.c
 #							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_usr.c
 #							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_usr_pippo.c
@@ -73,8 +74,11 @@ set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperleg_usr.c 
 							)						
 
-set(NVS_MNGMNT_SOURCE		${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_con.c
-							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mngmnt_usr.c	)
+set(NVS_MNGMNT_SOURCE		${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mn.c
+							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mn_appl_con.c
+							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mn_appl_usr.c
+							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mn_comm_con.c
+							${NVS_MNGMNT_SRC_FOLDER}eOcfg_nvsEP_mn_comm_usr.c )
 
 set(NVS_SENSORS_SOURCE		${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as.c
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_any_con_body.c  

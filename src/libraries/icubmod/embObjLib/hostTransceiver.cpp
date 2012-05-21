@@ -26,7 +26,7 @@ extern "C" {
 
 // the endpoints on that particular ems
 }
-#include "eOcfg_EPs_eb7.h"
+
 
 // mutex
 //#include <pthread.h>
@@ -65,20 +65,58 @@ hostTransceiver::~hostTransceiver()
 
 }
 
-void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize = EOK_HOSTTRANSCEIVER_capacityofpacket)
+void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize, uint8_t _board_n)
 {
 	YARP_INFO(Logger::get(),"hostTransceiver::init", Logger::get().log_files.f3);
 
     // the configuration of the transceiver: it is specific of a given remote board
-    eOhosttransceiver_cfg_t hosttxrxcfg = 
+
+    eOhosttransceiver_cfg_t hosttxrxcfg;
+    hosttxrxcfg.remoteboardipv4addr   	= 	_remoteipaddr;
+    hosttxrxcfg.remoteboardipv4port 	=  	_ipport;
+    hosttxrxcfg.tobedefined 			=   0;
+
+
+    switch(_board_n)
     {
-        EO_INIT(.vectorof_endpoint_cfg) 	eo_cfg_EPs_vectorof_eb7,
-        EO_INIT(.hashfunction_ep2index)		eo_cfg_nvsEP_eb7_fptr_hashfunction_ep2index,
-        EO_INIT(remoteboardipv4addr)    	_remoteipaddr,
-        EO_INIT(.remoteboardipv4port)   	_ipport,
-        EO_INIT(.tobedefined)           	0
-    };
-    
+    	case 1:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb1;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb1_fptr_hashfunction_ep2index;
+    		break;
+    	case 2:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb2;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb2_fptr_hashfunction_ep2index;
+    		break;
+    	case 3:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb3;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb3_fptr_hashfunction_ep2index;
+    		break;
+    	case 4:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb4;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb4_fptr_hashfunction_ep2index;
+    		break;
+    	case 5:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb5;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb5_fptr_hashfunction_ep2index;
+    		break;
+    	case 6:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb6;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb6_fptr_hashfunction_ep2index;
+    		break;
+    	case 7:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb7;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb7_fptr_hashfunction_ep2index;
+    		break;
+    	case 8:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb8;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb8_fptr_hashfunction_ep2index;
+    		break;
+    	case 9:
+    		hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb9;
+    		hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb9_fptr_hashfunction_ep2index;
+    		break;
+	}
+
     localipaddr  = _localipaddr;
     remoteipaddr = _remoteipaddr;
     ipport       = _ipport;
@@ -337,7 +375,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 {
 	YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
 
-	uint8_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
+	uint16_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
 	EOtreenode	*nvTreenodeRoot;
 	EOnv 		*nvRoot;
 	EOnv		tmp;

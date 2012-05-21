@@ -26,6 +26,22 @@ extern "C" {
 #include "EOhostTransceiver.h"
 #include "transceiverInterface.h"
 
+	// Boards configurations
+
+#include "eOcfg_nvsEP_mn.h"
+#include "eOcfg_nvsEP_mc.h"
+#include "eOcfg_nvsEP_sk.h"
+
+#include "eOcfg_EPs_eb1.h"
+#include "eOcfg_EPs_eb2.h"
+#include "eOcfg_EPs_eb3.h"
+#include "eOcfg_EPs_eb4.h"
+#include "eOcfg_EPs_eb5.h"
+#include "eOcfg_EPs_eb6.h"
+#include "eOcfg_EPs_eb7.h"
+#include "eOcfg_EPs_eb8.h"
+#include "eOcfg_EPs_eb9.h"
+
 #ifdef __cplusplus
 }
 #endif
@@ -45,14 +61,12 @@ private:
 	uint32_t            remoteipaddr;
 	uint16_t            ipport;
 	EOpacket*           pkt;
-	int					culo;
 
-public:
 public:
 	hostTransceiver();
     ~hostTransceiver();
 
-	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize);
+	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
 	// as an alternative ... create one methd which clears the remote vars, one which pushes one ack, and another the confirms them all.
 	void hostTransceiver_ConfigureRegularsOnRemote(void);
@@ -79,7 +93,7 @@ public:
 	void getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
 	EOnv* getNVhandler(uint16_t endpoint, uint16_t id);
 	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
-} ;
+};
 
 #endif  // include-guard
 

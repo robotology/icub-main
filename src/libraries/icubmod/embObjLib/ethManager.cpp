@@ -123,6 +123,8 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
+#warning "pick up the right borad number"
+	uint8_t board_n = 4;
 	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
 //	string str=config.toString().c_str();
@@ -182,7 +184,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	transceiver= new hostTransceiver;
 //	createProtocolHandler.open("hostTransceiver");
 //	createProtocolHandler.view(transceiver);
-	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket);
+	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, board_n);
 
 	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
 	// Clean device and subdevice fileds
