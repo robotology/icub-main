@@ -16,10 +16,136 @@ const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 using namespace std;
 
+
+#ifdef _AC_
+	#include "/usr/local/src/robot/iCub/pc104/device-drivers/cfw002/src/LinuxDriver/API/libcfw002.h"
+#else
+	#include "libcfw002.h"
+#endif
+
+
+Cfw2CanMessage::Cfw2CanMessage()
+{
+	msg=0;
+}
+
+Cfw2CanMessage::~Cfw2CanMessage()
+{
+}
+
+CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)
+{
+    const Cfw2CanMessage &tmp=dynamic_cast<const Cfw2CanMessage &>(l);
+    memcpy(msg, tmp.msg, sizeof(CFWCAN_MSG));
+    return *this;
+}
+
+
+unsigned int Cfw2CanMessage::getId() const
+{
+	return msg->id;
+}
+
+unsigned char Cfw2CanMessage::getLen() const
+{
+	return msg->len;
+}
+
+void Cfw2CanMessage::setLen(unsigned char len)
+{
+	msg->len = len;
+}
+
+void Cfw2CanMessage::setId(unsigned int id)
+{
+	msg->id = id;
+}
+
+const unsigned char *Cfw2CanMessage::getData() const
+{
+	return msg->data;
+}
+
+unsigned char *Cfw2CanMessage::getData()
+{
+	return msg->data;
+}
+
+unsigned char *Cfw2CanMessage::getPointer()
+{
+	return (unsigned char *) msg;
+}
+
+const unsigned char *Cfw2CanMessage::getPointer() const
+{
+	return (const unsigned char *) msg;
+}
+
+void Cfw2CanMessage::setBuffer(unsigned char *b)
+{
+	if (b != 0)
+		msg = (CFWCAN_MSG *) (b);
+}
+
+
+CanBuffer EmbObjSkin::createBuffer(int elem)
+   {
+       CanBuffer ret;
+       CFWCAN_MSG *storage=new CFWCAN_MSG[elem];
+       CanMessage **messages=new CanMessage *[elem];
+       Cfw2CanMessage *tmp=new Cfw2CanMessage[elem];
+
+       memset(storage, 0, sizeof(CFWCAN_MSG)*elem);
+
+       for(int k=0;k<elem;k++)
+           {
+               messages[k]=&tmp[k];
+               messages[k]->setBuffer((unsigned char *)(&storage[k]));
+           }
+
+       ret.resize(messages, elem);
+       return ret;
+   }
+
+ void EmbObjSkin::destroyBuffer(CanBuffer &buffer)
+   {
+       CanMessage **m=buffer.getPointer();
+       CFWCAN_MSG *storage=0;
+       Cfw2CanMessage *msgs=0;
+
+       if (m==0)
+           {
+               fprintf(stderr, "Warning trying to detroy non valid buffer\n");
+               return;
+           }
+
+       storage=reinterpret_cast<CFWCAN_MSG *>(m[0]->getPointer());
+       msgs=dynamic_cast<Cfw2CanMessage *>(m[0]);
+
+       if ((msgs==0)||(storage==0))
+           {
+               fprintf(stderr, "Warning, troubles destroying memory\n");
+               return;
+           }
+
+       delete [] storage;
+       delete [] msgs;
+       delete [] m;
+   }
+
+
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
 	// Debug info
-	YARP_INFO(Logger::get(), "embObjMotionControl::open", Logger::get().log_files.f3);
+	YARP_INFO(Logger::get(), "EmbObjSkin::open", Logger::get().log_files.f3);
+
+
+	// Check input parameters
+	int i;
+	bool correct=true;
+	correct &= config.check("Period");
+	correct &= config.check("IpAddress");
+
 
 	memset(info, 0x00, SIZE_INFO);
 	Bottle xtmp, xtmp2;
@@ -27,29 +153,46 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	xtmp = Bottle(config.findGroup("ETH"));
 	xtmp2 = xtmp.findGroup("IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
-	sprintf(info, "embObjMotionControl - referred to EMS: %s", address);
+	sprintf(info, "EmbObjSkin - referred to EMS: %s", address);
 #if SKIN_DEBUG
 	fprintf(stderr, "%s\n", config.toString().c_str());
 #endif
 
-	// Check input parameters
-	int i;
-	bool correct=true;
-	correct &= config.check("canbusdevice");
-	correct &= config.check("CanDeviceNum");
-	correct &= config.check("SkinCanIds");
-	correct &= config.check("Period");
+
+
+
+
 
 	if (!correct)
 	{
-		std::cerr<<"Error: insufficient parameters to SkinPrototypce\n";
+		std::cerr<<"Error: insufficient parameters to SkinPrototype\n";
 		return false;
 	}
 
-#if 1
 	//
+	//	CONFIGURATION
+	//
+
+
+//	Property prop;
+//
+//	prop.put("device", config.find("canbusdevice").asString().c_str());
+//	prop.put("CanTxTimeout", 500);
+//	prop.put("CanRxTimeout", 500);
+//	prop.put("CanDeviceNum", config.find("CanDeviceNum").asInt());
+//	prop.put("CanMyAddress", 0);
+//	prop.put("CanTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
+//	prop.put("CanRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
+
+//	driver.open(prop);
+//	if (!driver.isValid())
+//	{
+//		fprintf(stderr, "Error opening PolyDriver check parameters\n");
+//		return false;
+//	}
+
+
 	// open ethResource, if needed
-	//
 
 	Property prop;
 	ACE_TCHAR tmp[126];
@@ -65,10 +208,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	res = ethResCreator::getResource(prop);
 
 
-	//
-	//	CONFIGURATION
-	//
-#else
+
+#if 1
 
 	int period=config.find("Period").asInt();
 	setRate(period);
@@ -88,45 +229,29 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 #endif
 	}
 
-	Property prop;
+	//pCanBus=0;
+//	pCanBufferFactory=0;
 
-	prop.put("device", config.find("canbusdevice").asString().c_str());
-	prop.put("CanTxTimeout", 500);
-	prop.put("CanRxTimeout", 500);
-	prop.put("CanDeviceNum", config.find("CanDeviceNum").asInt());
-	prop.put("CanMyAddress", 0);
-	prop.put("CanTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
-	prop.put("CanRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
 
-	pCanBus=0;
-	pCanBufferFactory=0;
+	//driver.view(pCanBus);	// ??
+//	if (!pCanBus)
+//	{
+//		fprintf(stderr, "Error opening /ecan device not available\n");
+//		return false;
+//	}
 
-	driver.open(prop);
-	if (!driver.isValid())
-	{
-		fprintf(stderr, "Error opening PolyDriver check parameters\n");
-		return false;
-	}
+//	driver.view(pCanBufferFactory);
+//	pCanBus->canSetBaudRate(0); //default 1MB/s
 
-	driver.view(pCanBus);
+	// configure HW can filter
+//	for (int i=0; i<cardId.size(); i++)
+//		for (int id=0; id<16; ++id)
+//		{
+//			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
+//		}
 
-	if (!pCanBus)
-	{
-		fprintf(stderr, "Error opening /ecan device not available\n");
-		return false;
-	}
-
-	driver.view(pCanBufferFactory);
-	pCanBus->canSetBaudRate(0); //default 1MB/s
-
-	for (int i=0; i<cardId.size(); i++)
-		for (int id=0; id<16; ++id)
-		{
-			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
-		}
-
-	outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
-	inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
+	outBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
+	inBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
 #endif
 	//elements are:
 	sensorsNum=16*12*cardId.size();
@@ -139,12 +264,12 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 bool EmbObjSkin::close()
 {
 	RateThread::stop();
-	if (pCanBufferFactory)
+//	if (pCanBufferFactory)
 	{
-		pCanBufferFactory->destroyBuffer(inBuffer);
-		pCanBufferFactory->destroyBuffer(outBuffer);
+		destroyBuffer(inBuffer);
+		destroyBuffer(outBuffer);
 	}
-	driver.close();
+//	driver.close();
 	return true;
 }
 
@@ -169,6 +294,8 @@ int EmbObjSkin::getChannels()
 
 int EmbObjSkin::calibrateSensor()
 {
+	YARP_INFO(Logger::get(),"EmbObjSkin::calibrateSensor", Logger::get().log_files.f3);
+
 	for (int i=0; i<cardId.size(); i++)
 	{
 #if SKIN_DEBUG
@@ -190,10 +317,19 @@ int EmbObjSkin::calibrateSensor()
 		msg.getData()[7]=0;
 		msg.setLen(8);
 		canMessages=0;
-		pCanBus->canWrite(outBuffer, 1, &canMessages);
+		// create a ROP to start/initialize the MTB, if needed
+//		pCanBus->canWrite(outBuffer, 1, &canMessages);
 	}
 
-	return AS_OK;
+
+	int 							j=0;
+	eOmc_joint_config_t				a;
+	uint16_t						sizze;
+
+	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_leftlowerarm, (eo_cfg_nvsEP_sk_skinNumber_t)j, skinNVindex_sconfig__sigmode);
+	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_sk_emsboard_leftlowerarm, nvid);
+
+	return true;
 }
 
 int EmbObjSkin::calibrateChannel(int ch, double v)
@@ -236,7 +372,8 @@ bool EmbObjSkin::threadInit()
 		msg.getData()[7]=0;
 		msg.setLen(8);
 		canMessages=0;
-		pCanBus->canWrite(outBuffer, 1, &canMessages);
+		// create a ROP to start/initialize the MTB, if needed
+//		pCanBus->canWrite(outBuffer, 1, &canMessages);
 	}
 
 	return true;
@@ -248,7 +385,8 @@ void EmbObjSkin::run()
 
 	unsigned int canMessages=0;
 
-	bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
+	// read nv from NvsCfg DataBase
+	//bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
 	if (!res)
 	{
 		std::cerr<<"canRead failed\n";
