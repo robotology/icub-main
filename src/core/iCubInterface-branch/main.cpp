@@ -142,6 +142,11 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 #include "ControlBoardWrapper.h"
 #include <yarp/dev/Drivers.h>
 
+//#define _AC_
+
+#include <yarp/os/impl/Logger.h>
+using namespace yarp::os::impl;
+
 YARP_DECLARE_DEVICES(icubmod)
 
 using namespace yarp::os;
@@ -178,6 +183,17 @@ static void sighandler (int) {
 int main(int argc, char *argv[]) 
 {
 	Network yarp; //initialize network, this goes before everything
+
+
+#ifdef _AC_
+	Logger::get();
+    Logger::get().setVerbosity(LM_DEBUG);
+	Logger::get().log_files.f1=stdout;
+	Logger::get().log_files.f2=stderr;
+	Logger::get().log_files.f3=fopen("/home/icub/logs/trace.log", "w+");
+	Logger::get().log_files.f4=fopen("/home/icub/logs/debug.log", "w+");
+	Logger::get().log_files.f5=fopen("/home/icub/logs/other.log", "w+");
+#endif
 
 	if (!yarp.checkNetwork())
 	{
@@ -292,10 +308,13 @@ int main(int argc, char *argv[])
 		return 1;
 	}   
 
+	fprintf(stderr, "terminee.isOk\n");
+
 	IRobotInterface *i;
 	if (remap)
 	{
         i=new RobotInterfaceRemap;
+    	fprintf(stderr, "RobotInterfaceRemap\n");
 	}
 	else
 	{
@@ -345,5 +364,13 @@ int main(int argc, char *argv[])
 	ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
 	delete i; 
 	i=0;
+#ifdef _AC_
+	if( Logger::get().log_files.f3 != 0)
+		fclose(Logger::get().log_files.f3);
+	if( Logger::get().log_files.f4 != 0)
+		fclose(Logger::get().log_files.f4);
+	if( Logger::get().log_files.f5 != 0)
+		fclose(Logger::get().log_files.f5);
+#endif
 	return 0;  
 }

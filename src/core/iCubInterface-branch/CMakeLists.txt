@@ -13,6 +13,9 @@ SET(folder_header ${folder_header} ${tmp})
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
+set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
+include(../../libraries/icubmod/embObjLib/embObjLib.conf)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
                     ${iCubDev_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})

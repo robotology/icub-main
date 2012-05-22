@@ -55,7 +55,10 @@ inline void DEBUG_CW2(const char *fmt, ...)
 #endif
 }
 
+#include <yarp/os/impl/Logger.h>
+
 #include "ControlBoardWrapper.h"
+
 
 #ifdef MSVC
 	#pragma warning(disable:4355)
@@ -64,6 +67,7 @@ inline void DEBUG_CW2(const char *fmt, ...)
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
+using namespace yarp::os::impl;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
@@ -79,7 +83,8 @@ class ControlBoardWrapper2;
 * Helper object for reading config commands for the ControlBoardWrapper
 * class.
 */
-class CommandsHelper2 : public DeviceResponder {
+class CommandsHelper2 : public DeviceResponder
+{
 protected:
     ControlBoardWrapper2   *caller;
     yarp::dev::IPidControl          *pid;
@@ -206,7 +211,6 @@ struct DevicesLutEntry
     int deviceEntry; //index to the joint corresponding subdevice in the list
 };
 
-
 class WrappedDevice
 {
 public:
@@ -300,6 +304,7 @@ public:
     */
     ControlBoardWrapper2() : RateThread(20), callback_impl(this), command_reader(this)
     {
+    	////YARP_TRACE(Logger::get(),"ControlBoardWrapper2::ControlBoardWrapper2()", Logger::get().log_files.f3);
         controlledJoints = 0;
         thread_period = 20; // ms.
 
@@ -307,6 +312,7 @@ public:
     }
 
     virtual ~ControlBoardWrapper2() {
+    	//YARP_TRACE(Logger::get(),"ControlBoardWrapper2::~ControlBoardWrapper2()", Logger::get().log_files.f3);
         closeMain();
     }
 
@@ -369,7 +375,9 @@ public:
     * @param p new pid value
     * @return true/false on success/failure
     */
-    virtual bool setPid(int j, const Pid &p) {
+    virtual bool setPid(int j, const Pid &p)
+    {
+    	YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPid", Logger::get().log_files.f3);
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -381,6 +389,7 @@ public:
         {
             return s->pid->setPid(off+base, p);
         }
+
         return false;
     }
 
@@ -388,7 +397,9 @@ public:
     * @param ps pointer to a vector of pids
     * @return true/false upon success/failure
     */
-    virtual bool setPids(const Pid *ps) {
+    virtual bool setPids(const Pid *ps)
+    {
+    	YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids", Logger::get().log_files.f3);
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)
@@ -407,6 +418,7 @@ public:
             else
                 ret=false;
         }
+     	YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids - niente!", Logger::get().log_files.f3);
         return ret;
     }
 
@@ -419,7 +431,9 @@ public:
     * @param ref new reference point
     * @return true/false upon success/failure
     */
-    virtual bool setReference(int j, double ref) {
+    virtual bool setReference(int j, double ref)
+    {
+    	YARP_INFO(Logger::get(),"ControlBoardWrapper2::setReference", Logger::get().log_files.f3);
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -625,7 +639,10 @@ public:
     * @param p pointer to storage for the return value.
     * @return success/failure
     */
-    virtual bool getPid(int j, Pid *p) {
+    virtual bool getPid(int j, Pid *p)
+    {
+    	YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPid", Logger::get().log_files.f3);
+#warning "check for max number of joints!?!?!"
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -644,7 +661,9 @@ public:
     * @param pids vector that will store the values of the pids.
     * @return success/failure
     */
-    virtual bool getPids(Pid *pids) {
+    virtual bool getPids(Pid *pids)
+    {
+    	YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPids", Logger::get().log_files.f3);
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)

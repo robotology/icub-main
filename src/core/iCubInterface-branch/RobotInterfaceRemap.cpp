@@ -22,6 +22,14 @@
 
 #include <iCub/FactoryInterface.h>
 
+// Logger interface
+#include <yarp/os/Log.h>
+#include <yarp/os/impl/Logger.h>
+
+//#include "../../libraries/icubmod/ethManager/iCubDeviceInterface.h"
+//#include "../../libraries/icubmod/ethManager/ethManager.h"
+
+using namespace yarp::os::impl;
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace std;
@@ -50,17 +58,22 @@ RobotNetworkEntry *RobotNetwork::find(const string &id)
 
 RobotPartEntry::RobotPartEntry()
 {
+	YARP_INFO(Logger::get(),"RobotPartEntry::RobotPartEntry()", Logger::get().log_files.f3);
     iwrapper=0;
 }
 
 RobotPartEntry::~RobotPartEntry()
 {
+	YARP_INFO(Logger::get(),"RobotPartEntry::~RobotPartEntry()", Logger::get().log_files.f3);
     close();
 }
 
 bool RobotPartEntry::open(Property &p)
 {
-    driver.open(p);
+	YARP_INFO(Logger::get(),"RobotPartEntry::open()", Logger::get().log_files.f3);
+
+	driver.open(p);
+
     if (!driver.isValid())
         return false;
 
@@ -74,6 +87,7 @@ bool RobotPartEntry::open(Property &p)
 
 void RobotPartEntry::close()
 {
+	YARP_INFO(Logger::get(),"RobotPartEntry::close() ", Logger::get().log_files.f3);
     if (driver.isValid())
     {
         iwrapper=0;
@@ -95,175 +109,6 @@ RobotPartEntry *RobotParts::find(const string &pName)
     return 0;
 }
 
-SkinPartEntry::SkinPartEntry()
-{
-    analogServer=0;
-    analog=0;
-}
-
-SkinPartEntry::~SkinPartEntry()
-{
-
-}
-
-void SkinPartEntry::calibrate()
-{
-	if (analog)
-	{
-		analog->calibrateSensor();
-	}
-}
-
-bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP){
-    bool correct=true;
-    correct=correct&&partP.check("device");
-    correct=correct&&partP.check("robot");
-    correct=correct&&partP.check("canbusdevice");
-	//correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
-    
-    if (!correct)
-        return false;
-
-    int period=20;
-    if (partP.check("period"))
-    {
-        period=partP.find("period").asInt();
-    }
-    else
-    {
-        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
-    }
-
-	// Open the device
-    std::string devicename=partP.find("device").asString().c_str();
-    deviceP.put("device", devicename.c_str());
-
-    std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
-    deviceP.put("canbusdevice", canbusdevice.c_str());
-
-    driver.open(deviceP);
-    if (!driver.isValid())
-        return false;
-
-    driver.view(analog);
-
-    if (!analog)
-    {
-        std::cerr<<"Error: part "<<id<<" device " << devicename << " does not implement analog interface"<<endl;
-        driver.close();
-        return false;
-    }
-
-	// Read the list of ports
-    std::string robotName=partP.find("robot").asString().c_str();
-    std::string root_name;
-    root_name+="/";
-    root_name+=robotName;
-    root_name+="/skin/";
-
-	std::vector<AnalogPortEntry> skinPorts;
-	if(!partP.check("ports")){	
-		// if there is no "ports" section take the name of the "skin" group as the only port name
-		skinPorts.resize(1);
-		skinPorts[0].offset = 0;
-		skinPorts[0].length = -1;
-		skinPorts[0].port_name = root_name + this->id;
-	}
-	else{
-		Bottle *ports=partP.find("ports").asList();
-
-		if (!partP.check("total_taxels", "number of taxels of the part"))
-			return false;
-		int total_taxels=partP.find("total_taxels").asInt();
-		int nports=ports->size();
-		int totalT = 0;
-		skinPorts.resize(nports);
-	    
-		for(int k=0;k<ports->size();k++)
-		{
-			Bottle parameters=partP.findGroup(ports->get(k).asString().c_str());
-
-			if (parameters.size()!=5)
-			{
-				cerr<<"Error: check skin port parameters in part description"<<endl;
-				cerr<<"--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers"<<endl;
-				return false;
-			}
-
-			int wBase=parameters.get(1).asInt();
-			int wTop=parameters.get(2).asInt();
-			int base=parameters.get(3).asInt();
-			int top=parameters.get(4).asInt();
-
-			cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
-
-			//check consistenty
-			if(wTop-wBase != top-base){
-				cerr<<"Error: check skin port parameters in part description"<<endl;
-				cerr<<"Numbers of mapped taxels do not match.\n";
-				return false;
-			}
-			int taxels=top-base+1;
-
-			skinPorts[k].length = taxels;
-			skinPorts[k].offset = wBase;
-			skinPorts[k].port_name = root_name+string(ports->get(k).asString().c_str());
-	        
-			totalT+=taxels;
-		}
-
-		if (totalT!=total_taxels)
-		{
-			cerr<<"Error total number of mapped taxels does not correspond to total taxels"<<endl;
-			return false;
-		}
-	}
-
-    analogServer = new AnalogServer(skinPorts);
-    analogServer->setRate(period);
-    analogServer->attach(analog);
-    analogServer->start();
-
-    return true;
-}
-
-void SkinPartEntry::close()
-{
-    std::cout<<"Closing skin part "<< id << endl;
-    if (analogServer)
-    {
-        analogServer->stop();
-        delete analogServer;
-    }
-    if (analog)
-        analog=0;
-
-    driver.close();
-}
-
-SkinPartEntry *SkinParts::find(const string &pName)
-{
-    SkinPartsIt it=begin();
-    for(;it!=end(); it++)
-    {
-        if ((*it)->id==pName)
-            {
-                return (*it);
-            }
-    }
-
-    return 0;
-}
-
-void SkinParts::close()
-{
-    SkinPartsIt it=begin();
-    while(it!=end())
-    {
-       (*it)->close();
-       it++;
-    }
-}
 
 
 // implementation of the RobotInterfaceRemap class
@@ -299,7 +144,7 @@ RobotInterfaceRemap::~RobotInterfaceRemap()
 
 void RobotInterfaceRemap::park(bool wait)
 {
-    std::cout<<"RobotInterfaceRemap::park\n";
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::park(bool wait)", Logger::get().log_files.f3);
 
     if (abortF)
         return;
@@ -355,6 +200,7 @@ void RobotInterfaceRemap::calibrate(bool wait)
 
 bool RobotInterfaceRemap::initialize(const std::string &inifile)
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::initialize(...)", Logger::get().log_files.f3);
     std::string filename;
     std::string portname;
 
@@ -428,6 +274,7 @@ bool RobotInterfaceRemap::initialize(const std::string &inifile)
 
 bool RobotInterfaceRemap::initCart(const::string &file)
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::initCart(...)", Logger::get().log_files.f3);
     Property options;
     options.fromConfigFile(file.c_str());
 
@@ -487,6 +334,7 @@ bool RobotInterfaceRemap::initCart(const::string &file)
 
 bool RobotInterfaceRemap::finiCart()
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::finiCart(...)", Logger::get().log_files.f3);
     CartesianControllersIt it=cartesianControllers.begin();
 
     while(it!=cartesianControllers.end())
@@ -499,6 +347,7 @@ bool RobotInterfaceRemap::finiCart()
 
 bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::initialize10(...)", Logger::get().log_files.f3);
     fprintf(stderr, "Going to initialize the robot with a file\n");
 
     std::string PATH;
@@ -570,7 +419,11 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                         if (partEntry->open(tmpProp))
                         {
                             PolyDriverList p;
+#ifdef _DRIVER_AS_POINTER_
+                            p.push(netEntry->driver, "");
+#else
                             p.push(&netEntry->driver, "");
+#endif
                             partEntry->iwrapper->attachAll(p);
                             parts.push_back(partEntry);
                         }
@@ -600,7 +453,11 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     if (partEntry->open(tmpProp))
                         {
                             PolyDriverList p;
+#ifdef _DRIVER_AS_POINTER_
+                            p.push(netEntry->driver, netEntry->id.c_str());
+#else
                             p.push(&netEntry->driver, netEntry->id.c_str());
+#endif
                             partEntry->iwrapper->attachAll(p);
                             parts.push_back(partEntry);
                         }
@@ -641,25 +498,30 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     std::string PATH;
     PATH=extractPath(inifile.c_str());
 
-    Property robotOptions;
+    Property robotOptions;  // will holf icub.ini in formatted form
     fprintf(stderr, "Read robot description from %s\n", inifile.c_str());
     robotOptions.fromConfigFile(inifile.c_str());
+
+	string str=robotOptions.toString().c_str();
+	YARP_INFO(Logger::get(), "RobotInterfaceRemap::initialize20", Logger::get().log_files.f3);
 
     robotName=robotOptions.findGroup("GENERAL").find("name").asString().c_str();
     Bottle *reqParts=robotOptions.findGroup("GENERAL").find("parts").asList();
     int nparts=0;
     if (reqParts!=0)
         nparts=reqParts->size();
-   
-    std::cout<<"Found " << nparts <<" parts"<<endl;
 
-    //std::cout<<robotOptions.toString()<<endl;
+    string PC104IpAddress=robotOptions.findGroup("GENERAL").find("PC104IpAddress").asString().c_str();
+    printf("\n\n>> PC104IpAddress : %s\n\n", PC104IpAddress.c_str());
+    std::cout<<"Found " << nparts <<" parts"<<endl;
 
     int n=0;
     for(n=0;n<nparts;n++)
     {
         std::string partid=reqParts->get(n).asString().c_str();
         std::cout<<"--> Processing "<<partid<<endl;
+
+    	YARP_INFO(Logger::get(), String("--> Processing part: ") + String(reqParts->get(n).asString()), Logger::get().log_files.f3);
 
         RobotPartEntry *partEntry=new RobotPartEntry;
         partEntry->id=partid;
@@ -704,6 +566,13 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         Property tmpProp;
         tmpProp.fromString(robotOptions.findGroup(netid.c_str()).toString());
 
+
+        tmpProp.put("PC104IpAddress", PC104IpAddress.c_str());
+
+        string str=tmpProp.toString().c_str();
+        YARP_INFO(Logger::get(), tmpProp.toString().c_str(), Logger::get().log_files.f3);
+
+
         cout << "Instantiating network " << netid.c_str() << "...";
         if (!instantiateNetwork(PATH, tmpProp, *netEntry))
         {
@@ -715,18 +584,25 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         netit++;
     }
 
-    std::cout<<"--> Starting robot calibration!"<<endl;
-    calibrate();
+    std::cout<<"--> Starting robot calibration!  -- dummy"<<endl;
+ //   calibrate();
     std::cout<<"Finished robot calibration!"<<endl;
 
     //now iterate through list of parts to see if all networks have been created correctly
-    std::cout<<"--> Now I will go through the list of parts to create the wrappers"<<endl;
+    std::cout << "******************************************************************" << endl;
+    std::cout << "--> Now I will go through the list of parts to create the wrappers" <<endl;
+    std::cout << "******************************************************************" << endl;
 
     RobotPartIt partit=parts.begin();
 
     while(partit!=parts.end())
     {
         RobotPartEntry *tmp=*partit;    
+
+    	using namespace std;
+    	printf("§§§§§§§§§§ robotOptions INFOS!!\n");
+    	//string str2=robotOptions.toString().c_str();
+    	cout << str << endl << endl;
 
         //create the wrappers
         Property tmpProp;
@@ -762,9 +638,22 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
             if (net->isValid())
             {
+/*            	iCubDeviceInterface		*res;
+        		net->driver.view(res);
+        		PolyDriver   *res2 = res->motionCtrl;
                 std::cout<<"Attaching " << net->id.c_str() << endl;
-                polylist.push(&net->driver, net->id.c_str());
+                polylist.push(res2, net->id.c_str());
                 //tmp->wrapper.attach(&net->driver, net->id.c_str()); 
+*/
+// 			orig
+            	std::cout<<"Attaching " << net->id.c_str() << endl;
+#ifdef _DRIVER_AS_POINTER_
+            	polylist.push(net->driver, net->id.c_str());
+#else
+            	polylist.push(&net->driver, net->id.c_str());
+#endif
+            	//tmp->wrapper.attach(&net->driver, net->id.c_str());
+
             }
             else
             {
@@ -774,7 +663,6 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         }
 
         tmp->iwrapper->attachAll(polylist);
-
         std::cout<<endl;
         partit++;
     }
@@ -831,7 +719,11 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                     {
                         DeviceDriver *dTmp;
                         yarp::dev::IFactoryInterface *iFactory;
+#ifdef _DRIVER_AS_POINTER_
+                        selectedNet->driver->view(iFactory);
+#else
                         selectedNet->driver.view(iFactory);
+#endif
                         if (iFactory==0)
                         {
                             std::cout<<"CanBus device does not support iFactory interface\n";
@@ -916,11 +808,15 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     mServerLogger=new iCubInterfaceGuiServer;
     mServerLogger->config(PATH,robotOptions);
 
+
     for (RobotNetworkIt netIt=networks.begin(); netIt!=networks.end(); ++netIt)
     {
         IClientLogger* pCL=NULL;
+#ifdef _DRIVER_AS_POINTER_
+        (*netIt)->driver->view(pCL);
+#else
         (*netIt)->driver.view(pCL);
-
+#endif
         if (pCL)
         {
             pCL->setServerLogger(mServerLogger);
@@ -939,6 +835,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     }
 
     mServerLogger->start();
+
     #endif
 
     return true;
@@ -946,9 +843,14 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
 bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotOptions, RobotNetworkEntry &net)
 {
-    std::string file=robotOptions.find("file").asString().c_str();
+	std::string file=robotOptions.find("file").asString().c_str();
     std::string fullFilename;
     fullFilename=path;
+
+    string str("\n\n ------------------------------ \n RobotInterfaceRemap::instantiateNetwork(...)\n");
+    str += robotOptions.toString().c_str();
+    YARP_INFO(Logger::get(), str.c_str(), Logger::get().log_files.f3);
+
     if (fullFilename.length()!=0 && fullFilename[fullFilename.length()-1]!='/')
     {
         fullFilename.append("/",1);
@@ -961,11 +863,19 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     Value &device=robotOptions.find("device");
     Value &subdevice=robotOptions.find("subdevice");
     Value &candevice=robotOptions.find("canbusdevice");
+    Value PC104IpAddress=robotOptions.find("PC104IpAddress");
 
     deviceParameters.put("robotName",robotName.c_str());
     deviceParameters.put("device", device);
     deviceParameters.put("subdevice", subdevice);
     deviceParameters.put("canbusdevice",candevice);
+    deviceParameters.put("PC104IpAddress",PC104IpAddress);
+
+
+    printf("\n\ndevice dev: %s\n", device.asString().c_str());
+    printf("subdevice dev: %s\n", subdevice.asString().c_str());
+    printf("candevice dev: %s\n", candevice.asString().c_str());
+    printf("PC104IpAddress dev: %s\n", PC104IpAddress.asString().c_str());
 
     ICUB_CAN_IDS *ids=can_ids.find(candevice.asString().c_str());
 
@@ -988,6 +898,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
         }
     }
 
+    printf("can device: %s\n", candevice.asString().c_str() );
     if (robotOptions.check("calibrator"))
     {
         Value &calibrator=robotOptions.find("calibrator");
@@ -995,39 +906,180 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
         pTemp.fromString(deviceParameters.toString());
         pTemp.put("device",calibrator.toString());
         net.calibrator.open(pTemp);
+        std::cout<<"Opened calibrator "; fflush(stdout);
     }
 
     if (robotOptions.check("verbose")) 
         deviceParameters.put("verbose", 1);
 
-    std::cout<<"Opening network " << networkN << " on device " << device.asString().c_str() << "... ";
+    std::cout<<"Opening network " << networkN << " on device " << device.asString().c_str() << "... "; fflush(stdout);
 
-    net.driver.open(deviceParameters);
+    ICalibrator *icalibrator = 0x00;
+    IControlCalibration2 *iCrtlCalib =0x00;
 
-    if (!net.driver.isValid())
+    //
+    //  this function will be called once for each "Feature" the ems will expose, i.e. one for MC, one for AS, one for skin
+    //  they'll be on three different RobotNetworkEntry
+    //
+
+
+#if 1   // old style
+#ifdef _DRIVER_AS_POINTER_
+
+    net.driver->open(deviceParameters);
+
+    if (!net.driver->isValid())
     {
-        std::cout<<"failed!"<<endl;
-        return false;
-    }
-    std::cout<<"done!"<<endl;
+#else
+	net.driver.open(deviceParameters);
 
-    ICalibrator *icalibrator;
-    IControlCalibration2 *icalib;
-    //acquire calibrator int
-    net.calibrator.view(icalibrator);
+	if (!net.driver.isValid())
+	{
+		std::cout<<"failed!"<<endl;
+		return false;
+	}
+	std::cout<<"done!"<<endl;
+
+#endif
+
+
+
     //acquire calibration int
-    net.driver.view(icalib);
-
+#ifdef _DRIVER_AS_POINTER_
+    net.driver->view(iCrtlCalib);
+#else
+    net.driver.view(iCrtlCalib);
+#endif
     //save interface for later use
-    net.iCalib=icalib;
+    net.iCalib=iCrtlCalib;
+
+	//acquire calibrator int
+    net.calibrator.view(icalibrator);
+
     //set calibrator
-    net.iCalib->setCalibrator(icalibrator);
+	net.iCalib->setCalibrator(icalibrator);
+#else
+
+    // new style
+    //acquire ethResources handler
+    /* iCubDeviceInterface	*t = 0x00;
+    net.driver->view(t);
+    net.device = t;
+
+    //acquire calibrator handler
+
+    net.device->getControlCalibration(&iCrtlCalib);
+    net.iCalib=iCrtlCalib;
+
+    net.calibrator.view(icalibrator);
+	net.iCalib->setCalibrator(icalibrator);
+	*/
+
+    // new new style
+    //acquire ethResources handler
+//    iCubDeviceInterface	*t = 0x00;
+
+//	iCubDeviceInterface	*tmpDevice;
+//    net.manager.open(deviceParameters);
+//
+//    if (!net.manager.isValid())
+//    {
+//        std::cout<<"failed!"<<endl;
+//        return false;
+//    }
+//    std::cout<<"done!"<<endl;
+//	net.manager.view(tmpDevice);
+
+    //acquire calibrator handler
+//	tmpDevice->getControlCalibration(&iCrtlCalib);
+//    net.iCalib=iCrtlCalib;
+
+//    net.calibrator.view(icalibrator);
+//	net.iCalib->setCalibrator(icalibrator);
+#ifdef _DRIVER_AS_POINTER_
+	net.driver = (PolyDriver *) 0xC1A0;
+     tmpDevice->getMotorController((DeviceDriver **) &net.driver);
+     //net.driver
+#endif
+
+     //
+     //	Open different features
+     //
+
+     Property prop;
+     ACE_TCHAR tmp[126];
+     //Searchable config;
+     str=deviceParameters.toString().c_str();
+     Bottle xtmp = Bottle(deviceParameters.findGroup("FEATURES"));
+     prop.fromString(str.c_str());
+     prop.unput("device");
+     prop.unput("subdevice");
+     // look for Ethernet device driver to use and put it into the "device" field.
+     Value &motionControl=xtmp.find("motionControl");
+     strcpy(tmp, motionControl.asString().c_str());
+     prop.put("device", motionControl.asString().c_str());
+
+     net.driver.open(prop);
+     if (!net.driver.isValid())
+     {
+    	 std::cout<<"failed!"<<endl;
+    	 return false;
+     }
+     std::cout<<"done!"<<endl;
+
+     Property prop;
+     ACE_TCHAR tmp[126];
+     //Searchable config;
+     str=deviceParameters.toString().c_str();
+     Bottle xtmp = Bottle(deviceParameters.findGroup("FEATURES"));
+     prop.fromString(str.c_str());
+     prop.unput("device");
+     prop.unput("subdevice");
+     // look for Ethernet device driver to use and put it into the "device" field.
+     Value &motionControl=xtmp.find("motionControl");
+     strcpy(tmp, motionControl.asString().c_str());
+     prop.put("device", motionControl.asString().c_str());
+
+     net.driver.open(prop);
+     if (!net.driver.isValid())
+     {
+    	 std::cout<<"failed!"<<endl;
+    	 return false;
+     }
+     std::cout<<"done!"<<endl;
+
+     Property prop;
+     ACE_TCHAR tmp[126];
+     //Searchable config;
+     str=deviceParameters.toString().c_str();
+     Bottle xtmp = Bottle(deviceParameters.findGroup("FEATURES"));
+     prop.fromString(str.c_str());
+     prop.unput("device");
+     prop.unput("subdevice");
+     // look for Ethernet device driver to use and put it into the "device" field.
+     Value &motionControl=xtmp.find("motionControl");
+     strcpy(tmp, motionControl.asString().c_str());
+     prop.put("device", motionControl.asString().c_str());
+
+     net.driver.open(prop);
+     if (!net.driver.isValid())
+     {
+    	 std::cout<<"failed!"<<endl;
+    	 return false;
+     }
+     std::cout<<"done!"<<endl;
+
+
+
+
+#endif
 
     return true;
 } 
 
 bool RobotInterfaceRemap::instantiateInertial(Property &options)
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::instantiateInertial(...) 1st version", Logger::get().log_files.f3);
     fprintf(stderr, "Instantiating an INERTIAL device\n");
 
 	const char *conf = yarp::os::getenv("ICUB_ROOT");
@@ -1067,9 +1119,9 @@ bool RobotInterfaceRemap::instantiateInertial(Property &options)
     return ok;
 }
 
-
 bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property &options)
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::instantiateInertial(...) 2nd version", Logger::get().log_files.f3);
     //    std::cout<<"Path: "<<path<<" Property list: "<<options.toString().c_str();
     std::string file=options.find("file").asString().c_str();
     std::string device=options.find("device").asString().c_str();
@@ -1132,6 +1184,7 @@ bool RobotInterfaceRemap::detachWrappers()
 
 bool RobotInterfaceRemap::closeNetworks()
 {
+	YARP_INFO(Logger::get(),"RobotInterfaceRemap::closeNetworks()", Logger::get().log_files.f3);
     RobotNetworkEntry *tmpNet;
     int n=networks.size();
 

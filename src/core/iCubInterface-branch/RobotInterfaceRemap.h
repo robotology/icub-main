@@ -43,6 +43,12 @@
 #include <iCubInterfaceGuiServer.h>
 #endif
 
+// _AC_
+// to clean creating an Interface with some common method for ethResources and something like that for the canBus
+//#include "../../libraries/icubmod/ethManager/iCubDeviceInterface.h"
+//#define	_DRIVER_AS_POINTER_
+
+
 using namespace std;
 
 /**
@@ -392,7 +398,13 @@ public:
         RobotNetworkEntry::close();
     }
 
+    yarp::dev::PolyDriver manager;
+#ifdef _DRIVER_AS_POINTER_
+    yarp::dev::PolyDriver *driver;
+#else
     yarp::dev::PolyDriver driver;
+#endif
+
     yarp::dev::PolyDriver calibrator;
     ParallelCalibrator calibThread;
     ParallelParker     parkerThread;
@@ -402,9 +414,15 @@ public:
     std::list<yarp::dev::IAnalogSensor *> analogSensors;
     std::list<AnalogServer  *> analogServers;
 
+    //yarp::dev::iCubDeviceInterface		*device;
+
     bool isValid()
     {
+#ifdef _DRIVER_AS_POINTER_
+        return driver->isValid();
+#else
         return driver.isValid();
+#endif
     }
 
     void close()
@@ -423,7 +441,11 @@ public:
         }
 
         if (isValid())
-            driver.close();
+#ifdef _DRIVER_AS_POINTER_
+            driver->close();
+#else
+        driver.close();
+#endif
     }
 
     void startPark()
