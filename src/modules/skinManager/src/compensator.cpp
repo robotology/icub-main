@@ -119,7 +119,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     neighborsXtaxel.resize(skinDim, defaultNeighbors);
 
     // test read to check if the skin is broken (all taxel output is 0)
-    if(readInputData(compensatedData)){
+    if(robotName!="icubSim" && readInputData(compensatedData)){
         bool skinBroken = true;
         for(unsigned int i=0; i<skinDim; i++){
             if(compensatedData[i]!=0){
@@ -207,7 +207,7 @@ void Compensator::calibrationFinish(){
         if(baselines[i]!=255){
             baseline255 = false;
         }
-        if(touchThresholds[i]>0.00001){
+        if(robotName=="icubSim" || touchThresholds[i]>0.00001){
             thresholdZero = false;
         }
     }
