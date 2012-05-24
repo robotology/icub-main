@@ -1,0 +1,56 @@
+<application>
+  <name>Skin Gui Simulator</name>
+  <module>
+    <name>skinManager</name>
+    <parameters>--from skinManSim.ini --context skinGui/conf</parameters>
+    <node>console</node>
+    <tag>skinCompA</tag>
+  </module>
+  <module>
+    <name>skinManagerGui</name>
+    <parameters>--from skinManGuiSim.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
+    <node>console</node>
+    <tag>skinCompGuiA</tag>
+  </module>
+
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_hand.ini --useCalibration --xpos 410 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiLH</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_hand.ini --useCalibration --xpos 1230 --ypos 0 --width 400 --height 400</parameters>
+    <node>console</node>
+    <tag>skinGuiRH</tag>
+  </module>
+  
+  
+  <connection>
+    <from>/skinManGui/rpc:o</from>
+    <to>/skinManager/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManager/monitor:o</from>
+    <to>/skinManGui/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManager/info:o</from>
+    <to>/skinManGui/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/left_hand_comp</from>
+    <to>/skinGui/left_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_hand_comp</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>
