@@ -52,6 +52,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/Wrapper.h>
 #include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/IEncodersTimed.h>
 
 #include <iCub/ctrl/pids.h>
 #include <iCub/iKin/iKinHlp.h>

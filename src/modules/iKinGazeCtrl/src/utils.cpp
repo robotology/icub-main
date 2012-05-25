@@ -20,6 +20,7 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/IEncodersTimed.h>
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
