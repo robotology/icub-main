@@ -37,10 +37,11 @@ class Util:
 
 
 class Node:
-    def __init__(self, name, display, dispValue):
+    def __init__(self, name, display, dispValue, user):
         self.name=name
         self.display=display
         self.displayValue=dispValue;
+        self.user=user;
 
 class RemoteExecWindow:
     def __init__(self, master, user, nodes):
@@ -103,7 +104,8 @@ class RemoteExecWindow:
         for chk in self.nodesChk:
             if (chk.get()):
                 node=self.nodes[i].name
-                cmd = Util.getSshCmd(self.user.get(), node) + [remoteCmd]
+                user=self.nodes[i].user
+                cmd = Util.getSshCmd(user, node) + [remoteCmd]
                 print " ".join(cmd)
                 subprocess.Popen(cmd).wait()
             i=i+1
@@ -195,8 +197,9 @@ class App:
 
         Label(tmpFrame, text="Name").grid(row=0, column=1)
         Label(tmpFrame, text="Display").grid(row=0, column=2)
-        Label(tmpFrame, text="On/Off").grid(row=0, column=3)
-        Label(tmpFrame, text="Select").grid(row=0, column=4)
+        Label(tmpFrame, text="User").grid(row=0, column=3)
+        Label(tmpFrame, text="On/Off").grid(row=0, column=4)
+        Label(tmpFrame, text="Select").grid(row=0, column=5)
 
         tmpFrame.grid(row=1, column=0)
         self.clusterNodes=[]
@@ -227,12 +230,24 @@ class App:
             check.config(state=DISABLED, disabledforeground="#000000")
             check.grid(row=r, column=2)
 
+            u=StringVar()
+            if node.user != cluster.user:
+                u.set(node.user)
+                self.dispFlag.append(1)
+            else:
+                u.set("")
+                self.dispFlag.append(0)
+
+            check=Entry(tmpFrame, textvariable=u, width=8, justify="center")
+            check.config(state=DISABLED, disabledforeground="#000000")
+            check.grid(row=r, column=3)
+
             v=IntVar()
             check=Checkbutton(tmpFrame, variable=v)
             check.config(state=DISABLED,disabledforeground="#00A000")
             self.values.append(v)
 
-            check.grid(row=r, column=3)
+            check.grid(row=r, column=4)
 
             v=IntVar()
             v.set(1)
@@ -240,7 +255,7 @@ class App:
             check=Checkbutton(tmpFrame, variable=v)
 #           check.config(state=ENABLED, disabledforeground="#00A000")
             self.selected.append(v)
-            check.grid(row=r, column=4)
+            check.grid(row=r, column=5)
 
 
 
@@ -289,8 +304,8 @@ class App:
             running=i.next().get()
 
             if running==0 and selected==1:
-                #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
-                cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' start ']
+                #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
 
                 if node.display:
                     if (node.displayValue == ""):
@@ -299,8 +314,8 @@ class App:
                         cmd.append('display ')
                         cmd.append(node.displayValue)
                 else:
-                    cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' start ']
-#                   cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
+                    cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
+#                   cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
 
                 print 'Running',
                 print " ".join(cmd)
@@ -323,8 +338,8 @@ class App:
             running=i.next().get()
 
             if running==1 and selected==1 :
-                #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
-                cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' stop']
+                #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' stop']
                 print 'Running',
                 print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
@@ -341,8 +356,8 @@ class App:
         for node in self.cluster.nodes:
             selected=iS.next().get()
             if (selected):
-                #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
-                cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' kill']
+                #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' kill']
                 print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
 
@@ -433,14 +448,18 @@ if __name__ == '__main__':
         for node in nodes:
 
             if (node.hasAttributes()):
+                if node.hasAttribute("user"):
+                    nodeuser=node.getAttribute("user");
+                else:
+                    nodeuser=user;
                 a=node.getAttribute("display")
                 # handle default values for variable (for backward compatibility)
                 if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"): 
-                    newNode=Node(node.firstChild.data, True, ":0.0")
+                    newNode=Node(node.firstChild.data, True, ":0.0", nodeuser)
                 else:
-                    newNode=Node(node.firstChild.data, True, a)
+                    newNode=Node(node.firstChild.data, True, a, nodeuser)
             else:
-                newNode=Node(node.firstChild.data, False, "")
+                newNode=Node(node.firstChild.data, False, "", user)
 
             nodeList.append(newNode)
 
