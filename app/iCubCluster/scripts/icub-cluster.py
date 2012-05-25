@@ -27,21 +27,21 @@ from Tkinter import *
 
 
 class Util:
-	@staticmethod
-	def getSshCmd(user, host):
-		cmd = ['ssh', '-f']
-		if user == "":
-			return cmd + [host]
-		else:
-			return cmd + [user + '@' + host]
+    @staticmethod
+    def getSshCmd(user, host):
+        cmd = ['ssh', '-f']
+        if user == "":
+            return cmd + [host]
+        else:
+            return cmd + [user + '@' + host]
 
 
 class Node:
     def __init__(self, name, display, dispValue):
         self.name=name
         self.display=display
-	self.displayValue=dispValue;
-        
+        self.displayValue=dispValue;
+
 class RemoteExecWindow:
     def __init__(self, master, user, nodes):
         frame=Toplevel()
@@ -52,7 +52,7 @@ class RemoteExecWindow:
         tmpFrame=Frame(frame)
         tmpFrame.pack()
         Label(tmpFrame, text="Select nodes:").pack()
-        
+
         tmpFrame=Frame(frame)
         tmpFrame.pack()
         r=0
@@ -73,7 +73,7 @@ class RemoteExecWindow:
         self.user=Entry(tmpFrame)
         self.user.grid(row=0, column=1)
         self.user.insert(END, user)
-            
+
         tmpFrame=Frame(frame)
         tmpFrame.pack()
         Label(tmpFrame, text="Type the command you wish to execute:").grid()
@@ -128,12 +128,12 @@ class Cluster:
         for node in self.nodes:
             print node.name,
             if (node.display):
-                print "local display on", 
+                print "local display on",
                 print node.displayValue
             else:
                 print " local display disabled"
-                
-    
+
+
         print "------------"
 
 class App:
@@ -146,7 +146,7 @@ class App:
         self.cluster=cluster
 
         Label(self.master, text="Cluster Management Window").pack()
-        
+
         userFrame=Frame(self.master, relief="ridge", bd=1)
         userFrame.pack(fill=X)
         tmpFrame=Frame(userFrame)
@@ -197,13 +197,13 @@ class App:
         Label(tmpFrame, text="Display").grid(row=0, column=2)
         Label(tmpFrame, text="On/Off").grid(row=0, column=3)
         Label(tmpFrame, text="Select").grid(row=0, column=4)
-        
+
         tmpFrame.grid(row=1, column=0)
         self.clusterNodes=[]
         self.values=[]
         self.dispFlag=[]
         self.selected=[]
-        
+
         r=1
         for node in cluster.nodes:
             tmp=Entry(tmpFrame)
@@ -221,12 +221,12 @@ class App:
             else:
                 v.set("none")
                 self.dispFlag.append(0)
-                
+
             check=Entry(tmpFrame, textvariable=v, width=8, justify="center")
             #Checkbutton(tmpFrame, variable=v)
             check.config(state=DISABLED, disabledforeground="#000000")
             check.grid(row=r, column=2)
-            
+
             v=IntVar()
             check=Checkbutton(tmpFrame, variable=v)
             check.config(state=DISABLED,disabledforeground="#00A000")
@@ -236,13 +236,13 @@ class App:
 
             v=IntVar()
             v.set(1)
-                
+
             check=Checkbutton(tmpFrame, variable=v)
 #           check.config(state=ENABLED, disabledforeground="#00A000")
             self.selected.append(v)
             check.grid(row=r, column=4)
 
-            
+
 
         tmpFrame=Frame(tmpFrame1)
         tmpFrame.grid(row=1, column=1)
@@ -287,21 +287,21 @@ class App:
         for node in self.cluster.nodes:
             selected=iS.next().get()
             running=i.next().get()
-            
+
             if running==0 and selected==1:
-		#cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start '] 
+                #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
                 cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' start ']
 
                 if node.display:
-		    if (node.displayValue == ""):
-                    	cmd.append('display')
-		    else:
-			cmd.append('display ')
-			cmd.append(node.displayValue)
+                    if (node.displayValue == ""):
+                        cmd.append('display')
+                    else:
+                        cmd.append('display ')
+                        cmd.append(node.displayValue)
                 else:
                     cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' start ']
 #                   cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
-                    
+
                 print 'Running',
                 print cmd
                 ret=subprocess.Popen(cmd).wait()
@@ -366,11 +366,11 @@ class App:
         if self.nsFlag.get()==0:
             #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
             cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' start']
-	    if (self.cluster.nsType=='yarpserver3'):
+            if (self.cluster.nsType=='yarpserver3'):
                 cmd.append('yarpserver3')
             elif(self.cluster.nsType=='yarpserver'):
                  cmd.append('yarpserver')
-       		
+
             print 'Running',
             print cmd
             ret=subprocess.Popen(cmd).wait()
@@ -393,7 +393,7 @@ class App:
         else:
             print 'Nameserver was not running'
 
-            
+
 def printUsage(scriptName):
     print scriptName, ": python gui for managing yarprun servers (Linux only)"
     print "Usage:"
@@ -402,7 +402,7 @@ def printUsage(scriptName):
     print "cluster-config.xml: cluster configuration file."
     print "To learn how to write a valid cluster-config.xml see template in app/iCubCluster/scripts"
 
-    
+
 if __name__ == '__main__':
 
     #first check arguments
@@ -413,7 +413,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     configFilename=sys.argv[1]
-        
+
     print configFilename
 
     config = xml.dom.minidom.parse(configFilename)
@@ -426,7 +426,7 @@ if __name__ == '__main__':
         nameserver=cluster.getElementsByTagName("nameserver")[0]
         namespace=nameserver.getAttribute("namespace")
         namespaceNode=nameserver.getAttribute("node")
-	namespaceType=nameserver.getAttribute("type")
+        namespaceType=nameserver.getAttribute("type")
         nodes=cluster.getElementsByTagName("node")
 
         nodeList=[]
@@ -437,8 +437,8 @@ if __name__ == '__main__':
                 # handle default values for variable (for backward compatibility)
                 if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"): 
                     newNode=Node(node.firstChild.data, True, ":0.0")
-		else:
-		    newNode=Node(node.firstChild.data, True, a)
+                else:
+                    newNode=Node(node.firstChild.data, True, a)
             else:
                 newNode=Node(node.firstChild.data, False, "")
 
