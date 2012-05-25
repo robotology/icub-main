@@ -1539,7 +1539,7 @@ bool MotorThread::reach(Bottle &options)
 
     action[arm]->enableContactDetection();
 
-    iCub::action::ActionPrimitivesWayPoint wp;
+    ActionPrimitivesWayPoint wp;
     wp.x=xd+tmpDisp; wp.o=tmpOrient; wp.oEnabled=true;
     deque<ActionPrimitivesWayPoint> wpList;
     wpList.push_back(wp);
