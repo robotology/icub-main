@@ -104,7 +104,7 @@ class RemoteExecWindow:
             if (chk.get()):
                 node=self.nodes[i].name
                 cmd = Util.getSshCmd(self.user.get(), node) + [remoteCmd]
-                print cmd
+                print " ".join(cmd)
                 subprocess.Popen(cmd).wait()
             i=i+1
 
@@ -270,7 +270,7 @@ class App:
         for node in self.cluster.nodes:
             cmd=['yarp', 'exists', '/'+node.name]
             print 'Running',
-            print cmd
+            print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
             if ret==0:
                 print 'setting',
@@ -303,7 +303,7 @@ class App:
 #                   cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
 
                 print 'Running',
-                print cmd
+                print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
             else:
                 print node.name,
@@ -326,7 +326,7 @@ class App:
                 #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
                 cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' stop']
                 print 'Running',
-                print cmd
+                print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
             else:
                 print node.name,
@@ -343,7 +343,7 @@ class App:
             if (selected):
                 #cmd=['ssh', '-f', self.cluster.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
                 cmd = Util.getSshCmd(self.cluster.user, node.name) + ['icub-cluster-run.sh', ' kill']
-                print cmd
+                print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
 
         time.sleep(0.5)
@@ -353,7 +353,7 @@ class App:
         print 'Checking ns'
         cmd=['yarp', 'exists', self.cluster.namespace]
         print 'Running',
-        print cmd
+        print " ".join(cmd)
         ret=subprocess.Popen(cmd).wait()
         if ret==0:
             self.nsFlag.set(1)
@@ -372,7 +372,7 @@ class App:
                  cmd.append('yarpserver')
 
             print 'Running',
-            print cmd
+            print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
             time.sleep(0.5)
             self.checkNs()
@@ -386,7 +386,7 @@ class App:
             #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' stop']
             cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' stop']
             print 'Running',
-            print cmd
+            print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
             time.sleep(0.5)
             self.checkNs()
