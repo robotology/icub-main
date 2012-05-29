@@ -5585,7 +5585,6 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
     return 0;
 }
 
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
 bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
 {
     CanBusResources& r = RES(system_resources);
@@ -5595,11 +5594,11 @@ bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
-        v[i] = double(r._bcastRecvBuffer[i]._position._value);
-        t[i] = r._bcastRecvBuffer[i]._position._stamp;
+        v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
+        t[i] = r._bcastRecvBuffer[i]._position_joint._stamp;
 
-        if (stamp<r._bcastRecvBuffer[i]._position._stamp)
-            stamp=r._bcastRecvBuffer[i]._position._stamp;
+        if (stamp<r._bcastRecvBuffer[i]._position_joint._stamp)
+            stamp=r._bcastRecvBuffer[i]._position_joint._stamp;
     }
 
     stampEncoders.update(stamp);
@@ -5614,8 +5613,8 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
     if (!(axis >= 0 && axis <= r.getJoints()))return false;
 
     _mutex.wait();
-    *v = double(r._bcastRecvBuffer[axis]._position._value);
-    *t = r._bcastRecvBuffer[axis]._position._stamp;
+    *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
+    *t = r._bcastRecvBuffer[axis]._position_joint._stamp;
     _mutex.post();
 
     return true;

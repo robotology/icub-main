@@ -624,13 +624,8 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
             public ImplementVelocityControl<CanBusMotionControl, IVelocityControl>,
             public ImplementPidControl<CanBusMotionControl, IPidControl>,
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
             public IEncodersTimedRaw,
             public ImplementEncodersTimed,
-#else
-            public IEncodersRaw,
-            public ImplementEncoders<CanBusMotionControl, IEncoders>,
-#endif
             public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
             public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
@@ -888,10 +883,8 @@ public:
     //
     ///////////////////////// END Encoder Interface
 
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     virtual bool getEncodersTimedRaw(double *v, double *t);
     virtual bool getEncoderTimedRaw(int j, double *v, double *t);
-#endif
 
     ////// Amplifier interface
     //
