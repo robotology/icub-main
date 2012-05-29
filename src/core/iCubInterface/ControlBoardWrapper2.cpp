@@ -1708,11 +1708,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
     pid = dynamic_cast<yarp::dev::IPidControl *> (caller);
     pos = dynamic_cast<yarp::dev::IPositionControl *> (caller);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (caller);
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     enc = dynamic_cast<yarp::dev::IEncodersTimed *> (caller);
-#else
-    enc = dynamic_cast<yarp::dev::IEncoders *> (caller);
-#endif
     amp = dynamic_cast<yarp::dev::IAmplifierControl *> (caller);
     lim = dynamic_cast<yarp::dev::IControlLimits *> (caller);
     info = dynamic_cast<yarp::dev::IAxisInfo *> (caller);
@@ -1894,11 +1890,7 @@ void ControlBoardWrapper2::run()
         }
 
     timeMutex.wait();
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     time.update(timeStamp/controlledJoints);
-#else    
-    time.update(Time::now());
-#endif
     timeMutex.post();
 
     state_p.setEnvelope(time);

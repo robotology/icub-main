@@ -85,12 +85,7 @@ protected:
     yarp::dev::IPidControl          *pid;
     yarp::dev::IPositionControl     *pos;
     yarp::dev::IVelocityControl     *vel;
-
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     yarp::dev::IEncodersTimed       *enc;
-#else    
-    yarp::dev::IEncoders            *enc;
-#endif
     yarp::dev::IAmplifierControl    *amp;
     yarp::dev::IControlLimits       *lim;
     yarp::dev::ITorqueControl       *torque;
@@ -171,11 +166,7 @@ public:
     IPidControl       *pid;
     IPositionControl  *pos;
     IVelocityControl  *vel;
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     IEncodersTimed *enc;
-#else
-    IEncoders         *enc;
-#endif
     IAmplifierControl *amp;
     IControlLimits    *lim;
     IControlCalibration *calib;
@@ -200,12 +191,7 @@ public:
 
     inline void refreshEncoders()
     {
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
         enc->getEncodersTimed(encoders.data(), encodersTimes.data());
-#else
-        enc->getEncoders(encoders.data());
-        
-#endif
     }
 
     bool isAttached()
@@ -250,11 +236,7 @@ class ControlBoardWrapper2 : public DeviceDriver,
                              public IPidControl,
                              public IPositionControl,
                              public IVelocityControl,
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
                              public IEncodersTimed,
-#else 
-                             public IEncoders,
-#endif
                              public IAmplifierControl,
                              public IControlLimits,
 							 public IDebugInterface,
