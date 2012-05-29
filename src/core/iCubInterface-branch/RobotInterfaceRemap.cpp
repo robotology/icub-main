@@ -764,6 +764,11 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         std::cout<<"No analog wrappers requested\n";
     }
 
+    // Creating skin Parts
+     std::cout << "******************************************************************" << endl;
+     std::cout << "--> Creating skin Part											 " <<endl;
+     std::cout << "******************************************************************" << endl;
+     fflush(stdout);
 
     Bottle *skinParts=robotOptions.findGroup("GENERAL").find("skinParts").asList();
     std::cout<<"--> Checking if I need to create skin parts"<<std::endl;
@@ -781,6 +786,22 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             partOptions.fromString(robotOptions.findGroup(partId.c_str()).toString());
             partOptions.put("robot", robotName.c_str());
 
+        	Bottle xtmp, xtmp2;
+
+        	bool correct=true;
+
+			correct=correct&&robotOptions.check("GENERAL");
+
+			if(correct)
+				xtmp = Bottle(robotOptions.findGroup("GENERAL"));
+
+			correct=correct&&xtmp.check("PC104IpAddress");
+
+			if(correct)
+				xtmp2 = xtmp.findGroup("PC104IpAddress");
+
+
+
             SkinPartEntry *tmp=new SkinPartEntry;
             tmp->setId(partId);
 
@@ -790,6 +811,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
                 Property deviceParams;
                 deviceParams.fromConfigFile(filename.c_str());
+    			deviceParams.put("PC104IpAddress", xtmp2.get(1).asString().c_str());
 
                 if (tmp->open(deviceParams, partOptions))
                 {

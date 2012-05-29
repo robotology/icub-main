@@ -51,11 +51,30 @@ void SkinPartEntry::calibrate()
 bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 {
 	YARP_INFO(Logger::get(),"SkinPartEntry::open(...) - id " + String(id.c_str()), Logger::get().log_files.f3);
-    bool correct=true;
+	printf("SkinPartEntry param 1 (deviceP) = %s\n", deviceP.toString().c_str());
+	printf("SkinPartEntry param 2 (partP)   = %s\n", partP.toString().c_str());
+
+	bool correct=true;
     correct=correct&&partP.check("device");
     correct=correct&&partP.check("robot");
     //correct=correct&&partP.check("canbusdevice");
 	//correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
+//
+//    Bottle xtmp, xtmp2;
+//
+//    bool correct=true;
+//
+//    correct=correct&&robotOptions.check("GENERAL");
+//
+//    if(correct)
+//    	xtmp = Bottle(robotOptions.findGroup("GENERAL"));
+//
+//    correct=correct&&xtmp.check("PC104IpAddress");
+//
+//    if(correct)
+//    	xtmp2 = xtmp.findGroup("PC104IpAddress");
+//
+//    partOptions.put("PC104IpAddress", xtmp2.get(1).asString().c_str());
 
     if (!correct)
         return false;

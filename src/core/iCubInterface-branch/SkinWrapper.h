@@ -9,7 +9,7 @@
 #define SKINWRAPPER_H_
 
 
-#include "RobotInterfaceRemap.h"
+//#include "RobotInterfaceRemap.h"
 #include "extractPath.h"
 
 #include <sstream>
@@ -18,8 +18,8 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Os.h>
 
-#include "ControlBoardWrapper.h"
-#include "ControlBoardWrapper2.h"
+//#include "ControlBoardWrapper.h"
+//#include "ControlBoardWrapper2.h"
 
 #include <iCub/FactoryInterface.h>
 
@@ -28,180 +28,300 @@
 #include <yarp/os/impl/Logger.h>
 
 
-SkinPartEntry::SkinPartEntry()
+
+#include <yarp/os/Network.h>
+#include <yarp/os/Port.h>
+#include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
+#include <yarp/os/Property.h>
+
+#include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/GenericSensorInterfaces.h>
+#include <yarp/dev/IAnalogSensor.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/Wrapper.h>
+
+#include <list>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <sstream>
+
+#include <yarp/os/RateThread.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/os/Stamp.h>
+#include <yarp/os/BufferedPort.h>
+
+
+
+
+/**
+  * Handler of the rpc port related to an analog sensor.
+  * Manage the calibration command received on the rpc port.
+ **/
+class AnalogServerHandler: public yarp::os::PortReader
 {
-	YARP_INFO(Logger::get(),"SkinPartEntry::SkinPartEntry()", Logger::get().log_files.f3);
-    analogServer=0;
-    analog=0;
-}
+	yarp::dev::IAnalogSensor* is;	// analog sensor to calibrate, when required
+	yarp::os::Port rpcPort;			// rpc port related to the analog sensor
 
-SkinPartEntry::~SkinPartEntry()
-{
-	YARP_INFO(Logger::get(),"SkinPartEntry::~SkinPartEntry() ", Logger::get().log_files.f3);
-}
-
-void SkinPartEntry::calibrate()
-{
-	if (analog)
-	{
-		analog->calibrateSensor();
-	}
-}
-
-bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
-{
-	YARP_INFO(Logger::get(),"SkinPartEntry::open(...) - id " + String(id.c_str()), Logger::get().log_files.f3);
-    bool correct=true;
-    correct=correct&&partP.check("device");
-    correct=correct&&partP.check("robot");
-    correct=correct&&partP.check("canbusdevice");
-	//correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
-
-    if (!correct)
-        return false;
-
-    int period=20;
-    if (partP.check("period"))
-    {
-        period=partP.find("period").asInt();
-    }
-    else
-    {
-        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
-    }
-
-	// Open the device
-    std::string devicename=partP.find("device").asString().c_str();
-    deviceP.put("device", devicename.c_str());
-
-    std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
-    deviceP.put("canbusdevice", canbusdevice.c_str());
-
-    driver.open(deviceP);
-    if (!driver.isValid())
-        return false;
-
-    driver.view(analog);
-
-    if (!analog)
-    {
-        std::cerr<<"Error: part "<<id<<" device " << devicename << " does not implement analog interface"<<endl;
-        driver.close();
-        return false;
-    }
-
-	// Read the list of ports
-    std::string robotName=partP.find("robot").asString().c_str();
-    std::string root_name;
-    root_name+="/";
-    root_name+=robotName;
-    root_name+="/skin/";
-
-	std::vector<AnalogPortEntry> skinPorts;
-	if(!partP.check("ports")){
-		// if there is no "ports" section take the name of the "skin" group as the only port name
-		skinPorts.resize(1);
-		skinPorts[0].offset = 0;
-		skinPorts[0].length = -1;
-		skinPorts[0].port_name = root_name + this->id;
-	}
-	else{
-		Bottle *ports=partP.find("ports").asList();
-
-		if (!partP.check("total_taxels", "number of taxels of the part"))
-			return false;
-		int total_taxels=partP.find("total_taxels").asInt();
-		int nports=ports->size();
-		int totalT = 0;
-		skinPorts.resize(nports);
-
-		for(int k=0;k<ports->size();k++)
-		{
-			Bottle parameters=partP.findGroup(ports->get(k).asString().c_str());
-
-			if (parameters.size()!=5)
-			{
-				cerr<<"Error: check skin port parameters in part description"<<endl;
-				cerr<<"--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers"<<endl;
-				return false;
-			}
-
-			int wBase=parameters.get(1).asInt();
-			int wTop=parameters.get(2).asInt();
-			int base=parameters.get(3).asInt();
-			int top=parameters.get(4).asInt();
-
-			cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
-
-			//check consistenty
-			if(wTop-wBase != top-base){
-				cerr<<"Error: check skin port parameters in part description"<<endl;
-				cerr<<"Numbers of mapped taxels do not match.\n";
-				return false;
-			}
-			int taxels=top-base+1;
-
-			skinPorts[k].length = taxels;
-			skinPorts[k].offset = wBase;
-			skinPorts[k].port_name = root_name+string(ports->get(k).asString().c_str());
-
-			totalT+=taxels;
-		}
-
-		if (totalT!=total_taxels)
-		{
-			cerr<<"Error total number of mapped taxels does not correspond to total taxels"<<endl;
-			return false;
-		}
+public:
+	AnalogServerHandler(const char* n){
+		rpcPort.open(n);
+		rpcPort.setReader(*this);
 	}
 
-    analogServer = new AnalogServer(skinPorts);
-    analogServer->setRate(period);
-    analogServer->attach(analog);
-    analogServer->start();
+	~AnalogServerHandler(){
+		rpcPort.close();
+		is = 0;
+	}
 
-    return true;
-}
+	void setInterface(yarp::dev::IAnalogSensor *is){
+		this->is = is;
+	}
 
-void SkinPartEntry::close()
-{
-	YARP_INFO(Logger::get(),"SkinPartEntry::close() - id " + String(id.c_str()), Logger::get().log_files.f3);
-    std::cout<<"Closing skin part "<< id << endl;
-    if (analogServer)
+	bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
     {
-        analogServer->stop();
-        delete analogServer;
-    }
-    if (analog)
-        analog=0;
+        if (is==0)
+            return false;
 
-    driver.close();
-}
+        int msgsize=cmd.size();
 
-SkinPartEntry *SkinParts::find(const string &pName)
-{
-    SkinPartsIt it=begin();
-    for(;it!=end(); it++)
-    {
-        if ((*it)->id==pName)
+        int code=cmd.get(1).asVocab();
+        switch (code)
+        {
+        case VOCAB_CALIBRATE:
+            if (msgsize==2)
+                is->calibrateSensor();
+            else
             {
-                return (*it);
+                //read Vector of values and pass to is->calibrate();
             }
+            return true;
+            break;
+        case VOCAB_CALIBRATE_CHANNEL:
+            if (msgsize==3)
+            {
+                int ch=cmd.get(2).asInt();
+                is->calibrateChannel(ch);
+            }
+            if (msgsize==4)
+            {
+                int ch=cmd.get(2).asInt();
+                double v=cmd.get(3).asDouble();
+                is->calibrateChannel(ch, v);
+            }
+
+            return true;
+            break;
+        default:
+            return false;
+        }
     }
 
-    return 0;
-}
+    virtual bool read(yarp::os::ConnectionReader& connection) {
+        yarp::os::Bottle in;
+        yarp::os::Bottle out;
+        bool ok=in.read(connection);
+        if (!ok) return false;
 
-void SkinParts::close()
+        // parse in, prepare out
+        int code = in.get(0).asVocab();
+        bool ret=false;
+        if (code==VOCAB_IANALOG)
+        {
+            ret=_handleIAnalog(in, out);
+        }
+
+        if (!ret)
+        {
+            out.clear();
+            out.addVocab(VOCAB_FAILED);
+        }
+
+        yarp::os::ConnectionWriter *returnToSender = connection.getWriter();
+        if (returnToSender!=NULL) {
+            out.write(*returnToSender);
+        }
+        return true;
+    }
+
+};
+
+
+/**
+  * A yarp port that output data read from an analog sensor.
+  * It contains information about which data of the analog sensor are sent
+  * on the port, i.e. an offset and a length.
+  */
+struct AnalogPortEntry
 {
-	YARP_INFO(Logger::get(),"SkinParts::close()", Logger::get().log_files.f3);
-    SkinPartsIt it=begin();
-    while(it!=end())
+	yarp::os::BufferedPort<yarp::sig::Vector> port;
+	std::string port_name;		// the complete name of the port
+    int offset;					// an offset, the port is mapped starting from this taxel
+    int length;					// length of the output vector of the port (-1 for max length)
+	AnalogPortEntry(){}
+	AnalogPortEntry(const AnalogPortEntry &alt){
+		this->length = alt.length;
+		this->offset = alt.offset;
+		this->port_name = alt.port_name;
+	}
+	AnalogPortEntry &operator =(const AnalogPortEntry &alt){
+		this->length = alt.length;
+		this->offset = alt.offset;
+		this->port_name = alt.port_name;
+		return *this;
+	}
+};
+
+/**
+  * It reads the data from an analog sensor and sends them on one or more ports.
+  * It creates one rpc port and its related handler for every output port.
+  */
+class AnalogServer: public yarp::os::RateThread
+{
+    yarp::dev::IAnalogSensor *is;				// the analog sensor to read from
+    std::vector<AnalogPortEntry> analogPorts;	// the list of output ports
+	std::vector<AnalogServerHandler*> handlers;	// the list of rpc port handlers
+	yarp::os::Stamp lastStateStamp;				// the last reading time stamp
+
+	void setHandlers(){
+		for(unsigned int i=0;i<analogPorts.size(); i++){
+			std::string rpcPortName = analogPorts[i].port_name;
+			rpcPortName += "/rpc:i";
+			AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
+			handlers.push_back(ash);
+		}
+	}
+
+public:
+	// Constructor used when there is only one output port
+	AnalogServer(const char* name, int rate=20): RateThread(rate)
     {
-       (*it)->close();
-       it++;
+        is=0;
+        analogPorts.resize(1);
+		analogPorts[0].offset = 0;
+		analogPorts[0].length = -1;	// max length
+		analogPorts[0].port_name = std::string(name);
+		setHandlers();
     }
-}
+
+	// Contructor used when one or more output ports are specified
+	AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int rate=20): RateThread(rate)
+    {
+        is=0;
+        this->analogPorts=_analogPorts;
+        setHandlers();
+    }
+
+    ~AnalogServer()
+    {
+        threadRelease();
+        is=0;
+    }
+
+	/**
+	  * Specify which analog sensor this thread has to read from.
+	  */
+    void attach(yarp::dev::IAnalogSensor *s)
+    {
+        is=s;
+		for(unsigned int i=0;i<analogPorts.size(); i++){
+			handlers[i]->setInterface(is);
+		}
+    }
+
+
+	bool threadInit()
+    {
+		for(unsigned int i=0; i<analogPorts.size(); i++){
+			// open data port
+			if (!analogPorts[i].port.open(analogPorts[i].port_name.c_str()))
+				return false;
+		}
+		return true;
+    }
+
+    void threadRelease()
+    {
+		for(unsigned int i=0; i<analogPorts.size(); i++){
+			analogPorts[i].port.close();
+		}
+    }
+
+    void run()
+    {
+		int first, last, ret;
+        if (is!=0)
+        {
+			// read from the analog sensor
+            yarp::sig::Vector v;
+            ret=is->read(v);
+
+            if (ret==yarp::dev::IAnalogSensor::AS_OK)
+            {
+                if (v.size()>0)
+                {
+                    lastStateStamp.update();
+                    // send the data on the port(s), splitting them as specified in the config file
+                    for(unsigned int i=0; i<analogPorts.size(); i++){
+                        yarp::sig::Vector &pv = analogPorts[i].port.prepare();
+                        first = analogPorts[i].offset;
+                        if(analogPorts[i].length==-1)	// read the max length available
+                            last = v.size()-1;
+                        else
+                            last = analogPorts[i].offset + analogPorts[i].length - 1;
+                        // check vector limit
+                        if(last>=(int)v.size()){
+                            cerr<<"Error while sending analog sensor output on port "<< analogPorts[i].port_name<< endl;
+                            cerr<<"Vector size expected to be at least "<<last<<" whereas it is "<< v.size()<< endl;
+                            continue;
+                        }
+                        pv = v.subVector(first, last);
+                        analogPorts[i].port.setEnvelope(lastStateStamp);
+                        analogPorts[i].port.write();
+                    }
+				}
+            }
+            else
+            {
+                //todo release
+            }
+
+        }
+    }
+};
+
+
+class SkinPartEntry
+{
+private:
+    AnalogServer *analogServer;
+    yarp::dev::IAnalogSensor *analog;
+
+public:
+    SkinPartEntry();
+    ~SkinPartEntry();
+
+    bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
+    void close();
+	void calibrate();
+
+    void setId(const std::string &i)
+    { id=i; }
+
+    std::string id;
+    yarp::dev::PolyDriver driver;
+};
+
+class SkinParts: public std::list<SkinPartEntry *>
+{
+public:
+    SkinPartEntry *find(const std::string &pName);
+    void close();
+};
+
+typedef SkinParts::iterator SkinPartsIt;
 
 
 #endif /* SKINWRAPPER_H_ */
