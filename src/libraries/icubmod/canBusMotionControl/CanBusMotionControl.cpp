@@ -5619,5 +5619,5 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
 
     return true;
 }
-#endif
+
 
