@@ -87,7 +87,6 @@ void Cfw2CanMessage::setBuffer(unsigned char *b)
 		msg = (CFWCAN_MSG *) (b);
 }
 
-
 CanBuffer EmbObjSkin::createBuffer(int elem)
    {
        CanBuffer ret;
@@ -133,18 +132,18 @@ CanBuffer EmbObjSkin::createBuffer(int elem)
        delete [] m;
    }
 
-
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
 	// Debug info
 	YARP_INFO(Logger::get(), "EmbObjSkin::open", Logger::get().log_files.f3);
 
+	printf("EmbObjSkin param %s\n", config.toString().c_str());
 
 	// Check input parameters
 	int i;
 	bool correct=true;
-	correct &= config.check("Period");
-	correct &= config.check("IpAddress");
+	//correct &= config.check("Period");
+
 
 
 	memset(info, 0x00, SIZE_INFO);
@@ -152,20 +151,14 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	ACE_TCHAR address[64];
 	xtmp = Bottle(config.findGroup("ETH"));
 	xtmp2 = xtmp.findGroup("IpAddress");
+	//correct &= xtmp.check("IpAddress");
+
 	strcpy(address, xtmp2.get(1).asString().c_str());
 	sprintf(info, "EmbObjSkin - referred to EMS: %s", address);
-#if SKIN_DEBUG
-	fprintf(stderr, "%s\n", config.toString().c_str());
-#endif
-
-
-
-
-
 
 	if (!correct)
 	{
-		std::cerr<<"Error: insufficient parameters to SkinPrototype\n";
+		std::cerr<<"Error: insufficient parameters to EmbObjSkin\n";
 		return false;
 	}
 
@@ -229,21 +222,21 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 #endif
 	}
 
-	//pCanBus=0;
+//	pCanBus=0;
 //	pCanBufferFactory=0;
-
-
-	//driver.view(pCanBus);	// ??
+//
+//
+//	driver.view(pCanBus);	// ??
 //	if (!pCanBus)
 //	{
 //		fprintf(stderr, "Error opening /ecan device not available\n");
 //		return false;
 //	}
-
+//
 //	driver.view(pCanBufferFactory);
 //	pCanBus->canSetBaudRate(0); //default 1MB/s
-
-	// configure HW can filter
+//
+// 		configure HW can filter
 //	for (int i=0; i<cardId.size(); i++)
 //		for (int id=0; id<16; ++id)
 //		{
@@ -276,7 +269,59 @@ bool EmbObjSkin::close()
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
 	mutex.wait();
-	out=data;
+	YARP_INFO(Logger::get(),"EmbObjSkin::read", Logger::get().log_files.f3);
+
+	EOarray_of_10canframes			skinData;
+	uint16_t						size;
+	EOnv							*nv = NULL;
+
+
+	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_rightlowerarm, 0x00, skinNVindex_sstatus__arrayof10canframe);
+
+	res->transceiver->getNVvalue(nv, (uint8_t *)&skinData, &size);
+
+	unsigned int canMessages=skinData.head.size;
+
+	for (unsigned int i=0; i<canMessages; i++)
+	{
+		//CanMessage &msg=inBuffer[i];
+
+		eOutil_canframe_t &msg = *(eOutil_canframe_t*)&skinData.data[i];
+		unsigned int msgid=msg.id;
+		unsigned int id;
+		unsigned int sensorId;
+		id=(msgid & 0x00f0)>>4;
+		sensorId=msgid&0x000f;
+
+		unsigned int type=msg.data[0]&0x80;
+		int len=msg.size;
+
+		for (int i=0; i<cardId.size(); i++)
+		{
+			if (id==cardId[i])
+			{
+				int index=16*12*i + sensorId*12;
+
+				if (type)
+				{
+					for(int k=0;k<5;k++)
+						data[index+k+7]=msg.data[k+1];
+				}
+				else
+				{
+					for(int k=0;k<7;k++)
+						data[index+k]=msg.data[k+1];
+				}
+				//    else
+				//        {
+				//            std::cerr<<"Error: skin received malformed message\n";
+				//        }
+			}
+		}
+	}
+///////////////////////////////////////
+
+//	out=data;  //old - this needs the running thread
 	mutex.post();
 
 	return yarp::dev::IAnalogSensor::AS_OK;
@@ -326,7 +371,7 @@ int EmbObjSkin::calibrateSensor()
 	eOmc_joint_config_t				a;
 	uint16_t						sizze;
 
-	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_leftlowerarm, (eo_cfg_nvsEP_sk_skinNumber_t)j, skinNVindex_sconfig__sigmode);
+	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_leftlowerarm, 0x00, skinNVindex_sconfig__sigmode);
 	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_sk_emsboard_leftlowerarm, nvid);
 
 	return true;
@@ -347,7 +392,6 @@ int EmbObjSkin::calibrateChannel(int ch)
 {
 	return 0;
 }
-
 
 bool EmbObjSkin::threadInit()
 {
@@ -382,7 +426,8 @@ bool EmbObjSkin::threadInit()
 void EmbObjSkin::run()
 {	
 	mutex.wait();
-
+	YARP_INFO(Logger::get(),"EmbObjSkin::run", Logger::get().log_files.f3);
+	/*
 	unsigned int canMessages=0;
 
 	// read nv from NvsCfg DataBase
@@ -428,7 +473,7 @@ void EmbObjSkin::run()
 			}
 		}
 	}
-
+*/
 	mutex.post();
 }
 

@@ -23,6 +23,7 @@
 #include <yarp/os/impl/Logger.h>
 
 #include <ethManager.h>
+#include "EoUtilities.h"
 
 // Temporary inclusion because we encapsulate can messages inside a eth frame... for now.
 //  In the future this behaviour will dropped in favor of a more flexible and HW independent use of NVs
@@ -36,7 +37,6 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
 
-#define SIZE_INFO			128
 
 #if 1
 namespace yarp{
@@ -51,6 +51,7 @@ class yarp::dev::Cfw2CanMessage : public yarp::dev::CanMessage
 {
  public:
     CFWCAN_MSG *msg;
+    eOutil_canframe_t eoMsg;
 
  public:
     Cfw2CanMessage();
@@ -83,8 +84,8 @@ class yarp::dev::Cfw2CanMessage : public yarp::dev::CanMessage
 class EmbObjSkin : 	public RateThread,
 					public yarp::dev::IAnalogSensor,
 					public DeviceDriver
-					//public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>
-//					public ICanBus
+					// public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>
+					// public ICanBus
 {
 protected:
 //	PolyDriver driver;
@@ -92,8 +93,9 @@ protected:
     ethResources *res;
 
 	// can stuff... to be removed
+    //    ICanBufferFactory *pCanBufferFactory;
+
     ICanBus *pCanBus;
-//    ICanBufferFactory *pCanBufferFactory;
     CanBuffer inBuffer;
     CanBuffer outBuffer;
    
@@ -112,7 +114,7 @@ public:
     {
     }
 
-    char					info[SIZE_INFO];
+    char		info[SIZE_INFO];
 
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
@@ -133,7 +135,7 @@ public:
 	virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
-
+    virtual void fill_data();
    
 };
 
