@@ -1299,6 +1299,40 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 }
                                 break;
 
+   							case VOCAB_DEBUG_ROTOR_POS:
+                                {
+                                    int j     = cmd.get(2).asInt();
+									ok = iDbg->getRotorPosition(j, &dtmp);
+									response.addInt(j);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
+
+   							case VOCAB_DEBUG_ROTOR_POSS:
+                                {
+									//ok = iDbg->getRotorPositions(&dtmp);
+									//response.addDouble(dtmp);
+                                }
+                                break;
+
+   							case VOCAB_DEBUG_JOINT_POS:
+                                {
+                                    int j     = cmd.get(2).asInt();
+									ok = iDbg->getJointPosition(j, &dtmp);
+									response.addInt(j);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
+
+   							case VOCAB_DEBUG_JOINT_POSS:
+                                {
+									//ok = iDbg->getJointPositions(&dtmp);
+									//response.addDouble(dtmp);
+                                }
+                                break;
+
 							case VOCAB_GENERIC_PARAMETER:
                                 {
                                     int j     = cmd.get(2).asInt();

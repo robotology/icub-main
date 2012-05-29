@@ -2744,6 +2744,74 @@ public:
         return false;
 	}
 
+	virtual bool getRotorPosition(int j, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getRotorPosition(off+base, t);
+        }		
+        return false;
+	}
+
+	virtual bool getRotorPositions(double *t)
+	{
+        return false;
+        /*
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getRotorPosition(off+base, t);
+        }		
+        return false;*/
+	}
+
+    virtual bool getJointPosition(int j, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getJointPosition(off+base, t);
+        }		
+        return false;
+	}
+
+	virtual bool getJointPositions(double *t)
+	{
+        return false;
+        /*
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getJointPosition(off+base, t);
+        }		
+        return false;*/
+	}
+
 	virtual bool setDebugParameter(int j, unsigned int index, double t)
 	{
         int off=device.lut[j].offset;
