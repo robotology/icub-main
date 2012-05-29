@@ -68,13 +68,79 @@ bool yarp::dev::ImplementDebugInterface::getDebugReferencePosition(int j, double
 	return r;
 }
 
+bool yarp::dev::ImplementDebugInterface::getRotorPosition(int j, double* value)
+{
+	int k=castToMapper2(helper)->toHw(j);
+	double enc=0.0;
+    bool r= raw->getRotorPositionRaw(j, &enc);
+	if (r)
+	{
+		*value = castToMapper2(helper)->posR2A(enc,k);
+	}
+	else
+	{
+		*value = 0.0;
+	}
+	return r;
+}
+
+bool yarp::dev::ImplementDebugInterface::getRotorPositions(double* value)
+{
+    return false;
+	/*int k=castToMapper2(helper)->toHw(j);
+	double enc=0.0;
+    bool r= raw->getRotorPositionsRaw(j, &enc);
+	if (r)
+	{
+		*value = castToMapper2(helper)->posE2A(enc,k);
+	}
+	else
+	{
+		*value = 0.0;
+	}
+	return r;*/
+}
+
 yarp::dev::ImplementDebugInterface::ImplementDebugInterface(IDebugInterfaceRaw *r)
 {
     raw=r;
     helper=0;
 }
 
-bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, const double *angleToEncoder, const double *zeros)
+bool yarp::dev::ImplementDebugInterface::getJointPosition(int j, double* value)
+{
+	int k=castToMapper2(helper)->toHw(j);
+	double enc=0.0;
+    bool r= raw->getJointPositionRaw(j, &enc);
+	if (r)
+	{
+		*value = castToMapper2(helper)->posE2A(enc,k);
+	}
+	else
+	{
+		*value = 0.0;
+	}
+	return r;
+}
+
+bool yarp::dev::ImplementDebugInterface::getJointPositions(double* value)
+{
+    return false;
+	/*int k=castToMapper2(helper)->toHw(j);
+	double enc=0.0;
+    bool r= raw->getRotorPositionsRaw(j, &enc);
+	if (r)
+	{
+		*value = castToMapper2(helper)->posE2A(enc,k);
+	}
+	else
+	{
+		*value = 0.0;
+	}
+	return r;*/
+}
+
+bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, const double *angleToEncoder, const double *zeros, const double *rotToEncoder)
 {
     if (helper!=0)
         return false;
@@ -83,7 +149,7 @@ bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, c
     for(int k=0;k<size;k++)
         dummy[k]=0;
 
-    helper=(void *)(new ControlBoardHelper2(size, amap, angleToEncoder, zeros, dummy));
+    helper=(void *)(new ControlBoardHelper2(size, amap, angleToEncoder, zeros, dummy, rotToEncoder));
     _YARP_ASSERT_DEBUG(helper != 0);
 
     delete [] dummy;

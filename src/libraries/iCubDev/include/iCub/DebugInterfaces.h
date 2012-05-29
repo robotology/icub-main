@@ -47,6 +47,10 @@
 #define VOCAB_GENERIC_PARAMETER VOCAB4('g','e','n','p')
 #define VOCAB_DEBUG_PARAMETER   VOCAB4('d','b','g','p')
 #define VOCAB_DEBUG_DESIRED_POS VOCAB4('d','d','p','s')
+#define VOCAB_DEBUG_ROTOR_POS   VOCAB3('d','r','p')
+#define VOCAB_DEBUG_ROTOR_POSS  VOCAB4('d','r','p','s')
+#define VOCAB_DEBUG_JOINT_POS   VOCAB3('d','j','p')
+#define VOCAB_DEBUG_JOINT_POSS  VOCAB4('d','j','p','s')
 
 /* LATER: is it likely that some of these would move into iCub::dev namespace? */
 namespace yarp{
@@ -79,11 +83,12 @@ inline void checkAndDestroyDebug(T* &p) {
 class ControlBoardHelper2
 {
 public:
-    ControlBoardHelper2(int n, const int *aMap, const double *angToEncs, const double *zs, const double *nw): zeros(0), 
+    ControlBoardHelper2(int n, const int *aMap, const double *angToEncs, const double *zs, const double *nw, const double *angToRot): zeros(0), 
         signs(0),
         axisMap(0),
         invAxisMap(0),
         angleToEncoders(0),
+        angleToRotor(0),
 		newtonsToSensors(0)
     {
         nj=n;
@@ -100,6 +105,11 @@ public:
             memcpy(angleToEncoders, angToEncs, sizeof(double)*nj);
         else
             memset(angleToEncoders, 0, sizeof(double)*nj);
+
+        if (angToRot!=0)
+            memcpy(angleToRotor, angToRot, sizeof(double)*nj);
+        else
+            memset(angleToRotor, 0, sizeof(double)*nj);
 
 		if (nw!=0)
             memcpy(newtonsToSensors, nw, sizeof(double)*nj);
@@ -143,6 +153,7 @@ public:
         axisMap=new int [nj];
         invAxisMap=new int [nj];
         angleToEncoders=new double [nj];
+        angleToRotor=new double [nj];
 		newtonsToSensors=new double [nj];
         _YARP_ASSERT_DEBUG(zeros != 0 && signs != 0 && axisMap != 0 && invAxisMap != 0 && angleToEncoders != 0 && newtonsToSensors != 0);
 
@@ -156,6 +167,7 @@ public:
         checkAndDestroyDebug<int> (axisMap);
         checkAndDestroyDebug<int> (invAxisMap);
         checkAndDestroyDebug<double> (angleToEncoders);
+        checkAndDestroyDebug<double> (angleToRotor);
 		checkAndDestroyDebug<double> (newtonsToSensors);
         return true;
     }
@@ -217,6 +229,20 @@ public:
         int k=toUser(j);
         
         return (enc/angleToEncoders[k])-zeros[k];
+    }
+
+    inline void posR2A(double enc, int j, double &ang, int &k)
+    {
+        k=toUser(j);
+
+        ang=(enc/angleToRotor[k]);//-zeros[k];
+    }
+
+    inline double posR2A(double enc, int j)
+    {
+        int k=toUser(j);
+        
+        return (enc/angleToRotor[k]);//-zeros[k];
     }
 
 	inline void impN2S(double newtons, int j, double &sens, int &k)
@@ -504,6 +530,7 @@ public:
 	int *axisMap;
 	int *invAxisMap;
 	double *angleToEncoders;
+	double *angleToRotor;
 	double *newtonsToSensors;
 };
 
@@ -558,6 +585,11 @@ public:
      * @return true/false on success/failure
      */
     virtual bool getDebugReferencePosition(int j, double* value)=0;
+
+    virtual bool getRotorPosition         (int j, double* value)=0;
+    virtual bool getRotorPositions        (double* value)=0;
+    virtual bool getJointPosition         (int j, double* value)=0;
+    virtual bool getJointPositions        (double* value)=0;
 };
 
 class yarp::dev::IDebugInterfaceRaw {
@@ -599,6 +631,11 @@ public:
      * @return true/false on success/failure
      */
     virtual bool getDebugReferencePositionRaw(int j, double* value)=0;
+    
+    virtual bool getRotorPositionRaw         (int j, double* value)=0;
+    virtual bool getRotorPositionsRaw        (double* value)=0;
+    virtual bool getJointPositionRaw         (int j, double* value)=0;
+    virtual bool getJointPositionsRaw        (double* value)=0;
 };
 
 class yarp::dev::ImplementDebugInterface: public IDebugInterface
@@ -607,7 +644,7 @@ class yarp::dev::ImplementDebugInterface: public IDebugInterface
     yarp::dev::IDebugInterfaceRaw *raw;
     double *dummy;
 public:
-    bool initialize(int k, const int *amap, const double *angleToEncoder, const double *zeros);
+    bool initialize(int k, const int *amap, const double *angleToEncoder, const double *zeros, const double *rotToEncoder);
     bool uninitialize();
     ImplementDebugInterface(IDebugInterfaceRaw *v);
     ~ImplementDebugInterface();
@@ -617,6 +654,10 @@ public:
     bool getDebugParameter(int j, unsigned int index, double *value);
 	bool setDebugReferencePosition(int j, double value);
 	bool getDebugReferencePosition(int j, double *value);
+    bool getRotorPosition         (int j, double* value);
+    bool getRotorPositions        (double* value);
+    bool getJointPosition         (int j, double* value);
+    bool getJointPositions        (double* value);
 };
 
 #endif /* __DEBUGINTERFACES__ */
