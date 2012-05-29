@@ -65,12 +65,17 @@ public:
     virtual bool open();
     virtual bool open(Searchable& config);
     virtual bool close();
-	bool setParameter(int j, unsigned int type, double t);
+    bool setParameter(int j, unsigned int type, double t);
     bool getParameter(int j, unsigned int type, double *t);
-	bool setDebugParameter(int j, unsigned int index, double t);
+    bool setDebugParameter(int j, unsigned int index, double t);
     bool getDebugParameter(int j, unsigned int index, double *t);
-	bool setDebugReferencePosition(int j, double value);
-	bool getDebugReferencePosition(int j, double *value);
+    bool setDebugReferencePosition(int j, double value);
+    bool getDebugReferencePosition(int j, double *value);
+    
+    bool getRotorPosition(int j, double *value);
+    bool getRotorPositions(double *value);
+    bool getJointPosition(int j, double *value);
+    bool getJointPositions(double *value);
 };
 
 #endif

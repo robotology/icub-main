@@ -241,6 +241,41 @@ bool yarp::dev::DebugInterfaceClient::getDebugReferencePosition(int j, double *t
     return ok;
 }
 
+bool yarp::dev::DebugInterfaceClient::getRotorPosition(int j, double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_ROTOR_POS);
+    cmd.addInt(j);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+		&&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_POS)
+        &&(resp.get(2).asInt()==j))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
+bool yarp::dev::DebugInterfaceClient::getRotorPositions(double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_ROTOR_POSS);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+        &&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_POSS))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
 
 bool yarp::dev::DebugInterfaceClient::setDebugReferencePosition(int j, double t)
 { 
@@ -252,6 +287,42 @@ bool yarp::dev::DebugInterfaceClient::setDebugReferencePosition(int j, double t)
 
     bool ok = rpc_p.write(cmd, response);
     return CHECK_FAIL(ok, response);
+}
+
+bool yarp::dev::DebugInterfaceClient::getJointPosition(int j, double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_JOINT_POS);
+    cmd.addInt(j);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+		&&(resp.get(1).asInt()==VOCAB_DEBUG_JOINT_POS)
+        &&(resp.get(2).asInt()==j))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
+bool yarp::dev::DebugInterfaceClient::getJointPositions(double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_JOINT_POSS);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+        &&(resp.get(1).asInt()==VOCAB_DEBUG_JOINT_POSS))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
 }
 
 // implementation of CommandsHelper

@@ -17,8 +17,8 @@
 
 #define CAN_PROTOCOL_MAJOR          1
 #define CAN_PROTOCOL_MINOR          1
-#define LAST_BLL_BUILD             57
-#define LAST_MC4_BUILD             42
+#define LAST_BLL_BUILD             60
+#define LAST_MC4_BUILD             45
 
 #define MODE_IDLE					0
 #define MODE_POSITION 				1
@@ -158,7 +158,9 @@
 #define CAN_BCAST_PRINT				6
 #define CAN_BCAST_VELOCITY			7
 #define CAN_BCAST_PID_ERROR			8
-
-#define CAN_BCAST_MAX_MSGS			9
+#define CAN_BCAST_DEBUG				9
+#define CAN_BCAST_MOTOR_POSITION   10
+#define CAN_BCAST_MOTOR_SPEED      11
+#define CAN_BCAST_MAX_MSGS		   12
 
 #endif
