@@ -169,6 +169,7 @@ public:
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to encoder conversion factors */
+    double *_rotToEncoder;                      /** angle to rotor conversion factors */
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
 	Pid *_tpids;								/** initial torque gains */
@@ -552,9 +553,9 @@ class axisImpedanceHelper
 	inline ~axisImpedanceHelper()
 	{
 		delete [] impLimits;
-		impLimits=0;										
-	}
-
+		impLimits=0;		
+		   }
+	
 	inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
 };
 
@@ -922,6 +923,10 @@ public:
 	virtual bool getDebugParameterRaw(int j, unsigned int index, double* value);
 	virtual bool setDebugReferencePositionRaw(int j, double value);
 	virtual bool getDebugReferencePositionRaw(int j, double *value);
+	virtual bool getRotorPositionRaw(int j, double* value);
+	virtual bool getRotorPositionsRaw(double *value);
+	virtual bool getJointPositionRaw(int j, double* value);
+	virtual bool getJointPositionsRaw(double *value);
 
     /////// Limits
     virtual bool setLimitsRaw(int axis, double min, double max);

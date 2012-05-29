@@ -181,7 +181,8 @@ class BCastBufferElement
 {
 public:
     // msg 1
-    BCastElement _position;
+    BCastElement _position_joint;
+    BCastElement _position_rotor;
 
     // msg 2
     short _pid_value;
@@ -273,7 +274,8 @@ public:
 
     void zero (void)
     {
-        _position._value = 0;
+        _position_joint._value = 0;
+        _position_rotor._value = 0;
         _pid_value = 0;
         _current = 0;
 	    _axisStatus=0;
@@ -998,13 +1000,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
     
-    if (!validate(general, xtmp, "Encoder", "a list of scales for the encoders", nj+1))
+    if (!validate(general, xtmp, "Encoder", "a list of scales for the joint encoders", nj+1))
         return false;
 
 	int test = xtmp.size();
     for (i = 1; i < xtmp.size(); i++) 
         _angleToEncoder[i-1] = xtmp.get(i).asDouble();
-    
+
+    if (!validate(general, xtmp, "Rotor", "a list of scales for the rotor encoders", nj+1))
+        {
+            fprintf(stderr, "Using default value = 1\n");
+            for(i=1;i<nj+1; i++) 
+                _rotToEncoder[i-1] = 1.0;
+        }
+    else
+        {
+            int test = xtmp.size();
+            for (i = 1; i < xtmp.size(); i++) 
+                _rotToEncoder[i-1] = xtmp.get(i).asDouble();
+        }
+
     if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
 
@@ -1333,7 +1348,19 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         xtmp=canGroup.findGroup("broadcast_pid_err");
         setBroadCastMask(xtmp, CAN_BCAST_PID_ERROR); //@@@ not checking return value in order to keep this option not mandatory
     }
-   
+
+    if (!canGroup.findGroup("broadcast_rotor_pos").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_pos");
+        setBroadCastMask(xtmp, CAN_BCAST_MOTOR_POSITION);
+    }
+
+    if (!canGroup.findGroup("broadcast_rotor_vel_acc").isNull())
+    {
+        xtmp=canGroup.findGroup("broadcast_pos");
+        setBroadCastMask(xtmp, CAN_BCAST_MOTOR_SPEED);
+    }
+
     if (!ret)
         fprintf(stderr, "Invalid configuration file, check broadcast_* parameters\n");
 
@@ -1346,6 +1373,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _destinations=0;
     _axisMap=0;
     _angleToEncoder=0;
+    _rotToEncoder=0;
     _zeros=0;
     _pids=0;
     _tpids=0;
@@ -1382,6 +1410,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _destinations = allocAndCheck<unsigned char> (CAN_MAX_CARDS);
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
+    _rotToEncoder = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
     _torqueSensorId= allocAndCheck<int>(nj);					
 	_torqueSensorChan= allocAndCheck<int>(nj);
@@ -1429,6 +1458,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
 {
     checkAndDestroy<double>(_zeros);
     checkAndDestroy<double>(_angleToEncoder);
+    checkAndDestroy<double>(_rotToEncoder);
     checkAndDestroy<int>(_axisMap);
     checkAndDestroy<unsigned char>(_destinations);
     checkAndDestroy<int>(_velocityShifts);
@@ -1563,7 +1593,8 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     for (int j=0; j<_njoints ;j++)
         {
             _bcastRecvBuffer[j]._update_e=Time::now();
-            _bcastRecvBuffer[j]._position.resetStats();
+            _bcastRecvBuffer[j]._position_joint.resetStats();
+            _bcastRecvBuffer[j]._position_rotor.resetStats();
         }
 
     //previously initialized
@@ -2381,7 +2412,7 @@ void CanBusMotionControl::handleBroadcasts()
                         // r._bcastRecvBuffer[j]._position = *((int *)(data));
                         // r._bcastRecvBuffer[j]._update_p = before;
                         int tmp=*((int *)(data));
-                        r._bcastRecvBuffer[j]._position.update(tmp, before);
+                        r._bcastRecvBuffer[j]._position_joint.update(tmp, before);
 
                         j++;
                         if (j < r.getJoints())
@@ -2389,7 +2420,25 @@ void CanBusMotionControl::handleBroadcasts()
                                 tmp =*((int *)(data+4));
                                 //r._bcastRecvBuffer[j]._position = *((int *)(data+4));
                                 //r._bcastRecvBuffer[j]._update_p = before;
-                                r._bcastRecvBuffer[j]._position.update(tmp, before);
+                                r._bcastRecvBuffer[j]._position_joint.update(tmp, before);
+                            }
+                    }
+                    break;
+
+                case CAN_BCAST_MOTOR_POSITION:
+                    {
+                        // r._bcastRecvBuffer[j]._position = *((int *)(data));
+                        // r._bcastRecvBuffer[j]._update_p = before;
+                        int tmp=*((int *)(data));
+                        r._bcastRecvBuffer[j]._position_rotor.update(tmp, before);
+
+                        j++;
+                        if (j < r.getJoints())
+                            {
+                                tmp =*((int *)(data+4));
+                                //r._bcastRecvBuffer[j]._position = *((int *)(data+4));
+                                //r._bcastRecvBuffer[j]._update_p = before;
+                                r._bcastRecvBuffer[j]._position_rotor.update(tmp, before);
                             }
                     }
                     break;
@@ -2805,8 +2854,8 @@ void CanBusMotionControl:: run()
                     double max;
                     double min;
                     int it;
-                    r._bcastRecvBuffer[j]._position.getStats(it, dT, min, max);
-                    r._bcastRecvBuffer[j]._position.resetStats();
+                    r._bcastRecvBuffer[j]._position_joint.getStats(it, dT, min, max);
+                    r._bcastRecvBuffer[j]._position_joint.resetStats();
 
                     logJointData(canDevName.c_str(),r._networkN,j,5,yarp::os::Value(max));
 
@@ -3197,7 +3246,6 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 	*stiff= *((short *)(data));
 	data+=2;
 	*damp= *((short *)(data)); 
-
 	*damp/= 1000;
 
 	t->clear();
@@ -3935,6 +3983,38 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
 	return true;
 }
 
+bool CanBusMotionControl::getRotorPositionRaw(int axis, double* value)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *value = double(r._bcastRecvBuffer[axis]._position_rotor._value);
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getRotorPositionsRaw(double* value)
+{
+    return false;
+}
+
+bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *value = double(r._bcastRecvBuffer[axis]._position_joint._value);
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getJointPositionsRaw(double* value)
+{
+    return false;
+}
+
 bool CanBusMotionControl::getDebugReferencePositionRaw(int axis, double* value)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -4574,8 +4654,8 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
 bool CanBusMotionControl::stopRaw(int j)
 {
     bool ret=velocityMoveRaw(j, 0);
-    ret &= _writeNone  (CAN_STOP_TRAJECTORY, j);
-    return ret;
+	ret &= _writeNone  (CAN_STOP_TRAJECTORY, j);
+	return ret;
 }
 
 bool CanBusMotionControl::stopRaw()
@@ -4590,7 +4670,7 @@ bool CanBusMotionControl::stopRaw()
     {
        ret &= _writeNone  (CAN_STOP_TRAJECTORY, j);
     }
-
+    
     delete [] tmp;
     return ret;
 }
@@ -4724,10 +4804,10 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
-        v[i] = double(r._bcastRecvBuffer[i]._position._value);
+        v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
 
-        if (stamp<r._bcastRecvBuffer[i]._position._stamp)
-            stamp=r._bcastRecvBuffer[i]._position._stamp;
+        if (stamp<r._bcastRecvBuffer[i]._position_joint._stamp)
+            stamp=r._bcastRecvBuffer[i]._position_joint._stamp;
     }
 
     stampEncoders.update(stamp);
@@ -4750,7 +4830,7 @@ bool CanBusMotionControl::getEncoderRaw(int axis, double *v)
     if (!(axis >= 0 && axis <= r.getJoints()))return false;
 
     _mutex.wait();
-    *v = double(r._bcastRecvBuffer[axis]._position._value);
+    *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
     _mutex.post();
 
     return true;
