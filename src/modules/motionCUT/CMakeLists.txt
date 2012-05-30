@@ -8,8 +8,11 @@ SET(PROJECTNAME motionCUT)
 PROJECT(${PROJECTNAME})
 
 SET(folder_source main.cpp)
-
-SOURCE_GROUP("Source Files" FILES ${folder_source})
+IF(OpenCV_VERSION_MAJOR LESS 3 AND OpenCV_VERSION_MINOR LESS 3)
+    SOURCE_GROUP("Source Files" FILES ${folder_source} main_cv_c.cpp)
+ELSE()
+    SOURCE_GROUP("Source Files" FILES ${folder_source} main_cv_cpp.cpp)
+ENDIF()
 
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
