@@ -1801,11 +1801,7 @@ RateThread(10),
 ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
 ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
 ImplementPidControl<CanBusMotionControl, IPidControl>(this),
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
-    ImplementEncodersTimed(this),
-#else
-    ImplementEncoders<CanBusMotionControl, IEncoders>(this),
-#endif 
+ImplementEncodersTimed(this),
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
 ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
@@ -1887,12 +1883,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementPidControl<CanBusMotionControl, IPidControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-#else
-    ImplementEncoders<CanBusMotionControl, IEncoders>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-#endif
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -2282,13 +2273,7 @@ bool CanBusMotionControl::close (void)
 
         ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
         ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
-
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
         ImplementEncodersTimed::uninitialize();
-#else
-        ImplementEncoders<CanBusMotionControl, IEncoders>::uninitialize();
-#endif
-
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
         ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
@@ -2296,7 +2281,7 @@ bool CanBusMotionControl::close (void)
 
         ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
-		ImplementImpedanceControl::uninitialize();
+        ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
 
         
