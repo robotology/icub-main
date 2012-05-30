@@ -18,9 +18,10 @@ public:
     Fingertip(double cx,double cy,double th,double gain=1.0,int layoutNum=0,int lrMirror=0)
     {
         dGain=gain;
-		ilrMirror=lrMirror;
-		ilayoutNum=layoutNum;
+        ilrMirror=lrMirror;
+        ilayoutNum=layoutNum;
         nVerts=7;
+        nTaxels=12;
         /*
         dX[11]= 41.0; dY[11]=10.0;
         dX[10]= 65.0; dY[10]=10.0;
@@ -58,7 +59,7 @@ public:
         dXv[6]=-dXv[0]; dYv[6]=dYv[0];
 
         const double scale=2.7/15.3;
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             dX[i]*=scale;
             dY[i]*=scale;
@@ -75,7 +76,7 @@ public:
         const double CST=cos(DEG2RAD*th);
         const double SNT=sin(DEG2RAD*th);
 
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             double x=dX[i];
             double y=dY[i];

@@ -26,9 +26,10 @@ public:
         const double L=2.0*H/9.0;
         const double scale=1/40.0;
         dGain=gain;
-		ilrMirror=lrMirror;
-		ilayoutNum=layoutNum;
+        ilrMirror=lrMirror;
+        ilayoutNum=layoutNum;
         nVerts=3;
+        nTaxels=12;
         m_RadiusOrig=2.2;
 
         dX[8]=-128.62; dY[8]=222.83;
@@ -46,7 +47,7 @@ public:
 
 
         
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             dX[i]*=scale;
             dY[i]*=scale;
@@ -61,7 +62,7 @@ public:
         dXv[2]=0.0;
         dYv[2]=63.0/4;
 
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             double x=dX[i];
             double y=dY[i];
@@ -103,7 +104,7 @@ public:
             drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
         
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
 			if ((i==6) || (i==10)) 
 			{

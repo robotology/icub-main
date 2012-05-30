@@ -26,9 +26,10 @@ public:
         const double L=2.0*H/9.0;
      
         dGain=gain;
-		ilrMirror=lrMirror;
-		ilayoutNum=layoutNum;
+        ilrMirror=lrMirror;
+        ilayoutNum=layoutNum;
         nVerts=3;
+        nTaxels=12;
         m_RadiusOrig=2.0;
 
         dX[5]=L*cos(DEG2RAD*30.0); dX[4]=0.5-dX[5]; dX[2]=0.5+dX[5]; dX[1]=1.0-dX[5];
@@ -43,7 +44,7 @@ public:
         dY[8]=0.5*H+L*sin(DEG2RAD*30.0); dY[10]=dY[8];
         dY[9]=H-L;
 
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             double x=30.0*dX[i]-15.0;
             double y=30.0*dY[i]-10.0*H;

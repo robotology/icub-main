@@ -42,7 +42,7 @@ public:
         int w2=width /2;
         int h2=height/2;
 
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             x[i]=w2+int(scale*(dX[i]-dXmid));
             y[i]=h2+int(scale*(dY[i]-dYmid));
@@ -111,18 +111,18 @@ public:
 		switch (ilayoutNum)
 		{
 			case 0:
-				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
 				break;
 			case 1:
-				for (int i=0; i<12; ++i)  remapped_activation[11-i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[11-i]=activation[i];
 				break;
 			default:
-				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
 				printf("WARN: unkwnown layout number.\n");
 				break;
 		}
 
-        for (int i=0; i<12; ++i) if (remapped_activation[i]>0.0)
+        for (int i=0; i<nTaxels; ++i) if (remapped_activation[i]>0.0)
         {
             k0=dGain*remapped_activation[i];
             Y0=(m_Height-y[i]-1)*m_Width+x[i];
@@ -197,7 +197,7 @@ public:
             drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
         
-        for (int i=0; i<12; ++i)
+        for (int i=0; i<nTaxels; ++i)
         {
             drawCircle(image,x[i],y[i],m_Radius);
         }
@@ -302,8 +302,8 @@ protected:
     double dXv[8],dYv[8];
     double dXc,dYc;
     double dGain;
-	int    ilayoutNum;
-	int    ilrMirror;
+    int    ilayoutNum;
+    int    ilrMirror;
 
     double m_Radius,m_RadiusOrig;
     double activation[12];
@@ -316,6 +316,7 @@ protected:
     int xv[8],yv[8];
 
     int nVerts;
+    int nTaxels;
 
     int xMin,xMax,yMin,yMax;
 
