@@ -190,10 +190,10 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-#if (CV_MAJOR_VERSION<3) && (CV_MINOR_VERSION<3)
-    #include "main_cv_c.cpp"
-#else
+#ifdef OpenCV_USE_CPP
     #include "main_cv_cpp.cpp"
+#else
+    #include "main_cv_c.cpp"
 #endif
 
 

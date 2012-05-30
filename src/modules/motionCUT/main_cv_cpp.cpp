@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <opencv2/opencv.h>
+#include <opencv2/opencv.hpp>
 using namespace cv;
 
 // in BGR format
