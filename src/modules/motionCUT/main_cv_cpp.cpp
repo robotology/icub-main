@@ -233,7 +233,8 @@ public:
 
             // compute optical flow
             latch_t=Time::now();
-            calcOpticalFlowPyrLK(Mat(imgMonoPrev.getIplImage()),Mat(imgMonoIn.getIplImage()),
+            calcOpticalFlowPyrLK(Mat((IplImage*)imgMonoPrev.getIplImage()),
+                                 Mat((IplImage*)imgMonoIn.getIplImage()),
                                  nodesPrev,nodesCurr,featuresFound,featuresErrors,
                                  cvSize(winSize,winSize),5,
                                  cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),
