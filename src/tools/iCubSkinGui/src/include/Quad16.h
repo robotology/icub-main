@@ -28,7 +28,7 @@ public:
         dGain=gain;
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
-        nVerts=3;
+        nVerts=4;
         nTaxels=12;
         m_RadiusOrig=2.0;
 
@@ -44,6 +44,26 @@ public:
         dY[8]=0.5*H+L*sin(DEG2RAD*30.0); dY[10]=dY[8];
         dY[9]=H-L;
 
+        dX[0]=0;    dY[0]=0;
+        dX[1]=0.25; dY[1]=0;
+        dX[2]=0.50; dY[2]=0;
+        dX[3]=0.75; dY[3]=0;
+        
+        dX[4]=0;    dY[4]=0.25;
+        dX[5]=0.25; dY[5]=0.25;
+        dX[6]=0.50; dY[6]=0.25;
+        dX[7]=0.75; dY[7]=0.25;                
+
+        dX[8]=0;    dY[8]=0.5;
+        dX[9]=0.25; dY[9]=0.5;
+        dX[10]=0.50; dY[10]=0.5;
+        dX[11]=0.75; dY[11]=0.5;
+    /*    
+        dX[12]=0;    dY[12]=0.75;
+        dX[13]=0.25; dY[13]=0.75;
+        dX[14]=0.50; dY[14]=0.75;
+        dX[15]=0.75; dY[15]=0.75;          
+*/
         for (int i=0; i<nTaxels; ++i)
         {
             double x=30.0*dX[i]-15.0;
@@ -55,14 +75,17 @@ public:
         }
 
 		dXv[0]=-15.0;
-        dYv[0]=-8.66;
+        dYv[0]=-15.0;
 
         dXv[1]=+15.0;
-        dYv[1]=-8.66;
+        dYv[1]=-15.0;
 
-        dXv[2]=0;
-        dYv[2]=+17.32;
+        dXv[2]=+15;
+        dYv[2]=+15;
 
+        dXv[3]=-15;
+        dYv[3]=+15;
+        
 		for (int i=0; i<nVerts; ++i)
         {
             double x=dXv[i];
