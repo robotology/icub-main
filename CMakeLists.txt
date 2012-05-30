@@ -141,11 +141,6 @@ set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for i
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
-set(ICUB_ICUBINTERFACE_PRECISE_TIMESTAMPS TRUE CACHE BOOL "Enable experimental precise timestamps for encoders")
-
-if (ICUB_ICUBINTERFACE_PRECISE_TIMESTAMPS)
-	add_definitions(-D__ICUBINTERFACE_PRECISE_TIMESTAMPS__)
-endif ()
 
 ###################### End options and definitions
 
