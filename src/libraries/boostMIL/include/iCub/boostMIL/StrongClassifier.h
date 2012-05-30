@@ -161,7 +161,7 @@ public:
     *
     * @param input the inputs over which train the classifier.
     */
-    virtual void                        train       (const Inputs *input)                                       = 0;
+    virtual void                        train       (const Inputs *input, double weigth=1.0)              = 0;
 
 
 

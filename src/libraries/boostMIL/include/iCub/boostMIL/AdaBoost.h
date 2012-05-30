@@ -63,7 +63,7 @@ private:
     /**
     * Online method (private and unimplemented on purpose).
     */
-    virtual void                            train           (const Inputs *input)                   {}
+    virtual void                            train           (const Inputs *input, double weight=1.0){}
 
 public:
 

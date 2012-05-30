@@ -102,9 +102,8 @@ void OnlineBoost::train(const std::list<Inputs*> &training_set)
     }
 }
 
-void OnlineBoost::train(const Inputs* input)
+void OnlineBoost::train(const Inputs* input, double weight)
 {
-    double weight=1.0;
     update(input,weight);
 }
 
