@@ -29,13 +29,13 @@
 </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
+      <parameters>--name /icub/view/left --x 0 --y 0 --RefreTime 50</parameters>
       <node>chico3</node>
       <tag>viewleft</tag>
 </module>
 <module>
       <name>yarpview</name>
-      <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
+      <parameters>--name /icub/view/right --x 320 --y 0 --RefreTime 50</parameters>
       <node>chico3</node>
       <tag>viewright</tag>
 </module>
