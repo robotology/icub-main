@@ -1,0 +1,16 @@
+<application>
+  <name>Skin Gui Torso</name>
+  
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from posfet_quad.ini</parameters>
+    <node>console</node>
+    <tag>skinGuiT</tag>
+  </module>    
+
+  <connection>
+    <from>/palm_sensor:o</from>
+    <to>/skinGui/posfet_palm:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>
