@@ -1506,7 +1506,6 @@ public:
         return ret;
     }
 
-#ifdef __ICUBINTERFACE_PRECISE_TIMESTAMPS__
     virtual bool getEncodersTimed(double *encs, double *t) {
         bool ret=true;
 
@@ -1544,8 +1543,6 @@ public:
         *v=0.0;
         return false; 
     }
-
-#endif
 
     /**
     * Read the istantaneous speed of an axis.
