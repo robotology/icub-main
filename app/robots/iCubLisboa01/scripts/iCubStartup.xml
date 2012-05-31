@@ -1,7 +1,3 @@
-<!-- instantiation of
-     $ICUB_ROOT/main/app/iCubStartup/scripts/iCubStartup.xml.template
-     for iCubLisboa01 -->
-
 <application>
 <name>iCubStartup for iCubLisboa01 (Chico)</name>
 
@@ -61,7 +57,7 @@
         <module>
                 <name>wholeBodyDynamics</name>
                 <parameters>--headV2 --autoconnect</parameters>
-                <node>icubbrain1</node>
+                <node>icubbrain2</node>
                 <tag>wholeBodyDynamicsTag</tag>
         </module>
 
