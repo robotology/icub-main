@@ -186,6 +186,7 @@ private:
     bool     com_vel_enabled;
     bool     left_arm_enabled;
     bool     right_arm_enabled;
+    bool     head_enabled;
     bool     dummy_ft;
     bool     dump_vel_enabled;
     bool     auto_drift_comp;
@@ -220,6 +221,7 @@ public:
         legs_enabled = true;
         left_arm_enabled = true;
         right_arm_enabled = true;
+        head_enabled = true;
         w0_dw0_enabled = false;
         dummy_ft = false;
         dump_vel_enabled = false;
@@ -377,6 +379,13 @@ public:
             fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
         }
 
+        //------------------CHECK IF HEAD IS ENABLED-----------//
+        if (rf.check("no_head"))
+        {
+            head_enabled= false;
+            fprintf(stderr,"'no_head' option found. Head will be disabled.\n");
+        }
+
         //------------------CHECK IF ARMS ARE ENABLED-----------//
         if (rf.check("no_left_arm"))
         {
@@ -428,18 +437,20 @@ public:
         }
 
         //---------------------DEVICES--------------------------//
-
-        OptionsHead.put("device","remote_controlboard");
-        OptionsHead.put("local",string("/"+local_name+"/head/client").c_str());
-        OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
-
-        if (!createDriver(dd_head, OptionsHead))
+        if(head_enabled)
         {
-            fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
-            return false;
+            OptionsHead.put("device","remote_controlboard");
+            OptionsHead.put("local",string("/"+local_name+"/head/client").c_str());
+            OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+
+            if (!createDriver(dd_head, OptionsHead))
+            {
+                fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+                return false;
+            }
+            else
+                fprintf(stderr,"device driver created\n");
         }
-        else
-            fprintf(stderr,"device driver created\n");
 
         if (left_arm_enabled)
         {

@@ -1191,10 +1191,13 @@ void inverseDynamics::addSkinContacts()
     if(scl)
     {
         skinContactsTimestamp = Time::now();
-        if(scl->empty() && !default_ee_cont)   // if no skin contacts => leave the old contacts but reset the pressure
+        if(scl->empty() && !default_ee_cont)   // if no skin contacts => leave the old contacts but reset pressure and contact list
         {
             for(skinContactList::iterator it=skinContacts.begin(); it!=skinContacts.end(); it++)
+            {
                 it->setPressure(0.0);
+                it->setActiveTaxels(0);
+            }
             return;
         }
         
