@@ -113,17 +113,17 @@ modified since it was loaded within the database.
 <i>Action</i>: ask the database handler to dump on the screen 
 all the stored items along with their properties. 
  
-<b>synchronous streaming</b> \n 
+<b>synchronous broadcast</b> \n 
 <i>Format</i>: [sync] [start] <T>/[stop] \n 
 <i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: ask the database to start/stop streaming out its 
+<i>Action</i>: ask the database to start/stop broadcasting its 
 content to a yarp port with a periodicity of <T> seconds. The 
 parameter <T> is optional. 
  
-<b>asynchronous streaming</b> \n 
+<b>asynchronous broadcast</b> \n 
 <i>Format</i>: [async] [on]/[off] \n 
 <i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: ask the database to start/stop streaming out its 
+<i>Action</i>: ask the database to start/stop broadcasting its 
 content to a yarp port whenever [add]/[del]/[set] operations are
 performed. 
  
@@ -171,14 +171,13 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 --verbose 
 - Enable some verbosity. 
  
---sync_stream <T> 
-- Enable to stream out the database content with a periodicity 
-  of \e T seconds. If not specified, a period of 1.0 second is
-  assumed.
+--sync_bc <T> 
+- Broadcast the database content with a periodicity of \e T 
+  seconds. If not specified, a period of 1.0 second is assumed.
  
---async_stream 
-- Enable to stream out the database content whenever 
-  [add]/[del]/[set] operations are performed.
+--async_bc 
+- Broadcast the database content whenever [add]/[del]/[set] 
+  operations are performed.
  
 --stats 
 - Enable statistics printouts.
@@ -191,8 +190,8 @@ None.
 - \e /<moduleName>/rpc the remote procedure call port used to 
   send requests to the database and receive replies.
 
-- \e /<moduleName>/db:o the port used to stream out the database
-  content in synchronous and asynchronous mode.
+- \e /<moduleName>/broadcast:o the port used to broadcast the 
+  database content in synchronous and asynchronous mode.
  
 \section in_files_sec Input Data Files
 None.
@@ -388,8 +387,8 @@ protected:
     bool verbose;
     string dbFileName;
 
-    BufferedPort<Bottle> *pStreamPort;
-    bool asyncStream;
+    BufferedPort<Bottle> *pBroadcastPort;
+    bool asyncBroadcast;
 
     /************************************************************************/
     int printMessage(const char *format, ...)
@@ -486,15 +485,15 @@ protected:
     /************************************************************************/
     void run()
     {
-        stream("sync");
+        broadcast("sync");
     }
 
 public:
     /************************************************************************/
     DataBase() : RateThread(1000)
     {
-        pStreamPort=NULL;
-        asyncStream=false;
+        pBroadcastPort=NULL;
+        asyncBroadcast=false;
         initialized=false;
         nosave=false;
         verbose=false;
@@ -533,19 +532,19 @@ public:
         initialized=true;
         printMessage("database ready ...\n");
 
-        if (rf.check("sync_stream"))
+        if (rf.check("sync_bc"))
         {
-            setRate((int)(1000.0*rf.check("sync_stream",Value(1.0)).asDouble()));
+            setRate((int)(1000.0*rf.check("sync_bc",Value(1.0)).asDouble()));
             start();
         }
 
-        asyncStream=rf.check("async_stream");
+        asyncBroadcast=rf.check("async_bc");
     }
 
     /************************************************************************/
-    void setStreamPort(BufferedPort<Bottle> &streamPort)
+    void setBroadcastPort(BufferedPort<Bottle> &broadcastPort)
     {
-        pStreamPort=&streamPort;
+        pBroadcastPort=&broadcastPort;
     }
 
     /************************************************************************/
@@ -632,14 +631,14 @@ public:
     }
 
     /************************************************************************/
-    void stream(const string &type)
+    void broadcast(const string &type)
     {
-        if (pStreamPort!=NULL)
+        if (pBroadcastPort!=NULL)
         {
-            if (pStreamPort->getOutputCount()>0)
+            if (pBroadcastPort->getOutputCount()>0)
             {
                 mutex.wait();
-                Bottle &bottle=pStreamPort->prepare();
+                Bottle &bottle=pBroadcastPort->prepare();
                 bottle.clear();
 
                 bottle.addString(type.c_str());
@@ -654,7 +653,7 @@ public:
                     item.append(Bottle(it->second.prop->toString().c_str()));
                 }
 
-                pStreamPort->write();
+                pBroadcastPort->write();
                 mutex.post();
             }
         }
@@ -1050,8 +1049,8 @@ public:
                     b.addInt(idCnt);
                     idCnt++;
 
-                    if (asyncStream)
-                        stream("async");
+                    if (asyncBroadcast)
+                        broadcast("async");
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1072,8 +1071,8 @@ public:
                 if (remove(content))
                 {
                     reply.addVocab(REP_ACK);
-                    if (asyncStream)
-                        stream("async");
+                    if (asyncBroadcast)
+                        broadcast("async");
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1116,8 +1115,8 @@ public:
                 if (set(content))
                 {
                     reply.addVocab(REP_ACK);
-                    if (asyncStream)
-                        stream("async");
+                    if (asyncBroadcast)
+                        broadcast("async");
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1202,12 +1201,12 @@ public:
                 int opt=command.get(1).asVocab();
                 if (opt==Vocab::encode("on"))
                 {
-                    asyncStream=true;
+                    asyncBroadcast=true;
                     reply.addVocab(REP_ACK);
                 }
                 else if (opt==Vocab::encode("off"))
                 {
-                    asyncStream=false;
+                    asyncBroadcast=false;
                     reply.addVocab(REP_ACK);
                 }
                 else
@@ -1308,7 +1307,7 @@ private:
     DataBase             dataBase;
     RpcProcessor         rpcProcessor;
     Port                 rpcPort;
-    BufferedPort<Bottle> dbPort;
+    BufferedPort<Bottle> bcPort;
 
     int cnt;
     bool stats;
@@ -1325,11 +1324,11 @@ public:
         stats=rf.check("stats");
 
         string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
-        dataBase.setStreamPort(dbPort);
+        dataBase.setBroadcastPort(bcPort);
         rpcProcessor.setDataBase(dataBase);
         rpcPort.setReader(rpcProcessor);
         rpcPort.open(("/"+name+"/rpc").c_str());
-        dbPort.open(("/"+name+"/db:o").c_str());
+        bcPort.open(("/"+name+"/broadcast:o").c_str());
 
         cnt=0;
         nCallsOld=0;
@@ -1342,10 +1341,10 @@ public:
     bool close()
     {
         rpcPort.interrupt();
-        dbPort.interrupt();
+        bcPort.interrupt();
 
         rpcPort.close();
-        dbPort.close();
+        bcPort.close();
 
         return true;
     }
