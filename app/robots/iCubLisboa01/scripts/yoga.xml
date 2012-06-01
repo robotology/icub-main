@@ -1,5 +1,5 @@
 <application>
-  <name>Yoga Demo</name>
+  <name>Yoga</name>
   <dependencies>
 	<port>/icub/right_arm/state:o</port>
 	<port>/icub/left_arm/state:o</port>

@@ -3,7 +3,7 @@
      for iCubLisboa01 -->
 
 <application>
-<name>Demo Force Control</name>
+<name>Force Control</name>
 	<dependencies>
 	        <port>/icub/left_arm/state:o</port>
 	        <port>/wholeBodyDynamics/filtered/inertial:o</port>
