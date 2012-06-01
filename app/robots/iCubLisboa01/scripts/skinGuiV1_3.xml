@@ -1,5 +1,5 @@
 <application>
-<name>Face</name>
+<name>Skin GUI v1.3</name>
 <module>
       <name>iCubSkinGui</name>
       <parameters>--from lefthand_V1_3.ini</parameters>

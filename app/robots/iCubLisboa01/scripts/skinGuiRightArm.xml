@@ -3,7 +3,7 @@
      for iCubLisboa01 -->
 
 <application>
-  <name>Skin Gui Right Arm</name>
+  <name>Skin GUI Right Arm</name>
 
   <module>
     <name>skinManager</name>
