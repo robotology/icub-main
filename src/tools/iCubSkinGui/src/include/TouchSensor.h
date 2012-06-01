@@ -15,6 +15,8 @@
 #ifndef __ALE_TOUCHSENSOR_H__
 #define __ALE_TOUCHSENSOR_H__
 
+#define MAX_TAXELS 64
+
 class TouchSensor
 {
 	bool calibrated_skin;
@@ -99,6 +101,11 @@ public:
         return x>=0?x:-x;
     }
     
+    int get_nTaxels () 
+    {
+        return nTaxels;
+    }
+
     void eval(unsigned char *image)
     {
         int act;
@@ -107,14 +114,14 @@ public:
         int index;
         double k0,k1;
         int dya,dyb,dxa,dxb;
-		double remapped_activation[12];
+		double remapped_activation[MAX_TAXELS];
 		switch (ilayoutNum)
 		{
 			case 0:
 				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
 				break;
 			case 1:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[11-i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[nTaxels-1-i]=activation[i];
 				break;
 			default:
 				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
@@ -297,7 +304,7 @@ protected:
     }
 
     // original
-    double dX[12],dY[12];
+    double dX[MAX_TAXELS],dY[MAX_TAXELS];
     static double dXmin,dXmax,dYmin,dYmax;
     double dXv[8],dYv[8];
     double dXc,dYc;
@@ -306,13 +313,13 @@ protected:
     int    ilrMirror;
 
     double m_Radius,m_RadiusOrig;
-    double activation[12];
+    double activation[MAX_TAXELS];
 
     static int m_maxRange;
     static double *Exponential;
     
     // scaled
-    int x[12],y[12];
+    int x[MAX_TAXELS],y[MAX_TAXELS];
     int xv[8],yv[8];
 
     int nVerts;
@@ -321,6 +328,10 @@ protected:
     int xMin,xMax,yMin,yMax;
 
     int m_Width,m_Height;
+
+    public:
+    int min_tax;
+    int max_tax;
 };
 
 #endif

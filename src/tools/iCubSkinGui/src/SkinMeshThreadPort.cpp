@@ -23,37 +23,42 @@ bool SkinMeshThreadPort::threadInit()
 }
 
 void SkinMeshThreadPort::run()
-{	
+{
     mutex.wait();
 
-	Bottle *input=0;
+    Bottle *input=0;
 
     input = skin_port.read(false);
-    
+
     if (input==0)
     {
         mutex.post();
         return;
     }
+    
+    yarp::sig::Vector skin_value;
+    skin_value.resize(input->size());
+    for (int i=0; i<input->size(); i++)
+    {
+        skin_value[i] = input->get(i).asDouble();
+    }
 
-	yarp::sig::Vector skin_value;
-	int sensorId =0;
-	skin_value.resize(input->size());
-	for (int i=0; i<input->size(); i++)
-	{
-		skin_value[i] = input->get(i).asDouble();
+    for (int sensorId=0; sensorId<MAX_SENSOR_NUM; sensorId++)
+    {
+        if (sensor[sensorId]==0) continue;
 
-		sensorId=i/12;
-		if (sensorId<MAX_SENSOR_NUM && sensor[sensorId])
-			sensor[sensorId]->setActivationFromPortData(skin_value[i],i%12);
-	}
-
+        for (int i=sensor[sensorId]->min_tax; i<=sensor[sensorId]->max_tax; i++)
+        {
+            int curr_tax = i-sensor[sensorId]->min_tax;
+            
+            sensor[sensorId]->setActivationFromPortData(skin_value[i],curr_tax);
+        }
+    }
     mutex.post();
 }
 
 void SkinMeshThreadPort::threadRelease()
 {
-	printf("SkinMeshThreadPort releasing...\n");	
-
+    printf("SkinMeshThreadPort releasing...\n");	
     printf("... done.\n");
 }

@@ -29,69 +29,53 @@ public:
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
         nVerts=4;
-        nTaxels=12;
+        nTaxels=16;
         m_RadiusOrig=2.0;
 
-        dX[5]=L*cos(DEG2RAD*30.0); dX[4]=0.5-dX[5]; dX[2]=0.5+dX[5]; dX[1]=1.0-dX[5];
-        dX[6]=0.25; dX[3]=0.5; dX[0]=0.75;
-        dX[7]=0.25+dX[5]; dX[11]=0.75-dX[5];
-        dX[8]=dX[7]; dX[10]=dX[11];
-        dX[9]=0.5;
-
-        dY[5]=L*sin(DEG2RAD*30.0); dY[4]=dY[5]; dY[2]=dY[5]; dY[1]=dY[5];
-        dY[6]=0.5*H-L; dY[3]=L; dY[0]=dY[6];
-        dY[7]=0.5*H-L*sin(DEG2RAD*30.0); dY[11]=dY[7];
-        dY[8]=0.5*H+L*sin(DEG2RAD*30.0); dY[10]=dY[8];
-        dY[9]=H-L;
-
-        dX[0]=0;    dY[0]=0;
-        dX[1]=0.25; dY[1]=0;
-        dX[2]=0.50; dY[2]=0;
-        dX[3]=0.75; dY[3]=0;
+        dX[0]=0.2; dY[0]=0.2;
+        dX[1]=0.4; dY[1]=0.2;
+        dX[2]=0.6; dY[2]=0.2;
+        dX[3]=0.8; dY[3]=0.2;
         
-        dX[4]=0;    dY[4]=0.25;
-        dX[5]=0.25; dY[5]=0.25;
-        dX[6]=0.50; dY[6]=0.25;
-        dX[7]=0.75; dY[7]=0.25;                
+        dX[4]=0.2; dY[4]=0.4;
+        dX[5]=0.4; dY[5]=0.4;
+        dX[6]=0.6; dY[6]=0.4;
+        dX[7]=0.8; dY[7]=0.4;
 
-        dX[8]=0;    dY[8]=0.5;
-        dX[9]=0.25; dY[9]=0.5;
-        dX[10]=0.50; dY[10]=0.5;
-        dX[11]=0.75; dY[11]=0.5;
-    /*    
-        dX[12]=0;    dY[12]=0.75;
-        dX[13]=0.25; dY[13]=0.75;
-        dX[14]=0.50; dY[14]=0.75;
-        dX[15]=0.75; dY[15]=0.75;          
-*/
+        dX[8]=0.2;  dY[8]=0.6;
+        dX[9]=0.4;  dY[9]=0.6;
+        dX[10]=0.6; dY[10]=0.6;
+        dX[11]=0.8; dY[11]=0.6;
+        
+        dX[12]=0.2; dY[12]=0.8;
+        dX[13]=0.4; dY[13]=0.8;
+        dX[14]=0.6; dY[14]=0.8;
+        dX[15]=0.8; dY[15]=0.8;
+
         for (int i=0; i<nTaxels; ++i)
         {
-            double x=30.0*dX[i]-15.0;
-            double y=30.0*dY[i]-10.0*H;
+            double x=40.0*dX[i]-20.0;
+            double y=40.0*dY[i]-20.0;
 
-			if (lrMirror==1) x=-x;
+            if (lrMirror==1) x=-x;
             dX[i]=cx+CST*x-SNT*y;
             dY[i]=cy+SNT*x+CST*y;
         }
 
-		dXv[0]=-15.0;
-        dYv[0]=-15.0;
-
-        dXv[1]=+15.0;
-        dYv[1]=-15.0;
-
+        dXv[0]=-15;
+        dYv[0]=-15;
+        dXv[1]=+15;
+        dYv[1]=-15;
         dXv[2]=+15;
         dYv[2]=+15;
-
         dXv[3]=-15;
         dYv[3]=+15;
         
-		for (int i=0; i<nVerts; ++i)
+        for (int i=0; i<nVerts; ++i)
         {
             double x=dXv[i];
             double y=dYv[i];
-			if (lrMirror==1) x=-x;
-
+            if (lrMirror==1) x=-x;
             dXv[i]=cx+CST*x-SNT*y;
             dYv[i]=cy+SNT*x+CST*y;
         }

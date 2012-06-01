@@ -134,6 +134,24 @@ public:
             }
         }
 
+        int max_tax=0;
+        for (int t=0; t<MAX_SENSOR_NUM; ++t)
+        {
+            
+            if (sensor[t]) 
+            {
+                sensor[t]->min_tax=max_tax;
+                max_tax = sensor[t]->min_tax+sensor[t]->get_nTaxels();
+                sensor[t]->max_tax=max_tax-1;
+            } 
+            else
+            {
+                //this deals with the fact that some traingles can be not present,
+                //but they anyway broadcast an array of zeros...
+                max_tax += 12; 
+            }
+        }
+
         resize(width,height);
     }
 
