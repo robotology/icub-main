@@ -113,6 +113,20 @@ modified since it was loaded within the database.
 <i>Action</i>: ask the database handler to dump on the screen 
 all the stored items along with their properties. 
  
+<b>synchronous streaming</b> \n 
+<i>Format</i>: [sstream] [start] <T>/[stop] \n 
+<i>Reply</i>: [nack]; [ack] \n 
+<i>Action</i>: ask the database to start/stop streaming out its 
+content on a yarp port with a periodicity of <T> seconds. The 
+parameter <T> is optional. 
+ 
+<b>asynchronous streaming</b> \n 
+<i>Format</i>: [astream] [on]/[off] \n 
+<i>Reply</i>: [nack]; [ack] \n 
+<i>Action</i>: ask the database to start/stop streaming out its 
+content on a yarp port whenever [add]/[del]/[set] operations are
+performed. 
+ 
 <b>ask</b> \n
 <i>Format</i>: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) 
 ...) \n 
@@ -133,7 +147,7 @@ as (cond1) && ((cond2) || (cond3)) are not handled; however,
 this is not a real limitation since nested conditions can be 
 properly expanded: indeed, the previous example can be cast back 
 to (cond1)&&(cond2) || (cond1)&&(cond3). 
- 
+
 \section lib_sec Libraries 
 - YARP libraries. 
 
@@ -155,10 +169,19 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
   saved at shutdown.
  
 --verbose 
-- Enables some verbosity.
+- Enable some verbosity. 
+ 
+--sync_stream <T> 
+- Enable to stream out the database content with a periodicity 
+  of \e T seconds. If not specified, a period of 1.0 second is
+  assumed.
+ 
+--async_stream 
+- Enable to stream out the database content whenever 
+  [add]/[del]/[set] operations are performed.
  
 --stats 
-- Enables statistics printouts.
+- Enable statistics printouts.
  
 \section portsa_sec Ports Accessed
 None.
@@ -168,6 +191,9 @@ None.
 - \e /<moduleName>/rpc the remote procedure call port used to 
   send requests to the database and receive replies.
 
+- \e /<moduleName>/db:o the port used to stream out the database
+  content in synchronous and asynchronous mode.
+ 
 \section in_files_sec Input Data Files
 None.
 
@@ -205,13 +231,6 @@ reply: [ack] (id (1))
 \author Ugo Pattacini
 */ 
 
-#include <yarp/os/Property.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/PortReader.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/RFModule.h>
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <sstream>
@@ -219,8 +238,10 @@ reply: [ack] (id (1))
 #include <map>
 #include <deque>
 
-using namespace yarp::os;
+#include <yarp/os/all.h>
+
 using namespace std;
+using namespace yarp::os;
 
 #define CMD_ADD             VOCAB3('a','d','d')
 #define CMD_DEL             VOCAB3('d','e','l')
@@ -229,6 +250,8 @@ using namespace std;
 #define CMD_TIME            VOCAB4('t','i','m','e')
 #define CMD_DUMP            VOCAB4('d','u','m','p')
 #define CMD_ASK             VOCAB3('a','s','k')
+#define CMD_SSTREAM         VOCAB4('s','s','t','r')
+#define CMD_ASTREAM         VOCAB4('a','s','t','r')
                             
 #define REP_ACK             VOCAB3('a','c','k')
 #define REP_NACK            VOCAB4('n','a','c','k')
@@ -339,14 +362,14 @@ bool notEqual(Value &a, Value &b)
 
 
 /************************************************************************/
-class DataBase
+class DataBase : public RateThread
 {
 protected:
     /************************************************************************/
     struct Item
     {
         Property *prop;
-        double   lastUpdate;
+        double    lastUpdate;
     };
 
     /************************************************************************/
@@ -359,11 +382,14 @@ protected:
 
     map<int,Item> itemsMap;
     Semaphore mutex;
-    int idCnt;
+    int  idCnt;
     bool initialized;
     bool nosave;
     bool verbose;
     string dbFileName;
+
+    BufferedPort<Bottle> *pStreamPort;
+    bool asyncStream;
 
     /************************************************************************/
     int printMessage(const char *format, ...)
@@ -457,10 +483,18 @@ protected:
         }
     }
 
+    /************************************************************************/
+    void run()
+    {
+        stream("sync");
+    }
+
 public:
     /************************************************************************/
-    DataBase()
+    DataBase() : RateThread(1000)
     {
+        pStreamPort=NULL;
+        asyncStream=false;
         initialized=false;
         nosave=false;
         verbose=false;
@@ -470,6 +504,9 @@ public:
     /************************************************************************/
     ~DataBase()
     {
+        if (isRunning())
+            stop();
+
         save();
         clearMap();
     }
@@ -495,6 +532,20 @@ public:
         dump();
         initialized=true;
         printMessage("database ready ...\n");
+
+        if (rf.check("sync_stream"))
+        {
+            setRate((int)(1000.0*rf.check("sync_stream",Value(1.0)).asDouble()));
+            start();
+        }
+
+        asyncStream=rf.check("async_stream");
+    }
+
+    /************************************************************************/
+    void setStreamPort(BufferedPort<Bottle> &streamPort)
+    {
+        pStreamPort=&streamPort;
     }
 
     /************************************************************************/
@@ -578,6 +629,35 @@ public:
         else
             write(stdout);
         mutex.post();
+    }
+
+    /************************************************************************/
+    void stream(const string &type)
+    {
+        if (pStreamPort!=NULL)
+        {
+            if (pStreamPort->getOutputCount()>0)
+            {
+                mutex.wait();
+                Bottle &bottle=pStreamPort->prepare();
+                bottle.clear();
+
+                bottle.addString(type.c_str());
+                if (itemsMap.empty())
+                    bottle.addString("empty");
+                else for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
+                {
+                    Bottle &item=bottle.addList();
+                    Bottle &idList=item.addList();
+                    idList.addString(PROP_ID);
+                    idList.addInt(it->first);
+                    item.append(Bottle(it->second.prop->toString().c_str()));
+                }
+
+                pStreamPort->write();
+                mutex.post();
+            }
+        }
     }
 
     /************************************************************************/
@@ -969,6 +1049,9 @@ public:
                     b.addString(PROP_ID);
                     b.addInt(idCnt);
                     idCnt++;
+
+                    if (asyncStream)
+                        stream("async");
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -987,7 +1070,11 @@ public:
 
                 Bottle *content=command.get(1).asList();
                 if (remove(content))
+                {
                     reply.addVocab(REP_ACK);
+                    if (asyncStream)
+                        stream("async");
+                }
                 else
                     reply.addVocab(REP_NACK);
 
@@ -1027,7 +1114,11 @@ public:
     
                 Bottle *content=command.get(1).asList();
                 if (set(content))
+                {
                     reply.addVocab(REP_ACK);
+                    if (asyncStream)
+                        stream("async");
+                }
                 else
                     reply.addVocab(REP_NACK);
     
@@ -1061,6 +1152,67 @@ public:
             {
                 dump();
                 reply.addVocab(REP_ACK);
+                break;
+            }
+
+            //-----------------
+            case CMD_SSTREAM:
+            {
+                if (command.size()<2)
+                {
+                    reply.addVocab(REP_NACK);
+                    break;
+                }
+
+                int opt=command.get(1).asVocab();
+                if (opt==Vocab::encode("start"))
+                {
+                    if (command.size()>=3)
+                        setRate((int)(1000.0*command.get(2).asDouble()));
+
+                    if (!isRunning())
+                        start();
+                    else if (isSuspended())
+                        resume();
+
+                    reply.addVocab(REP_ACK);
+                }
+                else if (opt==Vocab::encode("stop"))
+                {
+                    if (isRunning() && !isSuspended())
+                        suspend();
+
+                    reply.addVocab(REP_ACK);
+                }
+                else
+                    reply.addVocab(REP_NACK);
+
+                break;
+            }
+
+            //-----------------
+            case CMD_ASTREAM:
+            {
+                if (command.size()<2)
+                {
+                    reply.addVocab(REP_NACK);
+                    break;
+                }
+
+                int opt=command.get(1).asVocab();
+                if (opt==Vocab::encode("on"))
+                {
+                    asyncStream=true;
+                    reply.addVocab(REP_ACK);
+                }
+                else if (opt==Vocab::encode("off"))
+                {
+                    asyncStream=false;
+                    reply.addVocab(REP_ACK);
+                }
+                else
+                    reply.addVocab(REP_NACK);
+
                 break;
             }
 
@@ -1153,9 +1305,10 @@ public:
 class objectsPropertiesCollectorModule: public RFModule
 {
 private:
-    DataBase     dataBase;
-    RpcProcessor rpcProcessor;
-    Port         rpcPort;
+    DataBase             dataBase;
+    RpcProcessor         rpcProcessor;
+    Port                 rpcPort;
+    BufferedPort<Bottle> dbPort;
 
     int cnt;
     bool stats;
@@ -1172,9 +1325,11 @@ public:
         stats=rf.check("stats");
 
         string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
+        dataBase.setStreamPort(dbPort);
         rpcProcessor.setDataBase(dataBase);
         rpcPort.setReader(rpcProcessor);
         rpcPort.open(("/"+name+"/rpc").c_str());
+        dbPort.open(("/"+name+"/db:o").c_str());
 
         cnt=0;
         nCallsOld=0;
@@ -1187,7 +1342,10 @@ public:
     bool close()
     {
         rpcPort.interrupt();
+        dbPort.interrupt();
+
         rpcPort.close();
+        dbPort.close();
 
         return true;
     }
