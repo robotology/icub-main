@@ -114,17 +114,17 @@ modified since it was loaded within the database.
 all the stored items along with their properties. 
  
 <b>synchronous streaming</b> \n 
-<i>Format</i>: [sstream] [start] <T>/[stop] \n 
+<i>Format</i>: [sync] [start] <T>/[stop] \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: ask the database to start/stop streaming out its 
-content on a yarp port with a periodicity of <T> seconds. The 
+content to a yarp port with a periodicity of <T> seconds. The 
 parameter <T> is optional. 
  
 <b>asynchronous streaming</b> \n 
-<i>Format</i>: [astream] [on]/[off] \n 
+<i>Format</i>: [async] [on]/[off] \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: ask the database to start/stop streaming out its 
-content on a yarp port whenever [add]/[del]/[set] operations are
+content to a yarp port whenever [add]/[del]/[set] operations are
 performed. 
  
 <b>ask</b> \n
@@ -250,8 +250,8 @@ using namespace yarp::os;
 #define CMD_TIME            VOCAB4('t','i','m','e')
 #define CMD_DUMP            VOCAB4('d','u','m','p')
 #define CMD_ASK             VOCAB3('a','s','k')
-#define CMD_SSTREAM         VOCAB4('s','s','t','r')
-#define CMD_ASTREAM         VOCAB4('a','s','t','r')
+#define CMD_SYNC            VOCAB4('s','y','n','c')
+#define CMD_ASYNC           VOCAB4('a','s','y','n')
                             
 #define REP_ACK             VOCAB3('a','c','k')
 #define REP_NACK            VOCAB4('n','a','c','k')
@@ -1156,7 +1156,7 @@ public:
             }
 
             //-----------------
-            case CMD_SSTREAM:
+            case CMD_SYNC:
             {
                 if (command.size()<2)
                 {
@@ -1191,7 +1191,7 @@ public:
             }
 
             //-----------------
-            case CMD_ASTREAM:
+            case CMD_ASYNC:
             {
                 if (command.size()<2)
                 {
