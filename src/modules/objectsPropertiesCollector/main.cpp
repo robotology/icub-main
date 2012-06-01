@@ -103,7 +103,7 @@ properties.
 <i>Format</i>: [time] ((id <num>)) \n 
 <i>Reply</i>: [nack]; [ack] (<time>) \n 
 <i>Action</i>: retrieve the time elapsed in seconds from the 
-last [add]/[del]/[set] operations on the stored item. \n 
+last change occured on the stored item. \n 
 Negative values of <time> indicates that the item has not been 
 modified since it was loaded within the database. 
  
@@ -117,15 +117,14 @@ all the stored items along with their properties.
 <i>Format</i>: [sync] [start] <T>/[stop] \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: ask the database to start/stop broadcasting its 
-content to a yarp port with a periodicity of <T> seconds. The 
-parameter <T> is optional. 
+content to a yarp port each <T> seconds. The parameter <T> is 
+optional. 
  
 <b>asynchronous broadcast</b> \n 
 <i>Format</i>: [async] [on]/[off] \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: ask the database to start/stop broadcasting its 
-content to a yarp port whenever [add]/[del]/[set] operations are
-performed. 
+content to a yarp port whenever a change occurs.
  
 <b>ask</b> \n
 <i>Format</i>: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) 
@@ -172,12 +171,11 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 - Enable some verbosity. 
  
 --sync_bc <T> 
-- Broadcast the database content with a periodicity of \e T 
-  seconds. If not specified, a period of 1.0 second is assumed.
+- Broadcast the database content each \e T seconds. If not 
+  specified, a period of 1.0 second is assumed.
  
 --async_bc 
-- Broadcast the database content whenever [add]/[del]/[set] 
-  operations are performed.
+- Broadcast the database content whenever a change occurs. 
  
 --stats 
 - Enable statistics printouts.
@@ -1404,6 +1402,8 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--empty             : start an empty database\n");
         fprintf(stdout,"\t--nosave            : prevent from saving the content of database at shutdown\n");
         fprintf(stdout,"\t--verbose           : enable some verbosity\n");
+        fprintf(stdout,"\t--sync_bc        <T>: broadcast the database content each T seconds\n");
+        fprintf(stdout,"\t--async_bc          : broadcast the database content whenever a change occurs\n");
         fprintf(stdout,"\t--stats             : enable statistics printouts\n");
         fprintf(stdout,"\n");
 
