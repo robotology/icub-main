@@ -1,0 +1,27 @@
+<application>
+<name>iCubStartup part 2</name>
+
+        <dependencies>
+		<port>/icub/head/rpc:i</port>
+		<!--
+	        <port>/icub/left_arm/state:o</port>
+	        <port>/icub/right_arm/state:o</port>
+		-->
+                <port>/iKinGazeCtrl/head/rpc</port>
+        </dependencies>
+   
+        <module>
+                <name>wholeBodyDynamics</name>
+                <parameters>--headV2 --autoconnect</parameters>
+                <node>chico4</node>
+                <tag>wholeBodyDynamicsTag</tag>
+        </module>
+
+        <module>
+                <name>gravityCompensator</name>
+                <parameters>--headV2</parameters>
+                <node>chico4</node>
+                <tag>gravityCompensatorTag</tag>
+        </module>
+
+</application>
