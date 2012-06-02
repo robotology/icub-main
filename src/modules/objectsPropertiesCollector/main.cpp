@@ -1256,46 +1256,48 @@ public:
     /************************************************************************/
     bool modify(const Bottle &content)
     {
-        if (content.size()>1)
+        if (content.size()==0)
+            return false;
+
+        string type=content.get(0).asString().c_str();
+        if ((type!=BCTAG_EMPTY) && (type!=BCTAG_SYNC) && (type!=BCTAG_ASYNC))
+            return false;
+
+        mutex.wait();
+        clear();
+
+        if (type!=BCTAG_EMPTY)
         {
-            mutex.wait();
-            clear();
-
-            if (content.get(0).asString()!=BCTAG_EMPTY)
+            idCnt=0;
+            for (int i=1; i<content.size(); i++)
             {
-                idCnt=0;
-                for (int i=1; i<content.size(); i++)
+                if (Bottle *item=content.get(i).asList())
                 {
-                    if (Bottle *item=content.get(i).asList())
+                    if (Bottle *idList=item->get(0).asList())
                     {
-                        if (Bottle *idList=item->get(0).asList())
+                        if (idList->size()==2)
                         {
-                            if (idList->size()==2)
+                            if (idList->get(0).asString()==PROP_ID)
                             {
-                                if (idList->get(0).asString()==PROP_ID)
-                                {
-                                    int id=idList->get(1).asInt();
-                                    itemsMap[id].prop=new Property(item->tail().toString().c_str());
-                                    itemsMap[id].lastUpdate=-1.0;
+                                int id=idList->get(1).asInt();
+                                itemsMap[id].prop=new Property(item->tail().toString().c_str());
+                                itemsMap[id].lastUpdate=-1.0;
 
-                                    if (idCnt<=id)
-                                        idCnt=id+1;
-                                }                            
+                                if (idCnt<=id)
+                                    idCnt=id+1;
                             }
                         }
                     }
                 }
             }
-
-            mutex.post();
-
-            if (asyncBroadcast)
-                broadcast(BCTAG_ASYNC);
-
-            return true;
         }
-        else
-            return false;
+
+        mutex.post();
+
+        if (asyncBroadcast)
+            broadcast(BCTAG_ASYNC);
+
+        return true;
     }
 };
 
