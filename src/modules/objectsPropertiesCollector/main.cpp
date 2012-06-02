@@ -263,6 +263,9 @@ using namespace yarp::os;
 #define PROP_ID             ("id")
 #define PROP_LIFETIMER      ("lifeTimer")
 #define PROP_SET            ("propSet")
+#define BCTAG_EMPTY         ("empty")
+#define BCTAG_SYNC          ("sync")
+#define BCTAG_ASYNC         ("async")
 
 
 namespace relationalOperators
@@ -487,7 +490,7 @@ protected:
     /************************************************************************/
     void run()
     {
-        broadcast("sync");
+        broadcast(BCTAG_SYNC);
     }
 
 public:
@@ -645,7 +648,7 @@ public:
 
                 bottle.addString(type.c_str());
                 if (itemsMap.empty())
-                    bottle.addString("empty");
+                    bottle.addString(BCTAG_EMPTY);
                 else for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                 {
                     Bottle &item=bottle.addList();
@@ -1052,7 +1055,7 @@ public:
                     idCnt++;
 
                     if (asyncBroadcast)
-                        broadcast("async");
+                        broadcast(BCTAG_ASYNC);
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1074,7 +1077,7 @@ public:
                 {
                     reply.addVocab(REP_ACK);
                     if (asyncBroadcast)
-                        broadcast("async");
+                        broadcast(BCTAG_ASYNC);
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1118,7 +1121,7 @@ public:
                 {
                     reply.addVocab(REP_ACK);
                     if (asyncBroadcast)
-                        broadcast("async");
+                        broadcast(BCTAG_ASYNC);
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1258,7 +1261,7 @@ public:
             mutex.wait();
             clear();
 
-            if (content.get(0).asString()!="empty")
+            if (content.get(0).asString()!=BCTAG_EMPTY)
             {
                 idCnt=0;
                 for (int i=1; i<content.size(); i++)
