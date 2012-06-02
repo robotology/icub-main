@@ -1288,6 +1288,10 @@ public:
             }
 
             mutex.post();
+
+            if (asyncBroadcast)
+                broadcast(BCTAG_ASYNC);
+
             return true;
         }
         else
