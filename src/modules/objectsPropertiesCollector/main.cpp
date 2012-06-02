@@ -191,6 +191,10 @@ None.
 - \e /<moduleName>/broadcast:o the port used to broadcast the 
   database content in synchronous and asynchronous mode.
  
+- \e /<moduleName>/modify:i the port used to modify the database
+  content complying with the data format implemented for the
+  broadcast port.
+ 
 \section in_files_sec Input Data Files
 None.
 
@@ -405,7 +409,7 @@ protected:
     }
 
     /************************************************************************/
-    void clearMap()
+    void clear()
     {
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
             delete it->second.prop;
@@ -505,7 +509,7 @@ public:
             stop();
 
         save();
-        clearMap();
+        clear();
     }
 
     /************************************************************************/
@@ -551,7 +555,7 @@ public:
         mutex.wait();
         printMessage("loading database from %s ...\n",dbFileName.c_str());
 
-        clearMap();
+        clear();
         idCnt=0;
 
         Property finProperty;
@@ -686,7 +690,7 @@ public:
             {
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
-                    clearMap();
+                    clear();
                     printMessage("database cleared\n");
                     mutex.post();
                     return true;
@@ -1245,6 +1249,47 @@ public:
             }
         }
     }
+
+    /************************************************************************/
+    bool modify(const Bottle &content)
+    {
+        if (content.size()>1)
+        {
+            mutex.wait();
+
+            clear();
+            idCnt=0;
+            
+            // skip the first string (i.e. "empty"/"sync"/"async")
+            for (int i=1; i<content.size(); i++)
+            {
+                if (Bottle *item=content.get(i).asList())
+                {
+                    if (Bottle *idList=item->get(0).asList())
+                    {
+                        if (idList->size()==2)
+                        {
+                            if (idList->get(0).asString()==PROP_ID)
+                            {
+                                int id=idList->get(1).asInt();
+                                itemsMap[id].prop=new Property(item->tail().toString().c_str());
+                                itemsMap[id].lastUpdate=-1.0;
+
+                                if (idCnt<=id)
+                                    idCnt=id+1;
+                            }                            
+                        }
+                    }
+                }
+            }
+
+            mutex.post();
+
+            return true;
+        }
+        else
+            return false;
+    }
 };
 
 
@@ -1260,8 +1305,7 @@ protected:
     bool read(ConnectionReader &connection)
     {
         Bottle command, reply;
-
-        if (!command.read(connection))
+        if (!command.read(connection) || (pDataBase==NULL))
             return false;
 
         double t0=Time::now();
@@ -1279,6 +1323,7 @@ public:
     /************************************************************************/
     RpcProcessor()
     {
+        pDataBase=NULL;
         nCalls=0;
         cumTime=0.0;
     }
@@ -1299,11 +1344,41 @@ public:
 
 
 /************************************************************************/
+class DataBaseModifyPort : public BufferedPort<Bottle>
+{
+protected:
+    DataBase *pDataBase;
+
+    /************************************************************************/
+    void onRead(Bottle &content)
+    {
+        if (pDataBase!=NULL)
+            pDataBase->modify(content);
+    }
+
+public:
+    /************************************************************************/
+    DataBaseModifyPort()
+    {
+        pDataBase=NULL;
+        useCallback();
+    }
+
+    /************************************************************************/
+    void setDataBase(DataBase &dataBase)
+    {
+        pDataBase=&dataBase;
+    }
+};
+
+
+/************************************************************************/
 class objectsPropertiesCollectorModule: public RFModule
 {
 private:
     DataBase             dataBase;
     RpcProcessor         rpcProcessor;
+    DataBaseModifyPort   modifyPort;
     Port                 rpcPort;
     BufferedPort<Bottle> bcPort;
 
@@ -1325,8 +1400,10 @@ public:
         dataBase.setBroadcastPort(bcPort);
         rpcProcessor.setDataBase(dataBase);
         rpcPort.setReader(rpcProcessor);
+        modifyPort.setDataBase(dataBase);
         rpcPort.open(("/"+name+"/rpc").c_str());
         bcPort.open(("/"+name+"/broadcast:o").c_str());
+        modifyPort.open(("/"+name+"/modify:i").c_str());
 
         cnt=0;
         nCallsOld=0;
@@ -1340,9 +1417,11 @@ public:
     {
         rpcPort.interrupt();
         bcPort.interrupt();
+        modifyPort.interrupt();
 
         rpcPort.close();
         bcPort.close();
+        modifyPort.close();
 
         return true;
     }
