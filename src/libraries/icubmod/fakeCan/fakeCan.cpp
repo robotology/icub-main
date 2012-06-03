@@ -55,7 +55,7 @@ bool FakeCan::canRead(CanBuffer &msgs,
     *read=l;
 
     MsgIt it=replies.begin();
-    int k=0;
+    unsigned int k=0;
     while(it!=replies.end() && k<l)
     {    
         FCMSG *r=reinterpret_cast<FCMSG *>(msgs[k].getPointer());
