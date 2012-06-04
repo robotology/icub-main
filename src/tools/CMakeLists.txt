@@ -10,6 +10,7 @@ add_subdirectory(iCubTest)
 
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)
+add_subdirectory(ethLoader)
 
 if(ICUB_USE_GtkPlus)
 	add_subdirectory(robotMotorGui)

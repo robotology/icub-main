@@ -45,7 +45,7 @@ public:
     ACE_UINT8 mRelease;
     ACE_UINT8 mBuild;
 
-    ACE_UINT8 mSuccess;
+    ACE_UINT16 mSuccess;
 };
 
 #endif

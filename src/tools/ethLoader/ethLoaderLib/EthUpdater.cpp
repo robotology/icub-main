@@ -47,6 +47,10 @@ void EthUpdater::cmdScan()
     }
 }
 
+#define PROGRAM_LOADER   0x55
+#define PROGRAM_UPDATER  0xAA
+#define PROGRAM_APP      0x5A
+
 std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(float))
 {
     updateProgressBar(0.0f);
@@ -59,7 +63,9 @@ std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(f
     fseek(programFile,0,SEEK_SET);
 
     mTxBuffer[0]=CMD_START;
-    mTxBuffer[1]=0x5A; // application updater
+    mTxBuffer[1]=PROGRAM_APP;
+    //mTxBuffer[1]=PROGRAM_LOADER;
+    //mTxBuffer[1]=PROGRAM_UPDATER;
 
     mN2Prog=mNProgSteps=0;
 
@@ -222,7 +228,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(f
     for (int i=0; i<mN2Prog; ++i)
     {
         ACE_UINT32 ip=mBoard2Prog[i]->mAddress;
-        sprintf(addr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>24)&0xFF,ip&0xFF);
+        sprintf(addr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
         sOutput+=addr;
         sOutput+=(mBoard2Prog[i]->mSuccess==mNProgSteps)?"\tsuccess\r\n":"\tFAILED\r\n";
     }
