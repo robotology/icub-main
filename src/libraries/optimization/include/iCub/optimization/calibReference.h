@@ -63,6 +63,10 @@ protected:
     yarp::sig::Vector max, max_s;
     yarp::sig::Vector x0,  s0;
 
+    double min_s_scalar;
+    double max_s_scalar;
+    double s0_scalar;
+
     std::deque<yarp::sig::Vector> p0;
     std::deque<yarp::sig::Vector> p1;
 
@@ -82,8 +86,8 @@ public:
     *            first 3 dimensions account for the translation
     *            part, the last 3 for the rotation in Euler angles
     *            representation.
-    * @param max the 6x1 Vector containining the maximums bounds. 
-    *            The first 3 dimensions account for the translation
+    * @param max the 6x1 Vector containining the maximum bounds. The
+    *            first 3 dimensions account for the translation
     *            part, the last 3 for the rotation in Euler angles
     *            representation.
     *  
@@ -95,11 +99,21 @@ public:
     /**
     * Allow specifying the bounds for the 3D scaling factors.
     * @param min the 3x1 Vector containining the minimum bounds.
-    * @param max the 3x1 Vector containining the maximums bounds. 
+    * @param max the 3x1 Vector containining the maximum bounds. 
     *  
     * @note by default min=(0.1,0.1,0.1) and max=(10.0,10.0,10.0). 
     */
     void setScalingBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
+
+    /**
+    * Allow specifying the bounds for the 3D scaling factors with 
+    * scalar scaling factor. 
+    * @param min the the minimum bound.
+    * @param max the the maximum bound. 
+    *  
+    * @note by default min=0.1 and max=10.0. 
+    */
+    void setScalingBounds(const double min, const double max);
 
     /**
     * Add to the internal database the 3D-point p0 and the 3D-point 
@@ -133,6 +147,14 @@ public:
     bool setScalingInitialGuess(const yarp::sig::Vector &s);
 
     /**
+    * Allow specifiying the initial guess for the scalar scaling 
+    * factor. 
+    * @param s the scaling factor.
+    * @return true/false on success/fail. 
+    */
+    bool setScalingInitialGuess(const double s);
+
+    /**
     * Perform reference calibration to determine the matrix H. 
     * @param H the final roto-translation matrix that links the two 
     *          reference frames of 3D points.
@@ -156,6 +178,19 @@ public:
     * @return true/false on success/fail. 
     */
     bool calibrate(yarp::sig::Matrix &H, yarp::sig::Vector &s, double &error);
+
+    /**
+    * Perform reference calibration to determine the matrix H and 
+    * the scalar scaling factor s. 
+    * @param H the final roto-translation matrix that links the two 
+    *          reference frames of 3D points.
+    * @param s the found scaling factor.
+    * @param error returns the residual error computed as 
+    *              norm(p1[i]-s*H*p0[i]) over the whole set of
+    *              points pairs.
+    * @return true/false on success/fail. 
+    */
+    bool calibrate(yarp::sig::Matrix &H, double &s, double &error);
 };
 
 }
