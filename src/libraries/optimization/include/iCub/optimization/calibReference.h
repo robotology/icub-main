@@ -106,7 +106,8 @@ public:
     * p1 which is supposed to correspond to H*p0, whose matrix H has 
     * to be found. 
     * @param p0 the free 3D-point.
-    * @param p1 the 3D-point which corresponds to H*p0. 
+    * @param p1 the 3D-point which corresponds either to H*p0 or to 
+    *           S*H*p0.
     * @return true/false on success/fail. 
     */
     bool addPoints(const yarp::sig::Vector &p0, const yarp::sig::Vector &p1);
