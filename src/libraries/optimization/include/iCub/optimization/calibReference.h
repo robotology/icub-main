@@ -102,7 +102,7 @@ public:
     void setScalingBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
 
     /**
-    * Add to the internal databse the 3D-point p0 and the 3D-point 
+    * Add to the internal database the 3D-point p0 and the 3D-point 
     * p1 which is supposed to correspond to H*p0, whose matrix H has 
     * to be found. 
     * @param p0 the free 3D-point.
