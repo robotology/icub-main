@@ -673,9 +673,14 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &s,
         app->Options()->SetStringValue("derivative_test","none");
         app->Initialize();
 
-        Ipopt::SmartPtr<CalibReferenceWithScalarScaledMatchedPointsNLP> nlp=new CalibReferenceWithScalarScaledMatchedPointsNLP(p0,p1,cat(min,min_s),cat(max,max_s));
+        Vector _min=min; Vector _max=max; Vector _x0=x0;
+        _min.push_back(min_s_scalar);
+        _max.push_back(max_s_scalar);
+        _x0.push_back(s0_scalar);
 
-        nlp->set_x0(cat(x0,s0));
+        Ipopt::SmartPtr<CalibReferenceWithScalarScaledMatchedPointsNLP> nlp=new CalibReferenceWithScalarScaledMatchedPointsNLP(p0,p1,_min,_max);
+
+        nlp->set_x0(_x0);
         Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
 
         Vector x=nlp->get_result();
