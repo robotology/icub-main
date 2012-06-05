@@ -1851,6 +1851,13 @@ bool ActionPrimitives::stopControl()
     {
         suspend();
 
+        if (actionWP!=NULL)
+        {
+            actionWP->stop();
+            delete actionWP;
+            actionWP=NULL;
+        }
+
         clearActionsQueue();
 
         cartCtrl->stopControl();
