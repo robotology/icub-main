@@ -119,8 +119,8 @@ public:
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
    
-    CanBuffer createBuffer(int elem);
-    void destroyBuffer(CanBuffer &buffer);
+//    CanBuffer createBuffer(int elem);
+//    void destroyBuffer(CanBuffer &buffer);
     
     //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
@@ -135,7 +135,7 @@ public:
 	virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
-    virtual void fill_data();
+    //virtual void fill_data();
    
 };
 

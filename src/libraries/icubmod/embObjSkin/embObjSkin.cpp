@@ -23,7 +23,7 @@ using namespace std;
 	#include "libcfw002.h"
 #endif
 
-
+/*
 Cfw2CanMessage::Cfw2CanMessage()
 {
 	msg=0;
@@ -131,6 +131,7 @@ CanBuffer EmbObjSkin::createBuffer(int elem)
        delete [] msgs;
        delete [] m;
    }
+*/
 
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
@@ -198,7 +199,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	Value &device=xtmp.find("device");
 	prop.put("device", device.asString().c_str());
 
-	res = ethResCreator::getResource(prop);
+	ethResCreator *resList = ethResCreator::instance();
+	res = resList->getResource(prop);
 
 
 
@@ -243,8 +245,9 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 //			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
 //		}
 
-	outBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
-	inBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
+
+//	outBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
+//	inBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
 #endif
 	//elements are:
 	sensorsNum=16*12*cardId.size();
@@ -258,10 +261,10 @@ bool EmbObjSkin::close()
 {
 	RateThread::stop();
 //	if (pCanBufferFactory)
-	{
-		destroyBuffer(inBuffer);
-		destroyBuffer(outBuffer);
-	}
+//	{
+//		destroyBuffer(inBuffer);
+//		destroyBuffer(outBuffer);
+//	}
 //	driver.close();
 	return true;
 }
@@ -395,30 +398,30 @@ int EmbObjSkin::calibrateChannel(int ch)
 
 bool EmbObjSkin::threadInit()
 {
-	for (int i=0; i<cardId.size(); i++)
-	{
-#if SKIN_DEBUG
-		printf("SkinPrototype:: thread initialising boardId:%d\n",cardId[i]);
-#endif
-
-		unsigned int canMessages=0;
-		unsigned id = 0x200 + cardId[i];
-
-		CanMessage &msg=outBuffer[0];
-		msg.setId(id);
-		msg.getData()[0]=0x4C; // message type
-		msg.getData()[1]=0x01; 
-		msg.getData()[2]=0x01; 
-		msg.getData()[3]=0x01;
-		msg.getData()[4]=0;
-		msg.getData()[5]=0x22;
-		msg.getData()[6]=0;
-		msg.getData()[7]=0;
-		msg.setLen(8);
-		canMessages=0;
-		// create a ROP to start/initialize the MTB, if needed
-//		pCanBus->canWrite(outBuffer, 1, &canMessages);
-	}
+//	for (int i=0; i<cardId.size(); i++)
+//	{
+//#if SKIN_DEBUG
+//		printf("SkinPrototype:: thread initialising boardId:%d\n",cardId[i]);
+//#endif
+//
+//		unsigned int canMessages=0;
+//		unsigned id = 0x200 + cardId[i];
+//
+//		CanMessage &msg=outBuffer[0];
+//		msg.setId(id);
+//		msg.getData()[0]=0x4C; // message type
+//		msg.getData()[1]=0x01;
+//		msg.getData()[2]=0x01;
+//		msg.getData()[3]=0x01;
+//		msg.getData()[4]=0;
+//		msg.getData()[5]=0x22;
+//		msg.getData()[6]=0;
+//		msg.getData()[7]=0;
+//		msg.setLen(8);
+//		canMessages=0;
+//		// create a ROP to start/initialize the MTB, if needed
+////		pCanBus->canWrite(outBuffer, 1, &canMessages);
+//	}
 
 	return true;
 }
