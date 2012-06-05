@@ -8,7 +8,7 @@
   </module>
   <module>
     <name>skinManagerGui</name>
-    <parameters>--from skinManGuiTorso.ini --context skinGui/conf</parameters>
+    <parameters>--from skinManGui.ini --context skinGui/conf</parameters>
     <node>console</node>
     <tag>skinCompGuiT</tag>
   </module>

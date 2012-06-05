@@ -8,7 +8,7 @@
   </module>
   <module>
     <name>skinManagerGui</name>
-    <parameters>--from skinManGuiAll.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
+    <parameters>--from skinManGui.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
     <node>console</node>
     <tag>skinManGui</tag>
   </module>
