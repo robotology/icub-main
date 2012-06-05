@@ -305,22 +305,21 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
 
         case get_pose:
             {
-                if(!(params.size()>1 && params.get(0).isInt() && params.get(1).isInt())){
-                    reply.addString(("ERROR: BodyPart and SkinPart are not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                if(!(params.size()>0 && params.get(0).isInt())){
+                    reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                BodyPart bp = (BodyPart) params.get(0).asInt();
-                SkinPart sp = (SkinPart) params.get(1).asInt();
-                if(params.size()>2 && params.get(2).isInt()){
-                    unsigned int taxelId = params.get(2).asInt();
-                    Vector res = myThread->getTaxelPose(bp, sp, taxelId);
+                SkinPart sp = (SkinPart) params.get(0).asInt();
+                if(params.size()>1 && params.get(1).isInt()){
+                    unsigned int taxelId = params.get(1).asInt();
+                    Vector res = myThread->getTaxelPose(sp, taxelId);
                     if(res.size()>0)
                         addToBottle(reply, res);
                     else
-                        reply.addString("No poses for the specified body part and skin part");
+                        reply.addString("No poses for the specified skin part");
                 }
                 else{
-                    vector<Vector> res = myThread->getTaxelPoses(bp, sp);
+                    vector<Vector> res = myThread->getTaxelPoses(sp);
                     addToBottle(reply, res);
                 }
                 return true;
@@ -328,20 +327,19 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
 
         case set_pose:
             {
-                if(!(params.size()>7 && params.get(0).isInt() && params.get(1).isInt())){
-                    reply.addString(("ERROR: BodyPart and SkinPart are not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                if(!(params.size()>6 && params.get(0).isInt() )){
+                    reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                BodyPart bp = (BodyPart) params.get(0).asInt();
-                SkinPart sp = (SkinPart) params.get(1).asInt();
+                SkinPart sp = (SkinPart) params.get(0).asInt();
                 if(params.get(2).isInt()){
-                    unsigned int taxelId = params.get(2).asInt();
+                    unsigned int taxelId = params.get(1).asInt();
                     Vector pose;
                     if(!bottleToVector(params.tail().tail().tail(), pose)){
                         reply.addString("ERROR while reading the taxel pose");
                         return true;
                     }
-                    if(myThread->setTaxelPose(bp, sp, taxelId, pose))
+                    if(myThread->setTaxelPose(sp, taxelId, pose))
                         reply.addInt(skin_manager_ok);
                     else{
                         reply.addInt(skin_manager_error);
@@ -354,7 +352,7 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                         reply.addString("ERROR while reading the taxel poses");
                         return true;
                     }
-                    if(myThread->setTaxelPoses(bp, sp, poses))
+                    if(myThread->setTaxelPoses(sp, poses))
                         reply.addInt(skin_manager_ok);
                     else{
                         reply.addInt(skin_manager_error);

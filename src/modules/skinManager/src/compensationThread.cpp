@@ -136,9 +136,14 @@ bool CompensationThread::threadInit()
 	Bottle &skinEventsConf = rf->findGroup("SKIN_EVENTS");
 	if(!skinEventsConf.isNull()){
         cout<< "SKIN_EVENTS section found\n";
+        string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
+	    if(!skinEventsPort.open(eventPortName.c_str()))
+            sendInfoMsg("Unable to open port "+eventPortName);
+        else
+            skinEventsOn = true;
         
         //maxNeighbourDistance = skinEventsConf.check("maxNeighbourDistance", 0.01).asDouble();
-        if(skinEventsConf.check("linkList")){
+        /*if(skinEventsConf.check("linkList")){
             Bottle* linkList = skinEventsConf.find("linkList").asList();
             if(linkList->size() != portNum){
                 stringstream msg;
@@ -149,30 +154,22 @@ bool CompensationThread::threadInit()
                 FOR_ALL_PORTS(i){
                     compensators[i]->setLinkNum(linkList->get(i).asInt());
                 }
-                string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
-	            if(!skinEventsPort.open(eventPortName.c_str())){
-                    stringstream msg; msg << "Unable to open port " << eventPortName << endl;
-                    sendInfoMsg(msg.str());
-                }else{
-                    skinEventsOn = true;
-                }
             }
-        }
-
-        if(skinEventsConf.check("bodyParts")){
-            Bottle* bodyPartList = skinEventsConf.find("bodyParts").asList();
-            if(bodyPartList->size() != portNum){
-                stringstream msg;
-                msg<< "ERROR: the number of body part ids is not equal to the number of input ports ("
-                    << bodyPartList->size()<< "!="<< portNum<< "). Body parts will not be set.";
-                sendInfoMsg(msg.str());
-            }else{
-                FOR_ALL_PORTS(i){
-                    cout<< "Body part "<< BodyPart_s[bodyPartList->get(i).asInt()]<< endl;
-                    compensators[i]->setBodyPart((BodyPart)bodyPartList->get(i).asInt());
-                }                
-            }
-        }
+        }*/
+        //if(skinEventsConf.check("bodyParts")){
+        //    Bottle* bodyPartList = skinEventsConf.find("bodyParts").asList();
+        //    if(bodyPartList->size() != portNum){
+        //        stringstream msg;
+        //        msg<< "ERROR: the number of body part ids is not equal to the number of input ports ("
+        //            << bodyPartList->size()<< "!="<< portNum<< "). Body parts will not be set.";
+        //        sendInfoMsg(msg.str());
+        //    }else{
+        //        FOR_ALL_PORTS(i){
+        //            cout<< "Body part "<< BodyPart_s[bodyPartList->get(i).asInt()]<< endl;
+        //            compensators[i]->setBodyPart((BodyPart)bodyPartList->get(i).asInt());
+        //        }                
+        //    }
+        //}
 
         if(skinEventsConf.check("skinParts")){
             Bottle* skinPartList = skinEventsConf.find("skinParts").asList();
@@ -185,7 +182,7 @@ bool CompensationThread::threadInit()
                 FOR_ALL_PORTS(i){
                     cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt()]<< endl;
                     compensators[i]->setSkinPart((SkinPart)skinPartList->get(i).asInt());
-                }                
+                }
             }
         }
     
@@ -481,57 +478,57 @@ bool CompensationThread::setContactCompensationGain(double gain){
         contactCompensationGain = gain;
     return res;
 }
-bool CompensationThread::setTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector position){
+bool CompensationThread::setTaxelPosition(SkinPart sp, unsigned int taxelId, const Vector &position){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelPosition(taxelId, position);
         }
     }
     return false;
 }
-bool CompensationThread::setTaxelPositions(BodyPart bp, SkinPart sp, vector<Vector> positions){
+bool CompensationThread::setTaxelPositions(SkinPart sp, const vector<Vector> &positions){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelPositions(positions);
         }
     }
     return false;
 }
-bool CompensationThread::setTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector orientation){
+bool CompensationThread::setTaxelOrientation(SkinPart sp, unsigned int taxelId, const Vector &orientation){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelOrientation(taxelId, orientation);
         }
     }
     return false;
 }
-bool CompensationThread::setTaxelOrientations(BodyPart bp, SkinPart sp, vector<Vector> orientations){
+bool CompensationThread::setTaxelOrientations(SkinPart sp, const vector<Vector> &orientations){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelOrientations(orientations);
         }
     }
     return false;
 }
-bool CompensationThread::setTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector pose){
+bool CompensationThread::setTaxelPose(SkinPart sp, unsigned int taxelId, const Vector &pose){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelPose(taxelId, pose);
         }
     }
     return false;
 }
-bool CompensationThread::setTaxelPoses(BodyPart bp, SkinPart sp, vector<Vector> poses){
+bool CompensationThread::setTaxelPoses(SkinPart sp, const vector<Vector> &poses){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelPoses(poses);
         }
     }
     return false;
 }
-bool CompensationThread::setTaxelPoses(BodyPart bp, SkinPart sp, Vector poses){
+bool CompensationThread::setTaxelPoses(SkinPart sp, const Vector &poses){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             unsigned int numTax = compensators[i]->getNumTaxels();
             if(poses.size()!=6*numTax)
                 return false;
@@ -587,106 +584,81 @@ bool CompensationThread::isCalibrating(){
 float CompensationThread::getSmoothFactor(){
 	return smoothFactor;
 }
-Vector CompensationThread::getTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId){
+Vector CompensationThread::getTaxelPosition(SkinPart sp, unsigned int taxelId){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getTaxelPosition(taxelId);
         }
     }
     return zeros(3);
 }
-vector<Vector> CompensationThread::getTaxelPositions(BodyPart bp, SkinPart sp){
+vector<Vector> CompensationThread::getTaxelPositions(SkinPart sp){
+    if(sp==SKIN_PART_ALL){
+        vector<Vector> res;
+        FOR_ALL_PORTS(i){
+            vector<Vector> temp = compensators[i]->getTaxelPositions();
+            res.insert(res.end(), temp.begin(), temp.end());
+        }
+        return res;
+    }
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getTaxelPositions();
         }
     }
     return vector<Vector>();
 }
-vector<Vector> CompensationThread::getTaxelPositions(BodyPart bp){
-    vector<Vector> res;
+Vector CompensationThread::getTaxelOrientation(SkinPart sp, unsigned int taxelId){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp){
-            vector<Vector> temp = compensators[i]->getTaxelPositions();
-            res.insert(res.end(), temp.begin(), temp.end());
-        }
-    }
-    return res;
-}
-vector<Vector> CompensationThread::getTaxelPositions(){
-    vector<Vector> res;
-    FOR_ALL_PORTS(i){
-        vector<Vector> temp = compensators[i]->getTaxelPositions();
-        res.insert(res.end(), temp.begin(), temp.end());
-    }
-    return res;
-}
-Vector CompensationThread::getTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId){
-    FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getTaxelOrientation(taxelId);
         }
     }
     return zeros(3);
 }
-vector<Vector> CompensationThread::getTaxelOrientations(BodyPart bp, SkinPart sp){
+vector<Vector> CompensationThread::getTaxelOrientations(SkinPart sp){
+    if(sp==SKIN_PART_ALL){
+        vector<Vector> res;
+        FOR_ALL_PORTS(i){
+            vector<Vector> temp = compensators[i]->getTaxelOrientations();
+            res.insert(res.end(), temp.begin(), temp.end());
+        }
+        return res;
+    }
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getTaxelOrientations();
         }
     }
     return vector<Vector>();
 }
-vector<Vector> CompensationThread::getTaxelOrientations(BodyPart bp){
-    vector<Vector> res;
+Vector CompensationThread::getTaxelPose(SkinPart sp, unsigned int taxelId){
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp){
-            vector<Vector> temp = compensators[i]->getTaxelOrientations();
-            res.insert(res.end(), temp.begin(), temp.end());
-        }
-    }
-    return res;
-}
-vector<Vector> CompensationThread::getTaxelOrientations(){
-    vector<Vector> res;
-    FOR_ALL_PORTS(i){
-        vector<Vector> temp = compensators[i]->getTaxelOrientations();
-        res.insert(res.end(), temp.begin(), temp.end());
-    }
-    return res;
-}
-Vector CompensationThread::getTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId){
-    FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getTaxelPose(taxelId);
         }
     }
     return zeros(3);
 }
-vector<Vector> CompensationThread::getTaxelPoses(BodyPart bp, SkinPart sp){
+vector<Vector> CompensationThread::getTaxelPoses(SkinPart sp){
+    if(sp==SKIN_PART_ALL){
+        vector<Vector> res;
+        FOR_ALL_PORTS(i){
+            vector<Vector> temp = compensators[i]->getTaxelPoses();
+            res.insert(res.end(), temp.begin(), temp.end());
+        }
+        return res;
+    }
     FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp && compensators[i]->getSkinPart()==sp){
+        if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getTaxelPoses();
         }
     }
     return vector<Vector>();
 }
-vector<Vector> CompensationThread::getTaxelPoses(BodyPart bp){
-    vector<Vector> res;
-    FOR_ALL_PORTS(i){
-        if(compensators[i]->getBodyPart()==bp){
-            vector<Vector> temp = compensators[i]->getTaxelPoses();
-            res.insert(res.end(), temp.begin(), temp.end());
-        }
-    }
+vector<SkinPart> CompensationThread::getSkinParts(){
+    vector<SkinPart> res(compensators.size());
+    FOR_ALL_PORTS(i)
+        res[i] = compensators[i]->getSkinPart();
     return res;
 }
-vector<Vector> CompensationThread::getTaxelPoses(){
-    vector<Vector> res;
-    FOR_ALL_PORTS(i){
-        vector<Vector> temp = compensators[i]->getTaxelPoses();
-        res.insert(res.end(), temp.begin(), temp.end());
-    }
-    return res;
-}
-

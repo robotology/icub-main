@@ -21,7 +21,7 @@ using namespace std;
 //   CONSTRUCTORS
 //~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const dynContact &c)
-    :dynContact(c), skinPart(UNKNOWN_SKIN_PART), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
+    :dynContact(c), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure)
@@ -44,7 +44,7 @@ skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, u
 geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact()
-: dynContact(), skinPart(UNKNOWN_SKIN_PART), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
+: dynContact(), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
 //~~~~~~~~~~~~~~~~~~~~~~
 //   SET methods
 //~~~~~~~~~~~~~~~~~~~~~~    

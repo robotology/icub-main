@@ -66,13 +66,13 @@ public:
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
-    bool setTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector position);
-    bool setTaxelPositions(BodyPart bp, SkinPart sp, vector<Vector> positions);
-    bool setTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector orientation);
-    bool setTaxelOrientations(BodyPart bp, SkinPart sp, vector<Vector> orientations);
-    bool setTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId, Vector pose);
-    bool setTaxelPoses(BodyPart bp, SkinPart sp, vector<Vector> poses);
-    bool setTaxelPoses(BodyPart bp, SkinPart sp, Vector poses);
+    bool setTaxelPosition(SkinPart sp, unsigned int taxelId, const Vector &position);
+    bool setTaxelPositions(SkinPart sp, const vector<Vector> &positions);
+    bool setTaxelOrientation(SkinPart sp, unsigned int taxelId, const Vector &orientation);
+    bool setTaxelOrientations(SkinPart sp, const vector<Vector> &orientations);
+    bool setTaxelPose(SkinPart sp, unsigned int taxelId, const Vector &pose);
+    bool setTaxelPoses(SkinPart sp, const vector<Vector> &poses);
+    bool setTaxelPoses(SkinPart sp, const Vector &poses);
 
 	Vector getTouchThreshold();
 	bool getBinarization();
@@ -82,18 +82,14 @@ public:
     double getCompensationGain();
     double getContactCompensationGain();
 	bool isCalibrating();
-    Vector getTaxelPosition(BodyPart bp, SkinPart sp, unsigned int taxelId);
-    vector<Vector> getTaxelPositions(BodyPart bp, SkinPart sp);
-    vector<Vector> getTaxelPositions(BodyPart bp);
-    vector<Vector> getTaxelPositions();
-    Vector getTaxelOrientation(BodyPart bp, SkinPart sp, unsigned int taxelId);
-    vector<Vector> getTaxelOrientations(BodyPart bp, SkinPart sp);
-    vector<Vector> getTaxelOrientations(BodyPart bp);
-    vector<Vector> getTaxelOrientations();
-    Vector getTaxelPose(BodyPart bp, SkinPart sp, unsigned int taxelId);
-    vector<Vector> getTaxelPoses(BodyPart bp, SkinPart sp);
-    vector<Vector> getTaxelPoses(BodyPart bp);
-    vector<Vector> getTaxelPoses();
+
+    Vector getTaxelPosition(SkinPart sp, unsigned int taxelId);
+    vector<Vector> getTaxelPositions(SkinPart sp=SKIN_PART_ALL);
+    Vector getTaxelOrientation(SkinPart sp, unsigned int taxelId);
+    vector<Vector> getTaxelOrientations(SkinPart sp=SKIN_PART_ALL);
+    Vector getTaxelPose(SkinPart sp, unsigned int taxelId);
+    vector<Vector> getTaxelPoses(SkinPart sp=SKIN_PART_ALL);
+    vector<SkinPart> getSkinParts();
     Bottle getInfo();
 
 

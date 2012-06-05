@@ -29,7 +29,7 @@ using namespace iCub::skinDynLib;
 unsigned long dynContact::ID = 1;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dynContact::dynContact(){
-    init(UNKNOWN_BODY_PART, 0, zeros(3));
+    init(BODY_PART_UNKNOWN, 0, zeros(3));
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dynContact::dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const Vector &_CoP){

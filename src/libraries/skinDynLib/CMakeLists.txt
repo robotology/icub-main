@@ -6,6 +6,11 @@ set(PROJECTNAME skinDynLib)
 
 project(${PROJECTNAME})
 
+set (SKIN_NAO OFF CACHE BOOL "Build the library for using the skin of Nao robot")
+if (SKIN_NAO)
+    add_definitions(-DSKIN_NAO)
+endif (SKIN_NAO)
+
 set(folder_source       src/skinContact.cpp
                         src/skinContactList.cpp
                         src/dynContact.cpp

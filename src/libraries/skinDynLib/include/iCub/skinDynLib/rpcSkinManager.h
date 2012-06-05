@@ -10,7 +10,7 @@ namespace skinManager{
 // Enum containing all the commands accepted by the rpc port of the SkinManager.
 // The last element of the enum (SkinManagerCommandSize) represents the total number of commands accepted by the module.
 typedef enum { 
-	calibrate,          get_touch_thr,		
+	calibrate,          get_touch_thr,
     set_binarization,	get_binarization, 
 	set_smooth_filter,	get_smooth_filter,	set_smooth_factor, 
 	get_smooth_factor,	set_threshold,      get_threshold, 

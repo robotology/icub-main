@@ -87,7 +87,7 @@ public:
      * @param _c the robotic chain
      */
     iDynContactSolver(iDynChain *_c, const std::string &_info="", const NewEulMode _mode=DYNAMIC, 
-        iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::UNKNOWN_BODY_PART, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+        iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
     
     /**
      * Constructor with F/T sensor.
@@ -96,7 +96,7 @@ public:
      * @param sensor the F/T sensor
      */
     iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor, 
-        const std::string &_info="", const NewEulMode _mode=DYNAMIC, iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::UNKNOWN_BODY_PART, 
+        const std::string &_info="", const NewEulMode _mode=DYNAMIC, iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN, 
         unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
     /**
@@ -110,7 +110,7 @@ public:
      */
     iDynContactSolver(iDynChain *_c, unsigned int sensLink, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, 
         double _m, const yarp::sig::Matrix &_I, const std::string &_info="", const NewEulMode _mode=DYNAMIC, 
-        iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::UNKNOWN_BODY_PART, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+        iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
     /**
      * Default destructor

@@ -54,8 +54,8 @@ Compensator::~Compensator(){
 }
 
 bool Compensator::init(string name, string robotName, string outputPortName, string inputPortName){
-    skinPart = UNKNOWN_SKIN_PART;
-    bodyPart = UNKNOWN_BODY_PART;
+    skinPart = SKIN_PART_UNKNOWN;
+    bodyPart = BODY_PART_UNKNOWN;
 
     if (!compensatedTactileDataPort.open(outputPortName.c_str())) {
 	    stringstream msg; msg<< "Unable to open output port "<< outputPortName;
@@ -511,10 +511,6 @@ skinContactList Compensator::getContacts(){
     return contactList;
 }
 
-void Compensator::setBinarization(bool value){
-	binarization = value;
-}
-
 void Compensator::setSmoothFilter(bool value){
 	if(smoothFilter != value){
 		smoothFilter = value;
@@ -535,16 +531,10 @@ bool Compensator::setSmoothFactor(float value){
 	return true;
 }
 
-void Compensator::setLinkNum(unsigned int linkNum){
-    this->linkNum = linkNum;
-}
-
-void Compensator::setBodyPart(BodyPart _bodyPart){
-    this->bodyPart = _bodyPart;
-}
-
 void Compensator::setSkinPart(SkinPart _skinPart){
     this->skinPart = _skinPart;
+    this->bodyPart = skinDynLib::getBodyPart(skinPart);
+    this->linkNum = skinDynLib::getLinkNum(skinPart);
 }
 
 bool Compensator::setAddThreshold(unsigned int thr){
@@ -574,6 +564,8 @@ unsigned int Compensator::getNumTaxels(){
     return 0;
 }
 
+Vector Compensator::getCompensation(){   return baselines-initialBaselines; }
+
 Vector Compensator::getTouchThreshold(){
 	touchThresholdSem.wait();
 	Vector res = touchThresholds;
@@ -581,42 +573,11 @@ Vector Compensator::getTouchThreshold(){
 	return res;
 }
 
-string Compensator::getBodyPartName(){ return BodyPart_s[bodyPart];}
-BodyPart Compensator::getBodyPart(){ return bodyPart; }
-string Compensator::getSkinPartName(){ return SkinPart_s[skinPart];}
-SkinPart Compensator::getSkinPart(){ return skinPart;}
-
-Vector Compensator::getCompensation(){  return baselines-initialBaselines;}
-Vector Compensator::getBaselines(){     return baselines;}
-Vector Compensator::getRawData(){       return rawData;}
-Vector Compensator::getCompData(){      return compensatedData;}
-
-bool Compensator::getBinarization(){
-	return binarization;
-}
-bool Compensator::getSmoothFilter(){
-	return smoothFilter;
-}
-
 float Compensator::getSmoothFactor(){
     smoothFactorSem.wait();
     float res=smoothFactor;
     smoothFactorSem.post();
 	return res;
-}
-
-unsigned int Compensator::getLinkNum(){
-    return linkNum;
-}
-
-unsigned int Compensator::getAddThreshold(){
-    return addThreshold;
-}
-double Compensator::getCompensationGain(){
-    return compensationGain;
-}
-double Compensator::getContactCompensationGain(){
-    return contactCompensationGain;
 }
 Vector Compensator::getTaxelPosition(unsigned int taxelId){
     if(taxelId>=skinDim)
@@ -662,17 +623,6 @@ vector<Vector> Compensator::getTaxelPoses(){
     }
     poseSem.post();
     return res;
-}
-string Compensator::getName(){
-    return name;
-}
-
-string Compensator::getInputPortName(){
-    return tactileSensorDevice->getValue("remote").asString().c_str();
-}
-
-bool Compensator::isWorking(){
-    return _isWorking;
 }
 
 bool Compensator::setMaxNeighborDistance(double d){
@@ -725,7 +675,7 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
 
 	return true;
 }
-bool Compensator::setTaxelPoses(vector<Vector> poses){
+bool Compensator::setTaxelPoses(const vector<Vector> &poses){
     if(poses.size()!=skinDim)
         return false;
     poseSem.wait();
@@ -739,7 +689,7 @@ bool Compensator::setTaxelPoses(vector<Vector> poses){
     poseSem.post();
     return true;
 }
-bool Compensator::setTaxelPose(unsigned int taxelId, Vector pose){
+bool Compensator::setTaxelPose(unsigned int taxelId, const Vector &pose){
     if(taxelId>=skinDim || pose.size()!=6)
         return false;
     poseSem.wait();
@@ -751,7 +701,7 @@ bool Compensator::setTaxelPose(unsigned int taxelId, Vector pose){
     poseSem.post();
     return true;
 }
-bool Compensator::setTaxelPositions(vector<Vector> positions){
+bool Compensator::setTaxelPositions(const vector<Vector> &positions){
     if(positions.size()!=skinDim)
         return false;
     poseSem.wait();
@@ -760,7 +710,7 @@ bool Compensator::setTaxelPositions(vector<Vector> positions){
     poseSem.post();
     return true;
 }
-bool Compensator::setTaxelPosition(unsigned int taxelId, Vector position){
+bool Compensator::setTaxelPosition(unsigned int taxelId, const Vector &position){
      if(taxelId>=skinDim || position.size()!=3)
         return false;
     poseSem.wait();
@@ -769,7 +719,7 @@ bool Compensator::setTaxelPosition(unsigned int taxelId, Vector position){
     poseSem.post();
     return true;
 }
-bool Compensator::setTaxelOrientations(vector<Vector> orientations){
+bool Compensator::setTaxelOrientations(const vector<Vector> &orientations){
     if(orientations.size()!=skinDim)
         return false;
     poseSem.wait();
@@ -777,7 +727,7 @@ bool Compensator::setTaxelOrientations(vector<Vector> orientations){
     poseSem.post();
     return true;
 }
-bool Compensator::setTaxelOrientation(unsigned int taxelId, Vector orientation){
+bool Compensator::setTaxelOrientation(unsigned int taxelId, const Vector &orientation){
      if(taxelId>=skinDim || orientation.size()!=3)
         return false;
     poseSem.wait();
@@ -814,7 +764,9 @@ void Compensator::computeNeighbors(){
                 printf("%d ", neighborsXtaxel[i][j]);*/
         }
     }
-    printf("[%s] min neighbors: %d; max neighbors: %d\n", getSkinPartName().c_str(), minNeighbors, maxNeighbors);
+    stringstream ss;
+    ss<<"Neighbors computed. Min neighbors: "<<minNeighbors<<"; max neighbors: "<<maxNeighbors;
+    sendInfoMsg(ss.str());
 }
 void Compensator::updateNeighbors(unsigned int taxelId){
     Vector v;

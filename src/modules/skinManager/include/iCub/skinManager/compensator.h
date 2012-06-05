@@ -64,11 +64,10 @@ public:
     bool readRawAndWriteCompensatedData();
 	void updateBaseline();
 	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
-    //bool isThereContact();
     skinContactList getContacts();
-    bool isWorking();
+    bool isWorking(){ return _isWorking; }
 
-	void setBinarization(bool value);
+	void setBinarization(bool value){ binarization = value; }
 	void setSmoothFilter(bool value);
 	bool setSmoothFactor(float value);    
     bool setAddThreshold(unsigned int thr);
@@ -76,23 +75,21 @@ public:
     bool setContactCompensationGain(double gain);
     bool setMaxNeighborDistance(double d);
     bool setTaxelPosesFromFile(const char *filePath);
-    bool setTaxelPoses(vector<Vector> poses);
-    bool setTaxelPose(unsigned int taxelId, Vector pose);
-    bool setTaxelPositions(vector<Vector> positions);
-    bool setTaxelPosition(unsigned int taxelId, Vector position);
-    bool setTaxelOrientations(vector<Vector> orientations);
-    bool setTaxelOrientation(unsigned int taxelId, Vector orientation);
-    void setLinkNum(unsigned int linkNum);
-    void setBodyPart(BodyPart _bodyPart);
+    bool setTaxelPoses(const vector<Vector> &poses);
+    bool setTaxelPose(unsigned int taxelId, const Vector &pose);
+    bool setTaxelPositions(const vector<Vector> &positions);
+    bool setTaxelPosition(unsigned int taxelId, const Vector &position);
+    bool setTaxelOrientations(const vector<Vector> &orientations);
+    bool setTaxelOrientation(unsigned int taxelId, const Vector &orientation);
     void setSkinPart(SkinPart _skinPart);
 
 	Vector getTouchThreshold();
-	bool getBinarization();
-	bool getSmoothFilter();
-	float getSmoothFactor();    
-    unsigned int getAddThreshold();
-    double getCompensationGain();
-    double getContactCompensationGain();
+	bool getBinarization(){     return binarization; }
+    bool getSmoothFilter(){     return smoothFilter; }
+	float getSmoothFactor();
+    unsigned int getAddThreshold(){         return addThreshold; }
+    double getCompensationGain(){           return compensationGain; }
+    double getContactCompensationGain(){    return contactCompensationGain; }
     Vector getTaxelPosition(unsigned int taxelId);
     vector<Vector> getTaxelPositions();
     Vector getTaxelOrientation(unsigned int taxelId);
@@ -100,18 +97,18 @@ public:
     Vector getTaxelPose(unsigned int taxelId);
     vector<Vector> getTaxelPoses();
     unsigned int getNumTaxels();
-    Vector getBaselines();
     Vector getCompensation();
-    Vector getRawData();    
-    Vector getCompData();
-    string getName();
-    string getInputPortName();    
-	//Vector getContactCOP();         // get the contact center of pressure
-    BodyPart getBodyPart();
-    string getBodyPartName();
-    SkinPart getSkinPart();    
-    string getSkinPartName();
-    unsigned int getLinkNum();
+    Vector getBaselines(){      return baselines; }
+    Vector getRawData(){        return rawData; }
+    Vector getCompData(){       return compensatedData; }
+    
+    string getName(){           return name; }
+    string getInputPortName(){  return tactileSensorDevice->getValue("remote").asString().c_str(); }
+    string getSkinPartName(){   return SkinPart_s[skinPart]; }
+    SkinPart getSkinPart(){     return skinPart; }
+    string getBodyPartName(){   return BodyPart_s[bodyPart]; }
+    BodyPart getBodyPart(){     return bodyPart; }
+    unsigned int getLinkNum(){  return linkNum; }
 
 private:
 
@@ -126,12 +123,12 @@ private:
     unsigned int skinDim;						// number of taxels (for the hand it is 192)	
     string robotName;
     string name;                                // name of the compensator
-    SkinPart skinPart;                          // id of the part of the skin (hand, forearm_lower, arm_internal, ...)
-    BodyPart bodyPart;                          // id of the part of the body (head, torso, left_arm, right_arm, ...)
+    SkinPart skinPart;                          // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
+    BodyPart bodyPart;                          // id of the body part
     unsigned int linkNum;                       // number of the link
 
     // SKIN CONTACTS
-    vector< list<int> >   neighborsXtaxel;    // list of neighbors for each taxel    
+    vector< list<int> >     neighborsXtaxel;    // list of neighbors for each taxel    
 	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
     double                  maxNeighDist;       // max distance between two neighbor taxels

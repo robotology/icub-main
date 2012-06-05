@@ -2468,7 +2468,7 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 	yarp::sig::Matrix T1;
 	switch (which_part) 
 	{
-		case ALL_BODY_PARTS:
+		case BODY_PART_ALL:
 			COM=whole_COM;
 			mass=whole_mass;
 		break;

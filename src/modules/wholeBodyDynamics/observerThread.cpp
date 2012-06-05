@@ -562,7 +562,7 @@ void inverseDynamics::run()
     if (com_enabled)
     {
         icub->computeCOM();
-        icub->getCOM(ALL_BODY_PARTS,    com_all, mass_all);
+        icub->getCOM(BODY_PART_ALL,     com_all, mass_all);
         icub->getCOM(LEFT_LEG,          com_ll,  mass_ll);
         icub->getCOM(RIGHT_LEG,         com_rl,  mass_rl);
         icub->getCOM(LEFT_ARM,          com_la,  mass_la);
