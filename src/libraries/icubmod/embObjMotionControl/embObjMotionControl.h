@@ -60,7 +60,6 @@ using namespace std;
 #define DEFAULT_EMS_PORT	33333
 
 
-#define SIZE_INFO			128
 #define EMS_MAX_CARDS		1				// TO BE REMOVED
 
 namespace yarp{
@@ -149,7 +148,7 @@ public:
     virtual bool close();
 
     // _AC_
-    bool configureTransceiver(ITransceiver *trans);
+ //   bool configureTransceiver(ITransceiver *trans);
     void getMotorController(DeviceDriver *iMC);
     bool alloc(int nj);
 

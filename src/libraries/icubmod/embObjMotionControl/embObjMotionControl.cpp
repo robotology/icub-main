@@ -22,11 +22,9 @@
 // embObj includes
 
 // Boards configurations
-extern "C" {
 #include "EOnv_hid.h"
-#include "eOcfg_EPs_eb7.h"
 #include "EoMotionControl.h"
-}
+
 
 #include "embObjMotionControl.h"
 
@@ -182,7 +180,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	Value &device=xtmp.find("device");
 	prop.put("device", device.asString().c_str());
 
-	res = ethResCreator::getResource(prop);
+	ethResCreator *resList = ethResCreator::instance();
+	res = resList->getResource(prop);
 
 
 	//
@@ -415,14 +414,15 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 	eOmc_joint_config_t				a;
 	uint16_t						sizze;
 
-	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(endpoint_mc_leftlowerleg, (eo_cfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(endpoint_mc_leftlowerleg, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
 
 	// la chiamata seguente va sostituita dalle linee successive
 //	transceiver->askNV(endpoint_mc_leftlowerleg, nvid, (uint8_t *)&a, &sizze);
 
-	EOnv					*nv = NULL;
 	res->transceiver->load_occasional_rop(eo_ropcode_ask, endpoint_mc_leftlowerleg, nvid);
 	//_mutex.wait();		// meccanismo di wait
+
+	EOnv	*nv = res->transceiver->getNVhandler( endpoint_mc_leftlowerleg,  nvid);  //??
 	res->transceiver->getNVvalue(nv, (uint8_t *)&a, &sizze);
 }
 
