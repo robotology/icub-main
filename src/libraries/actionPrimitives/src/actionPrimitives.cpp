@@ -1853,7 +1853,9 @@ bool ActionPrimitives::stopControl()
 
         if (actionWP!=NULL)
         {
-            actionWP->stop();
+            if (actionWP->isRunning())
+                actionWP->stop();
+
             delete actionWP;
             actionWP=NULL;
         }
@@ -2185,7 +2187,9 @@ void ActionPrimitivesLayer2::run()
     {
         if (actionWP!=NULL)
         {
-            actionWP->stop();
+            if (actionWP->isRunning())
+                actionWP->stop();
+
             delete actionWP;
             actionWP=NULL;
         }
