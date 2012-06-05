@@ -134,7 +134,7 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Os.h>
 
-#include "RobotInterface.h" 
+#include "RobotInterface.h"
 
 #include "RobotInterfaceRemap.h"
 
@@ -155,6 +155,8 @@ using namespace yarp::dev;
 static bool terminated = false;
 static bool askAbort=false;
 IRobotInterface *ri=0;
+
+extern IRobotInterface *iRobotInterface;// = (IRobotInterface *) 0xACCA;
 
 static void sighandler (int) {
 	static int ct = 0;
@@ -310,19 +312,20 @@ int main(int argc, char *argv[])
 
 	fprintf(stderr, "terminee.isOk\n");
 
-	IRobotInterface *i;
+//	IRobotInterface *iRobotInterface;
+
 	if (remap)
 	{
-        i=new RobotInterfaceRemap;
+        iRobotInterface=new RobotInterfaceRemap;
     	fprintf(stderr, "RobotInterfaceRemap\n");
 	}
 	else
 	{
-		i=new RobotInterface;
+		iRobotInterface=new RobotInterface;
 	}
-	ri=i; //set pointer to RobotInterface object (used in the handlers above)
+	ri=iRobotInterface; //set pointer to RobotInterface object (used in the handlers above)
 
-	ok = i->initialize(filename); 
+	ok = iRobotInterface->initialize(filename); 
 	if (!ok)
 		return 0;
 
@@ -333,12 +336,12 @@ int main(int argc, char *argv[])
 	bool someCartesian=false;
 	if (cartRightArm!="")
 	{
-		i->initCart(cartRightArm.c_str());
+		iRobotInterface->initCart(cartRightArm.c_str());
 		someCartesian=true;
 	}
 	if (cartLeftArm!="")
 	{
-		i->initCart(cartLeftArm.c_str());
+		iRobotInterface->initCart(cartLeftArm.c_str());
 		someCartesian=true;
 	}
 	if (!someCartesian)
@@ -355,15 +358,15 @@ int main(int argc, char *argv[])
 
 	if (someCartesian)
 	{
-		i->finiCart();
+		iRobotInterface->finiCart();
 	}
 
-    i->detachWrappers();
-    i->park(); //default behavior is blocking (safer)
-    i->closeNetworks();
+    iRobotInterface->detachWrappers();
+    iRobotInterface->park(); //default behavior is blocking (safer)
+    iRobotInterface->closeNetworks();
 	ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
-	delete i; 
-	i=0;
+	delete iRobotInterface; 
+	iRobotInterface=0;
 #ifdef _AC_
 	if( Logger::get().log_files.f3 != 0)
 		fclose(Logger::get().log_files.f3);
