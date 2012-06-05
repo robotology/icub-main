@@ -1284,7 +1284,7 @@ void RobotInterfaceRemap::abort()
 
 IiCubFeatureList * RobotInterfaceRemap::getRobotFeatureList(FEAT_ID *id)
 {
-	return &skinparts;
+	//return &skinparts;
 }
 
 IRobotInterface *RobotInterfaceRemap::getRobot()

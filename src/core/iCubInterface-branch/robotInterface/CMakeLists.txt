@@ -19,10 +19,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../tools/canLoader/canLoad
                     ${iCubDev_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
-if(ICUB_USE_INTERFACEGUI)
-	add_definitions(-D_USE_INTERFACEGUI)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../libraries/iCubInterfaceGuiLib)
-endif(ICUB_USE_INTERFACEGUI)
 
 add_library(IICcore 	RobotInterfaceRemap.cpp 
 						RobotInterface.cpp 

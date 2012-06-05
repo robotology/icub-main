@@ -2,7 +2,7 @@
 # Author: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-add_subdirectory(robotInterface)
+
 
 PROJECT(iCubInterface)
 
@@ -17,6 +17,8 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 include(../../libraries/icubmod/embObjLib/embObjLib.conf)
+
+add_subdirectory(robotInterface)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
 					${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/

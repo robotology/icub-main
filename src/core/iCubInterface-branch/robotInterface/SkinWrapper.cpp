@@ -6,6 +6,9 @@
  */
 
 
+
+
+
 #include "RobotInterfaceRemap.h"
 #include "extractPath.h"
 
@@ -194,11 +197,6 @@ void SkinPartEntry::close()
     driver.close();
 }
 
-bool SkinPartEntry::fillData(uint8_t &data)
-{
-	wholeData[0]=data;
-}
-
 SkinPartEntry *SkinParts::find(const string &pName)
 {
     SkinPartsIt it=begin();
@@ -211,19 +209,6 @@ SkinPartEntry *SkinParts::find(const string &pName)
     }
 
     return 0;
-}
-
-SkinPartEntry * SkinParts::findus(FEAT_ID *id )
-{
-	SkinPartsIt it=begin();
-	for(;it!=end(); it++)
-	{
-		if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) )
-		{
-			return (*it);
-		}
-	}
-	return 0;
 }
 
 void SkinParts::close()

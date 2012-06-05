@@ -53,9 +53,7 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/os/BufferedPort.h>
 
-// _AC_
-#include "IRobotInterface.h"
-#include "FeatureInterface.h"
+
 
 
 /**
@@ -295,22 +293,15 @@ public:
 };
 
 
-class SkinPartEntry: public IiCubFeature
+class SkinPartEntry
 {
 private:
-// to be removed ?
     AnalogServer *analogServer;
     yarp::dev::IAnalogSensor *analog;
-// _AC_
-    yarp::sig::Vector wholeData;
 
 public:
-    std::string id;
-    yarp::dev::PolyDriver driver;
-
     SkinPartEntry();
     ~SkinPartEntry();
-
 
     bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
     void close();
@@ -319,18 +310,14 @@ public:
     void setId(const std::string &i)
     { id=i; }
 
-    // _AC_
-    FEAT_ID		fId;
-    bool fillData(uint8_t &data );
+    std::string id;
+    yarp::dev::PolyDriver driver;
 };
 
-class SkinParts: public std::list<SkinPartEntry *>,
-				 public IiCubFeatureList
+class SkinParts: public std::list<SkinPartEntry *>
 {
 public:
     SkinPartEntry *find(const std::string &pName);
-    // _AC_
-    SkinPartEntry *findus(FEAT_ID *id );
     void close();
 };
 

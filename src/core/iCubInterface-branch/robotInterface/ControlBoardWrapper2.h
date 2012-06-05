@@ -59,7 +59,6 @@ inline void DEBUG_CW2(const char *fmt, ...)
 
 #include "ControlBoardWrapper.h"
 
-
 #ifdef MSVC
 	#pragma warning(disable:4355)
 #endif
@@ -83,14 +82,13 @@ class ControlBoardWrapper2;
 * Helper object for reading config commands for the ControlBoardWrapper
 * class.
 */
-class CommandsHelper2 : public DeviceResponder
-{
+class CommandsHelper2 : public DeviceResponder {
 protected:
     ControlBoardWrapper2   *caller;
     yarp::dev::IPidControl          *pid;
     yarp::dev::IPositionControl     *pos;
     yarp::dev::IVelocityControl     *vel;
-    yarp::dev::IEncoders            *enc;
+    yarp::dev::IEncodersTimed       *enc;
     yarp::dev::IAmplifierControl    *amp;
     yarp::dev::IControlLimits       *lim;
     yarp::dev::ITorqueControl       *torque;
@@ -172,7 +170,7 @@ public:
     IPidControl       *pid;
     IPositionControl  *pos;
     IVelocityControl  *vel;
-    IEncoders         *enc;
+    IEncodersTimed *enc;
     IAmplifierControl *amp;
     IControlLimits    *lim;
     IControlCalibration *calib;
@@ -186,6 +184,7 @@ public:
     IAxisInfo          *info;
 
     yarp::sig::Vector encoders;
+    yarp::sig::Vector encodersTimes;
 
     SubDevice();
 
@@ -196,7 +195,7 @@ public:
 
     inline void refreshEncoders()
     {
-        enc->getEncoders(encoders.data());
+        enc->getEncodersTimed(encoders.data(), encodersTimes.data());
     }
 
     bool isAttached()
@@ -210,6 +209,7 @@ struct DevicesLutEntry
     int offset; //an offset, the device is mapped starting from this joint
     int deviceEntry; //index to the joint corresponding subdevice in the list
 };
+
 
 class WrappedDevice
 {
@@ -240,7 +240,7 @@ class ControlBoardWrapper2 : public DeviceDriver,
                              public IPidControl,
                              public IPositionControl,
                              public IVelocityControl,
-                             public IEncoders,
+                             public IEncodersTimed,
                              public IAmplifierControl,
                              public IControlLimits,
 							 public IDebugInterface,
@@ -251,19 +251,20 @@ class ControlBoardWrapper2 : public DeviceDriver,
 							 public IImpedanceControl,
                              public IControlMode,
                              public IMultipleWrapper,
-                             public IAxisInfo
+                             public IAxisInfo,
+                             public IPreciselyTimed
 {
 private:
     bool spoke;
     bool verb;
-
-    yarp::os::Stamp lastStateStamp;
 
     WrappedDevice device;
 
     Port state_p;   // out port to read the state
     Port control_p; // in port to command the robot
     Port rpc_p;     // RPC to configure the robot
+    Stamp time;     // envelope to attach to the state port
+    Semaphore timeMutex;
 
     PortWriterBuffer<yarp::sig::Vector> state_buffer;
     PortReaderBuffer<CommandMessage> control_buffer;
@@ -276,7 +277,7 @@ private:
     PortReaderBuffer<Bottle> command_buffer;
 
     Vector            encoders;
-	std::string      partName;
+    std::string       partName;
 
     int               controlledJoints;
     int               base;
@@ -389,7 +390,6 @@ public:
         {
             return s->pid->setPid(off+base, p);
         }
-
         return false;
     }
 
@@ -1524,6 +1524,43 @@ public:
         return ret;
     }
 
+    virtual bool getEncodersTimed(double *encs, double *t) {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->enc)
+            {
+                ret=ret&&p->enc->getEncoderTimed(off+base, encs+l, t+l);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
+    virtual bool getEncoderTimed(int j, double *v, double *t) {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->pos)
+        {
+            return p->enc->getEncoderTimed(off+base, v, t);
+        }        
+        *v=0.0;
+        return false; 
+    }
 
     /**
     * Read the istantaneous speed of an axis.
@@ -2704,6 +2741,74 @@ public:
         return false;
 	}
 
+	virtual bool getRotorPosition(int j, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getRotorPosition(off+base, t);
+        }		
+        return false;
+	}
+
+	virtual bool getRotorPositions(double *t)
+	{
+        return false;
+        /*
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getRotorPosition(off+base, t);
+        }		
+        return false;*/
+	}
+
+    virtual bool getJointPosition(int j, double *t)
+	{
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getJointPosition(off+base, t);
+        }		
+        return false;
+	}
+
+	virtual bool getJointPositions(double *t)
+	{
+        return false;
+        /*
+		int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getJointPosition(off+base, t);
+        }		
+        return false;*/
+	}
+
 	virtual bool setDebugParameter(int j, unsigned int index, double t)
 	{
         int off=device.lut[j].offset;
@@ -2774,8 +2879,12 @@ public:
         return ret;
     }
 
-
-
+    virtual Stamp getLastInputStamp() {
+        timeMutex.wait();
+        Stamp ret=time;
+        timeMutex.post();
+        return ret;
+    }
 };
 
 #endif

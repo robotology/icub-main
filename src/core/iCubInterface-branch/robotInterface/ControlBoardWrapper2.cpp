@@ -8,6 +8,7 @@
  */
 
 #include "ControlBoardWrapper2.h"
+
 #include <iostream>
 
 // _AC_
@@ -82,6 +83,7 @@ bool SubDevice::configure(int b, int t, int n, const std::string &key)
         }
 
     encoders.resize(axes);
+    encodersTimes.resize(axes);
 
     configuredF=true;
     return true;
@@ -139,7 +141,6 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
             subdevice->view(pid);
             subdevice->view(pos);
             subdevice->view(vel);
-            subdevice->view(enc);
             subdevice->view(amp);
             subdevice->view(lim);
             subdevice->view(calib);
@@ -151,12 +152,11 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
             subdevice->view(iMode);
             subdevice->view(iOpenLoop);
 			subdevice->view(iDbg);
+            subdevice->view(enc);
         }
     else
         {
             cerr<<"Invalid device (isValid() returned false"<<endl;
-        	YARP_INFO(Logger::get(),"ControlBoardWrapper -- SubDevice::attach-> Invalid device (isValid() returned false", Logger::get().log_files.f3);
-
             return false;
         }
 
@@ -213,7 +213,6 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
         {
             return false;
         }
-	YARP_INFO(Logger::get(),"ControlBoardWrapper -- SubDevice::attach-> end", Logger::get().log_files.f3);
 
     return false;
 }
@@ -1319,6 +1318,40 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 }
                                 break;
 
+   							case VOCAB_DEBUG_ROTOR_POS:
+                                {
+                                    int j     = cmd.get(2).asInt();
+									ok = iDbg->getRotorPosition(j, &dtmp);
+									response.addInt(j);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
+
+   							case VOCAB_DEBUG_ROTOR_POSS:
+                                {
+									//ok = iDbg->getRotorPositions(&dtmp);
+									//response.addDouble(dtmp);
+                                }
+                                break;
+
+   							case VOCAB_DEBUG_JOINT_POS:
+                                {
+                                    int j     = cmd.get(2).asInt();
+									ok = iDbg->getJointPosition(j, &dtmp);
+									response.addInt(j);
+									response.addDouble(dtmp);
+                                }
+                                break;
+
+
+   							case VOCAB_DEBUG_JOINT_POSS:
+                                {
+									//ok = iDbg->getJointPositions(&dtmp);
+									//response.addDouble(dtmp);
+                                }
+                                break;
+
 							case VOCAB_GENERIC_PARAMETER:
                                 {
                                     int j     = cmd.get(2).asInt();
@@ -1444,14 +1477,9 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                             case VOCAB_AXES:
                                 {
-                                	YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> getAxes", Logger::get().log_files.f3);
                                     int tmp;
                                     ok = pos->getAxes(&tmp);
-                                   	YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> getAxes", Logger::get().log_files.f3);
-
                                     response.addInt(tmp);
-                                   	YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> getAxes", Logger::get().log_files.f3);
-
                                 }
                                 break;
 
@@ -1701,7 +1729,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
     pid = dynamic_cast<yarp::dev::IPidControl *> (caller);
     pos = dynamic_cast<yarp::dev::IPositionControl *> (caller);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (caller);
-    enc = dynamic_cast<yarp::dev::IEncoders *> (caller);
+    enc = dynamic_cast<yarp::dev::IEncodersTimed *> (caller);
     amp = dynamic_cast<yarp::dev::IAmplifierControl *> (caller);
     lim = dynamic_cast<yarp::dev::IControlLimits *> (caller);
     info = dynamic_cast<yarp::dev::IAxisInfo *> (caller);
@@ -1873,25 +1901,31 @@ void ControlBoardWrapper2::run()
 
     //getEncoders for all subdevices
     double *encoders=v.data();
+    double timeStamp=0.0;
+
     for(unsigned int k=0;k<device.subdevices.size();k++)
         {
     	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run3()", Logger::get().log_files.f3);
             int axes=device.subdevices[k].axes;
             int base=device.subdevices[k].base;
+
             device.subdevices[k].refreshEncoders();
 
         	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run3.5()", Logger::get().log_files.f3);
             for(int l=0;l<axes;l++)
+            {
                 encoders[l]=device.subdevices[k].encoders[l+base];
+                timeStamp+=device.subdevices[k].encodersTimes[l+base];
+            }
 
             encoders+=device.subdevices[k].axes; //jump to next group
         }
 
-	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run4()", Logger::get().log_files.f3);
-    //warning: this timestamp is not very accurate
-    lastStateStamp.update();
-    state_p.setEnvelope(lastStateStamp);
+    timeMutex.wait();
+    time.update(timeStamp/controlledJoints);
+    timeMutex.post();
 
+    state_p.setEnvelope(time);
     state_buffer.write();
 	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run5() - end loop", Logger::get().log_files.f3);
 }
