@@ -24,7 +24,7 @@ extern "C" {
 
 #include "EoCommon.h"
 #include "EOhostTransceiver.h"
-#include "transceiverInterface.h"
+//#include "transceiverInterface.h"
 
 	// Boards configurations
 
@@ -50,8 +50,8 @@ extern "C" {
 
 using namespace yarp::dev;
 
-class hostTransceiver : public DeviceDriver,
-						public ITransceiver
+class hostTransceiver : public DeviceDriver
+//						public ITransceiver
 {
 private:
 	EOhostTransceiver*  hosttxrx;

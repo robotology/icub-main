@@ -29,11 +29,13 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-TheEthManager* TheEthManager::handle = 0x00;
 
-int TheEthManager::i = 0;
-int ethResources::how_many_boards = 0;
-int ethResCreator::how_many = 0;
+ethResCreator* ethResCreator::handle = 0x00;
+bool ethResCreator::initted = false;
+
+TheEthManager* TheEthManager::handle = 0x00;
+int TheEthManager::i = false;
+
 
 ethResources::ethResources()
 {
@@ -60,66 +62,11 @@ ethResources::ethResources()
 ethResources::~ethResources()
 {
 	char tmp[126];
-	sprintf(tmp, "\nethResources::~ethResources() 1 handle= %p - i=%d", theEthManager_h, how_many_boards);
+	sprintf(tmp, "\nethResources::~ethResources() 1 handle= %p ", theEthManager_h);
 	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
-
 }
 
-ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
-{
-	ACE_TCHAR tmp[126], address[64];
-	Bottle xtmp, xtmp2;
-//	string str=config.toString().c_str();
-	ACE_UINT16 loc_port, rem_port;
-	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
-	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	YARP_INFO(Logger::get(), " ethResCreator::getResource", Logger::get().log_files.f3);
-
-    //
-    // Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
-	//	a pointer to an already existing object
-    //
-
-	xtmp = Bottle(config.findGroup("ETH"));
-	xtmp2 = xtmp.findGroup("IpAddress");
-	strcpy(address, xtmp2.get(1).asString().c_str());
-	YARP_INFO(Logger::get(), String("IpAddress:\t") + address, Logger::get().log_files.f3);
-
-	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
-	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-	YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
-	// Get EMS CmdPort from config file
-	xtmp2 = xtmp.findGroup("CmdPort");
-	rem_port = xtmp2.get(1).asInt();
-
-	// ACE format
-	ACE_INET_Addr tmp_addr;
-	tmp_addr.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
-
-	ethResources *newRes = NULL;
-	ethResIt iterator = ethResList.begin();
-
-	while(iterator!=ethResList.end())
-	{
-		if(tmp_addr == (*iterator)->getRemoteAddress() )
-		{
-			// device already exist.
-			newRes = (*iterator);
-		}
-		iterator++;
-	}
-
-	if ( NULL == newRes)
-	{
-		// device doesn't exist yet, create it
-		newRes = new ethResources;
-		newRes->open(config);
-		ethResList.push_back(newRes);
-	}
-
-	return newRes;
-}
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
@@ -153,6 +100,18 @@ bool ethResources::open(yarp::os::Searchable &config)
 	// ACE format
 	remote_dev.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
 
+	//
+	// Fill 'info' and ID fields
+	//
+	memset(info, 0x00, SIZE_INFO);
+	sprintf(info, "ethResources - referred to EMS: %d.%d.%d.%d", rem_ip1,rem_ip2,rem_ip3,rem_ip4);
+	id.ip1=rem_ip1;
+	id.ip2=rem_ip2;
+	id.ip3=rem_ip3;
+	id.ip4=rem_ip4;
+	strcpy(id.name, "Dunno");
+
+
     //
 	// Get PC104 ip address from config file
     //
@@ -166,13 +125,10 @@ bool ethResources::open(yarp::os::Searchable &config)
 
 	ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
 
-	// Fill debug 'info' fields
-	memset(info, 0x00, SIZE_INFO);
-	sprintf(info, "ethResources - referred to EMS: %d.%d.%d.%d", rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-
 	theEthManager_h = TheEthManager::instance(loc_dev);
 	remote_dev.addr_to_string(address, 64);
 	theEthManager_h->register_device(address, this);
+
 
 	// Get the pointer to the actual Singleton ethManager, or create it if it's the first time.
 
@@ -235,22 +191,23 @@ void ethResources::getPack(uint8_t **pack, uint16_t *size)
 }
 
 
-/*
+#if 0
 void ethResources::setCalibrator(ICalibrator *icalibrator)
 {
 	motionCtrl->setCalibrator(icalibrator);
 }
-*/
-//void ethResources::getControlCalibration(IControlCalibration2 **icalib)
-//{
-//	createMotionControlHandler.view(*icalib);
-//
-//}
-//
-//void ethResources::getMotorController(DeviceDriver **iMC)
-//{
-//	*iMC =  this->motionCtrl;
-//}
+
+void ethResources::getControlCalibration(IControlCalibration2 **icalib)
+{
+	createMotionControlHandler.view(*icalib);
+
+}
+
+void ethResources::getMotorController(DeviceDriver **iMC)
+{
+	*iMC =  this->motionCtrl;
+}
+#endif
 
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
@@ -260,6 +217,123 @@ void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 ACE_INET_Addr	ethResources::getRemoteAddress()
 {
 	return	remote_dev;
+}
+
+// -------------------------------------------------------------------\\
+//            ethResCreator   Singleton
+// -------------------------------------------------------------------\\
+
+ethResCreator::ethResCreator()
+{
+	how_many_boards = 0;
+}
+
+ethResCreator *ethResCreator::instance()
+{
+	if (initted == false)
+		handle = new ethResCreator();
+
+	initted = true;
+	return handle;
+}
+
+ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
+{
+	ACE_TCHAR tmp[126], address[64];
+	Bottle xtmp, xtmp2;
+//	string str=config.toString().c_str();
+	ACE_UINT16 loc_port, rem_port;
+	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
+	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
+
+	YARP_INFO(Logger::get(), " ethResCreator::getResource", Logger::get().log_files.f3);
+
+    //
+    // Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
+	//	a pointer to an already existing object
+    //
+
+	xtmp = Bottle(config.findGroup("ETH"));
+	xtmp2 = xtmp.findGroup("IpAddress");
+	strcpy(address, xtmp2.get(1).asString().c_str());
+	sprintf(tmp,"EMS IpAddress %s", address);
+	YARP_INFO(Logger::get(), tmp, Logger::get().log_files.f3);
+
+	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
+	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
+	// Get EMS CmdPort from config file
+	xtmp2 = xtmp.findGroup("CmdPort");
+	rem_port = xtmp2.get(1).asInt();
+
+	// ACE format
+	ACE_INET_Addr tmp_addr;
+	tmp_addr.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
+
+	EMS_ID id;
+	id.ip1=rem_ip1;
+	id.ip2=rem_ip2;
+	id.ip3=rem_ip3;
+	id.ip4=rem_ip4;
+
+
+	ethResources *newRes = NULL;
+	ethResCreator *ethResList = ethResCreator::instance();
+	ethResIt iterator = ethResList->begin();
+
+	while(iterator!=ethResList->end())
+	{
+		if(ethResList->compareIds(id, (*iterator)->id))
+		//if(tmp_addr == (*iterator)->getRemoteAddress() )
+		{
+			// device already exist.
+			YARP_INFO(Logger::get(), String("device already exist\n") + address, Logger::get().log_files.f3);
+
+			newRes = (*iterator);
+		}
+		iterator++;
+	}
+
+	if ( NULL == newRes)
+	{
+		// device doesn't exist yet, create it
+		YARP_INFO(Logger::get(), String("device doesn't exist yet, create it\n") + address, Logger::get().log_files.f3);
+		newRes = new ethResources;
+		newRes->open(config);
+		how_many_boards++;
+		ethResList->push_back(newRes);
+	}
+
+	return newRes;
+}
+
+bool	ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
+{
+	if( (id2beFound.ip1 == nextId.ip1) && (id2beFound.ip2 == nextId.ip2) && (id2beFound.ip3 == nextId.ip3) && (id2beFound.ip4 == nextId.ip4) )
+		return true;
+	else
+		return false;
+}
+
+
+uint8_t* ethResCreator::find(EMS_ID &id)
+{
+	YARP_INFO(Logger::get(), " ethResCreator::find", Logger::get().log_files.f3);
+
+	ethResources *res = NULL;
+	ethResCreator *ethResList = ethResCreator::instance();
+	ethResIt iterator = ethResList->begin();
+
+	while(iterator!=ethResList->end())
+	{
+		if(ethResList->compareIds(id, (*iterator)->id))
+		{
+			// device found
+			res = (*iterator);
+			break;
+		}
+		iterator++;
+	}
+	//res->
 }
 
 
@@ -277,19 +351,26 @@ SendThread::~SendThread()
 
 }
 
+bool SendThread::threadInit()
+{
+//	ethResList = ethResCreator::instance();
+	return true;
+}
+
+
 void SendThread::run()
 {
-	ethResIt iterator = ethResList.begin();
-
-	while(iterator!=ethResList.end())
-	{
-		data = 0;
-		size = 0;
-		(*iterator)->getPack(&data, &size);
-		ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
-		TheEthManager::instance()->send(data, size, addr);
-		iterator++;
-	}
+//	iterator = ethResList->begin();
+//
+//	while(iterator!=ethResList->end())
+//	{
+//		data = 0;
+//		size = 0;
+//		(*iterator)->getPack(&data, &size);
+//		ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
+//		TheEthManager::instance()->send(data, size, addr);
+//		iterator++;
+//	}
 }
 
 
@@ -311,6 +392,9 @@ TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1000)
 	_socket = 0;
 	deviceNum = 0;
 	sprintf(tmp, "TheEthManager::TheEthManager()");
+
+	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	local_addr.addr_to_string(tmp, 64);
 	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 
 	_socket = new ACE_SOCK_Dgram();
@@ -402,9 +486,9 @@ void TheEthManager::run()
 
 	if( recv_size > 0)
 	{
-		ethResIt iterator = ethResList.begin();
+		ethResIt iterator = ethResCreator::instance()->begin();
 
-		while(iterator!=ethResList.end())
+		while(iterator!=ethResCreator::instance()->end())
 		{
 			if(strcmp((*iterator)->address, address) == 0)
 			{

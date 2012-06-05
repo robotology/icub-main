@@ -10,6 +10,7 @@ PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
+set(ICUB_INTERFACE_CORE_FOLDER	$ENV{ICUB_ROOT}/main/src/core/iCubInterface-branch/)
 
 #add_definitions( -DMYDEFINE=CIAO )
 
@@ -27,6 +28,10 @@ set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
 set(BODY_COMMON_SOURCE 		${BODY_COMMON_FOLDER}/eEcommon.c)
 set(BODY_COMMON_HEADER 		${BODY_COMMON_FOLDER}/eEcommon.h)
 
+#set(ICUB_INTERFACE_SOURCE	${ICUB_INTERFACE_CORE_FOLDER}FeatureInterface.cpp
+#							${ICUB_INTERFACE_CORE_FOLDER}RobotInterfaceRemap.cpp
+#							)
+
 # Network Variable configuration# Network Variable configuration
 set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb1.c  
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb2.c
@@ -39,7 +44,7 @@ set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb1.c
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb9.c  )
 
 
-#set(NVS_EB_HEADER 		${NVS_EB_FOLDER}eOcfg_EPs_eb1.h  eOcfg_EPs_eb3.h  eOcfg_EPs_eb5.h  eOcfg_EPs_eb7.h  eOcfg_EPs_eb9.h  _eOcfg_EPs_loc_ebx.h 		eOcfg_EPs_eb2.h  eOcfg_EPs_eb4.h  eOcfg_EPs_eb6.h  eOcfg_EPs_eb8.h  eOcfg_EPs_ebx.h  _eOcfg_EPs_rem_ebx.h)
+#set(NVS_EB_HEADER 			${NVS_EB_FOLDER}eOcfg_EPs_eb1.h  eOcfg_EPs_eb3.h  eOcfg_EPs_eb5.h  eOcfg_EPs_eb7.h  eOcfg_EPs_eb9.h  _eOcfg_EPs_loc_ebx.h 		eOcfg_EPs_eb2.h  eOcfg_EPs_eb4.h  eOcfg_EPs_eb6.h  eOcfg_EPs_eb8.h  eOcfg_EPs_ebx.h  _eOcfg_EPs_rem_ebx.h)
 
 	
 set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
@@ -96,17 +101,22 @@ set(NVS_SENSORS_SOURCE		${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as.c
 #							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_usr.c 
 							)
 
+#SET_SOURCE_FILES_PROPERTIES( ${NVS_SKIN_CBK_FOLDER}eOcfg_nvsEP_sk_usrcbk_ebx.c PROPERTIES LANGUAGE CXX )
+
 set(NVS_SKIN_SOURCE			${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk.c
+							${NVS_SKIN_CBK_FOLDER}eOcfg_nvsEP_sk_usrcbk_ebx.c
 							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_con.c							
 							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_usr.c )
 
 
-set(NVS_CBK_SOURCE			${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c
-#							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c
+
+set(NVS_CBK_SOURCE			${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
 							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_pippo.c
-#							${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
+
+#							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c
+#							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c														
 #							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
-#							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c 
+#							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c
 							)
 
 
@@ -221,18 +231,21 @@ set(embobj_source 		${BODY_COMMON_SOURCE}
 						${NVS_SENSORS_SOURCE} 
 						${NVS_SKIN_SOURCE} 
 						${NVS_USR_SOURCE} 
-						${NVS_CBK_SOURCE})
-
+						${NVS_CBK_SOURCE}
+						${ICUB_INTERFACE_SOURCE})
 
 set(embobj_header 		${BODY_COMMON_SOURCE} 
 						${CORE_API_HEADER} 
 						${PROT_HEADER} 
 						${IPNET_HEADER}
 						${NVS_EB_SRC_FOLDER})
+					
 
-SOURCE_GROUP("EmbObj Source Files" FILES ${folder_source})
-SOURCE_GROUP("EmbObj Header Files" FILES ${folder_header})
+
+SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
+SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
+TARGET_LINK_LIBRARIES(${PROJECTNAME} IICcore) 
 
 icub_export_library(${PROJECTNAME})

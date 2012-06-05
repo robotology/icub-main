@@ -46,7 +46,7 @@ using namespace std;
 //#include "../ethManager/iCubDeviceInterface.h"
 //#include "../embObjMotionControl/embObjMotionControl.h"
 #include "hostTransceiver.hpp"
-#include "transceiverInterface.h"
+#include "embObjLibInterface.h"
 
 
 
@@ -91,8 +91,6 @@ class yarp::dev::ethResources:  //public DeviceDriver,	// needed if I want to cr
 {
 private:
 	char 						info[SIZE_INFO];
-	static int					how_many_boards;
-
 
 	TheEthManager  				*theEthManager_h;
 //	embObjMotionControl			*controller;
@@ -115,6 +113,7 @@ private:
 
 public:
 
+	EMS_ID						id;
    	hostTransceiver				*transceiver;
 	ACE_TCHAR					address[64];
    	/*embObjMotionControl*/ DeviceDriver			*motionCtrl;
@@ -138,20 +137,28 @@ public:
 };
 
 
-class yarp::dev::ethResCreator:public std::list<ethResources *>
+// -------------------------------------------------------------------\\
+//            ethResCreator   Singleton
+// -------------------------------------------------------------------\\
+
+class yarp::dev::ethResCreator: public std::list<ethResources *>,
+								public IEmbObjResList
 {
 	private:
-	static ethResCreator 		*handle;
-	static int					how_many;
+		ethResCreator();
+		static ethResCreator 		*handle;
+		static bool					initted;
+		int							how_many_boards;
+		bool	compareIds(EMS_ID id2beFound, EMS_ID comparingId);
 
 	public:
-	static ethResources* getResource(yarp::os::Searchable &config);
-	ethResCreator *find(const std::string &id);
+		static ethResCreator* 		instance();
+		ethResources* 				getResource(yarp::os::Searchable &config);
+		virtual uint8_t*			find(EMS_ID &id);
 };
 
 typedef std::list<ethResources *>::iterator ethResIt;
 
-static ethResCreator ethResList;
 
 
 
@@ -170,7 +177,10 @@ class SendThread:	public RateThread
 	private:
     uint8_t						*data;
     uint16_t					size;
+    ethResCreator 				*ethResList;
+    ethResIt 					iterator;
 
+    virtual bool threadInit();
 	virtual void run(void);
 };
 
