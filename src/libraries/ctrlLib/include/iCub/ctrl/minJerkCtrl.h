@@ -248,6 +248,7 @@ protected:
     yarp::sig::Vector pos;      // current position
     yarp::sig::Vector vel;      // current velocity
     yarp::sig::Vector acc;      // current acceleration
+    yarp::sig::Vector lastRef;  // last reference position
 
     double Ts;                  // sample time in seconds
     double T;                   // trajectory reference time in seconds

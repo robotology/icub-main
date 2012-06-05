@@ -283,7 +283,7 @@ minJerkTrajGen::minJerkTrajGen(const unsigned int _dim, const double _Ts, const 
     :dim(_dim), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
-    pos = vel = acc = zeros(dim);
+    pos = vel = acc = lastRef = zeros(dim);
     computeCoeffs();
 }
 
@@ -293,7 +293,7 @@ minJerkTrajGen::minJerkTrajGen(const Vector &y0, const double _Ts, const double 
     :dim(y0.size()), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
-    pos = y0;
+    lastRef = pos = y0;
     vel = acc = zeros(dim);
     computeCoeffs();
 }
@@ -305,6 +305,7 @@ minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen &z)
     pos = z.pos;
     vel = z.vel;
     acc = z.acc;
+    lastRef = z.lastRef;
     T = z.T;
     Ts = z.Ts;
     dim = z.dim;
@@ -331,6 +332,7 @@ minJerkTrajGen& minJerkTrajGen::operator=(const minJerkTrajGen &z)
     pos = z.pos;
     vel = z.vel;
     acc = z.acc;
+    lastRef = z.lastRef;
     T = z.T;
     Ts = z.Ts;
     dim = z.dim;
@@ -403,6 +405,8 @@ void minJerkTrajGen::computeCoeffs()
 /*******************************************************************************************/
 void minJerkTrajGen::computeNextValues(const Vector &ref)
 {
+    lastRef = ref;
+
     if (posFilter!=NULL)
         pos = posFilter->filt(ref);
 
