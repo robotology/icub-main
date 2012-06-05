@@ -641,7 +641,15 @@ double iKinChain::setAng(const unsigned int i, double _Ang)
     double res=0.0;
 
     if (i<N)
-        res=allList[i]->setAng(_Ang);
+    {
+        if (allList[i]->isBlocked())
+        {
+            setBlockingValue(i,_Ang);
+            res=allList[i]->getAng();
+        }
+        else
+            res=allList[i]->setAng(_Ang);
+    }
     else if (verbose)
         fprintf(stderr,"setAng() failed due to out of range index: %d>=%d\n",i,N);
 
