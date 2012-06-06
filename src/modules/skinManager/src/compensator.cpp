@@ -107,7 +107,8 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     subTouchDetected.resize(skinDim);
     touchDetectedFilt.resize(skinDim);
     compensatedData.resize(skinDim);
-    compensatedDataOld.resize(skinDim);    
+    compensatedDataOld.resize(skinDim);
+    compensatedDataFilt.resize(skinDim);
     taxelPos.resize(skinDim, zeros(3));
     taxelOri.resize(skinDim, zeros(3));
     maxNeighDist = MAX_NEIGHBOR_DISTANCE;
@@ -122,7 +123,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     if(robotName!="icubSim" && readInputData(compensatedData)){
         bool skinBroken = true;
         for(unsigned int i=0; i<skinDim; i++){
-            if(compensatedData[i]!=0){
+            if(compensatedData[i]!=0.0){
                 skinBroken = false;
                 break;
             }
@@ -284,8 +285,8 @@ bool Compensator::readRawAndWriteCompensatedData(){
         return false;
 	
 	Vector& compensatedData2Send = compensatedTactileDataPort.prepare();
-    compensatedData2Send.clear();   // local variable with data to send
-	compensatedData.clear();        // global variable with data to store
+    compensatedData2Send.resize(skinDim);   // local variable with data to send
+	compensatedData.resize(skinDim);        // global variable with data to store
 	
 	double d;
 	for(unsigned int i=0; i<skinDim; i++){
@@ -295,7 +296,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    }else{
 		    d = (double)(rawData(i) - baselines[i]);
 	    }
-	    compensatedData.push_back(d);	// save the data before applying filtering
+	    compensatedData[i] = d;	// save the data before applying filtering
 
         // detect touch (before applying filtering, so the compensation algorithm is not affected by the filters)
         if(d > touchThresholds[i] + addThreshold){
@@ -318,6 +319,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
 		    smoothFactorSem.post();
 		    compensatedDataOld(i) = d;	// update old value
 	    }
+        compensatedDataFilt[i] = d;
 
 	    // binarization filter
         // here we don't use the touchDetected array because, if the smooth filter is on,
@@ -334,7 +336,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
         
       //  if(d<0) // if negative, set it to zero
 		    //d=0;
-	    compensatedData2Send.push_back(d);
+	    compensatedData2Send[i] = d;
 	}
 
 	compensatedTactileDataPort.write();
@@ -424,7 +426,6 @@ bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline,
 	return false;
 }
 
-
 skinContactList Compensator::getContacts(){    
     vector<int>         contactXtaxel(skinDim, -1);     // contact for each taxel (-1 means no contact)
     deque<deque<int> >  taxelsXcontact;                 // taxels for each contact
@@ -474,7 +475,7 @@ skinContactList Compensator::getContacts(){
 
     skinContactList contactList;
     Vector CoP(3), geoCenter(3), normal(3);
-    double pressure;
+    double pressure, out;
     int activeTaxels;
     vector<unsigned int> taxelList;
     for( deque<deque<int> >::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
@@ -489,15 +490,18 @@ skinContactList Compensator::getContacts(){
         pressure = 0.0;
         int i=0;
         for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++, i++){
-            CoP         += taxelPos[(*tax)] * compensatedData[(*tax)];
-            normal      += taxelOri[(*tax)] * compensatedData[(*tax)];
+            out         = max(compensatedDataFilt[(*tax)], 0.0);
+            CoP         += taxelPos[(*tax)] * out;
+            normal      += taxelOri[(*tax)] * out;
             geoCenter   += taxelPos[(*tax)];
-            pressure    += max(compensatedData[(*tax)], 0.0);
+            pressure    += out;
             taxelList[i] = *tax;
         }
         if(pressure!=0.0){
         	CoP         /= pressure;
             normal      /= pressure;
+        }else{
+            sendInfoMsg("Error computing contacts: zero pressure detected.");
         }
         geoCenter   /= activeTaxels;
         pressure    /= activeTaxels;

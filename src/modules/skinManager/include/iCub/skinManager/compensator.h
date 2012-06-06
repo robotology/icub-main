@@ -145,6 +145,7 @@ private:
     Vector baselines;							// mean of the raw tactile data     
     Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
 	Vector compensatedDataOld;			    	// compensated tactile data of the previous step (used for smoothing filter)
+    Vector compensatedDataFilt;                 // compensated tactile data after smooth filter
 	
 	// CALIBRATION
     int calibrationRead;						// count the calibration reads
