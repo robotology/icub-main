@@ -2152,6 +2152,20 @@ void iDynInvSensor::setSensorInfo(const string &_info)
 	if(sens != NULL) sens->setInfo(_info);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iDynInvSensor::setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I)
+{
+	if( sens != NULL )
+	{
+		Matrix H_pass = sens->getH();
+		return sens->setSensor(H_pass,_HC,_m,_I);
+	}
+	else
+	{
+		if(verbose)    fprintf(stderr,"iDynInvSensor error: could not set dynamic parameters, because the sensor is not set yet.\n");
+		return false;
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//~~~~~~~~~~~~~~
 	// get methods
@@ -2168,6 +2182,49 @@ Matrix iDynInvSensor::getH()					const
     {
         if(verbose)
             fprintf(stderr,"iDynInvSensor error: could not get H of the FT sensor, because the sensor is not set yet.\n");
+        return Matrix(0,0);
+    }
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+double iDynInvSensor::getMass()					const
+{
+    if(sens != NULL)
+        return sens->getMass();
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get mass of the FT sensor, because the sensor is not set yet.\n");
+        return 0;
+    }
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynInvSensor::getCOM()					const
+{
+	Matrix com = Matrix(4,4);
+    if(sens != NULL) {
+        com.setSubmatrix(sens->getRC(),0,0);
+		com.setSubcol(sens->getrC(),0,3);
+		return com;
+    }
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get COM of the FT sensor, because the sensor is not set yet.\n");
+        return Matrix(0,0);
+    }
+
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Matrix iDynInvSensor::getInertia()					const
+{
+    if(sens != NULL)
+        return sens->getInertia();
+    else
+    {
+        if(verbose)
+            fprintf(stderr,"iDynInvSensor error: could not get inertia of the FT sensor, because the sensor is not set yet.\n");
         return Matrix(0,0);
     }
 

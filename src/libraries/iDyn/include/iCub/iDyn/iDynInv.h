@@ -1304,11 +1304,29 @@ public:
      */
 	yarp::sig::Vector getSensorForceMoment() const;
 	
- 	/**
+    /**
      * Get the sensor roto-translational matrix defining its position/orientation wrt the link
 	 * @return a (4x4) matrix
      */
 	yarp::sig::Matrix getH() const;
+    
+    /**
+	 * Get the mass of the portion of link defined between sensor and i-th frame
+	 * @return the mass of the semi-link
+	 */
+	double getMass() const;
+
+ 	/**
+	 * Get the sensor roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
+	 * @return a (4x4) matrix
+     */
+	yarp::sig::Matrix getCOM() const;
+
+	/**
+	 * Get the inertia of the portion of link defined between sensor and i-th frame
+	 * @return a (3x3) matrix, inertia of the semi-link
+	 */
+	yarp::sig::Matrix getInertia() const;
 
 	//~~~~~~~~~~~~~~
 	// set methods
@@ -1318,6 +1336,15 @@ public:
 	void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
 	void setInfo(const std::string &_info);
 	void setSensorInfo(const std::string &_info);
+    
+    /**
+	 * Set the dynamic parameters of the the portion of link defined between sensor and i-th frame.
+	 * @param _m is the semi-link mass
+	 * @param _HC is the rototranslation matrix from the link frame to the center of mass
+	 * @param _I is the Inertia matrix
+     * @return true if operation is successful (ie matrices size is correct, and the sensor is defined), false otherwise
+	 */
+	bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
 
 	//~~~~~~~~~~~~~~
 	// get methods
