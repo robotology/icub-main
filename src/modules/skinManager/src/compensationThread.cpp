@@ -662,3 +662,4 @@ vector<SkinPart> CompensationThread::getSkinParts(){
         res[i] = compensators[i]->getSkinPart();
     return res;
 }
+

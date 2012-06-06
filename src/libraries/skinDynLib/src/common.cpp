@@ -87,3 +87,4 @@ int iCub::skinDynLib::getLinkNum(SkinPart s)
             return SkinPart_2_LinkNum[i].linkNum;
     return -1;
 }
+
