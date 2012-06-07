@@ -94,6 +94,7 @@ bool CompensationThread::threadInit()
 	
     compensators.resize(portNum);
     compWorking.resize(portNum);
+    compEnable.resize(portNum, true);
     compensatorCounter = portNum;
     SKIN_DIM = 0;
     cout<< portNum<< " input ports found in the configuration file\n";
@@ -141,35 +142,6 @@ bool CompensationThread::threadInit()
             sendInfoMsg("Unable to open port "+eventPortName);
         else
             skinEventsOn = true;
-        
-        //maxNeighbourDistance = skinEventsConf.check("maxNeighbourDistance", 0.01).asDouble();
-        /*if(skinEventsConf.check("linkList")){
-            Bottle* linkList = skinEventsConf.find("linkList").asList();
-            if(linkList->size() != portNum){
-                stringstream msg;
-                msg<< "ERROR: the number of link id is not equal to the number of input ports ("
-                    << linkList->size()<< "!="<< portNum<< ")";                
-                sendInfoMsg(msg.str());
-            }else{
-                FOR_ALL_PORTS(i){
-                    compensators[i]->setLinkNum(linkList->get(i).asInt());
-                }
-            }
-        }*/
-        //if(skinEventsConf.check("bodyParts")){
-        //    Bottle* bodyPartList = skinEventsConf.find("bodyParts").asList();
-        //    if(bodyPartList->size() != portNum){
-        //        stringstream msg;
-        //        msg<< "ERROR: the number of body part ids is not equal to the number of input ports ("
-        //            << bodyPartList->size()<< "!="<< portNum<< "). Body parts will not be set.";
-        //        sendInfoMsg(msg.str());
-        //    }else{
-        //        FOR_ALL_PORTS(i){
-        //            cout<< "Body part "<< BodyPart_s[bodyPartList->get(i).asInt()]<< endl;
-        //            compensators[i]->setBodyPart((BodyPart)bodyPartList->get(i).asInt());
-        //        }                
-        //    }
-        //}
 
         if(skinEventsConf.check("skinParts")){
             Bottle* skinPartList = skinEventsConf.find("skinParts").asList();
@@ -197,13 +169,13 @@ bool CompensationThread::threadInit()
                 sendInfoMsg(msg.str());
             }
             else{
-                double maxNeighborDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asDouble();
+                maxNeighDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asDouble();
 
-                printf("Max neighbor distance: %f m\n", maxNeighborDist);
+                printf("Max neighbor distance: %f m\n", maxNeighDist);
                 FOR_ALL_PORTS(i){
 	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
 	                string filePath(rf->findFile(taxelPosFile.c_str()));
-                    compensators[i]->setMaxNeighborDistance(maxNeighborDist);
+                    compensators[i]->setMaxNeighborDistance(maxNeighDist);
 	                compensators[i]->setTaxelPosesFromFile(filePath.c_str());
 	            }
             }
@@ -217,7 +189,6 @@ bool CompensationThread::threadInit()
     initializationFinished = true;
 	return true;
 }
-
 
 void CompensationThread::calibrate(){
 	stateSem.wait();
@@ -280,7 +251,7 @@ void CompensationThread::sendSkinEvents(){
 
     skinContactList temp;
     FOR_ALL_PORTS(i){
-        if(compWorking[i]){
+        if(compWorking[i] && compEnable[i]){
             temp = compensators[i]->getContacts();
             skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());
         }
@@ -292,7 +263,6 @@ void CompensationThread::sendSkinEvents(){
 #endif
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
-
 
 void CompensationThread::checkErrors(){
     FOR_ALL_PORTS(i){
@@ -352,7 +322,6 @@ void CompensationThread::threadRelease()
     infoPort.close();
 }
 
-
 // send the data on the monitor port
 void CompensationThread::sendMonitorData(){
 	// send the monitor data (if there is at least a connection)
@@ -395,7 +364,7 @@ void CompensationThread::sendInfoMsg(string msg){
     Bottle& b = infoPort.prepare();
     b.clear();
     b.addString(msg.c_str());
-    infoPort.write();
+    infoPort.write(true);
 }
 
 Bottle CompensationThread::getInfo(){
@@ -476,6 +445,15 @@ bool CompensationThread::setContactCompensationGain(double gain){
     }
     if(res)
         contactCompensationGain = gain;
+    return res;
+}
+bool CompensationThread::setMaxNeighborDistance(double dist){
+    bool res = true;
+    FOR_ALL_PORTS(i){
+        res = res && compensators[i]->setMaxNeighborDistance(dist);
+    }
+    if(res)
+        maxNeighDist = dist;
     return res;
 }
 bool CompensationThread::setTaxelPosition(SkinPart sp, unsigned int taxelId, const Vector &position){
@@ -662,4 +640,25 @@ vector<SkinPart> CompensationThread::getSkinParts(){
         res[i] = compensators[i]->getSkinPart();
     return res;
 }
-
+bool CompensationThread::enableSkinPart(SkinPart sp){
+    FOR_ALL_PORTS(i)
+        if(compensators[i]->getSkinPart()==sp){
+            compEnable[i] = true;
+            return true;
+        }
+    return false;
+}
+bool CompensationThread::disableSkinPart(SkinPart sp){
+    FOR_ALL_PORTS(i)
+        if(compensators[i]->getSkinPart()==sp){
+            compEnable[i] = false;
+            return true;
+        }
+    return false;
+}
+bool CompensationThread::isSkinEnabled(SkinPart sp){
+    FOR_ALL_PORTS(i)
+        if(compensators[i]->getSkinPart()==sp)
+            return compEnable[i];
+    return false;
+}

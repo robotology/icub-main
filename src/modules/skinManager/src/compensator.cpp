@@ -525,9 +525,9 @@ void Compensator::setSmoothFilter(bool value){
 	}
 }
 bool Compensator::setSmoothFactor(float value){
-	if(value<0 || value>1)
+	if(value<0.0 || value>1.0)
 		return false;
-	if(value==1) 
+	if(value==1.0) 
 		value = 0.99f;	// otherwise with 1 the values don't update
 	smoothFactorSem.wait();
 	smoothFactor = value;
@@ -633,6 +633,9 @@ bool Compensator::setMaxNeighborDistance(double d){
     if(d<0.0)
         return false;
     maxNeighDist = d;
+    poseSem.wait();
+    computeNeighbors();
+    poseSem.post();
     return true;
 }
 
@@ -797,6 +800,5 @@ void Compensator::sendInfoMsg(string msg){
     b.clear();
     b.addString(getInputPortName().c_str());
     b.addString((": " + msg).c_str());
-    infoPort->write();
+    infoPort->write(true);
 }
-

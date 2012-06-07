@@ -66,6 +66,7 @@ public:
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
+    bool setMaxNeighborDistance(double dist);
     bool setTaxelPosition(SkinPart sp, unsigned int taxelId, const Vector &position);
     bool setTaxelPositions(SkinPart sp, const vector<Vector> &positions);
     bool setTaxelOrientation(SkinPart sp, unsigned int taxelId, const Vector &orientation);
@@ -81,6 +82,7 @@ public:
     unsigned int getAddThreshold();
     double getCompensationGain();
     double getContactCompensationGain();
+    double getMaxNeighborDistance(){ return maxNeighDist; }
 	bool isCalibrating();
 
     Vector getTaxelPosition(SkinPart sp, unsigned int taxelId);
@@ -89,6 +91,10 @@ public:
     vector<Vector> getTaxelOrientations(SkinPart sp=SKIN_PART_ALL);
     Vector getTaxelPose(SkinPart sp, unsigned int taxelId);
     vector<Vector> getTaxelPoses(SkinPart sp=SKIN_PART_ALL);
+
+    bool enableSkinPart(SkinPart sp);
+    bool disableSkinPart(SkinPart sp);
+    bool isSkinEnabled(SkinPart sp);
     vector<SkinPart> getSkinParts();
     Bottle getInfo();
 
@@ -121,10 +127,12 @@ private:
 	bool binarization;				// if true binarize the compensated output value (0: no touch, 255: touch)
 	bool smoothFilter;				// if true the smooth filter is on, otherwise it is off
 	float smoothFactor;				// intensity of the smooth filter action
+    double maxNeighDist;            // max neighbor distance used for computing taxel neighbors
 	unsigned int portNum;			// number of input ports (that is the same as the number of output ports)
 
     vector<Compensator*> compensators;
-    vector<bool> compWorking;           // true if the relative compensator is working, false otherwise
+    vector<bool> compEnable;            // true if the related compensator is enabled, false otherwise
+    vector<bool> compWorking;           // true if the related compensator is working, false otherwise
     unsigned int compensatorCounter;    // count the number of compensators that are working 
 
     // SKIN EVENTS

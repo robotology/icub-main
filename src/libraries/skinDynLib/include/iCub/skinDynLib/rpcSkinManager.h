@@ -17,6 +17,8 @@ typedef enum {
     set_gain,           get_gain,           set_cont_gain,           
     get_cont_gain,      is_calibrating,		get_info,
     get_pose,           set_pose,
+    get_max_neigh_dist, set_max_neigh_dist, get_skin_parts,     
+    enable_skin_part,   disable_skin_part,  is_skin_enabled,
     help,				quit,               
     SkinManagerCommandSize} SkinManagerCommand;
     
@@ -35,11 +37,13 @@ const std::string SkinManagerCommandList[]  = {
     "set gain",             "get gain",             "set contact gain",
     "get contact gain",     "is calibrating",       "get info",		      
     "get pose",             "set pose",
+    "get neigh dist",       "set neigh dist",       "get skin",             
+    "enable skin",          "disable skin",         "is skin enabled",
     "help",					"quit"};
 
 // the order in SkinManagerCommandDesc must correspond to the order in SkinManagerCommandList
 const std::string SkinManagerCommandDesc[]  = {
-	"force the calibration (for 5 sec no touch should occur)", 
+	"calibrate the skin, i.e. reset the baseline (for 5 sec no touch should occur)", 
 	"get touch thresholds (i.e. 95 percentile)", 
 	"enable or disable the binarization filter (255 touch, 0 no touch)",
 	"get the binarization filter state (on, off)",
@@ -55,8 +59,14 @@ const std::string SkinManagerCommandDesc[]  = {
     "get the contact compensation gain",
 	"tell whether the skin calibration is in progress",
     "get information about the module",
-    "get taxel pose(s) with input params: body part, skin part, taxel index (if taxel index is not specified return all taxel positions)",
-    "set taxel pose(s) with input params: body part, skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions)",
+    "get taxel pose(s) with input params: skin part, taxel index (if taxel index is not specified return all taxel positions)",
+    "set taxel pose(s) with input params: skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions)",
+    "get the max neighbor distance",
+    "set the max neighbor distance",
+    "get the list of the skin parts",
+    "enable the specified skin part",
+    "disable the specified skin part",
+    "check whether the specified skin part is enabled",
 	"get this list", 
 	"quit the module"};
 

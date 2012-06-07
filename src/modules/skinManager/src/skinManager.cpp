@@ -296,6 +296,71 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
             reply.addDouble(myThread->getContactCompensationGain());
             return true;
 
+        case get_max_neigh_dist:
+            reply.addDouble(myThread->getMaxNeighborDistance());
+            return true;
+
+        case set_max_neigh_dist:
+            {
+			if(params.size()<1 || (!params.get(0).isDouble())){
+				reply.addString("New max neighbor distance value missing or not a double! Not updated.");
+				return true;
+			}
+
+			stringstream temp;
+			if(myThread->setMaxNeighborDistance(params.get(0).asDouble())){	
+				temp<< "New max neighbor distance set: "<< params.get(0).asDouble();				
+			}
+			else{
+				temp<< "ERROR in setting new max neighbor distance: "<< params.get(0).asDouble();
+			}
+			reply.addString( temp.str().c_str());
+			return true;
+			}
+
+        case get_skin_parts:
+            {
+                vector<SkinPart> spl = myThread->getSkinParts();
+                for(vector<SkinPart>::const_iterator it=spl.begin(); it!=spl.end(); it++){
+                    reply.addInt(*it);
+                    reply.addString(SkinPart_s[*it].c_str());
+                }
+                return true;
+            }
+
+        case enable_skin_part:
+            if(!(params.size()>0 && params.get(0).isInt())){
+                reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                return true;
+            }
+            if(myThread->enableSkinPart((SkinPart)params.get(0).asInt()))
+                reply.addString("SkinPart enabled");
+            else
+                reply.addString("SkinPart not found");
+            return true;
+
+        case disable_skin_part:
+            if(!(params.size()>0 && params.get(0).isInt())){
+                reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                return true;
+            }
+            if(myThread->disableSkinPart((SkinPart)params.get(0).asInt()))
+                reply.addString("SkinPart disabled");
+            else
+                reply.addString("SkinPart not found");
+            return true;
+
+        case is_skin_enabled:
+            if(!(params.size()>0 && params.get(0).isInt())){
+                reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                return true;
+            }
+            if(myThread->isSkinEnabled((SkinPart)params.get(0).asInt()))
+                reply.addString("yes");
+            else
+                reply.addString("no");
+            return true;
+
 		case is_calibrating:
 			if(myThread->isCalibrating())
 				reply.addString("yes");
