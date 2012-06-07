@@ -58,6 +58,7 @@ GtkTextBuffer           *tbLog;
 GtkSpinButton           *spinThreshold;
 GtkSpinButton           *spinGain;
 GtkSpinButton           *spinContGain;
+GtkSpinButton           *spinMaxNeighDist;
 // second tab
 GtkTreeView             *treeBaselines;
 GtkTreeStore            *treeStoreComp;
@@ -80,6 +81,7 @@ GtkLabel                *lblInfo;
 Port					guiRpcPort;             // to send rpc command to the module
 BufferedPort<Vector>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
 BufferedPort<Bottle>	driftCompInfoPort;      // for reading sporadic msgs (errors, warnings)
+Port                    wholeBodyRpcPort;       // port connected to wholeBodyDynamics rpc port
 
 // global data
 guint                   timeoutId;              // id of the timeout callback function
@@ -90,6 +92,7 @@ bool                    initDone;               // true if the gui has been init
 unsigned int            currentThreshold;       // current safety threshold
 double                  currentCompGain;        // current compensation gain
 double                  currentContCompGain;    // current contact compensation gain
+double                  currentMaxNeighDist;    // current max neighbor distance
 int                     currentSampleFreq;
 int                     currentSampleNum;       // size of the dataPlot array
 
@@ -155,17 +158,6 @@ static Bottle sendRpcCommand(bool responseExpected, SkinManagerCommand cmd){
 	// create the bottle
 	Bottle b;
     b.addInt(cmd);
- //   string cmdStr = SkinManagerCommandList[cmd];
-	//b.addString(command);
-	//va_list ap;
-	//va_start(ap, command);		// Requires the last fixed parameter (to get the address)		
-	//for(int i=1;i<commandWordCount;i++){
-	//	const char* c = va_arg(ap, const char*); // Requires the type to cast to. Increments ap to the next argument.
-	//	b.addString(c);
-	//}
- //   va_end(ap);
-	
-	
 	//g_print("Going to send rpc msg: %s\n", b.toString().c_str());
 	if(responseExpected){		
 		guiRpcPort.write(b, resp);

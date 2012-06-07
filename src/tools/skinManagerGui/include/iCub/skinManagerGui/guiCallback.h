@@ -24,10 +24,12 @@ static void clean_exit(){
 	guiRpcPort.interrupt();
 	driftCompMonitorPort.interrupt();
     driftCompInfoPort.interrupt();
+    wholeBodyRpcPort.interrupt();
 
 	guiRpcPort.close();
 	driftCompMonitorPort.close();    
     driftCompInfoPort.close();
+    wholeBodyRpcPort.close();
 }
 
 static void on_window_destroy_event(GtkObject *object, gpointer user_data){
@@ -114,6 +116,33 @@ static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer use
 	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
     // setting the old value
     gtk_spin_button_set_value(spinbutton, currentContCompGain);
+}
+
+static void spin_max_neigh_dist_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
+    double maxNeighDist = 1e-2*gtk_spin_button_get_value(spinbutton);
+    if(maxNeighDist == currentMaxNeighDist)
+        return;
+
+    // set the value
+    Bottle b, setReply;
+    b.addInt(set_max_neigh_dist); b.addDouble(maxNeighDist);
+    guiRpcPort.write(b, setReply);
+
+    // read the value
+	Bottle getReply = sendRpcCommand(true, get_max_neigh_dist);
+	currentMaxNeighDist = getReply.get(0).asDouble();
+
+	if(maxNeighDist==currentMaxNeighDist){
+        stringstream msg; msg << "Max neighbor distance changed: " << maxNeighDist<< " m";
+        setStatusBarText(msg.str().c_str());
+        return;
+    }
+    
+    stringstream msg; msg << "Unable to set the max neighbor distance to " << maxNeighDist<< " m";
+	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
+    // setting the old value
+    gtk_spin_button_set_value(spinbutton, currentMaxNeighDist);
 }
 
 static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll, gdouble value, gpointer user_data){
@@ -229,11 +258,23 @@ static gint progressbar_calibration(gpointer data){
     printLog("Calibration done!");
 	return false;
 }
-static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpointer data){	
+static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpointer data){
+    // calibrate skin
 	sendRpcCommand(false, calibrate);
 	gtk_widget_show(GTK_WIDGET(progBarCalib));
 	g_timeout_add(100, progressbar_calibration, NULL);
 	gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
+
+	// check whether the port is connected
+	if(wholeBodyRpcPort.getOutputCount()==0){
+		printLog("Cannot reset F/T sensor offset because connection to wholeBodyDynamics not available.");
+        return false;
+    }
+	// reset F/T sensor offset
+	Bottle b, resp;
+    b.addInt(0);
+	guiRpcPort.write(b, resp);
+    printLog(string("WholeBodyDynamics response: ")+resp.toString().c_str());
 	return false;
 }
 

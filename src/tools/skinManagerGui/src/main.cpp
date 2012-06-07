@@ -129,7 +129,16 @@ bool initGuiStatus(){
     }else{
         currentContCompGain = reply.get(0).asDouble();
         gtk_adjustment_set_value(spinContGain->adjustment, currentContCompGain);
-    }    
+    } 
+
+    reply = sendRpcCommand(true,get_max_neigh_dist);
+    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
+        printLog("Error while getting the max neighbor distance");
+        return false;
+    }else{
+        currentMaxNeighDist = reply.get(0).asDouble();
+        gtk_adjustment_set_value(spinMaxNeighDist->adjustment, 1e2*currentMaxNeighDist);
+    }
 
     // get module information
     reply = sendRpcCommand(true, get_info);
@@ -198,13 +207,14 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 	if (rf.check("xpos")) gXpos=rf.find("xpos").asInt();
     if (rf.check("ypos")) gYpos=rf.find("ypos").asInt();
 
-	string driftCompRpcPortName		= rf.check("skinManRpcPort", Value("/skinMan/rpc")).asString().c_str();
-    string driftCompMonitorPortName	= rf.check("skinManMonitorPort", Value("/skinMan/monitor:o")).asString().c_str();
-    string driftCompInfoPortName	= rf.check("skinManInfoPort", Value("/skinMan/info:o")).asString().c_str();    
+	string driftCompRpcPortName		= rf.check("skinManRpcPort", Value("/skinManager/rpc")).asString().c_str();
+    string driftCompMonitorPortName	= rf.check("skinManMonitorPort", Value("/skinManager/monitor:o")).asString().c_str();
+    string driftCompInfoPortName	= rf.check("skinManInfoPort", Value("/skinManager/info:o")).asString().c_str();    
 	guiName					        = rf.check("name", Value("skinManGui")).asString().c_str();
 	string guiRpcPortName			= "/" + guiName + "/rpc:o";
 	string guiMonitorPortName		= "/" + guiName + "/monitor:i";
     string guiInfoPortName		    = "/" + guiName + "/info:i";
+    string wholeBodyRpcPortName		= "/" + guiName + "/wholeBody/rpc";
 	if (!guiRpcPort.open(guiRpcPortName.c_str())) {
 		string msg = string("Unable to open port ") + guiRpcPortName.c_str();
 		openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
@@ -220,6 +230,12 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 		openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
 		return false;
 	}
+    if (!wholeBodyRpcPort.open(wholeBodyRpcPortName.c_str())){
+		string msg = string("Unable to open port ") + wholeBodyRpcPortName.c_str();
+		openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
+		return false;
+	}
+
     driftCompInfoPort.setStrict();
 	
     // automatic connections removed because they gave problems when running the gui 
@@ -239,6 +255,8 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 			+ driftCompInfoPortName.c_str() + ". Connect later.";
 		openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
 	}*/
+    if(!yarp.connect(wholeBodyRpcPort.getName().c_str(), "/wholeBodyDynamics/rpc:i"))
+		openDialog("Unable to connect to wholeBodyDynamics rpc port. Connect later.", GTK_MESSAGE_WARNING);
     return true;
 }
 
@@ -288,6 +306,7 @@ int main (int argc, char *argv[])
     spinThreshold	= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonThreshold"));
     spinGain    	= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonGain"));
     spinContGain    = GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonContGain"));
+    spinMaxNeighDist= GTK_SPIN_BUTTON (gtk_builder_get_object (builder, "spinbuttonMaxNeighDist"));
 
     tbLog           = GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbufferLog"));
     tvLog           = GTK_TEXT_VIEW (gtk_builder_get_object (builder, "textviewLog"));
@@ -340,6 +359,7 @@ int main (int argc, char *argv[])
     g_signal_connect(spinThreshold, "value-changed", G_CALLBACK(spin_threshold_value_changed), NULL);
     g_signal_connect(spinGain, "value-changed", G_CALLBACK(spin_gain_value_changed), NULL);
     g_signal_connect(spinContGain, "value-changed", G_CALLBACK(spin_cont_gain_value_changed), NULL);
+    g_signal_connect(spinMaxNeighDist, "value-changed", G_CALLBACK(spin_max_neigh_dist_value_changed), NULL);
     g_signal_connect(comboPort , "changed", G_CALLBACK(comboPort_changed), NULL);
     g_signal_connect(comboTriangle , "changed", G_CALLBACK(comboTriangle_changed), NULL);
     g_signal_connect(comboTaxel , "changed", G_CALLBACK(comboTaxel_changed), NULL);
