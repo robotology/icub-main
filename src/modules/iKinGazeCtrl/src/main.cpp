@@ -605,7 +605,7 @@ protected:
         info.clear();
         Bottle &minVer=info.addList();
         minVer.addString("min_ver");
-        minVer.addDouble(commData.get_minAllowedVergence());
+        minVer.addDouble(CTRL_RAD2DEG*commData.get_minAllowedVergence());
         return true;
     }
 
