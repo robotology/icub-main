@@ -599,6 +599,16 @@ protected:
             return false;
     }
 
+    /************************************************************************/
+    bool getInfo(Bottle &info)
+    {
+        info.clear();
+        Bottle &minVer=info.addList();
+        minVer.addString("min_ver");
+        minVer.addDouble(commData.get_minAllowedVergence());
+        return true;
+    }
+
 public:
     /************************************************************************/
     CtrlModule() : interrupting(false) { }
@@ -1183,6 +1193,16 @@ public:
                             reply.addVocab(ack);
                             reply.addList()=options;
                             return true;
+                        }
+                        else if (type==VOCAB4('i','n','f','o'))
+                        {
+                            Bottle info;
+                            if (getInfo(info))
+                            {
+                                reply.addVocab(ack);
+                                reply.addList()=info;
+                                return true;
+                            }
                         }
                     }
 

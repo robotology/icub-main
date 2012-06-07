@@ -1434,6 +1434,37 @@ bool ClientGazeController::deleteContexts()
 
 
 /************************************************************************/
+bool ClientGazeController::getInfo(Bottle &info)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("info");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        if (reply.size()>1)
+        {
+            if (Bottle *infoPart=reply.get(1).asList())
+                info=*infoPart;
+
+            return true;
+        }
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 ClientGazeController::~ClientGazeController()
 {
     close();

@@ -1152,6 +1152,38 @@ bool ClientCartesianController::deleteContexts()
 
 
 /************************************************************************/
+bool ClientCartesianController::getInfo(Bottle &info)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_INFO);
+
+    // send command and wait for reply
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (reply.size()>1)
+        {
+            if (Bottle *infoPart=reply.get(1).asList())
+                info=*infoPart;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 ClientCartesianController::~ClientCartesianController()
 {
     close();

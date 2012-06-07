@@ -40,6 +40,7 @@
 #ifndef __CLIENTCARTESIANCONTROLLER_H__
 #define __CLIENTCARTESIANCONTROLLER_H__
 
+#include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
@@ -119,6 +120,7 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
+    bool getInfo(yarp::os::Bottle &info);
 
     virtual ~ClientCartesianController();
 };

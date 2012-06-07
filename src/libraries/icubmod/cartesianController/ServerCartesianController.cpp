@@ -616,6 +616,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         }
 
                         //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_INFO:
+                        {
+                            Bottle info;
+                            if (getInfo(info))
+                            {   
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addList()=info;
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -2664,6 +2679,19 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
                 contextMap.erase(itr);
         }
 
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getInfo(Bottle &info)
+{
+    if (connected)
+    {
+        info.clear();
         return true;
     }
     else

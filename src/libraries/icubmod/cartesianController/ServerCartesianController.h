@@ -266,6 +266,7 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
+    bool getInfo(yarp::os::Bottle &info);
 
     virtual ~ServerCartesianController();
 };

@@ -49,6 +49,7 @@
 #define IKINCARTCTRL_VOCAB_OPT_MOTIONDONE   VOCAB4('d','o','n','e')
 #define IKINCARTCTRL_VOCAB_OPT_ISSOLVERON   VOCAB4('i','s','o','n')
 #define IKINCARTCTRL_VOCAB_OPT_POSE         VOCAB4('p','o','s','e')
+#define IKINCARTCTRL_VOCAB_OPT_INFO         VOCAB4('i','n','f','o')
 #define IKINCARTCTRL_VOCAB_VAL_POSE_FULL    VOCAB4('f','u','l','l')
 #define IKINCARTCTRL_VOCAB_VAL_POSE_XYZ     VOCAB3('x','y','z')
 #define IKINCARTCTRL_VOCAB_VAL_MODE_TRACK   VOCAB4('c','o','n','t')
