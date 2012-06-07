@@ -1411,6 +1411,9 @@ bool ClientGazeController::deleteContexts()
     if (!connected)
         return false;
 
+    if (contextIdList.empty())
+        return true;
+
     Bottle command, reply;
     command.addString("del");
     Bottle &ids=command.addList();
