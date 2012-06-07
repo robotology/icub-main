@@ -8,13 +8,17 @@
 #include <yarp/os/Thread.h>
 #include <yarp/os/Stamp.h>
 #include <cv.h>
+#include <yarp/dev/GazeControl.h>
 #include <highgui.h>
+#include <yarp/dev/PolyDriver.h>
 
 using namespace cv;
 using namespace yarp::sig;
 using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
+using namespace yarp::dev;
+
   
 class stereoCalibThread : public Thread
 {
@@ -34,6 +38,8 @@ private:
     
     Mat DistL;
     Mat DistR;
+    double vergence;
+    double version;
 
     Mat R;
     Mat T;
@@ -52,6 +58,9 @@ private:
     BufferedPort<ImageOf<PixelRgb> > imagePortInRight;
     BufferedPort<ImageOf<PixelRgb> > outPortRight;
     BufferedPort<ImageOf<PixelRgb> > outPortLeft;
+
+    PolyDriver* gazeCtrl;
+    IGazeControl* igaze;
 
     Port *commandPort;
     string imageDir;

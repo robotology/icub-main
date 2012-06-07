@@ -61,6 +61,29 @@ bool stereoCalibThread::threadInit()
       cout << ": unable to open port " << outNameRight << endl;
       return false;
    }    
+    
+    Property option;
+    option.put("device","gazecontrollerclient");
+    option.put("remote","/iKinGazeCtrl");
+    option.put("local","/client/calibClient");
+    gazeCtrl=new PolyDriver(option);
+    if (gazeCtrl->isValid()) {
+        gazeCtrl->view(igaze);
+    }
+    else {
+        cout<<"Devices not available"<<endl;
+        return false;
+    }
+
+    Bottle p;
+    igaze->getInfo(p);
+    vergence=ceil(p.check(("min_allowed_vergenc"),Value(1)).asDouble());
+    version=0.0;
+    yarp::sig::Vector ang(3);
+    ang=0.0;
+    ang[0]=version;
+    ang[2]=vergence;
+    igaze->lookAtAbsAngles(ang);
 
    return true;
 }
@@ -310,6 +333,7 @@ void stereoCalibThread::threadRelease()
     outPortRight.close();
     commandPort->close();
     delete mutex;
+    delete gazeCtrl;
 }
 
 void stereoCalibThread::onStop() {
@@ -818,7 +842,17 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                                << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
                     line = "HN" + string(ss.str());
                 }
-       
+
+                if (line.find("Vergence",0) != string::npos){
+                    stringstream ss;
+                    ss << vergence;
+                    line = "Vergence" + string(ss.str());
+                }
+                if (line.find("Version",0) != string::npos){
+                    stringstream ss;
+                    ss << version;
+                    line = "Version" + string(ss.str());
+                }
             }
             // buffer line
             lines.push_back(line);
@@ -861,6 +895,9 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                           << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
                           << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
             out << endl;
+            out << "Vergence " << vergence << endl;
+            out << "Version " << version << endl;
+
             out.close();
         }
         else
