@@ -462,6 +462,7 @@ protected:
     exchangeData   commData;
     Port           rpcPort;
     bool           interrupting;
+    bool           headV2;
 
     struct Context
     {
@@ -603,9 +604,15 @@ protected:
     bool getInfo(Bottle &info)
     {
         info.clear();
+
+        Bottle &headVer=info.addList();
+        headVer.addString("head_version");
+        headVer.addInt(headV2?2:1);
+
         Bottle &minVer=info.addList();
-        minVer.addString("min_ver");
+        minVer.addString("min_allowed_vergence");
         minVer.addDouble(CTRL_RAD2DEG*commData.get_minAllowedVergence());
+
         return true;
     }
 
@@ -627,7 +634,6 @@ public:
         double eyeTiltMax;
         double minAbsVel;
         bool   saccadesOn;
-        bool   headV2;
         bool   Robotable;
         double ping_robot_tmo;
         Vector counterRotGain(2);
