@@ -1,36 +1,36 @@
 <?xml version="1.0"?>
 <interface>
-<!--  <requires lib="gtk+" version="2.14"/>
- interface-naming-policy toplevel-contextual -->
+  <!-- interface-requires gtk+ 2.12 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkTreeStore" id="treestore">
     <columns>
-<!-- column-name Port -->
+      <!-- column-name Port -->
       <column type="gchararray"/>
-<!-- column-name Triangle -->
+      <!-- column-name Triangle -->
       <column type="gchararray"/>
-<!-- column-name Taxel -->
+      <!-- column-name Taxel -->
       <column type="gchararray"/>
-<!-- column-name Drift -->
+      <!-- column-name Drift -->
       <column type="gdouble"/>
     </columns>
   </object>
   <object class="GtkListStore" id="liststoreTriangle">
     <columns>
-<!-- column-name Triangle -->
+      <!-- column-name Triangle -->
       <column type="gint"/>
     </columns>
   </object>
   <object class="GtkListStore" id="liststoreTaxel">
     <columns>
-<!-- column-name Taxel -->
+      <!-- column-name Taxel -->
       <column type="gint"/>
     </columns>
   </object>
   <object class="GtkListStore" id="liststorePort">
     <columns>
-<!-- column-name Port index -->
+      <!-- column-name Port -->
       <column type="gint"/>
-<!-- column-name Port -->
+      <!-- column-name Port1 -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -44,6 +44,7 @@
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkNotebook" id="notebook">
             <property name="visible">True</property>
@@ -55,6 +56,7 @@
                 <child>
                   <object class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkFrame" id="frame2">
@@ -84,6 +86,7 @@
                                 <child>
                                   <object class="GtkVBox" id="vbox3">
                                     <property name="visible">True</property>
+                                    <property name="orientation">vertical</property>
                                     <child>
                                       <object class="GtkLabel" id="label3">
                                         <property name="visible">True</property>
@@ -359,6 +362,38 @@
                         <property name="position">10</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkHBox" id="vbox7">
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkLabel" id="label20">
+                            <property name="visible">True</property>
+                            <property name="label" translatable="yes">Max neighbor distance (cm)</property>
+                          </object>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="spinbuttonMaxNeighDist">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="max_length">3</property>
+                            <property name="invisible_char">&#x25CF;</property>
+                            <property name="adjustment">adjustmentMaxNeighDist</property>
+                            <property name="digits">2</property>
+                            <property name="numeric">True</property>
+                            <property name="update_policy">if-valid</property>
+                          </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">11</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="resize">False</property>
@@ -497,6 +532,7 @@
                     <child>
                       <object class="GtkVBox" id="vbox8">
                         <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkLabel" id="lblMaxY">
                             <property name="visible">True</property>
@@ -876,5 +912,10 @@
     <property name="lower">10</property>
     <property name="upper">1000</property>
     <property name="step_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustmentMaxNeighDist">
+    <property name="upper">100</property>
+    <property name="step_increment">0.10000000000000001</property>
+    <property name="page_increment">1</property>
   </object>
 </interface>
