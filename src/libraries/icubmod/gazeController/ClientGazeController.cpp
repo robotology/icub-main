@@ -1459,8 +1459,8 @@ bool ClientGazeController::getInfo(Bottle &info)
             return true;
         }
     }
-    else
-        return false;
+
+    return false;
 }
 
 
