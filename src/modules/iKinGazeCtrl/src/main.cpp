@@ -340,8 +340,8 @@ following ports:
       bottle containing the pid values used to converge to the
       target with stereo input.
     - [get] [info]: returns a property-like bottle containing
-      useful information such as the head version and the
-      minimum allowed vergence.
+      useful information such as the "head_version" and the
+      "min_allowed_vergence".
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
