@@ -1131,7 +1131,7 @@ public:
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye. Further available options are
-    *              "left_v2" and "right_v2".
+    *              "[left|right]_v[1|2]".
     */
     iCubEye(const std::string &_type);
 
