@@ -18,6 +18,8 @@
 
 #include <typeinfo>
 #include <stdio.h>
+#include <algorithm>
+
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
 #include <iCub/iKin/iKinInv.h>
@@ -1370,10 +1372,8 @@ double MultiRefMinJerkCtrl::set_execTime(const double _execTime, const bool warn
 /************************************************************************/
 void MultiRefMinJerkCtrl::add_compensation(const Vector &comp)
 {
-    size_t l1=comp.length();
-    size_t l2=q.length();
-    size_t l=(l1>l2)?l2:l1;
-    for (size_t i=0; i<l; i++)
+    size_t len=std::min(comp.length(),q.length());
+    for (size_t i=0; i<len; i++)
         compensation[i]=comp[i];
 }
 

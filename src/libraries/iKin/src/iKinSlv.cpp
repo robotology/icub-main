@@ -16,10 +16,11 @@
  * Public License for more details
 */
 
+#include <stdio.h>
+#include <algorithm>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
-
-#include <stdio.h>
 
 #include <iCub/iKin/iKinVocabs.h>
 #include <iCub/iKin/iKinSlv.h>
@@ -1102,8 +1103,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 // if different from the actual one
                 if (b_q!=NULL)
                 {
-                    int len=b_q->size()<(int)prt->chn->getDOF()?b_q->size():prt->chn->getDOF();
-                    for (int i=0; i<len; i++)
+                    size_t len=std::min((size_t)b_q->size(),prt->chn->getDOF());
+                    for (size_t i=0; i<len; i++)
                         (*prt->chn)(i).setAng(CTRL_DEG2RAD*b_q->get(i).asDouble());
                 }
                 else
@@ -1232,11 +1233,8 @@ Vector &CartesianSolver::encodeDOF()
 /************************************************************************/
 bool CartesianSolver::decodeDOF(const Vector &_dof)
 {
-    int l1=prt->chn->getN();
-    int l2=_dof.length();
-    int len=l1<l2 ? l1 : l2;
-
-    for (int i=0; i<len; i++)
+    size_t len=std::min(prt->chn->getN(),_dof.length());
+    for (size_t i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
             continue;
@@ -1259,17 +1257,14 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
 
     if (options)
     {            
-        int sz=options->size();
-        int len=restJntPos.length();
-        int l=sz>len?len:sz;
-
-        for (int i=0; i<l; i++)
+        size_t len=std::min((size_t)options->size(),restJntPos.length());
+        for (size_t i=0; i<len; i++)
         {
             double val=CTRL_DEG2RAD*options->get(i).asDouble();
             double min=(*prt->chn)[i].getMin();
             double max=(*prt->chn)[i].getMax();
 
-            restJntPos[i]=val<min?min:(val>max?max:val);
+            restJntPos[i]=std::min(std::max(val,min),max);
         }
 
         ret=true;
@@ -1293,14 +1288,11 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
 
     if (options)
     {            
-        int sz=options->size();
-        int len=restWeights.length();
-        int l=sz>len?len:sz;
-
-        for (int i=0; i<l; i++)
+        size_t len=std::min((size_t)options->size(),restWeights.length());
+        for (size_t i=0; i<len; i++)
         {
             double val=options->get(i).asInt();
-            restWeights[i]=val<0.0?0.0:val;
+            restWeights[i]=std::max(val,0.0);
         }
 
         ret=true;
@@ -1320,11 +1312,8 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
 /************************************************************************/
 bool CartesianSolver::isNewDOF(const Vector &_dof)
 {
-    int l1=prt->chn->getN();
-    int l2=_dof.length();
-    int len=l1<l2 ? l1 : l2;
-
-    for (int i=0; i<len; i++)
+    size_t len=std::min(prt->chn->getN(),_dof.length());
+    for (size_t i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
             continue;
@@ -1839,12 +1828,9 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
     // latch current status
     Vector newDOF=dof;
 
-    int l1=prt->chn->getN();
-    int l2=_dof.length();
-    int len=l1<l2 ? l1 : l2;
-
     // update desired status
-    for (int i=0; i<len; i++)
+    size_t len=std::min(prt->chn->getN(),_dof.length());
+    for (size_t i=0; i<len; i++)
         newDOF[i]=_dof[i];
 
     // check whether shoulder's axes are treated properly

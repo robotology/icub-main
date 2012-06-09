@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <sstream>
+#include <algorithm>
 
 #include <iCub/iKin/iKinFwd.h>
 
@@ -609,8 +610,8 @@ Vector iKinChain::setAng(const Vector &q)
         return Vector(0);
     }
 
-    int sz=(q.length()>(int)DOF)?DOF:q.length();
-    for (int i=0; i<sz; i++)
+    size_t sz=std::min(q.length(),DOF);
+    for (size_t i=0; i<sz; i++)
         curr_q[i]=quickList[hash_dof[i]]->setAng(q[i]);
 
     return curr_q;
