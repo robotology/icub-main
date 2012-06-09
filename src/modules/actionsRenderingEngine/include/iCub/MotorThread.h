@@ -34,10 +34,7 @@
 #include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/neuralNetworks.h>
 #include <iCub/action/actionPrimitives.h>
-#include <iCub/iKin/iKinFwd.h>
 
-
-//#include <iCub/perception/models.h>
 
 #include <vector>
 
@@ -75,7 +72,6 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::action;
 using namespace iCub::perception;
-using namespace iCub::iKin;
 
 
 struct Dragger
@@ -216,12 +212,9 @@ private:
     string                              actions_path;
     Dragger                             dragger;
 
-    //in order to control the torso
-    iCubEye                             *iKinTorso;
+    Vector                              gaze_fix_point;
     
-    Vector								gaze_fix_point;
-    
-    double								avoid_table_height[2];
+    double                              avoid_table_height[2];
 
     double                              random_pos_y;
 

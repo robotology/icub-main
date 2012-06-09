@@ -17,18 +17,19 @@
 */
 
 
-#include <yarp/os/Time.h>
-
-#include <yarp/math/Math.h>
-#include <iCub/ctrl/math.h>
-
-#include <yarp/math/Rand.h>
-
 #include <fstream>
 #include <sstream>
 
+#include <yarp/os/Time.h>
+#include <yarp/math/Math.h>
+#include <yarp/math/Rand.h>
+
+#include <iCub/ctrl/math.h>
+#include <iCub/iKin/iKinFwd.h>
+
 #include <iCub/MotorThread.h>
 
+using namespace iCub::iKin;
 using namespace iCub::perception;
 
 
@@ -1204,12 +1205,6 @@ bool MotorThread::threadInit()
 
     grasp_state=GRASP_STATE_IDLE;
 
-    iKinTorso=(dominant_eye==LEFT)?new iCubEye("left"):new iCubEye("right");
-
-    iKinTorso->releaseLink(0);
-    iKinTorso->releaseLink(1);
-    iKinTorso->releaseLink(2);
-
     Rand::init();
 
     head_mode=HEAD_MODE_IDLE;
@@ -2159,12 +2154,26 @@ bool MotorThread::avoidTable(bool avoid)
 
 
 
+//************************************************************************************************
 bool MotorThread::exploreTorso(Bottle &options)
 {
     int dbg_cnt=0;
     this->avoidTable(true);
     // avoid torso controlDisp
 
+    Bottle info;
+    ctrl_gaze->getInfo(info);
+    int head_version=info.check("head_version",Value(1)).asInt();
+
+    ostringstream type;
+    type<<(dominant_eye==LEFT?"left":"right");
+    if (head_version==2)
+        type<<"_v2";
+
+    iCubEye iKinTorso=iCubEye(type.str());
+    iKinTorso.releaseLink(0);
+    iKinTorso.releaseLink(1);
+    iKinTorso.releaseLink(2);
 
     //get the torso initial position
     Vector torso_init_joints(3);
@@ -2178,24 +2187,22 @@ bool MotorThread::exploreTorso(Bottle &options)
     tmp_joints[1]=torso_init_joints[1];
     tmp_joints[2]=torso_init_joints[0];
     tmp_joints=CTRL_DEG2RAD*tmp_joints;
-    iKinTorso->setAng(tmp_joints);
+    iKinTorso.setAng(tmp_joints);
 
-	
-    Matrix H=iKinTorso->getH(3);
+    Matrix H=iKinTorso.getH(3);
     Vector cart_init_pos(3);
     cart_init_pos[0]=H[0][3];
     cart_init_pos[1]=H[1][3];
     cart_init_pos[2]=H[2][3];
     //----------------
 
-	fprintf(stdout,"cart init pos= %s\n",cart_init_pos.toString().c_str());
+    fprintf(stdout,"cart init pos= %s\n",cart_init_pos.toString().c_str());
     
     //fixed "target" position
     Vector fixed_target(3);
     fixed_target[0]=-0.5;
     fixed_target[1]=0.0;
     fixed_target[2]=cart_init_pos[2];
-
 
     double walking_time=20.0;
     double step_time=2.0;
@@ -2211,47 +2218,44 @@ bool MotorThread::exploreTorso(Bottle &options)
         //generate random next random step
         Vector random_pos(3);
         double tmp_rnd=Rand::scalar(-random_pos_y,random_pos_y);
-		if(fabs(tmp_rnd)<0.5 && tmp_rnd<0.0)
-			tmp_rnd-=0.1;
+        if(fabs(tmp_rnd)<0.5 && tmp_rnd<0.0)
+            tmp_rnd-=0.1;
 
-		if(fabs(tmp_rnd)<0.5 && tmp_rnd>0.0)
-			tmp_rnd+=0.1;
+        if(fabs(tmp_rnd)<0.5 && tmp_rnd>0.0)
+            tmp_rnd+=0.1;
 
         random_pos[0]=-2.0*tmp_rnd*tmp_rnd;//-Rand::scalar(0.05,0.0);
         random_pos[1]=cart_init_pos[1]+tmp_rnd;
         random_pos[2]=cart_init_pos[2];
 
-		random_pos=(norm(cart_init_pos)/norm(random_pos))*random_pos;
+        random_pos=(norm(cart_init_pos)/norm(random_pos))*random_pos;
 
-		fprintf(stdout,"random pos = %s\n\n",random_pos.toString().c_str());
+        fprintf(stdout,"random pos = %s\n\n",random_pos.toString().c_str());
 
         //get the desired angle
         double random_alpha=0.0;
         double tmp_y=fabs(random_pos[0]-fixed_target[0]);
        	if(tmp_y>0.01)
         {   
-		    double tmp_x=sqrt((random_pos[0]-fixed_target[0])*(random_pos[0]-fixed_target[0])+(random_pos[1]-fixed_target[1])*(random_pos[1]-fixed_target[1]));
-		    random_alpha=90.0-CTRL_RAD2DEG*asin(tmp_y/tmp_x);
-	    
-	    	double ang_sat=15.0;
-	    	if(random_alpha>ang_sat)
-	    		random_alpha=ang_sat;
-	    	else if(random_alpha<-ang_sat)
-	    		random_alpha=-ang_sat;
-	    }
-        //--------------------
+            double tmp_x=sqrt((random_pos[0]-fixed_target[0])*(random_pos[0]-fixed_target[0])+(random_pos[1]-fixed_target[1])*(random_pos[1]-fixed_target[1]));
+            random_alpha=90.0-CTRL_RAD2DEG*asin(tmp_y/tmp_x);
 
-		//fprintf(stdout,"random_alpha=%f\n",random_alpha);
+            double ang_sat=15.0;
+            if(random_alpha>ang_sat)
+                random_alpha=ang_sat;
+            else if(random_alpha<-ang_sat)
+                random_alpha=-ang_sat;
+        }
 
-   	 	double init_step_time=Time::now();
-   	 	
+        double init_step_time=Time::now();
+
         //wait to reach that point
         bool done=false;
         while(this->isRunning() && !interrupted && Time::now()-init_step_time<step_time && Time::now()-init_walking_time<walking_time)
         {
-			//set the current torso joints to the iKinTorso
+            //set the current torso joints to the iKinTorso
             Vector torso_joints(3);
-    		enc_torso->getEncoders(torso_joints.data());
+            enc_torso->getEncoders(torso_joints.data());
             
             Vector tmp_joints(8);
             tmp_joints=0.0;
@@ -2259,35 +2263,18 @@ bool MotorThread::exploreTorso(Bottle &options)
             tmp_joints[1]=torso_joints[1];
             tmp_joints[2]=torso_joints[0];
             tmp_joints=CTRL_DEG2RAD*tmp_joints;
-            iKinTorso->setAng(tmp_joints);
+            iKinTorso.setAng(tmp_joints);
 
-            Matrix H=iKinTorso->getH(3);
+            Matrix H=iKinTorso.getH(3);
             Vector curr_pos(3);
             curr_pos[0]=H[0][3];
             curr_pos[1]=H[1][3];
             curr_pos[2]=H[2][3];
 
             Vector x_dot=kp_pos_torso*(random_pos-curr_pos);
-
-		    Matrix fullJ=iKinTorso->GeoJacobian(3);
-
-			//fprintf(stdout,"fullJ=\n%s\n",fullJ.toString().c_str());
-
-            Matrix J=fullJ.submatrix(0,2,0,1);//fullJ.cols()-1);
-            
-			//fprintf(stdout,"J=\n%s\n",J.toString().c_str());
-
-
+            Matrix J=iKinTorso.GeoJacobian(3).submatrix(0,2,0,1);
             Matrix J_pinv_t=pinv(J,1e-06);
-           	//fprintf(stdout,"J_pinv_t=\n%s\n",J_pinv_t.toString().c_str());
-
-
-            //Matrix J_pinv_t=pinv(J.transposed());
-           
-            
-            //Vector q_dot_over=J_pinv_t.transposed()*x_dot;
             Vector q_dot_over=J_pinv_t*x_dot;
-           	//fprintf(stdout,"q_dot_over=%s\n",q_dot_over.toString().c_str());
             
             Vector q_dot(3);
             q_dot=0.0;
@@ -2295,27 +2282,20 @@ bool MotorThread::exploreTorso(Bottle &options)
             q_dot[1]=CTRL_RAD2DEG*q_dot_over[1];
             q_dot[2]=CTRL_RAD2DEG*q_dot_over[0];
             
+            if(norm(q_dot)<1.0)
+            {
+                vel_torso->stop();
+                break;
+            }
 
-			//fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
-			
-			if(norm(q_dot)<1.0)
-			{
-				vel_torso->stop();
-				break;
-			}
-			
-			double q_dot_saturation=15.0;
-			if(norm(q_dot)>q_dot_saturation)
-				q_dot=(q_dot_saturation/norm(q_dot))*q_dot;
+            double q_dot_saturation=15.0;
+            if(norm(q_dot)>q_dot_saturation)
+                q_dot=(q_dot_saturation/norm(q_dot))*q_dot;
 
-			//q_dot=((step_time-Time::now()+init_step_time)/step_time)*q_dot;
+            x_dot=(1.0/kp_pos_torso)*x_dot;
 
-			x_dot=(1.0/kp_pos_torso)*x_dot;
-			//fprintf(stdout,"x_dot=%s\n",q_dot.toString().c_str());
-			//fprintf(stdout,"q_dot=%s\n",q_dot.toString().c_str());
-
-	        vel_torso->velocityMove(q_dot.data());
-	        Time::delay(0.01);
+            vel_torso->velocityMove(q_dot.data());
+            Time::delay(0.01);
         }
     }
 
