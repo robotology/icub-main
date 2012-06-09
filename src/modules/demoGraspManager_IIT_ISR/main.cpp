@@ -189,7 +189,6 @@ Windows, Linux
 
 #include <gsl/gsl_math.h>
 #include <iCub/ctrl/neuralNetworks.h>
-#include <iCub/iKin/iKinFwd.h>
 
 #include <string>
 
@@ -225,25 +224,16 @@ using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
 using namespace iCub::ctrl;
-using namespace iCub::iKin;
 
 
 class Predictor
 {
 protected:
     ff2LayNN_tansig_purelin net;
-    iCubEye *eye;
 
 public:
-    Predictor() : eye(NULL) { }
-
     bool configure(Property &options)
     {
-        eye=new iCubEye("left");
-        eye->releaseLink(0);
-        eye->releaseLink(1);
-        eye->releaseLink(2);
-
         if (net.configure(options))
         {
             net.printStructure();
@@ -253,8 +243,7 @@ public:
             return false;
     }
 
-    Vector predict(const Vector &torso, const Vector &head,
-                   Bottle *imdLeft, Bottle *imdRight)
+    Vector predict(const Vector &head, Bottle *imdLeft, Bottle *imdRight)
     {
         Bottle *firstBlobLeft=imdLeft->get(0).asList();
         Bottle *firstBlobRight=imdRight->get(0).asList();
@@ -268,35 +257,7 @@ public:
         in[5]=firstBlobRight->get(0).asDouble();    // ur
         in[6]=firstBlobRight->get(1).asDouble();    // vr
 
-        Vector out=net.predict(in);
-        Vector homOut(4);
-        homOut[0]=out[0];
-        homOut[1]=out[1];
-        homOut[2]=out[2];
-        homOut[3]=1.0;
-
-        Vector dof(eye->getDOF());
-        dof[0]=CTRL_DEG2RAD*torso[2];
-        dof[1]=CTRL_DEG2RAD*torso[1];
-        dof[2]=CTRL_DEG2RAD*torso[0];
-        dof[3]=CTRL_DEG2RAD*head[0];
-        dof[4]=CTRL_DEG2RAD*head[1];
-        dof[5]=CTRL_DEG2RAD*head[2];
-        dof[6]=CTRL_DEG2RAD*head[3];
-        dof[7]=CTRL_DEG2RAD*(head[4]+head[5]/2.0);
-
-        homOut=eye->getH(dof)*homOut;
-        out[0]=homOut[0];
-        out[1]=homOut[1];
-        out[2]=homOut[2];
-
-        return out;
-    }
-
-    ~Predictor()
-    {
-        if (eye!=NULL)
-            delete eye;
+        return net.predict(in);
     }
 };
 
@@ -607,13 +568,26 @@ protected:
         encHead->getEncoders(head.data());
 
         if (useNetwork)
-        {            
+        {
             Bottle *imdTargetLeft=inportIMDTargetLeft.read(false);
             Bottle *imdTargetRight=inportIMDTargetRight.read(false);
 
             if ((imdTargetLeft!=NULL) && (imdTargetRight!=NULL))
             {
-                targetPos=pred.predict(torso,head,imdTargetLeft,imdTargetRight);
+                Vector x,o;
+                if (eyeUsed=="left")
+                    gazeCtrl->getLeftEyePose(x,o);
+                else
+                    gazeCtrl->getRightEyePose(x,o);
+
+                Matrix T=axis2dcm(o);
+                T(0,3)=x[0];
+                T(1,3)=x[1];
+                T(2,3)=x[2];
+
+                Vector netout=pred.predict(head,imdTargetLeft,imdTargetRight);
+                netout.push_back(1.0);
+                targetPos=(T*netout).subVector(0,2);
                 newTarget=true;
             }
         }
