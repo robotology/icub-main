@@ -610,7 +610,7 @@ Vector iKinChain::setAng(const Vector &q)
         return Vector(0);
     }
 
-    size_t sz=std::min(q.length(),DOF);
+    size_t sz=std::min(q.length(),(size_t)DOF);
     for (size_t i=0; i<sz; i++)
         curr_q[i]=quickList[hash_dof[i]]->setAng(q[i]);
 

@@ -1103,7 +1103,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 // if different from the actual one
                 if (b_q!=NULL)
                 {
-                    size_t len=std::min((size_t)b_q->size(),prt->chn->getDOF());
+                    size_t len=std::min((size_t)b_q->size(),(size_t)prt->chn->getDOF());
                     for (size_t i=0; i<len; i++)
                         (*prt->chn)(i).setAng(CTRL_DEG2RAD*b_q->get(i).asDouble());
                 }
@@ -1233,7 +1233,7 @@ Vector &CartesianSolver::encodeDOF()
 /************************************************************************/
 bool CartesianSolver::decodeDOF(const Vector &_dof)
 {
-    size_t len=std::min(prt->chn->getN(),_dof.length());
+    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
     for (size_t i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
@@ -1312,7 +1312,7 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
 /************************************************************************/
 bool CartesianSolver::isNewDOF(const Vector &_dof)
 {
-    size_t len=std::min(prt->chn->getN(),_dof.length());
+    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
     for (size_t i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
@@ -1829,7 +1829,7 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
     Vector newDOF=dof;
 
     // update desired status
-    size_t len=std::min(prt->chn->getN(),_dof.length());
+    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
     for (size_t i=0; i<len; i++)
         newDOF[i]=_dof[i];
 
