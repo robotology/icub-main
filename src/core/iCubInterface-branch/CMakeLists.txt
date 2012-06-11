@@ -6,6 +6,9 @@
 
 PROJECT(iCubInterface)
 
+add_definitions( -D_ICUB_CALLBACK_ )
+
+
 set(folder_source main.cpp)
 FILE(GLOB folder_header *.h)
 FILE(GLOB tmp ./canIdDiscoverer/*.h)
@@ -31,10 +34,7 @@ if(ICUB_USE_INTERFACEGUI)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../libraries/iCubInterfaceGuiLib)
 endif(ICUB_USE_INTERFACEGUI)
 
-
 ADD_EXECUTABLE(iCubInterface ${folder_source} ${folder_header})
-message(INFO " FILE(GLOB folder_source *.cpp) : ${folder_source}")
-
 
 if(ICUB_USE_INTERFACEGUI)
     TARGET_LINK_LIBRARIES(iCubInterface iCubDev 

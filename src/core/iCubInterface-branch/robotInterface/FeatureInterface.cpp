@@ -21,11 +21,19 @@ void *getRobotFeatureList_C(FEAT_ID *id)
 //	ethResCreator::instance();
 	IRobotInterface *iRobot;
 	iRobot = iRobotInterface;
-	iRobot->abort();
-	iRobot->initialize(std::string("ciao"));
+//	iRobot->abort();
+//	iRobot->initialize(std::string("ciao"));
 	iRobot->getRobot();
-	IiCubFeatureList *list = iRobot->getRobotFeatureList(id);
-	list->findus(id);
+	//IiCubFeatureList *list = iRobot->getRobotFeatureList(id);
+	//list->findus(id);
 	//return (void*) getList();
 }
 
+bool findAndFill(FEAT_ID *id, char *sk_array)
+{
+	IiCubFeatureList *list = iRobotInterface->getRobotFeatureList(id);
+	IiCubFeature * skin = list->findus(id);
+	skin->fillData(sk_array);
+	Vector *v = skin->getData();
+	skin->pushData(*v);
+}

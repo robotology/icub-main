@@ -8,9 +8,11 @@
 #ifndef FEATUREINTERFACE_H_
 #define FEATUREINTERFACE_H_
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
-	extern "C"
-	{
+extern "C"
+{
 #endif
 
 typedef enum
@@ -26,12 +28,12 @@ typedef struct
 }FEAT_ID;
 
 extern void *getRobotFeatureList_C(FEAT_ID *);
-
+bool findAndFill(FEAT_ID *id, char *sk_array);
 
 
 
 #ifdef __cplusplus
-	}
+}
 #endif
 
 #endif /* FEATUREINTERFACE_H_ */

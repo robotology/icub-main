@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 
 #ifdef _AC_
 	Logger::get();
-    Logger::get().setVerbosity(LM_DEBUG);
+    Logger::get().setVerbosity(LM_INFO);
 	Logger::get().log_files.f1=stdout;
 	Logger::get().log_files.f2=stderr;
 	Logger::get().log_files.f3=fopen("/home/icub/logs/trace.log", "w+");

@@ -11,9 +11,12 @@
 #define __IROBOTINTERFACE__
 
 #include <yarp/os/Property.h>
+#include <yarp/sig/Vector.h>
 #include <string>
 #include "FeatureInterface.h"
 #include "FeatureInterface_hid.h"
+
+using namespace yarp::sig;
 
 void *getList(void);
 

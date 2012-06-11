@@ -800,8 +800,6 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 			if(correct)
 				xtmp2 = xtmp.findGroup("PC104IpAddress");
 
-
-
             SkinPartEntry *tmp=new SkinPartEntry;
             tmp->setId(partId);
 
@@ -812,6 +810,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                 Property deviceParams;
                 deviceParams.fromConfigFile(filename.c_str());
     			deviceParams.put("PC104IpAddress", xtmp2.get(1).asString().c_str());
+    			deviceParams.put("FeatId",partId.c_str());
 
                 if (tmp->open(deviceParams, partOptions))
                 {
@@ -1284,7 +1283,15 @@ void RobotInterfaceRemap::abort()
 
 IiCubFeatureList * RobotInterfaceRemap::getRobotFeatureList(FEAT_ID *id)
 {
-	//return &skinparts;
+	return &skinparts;
+}
+
+bool RobotInterfaceRemap::findAndFill(FEAT_ID *id, char *sk_array)
+{
+	IiCubFeatureList *pList = getRobotFeatureList(id);
+	IiCubFeature *pSkin = pList->findus(id);
+	pSkin->fillData(sk_array);
+	return true;
 }
 
 IRobotInterface *RobotInterfaceRemap::getRobot()

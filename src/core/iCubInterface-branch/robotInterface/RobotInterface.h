@@ -99,6 +99,7 @@ public:
     void abort();
 
     IiCubFeatureList * getRobotFeatureList(FEAT_ID *id);
+    bool 	findAndFill(FEAT_ID *id, char *sk_array);
     IRobotInterface *getRobot();
 
 protected:

@@ -6,9 +6,6 @@
  */
 
 
-
-
-
 #include "RobotInterfaceRemap.h"
 #include "extractPath.h"
 
@@ -27,12 +24,14 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
+// should not include this stuff...
+#include "EoSkin.h"
 
 SkinPartEntry::SkinPartEntry()
 {
 	YARP_INFO(Logger::get(),"SkinPartEntry::SkinPartEntry()", Logger::get().log_files.f3);
-    analogServer=0;
-    analog=0;
+	analogServer=0;
+	analog=0;
 }
 
 SkinPartEntry::~SkinPartEntry()
@@ -55,66 +54,68 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 	printf("SkinPartEntry param 2 (partP)   = %s\n", partP.toString().c_str());
 
 	bool correct=true;
-    correct=correct&&partP.check("device");
-    correct=correct&&partP.check("robot");
-    //correct=correct&&partP.check("canbusdevice");
+	correct=correct&&partP.check("device");
+	correct=correct&&partP.check("robot");
+	//correct=correct&&partP.check("FeatId");
+	//correct=correct&&partP.check("canbusdevice");
 	//correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
-//
-//    Bottle xtmp, xtmp2;
-//
-//    bool correct=true;
-//
-//    correct=correct&&robotOptions.check("GENERAL");
-//
-//    if(correct)
-//    	xtmp = Bottle(robotOptions.findGroup("GENERAL"));
-//
-//    correct=correct&&xtmp.check("PC104IpAddress");
-//
-//    if(correct)
-//    	xtmp2 = xtmp.findGroup("PC104IpAddress");
-//
-//    partOptions.put("PC104IpAddress", xtmp2.get(1).asString().c_str());
+	//
+	//    Bottle xtmp, xtmp2;
+	//
+	//    bool correct=true;
+	//
+	//    correct=correct&&robotOptions.check("GENERAL");
+	//
+	//    if(correct)
+	//    	xtmp = Bottle(robotOptions.findGroup("GENERAL"));
+	//
+	//    correct=correct&&xtmp.check("PC104IpAddress");
+	//
+	//    if(correct)
+	//    	xtmp2 = xtmp.findGroup("PC104IpAddress");
+	//
+	//    partOptions.put("PC104IpAddress", xtmp2.get(1).asString().c_str());
 
-    if (!correct)
-        return false;
+	if (!correct)
+		return false;
 
-    int period=20;
-    if (partP.check("period"))
-    {
-        period=partP.find("period").asInt();
-    }
-    else
-    {
-        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
-    }
+	int period=20;
+	if (partP.check("period"))
+	{
+		period=partP.find("period").asInt();
+	}
+	else
+	{
+		std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
+	}
 
 	// Open the device
-    std::string devicename=partP.find("device").asString().c_str();
-    deviceP.put("device", devicename.c_str());
+	std::string devicename=partP.find("device").asString().c_str();
+	deviceP.put("device", devicename.c_str());
 
-    std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
-    deviceP.put("canbusdevice", canbusdevice.c_str());
+	std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
+	deviceP.put("canbusdevice", canbusdevice.c_str());
 
-    driver.open(deviceP);
-    if (!driver.isValid())
-        return false;
+	driver.open(deviceP);
+	if (!driver.isValid())
+		return false;
 
-    driver.view(analog);
+	driver.view(analog);
+	driver.view(hook);
 
-    if (!analog)
-    {
-        std::cerr<<"Error: part "<<id<<" device " << devicename << " does not implement analog interface"<<endl;
-        driver.close();
-        return false;
-    }
+	if (!analog)
+	{
+		std::cerr<<"Error: part "<<id<<" device " << devicename << " does not implement analog interface"<<endl;
+		driver.close();
+		return false;
+	}
 
 	// Read the list of ports
-    std::string robotName=partP.find("robot").asString().c_str();
-    std::string root_name;
-    root_name+="/";
-    root_name+=robotName;
-    root_name+="/skin/";
+	std::string robotName=partP.find("robot").asString().c_str();
+	std::string root_name;
+	root_name+="/";
+	root_name+=robotName;
+	root_name+="/skin/";
 
 	std::vector<AnalogPortEntry> skinPorts;
 	if(!partP.check("ports")){
@@ -174,50 +175,182 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 		}
 	}
 
-    analogServer = new AnalogServer(skinPorts);
-    analogServer->setRate(period);
-    analogServer->attach(analog);
-    analogServer->start();
+	// 7 = cardId.size()
+	wholeData.resize(16*12*7);
+	for (int i=0; i<wholeData.size(); i++)
+		wholeData[i]=255;
 
-    return true;
+	fId.type = Skin;
+	std::string FeatId = deviceP.find("FeatId").asString().c_str();
+	cout << "FeatId = " << FeatId << endl;
+	strcpy(fId.name, FeatId.c_str());
+
+	//memset(fId.name, 0x00, sizeof(fId.name) );
+
+	analogServer = new AnalogServer(skinPorts);
+	analogServer->setRate(period);
+	analogServer->attach(analog);
+	analogServer->start();
+
+	return true;
 }
 
 void SkinPartEntry::close()
 {
 	YARP_INFO(Logger::get(),"SkinPartEntry::close() - id " + String(id.c_str()), Logger::get().log_files.f3);
-    std::cout<<"Closing skin part "<< id << endl;
-    if (analogServer)
-    {
-        analogServer->stop();
-        delete analogServer;
-    }
-    if (analog)
-        analog=0;
+	std::cout<<"Closing skin part "<< id << endl;
+	if (analogServer)
+	{
+		analogServer->stop();
+		delete analogServer;
+	}
+	if (analog)
+		analog=0;
 
-    driver.close();
+	driver.close();
+}
+
+Vector * SkinPartEntry::getData()
+{
+	return &wholeData;
+}
+
+bool SkinPartEntry::pushData(yarp::sig::Vector &in)
+{
+	hook->pushData(in);
+	return false;
+}
+
+
+bool SkinPartEntry::fillData(char *data)
+{
+	uint8_t 				msgtype = 0;
+	uint8_t 				i, triangle = 0;
+	EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) data;
+	//	yarp::sig::Vector 		&pv = outPort.prepare();
+
+	printf("\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
+
+	for(i=0; i<sk_array->head.size; i++)
+	{
+		eOutil_canframe_t *canframe;
+		int  j, mtbId, cardId, valid = 0;
+
+		canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
+		valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
+
+//		if(valid)
+		{
+			cardId = (canframe->id & 0x00f0) >> 4;
+			switch (cardId)
+			{
+				case 14:
+					mtbId = 0;
+					break;
+				case 13:
+					mtbId = 1;
+					break;
+				case 12:
+					mtbId = 2;
+					break;
+				case 11:
+					mtbId = 3;
+					break;
+				case 10:
+					mtbId = 4;
+					break;
+				case 9:
+					mtbId = 5;
+					break;
+				case 8:
+					mtbId = 6;
+					break;
+			}
+			triangle = (canframe->id & 0x000f);
+			msgtype= ((canframe->data[0])& 0x80);
+			printf("\n data id 0x%04X, 0x", canframe->id);
+
+			int index=16*12*mtbId + triangle*12;
+
+			printf("%0X ", canframe->data[0]);
+			if (msgtype)
+			{
+				for(int k=0;k<5;k++)
+				{
+					wholeData[index+k+7]=canframe->data[k+1];
+					printf("%0X ", canframe->data[k+1]);
+				}
+			}
+			else
+			{
+				for(int k=0;k<7;k++)
+				{
+					wholeData[index+k]=canframe->data[k+1];
+					printf("%0X ", canframe->data[k+1]);
+				}
+			}
+		}
+/*		else
+		{
+			printf("Invalid Message\n");
+		}*/
+	}
+
+	//	pv = wholeData;
+
 }
 
 SkinPartEntry *SkinParts::find(const string &pName)
 {
-    SkinPartsIt it=begin();
-    for(;it!=end(); it++)
-    {
-        if ((*it)->id==pName)
-            {
-                return (*it);
-            }
-    }
+	SkinPartsIt it=begin();
+	for(;it!=end(); it++)
+	{
+		if ((*it)->id==pName)
+		{
+			return (*it);
+		}
+	}
 
-    return 0;
+	return 0;
+}
+
+//Vector * SkinParts::findus2(FEAT_ID *id )
+//{
+//	SkinPartsIt it=begin();
+//	for(;it!=end(); it++)
+//	{
+//		if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) )
+//		{
+//			return (*it)->getData(); //&(*it);
+//		}
+//	}
+//	return NULL;
+//}
+
+IiCubFeature * SkinParts::findus(FEAT_ID *id )
+{
+	IiCubFeature *ret;
+	id->type = Skin;
+	memset(id->name, 0x00, sizeof(id->name) );
+	SkinPartsIt it=begin();
+	for(;it!=end(); it++)
+	{
+		if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) )
+		{
+			ret = (*it);
+			return ret;
+		}
+	}
+	return NULL;
 }
 
 void SkinParts::close()
 {
 	YARP_INFO(Logger::get(),"SkinParts::close()", Logger::get().log_files.f3);
-    SkinPartsIt it=begin();
-    while(it!=end())
-    {
-       (*it)->close();
-       it++;
-    }
+	SkinPartsIt it=begin();
+	while(it!=end())
+	{
+		(*it)->close();
+		it++;
+	}
 }
