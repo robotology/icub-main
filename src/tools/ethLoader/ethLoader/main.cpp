@@ -271,10 +271,10 @@ static void fixed_toggled(GtkCellRendererToggle *cell,gchar *path_str,gpointer d
     activate_buttons();
 }
 
-bool dialog_question_ip_address(char* old_addr,char* new_addr,bool bMask)
+bool dialog_question_ip_address(char* old_addr,char* new_addr,const char* ip_or_mask)
 {
     char text[256];
-    sprintf(text,"Do you really want to change the IP %s of this board?\r\n\r\nCURRENT CAN ADDRESS %s WILL BE CHANGED IN %s",(bMask?"mask":"address"),old_addr,new_addr) ;
+    sprintf(text,"Do you really want to change the %s of this board to %s?\r\n\r\nThe new %s will be %s",ip_or_mask,old_addr,ip_or_mask,new_addr) ;
 
     message=dialog_message_generator(GTK_MESSAGE_QUESTION,text,NULL);
     gtk_window_set_modal(GTK_WINDOW(message),true);
@@ -286,10 +286,8 @@ bool dialog_question_ip_address(char* old_addr,char* new_addr,bool bMask)
     return response==GTK_RESPONSE_YES;
 }
 
-static void edited_ip_addr_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_addr,gpointer data)
+static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_addr,gpointer data)
 {
-    bool bMask=(data!=NULL);
-
     GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
     GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
     GtkTreeIter iter;
@@ -300,18 +298,52 @@ static void edited_ip_addr_mask(GtkCellRendererText *cell,gchar *path_str,gchar 
     sscanf(new_addr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
     ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-    ACE_UINT32 iOldAddress=bMask?gUpdater.getBoardList()[index[0]].mMask:gUpdater.getBoardList()[index[0]].mAddress;
+    ACE_UINT32 iOldAddress=gUpdater.getBoardList()[index[0]].mAddress;
 
     if (iNewAddress!=iOldAddress)
     {
         char old_addr[16];
         sprintf(old_addr,"%d.%d.%d.%d",(iOldAddress>>24)&0xFF,(iOldAddress>>16)&0xFF,(iOldAddress>>8)&0xFF,iOldAddress&0xFF);
         
-        if (dialog_question_ip_address(old_addr,new_addr,bMask))
+        if (dialog_question_ip_address(old_addr,new_addr,"IP address"))
         {
             printf("changing address\n");
             fflush(stdout);
-            gUpdater.cmdChangeAddressAndMask(iOldAddress,iNewAddress,bMask);
+            gUpdater.cmdChangeAddress(iOldAddress,iNewAddress);
+        }
+    }
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
+    gtk_widget_draw(treeview, NULL);
+
+    // clean up 
+    gtk_tree_path_free(path);
+}
+
+static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_addr)
+{
+    GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+    GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter(model,&iter,path);
+    int* index=gtk_tree_path_get_indices(path);
+
+    int ip1,ip2,ip3,ip4;
+    sscanf(new_addr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+    if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
+    ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
+    ACE_UINT32 iOldAddress=gUpdater.getBoardList()[index[0]].mMask;
+
+    if (iNewAddress!=iOldAddress)
+    {
+        char old_addr[16];
+        sprintf(old_addr,"%d.%d.%d.%d",(iOldAddress>>24)&0xFF,(iOldAddress>>16)&0xFF,(iOldAddress>>8)&0xFF,iOldAddress&0xFF);
+        
+        if (dialog_question_ip_address(old_addr,new_addr,"IP mask"))
+        {
+            printf("changing mask\n");
+            fflush(stdout);
+            gUpdater.cmdChangeMask(iOldAddress,iNewAddress);
         }
     }
 
@@ -344,7 +376,7 @@ static void add_columns(GtkTreeView *treeview)
     GTK_CELL_RENDERER_TEXT(renderer)->editable=true;
     GTK_CELL_RENDERER_TEXT(renderer)->editable_set=true;
     renderer->mode=GTK_CELL_RENDERER_MODE_EDITABLE;
-    g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_addr_mask),(gpointer)false);
+    g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_addr),NULL);
     column=gtk_tree_view_column_new_with_attributes("IP addr",renderer,"text",COLUMN_IP_ADDR,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),100);
@@ -357,7 +389,7 @@ static void add_columns(GtkTreeView *treeview)
     GTK_CELL_RENDERER_TEXT(renderer)->editable=true;
     GTK_CELL_RENDERER_TEXT(renderer)->editable_set=true;
     renderer->mode=GTK_CELL_RENDERER_MODE_EDITABLE;
-    g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_addr_mask),(gpointer)true);
+    g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_mask),NULL);
     column=gtk_tree_view_column_new_with_attributes("IP mask",renderer,"text",COLUMN_IP_MASK,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),100);

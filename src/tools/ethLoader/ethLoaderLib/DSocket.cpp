@@ -60,8 +60,18 @@ ssize_t DSocket::ReceiveFrom(void* data,size_t len,std::string &address,ACE_UINT
     ACE_Time_Value tv(wait_msec/1000,(wait_msec%1000)*1000);
     ACE_INET_Addr ace_addr;
     ssize_t nrec=mSocket->recv(data,len,ace_addr,0,&tv);
-    address=ace_addr.get_host_addr();
-    port=ace_addr.get_port_number();
+
+    if (nrec>0)
+    {
+        address=ace_addr.get_host_addr();
+        port=ace_addr.get_port_number();
+    }
+    else
+    {
+        address="";
+        port=0;
+    }
+
     return nrec;
 }
 
@@ -70,8 +80,18 @@ ssize_t DSocket::ReceiveFrom(void* data,size_t len,ACE_UINT32 &address,ACE_UINT1
     ACE_Time_Value tv(wait_msec/1000,(wait_msec%1000)*1000);
     ACE_INET_Addr ace_addr;
     ssize_t nrec=mSocket->recv(data,len,ace_addr,0,&tv);
-    address=ace_addr.get_ip_address();
-    port=ace_addr.get_port_number();
+
+    if (nrec>0)
+    {
+        address=ace_addr.get_ip_address();
+        port=ace_addr.get_port_number();
+    }
+    else
+    {
+        address=0;
+        port=0;
+    }
+    
     return nrec;
 }
 

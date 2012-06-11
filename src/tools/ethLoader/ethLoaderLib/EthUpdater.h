@@ -92,7 +92,8 @@ public:
     void cmdReset();
     void cmdJumpUpd();
     void cmdBlink();
-    void cmdChangeAddressAndMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr,bool bMask);
+    void cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
+    void cmdChangeMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
    
 protected:
     int sendDataBroadcast(unsigned char* data,int size,int answers,int retry);
