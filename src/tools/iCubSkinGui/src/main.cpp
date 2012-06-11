@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
 	gtk_init(&argc,&argv);
 	
     GtkWidget *pMainWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	std::string window_title="iCubSkinGui (robotPart: ";
+	std::string window_title="SkinGui (part: ";
 	window_title.append(rf.find("robotPart").asString());
 	window_title.append(")");
 	gtk_window_set_title(GTK_WINDOW(pMainWindow),window_title.c_str());

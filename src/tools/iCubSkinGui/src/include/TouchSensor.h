@@ -23,6 +23,13 @@ class TouchSensor
 
 public:
 
+    void setColor(unsigned char r, unsigned char g, unsigned char b)
+    {
+        R_MAX = r;
+        G_MAX = g;
+        B_MAX = b;
+    }
+
 	void setCalibrationFlag (bool use_calibrated_skin)
 	{
 		calibrated_skin=use_calibrated_skin;
@@ -149,10 +156,17 @@ public:
                 {
                     index=(dx+Y1)*3;
 
-                    if (image[index]!=255)
+                    if (image[index]<R_MAX || image[index+1]<G_MAX || image[index+2]<B_MAX)
                     {
-                        act=image[index]+int(k1*Exponential[Abs(dx)]);
-                        image[index]=act<255?act:255;
+                        act=int(k1*Exponential[Abs(dx)]);
+
+                        int actR=image[index  ]+(act*R_MAX)/255;
+                        int actG=image[index+1]+(act*G_MAX)/255;
+                        int actB=image[index+2]+(act*B_MAX)/255;
+
+                        image[index  ]=actR<R_MAX?actR:R_MAX;
+                        image[index+1]=actG<G_MAX?actG:G_MAX;
+                        image[index+2]=actB<B_MAX?actB:B_MAX;
                     }
                 }
             }
@@ -314,6 +328,8 @@ protected:
 
     double m_Radius,m_RadiusOrig;
     double activation[MAX_TAXELS];
+
+    unsigned char R_MAX, G_MAX, B_MAX;
 
     static int m_maxRange;
     static double *Exponential;

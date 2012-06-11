@@ -72,6 +72,27 @@ public:
 		{
 			printf("Using raw skin values (255-0)\n");
 		}
+        
+        Bottle *color = config.find("color").asList();
+        unsigned char r=255, g=0, b=0;
+        if(color)
+        {
+            if(color->size()<3 || !color->get(0).isInt() || !color->get(1).isInt() || !color->get(2).isInt())
+            {
+                printf("Error while reading the parameter color: three integer values should be specified (%s).\n", color->toString().c_str());
+            }
+            else
+            {
+                r = color->get(0).asInt();
+                g = color->get(1).asInt();
+                b = color->get(2).asInt();
+                printf("Using specified color: %d %d %d\n", r, g, b);
+            }
+        }
+        else
+        {
+            printf("Using red as default color.\n");
+        }
 
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
@@ -143,6 +164,7 @@ public:
                 sensor[t]->min_tax=max_tax;
                 max_tax = sensor[t]->min_tax+sensor[t]->get_nTaxels();
                 sensor[t]->max_tax=max_tax-1;
+                sensor[t]->setColor(r, g, b);
             } 
             else
             {
