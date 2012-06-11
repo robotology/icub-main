@@ -250,7 +250,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 //	inBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
 #endif
 	//elements are:
-	sensorsNum=16*12*cardId.size();
+	// sensorsNum=16*12*cardId.size();  // orig
+	sensorsNum=16*12*7;		// max num of card
 	data.resize(sensorsNum);
 
 	RateThread::start();
@@ -272,59 +273,59 @@ bool EmbObjSkin::close()
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
 	mutex.wait();
-	YARP_INFO(Logger::get(),"EmbObjSkin::read", Logger::get().log_files.f3);
-
-	EOarray_of_10canframes			skinData;
-	uint16_t						size;
-	EOnv							*nv = NULL;
-
-
-	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_rightlowerarm, 0x00, skinNVindex_sstatus__arrayof10canframe);
-
-	res->transceiver->getNVvalue(nv, (uint8_t *)&skinData, &size);
-
-	unsigned int canMessages=skinData.head.size;
-
-	for (unsigned int i=0; i<canMessages; i++)
-	{
-		//CanMessage &msg=inBuffer[i];
-
-		eOutil_canframe_t &msg = *(eOutil_canframe_t*)&skinData.data[i];
-		unsigned int msgid=msg.id;
-		unsigned int id;
-		unsigned int sensorId;
-		id=(msgid & 0x00f0)>>4;
-		sensorId=msgid&0x000f;
-
-		unsigned int type=msg.data[0]&0x80;
-		int len=msg.size;
-
-		for (int i=0; i<cardId.size(); i++)
-		{
-			if (id==cardId[i])
-			{
-				int index=16*12*i + sensorId*12;
-
-				if (type)
-				{
-					for(int k=0;k<5;k++)
-						data[index+k+7]=msg.data[k+1];
-				}
-				else
-				{
-					for(int k=0;k<7;k++)
-						data[index+k]=msg.data[k+1];
-				}
-				//    else
-				//        {
-				//            std::cerr<<"Error: skin received malformed message\n";
-				//        }
-			}
-		}
-	}
+//	YARP_INFO(Logger::get(),"EmbObjSkin::read", Logger::get().log_files.f3);
+//
+//	EOarray_of_10canframes			skinData;
+//	uint16_t						size;
+//	EOnv							*nv = NULL;
+//
+//
+//	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_rightlowerarm, 0x00, skinNVindex_sstatus__arrayof10canframe);
+//
+//	res->transceiver->getNVvalue(nv, (uint8_t *)&skinData, &size);
+//
+//	unsigned int canMessages=skinData.head.size;
+//
+//	for (unsigned int i=0; i<canMessages; i++)
+//	{
+//		//CanMessage &msg=inBuffer[i];
+//
+//		eOutil_canframe_t &msg = *(eOutil_canframe_t*)&skinData.data[i];
+//		unsigned int msgid=msg.id;
+//		unsigned int id;
+//		unsigned int sensorId;
+//		id=(msgid & 0x00f0)>>4;
+//		sensorId=msgid&0x000f;
+//
+//		unsigned int type=msg.data[0]&0x80;
+//		int len=msg.size;
+//
+//		for (int i=0; i<cardId.size(); i++)
+//		{
+//			if (id==cardId[i])
+//			{
+//				int index=16*12*i + sensorId*12;
+//
+//				if (type)
+//				{
+//					for(int k=0;k<5;k++)
+//						data[index+k+7]=msg.data[k+1];
+//				}
+//				else
+//				{
+//					for(int k=0;k<7;k++)
+//						data[index+k]=msg.data[k+1];
+//				}
+//				//    else
+//				//        {
+//				//            std::cerr<<"Error: skin received malformed message\n";
+//				//        }
+//			}
+//		}
+//	}
 ///////////////////////////////////////
 
-//	out=data;  //old - this needs the running thread
+	out=data;  //old - this needs the running thread
 	mutex.post();
 
 	return yarp::dev::IAnalogSensor::AS_OK;
@@ -388,6 +389,7 @@ int EmbObjSkin::calibrateChannel(int ch, double v)
 
 int EmbObjSkin::calibrateSensor(const yarp::sig::Vector& v)
 {
+	//data=v;
 	return 0;
 }
 
@@ -429,7 +431,7 @@ bool EmbObjSkin::threadInit()
 void EmbObjSkin::run()
 {	
 	mutex.wait();
-	YARP_INFO(Logger::get(),"EmbObjSkin::run", Logger::get().log_files.f3);
+	// YARP_INFO(Logger::get(),"EmbObjSkin::run", Logger::get().log_files.f3);
 	/*
 	unsigned int canMessages=0;
 
@@ -478,6 +480,23 @@ void EmbObjSkin::run()
 	}
 */
 	mutex.post();
+}
+
+Vector * EmbObjSkin::getData()
+{
+
+}
+
+bool EmbObjSkin::pushData(yarp::sig::Vector &in)
+{
+	data=in;
+	return true;
+}
+
+bool EmbObjSkin::fillData(char *data)
+{
+
+	return false;
 }
 
 void EmbObjSkin::threadRelease()

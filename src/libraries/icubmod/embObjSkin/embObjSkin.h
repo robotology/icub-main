@@ -25,6 +25,9 @@
 #include <ethManager.h>
 #include "EoUtilities.h"
 
+#include "FeatureInterface.h"
+#include "FeatureInterface_hid.h"
+
 // Temporary inclusion because we encapsulate can messages inside a eth frame... for now.
 //  In the future this behaviour will dropped in favor of a more flexible and HW independent use of NVs
 
@@ -83,7 +86,8 @@ class yarp::dev::Cfw2CanMessage : public yarp::dev::CanMessage
 
 class EmbObjSkin : 	public RateThread,
 					public yarp::dev::IAnalogSensor,
-					public DeviceDriver
+					public DeviceDriver,
+					public IiCubFeature
 					// public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>
 					// public ICanBus
 {
@@ -135,8 +139,11 @@ public:
 	virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
-    //virtual void fill_data();
-   
+
+    //IiCubFeature interface
+    virtual bool fillData(char *data);
+    virtual bool pushData(yarp::sig::Vector &in);
+	virtual Vector * getData();
 };
 
 #endif
