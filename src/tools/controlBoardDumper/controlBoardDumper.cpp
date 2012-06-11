@@ -26,20 +26,23 @@
  */
 
 
-void controlBoardDumper::setDevice(PolyDriver *Arm_d, int rate, ConstString portPrefix, ConstString dataToDump)
+void controlBoardDumper::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, ConstString portPrefix, ConstString dataToDump)
 {
   // open ports
-  Arm_dd=Arm_d;
+  board_dd=board_d;
+  debug_dd=debug_d;
+
   //getter = NULL;
 
   bool ok;
-  ok  = Arm_dd->view(pos);
-  ok &= Arm_dd->view(vel);
-  ok &= Arm_dd->view(enc);
-  ok &= Arm_dd->view(pid);
-  ok &= Arm_dd->view(amp);
-  ok &= Arm_dd->view(lim);
-  ok &= Arm_dd->view(trq);
+  ok  = board_d->view(pos);
+  ok &= board_d->view(vel);
+  ok &= board_d->view(enc);
+  ok &= board_d->view(pid);
+  ok &= board_d->view(amp);
+  ok &= board_d->view(lim);
+  ok &= board_d->view(trq);
+  ok &= debug_d->view(idbg);
 
   if (!ok)
     printf("Problems acquiring interfaces\n");
@@ -92,7 +95,10 @@ bool controlBoardDumper::threadInit()
 
 controlBoardDumper::controlBoardDumper():RateThread(500)
 {
-
+    getter = 0;
+    board_dd = 0;
+    debug_dd = 0;
+    port   = 0;  
 }
 
 void controlBoardDumper::threadRelease()

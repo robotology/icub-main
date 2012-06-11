@@ -176,7 +176,58 @@ bool GetTrqErrs::getData(double *e)
   //fprintf(stderr, "Entering getTrqErrs\n");
   if (itrq)
     {
-	  itrq->getTorqueErrors(e);
+      itrq->getTorqueErrors(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+void GetRotorPosition::setInterface(IDebugInterface *i)
+{
+    idbg = i;
+}
+
+bool GetRotorPosition::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqs\n");
+  if (idbg)
+    {
+      idbg->getRotorPositions(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+void GetRotorSpeed::setInterface(IDebugInterface *i)
+{
+    idbg = i;
+}
+
+bool GetRotorSpeed::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqErrs\n");
+  if (idbg)
+    {
+      idbg->getRotorSpeeds(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+void GetRotorAcceleration::setInterface(IDebugInterface *i)
+{
+    idbg = i;
+}
+
+bool GetRotorAcceleration::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqs\n");
+  if (idbg)
+    {
+      idbg->getRotorAccelerations(e);
       return 1;
     }
   else

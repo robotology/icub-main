@@ -32,7 +32,7 @@
 class controlBoardDumper: public RateThread
 {
 public:
-  void setDevice(PolyDriver *, int, ConstString, ConstString);
+  void setDevice(PolyDriver *, PolyDriver *, int, ConstString, ConstString);
   controlBoardDumper();
   ~controlBoardDumper();
   bool threadInit();
@@ -42,7 +42,8 @@ public:
   void setGetter(GetData *);
     
 private:
-  PolyDriver *Arm_dd;
+  PolyDriver *board_dd;
+  PolyDriver *debug_dd;
   GetData *getter;
   Stamp stmp;
 
@@ -55,6 +56,7 @@ private:
   IAmplifierControl *amp;
   IControlLimits *lim;
   ITorqueControl *trq;
+  IDebugInterface *idbg;
 
   int numberOfJoints;
   double *data;

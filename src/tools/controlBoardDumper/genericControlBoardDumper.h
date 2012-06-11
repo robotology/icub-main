@@ -19,6 +19,7 @@
 */
 
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <iCub/DebugInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PreciselyTimed.h>
 
@@ -108,3 +109,31 @@ public:
 
   ITorqueControl *itrq;
 };
+
+class GetRotorPosition : public GetData
+{
+public:
+  void setInterface (IDebugInterface *);
+  virtual bool getData(double *);
+
+  IDebugInterface *idbg;
+};
+
+class GetRotorSpeed : public GetData
+{
+public:
+  void setInterface (IDebugInterface *);
+  virtual bool getData(double *);
+
+  IDebugInterface *idbg;
+};
+
+class GetRotorAcceleration : public GetData
+{
+public:
+  void setInterface (IDebugInterface *);
+  virtual bool getData(double *);
+
+  IDebugInterface *idbg;
+};
+

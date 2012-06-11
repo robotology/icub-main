@@ -145,7 +145,9 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
 
-#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 8
+YARP_DECLARE_DEVICES(icubmod)
+
+#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 11
 
 //
 void getRate(Property p, int &r)
@@ -249,9 +251,11 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     availableDataToDump[3] = ConstString("getPositionErrors");
     availableDataToDump[4] = ConstString("getOutputs");
     availableDataToDump[5] = ConstString("getCurrents");
-	availableDataToDump[6] = ConstString("getTorques");
-	availableDataToDump[7] = ConstString("getTorqueErrors");
-
+    availableDataToDump[6] = ConstString("getTorques");
+    availableDataToDump[7] = ConstString("getTorqueErrors");
+    availableDataToDump[8]  = ConstString("getRotorPositions");
+    availableDataToDump[9]  = ConstString("getRotorSpeeds");
+    availableDataToDump[10] = ConstString("getRotorAccelerations");
 
     if (!p.check("dataToDump"))
         {
@@ -284,12 +288,14 @@ class DumpModule: public Module
 private:
     Property options;
     Property fileOptions;
-    Property ddOptions;
+    Property ddBoardOptions;
+    Property ddDebugOptions;
     ConstString name;
     ConstString configFileRobotPart;
     ConstString portPrefix;
 
-    PolyDriver dd;
+    PolyDriver ddBoard;
+    PolyDriver ddDebug;
 
     //get the joints to be dumped
     int rate;
@@ -301,28 +307,38 @@ private:
     controlBoardDumper *myDumper;
 
     //time stamp
-    IPreciselyTimed *stmp;
+    IPreciselyTimed *istmp;
     //encoders
-    IEncoders *enc;     
+    IEncoders *ienc;
     GetSpeeds myGetSpeeds;
     GetAccs myGetAccs;
     GetEncs myGetEncs;
     //pid
-    IPidControl *pid;
+    IPidControl *ipid;
     GetPosErrs myGetPosErrs;
     GetOuts myGetOuts;
     //amp
-    IAmplifierControl *amp;
+    IAmplifierControl *iamp;
     GetCurrs myGetCurrs;
-	//torques
-	ITorqueControl *trq;
-	GetTrqs myGetTrqs;
-	GetTrqErrs myGetTrqErrs;
+    //torques
+    ITorqueControl  *itrq;
+    GetTrqs myGetTrqs;
+    GetTrqErrs myGetTrqErrs;
+    //debug
+    IDebugInterface *idbg;
+    GetRotorPosition     myGetRotorPoss;
+    GetRotorSpeed        myGetRotorVels;
+    GetRotorAcceleration myGetRotorAccs;
 
 public:
     DumpModule() 
     { 
-
+        istmp=0;
+        ienc=0;
+        ipid=0;
+        iamp=0;
+        itrq=0;
+        idbg=0;
     }
 
     virtual bool open(Searchable &s)
@@ -379,30 +395,43 @@ public:
 
 
         //open remote control board
-        ddOptions.put("device", "remote_controlboard");
+        ddBoardOptions.put("device", "remote_controlboard");
+        ddDebugOptions.put("device", "debugInterfaceClient");
     
         ConstString localPortName = name;
+        ConstString localDebugPortName = name;
         localPortName = localPortName + "/controlBoardDumper/";
+        localDebugPortName = localPortName + "debug/";
         //localPortName = localPortName + robot.asString();
         localPortName = localPortName + part.asString();
-        ddOptions.put("local", localPortName.c_str());
+        localDebugPortName = localDebugPortName + part.asString();
+        ddBoardOptions.put("local", localPortName.c_str());
+        ddDebugOptions.put("local", localDebugPortName.c_str());
 
         ConstString remotePortName = "/";
         remotePortName = remotePortName + robot.asString();
         remotePortName = remotePortName + "/";
         remotePortName = remotePortName + part.asString();
-        ddOptions.put("remote", remotePortName.c_str());
+        ddBoardOptions.put("remote", remotePortName.c_str());
     
-        fprintf(stderr, "%s", ddOptions.toString().c_str());    
+        fprintf(stderr, "%s", ddBoardOptions.toString().c_str());    
         // create a device 
-        dd.open(ddOptions);
-        if (!dd.isValid()) {
-			printf("Device not available.  Here are the known devices:\n");
+        ddBoard.open(ddBoardOptions);
+        if (!ddBoard.isValid()) {
+            printf("Device not available.  Here are the known devices:\n");
             printf("%s", Drivers::factory().toString().c_str());
             Network::fini();
             return false;
         }
-    
+
+        ddDebug.open(ddDebugOptions);
+        if (!ddDebug.isValid()) {
+            printf("Debug Interface is mandatary to run this module.  Here are the known devices:\n");
+            printf("%s", Drivers::factory().toString().c_str());
+            Network::fini();
+            return false;
+        }
+
         portPrefix = "/";
         portPrefix= portPrefix + "controlBoardDumper/" + part.asString() + "/";
         //controlBoardDumper *myDumper = new controlBoardDumper(&dd, rate, portPrefix, dataToDump[0]);
@@ -413,16 +442,16 @@ public:
         for (int i = 0; i < nData; i++)
             {
                 if (dataToDump[i] == "getEncoders")
-                    if (dd.view(enc))
+                    if (ddBoard.view(ienc))
                         {
                             fprintf(stderr, "Initializing a getEncs thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetEncs.setInterface(enc);
-                            if (dd.view(stmp))
+                            myGetEncs.setInterface(ienc);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getEncoders::The time stamp initalization interfaces was successfull! \n");
-                                    myGetEncs.setStamp(stmp);
+                                    myGetEncs.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
@@ -430,120 +459,201 @@ public:
                         }
    
                 if (dataToDump[i] == "getEncoderSpeeds")
-                    if (dd.view(enc))
+                    if (ddBoard.view(ienc))
                         {
                             fprintf(stderr, "Initializing a getSpeeds thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetSpeeds.setInterface(enc);
-                            if (dd.view(stmp))
+                            myGetSpeeds.setInterface(ienc);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getEncodersSpeed::The time stamp initalization interfaces was successfull! \n");
-                                    myGetSpeeds.setStamp(stmp);
+                                    myGetSpeeds.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetSpeeds);
                         }
                 if (dataToDump[i] == "getEncoderAccelerations")
-                    if (dd.view(enc))
+                    if (ddBoard.view(ienc))
                         {
                             fprintf(stderr, "Initializing a getAccs thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetAccs.setInterface(enc);
-                            if (dd.view(stmp))
+                            myGetAccs.setInterface(ienc);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getEncoderAccelerations::The time stamp initalization interfaces was successfull! \n");
-                                    myGetAccs.setStamp(stmp);
+                                    myGetAccs.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetAccs);
                         }
                 if (dataToDump[i] == "getPositionErrors")
-                    if (dd.view(pid))
+                    if (ddBoard.view(ipid))
                         {
                             fprintf(stderr, "Initializing a getErrs thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetPosErrs.setInterface(pid);
-                            if (dd.view(stmp))
+                            myGetPosErrs.setInterface(ipid);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getPositionErrors::The time stamp initalization interfaces was successfull! \n");
-                                    myGetPosErrs.setStamp(stmp);
+                                    myGetPosErrs.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetPosErrs);
                         }
                 if (dataToDump[i] == "getOutputs")
-                    if (dd.view(pid))
+                    if (ddBoard.view(ipid))
                         {
                             fprintf(stderr, "Initializing a getOuts thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetOuts.setInterface(pid);
-                            if (dd.view(stmp))
+                            myGetOuts.setInterface(ipid);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getOutputs::The time stamp initalization interfaces was successfull! \n");
-                                    myGetOuts.setStamp(stmp);
+                                    myGetOuts.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetOuts);
                         }
                 if (dataToDump[i] == "getCurrents")
-                    if (dd.view(amp))
+                    if (ddBoard.view(iamp))
                         {
                             fprintf(stderr, "Initializing a getCurrs thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetCurrs.setInterface(amp);
-                            if (dd.view(stmp))
+                            myGetCurrs.setInterface(iamp);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getCurrents::The time stamp initalization interfaces was successfull! \n");
-                                    myGetCurrs.setStamp(stmp);
+                                    myGetCurrs.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
                             myDumper[i].setGetter(&myGetCurrs);
                         }
-		        if (dataToDump[i] == "getTorques")
-                    if (dd.view(trq))
+                if (dataToDump[i] == "getTorques")
+                    if (ddBoard.view(itrq))
                         {
                             fprintf(stderr, "Initializing a getTorques thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetTrqs.setInterface(trq);
-                            if (dd.view(stmp))
+                            myGetTrqs.setInterface(itrq);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
-                                    myGetTrqs.setStamp(stmp);
+                                    myGetTrqs.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
                             myDumper[i].setGetter(&myGetTrqs);
                         }
-		        if (dataToDump[i] == "getTorqueErrors")
-                    if (dd.view(trq))
+                if (dataToDump[i] == "getTorqueErrors")
+                    if (ddBoard.view(itrq))
                         {
                             fprintf(stderr, "Initializing a getTorqueErrors thread\n");
-                            myDumper[i].setDevice(&dd, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetTrqErrs.setInterface(trq);
-                            if (dd.view(stmp))
+                            myGetTrqErrs.setInterface(itrq);
+                            if (ddBoard.view(istmp))
                                 {
                                     fprintf(stderr, "getTorqueErrors::The time stamp initalization interfaces was successfull! \n");
-                                    myGetTrqErrs.setStamp(stmp);
+                                    myGetTrqErrs.setStamp(istmp);
                                 }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
                             myDumper[i].setGetter(&myGetTrqErrs);
                         }
+                if (dataToDump[i] == "getRotorPositions")
+                    {
+                        if (idbg==0 && ddDebug.isValid()) ddDebug.view(idbg);
+                        if (idbg!=0)
+                        {
+                            fprintf(stderr, "Initializing a getRotorPosition thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetRotorPoss.setInterface(idbg);
+                            if (ddDebug.view(istmp))
+                                {
+                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    myGetRotorPoss.setStamp(istmp);
+                                }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                               
+                            myDumper[i].setGetter(&myGetRotorPoss);
+                        }
+                        else
+                        {
+                            printf("Debug Interface not available.  Here are the known devices:\n");
+                            printf("%s", Drivers::factory().toString().c_str());
+                            Network::fini();
+                            return false;
+                        }
+                    }
+                if (dataToDump[i] == "getRotorSpeeds")
+                    {
+                        if (idbg==0 && ddDebug.isValid()) ddDebug.view(idbg);
+                        if (idbg!=0)
+                        {
+                            fprintf(stderr, "Initializing a getRotorSpeed thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetRotorVels.setInterface(idbg);
+                            if (ddDebug.view(istmp))
+                                {
+                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    myGetRotorVels.setStamp(istmp);
+                                }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                               
+                            myDumper[i].setGetter(&myGetRotorVels);
+                        }
+                        else
+                        {
+                            printf("Debug Interface not available.  Here are the known devices:\n");
+                            printf("%s", Drivers::factory().toString().c_str());
+                            Network::fini();
+                            return false;
+                        }
+                    }
+                if (dataToDump[i] == "getRotorAccelerations")
+                    {
+                        if (idbg==0 && ddDebug.isValid()) ddDebug.view(idbg);
+                        if (idbg!=0)
+                        {
+                            fprintf(stderr, "Initializing a getRotorAcceleration thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetRotorAccs.setInterface(idbg);
+                            if (ddDebug.view(istmp))
+                                {
+                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    myGetRotorAccs.setStamp(istmp);
+                                }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                               
+                            myDumper[i].setGetter(&myGetRotorAccs);
+                        }
+                        else
+                        {
+                            printf("Debug Interface not available.  Here are the known devices:\n");
+                            printf("%s", Drivers::factory().toString().c_str());
+                            Network::fini();
+                            return false;
+                        }
+                    }
             }
         Time::delay(1);
         for (int i = 0; i < nData; i++)
@@ -562,11 +672,15 @@ public:
         fprintf(stderr, "Deleting dumper class\n");
         delete[] myDumper;
 
-        //finally close the dd
+        //finally close the dd of the remote control board
         fprintf(stderr, "Closing the device driver\n");
-        dd.close();
+        if (ddBoard.isValid()) ddBoard.close();
         fprintf(stderr, "Device driver closed\n");
 
+        //finally close the dd of the debug interface clien
+        fprintf(stderr, "Closing the debug interface\n");
+        if (ddDebug.isValid()) ddDebug.close();
+        fprintf(stderr, "Debug interface closed\n");
 
         delete[] thetaMap;
         delete[] dataToDump;
@@ -577,6 +691,7 @@ public:
 
 int main(int argc, char *argv[]) 
 {
+    YARP_REGISTER_DEVICES(icubmod)
 
     Network::init();
     ResourceFinder rf;
