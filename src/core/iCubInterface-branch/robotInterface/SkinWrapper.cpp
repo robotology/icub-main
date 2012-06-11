@@ -330,8 +330,8 @@ SkinPartEntry *SkinParts::find(const string &pName)
 IiCubFeature * SkinParts::findus(FEAT_ID *id )
 {
 	IiCubFeature *ret;
-	id->type = Skin;
-	memset(id->name, 0x00, sizeof(id->name) );
+//	id->type = Skin;
+//	memset(id->name, 0x00, sizeof(id->name) );
 	SkinPartsIt it=begin();
 	for(;it!=end(); it++)
 	{

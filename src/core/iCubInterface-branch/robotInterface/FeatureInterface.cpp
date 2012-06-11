@@ -33,7 +33,16 @@ bool findAndFill(FEAT_ID *id, char *sk_array)
 {
 	IiCubFeatureList *list = iRobotInterface->getRobotFeatureList(id);
 	IiCubFeature * skin = list->findus(id);
-	skin->fillData(sk_array);
-	Vector *v = skin->getData();
-	skin->pushData(*v);
+	if(NULL == skin)
+	{
+		printf(	"/************************************\\\n"
+				"Parte non trovata!!!\n"
+				"\\***********************************/\n");
+	}
+	else
+	{
+		skin->fillData(sk_array);
+		Vector *v = skin->getData();
+		skin->pushData(*v);
+	}
 }
