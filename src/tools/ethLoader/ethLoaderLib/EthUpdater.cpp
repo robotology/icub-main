@@ -278,7 +278,7 @@ void EthUpdater::cmdBlink()
     sendCommandSelected(CMD_BLINK);
 }
 
-void EthUpdater::cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr)
+void EthUpdater::cmdChangeAddress(ACE_UINT32 address,ACE_UINT32 newAddr)
 {
     mTxBuffer[0]=CMD_CHADDR;
 
@@ -287,19 +287,23 @@ void EthUpdater::cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr)
     mTxBuffer[3]=(newAddr>>8) &0xFF;
     mTxBuffer[4]= newAddr     &0xFF;
 
-    mSocket.SendTo(mTxBuffer,5,mPort,oldAddr);
+    printf("change unit %x address to %x\n",address,newAddr);
+
+    mSocket.SendTo(mTxBuffer,5,mPort,address);
 }
 
-void EthUpdater::cmdChangeMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr)
+void EthUpdater::cmdChangeMask(ACE_UINT32 address,ACE_UINT32 newMask)
 {
     mTxBuffer[0]=CMD_CHMASK;
 
-    mTxBuffer[1]=(newAddr>>24)&0xFF;
-    mTxBuffer[2]=(newAddr>>16)&0xFF;
-    mTxBuffer[3]=(newAddr>>8) &0xFF;
-    mTxBuffer[4]= newAddr     &0xFF;
+    mTxBuffer[1]=(newMask>>24)&0xFF;
+    mTxBuffer[2]=(newMask>>16)&0xFF;
+    mTxBuffer[3]=(newMask>>8) &0xFF;
+    mTxBuffer[4]= newMask     &0xFF;
 
-    mSocket.SendTo(mTxBuffer,5,mPort,oldAddr);
+    printf("change unit %x mask to %x\n",address,newMask);
+
+    mSocket.SendTo(mTxBuffer,5,mPort,address);
 }
 
 std::string EthUpdater::cmdGetProcs()

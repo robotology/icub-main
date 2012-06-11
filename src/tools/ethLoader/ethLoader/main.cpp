@@ -298,18 +298,17 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     sscanf(new_addr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
     ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-    ACE_UINT32 iOldAddress=gUpdater.getBoardList()[index[0]].mAddress;
 
-    if (iNewAddress!=iOldAddress)
+    ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
+
+    if (iNewAddress!=address)
     {
         char old_addr[16];
-        sprintf(old_addr,"%d.%d.%d.%d",(iOldAddress>>24)&0xFF,(iOldAddress>>16)&0xFF,(iOldAddress>>8)&0xFF,iOldAddress&0xFF);
+        sprintf(old_addr,"%d.%d.%d.%d",(address>>24)&0xFF,(address>>16)&0xFF,(address>>8)&0xFF,address&0xFF);
         
         if (dialog_question_ip_address(old_addr,new_addr,"IP address"))
         {
-            printf("changing address\n");
-            fflush(stdout);
-            gUpdater.cmdChangeAddress(iOldAddress,iNewAddress);
+            gUpdater.cmdChangeAddress(address,iNewAddress);
         }
     }
 
@@ -320,7 +319,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     gtk_tree_path_free(path);
 }
 
-static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_addr)
+static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_mask)
 {
     GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
     GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
@@ -329,21 +328,21 @@ static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     int* index=gtk_tree_path_get_indices(path);
 
     int ip1,ip2,ip3,ip4;
-    sscanf(new_addr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+    sscanf(new_mask,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
-    ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-    ACE_UINT32 iOldAddress=gUpdater.getBoardList()[index[0]].mMask;
+    ACE_UINT32 iNewMask=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
+    ACE_UINT32 iOldMask=gUpdater.getBoardList()[index[0]].mMask;
+    
+    ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
 
-    if (iNewAddress!=iOldAddress)
+    if (iNewMask!=iOldMask)
     {
-        char old_addr[16];
-        sprintf(old_addr,"%d.%d.%d.%d",(iOldAddress>>24)&0xFF,(iOldAddress>>16)&0xFF,(iOldAddress>>8)&0xFF,iOldAddress&0xFF);
+        char old_mask[16];
+        sprintf(old_mask,"%d.%d.%d.%d",(iOldMask>>24)&0xFF,(iOldMask>>16)&0xFF,(iOldMask>>8)&0xFF,iOldMask&0xFF);
         
-        if (dialog_question_ip_address(old_addr,new_addr,"IP mask"))
+        if (dialog_question_ip_address(old_mask,new_mask,"IP mask"))
         {
-            printf("changing mask\n");
-            fflush(stdout);
-            gUpdater.cmdChangeMask(iOldAddress,iNewAddress);
+            gUpdater.cmdChangeMask(address,iNewMask);
         }
     }
 
