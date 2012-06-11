@@ -2723,9 +2723,9 @@ public:
         return false;
 	}
 
-	virtual bool getRotorPosition(int j, double *t)
-	{
-		int off=device.lut[j].offset;
+    virtual bool getRotorPosition(int j, double *t)
+    {
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2735,15 +2735,15 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getRotorPosition(off+base, t);
-        }		
+        }
         return false;
-	}
+    }
 
-	virtual bool getRotorPositions(double *t)
-	{
+    virtual bool getRotorPositions(double *t)
+    {
         return false;
         /*
-		int off=device.lut[j].offset;
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2753,9 +2753,51 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getRotorPosition(off+base, t);
-        }		
+        }
         return false;*/
-	}
+    }
+
+    virtual bool getRotorSpeed(int j, double *t)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getRotorSpeed(off+base, t);
+        }
+        return false;
+    }
+
+    virtual bool getRotorSpeeds(double *t)
+    {
+        return false;
+    }
+
+    virtual bool getRotorAcceleration(int j, double *t)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iDbg)
+        {
+            return p->iDbg->getRotorAcceleration(off+base, t);
+        }
+        return false;
+    }
+
+    virtual bool getRotorAccelerations(double *t)
+    {
+        return false;
+    }
 
     virtual bool getJointPosition(int j, double *t)
 	{
