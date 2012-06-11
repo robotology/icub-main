@@ -183,6 +183,8 @@ public:
     // msg 1
     BCastElement _position_joint;
     BCastElement _position_rotor;
+    BCastElement _speed_rotor;
+    BCastElement _accel_rotor;
 
     // msg 2
     short _pid_value;
@@ -205,8 +207,8 @@ public:
     double _update_r;
 
     // msg 4c
-    short _speed;
-    short _accel;
+    short _speed_joint;
+    short _accel_joint;
     double _update_s;
 
 	// msg 4d
@@ -276,6 +278,8 @@ public:
     {
         _position_joint._value = 0;
         _position_rotor._value = 0;
+        _speed_rotor._value = 0;
+        _accel_rotor._value = 0;
         _pid_value = 0;
         _current = 0;
 	    _axisStatus=0;
@@ -284,8 +288,8 @@ public:
 		_controlmodeStatus=0;
         _position_error = 0;
 		_torque_error = 0;
-        _speed = 0;
-        _accel = 0;
+        _speed_joint = 0;
+        _accel_joint = 0;
 
         //_torque=0;
 
@@ -1595,6 +1599,8 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
             _bcastRecvBuffer[j]._update_e=Time::now();
             _bcastRecvBuffer[j]._position_joint.resetStats();
             _bcastRecvBuffer[j]._position_rotor.resetStats();
+            _bcastRecvBuffer[j]._speed_rotor.resetStats();
+            _bcastRecvBuffer[j]._accel_rotor.resetStats();
         }
 
     //previously initialized
@@ -2428,6 +2434,26 @@ void CanBusMotionControl::handleBroadcasts()
                     }
                     break;
 
+                case CAN_BCAST_MOTOR_SPEED:
+                {
+                    int tmp;
+                    tmp =*((short *)(data));
+                    r._bcastRecvBuffer[j]._speed_rotor.update(tmp, before);
+                    tmp =*((short *)(data+4));
+                    r._bcastRecvBuffer[j]._accel_rotor.update(tmp, before);
+                    r._bcastRecvBuffer[j]._update_s = before;
+                    j++;
+                    if (j < r.getJoints())
+                    {
+                        tmp =*((short *)(data+2));
+                        r._bcastRecvBuffer[j]._speed_rotor.update(tmp, before);
+                        tmp =*((short *)(data+6));
+                        r._bcastRecvBuffer[j]._accel_rotor.update(tmp, before);
+                        r._bcastRecvBuffer[j]._update_s = before;
+                    }
+                    break;
+                }
+                break;
 #if 0
                 case CAN_BCAST_TORQUE:
                     {
@@ -2602,14 +2628,14 @@ void CanBusMotionControl::handleBroadcasts()
                 case CAN_BCAST_VELOCITY:
                     // also receives the acceleration values.
 
-                    r._bcastRecvBuffer[j]._speed = *((short *)(data));
-                    r._bcastRecvBuffer[j]._accel = *((short *)(data+4));
+                    r._bcastRecvBuffer[j]._speed_joint = *((short *)(data));
+                    r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+4));
                     r._bcastRecvBuffer[j]._update_s = before;
                     j++;
                     if (j < r.getJoints())
                     {
-                        r._bcastRecvBuffer[j]._speed = *((short *)(data+2));
-                        r._bcastRecvBuffer[j]._accel = *((short *)(data+6));
+                        r._bcastRecvBuffer[j]._speed_joint = *((short *)(data+2));
+                        r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+6));
                         r._bcastRecvBuffer[j]._update_s = before;
                     }
                     break;
@@ -3984,6 +4010,38 @@ bool CanBusMotionControl::getRotorPositionsRaw(double* value)
     return false;
 }
 
+bool CanBusMotionControl::getRotorSpeedRaw(int axis, double* value)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *value = double(r._bcastRecvBuffer[axis]._speed_rotor._value)*1000.0;
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getRotorSpeedsRaw(double* value)
+{
+    return false;
+}
+
+bool CanBusMotionControl::getRotorAccelerationRaw(int axis, double* value)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *value = double(r._bcastRecvBuffer[axis]._accel_rotor._value)*1000000.0;
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getRotorAccelerationsRaw(double* value)
+{
+    return false;
+}
+
 bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
 {
     CanBusResources& r = RES(system_resources);
@@ -4828,7 +4886,7 @@ bool CanBusMotionControl::getEncoderSpeedsRaw(double *v)
     _mutex.wait();
     for (i = 0; i < r.getJoints(); i++) {
 		int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
-        v[i] = (double(r._bcastRecvBuffer[i]._speed)*1000.0)/vel_factor;
+        v[i] = (double(r._bcastRecvBuffer[i]._speed_joint)*1000.0)/vel_factor;
     }
     _mutex.post();
     return true;
@@ -4843,7 +4901,7 @@ bool CanBusMotionControl::getEncoderSpeedRaw(int j, double *v)
 
     _mutex.wait();
 	int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
-    *v = (double(r._bcastRecvBuffer[j]._speed)*1000.0)/vel_factor;
+    *v = (double(r._bcastRecvBuffer[j]._speed_joint)*1000.0)/vel_factor;
     _mutex.post();
 
     return true;
@@ -4857,7 +4915,7 @@ bool CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
     for (i = 0; i < r.getJoints(); i++) {
 		int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
 		int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Acc_estimator_shift));
-        v[i] = (double(r._bcastRecvBuffer[i]._accel)*1000000.0)/(vel_factor*acc_factor);
+        v[i] = (double(r._bcastRecvBuffer[i]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
     }
     _mutex.post();
     return true;
@@ -4873,7 +4931,7 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
     _mutex.wait();
 	int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
 	int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Acc_estimator_shift));
-    *v = (double(r._bcastRecvBuffer[j]._accel)*1000000.0)/(vel_factor*acc_factor);
+    *v = (double(r._bcastRecvBuffer[j]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
     _mutex.post();
 
     return true;

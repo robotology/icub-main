@@ -44,13 +44,17 @@
 #include <stdio.h> // for printf
 
 // additional vocabs defined for the IDebug interface.
-#define VOCAB_GENERIC_PARAMETER VOCAB4('g','e','n','p')
-#define VOCAB_DEBUG_PARAMETER   VOCAB4('d','b','g','p')
-#define VOCAB_DEBUG_DESIRED_POS VOCAB4('d','d','p','s')
-#define VOCAB_DEBUG_ROTOR_POS   VOCAB3('d','r','p')
-#define VOCAB_DEBUG_ROTOR_POSS  VOCAB4('d','r','p','s')
-#define VOCAB_DEBUG_JOINT_POS   VOCAB3('d','j','p')
-#define VOCAB_DEBUG_JOINT_POSS  VOCAB4('d','j','p','s')
+#define VOCAB_GENERIC_PARAMETER   VOCAB4('g','e','n','p')
+#define VOCAB_DEBUG_PARAMETER     VOCAB4('d','b','g','p')
+#define VOCAB_DEBUG_DESIRED_POS   VOCAB4('d','d','p','s')
+#define VOCAB_DEBUG_ROTOR_POS     VOCAB3('d','r','p')
+#define VOCAB_DEBUG_ROTOR_POSS    VOCAB4('d','r','p','s')
+#define VOCAB_DEBUG_ROTOR_SPEED   VOCAB3('d','r','v')
+#define VOCAB_DEBUG_ROTOR_SPEEDS  VOCAB4('d','r','v','s')
+#define VOCAB_DEBUG_ROTOR_ACCEL   VOCAB3('d','r','a')
+#define VOCAB_DEBUG_ROTOR_ACCELS  VOCAB4('d','r','a','s')
+#define VOCAB_DEBUG_JOINT_POS     VOCAB3('d','j','p')
+#define VOCAB_DEBUG_JOINT_POSS    VOCAB4('d','j','p','s')
 
 /* LATER: is it likely that some of these would move into iCub::dev namespace? */
 namespace yarp{
@@ -588,6 +592,10 @@ public:
 
     virtual bool getRotorPosition         (int j, double* value)=0;
     virtual bool getRotorPositions        (double* value)=0;
+    virtual bool getRotorSpeed            (int j, double* value)=0;
+    virtual bool getRotorSpeeds           (double* value)=0;
+    virtual bool getRotorAcceleration     (int j, double* value)=0;
+    virtual bool getRotorAccelerations    (double* value)=0;
     virtual bool getJointPosition         (int j, double* value)=0;
     virtual bool getJointPositions        (double* value)=0;
 };
@@ -634,6 +642,10 @@ public:
     
     virtual bool getRotorPositionRaw         (int j, double* value)=0;
     virtual bool getRotorPositionsRaw        (double* value)=0;
+    virtual bool getRotorSpeedRaw            (int j, double* value)=0;
+    virtual bool getRotorSpeedsRaw           (double* value)=0;
+    virtual bool getRotorAccelerationRaw     (int j, double* value)=0;
+    virtual bool getRotorAccelerationsRaw    (double* value)=0;
     virtual bool getJointPositionRaw         (int j, double* value)=0;
     virtual bool getJointPositionsRaw        (double* value)=0;
 };
@@ -648,16 +660,20 @@ public:
     bool uninitialize();
     ImplementDebugInterface(IDebugInterfaceRaw *v);
     ~ImplementDebugInterface();
-	bool setParameter(int j, unsigned int type, double value);
-    bool getParameter(int j, unsigned int type, double* value);
-	bool setDebugParameter(int j, unsigned int index, double value);
-    bool getDebugParameter(int j, unsigned int index, double *value);
-	bool setDebugReferencePosition(int j, double value);
-	bool getDebugReferencePosition(int j, double *value);
-    bool getRotorPosition         (int j, double* value);
-    bool getRotorPositions        (double* value);
-    bool getJointPosition         (int j, double* value);
-    bool getJointPositions        (double* value);
+    bool setParameter              (int j, unsigned int type, double value);
+    bool getParameter              (int j, unsigned int type, double* value);
+    bool setDebugParameter         (int j, unsigned int index, double value);
+    bool getDebugParameter         (int j, unsigned int index, double *value);
+    bool setDebugReferencePosition (int j, double value);
+    bool getDebugReferencePosition (int j, double *value);
+    bool getRotorPosition          (int j, double* value);
+    bool getRotorPositions         (double* value);
+    bool getRotorSpeed             (int j, double* value);
+    bool getRotorSpeeds            (double* value);
+    bool getRotorAcceleration      (int j, double* value);
+    bool getRotorAccelerations     (double* value);
+    bool getJointPosition          (int j, double* value);
+    bool getJointPositions         (double* value);
 };
 
 #endif /* __DEBUGINTERFACES__ */

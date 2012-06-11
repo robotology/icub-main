@@ -918,6 +918,10 @@ public:
 	virtual bool getDebugReferencePositionRaw(int j, double *value);
 	virtual bool getRotorPositionRaw(int j, double* value);
 	virtual bool getRotorPositionsRaw(double *value);
+    virtual bool getRotorSpeedRaw(int j, double* value);
+	virtual bool getRotorSpeedsRaw(double *value);
+	virtual bool getRotorAccelerationRaw(int j, double* value);
+	virtual bool getRotorAccelerationsRaw(double *value);
 	virtual bool getJointPositionRaw(int j, double* value);
 	virtual bool getJointPositionsRaw(double *value);
 

@@ -277,6 +277,78 @@ bool yarp::dev::DebugInterfaceClient::getRotorPositions(double* t)
     return ok;
 }
 
+bool yarp::dev::DebugInterfaceClient::getRotorSpeed(int j, double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_ROTOR_SPEED);
+    cmd.addInt(j);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+		&&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_SPEED)
+        &&(resp.get(2).asInt()==j))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
+bool yarp::dev::DebugInterfaceClient::getRotorSpeeds(double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_ROTOR_SPEEDS);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+        &&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_SPEEDS))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
+bool yarp::dev::DebugInterfaceClient::getRotorAcceleration(int j, double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_ROTOR_ACCEL);
+    cmd.addInt(j);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+		&&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_ACCEL)
+        &&(resp.get(2).asInt()==j))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
+bool yarp::dev::DebugInterfaceClient::getRotorAccelerations(double* t)
+{ 
+    Bottle cmd, resp;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_DEBUG_ROTOR_ACCELS);
+
+    bool ok = rpc_p.write(cmd, resp);
+
+    if (  (resp.get(0).asVocab()==VOCAB_IS)
+        &&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_ACCELS))
+    {
+        ok=ok&&true;
+        *t=resp.get(3).asDouble();
+    }
+    return ok;
+}
+
 bool yarp::dev::DebugInterfaceClient::setDebugReferencePosition(int j, double t)
 { 
     Bottle cmd, response;

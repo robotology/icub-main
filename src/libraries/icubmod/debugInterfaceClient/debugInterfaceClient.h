@@ -74,6 +74,11 @@ public:
     
     bool getRotorPosition(int j, double *value);
     bool getRotorPositions(double *value);
+    bool getRotorSpeed(int j, double *value);
+    bool getRotorSpeeds(double *value);
+    bool getRotorAcceleration(int j, double *value);
+    bool getRotorAccelerations(double *value);
+
     bool getJointPosition(int j, double *value);
     bool getJointPositions(double *value);
 };
