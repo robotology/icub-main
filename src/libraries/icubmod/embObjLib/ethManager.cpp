@@ -382,7 +382,7 @@ TheEthManager::TheEthManager() : RateThread(1000)
 }
 
 
-TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1000)
+TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1)
 {
 	char tmp[SIZE_INFO];
 	memset(info, 0x00, SIZE_INFO);

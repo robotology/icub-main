@@ -5,18 +5,21 @@
 SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
+add_definitions( -D_ICUB_CALLBACK_ )
+
 PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}
     			INCLUDE ethManager.h )
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
-set(ICUB_INTERFACE_CORE_FOLDER	$ENV{ICUB_ROOT}/main/src/core/iCubInterface-branch/)
+
 
 #add_definitions( -DMYDEFINE=CIAO )
 
+
+
 # using embObjLib.conf...
  include(embObjLib.conf)
-#include ($ENV{ICUB_ROOT}/firmware/emBODY/arch-host/demo/hostTransceiver2/src/embObjLib.conf)
 
 # Debug messages
 # message(INFO " BASE=${BASE}")
