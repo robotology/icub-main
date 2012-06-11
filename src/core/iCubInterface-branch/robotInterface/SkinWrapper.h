@@ -323,7 +323,7 @@ public:
     void setId(const std::string &i)
     {
     	id=i;
-    	fId.name = i;
+    	strcpy(fId.name, i.c_str());
     }
 
     // _AC_
