@@ -70,8 +70,8 @@ ethResources::~ethResources()
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
-#warning "pick up the right borad number"
-	uint8_t board_n = 4;
+#warning "pick up the right board number"
+	uint8_t board_n = -1
 	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
 //	string str=config.toString().c_str();
@@ -493,6 +493,7 @@ void TheEthManager::run()
 			if(strcmp((*iterator)->address, address) == 0)
 			{
 				// come fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
+				ethRes = (*iterator);
 				memcpy(ethRes->recv_msg, incoming_msg, recv_size);
 				(*iterator)->onMsgReception(ethRes->recv_msg, recv_size);
 				//continue; // to skip remaining part of the for cycle

@@ -377,7 +377,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 
 	uint16_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
 	EOtreenode	*nvTreenodeRoot;
-	EOnv 		*nvRoot;
+	EOnv 		*nvRoot=NULL;
 	EOnv		tmp;
     eOresult_t res;
 
