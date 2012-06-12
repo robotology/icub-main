@@ -63,4 +63,8 @@ else(ICUB_USE_OpenCV)
     message(STATUS "OpenCV not found/selected, skipping stereoCalib")
 endif(ICUB_USE_OpenCV)
 
-
+if(ICUB_USE_GtkMM AND ICUB_USE_OpenCV)
+	add_subdirectory(dataSetPlayer)
+else(ICUB_USE_GtkMM AND ICUB_USE_OpenCV)
+    message(STATUS "OpenCV or GTKMM not found/selected, skipping dataSetPlayer")
+endif(ICUB_USE_GtkMM AND ICUB_USE_OpenCV)
