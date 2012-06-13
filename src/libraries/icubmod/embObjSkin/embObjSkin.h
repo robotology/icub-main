@@ -96,6 +96,7 @@ protected:
     PolyDriver resource;
     ethResources *res;
 
+    FEAT_ID		_fId;
 	// can stuff... to be removed
     //    ICanBufferFactory *pCanBufferFactory;
 
@@ -106,7 +107,7 @@ protected:
     yarp::os::Semaphore mutex;
 
     yarp::sig::VectorOf<int> cardId;
-    int sensorsNum;
+    size_t sensorsNum;
 
     yarp::sig::Vector data;
 
@@ -144,6 +145,7 @@ public:
     virtual bool fillData(char *data);
     virtual bool pushData(yarp::sig::Vector &in);
 	virtual Vector * getData();
+    virtual void setId(FEAT_ID &id);
 };
 
 #endif

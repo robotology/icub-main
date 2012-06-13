@@ -5,6 +5,7 @@
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #include <embObjSkin.h>
+#include "EOnv_hid.h"
 
 #include <yarp/os/Time.h>
 #include <iostream>
@@ -145,9 +146,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	bool correct=true;
 	//correct &= config.check("Period");
 
-
-
-	memset(info, 0x00, SIZE_INFO);
+	memset(info, 0x00, (size_t)SIZE_INFO);
 	Bottle xtmp, xtmp2;
 	ACE_TCHAR address[64];
 	xtmp = Bottle(config.findGroup("ETH"));
@@ -202,8 +201,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	ethResCreator *resList = ethResCreator::instance();
 	res = resList->getResource(prop);
 
-
-
 #if 1
 
 	int period=config.find("Period").asInt();
@@ -254,7 +251,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	sensorsNum=16*12*7;		// max num of card
 	data.resize(sensorsNum);
 
-	RateThread::start();
+	//RateThread::start();
 	return true;
 }
 
@@ -268,6 +265,11 @@ bool EmbObjSkin::close()
 //	}
 //	driver.close();
 	return true;
+}
+
+void EmbObjSkin::setId(FEAT_ID &id)
+{
+	_fId=id;
 }
 
 int EmbObjSkin::read(yarp::sig::Vector &out)
@@ -400,30 +402,62 @@ int EmbObjSkin::calibrateChannel(int ch)
 
 bool EmbObjSkin::threadInit()
 {
-//	for (int i=0; i<cardId.size(); i++)
-//	{
-//#if SKIN_DEBUG
-//		printf("SkinPrototype:: thread initialising boardId:%d\n",cardId[i]);
-//#endif
-//
-//		unsigned int canMessages=0;
-//		unsigned id = 0x200 + cardId[i];
-//
-//		CanMessage &msg=outBuffer[0];
-//		msg.setId(id);
-//		msg.getData()[0]=0x4C; // message type
-//		msg.getData()[1]=0x01;
-//		msg.getData()[2]=0x01;
-//		msg.getData()[3]=0x01;
-//		msg.getData()[4]=0;
-//		msg.getData()[5]=0x22;
-//		msg.getData()[6]=0;
-//		msg.getData()[7]=0;
-//		msg.setLen(8);
-//		canMessages=0;
-//		// create a ROP to start/initialize the MTB, if needed
-////		pCanBus->canWrite(outBuffer, 1, &canMessages);
-//	}
+	char str[128];
+	int j = 0;
+
+	EOnv 						*cnv;
+	eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
+	EOarray						*array;
+	eOropSIGcfg_t 				sigcfg;
+	eOcfg_nvsEP_mn_commNumber_t dummy = 0;
+	eOnvID_t 					nvid;
+	EOnv 						*nvRoot;
+
+	eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
+	nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
+	nvRoot = res->transceiver->getNVhandler(ep, nvid);
+	if(NULL == nvRoot)
+	{
+		printf("\n>>> ERROR \ntransceiver->getNVhandler returned NULL!!\n");
+		return false;
+	}
+	uint8_t dat = 1;
+	if( eores_OK != eo_nv_Set(nvRoot, &dat, eobool_true, eo_nv_upd_dontdo))
+	{
+		printf("\n>>> ERROR \neo_nv_Set !!\n");
+		return false;
+	}
+	// tell agent to prepare a rop to send
+	res->transceiver->load_occasional_rop(eo_ropcode_set, ep, nvid);
+
+	//
+	//	config regulars
+	//
+	eOnvID_t nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, dummy, commNVindex__ropsigcfgcommand);
+	cnv = res->transceiver->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign);
+	ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->loc;
+	array = (EOarray*) &ropsigcfgassign->array;
+	eo_array_Reset(array);
+	array->head.capacity = NUMOFROPSIGCFG;
+	array->head.itemsize = sizeof(eOropSIGcfg_t);
+	ropsigcfgassign->cmmnd = ropsigcfg_cmd_assign;
+
+	sigcfg.ep = _fId.ep;
+	nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)sigcfg.ep, 0, skinNVindex_sstatus__arrayof10canframe);
+	sigcfg.id = nvid;
+	sigcfg.plustime = 0;
+	eo_array_PushBack(array, &sigcfg);
+	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign);
+
+
+	eOnvID_t nvid_go2state 		= eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
+	EOnv 	*nv_p 				= res->transceiver->getNVhandler(endpoint_mn_appl, nvid_go2state);
+	eOmn_appl_state_t  desired 	= applstate_running;
+
+	if( eores_OK != eo_nv_Set(nv_p, &desired, eobool_true, eo_nv_upd_dontdo))
+		printf("error!!");
+	// tell agent to prepare a rop to send
+	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid_go2state);
 
 	return true;
 }
