@@ -26,6 +26,15 @@
 
 // should not include this stuff...
 #include "EoSkin.h"
+#include "eOcfg_nvsEP_sk.h"
+
+#undef _PRINT_DEBUG_
+
+#ifdef _PRINT_DEBUG_
+#define printDebug(args...)		printf(args)
+#else
+#define printDebug
+#endif
 
 SkinPartEntry::SkinPartEntry()
 {
@@ -102,6 +111,8 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 
 	driver.view(analog);
 	driver.view(hook);
+	RateThread *thread;
+	driver.view(thread);
 
 	if (!analog)
 	{
@@ -120,7 +131,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 	std::vector<AnalogPortEntry> skinPorts;
 	if(!partP.check("ports")){
 		// if there is no "ports" section take the name of the "skin" group as the only port name
-		skinPorts.resize(1);
+		skinPorts.resize( (size_t)1);
 		skinPorts[0].offset = 0;
 		skinPorts[0].length = -1;
 		skinPorts[0].port_name = root_name + this->id;
@@ -176,7 +187,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 	}
 
 	// 7 = cardId.size()
-	wholeData.resize(16*12*7);
+	wholeData.resize((size_t)16*12*7);
 	for (int i=0; i<wholeData.size(); i++)
 		wholeData[i]=255;
 
@@ -185,7 +196,16 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 	cout << "FeatId = " << FeatId << endl;
 	strcpy(fId.name, FeatId.c_str());
 
+	if( 0 == strcmp("left_arm", fId.name) )
+		fId.ep = endpoint_sk_emsboard_leftlowerarm;
+
+	if( 0 == strcmp("right_arm", fId.name) )
+			fId.ep = endpoint_sk_emsboard_rightlowerarm;
+
 	//memset(fId.name, 0x00, sizeof(fId.name) );
+
+	hook->setId(fId);
+	thread->start();
 
 	analogServer = new AnalogServer(skinPorts);
 	analogServer->setRate(period);
@@ -229,17 +249,19 @@ bool SkinPartEntry::fillData(char *data)
 	EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) data;
 	//	yarp::sig::Vector 		&pv = outPort.prepare();
 
-	printf("\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
+
+	printDebug("\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
 
 	for(i=0; i<sk_array->head.size; i++)
 	{
 		eOutil_canframe_t *canframe;
-		int  j, mtbId, cardId, valid = 0;
+		uint8_t  j, mtbId =0;
+		uint8_t  cardId, valid = 0;
 
 		canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
 		valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
 
-//		if(valid)
+		if(valid)
 		{
 			cardId = (canframe->id & 0x00f0) >> 4;
 			switch (cardId)
@@ -265,20 +287,24 @@ bool SkinPartEntry::fillData(char *data)
 				case 8:
 					mtbId = 6;
 					break;
+				default:
+					printf("Unexpected value %d\n", cardId);
+					return false;
+					break;
 			}
 			triangle = (canframe->id & 0x000f);
 			msgtype= ((canframe->data[0])& 0x80);
-			printf("\n data id 0x%04X, 0x", canframe->id);
+			printDebug("\n data id 0x%04X, 0x", canframe->id);
 
 			int index=16*12*mtbId + triangle*12;
 
-			printf("%0X ", canframe->data[0]);
+			printDebug("%0X ", canframe->data[0]);
 			if (msgtype)
 			{
 				for(int k=0;k<5;k++)
 				{
 					wholeData[index+k+7]=canframe->data[k+1];
-					printf("%0X ", canframe->data[k+1]);
+					printDebug("%0X ", canframe->data[k+1]);
 				}
 			}
 			else
@@ -286,18 +312,15 @@ bool SkinPartEntry::fillData(char *data)
 				for(int k=0;k<7;k++)
 				{
 					wholeData[index+k]=canframe->data[k+1];
-					printf("%0X ", canframe->data[k+1]);
+					printDebug("%0X ", canframe->data[k+1]);
 				}
 			}
 		}
-/*		else
+		else
 		{
-			printf("Invalid Message\n");
-		}*/
+			printDebug("Unknown Message\n");
+		}
 	}
-
-	//	pv = wholeData;
-
 }
 
 SkinPartEntry *SkinParts::find(const string &pName)
@@ -335,7 +358,8 @@ IiCubFeature * SkinParts::findus(FEAT_ID *id )
 	SkinPartsIt it=begin();
 	for(;it!=end(); it++)
 	{
-		if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) )
+		//if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) && ((*it)->fId.ep) == id->ep)
+		if( ((*it)->fId.type == id->type) && ((*it)->fId.ep) == id->ep)
 		{
 			ret = (*it);
 			return ret;
@@ -347,10 +371,9 @@ IiCubFeature * SkinParts::findus(FEAT_ID *id )
 void SkinParts::close()
 {
 	YARP_INFO(Logger::get(),"SkinParts::close()", Logger::get().log_files.f3);
-	SkinPartsIt it=begin();
-	while(it!=end())
+	SkinPartsIt it;
+	for(it=this->begin(); it!=this->end(); it++)
 	{
 		(*it)->close();
-		it++;
 	}
 }

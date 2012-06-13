@@ -16,8 +16,6 @@
 
 void *getRobotFeatureList_C(FEAT_ID *id)
 {
-
-	printf("hello!!\n");
 //	ethResCreator::instance();
 	IRobotInterface *iRobot;
 	iRobot = iRobotInterface;

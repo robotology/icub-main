@@ -9,6 +9,7 @@
 #define FEATUREINTERFACE_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -25,6 +26,7 @@ typedef struct
 {
 	FeatureType		type;
 	char 			name[64];
+	uint8_t 		ep;
 }FEAT_ID;
 
 extern void *getRobotFeatureList_C(FEAT_ID *);

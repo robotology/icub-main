@@ -20,6 +20,7 @@ class IiCubFeature
 		virtual bool fillData(char *data ) =0;
 		virtual Vector * getData() =0;
 		virtual bool pushData(yarp::sig::Vector &in) =0;
+	    virtual void setId(FEAT_ID &id) { };
 };
 
 class IiCubFeatureList
