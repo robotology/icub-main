@@ -341,7 +341,8 @@ following ports:
       target with stereo input.
     - [get] [info]: returns (enclosed in a list) a property-like
       bottle containing useful information, such as the
-      "head_version", the "min_allowed_vergence".
+      "head_version" (e.g. 1, 2, ...), the
+      "min_allowed_vergence" (in degrees).
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
