@@ -20,12 +20,8 @@ using namespace std;
 #include "hostTransceiver.hpp"
 #include <yarp/os/impl/Logger.h>
 
-extern "C" {
 #include "EoCommon.h"
 #include "EOnv_hid.h"
-
-// the endpoints on that particular ems
-}
 
 
 // mutex
@@ -143,8 +139,8 @@ void hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
     ropinfo.nvep        = ep;
 
     ropinfo.nvid = nvid;
-    eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
-
+    eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
+    printf("load_occasional_rop res = 0x%0X\n", res);
 }
 
 void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regular_rops_on_board(void)
@@ -373,7 +369,7 @@ void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint1
 
 EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 {
-	YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
+//	YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
 
 	uint16_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
 	EOtreenode	*nvTreenodeRoot;

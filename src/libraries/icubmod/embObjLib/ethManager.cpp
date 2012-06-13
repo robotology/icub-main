@@ -70,8 +70,8 @@ ethResources::~ethResources()
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
-#warning "pick up the right board number"
-	uint8_t board_n = -1
+#warning "pick up the right board number: now using 4th number of ip address"
+	uint8_t board_n = -1;
 	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
 //	string str=config.toString().c_str();
@@ -140,7 +140,8 @@ bool ethResources::open(yarp::os::Searchable &config)
 	transceiver= new hostTransceiver;
 //	createProtocolHandler.open("hostTransceiver");
 //	createProtocolHandler.view(transceiver);
-	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, board_n);
+
+	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, rem_ip4);
 
 	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
 	// Clean device and subdevice fileds
@@ -228,6 +229,16 @@ ethResCreator::ethResCreator()
 	how_many_boards = 0;
 }
 
+ethResCreator::~ethResCreator()
+{
+	ethResIt iterator = this->begin();
+	while(iterator != this->end())
+	{
+		delete (*iterator);
+		iterator++;
+	}
+}
+
 ethResCreator *ethResCreator::instance()
 {
 	if (initted == false)
@@ -277,12 +288,11 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 
 
 	ethResources *newRes = NULL;
-	ethResCreator *ethResList = ethResCreator::instance();
-	ethResIt iterator = ethResList->begin();
+	ethResIt iterator = this->begin();
 
-	while(iterator!=ethResList->end())
+	while(iterator!=this->end())
 	{
-		if(ethResList->compareIds(id, (*iterator)->id))
+		if(this->compareIds(id, (*iterator)->id))
 		//if(tmp_addr == (*iterator)->getRemoteAddress() )
 		{
 			// device already exist.
@@ -300,7 +310,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 		newRes = new ethResources;
 		newRes->open(config);
 		how_many_boards++;
-		ethResList->push_back(newRes);
+		this->push_back(newRes);
 	}
 
 	return newRes;
@@ -320,12 +330,11 @@ uint8_t* ethResCreator::find(EMS_ID &id)
 	YARP_INFO(Logger::get(), " ethResCreator::find", Logger::get().log_files.f3);
 
 	ethResources *res = NULL;
-	ethResCreator *ethResList = ethResCreator::instance();
-	ethResIt iterator = ethResList->begin();
+	ethResIt iterator = this->begin();
 
-	while(iterator!=ethResList->end())
+	while(iterator!=this->end())
 	{
-		if(ethResList->compareIds(id, (*iterator)->id))
+		if(this->compareIds(id, (*iterator)->id))
 		{
 			// device found
 			res = (*iterator);
@@ -353,24 +362,24 @@ SendThread::~SendThread()
 
 bool SendThread::threadInit()
 {
-//	ethResList = ethResCreator::instance();
+	ethResList = ethResCreator::instance();
 	return true;
 }
 
 
 void SendThread::run()
 {
-//	iterator = ethResList->begin();
-//
-//	while(iterator!=ethResList->end())
-//	{
-//		data = 0;
-//		size = 0;
-//		(*iterator)->getPack(&data, &size);
-//		ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
-//		TheEthManager::instance()->send(data, size, addr);
-//		iterator++;
-//	}
+	iterator = ethResList->begin();
+
+	while(iterator!=ethResList->end())
+	{
+		data = 0;
+		size = 0;
+		(*iterator)->getPack(&data, &size);
+		ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
+		TheEthManager::instance()->send(data, (size_t)size, addr);
+		iterator++;
+	}
 }
 
 
@@ -482,7 +491,7 @@ void TheEthManager::run()
 	recv_size = _socket->recv((void *) incoming_msg, n, sender_addr, 0);
 
 	sender_addr.addr_to_string(address, 64);
-	printf("Received new packet from address %s, size = %d\n", address, recv_size);
+//	printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
 	if( recv_size > 0)
 	{

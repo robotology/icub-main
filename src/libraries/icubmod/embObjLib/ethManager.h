@@ -146,6 +146,7 @@ class yarp::dev::ethResCreator: public std::list<ethResources *>,
 {
 	private:
 		ethResCreator();
+		~ethResCreator();
 		static ethResCreator 		*handle;
 		static bool					initted;
 		int							how_many_boards;
