@@ -12,6 +12,8 @@
 #include <highgui.h>
 #include <yarp/dev/PolyDriver.h>
 #include <iCub/iKin/iKinFwd.h>
+#include <iCub/ctrl/math.h>
+
 
 using namespace cv;
 using namespace yarp::sig;
@@ -20,7 +22,12 @@ using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace iCub::iKin;
-  
+using namespace yarp::math;
+
+
+#define LEFT    0
+#define RIGHT   1
+
 class stereoCalibThread : public Thread
 {
 private:
@@ -31,7 +38,8 @@ private:
     IplImage * imgR;
 
     string robotName;
-    yarp::sig::Vector q;
+    yarp::sig::Vector qL;
+    yarp::sig::Vector qR;
 
     Semaphore* mutex;
 
@@ -45,8 +53,7 @@ private:
     double vergence;
     double version;
 
-    iCubEye *LeyeKin;
-    iCubEye *ReyeKin;
+
     yarp::dev::PolyDriver polyHead;
     yarp::dev::IEncoders *posHead;
     yarp::dev::IControlLimits *HctrlLim;

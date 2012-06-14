@@ -114,36 +114,29 @@ bool stereoCalibThread::threadInit()
         return false;
     }
 
-    int vHead=p.check(("head_version"),Value(1)).asInt();
-    string headType="v"+vHead;
-
-    LeyeKin=new iCubEye(("left_"+headType).c_str());
-    ReyeKin=new iCubEye(("right_"+headType).c_str());
-    LeyeKin->releaseLink(0);
-    LeyeKin->releaseLink(1);
-    LeyeKin->releaseLink(2);
-    ReyeKin->releaseLink(0);
-    ReyeKin->releaseLink(1);
-    ReyeKin->releaseLink(2);
-    deque<IControlLimits*> lim;
-    lim.push_back(TctrlLim);
-    lim.push_back(HctrlLim);
-    LeyeKin->alignJointsBounds(lim);
-    ReyeKin->alignJointsBounds(lim);
-
     yarp::sig::Vector head_angles(6);
     posHead->getEncoders(head_angles.data());
-
     yarp::sig::Vector torso_angles(3);
     posTorso->getEncoders(torso_angles.data());
 
-    q.resize(torso_angles.size()+head_angles.size());
-
+    qL.resize(torso_angles.size()+head_angles.size()-1);
     for(int i=0; i<torso_angles.size(); i++)
-        q[i]=torso_angles[torso_angles.size()-i-1];
+        qL[i]=torso_angles[torso_angles.size()-i-1];
 
     for(int i=0; i<head_angles.size()-2; i++)
-        q[i+torso_angles.size()]=head_angles[i];
+        qL[i+torso_angles.size()]=head_angles[i];
+    qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
+    qL=CTRL_DEG2RAD*qL;
+
+
+    qR.resize(torso_angles.size()+head_angles.size()-1);
+    for(int i=0; i<torso_angles.size(); i++)
+        qR[i]=torso_angles[torso_angles.size()-i-1];
+
+    for(int i=0; i<head_angles.size()-2; i++)
+        qR[i+torso_angles.size()]=head_angles[i];
+    qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
+    qR=CTRL_DEG2RAD*qR;
 
    return true;
 }
@@ -395,8 +388,6 @@ void stereoCalibThread::threadRelease()
     delete mutex;
     delete gazeCtrl;
 
-    delete LeyeKin;
-    delete ReyeKin;
 
     if (polyHead.isValid())
         polyHead.close();
@@ -912,8 +903,11 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                     line = "HN" + string(ss.str());
                 }
 
-                if (line.find("Q",0) != string::npos){
-                    line = "Q" + string(q.toString());
+                if (line.find("QL",0) != string::npos){
+                    line = "QL" + string(qL.toString());
+                }
+                if (line.find("QR",0) != string::npos){
+                    line = "QR" + string(qR.toString());
                 }
             }
             // buffer line
@@ -957,8 +951,8 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                           << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
                           << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
             out << endl;
-            out << "Q " << q.toString() << endl;
-
+            out << "QL " << qL.toString() << endl;
+            out << "QR " << qR.toString() << endl;
             out.close();
         }
         else
