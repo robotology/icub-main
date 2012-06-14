@@ -85,6 +85,7 @@ void xdPort::set_xd(const Vector &_xd)
     mutex_0.wait();
     xd=_xd;
     isNew=true;
+    rx++;
     mutex_0.post();
     syncEvent.signal();
 }
