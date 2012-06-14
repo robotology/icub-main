@@ -120,20 +120,20 @@ bool stereoCalibThread::threadInit()
     posTorso->getEncoders(torso_angles.data());
 
     qL.resize(torso_angles.size()+head_angles.size()-1);
-    for(int i=0; i<torso_angles.size(); i++)
+    for(size_t i=0; i<torso_angles.length(); i++)
         qL[i]=torso_angles[torso_angles.size()-i-1];
 
-    for(int i=0; i<head_angles.size()-2; i++)
+    for(size_t i=0; i<head_angles.length()-2; i++)
         qL[i+torso_angles.size()]=head_angles[i];
     qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
     qL=CTRL_DEG2RAD*qL;
 
 
     qR.resize(torso_angles.size()+head_angles.size()-1);
-    for(int i=0; i<torso_angles.size(); i++)
+    for(size_t i=0; i<torso_angles.length(); i++)
         qR[i]=torso_angles[torso_angles.size()-i-1];
 
-    for(int i=0; i<head_angles.size()-2; i++)
+    for(size_t i=0; i<head_angles.length()-2; i++)
         qR[i+torso_angles.size()]=head_angles[i];
     qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
     qR=CTRL_DEG2RAD*qR;
