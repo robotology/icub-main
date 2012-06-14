@@ -5,6 +5,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
 {
 
     string moduleName=rf.check("name", Value("stereoCalib"),"module name (string)").asString().c_str();
+    robotName = rf.check("robotName",Value("icub"), "module name (string)").asString().c_str();
 
     this->inputLeftPortName         = "/"+moduleName;
     this->inputLeftPortName        +=rf.check("imgLeft",Value("/cam/left:i"),"Input image port (string)").asString();
@@ -84,6 +85,65 @@ bool stereoCalibThread::threadInit()
     ang[0]=version;
     ang[2]=vergence;
     igaze->lookAtAbsAngles(ang);
+    Property optHead;
+    optHead.put("device","remote_controlboard");
+    optHead.put("remote",("/"+robotName+"/head").c_str());
+    optHead.put("local","/disparityClient/head/position");
+    if (polyHead.open(optHead))
+    {
+        polyHead.view(posHead);
+        polyHead.view(HctrlLim);
+    }
+    else {
+        cout<<"Devices not available"<<endl;
+        return false;
+    }
+
+    Property optTorso;
+    optTorso.put("device","remote_controlboard");
+    optTorso.put("remote",("/"+robotName+"/torso").c_str());
+    optTorso.put("local","/disparityClient/torso/position");
+
+    if (polyTorso.open(optTorso))
+    {
+        polyTorso.view(posTorso);
+        polyTorso.view(TctrlLim);
+    }
+    else {
+        cout<<"Devices not available"<<endl;
+        return false;
+    }
+
+    int vHead=p.check(("head_version"),Value(1)).asInt();
+    string headType="v"+vHead;
+
+    LeyeKin=new iCubEye(("left_"+headType).c_str());
+    ReyeKin=new iCubEye(("right_"+headType).c_str());
+    LeyeKin->releaseLink(0);
+    LeyeKin->releaseLink(1);
+    LeyeKin->releaseLink(2);
+    ReyeKin->releaseLink(0);
+    ReyeKin->releaseLink(1);
+    ReyeKin->releaseLink(2);
+    deque<IControlLimits*> lim;
+    lim.push_back(TctrlLim);
+    lim.push_back(HctrlLim);
+    LeyeKin->alignJointsBounds(lim);
+    ReyeKin->alignJointsBounds(lim);
+
+    yarp::sig::Vector head_angles(6);
+    posHead->getEncoders(head_angles.data());
+
+    yarp::sig::Vector torso_angles(3);
+    posTorso->getEncoders(torso_angles.data());
+
+    q.resize(torso_angles.size()+head_angles.size());
+
+    for(int i=0; i<torso_angles.size(); i++)
+        q[i]=torso_angles[torso_angles.size()-i-1];
+
+    for(int i=0; i<head_angles.size()-2; i++)
+        q[i+torso_angles.size()]=head_angles[i];
 
    return true;
 }
@@ -334,6 +394,15 @@ void stereoCalibThread::threadRelease()
     commandPort->close();
     delete mutex;
     delete gazeCtrl;
+
+    delete LeyeKin;
+    delete ReyeKin;
+
+    if (polyHead.isValid())
+        polyHead.close();
+
+    if (polyTorso.isValid())
+        polyTorso.close();
 }
 
 void stereoCalibThread::onStop() {
@@ -843,15 +912,8 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                     line = "HN" + string(ss.str());
                 }
 
-                if (line.find("Vergence",0) != string::npos){
-                    stringstream ss;
-                    ss << vergence;
-                    line = "Vergence" + string(ss.str());
-                }
-                if (line.find("Version",0) != string::npos){
-                    stringstream ss;
-                    ss << version;
-                    line = "Version" + string(ss.str());
+                if (line.find("Q",0) != string::npos){
+                    line = "Q" + string(q.toString());
                 }
             }
             // buffer line
@@ -895,8 +957,7 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                           << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
                           << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
             out << endl;
-            out << "Vergence " << vergence << endl;
-            out << "Version " << version << endl;
+            out << "Q " << q.toString() << endl;
 
             out.close();
         }

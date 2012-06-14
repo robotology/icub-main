@@ -11,6 +11,7 @@
 #include <yarp/dev/GazeControl.h>
 #include <highgui.h>
 #include <yarp/dev/PolyDriver.h>
+#include <iCub/iKin/iKinFwd.h>
 
 using namespace cv;
 using namespace yarp::sig;
@@ -18,7 +19,7 @@ using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
 using namespace yarp::dev;
-
+using namespace iCub::iKin;
   
 class stereoCalibThread : public Thread
 {
@@ -28,6 +29,9 @@ private:
     ImageOf<PixelRgb> *imageR;
     IplImage * imgL;
     IplImage * imgR;
+
+    string robotName;
+    yarp::sig::Vector q;
 
     Semaphore* mutex;
 
@@ -40,6 +44,16 @@ private:
     Mat DistR;
     double vergence;
     double version;
+
+    iCubEye *LeyeKin;
+    iCubEye *ReyeKin;
+    yarp::dev::PolyDriver polyHead;
+    yarp::dev::IEncoders *posHead;
+    yarp::dev::IControlLimits *HctrlLim;
+
+    yarp::dev::PolyDriver polyTorso;
+    yarp::dev::IEncoders *posTorso;
+    yarp::dev::IControlLimits *TctrlLim;
 
     Mat R;
     Mat T;
