@@ -565,7 +565,7 @@ protected:
             Context &context=itr->second;
 
             // controller part
-            ctrl->setTeyes(context.eyesTime);   // alway remind to set eyes before the neck
+            ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
             ctrl->setTneck(context.neckTime);   // due to internal saturation
             ctrl->setTrackingMode(context.mode);
 
