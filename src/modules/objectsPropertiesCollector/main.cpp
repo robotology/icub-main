@@ -110,8 +110,8 @@ modified since it was loaded within the database.
 <b>dump</b> \n 
 <i>Format</i>: [dump] \n 
 <i>Reply</i>: [ack] \n 
-<i>Action</i>: ask the database handler to dump on the screen 
-all the stored items along with their properties. 
+<i>Action</i>: ask the database to dump on the screen all the
+stored items along with their properties. 
  
 <b>synchronous broadcast</b> \n 
 <i>Format</i>: [sync] [start] <T>/[stop] \n 
