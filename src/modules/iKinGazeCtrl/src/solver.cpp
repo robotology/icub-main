@@ -712,16 +712,13 @@ Vector Solver::getGravityDirection(const Vector &gyro)
 
 
 /************************************************************************/
-Vector Solver::neckTargetRotAngles(const Vector &xd)
+double Solver::neckTargetRotAngle(const Vector &xd)
 {
-    Vector fph=xd; fph.push_back(1.0);
-    fph=SE3inv(commData->get_fpFrame())*fph;
+    Matrix H=commData->get_fpFrame();
+    Vector fph=xd; fph.push_back(1.0);    
+    fph=SE3inv(H)*fph; fph[3]=0.0;
 
-    Vector ang(2);
-    ang[0]=-atan2(fph[1],fabs(fph[2]));
-    ang[1]=atan2(fph[0],fph[2]);
-
-    return ang;
+    return (CTRL_RAD2DEG*acos(dot(H.getCol(2),fph)/norm(fph)));
 }
 
 
@@ -809,9 +806,8 @@ void Solver::run()
 
     // hereafter accumulate solving conditions: the order does matter
 
-    // 1) compute the distance in the transverse and sagittal planes
-    Vector theta=neckTargetRotAngles(xd);
-    bool doSolve=(norm(theta)>NECKSOLVER_ACTIVATIONANGLE*CTRL_DEG2RAD);
+    // 1) compute the angular distance
+    bool doSolve=(neckTargetRotAngle(xd)>NECKSOLVER_ACTIVATIONANGLE);
 
     // 2) skip if controller is active and no torso motion is detected
     doSolve&=!(commData->get_isCtrlActive() && !torsoChanged);

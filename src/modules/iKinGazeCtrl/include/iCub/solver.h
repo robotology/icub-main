@@ -187,7 +187,7 @@ public:
            const double _eyeTiltMax, const bool _headV2, const unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target
-    Vector neckTargetRotAngles(const Vector &xd);    
+    double neckTargetRotAngle(const Vector &xd);
     void   bindNeckPitch(const double min_deg, const double max_deg);
     void   bindNeckRoll(const double min_deg, const double max_deg);
     void   bindNeckYaw(const double min_deg, const double max_deg);
