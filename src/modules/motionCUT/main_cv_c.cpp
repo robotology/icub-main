@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include "main.h"
 #include <cv.h>
 
 #ifdef CV_MAJOR_VERSION

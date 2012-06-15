@@ -190,10 +190,4 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 
-#ifdef OpenCV_USE_CPP
-    #include "main_cv_cpp.cpp"
-#else
-    #include "main_cv_c.cpp"
-#endif
-
 
