@@ -123,8 +123,8 @@ optional.
 <b>asynchronous broadcast</b> \n 
 <i>Format</i>: [async] [on]/[off] \n 
 <i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: ask the database to start/stop broadcasting its 
-content to a yarp port whenever a change occurs.
+<i>Action</i>: ask the database to enable/disable the broadcast 
+toward a yarp port whenever a change in the content occurs. 
  
 <b>ask</b> \n
 <i>Format</i>: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) 
