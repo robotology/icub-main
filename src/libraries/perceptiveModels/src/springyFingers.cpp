@@ -305,7 +305,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     
     port->open(("/"+name+part_analog+"/analog:i").c_str());
     string analogPortName(("/"+robot+part_analog+"/analog:o").c_str());
-    if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),"udp"))
+    if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),"mcast"))
     {
         printMessage(1,"unable to connect to %s\n",analogPortName.c_str());
         close();

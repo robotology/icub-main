@@ -95,7 +95,7 @@ bool PmpClient::open(const Property &options)
 
     bool ok=true;
 
-    ok&=Network::connect((remote+"/data:o").c_str(),data.getName().c_str(),"udp");
+    ok&=Network::connect((remote+"/data:o").c_str(),data.getName().c_str(),"mcast");
     ok&=Network::connect(rpc.getName().c_str(),(remote+"/rpc").c_str());
 
     if (ok)

@@ -92,8 +92,8 @@ bool ClientCartesianController::open(Searchable &config)
 
     bool ok=true;
 
-    ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),"udp");
-    ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),"udp");
+    ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),"mcast");
+    ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),"mcast");
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
 
     // check whether the solver is alive and connected

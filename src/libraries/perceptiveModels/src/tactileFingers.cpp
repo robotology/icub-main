@@ -208,7 +208,7 @@ bool TactileFingersModel::fromProperty(const Property &options)
     if (compensation)
         skinPortName+="_comp";
 
-    if (!Network::connect(skinPortName.c_str(),port->getName().c_str(),"udp"))
+    if (!Network::connect(skinPortName.c_str(),port->getName().c_str(),"mcast"))
     {
         printMessage(1,"unable to connect to %s\n",skinPortName.c_str());
         close();
