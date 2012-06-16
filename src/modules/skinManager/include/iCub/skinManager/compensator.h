@@ -77,7 +77,7 @@ public:
     bool setTaxelPosesFromFile(const char *filePath);
     bool setTaxelPoses(const vector<Vector> &poses);
     bool setTaxelPose(unsigned int taxelId, const Vector &pose);
-    bool setTaxelPositions(const vector<Vector> &positions);
+    bool setTaxelPositions(const Vector &positions);
     bool setTaxelPosition(unsigned int taxelId, const Vector &position);
     bool setTaxelOrientations(const vector<Vector> &orientations);
     bool setTaxelOrientation(unsigned int taxelId, const Vector &orientation);
@@ -96,6 +96,7 @@ public:
     vector<Vector> getTaxelOrientations();
     Vector getTaxelPose(unsigned int taxelId);
     vector<Vector> getTaxelPoses();
+	double getPoseConfidence(unsigned int taxelId);
     unsigned int getNumTaxels();
     Vector getCompensation();
     Vector getBaselines(){      return baselines; }
@@ -131,6 +132,7 @@ private:
     vector< list<int> >     neighborsXtaxel;    // list of neighbors for each taxel    
 	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
+	Vector					taxelPoseConfidence;// taxels pose estimation confidence 
     double                  maxNeighDist;       // max distance between two neighbor taxels
     Semaphore               poseSem;            // mutex to access taxel poses
 

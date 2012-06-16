@@ -68,7 +68,7 @@ public:
     bool setContactCompensationGain(double gain);
     bool setMaxNeighborDistance(double dist);
     bool setTaxelPosition(SkinPart sp, unsigned int taxelId, const Vector &position);
-    bool setTaxelPositions(SkinPart sp, const vector<Vector> &positions);
+    bool setTaxelPositions(SkinPart sp, const Vector &positions);
     bool setTaxelOrientation(SkinPart sp, unsigned int taxelId, const Vector &orientation);
     bool setTaxelOrientations(SkinPart sp, const vector<Vector> &orientations);
     bool setTaxelPose(SkinPart sp, unsigned int taxelId, const Vector &pose);
@@ -91,6 +91,7 @@ public:
     vector<Vector> getTaxelOrientations(SkinPart sp=SKIN_PART_ALL);
     Vector getTaxelPose(SkinPart sp, unsigned int taxelId);
     vector<Vector> getTaxelPoses(SkinPart sp=SKIN_PART_ALL);
+	double getPoseConfidence(SkinPart sp, unsigned int taxelId);
 
     bool enableSkinPart(SkinPart sp);
     bool disableSkinPart(SkinPart sp);

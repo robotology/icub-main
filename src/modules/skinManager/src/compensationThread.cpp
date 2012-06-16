@@ -464,7 +464,7 @@ bool CompensationThread::setTaxelPosition(SkinPart sp, unsigned int taxelId, con
     }
     return false;
 }
-bool CompensationThread::setTaxelPositions(SkinPart sp, const vector<Vector> &positions){
+bool CompensationThread::setTaxelPositions(SkinPart sp, const Vector &positions){
     FOR_ALL_PORTS(i){
         if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->setTaxelPositions(positions);
@@ -508,13 +508,23 @@ bool CompensationThread::setTaxelPoses(SkinPart sp, const Vector &poses){
     FOR_ALL_PORTS(i){
         if(compensators[i]->getSkinPart()==sp){
             unsigned int numTax = compensators[i]->getNumTaxels();
-            if(poses.size()!=6*numTax)
-                return false;
-            vector<Vector> p(numTax);
-            for(unsigned int j=0; j<numTax; j++){
-                p[j] = poses.subVector(6*j, 6*j+5);
-            }
-            return compensators[i]->setTaxelPoses(p);
+            if(poses.size()==6*numTax){
+                //return false;
+				vector<Vector> p(numTax);
+				for(unsigned int j=0; j<numTax; j++){
+					p[j] = poses.subVector(6*j, 6*j+5);
+				}
+				return compensators[i]->setTaxelPoses(p);
+			}
+			else if(poses.size()==7*numTax){ //check if there is also a confidence value of the estimation
+				vector<Vector> p(numTax);
+				for(unsigned int j=0; j<numTax; j++){
+					p[j] = poses.subVector(7*j, 7*j+6);
+				}
+				return compensators[i]->setTaxelPoses(p);
+			}
+			else
+				return false;
         }
     }
     return false;
@@ -634,6 +644,15 @@ vector<Vector> CompensationThread::getTaxelPoses(SkinPart sp){
     }
     return vector<Vector>();
 }
+
+double CompensationThread::getPoseConfidence(SkinPart sp, unsigned int taxelId){
+	FOR_ALL_PORTS(i){
+        if(compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getPoseConfidence(taxelId);
+        }
+    }
+}
+
 vector<SkinPart> CompensationThread::getSkinParts(){
     vector<SkinPart> res(compensators.size());
     FOR_ALL_PORTS(i)

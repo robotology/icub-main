@@ -111,6 +111,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     compensatedDataFilt.resize(skinDim);
     taxelPos.resize(skinDim, zeros(3));
     taxelOri.resize(skinDim, zeros(3));
+	taxelPoseConfidence.resize(skinDim,0.0);
     maxNeighDist = MAX_NEIGHBOR_DISTANCE;
     // by default every taxel is neighbor with all the other taxels
     list<int> defaultNeighbors(skinDim);
@@ -588,12 +589,15 @@ Vector Compensator::getTaxelPosition(unsigned int taxelId){
         return zeros(3);
     poseSem.wait();
     Vector res = taxelPos[taxelId];
+	res.push_back(taxelPoseConfidence[taxelId]);
     poseSem.post();
     return res;
 }
 vector<Vector> Compensator::getTaxelPositions(){
     poseSem.wait();
     vector<Vector> res = taxelPos;
+	for(unsigned int i=0; i<res.size(); i++)
+		res[i].push_back(taxelPoseConfidence[i]);
     poseSem.post();
     return res;
 }
@@ -602,12 +606,15 @@ Vector Compensator::getTaxelOrientation(unsigned int taxelId){
         return zeros(3);
     poseSem.wait();
     Vector res = taxelOri[taxelId];
+	res.push_back(taxelPoseConfidence[taxelId]);
     poseSem.post();
     return res;
 }
 vector<Vector> Compensator::getTaxelOrientations(){
     poseSem.wait();
     vector<Vector> res = taxelOri;
+	for(unsigned int i=0; i<res.size(); i++)
+		res[i].push_back(taxelPoseConfidence[i]);
     poseSem.post();
     return res;
 }
@@ -616,6 +623,7 @@ Vector Compensator::getTaxelPose(unsigned int taxelId){
         return zeros(6);
     poseSem.wait();
     Vector res = cat(taxelPos[taxelId], taxelOri[taxelId]);
+	res.push_back(taxelPoseConfidence[taxelId]);
     poseSem.post();
     return res;
 }
@@ -624,9 +632,20 @@ vector<Vector> Compensator::getTaxelPoses(){
     poseSem.wait();
     for(unsigned int i=0; i<skinDim; i++){
         res[i] = cat(taxelPos[i], taxelOri[i]);
+		res[i].push_back(taxelPoseConfidence[i]);
     }
     poseSem.post();
     return res;
+}
+
+double Compensator::getPoseConfidence(unsigned int taxelId){
+	double value;
+	if(taxelId>=skinDim)
+        return 0.0;
+	poseSem.wait();
+	value = taxelPoseConfidence[taxelId];
+	poseSem.post();
+    return value;
 }
 
 bool Compensator::setMaxNeighborDistance(double d){
@@ -690,6 +709,8 @@ bool Compensator::setTaxelPoses(const vector<Vector> &poses){
         for(unsigned int i=0; i<skinDim; i++){
             taxelPos[i] = poses[i].subVector(0,2);
             taxelOri[i] = poses[i].subVector(3,5);
+			if(poses[i].size() == 7)
+				taxelPoseConfidence[i] = poses[i][6];
         }
     }
     computeNeighbors();
@@ -703,25 +724,42 @@ bool Compensator::setTaxelPose(unsigned int taxelId, const Vector &pose){
     {
         taxelPos[taxelId] = pose.subVector(0,2);
         taxelOri[taxelId] = pose.subVector(3,5);
+		if(pose.size() == 7)
+				taxelPoseConfidence[taxelId] = pose[6];
     }
     updateNeighbors(taxelId);
     poseSem.post();
     return true;
 }
-bool Compensator::setTaxelPositions(const vector<Vector> &positions){
-    if(positions.size()!=skinDim)
-        return false;
-    poseSem.wait();
-    taxelPos = positions;
+bool Compensator::setTaxelPositions(const Vector &positions){
+	if(skinDim*3 == positions.size()){
+		poseSem.wait();
+		for(unsigned int j=0; j<skinDim; j++){
+			taxelPos[j] = positions.subVector(3*j, 3*j+2);
+		}	
+	}	
+	else if(skinDim*4 == positions.size()){
+		poseSem.wait();
+		for(unsigned int j=0; j<skinDim; j++){
+			taxelPos[j] = positions.subVector(4*j, 4*j+2);
+			taxelPoseConfidence[j] = positions[4*j+3];
+		}	
+	}
+	else
+		return false;
+
     computeNeighbors();
     poseSem.post();
     return true;
 }
+
 bool Compensator::setTaxelPosition(unsigned int taxelId, const Vector &position){
-     if(taxelId>=skinDim || position.size()!=3)
+     if(taxelId>=skinDim || (position.size()!=3 && position.size()!=4))
         return false;
     poseSem.wait();
-    taxelPos[taxelId] = position;
+    taxelPos[taxelId] = position.subVector(0,2);
+	if(position.size()==4)
+		taxelPoseConfidence[taxelId] = position[3];
     updateNeighbors(taxelId);
     poseSem.post();
     return true;
@@ -735,10 +773,12 @@ bool Compensator::setTaxelOrientations(const vector<Vector> &orientations){
     return true;
 }
 bool Compensator::setTaxelOrientation(unsigned int taxelId, const Vector &orientation){
-     if(taxelId>=skinDim || orientation.size()!=3)
+     if(taxelId>=skinDim || (orientation.size()!=3 && orientation.size()!=4))
         return false;
     poseSem.wait();
-    taxelOri[taxelId] = orientation;
+    taxelOri[taxelId] = orientation.subVector(0,2);
+	if(orientation.size()==4)
+		taxelPoseConfidence[taxelId] = orientation[3];
     poseSem.post();
     return true;
 }

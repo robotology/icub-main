@@ -397,10 +397,10 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                     return true;
                 }
                 SkinPart sp = (SkinPart) params.get(0).asInt();
-                if(params.get(2).isInt()){
+                if(params.get(1).isInt()){
                     unsigned int taxelId = params.get(1).asInt();
                     Vector pose;
-                    if(!bottleToVector(params.tail().tail().tail(), pose)){
+                    if(!bottleToVector(params.tail().tail(), pose)){
                         reply.addString("ERROR while reading the taxel pose");
                         return true;
                     }
@@ -413,7 +413,7 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                 }
                 else{
                     Vector poses;
-                    if(!bottleToVector(params.tail().tail(), poses)){
+                    if(!bottleToVector(params.tail(), poses)){
                         reply.addString("ERROR while reading the taxel poses");
                         return true;
                     }
@@ -426,7 +426,82 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                 }
                 return true;
             }
+		case get_position:
+            {
+                if(!(params.size()>0 && params.get(0).isInt())){
+                    reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                    return true;
+                }
+                SkinPart sp = (SkinPart) params.get(0).asInt();
+                if(params.size()>1 && params.get(1).isInt()){
+                    unsigned int taxelId = params.get(1).asInt();
+                    Vector res = myThread->getTaxelPosition(sp, taxelId);
+                    if(res.size()>0)
+                        addToBottle(reply, res);
+                    else
+                        reply.addString("No position for the specified skin part");
+                }
+                else{
+                    vector<Vector> res = myThread->getTaxelPositions(sp);
+                    addToBottle(reply, res);
+                }
+                return true;
+            }
+		case set_position:
+			{
+                if(!(params.size()>3 && params.get(0).isInt() )){
+                    reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                    return true;
+                }
+                SkinPart sp = (SkinPart) params.get(0).asInt();
+                if(params.get(1).isInt()){
+                    unsigned int taxelId = params.get(1).asInt();
+                    Vector pose;
+                    if(!bottleToVector(params.tail().tail(), pose)){
+                        reply.addString("ERROR while reading the taxel position");
+                        return true;
+                    }
+                    if(myThread->setTaxelPosition(sp, taxelId, pose))
+                        reply.addInt(skin_manager_ok);
+                    else{
+                        reply.addInt(skin_manager_error);
+                        reply.addString("ERROR: position was not set");
+                    }
+                }
+                else{
+                    Vector poses;
+                    if(!bottleToVector(params.tail(), poses)){
+                        reply.addString("ERROR while reading the taxel positions");
+                        return true;
+                    }
+                    if(myThread->setTaxelPositions(sp, poses))
+                        reply.addInt(skin_manager_ok);
+                    else{
+                        reply.addInt(skin_manager_error);
+                        reply.addString("ERROR: position was not set");
+                    }
+                }
+                return true;
+            }
+		case get_confidence:
+			{
+				if(!(params.size()>0 && params.get(0).isInt())){
+                    reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
+                    return true;
+                }
+                SkinPart sp = (SkinPart) params.get(0).asInt();
+                if(params.size()>1 && params.get(1).isInt()){
+                    unsigned int taxelId = params.get(1).asInt();
+                    double res = myThread->getPoseConfidence(sp, taxelId);
+					reply.addDouble(res);
+                }
+                else{
+                    vector<Vector> res = myThread->getTaxelPositions(sp);
+                    addToBottle(reply, res);
+                }
+                return true;
 
+			}
         case get_info:
             reply.append(myThread->getInfo());
             return true;
