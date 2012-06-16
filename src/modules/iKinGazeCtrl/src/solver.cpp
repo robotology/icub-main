@@ -544,6 +544,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     fbHeadOld=fbHead;
 
     bindSolveRequest=false;
+    neckAngleUserTolerance=0.0;
 }
 
 
@@ -668,6 +669,20 @@ void Solver::clearNeckYaw()
 
 
 /************************************************************************/
+double Solver::getNeckAngleUserTolerance()
+{
+    return neckAngleUserTolerance;
+}
+
+
+/************************************************************************/
+void Solver::setNeckAngleUserTolerance(const double angle)
+{
+    neckAngleUserTolerance=fabs(angle);
+}
+
+
+/************************************************************************/
 void Solver::updateAngles()
 {
     neckPos[0]=fbHead[0];
@@ -715,10 +730,31 @@ Vector Solver::getGravityDirection(const Vector &gyro)
 double Solver::neckTargetRotAngle(const Vector &xd)
 {
     Matrix H=commData->get_fpFrame();
-    Vector fph=xd; fph.push_back(1.0);    
-    fph=SE3inv(H)*fph; fph[3]=0.0;
+    Vector xdh=xd; xdh.push_back(1.0);
+    xdh=SE3inv(H)*xdh; xdh[3]=0.0;
 
-    return (CTRL_RAD2DEG*acos(dot(H.getCol(2),fph)/norm(fph)));
+    return (CTRL_RAD2DEG*acos(xdh[2]/norm(xdh)));
+}
+
+
+/************************************************************************/
+Vector Solver::computeTargetUserTolerance(const Vector &xd)
+{
+    Matrix H=commData->get_fpFrame();
+    Vector z(3,0.0); z[2]=1.0;
+    Vector xdh=xd; xdh.push_back(1.0);
+    xdh=SE3inv(H)*xdh;
+
+    Vector xdh3=xdh; xdh3.pop_back();
+    Vector rot=cross(xdh3,z);
+    double r=norm(rot);
+    if (r<1e-6)
+        return xd;
+
+    rot=rot/r;
+    rot.push_back(neckAngleUserTolerance*CTRL_DEG2RAD);
+
+    return ((H*(axis2dcm(rot)*xdh)).subVector(0,2));
 }
 
 
@@ -807,7 +843,8 @@ void Solver::run()
     // hereafter accumulate solving conditions: the order does matter
 
     // 1) compute the angular distance
-    bool doSolve=(neckTargetRotAngle(xd)>NECKSOLVER_ACTIVATIONANGLE);
+    double theta=neckTargetRotAngle(xd);
+    bool doSolve=(theta>NECKSOLVER_ACTIVATIONANGLE);
 
     // 2) skip if controller is active and no torso motion is detected
     doSolve&=!(commData->get_isCtrlActive() && !torsoChanged);
@@ -826,6 +863,9 @@ void Solver::run()
 
     // 6) solve straightaway if the target has changed
     doSolve|=port_xd->get_newDelayed();
+
+    // 7) forget if the angle to target is lower than the user tolerance
+    doSolve&=theta>neckAngleUserTolerance;
 
     // clear triggers
     port_xd->get_newDelayed()=false;
@@ -846,7 +886,8 @@ void Solver::run()
         else
             pgDir=&gDefaultDir;
 
-        neckPos=invNeck->solve(neckPos,xd,*pgDir);
+        Vector xdUserTol=computeTargetUserTolerance(xd);
+        neckPos=invNeck->solve(neckPos,xdUserTol,*pgDir);
 
         // update neck pitch,roll,yaw        
         commData->set_qd(0,neckPos[0]);

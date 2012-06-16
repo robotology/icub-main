@@ -158,6 +158,7 @@ protected:
     bool bindSolveRequest;
     int nJointsTorso;
     int nJointsHead;
+    double neckAngleUserTolerance;
     double eyeTiltMin;
     double eyeTiltMax;
     double Ts;
@@ -179,6 +180,7 @@ protected:
 
     void   updateAngles();
     Vector getGravityDirection(const Vector &gyro);
+    Vector computeTargetUserTolerance(const Vector &xd);
 
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
@@ -196,7 +198,9 @@ public:
     void   getCurNeckYawRange(double &min_deg, double &max_deg);
     void   clearNeckPitch();
     void   clearNeckRoll();
-    void   clearNeckYaw();    
+    void   clearNeckYaw();
+    double getNeckAngleUserTolerance();
+    void   setNeckAngleUserTolerance(const double angle);
     bool   threadInit();
     void   afterStart(bool s);
     void   run();

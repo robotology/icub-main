@@ -298,6 +298,8 @@ following ports:
       neck roll joint.
     - [get] [yaw]: returns in degrees the current range of
       neck yaw joint.
+    - [get] [ntol]: returns in degrees the current user
+      tolerance for gazing with the neck.
     - [get] [des]: returns the desired head joints angles that
       achieve the target [deg].
     - [get] [vel]: returns the head joints velocities commanded
@@ -347,12 +349,14 @@ following ports:
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
       for eyes movements.
-    - [set] [vor] <val>: sets a new vor gain for VOR.
-    - [set] [ocr] <val>: sets a new ocr gain for OCR.
+    - [set] [vor] <val>: sets a new gain for vor.
+    - [set] [ocr] <val>: sets a new gain for ocr.
     - [set] [sacc] <val>: enables/disables saccades; val can be
       0/1.
     - [set] [sinh] <val>: sets the saccades inhibition period
       (s).
+    - [set] [ntol] <val>: sets in degrees the new user tolerance
+      for gazing with the neck.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be 0/1.
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
@@ -1000,6 +1004,14 @@ public:
                             reply.addDouble(max_deg);
                             return true;
                         }
+                        else if (type==VOCAB4('n','t','o','l'))
+                        {
+                            double angle=slv->getNeckAngleUserTolerance();
+
+                            reply.addVocab(ack);
+                            reply.addDouble(angle);
+                            return true;
+                        }
                         else if (type==VOCAB3('d','e','s'))
                         {
                             Vector des;
@@ -1266,6 +1278,13 @@ public:
                         {
                             double inhiPeriod=command.get(2).asDouble();
                             eyesRefGen->setSaccadesInhibitionPeriod(inhiPeriod);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB4('n','t','o','l'))
+                        {
+                            double angle=command.get(2).asDouble();
+                            slv->setNeckAngleUserTolerance(angle);
                             reply.addVocab(ack);
                             return true;
                         }
