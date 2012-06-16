@@ -864,7 +864,7 @@ void Solver::run()
     // 6) solve straightaway if the target has changed
     doSolve|=port_xd->get_newDelayed();
 
-    // 7) forget if the angle to target is lower than the user tolerance
+    // 7) skip if the angle to target is lower than the user tolerance
     doSolve&=theta>neckAngleUserTolerance;
 
     // clear triggers
