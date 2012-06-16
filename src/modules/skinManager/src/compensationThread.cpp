@@ -651,6 +651,7 @@ double CompensationThread::getPoseConfidence(SkinPart sp, unsigned int taxelId){
             return compensators[i]->getPoseConfidence(taxelId);
         }
     }
+	return 0.0;
 }
 
 vector<SkinPart> CompensationThread::getSkinParts(){
