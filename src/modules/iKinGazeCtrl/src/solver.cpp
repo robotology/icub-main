@@ -748,7 +748,7 @@ Vector Solver::computeTargetUserTolerance(const Vector &xd)
     Vector xdh3=xdh; xdh3.pop_back();
     Vector rot=cross(xdh3,z);
     double r=norm(rot);
-    if (r<1e-6)
+    if (r<ALMOST_ZERO)
         return xd;
 
     rot=rot/r;
