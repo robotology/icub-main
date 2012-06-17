@@ -147,6 +147,8 @@ public:
     bool clearNeckPitch();
     bool clearNeckRoll();
     bool clearNeckYaw();
+    bool getNeckAngleUserTolerance(double *angle);
+    bool setNeckAngleUserTolerance(const double angle);
     bool checkMotionDone(bool *f);
     bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     bool checkSaccadeDone(bool *f);

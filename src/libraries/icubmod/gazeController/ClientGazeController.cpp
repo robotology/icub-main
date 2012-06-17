@@ -1254,6 +1254,53 @@ bool ClientGazeController::clearNeckYaw()
 
 
 /************************************************************************/
+bool ClientGazeController::getNeckAngleUserTolerance(double *angle)
+{
+    if (!connected || (angle==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("ntol");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        *angle=reply.get(1).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setNeckAngleUserTolerance(const double angle)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("ntol");
+    command.addDouble(angle);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
 bool ClientGazeController::checkMotionDone(bool *f)
 {
     if (!connected || (f==NULL))
