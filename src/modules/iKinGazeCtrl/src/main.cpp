@@ -486,6 +486,7 @@ protected:
         double neckRollMax;
         double neckYawMin;
         double neckYawMax;
+        double neckAngleUserTolerance;
         Vector counterRotGain;
         bool   saccadesOn;
 
@@ -550,7 +551,8 @@ protected:
         // solver part
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
-        slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);        
+        slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
+        context.neckAngleUserTolerance=slv->getNeckAngleUserTolerance();
         context.counterRotGain=eyesRefGen->getCounterRotGain();
         context.saccadesOn=eyesRefGen->isSaccadesOn();
 
@@ -577,6 +579,7 @@ protected:
             slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
             slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
             slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
+            slv->setNeckAngleUserTolerance(context.neckAngleUserTolerance);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
             eyesRefGen->setSaccades(context.saccadesOn);
 
