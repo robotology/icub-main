@@ -357,7 +357,8 @@ following ports:
     - [get] [info]: returns (enclosed in a list) a property-like
       bottle containing useful information, such as the
       "head_version" (e.g. 1, 2, ...), the
-      "min_allowed_vergence" (in degrees).
+      "min_allowed_vergence" (in degrees), a list of the
+      available "events".
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
@@ -636,6 +637,13 @@ protected:
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
         minVer.addDouble(CTRL_RAD2DEG*commData.get_minAllowedVergence());
+
+        Bottle &events=info.addList();
+        events.addString("events");
+        Bottle &eventsList=events.addList();
+        eventsList.addString("motion-onset");
+        eventsList.addString("motion-done");
+        eventsList.addString("closing");
 
         return true;
     }

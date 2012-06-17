@@ -2699,6 +2699,27 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 
 
 /************************************************************************/
+bool ServerCartesianController::getInfo(Bottle &info)
+{
+    if (connected)
+    {
+        info.clear();
+
+        Bottle &events=info.addList();
+        events.addString("events");
+        Bottle &eventsList=events.addList();
+        eventsList.addString("motion-onset");
+        eventsList.addString("motion-done");
+        eventsList.addString("closing");
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 void ServerCartesianController::notifyEvent(const string &event)
 {
     double time=txInfo.getTime();
@@ -2734,19 +2755,6 @@ void ServerCartesianController::notifyEvent(const string &event)
             Event.cartesianEventCallback();
         }
     }
-}
-
-
-/************************************************************************/
-bool ServerCartesianController::getInfo(Bottle &info)
-{
-    if (connected)
-    {
-        info.clear();
-        return true;
-    }
-    else
-        return false;
 }
 
 
