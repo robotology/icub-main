@@ -181,6 +181,20 @@ void Controller::findMinimumAllowedVergence()
 
 
 /************************************************************************/
+void Controller::notifyEvent(const string &event)
+{
+    Bottle bottle;
+
+    mutexChain.wait();
+    bottle.addString(event.c_str());
+    bottle.addDouble(txInfo_pose.getTime());
+    mutexChain.post();
+
+    port_event.write(bottle);
+}
+
+
+/************************************************************************/
 void Controller::stopLimbsVel()
 {
     if (Robotable)
@@ -222,6 +236,7 @@ bool Controller::threadInit()
 {
     port_x.open((localName+"/x:o").c_str());
     port_q.open((localName+"/q:o").c_str());
+    port_event.open((localName+"/events:o").c_str());
 
     fprintf(stdout,"Starting Controller at %d ms\n",period);
 
@@ -317,6 +332,8 @@ void Controller::run()
             stopLimbsVel();
             commData->get_isCtrlActive()=false;
             port_xd->get_new()=false;
+
+            notifyEvent("motion-done");
         }
     }
     else if (!swOffCond)
@@ -332,6 +349,8 @@ void Controller::run()
             Vector zeros(3,0.0);
             mjCtrlNeck->reset(zeros);
             mjCtrlEyes->reset(zeros);
+
+            notifyEvent("motion-onset");
         }
     }
 
@@ -465,12 +484,15 @@ void Controller::run()
 void Controller::threadRelease()
 {
     stopLimbsVel();
+    notifyEvent("closing");
 
     port_x.interrupt();
     port_q.interrupt();
+    port_event.interrupt();
 
     port_x.close();
     port_q.close();
+    port_event.close();
 
     delete neck;
     delete eyeL;

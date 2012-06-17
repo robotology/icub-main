@@ -40,6 +40,29 @@ using namespace yarp::math;
 
 
 /************************************************************************/
+class EventHandler : public BufferedPort<Bottle>
+{
+protected:
+    ClientGazeController *interface;
+
+    /************************************************************************/
+    void onRead(Bottle &event)
+    {
+        if (interface!=NULL)
+            interface->eventHandling(event);
+    }
+
+public:
+    /************************************************************************/
+    EventHandler(ClientGazeController *interface)
+    {
+        this->interface=interface;
+        useCallback();
+    }
+};
+
+
+/************************************************************************/
 ClientGazeController::ClientGazeController()
 {
     init();
@@ -66,6 +89,8 @@ void ClientGazeController::init()
 
     fixationPoint.resize(3,0.0);
     angles.resize(3,0.0);
+
+    portEvents=new EventHandler(this);
 }
 
 
@@ -94,6 +119,7 @@ bool ClientGazeController::open(Searchable &config)
     portStateFp.open((local+"/x:i").c_str());
     portStateAng.open((local+"/angles:i").c_str());
     portStateHead.open((local+"/q:i").c_str());
+    portEvents->open((local+"/events:i").c_str());
     portRpc.open((local+"/rpc").c_str());
 
     remote=remote+"/head";
@@ -106,7 +132,8 @@ bool ClientGazeController::open(Searchable &config)
     ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str(),"mcast");
     ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),"mcast");
     ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),"mcast");
-    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
+    ok&=Network::connect((remote+"/events:o").c_str(),portEvents->getName().c_str(),"mcast");
+    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());    
 
     return connected=ok;
 }
@@ -127,6 +154,7 @@ bool ClientGazeController::close()
     portStateFp.interrupt();
     portStateAng.interrupt();
     portStateHead.interrupt();
+    portEvents->interrupt();
     portRpc.interrupt();
 
     portCmdFp.close();
@@ -136,7 +164,10 @@ bool ClientGazeController::close()
     portStateFp.close();
     portStateAng.close();
     portStateHead.close();
+    portEvents->close();
     portRpc.close();
+
+    delete portEvents;
 
     connected=false;
 
@@ -1508,6 +1539,59 @@ bool ClientGazeController::getInfo(Bottle &info)
     }
 
     return false;
+}
+
+
+/************************************************************************/
+void ClientGazeController::eventHandling(Bottle &event)
+{
+    string type=event.get(0).asString().c_str();
+    double time=event.get(1).asDouble();
+    map<string,GazeEvent*>::iterator itr;
+
+    // rise the all-events callback
+    itr=eventsMap.find("*");
+    if (itr!=eventsMap.end())
+    {
+        if (itr->second!=NULL)
+        {
+            GazeEvent &Event=*itr->second;
+            Event.gazeEventType=ConstString(type.c_str());
+            Event.gazeEventTime=time;
+            Event.gazeEventCallback();
+        }
+    }
+
+    // rise the event specific callback
+    itr=eventsMap.find(type);
+    if (itr!=eventsMap.end())
+    {
+        if (itr->second!=NULL)
+        {
+            GazeEvent &Event=*itr->second;
+            Event.gazeEventType=ConstString(type.c_str());
+            Event.gazeEventTime=time;
+            Event.gazeEventCallback();
+
+        }
+    }
+}
+
+
+/************************************************************************/
+bool ClientGazeController::registerEvent(const ConstString &type,
+                                         GazeEvent *event)
+{
+    eventsMap[string(type.c_str())]=event;
+    return true;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::unregisterEvent(const ConstString &type)
+{
+    eventsMap.erase(string(type.c_str()));
+    return true;
 }
 
 

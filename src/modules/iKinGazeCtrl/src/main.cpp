@@ -264,6 +264,16 @@ following ports:
   together with the current vergence (Vector of 3 double). Units
   in deg.
  
+- \e /<ctrlName>/<part>/events:o streams out the event 
+  associated to the controller's state. \n
+  Available events are:
+   - "motion-onset" <time>: sent out at the beginning of the
+     trajectory; comprise the time instant of the source when
+     the event took place.
+   - "motion-done" <time>: sent out at the end of the
+     trajectory; comprise the time instant of the source when
+     the event took place.
+ 
 - \e /<ctrlName>/<part>/rpc remote procedure call. \n 
     Recognized remote commands (be careful, <b>commands dealing
     with geometric projections will only work if the cameras

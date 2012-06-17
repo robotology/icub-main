@@ -50,6 +50,7 @@
 
 #include <string>
 #include <set>
+#include <map>
 
 
 class ClientGazeController : public yarp::dev::DeviceDriver,
@@ -80,7 +81,11 @@ protected:
 
     yarp::os::Port portRpc;
 
+    yarp::os::BufferedPort<yarp::os::Bottle> *portEvents;
+    friend class EventHandler;
+
     std::set<int> contextIdList;
+    std::map<std::string,yarp::dev::GazeEvent*> eventsMap;
 
     void init();
     bool deleteContexts();
@@ -89,6 +94,7 @@ protected:
     bool blockNeckJoint(const std::string &joint, const int j);
     bool getNeckJointRange(const std::string &joint, double *min, double *max);
     bool clearNeckJoint(const std::string &joint);
+    void eventHandling(yarp::os::Bottle &event);
 
 public:
     ClientGazeController();
@@ -157,6 +163,8 @@ public:
     bool storeContext(int *id);
     bool restoreContext(const int id);
     bool getInfo(yarp::os::Bottle &info);
+    bool registerEvent(const yarp::os::ConstString &type, yarp::dev::GazeEvent *event);
+    bool unregisterEvent(const yarp::os::ConstString &type);
 
     virtual ~ClientGazeController();
 };

@@ -68,6 +68,7 @@ protected:
 
     Port  port_x;
     Port  port_q;
+    Port  port_event;
     Stamp txInfo_x;
     Stamp txInfo_q;
     Stamp txInfo_pose;
@@ -103,6 +104,7 @@ protected:
     Vector fbTorso,fbHead,fbNeck,fbEyes;
 
     void findMinimumAllowedVergence();
+    void notifyEvent(const string &event);
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
