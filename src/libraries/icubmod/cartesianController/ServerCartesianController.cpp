@@ -205,6 +205,7 @@ void ServerCartesianController::openPorts()
     portSlvRpc.open((prefixName+"/"+slvName+"/rpc").c_str());
     portCmd->open((prefixName+"/command:i").c_str());
     portState.open((prefixName+"/state:o").c_str());
+    portEvent.open((prefixName+"/events:o").c_str());
     portRpc.open((prefixName+"/rpc:i").c_str());
 }
 
@@ -216,12 +217,14 @@ void ServerCartesianController::closePorts()
     portSlvOut.interrupt();
     portSlvRpc.interrupt();
     portState.interrupt();
+    portEvent.interrupt();
     portRpc.interrupt();
 
     portSlvIn.close();
     portSlvOut.close();
     portSlvRpc.close();
     portState.close();
+    portEvent.close();
     portRpc.close();
 
     if (portCmd!=NULL)
@@ -1170,6 +1173,7 @@ void ServerCartesianController::run()
 
             // onset of new trajectory
             executingTraj=true;
+            notifyEvent("motion-onset");
         }
 
         // update the stamp anyway
@@ -1196,6 +1200,7 @@ void ServerCartesianController::run()
                 motionDone   =true;
 
                 stopLimbVel();
+                notifyEvent("motion-done");
 
                 mutex.post();
 
@@ -1240,6 +1245,8 @@ void ServerCartesianController::threadRelease()
 
     if (connected)
         stopLimbVel();
+
+    notifyEvent("closing");
 }
 
 
@@ -2549,6 +2556,8 @@ bool ServerCartesianController::stopControlNoMutex()
 {
     if (connected)
     {
+        bool notify=executingTraj;
+
         executingTraj=false;
         taskVelModeOn=false;
         motionDone   =true;
@@ -2559,6 +2568,9 @@ bool ServerCartesianController::stopControlNoMutex()
 
         txTokenLatchedStopControl=txToken;
         skipSlvRes=true;
+
+        if (notify)
+            notifyEvent("motion-done");
 
         return true;
     }
@@ -2687,6 +2699,45 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 
 
 /************************************************************************/
+void ServerCartesianController::notifyEvent(const string &event)
+{
+    double time=txInfo.getTime();
+    map<string,CartesianEvent*>::iterator itr;
+
+    Bottle bottle;
+    bottle.addString(event.c_str());
+    bottle.addDouble(time);
+    portEvent.write(bottle);
+
+    // rise the all-events callback
+    itr=eventsMap.find("*");
+    if (itr!=eventsMap.end())
+    {
+        if (itr->second!=NULL)
+        {
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventType=ConstString(event.c_str());
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
+        }
+    }
+
+    // rise the event specific callback
+    itr=eventsMap.find(event);
+    if (itr!=eventsMap.end())
+    {
+        if (itr->second!=NULL)
+        {
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventType=ConstString(event.c_str());
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
+        }
+    }
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::getInfo(Bottle &info)
 {
     if (connected)
@@ -2696,6 +2747,23 @@ bool ServerCartesianController::getInfo(Bottle &info)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::registerEvent(const ConstString &type,
+                                              CartesianEvent *event)
+{
+    eventsMap[string(type.c_str())]=event;
+    return true;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::unregisterEvent(const ConstString &type)
+{
+    eventsMap.erase(string(type.c_str()));
+    return true;
 }
 
 

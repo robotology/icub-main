@@ -51,6 +51,7 @@
 #include <iCub/iKin/iKinHlp.h>
 
 #include <set>
+#include <map>
 
 
 class ClientCartesianController : public    yarp::dev::DeviceDriver,
@@ -71,10 +72,31 @@ protected:
     yarp::os::Port                            portCmd;
     yarp::os::Port                            portRpc;
 
+    class EventHandler : public yarp::os::BufferedPort<yarp::os::Bottle>
+    {
+    protected:
+        ClientCartesianController *interface;
+        void onRead(yarp::os::Bottle &event)
+        {
+            if (interface!=NULL)
+                interface->eventHandling(event);
+        }
+
+    public:
+        EventHandler() : interface(NULL) { }
+        void setInterface(ClientCartesianController *interface)
+        {
+            this->interface=interface;
+            useCallback();
+        }
+    } portEvents;
+
     std::set<int> contextIdList;
+    std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;
 
     void init();
     bool deleteContexts();
+    void eventHandling(yarp::os::Bottle &event);
 
 public:
     ClientCartesianController();
@@ -121,6 +143,8 @@ public:
     bool storeContext(int *id);
     bool restoreContext(const int id);
     bool getInfo(yarp::os::Bottle &info);
+    bool registerEvent(const yarp::os::ConstString &type, yarp::dev::CartesianEvent *event);
+    bool unregisterEvent(const yarp::os::ConstString &type);
 
     virtual ~ClientCartesianController();
 };

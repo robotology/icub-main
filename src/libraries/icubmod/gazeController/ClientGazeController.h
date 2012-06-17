@@ -78,11 +78,26 @@ protected:
     yarp::os::Port portCmdAng;
     yarp::os::Port portCmdMono;
     yarp::os::Port portCmdStereo;
-
     yarp::os::Port portRpc;
 
-    yarp::os::BufferedPort<yarp::os::Bottle> *portEvents;
-    friend class EventHandler;
+    class EventHandler : public yarp::os::BufferedPort<yarp::os::Bottle>
+    {
+    protected:
+        ClientGazeController *interface;
+        void onRead(yarp::os::Bottle &event)
+        {
+            if (interface!=NULL)
+                interface->eventHandling(event);
+        }
+
+    public:
+        EventHandler() : interface(NULL) { }
+        void setInterface(ClientGazeController *interface)
+        {
+            this->interface=interface;
+            useCallback();
+        }
+    } portEvents;
 
     std::set<int> contextIdList;
     std::map<std::string,yarp::dev::GazeEvent*> eventsMap;

@@ -65,6 +65,8 @@ void ClientCartesianController::init()
     lastPoseMsgArrivalTime=0.0;
 
     pose.resize(7,0.0);
+
+    portEvents.setInterface(this);
 }
 
 
@@ -88,17 +90,19 @@ bool ClientCartesianController::open(Searchable &config)
 
     portCmd.open((local+"/command:o").c_str());
     portState.open((local+"/state:i").c_str());
+    portEvents.open((local+"/events:i").c_str());
     portRpc.open((local+"/rpc:o").c_str());
 
     bool ok=true;
 
     ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),"mcast");
     ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),"mcast");
+    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),"mcast");
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
 
     // check whether the solver is alive and connected
     if (ok)
-    {        
+    {
         Bottle command, reply;
     
         command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
@@ -142,10 +146,12 @@ bool ClientCartesianController::close()
 
     portCmd.interrupt();
     portState.interrupt();
+    portEvents.interrupt();
     portRpc.interrupt();
 
     portCmd.close();
     portState.close();
+    portEvents.close();
     portRpc.close();
 
     connected=false;
@@ -1180,6 +1186,58 @@ bool ClientCartesianController::getInfo(Bottle &info)
     }
 
     return false;
+}
+
+
+/************************************************************************/
+void ClientCartesianController::eventHandling(Bottle &event)
+{
+    string type=event.get(0).asString().c_str();
+    double time=event.get(1).asDouble();
+    map<string,CartesianEvent*>::iterator itr;
+
+    // rise the all-events callback
+    itr=eventsMap.find("*");
+    if (itr!=eventsMap.end())
+    {
+        if (itr->second!=NULL)
+        {
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventType=ConstString(type.c_str());
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
+        }
+    }
+
+    // rise the event specific callback
+    itr=eventsMap.find(type);
+    if (itr!=eventsMap.end())
+    {
+        if (itr->second!=NULL)
+        {
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventType=ConstString(type.c_str());
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
+        }
+    }
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::registerEvent(const ConstString &type,
+                                              CartesianEvent *event)
+{
+    eventsMap[string(type.c_str())]=event;
+    return true;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::unregisterEvent(const ConstString &type)
+{
+    eventsMap.erase(string(type.c_str()));
+    return true;
 }
 
 

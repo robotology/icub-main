@@ -172,6 +172,7 @@ protected:
     yarp::os::Port                             portSlvRpc;
 
     yarp::os::BufferedPort<yarp::sig::Vector>  portState;
+    yarp::os::Port                             portEvent;
     yarp::os::Port                             portRpc;
 
     CartesianCtrlCommandPort                  *portCmd;
@@ -190,6 +191,7 @@ protected:
 
     int contextIdCnt;
     std::map<int,Context> contextMap;
+    std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;
 
     void   init();
     void   openPorts();
@@ -203,6 +205,7 @@ protected:
     void   sendVelocity(const yarp::sig::Vector &v);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
+    void   notifyEvent(const std::string &event);
 
     bool   threadInit();
     void   afterStart(bool s);
@@ -267,6 +270,8 @@ public:
     bool storeContext(int *id);
     bool restoreContext(const int id);
     bool getInfo(yarp::os::Bottle &info);
+    bool registerEvent(const yarp::os::ConstString &type, yarp::dev::CartesianEvent *event);
+    bool unregisterEvent(const yarp::os::ConstString &type);
 
     virtual ~ServerCartesianController();
 };

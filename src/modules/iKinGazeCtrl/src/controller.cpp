@@ -184,12 +184,8 @@ void Controller::findMinimumAllowedVergence()
 void Controller::notifyEvent(const string &event)
 {
     Bottle bottle;
-
-    mutexChain.wait();
     bottle.addString(event.c_str());
     bottle.addDouble(txInfo_pose.getTime());
-    mutexChain.post();
-
     port_event.write(bottle);
 }
 

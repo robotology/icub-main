@@ -40,29 +40,6 @@ using namespace yarp::math;
 
 
 /************************************************************************/
-class EventHandler : public BufferedPort<Bottle>
-{
-protected:
-    ClientGazeController *interface;
-
-    /************************************************************************/
-    void onRead(Bottle &event)
-    {
-        if (interface!=NULL)
-            interface->eventHandling(event);
-    }
-
-public:
-    /************************************************************************/
-    EventHandler(ClientGazeController *interface)
-    {
-        this->interface=interface;
-        useCallback();
-    }
-};
-
-
-/************************************************************************/
 ClientGazeController::ClientGazeController()
 {
     init();
@@ -90,7 +67,7 @@ void ClientGazeController::init()
     fixationPoint.resize(3,0.0);
     angles.resize(3,0.0);
 
-    portEvents=new EventHandler(this);
+    portEvents.setInterface(this);
 }
 
 
@@ -119,7 +96,7 @@ bool ClientGazeController::open(Searchable &config)
     portStateFp.open((local+"/x:i").c_str());
     portStateAng.open((local+"/angles:i").c_str());
     portStateHead.open((local+"/q:i").c_str());
-    portEvents->open((local+"/events:i").c_str());
+    portEvents.open((local+"/events:i").c_str());
     portRpc.open((local+"/rpc").c_str());
 
     remote=remote+"/head";
@@ -132,8 +109,8 @@ bool ClientGazeController::open(Searchable &config)
     ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str(),"mcast");
     ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),"mcast");
     ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),"mcast");
-    ok&=Network::connect((remote+"/events:o").c_str(),portEvents->getName().c_str(),"mcast");
-    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());    
+    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),"mcast");
+    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
 
     return connected=ok;
 }
@@ -154,7 +131,7 @@ bool ClientGazeController::close()
     portStateFp.interrupt();
     portStateAng.interrupt();
     portStateHead.interrupt();
-    portEvents->interrupt();
+    portEvents.interrupt();
     portRpc.interrupt();
 
     portCmdFp.close();
@@ -164,10 +141,8 @@ bool ClientGazeController::close()
     portStateFp.close();
     portStateAng.close();
     portStateHead.close();
-    portEvents->close();
+    portEvents.close();
     portRpc.close();
-
-    delete portEvents;
 
     connected=false;
 
@@ -1572,7 +1547,6 @@ void ClientGazeController::eventHandling(Bottle &event)
             Event.gazeEventType=ConstString(type.c_str());
             Event.gazeEventTime=time;
             Event.gazeEventCallback();
-
         }
     }
 }
