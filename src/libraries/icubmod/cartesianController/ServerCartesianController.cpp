@@ -2711,6 +2711,7 @@ bool ServerCartesianController::getInfo(Bottle &info)
         eventsList.addString("motion-onset");
         eventsList.addString("motion-done");
         eventsList.addString("closing");
+        eventsList.addString("*");
 
         return true;
     }
