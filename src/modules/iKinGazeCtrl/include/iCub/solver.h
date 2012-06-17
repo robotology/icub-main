@@ -155,7 +155,7 @@ protected:
     unsigned int period;
     bool Robotable;
     bool headV2;
-    bool bindSolveRequest;
+    bool solveRequest;
     int nJointsTorso;
     int nJointsHead;
     double neckAngleUserTolerance;

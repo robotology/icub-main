@@ -543,7 +543,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
 
-    bindSolveRequest=false;
+    solveRequest=false;
     neckAngleUserTolerance=0.0;
 }
 
@@ -555,7 +555,7 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
     double cur_rad=(*chainNeck)(0).getAng();
 
-    bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
+    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.wait();
     (*chainNeck)(0).setMin(min_rad);
@@ -573,7 +573,7 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
     double cur_rad=(*chainNeck)(1).getAng();
 
-    bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
+    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.wait();
     (*chainNeck)(1).setMin(min_rad);
@@ -591,7 +591,7 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
     double cur_rad=(*chainNeck)(2).getAng();
 
-    bindSolveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
+    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.wait();
     (*chainNeck)(2).setMin(min_rad);
@@ -678,7 +678,9 @@ double Solver::getNeckAngleUserTolerance()
 /************************************************************************/
 void Solver::setNeckAngleUserTolerance(const double angle)
 {
-    neckAngleUserTolerance=fabs(angle);
+    double fangle=fabs(angle);
+    solveRequest=fangle<neckAngleUserTolerance;
+    neckAngleUserTolerance=fangle;
 }
 
 
@@ -857,9 +859,8 @@ void Solver::run()
     doSolve&=commData->get_isCtrlActive() || commData->get_canCtrlBeDisabled() ||
              torsoChanged || headChanged;
 
-    // 5) solve straightaway if we are in tracking mode and a request is raised
-    // by the binding methods
-    doSolve|=!commData->get_canCtrlBeDisabled() && bindSolveRequest;
+    // 5) solve straightaway if we are in tracking mode and a solve request is raised
+    doSolve|=!commData->get_canCtrlBeDisabled() && solveRequest;
 
     // 6) solve straightaway if the target has changed
     doSolve|=port_xd->get_newDelayed();
@@ -869,7 +870,7 @@ void Solver::run()
 
     // clear triggers
     port_xd->get_newDelayed()=false;
-    bindSolveRequest=false;
+    solveRequest=false;
 
     // call the solver for neck
     if (doSolve)
