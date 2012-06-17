@@ -50,6 +50,7 @@
 
 #include <iCub/iKin/iKinHlp.h>
 
+#include <string>
 #include <set>
 #include <map>
 
