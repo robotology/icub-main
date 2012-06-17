@@ -273,6 +273,9 @@ following ports:
    - "motion-done" <time>: sent out at the end of the
      trajectory; comprise the time instant of the source when
      the event took place.
+   - "closing" <time>: sent out when the controller is being
+     shut down; comprise the time instant of the source when the
+     event took place.
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. \n 
     Recognized remote commands (be careful, <b>commands dealing
