@@ -60,7 +60,8 @@ private:
 	uint32_t            localipaddr;
 	uint32_t            remoteipaddr;
 	uint16_t            ipport;
-	EOpacket*           pkt;
+	EOpacket*           pktTx;
+	EOpacket*           pktRx;
 
 public:
 	hostTransceiver();

@@ -126,7 +126,8 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     // retrieve the nvscfg
     pc104nvscfg  = eo_hosttransceiver_NVsCfg(hosttxrx);
 
-    pkt = eo_packet_New(_pktsize);
+    pktTx = eo_packet_New(_pktsize);
+    pktRx = eo_packet_New(_pktsize);
 }
 
 void hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
@@ -298,9 +299,9 @@ void hostTransceiver::SetReceived(uint8_t *data, uint16_t size)
     uint16_t numofrops;
     uint64_t txtime;
 
-    eo_packet_Payload_Set(pkt, data, size);
-    eo_packet_Addressing_Set(pkt, remoteipaddr, ipport);
-    eo_transceiver_Receive(pc104txrx, pkt, &numofrops, &txtime);
+    eo_packet_Payload_Set(pktRx, data, size);
+    eo_packet_Addressing_Set(pktRx, remoteipaddr, ipport);
+    eo_transceiver_Receive(pc104txrx, pktRx, &numofrops, &txtime);
 }
 
 // somebody retrieves what must be transmitted
@@ -308,9 +309,9 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 {
     uint16_t numofrops;
     
-    eo_transceiver_Transmit(pc104txrx, &pkt, &numofrops);
+    eo_transceiver_Transmit(pc104txrx, &pktTx, &numofrops);
     
-    eo_packet_Payload_Get(pkt, data, size);
+    eo_packet_Payload_Get(pktTx, data, size);
     
 }
 
