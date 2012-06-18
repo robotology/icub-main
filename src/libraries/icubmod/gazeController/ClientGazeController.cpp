@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <algorithm>
+#include <sstream>
 
 #include "ClientGazeController.h"
 
@@ -1524,16 +1525,21 @@ void ClientGazeController::eventHandling(Bottle &event)
     double time=event.get(1).asDouble();
     map<string,GazeEvent*>::iterator itr;
 
+    if (type=="motion-ongoing")
+    {
+        ostringstream ss;
+        ss<<type<<"-"<<event.get(2).asDouble();
+        type=ss.str();
+    }
+
     // rise the all-events callback
     itr=eventsMap.find("*");
     if (itr!=eventsMap.end())
     {
         if (itr->second!=NULL)
         {
-            GazeEvent &Event=*itr->second;
-            Event.gazeEventType=ConstString(type.c_str());
-            Event.gazeEventTime=time;
-            Event.gazeEventCallback();
+            itr->second->gazeEventTime=time;
+            itr->second->gazeEventCallback();
         }
     }
 
@@ -1543,28 +1549,75 @@ void ClientGazeController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            GazeEvent &Event=*itr->second;
-            Event.gazeEventType=ConstString(type.c_str());
-            Event.gazeEventTime=time;
-            Event.gazeEventCallback();
+            itr->second->gazeEventTime=time;
+            itr->second->gazeEventCallback();
         }
     }
 }
 
 
 /************************************************************************/
-bool ClientGazeController::registerEvent(const ConstString &type,
-                                         GazeEvent *event)
+bool ClientGazeController::registerEvent(GazeEvent *event)
 {
-    eventsMap[string(type.c_str())]=event;
+    if (!connected || (event==NULL))
+        return false;
+
+    string type=event->gazeEventType.c_str();
+    if (type=="motion-ongoing")
+    {
+        Bottle command, reply;
+        command.addString("register");
+        command.addString("ongoing");
+        command.addDouble(event->gazeEventMotionOngoing);
+
+        if (!portRpc.write(command,reply))
+        {
+            fprintf(stdout,"Error: unable to get reply from server!\n");
+            return false;
+        }
+
+        if (reply.get(0).asVocab()!=GAZECTRL_ACK)
+            return false;
+
+        ostringstream ss;
+        ss<<type<<"-"<<event->gazeEventMotionOngoing;
+        type=ss.str();
+    }
+
+    eventsMap[type]=event;
     return true;
 }
 
 
 /************************************************************************/
-bool ClientGazeController::unregisterEvent(const ConstString &type)
+bool ClientGazeController::unregisterEvent(GazeEvent *event)
 {
-    eventsMap.erase(string(type.c_str()));
+    if (!connected || (event==NULL))
+        return false;
+
+    string type=event->gazeEventType.c_str();
+    if (type=="motion-ongoing")
+    {
+        Bottle command, reply;
+        command.addString("unregister");
+        command.addString("ongoing");
+        command.addDouble(event->gazeEventMotionOngoing);
+
+        if (!portRpc.write(command,reply))
+        {
+            fprintf(stdout,"Error: unable to get reply from server!\n");
+            return false;
+        }
+
+        if (reply.get(0).asVocab()!=GAZECTRL_ACK)
+            return false;
+
+        ostringstream ss;
+        ss<<type<<"-"<<event->gazeEventMotionOngoing;
+        type=ss.str();
+    }
+
+    eventsMap.erase(type);
     return true;
 }
 

@@ -1202,10 +1202,8 @@ void ClientCartesianController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            CartesianEvent &Event=*itr->second;
-            Event.cartesianEventType=ConstString(type.c_str());
-            Event.cartesianEventTime=time;
-            Event.cartesianEventCallback();
+            itr->second->cartesianEventTime=time;
+            itr->second->cartesianEventCallback();
         }
     }
 
@@ -1215,28 +1213,31 @@ void ClientCartesianController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            CartesianEvent &Event=*itr->second;
-            Event.cartesianEventType=ConstString(type.c_str());
-            Event.cartesianEventTime=time;
-            Event.cartesianEventCallback();
+            itr->second->cartesianEventTime=time;
+            itr->second->cartesianEventCallback();
         }
     }
 }
 
 
 /************************************************************************/
-bool ClientCartesianController::registerEvent(const ConstString &type,
-                                              CartesianEvent *event)
+bool ClientCartesianController::registerEvent(CartesianEvent *event)
 {
-    eventsMap[string(type.c_str())]=event;
+    if (!connected || (event==NULL))
+        return false;
+
+    eventsMap[event->cartesianEventType.c_str()]=event;
     return true;
 }
 
 
 /************************************************************************/
-bool ClientCartesianController::unregisterEvent(const ConstString &type)
+bool ClientCartesianController::unregisterEvent(CartesianEvent *event)
 {
-    eventsMap.erase(string(type.c_str()));
+    if (!connected || (event==NULL))
+        return false;
+
+    eventsMap.erase(event->cartesianEventType.c_str());
     return true;
 }
 

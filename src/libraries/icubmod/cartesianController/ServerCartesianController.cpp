@@ -2737,10 +2737,8 @@ void ServerCartesianController::notifyEvent(const string &event)
     {
         if (itr->second!=NULL)
         {
-            CartesianEvent &Event=*itr->second;
-            Event.cartesianEventType=ConstString(event.c_str());
-            Event.cartesianEventTime=time;
-            Event.cartesianEventCallback();
+            itr->second->cartesianEventTime=time;
+            itr->second->cartesianEventCallback();
         }
     }
 
@@ -2750,28 +2748,31 @@ void ServerCartesianController::notifyEvent(const string &event)
     {
         if (itr->second!=NULL)
         {
-            CartesianEvent &Event=*itr->second;
-            Event.cartesianEventType=ConstString(event.c_str());
-            Event.cartesianEventTime=time;
-            Event.cartesianEventCallback();
+            itr->second->cartesianEventTime=time;
+            itr->second->cartesianEventCallback();
         }
     }
 }
 
 
 /************************************************************************/
-bool ServerCartesianController::registerEvent(const ConstString &type,
-                                              CartesianEvent *event)
+bool ServerCartesianController::registerEvent(CartesianEvent *event)
 {
-    eventsMap[string(type.c_str())]=event;
+    if (!connected || (event==NULL))
+        return false;
+
+    eventsMap[event->cartesianEventType.c_str()]=event;
     return true;
 }
 
 
 /************************************************************************/
-bool ServerCartesianController::unregisterEvent(const ConstString &type)
+bool ServerCartesianController::unregisterEvent(CartesianEvent *event)
 {
-    eventsMap.erase(string(type.c_str()));
+    if (!connected || (event==NULL))
+        return false;
+
+    eventsMap.erase(event->cartesianEventType.c_str());
     return true;
 }
 

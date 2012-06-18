@@ -178,8 +178,8 @@ public:
     bool storeContext(int *id);
     bool restoreContext(const int id);
     bool getInfo(yarp::os::Bottle &info);
-    bool registerEvent(const yarp::os::ConstString &type, yarp::dev::GazeEvent *event);
-    bool unregisterEvent(const yarp::os::ConstString &type);
+    bool registerEvent(yarp::dev::GazeEvent *event);
+    bool unregisterEvent(yarp::dev::GazeEvent *event);
 
     virtual ~ClientGazeController();
 };
