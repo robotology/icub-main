@@ -357,6 +357,7 @@ void Controller::run()
         if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
         {
             fprintf(stdout,"\nCommunication timeout detected!\n\n");
+            notifyEvent("comm-timeout");
             suspend();
 
             return;
@@ -503,10 +504,9 @@ void Controller::threadRelease()
 void Controller::suspend()
 {
     stopLimbsVel();
-
     fprintf(stdout,"\nController has been suspended!\n\n");
-
     RateThread::suspend();
+    notifyEvent("suspended");
 }
 
 
@@ -525,8 +525,8 @@ void Controller::resume()
     }
 
     fprintf(stdout,"\nController has been resumed!\n\n");
-
     RateThread::resume();
+    notifyEvent("resumed");
 }
 
 

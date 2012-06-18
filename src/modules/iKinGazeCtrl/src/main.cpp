@@ -276,6 +276,15 @@ following ports:
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
+   - "suspended" <time>: sent out when the controller is
+     suspended; comprise the time instant of the source when the
+     event took place.
+   - "resumed" <time>: sent out when the controller is resumed;
+     comprise the time instant of the source when the event took
+     place.
+   - "comm-timeout" <time>: sent out when the controller gets 
+     suspended because of a communication timeout; comprise the
+     time instant of the source when the event took place.
  
 - \e /<ctrlName>/<part>/rpc remote procedure call. \n 
     Recognized remote commands (be careful, <b>commands dealing
@@ -644,6 +653,9 @@ protected:
         eventsList.addString("motion-onset");
         eventsList.addString("motion-done");
         eventsList.addString("closing");
+        eventsList.addString("suspended");
+        eventsList.addString("resumed");
+        eventsList.addString("comm-timeout");
         eventsList.addString("*");
 
         return true;
