@@ -123,24 +123,24 @@ public:
         int dya,dyb,dxa,dxb;
         int Dx,Dy;
 
-        double remapped_activation[12];
+        double remapped_activation[MAX_TAXELS];
 		switch (ilayoutNum)
 		{
 			case 0:
-				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
 				break;
 			case 1:
-				for (int i=0; i<12; ++i)  remapped_activation[11-i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[nTaxels-1-i]=activation[i];
 				break;
 			default:
-				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
 				printf("WARN: unkwnown layout number.\n");
 				break;
 		}
 
         int maxRange2=m_maxRangeLight*m_maxRangeLight;
 
-        for (int i=0; i<12; ++i) if (remapped_activation[i]>0.0)
+        for (int i=0; i<nTaxels; ++i) if (remapped_activation[i]>0.0)
         {
             act=int(dGain*remapped_activation[i]);
             Y0=(m_Height-y[i]-1)*m_Width+x[i];
