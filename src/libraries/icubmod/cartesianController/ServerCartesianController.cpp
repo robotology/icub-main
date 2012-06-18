@@ -2737,8 +2737,10 @@ void ServerCartesianController::notifyEvent(const string &event)
     {
         if (itr->second!=NULL)
         {
-            itr->second->cartesianEventTime=time;
-            itr->second->cartesianEventCallback();
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventType=ConstString(event.c_str());
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
         }
     }
 
@@ -2748,8 +2750,9 @@ void ServerCartesianController::notifyEvent(const string &event)
     {
         if (itr->second!=NULL)
         {
-            itr->second->cartesianEventTime=time;
-            itr->second->cartesianEventCallback();
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
         }
     }
 }

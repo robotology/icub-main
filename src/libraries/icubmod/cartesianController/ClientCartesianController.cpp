@@ -1202,8 +1202,10 @@ void ClientCartesianController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            itr->second->cartesianEventTime=time;
-            itr->second->cartesianEventCallback();
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventType=ConstString(type.c_str());
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
         }
     }
 
@@ -1213,8 +1215,9 @@ void ClientCartesianController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            itr->second->cartesianEventTime=time;
-            itr->second->cartesianEventCallback();
+            CartesianEvent &Event=*itr->second;
+            Event.cartesianEventTime=time;
+            Event.cartesianEventCallback();
         }
     }
 }

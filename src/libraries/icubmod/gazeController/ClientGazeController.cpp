@@ -1523,14 +1523,8 @@ void ClientGazeController::eventHandling(Bottle &event)
 {
     string type=event.get(0).asString().c_str();
     double time=event.get(1).asDouble();
+    double deadline=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
     map<string,GazeEvent*>::iterator itr;
-
-    if (type=="motion-ongoing")
-    {
-        ostringstream ss;
-        ss<<type<<"-"<<event.get(2).asDouble();
-        type=ss.str();
-    }
 
     // rise the all-events callback
     itr=eventsMap.find("*");
@@ -1538,9 +1532,22 @@ void ClientGazeController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            itr->second->gazeEventTime=time;
-            itr->second->gazeEventCallback();
+            GazeEvent &Event=*itr->second;
+            Event.gazeEventType=ConstString(type.c_str());
+            Event.gazeEventTime=time;
+
+            if (deadline>=0.0)
+                Event.gazeEventMotionOngoing=deadline;
+
+            Event.gazeEventCallback();
         }
+    }
+
+    if (deadline>=0.0)
+    {
+        ostringstream ss;
+        ss<<type<<"-"<<deadline;
+        type=ss.str();
     }
 
     // rise the event specific callback
@@ -1549,8 +1556,9 @@ void ClientGazeController::eventHandling(Bottle &event)
     {
         if (itr->second!=NULL)
         {
-            itr->second->gazeEventTime=time;
-            itr->second->gazeEventCallback();
+            GazeEvent &Event=*itr->second;
+            Event.gazeEventTime=time;
+            Event.gazeEventCallback();
         }
     }
 }
