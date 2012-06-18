@@ -1557,18 +1557,18 @@ void ClientGazeController::eventHandling(Bottle &event)
 
 
 /************************************************************************/
-bool ClientGazeController::registerEvent(GazeEvent *event)
+bool ClientGazeController::registerEvent(GazeEvent &event)
 {
-    if (!connected || (event==NULL))
+    if (!connected)
         return false;
 
-    string type=event->gazeEventType.c_str();
+    string type=event.gazeEventType.c_str();
     if (type=="motion-ongoing")
     {
         Bottle command, reply;
         command.addString("register");
         command.addString("ongoing");
-        command.addDouble(event->gazeEventMotionOngoing);
+        command.addDouble(event.gazeEventMotionOngoing);
 
         if (!portRpc.write(command,reply))
         {
@@ -1580,28 +1580,28 @@ bool ClientGazeController::registerEvent(GazeEvent *event)
             return false;
 
         ostringstream ss;
-        ss<<type<<"-"<<event->gazeEventMotionOngoing;
+        ss<<type<<"-"<<event.gazeEventMotionOngoing;
         type=ss.str();
     }
 
-    eventsMap[type]=event;
+    eventsMap[type]=&event;
     return true;
 }
 
 
 /************************************************************************/
-bool ClientGazeController::unregisterEvent(GazeEvent *event)
+bool ClientGazeController::unregisterEvent(GazeEvent &event)
 {
-    if (!connected || (event==NULL))
+    if (!connected)
         return false;
 
-    string type=event->gazeEventType.c_str();
+    string type=event.gazeEventType.c_str();
     if (type=="motion-ongoing")
     {
         Bottle command, reply;
         command.addString("unregister");
         command.addString("ongoing");
-        command.addDouble(event->gazeEventMotionOngoing);
+        command.addDouble(event.gazeEventMotionOngoing);
 
         if (!portRpc.write(command,reply))
         {
@@ -1613,7 +1613,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent *event)
             return false;
 
         ostringstream ss;
-        ss<<type<<"-"<<event->gazeEventMotionOngoing;
+        ss<<type<<"-"<<event.gazeEventMotionOngoing;
         type=ss.str();
     }
 

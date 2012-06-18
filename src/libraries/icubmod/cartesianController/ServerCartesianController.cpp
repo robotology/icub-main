@@ -2756,23 +2756,23 @@ void ServerCartesianController::notifyEvent(const string &event)
 
 
 /************************************************************************/
-bool ServerCartesianController::registerEvent(CartesianEvent *event)
+bool ServerCartesianController::registerEvent(CartesianEvent &event)
 {
-    if (!connected || (event==NULL))
+    if (!connected)
         return false;
 
-    eventsMap[event->cartesianEventType.c_str()]=event;
+    eventsMap[event.cartesianEventType.c_str()]=&event;
     return true;
 }
 
 
 /************************************************************************/
-bool ServerCartesianController::unregisterEvent(CartesianEvent *event)
+bool ServerCartesianController::unregisterEvent(CartesianEvent &event)
 {
-    if (!connected || (event==NULL))
+    if (!connected)
         return false;
 
-    eventsMap.erase(event->cartesianEventType.c_str());
+    eventsMap.erase(event.cartesianEventType.c_str());
     return true;
 }
 

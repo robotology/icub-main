@@ -1221,23 +1221,23 @@ void ClientCartesianController::eventHandling(Bottle &event)
 
 
 /************************************************************************/
-bool ClientCartesianController::registerEvent(CartesianEvent *event)
+bool ClientCartesianController::registerEvent(CartesianEvent &event)
 {
-    if (!connected || (event==NULL))
+    if (!connected)
         return false;
 
-    eventsMap[event->cartesianEventType.c_str()]=event;
+    eventsMap[event.cartesianEventType.c_str()]=&event;
     return true;
 }
 
 
 /************************************************************************/
-bool ClientCartesianController::unregisterEvent(CartesianEvent *event)
+bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
 {
-    if (!connected || (event==NULL))
+    if (!connected)
         return false;
 
-    eventsMap.erase(event->cartesianEventType.c_str());
+    eventsMap.erase(event.cartesianEventType.c_str());
     return true;
 }
 
