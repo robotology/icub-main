@@ -110,7 +110,7 @@ protected:
     set<double> motionOngoingEventsCurrent;
 
     void findMinimumAllowedVergence();
-    void notifyEvent(const string &event, const double deadline=-1.0);
+    void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
 
 public:
@@ -141,8 +141,8 @@ public:
     bool   getDesired(Vector &des);
     bool   getVelocity(Vector &vel);
     bool   getPose(const string &poseSel, Vector &x, Stamp &stamp);
-    bool   registerMotionOngoingEvent(const double deadline);
-    bool   unregisterMotionOngoingEvent(const double deadline);
+    bool   registerMotionOngoingEvent(const double checkPoint);
+    bool   unregisterMotionOngoingEvent(const double checkPoint);
     Bottle listMotionOngoingEvents();
 };
 

@@ -1523,7 +1523,7 @@ void ClientGazeController::eventHandling(Bottle &event)
 {
     string type=event.get(0).asString().c_str();
     double time=event.get(1).asDouble();
-    double deadline=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
+    double checkPoint=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
     map<string,GazeEvent*>::iterator itr;
 
     // rise the all-events callback
@@ -1536,17 +1536,17 @@ void ClientGazeController::eventHandling(Bottle &event)
             Event.gazeEventType=ConstString(type.c_str());
             Event.gazeEventTime=time;
 
-            if (deadline>=0.0)
-                Event.gazeEventMotionOngoing=deadline;
+            if (checkPoint>=0.0)
+                Event.gazeEventMotionOngoing=checkPoint;
 
             Event.gazeEventCallback();
         }
     }
 
-    if (deadline>=0.0)
+    if (checkPoint>=0.0)
     {
         ostringstream ss;
-        ss<<type<<"-"<<deadline;
+        ss<<type<<"-"<<checkPoint;
         type=ss.str();
     }
 

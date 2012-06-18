@@ -273,11 +273,11 @@ following ports:
    - "motion-done" <time>: sent out at the end of the
      trajectory; comprise the time instant of the source when
      the event took place.
-   - "motion-ongoing" <time> <deadline>: sent out when the
-     portion of trajectory given in [0,1] by the deadline
+   - "motion-ongoing" <time> <checkpoint>: sent out when the
+     portion of trajectory given in [0,1] by the checkpoint
      parameter has been attained; comprise the time instant of
      the source when the event took place as well as the
-     deadline.
+     checkpoint.
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
@@ -402,10 +402,10 @@ following ports:
       context referred by the identifier \e id.
     - [del] (<id0> <id1> ...): delete all the contexts whose ids
       are contained in the list.
-    - [register] [ongoing] <deadline>: register the
-      "motion-ongoing" event with the given deadline in [0,1].
-    - [unregister] [ongoing] <deadline>: unregister the
-      "motion-ongoing" event with the given deadline in [0,1].
+    - [register] [ongoing] <checkpoint>: register the
+      "motion-ongoing" event with the given checkpoint in [0,1].
+    - [unregister] [ongoing] <checkpoint>: unregister the
+      "motion-ongoing" event with the given checkpoint in [0,1].
     - [list] [ongoing]: return the list of registered
       "motion-ongoing" events.
  
@@ -1368,8 +1368,8 @@ public:
                         {
                             if (command.size()>2)
                             {
-                                double deadline=command.get(2).asDouble();
-                                if (ctrl->registerMotionOngoingEvent(deadline))
+                                double checkPoint=command.get(2).asDouble();
+                                if (ctrl->registerMotionOngoingEvent(checkPoint))
                                 {
                                     reply.addVocab(ack);
                                     return true;
@@ -1391,8 +1391,8 @@ public:
                         {
                             if (command.size()>2)
                             {
-                                double deadline=command.get(2).asDouble();
-                                if (ctrl->unregisterMotionOngoingEvent(deadline))
+                                double checkPoint=command.get(2).asDouble();
+                                if (ctrl->unregisterMotionOngoingEvent(checkPoint))
                                 {
                                     reply.addVocab(ack);
                                     return true;

@@ -182,14 +182,14 @@ void Controller::findMinimumAllowedVergence()
 
 
 /************************************************************************/
-void Controller::notifyEvent(const string &event, const double deadline)
+void Controller::notifyEvent(const string &event, const double checkPoint)
 {
     Bottle bottle;
     bottle.addString(event.c_str());
     bottle.addDouble(q_stamp);
 
-    if (deadline>=0.0)
-        bottle.addDouble(deadline);
+    if (checkPoint>=0.0)
+        bottle.addDouble(checkPoint);
 
     port_event.write(bottle);
 }
@@ -200,15 +200,15 @@ void Controller::motionOngoingEventsHandling()
 {
     if (motionOngoingEventsCurrent.size()!=0)
     {
-        double curDeadline=*motionOngoingEventsCurrent.begin();
+        double curCheckPoint=*motionOngoingEventsCurrent.begin();
         double dist=norm(qddeg-q0deg);
-        double deadline=(dist>ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
-        deadline=std::min(std::max(deadline,0.0),1.0);        
+        double checkPoint=(dist>ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
+        checkPoint=std::min(std::max(checkPoint,0.0),1.0);
 
-        if (deadline>=curDeadline)
+        if (checkPoint>=curCheckPoint)
         {            
-            notifyEvent("motion-ongoing",curDeadline);
-            motionOngoingEventsCurrent.erase(curDeadline);
+            notifyEvent("motion-ongoing",curCheckPoint);
+            motionOngoingEventsCurrent.erase(curCheckPoint);
         }
     }
 }
@@ -692,12 +692,12 @@ bool Controller::getPose(const string &poseSel, Vector &x, Stamp &stamp)
 
 
 /************************************************************************/
-bool Controller::registerMotionOngoingEvent(const double deadline)
+bool Controller::registerMotionOngoingEvent(const double checkPoint)
 {
-    if ((deadline>=0.0) && (deadline<=1.0))
+    if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
         mutexData.wait();
-        motionOngoingEvents.insert(deadline);
+        motionOngoingEvents.insert(checkPoint);
         mutexData.post();
 
         return true;
@@ -708,12 +708,12 @@ bool Controller::registerMotionOngoingEvent(const double deadline)
 
 
 /************************************************************************/
-bool Controller::unregisterMotionOngoingEvent(const double deadline)
+bool Controller::unregisterMotionOngoingEvent(const double checkPoint)
 {
-    if ((deadline>=0.0) && (deadline<=1.0))
+    if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
         mutexData.wait();
-        size_t succ=motionOngoingEvents.erase(deadline);
+        size_t succ=motionOngoingEvents.erase(checkPoint);
         mutexData.post();
 
         return (succ!=0);
