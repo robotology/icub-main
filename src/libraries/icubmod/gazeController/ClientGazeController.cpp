@@ -515,7 +515,6 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
     command.addString("pose");
     command.addString(poseSel.c_str());
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -594,7 +593,6 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
     bOpt.addDouble(x[1]);
     bOpt.addDouble(x[2]);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -634,7 +632,6 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
     bOpt.addDouble(px[1]);
     bOpt.addDouble(z);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -677,7 +674,6 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
     bOpt.addDouble(plane[2]);
     bOpt.addDouble(plane[3]);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -717,7 +713,6 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
     bOpt.addDouble(ang[1]);
     bOpt.addDouble(ang[2]);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -754,7 +749,6 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
     bOpt.addDouble(x[1]);
     bOpt.addDouble(x[2]);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -794,7 +788,6 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
     bOpt.addDouble(pxr[0]);
     bOpt.addDouble(pxr[1]);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -827,7 +820,6 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
     command.addString("get");
     command.addString("des");
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -860,7 +852,6 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
     command.addString("get");
     command.addString("vel");
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -893,7 +884,6 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
     command.addString("get");
     command.addString("pid");
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -1474,7 +1464,6 @@ bool ClientGazeController::deleteContexts()
     for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)
         ids.addInt(*itr);
 
-    // send command and wait for reply
     if (!portRpc.write(command,reply))
     {
         fprintf(stdout,"Error: unable to get reply from server!\n");
@@ -1579,10 +1568,12 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
     string type=event.gazeEventParameters.type.c_str();
     if (type=="motion-ongoing")
     {
+        double checkPoint=event.gazeEventParameters.motionOngoingCheckPoint;
+
         Bottle command, reply;
         command.addString("register");
         command.addString("ongoing");
-        command.addDouble(event.gazeEventParameters.motionOngoingCheckPoint);
+        command.addDouble(checkPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1594,7 +1585,7 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
             return false;
 
         ostringstream ss;
-        ss<<type<<"-"<<event.gazeEventParameters.motionOngoingCheckPoint;
+        ss<<type<<"-"<<checkPoint;
         type=ss.str();
     }
 
@@ -1612,10 +1603,12 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
     string type=event.gazeEventParameters.type.c_str();
     if (type=="motion-ongoing")
     {
+        double checkPoint=event.gazeEventParameters.motionOngoingCheckPoint;
+
         Bottle command, reply;
         command.addString("unregister");
         command.addString("ongoing");
-        command.addDouble(event.gazeEventParameters.motionOngoingCheckPoint);
+        command.addDouble(checkPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1627,7 +1620,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
             return false;
 
         ostringstream ss;
-        ss<<type<<"-"<<event.gazeEventParameters.motionOngoingCheckPoint;
+        ss<<type<<"-"<<checkPoint;
         type=ss.str();
     }
 

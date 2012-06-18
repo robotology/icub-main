@@ -1412,9 +1412,8 @@ public:
                         int type=command.get(1).asVocab();
                         if (type==VOCAB4('o','n','g','o'))
                         {
-                            Bottle events=ctrl->listMotionOngoingEvents();
                             reply.addVocab(ack);
-                            reply.addList()=events;
+                            reply.addList()=ctrl->listMotionOngoingEvents();
                             return true;
                         }
                     }

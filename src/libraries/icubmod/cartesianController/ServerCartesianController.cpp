@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <algorithm>
+#include <sstream>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
@@ -810,6 +811,75 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             }
 
             //-----------------
+            case IKINCARTCTRL_VOCAB_CMD_EVENT:
+            {
+                if (command.size()>2)
+                    switch (command.get(1).asVocab())
+                    {
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_REGISTER:
+                        {
+                            int mode=command.get(2).asVocab();
+                            if ((mode==IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING) &&
+                                (command.size()>3))
+                            {
+                                double checkPoint=command.get(3).asDouble();
+                                if (registerMotionOngoingEvent(checkPoint))
+                                {
+                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                    break;
+                                }
+                            }
+
+                            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_UNREGISTER:
+                        {
+                            int mode=command.get(2).asVocab();
+                            if ((mode==IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING) &&
+                                (command.size()>3))
+                            {
+                                double checkPoint=command.get(3).asDouble();
+                                if (unregisterMotionOngoingEvent(checkPoint))
+                                {
+                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                    break;
+                                }
+                            }
+
+                            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_LIST:
+                        {
+                            int mode=command.get(2).asVocab();
+                            if (mode==IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING)
+                            {
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.addList()=listMotionOngoingEvents();
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
+                        default:
+                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    }
+                else
+                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                break;
+            }
+
+            //-----------------
             default:
                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
         }
@@ -952,6 +1022,7 @@ void ServerCartesianController::newController()
     velCmd.resize(chain->getDOF(),0.0);
     xdes=chain->EndEffPose();
     qdes=chain->getAng();
+    q0=qdes;
 
     // instantiate new controller
     if (plantModelProperties.check("plant_compensator",Value("off")).asString()=="on")
@@ -1174,6 +1245,9 @@ void ServerCartesianController::run()
             // onset of new trajectory
             executingTraj=true;
             notifyEvent("motion-onset");
+
+            motionOngoingEventsCurrent=motionOngoingEvents;
+            q0=fb;
         }
 
         // update the stamp anyway
@@ -1227,6 +1301,8 @@ void ServerCartesianController::run()
             portState.setEnvelope(txInfo);
             portState.write();
         }
+
+        motionOngoingEventsHandling();
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
@@ -2710,6 +2786,7 @@ bool ServerCartesianController::getInfo(Bottle &info)
         Bottle &eventsList=events.addList();
         eventsList.addString("motion-onset");
         eventsList.addString("motion-done");
+        eventsList.addString("motion-ongoing");
         eventsList.addString("closing");
         eventsList.addString("*");
 
@@ -2721,7 +2798,8 @@ bool ServerCartesianController::getInfo(Bottle &info)
 
 
 /************************************************************************/
-void ServerCartesianController::notifyEvent(const string &event)
+void ServerCartesianController::notifyEvent(const string &event,
+                                            const double checkPoint)
 {
     double time=txInfo.getTime();
     map<string,CartesianEvent*>::iterator itr;
@@ -2729,6 +2807,10 @@ void ServerCartesianController::notifyEvent(const string &event)
     Bottle bottle;
     bottle.addString(event.c_str());
     bottle.addDouble(time);
+
+    if (checkPoint>=0.0)
+        bottle.addDouble(checkPoint);
+
     portEvent.write(bottle);
 
     // rise the all-events callback
@@ -2740,12 +2822,24 @@ void ServerCartesianController::notifyEvent(const string &event)
             CartesianEvent &Event=*itr->second;
             Event.cartesianEventVariables.type=ConstString(event.c_str());
             Event.cartesianEventVariables.time=time;
+
+            if (checkPoint>=0.0)
+                Event.cartesianEventVariables.motionOngoingCheckPoint=checkPoint;
+
             Event.cartesianEventCallback();
         }
     }
 
+    string typeExtended=event;
+    if (checkPoint>=0.0)
+    {
+        ostringstream ss;
+        ss<<event<<"-"<<checkPoint;
+        typeExtended=ss.str();
+    }
+
     // rise the event specific callback
-    itr=eventsMap.find(event);
+    itr=eventsMap.find(typeExtended);
     if (itr!=eventsMap.end())
     {
         if (itr->second!=NULL)
@@ -2753,6 +2847,10 @@ void ServerCartesianController::notifyEvent(const string &event)
             CartesianEvent &Event=*itr->second;
             Event.cartesianEventVariables.type=ConstString(event.c_str());
             Event.cartesianEventVariables.time=time;
+
+            if (checkPoint>=0.0)
+                Event.cartesianEventVariables.motionOngoingCheckPoint=checkPoint;
+
             Event.cartesianEventCallback();
         }
     }
@@ -2765,7 +2863,18 @@ bool ServerCartesianController::registerEvent(CartesianEvent &event)
     if (!connected)
         return false;
 
-    eventsMap[event.cartesianEventParameters.type.c_str()]=&event;
+    string type=event.cartesianEventParameters.type.c_str();
+    if (type=="motion-ongoing")
+    {
+        double checkPoint=event.cartesianEventParameters.motionOngoingCheckPoint;
+        registerMotionOngoingEvent(checkPoint);
+
+        ostringstream ss;
+        ss<<type<<"-"<<checkPoint;
+        type=ss.str();
+    }
+
+    eventsMap[type]=&event;
     return true;
 }
 
@@ -2776,8 +2885,84 @@ bool ServerCartesianController::unregisterEvent(CartesianEvent &event)
     if (!connected)
         return false;
 
-    eventsMap.erase(event.cartesianEventParameters.type.c_str());
+    string type=event.cartesianEventParameters.type.c_str();
+    if (type=="motion-ongoing")
+    {
+        double checkPoint=event.cartesianEventParameters.motionOngoingCheckPoint;
+        unregisterMotionOngoingEvent(checkPoint);
+
+        ostringstream ss;
+        ss<<type<<"-"<<event.cartesianEventParameters.motionOngoingCheckPoint;
+        type=ss.str();
+    }
+
+    eventsMap.erase(type);
     return true;
+}
+
+
+/************************************************************************/
+void ServerCartesianController::motionOngoingEventsHandling()
+{
+    if (motionOngoingEventsCurrent.size()!=0)
+    {
+        double curCheckPoint=*motionOngoingEventsCurrent.begin();
+        double dist=norm(qdes-q0);
+        double checkPoint=(dist>1e-6)?norm(fb-q0)/dist:1.0;
+        checkPoint=std::min(std::max(checkPoint,0.0),1.0);
+
+        if (checkPoint>=curCheckPoint)
+        {            
+            notifyEvent("motion-ongoing",curCheckPoint);
+            motionOngoingEventsCurrent.erase(curCheckPoint);
+        }
+    }
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::registerMotionOngoingEvent(const double checkPoint)
+{
+    if ((checkPoint>=0.0) && (checkPoint<=1.0))
+    {
+        mutex.wait();
+        motionOngoingEvents.insert(checkPoint);
+        mutex.post();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::unregisterMotionOngoingEvent(const double checkPoint)
+{
+    if ((checkPoint>=0.0) && (checkPoint<=1.0))
+    {
+        mutex.wait();
+        size_t succ=motionOngoingEvents.erase(checkPoint);
+        mutex.post();
+
+        return (succ!=0);
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+Bottle ServerCartesianController::listMotionOngoingEvents()
+{
+    Bottle events;
+
+    mutex.wait();
+    for (set<double>::iterator it=motionOngoingEvents.begin(); it!=motionOngoingEvents.end(); it++)
+        events.addDouble(*it);
+    mutex.post();
+
+    return events;
 }
 
 

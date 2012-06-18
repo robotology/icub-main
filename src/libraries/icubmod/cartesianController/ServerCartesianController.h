@@ -58,6 +58,7 @@
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iKin/iKinInv.h>
 
+#include <set>
 #include <deque>
 #include <map>
 
@@ -166,6 +167,7 @@ protected:
     yarp::sig::Vector xdot_set;
     yarp::sig::Vector velCmd;
     yarp::sig::Vector fb;
+    yarp::sig::Vector q0;
 
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvIn;
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvOut;
@@ -193,6 +195,9 @@ protected:
     std::map<int,Context> contextMap;
     std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;
 
+    std::set<double> motionOngoingEvents;
+    std::set<double> motionOngoingEventsCurrent;
+
     void   init();
     void   openPorts();
     void   closePorts();
@@ -205,7 +210,11 @@ protected:
     void   sendVelocity(const yarp::sig::Vector &v);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
-    void   notifyEvent(const std::string &event);
+    void   notifyEvent(const std::string &event, const double checkPoint=-1.0);
+    void   motionOngoingEventsHandling();
+    bool   registerMotionOngoingEvent(const double checkPoint);
+    bool   unregisterMotionOngoingEvent(const double checkPoint);
+    yarp::os::Bottle listMotionOngoingEvents();
 
     bool   threadInit();
     void   afterStart(bool s);
