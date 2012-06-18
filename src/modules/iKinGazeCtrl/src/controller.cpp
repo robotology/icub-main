@@ -135,7 +135,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vdegOld=v;
 
     qd=fbHead;
-    qddeg=CTRL_RAD2DEG*qd;
+    q0deg=CTRL_RAD2DEG*qd;
+    qddeg=q0deg;
     vdeg =CTRL_RAD2DEG*v;
 
     port_xd=NULL;
@@ -181,12 +182,35 @@ void Controller::findMinimumAllowedVergence()
 
 
 /************************************************************************/
-void Controller::notifyEvent(const string &event)
+void Controller::notifyEvent(const string &event, const double deadline)
 {
     Bottle bottle;
     bottle.addString(event.c_str());
-    bottle.addDouble(txInfo_pose.getTime());
+    bottle.addDouble(q_stamp);
+
+    if (deadline>=0.0)
+        bottle.addDouble(deadline);
+
     port_event.write(bottle);
+}
+
+
+/************************************************************************/
+void Controller::motionOngoingEventsHandling()
+{
+    if (motionOngoingEventsCurrent.size()!=0)
+    {
+        double curDeadline=*motionOngoingEventsCurrent.begin();
+        double dist=norm(qddeg-q0deg);
+        double deadline=(dist>ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
+        deadline=std::min(std::max(deadline,0.0),1.0);        
+
+        if (deadline>=curDeadline)
+        {            
+            notifyEvent("motion-ongoing",curDeadline);
+            motionOngoingEventsCurrent.erase(curDeadline);
+        }
+    }
 }
 
 
@@ -235,6 +259,7 @@ bool Controller::threadInit()
     port_event.open((localName+"/events:o").c_str());
 
     fprintf(stdout,"Starting Controller at %d ms\n",period);
+    q_stamp=Time::now();
 
     return true;
 }
@@ -290,6 +315,8 @@ void Controller::resetCtrlEyes()
 /************************************************************************/
 void Controller::run()
 {
+    string event="none";
+
     // verify if any saccade is still underway
     mutexCtrl.wait();
     if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
@@ -329,7 +356,7 @@ void Controller::run()
             commData->get_isCtrlActive()=false;
             port_xd->get_new()=false;
 
-            notifyEvent("motion-done");
+            event="motion-done";
         }
     }
     else if (!swOffCond)
@@ -346,12 +373,16 @@ void Controller::run()
             mjCtrlNeck->reset(zeros);
             mjCtrlEyes->reset(zeros);
 
-            notifyEvent("motion-onset");
+            event="motion-onset";
+
+            mutexData.wait();
+            motionOngoingEventsCurrent=motionOngoingEvents;
+            mutexData.post();
         }
     }
 
     // Introduce the feedback within the control computation
-    double q_stamp=Time::now();
+    q_stamp=Time::now();
     if (Robotable)
     {
         if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
@@ -365,6 +396,9 @@ void Controller::run()
 
         Int->reset(fbHead);
     }
+
+    if (event=="motion-onset")
+        q0deg=CTRL_RAD2DEG*fbHead;
 
     qd=new_qd;
     for (int i=0; i<3; i++)
@@ -468,6 +502,11 @@ void Controller::run()
     txInfo_pose.update(q_stamp);
 
     mutexChain.post();
+
+    if (event!="none")
+        notifyEvent(event);
+
+    motionOngoingEventsHandling();
 
     // update joints angles
     fbHead=Int->integrate(v);
@@ -649,6 +688,52 @@ bool Controller::getPose(const string &poseSel, Vector &x, Stamp &stamp)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool Controller::registerMotionOngoingEvent(const double deadline)
+{
+    if ((deadline>=0.0) && (deadline<=1.0))
+    {
+        mutexData.wait();
+        motionOngoingEvents.insert(deadline);
+        mutexData.post();
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool Controller::unregisterMotionOngoingEvent(const double deadline)
+{
+    if ((deadline>=0.0) && (deadline<=1.0))
+    {
+        mutexData.wait();
+        size_t succ=motionOngoingEvents.erase(deadline);
+        mutexData.post();
+
+        return (succ!=0);
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+Bottle Controller::listMotionOngoingEvents()
+{
+    Bottle events;
+
+    mutexData.wait();
+    for (set<double>::iterator it=motionOngoingEvents.begin(); it!=motionOngoingEvents.end(); it++)
+        events.addDouble(*it);
+    mutexData.post();
+
+    return events;
 }
 
 

@@ -20,7 +20,9 @@
 #define __CONTROLLER_H__
 
 #include <string>
+#include <set>
 
+#include <yarp/os/Bottle.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -95,16 +97,21 @@ protected:
     double eyeTiltMin;
     double eyeTiltMax;
     double minAbsVel;
+    double q_stamp;
     double Ts;
 
     Matrix lim;
-    Vector qddeg,qdeg,vdeg;
+    Vector q0deg,qddeg,qdeg,vdeg;
     Vector v,vNeck,vEyes,vdegOld;
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
 
+    set<double> motionOngoingEvents;
+    set<double> motionOngoingEventsCurrent;
+
     void findMinimumAllowedVergence();
-    void notifyEvent(const string &event);
+    void notifyEvent(const string &event, const double deadline=-1.0);
+    void motionOngoingEventsHandling();
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
@@ -134,6 +141,9 @@ public:
     bool   getDesired(Vector &des);
     bool   getVelocity(Vector &vel);
     bool   getPose(const string &poseSel, Vector &x, Stamp &stamp);
+    bool   registerMotionOngoingEvent(const double deadline);
+    bool   unregisterMotionOngoingEvent(const double deadline);
+    Bottle listMotionOngoingEvents();
 };
 
 

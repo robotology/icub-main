@@ -273,6 +273,11 @@ following ports:
    - "motion-done" <time>: sent out at the end of the
      trajectory; comprise the time instant of the source when
      the event took place.
+   - "motion-ongoing" <time> <deadline>: sent out when the
+     portion of trajectory given in [0,1] by the deadline
+     parameter has been attained; comprise the time instant of
+     the source when the event took place as well as the
+     deadline.
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
@@ -397,6 +402,12 @@ following ports:
       context referred by the identifier \e id.
     - [del] (<id0> <id1> ...): delete all the contexts whose ids
       are contained in the list.
+    - [register] [ongoing] <deadline>: register the
+      "motion-ongoing" event with the given deadline in [0,1].
+    - [unregister] [ongoing] <deadline>: unregister the
+      "motion-ongoing" event with the given deadline in [0,1].
+    - [list] [ongoing]: return the list of registered
+      "motion-ongoing" events.
  
 \note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -652,6 +663,7 @@ protected:
         Bottle &eventsList=events.addList();
         eventsList.addString("motion-onset");
         eventsList.addString("motion-done");
+        eventsList.addString("motion-ongoing");
         eventsList.addString("closing");
         eventsList.addString("suspended");
         eventsList.addString("resumed");
@@ -817,137 +829,6 @@ public:
         {
             switch (command.get(0).asVocab())
             {
-                //-----------------
-                case VOCAB4('s','u','s','p'):
-                {
-                    ctrl->suspend();
-                    eyesRefGen->suspend();
-                    slv->suspend();
-                    reply.addVocab(ack);
-                    return true;
-                }
-
-                //-----------------
-                case VOCAB3('r','u','n'):
-                {
-                    slv->resume();
-                    eyesRefGen->resume();
-                    ctrl->resume();
-                    reply.addVocab(ack);
-                    return true;
-                }
-
-                //-----------------
-                case VOCAB4('s','t','o','p'):
-                {
-                    eyesRefGen->stopControl();
-                    reply.addVocab(ack);
-                    return true;
-                }
-
-                //-----------------
-                case VOCAB4('s','t','o','r'):
-                {
-                    int id;
-                    storeContext(&id);                    
-                    reply.addVocab(ack);
-                    reply.addInt(id);
-                    return true;
-                }
-
-                //-----------------
-                case VOCAB4('r','e','s','t'):
-                {
-                    if (command.size()>1)
-                    {
-                        int id=command.get(1).asInt();
-                        if (restoreContext(id))
-                        {
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                    }
-
-                    break;
-                }
-
-                //-----------------
-                case VOCAB3('d','e','l'):
-                {
-                    if (command.size()>1)
-                    {
-                        Bottle *ids=command.get(1).asList();
-                        if (deleteContexts(ids))
-                        {
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                    }
-
-                    break;
-                }
-
-                //-----------------
-                case VOCAB4('b','i','n','d'):
-                {
-                    if (command.size()>2)
-                    {
-                        int joint=command.get(1).asVocab();
-                        double min=command.get(2).asDouble();
-                        double max=command.get(3).asDouble();
-
-                        if (joint==VOCAB4('p','i','t','c'))
-                        {
-                            slv->bindNeckPitch(min,max);
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                        else if (joint==VOCAB4('r','o','l','l'))
-                        {
-                            slv->bindNeckRoll(min,max);
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                        else if (joint==VOCAB3('y','a','w'))
-                        {
-                            slv->bindNeckYaw(min,max);
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                    }
-
-                    break;
-                }
-
-                //-----------------
-                case VOCAB4('c','l','e','a'):
-                {
-                    if (command.size()>1)
-                    {
-                        int joint=command.get(1).asVocab();
-                        if (joint==VOCAB4('p','i','t','c'))
-                        {
-                            slv->clearNeckPitch();
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                        else if (joint==VOCAB4('r','o','l','l'))
-                        {
-                            slv->clearNeckRoll();
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                        else if (joint==VOCAB3('y','a','w'))
-                        {
-                            slv->clearNeckYaw();
-                            reply.addVocab(ack);
-                            return true;
-                        }
-                    }
-
-                    break;
-                }
-
                 //-----------------
                 case VOCAB3('g','e','t'):
                 {
@@ -1340,6 +1221,201 @@ public:
                                 reply.addVocab(ack);
                                 return true;
                             }
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('s','u','s','p'):
+                {
+                    ctrl->suspend();
+                    eyesRefGen->suspend();
+                    slv->suspend();
+                    reply.addVocab(ack);
+                    return true;
+                }
+
+                //-----------------
+                case VOCAB3('r','u','n'):
+                {
+                    slv->resume();
+                    eyesRefGen->resume();
+                    ctrl->resume();
+                    reply.addVocab(ack);
+                    return true;
+                }
+
+                //-----------------
+                case VOCAB4('s','t','o','p'):
+                {
+                    eyesRefGen->stopControl();
+                    reply.addVocab(ack);
+                    return true;
+                }
+
+                //-----------------
+                case VOCAB4('s','t','o','r'):
+                {
+                    int id;
+                    storeContext(&id);                    
+                    reply.addVocab(ack);
+                    reply.addInt(id);
+                    return true;
+                }
+
+                //-----------------
+                case VOCAB4('r','e','s','t'):
+                {
+                    if (command.size()>1)
+                    {
+                        int id=command.get(1).asInt();
+                        if (restoreContext(id))
+                        {
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB3('d','e','l'):
+                {
+                    if (command.size()>1)
+                    {
+                        Bottle *ids=command.get(1).asList();
+                        if (deleteContexts(ids))
+                        {
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('b','i','n','d'):
+                {
+                    if (command.size()>2)
+                    {
+                        int joint=command.get(1).asVocab();
+                        double min=command.get(2).asDouble();
+                        double max=command.get(3).asDouble();
+
+                        if (joint==VOCAB4('p','i','t','c'))
+                        {
+                            slv->bindNeckPitch(min,max);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB4('r','o','l','l'))
+                        {
+                            slv->bindNeckRoll(min,max);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB3('y','a','w'))
+                        {
+                            slv->bindNeckYaw(min,max);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('c','l','e','a'):
+                {
+                    if (command.size()>1)
+                    {
+                        int joint=command.get(1).asVocab();
+                        if (joint==VOCAB4('p','i','t','c'))
+                        {
+                            slv->clearNeckPitch();
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB4('r','o','l','l'))
+                        {
+                            slv->clearNeckRoll();
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB3('y','a','w'))
+                        {
+                            slv->clearNeckYaw();
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('r','e','g','i'):
+                {
+                    if (command.size()>1)
+                    {
+                        int type=command.get(1).asVocab();
+                        if (type==VOCAB4('o','n','g','o'))
+                        {
+                            if (command.size()>2)
+                            {
+                                double deadline=command.get(2).asDouble();
+                                if (ctrl->registerMotionOngoingEvent(deadline))
+                                {
+                                    reply.addVocab(ack);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('u','n','r','e'):
+                {
+                    if (command.size()>1)
+                    {
+                        int type=command.get(1).asVocab();
+                        if (type==VOCAB4('o','n','g','o'))
+                        {
+                            if (command.size()>2)
+                            {
+                                double deadline=command.get(2).asDouble();
+                                if (ctrl->unregisterMotionOngoingEvent(deadline))
+                                {
+                                    reply.addVocab(ack);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('l','i','s','t'):
+                {
+                    if (command.size()>1)
+                    {
+                        int type=command.get(1).asVocab();
+                        if (type==VOCAB4('o','n','g','o'))
+                        {
+                            Bottle events=ctrl->listMotionOngoingEvents();
+                            reply.addVocab(ack);
+                            reply.addList()=events;
+                            return true;
                         }
                     }
 
