@@ -121,7 +121,6 @@ public:
         int dx,dy;
         int Y0,Y1;
         int dya,dyb,dxa,dxb;
-        int Dx,Dy;
 
         double remapped_activation[MAX_TAXELS];
 		switch (ilayoutNum)
@@ -153,15 +152,11 @@ public:
 
             for (dy=dya; dy<=dyb; ++dy)
             {
-                Dy=dy-y[i];
-
                 Y1=Y0-dy*m_Width;
 
                 for (dx=dxa; dx<=dxb; ++dx)
                 {
-                    Dx=dx-x[i];
-
-                    if (Dx*Dx+Dy*Dy<=maxRange2)
+                    if (dx*dx+dy*dy<=maxRange2)
                     {
                         image[(dx+Y1)*3]=act<255?act:255;
                     }
