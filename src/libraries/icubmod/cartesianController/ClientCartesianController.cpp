@@ -1203,8 +1203,8 @@ void ClientCartesianController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             CartesianEvent &Event=*itr->second;
-            Event.cartesianEventType=ConstString(type.c_str());
-            Event.cartesianEventTime=time;
+            Event.cartesianEventVariables.type=ConstString(type.c_str());
+            Event.cartesianEventVariables.time=time;
             Event.cartesianEventCallback();
         }
     }
@@ -1216,7 +1216,8 @@ void ClientCartesianController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             CartesianEvent &Event=*itr->second;
-            Event.cartesianEventTime=time;
+            Event.cartesianEventVariables.type=ConstString(type.c_str());
+            Event.cartesianEventVariables.time=time;
             Event.cartesianEventCallback();
         }
     }
@@ -1229,7 +1230,7 @@ bool ClientCartesianController::registerEvent(CartesianEvent &event)
     if (!connected)
         return false;
 
-    eventsMap[event.cartesianEventType.c_str()]=&event;
+    eventsMap[event.cartesianEventParameters.type.c_str()]=&event;
     return true;
 }
 
@@ -1240,7 +1241,7 @@ bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
     if (!connected)
         return false;
 
-    eventsMap.erase(event.cartesianEventType.c_str());
+    eventsMap.erase(event.cartesianEventParameters.type.c_str());
     return true;
 }
 

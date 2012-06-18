@@ -1533,31 +1533,37 @@ void ClientGazeController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             GazeEvent &Event=*itr->second;
-            Event.gazeEventType=ConstString(type.c_str());
-            Event.gazeEventTime=time;
+            Event.gazeEventVariables.type=ConstString(type.c_str());
+            Event.gazeEventVariables.time=time;
 
             if (checkPoint>=0.0)
-                Event.gazeEventMotionOngoing=checkPoint;
+                Event.gazeEventVariables.motionOngoingCheckPoint=checkPoint;
 
             Event.gazeEventCallback();
         }
     }
 
+    string typeExtended=type;
     if (checkPoint>=0.0)
     {
         ostringstream ss;
         ss<<type<<"-"<<checkPoint;
-        type=ss.str();
+        typeExtended=ss.str();
     }
 
     // rise the event specific callback
-    itr=eventsMap.find(type);
+    itr=eventsMap.find(typeExtended);
     if (itr!=eventsMap.end())
     {
         if (itr->second!=NULL)
         {
             GazeEvent &Event=*itr->second;
-            Event.gazeEventTime=time;
+            Event.gazeEventVariables.type=ConstString(type.c_str());
+            Event.gazeEventVariables.time=time;
+
+            if (checkPoint>=0.0)
+                Event.gazeEventVariables.motionOngoingCheckPoint=checkPoint;
+
             Event.gazeEventCallback();
         }
     }
@@ -1570,13 +1576,13 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
     if (!connected)
         return false;
 
-    string type=event.gazeEventType.c_str();
+    string type=event.gazeEventParameters.type.c_str();
     if (type=="motion-ongoing")
     {
         Bottle command, reply;
         command.addString("register");
         command.addString("ongoing");
-        command.addDouble(event.gazeEventMotionOngoing);
+        command.addDouble(event.gazeEventParameters.motionOngoingCheckPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1588,7 +1594,7 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
             return false;
 
         ostringstream ss;
-        ss<<type<<"-"<<event.gazeEventMotionOngoing;
+        ss<<type<<"-"<<event.gazeEventParameters.motionOngoingCheckPoint;
         type=ss.str();
     }
 
@@ -1603,13 +1609,13 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
     if (!connected)
         return false;
 
-    string type=event.gazeEventType.c_str();
+    string type=event.gazeEventParameters.type.c_str();
     if (type=="motion-ongoing")
     {
         Bottle command, reply;
         command.addString("unregister");
         command.addString("ongoing");
-        command.addDouble(event.gazeEventMotionOngoing);
+        command.addDouble(event.gazeEventParameters.motionOngoingCheckPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1621,7 +1627,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
             return false;
 
         ostringstream ss;
-        ss<<type<<"-"<<event.gazeEventMotionOngoing;
+        ss<<type<<"-"<<event.gazeEventParameters.motionOngoingCheckPoint;
         type=ss.str();
     }
 
