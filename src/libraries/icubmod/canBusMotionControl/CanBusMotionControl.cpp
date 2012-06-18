@@ -1355,13 +1355,13 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     if (!canGroup.findGroup("broadcast_rotor_pos").isNull())
     {
-        xtmp=canGroup.findGroup("broadcast_pos");
+        xtmp=canGroup.findGroup("broadcast_rotor_pos");
         setBroadCastMask(xtmp, CAN_BCAST_MOTOR_POSITION);
     }
 
     if (!canGroup.findGroup("broadcast_rotor_vel_acc").isNull())
     {
-        xtmp=canGroup.findGroup("broadcast_pos");
+        xtmp=canGroup.findGroup("broadcast_rotor_vel_acc");
         setBroadCastMask(xtmp, CAN_BCAST_MOTOR_SPEED);
     }
 
