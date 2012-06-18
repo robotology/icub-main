@@ -95,10 +95,18 @@ bool controlBoardDumper::threadInit()
 
 controlBoardDumper::controlBoardDumper():RateThread(500)
 {
-    getter = 0;
+    getter   = 0;
     board_dd = 0;
     debug_dd = 0;
-    port   = 0;  
+    port     = 0;
+    pos      = 0;
+    vel      = 0;
+    enc      = 0;
+    pid      = 0;
+    amp      = 0;
+    lim      = 0;
+    trq      = 0;
+    idbg     = 0;
 }
 
 void controlBoardDumper::threadRelease()

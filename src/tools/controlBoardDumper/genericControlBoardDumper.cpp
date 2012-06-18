@@ -193,7 +193,8 @@ bool GetRotorPosition::getData(double *e)
   //fprintf(stderr, "Entering getTrqs\n");
   if (idbg)
     {
-      idbg->getRotorPositions(e);
+      for (int i=0; i<6; i++) idbg->getRotorPosition(i,&(e[i]));
+      //idbg->getRotorPositions(e);
       return 1;
     }
   else
@@ -210,7 +211,8 @@ bool GetRotorSpeed::getData(double *e)
   //fprintf(stderr, "Entering getTrqErrs\n");
   if (idbg)
     {
-      idbg->getRotorSpeeds(e);
+      for (int i=0; i<6; i++) idbg->getRotorSpeed(i,&(e[i]));
+      //idbg->getRotorSpeeds(e);
       return 1;
     }
   else
@@ -227,7 +229,8 @@ bool GetRotorAcceleration::getData(double *e)
   //fprintf(stderr, "Entering getTrqs\n");
   if (idbg)
     {
-      idbg->getRotorAccelerations(e);
+      for (int i=0; i<6; i++) idbg->getRotorAcceleration(i,&(e[i]));
+      //idbg->getRotorAccelerations(e);
       return 1;
     }
   else

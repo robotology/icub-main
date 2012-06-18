@@ -413,6 +413,7 @@ public:
         remotePortName = remotePortName + "/";
         remotePortName = remotePortName + part.asString();
         ddBoardOptions.put("remote", remotePortName.c_str());
+        ddDebugOptions.put("remote", remotePortName.c_str());
     
         fprintf(stderr, "%s", ddBoardOptions.toString().c_str());    
         // create a device 
