@@ -38,11 +38,14 @@ protected:
 
     yarp::os::Semaphore mutex;
 
-    int sensorsNum;	
+    int sensorsNum;
+    bool mbSimpleDraw;
 
 public:
-	SkinMeshThreadPort(Searchable& config,int period=40) : RateThread(period),mutex(1)
+	SkinMeshThreadPort(Searchable& config,int period) : RateThread(period),mutex(1)
     {
+        mbSimpleDraw=config.check("light");
+
         sensorsNum=0;
 
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
@@ -207,7 +210,17 @@ public:
 
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
-            if (sensor[t]) sensor[t]->eval(image);
+            if (sensor[t])
+            {
+                if (mbSimpleDraw)
+                {
+                    sensor[t]->eval_light(image);
+                }
+                else
+                {
+                    sensor[t]->eval(image);
+                }
+            }
         }
 
         mutex.post();

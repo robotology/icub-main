@@ -130,9 +130,11 @@ static guint gTimer;
 enum   TheadTypeEnum {TYPE_CAN, TYPE_PORT};
 static int TheadType = TYPE_PORT;
 
-static void timer_handler()
+static int timer_handler(gpointer dummy)
 {
 	gtk_widget_queue_draw(gpDrawingArea);
+
+    return 1;
 }
 
 static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
@@ -307,14 +309,14 @@ int main(int argc, char *argv[])
 	gtk_signal_connect(GTK_OBJECT(pMainWindow),"destroy",GTK_SIGNAL_FUNC(clean_exit),NULL);
     g_signal_connect(gpDrawingArea,"expose_event",G_CALLBACK(paint),NULL);
 
-    gTimer=g_timeout_add(50,(GSourceFunc)timer_handler,(gpointer)pMainWindow);
+    gTimer=g_timeout_add(50,timer_handler,NULL);
 
 	gtk_widget_show_all(pMainWindow);
 	gtk_window_move(GTK_WINDOW(pMainWindow),gXpos,gYpos);
 
 	if (TheadType==TYPE_CAN)
 	{
-		gpSkinMeshThreadCan=new SkinMeshThreadCan(rf);
+		gpSkinMeshThreadCan=new SkinMeshThreadCan(rf,50);
 		gpSkinMeshThreadCan->start();
 
 		gtk_main();
@@ -327,7 +329,7 @@ int main(int argc, char *argv[])
 	}
 	else if (TheadType==TYPE_PORT)
 	{
-		gpSkinMeshThreadPort=new SkinMeshThreadPort(rf);
+		gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,50);
 		gpSkinMeshThreadPort->start();
 
 		gtk_main();

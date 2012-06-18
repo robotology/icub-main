@@ -45,6 +45,8 @@ public:
 
         m_Radius=m_RadiusOrig*scale;
 
+        m_maxRangeLight=int(m_Radius);
+
         double dXmid=0.5*(dXmin+dXmax);
         double dYmid=0.5*(dYmin+dYmax);
 
@@ -111,6 +113,61 @@ public:
     int get_nTaxels () 
     {
         return nTaxels;
+    }
+
+    void eval_light(unsigned char *image)
+    {
+        int act;
+        int dx,dy;
+        int Y0,Y1;
+        int dya,dyb,dxa,dxb;
+        int Dx,Dy;
+
+        double remapped_activation[12];
+		switch (ilayoutNum)
+		{
+			case 0:
+				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				break;
+			case 1:
+				for (int i=0; i<12; ++i)  remapped_activation[11-i]=activation[i];
+				break;
+			default:
+				for (int i=0; i<12; ++i)  remapped_activation[i]=activation[i];
+				printf("WARN: unkwnown layout number.\n");
+				break;
+		}
+
+        int maxRange2=m_maxRangeLight*m_maxRangeLight;
+
+        for (int i=0; i<12; ++i) if (remapped_activation[i]>0.0)
+        {
+            act=int(dGain*remapped_activation[i]);
+            Y0=(m_Height-y[i]-1)*m_Width+x[i];
+
+            dya=(y[i]>=m_maxRangeLight)?-m_maxRangeLight:-y[i];
+            dyb=(y[i]+m_maxRangeLight<m_Height)?m_maxRangeLight:m_Height-y[i]-1;
+
+            dxa=(x[i]>=m_maxRangeLight)?-m_maxRangeLight:-x[i];
+            dxb=(x[i]+m_maxRangeLight<m_Width)?m_maxRangeLight:m_Width-x[i]-1;
+
+            for (dy=dya; dy<=dyb; ++dy)
+            {
+                Dy=dy-y[i];
+
+                Y1=Y0-dy*m_Width;
+
+                for (dx=dxa; dx<=dxb; ++dx)
+                {
+                    Dx=dx-x[i];
+
+                    if (Dx*Dx+Dy*Dy<=maxRange2)
+                    {
+                        image[(dx+Y1)*3]=act<255?act:255;
+                    }
+                }
+            }
+        }
     }
 
     void eval(unsigned char *image)
@@ -331,6 +388,7 @@ protected:
 
     unsigned char R_MAX, G_MAX, B_MAX;
 
+    int m_maxRangeLight;
     static int m_maxRange;
     static double *Exponential;
     
