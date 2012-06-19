@@ -287,7 +287,7 @@ public:
         return true;
     }
 
-    bool setWaing(bool &_waveing)
+    bool setWaveing(bool _waveing)
     {
         waveing=_waveing;
         return true;
