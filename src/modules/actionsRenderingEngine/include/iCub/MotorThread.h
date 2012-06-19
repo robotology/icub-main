@@ -201,7 +201,7 @@ private:
 
     int                                 grasp_state;
 
-    bool                                waving;
+    bool                                waveing;
     bool                                avoid_table;
     bool                                closed;
     bool                                interrupted;
@@ -213,7 +213,6 @@ private:
     Dragger                             dragger;
 
     Vector                              gaze_fix_point;
-    
     double                              avoid_table_height[2];
 
     double                              random_pos_y;
@@ -234,7 +233,7 @@ private:
     bool getArmOptions(Bottle &b, const int &arm);
     void close();
     
-   	bool avoidTable(bool avoid);
+    bool avoidTable(bool avoid);
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
@@ -285,6 +284,12 @@ public:
             return false;
 
         armInUse=arm;
+        return true;
+    }
+
+    bool setWaing(bool &_waveing)
+    {
+        waveing=_waveing;
         return true;
     }
 
