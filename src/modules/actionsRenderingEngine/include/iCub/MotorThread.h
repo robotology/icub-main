@@ -290,6 +290,22 @@ public:
     bool setWaveing(bool _waveing)
     {
         waveing=_waveing;
+        
+        if(waveing)
+        {
+            if(action[RIGHT]!=NULL)
+                action[RIGHT]->enableArmWaving(homePos[RIGHT]);
+
+            if(action[LEFT]!=NULL)
+                action[LEFT]->enableArmWaving(homePos[LEFT]);
+        }
+        else
+        {
+            if(action[RIGHT]!=NULL)
+                action[RIGHT]->disableArmWaving();
+            if(action[LEFT]!=NULL)
+                action[LEFT]->disableArmWaving();
+        }
         return true;
     }
 

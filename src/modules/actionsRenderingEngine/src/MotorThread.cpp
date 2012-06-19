@@ -858,7 +858,6 @@ bool MotorThread::threadInit()
     Bottle *neckPitchRange=bMotor.find("neck_pitch_range").asList();
     Bottle *neckRollRange=bMotor.find("neck_roll_range").asList();
 
-    this->setWaveing(bMotor.check("waveing",Value("on")).asString()=="on");
 
     //open ports
     disparityPort.open(("/"+name+"/disparity:io").c_str());
@@ -1215,6 +1214,8 @@ bool MotorThread::threadInit()
 
     closed=false;
     interrupted=false;
+
+    this->setWaveing(bMotor.check("waveing",Value("on")).asString()=="on");
 
     return true;
 }
