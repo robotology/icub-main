@@ -1,3 +1,6 @@
+2012-06-19  Ugo Pattacini  <ugo.pattacini@iit.it>
+    cartesian + gaze I/F's: added events handling.
+
 2012-06-17  Ugo Pattacini  <ugo.pattacini@iit.it>
     gaze I/F: added two methods to get/set the neck angle
     user tolerance.
