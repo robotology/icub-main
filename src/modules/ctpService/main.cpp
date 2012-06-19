@@ -10,15 +10,14 @@
  
 @ingroup icub_module 
  
-Hidden behind a sophisticated name lies a simple but useful 
-service that will allow you to send constant time position
+A simple service that allows you to send constant time position
 commands to any of the robot ports.
 
 \section intro_sec Description
 
 Sit silently and waits for incoming commands. Receive position
 commands requests and sends position commands, but it computes
-the reference speeds s.t. commands are all executed in the same
+the reference speeds so that commands are all executed in the same
 time irrespectively of the current position (the service reads 
 the current encoders and compute the reference speed accordingly).
 
@@ -44,9 +43,16 @@ Incoming commands are the following:
 
 [ctpn] [time] TIME(seconds) [off] j [pos] list
 
+Execute command. Command will take TIME seconds, the list of position will be sent to the motors
+starting from offset j.
+ 
 or 
-
+ 
 [ctpq] [time] TIME (seconds) [off] j [pos] list 
+ 
+ 
+Queue commands for execution. Command will take TIME seconds, the list of position will be sent to the motors
+starting from offset j
  
 or 
  
@@ -656,7 +662,11 @@ public:
         ActionItem *action;
         bool ret=parsePosCmd(cmd, reply, &action);
         if (ret)
+        {
             posPort.sendNow(action);
+            reply.addVocab(Vocab::encode("ack"));
+        }
+        
         return ret;
     }
 
@@ -665,7 +675,10 @@ public:
         ActionItem *action;
         bool ret=parsePosCmd(cmd, reply, &action);
         if (ret)
+        {
             posPort.queue(action);
+            reply.addVocab(Vocab::encode("ack"));
+        }
         return ret;
     }
 
@@ -675,12 +688,14 @@ public:
             return false;
         
         string fileName=contextPath+"/"+cmd.get(1).asString().c_str();
+        reply.addVocab(Vocab::encode("ack"));
         return velThread.go(fileName);
     }
 
     bool handle_wait(const Bottle &cmd, Bottle &reply)
     {
         cerr<<"Warning command not implemented yet"<<endl;
+        reply.addVocab(Vocab::encode("ack"));
         return true;
         //ActionItem *action;
         //bool ret=parseWaitCmd(cmd, reply, &action);
@@ -708,6 +723,9 @@ public:
                 if (cmd.get(5).asVocab()==VCTP_POSITION)
                 {
                     posCmd=cmd.get(6).asList();
+                    if (!posCmd)
+                        return false;
+
                     //check posCmd!=0
                     parsed=true;
                     if (verbose)
@@ -791,6 +809,12 @@ public:
                 case VOCAB4('h','e','l','p'):
                 {                    
                     cout << "Available commands:"          << endl;
+                    cout<<"Queue command:\n";
+                    cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";
+                    cout<<"New command, execute now (erase queue):\n";
+                    cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";
+                    cout<<"Load sequence from file:\n";
+                    cout<<"[ctpf] filename\n";
                     reply.addVocab(Vocab::encode("ack"));
                     return true;
                 }
