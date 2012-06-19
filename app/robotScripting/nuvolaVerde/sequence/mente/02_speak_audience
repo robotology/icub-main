@@ -1,0 +1,5 @@
+./nuvolaVerde/head_motion.sh 8 2 &
+echo "16.5" | yarp write ... /iSpeak &
+#command ARE to start waving
+#espeak -v it -f ./nuvolaVerde/speech/mente/01_speech.txt &
+#command ARE to stop waving

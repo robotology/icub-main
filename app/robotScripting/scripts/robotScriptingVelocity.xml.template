@@ -95,6 +95,12 @@
    <tag>torso_vel</tag>
 </module>
 
+<module>
+   <name>iSpeak</name>
+   <node>node1</node>
+   <tag>speaker</tag>
+</module>
+
 <connection>
       <from>/ctpservice/head/vc:o</from>
       <to>/icub/vc/head/fastCommand</to>
