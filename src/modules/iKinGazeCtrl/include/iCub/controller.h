@@ -106,8 +106,8 @@ protected:
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
 
-    set<double> motionOngoingEvents;
-    set<double> motionOngoingEventsCurrent;
+    multiset<double> motionOngoingEvents;
+    multiset<double> motionOngoingEventsCurrent;
 
     void findMinimumAllowedVergence();
     void notifyEvent(const string &event, const double checkPoint=-1.0);

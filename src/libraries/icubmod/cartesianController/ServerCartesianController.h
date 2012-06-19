@@ -195,8 +195,8 @@ protected:
     std::map<int,Context> contextMap;
     std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;
 
-    std::set<double> motionOngoingEvents;
-    std::set<double> motionOngoingEventsCurrent;
+    std::multiset<double> motionOngoingEvents;
+    std::multiset<double> motionOngoingEventsCurrent;
 
     void   init();
     void   openPorts();

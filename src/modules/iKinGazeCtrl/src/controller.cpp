@@ -710,16 +710,20 @@ bool Controller::registerMotionOngoingEvent(const double checkPoint)
 /************************************************************************/
 bool Controller::unregisterMotionOngoingEvent(const double checkPoint)
 {
+    bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
         mutexData.wait();
-        size_t succ=motionOngoingEvents.erase(checkPoint);
+        multiset<double>::iterator itr=motionOngoingEvents.find(checkPoint);
+        if (itr!=motionOngoingEvents.end())
+        {
+            motionOngoingEvents.erase(itr);
+            ret=true;
+        }
         mutexData.post();
-
-        return (succ!=0);
     }
-    else
-        return false;
+
+    return ret;
 }
 
 
@@ -729,8 +733,8 @@ Bottle Controller::listMotionOngoingEvents()
     Bottle events;
 
     mutexData.wait();
-    for (set<double>::iterator it=motionOngoingEvents.begin(); it!=motionOngoingEvents.end(); it++)
-        events.addDouble(*it);
+    for (multiset<double>::iterator itr=motionOngoingEvents.begin(); itr!=motionOngoingEvents.end(); itr++)
+        events.addDouble(*itr);
     mutexData.post();
 
     return events;

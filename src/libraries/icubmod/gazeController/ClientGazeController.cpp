@@ -125,6 +125,9 @@ bool ClientGazeController::close()
 
     deleteContexts();
 
+    while (eventsMap.size()>0)
+        unregisterEvent(*eventsMap.begin()->second);
+
     portCmdFp.interrupt();
     portCmdAng.interrupt();
     portCmdMono.interrupt();

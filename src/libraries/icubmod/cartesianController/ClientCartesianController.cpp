@@ -145,6 +145,9 @@ bool ClientCartesianController::close()
 
     deleteContexts();
 
+    while (eventsMap.size()>0)
+        unregisterEvent(*eventsMap.begin()->second);
+
     portCmd.interrupt();
     portState.interrupt();
     portEvents.interrupt();

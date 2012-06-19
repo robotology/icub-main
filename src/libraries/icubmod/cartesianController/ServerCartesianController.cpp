@@ -237,6 +237,8 @@ void ServerCartesianController::closePorts()
 
     if (rpcProcessor!=NULL)
         delete rpcProcessor;
+
+    connected=false;
 }
 
 
@@ -1582,6 +1584,9 @@ bool ServerCartesianController::close()
 
     if (ctrl!=NULL)
         delete ctrl;
+
+    while (eventsMap.size()>0)
+        unregisterEvent(*eventsMap.begin()->second);
 
     closePorts();
 
@@ -2939,16 +2944,20 @@ bool ServerCartesianController::registerMotionOngoingEvent(const double checkPoi
 /************************************************************************/
 bool ServerCartesianController::unregisterMotionOngoingEvent(const double checkPoint)
 {
+    bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
         mutex.wait();
-        size_t succ=motionOngoingEvents.erase(checkPoint);
+        multiset<double>::iterator itr=motionOngoingEvents.find(checkPoint);
+        if (itr!=motionOngoingEvents.end())
+        {
+            motionOngoingEvents.erase(itr);
+            ret=true;
+        }
         mutex.post();
-
-        return (succ!=0);
     }
-    else
-        return false;
+
+    return ret;
 }
 
 
@@ -2958,8 +2967,8 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
     Bottle events;
 
     mutex.wait();
-    for (set<double>::iterator it=motionOngoingEvents.begin(); it!=motionOngoingEvents.end(); it++)
-        events.addDouble(*it);
+    for (multiset<double>::iterator itr=motionOngoingEvents.begin(); itr!=motionOngoingEvents.end(); itr++)
+        events.addDouble(*itr);
     mutex.post();
 
     return events;
