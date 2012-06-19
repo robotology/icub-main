@@ -41,7 +41,7 @@ using namespace yarp::dev;
 using namespace yarp::os::impl;
 
 
-#if 1
+#if 0
 namespace yarp{
     namespace dev{
         class Cfw2CanMessage;
@@ -100,9 +100,9 @@ protected:
 	// can stuff... to be removed
     //    ICanBufferFactory *pCanBufferFactory;
 
-    ICanBus *pCanBus;
-    CanBuffer inBuffer;
-    CanBuffer outBuffer;
+//    ICanBus *pCanBus;
+//    CanBuffer inBuffer;
+//    CanBuffer outBuffer;
    
     yarp::os::Semaphore mutex;
 

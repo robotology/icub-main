@@ -241,8 +241,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 //		{
 //			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
 //		}
-
-
 //	outBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
 //	inBuffer=createBuffer(CAN_DRIVER_BUFFER_SIZE);
 #endif
@@ -347,32 +345,32 @@ int EmbObjSkin::calibrateSensor()
 {
 	YARP_INFO(Logger::get(),"EmbObjSkin::calibrateSensor", Logger::get().log_files.f3);
 
-	for (int i=0; i<cardId.size(); i++)
-	{
-#if SKIN_DEBUG
-		printf("SkinPrototype:: calibrating boardId: %d\n",cardId[i]);
-#endif
+//	for (int i=0; i<cardId.size(); i++)
+//	{
+//#if SKIN_DEBUG
+//		printf("SkinPrototype:: calibrating boardId: %d\n",cardId[i]);
+//#endif
+//
+//		unsigned int canMessages=0;
+//		unsigned id = 0x200 + cardId[i];
+//
+//		CanMessage &msg=outBuffer[0];
+//		msg.setId(id);
+//		msg.getData()[0]=0x4C; // message type
+//		msg.getData()[1]=0x01;
+//		msg.getData()[2]=0x01;
+//		msg.getData()[3]=0x01;
+//		msg.getData()[4]=0;
+//		msg.getData()[5]=0x22;
+//		msg.getData()[6]=0;
+//		msg.getData()[7]=0;
+//		msg.setLen(8);
+//		canMessages=0;
+//
+////		pCanBus->canWrite(outBuffer, 1, &canMessages);
+//	}
 
-		unsigned int canMessages=0;
-		unsigned id = 0x200 + cardId[i];
-
-		CanMessage &msg=outBuffer[0];
-		msg.setId(id);
-		msg.getData()[0]=0x4C; // message type
-		msg.getData()[1]=0x01; 
-		msg.getData()[2]=0x01; 
-		msg.getData()[3]=0x01;
-		msg.getData()[4]=0;
-		msg.getData()[5]=0x22;
-		msg.getData()[6]=0;
-		msg.getData()[7]=0;
-		msg.setLen(8);
-		canMessages=0;
-		// create a ROP to start/initialize the MTB, if needed
-//		pCanBus->canWrite(outBuffer, 1, &canMessages);
-	}
-
-
+#warning "create a ROP to start/initialize the MTB, if needed"
 	int 							j=0;
 	eOmc_joint_config_t				a;
 	uint16_t						sizze;
@@ -518,12 +516,14 @@ void EmbObjSkin::run()
 
 Vector * EmbObjSkin::getData()
 {
-
+	//not used, c'è in skinwrapper
 }
 
 bool EmbObjSkin::pushData(yarp::sig::Vector &in)
 {
+	mutex.wait();
 	data=in;
+	mutex.post();
 	return true;
 }
 
