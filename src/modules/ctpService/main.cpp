@@ -545,6 +545,9 @@ public:
         if (fin.is_open())
         {
             fin.seekg(0,ios_base::beg);
+            // skeep the first two lines
+            fin.getline(&line[0],sizeof(line),'\n');
+            fin.getline(&line[0],sizeof(line),'\n');
             firstRun=true;
             mutex.post();
             return true;
