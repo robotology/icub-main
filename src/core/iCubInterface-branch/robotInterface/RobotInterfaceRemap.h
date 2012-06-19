@@ -709,6 +709,7 @@ public:
 
     // _AC_
     IiCubFeatureList * getRobotFeatureList(FEAT_ID *id);
+    IiCubFeatureList * getRobotSkinList(FEAT_ID *id);
 	bool findAndFill(FEAT_ID *id, char *sk_array);
     IRobotInterface *getRobot();
 

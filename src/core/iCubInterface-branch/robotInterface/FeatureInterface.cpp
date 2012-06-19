@@ -29,12 +29,12 @@ void *getRobotFeatureList_C(FEAT_ID *id)
 
 bool findAndFill(FEAT_ID *id, char *sk_array)
 {
-	IiCubFeatureList *list = iRobotInterface->getRobotFeatureList(id);
+	IiCubFeatureList *list = iRobotInterface->getRobotSkinList(id);
 	IiCubFeature * skin = list->findus(id);
 	if(NULL == skin)
 	{
 		printf(	"/************************************\\\n"
-				"Parte non trovata!!!\n"
+				"			Parte non trovata!!!\n"
 				"\\***********************************/\n");
 	}
 	else

@@ -513,6 +513,9 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
     string PC104IpAddress=robotOptions.findGroup("GENERAL").find("PC104IpAddress").asString().c_str();
     printf("\n\n>> PC104IpAddress : %s\n\n", PC104IpAddress.c_str());
+    std::cout << "******************************************************************" << endl;
+    std::cout << "--> Creating MotionControl Devices							   *" <<endl;
+    std::cout << "******************************************************************" << endl;
     std::cout<<"Found " << nparts <<" parts"<<endl;
 
     int n=0;
@@ -568,6 +571,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
 
         tmpProp.put("PC104IpAddress", PC104IpAddress.c_str());
+        tmpProp.put("FeatId", netEntry->id.c_str());
 
         string str=tmpProp.toString().c_str();
         YARP_INFO(Logger::get(), tmpProp.toString().c_str(), Logger::get().log_files.f3);
@@ -884,13 +888,15 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     Value &device=robotOptions.find("device");
     Value &subdevice=robotOptions.find("subdevice");
     Value &candevice=robotOptions.find("canbusdevice");
-    Value PC104IpAddress=robotOptions.find("PC104IpAddress");
+    Value &PC104IpAddress=robotOptions.find("PC104IpAddress");
+    Value &featId=robotOptions.find("FeatId");
 
     deviceParameters.put("robotName",robotName.c_str());
     deviceParameters.put("device", device);
     deviceParameters.put("subdevice", subdevice);
     deviceParameters.put("canbusdevice",candevice);
     deviceParameters.put("PC104IpAddress",PC104IpAddress);
+    deviceParameters.put("FeatId",featId);
 
 
     printf("\n\ndevice dev: %s\n", device.asString().c_str());
@@ -1282,6 +1288,11 @@ void RobotInterfaceRemap::abort()
 }
 
 IiCubFeatureList * RobotInterfaceRemap::getRobotFeatureList(FEAT_ID *id)
+{
+	return &skinparts;
+}
+
+IiCubFeatureList * RobotInterfaceRemap::getRobotSkinList(FEAT_ID *id)
 {
 	return &skinparts;
 }

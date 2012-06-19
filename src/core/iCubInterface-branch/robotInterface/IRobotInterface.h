@@ -18,8 +18,6 @@
 
 using namespace yarp::sig;
 
-void *getList(void);
-
 class IRobotInterface
 {
 public:
@@ -48,6 +46,7 @@ public:
 
     // _AC_
     virtual IiCubFeatureList *getRobotFeatureList(FEAT_ID *id)=0;
+    virtual IiCubFeatureList *getRobotSkinList(FEAT_ID *id)=0;
     virtual IRobotInterface *getRobot()=0;
 };
 

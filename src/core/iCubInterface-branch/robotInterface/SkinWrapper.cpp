@@ -202,8 +202,6 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 	if( 0 == strcmp("right_arm", fId.name) )
 			fId.ep = endpoint_sk_emsboard_rightlowerarm;
 
-	//memset(fId.name, 0x00, sizeof(fId.name) );
-
 	hook->setId(fId);
 	thread->start();
 
@@ -356,8 +354,13 @@ IiCubFeature * SkinParts::findus(FEAT_ID *id )
 //	id->type = Skin;
 //	memset(id->name, 0x00, sizeof(id->name) );
 	SkinPartsIt it=begin();
+	uint8_t id1;
+	FeatureType f1;
+
 	for(;it!=end(); it++)
 	{
+		id1=((*it)->fId.ep);
+		f1 = ((*it)->fId.type);
 		//if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) && ((*it)->fId.ep) == id->ep)
 		if( ((*it)->fId.type == id->type) && ((*it)->fId.ep) == id->ep)
 		{
