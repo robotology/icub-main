@@ -48,7 +48,9 @@ At startup an attempt is made to connect to
 
 \section portsc_sec Ports Created 
 - \e /<name>: this port receives the string for speech
-  synthesis.
+  synthesis. In case a double is received in place of a string,
+  then the mouth will be controlled without actually uttering
+  any word.
  
 - \e /<name>/emotions:o: this port serves to command the facial
   expressions. At startup an attempt to connect to the proper
@@ -188,6 +190,8 @@ class iSpeak : protected BufferedPort<Bottle>,
     void run()
     {
         string phrase;
+        double time;
+        bool onlyMouth=false;
 
         mutex.wait();
         if (buffer.size()>0)    // protect also the access to the size() method
@@ -202,6 +206,12 @@ class iSpeak : protected BufferedPort<Bottle>,
                     phrase=request.get(0).asString().c_str();
                     speaking=true;
                 }
+                else if (request.get(0).isDouble())
+                {
+                    time=request.get(0).asDouble();
+                    speaking=true;
+                    onlyMouth=true;
+                }
             }
         }
         mutex.post();
@@ -213,7 +223,10 @@ class iSpeak : protected BufferedPort<Bottle>,
             else
                 mouth.start();
 
-            speak(phrase);
+            if (onlyMouth)
+                Time::delay(time);
+            else
+                speak(phrase);
 
             mouth.suspend();
             speaking=false;
