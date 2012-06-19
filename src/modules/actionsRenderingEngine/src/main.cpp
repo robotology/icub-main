@@ -221,6 +221,7 @@ library, we also have:
         * [status]:returns the bottle (gaze <status>) (left_arm <status>) (right_arm <status>) where\n
                    <status> can be equal to "idle", "busy" or "unavailable".\n
     -[impedance] [on]/[off]: enable/disable (if available) impedance velocity control.\n
+    -[waveing] [on]/[off]: enable/disable the iCub arm(s) waving.\n
     -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.\n
     -[interrupt] : interrupts any action deleting also the action queue for both arms.\n
     -[reinstate] : if the module was interrupted reinstate it.\n
@@ -286,6 +287,7 @@ Windows, Linux
 #define RPC_S2C_MODE                VOCAB4('m','o','d','e')
 #define RPC_INTERRUPT               VOCAB4('i','n','t','e')
 #define RPC_REINSTATE               VOCAB4('r','e','i','n')
+#define RPC_WAVEING                 VOCAB4('w','a','v','e')
 
 #define CMD_IDLE                    VOCAB4('i','d','l','e')
 #define CMD_HOME                    VOCAB4('h','o','m','e')
@@ -491,11 +493,31 @@ public:
                 else if(command.get(1).asString()=="off")
                 {
                     motorThr->setImpedance(false);
-                    reply.addString("impedance turned off");
+                    reply.addString("Impedance turned off");
                 }
                 else
                 {
                     reply.addString("What do you want? Impedance on or off?");
+                }
+
+                break;
+            }
+
+            case RPC_WAVEING:
+            {
+                if(command.get(1).asString()=="on")
+                {
+                    motorThr->setWaveing(true);
+                    reply.addString("Waveing turned on");
+                }
+                else if(command.get(1).asString()=="off")
+                {
+                    motorThr->setWaveing(false);
+                    reply.addString("Waveing turned off");
+                }
+                else
+                {
+                    reply.addString("What do you want? Waveing on or off?");
                 }
 
                 break;

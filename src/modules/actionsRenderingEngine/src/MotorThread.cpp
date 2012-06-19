@@ -858,7 +858,7 @@ bool MotorThread::threadInit()
     Bottle *neckPitchRange=bMotor.find("neck_pitch_range").asList();
     Bottle *neckRollRange=bMotor.find("neck_roll_range").asList();
 
-    waving=bMotor.check("waving",Value("on")).asString()=="on";
+    this->setWaveing(bMotor.check("waveing",Value("on")).asString()=="on");
 
     //open ports
     disparityPort.open(("/"+name+"/disparity:io").c_str());
@@ -1207,6 +1207,7 @@ bool MotorThread::threadInit()
 
     Rand::init();
 
+    
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
 
@@ -1221,6 +1222,9 @@ bool MotorThread::threadInit()
 
 void MotorThread::run()
 {
+    //check if the system needs to be updated
+    this->update();
+
     update();
 
     switch(head_mode)
@@ -1829,14 +1833,14 @@ bool MotorThread::goHome(Bottle &options)
 
         if(right_arm && action[RIGHT]!=NULL)
         {
-            if(waving)
+            if(waveing)
                 action[RIGHT]->enableArmWaving(homePos[RIGHT]);
             action[RIGHT]->setTrackingMode(false);
         }
 
         if(left_arm && action[LEFT]!=NULL)
         {
-            if(waving)
+            if(waveing)
                 action[LEFT]->enableArmWaving(homePos[LEFT]);
             action[LEFT]->setTrackingMode(false);
         }

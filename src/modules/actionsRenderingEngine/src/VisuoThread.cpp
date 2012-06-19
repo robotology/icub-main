@@ -484,7 +484,6 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
 
     Bottle &bStereo=bNewStereo.addList();
 
-
     if(type.isList())
     {
         Bottle *list=type.asList();
@@ -699,15 +698,12 @@ bool VisuoThread::getTrack(Bottle &bStereo)
 
     for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
-        
-        
+
     trackMutex.wait();
     tracking=true;
     trackMutex.post();
 
     trackMode=MODE_TRACK_TEMPLATE;
-        
-    
 
     return ok;
 }
