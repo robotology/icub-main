@@ -1,0 +1,7 @@
+#show all yarpviews  - lumaChroma - blobExtractor - sifts - ?localizer?
+
+#get blobs from blobDetector
+
+#look at objects for a while
+
+#point at the objects

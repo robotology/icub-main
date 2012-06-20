@@ -1,0 +1,10 @@
+./nuvolaVerde/sequence/02-conoscenza/01_look_and_point
+sleep 2
+
+./nuvolaVerde/sequence/02-conoscenza/02_take_observe
+sleep 2
+
+./nuvolaVerde/sequence/02-conoscenza/03_speak_drop
+sleep 2
+
+./nuvolaVerde/sequence/02-conoscenza/04_show_fingers

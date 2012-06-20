@@ -1,0 +1,9 @@
+#initialize head script
+./nuvolaVerde/head_motion.sh 13 2 &
+
+#start saying what you have to say
+
+#send drop command to ARE
+
+#look at audience
+

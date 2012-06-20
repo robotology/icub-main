@@ -1,0 +1,5 @@
+
+#take one object
+#send observe command to ARE
+#send "home arms" command (so as not to open fingers)
+#look at audience
