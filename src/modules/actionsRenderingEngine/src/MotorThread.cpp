@@ -1215,7 +1215,7 @@ bool MotorThread::threadInit()
     closed=false;
     interrupted=false;
 
-    this->setWaveing(bMotor.check("waveing",Value("on")).asString()=="on");
+    this->setWaveing(bMotor.check("waveing",Value("off")).asString()=="on");
 
     return true;
 }
