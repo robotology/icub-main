@@ -9,21 +9,28 @@ sleep 4
 
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io &
 echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
-./nuvolaVerde/head_motion.sh 10 2 &
+./nuvolaVerde/head_motion.sh 13 2 &
+sleep 2
+
 echo "9 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_05.mp3
 sleep 3
 
 yarprun --on /icub14 --as viewerL --cmd "yarpview --name /vleft  --RefreshTime 50 --x 0   --y 0"
 yarprun --on /icub14 --as viewerR --cmd "yarpview --name /vright --RefreshTime 50 --x 320 --y 0"
+
+yarp wait /vleft
+yarp wait /vright
+
 yarp connect /icub/camcalib/left/out  /vleft
 yarp connect /icub/camcalib/right/out /vright
-
-#yarprun --on /icub14 --sigterm viewerL
-#yarprun --on /icub14 --sigterm viewerR
 
 echo "4 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_06.mp3
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
+
+sleep 10
+yarprun --on /icub14 --sigterm viewerL
+yarprun --on /icub14 --sigterm viewerR
 
 
