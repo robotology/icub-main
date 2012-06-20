@@ -215,7 +215,7 @@ class iSpeak : protected BufferedPort<Bottle>,
                     phrase=request.get(0).asString().c_str();
                     speaking=true;
                 }
-                else if (request.get(0).isDouble())
+                else if (request.get(0).isDouble() || request.get(0).isInt())
                 {
                     time=request.get(0).asDouble();
                     speaking=true;
