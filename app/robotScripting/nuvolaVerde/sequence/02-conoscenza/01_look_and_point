@@ -1,7 +1,25 @@
-#show all yarpviews  - lumaChroma - blobExtractor - sifts - ?localizer?
+#show all yarpviews  - lumaChroma - blobExtractor - sifts - localizer
+yarprun --on /icub16 --as viewerLuma     --cmd "yarpview --name /luma   --RefreshTime 50 --x 0   --y 0"
+yarprun --on /icub16 --as viewerBlob     --cmd "yarpview --name /blob   --RefreshTime 50 --x 320 --y 0"
+yarprun --on /icub16 --as viewerSifts    --cmd "yarpview --name /sifts  --RefreshTime 50 --x 0   --y 0"
+yarprun --on /icub16 --as viewerLocalize --cmd "yarpview --name /loca   --RefreshTime 50 --x 320 --y 0"
+
+yarp wait /luma
+yarp wait /blob
+yarp wait /sifts
+yarp wait /loca
+
+yarp connect /lumaChroma/Y/image:o              /luma
+yarp connect /blobExtractor/img:o               /blob
+yarp connect /milClassifier/img:o               /sifts
+yarp connect /iolStateMachineHandler/imgLoc:o   /blob
+
+#send home command to ARE
+echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 #get blobs from blobDetector
 
 #look at objects for a while
 
 #point at the objects
+

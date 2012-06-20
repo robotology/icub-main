@@ -1,5 +1,17 @@
+./nuvolaVerde/head_motion.sh 13 2 &
+echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
+echo "12 250" | yarp write ... /iSpeak
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_01.mp3
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_02.mp3
+
+#send home command to ARE
+echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 #take one object
+
 #send observe command to ARE
+
 #send "home arms" command (so as not to open fingers)
+
 #look at audience
+echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc

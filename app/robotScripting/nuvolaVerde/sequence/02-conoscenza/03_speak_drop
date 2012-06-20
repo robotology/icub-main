@@ -1,8 +1,7 @@
-#initialize head script
 ./nuvolaVerde/head_motion.sh 13 2 &
-
-#start saying what you have to say
-
+echo "12 250" | yarp write ... /iSpeak
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_03.mp3
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_04.mp3
 #send drop command to ARE
 
 #look at audience
