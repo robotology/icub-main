@@ -1,5 +1,7 @@
-./nuvolaVerde/head_motion.sh 8 2 &
-echo "16.5" | yarp write ... /iSpeak &
-#command ARE to start waving
-#espeak -v it -f ./nuvolaVerde/speech/mente/01_speech.txt &
-#command ARE to stop waving
+./nuvolaVerde/head_motion.sh 7 2 &
+echo "12 250" | yarp write ... /iSpeak
+echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_01.mp3
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_02.mp3
+echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
+
