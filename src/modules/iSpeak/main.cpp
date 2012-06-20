@@ -42,6 +42,9 @@ This module has been tested only on Linux since it requires the
 --robot \e robot 
 - The parameter \e robot specifies the robot to connect to. 
  
+--period \e T 
+- The period given in [ms] for controlling the mouth. 
+ 
 \section portsa_sec Ports Accessed
 At startup an attempt is made to connect to 
 /<robot>/face/emotions/in port. 
@@ -50,7 +53,10 @@ At startup an attempt is made to connect to
 - \e /<name>: this port receives the string for speech
   synthesis. In case a double is received in place of a string,
   then the mouth will be controlled without actually uttering
-  any word.
+  any word. \n
+  Optionally, as second parameter, an integer can be provided
+  that overrides the default period used to control the mouth,
+  expressed in [ms].
  
 - \e /<name>/emotions:o: this port serves to command the facial
   expressions. At startup an attempt to connect to the proper
@@ -120,7 +126,7 @@ class MouthHandler : public RateThread
 
 public:
     /************************************************************************/
-    MouthHandler() : RateThread(200) { }
+    MouthHandler() : RateThread(1000) { }
 
     /************************************************************************/
     void configure(ResourceFinder &rf)
@@ -131,6 +137,7 @@ public:
         Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());        
 
         state="sur";
+        setRate(rf.check("period",Value(200)).asInt());
     }
 
     /************************************************************************/
@@ -192,6 +199,8 @@ class iSpeak : protected BufferedPort<Bottle>,
         string phrase;
         double time;
         bool onlyMouth=false;
+        int rate=(int)mouth.getRate();
+        bool resetRate=false;
 
         mutex.wait();
         if (buffer.size()>0)    // protect also the access to the size() method
@@ -212,6 +221,13 @@ class iSpeak : protected BufferedPort<Bottle>,
                     speaking=true;
                     onlyMouth=true;
                 }
+
+                if (request.size()>1)
+                    if (request.get(1).isInt())
+                    {
+                        mouth.setRate(request.get(1).asInt());
+                        resetRate=true;
+                    }
             }
         }
         mutex.post();
@@ -229,6 +245,9 @@ class iSpeak : protected BufferedPort<Bottle>,
                 speak(phrase);
 
             mouth.suspend();
+            if (resetRate)
+                mouth.setRate(rate);
+
             speaking=false;
         }
     }
