@@ -53,7 +53,7 @@ At startup an attempt is made to connect to
 - \e /<name>: this port receives the string for speech
   synthesis. In case a double is received in place of a string,
   then the mouth will be controlled without actually uttering
-  any word. \n
+  any word; that double accounts for the uttering time. \n
   Optionally, as second parameter, an integer can be provided
   that overrides the default period used to control the mouth,
   expressed in [ms].
