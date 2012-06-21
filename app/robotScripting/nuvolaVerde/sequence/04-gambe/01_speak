@@ -4,7 +4,7 @@ sleep 1
 echo "5.5 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/04-gambe/gambe_01.mp3
 sleep 1
-echo "4.5 250" | yarp write ... /iSpeak
+echo "4 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/04-gambe/gambe_02.mp3
 sleep 1
 echo "5.5 250" | yarp write ... /iSpeak

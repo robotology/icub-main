@@ -1,7 +1,7 @@
-./nuvolaVerde/sequence/03-conoscenza/01_start_motion
+./nuvolaVerde/sequence/03-corpo/01_start_motion
 sleep 2
 
-./nuvolaVerde/sequence/03-conoscenza/02_speak
+./nuvolaVerde/sequence/03-corpo/02_speak
 sleep 2
 
-./nuvolaVerde/sequence/03-conoscenza/03_start_motion
+./nuvolaVerde/sequence/03-corpo/03_start_motion
