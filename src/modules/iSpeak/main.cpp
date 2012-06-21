@@ -95,6 +95,7 @@ class MouthHandler : public RateThread
 {
     string state;
     Port emotions;
+    Semaphore mutex;
 
     /************************************************************************/
     void send()
@@ -109,12 +110,16 @@ class MouthHandler : public RateThread
     /************************************************************************/
     void run()
     {
+        mutex.wait();
+
         if (state=="sur")
             state="hap";
         else
             state="sur";
 
         send();
+
+        mutex.post();
     }
 
     /************************************************************************/
@@ -145,8 +150,12 @@ public:
     {
         RateThread::suspend();
 
+        mutex.wait();
+
         state="hap";
         send();
+
+        mutex.post();
     }
 };
 
@@ -155,8 +164,7 @@ public:
 class iSpeak : protected BufferedPort<Bottle>,
                public    RateThread
 {
-    string name;    
-
+    string name;
     deque<Bottle> buffer;
     Semaphore mutex;
     
