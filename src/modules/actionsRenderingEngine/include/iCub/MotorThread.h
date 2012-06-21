@@ -268,6 +268,8 @@ public:
 
     void keepFixation()
     {
+        gazeUnderControl=true;
+        ctrl_gaze->setTrackingMode(true);
         head_mode=HEAD_MODE_TRACK_FIX;
     }
 

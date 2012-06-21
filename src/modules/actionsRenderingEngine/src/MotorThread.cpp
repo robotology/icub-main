@@ -1308,12 +1308,12 @@ void MotorThread::run()
 
         case(HEAD_MODE_TRACK_FIX):
         {
-            //if(!gazeUnderControl)
+            if(!gazeUnderControl)
             {
                 gazeUnderControl=true;
-                ctrl_gaze->restoreContext(default_gaze_context);
+                //ctrl_gaze->restoreContext(default_gaze_context);
                 //ctrl_gaze->setTrackingMode(true);
-                ctrl_gaze->lookAtFixationPoint(gaze_fix_point);
+                //ctrl_gaze->lookAtFixationPoint(gaze_fix_point);
             }
             break;
         }
@@ -1328,6 +1328,7 @@ void MotorThread::run()
                 ctrl_gaze->restoreContext(initial_gaze_context);
                 head_mode=HEAD_MODE_IDLE;
             }
+            break;
         }
 
         default:
@@ -1729,9 +1730,9 @@ bool MotorThread::look(Bottle &options)
     if(checkOptions(options,"fixate"))
     {
     	gaze_fix_point=xd;
-    	head_mode=HEAD_MODE_TRACK_FIX;
+    	//head_mode=HEAD_MODE_TRACK_FIX;
         //ctrl_gaze->setTrackingMode(true);
-
+        keepFixation();
 	}
 	
 	
@@ -2030,9 +2031,11 @@ bool MotorThread::calibTable(Bottle &options)
 
     if(!checkOptions(options,"no_head"))
     {
-        setGazeIdle();
+        //setGazeIdle();
 
-        keepFixation();
+        setGazeIdle();
+        ctrl_gaze->restoreContext(default_gaze_context);
+        //keepFixation();
         ctrl_gaze->lookAtFixationPoint(deployEnd);
     }
 
