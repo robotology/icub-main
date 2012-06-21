@@ -1,9 +1,10 @@
-echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
-./nuvolaVerde/head_motion.sh 4 2 &
-echo "9 250" | yarp write ... /iSpeak
-mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_05.mp3
+#start part of crf demo
+#stop after some time
+#look at audience
 
-echo "calib fingers"  | yarp rpc /actionsRenderingEngine/cmd:io
-echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
-./nuvolaVerde/head_motion.sh 1 2
+echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
+./nuvolaVerde/head_motion.sh 5 2 &
+echo "8.5 250" | yarp write ... /iSpeak
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/03-corpo/corpo_05.mp3
+echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
