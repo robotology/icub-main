@@ -54,6 +54,8 @@ using namespace std;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
+
+
 // debug with workstation
 #define DEBUG_LAPTOP_IP			"10.255.37.155" 	// <- dhcp;
 #define DEBUG_WORKSTATION_IP 	"10.255.37.24" // ip della workstation qui dietro.
@@ -71,7 +73,7 @@ using namespace std;
 #define	SIZE_INFO				126
 
 #define _DEBUG_
-
+#define _SEPARETED_THREADS_
 
 namespace yarp{
     namespace dev{
@@ -84,6 +86,10 @@ namespace yarp{
 using namespace yarp::os;
 using namespace yarp::dev;
 
+#ifdef _SEPARETED_THREADS_
+	void *recvThread(void * arg);
+	#include "ace/Thread.h"
+#endif
 
 class yarp::dev::ethResources:  //public DeviceDriver,	// needed if I want to create this interface through the polydriver open (I guess)
 								public PolyDriver
@@ -169,6 +175,7 @@ typedef std::list<ethResources *>::iterator ethResIt;
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
+
 class SendThread:	public RateThread
 {
 	public:
@@ -185,8 +192,9 @@ class SendThread:	public RateThread
 	virtual void run(void);
 };
 
-class yarp::dev::TheEthManager: public DeviceDriver,
-								public RateThread
+class yarp::dev::TheEthManager: public DeviceDriver
+#ifndef _SEPARETED_THREADS_      ,public RateThread
+#endif
 {
 private:
     TheEthManager();
@@ -202,14 +210,21 @@ private:
 
 protected:
     ACE_INET_Addr				local_addr;
-	ACE_UINT16 					recv_size;
-    // Thread
-    virtual void run(void);
     SendThread					sendThread;
 
-// recv phase
-    ACE_INET_Addr				sender_addr;
+
+#ifdef _SEPARETED_THREADS_
+
+	ACE_thread_t 				id_recvThread;
+#else
+    // Thread
+    virtual void run(void);
+	ACE_UINT16 					recv_size;
+	// recv phase
+	ACE_INET_Addr				sender_addr;
 	char 						incoming_msg[MAX_RECV_SIZE];
+#endif
+
 
 
 public:
@@ -221,6 +236,7 @@ public:
     static TheEthManager* instance();
     static TheEthManager* instance(ACE_INET_Addr local_addr);
     bool   register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler);
+    bool  createSocket(ACE_INET_Addr local_addr);
 
     //Device Driver
     virtual bool open();

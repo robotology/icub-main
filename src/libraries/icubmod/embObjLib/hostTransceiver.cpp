@@ -23,6 +23,18 @@ using namespace std;
 #include "EoCommon.h"
 #include "EOnv_hid.h"
 
+#define _DEBUG_ON_FILE_
+
+#ifdef _DEBUG_ON_FILE_
+	#define SOGLIA						70000
+	#define MAX_ACQUISITION 			1000
+	uint64_t idx = 0;
+	uint64_t max_idx = MAX_ACQUISITION*7*16*2 / 8;
+	uint64_t utime[MAX_ACQUISITION*16*7*2*2] = {0};
+	uint64_t errors[MAX_ACQUISITION*16*7*2*2][2] = {0};
+	uint64_t nErr=0;
+	FILE *outFile = NULL;
+#endif
 
 // mutex
 //#include <pthread.h>
@@ -298,10 +310,71 @@ void hostTransceiver::SetReceived(uint8_t *data, uint16_t size)
 {
     uint16_t numofrops;
     uint64_t txtime;
+    static uint32_t prevTime = 0;
+    static uint32_t prevNum = 0;
+    uint32_t progNum;
 
     eo_packet_Payload_Set(pktRx, data, size);
     eo_packet_Addressing_Set(pktRx, remoteipaddr, ipport);
     eo_transceiver_Receive(pc104txrx, pktRx, &numofrops, &txtime);
+
+#ifdef _DEBUG_ON_FILE_
+    if(idx == 0)
+    {
+    	utime[idx] = 0;
+    	progNum = (txtime >> 32);
+        prevTime = (txtime & 0xFFFFFFFF);
+        prevNum = progNum;
+        idx++;
+    }
+
+    else if(idx < max_idx)
+	{
+    	utime[idx] = (txtime & 0xFFFFFFFF);// - prevTime;
+    	progNum = (txtime >> 32);
+
+//        if(utime[idx] >= SOGLIA)
+//        	printf("utime - prevTime = %d\n ",utime[idx] - prevTime);
+        if( (progNum - prevNum) > 1)
+        {
+        	errors[nErr][0] =  prevNum;
+			errors[nErr][1] =  progNum;
+	        printf("missing packet - old = %d, new = %d\n ",prevNum, progNum);
+        	printf("missing packet - old = %d, new = %d\n ",errors[nErr][0], errors[nErr][1]);
+        	nErr++;
+        }
+
+        prevTime = (txtime & 0xFFFFFFFF);
+        prevNum = progNum;
+        idx++;
+	}
+
+    if(idx == max_idx)
+    {
+    	outFile = fopen("/usr/local/src/robot/pc104-logs/transceiverTimestamp.txt", "w+");
+    	printf("Trans fopen: %s\n",strerror(errno));
+    	if(NULL == outFile)
+    	{
+    		outFile = stdout;
+    	}
+//    	for(uint64_t i=0; i<idx; i++)
+//    		fprintf(outFile, "%d\n", utime[i]);
+
+    	fprintf(outFile, "\n\nMissing packets: %d over %d\n\n", nErr, max_idx);
+    	uint64_t diff;
+    	for(uint64_t i=0; i< nErr; i++)
+    	{
+    		diff = errors[i][1] - errors[i][0];
+    		fprintf(outFile, "%d -> %d (%d)\n", errors[i][0] , errors[i][1], (uint32_t) diff);
+    	}
+    	printf("Trans fprintf: %s\n",strerror(errno));
+
+    	if(outFile != stdout)
+    		fclose(outFile);
+        idx++;
+    }
+
+#endif
 }
 
 // somebody retrieves what must be transmitted
