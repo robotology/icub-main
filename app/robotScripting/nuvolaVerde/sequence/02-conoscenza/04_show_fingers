@@ -1,5 +1,7 @@
-#start saying what you have to say
+./nuvolaVerde/head_motion.sh 4 2 &
+echo "8 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_05.mp3
-#send calib fingers to ARE 
+
 echo "calib fingers"  | yarp rpc /actionsRenderingEngine/cmd:io
-#look at audience
+echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
+./nuvolaVerde/head_motion.sh 1 2
