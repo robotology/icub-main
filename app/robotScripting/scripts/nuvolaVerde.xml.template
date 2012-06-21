@@ -92,7 +92,12 @@
     <node>icub-b17</node>
     <tag>memoryModule</tag>
 </module>
-
+<module>
+    <name>yarpview</name>
+    <parameters>--name /blobPoint --RefreshTime 33 --out /blobraw:o</parameters>
+    <node>icub14</node>
+    <tag>viewer</tag>
+</module>
 <connection>
     <from>/icub/camcalib/left/out</from>
     <to>/iolStateMachineHandler/img:i</to>
@@ -137,6 +142,11 @@
     <from>/milClassifier/OPC:io</from>
     <to>/memory/rpc</to>
     <protocol>tcp</protocol>
+</connection>
+<connection>
+    <from>/blobExtractor/img:o</from>
+    <to>/blobPoint</to>
+    <protocol>udp</protocol>
 </connection>
 
 </application>
