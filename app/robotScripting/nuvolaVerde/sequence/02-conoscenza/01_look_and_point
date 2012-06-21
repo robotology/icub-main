@@ -15,7 +15,6 @@ yarp connect /iolStateMachineHandler/imgLoc:o   /loca
 
 echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
-sleep 3
 
 echo "look (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
 sleep 3
@@ -27,7 +26,6 @@ echo "bind pitch -38.0 -38.0" | yarp rpc /iKinGazeCtrl/head/rpc
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 echo "point (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
 
-sleep 3
 echo "look (-0.36632 0.127452 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
 sleep 2
 echo "point (-0.36632 0.127452 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io

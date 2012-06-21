@@ -1,67 +1,142 @@
 <application>
-<name>Robot Scripting</name>
+<name>Nuvola Verde</name>
 
 <dependencies>
-   <port>/icub/left_arm/rpc:i</port>
-   <port>/icub/right_arm/rpc:i</port>
-   <port>/icub/head/rpc:i</port>
-   <port>/icub/torso/rpc:i</port>
    <port>/icub/left_leg/rpc:i</port>
    <port>/icub/right_leg/rpc:i</port>
+   <port>/icub/camcalib/left/out</port>
+   <port>/icub/cartesianController/left_arm/state:o</port>
+   <port>/icub/cartesianController/right_arm/state:o</port>
+   <port>/wholeBodyDynamics/left_arm/cartesianEndEffectorWrench:o</port>
+   <port>/wholeBodyDynamics/right_arm/cartesianEndEffectorWrench:o</port>
+   <port>/iKinGazeCtrl/head/rpc</port>
 </dependencies>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part right_arm</parameters>
-   <node>icub1</node>
+   <node>icub14</node>
    <tag>right_arm_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part left_arm</parameters>
-   <node>icub1</node>
+   <node>icub14</node>
    <tag>left_arm_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part left_leg</parameters>
-   <node>icub1</node>
+   <node>icub14</node>
    <tag>left_leg_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part right_leg</parameters>
-   <node>icub1</node>
+   <node>icub14</node>
    <tag>right_leg_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part head </parameters>
-   <node>icub1</node>
+   <node>icub14</node>
    <tag>head_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part torso</parameters>
-   <node>icub1</node>
+   <node>icub14</node>
    <tag>torso_ctp</tag>
 </module>
 
 <module>
    <name>iSpeak</name>
-   <node>node1</node>
+   <node>icub14</node>
    <tag>speaker</tag>
 </module>
 
 <module>
    <name>actionsRenderingEngine</name>
-   <node>node1</node>
+   <node>icub14</node>
    <tag>actioner</tag>
 </module>
+
+<module>
+    <name>lumaChroma</name>
+    <node>icub-b17</node>
+    <tag>lumaChromaModule</tag>
+</module>
+<module>
+    <name>blobExtractor</name>
+    <node>icub-b17</node>
+    <tag>blobExtractorModule</tag>
+</module>
+<module>
+    <name>milClassifier</name>
+    <node>icub-t1</node>
+    <tag>learningModule</tag>
+</module>
+<module>
+    <name>iolStateMachineHandler</name>
+    <node>icub14</node>
+    <tag>handlerModule</tag>
+</module>
+<module>
+    <name>objectsPropertiesCollector</name>
+    <parameters>--name memory --db memory.ini</parameters>
+    <node>icub-b17</node>
+    <tag>memoryModule</tag>
+</module>
+
+<connection>
+    <from>/icub/camcalib/left/out</from>
+    <to>/iolStateMachineHandler/img:i</to>
+    <protocol>udp</protocol>
+</connection>
+<connection>
+    <from>/icub/camcalib/left/out</from>
+    <to>/lumaChroma/image:i</to>
+    <protocol>udp</protocol>
+</connection>
+<connection>
+    <from>/iolStateMachineHandler/imgClassifier:o</from>
+    <to>/milClassifier/img:i</to>
+    <protocol>tcp</protocol>
+</connection>
+<connection>
+    <from>/lumaChroma/Y/image:o</from>
+    <to>/blobExtractor/img:i</to>
+    <protocol>udp</protocol>
+</connection>
+<connection>
+    <from>/blobExtractor/blobs:o</from>
+    <to>/iolStateMachineHandler/blobs:i</to>
+    <protocol>udp</protocol>
+</connection>
+<connection>
+    <from>/iolStateMachineHandler/classify:rpc</from>
+    <to>/milClassifier/rpc</to>
+    <protocol>tcp</protocol>
+</connection>
+<connection>
+    <from>/iolStateMachineHandler/memory:rpc</from>
+    <to>/memory/rpc</to>
+    <protocol>tcp</protocol>
+</connection>
+<connection>
+    <from>/actionsRenderingEngine/OPC:io</from>
+    <to>/memory/rpc</to>
+    <protocol>tcp</protocol>
+</connection>
+<connection>
+    <from>/milClassifier/OPC:io</from>
+    <to>/memory/rpc</to>
+    <protocol>tcp</protocol>
+</connection>
 
 </application>

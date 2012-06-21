@@ -1,16 +1,19 @@
 echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
 ./nuvolaVerde/head_motion.sh 5 2 &
 sleep 1
-echo "11 250" | yarp write ... /iSpeak
+echo "12.5 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_01.mp3
+sleep 1
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_02.mp3
 
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
+
 echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 echo "take (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 ./nuvolaVerde/head_motion.sh 6 2 &
+sleep 2
 echo "14 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_03.mp3
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_04.mp3
@@ -19,7 +22,7 @@ sleep 1
 
 echo "observe"  | yarp rpc /actionsRenderingEngine/cmd:io
 sleep 2
-echo "drop"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "drop gently"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 ./nuvolaVerde/head_motion.sh 1 2
