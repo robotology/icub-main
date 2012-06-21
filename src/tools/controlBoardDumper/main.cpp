@@ -78,6 +78,8 @@
  *
  * dataToDump   (data1...dataN)  //type of data to be collected [default: all possible data]
  *
+ * logToFile                     //if present, this options creates a log file for each data port
+ *
  * \endcode
  * 
  * If no such file can be found, the application is started
@@ -88,14 +90,17 @@
  * acquisition rate.
  * The parameter dataToDump can assume the following values:
  * <ul>
- * <li> getEncoders (joint position)
- * <li> getEncoderSpeeds (joint velocity)
+ * <li> getEncoders             (joint position)
+ * <li> getEncoderSpeeds        (joint velocity)
  * <li> getEncoderAccelerations (joint acceleration)
- * <li> getPositionErrors  (difference between desired and actual position)
- * <li> getTorqueErrors    (difference between desired and measured torque, if available)
- * <li> getOutputs  (voltage give to the motor)
- * <li> getCurrents (current given to the motor)
- * <li> getTorques  (joint torques, if available)
+ * <li> getPositionErrors       (difference between desired and actual position)
+ * <li> getTorqueErrors         (difference between desired and measured torque, if available)
+ * <li> getOutputs              (voltage (PWM) given to the motor)
+ * <li> getCurrents             (current given to the motor)
+ * <li> getTorques              (joint torques, if available)
+ * <li> getRotorPositions       (hires rotor position, if available)
+ * <li> getRotorSpeeds          (hires rotor velocity, if available)
+ * <li> getRotorAccelerations   (hires rotor acceleration, if available) 
  * </ul>
  * Other data can be easily added by modyfing the classes in the 
  * file genericControlBoardDumper.cpp which contains a class named
@@ -305,7 +310,7 @@ private:
     ConstString *dataToDump;  
     int nData;
 
-    controlBoardDumper *myDumper;
+    boardDumperThread *myDumper;
 
     //time stamp
     IPreciselyTimed *istmp;
@@ -434,12 +439,15 @@ public:
             return false;
         }
 
+        bool logToFile = false;
+        if (options.check("logToFile")) logToFile = true;
+
         portPrefix = "/";
         portPrefix= portPrefix + "controlBoardDumper/" + part.asString() + "/";
-        //controlBoardDumper *myDumper = new controlBoardDumper(&dd, rate, portPrefix, dataToDump[0]);
+        //boardDumperThread *myDumper = new boardDumperThread(&dd, rate, portPrefix, dataToDump[0]);
         //myDumper->setThetaMap(thetaMap, nJoints);
 
-        myDumper = new controlBoardDumper[nData];
+        myDumper = new boardDumperThread[nData];
 
         for (int i = 0; i < nData; i++)
             {
@@ -447,7 +455,7 @@ public:
                     if (ddBoard.view(ienc))
                         {
                             fprintf(stderr, "Initializing a getEncs thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetEncs.setInterface(ienc);
                             if (ddBoard.view(istmp))
@@ -464,7 +472,7 @@ public:
                     if (ddBoard.view(ienc))
                         {
                             fprintf(stderr, "Initializing a getSpeeds thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetSpeeds.setInterface(ienc);
                             if (ddBoard.view(istmp))
@@ -480,7 +488,7 @@ public:
                     if (ddBoard.view(ienc))
                         {
                             fprintf(stderr, "Initializing a getAccs thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetAccs.setInterface(ienc);
                             if (ddBoard.view(istmp))
@@ -496,7 +504,7 @@ public:
                     if (ddBoard.view(ipid))
                         {
                             fprintf(stderr, "Initializing a getErrs thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetPosErrs.setInterface(ipid);
                             if (ddBoard.view(istmp))
@@ -512,7 +520,7 @@ public:
                     if (ddBoard.view(ipid))
                         {
                             fprintf(stderr, "Initializing a getOuts thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetOuts.setInterface(ipid);
                             if (ddBoard.view(istmp))
@@ -528,7 +536,7 @@ public:
                     if (ddBoard.view(iamp))
                         {
                             fprintf(stderr, "Initializing a getCurrs thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetCurrs.setInterface(iamp);
                             if (ddBoard.view(istmp))
@@ -545,7 +553,7 @@ public:
                     if (ddBoard.view(itrq))
                         {
                             fprintf(stderr, "Initializing a getTorques thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetTrqs.setInterface(itrq);
                             if (ddBoard.view(istmp))
@@ -562,7 +570,7 @@ public:
                     if (ddBoard.view(itrq))
                         {
                             fprintf(stderr, "Initializing a getTorqueErrors thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetTrqErrs.setInterface(itrq);
                             if (ddBoard.view(istmp))
@@ -581,7 +589,7 @@ public:
                         if (idbg!=0)
                         {
                             fprintf(stderr, "Initializing a getRotorPosition thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetRotorPoss.setInterface(idbg);
                             if (ddDebug.view(istmp))
@@ -608,7 +616,7 @@ public:
                         if (idbg!=0)
                         {
                             fprintf(stderr, "Initializing a getRotorSpeed thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetRotorVels.setInterface(idbg);
                             if (ddDebug.view(istmp))
@@ -635,7 +643,7 @@ public:
                         if (idbg!=0)
                         {
                             fprintf(stderr, "Initializing a getRotorAcceleration thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i]);
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetRotorAccs.setInterface(idbg);
                             if (ddDebug.view(istmp))

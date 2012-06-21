@@ -24,17 +24,18 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
+#include <string>
 
 #include <yarp/os/RateThread.h>
 
 #include "genericControlBoardDumper.h"
 
-class controlBoardDumper: public RateThread
+class boardDumperThread: public RateThread
 {
 public:
-  void setDevice(PolyDriver *, PolyDriver *, int, ConstString, ConstString);
-  controlBoardDumper();
-  ~controlBoardDumper();
+  void setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, ConstString portPrefix, ConstString dataToDump, bool logOnDisk);
+  boardDumperThread();
+  ~boardDumperThread();
   bool threadInit();
   void setThetaMap(int *, int);
   void threadRelease();
@@ -47,7 +48,10 @@ private:
   GetData *getter;
   Stamp stmp;
 
+  std::string portName;
   Port *port;
+  FILE * logFile;
+  bool   logToFile;
 
   IPositionControl *pos;
   IVelocityControl *vel;
@@ -63,7 +67,7 @@ private:
 
   int numberOfJointsRead;
   double *dataRead;
-  int    *dataMap;  
+  int    *dataMap;
 
 };
 

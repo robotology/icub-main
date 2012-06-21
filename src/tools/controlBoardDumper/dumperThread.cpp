@@ -26,74 +26,91 @@
  */
 
 
-void controlBoardDumper::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, ConstString portPrefix, ConstString dataToDump)
+void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, ConstString portPrefix, ConstString dataToDump, bool logOnDisk)
 {
-  // open ports
-  board_dd=board_d;
-  debug_dd=debug_d;
+    // open ports
+    board_dd=board_d;
+    debug_dd=debug_d;
 
-  //getter = NULL;
+    //getter = NULL;
 
-  bool ok;
-  ok  = board_d->view(pos);
-  ok &= board_d->view(vel);
-  ok &= board_d->view(enc);
-  ok &= board_d->view(pid);
-  ok &= board_d->view(amp);
-  ok &= board_d->view(lim);
-  ok &= board_d->view(trq);
-  ok &= debug_d->view(idbg);
+    bool ok;
+    ok  = board_d->view(pos);
+    ok &= board_d->view(vel);
+    ok &= board_d->view(enc);
+    ok &= board_d->view(pid);
+    ok &= board_d->view(amp);
+    ok &= board_d->view(lim);
+    ok &= board_d->view(trq);
+    ok &= debug_d->view(idbg);
 
-  if (!ok)
+    if (!ok)
     printf("Problems acquiring interfaces\n");
-  else
+    else
     printf("Control board was accessed succesfully!\n");
 
-  pos->getAxes(&numberOfJoints);
-  fprintf(stderr, "Number of axes is: %d \n", numberOfJoints);
+    pos->getAxes(&numberOfJoints);
+    fprintf(stderr, "Number of axes is: %d \n", numberOfJoints);
 
-  //initialize used variables
-  data = new double [numberOfJoints];
+    //initialize used variables
+    data = new double [numberOfJoints];
 
-  port = new Port;
+    port = new Port;
 
-  ConstString portName = portPrefix + dataToDump;
-  port->open(portName.c_str());
+    portName = portPrefix + dataToDump;
+    port->open(portName.c_str());
 
-  this->setRate(rate);
+    logToFile = logOnDisk;
+    this->setRate(rate);
 }
 
-controlBoardDumper::~controlBoardDumper()
+boardDumperThread::~boardDumperThread()
 {    
-
 }
 
-void controlBoardDumper::setThetaMap(int *map, int n)
+void boardDumperThread::setThetaMap(int *map, int n)
 { 
-  fprintf(stderr, "Setting the map dimension %d \n", n);
-  numberOfJointsRead = n;
-  dataRead = new double [numberOfJointsRead];
-  dataMap = new int [numberOfJointsRead];
-  for (int i = 0; i < numberOfJointsRead; i++)
+    fprintf(stderr, "Setting the map dimension %d \n", n);
+    numberOfJointsRead = n;
+    dataRead = new double [numberOfJointsRead];
+    dataMap = new int [numberOfJointsRead];
+    for (int i = 0; i < numberOfJointsRead; i++)
     {
-      //fprintf(stderr, "map is %d \n", map[i]);
-      dataMap[i] = map[i];
-      dataRead[i] = 1.0;
+        //fprintf(stderr, "map is %d \n", map[i]);
+        dataMap[i] = map[i];
+        dataRead[i] = 1.0;
     }
 }
 
-void controlBoardDumper::setGetter(GetData *g)
+void boardDumperThread::setGetter(GetData *g)
 {
-  getter = g;
+    getter = g;
 }
 
-bool controlBoardDumper::threadInit()
+bool boardDumperThread::threadInit()
 {
+    char buff [255];
+    strcpy(buff, this->portName.c_str());
+    for (int i=0; i<strlen(buff); i++)
+        if (buff[i]=='/') buff[i]='_';
+    strcat(buff,".log");
 
-  return 1;
+    if (logToFile)
+    {
+        logFile = fopen(buff,"w");
+        if (logFile == 0)
+        {
+            printf ("error opening logfile: %s\n",this->portName.c_str());
+        }
+        else
+        {
+            printf ("logfile opened: %s\n",this->portName.c_str());
+        }
+    }
+    return 1;
 }
 
-controlBoardDumper::controlBoardDumper():RateThread(500)
+boardDumperThread::boardDumperThread():RateThread(500)
 {
     getter   = 0;
     board_dd = 0;
@@ -107,57 +124,81 @@ controlBoardDumper::controlBoardDumper():RateThread(500)
     lim      = 0;
     trq      = 0;
     idbg     = 0;
+    logFile  = 0;
+    logToFile = false;
 }
 
-void controlBoardDumper::threadRelease()
+void boardDumperThread::threadRelease()
 {
-  fprintf(stderr, "Closing thread \n");
-  //Arm_dd->close();
-  Time::delay(.1);
-  fprintf(stderr, "Closing ports \n");
-  port->close();
-}
+    fprintf(stderr, "Closing thread \n");
+    //Arm_dd->close();
+    Time::delay(.1);
+    fprintf(stderr, "Closing ports \n");
+    port->close();
 
-void controlBoardDumper::run()
-{
-  //printf("Entering the main thread\n");
-  //enc->getEncoders(data);
-  //Bottle bData;
-  //for (int i = 0; i < numberOfJointsRead; i++)
-  //  {
-  //    dataRead[i] = data[dataMap[i]];
-  //    bData.addDouble(dataRead[i]);
-  //  }
-  //port->write(bData);
-
-  if (getter)
+    if (logFile)
     {
-      //printf("Getter is getting something\n");
-      getter -> getData(data);
+        fprintf(stderr, "Closing logFile \n");
+        fclose (logFile);
+    }
+}
 
-      //fprintf(stderr, "Time is %lf \n", stmp.getTime());
+void boardDumperThread::run()
+{
+    //printf("Entering the main thread\n");
+    //enc->getEncoders(data);
+    //Bottle bData;
+    //for (int i = 0; i < numberOfJointsRead; i++)
+    //  {
+    //    dataRead[i] = data[dataMap[i]];
+    //    bData.addDouble(dataRead[i]);
+    //  }
+    //port->write(bData);
 
-      Bottle bData;
-      for (int i = 0; i < numberOfJointsRead; i++)
-	{
-	  //printf("%.2f \n", data[dataMap[i]]);
-	  dataRead[i] = data[dataMap[i]];
-	  bData.addDouble(dataRead[i]);
-	}
-      if (getter->getStamp(stmp)) 
-	{
-	  if (stmp.isValid())
-	    port->setEnvelope(stmp);
-	  else
-	    {
-            //stmp.update();
-            stmp=Stamp(-1,0.0);
-	      port->setEnvelope(stmp);
-	    }
-	}
-      else
-	fprintf(stderr, "controlBoardDumper::warning. Trying to get a stamp without a proper IPreciselyTimed defined. \n");
-      
-      port->write(bData);
+    if (getter)
+    {
+        //printf("Getter is getting something\n");
+        getter -> getData(data);
+
+        //fprintf(stderr, "Time is %lf \n", stmp.getTime());
+
+        Bottle bData;
+        for (int i = 0; i < numberOfJointsRead; i++)
+        {
+            //printf("%.2f \n", data[dataMap[i]]);
+            dataRead[i] = data[dataMap[i]];
+            bData.addDouble(dataRead[i]);
+        }
+
+        if (getter->getStamp(stmp)) 
+        {
+            if (stmp.isValid())
+            {
+                port->setEnvelope(stmp);
+            }
+            else
+            {
+                //stmp.update();
+                stmp=Stamp(-1,0.0);
+                port->setEnvelope(stmp);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "boardDumperThread::warning. Trying to get a stamp without a proper IPreciselyTimed defined. \n");
+        }
+
+        if (logFile)
+        {
+            char buff [20];
+            sprintf(buff,"%d ",stmp.getCount());
+            fputs (buff,logFile);
+            sprintf(buff,"%f ",stmp.getTime());
+            fputs (buff,logFile);
+            fputs (bData.toString().c_str(),logFile);
+            fputs ("\n",logFile);
+        }
+
+        port->write(bData);
     }
 }  
