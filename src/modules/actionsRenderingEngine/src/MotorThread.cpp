@@ -1784,13 +1784,16 @@ bool MotorThread::release(Bottle &options)
 
 bool MotorThread::goHome(Bottle &options)
 {
-    bool head_home=checkOptions(options,"head") || checkOptions(options,"gaze");
+    bool head_home=(checkOptions(options,"head") || checkOptions(options,"gaze"));
     bool arms_home=checkOptions(options,"arms") || checkOptions(options,"arm");
     bool hand_home=checkOptions(options,"fingers") || checkOptions(options,"hands") || checkOptions(options,"hand");
 
     //if none is specified then assume all are going home
     if(!head_home && !arms_home && !hand_home)
         head_home=arms_home=hand_home=true;
+
+    //workaround
+    head_home = head_home && !checkOptions(options,"no_head");
 
     bool left_arm=checkOptions(options,"left") || checkOptions(options,"both");
     bool right_arm=checkOptions(options,"right") || checkOptions(options,"both");
@@ -2024,10 +2027,14 @@ bool MotorThread::calibTable(Bottle &options)
     deployEnd[2]=-0.25;
 
     bool f=false;
-    setGazeIdle();
 
-    keepFixation();
-    ctrl_gaze->lookAtFixationPoint(deployEnd);
+    if(!checkOptions(options,"no_head"))
+    {
+        setGazeIdle();
+
+        keepFixation();
+        ctrl_gaze->lookAtFixationPoint(deployEnd);
+    }
 
     if(isHolding(options))
         action[arm]->pushAction("open_hand");
@@ -2058,7 +2065,8 @@ bool MotorThread::calibTable(Bottle &options)
         Vector x,o;
         action[arm]->getPose(x,o);
 
-        ctrl_gaze->lookAtFixationPoint(x);
+        if(!checkOptions(options,"no_head"))
+            ctrl_gaze->lookAtFixationPoint(x);
 
         table_height=x[2];
         table[3]=-table_height;
@@ -2079,7 +2087,9 @@ bool MotorThread::calibTable(Bottle &options)
     else
         fprintf(stdout,"########## Table height not found.\n");
 
-    setGazeIdle();
+    if(!checkOptions(options,"no_head"))
+        setGazeIdle();
+
     goHome(options);
 
     return found;
