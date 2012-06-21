@@ -141,9 +141,10 @@
  */
 
 
-#include "controlBoardDumper.h"
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Module.h>
+
+#include "dumperThread.h"
 
 YARP_DECLARE_DEVICES(icubmod)
 
@@ -585,7 +586,7 @@ public:
                             myGetRotorPoss.setInterface(idbg);
                             if (ddDebug.view(istmp))
                                 {
-                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    fprintf(stderr, "getRotorPositions::The time stamp initalization interfaces was successfull! \n");
                                     myGetRotorPoss.setStamp(istmp);
                                 }
                             else
@@ -612,7 +613,7 @@ public:
                             myGetRotorVels.setInterface(idbg);
                             if (ddDebug.view(istmp))
                                 {
-                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    fprintf(stderr, "getRotorSpeeds::The time stamp initalization interfaces was successfull! \n");
                                     myGetRotorVels.setStamp(istmp);
                                 }
                             else
@@ -639,7 +640,7 @@ public:
                             myGetRotorAccs.setInterface(idbg);
                             if (ddDebug.view(istmp))
                                 {
-                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                    fprintf(stderr, "getRotorAccelerations::The time stamp initalization interfaces was successfull! \n");
                                     myGetRotorAccs.setStamp(istmp);
                                 }
                             else

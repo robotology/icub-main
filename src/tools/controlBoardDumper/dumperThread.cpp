@@ -17,7 +17,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
 */
-#include "controlBoardDumper.h"
+#include "dumperThread.h"
 
 /*
  * Copyright (C) 2006 Francesco Nori
