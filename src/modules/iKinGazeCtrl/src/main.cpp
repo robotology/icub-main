@@ -268,16 +268,15 @@ following ports:
   associated to the controller's state. \n
   Available events are:
    - "motion-onset" <time>: sent out at the beginning of the
-     trajectory; comprise the time instant of the source when
-     the event took place.
-   - "motion-done" <time>: sent out at the end of the
-     trajectory; comprise the time instant of the source when
-     the event took place.
+     motion; comprise the time instant of the source when the
+     event took place.
+   - "motion-done" <time>: sent out at the end of the motion;
+     comprise the time instant of the source when the event took
+     place.
    - "motion-ongoing" <time> <checkpoint>: sent out when the
-     portion of trajectory given in [0,1] by the checkpoint
-     parameter has been attained; comprise the time instant of
-     the source when the event took place as well as the
-     checkpoint.
+     portion of path given in [0,1] by the checkpoint parameter
+     has been attained; comprise the time instant of the source
+     when the event took place as well as the checkpoint.
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
