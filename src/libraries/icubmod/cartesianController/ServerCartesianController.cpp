@@ -2809,14 +2809,17 @@ void ServerCartesianController::notifyEvent(const string &event,
     double time=txInfo.getTime();
     map<string,CartesianEvent*>::iterator itr;
 
-    Bottle bottle;
-    bottle.addString(event.c_str());
-    bottle.addDouble(time);
+    if (portEvent.getOutputCount()>0)
+    {
+        Bottle bottle;
+        bottle.addString(event.c_str());
+        bottle.addDouble(time);
 
-    if (checkPoint>=0.0)
-        bottle.addDouble(checkPoint);
+        if (checkPoint>=0.0)
+            bottle.addDouble(checkPoint);
 
-    portEvent.write(bottle);
+        portEvent.write(bottle);
+    }
 
     // rise the all-events callback
     itr=eventsMap.find("*");

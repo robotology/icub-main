@@ -184,14 +184,17 @@ void Controller::findMinimumAllowedVergence()
 /************************************************************************/
 void Controller::notifyEvent(const string &event, const double checkPoint)
 {
-    Bottle bottle;
-    bottle.addString(event.c_str());
-    bottle.addDouble(q_stamp);
+    if (port_event.getOutputCount()>0)
+    {
+        Bottle bottle;
+        bottle.addString(event.c_str());
+        bottle.addDouble(q_stamp);
 
-    if (checkPoint>=0.0)
-        bottle.addDouble(checkPoint);
+        if (checkPoint>=0.0)
+            bottle.addDouble(checkPoint);
 
-    port_event.write(bottle);
+        port_event.write(bottle);
+    }
 }
 
 
