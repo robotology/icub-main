@@ -1,19 +1,23 @@
 #start part of crf demo
 #stop after some time
 #look at audience
-
+echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
 
-./nuvolaVerde/head_motion.sh 5 2 &
+./nuvolaVerde/head_motion.sh 6 2 &
 echo "8.5 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/03-corpo/corpo_05.mp3
-sleep 2
+sleep 0.25
+
+echo "2 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/03-corpo/corpo_06.mp3
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 
-echo "look (-1.0 0.0 0.4) fixate" | yarp rpc /actionsRenderingEngine/cmd:io
-echo "calib table no_head"  | yarp rpc /actionsRenderingEngine/cmd:io
+#echo "look (-1.0 0.0 0.4) fixate" | yarp rpc /actionsRenderingEngine/cmd:io
+#echo "calib table no_head"  | yarp rpc /actionsRenderingEngine/cmd:io
+
+echo "calib table"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 ./nuvolaVerde/head_motion.sh 1 2 &
