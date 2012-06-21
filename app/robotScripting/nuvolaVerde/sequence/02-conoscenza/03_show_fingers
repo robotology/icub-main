@@ -7,3 +7,8 @@ echo "calib fingers"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 ./nuvolaVerde/head_motion.sh 1 2
+
+yarprun --on /icub14 --sigterm viewerLuma
+yarprun --on /icub14 --sigterm viewerBlob
+yarprun --on /icub14 --sigterm viewerSift
+yarprun --on /icub14 --sigterm viewerLocalize
