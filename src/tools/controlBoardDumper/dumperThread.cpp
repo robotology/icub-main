@@ -91,7 +91,7 @@ bool boardDumperThread::threadInit()
 {
     char buff [255];
     strcpy(buff, this->portName.c_str());
-    for (int i=0; i<strlen(buff); i++)
+    for (size_t i=0; i<strlen(buff); i++)
         if (buff[i]=='/') buff[i]='_';
     strcat(buff,".log");
 
