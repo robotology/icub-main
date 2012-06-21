@@ -1,0 +1,9 @@
+echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
+./nuvolaVerde/head_motion.sh 4 2 &
+echo "9 250" | yarp write ... /iSpeak
+mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/02-conoscenza/conoscenza_05.mp3
+
+echo "calib fingers"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
+./nuvolaVerde/head_motion.sh 1 2
