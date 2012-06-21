@@ -143,10 +143,10 @@ public:
     /************************************************************************/
     void suspend()
     {
+        RateThread::suspend();
+
         state="hap";
         send();
-
-        RateThread::suspend();
     }
 };
 
