@@ -23,6 +23,7 @@
 #include <iCub/FactoryInterface.h>
 
 // Logger interface
+#include "debugging.h"
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
@@ -58,19 +59,19 @@ RobotNetworkEntry *RobotNetwork::find(const string &id)
 
 RobotPartEntry::RobotPartEntry()
 {
-	YARP_INFO(Logger::get(),"RobotPartEntry::RobotPartEntry()", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotPartEntry::RobotPartEntry()", Logger::get().log_files.f3);
     iwrapper=0;
 }
 
 RobotPartEntry::~RobotPartEntry()
 {
-	YARP_INFO(Logger::get(),"RobotPartEntry::~RobotPartEntry()", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotPartEntry::~RobotPartEntry()", Logger::get().log_files.f3);
     close();
 }
 
 bool RobotPartEntry::open(Property &p)
 {
-	YARP_INFO(Logger::get(),"RobotPartEntry::open()", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotPartEntry::open()", Logger::get().log_files.f3);
 
 	driver.open(p);
 
@@ -87,7 +88,7 @@ bool RobotPartEntry::open(Property &p)
 
 void RobotPartEntry::close()
 {
-	YARP_INFO(Logger::get(),"RobotPartEntry::close() ", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotPartEntry::close() ", Logger::get().log_files.f3);
     if (driver.isValid())
     {
         iwrapper=0;
@@ -144,7 +145,7 @@ RobotInterfaceRemap::~RobotInterfaceRemap()
 
 void RobotInterfaceRemap::park(bool wait)
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::park(bool wait)", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::park(bool wait)", Logger::get().log_files.f3);
 
     if (abortF)
         return;
@@ -200,7 +201,7 @@ void RobotInterfaceRemap::calibrate(bool wait)
 
 bool RobotInterfaceRemap::initialize(const std::string &inifile)
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::initialize(...)", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::initialize(...)", Logger::get().log_files.f3);
     std::string filename;
     std::string portname;
 
@@ -274,7 +275,7 @@ bool RobotInterfaceRemap::initialize(const std::string &inifile)
 
 bool RobotInterfaceRemap::initCart(const::string &file)
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::initCart(...)", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::initCart(...)", Logger::get().log_files.f3);
     Property options;
     options.fromConfigFile(file.c_str());
 
@@ -334,7 +335,7 @@ bool RobotInterfaceRemap::initCart(const::string &file)
 
 bool RobotInterfaceRemap::finiCart()
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::finiCart(...)", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::finiCart(...)", Logger::get().log_files.f3);
     CartesianControllersIt it=cartesianControllers.begin();
 
     while(it!=cartesianControllers.end())
@@ -347,7 +348,7 @@ bool RobotInterfaceRemap::finiCart()
 
 bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::initialize10(...)", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::initialize10(...)", Logger::get().log_files.f3);
     fprintf(stderr, "Going to initialize the robot with a file\n");
 
     std::string PATH;
@@ -503,7 +504,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     robotOptions.fromConfigFile(inifile.c_str());
 
 	string str=robotOptions.toString().c_str();
-	YARP_INFO(Logger::get(), "RobotInterfaceRemap::initialize20", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(), "RobotInterfaceRemap::initialize20", Logger::get().log_files.f3);
 
     robotName=robotOptions.findGroup("GENERAL").find("name").asString().c_str();
     Bottle *reqParts=robotOptions.findGroup("GENERAL").find("parts").asList();
@@ -524,7 +525,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         std::string partid=reqParts->get(n).asString().c_str();
         std::cout<<"--> Processing "<<partid<<endl;
 
-    	YARP_INFO(Logger::get(), String("--> Processing part: ") + String(reqParts->get(n).asString()), Logger::get().log_files.f3);
+    	AC_YARP_INFO(Logger::get(), String("--> Processing part: ") + String(reqParts->get(n).asString()), Logger::get().log_files.f3);
 
         RobotPartEntry *partEntry=new RobotPartEntry;
         partEntry->id=partid;
@@ -574,7 +575,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         tmpProp.put("FeatId", netEntry->id.c_str());
 
         string str=tmpProp.toString().c_str();
-        YARP_INFO(Logger::get(), tmpProp.toString().c_str(), Logger::get().log_files.f3);
+        AC_YARP_INFO(Logger::get(), tmpProp.toString().c_str(), Logger::get().log_files.f3);
 
 
         cout << "Instantiating network " << netid.c_str() << "...";
@@ -874,7 +875,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 
     string str("\n\n ------------------------------ \n RobotInterfaceRemap::instantiateNetwork(...)\n");
     str += robotOptions.toString().c_str();
-    YARP_INFO(Logger::get(), str.c_str(), Logger::get().log_files.f3);
+    AC_YARP_INFO(Logger::get(), str.c_str(), Logger::get().log_files.f3);
 
     if (fullFilename.length()!=0 && fullFilename[fullFilename.length()-1]!='/')
     {
@@ -1106,7 +1107,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 
 bool RobotInterfaceRemap::instantiateInertial(Property &options)
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::instantiateInertial(...) 1st version", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::instantiateInertial(...) 1st version", Logger::get().log_files.f3);
     fprintf(stderr, "Instantiating an INERTIAL device\n");
 
 	const char *conf = yarp::os::getenv("ICUB_ROOT");
@@ -1148,7 +1149,7 @@ bool RobotInterfaceRemap::instantiateInertial(Property &options)
 
 bool RobotInterfaceRemap::instantiateInertial(const std::string &path, Property &options)
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::instantiateInertial(...) 2nd version", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::instantiateInertial(...) 2nd version", Logger::get().log_files.f3);
     //    std::cout<<"Path: "<<path<<" Property list: "<<options.toString().c_str();
     std::string file=options.find("file").asString().c_str();
     std::string device=options.find("device").asString().c_str();
@@ -1211,7 +1212,7 @@ bool RobotInterfaceRemap::detachWrappers()
 
 bool RobotInterfaceRemap::closeNetworks()
 {
-	YARP_INFO(Logger::get(),"RobotInterfaceRemap::closeNetworks()", Logger::get().log_files.f3);
+	AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::closeNetworks()", Logger::get().log_files.f3);
     RobotNetworkEntry *tmpNet;
     int n=networks.size();
 

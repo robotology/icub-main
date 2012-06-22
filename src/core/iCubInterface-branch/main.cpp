@@ -142,7 +142,7 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 #include "ControlBoardWrapper.h"
 #include <yarp/dev/Drivers.h>
 
-//#define _AC_
+#undef _AC_
 
 #include <yarp/os/impl/Logger.h>
 using namespace yarp::os::impl;

@@ -33,9 +33,9 @@ bool findAndFill(FEAT_ID *id, char *sk_array)
 	IiCubFeature * skin = list->findus(id);
 	if(NULL == skin)
 	{
-		printf(	"/************************************\\\n"
-				"			Parte non trovata!!!\n"
-				"\\***********************************/\n");
+//		printf(	"/************************************\\\n"
+//				"			Parte non trovata!!!\n"
+//				"\\***********************************/\n");
 	}
 	else
 	{
