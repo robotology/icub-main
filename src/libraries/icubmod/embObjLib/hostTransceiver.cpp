@@ -24,10 +24,11 @@ using namespace std;
 #include "EOnv_hid.h"
 
 #define _DEBUG_ON_FILE_
+#undef _DEBUG_ON_FILE_
 
 #ifdef _DEBUG_ON_FILE_
 	#define SOGLIA						70000
-	#define MAX_ACQUISITION 			1000
+	#define MAX_ACQUISITION 			10000
 	uint64_t idx = 0;
 	uint64_t max_idx = MAX_ACQUISITION*7*16*2 / 8;
 	uint64_t utime[MAX_ACQUISITION*16*7*2*2] = {0};

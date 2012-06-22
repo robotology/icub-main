@@ -218,7 +218,8 @@ set(IPNET_HEADER		${IPNET_FOLDER}/EOpacket_hid.h)
 set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
 
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
-						${EXTRA_FOLDER}/ethManager.cpp)
+						${EXTRA_FOLDER}/ethManager.cpp
+						${EXTRA_FOLDER}/debugFunctions.cpp)
 
 set(embobj_source 		${BODY_COMMON_SOURCE} 
 						${CORE_FOLDER_SOURCE} 

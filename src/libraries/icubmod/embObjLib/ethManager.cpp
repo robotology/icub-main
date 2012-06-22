@@ -16,12 +16,9 @@
 #include <iostream>
 #include <stdio.h>
 
-
 #include <yarp/dev/PolyDriver.h>
 #include <ace/config.h>
-
 #include "ethManager.h"
-
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
@@ -30,6 +27,8 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 bool keepGoingOn2 = true;
+
+
 
 ethResCreator* ethResCreator::handle = 0x00;
 bool ethResCreator::initted = false;
@@ -313,7 +312,6 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 		how_many_boards++;
 		this->push_back(newRes);
 	}
-
 	return newRes;
 }
 
@@ -512,9 +510,9 @@ int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
 #ifdef _SEPARETED_THREADS_
 void *recvThread(void * arg)
 {
-	size_t 			n = MAX_RECV_SIZE;
-	ACE_TCHAR 		address[64];
-	ethResources	*ethRes;
+	size_t 						n = MAX_RECV_SIZE;
+	ACE_TCHAR 					address[64];
+	ethResources				*ethRes;
 	ACE_SOCK_Dgram				*_socket = (ACE_SOCK_Dgram*)arg;
 	ACE_UINT16 					recv_size;
 	ACE_INET_Addr				sender_addr;
@@ -531,21 +529,23 @@ void *recvThread(void * arg)
 
 		if( recv_size > 0)
 		{
-			ethResIt iterator = ethResCreator::instance()->begin();
+//			check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
 
+			ethResIt iterator = ethResCreator::instance()->begin();
 			while(iterator!=ethResCreator::instance()->end())
 			{
 				if(strcmp((*iterator)->address, address) == 0)
 				{
-					// come fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
 					ethRes = (*iterator);
 					memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-					(*iterator)->onMsgReception(ethRes->recv_msg, recv_size);
+					ethRes->onMsgReception(ethRes->recv_msg, recv_size);
 					//continue; // to skip remaining part of the for cycle
 				}
 				iterator++;
 			}
 		}
+		else
+			printf("Received weird msg of size %d\n", recv_size);
 	}
 }
 
@@ -605,6 +605,7 @@ bool TheEthManager::close()
 {
 #ifdef _SEPARETED_THREADS_
 	keepGoingOn2 = false;
+	print_data();
 	sleep(1);
 	ACE_Thread::cancel(id_recvThread);
 

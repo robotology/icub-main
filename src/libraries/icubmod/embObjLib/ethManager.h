@@ -47,7 +47,7 @@ using namespace std;
 //#include "../embObjMotionControl/embObjMotionControl.h"
 #include "hostTransceiver.hpp"
 #include "embObjLibInterface.h"
-
+#include "debugFunctions.h"
 
 
 // ACE stuff
@@ -69,7 +69,8 @@ using namespace std;
 #define	EMS_IP					DEBUG_EMS_IP
 #define DEFAULT_PORT			3333
 
-#define	MAX_RECV_SIZE			512
+//#define	MAX_RECV_SIZE			512
+#define	MAX_RECV_SIZE			1500
 #define	SIZE_INFO				126
 
 #define _DEBUG_
@@ -193,7 +194,8 @@ class SendThread:	public RateThread
 };
 
 class yarp::dev::TheEthManager: public DeviceDriver
-#ifndef _SEPARETED_THREADS_      ,public RateThread
+#ifndef _SEPARETED_THREADS_
+,public RateThread
 #endif
 {
 private:
