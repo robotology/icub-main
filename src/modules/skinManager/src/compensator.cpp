@@ -472,7 +472,6 @@ skinContactList Compensator::getContacts(){
         }
     }
     poseSem.post();
-    //printf("Clustering finished\n");
 
     skinContactList contactList;
     Vector CoP(3), geoCenter(3), normal(3);
@@ -481,7 +480,6 @@ skinContactList Compensator::getContacts(){
     vector<unsigned int> taxelList;
     for( deque<deque<int> >::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
         activeTaxels = it->size();
-        //printf("Contact size: %d\n", activeTaxels);
         if(activeTaxels==0) continue;
         
         taxelList.resize(activeTaxels);
@@ -506,6 +504,9 @@ skinContactList Compensator::getContacts(){
             pressure    += out;
             taxelList[i] = *tax;
         }
+        // if this is not the only contact and no taxel in this contact has a position => discard it
+        if(taxelsXcontact.size()>1 && activeTaxelsGeo==0)
+            continue;
         if(pressureCoP!=0.0)        CoP         /= pressureCoP;
         if(pressureNormal!=0.0)     normal      /= pressureNormal;
         if(activeTaxelsGeo!=0)      geoCenter   /= activeTaxelsGeo;
