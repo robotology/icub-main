@@ -18,9 +18,6 @@
 
 
 // - external dependencies --------------------------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include "EoCommon.h"
 #include "EOhostTransceiver.h"
@@ -42,9 +39,6 @@ extern "C" {
 #include "eOcfg_EPs_eb8.h"
 #include "eOcfg_EPs_eb9.h"
 
-#ifdef __cplusplus
-}
-#endif
 
 #include <yarp/dev/DeviceDriver.h>
 

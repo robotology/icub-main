@@ -66,7 +66,7 @@ using namespace yarp::os::impl;
 
 hostTransceiver::hostTransceiver()
 {
-	YARP_INFO(Logger::get(), "hostTransceiver::hostTransceiver()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), "hostTransceiver::hostTransceiver()", Logger::get().log_files.f3);
 }
 
 hostTransceiver::~hostTransceiver()
@@ -76,7 +76,7 @@ hostTransceiver::~hostTransceiver()
 
 void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize, uint8_t _board_n)
 {
-	YARP_INFO(Logger::get(),"hostTransceiver::init", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"hostTransceiver::init", Logger::get().log_files.f3);
 
     // the configuration of the transceiver: it is specific of a given remote board
 
@@ -444,7 +444,7 @@ void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint1
 
 EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 {
-//	YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
+//	// AC_YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
 
 	uint16_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
 	EOtreenode	*nvTreenodeRoot;
@@ -483,7 +483,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 
 void hostTransceiver::getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size)
 {
-	YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
 
     if (NULL != nvRoot)
     {

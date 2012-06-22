@@ -39,7 +39,7 @@ int TheEthManager::i = false;
 
 ethResources::ethResources()
 {
-	YARP_INFO(Logger::get(), "ethResources::ethResources()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), "ethResources::ethResources()", Logger::get().log_files.f3);
 	char tmp[126];
 	transceiver = 0x00;
 	theEthManager_h = NULL;
@@ -79,7 +79,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	YARP_INFO(Logger::get(), "ethResources::open()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), "ethResources::open()", Logger::get().log_files.f3);
 
 	//
 	// Get EMS ip addresses and port from config file, in order to correctly configure the transceiver.
@@ -89,11 +89,11 @@ bool ethResources::open(yarp::os::Searchable &config)
 
 	xtmp2 = xtmp.findGroup("IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
-	YARP_INFO(Logger::get(), String("IpAddress:\t") + address, Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), String("IpAddress:\t") + address, Logger::get().log_files.f3);
 
 	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
 	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-	YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
+	// AC_YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
 	// Get EMS CmdPort from config file
 	xtmp2 = xtmp.findGroup("CmdPort");
 	rem_port = xtmp2.get(1).asInt();
@@ -117,11 +117,11 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//
 	xtmp2 = config.findGroup("PC104IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
-	YARP_INFO(Logger::get(), String("PC104IpAddress:\t") + address, Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), String("PC104IpAddress:\t") + address, Logger::get().log_files.f3);
 	// ACE format
 	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
 	sprintf(tmp,"pc104.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), loc_ip1,loc_ip2,loc_ip3,loc_ip4);
-	YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
+	// AC_YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
 
 	ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
 
@@ -257,7 +257,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	YARP_INFO(Logger::get(), " ethResCreator::getResource", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), " ethResCreator::getResource", Logger::get().log_files.f3);
 
 	//
 	// Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
@@ -268,7 +268,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	xtmp2 = xtmp.findGroup("IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
 	sprintf(tmp,"EMS IpAddress %s", address);
-	YARP_INFO(Logger::get(), tmp, Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), tmp, Logger::get().log_files.f3);
 
 	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
 	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
@@ -296,7 +296,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 			//if(tmp_addr == (*iterator)->getRemoteAddress() )
 		{
 			// device already exist.
-			YARP_INFO(Logger::get(), String("device already exist\n") + address, Logger::get().log_files.f3);
+			// AC_YARP_INFO(Logger::get(), String("device already exist\n") + address, Logger::get().log_files.f3);
 
 			newRes = (*iterator);
 		}
@@ -306,7 +306,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	if ( NULL == newRes)
 	{
 		// device doesn't exist yet, create it
-		YARP_INFO(Logger::get(), String("device doesn't exist yet, create it\n") + address, Logger::get().log_files.f3);
+		// AC_YARP_INFO(Logger::get(), String("device doesn't exist yet, create it\n") + address, Logger::get().log_files.f3);
 		newRes = new ethResources;
 		newRes->open(config);
 		how_many_boards++;
@@ -326,7 +326,7 @@ bool	ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
 
 uint8_t* ethResCreator::find(EMS_ID &id)
 {
-	YARP_INFO(Logger::get(), " ethResCreator::find", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), " ethResCreator::find", Logger::get().log_files.f3);
 
 	ethResources *res = NULL;
 	ethResIt iterator = this->begin();
@@ -353,7 +353,7 @@ uint8_t* ethResCreator::find(EMS_ID &id)
 SendThread::SendThread() : RateThread(1)
 
 {
-	YARP_INFO(Logger::get(), "SendThread::SendThread()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), "SendThread::SendThread()", Logger::get().log_files.f3);
 }
 
 SendThread::~SendThread()
@@ -377,8 +377,11 @@ void SendThread::run()
 		data = 0;
 		size = 0;
 		(*iterator)->getPack(&data, &size);
-		ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
-		TheEthManager::instance()->send(data, (size_t)size, addr);
+		if(size > 20)
+		{
+			ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
+			TheEthManager::instance()->send(data, (size_t)size, addr);
+		}
 		iterator++;
 	}
 }
@@ -448,9 +451,10 @@ TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
 		handle = new TheEthManager(local_addr);
 		// move the start during / right before the calibration command??
 
+		handle->sendThread.start();
 #ifdef _SEPARETED_THREADS_
 
-		handle->sendThread.start();
+		//nothing to do in this case
 #else
 		handle->start();
 #endif
@@ -529,7 +533,7 @@ void *recvThread(void * arg)
 
 		if( recv_size > 0)
 		{
-//			check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
+			//			check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
 
 			ethResIt iterator = ethResCreator::instance()->begin();
 			while(iterator!=ethResCreator::instance()->end())
@@ -597,7 +601,7 @@ bool TheEthManager::open()
 // Probably useless
 bool TheEthManager::initialize(yarp::os::Searchable &par)
 {
-	YARP_INFO(Logger::get(),"TheEthManager::initialize()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"TheEthManager::initialize()", Logger::get().log_files.f3);
 	return true;
 }
 
@@ -613,7 +617,7 @@ bool TheEthManager::close()
 	handle->stop();
 	handle->sendThread.stop();
 #endif
-	YARP_INFO(Logger::get(),"TheEthManager::close()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"TheEthManager::close()", Logger::get().log_files.f3);
 	fflush(stdout);
 	return true;
 }
