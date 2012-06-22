@@ -1,7 +1,7 @@
-yarprun --on /icub14 --as viewerLuma     --cmd "yarpview --name /luma --RefreshTime 50 --x 0   --y 0"
-yarprun --on /icub14 --as viewerBlob     --cmd "yarpview --name /blob --RefreshTime 50 --x 320 --y 0"
-yarprun --on /icub14 --as viewerSift     --cmd "yarpview --name /sift --RefreshTime 50 --x 640 --y 0"
-yarprun --on /icub14 --as viewerLocalize --cmd "yarpview --name /loca --RefreshTime 50 --x 960 --y 0"
+yarprun --on /icub16 --as viewerLuma     --cmd "yarpview --name /luma --RefreshTime 50 --x 0   --y 0"
+yarprun --on /icub16 --as viewerBlob     --cmd "yarpview --name /blob --RefreshTime 50 --x 320 --y 0"
+yarprun --on /icub16 --as viewerSift     --cmd "yarpview --name /sift --RefreshTime 50 --x 640 --y 0"
+yarprun --on /icub16 --as viewerLocalize --cmd "yarpview --name /loca --RefreshTime 50 --x 960 --y 0"
 
 yarp wait /luma
 yarp wait /blob

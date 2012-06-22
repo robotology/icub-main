@@ -15,98 +15,98 @@
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part right_arm</parameters>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>right_arm_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part left_arm</parameters>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>left_arm_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part left_leg</parameters>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>left_leg_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part right_leg</parameters>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>right_leg_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part head </parameters>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>head_ctp</tag>
 </module>
 
 <module>
    <name>ctpService</name>
    <parameters>--robot icub --part torso</parameters>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>torso_ctp</tag>
 </module>
 
 <module>
    <name>iSpeak</name>
-   <node>icub14</node>
+   <node>icub15</node>
    <tag>speaker</tag>
 </module>
 
 <module>
    <name>actionsRenderingEngine</name>
-   <node>icub14</node>
+   <node>icub-b12</node>
    <tag>actioner</tag>
 </module>
 
 <module>
     <name>lumaChroma</name>
-    <node>icub-b17</node>
+    <node>icub-b12</node>
     <tag>lumaChromaModule</tag>
 </module>
 <module>
     <name>blobExtractor</name>
-    <node>icub-b17</node>
+    <node>icub-b12</node>
     <tag>blobExtractorModule</tag>
 </module>
 <module>
     <name>milClassifier</name>
-    <node>icub-t1</node>
+    <node>icub-cuda</node>
     <tag>learningModule</tag>
 </module>
 <module>
     <name>iolStateMachineHandler</name>
-    <node>icub14</node>
+    <node>icub15</node>
     <tag>handlerModule</tag>
 </module>
 <module>
     <name>objectsPropertiesCollector</name>
     <parameters>--name memory --db memory.ini</parameters>
-    <node>icub-b17</node>
+    <node>icub15</node>
     <tag>memoryModule</tag>
 </module>
 <module>
     <name>yarpview</name>
     <parameters>--name /blobPoint --RefreshTime 33 --out /blobraw:o</parameters>
-    <node>icub14</node>
+    <node>icub15</node>
     <tag>viewer</tag>
 </module>
 <connection>
     <from>/icub/camcalib/left/out</from>
     <to>/iolStateMachineHandler/img:i</to>
-    <protocol>udp</protocol>
+    <protocol>mcast</protocol>
 </connection>
 <connection>
     <from>/icub/camcalib/left/out</from>
     <to>/lumaChroma/image:i</to>
-    <protocol>udp</protocol>
+    <protocol>mcast</protocol>
 </connection>
 <connection>
     <from>/iolStateMachineHandler/imgClassifier:o</from>
@@ -116,12 +116,12 @@
 <connection>
     <from>/lumaChroma/Y/image:o</from>
     <to>/blobExtractor/img:i</to>
-    <protocol>udp</protocol>
+    <protocol>mcast</protocol>
 </connection>
 <connection>
     <from>/blobExtractor/blobs:o</from>
     <to>/iolStateMachineHandler/blobs:i</to>
-    <protocol>udp</protocol>
+    <protocol>mcast</protocol>
 </connection>
 <connection>
     <from>/iolStateMachineHandler/classify:rpc</from>
@@ -146,7 +146,12 @@
 <connection>
     <from>/blobExtractor/img:o</from>
     <to>/blobPoint</to>
-    <protocol>udp</protocol>
+    <protocol>mcast</protocol>
+</connection>
+<connection>
+    <from>/iSpeak/emotions:o</from>
+    <to>/icub/face/emotions/in</to>
+    <protocol>tcp</protocol>
 </connection>
 
 </application>

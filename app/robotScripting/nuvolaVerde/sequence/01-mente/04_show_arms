@@ -16,8 +16,8 @@ echo "9 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_05.mp3
 sleep 3
 
-yarprun --on /icub14 --as viewerL --cmd "yarpview --name /vleft  --RefreshTime 50 --x 0   --y 0"
-yarprun --on /icub14 --as viewerR --cmd "yarpview --name /vright --RefreshTime 50 --x 320 --y 0"
+yarprun --on /icub16 --as viewerL --cmd "yarpview --name /vleft  --RefreshTime 50 --x 0   --y 0"
+yarprun --on /icub16 --as viewerR --cmd "yarpview --name /vright --RefreshTime 50 --x 320 --y 0"
 
 yarp wait /vleft
 yarp wait /vright
@@ -30,7 +30,7 @@ mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_06.mp3
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 
 sleep 10
-yarprun --on /icub14 --sigterm viewerL
-yarprun --on /icub14 --sigterm viewerR
+yarprun --on /icub16 --sigterm viewerL
+yarprun --on /icub16 --sigterm viewerR
 
 
