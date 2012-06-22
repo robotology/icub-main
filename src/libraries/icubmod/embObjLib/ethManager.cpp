@@ -63,7 +63,7 @@ ethResources::~ethResources()
 {
 	char tmp[126];
 	sprintf(tmp, "\nethResources::~ethResources() 1 handle= %p ", theEthManager_h);
-	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 }
 
 
@@ -396,7 +396,7 @@ TheEthManager::TheEthManager() : RateThread(1000)
 {
 	char tmp[126];
 	sprintf(tmp, "Error!!! Called constructor of ethResources without parameters!!! BTW, how can this be possible ???");
-	YARP_FAIL(Logger::get(),tmp, Logger::get().log_files.f3);
+	//YARP_FAIL(Logger::get(),tmp, Logger::get().log_files.f3);
 }
 
 #ifdef _SEPARETED_THREADS_
@@ -414,9 +414,9 @@ TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1)
 	//_socket = 0;
 	sprintf(tmp, "TheEthManager::TheEthManager()");
 
-	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 	local_addr.addr_to_string(tmp, 64);
-	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 
 	createSocket(local_addr);
 
@@ -432,8 +432,8 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 		sprintf(tmp, "\n/---------------------------------------------------\\"
 				"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|"
 				"\n\\---------------------------------------------------/");
-		YARP_ERROR(Logger::get(),tmp, Logger::get().log_files.f3);
-		YARP_FAIL(Logger::get(),tmp);
+		//YARP_ERROR(Logger::get(),tmp, Logger::get().log_files.f3);
+		//YARP_FAIL(Logger::get(),tmp);
 		return false;
 	}
 	ACE_thread_t id_recvThread;
@@ -472,12 +472,12 @@ TheEthManager::~TheEthManager()
 {
 	char tmp[126];
 	sprintf(tmp, "TheEthManager::~TheEthManager() destructor call; handle= %p - i=%d", handle, i);
-	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 	i--;
 	if (i == 0 )
 	{
 		sprintf(tmp, "TheEthManager::~TheEthManager() - real destruction happens here handle= %p - i=%d", handle, i);
-		YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+		//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 		_socket->close();
 		delete handle;
 	}
@@ -594,7 +594,7 @@ bool TheEthManager::open()
 	char tmp[126];
 	sprintf(tmp, "TheEthManager open - handle= %p - i=%d", handle, i);
 
-	YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 	return true;
 }
 

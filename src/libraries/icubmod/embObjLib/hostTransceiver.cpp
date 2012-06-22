@@ -461,7 +461,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 	if(eores_OK != res)
 	{
 		// Do something about this case
-		YARP_ERROR(Logger::get(), " WTF!! NV not found!!!\n",  Logger::get().log_files.f3);
+//		YARP_ERROR(Logger::get(), " WTF!! NV not found!!!\n",  Logger::get().log_files.f3);
 	}
 	else
 	{
