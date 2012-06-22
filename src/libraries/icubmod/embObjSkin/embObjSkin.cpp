@@ -19,17 +19,17 @@ using namespace std;
 
 #include "debugging.h"
 
-#ifdef _AC_
-	#include "/usr/local/src/robot/iCub/pc104/device-drivers/cfw002/src/LinuxDriver/API/libcfw002.h"
-#else
-	#include "libcfw002.h"
-#endif
+// #ifdef _AC_
+//	 #include "/usr/local/src/robot/iCub/pc104/device-drivers/cfw002/src/LinuxDriver/API/libcfw002.h"
+// #else
+// 	 #include "libcfw002.h"
+// #endif
 
 
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
 	// Debug info
-	AC_YARP_INFO(Logger::get(), "EmbObjSkin::open", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(), "EmbObjSkin::open", Logger::get().log_files.f3);
 
 	printf("EmbObjSkin param %s\n", config.toString().c_str());
 
@@ -140,7 +140,7 @@ int EmbObjSkin::getChannels()
 
 int EmbObjSkin::calibrateSensor()
 {
-	AC_YARP_INFO(Logger::get(),"EmbObjSkin::calibrateSensor", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"EmbObjSkin::calibrateSensor", Logger::get().log_files.f3);
 
 #warning "create a ROP to start/initialize the MTB, if needed"
 //	int 							j=0;
