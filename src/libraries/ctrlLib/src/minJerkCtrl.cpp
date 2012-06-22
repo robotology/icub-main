@@ -572,9 +572,9 @@ void minJerkRefGen::computeNextValues(const yarp::sig::Vector &y)
         pos = posFilter->filt(lastRef);
     
     // rotate pos around lastRef so that it lies along the distance y-lastRef
-    double n = yarp::math::norm(y-lastRef);
+    /*double n = yarp::math::norm(y-lastRef);
     if(n!=0.0)
-        pos = lastRef + yarp::math::norm(pos-lastRef)*(y-lastRef)/n;
+        pos = lastRef + yarp::math::norm(pos-lastRef)*(y-lastRef)/n;*/
 
     if (velFilter!=NULL)
         vel = velFilter->filt(lastRef-y);
