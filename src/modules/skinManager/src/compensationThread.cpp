@@ -654,6 +654,15 @@ double CompensationThread::getPoseConfidence(SkinPart sp, unsigned int taxelId){
 	return 0.0;
 }
 
+Vector CompensationThread::getPoseConfidences(SkinPart sp){
+	FOR_ALL_PORTS(i){
+        if(compensators[i]->getSkinPart()==sp){
+            return compensators[i]->getPoseConfidences();
+        }
+    }
+	return zeros(0);
+}
+
 vector<SkinPart> CompensationThread::getSkinParts(){
     vector<SkinPart> res(compensators.size());
     FOR_ALL_PORTS(i)

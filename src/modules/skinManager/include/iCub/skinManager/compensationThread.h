@@ -92,6 +92,7 @@ public:
     Vector getTaxelPose(SkinPart sp, unsigned int taxelId);
     vector<Vector> getTaxelPoses(SkinPart sp=SKIN_PART_ALL);
 	double getPoseConfidence(SkinPart sp, unsigned int taxelId);
+    Vector getPoseConfidences(SkinPart sp);
 
     bool enableSkinPart(SkinPart sp);
     bool disableSkinPart(SkinPart sp);

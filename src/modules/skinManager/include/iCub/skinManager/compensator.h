@@ -51,68 +51,7 @@ namespace skinManager{
 
 class Compensator
 {
-	/* class methods */
-public:
-	Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
-                         double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
-                         bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
-    ~Compensator();
-	    
-	void calibrationInit();
-	void calibrationDataCollection();
-	void calibrationFinish();
-    bool readRawAndWriteCompensatedData();
-	void updateBaseline();
-	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
-    skinContactList getContacts();
-    bool isWorking(){ return _isWorking; }
-
-	void setBinarization(bool value){ binarization = value; }
-	void setSmoothFilter(bool value);
-	bool setSmoothFactor(float value);    
-    bool setAddThreshold(unsigned int thr);
-    bool setCompensationGain(double gain);
-    bool setContactCompensationGain(double gain);
-    bool setMaxNeighborDistance(double d);
-    bool setTaxelPosesFromFile(const char *filePath);
-    bool setTaxelPoses(const vector<Vector> &poses);
-    bool setTaxelPose(unsigned int taxelId, const Vector &pose);
-    bool setTaxelPositions(const Vector &positions);
-    bool setTaxelPosition(unsigned int taxelId, const Vector &position);
-    bool setTaxelOrientations(const vector<Vector> &orientations);
-    bool setTaxelOrientation(unsigned int taxelId, const Vector &orientation);
-    void setSkinPart(SkinPart _skinPart);
-
-	Vector getTouchThreshold();
-	bool getBinarization(){     return binarization; }
-    bool getSmoothFilter(){     return smoothFilter; }
-	float getSmoothFactor();
-    unsigned int getAddThreshold(){         return addThreshold; }
-    double getCompensationGain(){           return compensationGain; }
-    double getContactCompensationGain(){    return contactCompensationGain; }
-    Vector getTaxelPosition(unsigned int taxelId);
-    vector<Vector> getTaxelPositions();
-    Vector getTaxelOrientation(unsigned int taxelId);
-    vector<Vector> getTaxelOrientations();
-    Vector getTaxelPose(unsigned int taxelId);
-    vector<Vector> getTaxelPoses();
-	double getPoseConfidence(unsigned int taxelId);
-    unsigned int getNumTaxels();
-    Vector getCompensation();
-    Vector getBaselines(){      return baselines; }
-    Vector getRawData(){        return rawData; }
-    Vector getCompData(){       return compensatedData; }
-    
-    string getName(){           return name; }
-    string getInputPortName(){  return tactileSensorDevice->getValue("remote").asString().c_str(); }
-    string getSkinPartName(){   return SkinPart_s[skinPart]; }
-    SkinPart getSkinPart(){     return skinPart; }
-    string getBodyPartName(){   return BodyPart_s[bodyPart]; }
-    BodyPart getBodyPart(){     return bodyPart; }
-    unsigned int getLinkNum(){  return linkNum; }
-
 private:
-
 	/* class constants */
     static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the compensator
 	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
@@ -185,6 +124,67 @@ private:
     void sendInfoMsg(string msg);
     void computeNeighbors();
 	void updateNeighbors(unsigned int taxelId);
+
+	/* class methods */
+public:
+	Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
+                         double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
+                         bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
+    ~Compensator();
+	    
+	void calibrationInit();
+	void calibrationDataCollection();
+	void calibrationFinish();
+    bool readRawAndWriteCompensatedData();
+	void updateBaseline();
+	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
+    skinContactList getContacts();
+    bool isWorking(){ return _isWorking; }
+
+	void setBinarization(bool value){ binarization = value; }
+	void setSmoothFilter(bool value);
+	bool setSmoothFactor(float value);    
+    bool setAddThreshold(unsigned int thr);
+    bool setCompensationGain(double gain);
+    bool setContactCompensationGain(double gain);
+    bool setMaxNeighborDistance(double d);
+    bool setTaxelPosesFromFile(const char *filePath);
+    bool setTaxelPoses(const vector<Vector> &poses);
+    bool setTaxelPose(unsigned int taxelId, const Vector &pose);
+    bool setTaxelPositions(const Vector &positions);
+    bool setTaxelPosition(unsigned int taxelId, const Vector &position);
+    bool setTaxelOrientations(const vector<Vector> &orientations);
+    bool setTaxelOrientation(unsigned int taxelId, const Vector &orientation);
+    void setSkinPart(SkinPart _skinPart);
+
+	Vector getTouchThreshold();
+	bool getBinarization(){     return binarization; }
+    bool getSmoothFilter(){     return smoothFilter; }
+	float getSmoothFactor();
+    unsigned int getAddThreshold(){         return addThreshold; }
+    double getCompensationGain(){           return compensationGain; }
+    double getContactCompensationGain(){    return contactCompensationGain; }
+    Vector getTaxelPosition(unsigned int taxelId);
+    vector<Vector> getTaxelPositions();
+    Vector getTaxelOrientation(unsigned int taxelId);
+    vector<Vector> getTaxelOrientations();
+    Vector getTaxelPose(unsigned int taxelId);
+    vector<Vector> getTaxelPoses();
+	double getPoseConfidence(unsigned int taxelId);
+    Vector getPoseConfidences();
+    unsigned int getNumTaxels();
+    Vector getCompensation();
+    Vector getBaselines(){      return baselines; }
+    Vector getRawData(){        return rawData; }
+    Vector getCompData(){       return compensatedData; }
+    
+    string getName(){           return name; }
+    string getInputPortName(){  return tactileSensorDevice->getValue("remote").asString().c_str(); }
+    string getSkinPartName(){   return SkinPart_s[skinPart]; }
+    SkinPart getSkinPart(){     return skinPart; }
+    string getBodyPartName(){   return BodyPart_s[bodyPart]; }
+    BodyPart getBodyPart(){     return bodyPart; }
+    unsigned int getLinkNum(){  return linkNum; }
 
 };
 

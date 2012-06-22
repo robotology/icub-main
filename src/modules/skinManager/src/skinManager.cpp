@@ -443,7 +443,10 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
                 }
                 else{
                     vector<Vector> res = myThread->getTaxelPositions(sp);
-                    addToBottle(reply, res);
+                    if(res.empty())
+                        reply.addString("Specified skin part has not been found.");
+                    else
+                        addToBottle(reply, res);
                 }
                 return true;
             }
@@ -496,8 +499,11 @@ bool skinManager::respond(const Bottle& command, Bottle& reply)
 					reply.addDouble(res);
                 }
                 else{
-                    vector<Vector> res = myThread->getTaxelPositions(sp);
-                    addToBottle(reply, res);
+                    Vector res = myThread->getPoseConfidences(sp);
+                    if(res.size()==0)
+                        reply.addString("Specified skin part has not been found");
+                    else
+                        addToBottle(reply, res);
                 }
                 return true;
 

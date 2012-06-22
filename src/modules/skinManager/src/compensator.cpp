@@ -586,7 +586,7 @@ float Compensator::getSmoothFactor(){
 }
 Vector Compensator::getTaxelPosition(unsigned int taxelId){
     if(taxelId>=skinDim)
-        return zeros(3);
+        return zeros(0);
     poseSem.wait();
     Vector res = taxelPos[taxelId];
 	res.push_back(taxelPoseConfidence[taxelId]);
@@ -603,7 +603,7 @@ vector<Vector> Compensator::getTaxelPositions(){
 }
 Vector Compensator::getTaxelOrientation(unsigned int taxelId){
     if(taxelId>=skinDim)
-        return zeros(3);
+        return zeros(0);
     poseSem.wait();
     Vector res = taxelOri[taxelId];
 	res.push_back(taxelPoseConfidence[taxelId]);
@@ -620,7 +620,7 @@ vector<Vector> Compensator::getTaxelOrientations(){
 }
 Vector Compensator::getTaxelPose(unsigned int taxelId){
     if(taxelId>=skinDim)
-        return zeros(6);
+        return zeros(0);
     poseSem.wait();
     Vector res = cat(taxelPos[taxelId], taxelOri[taxelId]);
 	res.push_back(taxelPoseConfidence[taxelId]);
@@ -639,11 +639,17 @@ vector<Vector> Compensator::getTaxelPoses(){
 }
 
 double Compensator::getPoseConfidence(unsigned int taxelId){
-	double value;
 	if(taxelId>=skinDim)
-        return 0.0;
+        return -1.0;
 	poseSem.wait();
-	value = taxelPoseConfidence[taxelId];
+	double value = taxelPoseConfidence[taxelId];
+	poseSem.post();
+    return value;
+}
+
+Vector Compensator::getPoseConfidences(){
+	poseSem.wait();
+	Vector value = taxelPoseConfidence;
 	poseSem.post();
     return value;
 }
