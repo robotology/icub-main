@@ -506,11 +506,9 @@ skinContactList Compensator::getContacts(){
             pressure    += out;
             taxelList[i] = *tax;
         }
-        if(pressureCoP!=0.0)
-        	CoP         /= pressureCoP;
-        if(pressureNormal!=0.0)
-            normal      /= pressureNormal;
-        geoCenter   /= activeTaxelsGeo;
+        if(pressureCoP!=0.0)        CoP         /= pressureCoP;
+        if(pressureNormal!=0.0)     normal      /= pressureNormal;
+        if(activeTaxelsGeo!=0)      geoCenter   /= activeTaxelsGeo;
         pressure    /= activeTaxels;
         skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, taxelList, pressure, normal);
         // set an estimate of the force that is with normal direction and intensity equal to the pressure
