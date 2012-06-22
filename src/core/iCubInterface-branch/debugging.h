@@ -9,6 +9,8 @@
 //	#define _AC_
 #endif
 
+#undef _AC_
+
 
 #ifdef _AC_
 #define AC_YARP_INFO(args...)  YARP_INFO(args)

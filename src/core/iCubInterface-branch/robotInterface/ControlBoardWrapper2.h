@@ -380,7 +380,7 @@ public:
     */
     virtual bool setPid(int j, const Pid &p)
     {
-    	AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPid", Logger::get().log_files.f3);
+    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPid", Logger::get().log_files.f3);
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -401,7 +401,7 @@ public:
     */
     virtual bool setPids(const Pid *ps)
     {
-    	AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids", Logger::get().log_files.f3);
+    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids", Logger::get().log_files.f3);
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)
@@ -420,7 +420,7 @@ public:
             else
                 ret=false;
         }
-     	AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids - niente!", Logger::get().log_files.f3);
+     	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids - niente!", Logger::get().log_files.f3);
         return ret;
     }
 
@@ -435,7 +435,7 @@ public:
     */
     virtual bool setReference(int j, double ref)
     {
-    	AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setReference", Logger::get().log_files.f3);
+    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setReference", Logger::get().log_files.f3);
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -643,7 +643,7 @@ public:
     */
     virtual bool getPid(int j, Pid *p)
     {
-    	AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPid", Logger::get().log_files.f3);
+    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPid", Logger::get().log_files.f3);
 #warning "check for max number of joints!?!?!"
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -665,7 +665,7 @@ public:
     */
     virtual bool getPids(Pid *pids)
     {
-    	AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPids", Logger::get().log_files.f3);
+    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPids", Logger::get().log_files.f3);
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)

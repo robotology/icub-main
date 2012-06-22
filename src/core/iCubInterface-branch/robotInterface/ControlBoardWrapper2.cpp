@@ -114,7 +114,7 @@ void SubDevice::detach()
 
 bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
 {   
-	YARP_INFO(Logger::get(),"ControlBoardWrapper -- SubDevice::attach", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- SubDevice::attach", Logger::get().log_files.f3);
     if (id!=k)
         {
             cerr<<"Wrong device sorry."<<endl;
@@ -758,7 +758,7 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 
 void ImplementCallbackHelper2::onRead(CommandMessage& v) 
 {
-	YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::onRead", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::onRead", Logger::get().log_files.f3);
 
     //printf("Data received on the control channel of size: %d\n", v.body.size());
     //	int i;
@@ -771,7 +771,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
         case VOCAB_POSITION_MODE: 
         case VOCAB_POSITION_MOVES:
             {
-                YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::VOCAB_POSITION_MOVES", Logger::get().log_files.f3);
+                // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::VOCAB_POSITION_MOVES", Logger::get().log_files.f3);
                 //printf("Received a position command\n");
                 //for (int i = 0; i < v.body.size(); i++)
                 //    printf("%.2f ", v.body[i]);
@@ -790,7 +790,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
         case VOCAB_VELOCITY_MODE:
         case VOCAB_VELOCITY_MOVES:
             {
-                YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::VOCAB_VELOCITY_MOVES", Logger::get().log_files.f3);
+                // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::VOCAB_VELOCITY_MOVES", Logger::get().log_files.f3);
                 //          printf("Received a velocity command\n");
                 //			for (i = 0; i < v.body.size(); i++)
                 //				printf("%.2f ", v.body[i]);
@@ -805,7 +805,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             break;
         case VOCAB_OUTPUTS:
             {
-                YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::VOCAB_OUTPUTS", Logger::get().log_files.f3);
+                // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::VOCAB_OUTPUTS", Logger::get().log_files.f3);
                 if (iOpenLoop)
                     {
                         bool ok=iOpenLoop->setOutputs(&(v.body[0]));
@@ -815,13 +815,13 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             }
         default: 
             {
-                YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::default", Logger::get().log_files.f3);
+                // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::default", Logger::get().log_files.f3);
                 fprintf(stderr, "Unrecognized message while receiving on command port\n");
             }
             break;
         }
 
-    YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::end", Logger::get().log_files.f3);
+    // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::end", Logger::get().log_files.f3);
 
     //    printf("v: ");
     //    int i <;
@@ -834,7 +834,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
 bool CommandsHelper2::respond(const yarp::os::Bottle& cmd, 
                               yarp::os::Bottle& response) 
 {
-	YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond", Logger::get().log_files.f3);
 
     //    ACE_thread_t self=ACE_Thread::self();
     //    fprintf(stderr, "--> [%X] starting responder\n",self);
@@ -977,7 +977,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 break;
                             case VOCAB_PID: 
                                 {
-                                	YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> setpid", Logger::get().log_files.f3);
+                                	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> setpid", Logger::get().log_files.f3);
 
                                     Pid p;
                                     int j = cmd.get(2).asInt();
@@ -995,7 +995,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                             case VOCAB_PIDS: 
                                 {
-                                	YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> setpids", Logger::get().log_files.f3);
+                                	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- CommandsHelper2::respond-> setpids", Logger::get().log_files.f3);
 
                                     Bottle& b = *(cmd.get(2).asList());
                                     int i;
@@ -1717,7 +1717,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
 
 bool CommandsHelper2::initialize() {
-	YARP_INFO(Logger::get(),"CommandsHelper2::initialize() ", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"CommandsHelper2::initialize() ", Logger::get().log_files.f3);
     bool ok = false;
     if (pos) 
         {
@@ -1756,7 +1756,7 @@ bool CommandsHelper2::initialize() {
 }
 
 CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) { 
-	//YARP_INFO(Logger::get(),"CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)", Logger::get().log_files.f3);
+	//// AC_YARP_INFO(Logger::get(),"CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)", Logger::get().log_files.f3);
     caller = x; 
     pid = dynamic_cast<yarp::dev::IPidControl *> (caller);
     pos = dynamic_cast<yarp::dev::IPositionControl *> (caller);
@@ -1779,7 +1779,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x) {
 bool ControlBoardWrapper2::open(Searchable& prop)
 {
     //debug
-	YARP_INFO(Logger::get(),"ControlBoardWrapper2::open()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::open()", Logger::get().log_files.f3);
 
 	string str=prop.toString().c_str();
 
@@ -1879,7 +1879,7 @@ bool ControlBoardWrapper2::open(Searchable& prop)
 
 bool ControlBoardWrapper2::attachAll(const PolyDriverList &polylist)
 {
-	YARP_INFO(Logger::get(),"ControlBoardWrapper2::attachAll()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::attachAll()", Logger::get().log_files.f3);
     for(int p=0;p<polylist.size();p++)
         {
             // find appropriate entry in list of subdevices
@@ -1924,12 +1924,12 @@ void ControlBoardWrapper2::run()
 {
     return;
 	String tmp(partName.c_str());
-	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run() - " + tmp, Logger::get().log_files.f3);
+	//// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::run() - " + tmp, Logger::get().log_files.f3);
 
     yarp::sig::Vector& v = state_buffer.get();
     v.size(controlledJoints);
 
-	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run2()", Logger::get().log_files.f3);
+	//// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::run2()", Logger::get().log_files.f3);
 
     //getEncoders for all subdevices
     double *encoders=v.data();
@@ -1937,13 +1937,13 @@ void ControlBoardWrapper2::run()
 
     for(unsigned int k=0;k<device.subdevices.size();k++)
         {
-    	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run3()", Logger::get().log_files.f3);
+    	//// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::run3()", Logger::get().log_files.f3);
             int axes=device.subdevices[k].axes;
             int base=device.subdevices[k].base;
 
             device.subdevices[k].refreshEncoders();
 
-        	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run3.5()", Logger::get().log_files.f3);
+        	//// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::run3.5()", Logger::get().log_files.f3);
             for(int l=0;l<axes;l++)
             {
                 encoders[l]=device.subdevices[k].encoders[l+base];
@@ -1959,6 +1959,6 @@ void ControlBoardWrapper2::run()
 
     state_p.setEnvelope(time);
     state_buffer.write();
-	//YARP_INFO(Logger::get(),"ControlBoardWrapper2::run5() - end loop", Logger::get().log_files.f3);
+	//// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::run5() - end loop", Logger::get().log_files.f3);
 }
 

@@ -189,10 +189,10 @@ int main(int argc, char *argv[])
 
 
 #ifdef _AC_
-	Logger::get();
-    Logger::get().setVerbosity(LM_INFO);
-	Logger::get().log_files.f1=stdout;
-	Logger::get().log_files.f2=stderr;
+//	Logger::get();
+//  Logger::get().setVerbosity(LM_INFO);
+//	Logger::get().log_files.f1=stdout;
+//	Logger::get().log_files.f2=stderr;
 //	Logger::get().log_files.f3=fopen("/home/icub/logs/trace.log", "w+");
 //	Logger::get().log_files.f4=fopen("/home/icub/logs/debug.log", "w+");
 //	Logger::get().log_files.f5=fopen("/home/icub/logs/other.log", "w+");

@@ -38,14 +38,14 @@
 
 SkinPartEntry::SkinPartEntry()
 {
-	YARP_INFO(Logger::get(),"SkinPartEntry::SkinPartEntry()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"SkinPartEntry::SkinPartEntry()", Logger::get().log_files.f3);
 	analogServer=0;
 	analog=0;
 }
 
 SkinPartEntry::~SkinPartEntry()
 {
-	YARP_INFO(Logger::get(),"SkinPartEntry::~SkinPartEntry() ", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"SkinPartEntry::~SkinPartEntry() ", Logger::get().log_files.f3);
 }
 
 void SkinPartEntry::calibrate()
@@ -58,7 +58,7 @@ void SkinPartEntry::calibrate()
 
 bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 {
-	YARP_INFO(Logger::get(),"SkinPartEntry::open(...) - id " + String(id.c_str()), Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"SkinPartEntry::open(...) - id " + String(id.c_str()), Logger::get().log_files.f3);
 	printf("SkinPartEntry param 1 (deviceP) = %s\n", deviceP.toString().c_str());
 	printf("SkinPartEntry param 2 (partP)   = %s\n", partP.toString().c_str());
 
@@ -215,7 +215,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 
 void SkinPartEntry::close()
 {
-	YARP_INFO(Logger::get(),"SkinPartEntry::close() - id " + String(id.c_str()), Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"SkinPartEntry::close() - id " + String(id.c_str()), Logger::get().log_files.f3);
 	std::cout<<"Closing skin part "<< id << endl;
 	if (analogServer)
 	{
@@ -373,7 +373,7 @@ IiCubFeature * SkinParts::findus(FEAT_ID *id )
 
 void SkinParts::close()
 {
-	YARP_INFO(Logger::get(),"SkinParts::close()", Logger::get().log_files.f3);
+	// AC_YARP_INFO(Logger::get(),"SkinParts::close()", Logger::get().log_files.f3);
 	SkinPartsIt it;
 	for(it=this->begin(); it!=this->end(); it++)
 	{
