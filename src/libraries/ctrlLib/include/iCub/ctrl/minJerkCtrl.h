@@ -343,6 +343,126 @@ public:
 };
 
 
+/**
+* \ingroup minJerkCtrl
+*
+* Generator of position, velocity and acceleration references
+* that are approximately minimum jerk.
+* The references are computed taking into account both
+* the desired final value of the trajectory and the current
+* feedback position.
+*/
+class minJerkRefGen
+{
+protected:
+    Filter* posFilter;          // filter used to compute the position
+    Filter* velFilter;          // filter used to compute the velocity
+    Filter* accFilter;          // filter used to compute the acceleration
+
+    yarp::sig::Vector pos;      // current position
+    yarp::sig::Vector vel;      // current velocity
+    yarp::sig::Vector acc;      // current acceleration
+    yarp::sig::Vector lastRef;  // last reference position
+
+    double Ts;                  // sample time in seconds
+    double T;                   // trajectory reference time in seconds
+    unsigned int dim;           // dimension of the controlled variable
+
+    void computeCoeffs();       // compute the filter coefficients
+
+public:
+    /**
+    * Constructor.
+    * @param _dim number of variables
+    * @param _Ts sample time in seconds
+    * @param _T trajectory reference time (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T)
+    */
+    minJerkRefGen(const unsigned int _dim, const double _Ts, const double _T);
+
+    /**
+    * Constructor with initial value.
+    * @param _y0 initial value of the trajectory
+    * @param _Ts sample time in seconds
+    * @param _T trajectory reference time (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T)
+    */
+    minJerkRefGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
+
+    /**
+    * Assignment operator.
+    */
+    minJerkRefGen& operator=(const minJerkRefGen &z);
+
+    /**
+    * Copy constructor.
+    */
+    minJerkRefGen(const minJerkRefGen &z);
+
+    /**
+    * Computes the position, velocity and acceleration references.
+    * @param y  current position
+    * @param yd desired final value of the trajectory
+    */
+    virtual void computeNextValues(const yarp::sig::Vector &y, const yarp::sig::Vector &yd);
+
+    /**
+    * Computes the position, velocity and acceleration references.
+    * @param y  current position
+    */
+    virtual void computeNextValues(const yarp::sig::Vector &y);
+
+    /**
+    * Resets the trajectory to a given value.
+    * @param y0 initial value of the trajectory
+    */
+    virtual void init(const yarp::sig::Vector &y0);
+
+    /**
+    * Get the current position.
+    */
+    const yarp::sig::Vector& getPos() const { return pos; }
+    
+    /**
+    * Get the current velocity.
+    */
+    const yarp::sig::Vector& getVel() const { return vel; }
+
+    /**
+    * Get the current acceleration.
+    */
+    const yarp::sig::Vector& getAcc() const { return acc; }
+
+    /**
+    * Get the trajectory reference time in seconds
+    * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
+    */
+    double getT() const { return T; }
+
+    /**
+    * Get the sample time in seconds.
+    */
+    double getTs() const { return Ts; }
+
+    /**
+    * Set the trajectory reference time
+    * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
+    * @param _T trajectory reference time in seconds
+    * @return true if operation succeeded, false otherwise
+    */
+    bool setT(const double _T);
+
+    /**
+    * Set the sample time.
+    * @param _Ts sample time in seconds
+    * @return true if operation succeeded, false otherwise
+    */
+    bool setTs(const double _Ts);
+
+    /**
+    * Destructor. 
+    */
+    virtual ~minJerkRefGen();
+};
+
 }
 
 }
