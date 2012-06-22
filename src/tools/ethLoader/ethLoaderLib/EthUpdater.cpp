@@ -19,12 +19,16 @@ void EthUpdater::cmdScan()
     mSocket.SendBroad(mTxBuffer,1,mPort);
 
     ACE_UINT16 rxPort;
-    ACE_UINT32 rxAddress;
+    ACE_UINT32 rxAddress=mMyAddress;
+
+
 
     while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,1000)>0)
     {
         if (mRxBuffer[0]==CMD_SCAN)
         {
+
+
             if (rxAddress!=mMyAddress)
             {
                 ACE_UINT8 version=mRxBuffer[1];
