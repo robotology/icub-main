@@ -476,8 +476,8 @@ skinContactList Compensator::getContacts(){
 
     skinContactList contactList;
     Vector CoP(3), geoCenter(3), normal(3);
-    double pressure, out;
-    int activeTaxels;
+    double pressure, pressureCoP, pressureNormal, out;
+    int activeTaxels, activeTaxelsGeo;
     vector<unsigned int> taxelList;
     for( deque<deque<int> >::iterator it=taxelsXcontact.begin(); it!=taxelsXcontact.end(); it++){
         activeTaxels = it->size();
@@ -488,23 +488,29 @@ skinContactList Compensator::getContacts(){
         CoP.zero();
         geoCenter.zero();
         normal.zero();
-        pressure = 0.0;
+        pressure = pressureCoP = pressureNormal = 0.0;
+        activeTaxelsGeo = 0;
         int i=0;
         for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++, i++){
             out         = max(compensatedDataFilt[(*tax)], 0.0);
-            CoP         += taxelPos[(*tax)] * out;
-            normal      += taxelOri[(*tax)] * out;
-            geoCenter   += taxelPos[(*tax)];
+            if(norm(taxelPos[i])!=0.0){  // if the taxel position estimate exists
+                CoP         += taxelPos[(*tax)] * out;
+                pressureCoP += out;
+                activeTaxelsGeo++;
+                geoCenter   += taxelPos[(*tax)];
+            }
+            if(norm(taxelOri[i])!=0.0){  // if the taxel orientation estimate exists
+                normal          += taxelOri[(*tax)] * out;
+                pressureNormal  += out;
+            }
             pressure    += out;
             taxelList[i] = *tax;
         }
-        if(pressure!=0.0){
-        	CoP         /= pressure;
-            normal      /= pressure;
-        }else{
-            sendInfoMsg("Error computing contacts: zero pressure detected.");
-        }
-        geoCenter   /= activeTaxels;
+        if(pressureCoP!=0.0)
+        	CoP         /= pressureCoP;
+        if(pressureNormal!=0.0)
+            normal      /= pressureNormal;
+        geoCenter   /= activeTaxelsGeo;
         pressure    /= activeTaxels;
         skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, taxelList, pressure, normal);
         // set an estimate of the force that is with normal direction and intensity equal to the pressure
@@ -795,27 +801,23 @@ void Compensator::computeNeighbors(){
     double d2 = maxNeighDist*maxNeighDist;
     for(unsigned int i=0; i<skinDim; i++){
         for(unsigned int j=i+1; j<skinDim; j++){
-            if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
-                v = taxelPos[i]-taxelPos[j];
-                if( dot(v,v) <= d2){
-                    neighborsXtaxel[i].push_back(j);
-                    neighborsXtaxel[j].push_back(i);
-                    //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());
-                }
+            //if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
+            v = taxelPos[i]-taxelPos[j];
+            if( dot(v,v) <= d2){
+                neighborsXtaxel[i].push_back(j);
+                neighborsXtaxel[j].push_back(i);
+                //printf("Taxels %d (%s) and %d (%s) are neighbors\n", i, taxelPos[i].toString().c_str(), j, taxelPos[j].toString().c_str());
             }
+            //}
         }
     }
 
     int minNeighbors=skinDim, maxNeighbors=0, ns;
     for(unsigned int i=0; i<skinDim; i++){
-        if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
-            ns = neighborsXtaxel[i].size();
-            if(ns>maxNeighbors) maxNeighbors = ns;
-            if(ns<minNeighbors) minNeighbors = ns;
-            /*printf("\nTaxel %d neighbors are: ", i);
-            for(unsigned int j=0; j<ns; j++)
-                printf("%d ", neighborsXtaxel[i][j]);*/
-        }
+        //if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
+        ns = neighborsXtaxel[i].size();
+        if(ns>maxNeighbors) maxNeighbors = ns;
+        if(ns<minNeighbors) minNeighbors = ns;
     }
     stringstream ss;
     ss<<"Neighbors computed. Min neighbors: "<<minNeighbors<<"; max neighbors: "<<maxNeighbors;
@@ -828,15 +830,14 @@ void Compensator::updateNeighbors(unsigned int taxelId){
     neighborsXtaxel[taxelId].clear();
 
     for(unsigned int i=0; i<skinDim; i++){
-        if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
-            // remove taxelId from the neighbor list (if there is)
-            neighborsXtaxel[i].remove(taxelId);
-            // check whether they are neighbors
-            v = taxelPos[i]-taxelPos[taxelId];
-            if( dot(v,v) <= d2){
-                neighborsXtaxel[i].push_back(taxelId);
-                neighborsXtaxel[taxelId].push_back(i);
-            }
+        //if(taxelPos[i][0]!=0.0 || taxelPos[i][1]!=0.0 || taxelPos[i][2]!=0.0){  // if the taxel exists
+        // remove taxelId from the neighbor list (if there is)
+        neighborsXtaxel[i].remove(taxelId);
+        // check whether they are neighbors
+        v = taxelPos[i]-taxelPos[taxelId];
+        if( dot(v,v) <= d2){
+            neighborsXtaxel[i].push_back(taxelId);
+            neighborsXtaxel[taxelId].push_back(i);
         }
     }
 }
