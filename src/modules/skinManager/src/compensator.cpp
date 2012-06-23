@@ -491,13 +491,13 @@ skinContactList Compensator::getContacts(){
         int i=0;
         for( deque<int>::iterator tax=it->begin(); tax!=it->end(); tax++, i++){
             out         = max(compensatedDataFilt[(*tax)], 0.0);
-            if(norm(taxelPos[i])!=0.0){  // if the taxel position estimate exists
+            if(norm(taxelPos[(*tax)])!=0.0){  // if the taxel position estimate exists
                 CoP         += taxelPos[(*tax)] * out;
                 pressureCoP += out;
                 activeTaxelsGeo++;
                 geoCenter   += taxelPos[(*tax)];
             }
-            if(norm(taxelOri[i])!=0.0){  // if the taxel orientation estimate exists
+            if(norm(taxelOri[(*tax)])!=0.0){  // if the taxel orientation estimate exists
                 normal          += taxelOri[(*tax)] * out;
                 pressureNormal  += out;
             }
