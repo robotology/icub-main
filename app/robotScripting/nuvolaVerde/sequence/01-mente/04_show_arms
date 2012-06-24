@@ -7,8 +7,9 @@ sleep 1.2
 echo "abs -35.0 3.0 10.0" | yarp write ... /iKinGazeCtrl/head/angles:i
 sleep 4
 
-echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io &
 echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
+echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io &
+
 ./nuvolaVerde/head_motion.sh 13 2 &
 sleep 2
 
@@ -16,8 +17,8 @@ echo "9 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_05.mp3
 sleep 3
 
-yarprun --on /icub16 --as viewerL --cmd "yarpview --name /vleft  --RefreshTime 50 --x 0   --y 0"
-yarprun --on /icub16 --as viewerR --cmd "yarpview --name /vright --RefreshTime 50 --x 320 --y 0"
+yarprun --on /icub16 --as viewerL --cmd "yarpview --name /vleft  --RefreshTime 50 --x 320 --y 0"
+yarprun --on /icub16 --as viewerR --cmd "yarpview --name /vright --RefreshTime 50 --x 640 --y 0"
 
 yarp wait /vleft
 yarp wait /vright

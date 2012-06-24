@@ -70,6 +70,8 @@ echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 ./nuvolaVerde/head_motion.sh 1 2 &
 
+yarprun --on /icub16 --as video --cmd "mplayer -zoom ./nuvolaVerde/mp3/04-gambe/Breve2.mp4"
+
 
 
 
