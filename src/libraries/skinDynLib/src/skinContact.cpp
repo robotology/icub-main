@@ -205,6 +205,50 @@ bool skinContact::read(ConnectionReader& connection){
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Vector skinContact::toVector() const{
+    Vector v(activeTaxels+21);
+    unsigned int index = 0;
+    v[index++] = contactId;
+    v[index++] = bodyPart;
+    v[index++] = linkNumber;
+    v[index++] = skinPart;
+    v.setSubvector(index, CoP);         index+=3;
+    v.setSubvector(index, F);           index+=3;
+    v.setSubvector(index, Mu);          index+=3;
+    v.setSubvector(index, geoCenter);   index+=3;
+    v.setSubvector(index, normalDir);   index+=3;
+    v[index++] = activeTaxels;
+    for(unsigned int i=0;i<activeTaxels;i++)
+        v[index++] = taxelList[i];
+    v[index++] = pressure;
+
+    return v;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool skinContact::fromVector(const Vector &v){
+    if(v.size()<21)
+        return false;
+    unsigned int index = 0;
+    contactId   = (unsigned long)(v[index++]);
+    bodyPart    = (BodyPart) int(v[index++]);
+    linkNumber  = (unsigned int)(v[index++]);
+    skinPart    = (SkinPart) int(v[index++]);
+    CoP         = v.subVector(index, index+2);  index+=3;
+    F           = v.subVector(index, index+2);  index+=3;
+    Mu          = v.subVector(index, index+2);  index+=3;
+    geoCenter   = v.subVector(index, index+2);  index+=3;
+    normalDir   = v.subVector(index, index+2);  index+=3;
+    activeTaxels = (unsigned int)(v[index++]);
+    if(v.size()!=21+activeTaxels)
+        return false;
+    taxelList.resize(activeTaxels);
+    for(unsigned int i=0;i<activeTaxels;i++)
+        taxelList[i] = (unsigned int)(v[index++]);
+    pressure    = v[index++];
+
+    return true;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string skinContact::toString(int precision) const{
     stringstream res;
     res<< dynContact::toString(precision)<< ", Skin part: "<< SkinPart_s[skinPart]<< ", geometric center: "<< 

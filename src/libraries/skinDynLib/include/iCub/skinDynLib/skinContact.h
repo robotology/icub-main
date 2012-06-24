@@ -166,6 +166,10 @@ public:
     */
     virtual bool write(yarp::os::ConnectionWriter& connection);
 
+    virtual yarp::sig::Vector toVector() const;
+
+    virtual bool fromVector(const yarp::sig::Vector &v);
+
     virtual std::string toString(int precision=-1) const;
    
 };
