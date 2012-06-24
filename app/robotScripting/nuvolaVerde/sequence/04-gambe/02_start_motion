@@ -70,5 +70,5 @@ echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 ./nuvolaVerde/head_motion.sh 1 2 &
 
 yarprun --on /icub16 --as video --cmd "mplayer -fs /usr/local/src/robot/iCub/main/app/robotScripting/nuvolaVerde/mp3/04-gambe/Breve2.mp4"
-yarprun --on /icub16 --sigterm video
+#yarprun --on /icub16 --sigterm video
 

@@ -8,7 +8,7 @@ echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 ./nuvolaVerde/head_motion.sh 1 2
 
-yarprun --on /icub16 --sigterm viewerLuma
-yarprun --on /icub16 --sigterm viewerBlob
-yarprun --on /icub16 --sigterm viewerSift
-yarprun --on /icub16 --sigterm viewerLocalize
+#yarprun --on /icub16 --sigterm viewerLuma
+#yarprun --on /icub16 --sigterm viewerBlob
+#yarprun --on /icub16 --sigterm viewerSift
+#yarprun --on /icub16 --sigterm viewerLocalize

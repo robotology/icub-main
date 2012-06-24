@@ -31,7 +31,7 @@ mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_06.mp3
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 
 sleep 10
-yarprun --on /icub16 --sigterm viewerL
-yarprun --on /icub16 --sigterm viewerR
+#yarprun --on /icub16 --sigterm viewerL
+#yarprun --on /icub16 --sigterm viewerR
 
 

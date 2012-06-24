@@ -1,6 +1,6 @@
 #start part of crf demo (yoga)
 
-yarprun --on /icub16 --as demoYoga     --cmd "iCubDemoY3"
+yarprun --on /icub16 --as demoYoga --cmd "iCubDemoY3"
 sleep 32
 yarprun --on /icub16 --sigterm demoYoga
 sleep 2
