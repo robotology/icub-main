@@ -19,7 +19,7 @@ echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
 
 echo "0" | yarp rpc /wholeBodyDynamics/rpc:i
 
-echo "calib table"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "calib table right"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "idle"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 ./nuvolaVerde/head_motion.sh 1 2 &

@@ -2,16 +2,16 @@ echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "2.5 250" | yarp write ... /iSpeak
 mplayer -af scaletempo -speed 0.95 -endpos 00:02 ./nuvolaVerde/mp3/01-mente/mente_03.mp3 &
 echo "ctpn time 2 off 0 pos (-10.0 8.0 -37.0 7.0 -21.0 1.0)" | yarp rpc /ctpservice/head/rpc 
-echo "ctpn time 2 off 0 pos (9.0 94.0 -37.0 105.0 -6.0 0.0 -20.0 3.0 37.0 47.0 52.0 9.0 1.0 42.0 106.0 132.0)" | yarp rpc /ctpservice/left_arm/rpc
+echo "ctpn time 2 off 0 pos (-16.0 107.0 -37.0 105.0 -14.0 0.0 -20.0 14.0 37.0 47.0 52.0 9.0 1.0 42.0 106.0 270.0)" | yarp rpc /ctpservice/left_arm/rpc
 sleep 1.75
 
 echo "ctpn time 2 off 0 pos (-10.0 -8.0 37.0 7.0 21.0 1.0)" | yarp rpc /ctpservice/head/rpc
-echo "ctpn time 2 off 0 pos (-30.0 30.0 0.0 45.0 0.0 0.0 0.0 15.0 30.0 7.0 15.0 10.0 0.0 10.0 30.0 20.0)" | yarp rpc /ctpservice/left_arm/rpc
-echo "ctpn time 2 off 0 pos (9.0 94.0 -37.0 105.0 -6.0 0.0 -20.0 3.0 37.0 47.0 52.0 9.0 1.0 42.0 106.0 132.0)" | yarp rpc /ctpservice/right_arm/rpc 
+echo "ctpn time 2 off 0 pos (-30.0 30.0 0.0 45.0 0.0 0.0 0.0 15.0 30.0 7.0 15.0 0.0 0.0 0.0 8.0 39.0)" | yarp rpc /ctpservice/left_arm/rpc
+echo "ctpn time 2 off 0 pos (-16.0 115.0 -37.0 105.0 -14.0 0.0 -20.0 14.0 37.0 47.0 52.0 9.0 1.0 42.0 106.0 270.0)" | yarp rpc /ctpservice/right_arm/rpc 
 sleep 1.75
 
 echo "ctpn time 2 off 0 pos (0.0 0.0 0.0 0.0 0.0 1.0)" | yarp rpc /ctpservice/head/rpc
-echo "ctpn time 2 off 0 pos (-30.0 30.0 0.0 45.0 0.0 0.0 0.0 15.0 30.0 7.0 15.0 10.0 0.0 10.0 30.0 20.0)" | yarp rpc /ctpservice/right_arm/rpc
+echo "ctpn time 2 off 0 pos (-30.0 30.0 0.0 45.0 0.0 0.0 0.0 15.0 30.0 7.0 15.0 0.0 0.0 0.0 8.0 0.0)" | yarp rpc /ctpservice/right_arm/rpc
 sleep 3.0
 
 echo "4 220" | yarp write ... /iSpeak

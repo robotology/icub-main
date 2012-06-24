@@ -51,5 +51,20 @@ echo "ctpq time 0.5 off 0 pos (-57.01 21.02 -13.83 73.36 82.00 -38.00 13.00 5.65
 
 sleep 8
 
-echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
+#echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
+
+#hands down
+echo "ctpn time 2 off 0 pos (-7.0 31.0 17.0 17.0 -18.0 -13.0 -20.0 20.0 10.0 10.0 10.0 10.0 10.0 40.0 10.0 47.0)" | yarp rpc /ctpservice/left_arm/rpc
+echo "ctpn time 2 off 0 pos (-7.0 25.0 17.0 17.0 -18.0 -13.0 -20.0 20.0 10.0 10.0 10.0 10.0 10.0 40.0 10.0 47.0)" | yarp rpc /ctpservice/right_arm/rpc
+
+
+
+yarprun --on /icub16 --sigterm viewerLuma
+yarprun --on /icub16 --sigterm viewerBlob
+yarprun --on /icub16 --sigterm viewerSift
+yarprun --on /icub16 --sigterm viewerLocalize
+
+yarprun --on /icub16 --sigterm viewerL
+yarprun --on /icub16 --sigterm viewerR
+

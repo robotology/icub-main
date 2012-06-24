@@ -12,7 +12,7 @@ echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 echo "0" | yarp rpc /wholeBodyDynamics/rpc:i
 
-echo "take (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "take (-0.291879 -0.2 -0.03) left"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 ./nuvolaVerde/head_motion.sh 6 2 &
 sleep 2

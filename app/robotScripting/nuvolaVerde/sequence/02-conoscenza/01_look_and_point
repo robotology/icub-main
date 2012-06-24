@@ -1,7 +1,7 @@
-yarprun --on /icub16 --as viewerLuma     --cmd "yarpview --name /luma --RefreshTime 50 --x 0   --y 350"
-yarprun --on /icub16 --as viewerBlob     --cmd "yarpview --name /blob --RefreshTime 50 --x 320 --y 350"
-yarprun --on /icub16 --as viewerSift     --cmd "yarpview --name /sift --RefreshTime 50 --x 640 --y 350"
-yarprun --on /icub16 --as viewerLocalize --cmd "yarpview --name /loca --RefreshTime 50 --x 960 --y 350"
+yarprun --on /icub16 --as viewerLuma     --cmd "yarpview --name /luma --RefreshTime 50 --x 0   --y 360"
+yarprun --on /icub16 --as viewerBlob     --cmd "yarpview --name /blob --RefreshTime 50 --x 320 --y 360"
+yarprun --on /icub16 --as viewerSift     --cmd "yarpview --name /sift --RefreshTime 50 --x 640 --y 360"
+yarprun --on /icub16 --as viewerLocalize --cmd "yarpview --name /loca --RefreshTime 50 --x 960 --y 360"
 
 yarp wait /luma
 yarp wait /blob
@@ -24,11 +24,13 @@ echo "look (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cm
 sleep 2
 echo "bind pitch -38.0 -38.0" | yarp rpc /iKinGazeCtrl/head/rpc
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
-echo "point (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "point (-0.291879 -0.2 0.0) left"  | yarp rpc /actionsRenderingEngine/cmd:io
+
+echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 echo "look (-0.36632 0.127452 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
 sleep 2
-echo "point (-0.36632 0.127452 -0.1567)"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "point (-0.372824 0.13 0.0) right"  | yarp rpc /actionsRenderingEngine/cmd:io
 echo "clear pitch" | yarp rpc /iKinGazeCtrl/head/rpc
 
 echo "home arms"  | yarp rpc /actionsRenderingEngine/cmd:io
