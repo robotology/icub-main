@@ -24,7 +24,7 @@ echo "look (-0.372824 -0.081898 -0.1567)"  | yarp rpc /actionsRenderingEngine/cm
 sleep 2
 echo "bind pitch -38.0 -38.0" | yarp rpc /iKinGazeCtrl/head/rpc
 echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
-echo "point (-0.291879 -0.2 0.0) left"  | yarp rpc /actionsRenderingEngine/cmd:io
+echo "point (-0.291879 -0.22 0.02) left"  | yarp rpc /actionsRenderingEngine/cmd:io
 
 echo "home all"  | yarp rpc /actionsRenderingEngine/cmd:io
 
