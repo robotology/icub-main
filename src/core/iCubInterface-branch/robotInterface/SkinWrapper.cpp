@@ -110,7 +110,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 		return false;
 
 	driver.view(analog);
-	driver.view(hook);
+
 	RateThread *thread;
 	driver.view(thread);
 
@@ -202,7 +202,10 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 	if( 0 == strcmp("right_arm", fId.name) )
 			fId.ep = endpoint_sk_emsboard_rightlowerarm;
 
-	hook->setId(fId);
+//	tapullo 
+	driver.view(hook);
+	if(hook !=0 )
+	  hook->setId(fId);
 	thread->start();
 
 	analogServer = new AnalogServer(skinPorts);
