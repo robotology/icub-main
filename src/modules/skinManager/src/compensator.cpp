@@ -705,6 +705,8 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
                         taxelOri[i][j-3] = strtod(number.c_str(),NULL);
                 }
 		    }
+            if(norm(taxelPos[i])>0.0)
+                taxelPoseConfidence[i] = 1.0;
 	    }
         computeNeighbors();
     }
