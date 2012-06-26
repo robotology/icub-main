@@ -51,6 +51,7 @@ class Kalman
 protected:
     yarp::sig::Matrix A, At;
     yarp::sig::Matrix H, Ht;
+    yarp::sig::Matrix B;
     yarp::sig::Matrix Q;
     yarp::sig::Matrix R;
     yarp::sig::Matrix I;
@@ -61,6 +62,8 @@ protected:
 
     size_t n;
     size_t m;
+
+    void initialize();
 
 public:
     /**
@@ -73,6 +76,19 @@ public:
      */
     Kalman(const yarp::sig::Matrix &_A, const yarp::sig::Matrix &_H,
            const yarp::sig::Matrix &_Q, const yarp::sig::Matrix &_R);
+
+    /**
+     * Init a Kalman state estimator
+     * 
+     * @param _A State transition matrix 
+     * @param _B Input matrix 
+     * @param _H Measurement matrix
+     * @param _Q Process noise covariance
+     * @param _R Measurement noise covariance 
+     */
+    Kalman(const yarp::sig::Matrix &_A, const yarp::sig::Matrix &_B,
+           const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_Q,
+           const yarp::sig::Matrix &_R);
 
     /**
      * Set initial state and error covariance
@@ -94,25 +110,35 @@ public:
     yarp::sig::Vector filt(const yarp::sig::Vector &z);
 
     /**
+     * Returns the estimated state vector given the current measurement
+     * 
+     * @param u Current input 
+     * @param z Current measurement 
+     * 
+     * @return Estimated state vector
+     */
+    yarp::sig::Vector filt(const yarp::sig::Vector &u, const yarp::sig::Vector &z);
+
+    /**
      * Returns the estimated state
      * 
      * @return Estimated state
      */
-    yarp::sig::Vector get_x() { return x; }
+    yarp::sig::Vector get_x() const { return x; }
 
     /**
      * Returns the estimated error covariance
      * 
      * @return Estimated error covariance
      */
-    yarp::sig::Matrix get_P() { return P; }
+    yarp::sig::Matrix get_P() const { return P; }
 
     /**
      * Returns the Kalman gain matrix
      * 
      * @return Kalman gain matrix
      */
-    yarp::sig::Matrix get_K() { return K; }
+    yarp::sig::Matrix get_K() const { return K; }
 };
 
 }

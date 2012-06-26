@@ -26,8 +26,7 @@ using namespace iCub::ctrl;
 
 
 /**********************************************************************/
-Kalman::Kalman(const Matrix &_A, const Matrix &_H, const Matrix &_Q,
-               const Matrix &_R) : A(_A), H(_H), Q(_Q), R(_R)
+void Kalman::initialize()
 {
     n=A.rows();
     m=H.rows();
@@ -43,18 +42,35 @@ Kalman::Kalman(const Matrix &_A, const Matrix &_H, const Matrix &_Q,
 
 
 /**********************************************************************/
+Kalman::Kalman(const Matrix &_A, const Matrix &_H, const Matrix &_Q,
+               const Matrix &_R) : A(_A), H(_H), Q(_Q), R(_R)
+{
+    initialize();
+    B.resize(n,n); B.zero();
+}
+
+
+/**********************************************************************/
+Kalman::Kalman(const Matrix &_A, const Matrix &_B, const Matrix &_H,
+               const Matrix &_Q, const Matrix &_R) : A(_A), B(_B), H(_H), Q(_Q), R(_R)
+{
+    initialize();
+}
+
+
+/**********************************************************************/
 void Kalman::init(const Vector &_z0, const Vector &_x0, const Matrix &_P0)
 { 
-	x=_x0;
+    x=_x0;
     P=_P0;
 }
 
 
 /**********************************************************************/
-Vector Kalman::filt(const Vector &z)
+Vector Kalman::filt(const Vector &u, const Vector &z)
 {
     // prediction
-    x=A*x;
+    x=A*x+B*u;
     P=A*P*At+Q;
 
     // Kalman gain
@@ -65,6 +81,13 @@ Vector Kalman::filt(const Vector &z)
     P=(I-K*H)*P;
 
     return x;
+}
+
+
+/**********************************************************************/
+Vector Kalman::filt(const Vector &z)
+{
+    return filt(Vector(n,0.0),z);
 }
 
 
