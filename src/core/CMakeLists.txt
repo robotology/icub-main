@@ -10,7 +10,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
 else()
 	add_subdirectory(iCubInterface)
 endif()
-	
+
 add_subdirectory(emotionInterface)
 
 
