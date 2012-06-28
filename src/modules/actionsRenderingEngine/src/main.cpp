@@ -154,7 +154,7 @@ repeat the trajectory previously registered.
 
 
 <b>CALIBRATION</b>
-different types of calibrations can be requested by issuing commands of the form: [calib] [calibration_type] "param1"
+different types of calibrations can be requested by issuing commands of the form: [calib] [calibration_type] "param1" "param2"
 In the following a short description of the possible values of [calibration_type]:
 
 --[table] the robot will try to find out the table height 
@@ -169,9 +169,11 @@ accordingly to avoid calibrating always at start-up.
 whether correct grasp has been achieved.
 
 --[kinematics] these option requires a parameter [start/stop]. when started, the system is set to cartesian
-admittance control and the robot arm can be moved around by the human user. When the [calib] [kinematics] [stop]
+torque control and the robot arm can be moved around by the human user. When the [calib] [kinematics] [stop]
 command is received, the system is set to velocity mode and the offset between the initial and the current
-position is stored.
+position is stored. It is also possible to associate a specific kinematic offset to a single object. To do 
+so, it is required to issue the command [calib] [kinematics] [stop] <object_name>. Then, whenever the system
+will be asked to preform an action over such object, the system will use the learnt offset.
  
 
 <b>EXPLORATION</b>
