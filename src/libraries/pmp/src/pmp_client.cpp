@@ -88,6 +88,7 @@ bool PmpClient::open(const Property &options)
         return false;
     }
 
+    carrier=opt.check("carrier",Value("udp")).asString().c_str();
     verbosity=opt.check("verbosity",Value(0)).asInt();
 
     data.open((local+"/data:i").c_str());
@@ -95,7 +96,7 @@ bool PmpClient::open(const Property &options)
 
     bool ok=true;
 
-    ok&=Network::connect((remote+"/data:o").c_str(),data.getName().c_str(),"mcast");
+    ok&=Network::connect((remote+"/data:o").c_str(),data.getName().c_str(),carrier.c_str());
     ok&=Network::connect(rpc.getName().c_str(),(remote+"/rpc").c_str());
 
     if (ok)

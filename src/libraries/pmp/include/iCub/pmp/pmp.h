@@ -67,6 +67,9 @@ public:
     * \b local <string>: example (local /pmp_client), specifies the 
     *    the client stem-name to be used for opening ports.
     *  
+    * \b carrier <string>: example (carrier udp), specifies the 
+    *    protocol used to connect yarp streaming ports.
+    *  
     * \b verbosity <int>: example (verbosity 3), specifies the 
     *    verbosity level of print-outs messages.
     *  

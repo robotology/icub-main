@@ -74,7 +74,7 @@ void ClientCartesianController::init()
 /************************************************************************/
 bool ClientCartesianController::open(Searchable &config)
 {
-    ConstString remote, local;
+    ConstString remote, local, carrier;
 
     if (config.check("remote"))
         remote=config.find("remote").asString();
@@ -85,6 +85,8 @@ bool ClientCartesianController::open(Searchable &config)
         local=config.find("local").asString();
     else
         return false;
+    
+    carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
@@ -96,9 +98,9 @@ bool ClientCartesianController::open(Searchable &config)
 
     bool ok=true;
 
-    ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),"mcast");
-    ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),"mcast");
-    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),"mcast");
+    ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),carrier.c_str());
+    ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),carrier.c_str());
+    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
 
     // check whether the solver is alive and connected

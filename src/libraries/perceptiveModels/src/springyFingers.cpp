@@ -291,6 +291,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     name=opt.find("name").asString().c_str();
     type=opt.find("type").asString().c_str();
     robot=opt.check("robot",Value("icub")).asString().c_str();
+    carrier=opt.check("carrier",Value("udp")).asString().c_str();
     verbosity=opt.check("verbosity",Value(0)).asInt();
 
     string part_motor=string("/"+type+"_arm");
@@ -305,7 +306,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     
     port->open(("/"+name+part_analog+"/analog:i").c_str());
     string analogPortName(("/"+robot+part_analog+"/analog:o").c_str());
-    if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),"mcast"))
+    if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),carrier.c_str()))
     {
         printMessage(1,"unable to connect to %s\n",analogPortName.c_str());
         close();

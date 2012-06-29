@@ -38,6 +38,7 @@ protected:
 
     std::string remote;
     std::string local;
+    std::string carrier;
 
     mutable yarp::sig::Vector field;
     mutable yarp::sig::Vector xdot;

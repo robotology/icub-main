@@ -75,7 +75,7 @@ void ClientGazeController::init()
 /************************************************************************/
 bool ClientGazeController::open(Searchable &config)
 {
-    ConstString remote, local;
+    ConstString remote, local, carrier;
 
     if (config.check("remote"))
         remote=config.find("remote").asString();
@@ -86,6 +86,8 @@ bool ClientGazeController::open(Searchable &config)
         local=config.find("local").asString();
     else
         return false;
+
+    carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
@@ -103,14 +105,14 @@ bool ClientGazeController::open(Searchable &config)
     remote=remote+"/head";
     bool ok=true;
 
-    ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str(),"mcast");
-    ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str(),"mcast");
-    ok&=Network::connect(portCmdMono.getName().c_str(),(remote+"/mono:i").c_str(),"mcast");
-    ok&=Network::connect(portCmdStereo.getName().c_str(),(remote+"/stereo:i").c_str(),"mcast");
-    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str(),"mcast");
-    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),"mcast");
-    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),"mcast");
-    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),"mcast");
+    ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str(),carrier.c_str());
+    ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str(),carrier.c_str());
+    ok&=Network::connect(portCmdMono.getName().c_str(),(remote+"/mono:i").c_str(),carrier.c_str());
+    ok&=Network::connect(portCmdStereo.getName().c_str(),(remote+"/stereo:i").c_str(),carrier.c_str());
+    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str(),carrier.c_str());
+    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),carrier.c_str());
+    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),carrier.c_str());
+    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
 
     return connected=ok;
