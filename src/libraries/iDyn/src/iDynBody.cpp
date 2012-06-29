@@ -2030,8 +2030,8 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
 			//partial COM jacobian are computed in this block
 			double mass_coeff = partial_mass[iLink]/(*total_mass);                    
 
-			Vector Z = intH[iLink].getCol(2);
-			Vector w = cross(Z,partial_COM[iLink]);
+            Vector Z = intH[iLink].subcol(0,2,3);
+			Vector w = cross(Z,partial_COM[iLink].subVector(0,2));
 
 			(*COM_jacob)(0,iLink)=mass_coeff*w[0];
 			(*COM_jacob)(1,iLink)=mass_coeff*w[1];
