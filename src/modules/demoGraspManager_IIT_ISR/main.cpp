@@ -1478,7 +1478,7 @@ public:
 
         gazeCtrl->storeContext(&startup_context_id_gaze);
         gazeCtrl->blockNeckRoll(0.0);
-        gazeCtrl->setSaccadesInhibitionPeriod(0.5);
+        gazeCtrl->setSaccadesActivationAngle(20.0);
 
         if (useLeftArm)
         {
