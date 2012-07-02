@@ -707,9 +707,7 @@ public:
         eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
-        //saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
-        // experimental
-        saccadesOn=(rf.check("saccades",Value("off")).asString()=="on");
+        saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
         counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();        
         headV2=rf.check("headV2");
