@@ -277,6 +277,12 @@ following ports:
      portion of path given in [0,1] by the checkpoint parameter
      has been attained; comprise the time instant of the source
      when the event took place as well as the checkpoint.
+   - "saccade-onset" <time>: sent out at the beginning of the
+     saccade; comprise the time instant of the source when the
+     event took place.
+   - "saccade-done" <time>: sent out at the end of the saccade;
+     comprise the time instant of the source when the event took
+     place.
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
@@ -666,6 +672,8 @@ protected:
         eventsList.addString("motion-onset");
         eventsList.addString("motion-done");
         eventsList.addString("motion-ongoing");
+        eventsList.addString("saccade-onset");
+        eventsList.addString("saccade-done");
         eventsList.addString("closing");
         eventsList.addString("suspended");
         eventsList.addString("resumed");

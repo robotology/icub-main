@@ -301,6 +301,8 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
     commData->get_isSaccadeUnderway()=true;
     unplugCtrlEyes=true;
 
+    notifyEvent("saccade-onset");
+
     mutexCtrl.post();    
 }
 
@@ -334,6 +336,8 @@ void Controller::run()
             posHead->checkMotionDone(5,&verDone);
 
         commData->get_isSaccadeUnderway()=!(tiltDone&&panDone&&verDone);
+        if (!commData->get_isSaccadeUnderway())
+            notifyEvent("saccade-done");
     }
     mutexCtrl.post();
     
