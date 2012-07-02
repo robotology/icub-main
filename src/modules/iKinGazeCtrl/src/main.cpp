@@ -522,6 +522,7 @@ protected:
         double neckAngleUserTolerance;
         Vector counterRotGain;
         bool   saccadesOn;
+        double saccadesInhibitionPeriod;
 
         // localizer part
         Bottle pidOptions;
@@ -588,6 +589,7 @@ protected:
         context.neckAngleUserTolerance=slv->getNeckAngleUserTolerance();
         context.counterRotGain=eyesRefGen->getCounterRotGain();
         context.saccadesOn=eyesRefGen->isSaccadesOn();
+        context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
 
         // localizer part
         loc->getPidOptions(context.pidOptions);
@@ -615,6 +617,7 @@ protected:
             slv->setNeckAngleUserTolerance(context.neckAngleUserTolerance);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
             eyesRefGen->setSaccades(context.saccadesOn);
+            eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
 
             // localizer part
             loc->setPidOptions(context.pidOptions);
