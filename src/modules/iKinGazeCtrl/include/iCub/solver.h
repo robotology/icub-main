@@ -38,9 +38,9 @@
 #include <iCub/controller.h>
 
 #define EYEPINVREFGEN_GAIN                  12.5    // [-]
-#define SACCADES_INHIBITION_PERIOD          0.2     // [s]
 #define SACCADES_VEL                        1000.0  // [deg/s]
-#define SACCADES_ACTIVATIONANGLE            10.0    // [deg]
+#define SACCADES_INHIBITION_PERIOD          0.2     // [s]
+#define SACCADES_ACTIVATION_ANGLE           10.0    // [deg]
 #define GYRO_BIAS_STABILITY                 5.0     // [deg/s]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
@@ -91,6 +91,7 @@ protected:
     int    saccadesRxTargets;
     double saccadesClock;
     double saccadesInhibitionPeriod;
+    double saccadesActivationAngle;
     double eyesHalfBaseline;
     double Ts;
     
@@ -111,14 +112,16 @@ public:
                   const bool _saccadesOn, const Vector &_counterRotGain, const bool _headV2,
                   const unsigned int _period);
 
-    void   set_xdport(xdPort *_port_xd)                        { port_xd=_port_xd;                   }
-    void   enable()                                            { genOn=true;                         }
-    void   disable()                                           { genOn=false;                        }    
-    Vector getCounterRotGain() const                           { return counterRotGain;              }
-    void   setSaccades(const bool sw)                          { saccadesOn=sw;                      }
-    bool   isSaccadesOn() const                                { return saccadesOn;                  }
-    void   setSaccadesInhibitionPeriod(const double inhPeriod) { saccadesInhibitionPeriod=inhPeriod; }
-    double getSaccadesInhibitionPeriod() const                 { return saccadesInhibitionPeriod;    }
+    void   set_xdport(xdPort *_port_xd)                     { port_xd=_port_xd;                }
+    void   enable()                                         { genOn=true;                      }
+    void   disable()                                        { genOn=false;                     }    
+    Vector getCounterRotGain() const                        { return counterRotGain;           }
+    void   setSaccades(const bool sw)                       { saccadesOn=sw;                   }
+    bool   isSaccadesOn() const                             { return saccadesOn;               }
+    void   setSaccadesInhibitionPeriod(const double period) { saccadesInhibitionPeriod=period; }    
+    void   setSaccadesActivationAngle(const double angle)   { saccadesActivationAngle=angle;   }
+    double getSaccadesInhibitionPeriod() const              { return saccadesInhibitionPeriod; }
+    double getSaccadesActivationAngle() const               { return saccadesActivationAngle;  }
     void   setCounterRotGain(const Vector &gain);
     bool   getGyro(Vector &data);    
     bool   threadInit();

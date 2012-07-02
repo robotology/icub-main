@@ -317,10 +317,11 @@ following ports:
     - [get] [Teyes]: returns the eyes movements execution time.
     - [get] [vor]: returns the vor gain.
     - [get] [ocr]: returns the ocr gain.
-    - [get] [sacc]: returns the saccades control status (0/1).
-    - [get] [sinh]: returns the saccades inhibition period (s).
+    - [get] [sacc]: returns the saccades control status [0/1].
+    - [get] [sinh]: returns the saccades inhibition period [s].
+    - [get] [sact]: returns the saccades activation angle [deg].
     - [get] [track]: returns the current controller's tracking
-      mode (0/1).
+      mode [0/1].
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
     - [get] [sdon]: returns 1 iff saccade is done, 0 if still
       underway.
@@ -385,13 +386,15 @@ following ports:
     - [set] [vor] <val>: sets a new gain for vor.
     - [set] [ocr] <val>: sets a new gain for ocr.
     - [set] [sacc] <val>: enables/disables saccades; val can be
-      0/1.
+      [0/1].
     - [set] [sinh] <val>: sets the saccades inhibition period
-      (s).
+      [s].
+    - [set] [sact] <val>: sets the saccades activation angle
+      [deg].
     - [set] [ntol] <val>: sets in degrees the new user tolerance
       for gazing with the neck.
     - [set] [track] <val>: sets the controller's tracking mode;
-      val can be 0/1.
+      val can be [0/1].
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets the pid values used to converge to the
       target with stereo input. The pid is implemented in
@@ -529,6 +532,7 @@ protected:
         Vector counterRotGain;
         bool   saccadesOn;
         double saccadesInhibitionPeriod;
+        double saccadesActivationAngle;
 
         // localizer part
         Bottle pidOptions;
@@ -596,6 +600,7 @@ protected:
         context.counterRotGain=eyesRefGen->getCounterRotGain();
         context.saccadesOn=eyesRefGen->isSaccadesOn();
         context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
+        context.saccadesActivationAngle=eyesRefGen->getSaccadesActivationAngle();
 
         // localizer part
         loc->getPidOptions(context.pidOptions);
@@ -624,6 +629,7 @@ protected:
             eyesRefGen->setCounterRotGain(context.counterRotGain);
             eyesRefGen->setSaccades(context.saccadesOn);
             eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
+            eyesRefGen->setSaccadesActivationAngle(context.saccadesActivationAngle);
 
             // localizer part
             loc->setPidOptions(context.pidOptions);
@@ -880,6 +886,12 @@ public:
                         {
                             reply.addVocab(ack);
                             reply.addDouble(eyesRefGen->getSaccadesInhibitionPeriod());
+                            return true;
+                        }
+                        else if (type==VOCAB4('s','a','c','t'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addDouble(eyesRefGen->getSaccadesActivationAngle());
                             return true;
                         }
                         else if (type==VOCAB4('t','r','a','c'))
@@ -1202,8 +1214,15 @@ public:
                         }
                         else if (type==VOCAB4('s','i','n','h'))
                         {
-                            double inhiPeriod=command.get(2).asDouble();
-                            eyesRefGen->setSaccadesInhibitionPeriod(inhiPeriod);
+                            double period=command.get(2).asDouble();
+                            eyesRefGen->setSaccadesInhibitionPeriod(period);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB4('s','a','c','t'))
+                        {
+                            double angle=command.get(2).asDouble();
+                            eyesRefGen->setSaccadesActivationAngle(angle);
                             reply.addVocab(ack);
                             return true;
                         }

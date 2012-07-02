@@ -138,6 +138,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     genOn=false;
     saccadeUnderWayOld=false;
     saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
+    saccadesActivationAngle=SACCADES_ACTIVATION_ANGLE;
     port_xd=NULL;
 }
 
@@ -286,7 +287,8 @@ void EyePinvRefGen::run()
             !commData->get_isSaccadeUnderway() && (Time::now()-saccadesClock>saccadesInhibitionPeriod))
         {
             Vector fph=xd; fph.push_back(1.0);
-            fph=SE3inv(chainNeck->getH())*fph;
+            fph=SE3inv(chainNeck->getH())*fph; fph[3]=0.0;
+            double rot=CTRL_RAD2DEG*acos(fph[2]/norm(fph)); fph[3]=1.0;
 
             // estimate geometrically the target tilt and pan of the eyes
             Vector ang(3,0.0);
@@ -298,7 +300,7 @@ void EyePinvRefGen::run()
             ang[1]=std::min(std::max(lim(1,0),ang[1]),lim(1,1));
 
             // favor the smooth-pursuit in case saccades are small
-            if (norm(ang)>SACCADES_ACTIVATIONANGLE*CTRL_DEG2RAD)
+            if (rot>saccadesActivationAngle)
             {
                 // init vergence
                 ang[2]=fbHead[5];
