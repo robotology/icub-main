@@ -18,7 +18,7 @@
 #define CAN_PROTOCOL_MAJOR          1
 #define CAN_PROTOCOL_MINOR          1
 #define LAST_BLL_BUILD             60
-#define LAST_MC4_BUILD             45
+#define LAST_MC4_BUILD             46
 
 #define MODE_IDLE					0
 #define MODE_POSITION 				1
