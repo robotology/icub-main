@@ -2472,6 +2472,14 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 			COM=whole_COM;
 			mass=whole_mass;
 		break;
+        case LOWER_BODY_PARTS:
+            COM=this->lower_COM;
+            mass=lower_mass;
+        break;
+        case UPPER_BODY_PARTS:
+            COM=this->upper_COM;
+            mass=upper_mass;
+        break;
 		case LEFT_LEG:
 			COM=this->lowerTorso->total_COM_LF;
 			mass=this->lowerTorso->total_mass_LF;
