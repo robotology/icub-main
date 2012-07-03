@@ -255,9 +255,19 @@ public:
     virtual void onStop();
 
 
-    void trackTemplate()
+    void trackTemplate(Bottle &options)
     {
-        head_mode=HEAD_MODE_TRACK_TEMP;
+        if(!gazeUnderControl)
+        {
+            ctrl_gaze->restoreContext(default_gaze_context);
+
+            if(checkOptions(options,"no_sacc"))
+                gazeCtrl->setSaccadeStatus(false);
+
+            head_mode=HEAD_MODE_TRACK_TEMP;
+
+            gazeUnderControl=true;
+        }
     }
 
 

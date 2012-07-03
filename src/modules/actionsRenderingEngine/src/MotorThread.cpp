@@ -1257,12 +1257,6 @@ void MotorThread::run()
 
         case(HEAD_MODE_TRACK_TEMP):
         {
-            if(!gazeUnderControl)
-            {
-                ctrl_gaze->restoreContext(default_gaze_context);
-                gazeUnderControl=true;
-            }
-
             Vector stereo=stereo_target.get();
             if(stereo.size()==4)
             {

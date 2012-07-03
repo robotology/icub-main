@@ -135,9 +135,10 @@ keep the gaze fixating the requested target also when other commands are issued 
 
 
 <b>TRACK</b> 
-format: [track] [target]
+format: [track] [target] "param1"
 action: the specified [target] visual position is supplied to the tracker module and the gaze controller is 
-updated in order to keep the object constantly inside the robot fovea.
+updated in order to keep the object constantly inside the robot fovea. The optional "param1" can be put equal to
+"no_sacc" in order to disable the saccadic movements of the gaze controller during the tracking process.
 
 <b>TEACH ACTION</b> 
 format: [teach] "action_name" [start/stop] "param1"
@@ -1088,8 +1089,8 @@ public:
                             visuoThr->getTarget(command.get(1),command);
                         else
                             visuoThr->trackMotion();
-                            
-                        motorThr->trackTemplate();
+
+                        motorThr->trackTemplate(command);
 
                         reply.addVocab(ACK);
 
