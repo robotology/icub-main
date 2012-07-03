@@ -1520,7 +1520,7 @@ public:
 	* @param jac the jacobian matrix
 	* @return true if succeeds, false otherwise
 	*/
-	bool EXPERIMENTAL_getCOMjacobian(yarp::sig::Matrix &jac);
+	bool EXPERIMENTAL_getCOMjacobian(iCub::skinDynLib::BodyPart which_part, yarp::sig::Matrix &jac);
 
 	/**
     * Performs the computation of the center of mass jacobian of the whole iCub
@@ -1533,7 +1533,7 @@ public:
 	* @param vel the velocity vector
 	* @return true if succeeds, false otherwise
 	*/
-	bool EXPERIMENTAL_getCOMvelocity(yarp::sig::Vector &vel);
+	bool EXPERIMENTAL_getCOMvelocity(iCub::skinDynLib::BodyPart which_part, yarp::sig::Vector &vel);
 };
 
 

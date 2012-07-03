@@ -2567,12 +2567,8 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 	for (r=3; r<6; r++) for (c=3; c<6; c++) T1_6x6(r,c)= T1(r-3,c-3);
 	yarp::sig::Matrix T_UP = T0_6x6*T1_6x6;
 
-	//upperTorso->EXPERIMENTAL_computeCOMjacobian();
-	upperTorso->COM_jacob_LF.resize(6,7);
-	upperTorso->COM_jacob_RT.resize(6,7);
-	upperTorso->COM_jacob_UP.resize(6,3);
-
-	//lower torso COM jacobian computation
+    //compute the COM jacobians
+	upperTorso->EXPERIMENTAL_computeCOMjacobian();
 	lowerTorso->EXPERIMENTAL_computeCOMjacobian();
 
 	//order the partial jacobians in the main jacobian.
@@ -2583,22 +2579,22 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 			ct = 0;
 			//left_leg
 			for (c=0; c<6; c++, ct++)
-				COM_Jacob(r,ct) = lowerTorso->total_mass_LF * lowerTorso->COM_jacob_LF(r,c) / whole_mass;
+				COM_Jacob(r,ct) = lowerTorso->COM_jacob_LF(r,c);
 			//right leg
 			for (c=0; c<6; c++, ct++)
-				COM_Jacob(r,ct) = lowerTorso->total_mass_RT * lowerTorso->COM_jacob_RT(r,c) / whole_mass;
+				COM_Jacob(r,ct) = lowerTorso->COM_jacob_RT(r,c);
 			//torso
 			for (c=0; c<3; c++, ct++)
-				COM_Jacob(r,ct) = lowerTorso->total_mass_UP * lowerTorso->COM_jacob_UP(r,c) / whole_mass;
-			//left arm @@@@ TO BE VERIFIED
+				COM_Jacob(r,ct) = lowerTorso->COM_jacob_UP(r,c);
+			//left arm 
 			for (c=0; c<7; c++, ct++)
-				COM_Jacob(r,ct) = upperTorso->total_mass_LF * ((T_UP*upperTorso->COM_jacob_LF)(r,c)) / whole_mass;
-			//right arm @@@@ TO BE VERIFIED
+				COM_Jacob(r,ct) = ((T_UP*upperTorso->COM_jacob_LF)(r,c));
+			//right arm
 			for (c=0; c<7; c++, ct++)
-				COM_Jacob(r,ct) = upperTorso->total_mass_RT * ((T_UP*upperTorso->COM_jacob_RT)(r,c)) / whole_mass;
-			//head @@@@ TO BE VERIFIED
+				COM_Jacob(r,ct) = ((T_UP*upperTorso->COM_jacob_RT)(r,c));
+			//head
 			for (c=0; c<3; c++, ct++)
-				COM_Jacob(r,ct) = upperTorso->total_mass_UP * ((T_UP*upperTorso->COM_jacob_UP)(r,c)) / whole_mass;
+				COM_Jacob(r,ct) = ((T_UP*upperTorso->COM_jacob_UP)(r,c));
 		}
 
 //*********************************************************************************************
@@ -2622,28 +2618,135 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(Matrix &jac)
+bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac)
 { 
-	if (COM_Jacob.cols() == 32)
-		{
-			jac = COM_Jacob; 
-			return true;
-		}
-	jac.zero();
-	return false;
+    jac = COM_Jacob;
+    unsigned int r,c,ct=0;
+    double tmp = 0.0;
+    switch (which_part) 
+    {
+        case BODY_PART_ALL:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            tmp = lowerTorso->total_mass_LF /  whole_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
+            tmp = lowerTorso->total_mass_RT /  whole_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
+            tmp = lowerTorso->total_mass_UP /  whole_mass; for (c=0; c<3; c++, ct++) jac(r,ct) *= tmp;
+            tmp = upperTorso->total_mass_LF /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
+            tmp = upperTorso->total_mass_RT /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
+            tmp = upperTorso->total_mass_UP /  whole_mass; for (c=0; c<3; c++, ct++) jac(r,ct) *= tmp;
+        }
+        break;
+        case LOWER_BODY_PARTS:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            tmp = lowerTorso->total_mass_LF /  lower_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
+            tmp = lowerTorso->total_mass_RT /  lower_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
+            tmp = lowerTorso->total_mass_UP /  lower_mass; for (c=0; c<3; c++, ct++) jac(r,ct) *= tmp;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+        }
+        break;
+        case UPPER_BODY_PARTS:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+            tmp = upperTorso->total_mass_LF /  upper_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
+            tmp = upperTorso->total_mass_RT /  upper_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
+            tmp = upperTorso->total_mass_UP /  upper_mass; for (c=0; c<3; c++, ct++) jac(r,ct) *= tmp;
+        }
+        break;
+        case LEFT_LEG:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            //for (c=0; c<6; c++, ct++) jac(r,ct) *= 1;
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+        }
+        break;
+        case RIGHT_LEG:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            //for (c=0; c<6; c++, ct++) jac(r,ct) *= 1;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+        }
+        break;
+        case TORSO:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            //for (c=0; c<3; c++, ct++) jac(r,ct) *= 1;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+        }
+        break;
+        case LEFT_ARM:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+            //for (c=0; c<7; c++, ct++) jac(r,ct) *= 1;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+        }
+        break;
+        case RIGHT_ARM:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            //for (c=0; c<7; c++, ct++) jac(r,ct) *= 1;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+        }
+        break;
+        case HEAD:
+        for (r=0; r<6; r++) 
+        {
+            ct = 0; 
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
+            //for (c=0; c<3; c++, ct++) jac(r,ct) *= 1;
+        }
+        break;
+    }
+    return true;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(Vector &vel)
+bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &vel)
 {
-	if (COM_Jacob.cols() == 32)
-		{
-			Vector jvel; 
-			getAllVelocities(jvel);
-			vel = COM_Jacob*jvel;
-			return true;
-		}
-	vel.zero();
-	return false;
+    Matrix jac;
+    EXPERIMENTAL_getCOMjacobian(which_part,jac);
+    
+    Vector jvel; 
+    getAllVelocities(jvel);
+
+    vel = COM_Jacob*jvel;
+    return true;
 }
 
