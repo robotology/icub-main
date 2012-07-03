@@ -31,7 +31,7 @@ using namespace yarp::dev;
 class SkinMeshThreadPort : public RateThread 
 {
 protected:
-	static const int MAX_SENSOR_NUM = 64;
+	static const int MAX_SENSOR_NUM = 128;
 
 	BufferedPort<Bottle> skin_port;							
 	TouchSensor *sensor[MAX_SENSOR_NUM];
