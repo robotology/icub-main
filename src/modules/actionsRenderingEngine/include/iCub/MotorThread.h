@@ -262,7 +262,7 @@ public:
             ctrl_gaze->restoreContext(default_gaze_context);
 
             if(checkOptions(options,"no_sacc"))
-                gazeCtrl->setSaccadeStatus(false);
+                ctrl_gaze->setSaccadesStatus(false);
 
             head_mode=HEAD_MODE_TRACK_TEMP;
 
