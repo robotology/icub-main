@@ -179,6 +179,8 @@ private:
     BufferedPort<Vector> *port_model_wrench_LL;
     BufferedPort<Vector> *port_external_wrench_TO;
     BufferedPort<Vector> *port_com_all;
+    BufferedPort<Vector> *port_com_lb;
+    BufferedPort<Vector> *port_com_ub;
     BufferedPort<Vector> *port_com_la;
     BufferedPort<Vector> *port_com_ra;
     BufferedPort<Vector> *port_com_ll;
@@ -193,6 +195,7 @@ private:
     BufferedPort<Vector> *port_external_ft_arm_right;
     BufferedPort<Vector> *port_external_ft_leg_left;
     BufferedPort<Vector> *port_external_ft_leg_right;
+    yarp::os::Stamp timestamp;
 
     bool first;
     thread_status_enum thread_status;

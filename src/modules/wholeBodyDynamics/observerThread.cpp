@@ -224,6 +224,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_cartesian_wrench_LL = new BufferedPort<Vector>;
     port_skin_contacts = new BufferedPort<skinContactList>;
     port_com_all = new BufferedPort<Vector>;
+    port_com_lb  = new BufferedPort<Vector>;
+    port_com_ub  = new BufferedPort<Vector>;
     port_com_la  = new BufferedPort<Vector>;
     port_com_ra  = new BufferedPort<Vector>;
     port_com_ll  = new BufferedPort<Vector>;
@@ -267,6 +269,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_cartesian_wrench_LL->open(string("/"+local_name+"/left_leg/cartesianEndEffectorWrench:o").c_str()); 
     port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
     port_com_all->open(string("/"+local_name+"/com:o").c_str());
+    port_com_lb->open (string("/"+local_name+"/lower_body/com:o").c_str());
+    port_com_ub->open (string("/"+local_name+"/upper_body/com:o").c_str());
     port_com_la ->open(string("/"+local_name+"/left_arm/com:o").c_str());
     port_com_ra ->open(string("/"+local_name+"/right_arm/com:o").c_str());
     port_com_ll ->open(string("/"+local_name+"/left_leg/com:o").c_str());
@@ -403,6 +407,8 @@ void iCubStatus::dump (FILE* f)
 
 void inverseDynamics::run()
 {
+    timestamp.update();
+
     thread_status = STATUS_OK;
     static int delay_check=0;
     if(readAndUpdate(false) == false)
@@ -556,19 +562,23 @@ void inverseDynamics::run()
     writeTorque(RATorques, 3, port_RWTorques); //wrist
     writeTorque(LATorques, 3, port_LWTorques); //wrist
 
-    Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7); 
-    double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to;
+    Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7), com_lb(7), com_ub(7);
+    double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to, mass_lb, mass_ub;
 
     if (com_enabled)
     {
         icub->computeCOM();
         icub->getCOM(BODY_PART_ALL,     com_all, mass_all);
+        icub->getCOM(LOWER_BODY_PARTS,  com_lb,  mass_lb);
+        icub->getCOM(UPPER_BODY_PARTS,  com_ub,  mass_ub);
         icub->getCOM(LEFT_LEG,          com_ll,  mass_ll);
         icub->getCOM(RIGHT_LEG,         com_rl,  mass_rl);
         icub->getCOM(LEFT_ARM,          com_la,  mass_la);
         icub->getCOM(RIGHT_ARM,         com_ra,  mass_ra);
         icub->getCOM(HEAD,              com_hd,  mass_hd);
         icub->getCOM(TORSO,             com_to,  mass_to);
+        com_lb.push_back(mass_lb);
+        com_ub.push_back(mass_ub);
         com_all.push_back(mass_all);
         com_ll.push_back (mass_ll);
         com_rl.push_back (mass_rl);
@@ -586,6 +596,12 @@ void inverseDynamics::run()
             com_all.push_back(com_v[0]);
             com_all.push_back(com_v[1]);
             com_all.push_back(com_v[2]);
+            //com_all.push_back(this->current_status.get_dq_torso()[0]);
+            //com_all.push_back(this->current_status.get_dq_torso()[1]);
+            //com_all.push_back(this->current_status.get_dq_torso()[2]);
+            //com_all.push_back(this->current_status.get_dq_lleg()[0]);
+            //com_all.push_back(this->current_status.get_dq_lleg()[1]);
+            //com_all.push_back(this->current_status.get_dq_lleg()[2]);
         }
         else
         {
@@ -695,6 +711,8 @@ void inverseDynamics::run()
     //sendVelAccData();
 
     broadcastData<Vector> (com_all, port_com_all);
+    broadcastData<Vector> (com_lb,  port_com_lb);
+    broadcastData<Vector> (com_ub,  port_com_ub);
     broadcastData<Vector> (com_ll,  port_com_ll);
     broadcastData<Vector> (com_rl,  port_com_rl);
     broadcastData<Vector> (com_la,  port_com_la);
@@ -797,6 +815,8 @@ void inverseDynamics::threadRelease()
     closePort(port_external_wrench_TO);
     fprintf(stderr, "Closing COM ports\n");	
     closePort(port_com_all);
+    closePort(port_com_lb);
+    closePort(port_com_ub);
     closePort(port_com_ra);
     closePort(port_com_rl);
     closePort(port_com_la);
@@ -852,6 +872,7 @@ template <class T> void inverseDynamics::broadcastData(T& _values, BufferedPort<
 {
     if (_port && _port->getOutputCount()>0)
     {
+        _port->setEnvelope(this->timestamp);
         _port->prepare()  = _values ;
         _port->write();
     }
