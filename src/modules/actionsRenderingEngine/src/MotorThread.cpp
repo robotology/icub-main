@@ -1224,8 +1224,6 @@ bool MotorThread::threadInit()
 void MotorThread::run()
 {
     //check if the system needs to be updated
-    this->update();
-
     update();
 
     switch(head_mode)

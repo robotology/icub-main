@@ -1085,15 +1085,7 @@ public:
                     {
                         //motion tracking is handled differently (temporary cheat)
                         if(command.get(1).asVocab()!=Vocab::encode("motion"))
-                        {
-                            if(command.size()<2)
-                            {
-                                reply.addVocab(NACK);
-                                break;
-                            }
-
                             visuoThr->getTarget(command.get(1),command);
-                        }
                         else
                             visuoThr->trackMotion();
                             
