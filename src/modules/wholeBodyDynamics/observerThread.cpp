@@ -564,6 +564,7 @@ void inverseDynamics::run()
 
     Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7), com_lb(7), com_ub(7);
     double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to, mass_lb, mass_ub;
+    Vector com_v;
 
     if (com_enabled)
     {
@@ -590,9 +591,8 @@ void inverseDynamics::run()
         if (com_vel_enabled)
         {
             //experimental
-            Vector com_v;
             icub->EXPERIMENTAL_computeCOMjacobian();
-            icub->EXPERIMENTAL_getCOMvelocity(com_v);
+            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v);
             com_all.push_back(com_v[0]);
             com_all.push_back(com_v[1]);
             com_all.push_back(com_v[2]);
