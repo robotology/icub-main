@@ -270,7 +270,7 @@ public:
                 for (int i=0; i<3; i++)
                     xd[i]=b->get(i).asDouble();
 
-                if (ctrlCompletePose && b->size()>=7)
+                if (ctrlCompletePose && (b->size()>=7))
                 {    
                     for (int i=0; i<4; i++)
                         od[i]=b->get(3+i).asDouble();
