@@ -1,14 +1,11 @@
 // -*- Mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
-* Copyright (C) 2010 Robotcub Consortium
-* Author: Lorenzo Natale
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-*/
-///
-/// $Id: embObjMotionControl.cpp,v 1.9 2008/03/08 10:07:01 babybot Exp $
-///
+ * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ *
+ */
 
 //#include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Bottle.h>
@@ -124,6 +121,15 @@ bool readAndCheckFromConfigData(Bottle &input, Bottle &out, const std::string &k
     return true;
 }
 
+void embObjMotionControl::waitSem()
+{
+	semaphore.wait();
+}
+
+void embObjMotionControl::postSem()
+{
+	semaphore.post();
+}
 
 embObjMotionControl::embObjMotionControl() : 	RateThread(10),
 						ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>(this),
@@ -183,6 +189,26 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	ethResCreator *resList = ethResCreator::instance();
 	res = resList->getResource(prop);
 
+	// Defining Unique Id
+	_fId.type = MotionControl;
+	std::string featId = config.find("FeatId").asString().c_str();
+	cout << "FeatId = " << featId << endl;
+	strcpy(_fId.name, featId.c_str());
+
+	_fId.ep = 255;
+
+	if( 0 == strcmp("EMS_2BLL_H2", _fId.name) )
+		_fId.ep = endpoint_sk_emsboard_leftlowerarm;
+
+	if( 0 == strcmp("EMS_2BLL_H4", _fId.name) )
+		_fId.ep = endpoint_sk_emsboard_rightlowerarm;
+
+
+	if(255 == _fId.ep)
+	{
+		printf("\n ERROR: MotionControl Endpoint not found!!!\n");
+		return false;
+	}
 
 	//
 	//	CONFIGURATION
@@ -343,23 +369,28 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 	//YARP_INFO(Logger::get(),"embObjMotionControl::setPidRaw", Logger::get().log_files.f3);
 	// Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
 	// the EMS I'm referring to.
+	eOnvID_t 					nvid = -1;
+	EOnv 						*nvRoot = NULL;
 
-	EOnv tmp;
-//	EOnv = eo_nvscfg_GetNV;
-// 	using new file
-//	eo_nv_remoteSet();
+	nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, 0x00, jointNVindex_jconfig__pidposition);
+	nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid);
 
-	// old using my test joint e.p.
-//	eOmc_joint_config_t *cfg =  &eo_cfg_nvsEP_joint_usr_rem_board_mem_local->cfg;
-//	copyPid2eo(pid, &cfg->pidposition);
-
-  //  transceiver->load_occasional_rop(eo_ropcode_set, EOK_cfg_nvsEP_joint_endpoint, EOK_cfg_nvsEP_joint_NVID__cfg);
-
-//	transceiver->hostTransceiver_AddSetROP(EOK_cfg_nvsEP_joint_endpoint, EOK_cfg_nvsEP_joint_NVID__cfg, (uint8_t*) &cfg, sizeof(cfg));
-
-	//transceiver->hostTransceiver_AddSetROP(EOK_cfg_nvsEP_base_endpoint, EOK_cfg_nvsEP_base_NVID__localise, &tmp, 1);
-//	printf("Sent EmbObj packet, size = %d\n", udppkt_size);
-
+	if(NULL == nvRoot)
+	{
+		printf("\n>>> ERROR \ntransceiver->getNVhandler returned NULL!!\n");
+		return false;
+	}
+	//eOmc_joint_config_t *cfg =  &eo_cfg_nvsEP_joint_usr_rem_board_mem_local->cfg;
+	eOmc_PID_t	outPid;
+	copyPid2eo(pid, &outPid);
+	if( eores_OK != eo_nv_Set(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
+	{
+		printf("\n>>> ERROR \neo_nv_Set !!\n");
+		return false;
+	}
+	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, jointNVindex_jconfig__pidposition);
+	printf("Sent EmbObj packet, size = %d\n", udppkt_size);
+	return true;
 }
 
 bool embObjMotionControl::setPidsRaw(const Pid *pids)
@@ -423,7 +454,9 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 	//_mutex.wait();		// meccanismo di wait
 
 	EOnv	*nv = res->transceiver->getNVhandler( endpoint_mc_leftlowerleg,  nvid);  //??
+
 	res->transceiver->getNVvalue(nv, (uint8_t *)&a, &sizze);
+	waitSem();
 }
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)

@@ -1,5 +1,24 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+
+/* Copyright (C) 2012  iCub Facility, Istituto Italiano di Tecnologia
+ * Author: Alberto Cardellino
+ * email: alberto.cardellino@iit.it
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
+
+// update comment hereafter
+
 /**
  * @ingroup icub_hardware_modules 
  * \defgroup eth2ems eth2ems
@@ -53,6 +72,9 @@ using namespace std;
 #include <ethManager.h>
 //#include "../ethManager/ethManager.h"
 #include "../embObjLib/hostTransceiver.hpp"
+#include "IRobotInterface.h"
+#include "FeatureInterface.h"
+
 
 // indirizzi ip
 #define DEFAULT_LAPTOP_IP	"10.255.37.155" // da usare col pc104
@@ -90,7 +112,7 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 				            public IFactoryInterface
 {
 private:
-     int 					ret, tot_packet_recv, errors;
+    int 					ret, tot_packet_recv, errors;
     tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
     char 					recv_time_string[40];
@@ -99,8 +121,10 @@ private:
     uint8_t 				*udppkt_data;
 	uint16_t 				udppkt_size;
 
+	// _AC_
 	//hostTransceiver 		*transceiver;
     yarp::os::Semaphore 	_mutex;
+    FEAT_ID					_fId;
 
 	// Joint/Mechanical data
 	int						_njoints;	// Number of joints handled by this EMS; this values will be extracted by the config file
@@ -137,7 +161,7 @@ public:
     ~embObjMotionControl();
 
     char					info[SIZE_INFO];
-//    ethResources *resource;
+    Semaphore				semaphore;
 
     yarp::os::ConstString ethDevName;
     PolyDriver resource;
@@ -150,7 +174,10 @@ public:
     // _AC_
  //   bool configureTransceiver(ITransceiver *trans);
     void getMotorController(DeviceDriver *iMC);
+    void waitSem();
+    void postSem();
     bool alloc(int nj);
+
 
     bool __init(void);
     ///////// 	PID INTERFACE		/////////

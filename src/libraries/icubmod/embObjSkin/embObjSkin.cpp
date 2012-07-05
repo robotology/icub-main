@@ -1,8 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-// Copyright: (C) 2010 RobotCub Consortium
-// Authors: Lorenzo Natale
-// CopyPolicy: Released under the terms of the GNU GPL v2.0.
+/*
+ * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ *
+ */
 
 #include <embObjSkin.h>
 #include "EOnv_hid.h"
