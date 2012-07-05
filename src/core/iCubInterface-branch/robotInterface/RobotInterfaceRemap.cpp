@@ -1,12 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * Copyright (C) 2008 RobotCub Consortium
- * Author: Lorenzo Natale
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
-
 
 #include "RobotInterfaceRemap.h"
 #include "extractPath.h"
@@ -515,7 +514,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     string PC104IpAddress=robotOptions.findGroup("GENERAL").find("PC104IpAddress").asString().c_str();
     printf("\n\n>> PC104IpAddress : %s\n\n", PC104IpAddress.c_str());
     std::cout << "******************************************************************" << endl;
-    std::cout << "--> Creating MotionControl Devices							   *" <<endl;
+    std::cout << "--> Creating MotionControl Devices                               *" <<endl;
     std::cout << "******************************************************************" << endl;
     std::cout<<"Found " << nparts <<" parts"<<endl;
 

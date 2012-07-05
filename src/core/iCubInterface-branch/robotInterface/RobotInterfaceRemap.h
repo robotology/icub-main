@@ -1,14 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
-* \author Lorenzo Natale
-*
-* Copyright (C) 2010 RobotCub Consortium
-*
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-* This file can be edited at src/iCubInterface/main.cpp.
-*/ 
+/*
+ * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ *
+ */
 
 #include "IRobotInterface.h"
 
