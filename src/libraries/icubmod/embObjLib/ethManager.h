@@ -4,17 +4,21 @@
  * @ingroup icub_hardware_modules 
  * \defgroup TheEthManager TheEthManager
  *
- * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a cfw2 can bus device (cfw2 pc104 card). This is the eth2ems module
- * device.
- *
- * Copyright (C) 2010 RobotCub Consortium.
- *
+*/
+/* Copyright (C) 2012  iCub Facility, Istituto Italiano di Tecnologia
  * Author: Alberto Cardellino
+ * email: alberto.cardellino@iit.it
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
  *
- * This file can be edited at src/modules/....h
- *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
  */
 
 //

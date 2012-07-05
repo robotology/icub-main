@@ -1,9 +1,9 @@
-
-/* @file       hostTransceiver.c
-    @brief      This file implements internal implementation of a nv object.
-    @author     marco.accame@iit.it
-    @date       09/03/2010
-**/
+/*
+ * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ *
+ */
 
 
 // --------------------------------------------------------------------------------------------------------------------

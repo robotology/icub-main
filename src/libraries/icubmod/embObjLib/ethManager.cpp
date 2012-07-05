@@ -1,11 +1,14 @@
 // -*- Mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * Copyright (C) 2010 Robotcub Consortium
- * Author: Lorenzo Natale
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
+
+
+
 ///
 /// $Id: TheEthManager.cpp,v 1.9 2008/03/08 10:07:01 babybot Exp $
 ///
@@ -381,6 +384,7 @@ void SendThread::run()
 		{
 			ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
 			TheEthManager::instance()->send(data, (size_t)size, addr);
+			printf("sent package of byte %d to %s\n", size, (*iterator)->address);
 		}
 		iterator++;
 	}
