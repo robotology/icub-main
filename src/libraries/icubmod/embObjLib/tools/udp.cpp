@@ -184,7 +184,6 @@ int Udp::send(char *data, ssize_t size, int client_id)
 		this->error = UDP_ERROR_SEND;
 		return 0;
 	}
-
 	return ret;
 
 }
@@ -203,6 +202,11 @@ int Udp::receive(char *data)
 int Udp::recv(char *data)
 {
   return recvfrom(this->udp_s, (char*)data, this->lBuffer, 0, NULL, NULL);
+}
+
+int Udp::recv(void *data)
+{
+  return recvfrom(this->udp_s, data, this->lBuffer, 0, NULL, NULL);
 }
 
 int Udp::setBufferSize(int size)

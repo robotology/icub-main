@@ -71,6 +71,7 @@ public:
 	int send(char *data, ssize_t size, int client_id=0);
 	int receive(char *data);
 	int recv(char *data);
+	int recv(void *data);
 
 	int getState();
 	int getfd();
