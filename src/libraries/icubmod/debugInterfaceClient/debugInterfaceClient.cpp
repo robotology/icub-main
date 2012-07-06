@@ -254,6 +254,7 @@ bool yarp::dev::DebugInterfaceClient::getRotorPosition(int j, double* t)
 		&&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_POS)
         &&(resp.get(2).asInt()==j))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamps of the whole interface!
         ok=ok&&true;
         *t=resp.get(3).asDouble();
     }
@@ -271,6 +272,7 @@ bool yarp::dev::DebugInterfaceClient::getRotorPositions(double* t)
     if (  (resp.get(0).asVocab()==VOCAB_IS)
         &&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_POSS))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamps of the whole interface!
         ok=ok&&true;
         *t=resp.get(3).asDouble();
     }
@@ -283,13 +285,14 @@ bool yarp::dev::DebugInterfaceClient::getRotorSpeed(int j, double* t)
     cmd.addVocab(VOCAB_GET);
     cmd.addVocab(VOCAB_DEBUG_ROTOR_SPEED);
     cmd.addInt(j);
-
+    
     bool ok = rpc_p.write(cmd, resp);
 
     if (  (resp.get(0).asVocab()==VOCAB_IS)
 		&&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_SPEED)
         &&(resp.get(2).asInt()==j))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamp of the whole interface!
         ok=ok&&true;
         *t=resp.get(3).asDouble();
     }
@@ -307,6 +310,7 @@ bool yarp::dev::DebugInterfaceClient::getRotorSpeeds(double* t)
     if (  (resp.get(0).asVocab()==VOCAB_IS)
         &&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_SPEEDS))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamp of the whole interface!
         ok=ok&&true;
         *t=resp.get(3).asDouble();
     }
@@ -326,6 +330,7 @@ bool yarp::dev::DebugInterfaceClient::getRotorAcceleration(int j, double* t)
 		&&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_ACCEL)
         &&(resp.get(2).asInt()==j))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamp of the whole interface!
         ok=ok&&true;
         *t=resp.get(3).asDouble();
     }
@@ -343,6 +348,7 @@ bool yarp::dev::DebugInterfaceClient::getRotorAccelerations(double* t)
     if (  (resp.get(0).asVocab()==VOCAB_IS)
         &&(resp.get(1).asInt()==VOCAB_DEBUG_ROTOR_ACCELS))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamp of the whole interface!
         ok=ok&&true;
         *t=resp.get(3).asDouble();
     }
@@ -395,6 +401,28 @@ bool yarp::dev::DebugInterfaceClient::getJointPositions(double* t)
         *t=resp.get(3).asDouble();
     }
     return ok;
+}
+
+bool yarp::dev::DebugInterfaceClient::getTimeStamp(Bottle &bot, Stamp &st)
+{
+    if (bot.get(3).asVocab()==VOCAB_TIMESTAMP)
+    {
+        //yup! we have a timestamp
+        int fr=bot.get(4).asInt();
+        double ts=bot.get(5).asDouble();
+        st=Stamp(fr,ts);
+        return true;
+    }
+    return false;
+}
+
+Stamp yarp::dev::DebugInterfaceClient::getLastInputStamp()
+{
+    Stamp ret;
+//        mutex.wait();
+    ret = lastStamp;
+//        mutex.post();
+    return ret;
 }
 
 // implementation of CommandsHelper

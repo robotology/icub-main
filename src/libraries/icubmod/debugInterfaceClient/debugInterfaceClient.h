@@ -44,12 +44,12 @@ namespace yarp{
     }
 }
 
-class yarp::dev::DebugInterfaceClient : public IDebugInterface, public DeviceDriver 
+class yarp::dev::DebugInterfaceClient : public IDebugInterface, public IPreciselyTimed, public DeviceDriver 
 {
 protected:
     Port rpc_p;
     Port command_p;
-    PortReaderBuffer<yarp::sig::Vector> state_buffer;
+    PortReaderBuffer<yarp::sig::Vector> state_buffer; 
     PortWriterBuffer<CommandMessage> command_buffer;
 
     ConstString remote;
@@ -81,6 +81,9 @@ public:
 
     bool getJointPosition(int j, double *value);
     bool getJointPositions(double *value);
+
+    virtual Stamp getLastInputStamp();
+    bool getTimeStamp(Bottle &bot, Stamp &st);
 };
 
 #endif
