@@ -537,7 +537,7 @@ void *recvThread(void * arg)
 
 		if( recv_size > 0)
 		{
-			//			check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
+			check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
 
 			ethResIt iterator = ethResCreator::instance()->begin();
 			while(iterator!=ethResCreator::instance()->end())
@@ -546,7 +546,7 @@ void *recvThread(void * arg)
 				{
 					ethRes = (*iterator);
 					memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-					ethRes->onMsgReception(ethRes->recv_msg, recv_size);
+					//ethRes->onMsgReception(ethRes->recv_msg, recv_size);
 					//continue; // to skip remaining part of the for cycle
 				}
 				iterator++;
