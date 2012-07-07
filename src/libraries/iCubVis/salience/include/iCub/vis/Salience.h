@@ -139,7 +139,7 @@ public:
 
     virtual string getChildFilterName(int j){
         cout << "Salience::getChildFilterName not implemented!" << endl;
-        return false;
+        return string("not-implemented");
     }
 
     virtual bool setWeight(double w){
