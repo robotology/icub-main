@@ -95,6 +95,7 @@ protected:
         void setInterface(ClientGazeController *interface)
         {
             this->interface=interface;
+            setStrict();
             useCallback();
         }
     } portEvents;

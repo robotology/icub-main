@@ -88,6 +88,7 @@ protected:
         void setInterface(ClientCartesianController *interface)
         {
             this->interface=interface;
+            setStrict();
             useCallback();
         }
     } portEvents;
