@@ -218,6 +218,18 @@ void Controller::motionOngoingEventsHandling()
 
 
 /************************************************************************/
+void Controller::motionOngoingEventsFlush()
+{
+    while (motionOngoingEventsCurrent.size()!=0)
+    {
+        double curCheckPoint=*motionOngoingEventsCurrent.begin();
+        notifyEvent("motion-ongoing",curCheckPoint);
+        motionOngoingEventsCurrent.erase(curCheckPoint);
+    }
+}
+
+
+/************************************************************************/
 void Controller::stopLimbsVel()
 {
     if (Robotable)
@@ -510,10 +522,16 @@ void Controller::run()
 
     mutexChain.post();
 
-    if (event!="none")
+    if (event=="motion-onset")
         notifyEvent(event);
 
     motionOngoingEventsHandling();
+
+    if (event=="motion-done")
+    {
+        motionOngoingEventsFlush();
+        notifyEvent(event);
+    }
 
     // update joints angles
     fbHead=Int->integrate(v);

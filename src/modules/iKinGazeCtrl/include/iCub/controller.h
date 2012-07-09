@@ -112,6 +112,7 @@ protected:
     void findMinimumAllowedVergence();
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
+    void motionOngoingEventsFlush();
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,

@@ -1203,6 +1203,8 @@ void ServerCartesianController::run()
     {
         mutex.wait();
 
+        string event="none";
+
         // read the feedback
         double stamp=getFeedback(fb);
         ctrl->set_q(fb);
@@ -1246,7 +1248,7 @@ void ServerCartesianController::run()
 
             // onset of new trajectory
             executingTraj=true;
-            notifyEvent("motion-onset");
+            event="motion-onset";
 
             motionOngoingEventsCurrent=motionOngoingEvents;
             q0=fb;
@@ -1276,7 +1278,7 @@ void ServerCartesianController::run()
                 motionDone   =true;
 
                 stopLimbVel();
-                notifyEvent("motion-done");
+                event="motion-done";
 
                 mutex.post();
 
@@ -1304,7 +1306,16 @@ void ServerCartesianController::run()
             portState.write();
         }
 
+        if (event=="motion-onset")
+            notifyEvent(event);
+
         motionOngoingEventsHandling();
+
+        if (event=="motion-done")
+        {
+            motionOngoingEventsFlush();
+            notifyEvent(event);
+        }
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
@@ -2924,6 +2935,18 @@ void ServerCartesianController::motionOngoingEventsHandling()
             notifyEvent("motion-ongoing",curCheckPoint);
             motionOngoingEventsCurrent.erase(curCheckPoint);
         }
+    }
+}
+
+
+/************************************************************************/
+void ServerCartesianController::motionOngoingEventsFlush()
+{
+    while (motionOngoingEventsCurrent.size()!=0)
+    {
+        double curCheckPoint=*motionOngoingEventsCurrent.begin();
+        notifyEvent("motion-ongoing",curCheckPoint);
+        motionOngoingEventsCurrent.erase(curCheckPoint);
     }
 }
 

@@ -212,6 +212,7 @@ protected:
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
     void   notifyEvent(const std::string &event, const double checkPoint=-1.0);
     void   motionOngoingEventsHandling();
+    void   motionOngoingEventsFlush();
     bool   registerMotionOngoingEvent(const double checkPoint);
     bool   unregisterMotionOngoingEvent(const double checkPoint);
     yarp::os::Bottle listMotionOngoingEvents();
