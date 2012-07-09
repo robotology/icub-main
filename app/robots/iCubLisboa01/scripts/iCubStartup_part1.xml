@@ -50,6 +50,7 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
+		<parameters>--context iCubLisboa01/conf --from iKinGazeCtrl.ini</parameters>
                 <node>icubbrain1</node>
                 <tag>gazeController</tag>
         </module>
