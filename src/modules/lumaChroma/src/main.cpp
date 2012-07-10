@@ -41,14 +41,17 @@
  * - \c context \c lumaChroma/conf \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - \c name \c lumaChroma \n   
+ * - \c --name \c lumaChroma \n   
  *   specifies the name of the module (used to form the stem of module port names)  
  *
- * - \c image \c lumaChroma \n   
+ * - \c --image \cyuv \n   
  *   specifies the type of the module to work on (yuv or hsv)  
  *
- * - \c out \c lumaChroma \n   
- *   specifies the output on the default port  (y, uv, h, s, v)
+ * - \c --out \c Y, UV, H, S, V \n
+ *   specifies the output on the default port  (y, uv, h, s, v). If nothing has been selected, 
+ *   eg --out without extra paramenter or simply without using --out, the default filter is Y for yuv image type
+ *   and S for hsv image type
+ *   
  * 
  * Configuration File Parameters
  *
@@ -58,29 +61,34 @@
  *   
  * - \c imageInputPort \c /image:i \n    
  *   specifies the input port name (this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
+ *   or whatever else is specifed by the name parameter)
  *
  * - \c YPort \c /Y/image:o \n  
  *   specifies the output port name when YUV is selected(this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
+ *   or whatever else is specifed by the name parameter)
  *
  * - \c UVPort \c /UV/image:o \n  
  *   specifies the output port name when YUV is selected(this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
+ *   or whatever else is specifed by the name parameter)
  *
  * - \c HPort \c /H/image:o \n  
  *   specifies the output port name when HSV is selected(this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
+ *   or whatever else is specifed by the name parameter)
  *
  * - \c SPort \c /S/image:o \n  
  *   specifies the output port name when HSV is selected(this string will be prefixed by \c /yuvProc 
- *   or whatever else is specifed by the name parameter
+ *   or whatever else is specifed by the name parameter)
  *
  * - \c VPort \c /V/image:o \n  
  *   specifies the output port name when HSV is selected(this string will be prefixed by \c /yuvProc 
+ *   or whatever else is specifed by the name parameter)
+ *
+ * - \c VPort \c /image:o \n  
+ *   This contains the default image chosen by the user using the --out paramenter. This was added to 
+ *   simplify connections while changing image types for demo applications such as the IOL demo
+ *   (interactiveObjectLearning) or KARMA demo. This string will be prefixed by \c /yuvProc 
  *   or whatever else is specifed by the name parameter
- *
- *
+ *   
  * \section portsa_sec Ports Accessed
  * 
  * - None
@@ -114,6 +122,7 @@
  *  - \c /lumaChroma/H/image:o when HSV is selected\n
  *  - \c /lumaChroma/S/image:o when HSV is selected\n
  *  - \c /lumaChroma/V/image:o when HSV is selected\n
+ *  - \c /lumaChroma/image:o default filter port is selected\n
  *
  * Port types
  *
@@ -124,6 +133,7 @@
  * \c BufferedPort<ImageOf<PixelMono> >   \c outPortY;   
  * \c BufferedPort<ImageOf<PixelMono> >   \c outPortUV;   
  * \c BufferedPort<ImageOf<PixelMono> >   \c outPortV;   
+ * \c BufferedPort<ImageOf<PixelMono> >   \c defaultPortOut;   
  *
  * \section in_files_sec Input Data Files
  *
@@ -143,7 +153,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>lumaChroma --name lumaChroma --image yuv (or hsv) --context lumaChroma/conf --from config.ini </tt>
+ * <tt>lumaChroma --name lumaChroma --image yuv (or hsv) --out Y --context lumaChroma/conf --from config.ini </tt>
  *
  * \author 
  * 
