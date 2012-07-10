@@ -144,15 +144,15 @@ PROCThread::PROCThread( string moduleName, string imgType, string whichPort )
     if (imgType == "yuv" || imgType == "YUV") 
     {
         cout << "will run module using the YUV image colour space" << endl;
-        if (whichPort.size() < 1)
-            whichPort = "Y";
+        if (whichPort.size() == 0)
+            this->whichPort = "Y";
     }
     else if (imgType == "hsv" || imgType == "HSV") 
     {
         isYUV = false;
         cout << "will run module using the HSV image colour space" << endl;
-        if (whichPort.size() < 1)
-            whichPort = "S";
+        if (whichPort.size() == 0)
+            this->whichPort = "S";
     }
     else
     {
@@ -332,13 +332,15 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
 
     if ( defaultPortOut.getOutputCount()>0 )
     {
-        if (whichPort=="y" || whichPort == "Y" || whichPort=="h" || whichPort == "H")
-            defaultPortOut.prepare() = *img_out_Y;
-        if (whichPort=="u" || whichPort == "U" || whichPort=="v" || whichPort == "V"  || whichPort=="uv" || whichPort == "UV" || whichPort=="s" || whichPort == "S" )
-            defaultPortOut.prepare() = *img_out_UV;
-        if (whichPort=="v" || whichPort == "V" )
+        if (!isYUV && whichPort=="v" || !isYUV && whichPort == "V" )
             defaultPortOut.prepare() = *img_out_V;
-
+        else if (whichPort=="y" || whichPort == "Y" || whichPort=="h" || whichPort == "H")
+            defaultPortOut.prepare() = *img_out_Y;
+        else if (whichPort=="u" || whichPort == "U" || whichPort=="v" || whichPort == "V"  || whichPort=="uv" || whichPort == "UV" || whichPort=="s" || whichPort == "S" )
+            defaultPortOut.prepare() = *img_out_UV;
+        else 
+            fprintf(stdout, "something went wrong\n");  
+            
         defaultPortOut.write();
     }
 
