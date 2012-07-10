@@ -130,7 +130,7 @@ PROCThread::~PROCThread()
 
 }
 
-PROCThread::PROCThread( string moduleName, string imgType, string whichPort )
+PROCThread::PROCThread( const string &moduleName, const string &imgType, const string &whichPort )
 {
     isYUV = true;
 
@@ -480,3 +480,5 @@ ImageOf<PixelRgb>* PROCThread::extender(ImageOf<PixelRgb>& inputOrigImage, int m
     }
     return inputExtImage;
 }
+
+

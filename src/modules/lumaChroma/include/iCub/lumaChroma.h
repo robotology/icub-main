@@ -89,7 +89,7 @@ public:
     * @param moduleName is passed to the thread in order to initialise all the ports correctly (default yuvProc)
     * @param imgType is passed to the thread in order to work on YUV or on HSV images (default yuv)
     */
-    PROCThread(std::string moduleName, std::string imgType, std::string whichPort);
+    PROCThread(const std::string &moduleName, const std::string &imgType, const std::string &whichPort);
     
     /**
      * destructor
@@ -138,3 +138,5 @@ public:
 #endif
 
 //empty line to make gcc happy
+
+

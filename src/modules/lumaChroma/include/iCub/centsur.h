@@ -49,12 +49,12 @@ public:
     /**
      * convert image to 32f precision
      */ 
-    void proc_im_8u(cv::Mat im_8u);
+    void proc_im_8u(const cv::Mat &im_8u);
 
     /**
      * process 32f image creating gauss pyramids:
      */
-    void proc_im_32f( cv::Mat im_32f );
+    void proc_im_32f( const cv::Mat &im_32f );
 
     /**
      * get center surround image in 32f precision
@@ -79,7 +79,9 @@ private:
     /**
      * creates pyramids
      */
-    void make_pyramid(cv::Mat im_in);
+    void make_pyramid(const cv::Mat &im_in);
 };
 #endif
 //empty line to make gcc happy
+
+

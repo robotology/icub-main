@@ -72,15 +72,15 @@ CentSur::~CentSur()
 	csTot32fTmp.release();
 }
 
-void CentSur::proc_im_8u(cv::Mat img_8u)
+void CentSur::proc_im_8u( const cv::Mat &img_8u )
 {
     //convert im precision to 32f:
-	img_8u.convertTo( img_32f, CV_32FC1, 1.0/255.0 );
+    img_8u.convertTo( img_32f, CV_32FC1, 1.0/255.0 );
     //process as normal:
     proc_im_32f( img_32f );
 }
 
-void CentSur::proc_im_32f( cv::Mat im_32f )
+void CentSur::proc_im_32f( const cv::Mat &im_32f )
 {
     //make image & gauss pyramids:
     make_pyramid( im_32f );
@@ -113,7 +113,7 @@ void CentSur::proc_im_32f( cv::Mat im_32f )
 	csTot32f.convertTo( csTot8u, CV_8UC1, 1.0 * 255.0 );
 }
 
-void CentSur::make_pyramid( cv::Mat im_32f )
+void CentSur::make_pyramid( const cv::Mat &im_32f )
 {
     //copy im to pyramid[0]:
     im_32f.copyTo( pyramid[0] );
@@ -143,3 +143,5 @@ void CentSur::make_pyramid( cv::Mat im_32f )
 //cv::INTER_LANCZOS4 INTER_CUBIC
     }
 }
+
+
