@@ -140,6 +140,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     vdeg =CTRL_RAD2DEG*v;
 
     port_xd=NULL;
+    ctrlActiveRisingEdgeTime=0.0;
     saccadeStartTime=0.0;
     tiltDone=panDone=verDone=false;
     unplugCtrlEyes=false;
@@ -361,9 +362,10 @@ void Controller::run()
 
     double errNeck=norm(new_qd.subVector(0,2)-fbHead.subVector(0,2));
     double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1));
-    bool swOffCond=!commData->get_isSaccadeUnderway() &&
+    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLETIME) ? false :
+                   (!commData->get_isSaccadeUnderway() &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
-                   (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD);
+                   (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD));
 
     // verify control switching conditions
     if (commData->get_isCtrlActive())
@@ -371,23 +373,35 @@ void Controller::run()
         // switch-off condition
         if (swOffCond)
         {
+            event="motion-done";
+
             stopLimbsVel();
             commData->get_isCtrlActive()=false;
-            port_xd->get_new()=false;
-
-            event="motion-done";
         }
+        // manage new target while controller is active
+        else if (port_xd->get_new())
+        {
+            event="motion-onset";
+
+            mutexData.wait();
+            motionOngoingEventsCurrent=motionOngoingEvents;
+            mutexData.post();
+        }
+
+        port_xd->get_new()=false;
     }
-    else if (!swOffCond)
+    else
     {
         // switch-on condition
-        commData->get_isCtrlActive()=(new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
-                                     (commData->get_canCtrlBeDisabled() ?
-                                      port_xd->get_new() : (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES));
+        commData->get_isCtrlActive()=port_xd->get_new() || (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
+                                     (!commData->get_canCtrlBeDisabled() && (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES));
 
         // reset controllers
         if (commData->get_isCtrlActive())
         {
+            ctrlActiveRisingEdgeTime=Time::now();
+            port_xd->get_new()=false;
+
             Vector zeros(3,0.0);
             mjCtrlNeck->reset(zeros);
             mjCtrlEyes->reset(zeros);

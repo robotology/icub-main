@@ -37,6 +37,7 @@
 #include <iCub/ctrl/pids.h>
 #include <iCub/utils.h>
 
+#define GAZECTRL_SWOFFCOND_DISABLETIME      0.100   // [s]
 #define GAZECTRL_MOTIONDONE_NECK_QTHRES     0.300   // [deg]
 #define GAZECTRL_MOTIONDONE_EYES_QTHRES     0.100   // [deg]
 #define GAZECTRL_MOTIONSTART_XTHRES         0.001   // [m]
@@ -90,6 +91,7 @@ protected:
     bool headV2;
     int nJointsTorso;
     int nJointsHead;
+    double ctrlActiveRisingEdgeTime;
     double saccadeStartTime;
     double printAccTime;
     double neckTime;
