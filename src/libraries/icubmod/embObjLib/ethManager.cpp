@@ -476,10 +476,19 @@ TheEthManager::~TheEthManager()
 {
 	char tmp[126];
 	sprintf(tmp, "TheEthManager::~TheEthManager() destructor call; handle= %p - i=%d", handle, i);
-	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	printf("TheEthManager::~TheEthManager()\n");
+	YARP_DEBUG(Logger::get(),tmp);
 	i--;
 	if (i == 0 )
 	{
+#ifdef _SEPARETED_THREADS_
+		keepGoingOn2 = false;
+		print_data();
+		fflush(stdout);
+		sleep(1);
+		ACE_Thread::cancel(id_recvThread);
+#endif
+
 		sprintf(tmp, "TheEthManager::~TheEthManager() - real destruction happens here handle= %p - i=%d", handle, i);
 		//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 		_socket->close();
@@ -525,7 +534,7 @@ void *recvThread(void * arg)
 	ACE_UINT16 					recv_size;
 	ACE_INET_Addr				sender_addr;
 	char 						incoming_msg[MAX_RECV_SIZE];
-
+	int							counter = 0;
 
 	while (keepGoingOn2)
 	{
@@ -553,8 +562,17 @@ void *recvThread(void * arg)
 			}
 		}
 		else
+		{
 			printf("Received weird msg of size %d\n", recv_size);
+		}
+		if(counter++ >= 60*1000)
+		{
+			print_data();
+			fflush(stdout);
+			counter = 0;
+		}
 	}
+	return NULL;
 }
 
 #else

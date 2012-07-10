@@ -12,7 +12,7 @@ PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
-
+set(TRANSCEIVER_FOLDER	$ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/ )
 
 #add_definitions( -DMYDEFINE=CIAO )
 
@@ -197,7 +197,7 @@ set(PROT_SOURCE
 						${PROT_FOLDER}/EOVstorage.c
 						${PROT_FOLDER}EOmatrix3d.c)
 
-set(PROT_HEADER  				${PROT_FOLDER}/EOhostTransceiver_hid.h
+set(PROT_HEADER  		${PROT_FOLDER}/EOhostTransceiver_hid.h
 						${PROT_FOLDER}/EOnv_hid.h
 						${PROT_FOLDER}/EOnvsCfg_hid.h
 						${PROT_FOLDER}/EOreceiver_hid.h
@@ -219,7 +219,7 @@ set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
 
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/ethManager.cpp
-						${EXTRA_FOLDER}/debugFunctions.cpp)
+						${EXTRA_FOLDER}/tools/debugFunctions.cpp)
 
 set(embobj_source 		${BODY_COMMON_SOURCE} 
 						${CORE_FOLDER_SOURCE} 

@@ -87,6 +87,7 @@ bool check_received_pkt(ACE_INET_Addr *sender_addr, void * pkt, ACE_UINT16 pkt_s
 	return do_real_check(board, pkt, pkt_size);
 }
 
+
 bool check_received_pkt(sockaddr *sender_addr, void * pkt, ACE_UINT16 pkt_size)
 {
 	char  str[64];
