@@ -31,16 +31,20 @@ bool lumaChroma::configure(yarp::os::ResourceFinder &rf)
 {    
     /* Process all parameters from both command-line and .ini file */
 
-    moduleName            = rf.check("name", 
-                           Value("lumaChroma"), 
-                           "module name (string)").asString();
+    moduleName          = rf.check("name", 
+                        Value("lumaChroma"), 
+                        "module name (string)").asString();
 
     setName(moduleName.c_str());
 
-    imageType            = rf.check("image", 
-                           Value("yuv"), 
-                           "image type (string)").asString();
-    
+    imageType           = rf.check("image", 
+                        Value("yuv"), 
+                        "image type (string)").asString();
+
+    whichPort           = rf.check("out",
+                        Value(""),
+                        "default port (string)").asString();
+
    /*
     * attach a port of the same name as the module (prefixed with a /) to the module
     * so that messages received from the port are redirected to the respond method
@@ -58,7 +62,7 @@ bool lumaChroma::configure(yarp::os::ResourceFinder &rf)
     attach(handlerPort);    // attach to port
 
     /* create the thread and pass pointers to the module parameters */
-    procThread = new PROCThread(moduleName, imageType);
+    procThread = new PROCThread(moduleName, imageType, whichPort);
 
     /* now start the thread to do the work */
     procThread->open();
@@ -97,14 +101,15 @@ bool lumaChroma::respond(const Bottle& command, Bottle& reply)
     else if (command.get(0).asString()=="help") 
     {
         cout << "Options:" << endl << endl;
-        cout << "\t--name       name: module name (default: lumaChroma)"                      << endl;
-        cout << "\t--image      type: image type to process (default: yuv)"                   << endl;
+        cout << "\t--name       name: module name (default: lumaChroma)"                                << endl;
+        cout << "\t--image      type: image type to process (default: yuv)"                             << endl;
+        cout << "\t--out        default port: duplicates the out port with a default name" << endl;
         reply.addString("ok");
     }
     else
     {
-	    cout << "command not known - type help for more info" << endl;
-	}
+        cout << "command not known - type help for more info" << endl;
+    }
     return true;
 }
 
@@ -125,9 +130,13 @@ PROCThread::~PROCThread()
 
 }
 
-PROCThread::PROCThread( string moduleName, string imgType )
+PROCThread::PROCThread( string moduleName, string imgType, string whichPort )
 {
     isYUV = true;
+
+    //set up default port name
+    this->whichPort = whichPort;
+
     //set up module name
     this->moduleName = moduleName;
 
@@ -135,22 +144,28 @@ PROCThread::PROCThread( string moduleName, string imgType )
     if (imgType == "yuv" || imgType == "YUV") 
     {
         cout << "will run module using the YUV image colour space" << endl;
-    }else if (imgType == "hsv" || imgType == "HSV") 
+        if (whichPort.size() < 1)
+            whichPort = "Y";
+    }
+    else if (imgType == "hsv" || imgType == "HSV") 
     {
         isYUV = false;
         cout << "will run module using the HSV image colour space" << endl;
-    }else
+        if (whichPort.size() < 1)
+            whichPort = "S";
+    }
+    else
     {
         cout << "probably an error in the colour space will use default: YUV" << endl;
     }
     cout << "initialising Variables" << endl;
 
     img_out_Y = NULL;    
-	img_out_UV = NULL;
+    img_out_UV = NULL;
     img_out_V = NULL;
     inputExtImage = NULL;
     img_Y = NULL;    
-	img_UV = NULL;
+    img_UV = NULL;
     img_V = NULL;
     centerSurr = NULL;
     allocated = false;
@@ -186,6 +201,9 @@ bool PROCThread::open()
         imageOutPort3.open( outputPortName3.c_str() );
     }
 
+    outputPortNameDefault = "/" + moduleName + "/image:o";
+    defaultPortOut.open( outputPortNameDefault.c_str() );
+
     check=false;
    
     return true;
@@ -206,33 +224,33 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
         allocate( img );
     }
     extender( img, KERNSIZEMAX );
-	if ( isYUV )
+    if ( isYUV )
         cv::cvtColor( cv::Mat((IplImage*)inputExtImage->getIplImage()), orig, CV_RGB2YCrCb);
     else
-		cv::cvtColor( cv::Mat((IplImage*)inputExtImage->getIplImage()), orig, CV_RGB2HSV);
+        cv::cvtColor( cv::Mat((IplImage*)inputExtImage->getIplImage()), orig, CV_RGB2HSV);
     
     vector<cv::Mat> planes;
     cv::split(orig, planes);
     //performs centre-surround uniqueness analysis on first plane
     centerSurr->proc_im_8u( planes[0] );
-	
+
     IplImage y_img = centerSurr->get_centsur_norm8u();
     cvCopyImage( &y_img, ( IplImage *)img_Y->getIplImage());
-	csTot32f.setTo(cv::Scalar(0));
+    csTot32f.setTo(cv::Scalar(0));
 
     //performs centre-surround uniqueness analysis on second plane:
     centerSurr->proc_im_8u( planes[1] );
     if ( isYUV )
-		cv::add(centerSurr->get_centsur_32f(), csTot32f, csTot32f);
+        cv::add(centerSurr->get_centsur_32f(), csTot32f, csTot32f);
     else
     {
-		IplImage s_img = centerSurr->get_centsur_norm8u();
+        IplImage s_img = centerSurr->get_centsur_norm8u();
         cvCopyImage( &y_img, ( IplImage *)img_UV->getIplImage());
     }
     //performs centre-surround uniqueness analysis on third plane:
     centerSurr->proc_im_8u( planes[2] );
     if ( isYUV )
-		cv::add(centerSurr->get_centsur_32f(), csTot32f, csTot32f);
+        cv::add(centerSurr->get_centsur_32f(), csTot32f, csTot32f);
     else
     {
         IplImage v_img = centerSurr->get_centsur_norm8u();
@@ -295,22 +313,35 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
     //output Y or H centre-surround results to ports
     if ( imageOutPort1.getOutputCount()>0 )
     {
-        imageOutPort1.prepare() = *img_out_Y;	
+        imageOutPort1.prepare() = *img_out_Y;
         imageOutPort1.write();
     }
 
     //output UV or V centre-surround results to ports
     if ( imageOutPort2.getOutputCount()>0 )
     {
-         imageOutPort2.prepare() = *img_out_UV;	
+        imageOutPort2.prepare() = *img_out_UV;
         imageOutPort2.write();
     }
     //output H centre-surround results to ports
     if ( !isYUV && imageOutPort3.getOutputCount()>0 )
     {
-        imageOutPort3.prepare() = *img_out_V;	
+        imageOutPort3.prepare() = *img_out_V;
         imageOutPort3.write();
     }
+
+    if ( defaultPortOut.getOutputCount()>0 )
+    {
+        if (whichPort=="y" || whichPort == "Y" || whichPort=="h" || whichPort == "H")
+            defaultPortOut.prepare() = *img_out_Y;
+        if (whichPort=="u" || whichPort == "U" || whichPort=="v" || whichPort == "V"  || whichPort=="uv" || whichPort == "UV" || whichPort=="s" || whichPort == "S" )
+            defaultPortOut.prepare() = *img_out_UV;
+        if (whichPort=="v" || whichPort == "V" )
+            defaultPortOut.prepare() = *img_out_V;
+
+        defaultPortOut.write();
+    }
+
     mutex.post();
 }
 
@@ -326,7 +357,7 @@ void PROCThread::allocate( ImageOf<PixelRgb> &img )
     cout << "Will extend these to: " << srcsize.width << " " << srcsize.height << endl;
 
     orig = cv::Mat(srcsize.width, srcsize.height, CV_8UC3);
-	csTot32f = cv::Mat( srcsize.height, srcsize.width, CV_32FC1 );
+    csTot32f = cv::Mat( srcsize.height, srcsize.width, CV_32FC1 );
     uvimg = cv::Mat( srcsize.height, srcsize.width, CV_32FC1 );
 
     ncsscale = 4;
@@ -335,23 +366,23 @@ void PROCThread::allocate( ImageOf<PixelRgb> &img )
     inputExtImage = new ImageOf<PixelRgb>;
     inputExtImage->resize( srcsize.width, srcsize.height );
 
-	img_Y = new ImageOf<PixelMono>;
-	img_Y->resize( srcsize.width, srcsize.height );
+    img_Y = new ImageOf<PixelMono>;
+    img_Y->resize( srcsize.width, srcsize.height );
 
     img_out_Y = new ImageOf<PixelMono>;
-	img_out_Y->resize( origsize.width, origsize.height );
+    img_out_Y->resize( origsize.width, origsize.height );
 
     img_UV = new ImageOf<PixelMono>;
-	img_UV->resize( srcsize.width, srcsize.height );
+    img_UV->resize( srcsize.width, srcsize.height );
 
     img_out_UV = new ImageOf<PixelMono>;
-	img_out_UV->resize( origsize.width, origsize.height );
+    img_out_UV->resize( origsize.width, origsize.height );
 
     img_V = new ImageOf<PixelMono>;
-	img_V->resize( srcsize.width, srcsize.height );
+    img_V->resize( srcsize.width, srcsize.height );
 
     img_out_V = new ImageOf<PixelMono>;
-	img_out_V->resize( origsize.width, origsize.height );
+    img_out_V->resize( origsize.width, origsize.height );
         
     allocated = true;
     cout << "done allocating" << endl;
@@ -366,15 +397,15 @@ void PROCThread::deallocate( )
     delete img_UV;
     delete img_V;
     delete inputExtImage;
-	img_out_Y = NULL;    
-	img_out_UV = NULL;
+    img_out_Y = NULL;    
+    img_out_UV = NULL;
     img_out_V = NULL;
     inputExtImage = NULL;
     img_Y = NULL;    
-	img_UV = NULL;
+    img_UV = NULL;
     img_V = NULL;
     delete centerSurr;
-	centerSurr = NULL;
+    centerSurr = NULL;
     
     orig.release();
     uvimg.release();
@@ -391,6 +422,8 @@ void PROCThread::close()
     imageOutPort2.close();
     if ( !isYUV ) 
         imageOutPort3.close();
+    defaultPortOut.close();
+
     deallocate();
     cout << "deallocated all attempting to close read port..." << endl;
     BufferedPort<ImageOf<PixelRgb> >::close();
@@ -398,7 +431,7 @@ void PROCThread::close()
     cout << "finished closing the read port..." << endl;
 }
 
-void PROCThread::interrupt() 
+void PROCThread::interrupt()
 {
     mutex.wait();
     check=true;
@@ -410,6 +443,8 @@ void PROCThread::interrupt()
 
     if ( !isYUV ) 
         imageOutPort3.interrupt();
+
+    defaultPortOut.interrupt();
     
     BufferedPort<ImageOf<PixelRgb> >::interrupt();
     cout << "finished interrupt ports" << endl;
@@ -419,7 +454,7 @@ void PROCThread::interrupt()
 ImageOf<PixelRgb>* PROCThread::extender(ImageOf<PixelRgb>& inputOrigImage, int maxSize) 
 {
     // copy of the image 
-	inputExtImage->copy( inputOrigImage, srcsize.width, srcsize.height );
+    inputExtImage->copy( inputOrigImage, srcsize.width, srcsize.height );
     // memcpy of the horizontal fovea lines (rows) 
     const int sizeBlock = origsize.width / 2;
     for(int i = 0; i < maxSize; i++) 
@@ -443,4 +478,3 @@ ImageOf<PixelRgb>* PROCThread::extender(ImageOf<PixelRgb>& inputOrigImage, int m
     }
     return inputExtImage;
 }
-

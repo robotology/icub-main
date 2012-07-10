@@ -46,6 +46,9 @@
  *
  * - \c image \c lumaChroma \n   
  *   specifies the type of the module to work on (yuv or hsv)  
+ *
+ * - \c out \c lumaChroma \n   
+ *   specifies the output on the default port  (y, uv, h, s, v)
  * 
  * Configuration File Parameters
  *
