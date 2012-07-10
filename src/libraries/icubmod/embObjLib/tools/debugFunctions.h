@@ -38,7 +38,7 @@
 #include "EOropframe_hid.h"
 #include "embObjLibInterface.h"
 
-
+#define _LINUX_UDP_SOCKET_
 #define _DEEP_DEBUG_
 
 #ifdef _DEEP_DEBUG_
@@ -49,6 +49,9 @@
 
 
 bool check_received_pkt(ACE_INET_Addr *sender_addr, void * pkt, ACE_UINT16 pkt_size);
+bool check_received_pkt(sockaddr *sender_addr, void * pkt, ACE_UINT16 pkt_size);
+bool do_real_check(int board, void * pkt, ACE_UINT16 pkt_size);
+
 void print_data(void);
 
 static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)

@@ -28,7 +28,7 @@ int Udp::setDestAddress(struct sockaddr_in *addr)
 }
 */
 
-int Udp::initLocal( int recv_port)
+int Udp::initLocal( int recv_port, const char *address)
 {
 	int broadcastPermission = 1;
 
@@ -42,6 +42,13 @@ int Udp::initLocal( int recv_port)
 		printf("Bounding socket ...");
 	}
 
+	in_addr_t my_in_addr;
+	if( address == NULL)
+//	if(strcmp(&address, "ANY") == 0)
+		my_in_addr = INADDR_ANY;
+	else
+		my_in_addr = inet_addr(address);
+
 	  // Create the UDP socket
 	  this->udp_s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -52,7 +59,7 @@ int Udp::initLocal( int recv_port)
 	  struct sockaddr_in addrL;
 	  addrL.sin_family = AF_INET;
 	  addrL.sin_port = htons(recv_port);
-	  addrL.sin_addr.s_addr = INADDR_ANY;			// any interfaccia!! (eth0, eth1, wlan0 ecc...)
+	  addrL.sin_addr.s_addr = my_in_addr;			// any interfaccia!! (eth0, eth1, wlan0 ecc...)
 
 	  /* Set socket to allow broadcast */
 	  if (setsockopt(this->udp_s, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0)
@@ -98,10 +105,12 @@ int Udp::connect(char *address, int send_port, int recv_port)
 
 	  // Configurando local
 	  struct sockaddr_in addrL;
+	  memset(&addrL, 0, sizeof(sockaddr_in));
 	  addrL.sin_family = AF_INET;
 	  addrL.sin_port = htons(recv_port);
-	  addrL.sin_addr.s_addr = INADDR_ANY;
+	  addrL.sin_addr.s_addr = inet_addr(address); //specific interface while INADDR_ANY means any interfaccia!! (eth0, eth1, wlan0 ecc...)
 
+	  setsockopt(udp_s, SOL_SOCKET, SO_REUSEADDR, (char *)0, 0);
 	  if (bind(udp_s, (struct sockaddr*)&addrL, sizeof(addrL)) == -1)		// ERROR
 		return 0;
 
@@ -204,10 +213,12 @@ int Udp::recv(char *data)
   return recvfrom(this->udp_s, (char*)data, this->lBuffer, 0, NULL, NULL);
 }
 
-int Udp::recv(void *data)
+int Udp::recv(void *data, sockaddr *addr)
 {
-  return recvfrom(this->udp_s, data, this->lBuffer, 0, NULL, NULL);
+	unsigned int len = sizeof(sockaddr);
+  return recvfrom(this->udp_s, data, this->lBuffer, 0, (sockaddr*) addr, &len);
 }
+
 
 int Udp::setBufferSize(int size)
 {

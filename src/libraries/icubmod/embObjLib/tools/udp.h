@@ -60,7 +60,7 @@ public:
 	Udp();
 	~Udp();
 
-	int initLocal( int recv_port);
+	int initLocal( int recv_port, const char *address = NULL);
 	int connect(char *address, int send_port, int recv_port = -1);
 	int disconnect();
 	
@@ -71,7 +71,7 @@ public:
 	int send(char *data, ssize_t size, int client_id=0);
 	int receive(char *data);
 	int recv(char *data);
-	int recv(void *data);
+	int recv(void *data, sockaddr *addr);
 
 	int getState();
 	int getfd();
