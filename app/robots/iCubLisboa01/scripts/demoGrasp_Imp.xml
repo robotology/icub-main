@@ -12,7 +12,7 @@
       
         <module>
                 <name>pf3dTracker</name>
-                <parameters>--from pf3dTracker.ini</parameters>
+                <parameters>--from pf3dTracker_iCubLisboa01_left.ini</parameters>
                 <node>icubbrain1</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>
