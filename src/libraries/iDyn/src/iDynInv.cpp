@@ -1502,8 +1502,8 @@ void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
 	case DYNAMIC_CORIOLIS_GRAVITY:
 	case DYNAMIC_W_ROTOR:
         ddp = link->getLinAcc() * R;
-        ddp -= cross(dw, r_proj);
-        ddp -= cross(w, cross(w, r_proj));
+        ddp += cross(dw, r_proj);
+        ddp += cross(w, cross(w, r_proj));
 		/*ddp = getR().transposed() * link->getLinAcc() 
 			- cross(dw,getr(true))
 			- cross(w,cross(w,getr(true)));*/
@@ -1557,8 +1557,8 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
             Vector temp = Mu;
             temp += cross(r_proj, link->getForce()*R);
 			temp -= cross(rc, m*ddpC);
-			temp -= I * (dw*R);
-			temp -= cross( w*R , I*(w*R));
+			temp -= I * (dw);
+			temp -= cross( w , I*(w));
             link->setMoment(R*temp);
 		    /*link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
 			    - cross(getrC(),(m * getLinAccC()))
@@ -1570,8 +1570,8 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
 	case DYNAMIC_W_ROTOR:
 		link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
 			- cross(getrC(),(m * getLinAccC()))
-			- getInertia() * getR().transposed() * getAngAcc() 
-			- cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
+			- getInertia() * getAngAcc() 
+			- cross( getAngVel() , getInertia() * getAngVel())
 			- link->getKr() * link->getD2Ang() * link->getIm() * getZM()
 			- link->getKr() * link->getDAng() * link->getIm() * cross(getAngVel(),getZM())
 			));
@@ -1598,8 +1598,8 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
             Mu = cross(rc, m*ddpC);
             Mu -= cross(r_proj, link->getForce()*R);
             Mu += link->getMoment()*R;
-            Mu += I * (dw*R);
-            Mu += cross( w*R , I*(w*R));
+            Mu += I * (dw);
+            Mu += cross( w , I*(w));
 	        /*Mu = cross(getrC(),(m * getLinAccC()))
                 - cross(getr(true),getR().transposed()*link->getForce()) 
 			    + getR().transposed() * link->getMoment()
@@ -1610,8 +1610,8 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
 	Mu =    cross(getrC(),(m * getLinAccC()))  
             - cross(getr(true),getR().transposed()*link->getForce()) 
 			+ getR().transposed() * link->getMoment()
-			+ getInertia() * getR().transposed() * getAngAcc() 
-			+ cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
+			+ getInertia() *  getAngAcc() 
+			+ cross( getAngVel() , getInertia() * getAngVel())
 			+ link->getKr() * link->getD2Ang() * link->getIm() * getZM()
 			+ link->getKr() * link->getDAng() * link->getIm() * cross(getAngVel(),getZM()) ;
 
