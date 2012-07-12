@@ -1320,7 +1320,13 @@ void ServerCartesianController::run()
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
         if (connectToSolver())
+        {
             newController();
+
+            // reserve id==0 for start-up context
+            int id0;
+            storeContext(&id0);
+        }
 
         connectCnt=0;
     }
@@ -2793,7 +2799,7 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 /************************************************************************/
 bool ServerCartesianController::getInfo(Bottle &info)
 {
-    if (connected)
+    if (attached)
     {
         info.clear();
 

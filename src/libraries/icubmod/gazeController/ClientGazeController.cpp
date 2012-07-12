@@ -1484,7 +1484,7 @@ bool ClientGazeController::storeContext(int *id)
 /************************************************************************/
 bool ClientGazeController::restoreContext(const int id)
 {
-    if (!connected || (contextIdList.find(id)==contextIdList.end()))
+    if (!connected || (contextIdList.find(id)==contextIdList.end()) && (id!=0))
         return false;
 
     Bottle command, reply;

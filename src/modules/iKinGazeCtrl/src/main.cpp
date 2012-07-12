@@ -605,7 +605,8 @@ protected:
         // localizer part
         loc->getPidOptions(context.pidOptions);
 
-        *id=contextIdCnt++;
+        if (id!=NULL)
+            *id=contextIdCnt++;
     }
 
     /************************************************************************/
@@ -829,6 +830,10 @@ public:
         attach(rpcPort);
 
         contextIdCnt=0;
+
+        // reserve id==0 for start-up context
+        int id0;
+        storeContext(&id0);
 
         return true;
     }
