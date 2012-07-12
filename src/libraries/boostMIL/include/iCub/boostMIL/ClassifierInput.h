@@ -66,7 +66,7 @@ public:
     Inputs(const Inputs &input)
     {
         setLabel(input.getLabel());
-        for(std::map<std::string,const yarp::sig::Vector*>::iterator itr = map.begin(); itr != map.end(); itr++)
+        for(std::map<std::string,const yarp::sig::Vector*>::const_iterator itr = input.map.begin(); itr != input.map.end(); itr++)
             setInput(itr->first,itr->second);
     }
 
