@@ -499,8 +499,8 @@ protected:
             if (useLeftArm)
             {
                 drvCartLeftArm->view(icart);
-                icart->restoreContext(0);
                 icart->storeContext(&startup_context_id_left);
+                icart->restoreContext(0);
             }
             else
                 return;
@@ -512,8 +512,8 @@ protected:
             if (useRightArm)
             {
                 drvCartRightArm->view(icart);
-                icart->restoreContext(0);
                 icart->storeContext(&startup_context_id_right);
+                icart->restoreContext(0);
             }
             else
                 return;
@@ -1478,8 +1478,8 @@ public:
         drvHead->view(encHead);
         drvGazeCtrl->view(gazeCtrl);
 
-        gazeCtrl->restoreContext(0);
         gazeCtrl->storeContext(&startup_context_id_gaze);
+        gazeCtrl->restoreContext(0);
         gazeCtrl->blockNeckRoll(0.0);
         gazeCtrl->setSaccadesActivationAngle(20.0);
         gazeCtrl->setSaccadesInhibitionPeriod(1.0);
