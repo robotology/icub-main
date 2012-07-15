@@ -242,8 +242,9 @@ within the configuration file.
   select the current context)
 
 \section in_files_sec Input/Output Data Files
--- table.ini contains the table height and is updated on-line as 
-   result of an exploration phase.
+-- kinematic_offsets.ini contains the table height as well as
+   the arms kinematic offsets and is updated on-line as result 
+   of an exploration phase. 
 -- network.ini contains the information needed by the system to 
    load the neural network that computes the stereo2cartesian mapping.
 -- hands_sequences.ini contains the list of hand sequences for the 
