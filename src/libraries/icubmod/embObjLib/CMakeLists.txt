@@ -250,6 +250,6 @@ SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
-TARGET_LINK_LIBRARIES(${PROJECTNAME} IICcore) 
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${ACE_LIBRARIES} IICcore) 
 
 icub_export_library(${PROJECTNAME})

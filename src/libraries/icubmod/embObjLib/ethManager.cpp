@@ -77,11 +77,13 @@ bool ethResources::open(yarp::os::Searchable &config)
 	uint8_t board_n = -1;
 	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
+	Value val;
 	//	string str=config.toString().c_str();
 	ACE_UINT16 loc_port, rem_port;
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
+	printf("Config: \n%s\n\n", config.toString().c_str() );
 	// AC_YARP_INFO(Logger::get(), "ethResources::open()", Logger::get().log_files.f3);
 
 	//
@@ -89,6 +91,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//
 	// extract eth group info
 	xtmp = Bottle(config.findGroup("ETH"));
+
 
 	xtmp2 = xtmp.findGroup("IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
@@ -103,6 +106,10 @@ bool ethResources::open(yarp::os::Searchable &config)
 	// ACE format
 	remote_dev.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
 
+	int boardNum=255;
+	xtmp2 = xtmp.findGroup("Ems");
+	printf("Ems %s - %d - %s\n", xtmp2.get(0).asString().c_str(), xtmp2.get(1).asInt(), xtmp2.get(2).asString().c_str());
+	boardNum = xtmp2.get(1).asInt();
 	//
 	// Fill 'info' and ID fields
 	//
@@ -144,7 +151,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//	createProtocolHandler.open("hostTransceiver");
 	//	createProtocolHandler.view(transceiver);
 
-	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, rem_ip4);
+	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
 
 	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
 	// Clean device and subdevice fileds
@@ -380,11 +387,11 @@ void SendThread::run()
 		data = 0;
 		size = 0;
 		(*iterator)->getPack(&data, &size);
-		if(size > 20)
+		if(size >= 20)
 		{
 			ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
 			TheEthManager::instance()->send(data, (size_t)size, addr);
-			printf("sent package of byte %d to %s\n", size, (*iterator)->address);
+			//printf("sent package of byte %d to %s\n", size, (*iterator)->address);
 		}
 		iterator++;
 	}
@@ -444,6 +451,17 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 	if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
 		printf((LM_DEBUG,"Error in spawning recvThread\n"));
 
+	int n;
+	int m = sizeof(n);
+	_socket->get_option(SOL_SOCKET,SO_RCVBUF,(void *)&n, &m);
+	printf("SO_RCVBUF %d\n", n);
+	n = 1024*1024;
+	_socket->set_option(SOL_SOCKET,SO_RCVBUF,(void *)&n, m);
+	_socket->get_option(SOL_SOCKET,SO_RCVBUF,(void *)&n, &m);
+	printf("SO_RCVBUF %d\n", n);
+
+	_socket->get_option(SOL_SOCKET,SO_RCVLOWAT,(void *)&n, &m);
+	printf("SO_RCVLOWAT %d\n", n);
 
 	return true;
 }
@@ -477,7 +495,7 @@ TheEthManager::~TheEthManager()
 	char tmp[126];
 	sprintf(tmp, "TheEthManager::~TheEthManager() destructor call; handle= %p - i=%d", handle, i);
 	printf("TheEthManager::~TheEthManager()\n");
-	YARP_DEBUG(Logger::get(),tmp);
+
 	i--;
 	if (i == 0 )
 	{
@@ -565,7 +583,7 @@ void *recvThread(void * arg)
 		{
 			printf("Received weird msg of size %d\n", recv_size);
 		}
-		if(counter++ >= 60*1000)
+		if(counter++ >= 10*1000)
 		{
 			print_data();
 			fflush(stdout);

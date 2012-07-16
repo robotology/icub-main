@@ -38,8 +38,9 @@ size_t				maxBytes2Read 			= 1500;
 #define eb2_ip "10.0.1.2"
 #define eb4_ip "10.0.1.4"
 
-#define eb2_ip "192.168.202.1"
-#define eb4_ip "10.255.72.208"
+//#define eb2_ip "10.255.10.153"
+#define eb2_ip "10.255.72.101"
+#define eb4_ip "192.168.202.1"
 
 //#ifdef _LINUX_UDP_SOCKET_
 #define eb2_addr inet_addr(eb2_ip)
@@ -146,12 +147,18 @@ bool do_real_check(int board, void * pkt, ACE_UINT16 pkt_size)
 	else //if(idx[board] < max_idx)
 	{
 		if(size_ini[board] != pkt_size)
-			fprintf(outFile, "size of packet %d differs from %d\n", size_ini[board], pkt_size);
+		{
+		//	fprintf(outFile, "size of packet %d differs from %d\n", size_ini[board], pkt_size);
+			nErr[board]++;
+		}
 
 		gettimeofday(&recvTime[board],NULL);
 		timeval_subtract(&diffTime[board], &recvTime[board], &prevTime[board]);
 		if(diffTime[board].tv_usec >= SOGLIA)
-			fprintf(outFile, "time between packets %06d.%06d\n", diffTime[board].tv_sec, diffTime[board].tv_usec);
+		{
+		//	fprintf(outFile, "time between packets %06d.%06d\n", diffTime[board].tv_sec, diffTime[board].tv_usec);
+			nErr[board]++;
+		}
 
 		progNum[board] = (txtime >> 32);
 		if( (progNum[board] - prevNum[board]) > 1)

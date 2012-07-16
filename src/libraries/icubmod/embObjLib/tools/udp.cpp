@@ -44,29 +44,42 @@ int Udp::initLocal( int recv_port, const char *address)
 
 	in_addr_t my_in_addr;
 	if( address == NULL)
-//	if(strcmp(&address, "ANY") == 0)
+		//	if(strcmp(&address, "ANY") == 0)
 		my_in_addr = INADDR_ANY;
 	else
 		my_in_addr = inet_addr(address);
 
-	  // Create the UDP socket
-	  this->udp_s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	// Create the UDP socket
+	this->udp_s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-	  if (this->udp_s <= 0)
-	    return 0;
+	if (this->udp_s <= 0)
+		return 0;
 
-	  // Configurando local
-	  struct sockaddr_in addrL;
-	  addrL.sin_family = AF_INET;
-	  addrL.sin_port = htons(recv_port);
-	  addrL.sin_addr.s_addr = my_in_addr;			// any interfaccia!! (eth0, eth1, wlan0 ecc...)
+	// Configurando local
+	struct sockaddr_in addrL;
+	addrL.sin_family = AF_INET;
+	addrL.sin_port = htons(recv_port);
+	addrL.sin_addr.s_addr = my_in_addr;			// any interfaccia!! (eth0, eth1, wlan0 ecc...)
 
-	  /* Set socket to allow broadcast */
-	  if (setsockopt(this->udp_s, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0)
-		  printf("setsockopt() broadcast failed\n");
+	/* Set socket to allow broadcast */
+	if (setsockopt(this->udp_s, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0)
+		printf("setsockopt() broadcast failed\n");
 
-	  if (bind(udp_s, (struct sockaddr*)&addrL, sizeof(addrL)) == -1)
-		  return 0;
+	if (bind(udp_s, (struct sockaddr*)&addrL, sizeof(addrL)) == -1)
+		return 0;
+
+	int n;
+	unsigned int m = sizeof(n);
+
+	getsockopt(udp_s,SOL_SOCKET,SO_RCVBUF,(void *)&n, &m);
+	printf("SO_RCVBUF %d\n", n);
+
+	getsockopt(udp_s,SOL_SOCKET,SO_SNDBUF,(void *)&n, &m);
+	printf("SO_SNDBUF %d\n", n);
+
+	getsockopt(udp_s,SOL_SOCKET,SO_RCVLOWAT,(void *)&n, &m);
+	printf("SO_RCVLOWAT %d\n", n);
+
 
 	bounded = TRUE;
 	printf("done\n");
@@ -218,7 +231,6 @@ int Udp::recv(void *data, sockaddr *addr)
 	unsigned int len = sizeof(sockaddr);
   return recvfrom(this->udp_s, data, this->lBuffer, 0, (sockaddr*) addr, &len);
 }
-
 
 int Udp::setBufferSize(int size)
 {
