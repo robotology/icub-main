@@ -39,7 +39,7 @@
 #include "embObjLibInterface.h"
 
 #define _LINUX_UDP_SOCKET_
-#undef _LINUX_UDP_SOCKET_
+//#undef _LINUX_UDP_SOCKET_
 
 
 #define _DEEP_DEBUG_

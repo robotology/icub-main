@@ -44,49 +44,36 @@ int Udp::initLocal( int recv_port, const char *address)
 
 	in_addr_t my_in_addr;
 	if( address == NULL)
-		//	if(strcmp(&address, "ANY") == 0)
+//	if(strcmp(&address, "ANY") == 0)
 		my_in_addr = INADDR_ANY;
 	else
 		my_in_addr = inet_addr(address);
 
-	// Create the UDP socket
-	this->udp_s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	  // Create the UDP socket
+	  this->udp_s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-	if (this->udp_s <= 0)
-		return 0;
+	  if (this->udp_s <= 0)
+	    return 0;
 
-	// Configurando local
-	struct sockaddr_in addrL;
-	addrL.sin_family = AF_INET;
-	addrL.sin_port = htons(recv_port);
-	addrL.sin_addr.s_addr = my_in_addr;			// any interfaccia!! (eth0, eth1, wlan0 ecc...)
+	  // Configurando local
+	  struct sockaddr_in addrL;
+	  addrL.sin_family = AF_INET;
+	  addrL.sin_port = htons(recv_port);
+	  addrL.sin_addr.s_addr = my_in_addr;			// any interfaccia!! (eth0, eth1, wlan0 ecc...)
 
-	/* Set socket to allow broadcast */
-	if (setsockopt(this->udp_s, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0)
-		printf("setsockopt() broadcast failed\n");
+	  /* Set socket to allow broadcast */
+	  if (setsockopt(this->udp_s, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0)
+		  printf("setsockopt() broadcast failed\n");
 
-	if (bind(udp_s, (struct sockaddr*)&addrL, sizeof(addrL)) == -1)
-		return 0;
-
-	int n;
-	unsigned int m = sizeof(n);
-
-	getsockopt(udp_s,SOL_SOCKET,SO_RCVBUF,(void *)&n, &m);
-	printf("SO_RCVBUF %d\n", n);
-
-	getsockopt(udp_s,SOL_SOCKET,SO_SNDBUF,(void *)&n, &m);
-	printf("SO_SNDBUF %d\n", n);
-
-	getsockopt(udp_s,SOL_SOCKET,SO_RCVLOWAT,(void *)&n, &m);
-	printf("SO_RCVLOWAT %d\n", n);
-
+	  if (bind(udp_s, (struct sockaddr*)&addrL, sizeof(addrL)) == -1)
+		  return 0;
 
 	bounded = TRUE;
 	printf("done\n");
 	return 1;
 }
 
-int Udp::connect(char *address, int send_port, int recv_port)
+int Udp::connect(const char *address, int send_port, int recv_port)
 {
 	int broadcastPermission = 1;
 	//this->disconnect();
@@ -102,7 +89,7 @@ int Udp::connect(char *address, int send_port, int recv_port)
 
   if(recv_port < 0 || recv_port > 32767)
     return 0;
-*/
+
 
   if(!bounded)
   {
@@ -129,7 +116,7 @@ int Udp::connect(char *address, int send_port, int recv_port)
 
 	 bounded = TRUE;
   }
-
+*/
   // Configurando remoto
   udp_addr[connected_clients].sin_family = AF_INET;
   udp_addr[connected_clients].sin_port = htons(send_port);
@@ -196,7 +183,7 @@ int Udp::send(char *data, int client_id)
   return ret;
 }
 
-int Udp::send(char *data, ssize_t size, int client_id)
+int Udp::send(void *data, ssize_t size, int client_id)
 {
 	int ret = sendto(udp_s, (char*)data, size, 0, (struct sockaddr*)&this->udp_addr[client_id], sizeof(udp_addr[client_id]));
 	//printf("udp_addr[client_id].sin_addr.s_addr: 0x%06X\n", udp_addr[client_id].sin_addr.s_addr);
@@ -231,6 +218,7 @@ int Udp::recv(void *data, sockaddr *addr)
 	unsigned int len = sizeof(sockaddr);
   return recvfrom(this->udp_s, data, this->lBuffer, 0, (sockaddr*) addr, &len);
 }
+
 
 int Udp::setBufferSize(int size)
 {

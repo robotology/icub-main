@@ -39,8 +39,8 @@ size_t				maxBytes2Read 			= 1500;
 #define eb4_ip "10.0.1.4"
 
 //#define eb2_ip "10.255.10.153"
-#define eb2_ip "10.255.72.101"
-#define eb4_ip "192.168.202.1"
+//#define eb2_ip "10.255.72.101"
+//#define eb4_ip "192.168.202.1"
 
 //#ifdef _LINUX_UDP_SOCKET_
 #define eb2_addr inet_addr(eb2_ip)
@@ -59,15 +59,11 @@ eOabstime_t			txtime;
 ACE_UINT16 			size_ini[BOARD_NUM] 	= {0};
 EOropframe			*ropFrame				= NULL;
 
+bool error = false;
+
 bool check_received_pkt(ACE_INET_Addr *sender_addr, void * pkt, ACE_UINT16 pkt_size)
 {
 	char  str[64];
-	// init ropframe
-	if(NULL == ropFrame)
-	{
-		printf("|\n|\tStarting check on eth packets...\n|\n");
-		ropFrame = eo_ropframe_New();
-	}
 
 	// detect board
 	if( *sender_addr == eb2)
@@ -92,12 +88,6 @@ bool check_received_pkt(ACE_INET_Addr *sender_addr, void * pkt, ACE_UINT16 pkt_s
 bool check_received_pkt(sockaddr *sender_addr, void * pkt, ACE_UINT16 pkt_size)
 {
 	char  str[64];
-	// init ropframe
-	if(NULL == ropFrame)
-	{
-		printf("|\n|\tStarting check on eth packets...\n|\n");
-		ropFrame = eo_ropframe_New();
-	}
 
 	sockaddr_in *p = (sockaddr_in *) sender_addr;
 	sockaddr_in a;
@@ -129,9 +119,17 @@ bool check_received_pkt(sockaddr *sender_addr, void * pkt, ACE_UINT16 pkt_size)
 
 bool do_real_check(int board, void * pkt, ACE_UINT16 pkt_size)
 {
+	error = false;
+	// init ropframe
+	if(NULL == ropFrame)
+	{
+		printf("|\n|\tStarting check on eth packets...\n|\n");
+		ropFrame = eo_ropframe_New();
+	}
+
 	// Get data from the packet
 	eo_ropframe_Load(ropFrame, (uint8_t*) pkt, pkt_size, maxBytes2Read);
-//	txtime = eo_ropframe_age_Get(ropFrame);
+	txtime = eo_ropframe_age_Get(ropFrame);
 
 	if(idx[board] == 0)
 	{
@@ -141,31 +139,35 @@ bool do_real_check(int board, void * pkt, ACE_UINT16 pkt_size)
 		prevNum[board] = (txtime >> 32);
 		gettimeofday(&prevTime[board],NULL);
 		idx[board]++;
-		printf("case 0=%d\n", board);
+		printf("Fisrt packet from board=%d\n", board);
 	}
 
 	else //if(idx[board] < max_idx)
 	{
 		if(size_ini[board] != pkt_size)
 		{
-		//	fprintf(outFile, "size of packet %d differs from %d\n", size_ini[board], pkt_size);
-			nErr[board]++;
+			fprintf(outFile, "size of packet %d differs from %d\n", size_ini[board], pkt_size);
+			error=true;
 		}
 
 		gettimeofday(&recvTime[board],NULL);
 		timeval_subtract(&diffTime[board], &recvTime[board], &prevTime[board]);
 		if(diffTime[board].tv_usec >= SOGLIA)
 		{
-		//	fprintf(outFile, "time between packets %06d.%06d\n", diffTime[board].tv_sec, diffTime[board].tv_usec);
-			nErr[board]++;
+			fprintf(outFile, "time between packets %06d.%06d - board [%d]\n", diffTime[board].tv_sec, diffTime[board].tv_usec, board);
+			error=true;
 		}
 
 		progNum[board] = (txtime >> 32);
-		if( (progNum[board] - prevNum[board]) > 1)
+		if( (progNum[board] - prevNum[board]) != 1)
 		{
-			fprintf(outFile,"missing packet(board %d) - old = %d, new = %d\n ", board, prevNum[board], progNum[board]);
-			nErr[board]++;
+			fprintf(outFile,"missing packet: old = %d, new = %d  - board [%d] \n ", prevNum[board], progNum[board], board);
+			error=true;
 		}
+
+		if (error)
+			nErr[board]++;
+
 		prevTime[board] = recvTime[board];
 		prevNum[board] = progNum[board];
 		idx[board]++;
@@ -175,6 +177,7 @@ bool do_real_check(int board, void * pkt, ACE_UINT16 pkt_size)
 
 void print_data(void)
 {
+	fprintf(outFile,"Printing data...\n");
 	for(board = 0; board <BOARD_NUM; board++)
 		fprintf(outFile,"errors board[%d] = %d over %d\n",board, nErr[board], idx[board]);
 }
