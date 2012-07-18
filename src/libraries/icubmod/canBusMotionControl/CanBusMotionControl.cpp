@@ -226,26 +226,27 @@ public:
 	int _address;
 
     BCastBufferElement () { zero (); }
-    bool isFaultOk			 () { return (!_axisStatus ) ; }
-    bool isFaultUndervoltage () { return _axisStatus & 0x01; }
-    bool isFaultOverload     ()	{ return _axisStatus & 0x02; }
-	bool isOverCurrent       ()	{ return _axisStatus & 0x08; }
-    bool isFaultExternal	 () { return _axisStatus & 0x04; }
-	bool isHallSensorError	 () { return _axisStatus & 0x10; }
-	bool isAbsEncoderError	 () { return _axisStatus & 0x20; }
-	bool isCanTxOverflow	 () { return _canStatus & 0x01; }
-	bool isCanBusOff	     () { return _canStatus & 0x02; }
-	bool isCanTxError	     () { return _canStatus & 0x04; }
-	bool isCanRxError	     () { return _canStatus & 0x08; }
-	bool isCanTxOverrun 	 () { return _canStatus & 0x10; }
-	bool isCanRxWarning	     () { return _canStatus & 0x20; }
-	bool isCanRxOverrun 	 () { return _canStatus & 0x40; }
-	bool isMainLoopOverflow  () { return _boardStatus & 0x01; }
-	bool isOverTempCh1       () { return _boardStatus & 0x02; }
-	bool isOverTempCh2       () { return _boardStatus & 0x04; } 
-	bool isTempErrorCh1      () { return _boardStatus & 0x08; }
-	bool isTempErrorCh2      () { return _boardStatus & 0x10; } 
-	void ControlStatus       (int net, short controlmode,short addr) 
+    bool isFaultOk			   () { return (!_axisStatus ) ; }
+    bool isFaultUndervoltage   () { return _axisStatus & 0x01; }
+    bool isFaultOverload       () { return _axisStatus & 0x02; }
+	bool isOverCurrent         () { return _axisStatus & 0x08; }
+    bool isFaultExternal	   () { return _axisStatus & 0x04; }
+	bool isHallSensorError	   () { return _axisStatus & 0x10; }
+	bool isAbsEncoderError	   () { return _axisStatus & 0x20; }
+	bool isOpticalEncoderError () { return _axisStatus & 0x40; }
+	bool isCanTxOverflow	   () { return _canStatus & 0x01; }
+	bool isCanBusOff	       () { return _canStatus & 0x02; }
+	bool isCanTxError	       () { return _canStatus & 0x04; }
+	bool isCanRxError	       () { return _canStatus & 0x08; }
+	bool isCanTxOverrun 	   () { return _canStatus & 0x10; }
+	bool isCanRxWarning	       () { return _canStatus & 0x20; }
+	bool isCanRxOverrun 	   () { return _canStatus & 0x40; }
+	bool isMainLoopOverflow    () { return _boardStatus & 0x01; }
+	bool isOverTempCh1         () { return _boardStatus & 0x02; }
+	bool isOverTempCh2         () { return _boardStatus & 0x04; } 
+	bool isTempErrorCh1        () { return _boardStatus & 0x08; }
+	bool isTempErrorCh2        () { return _boardStatus & 0x10; } 
+	void ControlStatus         (int net, short controlmode,short addr) 
 	{
 		switch (controlmode)
 		{
@@ -2527,6 +2528,9 @@ void CanBusMotionControl::handleBroadcasts()
                     if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
 					logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
 
+					if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) printf ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
+					logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
+
                     if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverflow())) printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
 					logJointData(canDevName.c_str(),_networkN,j,16,yarp::os::Value((int)bFlag));
 
@@ -2595,6 +2599,9 @@ void CanBusMotionControl::handleBroadcasts()
                         
                         if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
+
+						if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) printf ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);		
+					    logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
                     }	
 
                     break;
