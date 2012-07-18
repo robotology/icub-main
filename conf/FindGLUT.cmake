@@ -32,12 +32,16 @@ if (WIN32)
 	)
 	#message(${GLUT_LIBRARIES})
 	if (GLUT_INCLUDE_DIR AND GLUT_LIBRARIES)
-		set(GLUT_FOUND TRUE CACHE BOOL "GLUT found?")
+		set(GLUT_FOUND TRUE CACHE BOOL "GLUT found?") 
 	endif(GLUT_INCLUDE_DIR AND GLUT_LIBRARIES)
 endif(WIN32)
 	
 if(NOT GLUT_FOUND)
 	#message(calling kitware find)
+	# Previous find failed, so let's try kitware find. Cleanup variables first.
+	set(GLUT_INCLUDE_DIR)
+	set(GLUT_LIBRARIES)
+	set(GLUT_FOUND)
 	find_package(GLUT)
 endif(NOT GLUT_FOUND)
 
