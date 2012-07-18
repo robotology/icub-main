@@ -6,10 +6,6 @@
  */
 
 /**
- * \defgroup skinDynLib
- *    
- * @ingroup iCubDev
- *  
  * Class representing a contact on the tactile sensor system (skin) of iCub.
  * 
  * \section intro_sec Description
@@ -38,7 +34,9 @@ namespace iCub
 namespace skinDynLib
 {
 
-/**
+/** 
+* @ingroup skinDynLib 
+*  
 * Class representing a list of external contacts.
 */
 class dynContactList : public std::vector<dynContact>, public yarp::os::Portable

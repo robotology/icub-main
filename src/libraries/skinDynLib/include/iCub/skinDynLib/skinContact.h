@@ -8,8 +8,6 @@
 /**
  * \defgroup skinDynLib
  *    
- * @ingroup iCubDev
- *  
  * Class representing a contact on the tactile sensor system (skin) of iCub.
  * 
  * \section intro_sec Description
@@ -41,7 +39,9 @@ namespace iCub
 namespace skinDynLib
 {
 
-/**
+/** 
+* @ingroup skinDynLib 
+*  
 * Class representing an external contact acting on the iCub' skin.
 */
 class skinContact : public dynContact

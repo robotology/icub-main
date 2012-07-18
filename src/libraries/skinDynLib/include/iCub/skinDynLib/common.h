@@ -1,6 +1,4 @@
 /**
- * \defgroup skinDynLib
- *  
  * This file contains the definition of unique IDs for the body parts and the skin parts of the robot.
  * Moreover, it defines the association between each skin part and the corresponding body part and link number.
  *
@@ -192,21 +190,27 @@ static const int LEG_FT_SENSOR_LINK_INDEX = 1;  // index of the link containing 
 static const int ARM_DOF = 7;
 static const int TORSO_DOF = 3;
 
-/**
+/** 
+* @ingroup skinDynLib 
+*  
 * Get the body part associated to the specified skin part.
 * @param s the interested skin part
 * @return the associated body part
 */
 BodyPart getBodyPart(SkinPart s);
 
-/**
+/** 
+* @ingroup skinDynLib 
+*  
 * Get the list of skin parts associated to the specified body part.
 * @param b the interested body part
 * @return list of skin part associated to the specified body part
 */
 std::vector<SkinPart> getSkinParts(BodyPart b);
 
-/**
+/** 
+* @ingroup skinDynLib 
+*  
 * Get the link number associated to the specified skin part.
 * @param s the interested skin part
 * @return the associated link number, -1 if the link number is not defined
