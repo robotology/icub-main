@@ -6,7 +6,9 @@
  */
 
 /**
- * \defgroup skinDynLib
+ * \defgroup skinDynLib 
+ *  
+ * @ingroup icub_libraries 
  *    
  * Class representing a contact on the tactile sensor system (skin) of iCub.
  * 
