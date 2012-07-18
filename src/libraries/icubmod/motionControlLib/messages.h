@@ -133,8 +133,9 @@
 #define CAN_GET_IMPEDANCE_OFFSET    90
 
 #define CAN_GET_FIRMWARE_VERSION    91
+#define CAN_SET_OPTICAL_ENC_RATIO   92
 
-#define NUM_OF_MESSAGES				92
+#define NUM_OF_MESSAGES				93
 
 
 /* error status values */
