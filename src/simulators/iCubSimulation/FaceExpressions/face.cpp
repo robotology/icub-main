@@ -80,7 +80,7 @@ void setSubSystem(const char *command)
     char hex[2];
     hex[0]=command[1];
     hex[1]=command[2];
-    cout<<strtol(hex, (char **)NULL, 16)<<endl;
+    //cout<<strtol(hex, (char **)NULL, 16)<<endl;
 
     //convert hexdec to binary 
     int num = strtol(hex, (char **)NULL, 16);
@@ -90,10 +90,12 @@ void setSubSystem(const char *command)
         for (int i=0;i<8;i++) 
             eyeLids[i] = (num >> i)&1;
         //print the array
-        //for (int i = 0; i<8;i++) cout<<eyeLids[i];
-        //cout<<endl;
+        for (int i = 0; i<8;i++) 
+            cout<<eyeLids[i];
+        cout<<endl;
+
         eyeLidPos = linearMap(num,36,72,0,30);
-        //cout<<eyeLidPos<<endl;
+        cout<<eyeLidPos<<endl;
     }
     else 
     {

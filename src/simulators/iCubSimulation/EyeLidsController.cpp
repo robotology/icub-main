@@ -60,8 +60,8 @@ void EyeLids::checkPort()
         Bottle *bot = port.read(false);
         if (bot!=NULL){
         eyeLidsRotation = (float)bot->get(0).asDouble();
-            bot->clear();
             printf("Message received: %s\n",bot->toString().c_str());
-        }    
+            bot->clear();
+        }
     }
 }

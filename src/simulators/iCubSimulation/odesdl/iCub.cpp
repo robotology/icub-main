@@ -931,9 +931,9 @@ void ICubSim::draw(){
         } 
         glPushMatrix();LDEsetM(dGeomGetPosition(eye1_geom),dGeomGetRotation(head1_geom));
         eyeLids->checkPort();
-        //glRotatef(eyeLids->eyeLidsRotation,1,0,0);
+        glRotatef(eyeLids->eyeLidsRotation,1,0,0);
         topEyeLidModel->draw(false,8); 
-        //glRotatef(-2*eyeLids->eyeLidsRotation,1,0,0);
+        glRotatef(-2*eyeLids->eyeLidsRotation,1,0,0);
         bottomEyeLidModel->draw(false,8); 
         glPopMatrix();
 
