@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) 2008 Martin Peniak
+ * Copyright (C) 2008 Vadim Tikhanoff Martin Peniak
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
 /**
@@ -39,123 +39,148 @@ ImageOf<PixelRgb> mask;
 ImageOf<PixelRgb> image;
 
 //linear function
-float linearMap( float x, float min, float max, float outMin, float outMax ) {
-         float m = - ( outMax-outMin )/( max-min );
-        float q = outMax - m*min;
-        float ret = m*x+q;
-        if (ret < outMin) return outMin;
-        if (ret > outMax) return outMax;
-        return ret;
+float linearMap( float x, float min, float max, float outMin, float outMax ) 
+{
+    float m = - ( outMax-outMin )/( max-min );
+    float q = outMax - m*min;
+    float ret = m*x+q;
+    if (ret < outMin) return outMin;
+    if (ret > outMax) return outMax;
+    return ret;
 }
 
 //read mask which contains all information to create any facial expression
 void readMask()
 {
-	read(mask,"Mask.ppm");
-	maskData = mask.getRawImage();
+    read(mask,"Mask.ppm");
+    maskData = mask.getRawImage();
 }
 
 //prepare data for processing
 void prepareData(unsigned char *data, int width, int height) 
 {
-	image.setQuantum(1);
-	image.setExternal(data,width,height);
+    image.setQuantum(1);
+    image.setExternal(data,width,height);
 }
 
 void setSubSystem(const char *command)
 {
-//variable holding position in the array
-int pos = 0;
-//cout<<"command received: "<<command<<endl;
-//get sub system id and set writing position in the array
-char systemID = command[0];
-//cout<<"sub system ID: "<<systemID<<endl;
-if (systemID == 'L') pos = 0;
-else if (systemID == 'R') pos = 8;
-else if (systemID == 'M') pos = 16;
-//cout<<"array position: "<<pos<<endl;
+    //variable holding position in the array
+    int pos = 0;
+    //cout<<"command received: "<<command<<endl;
+    //get sub system id and set writing position in the array
+    char systemID = command[0];
+    //cout<<"sub system ID: "<<systemID<<endl;
+    if (systemID == 'L') pos = 0;
+    else if (systemID == 'R') pos = 8;
+    //else if (systemID == 'M') pos = 16;
+    else if (systemID == 'M') pos = 21;
+    
+    //truncate string
+    char hex[2];
+    hex[0]=command[1];
+    hex[1]=command[2];
+    cout<<strtol(hex, (char **)NULL, 16)<<endl;
 
-//truncate string
-char hex[2];
-hex[0]=command[1];
-hex[1]=command[2];
-//cout<<strtol(hex, (char **)NULL, 16)<<endl;
+    //convert hexdec to binary 
+    int num = strtol(hex, (char **)NULL, 16);
 
-//convert hexdec to binary 
-int num = strtol(hex, (char **)NULL, 16);
+    if (systemID == 'S')
+    {
+        for (int i=0;i<8;i++) 
+            eyeLids[i] = (num >> i)&1;
+        //print the array
+        //for (int i = 0; i<8;i++) cout<<eyeLids[i];
+        //cout<<endl;
+        eyeLidPos = linearMap(num,36,72,0,30);
+        //cout<<eyeLidPos<<endl;
+    }
+    else 
+    {
+        if (pos == 21)
+        {
+            for (int i=0;i<8;i++) 
+                ledsActivation[(pos)-i] = (num >> i)&1;
+        }
+        else
+            for (int i=0;i<8;i++) 
+                ledsActivation[pos+i] = (num >> i)&1;
 
-if (systemID == 'S')
-{
-	for (int i=0;i<8;i++) eyeLids[i] = (num >> i)&1;
-	//print the array
-	//for (int i = 0; i<8;i++) cout<<eyeLids[i];
-	//cout<<endl;
-	eyeLidPos = linearMap(num,36,72,0,30);
-	//cout<<eyeLidPos<<endl;
-}
-else 
-{
-	for (int i=0;i<8;i++) ledsActivation[pos+i] = (num >> i)&1;
-	//print the array
-	//for (int i = 0; i<24;i++) cout<<ledsActivation[i];
-	//cout<<endl;
-}
+        if (ledsActivation[19]==1 && ledsActivation[18]!=1)
+        {
+            //cout << "POSITION 19 is 1 changing it to 18" << endl;
+            ledsActivation[18]=1;
+            ledsActivation[19]=0;
+        }
+        else if (ledsActivation[18]==1  && ledsActivation[19]!=1)
+        {
+             //cout << "POSITION 18 is 1 changing it to 19" << endl;
+             ledsActivation[18]=0;
+             ledsActivation[19]=1;
+        }
 
-}
+
+        //for (int i = 0; i<24;i++) 
+        //    cout<<ledsActivation[i];
+        //cout<<endl;
+        }
+    }
 
 //generate texture by checking leds that are switched on and drawing them 
 void generateTexture()
 {
-	for (int i=0;i<512;i++)
-		for (int j =0;j<512;j++)
-		{
-			PixelRgb& maskPixel = mask.pixel(i,j);
-			PixelRgb& imagePixel = image.pixel(i,j);
-			if (maskPixel.b <NUM_PORTS && ledsActivation[maskPixel.b]==1) 
-			{
-				imagePixel.r = 255;
-				imagePixel.g = 120;
-				imagePixel.b = 120;
-			}
-			else
-			{
-				imagePixel.r = 255;
-				imagePixel.g = 255;
-				imagePixel.b = 245;
-			}
-		}
-		write(image,"Texture.ppm");
-}
+    for (int i=0;i<512;i++)
+        for (int j =0;j<512;j++)
+        {
+            PixelRgb& maskPixel = mask.pixel(i,j);
+            PixelRgb& imagePixel = image.pixel(i,j);
+            if (maskPixel.b <NUM_PORTS && ledsActivation[maskPixel.b]==1) 
+            {
+                imagePixel.r = 255;
+                imagePixel.g = 120;
+                imagePixel.b = 120;
+            }
+            else
+            {
+                imagePixel.r = 255;
+                imagePixel.g = 255;
+                imagePixel.b = 245;
+            }
+        }
+    write(image,"Texture.ppm");
+    }
 
-int main() {
-	Network yarp;
-	Port reader,eyeLidsPos;
-	reader.open("/icubSim/face/raw/in");
-	BufferedPort<ImageOf<PixelRgb> > writer;
-	writer.open("/face/image/out");
-	eyeLidsPos.open("/face/eyelids");
+int main() 
+{
+    Network yarp;
+    Port reader,eyeLidsPos;
+    reader.open("/icubSim/face/raw/in");
+    BufferedPort<ImageOf<PixelRgb> > writer;
+    writer.open("/face/image/out");
+    eyeLidsPos.open("/face/eyelids");
 
-	readMask();
-	prepareData(data,width,height);
+    readMask();
+    prepareData(data,width,height);
 
-	Bottle bot;
-	while (1) {
-		reader.read(bot);
-		ConstString message = bot.toString();
-		printf("Message received: %s\n",message.c_str());
-		setSubSystem(message.c_str());
-		generateTexture();
-		writer.prepare() = image;
-		writer.write();
-		//send eyelids position
-		if ((bot.toString().c_str())[0]=='S')
-		{
-			bot.clear();
-			bot.add(eyeLidPos);
-			eyeLidsPos.write(bot);
-			printf("Eye lids position sent: %s\n",bot.toString().c_str());
-		}
-	}
-	delete[] data;
-	return 0;
+    Bottle bot;
+    while (1) 
+    {
+        reader.read(bot);
+        ConstString message = bot.toString();
+        printf("Message received: %s\n",message.c_str());
+        setSubSystem(message.c_str());
+        generateTexture();
+        writer.prepare() = image;
+        writer.write();
+        //send eyelids position
+        if ((bot.toString().c_str())[0]=='S')
+        {
+            bot.clear();
+            bot.add(eyeLidPos);
+            eyeLidsPos.write(bot);
+            printf("Eye lids position sent: %s\n",bot.toString().c_str());
+        }
+    }
+    delete[] data;
+    return 0;
 }
