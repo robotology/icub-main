@@ -6,7 +6,7 @@
  */
 
 /**
- * \defgroup skinDynLib 
+ * \defgroup skinDynLib skinDynLib
  *  
  * @ingroup icub_libraries 
  *    
