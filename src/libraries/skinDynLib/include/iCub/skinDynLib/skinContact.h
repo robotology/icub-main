@@ -164,6 +164,15 @@ public:
 
     /**
     * Write skinContact to a connection.
+    * The skinContact is represented as a list of 8 elements that are:
+    * - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
+    * - a list of 3 double, i.e. the CoP
+    * - a list of 3 double, i.e. the force
+    * - a list of 3 double, i.e. the moment
+    * - a list of 3 double, i.e. the geometric center
+    * - a list of 3 double, i.e. the normal direction
+    * - a list of N int, i.e. the active taxel ids
+    * - a double, i.e. the pressure
     * return true iff a skinContact was written correctly
     */
     virtual bool write(yarp::os::ConnectionWriter& connection);
