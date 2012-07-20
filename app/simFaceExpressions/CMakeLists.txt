@@ -6,7 +6,7 @@ file(GLOB init ${CMAKE_CURRENT_SOURCE_DIR}/*.ini)
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template
                    ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.sh)
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
-file(GLOB mask ${CMAKE_CURRENT_SOURCE_DIR}/data/*.ppm)
+file(GLOB data ${CMAKE_CURRENT_SOURCE_DIR}/data/*.ppm)
 
 icub_app_install(${appname} 
 				FILES ${init})
@@ -20,8 +20,8 @@ icub_app_install(${appname}
 				DESTINATION conf)
 
 icub_app_install(${appname} 
-				FILES ${mask}
-				DESTINATION mask)				
+				FILES ${data}
+				DESTINATION data)				
 				
 
 
