@@ -16,12 +16,6 @@
  * Public License for more details
  */
 
-/**
-*
-* @ingroup icub_contrib_modules
-* \defgroup icub_lumaChroma lumaChroma
-*/
-
 #ifndef __ICUB_LUMACHROMA_H__
 #define __ICUB_LUMACHROMA_H__
 
@@ -114,7 +108,7 @@ public:
 
 class lumaChroma : public yarp::os::RFModule
 {
-   /* module parameters */
+    /* module parameters */
     std::string moduleName;         //string containing the module name passed to the thread
     std::string imageType;          //string containing the image type passed to the thread
     std::string handlerPortName;    //string containing the name of the handler port

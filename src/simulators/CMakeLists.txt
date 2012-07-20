@@ -6,8 +6,9 @@ add_subdirectory(simCartesianControl)
 
 if(ICUB_USE_ODE AND ICUB_USE_SDL)
 	add_subdirectory(iCubSimulation)
+	add_subdirectory(simFaceExpressions)
 else(ICUB_USE_ODE AND ICUB_USE_SDL)
-	message(STATUS "ODE or SDL not found/selected, skipping iCubSimulation")
+	message(STATUS "ODE or SDL not found/selected, skipping iCubSimulation and simFaceExpressions")
 endif(ICUB_USE_ODE AND ICUB_USE_SDL)
 
 
