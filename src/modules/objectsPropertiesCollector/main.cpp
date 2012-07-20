@@ -998,17 +998,19 @@ public:
     void periodicHandler(const double dt)   // manage the items life-timers
     {
         mutex.wait();
+        bool erased=false;
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
             Property *pProp=it->second.prop;
             if (pProp->check(PROP_LIFETIMER))
             {
                 double lifeTimer=pProp->find(PROP_LIFETIMER).asDouble()-dt;
-
                 if (lifeTimer<0.0)
                 {
                     printMessage("item with id==%d expired\n",it->first);
                     eraseItem(it);
+                    erased=true;
+
                     break;  // to avoid seg-fault
                 }
                 else
@@ -1019,6 +1021,9 @@ public:
             }
         }
         mutex.post();
+
+        if (asyncBroadcast && erased)
+            broadcast(BCTAG_ASYNC);
     }
 
     /************************************************************************/
