@@ -75,8 +75,10 @@ bool simFaceExp::configure(yarp::os::ResourceFinder &rf)
     if (readMask(maskPath.c_str()))
         fprintf(stdout,"\n\nMask has been loaded correctly\n\n");
     else
+    {
         fprintf(stdout,"Mask has some issues please control files\n");
-
+        return false;
+    }
     return true ;      // let the RFModule know everything went well
 }
 
