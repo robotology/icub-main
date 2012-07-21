@@ -42,6 +42,23 @@ using namespace yarp::math;
 
 
 /************************************************************************/
+void CartesianEventHandler::onRead(Bottle &event)
+{
+    if (interface!=NULL)
+        interface->eventHandling(event);
+}
+
+
+/************************************************************************/
+void CartesianEventHandler::setInterface(ClientCartesianController *interface)
+{
+    this->interface=interface;
+    setStrict();
+    useCallback();
+}
+
+
+/************************************************************************/
 ClientCartesianController::ClientCartesianController()
 {
     init();

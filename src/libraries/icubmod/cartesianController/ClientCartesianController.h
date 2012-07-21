@@ -55,6 +55,24 @@
 #include <map>
 
 
+// forward declaration
+class ClientCartesianController;
+
+
+/************************************************************************/
+class CartesianEventHandler : public yarp::os::BufferedPort<yarp::os::Bottle>
+{
+protected:
+    ClientCartesianController *interface;
+    void onRead(yarp::os::Bottle &event);
+
+public:
+    CartesianEventHandler() : interface(NULL) { }
+    void setInterface(ClientCartesianController *interface);
+};
+
+
+/************************************************************************/
 class ClientCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::ICartesianControl,
                                   protected iCub::iKin::CartesianHelper
@@ -71,30 +89,12 @@ protected:
 
     yarp::os::BufferedPort<yarp::sig::Vector> portState;
     yarp::os::Port                            portCmd;
-    yarp::os::Port                            portRpc;
+    yarp::os::Port                            portRpc;    
 
-    class EventHandler : public yarp::os::BufferedPort<yarp::os::Bottle>
-    {
-    protected:
-        ClientCartesianController *interface;
-        void onRead(yarp::os::Bottle &event)
-        {
-            if (interface!=NULL)
-                interface->eventHandling(event);
-        }
-
-    public:
-        EventHandler() : interface(NULL) { }
-        void setInterface(ClientCartesianController *interface)
-        {
-            this->interface=interface;
-            setStrict();
-            useCallback();
-        }
-    } portEvents;
-
-    std::set<int> contextIdList;
-    std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;
+    std::set<int> contextIdList;    
+    std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;    
+    CartesianEventHandler portEvents;
+    friend class CartesianEventHandler;
 
     void init();
     bool deleteContexts();

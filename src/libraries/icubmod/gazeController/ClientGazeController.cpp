@@ -41,6 +41,23 @@ using namespace yarp::math;
 
 
 /************************************************************************/
+void GazeEventHandler::onRead(Bottle &event)
+{
+    if (interface!=NULL)
+        interface->eventHandling(event);
+}
+
+
+/************************************************************************/
+void GazeEventHandler::setInterface(ClientGazeController *interface)
+{
+    this->interface=interface;
+    setStrict();
+    useCallback();
+}
+
+
+/************************************************************************/
 ClientGazeController::ClientGazeController()
 {
     init();

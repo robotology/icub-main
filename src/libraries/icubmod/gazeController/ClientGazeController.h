@@ -53,6 +53,24 @@
 #include <map>
 
 
+// forward declaration
+class ClientGazeController;
+
+
+/************************************************************************/
+class GazeEventHandler : public yarp::os::BufferedPort<yarp::os::Bottle>
+{
+protected:
+    ClientGazeController *interface;
+    void onRead(yarp::os::Bottle &event);
+
+public:
+    GazeEventHandler() : interface(NULL) { }
+    void setInterface(ClientGazeController *interface);
+};
+
+
+/************************************************************************/
 class ClientGazeController : public yarp::dev::DeviceDriver,
                              public yarp::dev::IGazeControl
 {
@@ -78,30 +96,12 @@ protected:
     yarp::os::Port portCmdAng;
     yarp::os::Port portCmdMono;
     yarp::os::Port portCmdStereo;
-    yarp::os::Port portRpc;
-
-    class EventHandler : public yarp::os::BufferedPort<yarp::os::Bottle>
-    {
-    protected:
-        ClientGazeController *interface;
-        void onRead(yarp::os::Bottle &event)
-        {
-            if (interface!=NULL)
-                interface->eventHandling(event);
-        }
-
-    public:
-        EventHandler() : interface(NULL) { }
-        void setInterface(ClientGazeController *interface)
-        {
-            this->interface=interface;
-            setStrict();
-            useCallback();
-        }
-    } portEvents;
+    yarp::os::Port portRpc;    
 
     std::set<int> contextIdList;
     std::map<std::string,yarp::dev::GazeEvent*> eventsMap;
+    GazeEventHandler portEvents;
+    friend class GazeEventHandler;
 
     void init();
     bool deleteContexts();
