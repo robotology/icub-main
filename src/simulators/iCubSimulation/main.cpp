@@ -154,7 +154,10 @@
 int main(int argc, char** argv) {
     yarp::os::Network yarp;
     if (!yarp.checkNetwork())
+    {
+        fprintf (stderr, "Error: could not initialize YARP network (is the nameserver running?)\n");
         return 1;
+    }
 
     yarp::os::Property options;
     options.fromCommand(argc,argv);
