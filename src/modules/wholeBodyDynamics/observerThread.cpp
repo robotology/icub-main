@@ -641,6 +641,35 @@ void inverseDynamics::run()
         contactFound = false;
     }
 
+	//*********************************************** add the legs contacts JUST TEMP FIX!! *******************
+	skinContact left_leg_contact;
+	left_leg_contact.setLinkNumber(5);
+	left_leg_contact.setBodyPart(iCub::skinDynLib::LEFT_LEG);
+	left_leg_contact.setForceMoment(F_ext_left_leg);
+	skinContact right_leg_contact;
+	right_leg_contact.setLinkNumber(5);
+	right_leg_contact.setBodyPart(iCub::skinDynLib::RIGHT_LEG);
+	right_leg_contact.setForceMoment(F_ext_right_leg);
+	static bool add_legs_once = false;
+	if (!add_legs_once)
+	{
+		skinContacts.push_back(left_leg_contact);
+		skinContacts.push_back(right_leg_contact);
+		add_legs_once = true;
+	}
+	for(unsigned int j=0; j<skinContacts.size(); j++)
+	{
+		if (skinContacts[j].getBodyPart()==iCub::skinDynLib::LEFT_LEG)
+		{
+			skinContacts[j].setForceMoment(F_ext_left_leg);
+		}
+		if (skinContacts[j].getBodyPart()==iCub::skinDynLib::RIGHT_LEG)
+		{
+			skinContacts[j].setForceMoment(F_ext_right_leg);
+		}
+	}
+	//*********************************************** add the legs contacts JUST TEMP FIX!! *******************
+
     F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
     F_ext_cartesian_left_leg = F_ext_cartesian_right_leg = zeros(6);
     F_ext_left_arm  = icub->upperTorso->leftSensor->getForceMomentEndEff();
