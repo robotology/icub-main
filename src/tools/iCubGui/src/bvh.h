@@ -69,6 +69,15 @@ public:
         yarp::sig::Vector *enc =NULL;
         yarp::sig::Vector *encV=NULL;
 
+        if (portEncBase.getInputCount()>0)
+        {
+            encV=NULL;
+
+            while (enc=portEncBase.read(false)) encV=enc;
+            
+            if (encV) for (int i=0; i<nJBase; ++i) dEncBase[i]=(*encV)[i];
+        }
+
         if (portEncTorso.getInputCount()>0)
         {
             encV=NULL;
@@ -188,8 +197,9 @@ public:
     
     //PolyDriver *pTorsoDriver,*pHeadDriver,*pLeftArmDriver,*pRightArmDriver,*pLeftLegDriver,*pRightLegDriver;
     //IEncoders *pEncTorso,*pEncHead,*pEncLeftArm,*pEncRightArm,*pEncLeftLeg,*pEncRightLeg;
-    int nJTorso,nJHead,nJLeftArm,nJRightArm,nJLeftLeg,nJRightLeg;
+    int nJTorso,nJHead,nJLeftArm,nJRightArm,nJLeftLeg,nJRightLeg,nJBase;
     
+    yarp::os::BufferedPort<yarp::sig::Vector> portEncBase;
     yarp::os::BufferedPort<yarp::sig::Vector> portEncTorso;
     yarp::os::BufferedPort<yarp::sig::Vector> portEncHead;
     yarp::os::BufferedPort<yarp::sig::Vector> portEncLeftArm;
@@ -198,7 +208,7 @@ public:
     yarp::os::BufferedPort<yarp::sig::Vector> portEncRightLeg;
 
     double dEncBuffer[59];
-    double *dEncTorso,*dEncHead,*dEncLeftArm,*dEncRightArm,*dEncLeftLeg,*dEncRightLeg,*dEncRoot;
+    double *dEncTorso,*dEncHead,*dEncLeftArm,*dEncRightArm,*dEncLeftLeg,*dEncRightLeg,*dEncBase;
 };
 
 #endif

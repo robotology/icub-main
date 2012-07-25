@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 
 #include <qmessagebox.h>
 
@@ -67,6 +67,7 @@ bool BVH::Create(yarp::os::ResourceFinder& config)
 
 BVH::~ BVH()
 {
+    portEncBase.interrupt();
     portEncHead.interrupt();
     portEncTorso.interrupt();
     portEncLeftArm.interrupt();
@@ -74,6 +75,7 @@ BVH::~ BVH()
     portEncLeftLeg.interrupt();
     portEncRightLeg.interrupt();
 
+    portEncBase.close();
     portEncHead.close();
     portEncTorso.close();
     portEncLeftArm.close();
@@ -145,6 +147,7 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
   
     Network::init();
 
+    portEncBase.open((GUI_NAME+"/base:i").c_str());
     portEncTorso.open((GUI_NAME+"/torso:i").c_str());
     portEncHead.open((GUI_NAME+"/head:i").c_str());
     portEncLeftArm.open((GUI_NAME+"/left_arm:i").c_str());
@@ -164,6 +167,7 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
     nJRightArm=16;
     nJLeftLeg=6;
     nJRightLeg=6;
+    nJBase=6;
 
     dEncTorso=dEncBuffer;
     dEncHead=dEncTorso+nJTorso;
@@ -171,7 +175,7 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
     dEncRightArm=dEncLeftArm+nJLeftArm;
     dEncLeftLeg=dEncRightArm+nJRightArm;
     dEncRightLeg=dEncLeftLeg+nJLeftLeg;
-    dEncRoot=dEncRightLeg+nJRightLeg;
+    dEncBase=dEncRightLeg+nJRightLeg;
 
     return bvhReadNode(config);
 }
