@@ -26,7 +26,7 @@ class TSquare {
 	//friend ostream& operator<<(ostream& s, const TSquare<T>& tsquare);
 
   public: 
-    TSquare (T size_, T x_, T y_, T scale_);
+    TSquare (T size_, T x_, T y_, T scale_=0);
     TSquare  ():x(0),y(0),size(0),scale(0){};
 	TSquare (const TSquare<double> &other) {
 		x = (int)other.x;
@@ -92,7 +92,7 @@ bool decreasing (const TSquare<T> &Lft,const TSquare<T> &Rht){ return Lft.size >
 
 
 template <class T> 
-TSquare<T>::TSquare (T size_, T x_, T y_, T scale_=0)
+TSquare<T>::TSquare (T size_, T x_, T y_, T scale_)
 {
   size = size_;
   x = x_;
