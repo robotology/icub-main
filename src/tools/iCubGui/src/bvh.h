@@ -74,8 +74,17 @@ public:
             encV=NULL;
 
             while (enc=portEncBase.read(false)) encV=enc;
-            
-            if (encV) for (int i=0; i<nJBase; ++i) dEncBase[i]=(*encV)[i];
+
+            if (encV)
+            {
+                dEncBase[0]=-(*encV)[2];
+                dEncBase[1]= (*encV)[0];
+                dEncBase[2]=-(*encV)[1];
+
+                dEncBase[3]=-(*encV)[4];
+                dEncBase[4]= (*encV)[5];
+                dEncBase[5]=-(*encV)[3];
+            }
         }
 
         if (portEncTorso.getInputCount()>0)
