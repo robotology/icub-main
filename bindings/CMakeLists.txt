@@ -1,4 +1,4 @@
-# Copyright: (C) 2011 IITRBCS
+# Copyright: (C) 2011 Department of Robotics, Brain and Cognitive Sciences, Istituto Italiano di Tecnologia
 # Authors: Paul Fitzpatrick
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -46,6 +46,17 @@ SET_SOURCE_FILES_PROPERTIES(icub.i PROPERTIES CPLUSPLUS ON)
 if (CREATE_PYTHON)
   set(CMAKE_SWIG_FLAGS "-Wall;-module;icub;-threads")
   find_package(PythonLibs)
+  
+  get_filename_component(PYTHON_DIR ${PYTHON_LIBRARY} PATH)
+  link_directories(${PYTHON_DIR})
+  
+  if (WIN32)
+		get_filename_component(PYTHON_DIR ${PYTHON_LIBRARY} PATH)
+		link_directories(${PYTHON_DIR})
+  endif()
+	  
+  # message("-->${PYTHON_LIBRARY} ${PYTHON_DIR}")
+  
   include_directories(${PYTHON_INCLUDE_PATH})
   swig_add_module(icub python icub.i)
 endif (CREATE_PYTHON)

@@ -12,6 +12,10 @@
 %{
 #include <yarp/dev/Drivers.h>
 YARP_DECLARE_DEVICES(icubmod)
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+using namespace yarp::os;
+using namespace yarp::sig;
 #include "cartesianController/ClientCartesianController.h"
 #include "gazeController/ClientGazeController.h"
 %}
@@ -24,6 +28,7 @@ bool init();
 %{
   bool init() {
       YARP_REGISTER_DEVICES(icubmod)
+      return true;
   }
 %}
 
