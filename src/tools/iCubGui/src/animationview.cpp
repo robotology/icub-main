@@ -214,7 +214,14 @@ void AnimationView::draw()
   
     drawFloor();
 
+    glPushMatrix();
+
+    glRotated(-90.0,1.0,0.0,0.0);
+    glRotated( 90.0,0.0,0.0,1.0);
+
     pBVH->draw();
+
+    glPopMatrix();
 
     //mObjectsThread->draw();
 }

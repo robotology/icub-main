@@ -256,26 +256,26 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     {
     case BVH_ROOT:
 		{
-			int a=token().toInt();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
-			double e=token().toDouble();
-			double f=token().toDouble();
-			double g=token().toDouble();
-			node=new BVHNodeROOT(sName,a,b,c,d,e,f,g,pMesh,mObjectsManager); 
+			int id=token().toInt();
+            
+            double Px=token().toDouble();
+			double Py=token().toDouble();
+			double Pz=token().toDouble();
+
+			node=new BVHNodeROOT(sName,id,Px,Py,Pz,pMesh,mObjectsManager); 
 		}
 		break;
     case BVH_JOINT:
         if (tag=="RPY_XYZ")
 		{
-			double a=token().toDouble();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
-			double e=token().toDouble();
-			double f=token().toDouble();
-            node=new BVHNodeRPY_XYZ(sName,a,b,c,d,e,f);
+			double Rz=token().toDouble();
+			double Ry=token().toDouble();
+			double Rx=token().toDouble();
+			double Px=token().toDouble();
+			double Py=token().toDouble();
+			double Pz=token().toDouble();
+
+            node=new BVHNodeXYZ_RPY(sName,Px,Py,Pz,Rz,Ry,Rx);
 		}
         else if (tag=="DH")
 		{

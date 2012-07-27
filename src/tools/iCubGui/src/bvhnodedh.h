@@ -23,13 +23,13 @@
 class BVHNodeDH : public BVHNode
 {
 public:
-    BVHNodeDH(const QString& name,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0) 
+    BVHNodeDH(const QString& name,int enc,double Dx,double Dz,double Rx,double Rz0,iCubMesh* mesh=0) 
     : BVHNode(name,enc,mesh)
     {
-        dA=a; 
-        dD=d; 
-        dAlpha=alpha; 
-        dTheta0=theta0;
+        dA=Dx; 
+        dD=Dz; 
+        dAlpha=Rx; 
+        dTheta0=Rz0;
     }
 
     virtual void draw(double *encoders,BVHNode* pSelected)

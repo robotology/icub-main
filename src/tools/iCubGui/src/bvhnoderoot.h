@@ -21,11 +21,11 @@
 #include "bvhnoderpy_xyz.h"
 #include "objectsthread.h"
 
-class BVHNodeROOT : public BVHNodeRPY_XYZ
+class BVHNodeROOT : public BVHNodeXYZ_RPY
 {
 public:
-    BVHNodeROOT(const QString& name,int enc,double yaw,double pitch,double roll,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager) 
-        : BVHNodeRPY_XYZ(name,yaw,pitch,roll,x,y,z)
+    BVHNodeROOT(const QString& name,int enc,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager) 
+        : BVHNodeXYZ_RPY(name,x,y,z)
     {
         nEnc=enc;
         pMesh=mesh;
@@ -38,17 +38,22 @@ public:
     {
         glPushMatrix();
         
+        glTranslated(dX,dY,dZ);
+
+        glPushMatrix();
+
         glTranslated(encoders[nEnc+3],encoders[nEnc+4],encoders[nEnc+5]);
+
         glRotated(encoders[nEnc],  0.0,0.0,1.0);
         glRotated(encoders[nEnc+1],0.0,1.0,0.0);
-        glRotated(encoders[nEnc+2],1.0,0.0,0.0);   
+        glRotated(encoders[nEnc+2],1.0,0.0,0.0);
 
-        glTranslated(dX,dY,dZ);
-       
+        /*
         glRotated(dYaw,  0.0,0.0,1.0);
         glRotated(dPitch,0.0,1.0,0.0);
         glRotated(dRoll, 1.0,0.0,0.0);
-        
+        */
+
         if (pMesh)
         { 
             glColor4f(0.9,0.8,0.7,1.0);
@@ -61,7 +66,9 @@ public:
         {
             children[i]->draw(encoders,pSelected);
         }
-        
+
+        glPopMatrix();
+
         if (mObjectsManager)
         {
             mObjectsManager->draw();

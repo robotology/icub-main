@@ -75,16 +75,9 @@ public:
 
             while (enc=portEncBase.read(false)) encV=enc;
 
-            if (encV)
-            {
-                dEncBase[0]=-(*encV)[2];
-                dEncBase[1]= (*encV)[0];
-                dEncBase[2]=-(*encV)[1];
+            if (encV) for (int i=0; i<6; ++i) dEncBase[i]=(*encV)[i];
 
-                dEncBase[3]=-(*encV)[4];
-                dEncBase[4]= (*encV)[5];
-                dEncBase[5]=-(*encV)[3];
-            }
+            mObjectsManager->readEncoders(dEncBase);
         }
 
         if (portEncTorso.getInputCount()>0)

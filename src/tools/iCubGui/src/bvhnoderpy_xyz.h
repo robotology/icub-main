@@ -20,14 +20,15 @@
 
 #include "bvhnode.h"
 
-class BVHNodeRPY_XYZ : public BVHNode
+class BVHNodeXYZ_RPY : public BVHNode
 {
 public:
-    BVHNodeRPY_XYZ(const QString& name,double yaw,double pitch,double roll,double x,double y,double z) 
+    BVHNodeXYZ_RPY(const QString& name,double x,double y,double z,double yaw=0.0,double pitch=0.0,double roll=0.0) 
         : BVHNode(name,-1,NULL)
     {
-        dYaw=yaw; dPitch=pitch; dRoll=roll;
         dX=x; dY=y; dZ=z;
+
+        dYaw=yaw; dPitch=pitch; dRoll=roll;
     }
 
     virtual void draw(double *encoders,BVHNode *pSelected)
@@ -60,7 +61,8 @@ public:
     }
 
 protected:
-    double dYaw,dPitch,dRoll,dX,dY,dZ;
+    double dX,dY,dZ;
+    double dYaw,dPitch,dRoll;
 };
 
 #endif

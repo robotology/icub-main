@@ -202,6 +202,7 @@ public:
     VisionObj(std::string name,
               double dimx,double dimy,double dimz,
               double posx,double posy,double posz,
+              double rotx0,double roty0,double rotz0,
               double rotx,double roty,double rotz,
               int r,int g,int b,double alpha)
         : GuiObj(name,r,g,b,alpha)
@@ -211,7 +212,7 @@ public:
         bTextured=false;
         mTextureBuffer=NULL;
        
-        set(dimx,dimy,dimz,posx,posy,posz,rotx,roty,rotz,r,g,b,alpha);
+        set(dimx,dimy,dimz,posx,posy,posz,rotx0,roty0,rotz0,rotx,roty,rotz,r,g,b,alpha);
     }
 
     ~VisionObj()
@@ -222,12 +223,14 @@ public:
     
     void set(double dimx,double dimy,double dimz,
              double posx,double posy,double posz,
+             double rotx0,double roty0,double rotz0,
              double rotx,double roty,double rotz,
              int r,int g,int b,double alpha)
     {
         mDimx=0.5*dimx; mDimy=0.5*dimy; mDimz=0.5*dimz;
         mPosx=posx; mPosy=posy; mPosz=posz;
         mRotx=rotx; mRoty=roty; mRotz=rotz;
+        mRotx0=rotx0; mRoty0=roty0; mRotz0=rotz0;
         mR=double(r)/255.0; mG=double(g)/255.0; mB=double(b)/255.0;
         mAlpha=alpha;
     }
@@ -260,6 +263,10 @@ public:
 
         glTranslated(mPosx,mPosy,mPosz);
         printw(0.0,0.0,1.2*mDimz,mName.c_str());
+
+        glRotated(mRotz0,0.0,0.0,1.0);
+        glRotated(mRoty0,0.0,1.0,0.0);
+        glRotated(mRotx0,1.0,0.0,0.0);
 
         glRotated(mRotz,0.0,0.0,1.0);
         glRotated(mRoty,0.0,1.0,0.0);
@@ -356,6 +363,7 @@ protected:
     double mDimx,mDimy,mDimz;
     double mPosx,mPosy,mPosz;
     double mRotx,mRoty,mRotz;
+    double mRotx0,mRoty0,mRotz0;
 };
 
 #endif

@@ -24,6 +24,8 @@
 #include <yarp/sig/Vector.h>
 #include <iCub/skinDynLib/skinContactList.h>
 
+#include "bvhnoderoot.h"
+
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
 #else
@@ -47,6 +49,12 @@ public:
         mObjPort.setStrict();
         mTexPort.setStrict();
         mForcePort.setStrict();
+
+        mPx=mPy=mPz=0.0;
+        mRx=mRy=mRz=0.0;
+        for (int i=0; i<3; ++i)
+            for (int j=0; j<3; ++j)
+                R[i][j]=(double)(i==j);
     }
 
     ~ObjectsManager()
@@ -79,6 +87,31 @@ public:
     inline void manage(yarp::os::Bottle *msg);
     inline void manage(yarp::sig::VectorOf<unsigned char> *img);
     inline void manage(iCub::skinDynLib::skinContactList &forces);
+
+    void readEncoders(double *enc)
+    {
+        static const double DEG2RAD=M_PI/180.0;
+
+        mPx=enc[3];
+        mPy=enc[4];
+        mPz=enc[5];
+
+        mRz=enc[0];
+        mRy=enc[1];
+        mRx=enc[2];
+
+        double Rz=DEG2RAD*mRz;
+        double Ry=DEG2RAD*mRy;
+        double Rx=DEG2RAD*mRx;
+
+        double cA=cos(Rz),sA=sin(Rz);
+        double cB=cos(Ry),sB=sin(Ry);
+        double cY=cos(Rx),sY=sin(Rx);
+
+        R[0][0]=cA*cB; R[0][1]=cA*sB*sY-sA*cY; R[0][2]=cA*sB*cY+sA*sY;
+        R[1][0]=sA*cB; R[1][1]=sA*sB*sY+cA*cY; R[1][2]=sA*sB*cY-cA*sY;
+        R[2][0]=  -sB; R[2][1]=   cB*sY;       R[2][2]=   cB*cY;
+    }
 
     void draw()
     {
@@ -170,6 +203,10 @@ protected:
     std::vector<VisionObj*> mObjects;
     std::vector<TrajectoryObj*> mTrajectories;
 
+    double mPx,mPy,mPz;
+    double mRx,mRy,mRz;
+    double R[3][3];
+
     BVHNode ***mAB;
 
     yarp::os::BufferedPort<yarp::os::Bottle> mObjPort;
@@ -220,21 +257,25 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         double ry=msg->get(9).asDouble();
         double rz=msg->get(10).asDouble();
 
-        int R=msg->get(11).asInt();
-        int G=msg->get(12).asInt();
-        int B=msg->get(13).asInt();
+        int r=msg->get(11).asInt();
+        int g=msg->get(12).asInt();
+        int b=msg->get(13).asInt();
         double alpha=msg->get(14).asDouble();
+
+        double Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
+        double Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
+        double Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
             if (*mObjects[i]==name)
             {
-                mObjects[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha);
+                mObjects[i]->set(dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
                 return;
             }
         }
 
-        mObjects.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,R,G,B,alpha));
+        mObjects.push_back(new VisionObj(name,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha));
         
         return;
     }
@@ -276,11 +317,15 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         double y=msg->get(3).asDouble();
         double z=msg->get(4).asDouble();
 
+        double Px=R[0][0]*x+R[0][1]*y+R[0][2]*z+mPx;
+        double Py=R[1][0]*x+R[1][1]*y+R[1][2]*z+mPy;
+        double Pz=R[2][0]*x+R[2][1]*y+R[2][2]*z+mPz;
+
         for (int i=0; i<(int)mTrajectories.size(); ++i)
         {
             if (*mTrajectories[i]==name)
             {
-                mTrajectories[i]->update(x,y,z);
+                mTrajectories[i]->update(Px,Py,Pz);
                 return;
             }
         }
