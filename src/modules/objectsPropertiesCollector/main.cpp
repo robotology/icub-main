@@ -1027,8 +1027,11 @@ public:
     }
 
     /************************************************************************/
-    void respond(const Bottle &command, Bottle &reply)
+    void respond(ConnectionReader &connection, const Bottle &command, Bottle &reply)
     {
+        printMessage("[%s]: %s\n",connection.getRemoteContact().getName().c_str(),
+                                  command.toString().c_str());
+
         if (command.size()<1)
         {
             reply.addVocab(REP_NACK);
@@ -1323,7 +1326,7 @@ protected:
             return false;
 
         double t0=Time::now();
-        pDataBase->respond(command,reply);
+        pDataBase->respond(connection,command,reply);
         cumTime+=Time::now()-t0;
         nCalls++;
 
