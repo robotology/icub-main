@@ -2477,7 +2477,10 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
             mass=lower_mass;
         break;
         case UPPER_BODY_PARTS:
-            COM=this->upper_COM;
+            T0 = lowerTorso->HUp;
+			T1 = lowerTorso->up->getH(2,true);
+            //COM=this->upper_COM; //respect to neck
+            COM= T0 * T1 * this->upper_COM; //respect to root
             mass=upper_mass;
         break;
 		case LEFT_LEG:
@@ -2558,22 +2561,31 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 	//prepare the transformation matrices
 	yarp::sig::Matrix T0 = lowerTorso->HUp;
 	yarp::sig::Matrix T1 = lowerTorso->up->getH(2,true);
-	yarp::sig::Matrix T0_6x6; T0_6x6.resize(6,6); T0_6x6.zero();
-	yarp::sig::Matrix T1_6x6; T1_6x6.resize(6,6); T1_6x6.zero();
-	unsigned int r,c,ct=0;
-	for (r=0; r<3; r++) for (c=0; c<3; c++) T0_6x6(r,c)= T0(r,c);
-	for (r=3; r<6; r++) for (c=3; c<6; c++) T0_6x6(r,c)= T0(r-3,c-3);
-	for (r=0; r<3; r++) for (c=0; c<3; c++) T1_6x6(r,c)= T1(r,c);
-	for (r=3; r<6; r++) for (c=3; c<6; c++) T1_6x6(r,c)= T1(r-3,c-3);
-	yarp::sig::Matrix T_UP = T0_6x6*T1_6x6;
 
-    //compute the COM jacobians
+	//yarp::sig::Matrix Tup = T0*T1;
+	yarp::sig::Matrix T_ad;
+	//yarp::sig::Matrix Teye;
+
+	//Teye.resize(4,4);
+	T_ad.resize(6,6);
+
+	//Teye.eye();
+
+	//adjoint matrix computation
+	T_ad.eye();
+
+	//upper torso COM jacobian computation
 	upperTorso->EXPERIMENTAL_computeCOMjacobian();
+
+	//lower torso COM jacobian computation
 	lowerTorso->EXPERIMENTAL_computeCOMjacobian();
 
 	//order the partial jacobians in the main jacobian.
 	this->COM_Jacob.resize(6,32);
 
+	int r=0;
+	int ct=0;
+	int c=0;
 	for (r=0; r<6; r++)
 		{
 			ct = 0;
@@ -2588,13 +2600,13 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 				COM_Jacob(r,ct) = lowerTorso->COM_jacob_UP(r,c);
 			//left arm 
 			for (c=0; c<7; c++, ct++)
-				COM_Jacob(r,ct) = ((T_UP*upperTorso->COM_jacob_LF)(r,c));
+				COM_Jacob(r,ct) = ((T_ad*upperTorso->COM_jacob_LF)(r,c));
 			//right arm
 			for (c=0; c<7; c++, ct++)
-				COM_Jacob(r,ct) = ((T_UP*upperTorso->COM_jacob_RT)(r,c));
+				COM_Jacob(r,ct) = ((T_ad*upperTorso->COM_jacob_RT)(r,c));
 			//head
 			for (c=0; c<3; c++, ct++)
-				COM_Jacob(r,ct) = ((T_UP*upperTorso->COM_jacob_UP)(r,c));
+				COM_Jacob(r,ct) = ((T_ad*upperTorso->COM_jacob_UP)(r,c));
 		}
 
 //*********************************************************************************************
@@ -2738,15 +2750,16 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &vel)
+bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &com_vel, Vector &dq)
 {
     Matrix jac;
     EXPERIMENTAL_getCOMjacobian(which_part,jac);
     
     Vector jvel; 
     getAllVelocities(jvel);
+    dq = jvel;
 
-    vel = COM_Jacob*jvel;
+    com_vel = COM_Jacob*jvel;
     return true;
 }
 

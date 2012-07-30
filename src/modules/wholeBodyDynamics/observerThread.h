@@ -191,6 +191,10 @@ private:
     BufferedPort<Vector> *port_monitor;
     BufferedPort<iCub::skinDynLib::skinContactList> *port_contacts;
     BufferedPort<Vector> *port_dumpvel;
+    BufferedPort<Vector> *port_COM_vel;
+    BufferedPort<Matrix> *port_COM_Jacobian;
+    BufferedPort<Vector> *port_all_velocities;
+
     // ports outputing the external dynamics seen at the F/T sensor
     BufferedPort<Vector> *port_external_ft_arm_left;
     BufferedPort<Vector> *port_external_ft_arm_right;
@@ -247,6 +251,9 @@ private:
     // icub model
     int comp;
     Matrix FM_sens_up,FM_sens_low;
+
+    //COM Jacobian Matrix
+    Matrix com_jac;
 
     Vector evalVelUp(const Vector &x);
     Vector evalVelLow(const Vector &x);

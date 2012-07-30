@@ -240,6 +240,9 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_ft_arm_right = new BufferedPort<Vector>;
     port_external_ft_leg_left = new BufferedPort<Vector>;
     port_external_ft_leg_right = new BufferedPort<Vector>;
+    port_COM_vel = new BufferedPort<Vector>;
+    port_COM_Jacobian = new BufferedPort<Matrix>;
+    port_all_velocities = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
     port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -286,6 +289,9 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_external_ft_arm_right->open(string("/"+local_name+"/right_arm/ext_ft_sens:o").c_str());
     port_external_ft_leg_left->open(string("/"+local_name+"/left_leg/ext_ft_sens:o").c_str());
     port_external_ft_leg_right->open(string("/"+local_name+"/right_leg/ext_ft_sens:o").c_str());
+    port_COM_vel->open(string("/"+local_name+"/com_vel:o").c_str());
+    port_COM_Jacobian->open(string("/"+local_name+"/com_jacobian:o").c_str());
+    port_all_velocities->open(string("/"+local_name+"/all_velocities:o").c_str());
 
     if (autoconnect)
     {
@@ -342,6 +348,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     F_ext_right_leg.resize(6,0.0); 
     F_ext_cartesian_left_leg.resize(6,0.0);
     F_ext_cartesian_right_leg.resize(6,0.0);
+    com_jac.resize(6,32);
+
 }
 
 bool inverseDynamics::threadInit()
@@ -565,7 +573,8 @@ void inverseDynamics::run()
 
     Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7), com_lb(7), com_ub(7);
     double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to, mass_lb, mass_ub;
-    Vector com_v;
+	Vector com_v; com_v.resize(3); com_v.zero();
+    Vector dq; dq.resize(32,1); dq.zero();
 
     if (com_enabled)
     {
@@ -593,16 +602,11 @@ void inverseDynamics::run()
         {
             //experimental
             icub->EXPERIMENTAL_computeCOMjacobian();
-            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v);
+            icub->EXPERIMENTAL_getCOMjacobian(BODY_PART_ALL,com_jac);
+            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v,dq);
             com_all.push_back(com_v[0]);
             com_all.push_back(com_v[1]);
             com_all.push_back(com_v[2]);
-            //com_all.push_back(this->current_status.get_dq_torso()[0]);
-            //com_all.push_back(this->current_status.get_dq_torso()[1]);
-            //com_all.push_back(this->current_status.get_dq_torso()[2]);
-            //com_all.push_back(this->current_status.get_dq_lleg()[0]);
-            //com_all.push_back(this->current_status.get_dq_lleg()[1]);
-            //com_all.push_back(this->current_status.get_dq_lleg()[2]);
         }
         else
         {
@@ -748,6 +752,12 @@ void inverseDynamics::run()
     // *** DUMP VEL DATA ***
     //sendVelAccData();
 
+    if (com_vel_enabled)
+	{
+	    broadcastData<Vector> (com_v, port_COM_vel);
+		broadcastData<Vector> (dq, port_all_velocities);
+	    broadcastData<Matrix> (com_jac, port_COM_Jacobian);
+    }
     broadcastData<Vector> (com_all, port_com_all);
     broadcastData<Vector> (com_lb,  port_com_lb);
     broadcastData<Vector> (com_ub,  port_com_ub);
@@ -888,7 +898,10 @@ void inverseDynamics::threadRelease()
     closePort(port_external_ft_leg_left);
     fprintf(stderr, "Closing external_ft_leg_right port\n");
     closePort(port_external_ft_leg_right);
-    
+    fprintf(stderr, "Close COM velocity port\n");
+    closePort(port_COM_vel);
+    fprintf(stderr, "Closing COM Jacobian port\n");
+    closePort(port_COM_Jacobian);
 
     if (icub)      {delete icub; icub=0;}
     if (icub_sens) {delete icub_sens; icub=0;}

@@ -1533,7 +1533,7 @@ public:
 	* @param vel the velocity vector
 	* @return true if succeeds, false otherwise
 	*/
-	bool EXPERIMENTAL_getCOMvelocity(iCub::skinDynLib::BodyPart which_part, yarp::sig::Vector &vel);
+	bool EXPERIMENTAL_getCOMvelocity(iCub::skinDynLib::BodyPart which_part, yarp::sig::Vector &vel, yarp::sig::Vector &dq);
 };
 
 
