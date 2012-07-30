@@ -177,6 +177,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     w0_dw0_enabled   = false;
     dumpvel_enabled = false;
     auto_drift_comp = false;
+    add_legs_once = false;
 
     icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
     icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
@@ -650,24 +651,32 @@ void inverseDynamics::run()
 	right_leg_contact.setLinkNumber(5);
 	right_leg_contact.setBodyPart(iCub::skinDynLib::RIGHT_LEG);
 	right_leg_contact.setForceMoment(F_ext_right_leg);
-	static bool add_legs_once = false;
+	
 	if (!add_legs_once)
 	{
 		skinContacts.push_back(left_leg_contact);
 		skinContacts.push_back(right_leg_contact);
 		add_legs_once = true;
 	}
+	
+	bool skin_lleg_found = false;
+	bool skin_rleg_found = false;
 	for(unsigned int j=0; j<skinContacts.size(); j++)
 	{
 		if (skinContacts[j].getBodyPart()==iCub::skinDynLib::LEFT_LEG)
 		{
 			skinContacts[j].setForceMoment(F_ext_left_leg);
+			skin_lleg_found = true;
 		}
 		if (skinContacts[j].getBodyPart()==iCub::skinDynLib::RIGHT_LEG)
 		{
 			skinContacts[j].setForceMoment(F_ext_right_leg);
+			skin_rleg_found = true;
 		}
 	}
+	if (!skin_rleg_found) {skinContacts.push_back(right_leg_contact);} 
+    if (!skin_lleg_found) {skinContacts.push_back(left_leg_contact);} 
+    
 	//*********************************************** add the legs contacts JUST TEMP FIX!! *******************
 
     F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
@@ -1270,6 +1279,7 @@ void inverseDynamics::addSkinContacts()
         // if time is up, remove all the contacts
         icub->upperTorso->clearContactList();
         skinContacts.clear();
+        add_legs_once = true;
     }
 }
 

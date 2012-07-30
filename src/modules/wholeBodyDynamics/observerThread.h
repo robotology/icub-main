@@ -123,6 +123,7 @@ public:
     bool       dumpvel_enabled;
     bool       auto_drift_comp;
     bool       default_ee_cont;
+    bool       add_legs_once;
 
 private:
     string     robot_name;
