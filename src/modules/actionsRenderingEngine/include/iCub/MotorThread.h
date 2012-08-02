@@ -271,15 +271,19 @@ public:
     }
 
 
-    void lookAtHand()
+    void lookAtHand(Bottle &options)
     {
+        if(checkOptions(options,"no_sacc"))
+            ctrl_gaze->setSaccadesStatus(false);
         head_mode=HEAD_MODE_TRACK_HAND;
     }
 
-    void keepFixation()
+    void keepFixation(Bottle &options)
     {
         gazeUnderControl=true;
         ctrl_gaze->setTrackingMode(true);
+        if(checkOptions(options,"no_sacc"))
+            ctrl_gaze->setSaccadesStatus(false);
         head_mode=HEAD_MODE_TRACK_FIX;
     }
 

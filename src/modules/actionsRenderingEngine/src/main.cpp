@@ -21,7 +21,7 @@
 \defgroup actionsRenderingEngine actionsRenderingEngine
 
 A module combining multiple libraries and modules from the iCub repository
-that allows to exectute some basic and complex actions on objects placed on
+that allows to execute some basic and complex actions on objects placed on
 a table in front of the robot.
 
 \section intro_sec Description 
@@ -44,9 +44,7 @@ estimate of the 2D target.
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
-are described in the following. Note that all commands can be supplied 
-with the optional parameter "left" or "right" to select the arm in use
-for the action. The response to any command consists in the voca [ack]/[nack] in case of
+are described in the following. The response to any command consists in the voca [ack]/[nack] in case of
 success/faliure.
 
 Some commands require to specify a visual target for 
@@ -69,6 +67,17 @@ the action required. In these cases the parameter [target] can be expressed as f
 --"object_name" when using a visual classifier to localize objects. This option represents a label to access online information stored in the
   databased provided by \ref objectsPropertiesCollector module. The label itself is used to access the corresponding object through the "name"
   property, whereas the relevant 3D information are available through the "position_3d" property.
+
+General Parameters:
+
+The majority of commands can usually be provided with general optional parameters:
+
+--<arm>: the user can specify the arm required for the action ("left"/"right"). Otherwise the default arm will be used.
+
+--"no_head"/"no_gaze": the action does not affect the gaze of the robot (this parameter does not influece commands that explicitly require
+  to move the head like LOOK).
+
+--"no_sacc": disables the saccadic movements of the gaze controller during the action.
 
 The commands:
 
@@ -184,7 +193,9 @@ In the following a short description of the possible values of [exploration_type
 --[torso] the robot will start moving its torso exploring different positions (specified in the file exploration_poses.ini).
 then it will go back to the initial position.
  
---[hand] the robot will start moving its hand (typically while holding an object) and at the same time look at it
+--[hand] the robot will start moving its hand (typically while holding an object) and at the same time look at it. For safety
+issues, by default the robot moves the other hand back to home position in order to avoid collision. This behaviour can be modified
+by providing the optional parameter "keep_other_hand_still".
 
  
 \section get_port The "Get" Port
@@ -816,7 +827,7 @@ public:
                             else
                             {
                                 motorThr->setGazeIdle();
-                                motorThr->lookAtHand();
+                                motorThr->lookAtHand(command);
                                 reply.addVocab(ACK);
                                 reply.addString("start teaching");
                             }
@@ -845,7 +856,7 @@ public:
                         action.addString("action_name");
                         action.addString(action_name.c_str());
 
-                        motorThr->lookAtHand();
+                        motorThr->lookAtHand(command);
 
                         if(!motorThr->imitateAction(command))
                         {
@@ -904,7 +915,7 @@ public:
                             break;
                         }
 
-                        motorThr->lookAtHand();
+                        motorThr->lookAtHand(command);
                         motorThr->drawNear(command);
                         motorThr->setGazeIdle();
 
@@ -931,7 +942,7 @@ public:
 
                         motorThr->deploy(command);
 
-                        motorThr->keepFixation();
+                        motorThr->keepFixation(command);
 
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
@@ -957,7 +968,7 @@ public:
                             break;
                         }
 
-                        motorThr->lookAtHand();
+                        motorThr->lookAtHand(command);
                         motorThr->shift(command);
                         motorThr->grasp(command);
 

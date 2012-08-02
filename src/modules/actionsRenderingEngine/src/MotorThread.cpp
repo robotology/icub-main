@@ -918,6 +918,12 @@ bool MotorThread::threadInit()
         drv_arm[LEFT]->view(ctrl_mode_arm[LEFT]);
         drv_arm[LEFT]->view(ctrl_impedance_arm[LEFT]);
         drv_arm[LEFT]->view(pos_arm[LEFT]);
+        drv_arm[LEFT]->view(enc_arm[LEFT]);
+
+        Vector vels(16),accs(16);
+        vels=20.0; accs=6000.0;
+        pos_arm[LEFT]->setRefSpeeds(vels.data());
+        pos_arm[LEFT]->setRefAccelerations(accs.data());
     }
 
     if(partUsed=="both_arms" || partUsed=="right_arm")
@@ -932,6 +938,12 @@ bool MotorThread::threadInit()
         drv_arm[RIGHT]->view(ctrl_mode_arm[RIGHT]);
         drv_arm[RIGHT]->view(ctrl_impedance_arm[RIGHT]);
         drv_arm[RIGHT]->view(pos_arm[RIGHT]);
+        drv_arm[RIGHT]->view(enc_arm[RIGHT]);
+
+        Vector vels(16),accs(16);
+        vels=20.0; accs=6000.0;
+        pos_arm[RIGHT]->setRefSpeeds(vels.data());
+        pos_arm[RIGHT]->setRefAccelerations(accs.data());
     }
 
     drv_ctrl_gaze->view(ctrl_gaze);
@@ -1232,7 +1244,6 @@ void MotorThread::run()
         {
             if(!gazeUnderControl)
             {
-                ctrl_gaze->restoreContext(default_gaze_context);
                 gazeUnderControl=true;
             }
 
@@ -1245,9 +1256,7 @@ void MotorThread::run()
             if(!gazeUnderControl)
             {
                 gazeUnderControl=true;
-                ctrl_gaze->restoreContext(default_gaze_context);
             }
-
 
             Vector x,o;
             action[armInUse]->getPose(x,o);
@@ -1509,10 +1518,10 @@ bool MotorThread::reach(Bottle &options)
 
     arm=checkArm(arm,xd);
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation();
+        keepFixation(options);
         look(options);
     }
 
@@ -1561,7 +1570,7 @@ bool MotorThread::reach(Bottle &options)
 
     setGraspState(side);
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     return true;
@@ -1584,11 +1593,11 @@ bool MotorThread::push(Bottle &options)
 
     xd=xd+pushAboveRelief;
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         look(options);
-        keepFixation();
+        keepFixation(options);
     }
 
     ctrl_gaze->waitMotionDone(0.1,2.0);
@@ -1602,11 +1611,11 @@ bool MotorThread::push(Bottle &options)
 
     action[arm]->checkActionsDone(f,true);
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        lookAtHand();
-        keepFixation();
+        lookAtHand(options);
+        keepFixation(options);
     }
 
     action[arm]->enableContactDetection();
@@ -1617,7 +1626,7 @@ bool MotorThread::push(Bottle &options)
 
     action[arm]->disableContactDetection();
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     return true;
@@ -1637,10 +1646,10 @@ bool MotorThread::point(Bottle &options)
         return false;
 
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation();
+        keepFixation(options);
         look(options);
         ctrl_gaze->setTrackingMode(true);
     }
@@ -1682,7 +1691,7 @@ bool MotorThread::point(Bottle &options)
     bool f;
     action[arm]->checkActionsDone(f,true);
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         ctrl_gaze->setTrackingMode(false);
@@ -1705,7 +1714,7 @@ bool MotorThread::look(Bottle &options)
 
         arm=checkArm(arm);
         
-        lookAtHand();
+        lookAtHand(options);
         
         return true;
     }
@@ -1724,7 +1733,7 @@ bool MotorThread::look(Bottle &options)
     	gaze_fix_point=xd;
     	//head_mode=HEAD_MODE_TRACK_FIX;
         //ctrl_gaze->setTrackingMode(true);
-        keepFixation();
+        keepFixation(options);
 	}
 	
 	
@@ -1786,7 +1795,7 @@ bool MotorThread::goHome(Bottle &options)
         head_home=arms_home=hand_home=true;
 
     //workaround
-    head_home = head_home && !checkOptions(options,"no_head");
+    head_home = head_home && !checkOptions(options,"no_head") && !checkOptions(options,"no_gaze");
 
     bool left_arm=checkOptions(options,"left") || checkOptions(options,"both");
     bool right_arm=checkOptions(options,"right") || checkOptions(options,"both");
@@ -1913,12 +1922,12 @@ bool MotorThread::deploy(Bottle &options)
     }
 
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         Vector deployFixZone=deployZone;
         deployFixZone[2]=table_height;
         setGazeIdle();
-        keepFixation();
+        keepFixation(options);
         ctrl_gaze->lookAtFixationPoint(deployFixZone);
     }
 
@@ -1941,7 +1950,7 @@ bool MotorThread::deploy(Bottle &options)
     action[arm]->getPose(x,o);
     action[arm]->disableContactDetection();
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         ctrl_gaze->lookAtFixationPoint(x);
 
     release(options);
@@ -2021,13 +2030,13 @@ bool MotorThread::calibTable(Bottle &options)
 
     bool f=false;
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         //setGazeIdle();
 
         setGazeIdle();
         ctrl_gaze->restoreContext(default_gaze_context);
-        //keepFixation();
+        //keepFixation(options);
         ctrl_gaze->lookAtFixationPoint(deployEnd);
     }
 
@@ -2060,7 +2069,7 @@ bool MotorThread::calibTable(Bottle &options)
         Vector x,o;
         action[arm]->getPose(x,o);
 
-        if(!checkOptions(options,"no_head"))
+        if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
             ctrl_gaze->lookAtFixationPoint(x);
 
         table_height=x[2];
@@ -2082,7 +2091,7 @@ bool MotorThread::calibTable(Bottle &options)
     else
         fprintf(stdout,"########## Table height not found.\n");
 
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     goHome(options);
@@ -2109,7 +2118,7 @@ bool MotorThread::calibFingers(Bottle &options)
             setArmInUse(arm);
 
             if(!no_head)
-                lookAtHand();
+                lookAtHand(options);
 
             Bottle b(arm==LEFT?"left":"right");
             drawNear(b);
@@ -2328,19 +2337,52 @@ bool MotorThread::exploreTorso(Bottle &options)
 //************************************************************************************************
 bool MotorThread::exploreHand(Bottle &options)
 {
+    if(arm_mode!=ARM_MODE_IDLE)
+    {
+        fprintf(stdout,"Error! The requested arm is busy!\n");
+        return false;
+    }
+
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
 
-    if(!checkOptions(options,"no_head"))
+    if(action[arm]==NULL)
     {
-        setGazeIdle();
-        lookAtHand();
+        fprintf(stdout,"Error! requested arm is not working!\n");
+        return false;
     }
 
-    double max_step_time=5.0;
+    //if it was not specified by the user to keep the other hand still, bring it back home
+    int other_arm=1-arm;
+    if(!checkOptions(options,"keep_other_hand_still") && action[other_arm]!=NULL)
+    {
+        action[other_arm]->pushAction(homePos[other_arm],homeOrient[other_arm]);
+
+        bool f;
+        action[other_arm]->checkActionsDone(f,true);
+    }
+
+    //completely disable the arm control
+    Bottle bInterrupt("skip");
+    suspendLearningModeAction(bInterrupt);
+    suspendLearningModeKinOffset(bInterrupt);
+
+    action[arm]->lockActions();
+    action[arm]->syncCheckInterrupt(true);
+    action[arm]->stopControl();
+    //-----------------------------------
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    {
+        setGazeIdle();
+
+        lookAtHand(options);
+    }
+
+    double max_step_time=2.0;
 
     //start exploration
     Vector destination(16);
@@ -2350,11 +2392,11 @@ bool MotorThread::exploreHand(Bottle &options)
         enc_arm[arm]->getEncoders(current_position.data());
 
         //copy the arm configuration in the destination vector
-        for(unsigned int i=0; i<handPoses.size(); i++)
+        for(unsigned int i=0; i<handPoses[pose_idx].size(); i++)
             destination[i]=handPoses[pose_idx][i];
 
         //do not change the fingers angles
-        for(int i=handPoses.size(); i<16; i++)
+        for(int i=handPoses[pose_idx].size(); i<16; i++)
             destination[i]=current_position[i];
 
         pos_arm[arm]->positionMove(destination.data());
@@ -2363,7 +2405,13 @@ bool MotorThread::exploreHand(Bottle &options)
         while(!this->interrupted && Time::now()-init_step_time<max_step_time)
         {
             enc_arm[arm]->getEncoders(current_position.data());
-            if(norm(destination-current_position)<0.1)
+
+            bool done=true;
+            for(int i=0; i<handPoses[pose_idx].size(); i++)
+                if(fabs(destination[i]-current_position[i])>3.0)
+                    done=false;
+
+            if(done)
                 break;
 
             Time::delay(0.05);
@@ -2371,12 +2419,18 @@ bool MotorThread::exploreHand(Bottle &options)
     }
 
     
-    if(!checkOptions(options,"no_head"))
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
     }
 
-
+    //re-enable the arm control
+    if(action[arm]!=NULL)
+    {
+        action[arm]->unlockActions();
+        action[arm]->syncCheckReinstate();
+    }
+    
     return true;
 }
 
