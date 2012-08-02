@@ -62,8 +62,8 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
             IplImage test = cv_img;
             ImageOf<PixelRgb> yarpImg;
             yarpImg.wrapIplImage(&test);
-            yrpImgOut.zero();
-            yrpImgOut = yarpImg;
+            //yrpImgOut.zero();
+            //yrpImgOut = yarpImg;
             
             if (verbose)
                 fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
