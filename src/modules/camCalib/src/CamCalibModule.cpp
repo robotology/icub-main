@@ -46,24 +46,50 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         {
             calibTool->apply(yrpImgIn,yrpImgOut);
             
+            //IplImage *cv_img = cvCreateImage( cvSize(yrpImgOut.width(), yrpImgOut.height()), IPL_DEPTH_8U, 3 );
+            //cvCvtColor((IplImage*)yrpImgOut.getIplImage(), cv_img, CV_RGB2BGR);
+            //cvScale(cv_img, cv_img, currSat);
+           
             cv::Mat cv_img (yrpImgOut.height(), yrpImgOut.width(), CV_8UC3);
-
             cv::Scalar scale(currSat*255.0);
             cv::Mat cv_sMod (yrpImgOut.height(), yrpImgOut.width(), CV_8UC1, scale);
-            
+ 
             vector<cv::Mat> planes;
             cv::cvtColor( cv::Mat((IplImage*)yrpImgOut.getIplImage()), cv_img, CV_RGB2HSV);
             cv::split(cv_img, planes);
-            planes[1]=cv_sMod;
-            cv::merge(planes,cv_img);
+            //planes[1]=cv_sMod; //dont just add the values
+
+            //cv::Mat res(yrpImgOut.height(), yrpImgOut.width(), CV_8UC1);
+            //cv::gemm(planes[1], cv_sMod, 1.0, cv::Mat(), 0.0, res);
             
-            cv::cvtColor( cv_img, cv_img, CV_HSV2BGR);
+            for (int c =0; c <planes[1].cols; c++)
+            {
+                for (int r=0; r<planes[1].rows; r++)
+                {
+                    double to_be_saturated=planes[1].at<uchar>(r,c) * currSat;
+                    //fprintf(stdout,"dgb1 %d %lf\n", planes[1].at<uchar>(r,c), to_be_saturated);
+                    if(to_be_saturated<0.0)
+                        to_be_saturated=0.0;
+                    if(to_be_saturated>255.0)
+                        to_be_saturated=255.0;
+                        
+                    planes[1].at<uchar>(r,c)=to_be_saturated;
+                }
+            }
+            //fprintf(stdout,"dgb1\n");
+            //planes[1] = res;
+            cv::merge(planes,cv_img);
+            //fprintf(stdout,"dgb2\n");
+            cv::cvtColor( cv_img, cv_img, CV_HSV2RGB);
+            //fprintf(stdout,"dgb3\n");
             
             IplImage test = cv_img;
+            
             ImageOf<PixelRgb> yarpImg;
-            yarpImg.wrapIplImage(&test);
-            //yrpImgOut.zero();
-            //yrpImgOut = yarpImg;
+            yarpImg.resize(test.width,test.height);
+            cvCopyImage(&test, (IplImage*)yarpImg.getIplImage());
+            yrpImgOut.zero();
+            yrpImgOut = yarpImg;
             
             if (verbose)
                 fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
@@ -145,7 +171,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     {
         cout << "====> warning: port " << getName("/conf") << " already in use" << endl;    
     }
-    _prtImgIn.setSaturation(rf.check("saturation",Value(0.271)).asDouble());
+    _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asDouble());
     _prtImgIn.open(getName("/in"));
     _prtImgIn.setPointers(&_prtImgOut,_calibTool);
     _prtImgIn.setVerbose(rf.check("verbose"));
