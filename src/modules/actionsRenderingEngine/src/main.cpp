@@ -184,6 +184,9 @@ In the following a short description of the possible values of [exploration_type
 --[torso] the robot will start moving its torso exploring different positions (specified in the file exploration_poses.ini).
 then it will go back to the initial position.
  
+--[hand] the robot will start moving its hand (typically while holding an object) and at the same time look at it
+
+ 
 \section get_port The "Get" Port
  
 The actionsRenderingEngine can be queried via the port /<modName>/get:io in order to obtain 

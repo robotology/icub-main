@@ -2340,67 +2340,41 @@ bool MotorThread::exploreHand(Bottle &options)
         lookAtHand();
     }
 
-    //the new position is approximately at the center of
-    Vector xd(3);
-    xd[0]=-0.25;
-    xd[1]=0.0;
-    xd[2]=table_height>0.1?table_height:0.1;
+    double max_step_time=5.0;
 
-    //set the new orientation
-    Vector x_o(3),y_o(3),z_o(3);
-    x_o=y_o=z_o=0.0;
-
-    if(arm==LEFT)
+    //start exploration
+    Vector destination(16);
+    for(unsigned int pose_idx=0; pose_idx<handPoses.size(); pose_idx++)
     {
-        x_o[1]=1.0;
-        y_o[0]=1.0;
-        z_o[2]=1.0;
-    }
-    else
-    {
-        x_o[1]=-1.0;
-        y_o[0]=1.0;
-        z_o[2]=-1.0;
-    }
+        Vector current_position(16);
+        enc_arm[arm]->getEncoders(current_position.data());
 
-    Matrix R(3,3);
-    R.setCol(0,x_o);
-    R.setCol(1,y_o);
-    R.setCol(2,z_o);
+        //copy the arm configuration in the destination vector
+        for(unsigned int i=0; i<handPoses.size(); i++)
+            destination[i]=handPoses[pose_idx][i];
 
-    Vector od=dcm2axis(R);
+        //do not change the fingers angles
+        for(int i=handPoses.size(); i<16; i++)
+            destination[i]=current_position[i];
 
+        pos_arm[arm]->positionMove(destination.data());
 
-    //reach for the position
-    action[arm]->pushAction(xd,od,"open_hand");
-
-    bool f;
-    action[arm]->checkActionsDone(f,true);
-
-
-    //move the hand back
-    double exec_time=10.0;
-    double init_time=Time::now();
-
-    int flip=1;
-    double flip_max_time=0.25;
-    double flip_angle=15.0;
-    double flip_time=Time::now();
-
-    while(Time::now()-init_time<exec_time)
-    {
-        if ((Time::now()-flip_time)>flip_max_time)
+        double init_step_time=Time::now();
+        while(!this->interrupted && Time::now()-init_step_time<max_step_time)
         {
-            flip_time=Time::now();
-            //hand->positionMove(5,-20.0+flip*20.0);    // forearm rotation
-            pos_arm[arm]->positionMove(6,flip*flip_angle);    // forearm rotation
-            flip=-flip;
+            enc_arm[arm]->getEncoders(current_position.data());
+            if(norm(destination-current_position)<0.1)
+                break;
+
+            Time::delay(0.05);
         }
     }
 
-
+    
     if(!checkOptions(options,"no_head"))
+    {
         setGazeIdle();
+    }
 
 
     return true;
