@@ -1,2 +1,0 @@
-mplayer -af scaletempo -speed 0.95 filename.mp3
-

@@ -1,4 +1,0 @@
-echo "ctpn time 3 off 0 pos (47 0 0)" | yarp rpc /ctpservice/torso/rpc
-echo "ctpn time 3 off 0 pos (-50.69 12.66 3.86 88.05 -84.19 -9.00 15.60 7.94 52.01 0.37 13.98 2.17 1.05 0.39 2.05 -6.92)" | yarp rpc /ctpservice/right_arm/rpc
-echo "ctpn time 3 off 0 pos (17 0 0 10 -7 8)" | yarp rpc /ctpservice/head/rpc
-

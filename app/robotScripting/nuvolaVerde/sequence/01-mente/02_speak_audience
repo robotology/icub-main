@@ -1,7 +1,0 @@
-./nuvolaVerde/head_motion.sh 6 2 &
-echo "12 250" | yarp write ... /iSpeak
-echo "waveing on" | yarp rpc /actionsRenderingEngine/rpc
-mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_01_new.mp3
-mplayer -af scaletempo -speed 0.95 ./nuvolaVerde/mp3/01-mente/mente_02_new.mp3
-echo "waveing off" | yarp rpc /actionsRenderingEngine/rpc
-
