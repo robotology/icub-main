@@ -54,11 +54,14 @@ private:
 
     bool verbose;
     double t0;
+    double currSat;
 
     virtual void onRead(ImageOf<PixelRgb> &yrpImgIn);
 
 public:
     CamCalibPort();
+    
+    void setSaturation(double satVal);
     void setPointers(yarp::os::Port *_portImgOut, ICalibTool *_calibTool);
     void setVerbose(const bool sw) { verbose=sw; }
 };
@@ -91,6 +94,7 @@ public:
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
+    virtual bool respond(const Bottle& command, Bottle& reply);
     virtual double getPeriod();
 
 };

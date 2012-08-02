@@ -23,10 +23,15 @@ void CamCalibPort::setPointers(yarp::os::Port *_portImgOut, ICalibTool *_calibTo
     calibTool=_calibTool;
 }
 
+void CamCalibPort::setSaturation(double satVal)
+{
+    currSat = satVal;
+}
+
 void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 {
     double t=Time::now();
-   
+    int temp = 0;
     // execute calibration
     if (portImgOut!=NULL)
     {        
@@ -40,7 +45,26 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         if (calibTool!=NULL)
         {
             calibTool->apply(yrpImgIn,yrpImgOut);
+            
+            cv::Mat cv_img (yrpImgOut.height(), yrpImgOut.width(), CV_8UC3);
 
+            cv::Scalar scale(currSat*255.0);
+            cv::Mat cv_sMod (yrpImgOut.height(), yrpImgOut.width(), CV_8UC1, scale);
+            
+            vector<cv::Mat> planes;
+            cv::cvtColor( cv::Mat((IplImage*)yrpImgOut.getIplImage()), cv_img, CV_RGB2HSV);
+            cv::split(cv_img, planes);
+            planes[1]=cv_sMod;
+            cv::merge(planes,cv_img);
+            
+            cv::cvtColor( cv_img, cv_img, CV_HSV2BGR);
+            
+            IplImage test = cv_img;
+            ImageOf<PixelRgb> yarpImg;
+            yarpImg.wrapIplImage(&test);
+            yrpImgOut.zero();
+            yrpImgOut = yarpImg;
+            
             if (verbose)
                 fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
         }
@@ -121,7 +145,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     {
         cout << "====> warning: port " << getName("/conf") << " already in use" << endl;    
     }
-     
+    _prtImgIn.setSaturation(rf.check("saturation",Value(0.271)).asDouble());
     _prtImgIn.open(getName("/in"));
     _prtImgIn.setPointers(&_prtImgOut,_calibTool);
     _prtImgIn.setVerbose(rf.check("verbose"));
@@ -161,4 +185,27 @@ bool CamCalibModule::updateModule(){
 double CamCalibModule::getPeriod() {
   return 1.0;
 }
+
+bool CamCalibModule::respond(const Bottle& command, Bottle& reply) 
+{
+    reply.clear(); 
+
+    if (command.get(0).asString()=="quit") 
+    {
+        reply.addString("quitting");
+        return false;     
+    }
+    else if (command.get(0).asString()=="sat" || command.get(0).asString()=="saturation")
+    {
+        double satVal = command.get(1).asDouble();
+        _prtImgIn.setSaturation(satVal);
+        reply.addString("ok");
+    }
+    else
+    {
+        cout << "command not known - type help for more info" << endl;
+    }
+    return true;
+}
+
 
