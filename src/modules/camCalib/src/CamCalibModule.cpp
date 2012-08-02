@@ -64,7 +64,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
                     if(to_be_saturated>255.0)
                         to_be_saturated=255.0;
                         
-                    planes[1].at<uchar>(r,c)=to_be_saturated;
+                    planes[1].at<uchar>(r,c)=(uchar)to_be_saturated;
                 }
             }
 
