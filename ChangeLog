@@ -1,3 +1,6 @@
+2012-08-02 Lorenzo Natale <lorenzo.natale@iit.it>
+    * added version check using YARP_SVN_VERSION
+
 2012-07-05 Lorenzo Natale <lorenzo.natale@iit.it>
     * tagging 1.1.10
 
