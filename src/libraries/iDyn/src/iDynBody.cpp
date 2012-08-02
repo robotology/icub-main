@@ -2759,7 +2759,7 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &com
     getAllVelocities(jvel);
     dq = jvel;
 
-    com_vel = COM_Jacob*jvel;
+    com_vel = jac*jvel;
     return true;
 }
 
