@@ -47,29 +47,33 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
             calibTool->apply(yrpImgIn,yrpImgOut);
            
             cv::Mat cv_img (yrpImgOut.height(), yrpImgOut.width(), CV_8UC3);
-            cv::Scalar scale(currSat*255.0);
-            cv::Mat cv_sMod (yrpImgOut.height(), yrpImgOut.width(), CV_8UC1, scale);
- 
+
             vector<cv::Mat> planes;
-            cv::cvtColor( cv::Mat((IplImage*)yrpImgOut.getIplImage()), cv_img, CV_RGB2HSV);
+            cv::cvtColor( cv::Mat((IplImage*)yrpImgOut.getIplImage()), cv_img, CV_RGB2BGR);
             cv::split(cv_img, planes);
             
-            for (int c =0; c <planes[1].cols; c++)
+            for (int c =0; c <cv_img.cols; c++)
             {
-                for (int r=0; r<planes[1].rows; r++)
+                for (int r=0; r<cv_img.rows; r++)
                 {
-                    double to_be_saturated=planes[1].at<uchar>(r,c) * currSat;
-                    if(to_be_saturated<0.0)
-                        to_be_saturated=0.0;
-                    if(to_be_saturated>255.0)
-                        to_be_saturated=255.0;
-                        
-                    planes[1].at<uchar>(r,c)=(uchar)to_be_saturated;
+                    double mean=(1.0/3.0)*(planes[0].at<uchar>(r,c)+planes[1].at<uchar>(r,c)+planes[2].at<uchar>(r,c));
+                    for(int i=0; i<3; i++)
+                    {
+                        double s=planes[i].at<uchar>(r,c)-mean;
+                        double sn=currSat*s;
+                        sn+=mean;
+
+                        if(sn<0.0)
+                            sn=0.0;
+                        if(sn>255.0)
+                            sn=255.0;
+
+                        planes[i].at<uchar>(r,c)=sn;
+                    }
                 }
             }
-
             cv::merge(planes,cv_img);
-            cv::cvtColor( cv_img, cv_img, CV_HSV2RGB);
+            cv::cvtColor( cv_img, cv_img, CV_BGR2RGB);
 
             IplImage test = cv_img;
             
@@ -78,7 +82,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
             cvCopyImage(&test, (IplImage*)yarpImg.getIplImage());
             yrpImgOut.zero();
             yrpImgOut = yarpImg;
-            
+
             if (verbose)
                 fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
         }
@@ -112,8 +116,8 @@ CamCalibModule::~CamCalibModule(){
 
 bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
-	ConstString str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
-	setName(str.c_str()); // modulePortName  
+    ConstString str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
+    setName(str.c_str()); // modulePortName
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());
@@ -168,7 +172,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     _configPort.open(getName("/conf"));
 
     attach(_configPort);
-	fflush(stdout);
+    fflush(stdout);
 
     return true;
 }
@@ -187,12 +191,12 @@ bool CamCalibModule::close(){
 
 bool CamCalibModule::interruptModule(){
     _prtImgIn.interrupt();
-	_prtImgOut.interrupt();
+    _prtImgOut.interrupt();
     _configPort.interrupt();
     return true;
 }
 
-bool CamCalibModule::updateModule(){	
+bool CamCalibModule::updateModule(){
     return true;
 }
 
@@ -213,6 +217,7 @@ bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
     {
         double satVal = command.get(1).asDouble();
         _prtImgIn.setSaturation(satVal);
+        
         reply.addString("ok");
     }
     else
