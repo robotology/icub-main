@@ -1968,7 +1968,7 @@ bool ServerCartesianController::getTrackingMode(bool *f)
 /************************************************************************/
 bool ServerCartesianController::setReferenceMode(const bool f)
 {
-    if (attached)
+    if (attached && pidAvailable)
     {
         useReferences=f;
         return true;
