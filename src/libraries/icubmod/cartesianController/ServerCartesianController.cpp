@@ -167,7 +167,8 @@ void ServerCartesianController::init()
     trackingMode =false;
     executingTraj=false;
     taskVelModeOn=false;
-    motionDone   =true;    
+    motionDone   =true;
+    useReferences=false;
 
     connectCnt=0;
     ctrlPose=IKINCTRL_POSE_FULL;
@@ -381,6 +382,25 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab(IKINCARTCTRL_VOCAB_VAL_MODE_TRACK);
                                 else
                                     reply.addVocab(IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_REFERENCE:
+                        {
+                            bool flag;
+                            if (getReferenceMode(&flag))
+                            {   
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+
+                                if (flag)
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_TRUE);
+                                else
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_FALSE);
                             }
                             else
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -673,6 +693,30 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
     
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_REFERENCE:
+                        {
+                            int mode=command.get(2).asVocab();
+                            if (mode==IKINCARTCTRL_VOCAB_VAL_TRUE)
+                            {    
+                                if (setReferenceMode(true))
+                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                else
+                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            }
+                            else if (mode==IKINCARTCTRL_VOCAB_VAL_FALSE)
+                            {    
+                                if (setReferenceMode(false))
+                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                else
+                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
                             break;
                         }
 
@@ -971,7 +1015,10 @@ double ServerCartesianController::getFeedback(Vector &_fb)
     for (int i=0; i<numDrv; i++)
     {
         bool ok;
-        if (encTimedEnabled)
+
+        if (useReferences)
+            ok=lPid[i]->getReferences(fbTmp.data());
+        else if (encTimedEnabled)
         {
             ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data());
             timeStamp=std::max(timeStamp,findMax(stamps.subVector(0,lJnt[i]-1)));
@@ -1592,7 +1639,8 @@ bool ServerCartesianController::close()
     lLim.clear();
     lEnc.clear();
     lEnt.clear();
-    lVel.clear();
+    lPid.clear();
+    lVel.clear();    
     lJnt.clear();
     lRmp.clear();
 
@@ -1647,7 +1695,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         }
 
         // acquire interfaces and driver's info
-        encTimedEnabled=true;
+        encTimedEnabled=pidAvailable=true;
         if (drivers[j]->poly->isValid())
         {
             fprintf(stdout,"ok\n");
@@ -1655,13 +1703,15 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IControlLimits   *lim;
             IEncoders        *enc;
             IEncodersTimed   *ent;
-            IVelocityControl *vel;
+            IPidControl      *pid;
+            IVelocityControl *vel;            
             int               joints;
 
             drivers[j]->poly->view(lim);
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(vel);
             encTimedEnabled&=drivers[j]->poly->view(ent);
+            pidAvailable&=drivers[j]->poly->view(pid);
 
             enc->getAxes(&joints);
 
@@ -1695,7 +1745,8 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             lLim.push_back(lim);
             lEnc.push_back(enc);
             lEnt.push_back(ent);
-            lVel.push_back(vel);
+            lPid.push_back(pid);
+            lVel.push_back(vel);            
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
         }
@@ -1708,6 +1759,9 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     fprintf(stdout,"%s interface will be used\n",
             encTimedEnabled?"IEncodersTimed":"IEncoders");
+
+    fprintf(stdout,"pid interface %s for getting references\n",
+            pidAvailable?"available":"not available");
 
     // exclude acceleration constraints by fixing
     // thresholds at high values
@@ -1904,6 +1958,32 @@ bool ServerCartesianController::getTrackingMode(bool *f)
     if (attached && (f!=NULL))
     {
         *f=trackingMode;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setReferenceMode(const bool f)
+{
+    if (attached)
+    {
+        useReferences=f;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getReferenceMode(bool *f)
+{
+    if (attached && (f!=NULL))
+    {
+        *f=useReferences;
         return true;
     }
     else
@@ -2711,11 +2791,12 @@ bool ServerCartesianController::storeContext(int *id)
         }
 
         double _trajTime,_tol;
-        bool _mode;
+        bool _mode,_useReference;
 
         getTrajTime(&_trajTime);
         getInTargetTol(&_tol);
         getTrackingMode(&_mode);
+        getReferenceMode(&_useReference);
 
         mutex.wait();
 
@@ -2727,6 +2808,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.trajTime=_trajTime;
         context.tol=_tol;
         context.mode=_mode;
+        context.useReferences=_useReference;
 
         *id=contextIdCnt++;
 
@@ -2763,8 +2845,9 @@ bool ServerCartesianController::restoreContext(const int id)
                 setLimits(axis,context.limits(axis,0),context.limits(axis,1));
 
             setTrackingMode(context.mode);
+            setReferenceMode(context.useReferences);
             setTrajTime(context.trajTime);
-            setInTargetTol(context.tol);
+            setInTargetTol(context.tol);            
 
             return true;
         }

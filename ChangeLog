@@ -1,3 +1,6 @@
+2012-08-03 Ugo Pattacini <ugo.pattacini@iit.it>
+    * cart I/F: added set/getReferenceMode() methods
+
 2012-08-02 Lorenzo Natale <lorenzo.natale@iit.it>
     * added version check using YARP_SVN_VERSION
 

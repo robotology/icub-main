@@ -109,6 +109,8 @@ public:
 
     bool setTrackingMode(const bool f);
     bool getTrackingMode(bool *f);
+    bool setReferenceMode(const bool f);
+    bool getReferenceMode(bool *f);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

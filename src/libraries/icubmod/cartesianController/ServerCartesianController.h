@@ -119,6 +119,8 @@ protected:
     bool taskVelModeOn;
     bool motionDone;
     bool encTimedEnabled;
+    bool pidAvailable;
+    bool useReferences;
 
     yarp::os::ConstString ctrlName;
     yarp::os::ConstString slvName;
@@ -138,7 +140,8 @@ protected:
     std::deque<yarp::dev::IControlLimits*>   lLim;
     std::deque<yarp::dev::IEncoders*>        lEnc;
     std::deque<yarp::dev::IEncodersTimed*>   lEnt;
-    std::deque<yarp::dev::IVelocityControl*> lVel;
+    std::deque<yarp::dev::IPidControl*>      lPid;
+    std::deque<yarp::dev::IVelocityControl*> lVel;    
     std::deque<int>                          lJnt;
     std::deque<int*>                         lRmp;
 
@@ -189,6 +192,7 @@ protected:
         double            trajTime;
         double            tol;
         bool              mode;
+        bool              useReferences;
     };
 
     int contextIdCnt;
@@ -244,6 +248,8 @@ public:
 
     bool setTrackingMode(const bool f);
     bool getTrackingMode(bool *f);
+    bool setReferenceMode(const bool f);
+    bool getReferenceMode(bool *f);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

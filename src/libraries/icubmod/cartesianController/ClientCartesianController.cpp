@@ -240,6 +240,62 @@ bool ClientCartesianController::getTrackingMode(bool *f)
 
 
 /************************************************************************/
+bool ClientCartesianController::setReferenceMode(const bool f)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REFERENCE);
+
+    command.addVocab(f?IKINCARTCTRL_VOCAB_VAL_TRUE:IKINCARTCTRL_VOCAB_VAL_FALSE);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getReferenceMode(bool *f)
+{
+    if (!connected || (f==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REFERENCE);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        int mode=reply.get(1).asVocab();
+
+        if (mode==IKINCARTCTRL_VOCAB_VAL_TRUE)
+            *f=true;
+        else if (mode==IKINCARTCTRL_VOCAB_VAL_FALSE)
+            *f=false;
+        else
+            return false;
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ClientCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (!connected)
