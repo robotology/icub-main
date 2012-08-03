@@ -501,9 +501,6 @@ protected:
                 drvCartLeftArm->view(icart);
                 icart->storeContext(&startup_context_id_left);
                 icart->restoreContext(0);
-
-                if (leftArmImpVelMode) 
-                    icart->setReferenceMode(true);
             }
             else
                 return;
@@ -517,9 +514,6 @@ protected:
                 drvCartRightArm->view(icart);
                 icart->storeContext(&startup_context_id_right);
                 icart->restoreContext(0);
-
-                if (rightArmImpVelMode) 
-                    icart->setReferenceMode(true);
             }
             else
                 return;
