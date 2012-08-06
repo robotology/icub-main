@@ -88,7 +88,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
                 for (int c=0; c<yrpImgOut.width(); c++)
                 {
                     unsigned char *pixel = yrpImgOut.getPixelAddress(c,r);
-                    double mean = (1/3.0)*(pixel[0]+pixel[1]+pixel[2]);
+                    double mean = (1.0/3.0)*(pixel[0]+pixel[1]+pixel[2]);
 
                     for(int i=0; i<3; i++)
                     {
@@ -98,10 +98,10 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 
                         if(sn<0.0)
                             sn=0.0;
-                        if(sn>255.0)
+                        else if(sn>255.0)
                             sn=255.0;
 
-                        pixel[i]=sn;
+                        pixel[i]=(unsigned char)sn;
                     }
                 }
             }
