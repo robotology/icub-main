@@ -46,7 +46,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         {
             calibTool->apply(yrpImgIn,yrpImgOut);
            
-            cv::Mat cv_img (yrpImgOut.height(), yrpImgOut.width(), CV_8UC3);
+            /*cv::Mat cv_img (yrpImgOut.height(), yrpImgOut.width(), CV_8UC3);
 
             vector<cv::Mat> planes;
             cv::cvtColor( cv::Mat((IplImage*)yrpImgOut.getIplImage()), cv_img, CV_RGB2BGR);
@@ -81,7 +81,30 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
             yarpImg.resize(test.width,test.height);
             cvCopyImage(&test, (IplImage*)yarpImg.getIplImage());
             yrpImgOut.zero();
-            yrpImgOut = yarpImg;
+            yrpImgOut = yarpImg; */
+
+            for (int r =0; r <yrpImgOut.height(); r++)
+            {
+                for (int c=0; c<yrpImgOut.width(); c++)
+                {
+                    unsigned char *pixel = yrpImgOut.getPixelAddress(c,r);
+                    double mean = (1/3.0)*(pixel[0]+pixel[1]+pixel[2]);
+
+                    for(int i=0; i<3; i++)
+                    {
+                        double s=pixel[i]-mean;
+                        double sn=currSat*s;
+                        sn+=mean;
+
+                        if(sn<0.0)
+                            sn=0.0;
+                        if(sn>255.0)
+                            sn=255.0;
+
+                        pixel[i]=sn;
+                    }
+                }
+            }
 
             if (verbose)
                 fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
@@ -94,7 +117,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
                 fprintf(stdout,"just copied in %g [s]\n",Time::now()-t1);
         }
 
-        // timestamp propagation
+        //timestamp propagation
         yarp::os::Stamp stamp;
         BufferedPort<ImageOf<PixelRgb> >::getEnvelope(stamp);
         portImgOut->setEnvelope(stamp);

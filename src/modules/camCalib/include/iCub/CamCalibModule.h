@@ -78,11 +78,11 @@ class iCub::contrib::CamCalibModule : public RFModule {
 
 private:
 
-    CamCalibPort   _prtImgIn;
-	yarp::os::Port _prtImgOut;
-    yarp::os::Port _configPort;
+    CamCalibPort    _prtImgIn;
+    yarp::os::Port  _prtImgOut;
+    yarp::os::Port  _configPort;
 
-    ICalibTool *_calibTool;
+    ICalibTool *    _calibTool;
 
 public:
 
