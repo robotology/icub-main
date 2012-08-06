@@ -45,43 +45,6 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         if (calibTool!=NULL)
         {
             calibTool->apply(yrpImgIn,yrpImgOut);
-           
-            /*cv::Mat cv_img (yrpImgOut.height(), yrpImgOut.width(), CV_8UC3);
-
-            vector<cv::Mat> planes;
-            cv::cvtColor( cv::Mat((IplImage*)yrpImgOut.getIplImage()), cv_img, CV_RGB2BGR);
-            cv::split(cv_img, planes);
-            
-            for (int c =0; c <cv_img.cols; c++)
-            {
-                for (int r=0; r<cv_img.rows; r++)
-                {
-                    double mean=(1.0/3.0)*(planes[0].at<uchar>(r,c)+planes[1].at<uchar>(r,c)+planes[2].at<uchar>(r,c));
-                    for(int i=0; i<3; i++)
-                    {
-                        double s=planes[i].at<uchar>(r,c)-mean;
-                        double sn=currSat*s;
-                        sn+=mean;
-
-                        if(sn<0.0)
-                            sn=0.0;
-                        if(sn>255.0)
-                            sn=255.0;
-
-                        planes[i].at<uchar>(r,c)=sn;
-                    }
-                }
-            }
-            cv::merge(planes,cv_img);
-            cv::cvtColor( cv_img, cv_img, CV_BGR2RGB);
-
-            IplImage test = cv_img;
-            
-            ImageOf<PixelRgb> yarpImg;
-            yarpImg.resize(test.width,test.height);
-            cvCopyImage(&test, (IplImage*)yarpImg.getIplImage());
-            yrpImgOut.zero();
-            yrpImgOut = yarpImg; */
 
             for (int r =0; r <yrpImgOut.height(); r++)
             {
