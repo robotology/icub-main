@@ -2407,7 +2407,7 @@ bool MotorThread::exploreHand(Bottle &options)
             enc_arm[arm]->getEncoders(current_position.data());
 
             bool done=true;
-            for(int i=0; i<handPoses[pose_idx].size(); i++)
+            for(size_t i=0; i<handPoses[pose_idx].size(); i++)
                 if(fabs(destination[i]-current_position[i])>3.0)
                     done=false;
 
