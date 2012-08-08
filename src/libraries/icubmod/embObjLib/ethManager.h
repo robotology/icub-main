@@ -52,13 +52,16 @@ using namespace std;
 #include "hostTransceiver.hpp"
 #include "embObjLibInterface.h"
 #include "debugFunctions.h"
-
+#include "FeatureInterface.h"
+#include <map>
 
 // ACE stuff
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
+#define _ICUB_CALLBACK_
 
+using namespace std;
 
 // debug with workstation
 #define DEBUG_LAPTOP_IP			"10.255.37.155" 	// <- dhcp;
@@ -76,6 +79,7 @@ using namespace std;
 //#define	MAX_RECV_SIZE			512
 #define	MAX_RECV_SIZE			1500
 #define	SIZE_INFO				126
+#define MAX_ICUB_EP				32
 
 #define _DEBUG_
 #define _SEPARETED_THREADS_
@@ -152,20 +156,29 @@ public:
 //            ethResCreator   Singleton
 // -------------------------------------------------------------------\\
 
+
+
 class yarp::dev::ethResCreator: public std::list<ethResources *>,
 								public IEmbObjResList
 {
 	private:
-		ethResCreator();
-		~ethResCreator();
+
 		static ethResCreator 		*handle;
 		static bool					initted;
 		int							how_many_boards;
-		bool	compareIds(EMS_ID id2beFound, EMS_ID comparingId);
+		FEAT_ID						linkTable[MAX_ICUB_EP];
+		map 						<uint8_t, FEAT_ID> class_lut;
+
+
+		ethResCreator();
+		~ethResCreator();
+		bool						compareIds(EMS_ID id2beFound, EMS_ID comparingId);
 
 	public:
 		static ethResCreator* 		instance();
 		ethResources* 				getResource(yarp::os::Searchable &config);
+		void 						addLUTelement(FEAT_ID id);
+		void *						getHandleFromEP(uint8_t ep);
 		virtual uint8_t*			find(EMS_ID &id);
 };
 

@@ -22,13 +22,6 @@ using namespace std;
 
 #include "debugging.h"
 
-// #ifdef _AC_
-//	 #include "/usr/local/src/robot/iCub/pc104/device-drivers/cfw002/src/LinuxDriver/API/libcfw002.h"
-// #else
-// 	 #include "libcfw002.h"
-// #endif
-
-
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
 	// Debug info
@@ -77,6 +70,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	ethResCreator *resList = ethResCreator::instance();
 	res = resList->getResource(prop);
 
+
 	int period=config.find("Period").asInt();
 	setRate(period);
 
@@ -84,7 +78,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
 	if (ids.size()>1)
 	{
-		cerr<<"Warning: SkinPrototype id list contains more than one entry -> devices will be merged. "<<endl;
+		cerr<<"Warning: EmbObjSkin id list contains more than one entry -> devices will be merged. "<<endl;
 	}
 	for (int i=0; i<ids.size(); i++)
 	{
@@ -100,6 +94,25 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	// sensorsNum=16*12*cardId.size();  // orig
 	sensorsNum=16*12*7;		// max num of card
 	data.resize(sensorsNum);
+
+	int ttt = data.size();
+	for (int i=0; i < ttt; i++)
+		data[i]=(double)255;
+
+	memset(&_fId, 0x00, sizeof(FEAT_ID) );
+	_fId.type = Skin;
+	std::string FeatId = config.find("FeatId").asString().c_str();
+	cout << "FeatId = " << FeatId << endl;
+	strcpy(_fId.name, FeatId.c_str());
+
+	if( 0 == strcmp("left_arm", _fId.name) )
+		_fId.ep = endpoint_sk_emsboard_leftlowerarm;		// fare in maniera più sicura
+
+	if( 0 == strcmp("right_arm", _fId.name) )
+		_fId.ep = endpoint_sk_emsboard_rightlowerarm;
+
+	_fId.handle = dynamic_cast<IiCubFeature*> (this);		//weird behaviour
+	resList->addLUTelement(_fId);
 
 	//RateThread::start();
 	return true;
@@ -242,23 +255,85 @@ void EmbObjSkin::run()
 	mutex.post();
 }
 
-Vector * EmbObjSkin::getData()
+bool EmbObjSkin::fillData(char *raw_skin_data)
 {
-	//not used, c'è in skinwrapper
-}
+	uint8_t 				msgtype = 0;
+	uint8_t 				i, triangle = 0;
+	EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
+	//	yarp::sig::Vector 		&pv = outPort.prepare();
 
-bool EmbObjSkin::pushData(yarp::sig::Vector &in)
-{
-	mutex.wait();
-	data=in;
-	mutex.post();
-	return true;
-}
+	print_debug(AC_debug_file, "\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
 
-bool EmbObjSkin::fillData(char *data)
-{
+	for(i=0; i<sk_array->head.size; i++)
+	{
+		eOutil_canframe_t *canframe;
+		uint8_t  j, mtbId =0;
+		uint8_t  cardId, valid = 0;
 
-	return false;
+		canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
+		valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
+
+		if(valid)
+		{
+			cardId = (canframe->id & 0x00f0) >> 4;
+			switch (cardId)
+			{
+				case 14:
+					mtbId = 0;
+					break;
+				case 13:
+					mtbId = 1;
+					break;
+				case 12:
+					mtbId = 2;
+					break;
+				case 11:
+					mtbId = 3;
+					break;
+				case 10:
+					mtbId = 4;
+					break;
+				case 9:
+					mtbId = 5;
+					break;
+				case 8:
+					mtbId = 6;
+					break;
+				default:
+					printf("Unexpected value %d\n", cardId);
+					return false;
+					break;
+			}
+			triangle = (canframe->id & 0x000f);
+			msgtype= ((canframe->data[0])& 0x80);
+			print_debug(AC_debug_file, "\n data id 0x%04X, 0x", canframe->id);
+
+			int index=16*12*mtbId + triangle*12;
+
+			print_debug(AC_debug_file,"%0X ", canframe->data[0]);
+			if (msgtype)
+			{
+				for(int k=0;k<5;k++)
+				{
+					data[index+k+7]=canframe->data[k+1];
+					print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
+				}
+			}
+			else
+			{
+				for(int k=0;k<7;k++)
+				{
+					this->data[index+k]=canframe->data[k+1];
+					print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
+				}
+			}
+		}
+		else
+		{
+			print_debug(AC_debug_file, "Unknown Message\n");
+		}
+	}
+	return true;  // bool?
 }
 
 void EmbObjSkin::threadRelease()

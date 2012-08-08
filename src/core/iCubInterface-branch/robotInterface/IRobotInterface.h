@@ -11,12 +11,8 @@
 #define __IROBOTINTERFACE__
 
 #include <yarp/os/Property.h>
-#include <yarp/sig/Vector.h>
-#include <string>
-#include "FeatureInterface.h"
-#include "FeatureInterface_hid.h"
 
-using namespace yarp::sig;
+#include <string>
 
 class IRobotInterface
 {
@@ -27,7 +23,6 @@ public:
         {return true;}
     virtual bool finiCart()
         {return true;}
-
 
     /**
     * Closes all robot devices.
@@ -43,14 +38,6 @@ public:
     virtual void park(bool wait=true)=0;
 
     virtual void abort()=0;
-
-    // _AC_
-    virtual IiCubFeatureList *getRobotFeatureList(FEAT_ID *id)=0;
-    virtual IiCubFeatureList *getRobotSkinList(FEAT_ID *id)=0;
-    virtual IRobotInterface *getRobot()=0;
 };
-
-
-
 
 #endif

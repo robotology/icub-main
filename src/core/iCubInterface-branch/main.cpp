@@ -143,7 +143,7 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 #include <yarp/dev/Drivers.h>
 
 
-#include "debugging.h"
+
 
 #include <yarp/os/impl/Logger.h>
 using namespace yarp::os::impl;
@@ -155,9 +155,8 @@ using namespace yarp::dev;
 
 static bool terminated = false;
 static bool askAbort=false;
-IRobotInterface *ri=0;
 
-extern IRobotInterface *iRobotInterface;// = (IRobotInterface *) 0xACCA;
+IRobotInterface *ri=0;
 
 static void sighandler (int) {
 	static int ct = 0;
@@ -187,21 +186,22 @@ int main(int argc, char *argv[])
 {
 	Network yarp; //initialize network, this goes before everything
 
-
-#ifdef _AC_
-//	Logger::get();
-//  Logger::get().setVerbosity(LM_INFO);
-//	Logger::get().log_files.f1=stdout;
-//	Logger::get().log_files.f2=stderr;
-//	Logger::get().log_files.f3=fopen("/home/icub/logs/trace.log", "w+");
-//	Logger::get().log_files.f4=fopen("/home/icub/logs/debug.log", "w+");
-//	Logger::get().log_files.f5=fopen("/home/icub/logs/other.log", "w+");
-#endif
-
 	if (!yarp.checkNetwork())
 	{
 		fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
 		return -1;
+	}
+
+	if( NULL == (AC_trace_file = fopen("/home/icub/trace.log", "w+")) )
+	{
+		printf("Cannot open file /home/icub/trace.log, using stdout\n");
+		AC_trace_file = stdout;
+	}
+
+	if( NULL == (AC_debug_file = fopen("/home/icub/debug.log", "w+")) )
+	{
+		printf("Cannot open file /home/icub/debug.log, using stdout\n");
+		AC_debug_file = stdout;
 	}
 
     YARP_REGISTER_DEVICES(icubmod)
@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
 
 	fprintf(stderr, "terminee.isOk\n");
 
-//	IRobotInterface *iRobotInterface;
+	IRobotInterface *iRobotInterface;
 
 	if (remap)
 	{
@@ -368,13 +368,13 @@ int main(int argc, char *argv[])
 	ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
 	delete iRobotInterface; 
 	iRobotInterface=0;
+
 #ifdef _AC_
-	if( Logger::get().log_files.f3 != 0)
-		fclose(Logger::get().log_files.f3);
-	if( Logger::get().log_files.f4 != 0)
-		fclose(Logger::get().log_files.f4);
-	if( Logger::get().log_files.f5 != 0)
-		fclose(Logger::get().log_files.f5);
+	if( stdout != AC_trace_file)
+		fclose(AC_trace_file);
+
+	if( stdout != AC_debug_file)
+		fclose(AC_debug_file);
 #endif
 	return 0;  
 }

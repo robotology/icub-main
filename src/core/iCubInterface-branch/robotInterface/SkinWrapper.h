@@ -41,11 +41,11 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/Wrapper.h>
 
-#include <list>
-#include <vector>
+//#include <list>
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <yarp/sig/Vector.h>
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
@@ -53,10 +53,7 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/os/BufferedPort.h>
 
-// _AC_
-#include "IRobotInterface.h"
-#include "FeatureInterface.h"
-
+using namespace yarp::sig;
 
 /**
   * Handler of the rpc port related to an analog sensor.
@@ -258,8 +255,7 @@ public:
         {
 			// read from the analog sensor
             yarp::sig::Vector v;
-            IiCubFeatureList *ttt;
-            //ttt->  getData
+
             ret=is->read(v);
 
             if (ret==yarp::dev::IAnalogSensor::AS_OK)
@@ -297,15 +293,14 @@ public:
 };
 
 
-class SkinPartEntry: public IiCubFeature
+class SkinPartEntry//: public IiCubFeature
 {
 private:
-// to be removed ?
+// to be removed ?   -> if change the analog sensorto be a device and the analog server to be a wrapper??
     AnalogServer *analogServer;
     yarp::dev::IAnalogSensor *analog;
-// _AC_
-    yarp::sig::Vector wholeData;
-    IiCubFeature  *hook;
+
+//    yarp::sig::Vector wholeData;		// may be useful if one the skin wrapper has to get data from more than one device...
 
 public:
     std::string id;
@@ -313,7 +308,6 @@ public:
 
     SkinPartEntry();
     ~SkinPartEntry();
-
 
     bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
     void close();
@@ -323,22 +317,13 @@ public:
     void setId(const std::string &i)
     {
     	id=i;
-    	strcpy(fId.name, i.c_str());
     }
-
-    // _AC_
-    FEAT_ID		fId;
-    bool fillData(char *data );
-    bool pushData(yarp::sig::Vector &in);
 };
 
-class SkinParts: public std::list<SkinPartEntry *>,
-				 public IiCubFeatureList
+class SkinParts: public std::list<SkinPartEntry *>
 {
 public:
     SkinPartEntry *find(const std::string &pName);
-    // _AC_
-    IiCubFeature * findus(FEAT_ID *id);
     void close();
 };
 

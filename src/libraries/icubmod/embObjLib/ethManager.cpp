@@ -25,12 +25,18 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
+#include "debugging.h"
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
 bool keepGoingOn2 = true;
 
+#ifdef _AC_
+FILE *AC_trace_file = stdout;
+FILE *AC_debug_file = stdout;
+#endif
 
 
 ethResCreator* ethResCreator::handle = 0x00;
@@ -83,7 +89,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	printf("Config: \n%s\n\n", config.toString().c_str() );
+	printf("\nConfig: \n%s\n\n", config.toString().c_str() );
 	// AC_YARP_INFO(Logger::get(), "ethResources::open()", Logger::get().log_files.f3);
 
 	//
@@ -95,7 +101,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 
 	xtmp2 = xtmp.findGroup("IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
-	// AC_YARP_INFO(Logger::get(), String("IpAddress:\t") + address, Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "Ems ip address %s\n", address);
 
 	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
 	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
@@ -120,7 +126,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	id.ip3=rem_ip3;
 	id.ip4=rem_ip4;
 	strcpy(id.name, "Dunno");
-
+	printf("%s\n", info);
 
 	//
 	// Get PC104 ip address from config file
@@ -354,6 +360,17 @@ uint8_t* ethResCreator::find(EMS_ID &id)
 	//res->
 }
 
+void ethResCreator::addLUTelement(FEAT_ID id)
+{
+	ethResCreator::class_lut.insert(std::pair<uint8_t, FEAT_ID>(id.ep, id));
+	//ethResCreator::class_lut[id.ep] = id;		// does the same??
+}
+
+void *ethResCreator::getHandleFromEP(uint8_t ep)
+{
+	return ethResCreator::class_lut[ep].handle;
+}
+
 
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
@@ -449,7 +466,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 	}
 	ACE_thread_t id_recvThread;
 	if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
-		printf((LM_DEBUG,"Error in spawning recvThread\n"));
+		printf(("Error in spawning recvThread\n"));
 
 	int n;
 	int m = sizeof(n);
@@ -564,7 +581,7 @@ void *recvThread(void * arg)
 
 		if( recv_size > 0)
 		{
-			check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
+			//check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
 
 			ethResIt iterator = ethResCreator::instance()->begin();
 			while(iterator!=ethResCreator::instance()->end())
@@ -573,8 +590,8 @@ void *recvThread(void * arg)
 				{
 					ethRes = (*iterator);
 					memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-					//ethRes->onMsgReception(ethRes->recv_msg, recv_size);
-					//continue; // to skip remaining part of the for cycle
+					ethRes->onMsgReception(ethRes->recv_msg, recv_size);
+					break; // to skip remaining part of the for cycle
 				}
 				iterator++;
 			}

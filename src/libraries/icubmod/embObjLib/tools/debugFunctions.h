@@ -34,9 +34,9 @@
 #include "ace/Thread.h"
 
 // EO includes
-#include "EOnv_hid.h"
-#include "EOropframe_hid.h"
-#include "embObjLibInterface.h"
+//#include "EOnv_hid.h"
+//#include "EOropframe_hid.h"
+//#include "embObjLibInterface.h"
 
 #define _LINUX_UDP_SOCKET_
 //#undef _LINUX_UDP_SOCKET_
@@ -44,9 +44,17 @@
 
 #define _DEEP_DEBUG_
 
-#ifdef _DEEP_DEBUG_
+#define eb1_ip "10.0.0.1"
+#define eb2_ip "10.0.1.2"
+#define eb3_ip "10.255.72.101"
+#define eb4_ip "10.0.1.4"
+#define eb5_ip "192.168.202.1"
+#define eb6_ip "10.0.0.100"
 
-#define	BOARD_NUM					6
+#define eb5_ip "10.0.0.101"
+
+
+#define	BOARD_NUM					7
 #define SOGLIA						1700
 #define MAX_ACQUISITION 			100*1000
 
@@ -56,6 +64,21 @@ bool check_received_pkt(sockaddr *sender_addr, void * pkt, ACE_UINT16 pkt_size);
 bool do_real_check(int board, void * pkt, ACE_UINT16 pkt_size);
 
 void print_data(void);
+
+int gettimeofday(struct timeval *tv, struct timezone *tz);
+
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+
+struct timezone
+{
+  int  tz_minuteswest; /* minutes W of Greenwich */
+  int  tz_dsttime;     /* type of dst correction */
+};
+
+#else
+  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+#endif
 
 static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)
 {
@@ -87,6 +110,6 @@ static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct 
 	return _x->tv_sec < _y->tv_sec;
 }
 
-#endif  //  _DEEP_DEBUG_
+
 
 #endif  // __debugfunctions__

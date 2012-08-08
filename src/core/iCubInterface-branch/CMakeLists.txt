@@ -8,20 +8,19 @@ PROJECT(iCubInterface)
 
 add_definitions( -D_ICUB_CALLBACK_ )
 
+FILE(GLOB folder_source ./robotInterface/*.cpp)
+set(folder_source ${folder_source} main.cpp)
 
-set(folder_source main.cpp)
 FILE(GLOB folder_header *.h)
 FILE(GLOB tmp ./canIdDiscoverer/*.h)
-
-SET(folder_header ${folder_header} ${tmp})
+FILE(GLOB rih ./robotInterface/*.h)
+SET(folder_header ${folder_header} ${tmp} ${rih} )
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 include(../../libraries/icubmod/embObjLib/embObjLib.conf)
-
-add_subdirectory(robotInterface)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
 					${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/
@@ -41,14 +40,12 @@ if(ICUB_USE_INTERFACEGUI)
                                     ${YARP_LIBRARIES}
                                     canLoaderLib 
                                     icubmod
-                                    IICcore
                                     iCubInterfaceGuiLib)
 else()
     TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
                                     ${YARP_LIBRARIES}
                                     canLoaderLib 
-                                    icubmod
-                                    IICcore)
+                                    icubmod)
 endif()
 
 INSTALL(TARGETS iCubInterface DESTINATION bin COMPONENT Core)

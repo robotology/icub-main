@@ -675,23 +675,3 @@ bool RobotInterface::instantiateHead(Property &options)
 
     return ok;
 }
- 
-IiCubFeatureList * RobotInterface::getRobotFeatureList(FEAT_ID *id)
-{
-	//return &skinparts;
-}
-
-IiCubFeatureList * RobotInterface::getRobotSkinList(FEAT_ID *id)
-{
-	//return &skinparts;
-}
-
-bool RobotInterface::findAndFill(FEAT_ID *id, char *sk_array)
-{
-	return true;
-}
-
-IRobotInterface *RobotInterface::getRobot()
-{
-	//return iRobotInterface;
-}

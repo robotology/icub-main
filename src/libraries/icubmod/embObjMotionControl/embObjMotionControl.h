@@ -76,6 +76,9 @@ using namespace std;
 #include "FeatureInterface.h"
 
 
+#include "debugging.h"
+
+
 // indirizzi ip
 #define DEFAULT_LAPTOP_IP	"10.255.37.155" // da usare col pc104
 #define DEFAULT_EMS_IP 		"127.0.0.1"		// "10.255.39.152"  ip della workstation qui dietro.

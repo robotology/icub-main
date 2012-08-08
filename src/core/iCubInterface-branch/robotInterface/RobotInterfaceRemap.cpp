@@ -26,8 +26,6 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
-//#include "../../libraries/icubmod/ethManager/iCubDeviceInterface.h"
-//#include "../../libraries/icubmod/ethManager/ethManager.h"
 
 using namespace yarp::os::impl;
 using namespace yarp::dev;
@@ -419,11 +417,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                         if (partEntry->open(tmpProp))
                         {
                             PolyDriverList p;
-#ifdef _DRIVER_AS_POINTER_
-                            p.push(netEntry->driver, "");
-#else
                             p.push(&netEntry->driver, "");
-#endif
                             partEntry->iwrapper->attachAll(p);
                             parts.push_back(partEntry);
                         }
@@ -453,11 +447,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
                     if (partEntry->open(tmpProp))
                         {
                             PolyDriverList p;
-#ifdef _DRIVER_AS_POINTER_
-                            p.push(netEntry->driver, netEntry->id.c_str());
-#else
                             p.push(&netEntry->driver, netEntry->id.c_str());
-#endif
                             partEntry->iwrapper->attachAll(p);
                             parts.push_back(partEntry);
                         }
@@ -651,11 +641,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 */
 // 			orig
             	std::cout<<"Attaching " << net->id.c_str() << endl;
-#ifdef _DRIVER_AS_POINTER_
-            	polylist.push(net->driver, net->id.c_str());
-#else
             	polylist.push(&net->driver, net->id.c_str());
-#endif
             	//tmp->wrapper.attach(&net->driver, net->id.c_str());
 
             }
@@ -723,11 +709,8 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                     {
                         DeviceDriver *dTmp;
                         yarp::dev::IFactoryInterface *iFactory;
-#ifdef _DRIVER_AS_POINTER_
-                        selectedNet->driver->view(iFactory);
-#else
                         selectedNet->driver.view(iFactory);
-#endif
+
                         if (iFactory==0)
                         {
                             std::cout<<"CanBus device does not support iFactory interface\n";
@@ -837,11 +820,8 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     for (RobotNetworkIt netIt=networks.begin(); netIt!=networks.end(); ++netIt)
     {
         IClientLogger* pCL=NULL;
-#ifdef _DRIVER_AS_POINTER_
-        (*netIt)->driver->view(pCL);
-#else
         (*netIt)->driver.view(pCL);
-#endif
+
         if (pCL)
         {
             pCL->setServerLogger(mServerLogger);
@@ -951,13 +931,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 
 
 #if 1   // old style
-#ifdef _DRIVER_AS_POINTER_
 
-    net.driver->open(deviceParameters);
-
-    if (!net.driver->isValid())
-    {
-#else
 	net.driver.open(deviceParameters);
 
 	if (!net.driver.isValid())
@@ -967,16 +941,11 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 	}
 	std::cout<<"done!"<<endl;
 
-#endif
-
 
 
     //acquire calibration int
-#ifdef _DRIVER_AS_POINTER_
-    net.driver->view(iCrtlCalib);
-#else
     net.driver.view(iCrtlCalib);
-#endif
+
     //save interface for later use
     net.iCalib=iCrtlCalib;
 
@@ -1023,11 +992,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 
 //    net.calibrator.view(icalibrator);
 //	net.iCalib->setCalibrator(icalibrator);
-#ifdef _DRIVER_AS_POINTER_
-	net.driver = (PolyDriver *) 0xC1A0;
-     tmpDevice->getMotorController((DeviceDriver **) &net.driver);
-     //net.driver
-#endif
+
 
      //
      //	Open different features
@@ -1286,27 +1251,3 @@ void RobotInterfaceRemap::abort()
 
     abortF=true;
 }
-
-IiCubFeatureList * RobotInterfaceRemap::getRobotFeatureList(FEAT_ID *id)
-{
-	return &skinparts;
-}
-
-IiCubFeatureList * RobotInterfaceRemap::getRobotSkinList(FEAT_ID *id)
-{
-	return &skinparts;
-}
-
-bool RobotInterfaceRemap::findAndFill(FEAT_ID *id, char *sk_array)
-{
-	IiCubFeatureList *pList = getRobotFeatureList(id);
-	IiCubFeature *pSkin = pList->findus(id);
-	pSkin->fillData(sk_array);
-	return true;
-}
-
-IRobotInterface *RobotInterfaceRemap::getRobot()
-{
-	return this;
-}
-

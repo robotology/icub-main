@@ -43,10 +43,6 @@
 using namespace std;
 
 
-// _AC_
-// to clean creating an Interface with some common method for ethResources and something like that for the canBus
-//#include "../../libraries/icubmod/ethManager/iCubDeviceInterface.h"
-//#define	_DRIVER_AS_POINTER_
 #include "FeatureInterface.h"
 #include "SkinWrapper.h"
 
@@ -406,11 +402,7 @@ public:
     }
 
     yarp::dev::PolyDriver manager;
-#ifdef _DRIVER_AS_POINTER_
-    yarp::dev::PolyDriver *driver;
-#else
     yarp::dev::PolyDriver driver;
-#endif
 
     yarp::dev::PolyDriver calibrator;
     ParallelCalibrator calibThread;
@@ -425,11 +417,7 @@ public:
 
     bool isValid()
     {
-#ifdef _DRIVER_AS_POINTER_
-        return driver->isValid();
-#else
         return driver.isValid();
-#endif
     }
 
     void close()
@@ -448,11 +436,7 @@ public:
         }
 
         if (isValid())
-#ifdef _DRIVER_AS_POINTER_
-            driver->close();
-#else
         driver.close();
-#endif
     }
 
     void startPark()
@@ -633,7 +617,6 @@ protected:
     #ifdef _USE_INTERFACEGUI
     iCubInterfaceGuiServer *mServerLogger;
     #endif
-//	static IRobotInterface 		*handle;
 
 public:
     // default constructor.
@@ -703,12 +686,6 @@ public:
     void calibrate(bool wait=true);
 
     void abort();
-
-    // _AC_
-    IiCubFeatureList * getRobotFeatureList(FEAT_ID *id);
-    IiCubFeatureList * getRobotSkinList(FEAT_ID *id);
-	bool findAndFill(FEAT_ID *id, char *sk_array);
-    IRobotInterface *getRobot();
 
 protected:
     bool instantiateRightArm(yarp::os::Property& options);

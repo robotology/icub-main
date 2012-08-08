@@ -31,9 +31,9 @@ set(TRANSCEIVER_FOLDER	$ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/ )
 set(BODY_COMMON_SOURCE 		${BODY_COMMON_FOLDER}/eEcommon.c)
 set(BODY_COMMON_HEADER 		${BODY_COMMON_FOLDER}/eEcommon.h)
 
-#set(ICUB_INTERFACE_SOURCE	${ICUB_INTERFACE_CORE_FOLDER}FeatureInterface.cpp
+set(ICUB_INTERFACE_SOURCE	${ICUB_INTERFACE_CORE_FOLDER}/robotInterface/FeatureInterface.cpp
 #							${ICUB_INTERFACE_CORE_FOLDER}RobotInterfaceRemap.cpp
-#							)
+							)
 
 # Network Variable configuration# Network Variable configuration
 set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb1.c  
@@ -250,6 +250,7 @@ SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${ACE_LIBRARIES} IICcore) 
+#TARGET_LINK_LIBRARIES(${PROJECTNAME} ${ACE_LIBRARIES} IICcore)
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${ACE_LIBRARIES})  
 
 icub_export_library(${PROJECTNAME})

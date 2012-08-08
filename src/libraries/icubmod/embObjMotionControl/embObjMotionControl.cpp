@@ -24,7 +24,7 @@
 
 
 #include "embObjMotionControl.h"
-
+#include "debugging.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -45,6 +45,8 @@ inline T* allocAndCheck(int size)
     return t;
 }
 */
+
+
 
 bool embObjMotionControl::alloc(int nj)
 {
@@ -141,10 +143,9 @@ embObjMotionControl::embObjMotionControl() : 	RateThread(10),
 				        ImplementControlMode(this),
 				        _mutex(1)
 {
-	//YARP_INFO(Logger::get(), "embObjMotionControl::embObjMotionControl()", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::embObjMotionControl()");
 	udppkt_data = 0x00;
 	udppkt_size = 0x00;
-
 }
 
 embObjMotionControl::~embObjMotionControl()
@@ -279,11 +280,6 @@ bool embObjMotionControl::close()
     ImplementPidControl<embObjMotionControl, IPidControl>::uninitialize();
 }
 
-/*bool embObjMotionControl::configureTransceiver(ITransceiver *trans)
-{
-	transceiver = (hostTransceiver *) trans;
-	return 1;
-}*/
 
 void embObjMotionControl::getMotorController(DeviceDriver *iMC)
 {
@@ -291,7 +287,7 @@ void embObjMotionControl::getMotorController(DeviceDriver *iMC)
 }
 
 // Thread
-void embObjMotionControl::run(void)
+void embObjMotionControl::run(void)  // probaly useless now.... think about it
 {
 
 #if 0
@@ -352,13 +348,13 @@ void embObjMotionControl::run(void)
 
 bool embObjMotionControl::threadInit()
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::threadInit", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::threadInit()");
 	return true;
 }
 
 void embObjMotionControl::threadRelease()
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::threadRelease", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::threadRelease()");
 	return;
 }
 
@@ -366,7 +362,7 @@ void embObjMotionControl::threadRelease()
 //
 bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setPidRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setPidRaw()");
 	// Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
 	// the EMS I'm referring to.
 	eOnvID_t 					nvid = -1;
@@ -395,52 +391,52 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 
 bool embObjMotionControl::setPidsRaw(const Pid *pids)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setPidsRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setPidRaw()");
 }
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setReferenceRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setReferenceRaw()");
 }
 
 bool embObjMotionControl::setReferencesRaw(const double *refs)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setReferencesRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setReferencesRaw()");
 }
 
 bool embObjMotionControl::setErrorLimitRaw(int j, double limit)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setErrorLimitRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setErrorLimitRaw()");
 }
 
 bool embObjMotionControl::setErrorLimitsRaw(const double *limits)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setErrorLimitsRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setErrorLimitsRaw()");
 }
 
 bool embObjMotionControl::getErrorRaw(int j, double *err)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::getErrorRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::getErrorRaw()");
 }
 
 bool embObjMotionControl::getErrorsRaw(double *errs)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::getErrorsRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::getErrorRaw()");
 }
 
 bool embObjMotionControl::getOutputRaw(int j, double *out)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::getOutputRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::getOutputRaw()");
 }
 
 bool embObjMotionControl::getOutputsRaw(double *outs)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::getOutputsRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::getOutputsRaw()");
 }
 
 bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::getPidRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::getPidRaw()");
 
 	eOmc_joint_config_t				a;
 	uint16_t						sizze;
@@ -461,64 +457,64 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::getPidsRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::getPidsRaw()");
 }
 
 bool embObjMotionControl::getReferenceRaw(int j, double *ref)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::getReferenceRaw()");
 }
 
 bool embObjMotionControl::getReferencesRaw(double *refs)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::getReferencesRaw()");
 }
 
 bool embObjMotionControl::getErrorLimitRaw(int j, double *limit)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::getErrorLimitRaw()");
 }
 
 bool embObjMotionControl::getErrorLimitsRaw(double *limits)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::getErrorLimitsRaw()");
 }
 
 bool embObjMotionControl::resetPidRaw(int j)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::resetPidRaw()");
 }
 
 bool embObjMotionControl::disablePidRaw(int j)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::disablePidRaw()");
 }
 
 bool embObjMotionControl::enablePidRaw(int j)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::enablePidRaw()");
 }
 
 bool embObjMotionControl::setOffsetRaw(int j, double v)
 {
-
+	print_debug(AC_trace_file, "embObjMotionControl::setOffsetRaw()");
 }
 
 ///////////// Velocity control interface raw
 
 bool embObjMotionControl::setVelocityModeRaw()
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::setVelocityModeRaw", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::setVelocityModeRaw()");
 }
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::velocityMoveRaw(int j, double sp)", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::velocityMoveRaw()");
 }
 
 bool embObjMotionControl::velocityMoveRaw(const double *sp)
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::velocityMoveRaw(const double *sp)", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, "embObjMotionControl::velocityMoveRaw()");
 }
 
 

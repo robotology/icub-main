@@ -32,93 +32,28 @@
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
 
-
-#include <yarp/os/Log.h>
-#include <yarp/os/impl/Logger.h>
-
 #include <ethManager.h>
 #include "EoUtilities.h"
 
 #include "FeatureInterface.h"
 #include "FeatureInterface_hid.h"
 
-// Temporary inclusion because we encapsulate can messages inside a eth frame... for now.
-//  In the future this behaviour will dropped in favor of a more flexible and HW independent use of NVs
-
-#include <yarp/dev/CanBusInterface.h>
-//#include "/usr/local/src/robot/iCub/pc104/device-drivers/cfw002/src/LinuxDriver/API/libcfw002.h"
-//#include "/usr/local/src/robot/iCub/main/src/libraries/icubmod/cfw2Can/Cfw2Can.h"
-//#include "/usr/local/src/robot/iCub/pc104/device-drivers/cfw002/src/LinuxDriver/API/cfw002_api.h"
-
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
-
-
-#if 0
-namespace yarp{
-    namespace dev{
-        class Cfw2CanMessage;
-    }
-}
-
-typedef struct cfw002_rtx_payload CFWCAN_MSG;
-
-class yarp::dev::Cfw2CanMessage : public yarp::dev::CanMessage
-{
- public:
-    CFWCAN_MSG *msg;
-    eOutil_canframe_t eoMsg;
-
- public:
-    Cfw2CanMessage();
-
-     ~Cfw2CanMessage();
-
-    CanMessage &operator=(const CanMessage &l);
-
-    unsigned int getId() const;
-
-     unsigned char getLen() const;
-
-     void setLen(unsigned char len);
-
-     void setId(unsigned int id);
-
-     const unsigned char *getData() const;
-
-     unsigned char *getData();
-
-     unsigned char *getPointer();
-
-     const unsigned char *getPointer() const;
-
-     void setBuffer(unsigned char *b);
-};
-#endif
-
 
 class EmbObjSkin : 	public RateThread,
 					public yarp::dev::IAnalogSensor,
 					public DeviceDriver,
 					public IiCubFeature
-					// public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>
-					// public ICanBus
 {
 protected:
-//	PolyDriver driver;
+
     PolyDriver resource;
     ethResources *res;
-
     FEAT_ID		_fId;
-	// can stuff... to be removed
-    //    ICanBufferFactory *pCanBufferFactory;
 
-//    ICanBus *pCanBus;
-//    CanBuffer inBuffer;
-//    CanBuffer outBuffer;
-   
-    yarp::os::Semaphore mutex;
+       yarp::os::Semaphore mutex;
 
     yarp::sig::VectorOf<int> cardId;
     size_t sensorsNum;
@@ -138,10 +73,6 @@ public:
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
    
-//    CanBuffer createBuffer(int elem);
-//    void destroyBuffer(CanBuffer &buffer);
-    
-    //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
     virtual int getChannels();
@@ -155,10 +86,7 @@ public:
     virtual void threadRelease();
     virtual void run();
 
-    //IiCubFeature interface
     virtual bool fillData(char *data);
-    virtual bool pushData(yarp::sig::Vector &in);
-	virtual Vector * getData();
     virtual void setId(FEAT_ID &id);
 };
 

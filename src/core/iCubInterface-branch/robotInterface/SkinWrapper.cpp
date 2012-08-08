@@ -28,13 +28,7 @@
 #include "EoSkin.h"
 #include "eOcfg_nvsEP_sk.h"
 
-#undef _PRINT_DEBUG_
 
-#ifdef _PRINT_DEBUG_
-#define printDebug(args...)		printf(args)
-#else
-#define printDebug
-#endif
 
 SkinPartEntry::SkinPartEntry()
 {
@@ -186,28 +180,6 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 		}
 	}
 
-	// 7 = cardId.size()
-	wholeData.resize((size_t)16*12*7);
-	for (int i=0; i<wholeData.size(); i++)
-		wholeData[i]=255;
-
-	fId.type = Skin;
-	std::string FeatId = deviceP.find("FeatId").asString().c_str();
-	cout << "FeatId = " << FeatId << endl;
-	strcpy(fId.name, FeatId.c_str());
-
-	if( 0 == strcmp("left_arm", fId.name) )
-		fId.ep = endpoint_sk_emsboard_leftlowerarm;
-
-	if( 0 == strcmp("right_arm", fId.name) )
-			fId.ep = endpoint_sk_emsboard_rightlowerarm;
-
-//	tapullo 
-	driver.view(hook);
-	if(hook !=0 )
-	  hook->setId(fId);
-	thread->start();
-
 	analogServer = new AnalogServer(skinPorts);
 	analogServer->setRate(period);
 	analogServer->attach(analog);
@@ -231,99 +203,6 @@ void SkinPartEntry::close()
 	driver.close();
 }
 
-Vector * SkinPartEntry::getData()
-{
-	return &wholeData;
-}
-
-bool SkinPartEntry::pushData(yarp::sig::Vector &in)
-{
-	hook->pushData(in);
-	return false;
-}
-
-
-bool SkinPartEntry::fillData(char *data)
-{
-	uint8_t 				msgtype = 0;
-	uint8_t 				i, triangle = 0;
-	EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) data;
-	//	yarp::sig::Vector 		&pv = outPort.prepare();
-
-
-	printDebug("\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
-
-	for(i=0; i<sk_array->head.size; i++)
-	{
-		eOutil_canframe_t *canframe;
-		uint8_t  j, mtbId =0;
-		uint8_t  cardId, valid = 0;
-
-		canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
-		valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
-
-		if(valid)
-		{
-			cardId = (canframe->id & 0x00f0) >> 4;
-			switch (cardId)
-			{
-				case 14:
-					mtbId = 0;
-					break;
-				case 13:
-					mtbId = 1;
-					break;
-				case 12:
-					mtbId = 2;
-					break;
-				case 11:
-					mtbId = 3;
-					break;
-				case 10:
-					mtbId = 4;
-					break;
-				case 9:
-					mtbId = 5;
-					break;
-				case 8:
-					mtbId = 6;
-					break;
-				default:
-					printf("Unexpected value %d\n", cardId);
-					return false;
-					break;
-			}
-			triangle = (canframe->id & 0x000f);
-			msgtype= ((canframe->data[0])& 0x80);
-			printDebug("\n data id 0x%04X, 0x", canframe->id);
-
-			int index=16*12*mtbId + triangle*12;
-
-			printDebug("%0X ", canframe->data[0]);
-			if (msgtype)
-			{
-				for(int k=0;k<5;k++)
-				{
-					wholeData[index+k+7]=canframe->data[k+1];
-					printDebug("%0X ", canframe->data[k+1]);
-				}
-			}
-			else
-			{
-				for(int k=0;k<7;k++)
-				{
-					wholeData[index+k]=canframe->data[k+1];
-					printDebug("%0X ", canframe->data[k+1]);
-				}
-			}
-		}
-		else
-		{
-			printDebug("Unknown Message\n");
-		}
-	}
-}
-
 SkinPartEntry *SkinParts::find(const string &pName)
 {
 	SkinPartsIt it=begin();
@@ -338,41 +217,7 @@ SkinPartEntry *SkinParts::find(const string &pName)
 	return 0;
 }
 
-//Vector * SkinParts::findus2(FEAT_ID *id )
-//{
-//	SkinPartsIt it=begin();
-//	for(;it!=end(); it++)
-//	{
-//		if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) )
-//		{
-//			return (*it)->getData(); //&(*it);
-//		}
-//	}
-//	return NULL;
-//}
 
-IiCubFeature * SkinParts::findus(FEAT_ID *id )
-{
-	IiCubFeature *ret;
-//	id->type = Skin;
-//	memset(id->name, 0x00, sizeof(id->name) );
-	SkinPartsIt it=begin();
-	uint8_t id1;
-	FeatureType f1;
-
-	for(;it!=end(); it++)
-	{
-		id1=((*it)->fId.ep);
-		f1 = ((*it)->fId.type);
-		//if( ((*it)->fId.type == id->type) && (strcmp((*it)->fId.name, id->name) == 0) && ((*it)->fId.ep) == id->ep)
-		if( ((*it)->fId.type == id->type) && ((*it)->fId.ep) == id->ep)
-		{
-			ret = (*it);
-			return ret;
-		}
-	}
-	return NULL;
-}
 
 void SkinParts::close()
 {

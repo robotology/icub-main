@@ -19,16 +19,17 @@
 #define __DEBUGGING_H__
 
 #ifndef _AC_
-//	#define _AC_
+	#define _AC_
+	//#undef _AC_
 #endif
 
-#undef _AC_
-
+extern FILE *AC_trace_file;
+extern FILE *AC_debug_file;
 
 #ifdef _AC_
-#define AC_YARP_INFO(args...)  YARP_INFO(args)
+	#define print_debug(args...)  fprintf(args)
 #else
-#define AC_YARP_INFO
+	#define print_debug(args...)
 #endif
 
 
