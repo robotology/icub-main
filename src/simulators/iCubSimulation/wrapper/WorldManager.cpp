@@ -123,13 +123,43 @@ public:
 
     bool consume(WorldOpFlag& x, const char *msg) {
         if (failed) return false;
-        bool ok = (get(offset).isInt());
+        bool ok;
+        int getBool = 0;
+        if ( get(offset).isNull() && strcmp ( msg, "collide" ) == 0 )
+        {
+            ok = true;
+            getBool = 1;
+        }
+        else if (get(offset).isString())
+        {
+            if ( strcmp ( get(offset).asString(), "true" ) == 0 || strcmp ( get(offset).asString(), "TRUE" ) == 0 )
+            {
+                ok  = true;
+                getBool = 1;
+            }
+            else if ( strcmp ( get(offset).asString(), "false" ) == 0 || strcmp ( get(offset).asString(), "FALSE" ) == 0 )
+            {
+                ok  = true;
+                getBool = 0;
+            }
+            else
+               ok = false;
+        }
+        else
+           ok  = (get(offset).isInt());
+
         x.valid = false;
         if (!ok) {
             fail(msg);
             return false;
         }
-        x.setting = get(offset).asInt()?true:false;
+        if (get(offset).isString() || get(offset).isNull() && strcmp ( msg, "collide" ) == 0)
+        {
+            x.setting = getBool?true:false;
+        }
+        else
+            x.setting = get(offset).asInt()?true:false;
+
         x.valid = true;
         offset++;
         return true;
@@ -146,6 +176,7 @@ void consumeKind(ManagerState& state) {
     int kind = state.command.get(2).asVocab();
     state.offset++;
     bool static_obj = false;
+    //bool mustCollide = state.command.get(2).asVocab()
     switch (kind) {
     case VOCAB4('s','b','o','x'):
         static_obj = true;
@@ -286,9 +317,13 @@ bool doMake(ManagerState& state) {
         state.consume(state.op.modelTexture,"model texture");
     }
     state.consume(state.op.location,"location");
+
     if (name != "model") {
         state.consume(state.op.color,"color");
     }
+
+    state.consume(state.op.collide,"collide");
+
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
     }

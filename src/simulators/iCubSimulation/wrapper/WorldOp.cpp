@@ -93,6 +93,8 @@ void WorldOp::show() const {
     ::show(active);
     printf("  index: ");
     ::show(index);
+    printf("  collide: ");
+    ::show(collide);
     printf("  parameter: ");
     ::show(parameter);
     printf("  rightHanded?: ");
@@ -114,8 +116,4 @@ void WorldResult::show() {
     printf("  path: ");
     ::show(path);
  }
-
-
-
-
 

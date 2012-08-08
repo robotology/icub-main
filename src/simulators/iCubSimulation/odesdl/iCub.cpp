@@ -1350,7 +1350,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
             dGeomTriMeshDataBuildSingle(model_TriData[(*itr).first], model_trimesh[(*itr).first]->Vertices, 3 * sizeof(float), model_trimesh[(*itr).first]->VertexCount, model_trimesh[(*itr).first]->Indices, model_trimesh[(*itr).first]->IndexCount, 3 * sizeof(int));
             model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCub, model_TriData[(*itr).first], 0, 0, 0);
             dGeomSetData(model_ThreeD_obj[(*itr).first].geom,model_TriData[(*itr).first]);
-            dGeomSetPosition(model_ThreeD_obj[(*itr).first].geom,0.0,0.5,0.5);
+            //dGeomSetPosition(model_ThreeD_obj[(*itr).first].geom,0.0,0.5,0.5);
         }
     }
     modelTextureIndex++;

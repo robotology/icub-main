@@ -108,6 +108,8 @@ public:
                 colors[at][2] = op.color.get(2);
             }
         }
+
+
         return true;
     }
 

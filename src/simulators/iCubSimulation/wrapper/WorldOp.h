@@ -127,6 +127,7 @@ public:
     WorldOpFlag parameter;
     WorldOpName modelName;
     WorldOpName modelTexture;
+    WorldOpFlag collide;
 
     // for debugging
     void show() const;

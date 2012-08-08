@@ -221,7 +221,7 @@ void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     /*------------iCub Space creation-------------*/
     /*
     * objects in the same space do not collide...see collision function in ICub_sim
-    */	
+    */
     boxObj = dSimpleSpaceCreate(space);
     dSpaceSetCleanup(boxObj,0);
 
@@ -235,7 +235,6 @@ void worldSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 
         float ms = 1;
         /*---------------Body creation-----------*/
-
         tableGeom[0] = dCreateBox (space,0.03,0.5,0.03);
         tableGeom[1] = dCreateBox (space,0.03,0.5,0.03);
         tableGeom[2] = dCreateBox (space,0.03,0.5,0.03);
@@ -369,7 +368,12 @@ bool worldSim::MyObject::create(const WorldOp& op, WorldResult& result, int idx)
         dMassSetBoxTotal (&m,DENSITY,size[0],size[1],size[2]);
         dBodySetMass (boxbody,&m);
     }
-    geom[0] = dCreateBox (odeinit.space,size[0],size[1],size[2]);
+    if (op.collide.get())
+        geom[0] = dCreateBox (odeinit.space,size[0],size[1],size[2]);
+    else
+        geom[0] = dCreateBox (odeinit._iCub->iCub,size[0],size[1],size[2]);
+
+    
     if (op.dynamic.get()) {
         dGeomSetBody (geom[0],boxbody);
     }
@@ -396,9 +400,13 @@ bool worldSim::MyObject1::create(const WorldOp& op, WorldResult& result, int idx
         dMassSetCylinderTotal (&m,DENSITY,3,radius,lenght);
         dBodySetMass (cylbody,&m);
     }
-    cylgeom[0] = dCreateCylinder(odeinit.space,radius,lenght);
-    if (op.dynamic.get()) {        
-     dGeomSetBody (cylgeom[0],cylbody);
+    if (op.collide.get())
+        cylgeom[0] = dCreateCylinder(odeinit.space,radius,lenght);
+    else
+        cylgeom[0] = dCreateCylinder(odeinit._iCub->iCub,radius,lenght);
+
+    if (op.dynamic.get()) {
+        dGeomSetBody (cylgeom[0],cylbody);
     }
     return true;
 }
@@ -443,8 +451,12 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
     if (dynamic) {
         body = dBodyCreate (odeinit.world);
     }
-    geom = dCreateTriMesh(odeinit.space, tridata[idx], 
-                          0, 0, 0);
+    if (op.collide.get())
+        geom = dCreateTriMesh(odeinit.space, tridata[idx], 0, 0, 0);
+    else
+        geom = dCreateTriMesh(odeinit._iCub->iCub, tridata[idx], 0, 0, 0);
+    
+    //geom = dCreateTriMesh(odeinit.space, tridata[idx], 0, 0, 0);
     dGeomSetData(geom,tridata[idx]);
     if (dynamic) {
         dMass m;
@@ -481,7 +493,10 @@ bool worldSim::MyObject3::create(const WorldOp& op, WorldResult& result, int idx
         dMassSetSphereTotal(&m,DENSITY, radius);
         dBodySetMass(sphbody, &m);
     }
-    sphgeom[0] = dCreateSphere (odeinit.space, radius);
+    if (op.collide.get())
+        sphgeom[0] = dCreateSphere (odeinit.space, radius);
+    else
+        sphgeom[0] = dCreateSphere (odeinit._iCub->iCub, radius);
     if (op.dynamic.get()) {
         dGeomSetBody(sphgeom[0], sphbody);
     }
