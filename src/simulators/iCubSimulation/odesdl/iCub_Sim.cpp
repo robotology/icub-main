@@ -35,7 +35,7 @@ static long gl_frame_length = 1000/30; // update opengl and vision stream at 30 
 static long ode_step_length = 10;      // target duration of the ODE step in CPU time (set to 0 to go as fast as possible, set to dstep*1000 to go realtime)
 static double dstep = 10.0/1000.0;     // step size in ODE's dWorldStep in seconds
 
-static bool glrun; // draw gl
+static bool glrun;  // draw gl
 static bool simrun; // run simulator thread
 
 static int stop = 0;
