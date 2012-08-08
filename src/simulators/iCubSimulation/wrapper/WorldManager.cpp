@@ -21,7 +21,7 @@
 #include "WorldManager.h"
 
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 
 class ManagerState {
 public:
