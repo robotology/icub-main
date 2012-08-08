@@ -71,6 +71,7 @@ public:
     char		info[SIZE_INFO];
 
     virtual bool open(yarp::os::Searchable& config);
+    bool 		 init();
     virtual bool close();
    
     virtual int read(yarp::sig::Vector &out);
@@ -82,7 +83,6 @@ public:
     virtual int calibrateSensor(const yarp::sig::Vector& v);
     virtual int calibrateChannel(int ch);
 
-	virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
 

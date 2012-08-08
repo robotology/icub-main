@@ -115,6 +115,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	resList->addLUTelement(_fId);
 
 	//RateThread::start();
+
+	init();
 	return true;
 }
 
@@ -186,7 +188,7 @@ int EmbObjSkin::calibrateChannel(int ch)
 	return 0;
 }
 
-bool EmbObjSkin::threadInit()
+bool EmbObjSkin::init()
 {
 	char str[128];
 	int j = 0;

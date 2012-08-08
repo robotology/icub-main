@@ -404,7 +404,7 @@ void SendThread::run()
 		data = 0;
 		size = 0;
 		(*iterator)->getPack(&data, &size);
-		if(size >= 20)
+		if(size > 20)
 		{
 			ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
 			TheEthManager::instance()->send(data, (size_t)size, addr);
