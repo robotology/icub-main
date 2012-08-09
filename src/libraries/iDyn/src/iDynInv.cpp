@@ -516,7 +516,7 @@ void OneLinkNewtonEuler::computeLinAcc(OneLinkNewtonEuler *prev)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::computeLinAccBackward(OneLinkNewtonEuler *next)
 {
-    const Matrix& R = getR();
+    const Matrix& R = next->getR();
 	switch(mode)
 	{
 	case DYNAMIC:
