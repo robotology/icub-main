@@ -140,3 +140,4 @@ void OdeInit::destroy()
     _odeinit = NULL;
   }
 }
+
