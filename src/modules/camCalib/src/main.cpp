@@ -23,7 +23,7 @@
  *      label = "camcalib module";
  *       "/camCalib/in";
  *       "/camCalib/out";
- *		 "/camCalib/conf";
+ *       "/camCalib/conf";
  *     }
  *     "/camera" -> "/camCalib/in"
  *     "/camCalib/out" -> "/viewer/in"
@@ -97,7 +97,8 @@
  * Rpc port
  *
  * - \c /camCalib/conf \n
- *	  Rpc port in ordet to change the output image saturation used primarely for the bayer images 
+ *    Rpc port to change the output image saturation used
+ *    primarely for the bayer images
  *
  * \section conf_file_sec Configuration Files
  *
