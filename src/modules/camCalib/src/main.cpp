@@ -41,10 +41,21 @@ using namespace iCub::contrib;
  *      label = "camcalib module";
  *       "/camCalib/in";
  *       "/camCalib/out";
+ *		 "/camCalib/conf";
  *     }
  *     "/camera" -> "/camCalib/in"
  *     "/camCalib/out" -> "/viewer/in"
+ *     "/camCalib/conf" -> "rpc port"
  * \enddot
+ *
+ * We have enabled changes of the image saturation directly from the rpc port. 
+ * This has been done (temporary) in order to change the saturation for the bayer images.
+ * The command are sent via rpc to the "/camcalib/conf" port (as seen above) and can be:
+ * 
+ * sat 1.0  ---- no changes in saturation 
+ * sat x where x is < 1.0 will decrease saturation until a gray image is obtained
+ * sat x where x is > 1.0 will increase saturation 
+ * 
  *
  * For calibration configuration options see: iCub::contrib::PinholeCalibTool::configure
  * 
