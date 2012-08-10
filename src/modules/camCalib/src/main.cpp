@@ -40,9 +40,9 @@
  * This has been done (temporary) in order to change the saturation for the bayer images.
  * The command are sent via rpc can be:
  * 
- * - sat 1.0  ---- no changes in saturation 
- * - sat x where x is < 1.0 will decrease saturation until a gray image is obtained
- * - sat x where x is > 1.0 will increase saturation 
+ * - sat 1.0  -  no changes in saturation 
+ * - sat x where x is < 1.0  -  will decrease saturation until a gray image is obtained
+ * - sat x where x is > 1.0  -  will increase saturation 
  * 
  * \section parameters_sec Parameters
  * 
