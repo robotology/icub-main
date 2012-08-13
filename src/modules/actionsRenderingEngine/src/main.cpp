@@ -141,6 +141,8 @@ action: the robot tries to point the specified [target] with its index finger.
 format: [look] [target] "param1"
 action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
 keep the gaze fixating the requested target also when other commands are issued to the torso.
+Note: the special target [hand] (with optional parameter 'left'/'right') can be provided to have the robot look
+at its own hand. The robot will keep looking at its own hand until an idle command.
 
 
 <b>TRACK</b> 
