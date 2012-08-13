@@ -101,14 +101,14 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public IPidControlRaw,
 							public IControlCalibration2Raw,
 							public IAmplifierControlRaw,
-							public IEncodersRaw,
+				            public IEncodersTimedRaw,
+				            public ImplementEncodersTimed,
 							public IPositionControlRaw,
 				            public IVelocityControlRaw,
 							public IControlModeRaw,
 							public ImplementControlMode,
 							public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
 							public ImplementPositionControl<embObjMotionControl, IPositionControl>,
-							public ImplementEncoders<embObjMotionControl, IEncoders>,
 							public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
 				            public ImplementPidControl<embObjMotionControl, IPidControl>,
 				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
@@ -272,6 +272,9 @@ public:
 	virtual bool getEncoderAccelerationRaw(int j, double *spds);
 	virtual bool getEncoderAccelerationsRaw(double *accs);
 	///////////////////////// END Encoder Interface
+
+    virtual bool getEncodersTimedRaw(double *encs, double *stamps);
+    virtual bool getEncoderTimedRaw(int j, double *encs, double *stamp);
 
 	////// Amplifier interface
 	virtual bool enableAmpRaw(int j);

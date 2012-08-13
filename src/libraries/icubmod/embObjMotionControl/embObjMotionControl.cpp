@@ -137,7 +137,7 @@ embObjMotionControl::embObjMotionControl() : 	RateThread(10),
 						ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>(this),
 						ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
 						ImplementPidControl<embObjMotionControl, IPidControl>(this),
-						ImplementEncoders<embObjMotionControl, IEncoders>(this),
+						ImplementEncodersTimed(this),
 						ImplementPositionControl<embObjMotionControl, IPositionControl>(this),
 				        ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
 				        ImplementControlMode(this),
@@ -162,7 +162,7 @@ embObjMotionControl::~embObjMotionControl()
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
-	//YARP_INFO(Logger::get(), "embObjMotionControl::open", Logger::get().log_files.f3);
+	print_debug(AC_trace_file, " embObjMotionControl::open\n");
 	// Debug info
 	memset(info, 0x00, SIZE_INFO);
 	Bottle xtmp, xtmp2;
@@ -260,7 +260,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	//
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-    ImplementEncoders<embObjMotionControl, IEncoders>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPositionControl<embObjMotionControl, IPositionControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementControlMode::initialize(_njoints, _axisMap);
@@ -275,6 +275,7 @@ bool embObjMotionControl::close()
 	//YARP_INFO(Logger::get(),"embObjMotionControl::close", Logger::get().log_files.f3);
     RateThread::stop();
 
+    ImplementEncodersTimed::uninitialize();
     ImplementPositionControl<embObjMotionControl, IPositionControl>::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
     ImplementPidControl<embObjMotionControl, IPidControl>::uninitialize();
@@ -527,21 +528,18 @@ bool embObjMotionControl::calibrate(int axis, unsigned int type, double p1, doub
     return true;
 }
 
-// CalibrationRaw
 bool embObjMotionControl::calibrateRaw(int j, double p)
 {
 	printf("embObjMotionControl::calibrateRaw");
     return true;
 }
 
-// Calibration2
 bool embObjMotionControl::calibrate2(int axis, unsigned int type, double p1, double p2, double p3)
 {
 	printf("embObjMotionControl::calibrate2");
     return true;
 }
 
-// Calibration2Raw
 bool embObjMotionControl::calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3)
 {
 	printf("embObjMotionControl::calibrateRaw");
@@ -606,6 +604,9 @@ bool embObjMotionControl::getEncoderAccelerationRaw(int j, double *spds){ }
 bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs){ }
 //
 ///////////////////////// END Encoder Interface
+
+bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps) { }
+bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp) { }
 
 ////// Amplifier interface
 //
