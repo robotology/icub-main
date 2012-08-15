@@ -49,6 +49,8 @@ None.
 The module creates the port /joystickCtrl:o used to transmit the joystick data.
 The output of the port consists in a sequence of <n> doubles (<n> depending on the number of axes specified
 in the configuration file) containing the readings.
+The port /joystickCtrl/axis:o contains the axis output only (raw data).
+The port /joystickCtrl/buttons:o contains the buttons output only (raw data).
 
 \section in_files_sec Input Data Files
 None.
@@ -109,6 +111,8 @@ class CtrlThread: public RateThread
 protected:
     ResourceFinder       &rf;
     BufferedPort<Bottle> port_command;
+    BufferedPort<Bottle> port_axis_only;
+    BufferedPort<Bottle> port_buttons_only;
     bool                 silent;
     bool                 force_cfg;
 
@@ -120,6 +124,9 @@ protected:
     int numButtons;
     int joy_id;
     SDL_Joystick* joy1;
+	
+	//button actions;
+	string button_actions [20];
 
     //variables read from the joystick
     int*    rawButtons;
@@ -307,6 +314,36 @@ public:
             fprintf ( stderr, "outputPortName not found, using %s \n", output_port_name.c_str());
         }
         port_command.open(output_port_name.c_str());
+
+		//get the list of the commands to be executed with the buttons
+		Bottle& exec_comm_bottle = rf.findGroup("BUTTONS_EXECUTE");
+		int joystick_actions_count = 0;
+		if (!exec_comm_bottle.isNull())
+		{ 
+			printf ( "associating the following actions to the buttons: \n");
+			
+			do
+			{
+				char tmp[80];
+				sprintf(tmp, "button%d", joystick_actions_count); 
+				if (exec_comm_bottle.check(tmp))
+				{
+					button_actions[joystick_actions_count] = exec_comm_bottle.findGroup(tmp).toString();
+					printf ("%s %s\n", tmp, button_actions[joystick_actions_count].c_str());
+				}
+				else
+				{
+					break;
+				}
+				joystick_actions_count++;
+			}
+			while (joystick_actions_count<20);
+			printf ("\n");
+		}
+		if (joystick_actions_count==0)
+		{
+			fprintf ( stderr, "no actions specified for the joystick buttons. \n");
+		}
 
         // start SDL subsystem
         //SDL_Init(SDL_INIT_VIDEO);
@@ -503,6 +540,8 @@ public:
 
         // Sending data out on a Yarp port
         Bottle data;
+		Bottle axis_data;
+		Bottle buttons_data;
         for(int i=0;i<num_outputs;i++)
         {            
             if (jointProperties[i].type == JTYPE_POLAR)
@@ -538,16 +577,48 @@ public:
             }
         }
 
-        // Sending data on the yarp port
+		//execute button actions
+		for (int i=0;i<numButtons;i++)
+		{
+			if (rawButtons[i] == 255)
+			{
+				//execute
+			}
+		}
+
+        // Preparing data to be sent on the yarp ports
         for(int i=0;i<num_outputs;i++)
-            {    
-                if ( jointProperties[i].type == JTYPE_STRING)
-                    data.addString(jointProperties[i].param_s.c_str());
-                else
-                    data.addDouble(outAxes[i]);
-            }
-        port_command.prepare() = data;
-        port_command.write();
+        {    
+            if ( jointProperties[i].type == JTYPE_STRING)
+                data.addString(jointProperties[i].param_s.c_str());
+            else
+                data.addDouble(outAxes[i]);
+        }	
+        for (int i=0;i<numButtons;i++)
+		{
+			buttons_data.addDouble(rawButtons[i]);
+		}
+		for (int i=0;i<numAxes; i++)
+		{
+			axis_data.addDouble(rawAxes[i]);
+		}
+
+		// Sending data on the yarp ports
+		if (port_command.getOutputCount()>0)
+        {
+			port_command.prepare() = data;
+			port_command.write();
+		}
+		if (port_axis_only.getOutputCount()>0)
+        {
+			port_axis_only.prepare() = axis_data;
+			port_axis_only.write();
+		}
+		if (port_buttons_only.getOutputCount()>0)
+        {
+			port_buttons_only.prepare() = buttons_data;
+			port_buttons_only.write();
+		}
 
         // Displaying status
         if (!silent) printStatus();
@@ -568,6 +639,10 @@ public:
         if (reverse)         delete [] reverse;
         port_command.interrupt();
         port_command.close();
+	    port_axis_only.interrupt();
+        port_axis_only.close();
+	    port_buttons_only.interrupt();
+        port_buttons_only.close();
     }
 
 
