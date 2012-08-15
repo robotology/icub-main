@@ -130,6 +130,7 @@ protected:
 
     //variables read from the joystick
     int*    rawButtons;
+    int*    rawButtonsOld;
     int*    rawHats;
     double* rawAxes;
     double* outAxes;
@@ -151,6 +152,7 @@ public:
     {
         joy_id=0;
         rawButtons=0;
+        rawButtonsOld=0;
         rawAxes=0;
         rawHats=0;
         outAxes=0;
@@ -314,7 +316,10 @@ public:
             fprintf ( stderr, "outputPortName not found, using %s \n", output_port_name.c_str());
         }
         port_command.open(output_port_name.c_str());
-
+        //@@@ TO BE COMPLETED: port name prefix to be set in the ini file
+        port_axis_only.open("/joystickCtrl/raw_axis:o");
+        port_buttons_only.open("/joystickCtrl/raw_buttons:o");
+        
 		//get the list of the commands to be executed with the buttons
 		Bottle& exec_comm_bottle = rf.findGroup("BUTTONS_EXECUTE");
 		int joystick_actions_count = 0;
@@ -328,7 +333,7 @@ public:
 				sprintf(tmp, "button%d", joystick_actions_count); 
 				if (exec_comm_bottle.check(tmp))
 				{
-					button_actions[joystick_actions_count] = exec_comm_bottle.findGroup(tmp).toString();
+					button_actions[joystick_actions_count] = exec_comm_bottle.find(tmp).toString();
 					printf ("%s %s\n", tmp, button_actions[joystick_actions_count].c_str());
 				}
 				else
@@ -446,10 +451,11 @@ public:
             }
         }
 
-        rawAxes=new double [MAX_AXES];
-        rawHats=new int [MAX_AXES];
-        rawButtons = new int [MAX_AXES];
-        outAxes=new double [MAX_AXES];
+        rawAxes       = new double [MAX_AXES];
+        rawHats       = new int    [MAX_AXES];
+        rawButtons    = new int    [MAX_AXES];
+        rawButtonsOld = new int    [MAX_AXES];
+        outAxes       = new double [MAX_AXES];
 
         /*
         // check: selected joint MUST have at least one button
@@ -490,10 +496,11 @@ public:
         // Reading joystick data (axes/buttons...)
         for ( int i=0; i < numButtons; ++i )
         {
+            rawButtonsOld[i] = rawButtons[i];
             rawButtons[i] = SDL_JoystickGetButton ( joy1, i );
         }
 
-       for ( int i=0; i < numHats; ++i )
+        for ( int i=0; i < numHats; ++i )
         {
             rawHats[i] = SDL_JoystickGetHat ( joy1, i );
         }
@@ -580,9 +587,18 @@ public:
 		//execute button actions
 		for (int i=0;i<numButtons;i++)
 		{
-			if (rawButtons[i] == 255)
+			if (rawButtonsOld[i] == 0 && rawButtons[i] == 1)
 			{
-				//execute
+				//execute script
+				if (!button_actions[i].empty())
+				{
+				    printf ("executing script %d: %s\n", i, button_actions[i].c_str());
+				    int ret = system(button_actions[i].c_str());
+				}
+				else
+				{
+    				printf ("no scripts associated to button %d\n", i);
+				}
 			}
 		}
 
