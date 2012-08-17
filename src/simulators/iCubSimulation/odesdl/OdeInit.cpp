@@ -31,6 +31,18 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config)
     verbose = false;
     
     dWorldSetGravity (world,0,-9.8,0);
+    dWorldSetERP(world, config->getWorldERP());   // error reduction parameter: in [0.1,0.8], the higher, the more springy constraints are
+    dWorldSetCFM(world, config->getWorldCFM());  // constraint force mixing: in [1e-9,1], the higher, the softer constraints are
+
+    // Maximum correcting velocity the contacts are allowed to generate. Default value is infinity.
+    // Reducing it can help prevent "popping" of deeply embedded objects
+    dWorldSetContactMaxCorrectingVel(world, config->getMaxContactCorrectingVel());
+    
+    // Contacts are allowed to sink into the surface layer up to the given depth before coming to rest. 
+    // The default value is zero. Increasing this to some small value (e.g. 0.001) can help prevent jittering 
+    // problems due to contacts being repeatedly made and broken. 
+    dWorldSetContactSurfaceLayer(world, config->getContactSurfaceLayer());
+
     ground = dCreatePlane (space,0, 1, 0, 0);
     //feedback = new dJointFeedback;
     //feedback1 = new dJointFeedback;

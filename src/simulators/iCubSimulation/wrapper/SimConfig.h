@@ -30,14 +30,24 @@
 #define SIMCONFIG_INC
 
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/os/Bottle.h>
 #include <stdio.h>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 #include "RobotConfig.h"
+
+using namespace std;
+using namespace yarp::os;
 
 class SimConfig : public yarp::os::ResourceFinder, public RobotConfig {
     
 public:
+
+    SimConfig(){
+        odeParamRead = false;
+    }
 
     // can't actually configure from command line yet, since
     // some config files get loaded before main() - this needs
@@ -64,9 +74,102 @@ public:
         return flags;
     }
 
+    virtual double getWorldCFM() {
+        readOdeParams();
+        return worldCFM;
+    }
+    virtual double getWorldERP() {
+        readOdeParams();
+        return worldERP;
+    }
+    virtual double getFudgeFactor(){
+        readOdeParams();
+        return fudgeFactor;
+    }
+    virtual double getStopCFM(){
+        readOdeParams();
+        return stopCFM;
+    }
+    virtual double getJointCFM(){
+        readOdeParams();
+        return jointCFM;
+    }
+    virtual double getStopERP(){
+        readOdeParams();
+        return stopERP;
+    }
+    virtual double getMaxContactCorrectingVel(){
+        readOdeParams();
+        return maxContactCorrectingVel;
+    }
+    virtual double getContactSurfaceLayer(){
+        readOdeParams();
+        return contactSurfaceLayer;
+    }
+    virtual double getMotorMaxTorque(){
+        readOdeParams();
+        return motorMaxTorque;
+    }
+    virtual double getMotorDryFriction(){
+        readOdeParams();
+        return motorDryFriction;
+    }
+    virtual double getJointStopBouncyness(){
+        readOdeParams();
+        return jointStopBouncyness;
+    }
+    virtual int getWorldTimestep(){
+        readOdeParams();
+        return worldTimestep;
+    }
+   
+
 private:
     std::string moduleName;    
     RobotFlags flags;
+
+    bool odeParamRead;
+    double fudgeFactor;
+    double stopCFM;
+    double jointCFM;
+    double worldCFM; 
+    int    worldTimestep;
+    double stopERP;   
+    double worldERP;
+    double maxContactCorrectingVel;
+    double contactSurfaceLayer;
+    double motorMaxTorque;
+    double motorDryFriction;
+    double jointStopBouncyness;
+
+    
+    void readOdeParams(){
+        if(odeParamRead==true)
+            return;
+
+        Property bParams;
+        bParams.fromConfigFile(findFile(find("ode").asString().c_str()).c_str());
+        Bottle &bParamWorld     = bParams.findGroup("WORLD");
+        Bottle &bParamContacts  = bParams.findGroup("CONTACTS");
+        Bottle &bParamJoints    = bParams.findGroup("JOINTS");
+
+        worldTimestep   = bParamWorld.check("timestep", Value(10)).asInt();
+        worldCFM        = bParamWorld.check("worldCFM", Value(0.00001)).asDouble();
+        worldERP        = bParamWorld.check("worldERP", Value(0.2)).asDouble();
+        
+        maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asDouble();
+        contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asDouble();
+
+        fudgeFactor         = bParamJoints.check("fudgeFactor", Value(0.02)).asDouble();
+        jointCFM            = bParamJoints.check("jointCFM", Value(1e-5)).asDouble();
+        stopCFM             = bParamJoints.check("stopCFM", Value(1e-5)).asDouble();
+        stopERP             = bParamJoints.check("stopERP", Value(0.2)).asDouble();
+        motorMaxTorque      = bParamJoints.check("motorMaxTorque", Value(1e3)).asDouble();
+        motorDryFriction    = bParamJoints.check("motorDryFriction", Value(0.1)).asDouble();
+        jointStopBouncyness = bParamJoints.check("jointStopBouncyness", Value(0.1)).asDouble();
+
+        odeParamRead = true;
+    }
 };
 
 

@@ -66,9 +66,15 @@ public:
     }
 
     
-    virtual double getTorque(int axis){
+    virtual double getTorque(){
         return true;
     }
+
+    virtual void setTorque(double target){
+        torque = target;
+    }
+
+    virtual void controlModeChanged(int cm){}
 
     void update() {
         double now = yarp::os::Time::now();

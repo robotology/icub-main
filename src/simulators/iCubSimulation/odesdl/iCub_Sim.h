@@ -113,10 +113,6 @@ public:
 private:
     static void draw();
 
-    static void setJointTorques();
-
-    static void setJointSpeed();
-
     static void printStats();
 
     static void handle_key_down(SDL_keysym* keysym);

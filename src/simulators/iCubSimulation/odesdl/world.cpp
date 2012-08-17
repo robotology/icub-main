@@ -40,14 +40,6 @@ static dReal ballVel[3], ballDamp[3];
 worldSimData::worldSimData() {
 }
 
-void worldSim::resetSpeeds() {
-//    int x;
-    // joint speeds
-    //for(x = 0; x < numObjJoints; x++) {
-        //speed[x] = 0.0;
-    //}
-}
-
 void worldSim::syncAngles() {
 }
 
@@ -346,7 +338,6 @@ worldSim::worldSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
       sphere_dynamic(sph,MAXNUM,SPHNUM,color2),
       sphere_static(s_sph,MAXNUM,S_SPHNUM,s_color2)
 {
-    resetSpeeds();
     init(world, space, X, Y, Z, config);
 }
 

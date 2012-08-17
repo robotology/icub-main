@@ -68,7 +68,14 @@ public:
     /**
      * this is just a fake torque interface for now
      */
-    virtual double getTorque(int axis) = 0;
+    virtual double getTorque() = 0;
+
+    /**
+     * Set the reference torque.
+     */
+    virtual void setTorque(double target) = 0;
+
+    virtual void controlModeChanged(int cm) = 0;
 };
 
 

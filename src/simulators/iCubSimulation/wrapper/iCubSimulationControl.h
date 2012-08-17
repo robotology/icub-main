@@ -267,6 +267,9 @@ protected:
 
     //next velocity of the joints during velocity control
     double *next_vel;
+
+    //next torques of the joints during torque control
+    double *next_torques;
     
     //semaphore access for synch with run function of webots
     int semaphoreNum;
@@ -308,7 +311,7 @@ protected:
     double *controlP;
 	int    *controlMode;
 
-    bool velocityMode;
+    //bool velocityMode;
 };
 
 #endif

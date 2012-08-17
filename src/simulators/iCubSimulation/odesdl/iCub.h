@@ -39,6 +39,7 @@
 #include <ode/ode.h>
 #include <string>
 #include "RobotConfig.h"
+#include "OdeInit.h"
 
 #include "EyeLidsController.h"
 
@@ -190,16 +191,23 @@ public:
 
     dJointID    fixedHipJoint;
 
-    /*----Lower Body joints speeds----*/
+    /*---- joint speeds----*/
     dReal    LLeg_speed	[20];
     dReal    RLeg_speed	[20];
-
     dReal    Torso_speed[8];
     dReal    la_speed[25];
     dReal    la_speed1[25];
     dReal    ra_speed[25];
     dReal    ra_speed1[25];
     dReal    h_speed[25];
+
+    /*---- joint torques----*/
+    dReal    LLeg_torques[20];
+    dReal    RLeg_torques[20];
+    dReal    Torso_torques[8];
+    dReal    la_torques[25];
+    dReal    ra_torques[25];
+    dReal    h_torques[25];
 
     map <string, ConstString> model;
     ConstString textureName[100];
@@ -246,8 +254,12 @@ public:
     ~ICubSim();
 
     void resetSpeeds();
-    void setJointSpeeds();
-    void setJointTorques();
+    
+    /**
+    * Set the control action for all the joints, that can be either a velocity
+    * command or a torque command, depending on the current control mode.
+    */
+    void setJointControlAction();
     //void syncAngles();
 
     bool checkTouchSensor(int bodyToCheck);

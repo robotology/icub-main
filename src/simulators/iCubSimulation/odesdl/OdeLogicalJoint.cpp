@@ -30,6 +30,7 @@ OdeLogicalJoint::OdeLogicalJoint() : filter(6,0.3,0.0,100) {
     sub = NULL;
     joint = NULL;
     speed = NULL;
+    feedback = NULL;
     active = false;
     left = NULL;
     right = NULL;
@@ -83,7 +84,7 @@ void OdeLogicalJoint::init(OdeLogicalJoint& left,
 void OdeLogicalJoint::init(const char *unit,
                       const char *type,
                       int index,
-                      int sign) {
+                      int sign, RobotConfig &conf) {
     OdeInit& odeinit = OdeInit::get();
     active = true;
     number = index;
@@ -115,6 +116,7 @@ void OdeLogicalJoint::init(const char *unit,
         } else {
             speed = &(odeinit._iCub->la_speed[index]);
         }
+        torque = &(odeinit._iCub->la_torques[index]);
     } else if (sunit=="rightarm") {
         joint = &(odeinit._iCub->RAjoints[index]);
         if (hinged) {
@@ -124,40 +126,60 @@ void OdeLogicalJoint::init(const char *unit,
         } else {
             speed = &(odeinit._iCub->ra_speed[index]);
         }
+        torque = &(odeinit._iCub->ra_torques[index]);
     } 
     else if (sunit=="head") {
         joint = &(odeinit._iCub->Hjoints[index]);
         speed = &(odeinit._iCub->h_speed[index]);
+        torque = &(odeinit._iCub->h_torques[index]);
     } 
     else if (sunit=="leftleg") {
         joint = &(odeinit._iCub->LLegjoints[index]);
         if (hinged) {
             speed = &(odeinit._iCub->LLeg_speed[index]);	
         }
+        torque = &(odeinit._iCub->LLeg_torques[index]);
     }
     else if (sunit=="rightleg") {
         joint = &(odeinit._iCub->RLegjoints[index]);
         if (hinged) {
             speed = &(odeinit._iCub->RLeg_speed[index]);
         }
+        torque = &(odeinit._iCub->RLeg_torques[index]);
     }
     else if (sunit=="torso") {
         joint = &(odeinit._iCub->Torsojoints[index]);
         if (hinged) {
             speed = &(odeinit._iCub->Torso_speed[index]);
         }
+        torque = &(odeinit._iCub->Torso_torques[index]);
     }
     else {
         printf("Unknown body unit %s\n", unit);
         exit(1);
     }
+    feedback = new dJointFeedback;
+    dJointSetFeedback(*joint, feedback);
+    if(hinged)
+        dJointGetHingeAxis(*joint, axis);
+    else if(universal==1)
+        dJointGetUniversalAxis1(*joint, axis);
+    else if(universal==2)
+        dJointGetUniversalAxis2(*joint, axis);
 
+    dryFriction = conf.getMotorDryFriction();
+    maxTorque = conf.getMotorMaxTorque();
 }
 
-double OdeLogicalJoint::getTorque(int axis) {
-    OdeInit& odeinit = OdeInit::get();
-    double result = odeinit._iCub->torqueData[axis];
-    return result;
+double OdeLogicalJoint::getTorque() {
+    // odeinit._iCub->torqueData[0]
+    if(!hinged || !feedback) 
+        return 0.0;
+    return (feedback->t1[0]*axis[0]+feedback->t1[1]*axis[1]+feedback->t1[2]*axis[2]);
+}
+
+void OdeLogicalJoint::setTorque(double target){
+    *torque = target;
 }
 
 double OdeLogicalJoint::getAngleRaw() {
@@ -247,6 +269,20 @@ void OdeLogicalJoint::setVelocityRaw(double target) {
         if (verge==1) {
             left->setVelocityRaw(speedSetpoint+altSpeed);
             right->setVelocityRaw(speedSetpoint-altSpeed);
+        }
+    }
+}
+
+
+void OdeLogicalJoint::controlModeChanged(int cm){
+    if(hinged){
+        // only hinge joints can be torque controlled
+        if(cm==MODE_TORQUE){
+            dJointSetHingeParam(*joint, dParamFMax, dryFriction);
+            dJointSetHingeParam(*joint, dParamVel, 0.0);
+        }
+        else{
+            dJointSetHingeParam(*joint, dParamFMax, maxTorque);
         }
     }
 }

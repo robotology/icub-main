@@ -19,7 +19,8 @@
 */
 /**
  * \file OdeInit.h
- * \brief This file is responsible for the initialisation of the world parameters that are controlled by ODE. Some extra parameters are/can be added here for simulation stability
+ * \brief This file is responsible for the initialisation of the world parameters that are controlled by ODE. 
+ * Some extra parameters are/can be added here for simulation stability
  * \author Vadim Tikhanoff
  * \date 2007
  * \note Released under GNU GPL v2.0
@@ -40,6 +41,8 @@
 
 using namespace std;
 using namespace yarp::dev;
+
+class ICubSim;
 
 /**
  *

@@ -118,6 +118,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     current_torques = allocAndCheck<double>(njoints);
     next_pos = allocAndCheck<double>(njoints);
     next_vel = allocAndCheck<double>(njoints);
+    next_torques = allocAndCheck<double>(njoints);
     inputs = allocAndCheck<int>(njoints);
     vels = allocAndCheck<double>(njoints);
 
@@ -197,7 +198,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         if (v>limitsMax[axis]) v = limitsMax[axis];
         //else v = next_pos[i];
         next_pos[axis] = M_PI*(v/angleToEncoder[axis])/180;//removed (v/angleToEncoder[i]-1)/180
-        next_vel[axis] = 0.0;      
+        next_vel[axis] = 0.0;
+        next_torques[axis] = 0.0;
         input = 0;
         inputs[axis] = 0;
         vels[axis] = 1;
@@ -220,8 +222,6 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         initialize(njoints, axisMap, angleToEncoder, zeros);
 	ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
 	ImplementControlMode::initialize(njoints, axisMap);
-
-    velocityMode = false;
 
     if (!p.check("joint_device")) {
         printf("Need a device to access the joints\n");
@@ -275,6 +275,7 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<double>(current_vel);
     checkAndDestroy<double>(next_pos);
     checkAndDestroy<double>(next_vel);
+    checkAndDestroy<double>(next_torques);
    // delete[] joint_dev;
 
     checkAndDestroy<double>(angleToEncoder);
@@ -314,23 +315,22 @@ void iCubSimulationControl::jointStep() {
             if (!ctrl.isValid()) continue;
             current_pos[axis] = ctrl.getAngle();
             current_vel[axis] = ctrl.getVelocity();
-
-            current_torques[axis] = ctrl.getTorque(axis);
-
+            current_torques[axis] = ctrl.getTorque();
             //fprintf(stdout,"torques %lf \n",current_torques[axis]);
         
             motor_on[axis] = true; // no reason to turn motors off, for now
 
-            if (velocityMode) {
+            if (controlMode[axis]==MODE_VELOCITY) {
                 if(((current_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
                     ctrl.setVelocity(0.0);
                 else{
                     ctrl.setVelocity(next_vel[axis]);
                 }
-            } else {
-                // no acceleration control right now, just velocity
+            } else if (controlMode[axis]==MODE_POSITION) {
                 ctrl.setControlParameters(vels[axis],1);
                 ctrl.setPosition(next_pos[axis]);
+            } else if (controlMode[axis]==MODE_TORQUE) {
+                ctrl.setTorque(next_torques[axis]);
             }
         }
     }
@@ -459,7 +459,7 @@ bool iCubSimulationControl::resetPidRaw(int axis)
 
 bool iCubSimulationControl::enablePidRaw(int axis)
 {
-    return NOT_YET_IMPLEMENTED("enablePidRaw");
+    return setPositionModeRaw(axis);
 }
 
 bool iCubSimulationControl::setOffsetRaw(int axis, double v)
@@ -474,19 +474,20 @@ bool iCubSimulationControl::disablePidRaw(int axis)
 
 bool iCubSimulationControl::setPositionModeRaw()
 {
-    velocityMode = false;
+    for(int axis = 0; axis<njoints; axis++)
+        controlMode[axis] = MODE_POSITION;
     return true;
 }
 
 bool iCubSimulationControl::setVelocityModeRaw()
 {
-    velocityMode = true;
+    for(int axis = 0; axis<njoints; axis++)
+        controlMode[axis] = MODE_VELOCITY;
     return true;
 }
 
 bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 {
-    velocityMode = false;
     if( (axis >=0) && (axis<njoints) )
     {
         _mutex.wait();
@@ -516,10 +517,10 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 
 bool iCubSimulationControl::positionMoveRaw(const double *refs)
 {
-    velocityMode = false;
     _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
         {
+            controlMode[axis] = MODE_POSITION;
             double ref = refs[axis];
             if(ref< limitsMin[axis]){
                 next_pos[axis] = limitsMin[axis];
@@ -539,13 +540,11 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
 
 bool iCubSimulationControl::relativeMoveRaw(int axis, double delta)
 {
-    velocityMode = false;
     return positionMoveRaw(axis,next_pos[axis]+delta);
 }
 
 bool iCubSimulationControl::relativeMoveRaw(const double *deltas)
 {
-    velocityMode = false;
     for(int axis = 0; axis<njoints; axis++) {
         relativeMoveRaw(axis,deltas[axis]);
     }
@@ -658,7 +657,7 @@ bool iCubSimulationControl::stopRaw(int axis)
         {
             _mutex.wait();
             next_pos[axis] = current_pos[axis];
-            next_vel[axis] = 0;
+            next_vel[axis] = 0.0;
             _mutex.post();
             return true;
         }
@@ -680,7 +679,6 @@ bool iCubSimulationControl::stopRaw()
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 {
-    velocityMode = true;
     if( (axis >=0) && (axis<njoints) ) {
         _mutex.wait();
         next_vel[axis] = sp;
@@ -702,10 +700,9 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (const double *sp)
 {
-    velocityMode = true;
     _mutex.wait();
     for (int axis=0; axis<njoints; axis++) {
-        //velocityMoveRaw(i,sp[i]);
+        controlMode[axis] = MODE_VELOCITY; 
         next_vel[axis] = sp[axis];
         motor_on[axis] = true;
         if (verbosity)
@@ -930,11 +927,29 @@ bool iCubSimulationControl::getTorqueRangesRaw(double *a,double *b)
 }
 bool iCubSimulationControl::setRefTorquesRaw(const double *sp)
 {
-    return NOT_YET_IMPLEMENTED("setRefTorquesRaw");
+    _mutex.wait();
+    for (int axis=0; axis<njoints; axis++) {
+        next_torques[axis] = sp[axis];
+        motor_on[axis] = true;
+        if (verbosity)
+            printf("setting joint %d of part %d to torque %f\n",axis,partSelec,next_torques[axis]);
+    }
+    _mutex.post();
+    return true;
 }
 bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
 {
-    return NOT_YET_IMPLEMENTED("setRefTorqueRaw");
+    if( (axis >=0) && (axis<njoints) ) {
+        _mutex.wait();
+        next_torques[axis] = ref;
+        motor_on[axis] = true;
+		controlMode[axis] = MODE_TORQUE; 
+		_mutex.post();
+        return true;
+    }
+    if (verbosity)
+        printf("setRefTorqueRaw: joint with index %d does not exist, valis joints indices are between 0 and %d \n",axis,njoints);
+    return false;
 }
 bool iCubSimulationControl::getRefTorquesRaw(double *ref)
 {
@@ -1014,6 +1029,8 @@ bool iCubSimulationControl::setPositionModeRaw(int j)
     if( (j >=0) && (j < njoints) ){
         _mutex.wait();
         controlMode[j] = MODE_POSITION;
+        manager->control(partSelec,j).controlModeChanged(controlMode[j]);
+        next_pos[j] = current_pos[j];
         _mutex.post();
        return true;
     }
@@ -1026,6 +1043,8 @@ bool iCubSimulationControl::setVelocityModeRaw(int j)
     if( (j >=0) && (j < njoints) ){
         _mutex.wait();
         controlMode[j] = MODE_VELOCITY;
+        manager->control(partSelec,j).controlModeChanged(controlMode[j]);
+        next_vel[j] = 0.0;
         _mutex.post();
        return true;
     }
@@ -1038,6 +1057,8 @@ bool iCubSimulationControl::setTorqueModeRaw(int j)
     if( (j >=0) && (j < njoints) ){
         _mutex.wait();
         controlMode[j] = MODE_TORQUE;
+        manager->control(partSelec,j).controlModeChanged(controlMode[j]);
+        next_torques[j] = 0.0;
         _mutex.post();
        return true;
     }

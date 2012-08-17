@@ -42,6 +42,22 @@ public:
     void setFlags();
 	//bool stopConfig(yarp::os::ConstString error, bool proceed);
 	void stopConfig(yarp::os::ConstString error);
+
+    virtual int getWorldTimestep() = 0;
+    virtual double getWorldCFM() = 0;
+    virtual double getWorldERP() = 0;
+
+    virtual double getFudgeFactor() = 0;
+    virtual double getStopCFM() = 0;
+    virtual double getJointCFM() = 0;
+    virtual double getStopERP() = 0;
+    
+    virtual double getMaxContactCorrectingVel() = 0;
+    virtual double getContactSurfaceLayer() = 0;
+
+    virtual double getMotorMaxTorque() = 0;
+    virtual double getMotorDryFriction() = 0;
+    virtual double getJointStopBouncyness() = 0;
 };
 
 #endif

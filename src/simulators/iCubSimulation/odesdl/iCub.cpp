@@ -151,72 +151,114 @@ void ICubSim::resetSpeeds() {
     for(x = 0; x < 10; x++) {
         LLeg_speed[x] = 0.0;
         RLeg_speed[x] = 0.0;
+        LLeg_torques[x] = 0.0;
+        RLeg_torques[x] = 0.0;
     }
 
-    Torso_speed[0] = 0.0;
-    Torso_speed[1] = 0.0;
-    Torso_speed[2] = 0.0;
-    Torso_speed[3] = 0.0;
-    Torso_speed[4] = 0.0;
-    Torso_speed[5] = 0.0;
-    Torso_speed[6] = 0.0; 
+    for(x=0; x<7; x++){
+        Torso_speed[x] = 0.0;
+        Torso_torques[x] = 0.0;
+    }
 
     for(x = 0; x < 25; x++) {
         la_speed[x] = 0.0;
         la_speed1[x] = 0.0;
+        la_torques[x] = 0.0;
         ra_speed[x] = 0.0;
         ra_speed1[x] = 0.0;
+        ra_torques[x] = 0.0;
         h_speed[x]  = 0.0;
+        h_torques[x] = 0.0;
     }
 }
-void ICubSim::setJointTorques(){
+
+void ICubSim::setJointControlAction() {
+    OdeInit& odeInit = OdeInit::get();
+    int cm[25];
+    memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
+    /*for(int i=0;i<5;i++){
+        printf("LAJoint %d angle: %.3f\t", i, 180.0/M_PI*dJointGetHingeAngle(LAjoints[i]));
+        printf("vel: %.3f\t", 180.0/M_PI*dJointGetHingeParam(LAjoints[i], dParamVel));
+        printf("fmax: %.1f\t", dJointGetHingeParam(LAjoints[i], dParamFMax));
+        printf("torque_d: %.1f\n", la_torques[i]);
+    }*/
+    /*for(int i=0;i<5;i++){
+        printf("RAJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(RAjoints[i]));
+        printf("vel: %.1f\t", 180.0/M_PI*dJointGetHingeParam(RAjoints[i], dParamVel));
+        printf("fmax: %.1f\t", dJointGetHingeParam(RAjoints[i], dParamFMax));
+        printf("torque_d: %.1f\n", ra_torques[i]);
+    }*/
+    /*for(int i=0;i<3;i++){
+        printf("TorsoJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(Torsojoints[i]));
+        printf("vel: %.1f\t", 180.0/M_PI*dJointGetHingeParam(Torsojoints[i], dParamVel));
+        printf("fmax: %.1f\t", dJointGetHingeParam(Torsojoints[i], dParamFMax));
+        printf("torque_d: %.1f\n", Torso_torques[i]);
+    }*/
+
+    // BodyPart: 1 left arm, 2 right arm, 3 head, 4 left leg, 5 right leg, 6 torso
+    // LEFT LEG
+    int bodyPart = 4;
+    if(odeInit._controls[bodyPart])
+        odeInit._controls[bodyPart]->getControlModesRaw(cm);
     for (int x=0; x<6;x++){
-        dJointAddHingeTorque(LLegjoints[x], LLeg_speed[x]);
-        dJointAddHingeTorque(RLegjoints[x], RLeg_speed[x]);
+        if(cm[x]==VOCAB_CM_TORQUE)
+            dJointAddHingeTorque(LLegjoints[x], LLeg_torques[x]);
+        else
+            dJointSetHingeParam(LLegjoints[x], dParamVel, LLeg_speed[x]);
     }
+    // RIGHT LEG
+    bodyPart = 5;
+    if(odeInit._controls[bodyPart])
+        odeInit._controls[bodyPart]->getControlModesRaw(cm);
+    else
+        memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
+    for (int x=0; x<6;x++){
+        if(cm[x]==VOCAB_CM_TORQUE)
+            dJointAddHingeTorque(RLegjoints[x], RLeg_torques[x]);
+        else
+            dJointSetHingeParam(RLegjoints[x], dParamVel, RLeg_speed[x]);
+    }
+    // TORSO
+    bodyPart = 6;
+    if(odeInit._controls[bodyPart])
+        odeInit._controls[bodyPart]->getControlModesRaw(cm);
+    else
+        memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
     for (int x=0; x<5; x++){
-        dJointAddHingeTorque(Torsojoints[x], Torso_speed[x]);
+        if(cm[x]==VOCAB_CM_TORQUE)
+            dJointAddHingeTorque(Torsojoints[x], Torso_torques[x]);
+        else
+            dJointSetHingeParam(Torsojoints[x], dParamVel, Torso_speed[x]);
     }
+    // LEFT ARM
+    bodyPart = 1;
+    if(odeInit._controls[bodyPart])
+        odeInit._controls[bodyPart]->getControlModesRaw(cm);
+    else
+        memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
     for (int x=0; x<5; x++){
-        dJointAddHingeTorque(LAjoints[x], la_speed[x]);
-        dJointAddHingeTorque(RAjoints[x], ra_speed[x]);
-    }
-    for (int x=5; x<6;x++){//for the hand
-        dJointSetUniversalParam(LAjoints[x],dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x],dParamVel,  ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
-    }
-    for (int x=6; x<25;x++){
-        if (x!=9 && x!=13 && x!=17 && x!=21 && x!=22){
-            dJointAddHingeTorque(LAjoints[x], la_speed[x]);
-            dJointAddHingeTorque(RAjoints[x], ra_speed[x]);
+        if(cm[x]==VOCAB_CM_TORQUE){
+            dJointAddHingeTorque(LAjoints[x], la_torques[x]);
         }
-    }
-    for (int x=22; x<23;x++){//for the hands
-        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
+        else
+            dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
     }
 
-    dJointAddHingeTorque(Hjoints[0], h_speed[0]);
-    for (int x=1; x<6; x++){//Joint parameters
-        dJointAddHingeTorque(Hjoints[x], h_speed[x]);
-    }
-}
-void ICubSim::setJointSpeeds() {
-    for (int x=0; x<6;x++){
-        dJointSetHingeParam(LLegjoints[x], dParamVel, LLeg_speed[x]);
-        dJointSetHingeParam(RLegjoints[x], dParamVel, RLeg_speed[x]);
-    }
+    // RIGHT ARM
+    bodyPart = 2;
+    if(odeInit._controls[bodyPart])
+        odeInit._controls[bodyPart]->getControlModesRaw(cm);
+    else
+        memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
     for (int x=0; x<5; x++){
-        dJointSetHingeParam(Torsojoints[x], dParamVel, Torso_speed[x]);
+        if(cm[x]==VOCAB_CM_TORQUE){
+            dJointAddHingeTorque(RAjoints[x], ra_torques[x]);
+        }
+        else{
+            dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
+        }
     }
-    for (int x=0; x<5; x++){
-        dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-    }
+
     for (int x=5; x<6;x++){//for the hand
         dJointSetUniversalParam(LAjoints[x],dParamVel, la_speed[x]);
         dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
@@ -235,11 +277,20 @@ void ICubSim::setJointSpeeds() {
         dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
         dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
     }
-    dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
-    for (int x=1; x<6; x++){//Joint parameters
-        dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
+        
+    // HEAD
+    bodyPart = 3;
+    if(odeInit._controls[bodyPart])
+        odeInit._controls[bodyPart]->getControlModesRaw(cm);
+    else
+        memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
+    for (int x=0; x<6; x++){
+        if(cm[x]==VOCAB_CM_TORQUE)
+            dJointAddHingeTorque(Hjoints[x], h_torques[x]);
+        else
+            dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
     }
-
+    
     /*dMatrix3 R;
     dRFromAxisAndAngle(R,1,0,0,eyeLids.eyeLidsRotation);
     dBodySetRotation(topEyeLid,R);
@@ -1274,7 +1325,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     activateiCubParts(config);
 
     for (int x =0; x<100; x++)
-        torqueData[x] = 0;
+        torqueData[x] = 0.0;
 
     if (actHeadCover)
     {
@@ -1288,6 +1339,29 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 
     //load joint positions from file
     loadJointPosition(finder.findFile(finder.find("joints").asString().c_str()).c_str());
+
+    // --- READ ODE CONFIGURATION PARAMETERS FROM CONFIG FILE ---
+    double CTRL_DEG2RAD = M_PI/180.0;
+    double CTRL_RAD2DEG = 180.0/M_PI;
+    // *** Joint Stop Fudge Factor
+    // Reducing this should decrease the jump effect when moving away from a joint limit
+    double fudgeFactor = config.getFudgeFactor();
+    // *** Constraint Force Mixing
+    // If CFM=0 the constraint is hard, if CFM>0 then it is possible to violate the constraint by pushing on it.
+    // Increasing CFM can reduce the numerical errors in the simulation, hence increasing stability.
+    // Default value is 1e-5 for single precision, 1e-10 for double precision.
+    double stopCFM  = config.getStopCFM();
+    double jointCFM = config.getJointCFM();
+    // *** Error Reduction Parameter: 
+    // value in [0, 1], default is 0.2, reccomended range is [0.1, 0.8], regulates what portion of the joint error 
+    // will be fixed during the next simulation step.
+    double stopERP = config.getStopERP();
+    // Motor Max Torque used for position and velocity control mode
+    double motorMaxTorque = config.getMotorMaxTorque();
+    // Joint Stop Bouncyness: 0 means rigid, 1 means maximum bouncyness
+    double jointStopBouncyness = config.getJointStopBouncyness();
+    // margin added to the joint limits
+    double safetyMargin = 0.1 * CTRL_DEG2RAD;
 
     //mass
     dMass m, m2;
@@ -2407,8 +2481,8 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         RAjoints[x] = dJointCreateHinge(world, 0);
     }
     for(int x = 22; x < 23; x++) {
-    LAjoints[x] = dJointCreateUniversal(world, 0);
-    RAjoints[x] = dJointCreateUniversal(world, 0);
+        LAjoints[x] = dJointCreateUniversal(world, 0);
+        RAjoints[x] = dJointCreateUniversal(world, 0);
     }
     for(int x = 23; x < 25; x++) {
         LAjoints[x] = dJointCreateHinge(world, 0);
@@ -2521,20 +2595,25 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeParam(Torsojoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[4],dParamHiStop, 2.7925);
 
     }else{
+        /* Torso joints are in reserved order with respect to robotMotorGui
+          Max  50  30  70
+          Min -50 -30 -10
+        */
         dJointAttach (Torsojoints[0], torso[0], torso[1]);
         dJointSetHingeAnchor (Torsojoints[0],  jP_torso[0][1], elev + jP_torso[0][2], jP_torso[0][0]);//dJointSetHingeAnchor (Torsojoints[0],  0.0, elev +0.5484, -0.04);
         dJointSetHingeAxis (Torsojoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(Torsojoints[0],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[0],dParamHiStop, 2.7925);
+        // this joint angle is the opposite of the real iCub joint angle so I had to invert the lower and upper bounds
+        dJointSetHingeParam(Torsojoints[0],dParamLoStop, -70*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[0],dParamHiStop, 10*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (Torsojoints[1], torso[1], torso[2]);
         dJointSetHingeAnchor (Torsojoints[1], jP_torso[1][1], elev + jP_torso[1][2], jP_torso[1][0]);//dJointSetHingeAnchor (Torsojoints[1], 0.0, elev +0.624, -0.034);
         dJointSetHingeAxis (Torsojoints[1], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(Torsojoints[1],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[1],dParamHiStop, 2.7925);
+        dJointSetHingeParam(Torsojoints[1],dParamLoStop, -30*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[1],dParamHiStop, 30*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (Torsojoints[2], torso[2], torso[3]);
         dJointSetHingeAnchor (Torsojoints[2], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[2], 0.0, elev +0.6687, -0.026);
         dJointSetHingeAxis (Torsojoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(Torsojoints[2],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[2],dParamHiStop, 2.7925);
+        dJointSetHingeParam(Torsojoints[2],dParamLoStop, -50*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[2],dParamHiStop, 50*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (Torsojoints[3], torso[3], torso[4]);
         dJointSetHingeAnchor (Torsojoints[3], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[3], 0.038, elev +0.6824, -0.026);
@@ -2545,6 +2624,15 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAnchor (Torsojoints[4], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[4], -0.038, elev +0.6824, -0.026);
         dJointSetHingeAxis (Torsojoints[4], 0.0, 1.0, 0.0);
         dJointSetHingeParam(Torsojoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[4],dParamHiStop, 2.7925);
+
+        for(int i=0;i<5;i++){
+            //printf("Joint %d angle: %f\n", i, CTRL_RAD2DEG*dJointGetHingeAngle(Torsojoints[i]));
+            dJointSetHingeParam(Torsojoints[i], dParamFudgeFactor, fudgeFactor);
+            dJointSetHingeParam(Torsojoints[i], dParamStopCFM, stopCFM);
+            dJointSetHingeParam(Torsojoints[i], dParamStopERP, stopERP);
+            dJointSetHingeParam(Torsojoints[i], dParamCFM, jointCFM);
+            dJointSetHingeParam(Torsojoints[i], dParamBounce, jointStopBouncyness);
+        }
     }
     if (actLArm == "off"){
         dJointAttach (LAjoints[0], torso[4], larm);
@@ -2558,31 +2646,42 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);//
         //dJointSetHingeAnchor (LAjoints[0],   0.117/*0.0815*/, elev +0.77, -0.026);
         dJointSetHingeAxis (LAjoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(LAjoints[0],dParamLoStop, -2.7925);dJointSetHingeParam(LAjoints[0],dParamHiStop, 2.7925);//the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        dJointSetHingeParam(LAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD - safetyMargin);dJointSetHingeParam(LAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD + safetyMargin);
 
         dJointAttach (LAjoints[1],  body[0], body[2]);//joint left shoulder1 and left shoulder2
         dJointSetHingeAnchor (LAjoints[1],   jP_leftArm[1][1], elev + jP_leftArm[1][2], jP_leftArm[1][0]);
         //dJointSetHingeAnchor (LAjoints[1],   0.117, elev +0.77, -0.026);
         dJointSetHingeAxis (LAjoints[1], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(LAjoints[1],dParamLoStop, -2.7925);dJointSetHingeParam(LAjoints[1],dParamHiStop, 2.7925);//180° cannot be fully reached have to make with 179.4°
+        // higher bound should be 0, but it gives problem
+        dJointSetHingeParam(LAjoints[1],dParamLoStop, -160.8*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[1],dParamHiStop, 1.0+safetyMargin);
 
         dJointAttach (LAjoints[2], body[2], body[4]); //joint left shoulder1 and left upper arm
         dJointSetHingeAnchor (LAjoints[2],   jP_leftArm[2][1], elev + jP_leftArm[2][2], jP_leftArm[2][0]);
         //dJointSetHingeAnchor (LAjoints[2],   0.117, elev +0.692, -0.026);
         dJointSetHingeAxis (LAjoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(LAjoints[2],dParamLoStop, -2.7925);dJointSetHingeParam(LAjoints[2],dParamHiStop, 2.7925);
+        dJointSetHingeParam(LAjoints[2],dParamLoStop,  -52.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[2],dParamHiStop, 65.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (LAjoints[3], body[4], body[6]); //joint left upper arm and left elbow mechanism
         dJointSetHingeAnchor (LAjoints[3],   jP_leftArm[3][1], elev + jP_leftArm[3][2], jP_leftArm[3][0]);
         //dJointSetHingeAnchor (LAjoints[3],   0.117, elev +0.614, -0.026);
         dJointSetHingeAxis (LAjoints[3], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(LAjoints[3],dParamLoStop, -2.7925);dJointSetHingeParam(LAjoints[3],dParamHiStop, 2.7925);
+        // lower limit should be 15 but it gives problems
+        dJointSetHingeParam(LAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (LAjoints[4], body[6], body[8]); //joint left elbow mechanism and left lower arm
         dJointSetHingeAnchor (LAjoints[4],   jP_leftArm[4][1], elev + jP_leftArm[4][2], jP_leftArm[4][0]);
         //dJointSetHingeAnchor (LAjoints[4],   0.117, elev +0.544, -0.026);
         dJointSetHingeAxis (LAjoints[4], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(LAjoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(LAjoints[4],dParamHiStop, 2.7925);
+        dJointSetHingeParam(LAjoints[4],dParamLoStop, -90.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[4],dParamHiStop, 90.5*CTRL_DEG2RAD+safetyMargin);
+   
+        for(int i=0;i<5;i++){
+            //printf("Joint %d angle: %f\n", i, CTRL_RAD2DEG*dJointGetHingeAngle(LAjoints[i]));
+            dJointSetHingeParam(LAjoints[i], dParamFudgeFactor, fudgeFactor);
+            dJointSetHingeParam(LAjoints[i], dParamStopCFM, stopCFM);
+            dJointSetHingeParam(LAjoints[i], dParamStopERP, stopERP);
+            dJointSetHingeParam(LAjoints[i], dParamCFM, jointCFM);
+            dJointSetHingeParam(LAjoints[i], dParamBounce, jointStopBouncyness);
+        }
     }
     if (actLArm == "off" && actLHand == "off"){
 
@@ -2705,31 +2804,43 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeParam(RAjoints[0],dParamLoStop, -0.0);dJointSetHingeParam(RAjoints[0],dParamHiStop, 0.0);//the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
     }
     else{
-        //RIGHT ARM JOINTS
+        //Max     10   160.8  80     106      90       0     40      60    90      90      90       90       90     90      90   115
+        //Min    -95   0     -37    15.5     -90     -90    -20      0     0       0       0        0        0      0       0     0
+        //RIGHT ARM JOINTS        
         dJointAttach (RAjoints[0], torso[5], body[1]);//joint right clavicule and right shoulder1
         dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);//dJointSetHingeAnchor (RAjoints[0],   -0.117/*-0.0815*/, elev +0.77, -0.026);
         dJointSetHingeAxis (RAjoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[0],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[0],dParamHiStop, 2.7925);//the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        dJointSetHingeParam(RAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (RAjoints[1],  body[1], body[3]);//joint right shoulder1 and left shoulder2
         dJointSetHingeAnchor (RAjoints[1],  jP_rightArm[1][1], elev + jP_rightArm[1][2], jP_rightArm[1][0]);//dJointSetHingeAnchor (RAjoints[1],   -0.117,elev + 0.77, -0.026);
         dJointSetHingeAxis (RAjoints[1], 0.0, 0.0 , 1.0);
-        dJointSetHingeParam(RAjoints[1],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[1],dParamHiStop, 2.7925);//180° cannot be fully reached have to make with 179.4°
+        // the lower limit should be 0 but it gives problem
+        dJointSetHingeParam(RAjoints[1],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180° cannot be fully reached have to make with 179.4°
 
         dJointAttach (RAjoints[2], body[3], body[5]); //joint right shoulder1 and right upper arm
         dJointSetHingeAnchor (RAjoints[2],   jP_rightArm[2][1], elev + jP_rightArm[2][2], jP_rightArm[2][0]);//dJointSetHingeAnchor (RAjoints[2],   -0.117,elev + 0.692, -0.026);
         dJointSetHingeAxis (RAjoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(RAjoints[2],dParamLoStop,  -2.7925);dJointSetHingeParam(RAjoints[2],dParamHiStop, 2.7925);
+        dJointSetHingeParam(RAjoints[2],dParamLoStop,  -65.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (RAjoints[3], body[5], body[7]); //joint right upper arm and right elbow mechanism
         dJointSetHingeAnchor (RAjoints[3],   jP_rightArm[3][1], elev + jP_rightArm[3][2], jP_rightArm[3][0]);//dJointSetHingeAnchor (RAjoints[3],   -0.117,elev + 0.614, -0.026);
         dJointSetHingeAxis (RAjoints[3], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[3],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[3],dParamHiStop, 2.7925);
+        // lower limit should be 15° but it gives problem
+        dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (RAjoints[4], body[7], body[9]); //joint right elbow mechanism and right lower arm
         dJointSetHingeAnchor (RAjoints[4],   jP_rightArm[4][1], elev + jP_rightArm[4][2], jP_rightArm[4][0]);//dJointSetHingeAnchor (RAjoints[4],   -0.117,elev + 0.544, -0.026);
         dJointSetHingeAxis (RAjoints[4], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(RAjoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[4],dParamHiStop, 2.7925);
+        dJointSetHingeParam(RAjoints[4],dParamLoStop, -90.5*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[4],dParamHiStop, 90.0*CTRL_DEG2RAD+safetyMargin);
+
+        for(int i=0;i<5;i++){
+            dJointSetHingeParam(RAjoints[i], dParamFudgeFactor, fudgeFactor);
+            dJointSetHingeParam(RAjoints[i], dParamStopCFM, stopCFM);
+            dJointSetHingeParam(RAjoints[i], dParamStopERP, stopERP);
+            dJointSetHingeParam(RAjoints[i], dParamCFM, jointCFM);
+            dJointSetHingeParam(RAjoints[i], dParamBounce, jointStopBouncyness);
+        }
     }
     if (actRArm == "off" && actRHand == "off"){
 
@@ -2906,59 +3017,59 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     //joint parameters
     for (int x=0; x<6; x++){
         //dJointSetHingeParam(LLegjoints[x], dParamVel, LLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
-        dJointSetHingeParam(LLegjoints[x], dParamFMax,1000);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
+        dJointSetHingeParam(LLegjoints[x], dParamFMax, motorMaxTorque);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
 
         dJointSetHingeParam(RLegjoints[x], dParamVel, RLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
-        dJointSetHingeParam(RLegjoints[x], dParamFMax,1000);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
+        dJointSetHingeParam(RLegjoints[x], dParamFMax,motorMaxTorque);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
     }
     for (int x=0; x<5; x++){
         dJointSetHingeParam(Torsojoints[x], dParamVel, Torso_speed[x]);
-        dJointSetHingeParam(Torsojoints[x], dParamFMax,1000);
-    }   
+        dJointSetHingeParam(Torsojoints[x], dParamFMax,motorMaxTorque);
+    }
     for (int x=0; x<5; x++){
         dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetHingeParam(LAjoints[x], dParamFMax,1000);
+        dJointSetHingeParam(LAjoints[x], dParamFMax,motorMaxTorque);
         dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetHingeParam(RAjoints[x], dParamFMax,1000);
+        dJointSetHingeParam(RAjoints[x], dParamFMax,motorMaxTorque);
     }
     for (int x=5; x<6;x++){//for the hands
         dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax,1000);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax,motorMaxTorque);
         dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax2,1000);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax2,motorMaxTorque);
 
         dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax,1000);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax,motorMaxTorque);
         dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax2,1000);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax2,motorMaxTorque);
     }
     for (int x=6; x<25; x++){//22
         if (x!=9 && x!=13 && x!=17 && x!=21 && x!=22){
             dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-            dJointSetHingeParam(LAjoints[x], dParamFMax,1000);
+            dJointSetHingeParam(LAjoints[x], dParamFMax,motorMaxTorque);
             dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-            dJointSetHingeParam(RAjoints[x], dParamFMax,1000);
+            dJointSetHingeParam(RAjoints[x], dParamFMax,motorMaxTorque);
         }
     }
     for (int x=22; x<23;x++){//for the hands
         dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax,1000);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax,motorMaxTorque);
         dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax2,1000);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax2,motorMaxTorque);
 
         dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax,1000);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax,motorMaxTorque);
         dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax2,1000);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax2,motorMaxTorque);
     }
 
     dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
-    dJointSetHingeParam(Hjoints[0], dParamFMax,1000);
+    dJointSetHingeParam(Hjoints[0], dParamFMax,motorMaxTorque);
     if (actHead ){
         /*-------------head parameters--------------*/
         for (int x=1; x<6; x++){//Joint parameters
             dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
-            dJointSetHingeParam(Hjoints[x], dParamFMax,1000);
+            dJointSetHingeParam(Hjoints[x], dParamFMax,motorMaxTorque);
         }
     }
 

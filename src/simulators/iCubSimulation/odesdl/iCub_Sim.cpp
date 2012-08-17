@@ -108,17 +108,6 @@ void OdeSdlSimulation::draw() {
     odeinit._wrld->draw();
 }
 
-void OdeSdlSimulation::setJointTorques() {
-    OdeInit& odeinit = OdeInit::get();
-    odeinit._iCub->setJointTorques();
-}
-
-void OdeSdlSimulation::setJointSpeed() {
-    OdeInit& odeinit = OdeInit::get();
-    odeinit._iCub->setJointSpeeds();
-
-}
-
 void OdeSdlSimulation::printStats() {
     OdeInit& odeinit = OdeInit::get();
 
@@ -802,13 +791,32 @@ int OdeSdlSimulation::thread_ode(void *unused) {
     //SLD_AddTimer freezes the system if delay is too short. Instead use a while loop that waits if there was time left after the computation of ODE_process
     long prevTime = (long) clock();
     long timeLeft;
+    double avg_ode_step_length = 0.0;
+    double current_ode_step_length = 0.0;
+    long count = 0;
     simrun = true;
     while (simrun) {
         ODE_process(1, (void*)1);
         // check for oderate
-        timeLeft = (prevTime - (long) clock()) + ode_step_length;
+        current_ode_step_length = (long) clock() - prevTime;
+        timeLeft = ode_step_length - current_ode_step_length;
         if (timeLeft > 0) // wait if there is still time left in this frame
             SDL_Delay(timeLeft);
+        
+        // check if the desired timestep is achieved, if not print a warning msg
+        count++;
+        avg_ode_step_length = ((count-1)*avg_ode_step_length + current_ode_step_length) / count;
+        if(count % (10000/ode_step_length)==0){
+            if(avg_ode_step_length > 1.2*ode_step_length){
+                printf("WARNING: the simulation is too slow, you should increase the parameter timestep in ode_params.ini (current value: %d, suggested value: %.0f)\n", 
+                    ode_step_length, avg_ode_step_length);
+            }
+            else if(avg_ode_step_length < 0.8*ode_step_length){
+                printf("INFO: the simulation can run faster, you can decrease the parameter timestep in ode_params.ini (current value: %d, suggested value: %.0f)\n", 
+                    ode_step_length, avg_ode_step_length);
+            }
+        }
+
         prevTime = (long) clock();
     }
     return(0);
@@ -822,7 +830,6 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     odeinit.mutex.wait();
     nFeedbackStructs=0;
     dSpaceCollide(odeinit.space,0,&nearCallback);
-    //dWorldStep(odeinit.world, 0.01); // TIMESTEP
     dWorldStep(odeinit.world, dstep);
     // do 1 TIMESTEP in controllers (ok to run at same rate as ODE: 1 iteration takes about 300 times less computation time than dWorldStep)
     for (int ipart = 0; ipart<MAX_PART; ipart++) {
@@ -860,8 +867,8 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     //go and check if torques are needed
     robot_streamer->checkTorques();
 
-    setJointSpeed();
-    //setJointTorques();
+    odeinit._iCub->setJointControlAction();
+    
     //finishTimeODE = clock() ;
     //SPS();
     //printf("ODE=%lf\n",(double)(finishTimeODE - startTimeODE) / CLOCKS_PER_SEC);
@@ -1076,6 +1083,9 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     }
     robot_streamer = streamer;
     robot_config = config;
+
+    ode_step_length = config->getWorldTimestep();
+    dstep = ode_step_length*1e-3;
 
     video = new VideoTexture;
     string moduleName = odeinit.getName();

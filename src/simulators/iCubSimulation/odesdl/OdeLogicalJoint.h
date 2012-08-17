@@ -29,6 +29,8 @@
 
 #include "LogicalJoint.h"
 
+#include "RobotConfig.h"
+
 /**
  *
  * Convenience class for mapping from physical ODE joints in the model to
@@ -61,7 +63,7 @@ public:
     /**
      * Initialize a regular control unit.
      */
-    void init(const char *unit, const char *type, int index, int sign);
+    void init(const char *unit, const char *type, int index, int sign, RobotConfig &conf);
 
     /**
      * Initialize a differential pair of control units.
@@ -100,8 +102,9 @@ public:
     }
 
     //test for torque
-    double getTorque(int axis);
-    double setTorque();
+    double getTorque();
+
+    void setTorque(double target);
 
     /**
      * Set velocity and acceleration control parameters.
@@ -127,11 +130,16 @@ public:
         return (number != -1) || (verge != 0);
     }
 
+    void controlModeChanged(int cm);
+
 private:
     int number;
     std::string unit;
     dJointID *joint;
+    dJointFeedback *feedback;
+    dVector3 axis;
     dReal *speed;
+    dReal *torque;
     double speedSetpoint;
     bool hinged;
     int universal;
@@ -142,7 +150,9 @@ private:
     double vel;
     double acc;
     PidFilter filter;
-    double torque;
+
+    double dryFriction;
+    double maxTorque;
 
     OdeLogicalJoint *left, *right, *peer;
     int verge;

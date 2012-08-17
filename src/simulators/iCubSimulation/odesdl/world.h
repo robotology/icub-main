@@ -296,8 +296,6 @@ public:
     std::string model_DIR;
 public:
 
-    void resetSpeeds();
-    void setJointSpeeds();
     void syncAngles();
     void ballDamping();
     void draw();
