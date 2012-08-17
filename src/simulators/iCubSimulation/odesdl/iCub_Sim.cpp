@@ -808,11 +808,11 @@ int OdeSdlSimulation::thread_ode(void *unused) {
         avg_ode_step_length = ((count-1)*avg_ode_step_length + current_ode_step_length) / count;
         if(count % (10000/ode_step_length)==0){
             if(avg_ode_step_length > 1.2*ode_step_length){
-                printf("WARNING: the simulation is too slow, you should increase the parameter timestep in ode_params.ini (current value: %d, suggested value: %.0f)\n", 
+                printf("WARNING: the simulation is too slow, you should increase the parameter timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
                     ode_step_length, avg_ode_step_length);
             }
             else if(avg_ode_step_length < 0.8*ode_step_length){
-                printf("INFO: the simulation can run faster, you can decrease the parameter timestep in ode_params.ini (current value: %d, suggested value: %.0f)\n", 
+                printf("INFO: the simulation can run faster, you can decrease the parameter timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
                     ode_step_length, avg_ode_step_length);
             }
         }
