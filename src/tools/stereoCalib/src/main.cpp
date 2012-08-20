@@ -85,7 +85,7 @@ YARP libraries and OpenCV
 None.
 
 \section out_data_sec Output Data Files
-None. 
+outputCalib.ini 
  
 \section tested_os_sec Tested OS
 Windows and Linux.
