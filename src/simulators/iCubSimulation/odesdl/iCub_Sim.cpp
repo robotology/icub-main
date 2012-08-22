@@ -799,7 +799,7 @@ int OdeSdlSimulation::thread_ode(void *unused) {
         ODE_process(1, (void*)1);
         // check for oderate
         current_ode_step_length = (long) clock() - prevTime;
-        timeLeft = ode_step_length - current_ode_step_length;
+        timeLeft = (long)(ode_step_length - current_ode_step_length);
         if (timeLeft > 0) // wait if there is still time left in this frame
             SDL_Delay(timeLeft);
         
