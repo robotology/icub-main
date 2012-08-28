@@ -12,7 +12,7 @@
 // ControlBoardWrapper
 // A modified version of the YARP remote control board class
 // which remaps joints.
-// 
+//
 
 
 #include <yarp/os/PortablePair.h>
@@ -36,7 +36,7 @@
 #include <string>
 
 #ifdef WIN32
-	#pragma warning(disable:4355)
+    #pragma warning(disable:4355)
 #endif
 
 using namespace yarp::os;
@@ -45,7 +45,7 @@ using namespace yarp::sig;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-/* the control command message type 
+/* the control command message type
 * head is a Bottle which contains the specification of the message type
 * body is a Vector which move the robot accordingly
 */
@@ -70,7 +70,7 @@ protected:
     yarp::dev::IAxisInfo            *info;
     yarp::dev::IControlCalibration2 *ical2;
     yarp::dev::IControlMode         *iControlMode;
-	yarp::dev::IOpenLoopControl     *iOpenLoop;
+    yarp::dev::IOpenLoopControl     *iOpenLoop;
     int controlledJoints;
     Vector vect;
 
@@ -87,10 +87,10 @@ public:
     CommandsHelper(ControlBoardWrapper *x);
 
     virtual bool respond(const Bottle& cmd, Bottle& response);
-    void handleTorqueMsg(const yarp::os::Bottle& cmd, 
+    void handleTorqueMsg(const yarp::os::Bottle& cmd,
         yarp::os::Bottle& response, bool *rec, bool *ok);
-    
-    void handleControlModeMsg(const yarp::os::Bottle& cmd, 
+
+    void handleControlModeMsg(const yarp::os::Bottle& cmd,
         yarp::os::Bottle& response, bool *rec, bool *ok);
 
     /**
@@ -126,13 +126,13 @@ public:
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 /*
-* A modified version of the network wrapper. Similar 
-* to the the network wrapper in YARP, but it 
+* A modified version of the network wrapper. Similar
+* to the the network wrapper in YARP, but it
 * maps only a subpart of the underlying device.
 * Allows also deferred attach/detach of a subdevice.
 */
-class ControlBoardWrapper : 
-    public DeviceDriver, 
+class ControlBoardWrapper :
+    public DeviceDriver,
     public RateThread,
     public IPidControl,
     public IPositionControl,
@@ -143,9 +143,9 @@ class ControlBoardWrapper :
     public IControlCalibration,
     public IControlCalibration2,
     public IMultipleWrapper,
-	public ITorqueControl,
+    public ITorqueControl,
     public IControlMode,
-	public IOpenLoopControl,
+    public IOpenLoopControl,
     public IAxisInfo
     // convenient to put these here just to make sure all
     // methods get implemented
@@ -173,7 +173,7 @@ private:
 
     PolyDriver *subdevice;
     Vector      encoders;
-	std::string      partName;
+    std::string      partName;
 
     int               deviceJoints;
     int               controlledJoints;
@@ -192,7 +192,7 @@ private:
     IPreciselyTimed      *iTimed;
     IAxisInfo          *info;
     IControlMode        *iControlMode;
-	IOpenLoopControl   *iOpenLoop;
+    IOpenLoopControl   *iOpenLoop;
 
     bool closeMain() {
         if (RateThread::isRunning()) {
@@ -226,7 +226,7 @@ public:
         info = NULL;
         torque=NULL;
         iControlMode=0;
-		iOpenLoop=0;
+        iOpenLoop=0;
         controlledJoints = 0;
         deviceJoints=0;
         thread_period = 20; // ms.
@@ -265,7 +265,7 @@ public:
 
     /**
     * Open the device driver.
-    * @param prop is a Searchable object which contains the parameters. 
+    * @param prop is a Searchable object which contains the parameters.
     * Allowed parameters are:
     * - verbose or v to print diagnostic information while running.
     * - subdevice to specify the name of the wrapped device.
@@ -289,7 +289,7 @@ public:
 
         partName=prop.check("name",Value("controlboard"),
             "prefix for port names").asString().c_str();
-		std::string rootName="/";
+        std::string rootName="/";
         rootName+=(partName);
 
         // attach readers.
@@ -317,7 +317,7 @@ public:
     /**
     * The thread main loop deals with writing on ports here.
     */
-    virtual void run() 
+    virtual void run()
     {
         yarp::sig::Vector& v = state_buffer.get();
         v.size(controlledJoints);
@@ -365,9 +365,9 @@ public:
     }
 
     /** Set the controller reference point for a given axis.
-    * Warning this method can result in very large torques 
+    * Warning this method can result in very large torques
     * and should be used carefully. If you do not understand
-    * this warning you should avoid using this method. 
+    * this warning you should avoid using this method.
     * Have a look at other interfaces (e.g. position control).
     * @param j joint number
     * @param ref new reference point
@@ -380,9 +380,9 @@ public:
     }
 
     /** Set the controller reference points, multiple axes.
-    * Warning this method can result in very large torques 
+    * Warning this method can result in very large torques
     * and should be used carefully. If you do not understand
-    * this warning you should avoid using this method. 
+    * this warning you should avoid using this method.
     * Have a look at other interfaces (e.g. position control).
     * @param refs pointer to the vector that contains the new reference points.
     * @return true/false upon success/failure
@@ -512,7 +512,7 @@ public:
     /** Get the current reference position of the controller for a specific joint.
     * @param j joint number
     * @param ref pointer to storage for return value
-    * @return reference value 
+    * @return reference value
     */
     virtual bool getReference(int j, double *ref) {
         if (pid)
@@ -560,7 +560,7 @@ public:
         return ret;
     }
 
-    /** Reset the controller of a given joint, usually sets the 
+    /** Reset the controller of a given joint, usually sets the
     * current position of the joint as the reference value for the PID, and resets
     * the integrator.
     * @param j joint number
@@ -572,8 +572,8 @@ public:
         return false;
     }
 
-    /** 
-    * Disable the pid computation for a joint 
+    /**
+    * Disable the pid computation for a joint
     * @param j is the axis number
     * @return true if successful, false on failure
     **/
@@ -583,7 +583,7 @@ public:
         return false;
     }
 
-    /** 
+    /**
     * Enable the pid computation for a joint
     * @param j is the axis number
     * @return true/false on success/failure
@@ -603,12 +603,12 @@ public:
     * @return true/false.
     */
     virtual bool getAxes(int *ax) {
-        if (pos) 
+        if (pos)
         {
             *ax=controlledJoints;
             return true;
         }
-        if (vel) 
+        if (vel)
         {
             *ax=controlledJoints;
             return true;
@@ -617,7 +617,7 @@ public:
         return false;
     }
 
-    /** 
+    /**
     * Set position mode. This command
     * is required by control boards implementing different
     * control methods (e.g. velocity/torque), in some cases
@@ -636,16 +636,16 @@ public:
         return false;
     }
 
-    /** 
+    /**
     * Set new reference point for a single axis.
     * @param j joint number
     * @param ref specifies the new ref point
     * @return true/false on success/failure
     */
-    virtual bool positionMove(int j, double ref) { 
+    virtual bool positionMove(int j, double ref) {
         if (pos)
             return pos->positionMove(j+base, ref);
-        return false; 
+        return false;
     }
 
     /** Set new reference point for all axes.
@@ -663,7 +663,7 @@ public:
         return ret;
     }
 
-    /** Set relative position. The command is relative to the 
+    /** Set relative position. The command is relative to the
     * current position of the axis.
     * @param j joint axis number
     * @param delta relative command
@@ -689,7 +689,7 @@ public:
         return ret;
     }
 
-    /** 
+    /**
     * Check if the current trajectory is terminated. Non blocking.
     * @param j the axis
     * @param flag true if the trajectory is terminated, false otherwise
@@ -702,12 +702,12 @@ public:
         return false;
     }
 
-    /** 
+    /**
     * Check if the current trajectory is terminated. Non blocking.
     * @param flag true if the trajectory is terminated, false otherwise
     * @return false on failure
     */
-    virtual bool checkMotionDone(bool *flag) { 
+    virtual bool checkMotionDone(bool *flag) {
         bool ret=false;
         *flag=true;
         if (pos)
@@ -732,7 +732,7 @@ public:
     * @return true/false upon success/failure
     */
     virtual bool setRefSpeed(int j, double sp) {
-        if (pos) 
+        if (pos)
             return pos->setRefSpeed(j+base, sp);
         return false;
     }
@@ -779,7 +779,7 @@ public:
         return ret;
     }
 
-    /** Get reference speed for a joint. Returns the speed used to 
+    /** Get reference speed for a joint. Returns the speed used to
     * generate the trajectory profile.
     * @param j joint number
     * @param ref pointer to storage for the return value
@@ -807,7 +807,7 @@ public:
         return ret;
     }
 
-    /** Get reference acceleration for a joint. Returns the acceleration used to 
+    /** Get reference acceleration for a joint. Returns the acceleration used to
     * generate the trajectory profile.
     * @param j joint number
     * @param acc pointer to storage for the return value
@@ -823,7 +823,7 @@ public:
     /** Get reference acceleration of all joints. These are the values used during the
     * interpolation of the trajectory.
     * @param accs pointer to the array that will store the acceleration values.
-    * @return true/false on success or failure 
+    * @return true/false on success or failure
     */
     virtual bool getRefAccelerations(double *accs) {
         bool ret=false;
@@ -845,8 +845,8 @@ public:
         return false;
     }
 
-    /** 
-    * Stop motion, multiple joints 
+    /**
+    * Stop motion, multiple joints
     * @return true/false on success/failure
     */
     virtual bool stop() {
@@ -857,7 +857,7 @@ public:
 
     /* IVelocityControl */
 
-    /** 
+    /**
     * Set new reference speed for a single axis.
     * @param j joint number
     * @param v specifies the new ref speed
@@ -897,7 +897,7 @@ public:
     /* IEncoders */
 
     /**
-    * Reset encoder, single joint. Set the encoder value to zero 
+    * Reset encoder, single joint. Set the encoder value to zero
     * @param j is the axis number
     * @return true/false on success/failure
     */
@@ -918,7 +918,7 @@ public:
     }
 
     /**
-    * Set the value of the encoder for a given joint. 
+    * Set the value of the encoder for a given joint.
     * @param j encoder number
     * @param val new value
     * @return true/false
@@ -1015,7 +1015,7 @@ public:
     /**
     * Read the istantaneous acceleration of all axes.
     * @param accs pointer to the array that will contain the output
-    * @return true if all goes well, false if anything bad happens. 
+    * @return true if all goes well, false if anything bad happens.
     */
     virtual bool getEncoderAccelerations(double *accs) {
         bool ret=false;
@@ -1029,9 +1029,9 @@ public:
 
     /* IAmplifierControl */
 
-    /** 
+    /**
     * Enable the amplifier on a specific joint. Be careful, check that the output
-    * of the controller is appropriate (usually zero), to avoid 
+    * of the controller is appropriate (usually zero), to avoid
     * generating abrupt movements.
     * @return true/false on success/failure
     */
@@ -1041,7 +1041,7 @@ public:
         return false;
     }
 
-    /** 
+    /**
     * Disable the amplifier on a specific joint. All computations within the board
     * will be carried out normally, but the output will be disabled.
     * @return true/false on success/failure
@@ -1081,7 +1081,7 @@ public:
     }
 
     /**
-    * Set the maximum electric current going to a given motor. The behavior 
+    * Set the maximum electric current going to a given motor. The behavior
     * of the board/amplifier when this limit is reached depends on the
     * implementation.
     * @param j motor number
@@ -1096,7 +1096,7 @@ public:
 
     /**
     * Get the status of the amplifiers, coded in a 32 bits integer for
-    * each amplifier (at the moment contains only the fault, it will be 
+    * each amplifier (at the moment contains only the fault, it will be
     * expanded in the future).
     * @param st pointer to storage
     * @return true in good luck, false otherwise.
@@ -1111,7 +1111,7 @@ public:
     }
 
     virtual bool getAmpStatus(int k, int *st)
-    {   
+    {
         // AMP_STATUS TODO
         if (amp)
             return amp->getAmpStatus(k, st);
@@ -1127,7 +1127,7 @@ public:
     * @param min the value of the lower limit
     * @param max the value of the upper limit
     * @return true or false on success or failure
-    */ 
+    */
     virtual bool setLimits(int axis, double min, double max) {
         if (lim)
             return lim->setLimits(axis+base, min, max);
@@ -1414,7 +1414,7 @@ public:
         return false;
     }
 
-    virtual bool setTorqueOffset(int j, double v)   
+    virtual bool setTorqueOffset(int j, double v)
     {
         if (torque)
             return torque->setTorqueOffset(j+base, v);
@@ -1435,20 +1435,20 @@ public:
         return false;
     }
 
-	virtual bool setImpedancePositionMode(int j)
+    virtual bool setImpedancePositionMode(int j)
     {
         if (iControlMode)
             return iControlMode->setImpedancePositionMode(j+base);
         return false;
     }
 
-	virtual bool setImpedanceVelocityMode(int j)
+    virtual bool setImpedanceVelocityMode(int j)
     {
         if (iControlMode)
             return iControlMode->setImpedanceVelocityMode(j+base);
         return false;
     }
-	virtual bool setOpenLoopMode(int j)
+    virtual bool setOpenLoopMode(int j)
     {
         if (iControlMode)
             return iControlMode->setOpenLoopMode(j+base);
@@ -1476,18 +1476,18 @@ public:
         return false;
     }
 
-	virtual bool setOutput(int j, double v)
+    virtual bool setOutput(int j, double v)
     {
         if (iOpenLoop)
            return iOpenLoop->setOutput(j+base, v);
         return false;
     }
 
-	virtual bool setOutputs(const double *v) {
+    virtual bool setOutputs(const double *v) {
         bool ret=false;
         if (iOpenLoop) {
             ret=true;
-			for(int l=0;l<controlledJoints;l++)
+            for(int l=0;l<controlledJoints;l++)
                 ret=ret&&iOpenLoop->setOutput(l+base,v[l]);
         }
 

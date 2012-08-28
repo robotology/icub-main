@@ -14,7 +14,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Property.h>
- 
+
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -24,7 +24,7 @@
 //
 // only a container of the robot code on the main application
 //
- 
+
 class RobotInterface: public IRobotInterface
 {
 protected:
@@ -44,13 +44,13 @@ protected:
     yarp::dev::IControlCalibration2 *head_cal;
 
     yarp::dev::PolyDriver gyro;
-	yarp::dev::IGenericSensor *gyro_i;
+    yarp::dev::IGenericSensor *gyro_i;
 
     yarp::dev::PolyDriver rarm;
     yarp::dev::IPositionControl *rarm_ipc;
     yarp::dev::IAmplifierControl *rarm_amp;
     yarp::dev::IControlCalibration2 *rarm_cal;
-	
+
     yarp::dev::PolyDriver larm;
     yarp::dev::IPositionControl *larm_ipc;
     yarp::dev::IAmplifierControl *larm_amp;
@@ -79,18 +79,18 @@ public:
     RobotInterface();
 
     /**
-    * Initializes all robot devices. Reads list of devices to be initialized 
+    * Initializes all robot devices. Reads list of devices to be initialized
     * in the file specfied in 'file'.
     * @param full path to config file
     * @return true/false on success failure
     */
     bool initialize(const std::string &file);
- 
+
     bool detachWrappers();
     bool closeNetworks();
 
     /**
-    * Park the robot. This function can be blocking or not depending on 
+    * Park the robot. This function can be blocking or not depending on
     * the value of the parameter wait.
     * @param wait if true the function blocks and returns only when parking is finished
     */

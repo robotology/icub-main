@@ -57,25 +57,25 @@ using namespace std;
  **/
 class AnalogServerHandler: public yarp::os::PortReader
 {
-	yarp::dev::IAnalogSensor* is;	// analog sensor to calibrate, when required
-	yarp::os::Port rpcPort;			// rpc port related to the analog sensor
+    yarp::dev::IAnalogSensor* is;   // analog sensor to calibrate, when required
+    yarp::os::Port rpcPort;         // rpc port related to the analog sensor
 
 public:
-	AnalogServerHandler(const char* n){
-		rpcPort.open(n);
-		rpcPort.setReader(*this);
-	}
+    AnalogServerHandler(const char* n){
+        rpcPort.open(n);
+        rpcPort.setReader(*this);
+    }
 
-	~AnalogServerHandler(){
-		rpcPort.close();
-		is = 0;
-	}
+    ~AnalogServerHandler(){
+        rpcPort.close();
+        is = 0;
+    }
 
-	void setInterface(yarp::dev::IAnalogSensor *is){
-		this->is = is;
-	}
+    void setInterface(yarp::dev::IAnalogSensor *is){
+        this->is = is;
+    }
 
-	bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
+    bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
     {
         if (is==0)
             return false;
@@ -151,22 +151,22 @@ public:
   */
 struct AnalogPortEntry
 {
-	yarp::os::BufferedPort<yarp::sig::Vector> port;
-	std::string port_name;		// the complete name of the port
-    int offset;					// an offset, the port is mapped starting from this taxel
-    int length;					// length of the output vector of the port (-1 for max length)
-	AnalogPortEntry(){}
-	AnalogPortEntry(const AnalogPortEntry &alt){
-		this->length = alt.length;
-		this->offset = alt.offset;
-		this->port_name = alt.port_name;
-	}	
-	AnalogPortEntry &operator =(const AnalogPortEntry &alt){ 
-		this->length = alt.length;
-		this->offset = alt.offset;
-		this->port_name = alt.port_name;
-		return *this;
-	}
+    yarp::os::BufferedPort<yarp::sig::Vector> port;
+    std::string port_name;      // the complete name of the port
+    int offset;                 // an offset, the port is mapped starting from this taxel
+    int length;                 // length of the output vector of the port (-1 for max length)
+    AnalogPortEntry(){}
+    AnalogPortEntry(const AnalogPortEntry &alt){
+        this->length = alt.length;
+        this->offset = alt.offset;
+        this->port_name = alt.port_name;
+    }
+    AnalogPortEntry &operator =(const AnalogPortEntry &alt){
+        this->length = alt.length;
+        this->offset = alt.offset;
+        this->port_name = alt.port_name;
+        return *this;
+    }
 };
 
 /**
@@ -175,34 +175,34 @@ struct AnalogPortEntry
   */
 class AnalogServer: public yarp::os::RateThread
 {
-    yarp::dev::IAnalogSensor *is;				// the analog sensor to read from
-    std::vector<AnalogPortEntry> analogPorts;	// the list of output ports
-	std::vector<AnalogServerHandler*> handlers;	// the list of rpc port handlers
-	yarp::os::Stamp lastStateStamp;				// the last reading time stamp
+    yarp::dev::IAnalogSensor *is;               // the analog sensor to read from
+    std::vector<AnalogPortEntry> analogPorts;   // the list of output ports
+    std::vector<AnalogServerHandler*> handlers; // the list of rpc port handlers
+    yarp::os::Stamp lastStateStamp;             // the last reading time stamp
 
-	void setHandlers(){
-		for(unsigned int i=0;i<analogPorts.size(); i++){
-			std::string rpcPortName = analogPorts[i].port_name;
-			rpcPortName += "/rpc:i";
-			AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
-			handlers.push_back(ash);
-		}
-	}
+    void setHandlers(){
+        for(unsigned int i=0;i<analogPorts.size(); i++){
+            std::string rpcPortName = analogPorts[i].port_name;
+            rpcPortName += "/rpc:i";
+            AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
+            handlers.push_back(ash);
+        }
+    }
 
 public:
-	// Constructor used when there is only one output port
-	AnalogServer(const char* name, int rate=20): RateThread(rate)
+    // Constructor used when there is only one output port
+    AnalogServer(const char* name, int rate=20): RateThread(rate)
     {
         is=0;
         analogPorts.resize(1);
-		analogPorts[0].offset = 0;
-		analogPorts[0].length = -1;	// max length
-		analogPorts[0].port_name = std::string(name);
-		setHandlers();
+        analogPorts[0].offset = 0;
+        analogPorts[0].length = -1; // max length
+        analogPorts[0].port_name = std::string(name);
+        setHandlers();
     }
 
-	// Contructor used when one or more output ports are specified
-	AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int rate=20): RateThread(rate)
+    // Contructor used when one or more output ports are specified
+    AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int rate=20): RateThread(rate)
     {
         is=0;
         this->analogPorts=_analogPorts;
@@ -215,44 +215,44 @@ public:
         is=0;
     }
 
-	/**
-	  * Specify which analog sensor this thread has to read from.
-	  */
+    /**
+     * Specify which analog sensor this thread has to read from.
+     */
     void attach(yarp::dev::IAnalogSensor *s)
     {
         is=s;
-		for(unsigned int i=0;i<analogPorts.size(); i++){
-			handlers[i]->setInterface(is);
-		}
-    }    
+        for(unsigned int i=0;i<analogPorts.size(); i++){
+            handlers[i]->setInterface(is);
+        }
+    }
 
 
-	bool threadInit()
-    {        
-		for(unsigned int i=0; i<analogPorts.size(); i++){
-			// open data port
-			if (!analogPorts[i].port.open(analogPorts[i].port_name.c_str()))
-				return false;
-		}
-		return true;
+    bool threadInit()
+    {
+        for(unsigned int i=0; i<analogPorts.size(); i++){
+            // open data port
+            if (!analogPorts[i].port.open(analogPorts[i].port_name.c_str()))
+                return false;
+        }
+        return true;
     }
 
     void threadRelease()
     {
-		for(unsigned int i=0; i<analogPorts.size(); i++){
-			analogPorts[i].port.close();
-		}
+        for(unsigned int i=0; i<analogPorts.size(); i++){
+            analogPorts[i].port.close();
+        }
     }
 
     void run()
     {
-		int first, last, ret;
+        int first, last, ret;
         if (is!=0)
         {
-			// read from the analog sensor
+            // read from the analog sensor
             yarp::sig::Vector v;
             ret=is->read(v);
-            
+
             if (ret==yarp::dev::IAnalogSensor::AS_OK)
             {
                 if (v.size()>0)
@@ -262,7 +262,7 @@ public:
                     for(unsigned int i=0; i<analogPorts.size(); i++){
                         yarp::sig::Vector &pv = analogPorts[i].port.prepare();
                         first = analogPorts[i].offset;
-                        if(analogPorts[i].length==-1)	// read the max length available
+                        if(analogPorts[i].length==-1)   // read the max length available
                             last = v.size()-1;
                         else
                             last = analogPorts[i].offset + analogPorts[i].length - 1;
@@ -276,7 +276,7 @@ public:
                         analogPorts[i].port.setEnvelope(lastStateStamp);
                         analogPorts[i].port.write();
                     }
-				}
+                }
             }
             else
             {
@@ -387,7 +387,7 @@ public:
 // only a container of the robot code on the main application
 //
 
-/*
+/**
 *   Manage one network on the robot
 */
 class RobotNetworkEntry
@@ -395,7 +395,7 @@ class RobotNetworkEntry
 public:
     RobotNetworkEntry()
     { iCalib=0; }
-    
+
     ~RobotNetworkEntry()
     {
         RobotNetworkEntry::close();
@@ -413,7 +413,7 @@ public:
     std::list<yarp::dev::IAnalogSensor *> analogSensors;
     std::list<AnalogServer  *> analogServers;
 
-    //yarp::dev::iCubDeviceInterface		*device;
+    //yarp::dev::iCubDeviceInterface        *device;
 
     bool isValid()
     {
@@ -498,8 +498,8 @@ public:
     RobotNetworkEntry *find(const std::string &id);
 };
 
-/*
-*   Contains stuff to convert the robot as seen from the point of 
+/**
+*   Contains stuff to convert the robot as seen from the point of
 *   view of a collection of networks to a collection of limbs.
 */
 class RobotPartEntry
@@ -545,7 +545,7 @@ public:
 
         driver.close();
     }
-    
+
     CartesianController()
     {
         iwrapper=0;
@@ -572,7 +572,7 @@ public:
 
     bool open(yarp::os::Property &deviceP, yarp::os::Property &partP);
     void close();
-	void calibrate();
+    void calibrate();
 
     void setId(const std::string &i)
     { id=i; }
@@ -643,7 +643,7 @@ public:
     bool finiCart();
 
     /**
-    * Initializes all robot devices. Reads list of devices to be initialized 
+    * Initializes all robot devices. Reads list of devices to be initialized
     * in the file specfied in 'options'.
     * @param options contains name of config file
     * @return true/false on success failure
@@ -651,17 +651,17 @@ public:
     bool initialize10(const std::string &inifile);
 
     /**
-    * Initializes all robot devices. Reads list of devices to be initialized 
+    * Initializes all robot devices. Reads list of devices to be initialized
     * in the file specfied in 'inifile'. New version for icub 2.0.
     */
     bool initialize20(const std::string &inifile);
 
     /**
-    * Instantiate a device which controls a can network. 
+    * Instantiate a device which controls a can network.
     * @param parameters: parameters to be passed to the device
     * @param net: data structure to manage the network
     */
-    bool instantiateNetwork(std::string &filename, 
+    bool instantiateNetwork(std::string &filename,
         yarp::os::Property &robotOptions,
         RobotNetworkEntry &net);
 
@@ -669,7 +669,7 @@ public:
         yarp::os::Property &options);
 
     /**
-    * Park the robot. This function can be blocking or not depending on 
+    * Park the robot. This function can be blocking or not depending on
     * the value of the parameter wait.
     * @param wait if true the function blocks and returns only when parking is finished
     */
@@ -679,7 +679,7 @@ public:
     bool closeNetworks();
 
     /**
-    * Calibrate the robot. This function can be blocking or not depending on 
+    * Calibrate the robot. This function can be blocking or not depending on
     * the value of the parameter wait.
     * @param wait if true the function blocks and returns only when parking is finished
     */

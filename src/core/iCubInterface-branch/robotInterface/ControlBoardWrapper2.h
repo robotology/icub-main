@@ -13,7 +13,7 @@
 // A modified version of the YARP remote control board class
 // which remaps joints. Similar to ControlBoardWrapper, but it
 // also merge can networks into a single parts.
-// 
+//
 
 #include <yarp/os/PortablePair.h>
 #include <yarp/os/BufferedPort.h>
@@ -44,13 +44,13 @@ const int DEBUG_PRINTF_BUFFER_LENGTH=255;
 inline void DEBUG_CW2(const char *fmt, ...)
 {
 #ifdef CONTROLBOARDWRAPPER2_DEBUG
-    va_list ap; 
+    va_list ap;
     va_start(ap, fmt);
     char buffer[DEBUG_PRINTF_BUFFER_LENGTH];
 #ifdef WIN32
-    _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+    _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap);
 #else
-    vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+    vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap);
 #endif
     fprintf(stderr, "%s", buffer);
     va_end(ap);
@@ -62,7 +62,7 @@ inline void DEBUG_CW2(const char *fmt, ...)
 #include "ControlBoardWrapper.h"
 
 #ifdef MSVC
-	#pragma warning(disable:4355)
+    #pragma warning(disable:4355)
 #endif
 
 using namespace yarp::os;
@@ -72,7 +72,7 @@ using namespace yarp::os::impl;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-/* the control command message type 
+/* the control command message type
 * head is a Bottle which contains the specification of the message type
 * body is a Vector which move the robot accordingly
 */
@@ -95,11 +95,11 @@ protected:
     yarp::dev::IControlLimits       *lim;
     yarp::dev::ITorqueControl       *torque;
     yarp::dev::IControlMode         *iMode;
-	yarp::dev::IDebugInterface      *iDbg;
+    yarp::dev::IDebugInterface      *iDbg;
     yarp::dev::IAxisInfo            *info;
     yarp::dev::IControlCalibration2   *ical2;
-	yarp::dev::IOpenLoopControl     *iOpenLoop;
-	yarp::dev::IImpedanceControl    *iImpedance;
+    yarp::dev::IOpenLoopControl     *iOpenLoop;
+    yarp::dev::IImpedanceControl    *iImpedance;
     int controlledJoints;
     Vector vect;
 
@@ -117,13 +117,13 @@ public:
 
     virtual bool respond(const Bottle& cmd, Bottle& response);
 
-    void handleTorqueMsg(const yarp::os::Bottle& cmd, 
-        yarp::os::Bottle& response, bool *rec, bool *ok);
-    
-    void handleControlModeMsg(const yarp::os::Bottle& cmd, 
+    void handleTorqueMsg(const yarp::os::Bottle& cmd,
         yarp::os::Bottle& response, bool *rec, bool *ok);
 
-    void handleImpedanceMsg(const yarp::os::Bottle& cmd, 
+    void handleControlModeMsg(const yarp::os::Bottle& cmd,
+        yarp::os::Bottle& response, bool *rec, bool *ok);
+
+    void handleImpedanceMsg(const yarp::os::Bottle& cmd,
         yarp::os::Bottle& response, bool *rec, bool *ok);
 
     /**
@@ -179,9 +179,9 @@ public:
     IControlCalibration2 *calib2;
     IPreciselyTimed      *iTimed;
     ITorqueControl       *iTorque;
-	IImpedanceControl    *iImpedance;
-	IOpenLoopControl     *iOpenLoop;
-	IDebugInterface      *iDbg;
+    IImpedanceControl    *iImpedance;
+    IOpenLoopControl     *iOpenLoop;
+    IDebugInterface      *iDbg;
     IControlMode         *iMode;
     IAxisInfo          *info;
 
@@ -232,12 +232,12 @@ public:
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 /*
-* A modified version of the network wrapper. Similar 
-* to the the network wrapper in YARP, but it 
+* A modified version of the network wrapper. Similar
+* to the the network wrapper in YARP, but it
 * maps only a subpart of the underlying device.
 * Allows also deferred attach/detach of a subdevice.
 */
-class ControlBoardWrapper2 : public DeviceDriver, 
+class ControlBoardWrapper2 : public DeviceDriver,
                              public RateThread,
                              public IPidControl,
                              public IPositionControl,
@@ -245,12 +245,12 @@ class ControlBoardWrapper2 : public DeviceDriver,
                              public IEncodersTimed,
                              public IAmplifierControl,
                              public IControlLimits,
-							 public IDebugInterface,
+                             public IDebugInterface,
                              public IControlCalibration,
                              public IControlCalibration2,
                              public IOpenLoopControl,
                              public ITorqueControl,
-							 public IImpedanceControl,
+                             public IImpedanceControl,
                              public IControlMode,
                              public IMultipleWrapper,
                              public IAxisInfo,
@@ -307,7 +307,7 @@ public:
     */
     ControlBoardWrapper2() : RateThread(20), callback_impl(this), command_reader(this)
     {
-    	////YARP_TRACE(Logger::get(),"ControlBoardWrapper2::ControlBoardWrapper2()", Logger::get().log_files.f3);
+        ////YARP_TRACE(Logger::get(),"ControlBoardWrapper2::ControlBoardWrapper2()", Logger::get().log_files.f3);
         controlledJoints = 0;
         thread_period = 20; // ms.
 
@@ -315,7 +315,7 @@ public:
     }
 
     virtual ~ControlBoardWrapper2() {
-    	//YARP_TRACE(Logger::get(),"ControlBoardWrapper2::~ControlBoardWrapper2()", Logger::get().log_files.f3);
+        //YARP_TRACE(Logger::get(),"ControlBoardWrapper2::~ControlBoardWrapper2()", Logger::get().log_files.f3);
         closeMain();
     }
 
@@ -344,7 +344,7 @@ public:
 
     /**
     * Open the device driver.
-    * @param prop is a Searchable object which contains the parameters. 
+    * @param prop is a Searchable object which contains the parameters.
     * Allowed parameters are:
     * - verbose or v to print diagnostic information while running.
     * - subdevice to specify the name of the wrapped device.
@@ -359,11 +359,11 @@ public:
         RateThread::stop();
 
         int devices=device.subdevices.size();
-        for(int k=0;k<devices;k++)  
+        for(int k=0;k<devices;k++)
             device.getSubdevice(k)->detach();
 
         return true;
-    } 
+    }
 
     virtual bool attachAll(const yarp::dev::PolyDriverList &l);
 
@@ -380,7 +380,7 @@ public:
     */
     virtual bool setPid(int j, const Pid &p)
     {
-    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPid", Logger::get().log_files.f3);
+        // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPid", Logger::get().log_files.f3);
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -401,7 +401,7 @@ public:
     */
     virtual bool setPids(const Pid *ps)
     {
-    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids", Logger::get().log_files.f3);
+        // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids", Logger::get().log_files.f3);
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)
@@ -420,14 +420,14 @@ public:
             else
                 ret=false;
         }
-     	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids - niente!", Logger::get().log_files.f3);
+        // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setPids - niente!", Logger::get().log_files.f3);
         return ret;
     }
 
     /** Set the controller reference point for a given axis.
-    * Warning this method can result in very large torques 
+    * Warning this method can result in very large torques
     * and should be used carefully. If you do not understand
-    * this warning you should avoid using this method. 
+    * this warning you should avoid using this method.
     * Have a look at other interfaces (e.g. position control).
     * @param j joint number
     * @param ref new reference point
@@ -435,7 +435,7 @@ public:
     */
     virtual bool setReference(int j, double ref)
     {
-    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setReference", Logger::get().log_files.f3);
+        // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::setReference", Logger::get().log_files.f3);
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -446,14 +446,14 @@ public:
         if (p->pid)
         {
             return p->pid->setReference(off+base, ref);
-        }        
+        }
         return false;
     }
 
     /** Set the controller reference points, multiple axes.
-    * Warning this method can result in very large torques 
+    * Warning this method can result in very large torques
     * and should be used carefully. If you do not understand
-    * this warning you should avoid using this method. 
+    * this warning you should avoid using this method.
     * Have a look at other interfaces (e.g. position control).
     * @param refs pointer to the vector that contains the new reference points.
     * @return true/false upon success/failure
@@ -496,7 +496,7 @@ public:
         if (p->pid)
         {
             return p->pid->setErrorLimit(off+base, limit);
-        }        
+        }
         return false;
     }
 
@@ -542,7 +542,7 @@ public:
         if (p->pid)
         {
             return p->pid->getError(off+base, err);
-        }       
+        }
         *err = 0.0;
         return false;
     }
@@ -590,7 +590,7 @@ public:
         if (p->pid)
         {
             return p->pid->getOutput(off+base, out);
-        }        
+        }
         *out=0.0;
         return false;
     }
@@ -632,7 +632,7 @@ public:
         if (p->pid)
         {
             return p->pid->setOffset(off+base, v);
-        }		
+        }
         return false;
     }
 
@@ -643,7 +643,7 @@ public:
     */
     virtual bool getPid(int j, Pid *p)
     {
-    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPid", Logger::get().log_files.f3);
+        // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPid", Logger::get().log_files.f3);
 #warning "check for max number of joints!?!?!"
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -655,7 +655,7 @@ public:
         if (s->pid)
         {
             return s->pid->getPid(off+base, p);
-        }        
+        }
         return false;
     }
 
@@ -665,7 +665,7 @@ public:
     */
     virtual bool getPids(Pid *pids)
     {
-    	// AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPids", Logger::get().log_files.f3);
+        // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper2::getPids", Logger::get().log_files.f3);
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)
@@ -690,7 +690,7 @@ public:
     /** Get the current reference position of the controller for a specific joint.
     * @param j joint number
     * @param ref pointer to storage for return value
-    * @return reference value 
+    * @return reference value
     */
     virtual bool getReference(int j, double *ref) {
         int off=device.lut[j].offset;
@@ -703,7 +703,7 @@ public:
         if (p->pid)
         {
             return p->pid->getReference(off+base, ref);
-        }        
+        }
         return false;
     }
 
@@ -748,7 +748,7 @@ public:
         if (p->pid)
         {
             return p->pid->getErrorLimit(off+base, limit);
-        }        
+        }
         return false;
     }
 
@@ -778,7 +778,7 @@ public:
         return ret;
     }
 
-    /** Reset the controller of a given joint, usually sets the 
+    /** Reset the controller of a given joint, usually sets the
     * current position of the joint as the reference value for the PID, and resets
     * the integrator.
     * @param j joint number
@@ -795,12 +795,12 @@ public:
         if (p->pid)
         {
             return p->pid->resetPid(off+base);
-        }        
+        }
         return false;
     }
 
-    /** 
-    * Disable the pid computation for a joint 
+    /**
+    * Disable the pid computation for a joint
     * @param j is the axis number
     * @return true if successful, false on failure
     **/
@@ -815,11 +815,11 @@ public:
         if (p->pid)
         {
             return p->pid->disablePid(off+base);
-        }        
+        }
         return false;
     }
 
-    /** 
+    /**
     * Enable the pid computation for a joint
     * @param j is the axis number
     * @return true/false on success/failure
@@ -835,7 +835,7 @@ public:
         if (p->pid)
         {
             return p->pid->enablePid(off+base);
-        } 
+        }
         return false;
     }
 
@@ -852,7 +852,7 @@ public:
         return true;
     }
 
-    /** 
+    /**
     * Set position mode. This command
     * is required by control boards implementing different
     * control methods (e.g. velocity/torque), in some cases
@@ -873,7 +873,7 @@ public:
 
             if (p->pos)
             {
-				//calling iControlMode interface
+                //calling iControlMode interface
                 ret=ret&&p->iMode->setPositionMode(off+base);
             }
             else
@@ -896,7 +896,7 @@ public:
 
             if (p->pos)
             {
-				//calling iControlMode interface
+                //calling iControlMode interface
                 ret=ret&&p->iMode->setOpenLoopMode(off+base);
             }
             else
@@ -906,7 +906,7 @@ public:
         return false;
     }
 
-    /** 
+    /**
     * Set new reference point for a single axis.
     * @param j joint number
     * @param ref specifies the new ref point
@@ -923,9 +923,9 @@ public:
         if (p->pos)
         {
             return p->pos->positionMove(off+base, ref);
-        }        
+        }
 
-        return false; 
+        return false;
     }
 
     /** Set new reference point for all axes.
@@ -954,7 +954,7 @@ public:
         return ret;
     }
 
-    /** Set relative position. The command is relative to the 
+    /** Set relative position. The command is relative to the
     * current position of the axis.
     * @param j joint axis number
     * @param delta relative command
@@ -971,7 +971,7 @@ public:
         if (p->pos)
         {
             return p->pos->relativeMove(off+base, delta);
-        }        
+        }
 
         return false;
     }
@@ -1002,7 +1002,7 @@ public:
         return ret;
     }
 
-    /** 
+    /**
     * Check if the current trajectory is terminated. Non blocking.
     * @param j the axis
     * @param flag true if the trajectory is terminated, false otherwise
@@ -1020,17 +1020,17 @@ public:
         if (p->pos)
         {
             return p->pos->checkMotionDone(off+base, flag);
-        }        
+        }
 
         return false;
     }
 
-    /** 
+    /**
     * Check if the current trajectory is terminated. Non blocking.
     * @param flag true if the trajectory is terminated, false otherwise
     * @return false on failure
     */
-    virtual bool checkMotionDone(bool *flag) { 
+    virtual bool checkMotionDone(bool *flag) {
         bool ret=true;
         *flag=true;
         for(int l=0;l<controlledJoints;l++)
@@ -1072,7 +1072,7 @@ public:
         if (p->pos)
         {
             return p->pos->setRefSpeed(off+base, sp);
-        }        
+        }
         return false;
     }
 
@@ -1121,7 +1121,7 @@ public:
         if (p->pos)
         {
             return p->pos->setRefAcceleration(off+base, acc);
-        }        
+        }
         return false;
     }
 
@@ -1153,7 +1153,7 @@ public:
         return ret;
     }
 
-    /** Get reference speed for a joint. Returns the speed used to 
+    /** Get reference speed for a joint. Returns the speed used to
     * generate the trajectory profile.
     * @param j joint number
     * @param ref pointer to storage for the return value
@@ -1171,7 +1171,7 @@ public:
         if (p->pos)
         {
             return p->pos->getRefSpeed(off+base, ref);
-        }        
+        }
         *ref=0;
         return false;
     }
@@ -1204,7 +1204,7 @@ public:
         return ret;
     }
 
-    /** Get reference acceleration for a joint. Returns the acceleration used to 
+    /** Get reference acceleration for a joint. Returns the acceleration used to
     * generate the trajectory profile.
     * @param j joint number
     * @param acc pointer to storage for the return value
@@ -1222,7 +1222,7 @@ public:
         if (p->pos)
         {
             return p->pos->getRefAcceleration(off+base, acc);
-        }        
+        }
         *acc=0;
         return false;
     }
@@ -1230,7 +1230,7 @@ public:
     /** Get reference acceleration of all joints. These are the values used during the
     * interpolation of the trajectory.
     * @param accs pointer to the array that will store the acceleration values.
-    * @return true/false on success or failure 
+    * @return true/false on success or failure
     */
     virtual bool getRefAccelerations(double *accs) {
         bool ret=true;
@@ -1271,12 +1271,12 @@ public:
         if (p->pos)
         {
             return p->pos->stop(off+base);
-        }        
+        }
         return false;
     }
 
-    /** 
-    * Stop motion, multiple joints 
+    /**
+    * Stop motion, multiple joints
     * @return true/false on success/failure
     */
     virtual bool stop() {
@@ -1304,7 +1304,7 @@ public:
 
     /* IVelocityControl */
 
-    /** 
+    /**
     * Set new reference speed for a single axis.
     * @param j joint number
     * @param v specifies the new ref speed
@@ -1322,8 +1322,8 @@ public:
         if (p->pos)
         {
             return p->vel->velocityMove(off+base, v);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     /**
@@ -1372,7 +1372,7 @@ public:
 
             if (p->pos)
             {
-				//calling iControlMode interface
+                //calling iControlMode interface
                 ret=ret&&p->iMode->setVelocityMode(off+base);
             }
             else
@@ -1384,7 +1384,7 @@ public:
     /* IEncoders */
 
     /**
-    * Reset encoder, single joint. Set the encoder value to zero 
+    * Reset encoder, single joint. Set the encoder value to zero
     * @param j is the axis number
     * @return true/false on success/failure
     */
@@ -1399,8 +1399,8 @@ public:
         if (p->enc)
         {
             return p->enc->resetEncoder(off+base);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     /**
@@ -1430,7 +1430,7 @@ public:
     }
 
     /**
-    * Set the value of the encoder for a given joint. 
+    * Set the value of the encoder for a given joint.
     * @param j encoder number
     * @param val new value
     * @return true/false
@@ -1446,7 +1446,7 @@ public:
         if (p->enc)
         {
             return p->enc->setEncoder(off+base,val);
-        }        
+        }
         return false;
     }
 
@@ -1494,9 +1494,9 @@ public:
         if (p->pos)
         {
             return p->enc->getEncoder(off+base, v);
-        }        
+        }
         *v=0.0;
-        return false; 
+        return false;
     }
 
     /**
@@ -1559,9 +1559,9 @@ public:
         if (p->pos)
         {
             return p->enc->getEncoderTimed(off+base, v, t);
-        }        
+        }
         *v=0.0;
-        return false; 
+        return false;
     }
 
     /**
@@ -1581,9 +1581,9 @@ public:
         if (p->pos)
         {
             return p->enc->getEncoderSpeed(off+base, sp);
-        }        
+        }
         *sp=0.0;
-        return false; 
+        return false;
     }
 
     /**
@@ -1629,15 +1629,15 @@ public:
         if (p->pos)
         {
             return p->enc->getEncoderAcceleration(off+base,acc);
-        }        
+        }
         *acc=0.0;
-        return false; 
+        return false;
     }
 
     /**
     * Read the istantaneous acceleration of all axes.
     * @param accs pointer to the array that will contain the output
-    * @return true if all goes well, false if anything bad happens. 
+    * @return true if all goes well, false if anything bad happens.
     */
     virtual bool getEncoderAccelerations(double *accs) {
         bool ret=true;
@@ -1663,9 +1663,9 @@ public:
 
     /* IAmplifierControl */
 
-    /** 
+    /**
     * Enable the amplifier on a specific joint. Be careful, check that the output
-    * of the controller is appropriate (usually zero), to avoid 
+    * of the controller is appropriate (usually zero), to avoid
     * generating abrupt movements.
     * @return true/false on success/failure
     */
@@ -1680,11 +1680,11 @@ public:
         if (p->pos)
         {
             return p->amp->enableAmp(off+base);
-        }        
-        return false; 
+        }
+        return false;
     }
 
-    /** 
+    /**
     * Disable the amplifier on a specific joint. All computations within the board
     * will be carried out normally, but the output will be disabled.
     * @return true/false on success/failure
@@ -1700,8 +1700,8 @@ public:
         if (p->pos)
         {
             return p->amp->disableAmp(off+base);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     /**
@@ -1748,13 +1748,13 @@ public:
         if (p->pos)
         {
             return p->amp->getCurrent(off+base,val);
-        }        
+        }
         *val=0.0;
-        return false; 
+        return false;
     }
 
     /**
-    * Set the maximum electric current going to a given motor. The behavior 
+    * Set the maximum electric current going to a given motor. The behavior
     * of the board/amplifier when this limit is reached depends on the
     * implementation.
     * @param j motor number
@@ -1772,13 +1772,13 @@ public:
         if (p->pos)
         {
             return p->amp->setMaxCurrent(off+base,v);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     /**
     * Get the status of the amplifiers, coded in a 32 bits integer for
-    * each amplifier (at the moment contains only the fault, it will be 
+    * each amplifier (at the moment contains only the fault, it will be
     * expanded in the future).
     * @param st pointer to storage
     * @return true in good luck, false otherwise.
@@ -1794,7 +1794,7 @@ public:
             SubDevice *p=device.getSubdevice(subIndex);
             if (p->amp)
                 {
-                    
+
                     st[l]=0;
                     //getAmpStatus for single joint does not exist!!
                     // AMP_STATUS TODO
@@ -1816,9 +1816,9 @@ public:
         if (p->amp)
             {
                 return p->amp->getAmpStatus(off+base,v);
-            }        
+            }
         *v=0;
-        return false; 
+        return false;
     }
 
     /* IControlLimits */
@@ -1830,7 +1830,7 @@ public:
     * @param min the value of the lower limit
     * @param max the value of the upper limit
     * @return true or false on success or failure
-    */ 
+    */
     virtual bool setLimits(int j, double min, double max) {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -1842,8 +1842,8 @@ public:
         if (p->lim)
         {
             return p->lim->setLimits(off+base,min, max);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     /**
@@ -1868,10 +1868,10 @@ public:
         if (p->lim)
             {
                 return p->lim->getLimits(off+base,min, max);
-            }        
+            }
         *min=0.0;
         *max=0.0;
-        return false; 
+        return false;
     }
 
 
@@ -1896,8 +1896,8 @@ public:
         if (s->calib)
         {
             return s->calib->calibrate(off+base, p);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     virtual bool calibrate2(int j, unsigned int ui, double v1, double v2, double v3) {
@@ -1908,8 +1908,8 @@ public:
         if (p->calib2)
         {
             return p->calib2->calibrate2(off+base, ui,v1,v2,v3);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     /**
@@ -1928,20 +1928,20 @@ public:
         if (p->calib2)
         {
             return p->calib2->done(off+base);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     virtual bool abortPark()
     {
         fprintf(stderr, "ControlBoardWrapper2::Calling abortPark -- not implemented\n");
-        return false; 
+        return false;
     }
 
     virtual bool abortCalibration()
     {
         fprintf(stderr, "ControlBoardWrapper2::Calling abortCalibration -- not implemented\n");
-        return false; 
+        return false;
     }
 
     /* IAxisInfo */
@@ -1956,8 +1956,8 @@ public:
         if (p->info)
         {
             return p->info->getAxisName(off+base, name);
-        }        
-        return false; 
+        }
+        return false;
     }
 
     virtual bool setTorqueMode()
@@ -1975,7 +1975,7 @@ public:
 
             if (p->pos)
             {
-				//calling iControlMode interface
+                //calling iControlMode interface
                 ret=ret&&p->iMode->setTorqueMode(off+base);
             }
             else
@@ -2020,7 +2020,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getRefTorque(off+base, t);
-        }        
+        }
         return false;
     }
 
@@ -2059,7 +2059,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->setRefTorque(off+base, t);
-        }        
+        }
         return false;
     }
 
@@ -2075,12 +2075,12 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->setTorquePid(off+base, pid);
-        }        
-        
+        }
+
         return false;
     }
 
-	virtual bool setImpedance(int j, double stiff, double damp)
+    virtual bool setImpedance(int j, double stiff, double damp)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2092,12 +2092,12 @@ public:
         if (p->iImpedance)
         {
             return p->iImpedance->setImpedance(off+base, stiff, damp);
-        }        
-        
+        }
+
         return false;
     }
 
-	virtual bool setImpedanceOffset(int j, double offset)
+    virtual bool setImpedanceOffset(int j, double offset)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2109,8 +2109,8 @@ public:
         if (p->iImpedance)
         {
             return p->iImpedance->setImpedanceOffset(off+base, offset);
-        }        
-        
+        }
+
         return false;
     }
 
@@ -2126,7 +2126,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getTorque(off+base, t);
-        }        
+        }
 
         return false;
     }
@@ -2166,7 +2166,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getTorqueRange(off+base, min, max);
-        }        
+        }
 
         return false;
     }
@@ -2229,13 +2229,13 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->setTorqueErrorLimit(off+base, limit);
-        }        
+        }
 
         return false;
     }
 
     virtual bool setTorqueErrorLimits(const double *limits)
-    { 
+    {
         bool ret=true;
 
         for(int l=0;l<controlledJoints;l++)
@@ -2269,7 +2269,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getTorqueError(off+base, err);
-        }        
+        }
 
         return false;
     }
@@ -2309,7 +2309,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getTorquePidOutput(off+base, out);
-        }        
+        }
 
         return false;
     }
@@ -2349,12 +2349,12 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getTorquePid(off+base, pid);
-        }        
+        }
 
         return false;
     }
 
-	virtual bool getImpedance(int j, double* stiff, double* damp)
+    virtual bool getImpedance(int j, double* stiff, double* damp)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2366,12 +2366,12 @@ public:
         if (p->iImpedance)
         {
             return p->iImpedance->getImpedance(off+base, stiff, damp);
-        }        
+        }
 
         return false;
     }
 
-	virtual bool getImpedanceOffset(int j, double* offset)
+    virtual bool getImpedanceOffset(int j, double* offset)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2383,12 +2383,12 @@ public:
         if (p->iImpedance)
         {
             return p->iImpedance->getImpedanceOffset(off+base, offset);
-        }        
+        }
 
         return false;
     }
 
-	virtual bool getCurrentImpedanceLimit(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
+    virtual bool getCurrentImpedanceLimit(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2400,7 +2400,7 @@ public:
         if (p->iImpedance)
         {
             return p->iImpedance->getCurrentImpedanceLimit(off+base, min_stiff, max_stiff, min_damp, max_damp);
-        }        
+        }
 
         return false;
     }
@@ -2440,7 +2440,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->getTorqueErrorLimit(off+base, limit);
-        }        
+        }
 
         return false;
     }
@@ -2480,7 +2480,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->resetTorquePid(off+base);
-        }        
+        }
 
         return false;
     }
@@ -2497,7 +2497,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->disableTorquePid(off+base);
-        }        
+        }
 
         return false;
     }
@@ -2514,12 +2514,12 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->enableTorquePid(off+base);
-        }        
+        }
 
         return false;
     }
 
-    virtual bool setTorqueOffset(int j, double v)   
+    virtual bool setTorqueOffset(int j, double v)
     {
          int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2531,7 +2531,7 @@ public:
         if (p->iTorque)
         {
             return p->iTorque->setTorqueOffset(off+base,v);
-        }        
+        }
 
         return false;
     }
@@ -2548,7 +2548,7 @@ public:
         if (p->iMode)
         {
             return p->iMode->setPositionMode(off+base);
-        }        
+        }
 
         return false;
     }
@@ -2565,12 +2565,12 @@ public:
         if (p->iMode)
         {
             return p->iMode->setTorqueMode(off+base);
-        }        
+        }
 
         return false;
     }
 
-	virtual bool setImpedancePositionMode(int j)
+    virtual bool setImpedancePositionMode(int j)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2582,12 +2582,12 @@ public:
         if (p->iMode)
         {
             return p->iMode->setImpedancePositionMode(off+base);
-        }        
+        }
 
         return false;
     }
 
-	virtual bool setImpedanceVelocityMode(int j)
+    virtual bool setImpedanceVelocityMode(int j)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2599,7 +2599,7 @@ public:
         if (p->iMode)
         {
             return p->iMode->setImpedanceVelocityMode(off+base);
-        }        
+        }
 
         return false;
     }
@@ -2616,12 +2616,12 @@ public:
         if (p->iMode)
         {
             return p->iMode->setVelocityMode(off+base);
-        }        
+        }
 
         return false;
     }
 
-	virtual bool setOpenLoopMode(int j)
+    virtual bool setOpenLoopMode(int j)
     {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -2633,7 +2633,7 @@ public:
         if (p->iMode)
         {
             return p->iMode->setOpenLoopMode(off+base);
-        }        
+        }
 
         return false;
     }
@@ -2651,7 +2651,7 @@ public:
         {
             DEBUG_CW2("Calling GET_CONTROL_MODE\n");
             return p->iMode->getControlMode(off+base, mode);
-        }        
+        }
         return false;
     }
 
@@ -2659,7 +2659,7 @@ public:
     {
        bool ret=true;
 
-	    DEBUG_CW2("Calling GET_CONTROL_MODES\n");
+        DEBUG_CW2("Calling GET_CONTROL_MODES\n");
         for(int l=0;l<controlledJoints;l++)
         {
             int off=device.lut[l].offset;
@@ -2679,9 +2679,9 @@ public:
         return ret;
     }
 
-	virtual bool getParameter(int j, unsigned int type, double *t)
-	{
-		int off=device.lut[j].offset;
+    virtual bool getParameter(int j, unsigned int type, double *t)
+    {
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2691,12 +2691,12 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getParameter(off+base, type, t);
-        }		
+        }
         return false;
-	}
+    }
 
-	virtual bool setParameter(int j, unsigned int type, double t)
-	{
+    virtual bool setParameter(int j, unsigned int type, double t)
+    {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -2707,13 +2707,13 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->setParameter(off+base, type, t);
-        }		
+        }
         return false;
-	}
+    }
 
-	virtual bool getDebugParameter(int j, unsigned int index, double *t)
-	{
-		int off=device.lut[j].offset;
+    virtual bool getDebugParameter(int j, unsigned int index, double *t)
+    {
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2723,13 +2723,13 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getDebugParameter(off+base, index, t);
-        }		
+        }
         return false;
-	}
+    }
 
-	virtual bool getDebugReferencePosition(int j, double *t)
-	{
-		int off=device.lut[j].offset;
+    virtual bool getDebugReferencePosition(int j, double *t)
+    {
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2739,9 +2739,9 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getDebugReferencePosition(off+base, t);
-        }		
+        }
         return false;
-	}
+    }
 
     virtual bool getRotorPosition(int j, double *t)
     {
@@ -2820,8 +2820,8 @@ public:
     }
 
     virtual bool getJointPosition(int j, double *t)
-	{
-		int off=device.lut[j].offset;
+    {
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2831,15 +2831,15 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getJointPosition(off+base, t);
-        }		
+        }
         return false;
-	}
+    }
 
-	virtual bool getJointPositions(double *t)
-	{
+    virtual bool getJointPositions(double *t)
+    {
         return false;
         /*
-		int off=device.lut[j].offset;
+        int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
         SubDevice *p=device.getSubdevice(subIndex);
@@ -2849,12 +2849,12 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->getJointPosition(off+base, t);
-        }		
+        }
         return false;*/
-	}
+    }
 
-	virtual bool setDebugParameter(int j, unsigned int index, double t)
-	{
+    virtual bool setDebugParameter(int j, unsigned int index, double t)
+    {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -2865,12 +2865,12 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->setDebugParameter(off+base, index, t);
-        }		
+        }
         return false;
-	}
+    }
 
-	virtual bool setDebugReferencePosition(int j, double t)
-	{
+    virtual bool setDebugReferencePosition(int j, double t)
+    {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
@@ -2881,9 +2881,9 @@ public:
         if (p->iDbg)
         {
             return p->iDbg->setDebugReferencePosition(off+base, t);
-        }		
+        }
         return false;
-	}
+    }
 
     virtual bool setOutput(int j, double v)
     {
@@ -2897,7 +2897,7 @@ public:
         if (p->iOpenLoop)
         {
             return p->iOpenLoop->setOutput(off+base, v);
-        }		
+        }
         return false;
     }
 

@@ -4,50 +4,50 @@
 
 
 
-PROJECT(iCubInterface)
+project(iCubInterface)
 
 add_definitions( -D_ICUB_CALLBACK_ )
 
-FILE(GLOB folder_source ./robotInterface/*.cpp)
+file(GLOB folder_source ./robotInterface/*.cpp)
 set(folder_source ${folder_source} main.cpp)
 
-FILE(GLOB folder_header *.h)
-FILE(GLOB tmp ./canIdDiscoverer/*.h)
-FILE(GLOB rih ./robotInterface/*.h)
-SET(folder_header ${folder_header} ${tmp} ${rih} )
+file(GLOB folder_header *.h)
+file(GLOB tmp ./canIdDiscoverer/*.h)
+file(GLOB rih ./robotInterface/*.h)
+set(folder_header ${folder_header} ${tmp} ${rih} )
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 include(../../libraries/icubmod/embObjLib/embObjLib.conf)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
-					${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/
+                    ${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/
                     ${iCubDev_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 
 if(ICUB_USE_INTERFACEGUI)
-	add_definitions(-D_USE_INTERFACEGUI)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../libraries/iCubInterfaceGuiLib)
+    add_definitions(-D_USE_INTERFACEGUI)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../libraries/iCubInterfaceGuiLib)
 endif(ICUB_USE_INTERFACEGUI)
 
-ADD_EXECUTABLE(iCubInterface ${folder_source} ${folder_header})
+add_executable(iCubInterface ${folder_source} ${folder_header})
 
 if(ICUB_USE_INTERFACEGUI)
-    TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
+    target_link_libraries(iCubInterface iCubDev
                                     ${YARP_LIBRARIES}
-                                    canLoaderLib 
+                                    canLoaderLib
                                     icubmod
                                     iCubInterfaceGuiLib)
 else()
-    TARGET_LINK_LIBRARIES(iCubInterface iCubDev 
+    target_link_libraries(iCubInterface iCubDev
                                     ${YARP_LIBRARIES}
-                                    canLoaderLib 
+                                    canLoaderLib
                                     icubmod)
 endif()
 
-INSTALL(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
+install(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
 
 

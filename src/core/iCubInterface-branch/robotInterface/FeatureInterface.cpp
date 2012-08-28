@@ -13,17 +13,17 @@
 
 bool findAndFill(FEAT_ID *id, char *sk_array)
 {
-	// new with table, data stored in eoSkin;
-	IiCubFeature * skin =  (IiCubFeature*) (ethResCreator::instance()->getHandleFromEP(id->ep));
-	if(NULL == skin)
-	{
-//		printf(	"/************************************\\\n"
-//				"			Parte non trovata!!!\n"
-//				"\\***********************************/\n");
-		return false;
-	}
-	else
-		skin->fillData(sk_array);
+    // new with table, data stored in eoSkin;
+    IiCubFeature * skin =  (IiCubFeature*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+    if(NULL == skin)
+    {
+//        printf( "/************************************\\\n"
+//                "            Parte non trovata!!!\n"
+//                "\\***********************************/\n");
+        return false;
+    }
+    else
+        skin->fillData(sk_array);
 
-	return true;
+    return true;
 }

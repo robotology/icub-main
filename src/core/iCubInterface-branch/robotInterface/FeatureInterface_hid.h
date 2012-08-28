@@ -17,11 +17,11 @@ using namespace yarp::sig;
 
 class IiCubFeature
 {
-	public:
-		virtual	~IiCubFeature() {};
-		virtual bool fillData(char *data ) =0;
+    public:
+        virtual ~IiCubFeature() {};
+        virtual bool fillData(char *data ) =0;
 
-	    virtual void setId(FEAT_ID &id) { };
+        virtual void setId(FEAT_ID &id) { };
 };
 
 #endif /* FEATUREINTERFACE_HID_H_ */
