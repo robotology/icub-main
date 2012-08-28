@@ -828,7 +828,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         }
     }
 
-    for (std::list<SkinPartEntry*>::iterator skinIt=skinparts.begin(); skinIt!=skinparts.end(); ++skinIt)
+    for (SkinPartsIt skinIt=skinparts.begin(); skinIt!=skinparts.end(); ++skinIt)
     {
         IClientLogger* pCL=NULL;
         (*skinIt)->driver.view(pCL);
