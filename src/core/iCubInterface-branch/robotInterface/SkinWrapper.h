@@ -320,7 +320,7 @@ public:
     }
 };
 
-class SkinParts: public std::list<SkinPartEntry *>
+class SkinParts : public std::vector<SkinPartEntry*>
 {
 public:
     SkinPartEntry *find(const std::string &pName);
