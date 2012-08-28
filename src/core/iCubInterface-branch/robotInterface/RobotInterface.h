@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef ROBOT_INTERFACE_H
+#define ROBOT_INTERFACE_H
+
 #include "IRobotInterface.h"
 
 #include <yarp/os/Network.h>
@@ -107,3 +110,5 @@ protected:
 
     bool forceNetworkId(yarp::os::Property& op, int n);
 };
+
+#endif // ROBOT_INTERFACE_H
