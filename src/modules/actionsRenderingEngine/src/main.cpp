@@ -862,12 +862,12 @@ public:
 
                         if(!motorThr->imitateAction(command))
                         {
-                            reply.addVocab(ACK);
-                            reply.addString(("action "+action_name+" unkown").c_str());
+                            reply.addVocab(NACK);
+                            reply.addString(("action "+action_name+" unknown").c_str());
                         }
                         else
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab(ACK);
                             reply.addString(("action "+action_name+" done").c_str());
                         }
                         motorThr->setGazeIdle();

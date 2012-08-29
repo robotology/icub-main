@@ -1,0 +1,88 @@
+
+<application>
+<name>Actions Rendering Engine</name>
+
+        <dependencies>
+            <port>/icub/camcalib/left/out</port>
+            <port>/icub/camcalib/right/out</port>
+            <port>/icub/cartesianController/left_arm/state:o</port>
+            <port>/icub/cartesianController/right_arm/state:o</port>
+            <port>/iKinGazeCtrl/head/angles:o</port>
+        </dependencies>
+
+
+
+        <!--Core module-->  
+        <module>
+            <name>actionsRenderingEngine</name>
+	    <parameters>--actions OPC </parameters>           
+            <node>mynode</node>
+            <tag>actionsRenderingEngine</tag>
+        </module>
+
+       <!--Optional module-->  
+        <module>
+            <name>objectsPropertiesCollector</name>
+	    <parameters>--db actionsLearned</parameters>            
+            <node>mynode</node>
+            <tag>objPropCollector</tag>
+        </module>
+       
+        <!--Viewers-->  
+        <module>
+            <name>yarpview</name>
+            <parameters>--name /actionsRenderingEngine/left/view --x 0 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/left/raw:o</parameters>
+            <tag>viewLeft</tag>
+        </module>
+        <module>
+            <name>yarpview</name>
+            <parameters>--name /actionsRenderingEngine/right/view --x 308 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/right/raw:o</parameters>
+            <tag>viewRight</tag>
+        </module>
+        
+
+
+        <!--Core connections-->  
+        <connection>
+            <from>/actionsRenderingEngine/OPC:io</from>
+            <to>/objectsPropertiesCollector/rpc</to>
+            <protocol>tcp</protocol>
+        </connection>
+
+	<connection>
+            <from>/icub/camcalib/left/out</from>
+            <to>/actionsRenderingEngine/left/img:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/icub/camcalib/right/out</from>
+            <to>/actionsRenderingEngine/right/img:i</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/left/img:o</from>
+            <to>/actionsRenderingEngine/left/view</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/right/img:o</from>
+            <to>/actionsRenderingEngine/right/view</to>
+            <protocol>udp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/left/raw:o</from>
+            <to>/actionsRenderingEngine/left/raw:i</to>
+            <protocol>tcp</protocol>
+        </connection>
+        <connection>
+            <from>/actionsRenderingEngine/right/raw:o</from>
+            <to>/actionsRenderingEngine/right/raw:i</to>
+            <protocol>tcp</protocol>
+        </connection>
+
+		
+		
+       
+
+
+</application>

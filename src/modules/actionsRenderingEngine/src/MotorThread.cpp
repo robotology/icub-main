@@ -840,7 +840,8 @@ bool MotorThread::threadInit()
     string partUsed=bMotor.check("part_used",Value("both_arms")).asString().c_str();
     setRate(bMotor.check("thread_period",Value(100)).asInt());
 
-    actions_path=rf.findPath("actions");
+    if (strcmp(rf.find("actions").asString().c_str(), "OPC"))
+        actions_path=rf.findPath("actions");
 
     //fprintf(stdout,"path is %s \n",actions_path.c_str() );
     
@@ -2516,15 +2517,25 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
 
     if(!skip)
     {
-        ofstream action_fout((actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
-
-        if(!action_fout.is_open())
+        if (actions_path != "")
         {
-            fprintf(stdout,"Error! Unable to open file '%s' for action %s\n",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
-            success=false;
+            ofstream action_fout((actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
+
+            if(!action_fout.is_open())
+            {
+                fprintf(stdout,"Error! Unable to open file '%s' for action %s\n",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
+                success=false;
+            }
+            else
+                action_fout << dragger.actions.toString();
         }
         else
-            action_fout << dragger.actions.toString();
+        {
+
+            success = opcPort.setAction(dragger.actionName, &(dragger.actions));
+            
+        }
+    
     }
 
     // set back again to (impedance) velocity mode
@@ -2551,14 +2562,23 @@ bool MotorThread::imitateAction(Bottle &options)
 
     string action_name=options.find("action_name").asString().c_str();
 
-    ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
-    if(!action_fin.is_open())
-        return false;
+    Bottle actions;
+    if (actions_path != "")
+    {
+        ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+        if(!action_fin.is_open())
+            return false;
 
-    stringstream strstr;
-    strstr << action_fin.rdbuf();
+        stringstream strstr;
+        strstr << action_fin.rdbuf();
 
-    Bottle actions(strstr.str().c_str());
+        actions.fromString(strstr.str().c_str());
+    }
+    else
+    {
+        if (!opcPort.getAction(action_name, &actions))
+            return false;
+    }
 
     ICartesianControl *ctrl;
     action[arm]->getCartesianIF(ctrl);

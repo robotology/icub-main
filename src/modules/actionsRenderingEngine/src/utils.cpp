@@ -340,4 +340,61 @@ bool ObjectPropertiesCollectorPort::setTableHeight(const double &table_height)
     return bReply.get(0).asVocab()==Vocab::encode("ack");
 }
 
+bool ObjectPropertiesCollectorPort::setAction(const string &act_name, const Bottle *trajectory)
+{
+    if(this->getOutputCount()==0)
+        return false;
+    // rpc add: should ask to see if the same action already exists?
+    Bottle bAdd, bReply;
+    bAdd.addVocab(Vocab::encode("add"));
+    Bottle &bTempAdd=bAdd.addList();
 
+    Bottle &bEntity=bTempAdd.addList();
+    bEntity.addString("entity"); bEntity.addString("action");
+
+    Bottle &bName=bTempAdd.addList();
+    bName.addString("name"); bName.addString(act_name.c_str());
+    Bottle &bTraj= bTempAdd.addList();
+    bTraj.addString("trajectory"); bTraj.addList()=*trajectory;
+
+    this->write(bAdd,bReply);
+    return bReply.get(0).asVocab()==Vocab::encode("ack");
+};
+bool ObjectPropertiesCollectorPort::getAction(const string &act_name, Bottle *trajectory)
+{
+    if(this->getOutputCount()==0)
+        return false;
+    //ask for the object's id
+    Bottle bAsk,bGet,bReply;
+    bAsk.addVocab(Vocab::encode("ask"));
+    Bottle &bTempAsk=bAsk.addList().addList();
+    bTempAsk.addString("name");
+    bTempAsk.addString("==");
+    bTempAsk.addString(act_name.c_str());
+
+    this->write(bAsk,bReply);
+
+    if(bReply.size()==0 ||
+       bReply.get(0).asVocab()!=Vocab::encode("ack") ||
+       bReply.get(1).asList()->check("id")==false ||
+       bReply.get(1).asList()->find("id").asList()->size()==0)
+        return false;
+
+    bGet.addVocab(Vocab::encode("get"));
+    Bottle &bTempGet=bGet.addList().addList();
+    bTempGet.addString("id");
+    bTempGet.addInt(bReply.get(1).asList()->find("id").asList()->get(0).asInt());
+
+    this->write(bGet,bReply);
+
+    if(bReply.size()==0 || bReply.get(0).asVocab()!=Vocab::encode("ack"))
+        return false;
+
+    if(!bReply.get(1).asList()->check("trajectory"))
+        return false;
+   
+    *trajectory =  *(bReply.get(1).asList()->find("trajectory").asList());
+
+    return true;
+    
+};
