@@ -398,3 +398,6 @@ bool ObjectPropertiesCollectorPort::getAction(const string &act_name, Bottle *tr
     return true;
     
 };
+
+
+
