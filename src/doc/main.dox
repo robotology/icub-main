@@ -41,7 +41,7 @@ running:
 locally on your repository, to figure out what's going on.
 The output can be browsed at doc/html/index.html.
 
-This page can be edited at $ICUB_ROOT/main/src/doc/main.dox.
+This page can be edited at \link main/src/doc/main.dox.
 
 *
 */
