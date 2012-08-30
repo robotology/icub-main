@@ -1,7 +1,10 @@
+/* 
+\file main.dox
+\brief This file is the main page for the iCub software repository documentation.
+*/
 
 /**
 \mainpage iCub Software Repository Documentation
-\file This file is the main page for the iCub software repository documentation.
 
 \image html icub_small_new-white.gif "Welcome to my brain!"
 
