@@ -1,19 +1,19 @@
 /*
- * animationview.h          
- */
+* animationview.h          
+*/
 
 /*
- * Copyright (C) 2009 RobotCub Consortium
- * Author: Alessandro Scalzo alessandro.scalzo@iit.it
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * Based on:
- *
- *   Qavimator
- *   Copyright (C) 2006 by Zi Ree   *
- *   Zi Ree @ SecondLife   *
- *   Released under the terms of the GNU GPL v2.0.
- */
+* Copyright (C) 2009 RobotCub Consortium
+* Author: Alessandro Scalzo alessandro.scalzo@iit.it
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*
+* Based on:
+*
+*   Qavimator
+*   Copyright (C) 2006 by Zi Ree   *
+*   Zi Ree @ SecondLife   *
+*   Released under the terms of the GNU GPL v2.0.
+*/
 
 #ifndef ANIMATIONVIEW_H
 #define ANIMATIONVIEW_H
@@ -49,9 +49,9 @@ class QMouseEvent;
 
 class AnimationView : public QGLWidget
 {
-  Q_OBJECT
+    Q_OBJECT
 
-  public:
+public:
     AnimationView(QWidget* parent,yarp::os::ResourceFinder& config);
     ~AnimationView();
 
@@ -67,19 +67,19 @@ class AnimationView : public QGLWidget
         mTimer.stop();
     }
 
-	QStringList& partNames(){ return pBVH->partNames; }
+    QStringList& partNames(){ return pBVH->partNames; }
 
-  signals:
+signals:
     void backgroundClicked();
 
-  public slots:
-    void resetCamera();
-    void timerTimeout(){ repaint(); }
+    public slots:
+        void resetCamera();
+        void timerTimeout(){ repaint(); }
 
-  protected slots:
-    void draw();
+        protected slots:
+            void draw();
 
-  protected:
+protected:
     //enum { MODE_PARTS, MODE_SKELETON, MODE_ROT_AXES };
 
     virtual void paintGL();
@@ -95,11 +95,20 @@ class AnimationView : public QGLWidget
     virtual void resizeEvent(QResizeEvent* newSize);
 
     // remove annyoing debug message from QT (only on windows)
-#ifdef WIN32
+    // Checked on qt3: on Windows updateOverlayGL() does nothing
+    // but prints an annooying debug message, looks safe to remove. 
+    // On Linux updateOverlayGL() calls other functions so it is 
+    // better to keep calling it.
+    // WARNING: check carefully againe in case of porting to Qt4
     virtual void updateOverlayGL ()
-    {}
-#endif
-    
+    {
+        #ifdef WIN32
+            //do nothing
+        #else
+            QGLWidget::updateOverlayGL();
+        #endif
+    }
+
     void drawFloor();
 
     bool leftMouseButton;
@@ -125,7 +134,7 @@ class AnimationView : public QGLWidget
 
     void setProjection();
     void setModelView();
-   
+
     void clearSelected();
     void drawCircle(int axis, float radius, int width);    
 };

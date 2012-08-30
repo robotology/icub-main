@@ -201,7 +201,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     BVHNode *node=NULL;
     
     QString sName=token();
-	partNames << sName;
+    partNames << sName;
 
     expect_token("{");
     iCubMesh *pMesh=0;
@@ -236,9 +236,9 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
         double a=token().toDouble();
         double b=token().toDouble();
         double c=token().toDouble();
-		double d=token().toDouble();
-		double e=token().toDouble();
-		double f=token().toDouble();
+        double d=token().toDouble();
+        double e=token().toDouble();
+        double f=token().toDouble();
         QString file(config.findPath(QString("covers/")+name).c_str());
         if (file.isEmpty()) file=name;
         printf("\n%s\n\n",file.latin1());
@@ -248,98 +248,98 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     
     if (tag=="FORCE_TORQUE")
     {
-		ftPortName=token();
+        ftPortName=token();
         tag=token();
     }
 
     switch (nType)
     {
     case BVH_ROOT:
-		{
-			int id=token().toInt();
+        {
+            int id=token().toInt();
             
             double Px=token().toDouble();
-			double Py=token().toDouble();
-			double Pz=token().toDouble();
+            double Py=token().toDouble();
+            double Pz=token().toDouble();
 
-			node=new BVHNodeROOT(sName,id,Px,Py,Pz,pMesh,mObjectsManager); 
-		}
-		break;
+            node=new BVHNodeROOT(sName,id,Px,Py,Pz,pMesh,mObjectsManager); 
+        }
+        break;
     case BVH_JOINT:
         if (tag=="RPY_XYZ")
-		{
-			double Rz=token().toDouble();
-			double Ry=token().toDouble();
-			double Rx=token().toDouble();
-			double Px=token().toDouble();
-			double Py=token().toDouble();
-			double Pz=token().toDouble();
+        {
+            double Rz=token().toDouble();
+            double Ry=token().toDouble();
+            double Rx=token().toDouble();
+            double Px=token().toDouble();
+            double Py=token().toDouble();
+            double Pz=token().toDouble();
 
             node=new BVHNodeXYZ_RPY(sName,Px,Py,Pz,Rz,Ry,Rx);
-		}
+        }
         else if (tag=="DH")
-		{
-	        int a=token().toInt();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
-			double e=token().toDouble();
+        {
+            int a=token().toInt();
+            double b=token().toDouble();
+            double c=token().toDouble();
+            double d=token().toDouble();
+            double e=token().toDouble();
             if (ftPortName=="")
             {
                 node=new BVHNodeDH(sName,a,b,c,d,e,pMesh); 
-		    }
+            }
             else
             {
                 node=new BVHNodeForceTorque(sName,ftPortName,a,b,c,d,e,pMesh);
             }
         }
-		break;
+        break;
     case BVH_END:
         if (tag=="EYE")
-		{
+        {
             int n=token().toInt();
-			double a=token().toDouble();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
+            double a=token().toDouble();
+            double b=token().toDouble();
+            double c=token().toDouble();
+            double d=token().toDouble();
             node=new BVHNodeEYE(sName,n,a,b,c,d,pMesh);
-		}
-		else if (tag=="DH")
-		{
+        }
+        else if (tag=="DH")
+        {
             int n=token().toInt();
-			double a=token().toDouble();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
+            double a=token().toDouble();
+            double b=token().toDouble();
+            double c=token().toDouble();
+            double d=token().toDouble();
             node=new BVHNodeEND(sName,n,a,b,c,d,pMesh);
-		}
-		else if (tag=="LEFTHAND")
-		{
-			int a=token().toInt();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
-			double e=token().toDouble();
+        }
+        else if (tag=="LEFTHAND")
+        {
+            int a=token().toInt();
+            double b=token().toDouble();
+            double c=token().toDouble();
+            double d=token().toDouble();
+            double e=token().toDouble();
             node=new BVHNodeLEFTHAND(sName,a,b,c,d,e,pMesh);
-		}
-		else if (tag=="RIGHTHAND")
-		{
-			int a=token().toInt();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
-			double e=token().toDouble();
+        }
+        else if (tag=="RIGHTHAND")
+        {
+            int a=token().toInt();
+            double b=token().toDouble();
+            double c=token().toDouble();
+            double d=token().toDouble();
+            double e=token().toDouble();
             node=new BVHNodeRIGHTHAND(sName,a,b,c,d,e,pMesh);
         }
-		else if (tag=="INERTIAL")
-		{
-			double a=token().toDouble();
-			double b=token().toDouble();
-			double c=token().toDouble();
-			double d=token().toDouble();
+        else if (tag=="INERTIAL")
+        {
+            double a=token().toDouble();
+            double b=token().toDouble();
+            double c=token().toDouble();
+            double d=token().toDouble();
             node=new BVHNodeINERTIAL(sName,a,b,c,d,robot+"/inertial",pMesh);
-		}
-		break;    
+        }
+        break;    
     }
 
     if (skinPart)

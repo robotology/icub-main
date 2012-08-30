@@ -151,14 +151,6 @@ int main( int argc, char ** argv )
     signal(SIGHUP,sig_handler);
 #endif 
 
-//#if defined(WIN32) || defined(WIN64)
-//    //signal(SIGBREAK,sig_handler);
-//#else
-//    signal(SIGINT,sig_handler);
-//    signal(SIGTERM,sig_handler);
-//    signal(SIGHUP,sig_handler);
-//#endif 
-
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultContext("iCubGui");

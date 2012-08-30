@@ -1,19 +1,19 @@
 /*
- * ui_settingsdialog.h
- */
+* ui_settingsdialog.h
+*/
 
 /*
- * Copyright (C) 2009 RobotCub Consortium
- * Author: Alessandro Scalzo alessandro.scalzo@iit.it
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * Based on:
- *
- *   Qavimator
- *   Copyright (C) 2006 by Zi Ree   *
- *   Zi Ree @ SecondLife   *
- *   Released under the terms of the GNU GPL v2.0.
- */
+* Copyright (C) 2009 RobotCub Consortium
+* Author: Alessandro Scalzo alessandro.scalzo@iit.it
+* CopyPolicy: Released under the terms of the GNU GPL v2.0.
+*
+* Based on:
+*
+*   Qavimator
+*   Copyright (C) 2006 by Zi Ree   *
+*   Zi Ree @ SecondLife   *
+*   Released under the terms of the GNU GPL v2.0.
+*/
 
 #ifndef UI_SETTINGSDIALOGFORM_H
 #define UI_SETTINGSDIALOGFORM_H
@@ -56,7 +56,7 @@ public:
             SettingsDialogForm->setName(QString::fromUtf8("SettingsDialogForm"));
         //SettingsDialogForm->setWindowModality(Qt::WindowModal);
         SettingsDialogForm->setModal(true);
-		SettingsDialogForm->resize(337, 200);
+        SettingsDialogForm->resize(337, 200);
         gridLayout = new QGridLayout(SettingsDialogForm);
         gridLayout->setSpacing(6);
         gridLayout->setMargin(11);
@@ -70,13 +70,13 @@ public:
         cancelButton->setName(QString::fromUtf8("cancelButton"));
 
         //gridLayout->addWidget(cancelButton, 1, 3, 1, 1);
-		gridLayout->addMultiCellWidget(cancelButton, 1, 1, 3, 3);
+        gridLayout->addMultiCellWidget(cancelButton, 1, 1, 3, 3);
 
         applyButton = new QPushButton(SettingsDialogForm);
         applyButton->setName(QString::fromUtf8("applyButton"));
 
         //gridLayout->addWidget(applyButton, 1, 2, 1, 1);
-		gridLayout->addMultiCellWidget(applyButton, 1, 1, 2, 2);
+        gridLayout->addMultiCellWidget(applyButton, 1, 1, 2, 2);
 
         tabWidget4 = new QTabWidget(SettingsDialogForm);
         tabWidget4->setName(QString::fromUtf8("tabWidget4"));
@@ -89,7 +89,7 @@ public:
         spacerItem = new QSpacerItem(20, 70, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         //gridLayout1->addItem(spacerItem, 1, 0, 1, 1);
-		gridLayout1->addMultiCell(spacerItem, 1, 1, 0, 0);
+        gridLayout1->addMultiCell(spacerItem, 1, 1, 0, 0);
 
         hboxLayout = new QHBoxLayout();
         hboxLayout->setSpacing(6);
@@ -129,24 +129,24 @@ public:
 
 
         //gridLayout1->addLayout(hboxLayout, 0, 0, 1, 1);
-		gridLayout1->addMultiCellLayout(hboxLayout, 0, 0, 0, 0);
+        gridLayout1->addMultiCellLayout(hboxLayout, 0, 0, 0, 0);
 
         tabWidget4->addTab(tab, QString());
 
         //gridLayout->addWidget(tabWidget4, 0, 0, 1, 4);
-		gridLayout->addMultiCellWidget(tabWidget4, 0, 0, 0, 3);
+        gridLayout->addMultiCellWidget(tabWidget4, 0, 0, 0, 3);
 
         spacerItem2 = new QSpacerItem(61, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         //gridLayout->addItem(spacerItem2, 1, 0, 1, 1);
-		gridLayout->addMultiCell(spacerItem2, 1, 1, 0, 0);
+        gridLayout->addMultiCell(spacerItem2, 1, 1, 0, 0);
 
         retranslateUi(SettingsDialogForm);
 
         tabWidget4->setCurrentPage(0);
 
         //SettingsDialogForm->connect(floorTranslucencySpin,SIGNAL(valueChanged(int)),SettingsDialogForm,SLOT(on_floorTranslucencySpin_valueChanged(int)));
-        
+
         SettingsDialogForm->connect(okButton,SIGNAL(clicked()),SettingsDialogForm,SLOT(on_okButton_clicked()));
         SettingsDialogForm->connect(cancelButton,SIGNAL(clicked()),SettingsDialogForm,SLOT(on_cancelButton_clicked()));
         SettingsDialogForm->connect(applyButton,SIGNAL(clicked()),SettingsDialogForm,SLOT(on_applyButton_clicked()));
@@ -167,7 +167,7 @@ public:
         floorTranslucencyLabel->setText("Floor Translucency:");
         floorTranslucencySpin->setSuffix("%");
         //tabWidget4->setTabLabel(tabWidget4->indexOf(tab), "OpenGL");
-		tabWidget4->setTabLabel(tab, "OpenGL");
+        tabWidget4->setTabLabel(tab, "OpenGL");
         Q_UNUSED(SettingsDialogForm);
     } // retranslateUi
 
