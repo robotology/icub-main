@@ -94,6 +94,12 @@ class AnimationView : public QGLWidget
     virtual void keyReleaseEvent(QKeyEvent* event);
     virtual void resizeEvent(QResizeEvent* newSize);
 
+    // remove annyoing debug message from QT (only on windows)
+#ifdef WIN32
+    virtual void updateOverlayGL ()
+    {}
+#endif
+    
     void drawFloor();
 
     bool leftMouseButton;

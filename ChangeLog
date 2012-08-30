@@ -1,3 +1,11 @@
+2012-08-30 Lorenzo Natale <lorenzo.natale@iit.it>
+    *  src/animationview.h
+    *  src/main.cpp
+    
+    Removed signal handlers for Windows since conflicting with WM_CLOSE.
+    Overwritten QGLWidget::updateOverlayGL to remove annoying debug(?) 
+    message from QT.
+
 2012-08-03 Ugo Pattacini <ugo.pattacini@iit.it>
     * cart I/F: added set/getReferenceMode() methods
 
