@@ -14,18 +14,7 @@ None.
 
 \section modules_sec Instantiated Modules
 - emotionInterface
-
-\section parameters_sec Parameters
-
-\code
-./scripts/
-\endcode
-
-\section config_sec Configuration Files
-
-\code
-./scripts/config.sh: contains parameters to configure the application
-\endcode
+- serial device through \e yarpdev
 
 \code
 ./conf/emotions.ini: parameters passed to the emotionInterface module.
@@ -34,12 +23,13 @@ None.
 
 \section example_sec How to run the application
 
-Starts the application:
+Run and execute through \e gyarpmanager .
 
-On the pc104:
-\code
-./emotions.sh: starts and connects all modules
-\endcode
+There are two applications:
+
+- Face Expressions (app.xml). This can run out of the box, since it assumes you have a pc104 and a real iCub.
+
+If you are using the simulator edit and customize \e appSim.xml.template .
 
 Now from any machine you can rpc to the port "/icub/face/emotions/in" 
 and send high level commands.
@@ -77,6 +67,6 @@ Copyright (C) 2008 RobotCub Consortium
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 
-This file can be edited at \in app/faceExpressions/doc.dox
+This file can be edited at \link app/faceExpressions/doc.dox
 
 */
