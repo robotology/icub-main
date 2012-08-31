@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2012 RobotCub Consortium
+ * Author: Alessandro Scalzo
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #ifndef __SHARED_CAN_BUS_H__
 #define __SHARED_CAN_BUS_H__
 

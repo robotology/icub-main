@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2012 RobotCub Consortium
+ * Author: Alessandro Scalzo
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ */
+
 #include <vector>
 
 #include <yarp/os/Property.h>

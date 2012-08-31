@@ -1,5 +1,5 @@
-# Copyright: (C) 2010 RobotCub Consortium
-# Authors: Lorenzo Natale
+# Copyright: (C) 2012 RobotCub Consortium
+# Authors: Lorenzo Natale, Alessandro Scalzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 PREPARE_DEVICE(sharedcan TYPE CanBusAccessPoint
