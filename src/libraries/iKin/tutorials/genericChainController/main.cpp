@@ -358,7 +358,8 @@ public:
     virtual void threadRelease()
     {
         // make sure that the limb is stopped before closing
-        port_v.write(zeros(chain->getDOF()));
+        Vector zeros(chain->getDOF(),0.0);
+        port_v.write(zeros);
 
         port_v.interrupt();
         port_x.interrupt();
