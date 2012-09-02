@@ -117,6 +117,9 @@ void OnlineBoost::initialize(const std::list<Inputs*> &initializer)
 {
     for(std::list<Inputs*>::const_iterator itr=initializer.begin(); itr!=initializer.end(); itr++)
         ClassifierFactory::instance().pack((*itr),function_space);
+
+    //shuffle the function_space
+    random_shuffle(function_space.begin(),function_space.end());
 }
 
 
