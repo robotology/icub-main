@@ -33,7 +33,7 @@ public:
     {
         for (int i=0; i<0x800; ++i) reqIds[i]=UNREQ;
 
-        readBuffer=createBuffer(BUF_SIZE);
+        //readBuffer=createBuffer(BUF_SIZE);
 
         waitingOnRead=false;
 

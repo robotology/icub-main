@@ -119,7 +119,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     correct=correct&&partP.check("device");
     correct=correct&&partP.check("robot");
     correct=correct&&partP.check("canbusdevice");
-	//correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
+    //correct=correct&&partP.check("ports");		// list of the ports where to send the tactile data
     
     if (!correct)
         return false;
@@ -140,6 +140,9 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 
     std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
     deviceP.put("canbusdevice", canbusdevice.c_str());
+
+    std::string physdevice=partP.find("physdevice").asString().c_str();
+    deviceP.put("physdevice", physdevice.c_str());
 
     driver.open(deviceP);
     if (!driver.isValid())
@@ -961,11 +964,13 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     Value &device=robotOptions.find("device");
     Value &subdevice=robotOptions.find("subdevice");
     Value &candevice=robotOptions.find("canbusdevice");
+    Value &physdevice=robotOptions.find("physdevice");
 
     deviceParameters.put("robotName",robotName.c_str());
     deviceParameters.put("device", device);
     deviceParameters.put("subdevice", subdevice);
     deviceParameters.put("canbusdevice",candevice);
+    deviceParameters.put("physdevice",physdevice);
 
     ICUB_CAN_IDS *ids=can_ids.find(candevice.asString().c_str());
 

@@ -85,7 +85,7 @@ public:
 
     void run()
     {
-        static const unsigned int MAX_MSGS=1024;
+        static const unsigned int MAX_MSGS=BUF_SIZE;
         static const bool NOWAIT=false;
         unsigned int msgsNum=0;
 
@@ -114,7 +114,7 @@ public:
                     }
                 }
             }
-        }
+        } 
 
         configMutex.post();
     }
@@ -171,6 +171,11 @@ public:
 
     yarp::dev::ICanBufferFactory* getCanBufferFactory()
     {
+        if (!theBufferFactory)
+        {
+            fprintf(stderr, "Error: no buffer factory\n");
+        }
+
         return theBufferFactory;
     }
 
@@ -189,21 +194,23 @@ public:
             return true;
         }
 
-        if (!config.check("carrier"))
+        if (!config.check("physdevice"))
         {
             fprintf(stderr, "Error: could not find low level can driver specification\n");
             configMutex.post();         
             return false;
         }
 
-        yarp::os::ConstString carrier=config.find("carrier").asString();
+        yarp::os::ConstString device=config.find("physdevice").asString();
 
         yarp::os::Property prop;
         prop.fromString(config.toString().c_str());
 
-        prop.unput("carrier");
         prop.unput("device");
-        prop.put("device",carrier.c_str());
+        prop.unput("subdevice");
+        prop.unput("physdevice");
+
+        prop.put("device",device.c_str());
 
         // low level driver
         polyDriver.open(prop);
@@ -272,6 +279,8 @@ bool yarp::dev::CanBusAccessPoint::open(yarp::os::Searchable& config)
 {
     if (!SharedCanBus::getInstance().open(config)) return false;
 
+    readBuffer=createBuffer(BUF_SIZE);
+
     SharedCanBus::getInstance().attachAccessPoint(this);
 
     return true;
@@ -328,7 +337,9 @@ bool yarp::dev::CanBusAccessPoint::canIdDelete(unsigned int id)
 
 yarp::dev::CanBuffer yarp::dev::CanBusAccessPoint::createBuffer(int nmessage)
 {
-    return SharedCanBus::getInstance().getCanBufferFactory()->createBuffer(nmessage);
+    yarp::dev::CanBuffer cb=SharedCanBus::getInstance().getCanBufferFactory()->createBuffer(nmessage);
+
+    return cb;
 }
 
 void yarp::dev::CanBusAccessPoint::destroyBuffer(CanBuffer &msgs)

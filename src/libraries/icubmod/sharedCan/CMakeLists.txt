@@ -3,8 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 PREPARE_DEVICE(sharedcan TYPE CanBusAccessPoint
-    INCLUDE SharedCanBus.h 
-    WRAPPER "")
+    INCLUDE SharedCanBus.h)
 
 
 IF (NOT SKIP_sharedcan)
