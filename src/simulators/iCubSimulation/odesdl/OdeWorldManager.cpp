@@ -308,31 +308,54 @@ void OdeLink::doRotate() {
     OdeInit& odeinit = OdeInit::get();
 
     if (!checkObject()) return;
-    if (!op.rotation.isValid()) {
-        result.setFail("no rotation set");
-        return;
-    }
     if (object==NULL) {
         result.setFail("no geometry found");
         return;
     }
 
-    dMatrix3 Rtx,Rty,Rtz, Rtmp1,Rtmp2;
+    // We want to get the object rotation
+    if (!op.rotation.isValid()) {
+        if (bid!=NULL) {
+            odeinit.mutex.wait();
+            const dReal *R = dBodyGetRotation(bid);
+            result.rotation = WorldOpTriplet(atan2(R[9], R[10])*180/M_PI, asin(-R[8])*180/M_PI, atan2(R[4], R[0])*180/M_PI);
+            result.setOk();
+            odeinit.mutex.post();
+            return;
+        }
+        if (gid!=NULL) {
+            odeinit.mutex.wait();
+            const dReal *R = dGeomGetRotation(gid);
+            result.rotation = WorldOpTriplet(atan2(R[9], R[10])*180/M_PI, asin(-R[8])*180/M_PI, atan2(R[4], R[0])*180/M_PI);
+            result.setOk();
+            odeinit.mutex.post();
+            return;
+        }
+        result.setFail("no object found");
+    }
+    if (object==NULL) {
+        result.setFail("no geometry found");
+        return;
+    } else {
+        // We want to set the object rotation
+
+        dMatrix3 Rtx,Rty,Rtz, Rtmp1,Rtmp2;
     
-    double rotx = (op.rotation.get(0) * M_PI) / 180;
-    double roty = (op.rotation.get(1) * M_PI) / 180;
-    double rotz = (op.rotation.get(2) * M_PI) / 180;
-    
-    dRFromAxisAndAngle(Rtx,1,0,0,rotx);
-    dRFromAxisAndAngle(Rty,0,1,0,roty);
-    dRFromAxisAndAngle(Rtz,0,0,1,rotz);
-    
-    dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
-    dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
-    odeinit.mutex.wait();
-    dGeomSetRotation(object->getGeometry(),Rtmp2);
-    odeinit.mutex.post();
-    result.setOk();
+        double rotx = (op.rotation.get(0) * M_PI) / 180;
+        double roty = (op.rotation.get(1) * M_PI) / 180;
+        double rotz = (op.rotation.get(2) * M_PI) / 180;
+        
+        dRFromAxisAndAngle(Rtx,1,0,0,rotx);
+        dRFromAxisAndAngle(Rty,0,1,0,roty);
+        dRFromAxisAndAngle(Rtz,0,0,1,rotz);
+        
+        dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
+        dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
+        odeinit.mutex.wait();
+        dGeomSetRotation(object->getGeometry(),Rtmp2);
+        odeinit.mutex.post();
+        result.setOk();
+    }
 }
 
 void OdeLink::doColor() {

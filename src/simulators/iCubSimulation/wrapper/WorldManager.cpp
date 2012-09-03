@@ -343,7 +343,9 @@ bool doGrab(ManagerState& state) {
 
 bool doRotate(ManagerState& state) {
     consumeObject(state);
-    state.consume(state.op.rotation,"rotation");
+    if (state.more()) {
+        state.consume(state.op.rotation,"rotation");
+    }
     if (!state.failed) {
         state.manager.apply(state.op,state.result);
     }
@@ -425,6 +427,10 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
                 reply.addDouble(result.location.get(0));
                 reply.addDouble(result.location.get(1));
                 reply.addDouble(result.location.get(2));
+            } else if (result.rotation.isValid()) {
+                reply.addDouble(result.rotation.get(0));
+                reply.addDouble(result.rotation.get(1));
+                reply.addDouble(result.rotation.get(2));
             } else if (result.color.isValid()) {
                 reply.addDouble(result.color.get(0));
                 reply.addDouble(result.color.get(1));

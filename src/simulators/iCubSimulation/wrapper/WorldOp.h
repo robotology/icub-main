@@ -138,6 +138,7 @@ public:
     bool success;
     std::string msg;
     WorldOpTriplet location;
+    WorldOpTriplet rotation;
     WorldOpTriplet color;
     WorldOpName path;
     WorldOpIndex count;
