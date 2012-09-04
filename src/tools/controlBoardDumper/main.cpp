@@ -153,7 +153,7 @@
 
 YARP_DECLARE_DEVICES(icubmod)
 
-#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 11
+#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 12
 
 //
 void getRate(Property p, int &r)
@@ -262,6 +262,7 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     availableDataToDump[8]  = ConstString("getRotorPositions");
     availableDataToDump[9]  = ConstString("getRotorSpeeds");
     availableDataToDump[10] = ConstString("getRotorAccelerations");
+	availableDataToDump[11] = ConstString("getPidReferences");
 
     if (!p.check("dataToDump"))
         {
@@ -322,6 +323,7 @@ private:
     //pid
     IPidControl *ipid;
     GetPosErrs myGetPosErrs;
+	GetPidRefs myGetPidRefs;
     GetOuts myGetOuts;
     //amp
     IAmplifierControl *iamp;
@@ -499,6 +501,22 @@ public:
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetAccs);
+                        }
+				if (dataToDump[i] == "getPidReferences")
+                    if (ddBoard.view(ipid))
+                        {
+                            fprintf(stderr, "Initializing a getErrs thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetPidRefs.setInterface(ipid);
+                            if (ddBoard.view(istmp))
+                                {
+                                    fprintf(stderr, "getPidReferences::The time stamp initalization interfaces was successfull! \n");
+                                    myGetPidRefs.setStamp(istmp);
+                                }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                            myDumper[i].setGetter(&myGetPidRefs);
                         }
                 if (dataToDump[i] == "getPositionErrors")
                     if (ddBoard.view(ipid))
@@ -729,7 +747,7 @@ int main(int argc, char *argv[])
     if (!p.check("dataToDump"))
         {
             Value v;
-            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors)");
+            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPidReferences)");
             p.put("dataToDump", v);
         }
 

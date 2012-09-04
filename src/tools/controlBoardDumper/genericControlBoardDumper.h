@@ -47,6 +47,15 @@ public:
   IEncoders *iencs;
 };
 
+class GetPidRefs : public GetData
+{
+public:
+  void setInterface (IPidControl *);
+  virtual bool getData(double *);
+
+  IPidControl *ipid;
+};
+
 class GetSpeeds : public GetData
 {
 public:

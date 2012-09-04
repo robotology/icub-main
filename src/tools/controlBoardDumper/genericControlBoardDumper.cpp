@@ -64,6 +64,23 @@ bool GetEncs::getData(double *e)
     }
 }
 
+void GetPidRefs::setInterface(IPidControl *i)
+{
+    ipid = i;
+}
+
+bool GetPidRefs::getData(double *e)
+{
+  //fprintf(stderr, "Entering getPosErrs\n");
+  if (ipid)
+    {
+	  ipid->getReferences(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
 void GetSpeeds::setInterface(IEncoders *i)
 {
     iencs = i;
