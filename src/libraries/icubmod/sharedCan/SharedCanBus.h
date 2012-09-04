@@ -1,7 +1,20 @@
-/*
- * Copyright (C) 2012 RobotCub Consortium
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+/**
+ * @ingroup icub_hardware_modules 
+ * \defgroup shcan shcan
+ *
+ * Implements ICanBus interface for multiple access from a single access can driver (for example cfw2can).
+ * It wraps the low level device driver (physdevice in the configuration file) in a higher level, multiple
+ * access virtual device driver.
+ *
+ * Copyright (C) 2012 RobotCub Consortium.
+ *
  * Author: Alessandro Scalzo
+ *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at src/modules/shcan/SharedCanBus.h
  *
  */
 
