@@ -73,6 +73,7 @@ protected:
     int nodesNum;
     int nodesX;
     int nodesY;
+    int cropRadius;
 
 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
     int numThreads;
@@ -97,6 +98,7 @@ protected:
     BufferedPort<ImageOf<PixelMono> > optPort;
     Port nodesPort;
     Port blobsPort;
+    Port outCropPort;
 
     /************************************************************************/
     void disposeMem()
@@ -160,6 +162,8 @@ public:
         verbosity=rf.check("verbosity");
         inhibition=false;
 
+        cropRadius=rf.check("cropRadius",Value(40)).asInt();
+
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
 
         // thresholding 
@@ -185,6 +189,7 @@ public:
         optPort.open(("/"+name+"/opt:o").c_str());
         nodesPort.open(("/"+name+"/nodes:o").c_str());
         blobsPort.open(("/"+name+"/blobs:o").c_str());
+        outCropPort.open(("/"+name+"/crop:o").c_str());
 
         firstConsistencyCheck=true;
 
@@ -217,6 +222,7 @@ public:
         #endif
             
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
+            fprintf(stdout,"cropRadius        = %d\n",cropRadius);
             fprintf(stdout,"\n");
         }
         else
@@ -445,6 +451,34 @@ public:
                 blobsPort.setEnvelope(stamp);
                 blobsPort.write(blobsBottle);
             }
+            
+            if ((outCropPort.getOutputCount()>0) && blobsBottle.size())
+            {
+                int x=cvRound(blobsBottle.get(0).asList()->get(0).asDouble());
+                int y=cvRound(blobsBottle.get(0).asList()->get(1).asDouble());
+                
+                int radius=cropRadius;
+                
+                if(x-radius<0)
+                    radius=x;
+                if(y-radius<0)
+                    radius=y;
+                if(x+radius>=pImgBgrIn->width())
+                    radius=pImgBgrIn->width()-x-1;
+                if(y+radius>=pImgBgrIn->height())
+                    radius=pImgBgrIn->height()-y-1;
+                
+                ImageOf<PixelBgr> cropImg;
+                cropImg.resize(2*radius,2*radius);
+                
+                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(x-radius,y-radius,2*radius,2*radius));
+
+                cvCopy((IplImage*)pImgBgrIn->getIplImage(),(IplImage*)cropImg.getIplImage());
+                cvResetImageROI((IplImage*)pImgBgrIn->getIplImage());
+                            
+                outCropPort.setEnvelope(stamp);
+                outCropPort.write(cropImg);
+            }
 
             // save data for next cycle
             imgMonoPrev=imgMonoIn;
@@ -479,6 +513,7 @@ public:
         optPort.close();
         nodesPort.close();
         blobsPort.close();
+        outCropPort.close();
     }
 
     /************************************************************************/
@@ -608,6 +643,11 @@ public:
                     inhibition=req.get(2).asString()=="on";
                     reply.addString("ack");
                 }
+                else if (subcmd=="cropRadius")
+                {
+                    cropRadius=req.get(2).asInt();
+                    reply.addString("ack");
+                }
                 else
                     return false;
             }
@@ -638,6 +678,8 @@ public:
                     reply.addString(verbosity?"on":"off");
                 else if (subcmd=="inhibition")
                     reply.addString(inhibition?"on":"off");
+                else if (subcmd=="cropRadius")
+                    reply.addInt(cropRadius);
                 else
                     return false;
             }

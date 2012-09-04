@@ -104,6 +104,10 @@ YARP libraries and OpenCV
 --blobMinSizeThres \e min 
 - This parameter allows filtering out blobs whose nodes number 
   is lower than <min>.
+  
+--cropRadius \e min 
+- This parameter allows to change the size of a cropping window
+  around the center of the largest blob detected (port <i> /<stemName>/crop:o </i>).
  
 --framesPersistence \e frames
 - This parameter allows increasing the node persistence over 
@@ -147,6 +151,9 @@ None.
   blobs list is sorted according to their size (decreasing
   order). This port propagates the time-stamp carried
   by the input image.
+
+- <i> /<stemName>/crop:o </i> outputs a window of fixed size obtained from
+  a ROI around the center of mass of the largest blob detected.
  
 - <i> /<stemName>/opt:o </i> outputs monochrome images 
   containing just the grid nodes signalling independent
