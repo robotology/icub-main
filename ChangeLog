@@ -1,3 +1,11 @@
+2012-09-04  Paul Fitzpatrick  <paul@robotrebuilt.com>
+
+	* src/simulators/iCubSimulation/wrapper/WorldManager.cpp
+	* src/simulators/iCubSimulation/wrapper/WorldOp.h
+	* src/simulators/iCubSimulation/odesdl/OdeWorldManager.cpp:
+	Applied Fabien Benureau's patch to query rotation angle of object
+	in simulator
+
 2012-09-03 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* src/core/iCubInterface/RobotInterfaceRemap.cpp
 	* src/libraries/icubmod/sharedCan/CMakeLists.txt
