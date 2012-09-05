@@ -22,11 +22,11 @@
 
 <connection>
   <from>/icub/cam/left</from>
-  <to>/stereoCalib/left:i</to>
+  <to>/stereoCalib/cam/left:i</to>
   <protocol>udp</protocol>
 </connection>
  <connection>
-  <from>/stereoCalib/left:o</from>
+  <from>/stereoCalib/cam/left:o</from>
   <to>/left_image</to>
   <protocol>udp</protocol>
 </connection>
