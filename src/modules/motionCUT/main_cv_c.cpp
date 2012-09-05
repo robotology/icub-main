@@ -165,11 +165,9 @@ public:
 
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
 
-        // thresholding 
-        if (coverXratio>1.0)
-            coverXratio=1.0;
-        if (coverYratio>1.0)
-            coverYratio=1.0;
+        // thresholding
+        coverXratio=std::min(coverXratio,1.0);
+        coverYratio=std::min(coverYratio,1.0);
 
         // if the OpenCV version supports OpenMP multi-threading,
         // set the maximum number of threads available to OpenCV

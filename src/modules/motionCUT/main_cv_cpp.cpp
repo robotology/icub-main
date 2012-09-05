@@ -107,10 +107,8 @@ public:
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);        
 
         // thresholding 
-        if (coverXratio>1.0)
-            coverXratio=1.0;
-        if (coverYratio>1.0)
-            coverYratio=1.0;
+        coverXratio=std::min(coverXratio,1.0);
+        coverYratio=std::min(coverYratio,1.0);
 
         inPort.open(("/"+name+"/img:i").c_str());
         outPort.open(("/"+name+"/img:o").c_str());
