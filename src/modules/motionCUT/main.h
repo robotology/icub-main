@@ -104,16 +104,17 @@ YARP libraries and OpenCV
 --blobMinSizeThres \e min 
 - This parameter allows filtering out blobs whose nodes number 
   is lower than <min>.
-  
---cropRadius \e min 
-- This parameter allows to change the size of a cropping window
-  around the center of the largest blob detected (port <i> /<stemName>/crop:o </i>).
- 
+
 --framesPersistence \e frames
 - This parameter allows increasing the node persistence over 
   consecutive frames implementing a sort of low-pass filter. The
   value \e frames specifies the number of consecutive frames for
   which if a node gets active it is kept on.
+ 
+--cropRadius \e radius 
+- This parameter allows changing the size of a cropping window
+  around the center of the largest blob detected, which will be
+  then sent out through the corresponding port.
  
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
@@ -189,6 +190,7 @@ Linux and Windows.
 #include <set>
 #include <vector>
 #include <deque>
+#include <algorithm>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>

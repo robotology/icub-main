@@ -98,7 +98,7 @@ protected:
     BufferedPort<ImageOf<PixelMono> > optPort;
     Port nodesPort;
     Port blobsPort;
-    Port outCropPort;
+    Port cropPort;
 
     /************************************************************************/
     void disposeMem()
@@ -159,10 +159,9 @@ public:
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
-        verbosity=rf.check("verbosity");
-        inhibition=false;
-
         cropRadius=rf.check("cropRadius",Value(40)).asInt();
+        verbosity=rf.check("verbosity");
+        inhibition=false;        
 
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
 
@@ -189,7 +188,7 @@ public:
         optPort.open(("/"+name+"/opt:o").c_str());
         nodesPort.open(("/"+name+"/nodes:o").c_str());
         blobsPort.open(("/"+name+"/blobs:o").c_str());
-        outCropPort.open(("/"+name+"/crop:o").c_str());
+        cropPort.open(("/"+name+"/crop:o").c_str());
 
         firstConsistencyCheck=true;
 
@@ -214,6 +213,7 @@ public:
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
+            fprintf(stdout,"cropRadius        = %d\n",cropRadius);
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             fprintf(stdout,"numThreads        = %d\n",numThreads);
@@ -221,8 +221,7 @@ public:
             fprintf(stdout,"numThreads        = OpenCV version does not support OpenMP multi-threading\n");
         #endif
             
-            fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");
-            fprintf(stdout,"cropRadius        = %d\n",cropRadius);
+            fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");            
             fprintf(stdout,"\n");
         }
         else
@@ -446,38 +445,32 @@ public:
                 nodesPort.write(nodesBottle);
             }
 
-            if ((blobsPort.getOutputCount()>0) && blobsBottle.size())
+            if ((blobsPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
                 blobsPort.setEnvelope(stamp);
                 blobsPort.write(blobsBottle);
             }
             
-            if ((outCropPort.getOutputCount()>0) && blobsBottle.size())
+            if ((cropPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
                 int x=cvRound(blobsBottle.get(0).asList()->get(0).asDouble());
                 int y=cvRound(blobsBottle.get(0).asList()->get(1).asDouble());
                 
-                int radius=cropRadius;
-                
-                if(x-radius<0)
-                    radius=x;
-                if(y-radius<0)
-                    radius=y;
-                if(x+radius>=pImgBgrIn->width())
-                    radius=pImgBgrIn->width()-x-1;
-                if(y+radius>=pImgBgrIn->height())
-                    radius=pImgBgrIn->height()-y-1;
-                
-                ImageOf<PixelBgr> cropImg;
-                cropImg.resize(2*radius,2*radius);
-                
-                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(x-radius,y-radius,2*radius,2*radius));
+                int radius=std::min(cropRadius,x);
+                radius=std::min(radius,y);
+                radius=std::min(radius,pImgBgrIn->width()-x-1);
+                radius=std::min(radius,pImgBgrIn->height()-y-1);                
+                int radius2=radius<<1;
 
+                ImageOf<PixelBgr> cropImg;
+                cropImg.resize(radius2,radius2);
+                
+                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(x-radius,y-radius,radius2,radius2));
                 cvCopy((IplImage*)pImgBgrIn->getIplImage(),(IplImage*)cropImg.getIplImage());
                 cvResetImageROI((IplImage*)pImgBgrIn->getIplImage());
                             
-                outCropPort.setEnvelope(stamp);
-                outCropPort.write(cropImg);
+                cropPort.setEnvelope(stamp);
+                cropPort.write(cropImg);
             }
 
             // save data for next cycle
@@ -513,7 +506,7 @@ public:
         optPort.close();
         nodesPort.close();
         blobsPort.close();
-        outCropPort.close();
+        cropPort.close();
     }
 
     /************************************************************************/
@@ -787,6 +780,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"\t--adjNodesThres     <int>\n");
         fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
         fprintf(stdout,"\t--framesPersistence <int>\n");
+        fprintf(stdout,"\t--cropRadius        <int>\n");
     #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
         fprintf(stdout,"\t--numThreads        <int>\n");
     #endif
