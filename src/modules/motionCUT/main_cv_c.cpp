@@ -67,13 +67,13 @@ protected:
     double recogThresAbs;
     int adjNodesThres;
     int blobMinSizeThres;
-    int framesPersistence;    
+    int framesPersistence;
+    int cropRadius;
     bool verbosity;
     bool inhibition;
     int nodesNum;
     int nodesX;
-    int nodesY;
-    int cropRadius;
+    int nodesY;    
 
 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
     int numThreads;
