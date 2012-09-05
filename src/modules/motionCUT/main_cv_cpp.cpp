@@ -83,6 +83,7 @@ protected:
     BufferedPort<ImageOf<PixelMono> > optPort;
     Port nodesPort;
     Port blobsPort;
+    Port cropPort;
 
 public:
     /************************************************************************/
