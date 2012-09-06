@@ -46,7 +46,7 @@ numberOfPairs N
 MonoCalib value
 \endcode
 
-This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini. You should replace your old calibration file (e.g. icubEyes.ini) with this new one.
+This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in the specified context (default is: $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini). You should replace your old calibration file (e.g. icubEyes.ini) with this new one.
 
 \note If you are using low resolution images (320x240) you should use a big chessboard pattern (i.e. with square side length of ~4cm). 
 \note Make sure to show the pattern horizontally.
@@ -73,8 +73,8 @@ YARP libraries and OpenCV
 - <i> /<stemName>/cam/left:i </i> accepts the incoming images from the left eye. 
 - <i> /<stemName>/cam/right:i </i> accepts the incoming images from the right eye. 
 
-- <i> /<stemName>/cam/left:o </i> outputs the left eye image synchronized with the right eye. 
-- <i> /<stemName>/cam/right:o </i> outputs the right eye image synchronized with the left eye. 
+- <i> /<stemName>/cam/left:o </i> outputs the left eye image.
+- <i> /<stemName>/cam/right:o </i> outputs the right eye image.
 
 - <i> /<stemName>/cmd </i> for terminal commands comunication. 
  Recognized remote commands:
