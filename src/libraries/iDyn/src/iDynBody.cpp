@@ -2610,7 +2610,7 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 	Matrix T_ad;
 	T_ad.resize(6,6);
 	T_ad = adjoint(T0*T1);
-	yarp::sig::Matrix RotZero; RotZero.resize(3,3); RotZero.zero(); 
+	Matrix RotZero; RotZero.resize(3,3); RotZero.zero(); 
 	T_ad.setSubmatrix(RotZero,0,3);
 
 	tmp_Jac.zero();
@@ -2680,6 +2680,7 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         	for (c=0; c<3; c++, ct++){
             	jac(r,ct) *= tmp;
             	jac(r,ct) += tmp2*Jac_Torso(r,c);
+            	fprintf(stderr, "Lacking something here ...\n");
 //!!!!!!!!!!!	STILL NEED TO ADD A FEW LINES WITH THE WEIGHTED GEOMETRIC JACOBIANS FOR EACH ARM.
 
 
