@@ -2678,17 +2678,17 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 	    Vector RcH = rotT0T1*(HDcom.subVector(0,2));
 
 	    // First additional matrix RIGHT ARM
-	    Matrix L1; L1.resize(6,6); L1.zero();
+	    Matrix L1; L1.resize(6,3); L1.zero();
 	    L1.setRow(0,  -1*(Jac_Torso.getRow(5)*RcR(1))     +      Jac_Torso.getRow(4)*RcR(2));
 	    L1.setRow(1,      Jac_Torso.getRow(5)*RcR(0)      +   -1*Jac_Torso.getRow(3)*RcR(2));
 	    L1.setRow(2,  -1*(Jac_Torso.getRow(4)*RcR(0))     +      Jac_Torso.getRow(3)*RcR(1));
 	    // Second additional matrix LEFT ARM
-	    Matrix L2; L2.resize(6,6); L2.zero();
+	    Matrix L2; L2.resize(6,3); L2.zero();
 	    L2.setRow(0,  -1*(Jac_Torso.getRow(5)*RcL(1))     +      Jac_Torso.getRow(4)*RcL(2));
 	    L2.setRow(1,      Jac_Torso.getRow(5)*RcL(0)      +   -1*Jac_Torso.getRow(3)*RcL(2));
 	    L2.setRow(2,  -1*(Jac_Torso.getRow(4)*RcL(0))     +      Jac_Torso.getRow(3)*RcL(1));
 	    // Third addition matrix HEAD
-	    Matrix L3; L3.resize(6,6); L3.zero();
+	    Matrix L3; L3.resize(6,3); L3.zero();
 	    L3.setRow(0,  -1*(Jac_Torso.getRow(5)*RcH(1))     +      Jac_Torso.getRow(4)*RcH(2));
 	    L3.setRow(1,      Jac_Torso.getRow(5)*RcH(0)      +   -1*Jac_Torso.getRow(3)*RcH(2));
 	    L3.setRow(2,  -1*(Jac_Torso.getRow(4)*RcH(0))     +      Jac_Torso.getRow(3)*RcH(1));
@@ -2710,7 +2710,6 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
             	jac(r,ct) += tmp2*Jac_Torso(r,c);
 
             	jac(r,ct) += (upperTorso->total_mass_RT/whole_mass)*L1(r,c) + (upperTorso->total_mass_LF/whole_mass)*L2(r,c) + (upperTorso->total_mass_UP/whole_mass)*L3(r,c);
-//!!!!!!!!!!!	STILL NEED TO ADD A FEW LINES...
             }
             tmp = upperTorso->total_mass_LF /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
             tmp = upperTorso->total_mass_RT /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
