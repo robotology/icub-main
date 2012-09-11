@@ -2614,31 +2614,21 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 	T_ad.setSubmatrix(RotZero,0,3);
 
 	tmp_Jac.zero();
-	tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_LF,0,15); // verificare
+	tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_LF,0,15); 
 	Matrix larm = T_ad*upperTorso->COM_jacob_LF;
 	COM_Jacob+=tmp_Jac;
 
 	tmp_Jac.zero();
-	tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_RT,0,22); // verificare
+	tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_RT,0,22); 
 	Matrix rarm = T_ad*upperTorso->COM_jacob_RT;
 	COM_Jacob+=tmp_Jac;
 
 	tmp_Jac.zero();
 	yarp::sig::Matrix COMHead = upperTorso->COM_jacob_UP;
-	tmp_Jac.setSubmatrix(T_ad*COMHead.submatrix(0,5,0,2),0,29); // verificare
+	tmp_Jac.setSubmatrix(T_ad*COMHead.submatrix(0,5,0,2),0,29);
 	
 	Matrix mm = T_ad*upperTorso->COM_jacob_UP;
 	COM_Jacob+=tmp_Jac;
-
-	
-	//Matrix Jac_Torso = T_ad*lowerTorso->up->GeoJacobian();
-
-	//tmp_Jac.zero();
-	//tmp_Jac.setSubmatrix(Jac_Torso,0,12);
-	//tmp_Jac.setSubmatrix(lowerTorso->COM_jacob_UP,0,12);
-	//COM_Jacob+=tmp_Jac;
-	//COM_Jacob+=tmp_Jac;
-	//COM_Jacob+=tmp_Jac;
 
 //*********************************************************************************************
 //  debug block
@@ -2664,7 +2654,45 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac)
 { 
     jac = COM_Jacob;
-    Matrix Jac_Torso = adjoint(lowerTorso->HUp)*lowerTorso->up->GeoJacobian();
+    Matrix T_rotT0 = adjoint(lowerTorso->HUp);
+   	Matrix RotZero; RotZero.resize(3,3); RotZero.zero(); 
+	T_rotT0.setSubmatrix(RotZero,0,3);
+	// T_rotT0 is a similar Transformation matrix for putting the Torso GeoJacobian from its base link
+	// reference frame to the ROOT reference frame.
+    Matrix Jac_Torso = T_rotT0*lowerTorso->up->GeoJacobian();
+
+		Matrix T0 = lowerTorso->HUp;
+		Matrix T1 = lowerTorso->up->getH(2,true);
+	    Matrix H_T0T1; H_T0T1.resize(4,4); H_T0T1 = T0*T1; 
+	    Matrix rotT0T1; rotT0T1.resize(3,3); rotT0T1 = H_T0T1.submatrix(0,2,0,2);
+	    // Left Arm COM seen from Root RcL i.e. R*NcL where NcL is the COM vector of the left arm w.r.t. Neck 	    
+   	    Vector LFcom; LFcom = upperTorso->total_COM_LF;
+	    Vector RcL = rotT0T1*(LFcom.subVector(0,2));
+
+	    // Right Arm COM seen from Root RcR i.e. R*NcR where NcR is the COM vector of the left arm w.r.t. Neck 
+   	    Vector RTcom; RTcom = upperTorso->total_COM_RT;
+	    Vector RcR = rotT0T1*(RTcom.subVector(0,2));
+
+	    //Head COM Seen from ROOT RcH i.e. R*NcH where NcH is the com of the head w.r.t the Neck
+		Vector HDcom; HDcom = upperTorso->total_COM_UP;
+	    Vector RcH = rotT0T1*(HDcom.subVector(0,2));
+
+	    // First additional matrix RIGHT ARM
+	    Matrix L1; L1.resize(6,6); L1.zero();
+	    L1.setRow(0,  -1*(Jac_Torso.getRow(5)*RcR(1))     +      Jac_Torso.getRow(4)*RcR(2));
+	    L1.setRow(1,      Jac_Torso.getRow(5)*RcR(0)      +   -1*Jac_Torso.getRow(3)*RcR(2));
+	    L1.setRow(2,  -1*(Jac_Torso.getRow(4)*RcR(0))     +      Jac_Torso.getRow(3)*RcR(1));
+	    // Second additional matrix LEFT ARM
+	    Matrix L2; L2.resize(6,6); L2.zero();
+	    L2.setRow(0,  -1*(Jac_Torso.getRow(5)*RcL(1))     +      Jac_Torso.getRow(4)*RcL(2));
+	    L2.setRow(1,      Jac_Torso.getRow(5)*RcL(0)      +   -1*Jac_Torso.getRow(3)*RcL(2));
+	    L2.setRow(2,  -1*(Jac_Torso.getRow(4)*RcL(0))     +      Jac_Torso.getRow(3)*RcL(1));
+	    // Third addition matrix HEAD
+	    Matrix L3; L3.resize(6,6); L3.zero();
+	    L3.setRow(0,  -1*(Jac_Torso.getRow(5)*RcH(1))     +      Jac_Torso.getRow(4)*RcH(2));
+	    L3.setRow(1,      Jac_Torso.getRow(5)*RcH(0)      +   -1*Jac_Torso.getRow(3)*RcH(2));
+	    L3.setRow(2,  -1*(Jac_Torso.getRow(4)*RcH(0))     +      Jac_Torso.getRow(3)*RcH(1));
+
     unsigned int r,c,ct=0;
     double tmp, tmp2; tmp = tmp2 = 0.0;
     switch (which_part) 
@@ -2677,13 +2705,12 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
             tmp = lowerTorso->total_mass_RT /  whole_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
             tmp = lowerTorso->total_mass_UP /  whole_mass;
         	tmp2 = upperTorso->total_mass_LF/whole_mass + upperTorso->total_mass_RT/whole_mass + upperTorso->total_mass_UP/whole_mass;
-        	for (c=0; c<3; c++, ct++){
+        	for (c=0; c<3; c++, ct++){                                                          
             	jac(r,ct) *= tmp;
             	jac(r,ct) += tmp2*Jac_Torso(r,c);
-            	fprintf(stderr, "Lacking something here ...\n");
-//!!!!!!!!!!!	STILL NEED TO ADD A FEW LINES WITH THE WEIGHTED GEOMETRIC JACOBIANS FOR EACH ARM.
 
-
+            	jac(r,ct) += (upperTorso->total_mass_RT/whole_mass)*L1(r,c) + (upperTorso->total_mass_LF/whole_mass)*L2(r,c) + (upperTorso->total_mass_UP/whole_mass)*L3(r,c);
+//!!!!!!!!!!!	STILL NEED TO ADD A FEW LINES...
             }
             tmp = upperTorso->total_mass_LF /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
             tmp = upperTorso->total_mass_RT /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
