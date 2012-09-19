@@ -46,7 +46,7 @@
 <connection>
   <from>/stereoCalib/cam/right:o</from>
   <to>/right_image</to>
-  <protocol>udp</protocol>
+  <protocol>udp</protocol> <!-- mcast+recv.bayer+method.nearest -->
 </connection>
 
 </application>
