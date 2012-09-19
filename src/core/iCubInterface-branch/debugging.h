@@ -25,6 +25,7 @@
 
 extern FILE *AC_trace_file;
 extern FILE *AC_debug_file;
+extern FILE *AC_error_file;
 
 #ifdef _AC_
     #define print_debug(args...)  fprintf(args)
