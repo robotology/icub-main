@@ -117,23 +117,22 @@ private:
    	uint16_t 					udppkt_size;
 
    	// Protocol handlers
-   	PolyDriver					createProtocolHandler;
+//   	PolyDriver					createProtocolHandler;
 
 
    	// Motion control handlers
-   	PolyDriver					createMotionControlHandler;
+//   	PolyDriver					createMotionControlHandler;
 
-   	PolyDriver					createSkinHandler;
-   	PolyDriver					createAnalogHandler;
+//   	PolyDriver					createSkinHandler;
+//   	PolyDriver					createAnalogHandler;
 
 public:
 
 	EMS_ID						id;
    	hostTransceiver				*transceiver;
 	ACE_TCHAR					address[64];
-   	/*embObjMotionControl*/ DeviceDriver			*motionCtrl;
-	ethResources();
 
+	ethResources();
     ~ethResources();
 
     uint8_t 					recv_msg[512];
@@ -157,7 +156,6 @@ public:
 // -------------------------------------------------------------------\\
 
 
-
 class yarp::dev::ethResCreator: public std::list<ethResources *>,
 								public IEmbObjResList
 {
@@ -167,8 +165,7 @@ class yarp::dev::ethResCreator: public std::list<ethResources *>,
 		static bool					initted;
 		int							how_many_boards;
 		FEAT_ID						linkTable[MAX_ICUB_EP];
-		map 						<uint8_t, FEAT_ID> class_lut;
-
+		map 						<eOnvEP_t, FEAT_ID> class_lut;
 
 		ethResCreator();
 		~ethResCreator();
@@ -178,7 +175,8 @@ class yarp::dev::ethResCreator: public std::list<ethResources *>,
 		static ethResCreator* 		instance();
 		ethResources* 				getResource(yarp::os::Searchable &config);
 		void 						addLUTelement(FEAT_ID id);
-		void *						getHandleFromEP(uint8_t ep);
+		void *						getHandleFromEP(eOnvEP_t ep);
+		FEAT_ID 					getFeatInfoFromEP(uint8_t ep);
 		virtual uint8_t*			find(EMS_ID &id);
 };
 

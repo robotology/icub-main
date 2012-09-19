@@ -7,14 +7,12 @@ PREPARE_DEVICE(embObjMotionControl TYPE embObjMotionControl
     WRAPPER controlboard)
 
  IF (NOT SKIP_embObjMotionControl)
-	#add_definitions( -DBOOST_FILESYSTEM_VERSION=2 )
-	set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 	include(../embObjLib/embObjLib.conf)
-#  	message(INFO " embMotCtrl - embObj_includes: ${embObj_includes}")
+    #  	message(INFO " embMotCtrl - embObj_includes: ${embObj_includes}")
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )
 
 	ADD_LIBRARY(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h )
-	TARGET_LINK_LIBRARIES(embObjMotionControl ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+	TARGET_LINK_LIBRARIES(embObjMotionControl embObjLib ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 	icub_export_library(embObjMotionControl)
 ENDIF (NOT SKIP_embObjMotionControl)
 

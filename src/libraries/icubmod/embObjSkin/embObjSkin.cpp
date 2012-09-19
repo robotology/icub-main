@@ -99,19 +99,32 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	for (int i=0; i < ttt; i++)
 		data[i]=(double)255;
 
+	// fill FEAT_ID data
 	memset(&_fId, 0x00, sizeof(FEAT_ID) );
+	_fId.ep = 255;
 	_fId.type = Skin;
 	std::string FeatId = config.find("FeatId").asString().c_str();
 	cout << "FeatId = " << FeatId << endl;
 	strcpy(_fId.name, FeatId.c_str());
 
+#warning "Fix this"
 	if( 0 == strcmp("left_arm", _fId.name) )
 		_fId.ep = endpoint_sk_emsboard_leftlowerarm;		// fare in maniera più sicura
 
 	if( 0 == strcmp("right_arm", _fId.name) )
 		_fId.ep = endpoint_sk_emsboard_rightlowerarm;
 
+
+	if(255 == _fId.ep)
+	{
+		printf("\n ERROR: MotionControl endpoint not found!!!\n");
+		return false;
+	}
+
 	_fId.handle = dynamic_cast<IiCubFeature*> (this);		//weird behaviour
+	// Save eo data of this board/EP
+	res->transceiver->getHostData(&_fId.EPvector, &_fId.EPhash_function);
+
 	resList->addLUTelement(_fId);
 
 	//RateThread::start();

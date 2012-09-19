@@ -68,13 +68,15 @@ using namespace std;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
+#include "FeatureInterface.h"
+
 #include "EoMotionControl.h"
 #include <ethManager.h>
 //#include "../ethManager/ethManager.h"
 #include "../embObjLib/hostTransceiver.hpp"
 #include "IRobotInterface.h"
-#include "FeatureInterface.h"
 
+#include "eoRequestsQueue.hpp"
 
 #include "debugging.h"
 
@@ -93,7 +95,8 @@ namespace yarp{
     }
 }
 
-void copyPid2eo(Pid in, eOmc_PID_t *out);
+void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
+void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
 class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							// public PolyDriver,
@@ -115,7 +118,7 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 				            public IFactoryInterface
 {
 private:
-    int 					ret, tot_packet_recv, errors;
+    int 					tot_packet_recv, errors;
     tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
     char 					recv_time_string[40];
@@ -130,7 +133,6 @@ private:
     FEAT_ID					_fId;
 
 	// Joint/Mechanical data
-	int						_njoints;	// Number of joints handled by this EMS; this values will be extracted by the config file
 
     int _networkN;								/** network number */
     unsigned char *_destinations;       		/** destination addresses */
@@ -158,6 +160,21 @@ private:
 	double *_maxTorque;						    /** Max torque of a joint */
 	double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
 
+// basic knowledge of my joints
+	int		_njoints;							// Number of joints handled by this EMS; this values will be extracted by the config file
+    int 	_firstJoint;						// in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
+
+
+    // internal stuff
+    bool    *_enabledAmp;		// Middle step toward fully enable of the motor controller. Amp (pwm) plus Pid enable command must be sent to get the joint to move.
+    double 	*_ref_positions;		// used for position control.
+    double 	*_ref_speeds;		// used for position control.
+    double 	*_command_speeds;	// used for velocity control.
+    double 	*_ref_accs;			// for velocity control, in position min jerk eq is used.
+	double 	*_ref_torques;		// for torque control.
+
+
+	uint16_t 		NVnumber;		// keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 
 public:
     embObjMotionControl();
@@ -165,10 +182,11 @@ public:
 
     char					info[SIZE_INFO];
     Semaphore				semaphore;
+	eoRequestsQueue			*requestQueue;	// tabella che contiene la lista delle attese
+    ethResources 			*res;
 
-    yarp::os::ConstString ethDevName;
-    PolyDriver resource;
-    ethResources *res;
+    //debug
+    yarp::os::ConstString 	ethDevName;
 
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
@@ -183,6 +201,7 @@ public:
 
 
     bool __init(void);
+
     ///////// 	PID INTERFACE		/////////
     virtual bool setPidRaw(int j, const Pid &pid);
     virtual bool setPidsRaw(const Pid *pids);
@@ -204,6 +223,26 @@ public:
     virtual bool disablePidRaw(int j);
     virtual bool enablePidRaw(int j);
     virtual bool setOffsetRaw(int j, double v);
+
+	/// POSITION CONTROL INTERFACE RAW
+	virtual bool getAxes(int *ax);
+	virtual bool setPositionModeRaw();
+	virtual bool positionMoveRaw(int j, double ref);
+	virtual bool positionMoveRaw(const double *refs);
+	virtual bool relativeMoveRaw(int j, double delta);
+	virtual bool relativeMoveRaw(const double *deltas);
+	virtual bool checkMotionDoneRaw(bool *flag);
+	virtual bool checkMotionDoneRaw(int j, bool *flag);
+	virtual bool setRefSpeedRaw(int j, double sp);
+	virtual bool setRefSpeedsRaw(const double *spds);
+	virtual bool setRefAccelerationRaw(int j, double acc);
+	virtual bool setRefAccelerationsRaw(const double *accs);
+	virtual bool getRefSpeedRaw(int j, double *ref);
+	virtual bool getRefSpeedsRaw(double *spds);
+	virtual bool getRefAccelerationRaw(int j, double *acc);
+	virtual bool getRefAccelerationsRaw(double *accs);
+	virtual bool stopRaw(int j);
+	virtual bool stopRaw();
 
     ///////// 	Velocity control interface raw	/////////
      virtual bool setVelocityModeRaw();
@@ -227,25 +266,7 @@ public:
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
     virtual bool doneRaw(int j);
 
-	/// POSITION CONTROL INTERFACE RAW
-	virtual bool getAxes(int *ax);
-	virtual bool setPositionModeRaw();
-	virtual bool positionMoveRaw(int j, double ref);
-	virtual bool positionMoveRaw(const double *refs);
-	virtual bool relativeMoveRaw(int j, double delta);
-	virtual bool relativeMoveRaw(const double *deltas);
-	virtual bool checkMotionDoneRaw(bool *flag);
-	virtual bool checkMotionDoneRaw(int j, bool *flag);
-	virtual bool setRefSpeedRaw(int j, double sp);
-	virtual bool setRefSpeedsRaw(const double *spds);
-	virtual bool setRefAccelerationRaw(int j, double acc);
-	virtual bool setRefAccelerationsRaw(const double *accs);
-	virtual bool getRefSpeedRaw(int j, double *ref);
-	virtual bool getRefSpeedsRaw(double *spds);
-	virtual bool getRefAccelerationRaw(int j, double *acc);
-	virtual bool getRefAccelerationsRaw(double *accs);
-	virtual bool stopRaw(int j);
-	virtual bool stopRaw();
+
 	//
 	/////////////////////////////// END Position Control INTERFACE
 

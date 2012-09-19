@@ -36,6 +36,7 @@ bool keepGoingOn2 = true;
 #ifdef _AC_
 FILE *AC_trace_file = stdout;
 FILE *AC_debug_file = stdout;
+FILE *AC_error_file = stderr;
 #endif
 
 
@@ -79,8 +80,6 @@ ethResources::~ethResources()
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
-#warning "pick up the right board number: now using 4th number of ip address"
-	uint8_t board_n = -1;
 	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
 	Value val;
@@ -141,27 +140,26 @@ bool ethResources::open(yarp::os::Searchable &config)
 
 	ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
 
+	// Get the pointer to the actual Singleton ethManager, or create it if it's the first time.
 	theEthManager_h = TheEthManager::instance(loc_dev);
 	remote_dev.addr_to_string(address, 64);
 	theEthManager_h->register_device(address, this);
 
 
-	// Get the pointer to the actual Singleton ethManager, or create it if it's the first time.
-
 	//
 	//	EMBOBJ INIT
 	//
-	// Init  -- nel pc104 quale utilità hanno gli indirizzi ip utilizzati qui??
-	//transceiver= new hostTransceiver;
-	transceiver= new hostTransceiver;
-	//	createProtocolHandler.open("hostTransceiver");
-	//	createProtocolHandler.view(transceiver);
 
-	transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
+	if ( ( boardNum >= FIRST_BOARD) && ( boardNum <= LAST_BOARD) )
+	{
+		transceiver= new hostTransceiver;
+		transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
+	}
 
+#if 0
 	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
 	// Clean device and subdevice fileds
-#if 0
+
 	Property prop;
 	string str=config.toString().c_str();
 	xtmp = Bottle(config.findGroup("FEATURES"));
@@ -331,7 +329,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	return newRes;
 }
 
-bool	ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
+bool ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
 {
 	if( (id2beFound.ip1 == nextId.ip1) && (id2beFound.ip2 == nextId.ip2) && (id2beFound.ip3 == nextId.ip3) && (id2beFound.ip4 == nextId.ip4) )
 		return true;
@@ -366,11 +364,15 @@ void ethResCreator::addLUTelement(FEAT_ID id)
 	//ethResCreator::class_lut[id.ep] = id;		// does the same??
 }
 
-void *ethResCreator::getHandleFromEP(uint8_t ep)
+void *ethResCreator::getHandleFromEP(eOnvEP_t ep)
 {
 	return ethResCreator::class_lut[ep].handle;
 }
 
+FEAT_ID ethResCreator::getFeatInfoFromEP(uint8_t ep)
+{
+	return ethResCreator::class_lut[ep];
+}
 
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
@@ -577,7 +579,7 @@ void *recvThread(void * arg)
 		recv_size = _socket->recv((void *) incoming_msg, n, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
-		//	printf("Received new packet from address %s, size = %d\n", address, recv_size);
+		//printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
 		if( recv_size > 0)
 		{

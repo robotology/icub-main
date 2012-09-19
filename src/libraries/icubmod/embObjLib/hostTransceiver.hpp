@@ -44,15 +44,7 @@
 #include "eOcfg_nvsEP_mc.h"
 #include "eOcfg_nvsEP_sk.h"
 
-#include "eOcfg_EPs_eb1.h"
-#include "eOcfg_EPs_eb2.h"
-#include "eOcfg_EPs_eb3.h"
-#include "eOcfg_EPs_eb4.h"
-#include "eOcfg_EPs_eb5.h"
-#include "eOcfg_EPs_eb6.h"
-#include "eOcfg_EPs_eb7.h"
-#include "eOcfg_EPs_eb8.h"
-#include "eOcfg_EPs_eb9.h"
+#include "eOcfg_EPs_board.h"
 
 
 #include <yarp/dev/DeviceDriver.h>
@@ -63,19 +55,22 @@ class hostTransceiver : public DeviceDriver
 //						public ITransceiver
 {
 private:
-	EOhostTransceiver*  hosttxrx;
-	EOtransceiver*      pc104txrx;
-	EOnvsCfg*           pc104nvscfg;
-	uint32_t            localipaddr;
-	uint32_t            remoteipaddr;
-	uint16_t            ipport;
-	EOpacket*           pktTx;
-	EOpacket*           pktRx;
+	EOhostTransceiver*  	hosttxrx;
+	EOtransceiver*      	pc104txrx;
+	EOnvsCfg*           	pc104nvscfg;
+	uint32_t            	localipaddr;
+	uint32_t            	remoteipaddr;
+	uint16_t            	ipport;
+	EOpacket*           	pktTx;
+	EOpacket*           	pktRx;
+
+
 
 public:
 	hostTransceiver();
     ~hostTransceiver();
-
+	const EOconstvector* 	EPvector;
+	eOuint16_fp_uint16_t 	EPhash_function_ep2index;
 	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
 	// as an alternative ... create one methd which clears the remote vars, one which pushes one ack, and another the confirms them all.
@@ -103,6 +98,11 @@ public:
 	void getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
 	EOnv* getNVhandler(uint16_t endpoint, uint16_t id);
 	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
+
+	void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
+
+	uint16_t getNVnumber(int boardNum, eOnvEP_t ep);
+	uint16_t translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid);
 };
 
 #endif  // include-guard

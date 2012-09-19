@@ -2,17 +2,16 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME ethResources)
+SET(PROJECTNAME embObjLib)
 PROJECT(${PROJECTNAME})
 
 add_definitions( -D_ICUB_CALLBACK_ )
 
-PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}
-    			INCLUDE ethManager.h )
+PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h )
 
-set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
-set(EXTRA_FOLDER  	${CMAKE_CURRENT_SOURCE_DIR}/)
-set(TRANSCEIVER_FOLDER	$ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/ )
+
+set(EXTRA_FOLDER  	    ${CMAKE_CURRENT_SOURCE_DIR}/)
+set(TRANSCEIVER_FOLDER	${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/ )
 
 #add_definitions( -DMYDEFINE=CIAO )
 
@@ -31,12 +30,13 @@ set(TRANSCEIVER_FOLDER	$ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/ )
 set(BODY_COMMON_SOURCE 		${BODY_COMMON_FOLDER}/eEcommon.c)
 set(BODY_COMMON_HEADER 		${BODY_COMMON_FOLDER}/eEcommon.h)
 
-set(ICUB_INTERFACE_SOURCE	${ICUB_INTERFACE_CORE_FOLDER}/robotInterface/FeatureInterface.cpp
+set(ICUB_INTERFACE_SOURCE	${EXTRA_FOLDER}/FeatureInterface.cpp
 #							${ICUB_INTERFACE_CORE_FOLDER}RobotInterfaceRemap.cpp
 							)
 
 # Network Variable configuration# Network Variable configuration
-set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb1.c  
+set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_board.c  
+							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb1.c
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb2.c
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb3.c  
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb4.c
@@ -115,11 +115,11 @@ set(NVS_SKIN_SOURCE			${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk.c
 
 set(NVS_CBK_SOURCE			${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
 							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_pippo.c
-
 #							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c
 #							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c														
 #							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
 #							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c
+#                            ${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_right_arm_usrcbk.cpp
 							)
 
 
@@ -219,7 +219,8 @@ set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
 
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/ethManager.cpp
-						${EXTRA_FOLDER}/tools/debugFunctions.cpp)
+						${EXTRA_FOLDER}/tools/debugFunctions.cpp
+						${EXTRA_FOLDER}/eoRequestsQueue.cpp)
 
 set(embobj_source 		${BODY_COMMON_SOURCE} 
 						${CORE_FOLDER_SOURCE} 

@@ -141,6 +141,10 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
 
     pktTx = eo_packet_New(_pktsize);
     pktRx = eo_packet_New(_pktsize);
+
+    // save board specific configs for later use (they may be needed by some callbacks)
+	EPvector = hosttxrxcfg.vectorof_endpoint_cfg;
+	EPhash_function_ep2index = hosttxrxcfg.hashfunction_ep2index;
 }
 
 void hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
@@ -460,8 +464,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 	// if the nvscfg does not have the triple (ip, ep, id) then we return an error
 	if(eores_OK != res)
 	{
-		// Do something about this case
-//		YARP_ERROR(Logger::get(), " WTF!! NV not found!!!\n",  Logger::get().log_files.f3);
+		// Do something about this case?
 	}
 	else
 	{
@@ -483,21 +486,35 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id)
 
 void hostTransceiver::getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size)
 {
-	// AC_YARP_INFO(Logger::get(),"hostTransceiver::getNVvalue", Logger::get().log_files.f3);
-
-    if (NULL != nvRoot)
+    if (NULL == nvRoot)
     {
-		// get te actual value
-		eo_nv_remoteGet(nvRoot, data, size);
+    	return;
 	}
+
+    eo_nv_remoteGet(nvRoot, data, size);
 }
 
 
+void hostTransceiver::getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function)
+{
+	*pEPvector = EPvector;
+	*pEPhash_function = EPhash_function_ep2index;
+}
 
+uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
+{
+	const EOconstvector* EPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
+	uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
+	return eo_cfg_nvsEP_board_NVs_endpoint_numberof_get(EPvector, epindex);
+}
 
-
-
-
+uint16_t hostTransceiver::translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid)
+{
+	EOconstvector* pEPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
+	uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
+	eOnvscfg_EP_t* EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(pEPvector,  epindex);
+	return eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
