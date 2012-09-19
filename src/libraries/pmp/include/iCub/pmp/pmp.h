@@ -21,7 +21,9 @@
  * @ingroup icub_libraries 
  *  
  * Abstract class for dealing with the Passive Motion Paradigm 
- * (PMP) control. 
+ * (PMP) control whose implementation resorts to the <a 
+ * href="http://eris.liralab.it/viki/images/5/5a/DForC.pdf">DForC</a> 
+ * approach. 
  *  
  * For further details please refer to the <a 
  * href="http://eris.liralab.it/wiki/Pmp_Library">wiki</a>. 
