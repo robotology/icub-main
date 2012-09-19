@@ -11,10 +11,6 @@
 
 #include <iostream>
 
-// _AC_
-//#include "../../libraries/icubmod/ethManager/iCubDeviceInterface.h"
-//#include "../../libraries/icubmod/ethManager/ethManager.h"
-
 using namespace std;
 
 inline void appendTimeStamp(Bottle &bot, Stamp &st)
@@ -813,6 +809,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
                             fprintf(stderr, "Issues while trying to command an open loop message\n");
                     }
             }
+            break;
         default:
             {
                 // AC_YARP_INFO(Logger::get(),"ControlBoardWrapper -- ImplementCallbackHelper2::default", Logger::get().log_files.f3);

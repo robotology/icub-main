@@ -42,6 +42,7 @@
 #include <yarp/dev/Wrapper.h>
 
 //#include <list>
+#include <vector>
 #include <iostream>
 #include <string>
 #include <sstream>
