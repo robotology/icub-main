@@ -91,4 +91,70 @@ Vector Kalman::filt(const Vector &z)
 }
 
 
+/**********************************************************************/
+bool Kalman::set_A(const yarp::sig::Matrix &_A)
+{
+    if ((_A.cols()==A.cols()) && (_A.rows()==A.rows()))
+    {
+        A=_A;
+        At=A.transposed();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**********************************************************************/
+bool Kalman::set_B(const yarp::sig::Matrix &_B)
+{
+    if ((_B.cols()==B.cols()) && (_B.rows()==B.rows()))
+    {
+        B=_B;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**********************************************************************/
+bool Kalman::set_H(const yarp::sig::Matrix &_H)
+{
+    if ((_H.cols()==H.cols()) && (_H.rows()==H.rows()))
+    {
+        H=_H;
+        Ht=H.transposed();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**********************************************************************/
+bool Kalman::set_Q(const yarp::sig::Matrix &_Q)
+{
+    if ((_Q.cols()==Q.cols()) && (_Q.rows()==Q.rows()))
+    {
+        Q=_Q;
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**********************************************************************/
+bool Kalman::set_R(const yarp::sig::Matrix &_R)
+{
+    if ((_R.cols()==R.cols()) && (_R.rows()==R.rows()))
+    {
+        R=_R;
+        return true;
+    }
+    else
+        return false;
+}
+
 
