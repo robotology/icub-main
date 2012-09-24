@@ -59,7 +59,7 @@ using namespace std;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-#define _ICUB_CALLBACK_
+//#define _ICUB_CALLBACK_
 
 using namespace std;
 

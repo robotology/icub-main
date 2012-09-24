@@ -38,6 +38,7 @@
 #include <ace/Thread.h>
 #include <yarp/os/Semaphore.h>
 #include <list>
+#include "ace/Semaphore.h"
 
 #include "debugging.h"
 
@@ -69,13 +70,16 @@ private:
 	// Semaphore where the thread will sleep onto -> change to ACE_semaphore because it supports timeouts
 	ACE_thread_t _handle;
 	yarp::os::Semaphore _synch;
+	//ACE_Semaphore _synch;
 	int _pending;
-    int _timedOut;
 
+
+	int _timedOut;
     int _replied;   // needed?
 
     // internal mutex, to avoid concurrent operationss
     yarp::os::Semaphore _mutex;
+
 
     inline void lock()
     { _mutex.wait(); }
@@ -86,6 +90,8 @@ private:
 public:
     eoThreadEntry();
     ~eoThreadEntry();
+
+	eoThreadId id;
 
     void clear();
 
@@ -104,8 +110,7 @@ public:
 
     // wait on semaphore, usually thread sleeps here after
     // has issued a list of requests to the can
-    void synch()
-    { _synch.wait(); }
+    int synch();
 
     // true if there are pending requests
     bool pending()
@@ -168,6 +173,7 @@ private:
         i=index;
         index++;
         pool[i].handle()=s;
+        pool[i].id = index;
         return true;
     }
 
@@ -195,7 +201,7 @@ public:
         index=0;
     }
 
-    bool getId(int &i);
+    bool getId(int *i);
 
     inline eoThreadEntry *getThreadTable(int id)
     {
@@ -255,6 +261,7 @@ public:
 
     // append requests
     void append(const eoRequest &rqst);
+    bool cleanTimeouts(eoThreadId id);
 
     inline int getNMessages()       {return num_of_messages;}
     inline int getPending()      	{return whole_pendings;}

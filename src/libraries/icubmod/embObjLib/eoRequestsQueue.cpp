@@ -24,7 +24,7 @@ eoThreadArray::~eoThreadArray()
 	delete [] pool;
 }
 
-bool eoThreadArray::getId(int &i)
+bool eoThreadArray::getId(int *i)
 {
     ACE_thread_t self=ACE_Thread::self();
     int id;
@@ -35,7 +35,7 @@ bool eoThreadArray::getId(int &i)
         {
             ret=getNew(self,id);
         }
-    i=id;
+    *i=id;
     return ret;
 }
 
@@ -64,25 +64,18 @@ void eoThreadEntry::init(void)
 
 }
 
-
-/* Non dovrebbero più servire
-
-yarp::dev::CanMessage *eoThreadEntry::get(int n)
+int eoThreadEntry::synch()
 {
-    if (n<0 || n>=_replied)
-        return 0;
+	double timeout = 0.5f;
 
-    return &_replies[n];
-}
+	if( -1 == _synch.waitWithTimeout(timeout))
+	{
+		printf("Semaphore timed out!!\n");
+		return -1;
+	}
 
-yarp::dev::CanMessage *eoThreadEntry::getByJoint(int j, const unsigned char *destInv)
-{
-    for(int k=0;k<_replied;k++)
-        if (getJoint(_replies[k], destInv)==j)
-            return &_replies[k];
-    return 0;
+	return 0;
 }
- */
 
 bool eoThreadEntry::push(void)
 {
@@ -97,7 +90,7 @@ bool eoThreadEntry::push(void)
 	return true;
 }
 
-bool eoThreadEntry::timeout()
+bool eoThreadEntry::timeout( )
 {
 	lock();
 	_replied++;
@@ -197,4 +190,28 @@ void eoRequestsQueue::append(const eoRequest &rqst)
 
 	fifo->push(rqst.threadId);
 	whole_pendings++;
+}
+
+bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
+{
+	for(int i=0; i<getNMessages(); i++)
+	{
+		eoThreadFifo *fifo=getFifo(i);
+        std::list<eoThreadId>::iterator it=fifo->begin();
+        std::list<eoThreadId>::iterator end=fifo->end();
+        while(it!=end)
+        {
+        	printf("thread Id %d\n", *it);
+        	if( (*it) == id )
+        	{
+        		printf("Got it!!\n ");
+        		it=fifo->erase(it);  //it now points to the next element
+        	}
+        	else
+        		it++;
+        }
+	}
+	 // anything can be wrong here?? maybe if I don't find any requests issued by this thread, this means there is some mess here
+	// ... but what can I do about it?
+	return true;
 }

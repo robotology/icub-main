@@ -51,8 +51,6 @@
 #define eb5_ip "192.168.202.1"
 #define eb6_ip "10.0.0.100"
 
-#define eb5_ip "10.0.0.101"
-
 
 #define	BOARD_NUM					7
 #define SOGLIA						1700

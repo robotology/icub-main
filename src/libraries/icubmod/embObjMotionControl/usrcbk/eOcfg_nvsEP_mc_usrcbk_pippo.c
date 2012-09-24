@@ -213,6 +213,23 @@ static MYmotionController themotioncontrollers[3];
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
 
+bool jwake(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, eOcfg_nvsEP_mc_jointNVindex_t nv_name)
+{
+	void *handler = (void*) get_MChandler_fromEP(nv->ep);
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);
+	uint16_t epindex, nvindex;
+	EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
+	MCmutex_post(handler, epindex, nvindex);
+}
+
+bool mwake(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv,  eOcfg_nvsEP_mc_motorNVindex_t nv_name)
+{
+	void *handler = (void*) get_MChandler_fromEP(nv->ep);
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get(nv->ep, xx, nv_name);
+	uint16_t epindex, nvindex;
+	EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
+	MCmutex_post(handler, epindex, nvindex);
+}
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
@@ -291,14 +308,15 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig__maxcurrentofmotor(eOcfg_nvsEP_
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
-	printf("jconfig__pidposition Callback\n");
-	void *handler = (void*) get_MChandler_fromEP(nv->ep);
-	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, jointNVindex_jconfig__pidposition);
-	uint16_t epindex, nvindex;
-	EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
-	MCmutex_post(handler, epindex, nvindex);
+	printf("jconfig__pidposition Callback, j=%d\n", xx);
+	jwake(xx, nv, jointNVindex_jconfig__pidposition);
 }
 
+extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+{
+	printf("jconfig__pidposition controlmode, j=%d\n", xx);
+	jwake(xx, nv, jointNVindex_jconfig__controlmode);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)

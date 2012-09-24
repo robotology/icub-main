@@ -34,7 +34,6 @@ typedef enum
 }FeatureType;
 
 
-
 typedef struct
 {
 	uint8_t				 boardNum;
@@ -42,7 +41,7 @@ typedef struct
 	void				 *handle;
 
 	// eoStuff
-	const EOconstvector		 *EPvector;
+	const EOconstvector	*EPvector;
 	eOuint16_fp_uint16_t EPhash_function;
 
 	// Following are additional and optional info, DO NOT COUNT ON THEM as identifiers for searches!!

@@ -98,9 +98,8 @@ namespace yarp{
 void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
 void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
+
 class yarp::dev::embObjMotionControl: 	public DeviceDriver,
-							// public PolyDriver,
-							public os::RateThread,
 							public IPidControlRaw,
 							public IControlCalibration2Raw,
 							public IAmplifierControlRaw,
@@ -114,8 +113,7 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public ImplementPositionControl<embObjMotionControl, IPositionControl>,
 							public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
 				            public ImplementPidControl<embObjMotionControl, IPidControl>,
-				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
-				            public IFactoryInterface
+				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>
 {
 private:
     int 					tot_packet_recv, errors;
@@ -193,14 +191,12 @@ public:
     virtual bool close();
 
     // _AC_
- //   bool configureTransceiver(ITransceiver *trans);
+    eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);
     void getMotorController(DeviceDriver *iMC);
-    void waitSem();
-    void postSem();
+//    void waitSem();
+//    void postSem();
     bool alloc(int nj);
-
-
-    bool __init(void);
+    bool init(void);
 
     ///////// 	PID INTERFACE		/////////
     virtual bool setPidRaw(int j, const Pid &pid);
@@ -251,16 +247,16 @@ public:
 
 
     // calibration
-    virtual bool calibrate(int axis, unsigned int type, double p1, double p2, double p3);
+//    virtual bool calibrate(int axis, unsigned int type, double p1, double p2, double p3);
 //    virtual bool done(int j);
 
     // calibrationraw
-    virtual bool calibrateRaw(int j, double p);
+//    virtual bool calibrateRaw(int j, double p);
 //    virtual bool doneRaw(int j);
 
-    // calibration2
-    virtual bool calibrate2(int axis, unsigned int type, double p1, double p2, double p3);
-    virtual bool done(int j);
+//    // calibration2
+//    virtual bool calibrate2(int axis, unsigned int type, double p1, double p2, double p3);
+//    virtual bool done(int j);
 
     // calibration2raw
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
@@ -307,15 +303,6 @@ public:
 	virtual bool getAmpStatusRaw(int j, int *st);
 	/////////////// END AMPLIFIER INTERFACE
 
-
-    ////////////// IFactoryInterface
-    yarp::dev::DeviceDriver *createDevice(yarp::os::Searchable& config);
-
-protected:
-   // Tread
-   virtual void run(void);
-   virtual bool threadInit();
-   virtual void threadRelease();
 };
 
 #endif // include guard

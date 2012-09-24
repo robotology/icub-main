@@ -12,7 +12,7 @@ PREPARE_DEVICE(embObjMotionControl TYPE embObjMotionControl
 	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )
 
 	ADD_LIBRARY(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h )
-	TARGET_LINK_LIBRARIES(embObjMotionControl embObjLib ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+	TARGET_LINK_LIBRARIES(embObjMotionControl ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 	icub_export_library(embObjMotionControl)
 ENDIF (NOT SKIP_embObjMotionControl)
 

@@ -18,13 +18,11 @@
 
 // embObj includes
 
+#include "embObjMotionControl.h"
+
 // Boards configurations
 #include "EOnv_hid.h"
-#include "EoMotionControl.h"
 
-
-#include "embObjMotionControl.h"
-#include "debugging.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -45,6 +43,31 @@ inline T* allocAndCheck(int size)
     return t;
 }
 */
+
+// Utilities
+
+void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
+{
+	out->kp = in->kp;
+	out->ki = in->ki;
+	out->kd = in->kd;
+	out->limitonintegral = in->max_int;
+	out->limitonoutput = in->max_output;
+	out->offset = in->offset;
+	out->scale = in->scale;
+}
+
+void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
+{
+	out->kp = in->kp;
+	out->ki = in->ki;
+	out->kd = in->kd;
+	out->max_int = in->limitonintegral;
+	out->max_output = in->limitonoutput;
+	out->offset = in->offset;
+	out->scale = in->scale;
+}
+
 
 inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
@@ -133,17 +156,17 @@ bool readAndCheckFromConfigData(Bottle &input, Bottle &out, const std::string &k
     return true;
 }
 
-void embObjMotionControl::waitSem()
-{
-	semaphore.wait();
-}
+//void embObjMotionControl::waitSem()
+//{
+//	semaphore.wait();
+//}
 
-void embObjMotionControl::postSem()
-{
-	semaphore.post();
-}
+//void embObjMotionControl::postSem()
+//{
+//	semaphore.post();
+//}
 
-embObjMotionControl::embObjMotionControl() : 	RateThread(10),
+embObjMotionControl::embObjMotionControl() :
 						ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>(this),
 						ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
 						ImplementPidControl<embObjMotionControl, IPidControl>(this),
@@ -156,6 +179,7 @@ embObjMotionControl::embObjMotionControl() : 	RateThread(10),
 	print_debug(AC_trace_file, "embObjMotionControl::embObjMotionControl()");
 	udppkt_data = 0x00;
 	udppkt_size = 0x00;
+	_enabledAmp = false;
 }
 
 embObjMotionControl::~embObjMotionControl()
@@ -264,6 +288,13 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	}
 	else
 		fprintf(stderr, "Non existing board number!!\n");
+
+	//
+	//  Tell EMS which NV I want to be signalled spontaneously
+	//
+
+	init();
+
 	//
 	//	CONFIGURATION
 	//
@@ -281,7 +312,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	alloc(_njoints);
 
 	// leggere i valori da file
-
 	if (!readAndCheckFromConfigData(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints+1))
 		return false;
 
@@ -319,7 +349,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
-    // Reserve space for all spontaneous messages updated every ms. values are initialize to 0
+    // Reserve space for data stored locally. values are initialize to 0
     _ref_positions = allocAndCheck<double>(_njoints);
     _command_speeds = allocAndCheck<double>(_njoints);
     _ref_speeds = allocAndCheck<double>(_njoints);
@@ -330,41 +360,63 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	return true;
 }
 
+bool embObjMotionControl::init()
+{
+	eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
+	EOarray						*array;
+	eOropSIGcfg_t 				sigcfg;
+
+	eOnvID_t nvid, nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, 0, commNVindex__ropsigcfgcommand);
+	EOnv *nvRoot = res->transceiver->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign);
+
+	ropsigcfgassign = (eOmn_ropsigcfg_command_t*) nvRoot->loc;
+	array = (EOarray*) &ropsigcfgassign->array;
+	eo_array_Reset(array);
+	array->head.capacity = NUMOFROPSIGCFG;
+	array->head.itemsize = sizeof(eOropSIGcfg_t);
+	ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+
+	for(int j=_firstJoint; j<_firstJoint+_njoints;j++)
+	{
+		nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jstatus__basic);
+		sigcfg.ep = _fId.ep;
+		sigcfg.id = nvid;
+		sigcfg.plustime = 0;
+		eo_array_PushBack(array, &sigcfg);
+
+		nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mstatus__basic);
+		sigcfg.ep = _fId.ep;
+		sigcfg.id = nvid;
+		sigcfg.plustime = 0;
+		eo_array_PushBack(array, &sigcfg);
+	}
+}
+
 bool embObjMotionControl::close()
 {
-	//YARP_INFO(Logger::get(),"embObjMotionControl::close", Logger::get().log_files.f3);
-    RateThread::stop();
-
     ImplementEncodersTimed::uninitialize();
     ImplementPositionControl<embObjMotionControl, IPositionControl>::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
     ImplementPidControl<embObjMotionControl, IPidControl>::uninitialize();
 }
 
+eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint16_t nvid)
+{
+	eoRequest req;
+	if(!requestQueue->threadPool->getId(&req.threadId) )
+		fprintf(stderr, "Error: too much threads!! (embObjMotionControl)");
+	req.joint = j;
+	req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid);
+
+	requestQueue->append(req);
+	return requestQueue->threadPool->getThreadTable(req.threadId);
+}
 
 void embObjMotionControl::getMotorController(DeviceDriver *iMC)
 {
 
 }
 
-// Thread
-void embObjMotionControl::run(void)  // probaly useless now.... think about it
-{
-
-	  return;
-}
-
-bool embObjMotionControl::threadInit()
-{
-	print_debug(AC_trace_file, "embObjMotionControl::threadInit()");
-	return true;
-}
-
-void embObjMotionControl::threadRelease()
-{
-	print_debug(AC_trace_file, "embObjMotionControl::threadRelease()");
-	return;
-}
 
 ///////////// PID INTERFACE
 
@@ -519,19 +571,18 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
 
 	// Sign up for waiting the reply
-	eoRequest req;
-	if(!requestQueue->threadPool->getId(req.threadId) )
-		fprintf(stderr, "Error: too much threads!! (embObjMotionControl)");
-	req.joint = j;
-	req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid);
-
-	requestQueue->append(req);
-	eoThreadEntry *tt = requestQueue->threadPool->getThreadTable(req.threadId);
+	eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
 	tt->setPending(1);
 
 	// wait here
-	tt->synch();
-
+	if(-1 == tt->synch() )
+	{
+		int threadId;
+		printf("embObjMotionControl::getPidRaw timed out!!\n");
+		if(requestQueue->threadPool->getId(&threadId))
+			requestQueue->cleanTimeouts(threadId);
+		return false;
+	}
 	// Get the value
 	uint16_t size;
 	res->transceiver->getNVvalue(nvRoot, (uint8_t *)pid, &size);
@@ -543,6 +594,7 @@ bool embObjMotionControl::getPidsRaw(Pid *pids)
 	print_debug(AC_trace_file, "embObjMotionControl::getPidsRaw()");
 
 	bool ret = true;
+	eoThreadEntry *tt = NULL;
 
 	eOnvID_t  nvid[_njoints];
 	EOnv	  *nvRoot[_njoints];
@@ -558,24 +610,28 @@ bool embObjMotionControl::getPidsRaw(Pid *pids)
 			NV_NOT_FOUND;
 			ret = false;
 		}
-		res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]);
-		// Fill requests for reply
-
-		if(!requestQueue->threadPool->getId(req.threadId) )
-			fprintf(stderr, "Error: too much threads!! (embObjMotionControl)");
-		req.joint = j;
-		req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid[index]);
-
-		requestQueue->append(req);
+		// Sign up for waiting the reply
+		tt = appendWaitRequest(j, nvid[index]);
 	}
 
-	eoThreadEntry *tt = requestQueue->threadPool->getThreadTable(req.threadId);
-	tt->setPending(_njoints);
-
 	printf("waiting for %d replies\n", _njoints);
-	// wait just once for all data
-	tt->synch();  //  wait here
+	if( NULL != tt)
+	{
+		tt->setPending(_njoints);
 
+		// wait just once for all data
+		// wait here
+		if(-1 == tt->synch() )
+		{
+			int threadId;
+			printf("embObjMotionControl::getPidRaw timed out!!\n");
+			if(requestQueue->threadPool->getId(&threadId))
+				requestQueue->cleanTimeouts(threadId);
+			return false;
+		}
+	}
+	else
+		return false;
 	// copy data received to the caller
 	for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
 	{
@@ -784,40 +840,112 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 //    Calibration control interface   //
 ////////////////////////////////////////
 
-bool embObjMotionControl::calibrate(int axis, unsigned int type, double p1, double p2, double p3)
+bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, double p2, double p3)
 {
-	printf("embObjMotionControl::calibrate");
-    return true;
-}
+	print_debug(AC_trace_file, "embObjMotionControl::calibrateRaw()");
 
-bool embObjMotionControl::calibrateRaw(int j, double p)
-{
-	printf("embObjMotionControl::calibrateRaw");
-    return true;
-}
+		// Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
+		// the EMS I'm referring to.
+		eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__calibration);
+		EOnv *nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid);
 
-bool embObjMotionControl::calibrate2(int axis, unsigned int type, double p1, double p2, double p3)
-{
-	printf("embObjMotionControl::calibrate2");
-    return true;
-}
+		if(NULL == nvRoot)
+		{
+			NV_NOT_FOUND;
+			return false;
+		}
 
-bool embObjMotionControl::calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3)
-{
-	printf("embObjMotionControl::calibrateRaw");
+		eOmc_calibrator_t calib;
+
+		switch(type)
+		{
+			case eomc_calibration_type0_hard_stops:
+				calib.type = eomc_calibration_type0_hard_stops;
+				calib.params.type0.pwmlimit = p1;
+				calib.params.type0.velocity = p2;
+			break;
+
+			case eomc_calibration_type1_abs_sens_analog:
+				calib.type = eomc_calibration_type1_abs_sens_analog;
+				calib.params.type1.position = p1;
+				calib.params.type1.velocity = p2;
+			break;
+
+			case eomc_calibration_type2_hard_stops_diff:
+				calib.type = eomc_calibration_type2_hard_stops_diff;
+				calib.params.type2.pwmlimit = p1;
+				calib.params.type2.velocity = p2;
+			break;
+
+			case eomc_calibration_type3_abs_sens_digital:
+				calib.type = eomc_calibration_type3_abs_sens_digital;
+				calib.params.type3.position = p1;
+				calib.params.type3.velocity = p2;
+				calib.params.type3.offset   = p3;
+			break;
+
+			case eomc_calibration_type4_abs_and_incremental:
+				calib.type = eomc_calibration_type4_abs_and_incremental;
+				calib.params.type4.position   = p1;
+				calib.params.type3.velocity   = p2;
+				calib.params.type4.maxencoder = p3;
+			break;
+			default:
+				print_debug(AC_error_file, ">> ERROR: Calibration type unknown!! (embObjMotionControl)\n");
+				return false;
+				break;
+		}
+
+		if( eores_OK != eo_nv_Set(nvRoot, &calib, eobool_true, eo_nv_upd_dontdo))
+		{
+			print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+			return false;
+		}
+		res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
     return true;
 }
 
 bool embObjMotionControl::doneRaw(int axis)
 {
-	printf("embObjMotionControl::doneRaw");
-    return true;
-}
+	print_debug(AC_trace_file, "embObjMotionControl::doneRaw\n");
 
-bool embObjMotionControl::done(int axis)
-{
-	printf("embObjMotionControl::done");
-    return true;
+	// get the control mode and check its value
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)axis, jointNVindex_jstatus__basic);
+	EOnv	*nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid);
+
+	if(NULL == nvRoot)
+	{
+		NV_NOT_FOUND;
+		return false;
+	}
+
+	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+
+	// Sign up for waiting the reply
+	eoThreadEntry *tt = appendWaitRequest(axis, nvid);
+	tt->setPending(1);
+
+	// wait here
+	if(-1 == tt->synch() )
+	{
+		int threadId;
+		printf("embObjMotionControl::getPidRaw timed out!!\n");
+		if(requestQueue->threadPool->getId(&threadId))
+			requestQueue->cleanTimeouts(threadId);
+		return false;
+	}
+
+	uint16_t size;
+	eOmc_controlmode_t type;
+	res->transceiver->getNVvalue(nvRoot, (uint8_t*) &type, &size);
+
+
+	// if the value I get back from the board corresponds to the calibration type that was imposed, then the calibration is done!
+	// for now just check if it is any of the calibration types.
+	if( ( eomc_controlmode_calib_abs_pos_sens == type) || ( eomc_controlmode_calib_hard_stops == type) ||	( eomc_controlmode_handle_hard_stops == type) || ( eomc_controlmode_margin_reached == type) || ( eomc_controlmode_calib_abs_and_inc) )
+		return true;
+	else
+		return false;
 }
 
 ////////////////////////////////////////
@@ -1255,11 +1383,19 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 
 	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
 
-	SOME_WAIT_MECHANISM;
+	// Sign up for waiting the reply
+	eoThreadEntry *tt = appendWaitRequest(j, nvid);
+	tt->setPending(1);
 
-	// I guess following 2 lines have the same effect of the getNVvalue function, but they are NOT PROTECTED by mutex
-	//eOmc_PID_t *tmpPid = (eOmc_PID16_t *) nvRoot->rem;
-	//copyPid_eo2iCub(tmpPid, pid);
+	// wait here
+	if(-1 == tt->synch() )
+	{
+		int threadId;
+		printf("embObjMotionControl::getPidRaw timed out!!\n");
+		if(requestQueue->threadPool->getId(&threadId))
+			requestQueue->cleanTimeouts(threadId);
+		return false;
+	}
 
 	uint16_t size;
 	eOmc_controlmode_t type;
@@ -1542,34 +1678,4 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 		sts[j] = _enabledAmp[j];
 	}
 	return ret;
-}
-
-
-yarp::dev::DeviceDriver *embObjMotionControl::createDevice(yarp::os::Searchable& config)
-{
-
-}
-
-// Utilities
-
-void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
-{
-	out->kp = in->kp;
-	out->ki = in->ki;
-	out->kd = in->kd;
-	out->limitonintegral = in->max_int;
-	out->limitonoutput = in->max_output;
-	out->offset = in->offset;
-	out->scale = in->scale;
-}
-
-void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
-{
-	out->kp = in->kp;
-	out->ki = in->ki;
-	out->kd = in->kd;
-	out->max_int = in->limitonintegral;
-	out->max_output = in->limitonoutput;
-	out->offset = in->offset;
-	out->scale = in->scale;
 }

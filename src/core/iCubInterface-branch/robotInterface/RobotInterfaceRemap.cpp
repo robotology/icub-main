@@ -579,7 +579,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     }
 
     std::cout<<"--> Starting robot calibration!  -- dummy"<<endl;
- //   calibrate();
+    calibrate();
     std::cout<<"Finished robot calibration!"<<endl;
 
     //now iterate through list of parts to see if all networks have been created correctly

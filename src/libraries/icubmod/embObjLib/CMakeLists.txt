@@ -2,7 +2,9 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME embObjLib)
+# Name of the project must correspond to the class name that needs to be 
+# instantiated by the factory - so embObjLib is not ok
+SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
 add_definitions( -D_ICUB_CALLBACK_ )
@@ -119,7 +121,7 @@ set(NVS_CBK_SOURCE			${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
 #							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c														
 #							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
 #							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c
-#                            ${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_right_arm_usrcbk.cpp
+#                           ${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_right_arm_usrcbk.cpp
 							)
 
 
@@ -251,7 +253,7 @@ SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
-#TARGET_LINK_LIBRARIES(${PROJECTNAME} ${ACE_LIBRARIES} IICcore)
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${ACE_LIBRARIES})  
+
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES})  
 
 icub_export_library(${PROJECTNAME})
