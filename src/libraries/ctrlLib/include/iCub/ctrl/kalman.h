@@ -94,11 +94,10 @@ public:
      * Set initial state and error covariance.
      * 
      * @param _x0 Initial condition for estimated state. 
-     * @param _z0 Initial input measurement. 
-     * @param _P0 Initial condition for estimated error covariance. 
+     * @param _P0 Initial condition for estimated error covariance.
+     * @return true/false on success/failure. 
      */
-    void init(const yarp::sig::Vector &_z0, const yarp::sig::Vector &_x0,
-              const yarp::sig::Matrix &_P0);
+    bool init(const yarp::sig::Vector &_x0, const yarp::sig::Matrix &_P0);
 
     /**
      * Returns the estimated state vector given the current 
