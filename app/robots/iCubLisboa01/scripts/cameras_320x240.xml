@@ -54,21 +54,25 @@
 <connection>
       <from>/icub/cam/left</from>
       <to>/icub/camcalib/left/in</to>
-      <protocol>tcp</protocol>
+      <!--<protocol>tcp</protocol>-->
+      <protocol>udp</protocol>
 </connection>
 <connection>
       <from>/icub/cam/right</from>
       <to>/icub/camcalib/right/in</to>
-      <protocol>tcp</protocol>
+      <!--<protocol>tcp</protocol>-->
+      <protocol>udp</protocol>
 </connection>
 <connection>
       <from>/icub/camcalib/left/out</from>
       <to>/icub/view/left</to>
-      <protocol>tcp</protocol>
+      <!--<protocol>tcp</protocol>-->
+      <protocol>udp</protocol>
 </connection>
 <connection>
       <from>/icub/camcalib/right/out</from>
       <to>/icub/view/right</to>
-      <protocol>tcp</protocol>
+      <!--<protocol>tcp</protocol>-->
+      <protocol>udp</protocol>
 </connection>
 </application>
