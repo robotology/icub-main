@@ -749,6 +749,26 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         shiftPos[arm].resize(3);
         shiftPos[arm]=0.0;
     }
+    
+    if (Bottle *pB=b.find("expect_position").asList())
+    {
+        expectPos[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            expectPos[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        return false;
+
+    if (Bottle *pB=b.find("expect_orientation").asList())
+    {
+        expectOrient[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            expectOrient[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        return false;
 
     if (b.check("external_forces_thresh"))
         extForceThresh[arm]=b.find("external_forces_thresh").asDouble();
@@ -1739,6 +1759,83 @@ bool MotorThread::look(Bottle &options)
 	
 	
     ctrl_gaze->lookAtFixationPoint(xd);
+
+    return true;
+}
+
+
+
+
+bool MotorThread::expect(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    {
+        setGazeIdle();
+        lookAtHand(options);
+    }
+
+    action[arm]->pushAction(expectPos[arm],expectOrient[arm],"open_hand");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    action[arm]->enableContactDetection();
+
+    bool contact_detected=false;
+    double t=Time::now();
+    while(!contact_detected && Time::now()-t<5.0)
+        action[arm]->checkContact(contact_detected); 
+
+    action[arm]->disableContactDetection();
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+        setGazeIdle();
+
+    if(contact_detected)
+        setGraspState(false);
+
+    return contact_detected;
+}
+
+
+bool MotorThread::give(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    {
+        setGazeIdle();
+        lookAtHand(options);
+    }
+
+    action[arm]->pushAction(expectPos[arm],expectOrient[arm]);
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    action[arm]->pushAction("open_hand");
+
+    action[arm]->enableContactDetection();
+
+    bool contact_detected=false;
+    double t=Time::now();
+    while(!contact_detected && Time::now()-t<5.0)
+        action[arm]->checkContact(contact_detected); 
+
+    action[arm]->disableContactDetection();
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+        setGazeIdle();
 
     return true;
 }

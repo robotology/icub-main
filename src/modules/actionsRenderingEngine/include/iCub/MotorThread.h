@@ -171,6 +171,8 @@ private:
     Vector                              drawNearPos[2];
     Vector                              drawNearOrient[2];
     Vector                              shiftPos[2];
+    Vector                              expectPos[2];
+    Vector                              expectOrient[2];
 
     //tactile perception
     iCub::perception::Model             *graspModel[2];
@@ -351,6 +353,8 @@ public:
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
     bool shift(Bottle &options);
+    bool expect(Bottle &options);
+    bool give(Bottle &options);
 
     // explore
     bool exploreTorso(Bottle &options);

@@ -144,6 +144,15 @@ keep the gaze fixating the requested target also when other commands are issued 
 Note: the special target [hand] (with optional parameter 'left'/'right') can be provided to have the robot look
 at its own hand. The robot will keep looking at its own hand until an idle command.
 
+<b>EXPECT</b> 
+format: [expect]
+action: the robot puts one arm forward with the palm of the hand facing up and waiting for an object
+to be put on it.
+
+<b>GIVE</b> 
+format: [give]
+action: the robot puts one arm forward with the palm of the hand facing up and opens the fingers so that
+the object held in the hand is free to be taken.
 
 <b>TRACK</b> 
 format: [track] [target] "param1"
@@ -329,6 +338,8 @@ Windows, Linux
 #define CMD_POINT                   VOCAB4('p','o','i','n')
 #define CMD_LOOK                    VOCAB4('l','o','o','k')
 #define CMD_TRACK                   VOCAB4('t','r','a','c')
+#define CMD_EXPECT                  VOCAB4('e','x','p','e')
+#define CMD_GIVE                    VOCAB4('g','i','v','e')
 
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
@@ -338,6 +349,7 @@ Windows, Linux
 //sub commands: get
 #define GET_S2C                     VOCAB3('s','2','c')
 #define GET_TABLE                   VOCAB4('t','a','b','l')
+#define GET_HOLDING                 VOCAB4('h','o','l','d')
 
 //sub commands: calib
 #define CALIB_TABLE                 VOCAB4('t','a','b','l')
@@ -650,6 +662,17 @@ public:
                             break;
                         }
 
+                        case GET_HOLDING:
+                        {
+                            reply.clear();
+                            if(motorThr->isHolding(command))
+                                reply.addVocab(ACK);
+                            else
+                                reply.addVocab(NACK);
+
+                            break;
+                        }
+
                         default:
                         {
                             reply.addVocab(NACK);
@@ -925,6 +948,67 @@ public:
 
                         break;
                     }
+
+                    case CMD_EXPECT:
+                    {
+                        if(!motorThr->expect(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        motorThr->grasp(command);
+
+                        if(motorThr->isHolding(command))
+                        {
+                            if(check(command,"near"))
+                            {
+                                motorThr->drawNear(command);
+                                motorThr->setGazeIdle();
+                            }
+                            else
+                            {
+                                motorThr->setGazeIdle();
+                                Bottle b;
+                                b.addString("head");
+                                b.addString("arms");
+                                motorThr->goHome(b);
+                            }
+
+                            reply.addVocab(ACK);
+                        }
+                        else
+                        {
+                           motorThr->setGazeIdle();
+                           motorThr->release(command);
+                           motorThr->goHome(command);
+                           reply.addVocab(NACK);
+                        }
+
+                        break;
+                    }
+
+                    case CMD_GIVE:
+                    {
+                        if(!motorThr->isHolding(command))
+                        {
+                            reply.addVocab(NACK);
+                            reply.addString("Nothing to give. Not holding anything");
+                            motorThr->release(command);
+                            motorThr->goHome(command);
+                            break;
+                        }
+
+                        motorThr->give(command);
+
+                       motorThr->setGazeIdle();
+                       motorThr->release(command);
+                       motorThr->goHome(command);
+                       reply.addVocab(NACK);
+
+                        break;
+                    }
+
 
                     case CMD_DROP:
                     {
