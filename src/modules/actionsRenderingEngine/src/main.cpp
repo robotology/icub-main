@@ -224,7 +224,11 @@ targets wrt to the robot root reference frame. The number of targets is not pred
  
 --[table] : returns the current height of the table in front of the robot
  
- 
+--[holding] : returns true if the robot is holding an object in its active hand
+.
+--[hand] [image] : returns a vector of the form (u_left v_left u_right v_right hand-head-distance) that reports
+the projection of the end-effector of the active arm in both the robot cameras together with the distance
+(in meters) between the robot forehead and its hand.
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -350,6 +354,8 @@ Windows, Linux
 #define GET_S2C                     VOCAB3('s','2','c')
 #define GET_TABLE                   VOCAB4('t','a','b','l')
 #define GET_HOLDING                 VOCAB4('h','o','l','d')
+#define GET_HAND                    VOCAB4('h','a','n','d')
+#define GET_IMAGE                   VOCAB4('i','m','a','g')
 
 //sub commands: calib
 #define CALIB_TABLE                 VOCAB4('t','a','b','l')
@@ -672,6 +678,21 @@ public:
 
                             break;
                         }
+                        
+                        case GET_HAND:
+                        {
+                            if(command.get(2).asVocab()==GET_IMAGE)
+                            {
+                                reply.clear();
+                                if(!motorThr->getHandImagePosition(reply))
+                                    reply.addVocab(NACK);
+                            }
+                            else
+                                reply.addVocab(NACK);
+
+                            break;
+                        }
+
 
                         default:
                         {

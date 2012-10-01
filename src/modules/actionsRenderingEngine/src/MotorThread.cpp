@@ -2098,6 +2098,27 @@ bool MotorThread::shift(Bottle &options)
     return true;
 }
 
+bool MotorThread::getHandImagePosition(Bottle &hand_image_pos)
+{
+    int arm=ARM_IN_USE;
+    arm=checkArm(arm);
+
+    Vector x_hand,o_hand,px[2],x_head,o_head;
+    action[arm]->getPose(x_hand,o_hand);
+    ctrl_gaze->get2DPixel(LEFT,x_hand,px[LEFT]);
+    ctrl_gaze->get2DPixel(RIGHT,x_hand,px[RIGHT]);
+
+    ctrl_gaze->getHeadPose(x_head,o_head);
+
+    hand_image_pos.clear();
+    hand_image_pos.addDouble(px[LEFT][0]);
+    hand_image_pos.addDouble(px[LEFT][1]);
+    hand_image_pos.addDouble(px[RIGHT][0]);
+    hand_image_pos.addDouble(px[RIGHT][1]);
+    hand_image_pos.addDouble(norm(x_head-x_hand));
+
+    return true;
+}
 
 bool MotorThread::isHolding(Bottle &options)
 {

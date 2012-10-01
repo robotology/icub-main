@@ -361,6 +361,7 @@ public:
     bool exploreHand(Bottle &options);
 
 
+    bool getHandImagePosition(Bottle &hand_image_pos);
     bool isHolding(Bottle &options);
     bool calibTable(Bottle &options);
     bool calibFingers(Bottle &options);
