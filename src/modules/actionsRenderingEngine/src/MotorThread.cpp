@@ -1790,17 +1790,18 @@ bool MotorThread::expect(Bottle &options)
     bool contact_detected=false;
     double t=Time::now();
     while(!contact_detected && Time::now()-t<5.0)
+    {
+        fprintf(stdout,"ciao\n");
         action[arm]->checkContact(contact_detected); 
-
+        Time::delay(0.1);
+    }
+    
     action[arm]->disableContactDetection();
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
-    if(contact_detected)
-        setGraspState(false);
-
-    return contact_detected;
+    return true;
 }
 
 

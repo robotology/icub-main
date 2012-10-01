@@ -953,6 +953,9 @@ public:
                     {
                         if(!motorThr->expect(command))
                         {
+                            motorThr->setGazeIdle();
+                            motorThr->release(command);
+                            motorThr->goHome(command);
                             reply.addVocab(NACK);
                             break;
                         }
