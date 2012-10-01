@@ -138,10 +138,13 @@ public:
         Matrix H=computeH(x);
 
         obj_value=0.0;
-        for (size_t i=0; i<p0.size(); i++)
-            obj_value+=0.5*norm2(p1[i]-H*p0[i]);
+        if (p0.size()>0)
+        {
+            for (size_t i=0; i<p0.size(); i++)
+                obj_value+=0.5*norm2(p1[i]-H*p0[i]);
 
-        obj_value/=p0.size();
+            obj_value/=p0.size();
+        }
 
         return true;
     }
@@ -179,19 +182,22 @@ public:
         Matrix H=computeH(x);
         grad_f[0]=grad_f[1]=grad_f[2]=0.0;
         grad_f[3]=grad_f[4]=grad_f[5]=0.0;
-        for (size_t i=0; i<p0.size(); i++)
+        if (p0.size()>0)
         {
-            Vector d=p1[i]-H*p0[i];
-            grad_f[0]-=dot(d,(dHdx0*p0[i]));
-            grad_f[1]-=dot(d,(dHdx1*p0[i]));
-            grad_f[2]-=dot(d,(dHdx2*p0[i]));
-            grad_f[3]-=dot(d,(dHdx3*p0[i]));
-            grad_f[4]-=dot(d,(dHdx4*p0[i]));
-            grad_f[5]-=dot(d,(dHdx5*p0[i]));
-        }
+            for (size_t i=0; i<p0.size(); i++)
+            {
+                Vector d=p1[i]-H*p0[i];
+                grad_f[0]-=dot(d,(dHdx0*p0[i]));
+                grad_f[1]-=dot(d,(dHdx1*p0[i]));
+                grad_f[2]-=dot(d,(dHdx2*p0[i]));
+                grad_f[3]-=dot(d,(dHdx3*p0[i]));
+                grad_f[4]-=dot(d,(dHdx4*p0[i]));
+                grad_f[5]-=dot(d,(dHdx5*p0[i]));
+            }
 
-        for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]/=p0.size();
+            for (Ipopt::Index i=0; i<n; i++)
+                grad_f[i]/=p0.size();
+        }
 
         return true;
     }
@@ -269,10 +275,13 @@ public:
         s[3]=1.0;
 
         obj_value=0.0;
-        for (size_t i=0; i<p0.size(); i++)
-            obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
+        if (p0.size()>0)
+        {
+            for (size_t i=0; i<p0.size(); i++)
+                obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
 
-        obj_value/=p0.size();
+            obj_value/=p0.size();
+        }
 
         return true;
     }
@@ -321,22 +330,25 @@ public:
         grad_f[0]=grad_f[1]=grad_f[2]=0.0;
         grad_f[3]=grad_f[4]=grad_f[5]=0.0;
         grad_f[6]=grad_f[7]=grad_f[8]=0.0;
-        for (size_t i=0; i<p0.size(); i++)
+        if (p0.size()>0)
         {
-            Vector d=p1[i]-s*(H*p0[i]);
-            grad_f[0]-=dot(d,(dHdx0*p0[i]));
-            grad_f[1]-=dot(d,(dHdx1*p0[i]));
-            grad_f[2]-=dot(d,(dHdx2*p0[i]));
-            grad_f[3]-=dot(d,(dHdx3*p0[i]));
-            grad_f[4]-=dot(d,(dHdx4*p0[i]));
-            grad_f[5]-=dot(d,(dHdx5*p0[i]));
-            grad_f[6]-=dot(d,(dHdx6*p0[i]));
-            grad_f[7]-=dot(d,(dHdx7*p0[i]));
-            grad_f[8]-=dot(d,(dHdx8*p0[i]));
-        }
+            for (size_t i=0; i<p0.size(); i++)
+            {
+                Vector d=p1[i]-s*(H*p0[i]);
+                grad_f[0]-=dot(d,(dHdx0*p0[i]));
+                grad_f[1]-=dot(d,(dHdx1*p0[i]));
+                grad_f[2]-=dot(d,(dHdx2*p0[i]));
+                grad_f[3]-=dot(d,(dHdx3*p0[i]));
+                grad_f[4]-=dot(d,(dHdx4*p0[i]));
+                grad_f[5]-=dot(d,(dHdx5*p0[i]));
+                grad_f[6]-=dot(d,(dHdx6*p0[i]));
+                grad_f[7]-=dot(d,(dHdx7*p0[i]));
+                grad_f[8]-=dot(d,(dHdx8*p0[i]));
+            }
 
-        for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]/=p0.size();
+            for (Ipopt::Index i=0; i<n; i++)
+                grad_f[i]/=p0.size();
+        }
 
         return true;
     }
@@ -373,10 +385,13 @@ public:
         s[3]=1.0;
 
         obj_value=0.0;
-        for (size_t i=0; i<p0.size(); i++)
-            obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
+        if (p0.size()>0)
+        {
+            for (size_t i=0; i<p0.size(); i++)
+                obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
 
-        obj_value/=p0.size();
+            obj_value/=p0.size();
+        }
 
         return true;
     }
@@ -421,20 +436,23 @@ public:
         grad_f[0]=grad_f[1]=grad_f[2]=0.0;
         grad_f[3]=grad_f[4]=grad_f[5]=0.0;
         grad_f[6]=0.0;
-        for (size_t i=0; i<p0.size(); i++)
+        if (p0.size()>0)
         {
-            Vector d=p1[i]-s*(H*p0[i]);
-            grad_f[0]-=dot(d,(dHdx0*p0[i]));
-            grad_f[1]-=dot(d,(dHdx1*p0[i]));
-            grad_f[2]-=dot(d,(dHdx2*p0[i]));
-            grad_f[3]-=dot(d,(dHdx3*p0[i]));
-            grad_f[4]-=dot(d,(dHdx4*p0[i]));
-            grad_f[5]-=dot(d,(dHdx5*p0[i]));
-            grad_f[6]-=dot(d,(dHdx6*p0[i]));
-        }
+            for (size_t i=0; i<p0.size(); i++)
+            {
+                Vector d=p1[i]-s*(H*p0[i]);
+                grad_f[0]-=dot(d,(dHdx0*p0[i]));
+                grad_f[1]-=dot(d,(dHdx1*p0[i]));
+                grad_f[2]-=dot(d,(dHdx2*p0[i]));
+                grad_f[3]-=dot(d,(dHdx3*p0[i]));
+                grad_f[4]-=dot(d,(dHdx4*p0[i]));
+                grad_f[5]-=dot(d,(dHdx5*p0[i]));
+                grad_f[6]-=dot(d,(dHdx6*p0[i]));
+            }
 
-        for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]/=p0.size();
+            for (Ipopt::Index i=0; i<n; i++)
+                grad_f[i]/=p0.size();
+        }
 
         return true;
     }
