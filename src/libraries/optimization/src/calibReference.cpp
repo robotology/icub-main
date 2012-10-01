@@ -512,10 +512,13 @@ void CalibReferenceWithMatchedPoints::setScalingBounds(const double min,
 double CalibReferenceWithMatchedPoints::evalError(const Matrix &H)
 {
     double error=0.0;
-    for (size_t i=0; i<p0.size(); i++)
-        error+=norm(p1[i]-H*p0[i]);
+    if (p0.size()>0)
+    {
+        for (size_t i=0; i<p0.size(); i++)
+            error+=norm(p1[i]-H*p0[i]);
 
-    error/=p0.size();
+        error/=p0.size();
+    }
 
     return error;
 }
