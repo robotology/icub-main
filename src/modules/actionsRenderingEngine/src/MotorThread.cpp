@@ -1784,20 +1784,24 @@ bool MotorThread::expect(Bottle &options)
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-
-    action[arm]->enableContactDetection();
-
+    
+    double force_thresh;
+    action[arm]->getExtForceThres(force_thresh);
+    
     bool contact_detected=false;
+    Vector wrench(6);
     double t=Time::now();
     while(!contact_detected && Time::now()-t<5.0)
     {
-        fprintf(stdout,"ciao\n");
-        action[arm]->checkContact(contact_detected); 
+        action[arm]->getExtWrench(wrench);
+        if(norm(wrench)>force_thresh)
+            contact_detected=true;
         Time::delay(0.1);
-    }
+    }    
     
-    action[arm]->disableContactDetection();
-
+    if(!contact_detected)
+        fprintf(stdout,"damn!\n");
+    
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
