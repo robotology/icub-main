@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
     ConstString cartLeftArm=rf.findFile("cartLeftArm");
 
     std::string filename;
-    bool remap=false;
+    bool remap=true;
     if (configFile!="")
     {
         configFile=rf.findFile("config");

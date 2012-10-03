@@ -176,22 +176,33 @@ void RobotInterfaceRemap::calibrate(bool wait)
 
     isCalibrating=true;
 
-    RobotNetworkIt it=networks.begin();
-    while(it!=networks.end())
+    RobotPartIt it = parts.begin();
+    while(it!=parts.end())
     {
-        (*it)->startCalib();
-        it++;
+    	//acquire calibration int
+    	IControlCalibration2 *iCtrlCalib =0x00;
+    	(*it)->driver.view(iCtrlCalib);				//prendi l'interfaccia IControlCalib2 del wrapper (il device della parte)
+
+    	iCtrlCalib->calibrate();
+    	it++;
     }
 
-    it=networks.begin();
-    if(wait)
-    {
-        while(it!=networks.end())
-        {
-            (*it)->joinCalib();
-            it++;
-        }
-    }
+//    RobotNetworkIt it=networks.begin();
+//    while(it!=networks.end())
+//    {
+//        (*it)->startCalib();
+//        it++;
+//    }
+//
+//    it=networks.begin();
+//    if(wait)
+//    {
+//        while(it!=networks.end())
+//        {
+//            (*it)->joinCalib();
+//            it++;
+//        }
+//    }
 
     isCalibrating=false;
 }
@@ -474,7 +485,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
     else
         fprintf(stderr, "RobotInterface::no inertial sensor defined in the config file\n");
 
-    std::cout<<"Starting robot calibration!"<<endl;
+    std::cout<<"Starting robot calibration! - dummy"<<endl;
     calibrate();
     std::cout<<"Finished robot calibration!"<<endl;
 
@@ -504,7 +515,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     string PC104IpAddress=robotOptions.findGroup("GENERAL").find("PC104IpAddress").asString().c_str();
     printf("\n\n>> PC104IpAddress : %s\n\n", PC104IpAddress.c_str());
     std::cout << "******************************************************************" << endl;
-    std::cout << "--> Creating MotionControl Devices                               *" <<endl;
+    std::cout << "--> Creating MotionControl Devices                               *" << endl;
     std::cout << "******************************************************************" << endl;
     std::cout<<"Found " << nparts <<" parts"<<endl;
 
@@ -578,13 +589,11 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         netit++;
     }
 
-    std::cout<<"--> Starting robot calibration!  -- dummy"<<endl;
-    calibrate();
-    std::cout<<"Finished robot calibration!"<<endl;
+
 
     //now iterate through list of parts to see if all networks have been created correctly
     std::cout << "******************************************************************" << endl;
-    std::cout << "--> Now I will go through the list of parts to create the wrappers" <<endl;
+    std::cout << "--> Now I will go through the list of parts to create the wrappers" << endl;
     std::cout << "******************************************************************" << endl;
 
     RobotPartIt partit=parts.begin();
@@ -593,10 +602,9 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
     {
         RobotPartEntry *tmp=*partit;
 
-        using namespace std;
-        printf("§§§§§§§§§§ robotOptions INFOS!!\n");
-        //string str2=robotOptions.toString().c_str();
-        cout << str << endl << endl;
+
+//        printf("§§§§§§§§§§ robotOptions INFOS!!\n");
+//        std::cout << str << endl << endl;
 
         //create the wrappers
         Property tmpProp;
@@ -644,6 +652,25 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                 polylist.push(&net->driver, net->id.c_str());
                 //tmp->wrapper.attach(&net->driver, net->id.c_str());
 
+////                _AC_
+                ICalibrator *icalibrator = 0x00;
+                IControlCalibration2 *iCrtlCalib =0x00;
+                //acquire calibration int
+                tmp->driver.view(iCrtlCalib);		// iCrtlCalib contiene puntatore a interfaccia IControlCalibration2 del wrapper
+
+                //save interface for later use
+                net->iCalib=iCrtlCalib;
+
+                net->calibrator.view(icalibrator);
+
+                //set calibrator
+                net->iCalib->setCalibrator(icalibrator);
+
+                //set calibrator
+                iCrtlCalib->setCalibrator(icalibrator);	// impongo al device mc di far riferimento al wrapper
+
+                net->driver.view(iCrtlCalib);
+
             }
             else
             {
@@ -652,10 +679,14 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             netIt++;
         }
 
+
+
         tmp->iwrapper->attachAll(polylist);
         std::cout<<endl;
         partit++;
     }
+
+
 
     fprintf(stderr, "RobotInterface::now opening inertial\n");
     if (robotOptions.check("INERTIAL"))
@@ -751,9 +782,14 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         std::cout<<"No analog wrappers requested\n";
     }
 
+    std::cout<<"--> Starting robot calibration!"<<endl;
+    calibrate();
+    std::cout<<"Finished robot calibration!"<<endl;
+
+
     // Creating skin Parts
      std::cout << "******************************************************************" << endl;
-     std::cout << "--> Creating skin Part                                            " <<endl;
+     std::cout << "--> Creating skin Part                                            " << endl;
      std::cout << "******************************************************************" << endl;
      fflush(stdout);
 
@@ -930,8 +966,6 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     //
 
 
-#if 1   // old style
-
     net.driver.open(deviceParameters);
 
     if (!net.driver.isValid())
@@ -954,115 +988,6 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
 
     //set calibrator
     net.iCalib->setCalibrator(icalibrator);
-#else
-
-    // new style
-    //acquire ethResources handler
-    /* iCubDeviceInterface *t = 0x00;
-    net.driver->view(t);
-    net.device = t;
-
-    //acquire calibrator handler
-
-    net.device->getControlCalibration(&iCrtlCalib);
-    net.iCalib=iCrtlCalib;
-
-    net.calibrator.view(icalibrator);
-    net.iCalib->setCalibrator(icalibrator);
-    */
-
-    // new new style
-    //acquire ethResources handler
-//    iCubDeviceInterface *t = 0x00;
-
-//    iCubDeviceInterface *tmpDevice;
-//    net.manager.open(deviceParameters);
-//
-//    if (!net.manager.isValid())
-//    {
-//        std::cout<<"failed!"<<endl;
-//        return false;
-//    }
-//    std::cout<<"done!"<<endl;
-//    net.manager.view(tmpDevice);
-
-    //acquire calibrator handler
-//    tmpDevice->getControlCalibration(&iCrtlCalib);
-//    net.iCalib=iCrtlCalib;
-
-//    net.calibrator.view(icalibrator);
-//    net.iCalib->setCalibrator(icalibrator);
-
-
-    //
-    // Open different features
-    //
-
-    Property prop;
-    ACE_TCHAR tmp[126];
-    //Searchable config;
-    str=deviceParameters.toString().c_str();
-    Bottle xtmp = Bottle(deviceParameters.findGroup("FEATURES"));
-    prop.fromString(str.c_str());
-    prop.unput("device");
-    prop.unput("subdevice");
-    // look for Ethernet device driver to use and put it into the "device" field.
-    Value &motionControl=xtmp.find("motionControl");
-    strcpy(tmp, motionControl.asString().c_str());
-    prop.put("device", motionControl.asString().c_str());
-
-    net.driver.open(prop);
-    if (!net.driver.isValid())
-    {
-        std::cout<<"failed!"<<endl;
-        return false;
-    }
-    std::cout<<"done!"<<endl;
-
-    Property prop;
-    ACE_TCHAR tmp[126];
-    //Searchable config;
-    str=deviceParameters.toString().c_str();
-    Bottle xtmp = Bottle(deviceParameters.findGroup("FEATURES"));
-    prop.fromString(str.c_str());
-    prop.unput("device");
-    prop.unput("subdevice");
-    // look for Ethernet device driver to use and put it into the "device" field.
-    Value &motionControl=xtmp.find("motionControl");
-    strcpy(tmp, motionControl.asString().c_str());
-    prop.put("device", motionControl.asString().c_str());
-
-    net.driver.open(prop);
-    if (!net.driver.isValid())
-    {
-        std::cout<<"failed!"<<endl;
-        return false;
-    }
-    std::cout<<"done!"<<endl;
-
-    Property prop;
-    ACE_TCHAR tmp[126];
-    //Searchable config;
-    str=deviceParameters.toString().c_str();
-    Bottle xtmp = Bottle(deviceParameters.findGroup("FEATURES"));
-    prop.fromString(str.c_str());
-    prop.unput("device");
-    prop.unput("subdevice");
-    // look for Ethernet device driver to use and put it into the "device" field.
-    Value &motionControl=xtmp.find("motionControl");
-    strcpy(tmp, motionControl.asString().c_str());
-    prop.put("device", motionControl.asString().c_str());
-
-    net.driver.open(prop);
-    if (!net.driver.isValid())
-    {
-        std::cout<<"failed!"<<endl;
-        return false;
-    }
-    std::cout<<"done!"<<endl;
-
-
-#endif
 
     return true;
 }

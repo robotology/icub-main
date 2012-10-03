@@ -1885,7 +1885,8 @@ public:
     * @param p is a double value that is passed to the calibration procedure.
     * @return true/false on success/failure.
     */
-    virtual bool calibrate(int j, double p) {
+    virtual bool calibrate(int j, double p)
+    {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
