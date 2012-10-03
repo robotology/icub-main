@@ -80,7 +80,63 @@ using namespace std;
 
 #include "debugging.h"
 
+// Move to a different file?
 
+//
+//   Help structure
+//
+
+struct ImpedanceLimits
+{
+	double min_stiff;
+	double max_stiff;
+	double min_damp;
+	double max_damp;
+	double param_a;
+	double param_b;
+	double param_c;
+
+	public:
+	ImpedanceLimits()
+	{
+		min_stiff=0; max_stiff=0;
+		min_damp=0;  max_damp=0;
+		param_a=0; param_b=0; param_c=0;
+	}
+
+	double get_min_stiff() {return min_stiff;}
+	double get_max_stiff() {return max_stiff;}
+	double get_min_damp()  {return min_damp;}
+	double get_max_damp()  {return max_damp;}
+};
+
+struct ImpedanceParameters
+{
+		double stiffness;
+		double damping;
+		bool   enabled;
+		ImpedanceLimits limits;
+		ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
+};
+
+struct SpeedEstimationParameters
+{
+	double jnt_Vel_estimator_shift;
+	double jnt_Acc_estimator_shift;
+	double mot_Vel_estimator_shift;
+	double mot_Acc_estimator_shift;
+
+	SpeedEstimationParameters()
+	{
+		jnt_Vel_estimator_shift=0;
+		jnt_Acc_estimator_shift=0;
+		mot_Vel_estimator_shift=0;
+		mot_Acc_estimator_shift=0;
+	}
+};
+
+
+////////////////////////////////////////////
 // indirizzi ip
 #define DEFAULT_LAPTOP_IP	"10.255.37.155" // da usare col pc104
 #define DEFAULT_EMS_IP 		"127.0.0.1"		// "10.255.39.152"  ip della workstation qui dietro.
@@ -132,22 +188,23 @@ private:
 
 	// Joint/Mechanical data
 
-    int _networkN;								/** network number */
-    unsigned char *_destinations;       		/** destination addresses */
-    unsigned char _my_address;					/** my address */
-    int _polling_interval;						/** thread polling interval [ms] */
-    int _timeout;								/** number of cycles before timing out */
+//    int _networkN;								/** network number */
+//    unsigned char *_destinations;       		/** destination addresses */
+//    unsigned char _my_address;					/** my address */
+//    int _polling_interval;						/** thread polling interval [ms] */
+//    int _timeout;								/** number of cycles before timing out */
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to encoder conversion factors */
+    double *_rotToEncoder;                      /** angle to rotor conversion factors */
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
 	Pid *_tpids;								/** initial torque gains */
 	bool _tpidsEnabled;							/** abilitation for torque gains */
-//	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
+	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 //	DebugParameters *_debug_params;             /** debug parameters */
-//	ImpedanceParameters *_impedance_params;		/** impedance parameters */
-//	ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+	ImpedanceParameters *_impedance_params;		/** impedance parameters */
+	ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
@@ -189,6 +246,7 @@ public:
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
+    bool fromConfig(yarp::os::Searchable &config);
 
     // _AC_
     eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);

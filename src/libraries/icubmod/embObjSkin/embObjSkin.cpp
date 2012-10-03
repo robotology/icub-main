@@ -241,7 +241,7 @@ bool EmbObjSkin::init()
 	eo_array_Reset(array);
 	array->head.capacity = NUMOFROPSIGCFG;
 	array->head.itemsize = sizeof(eOropSIGcfg_t);
-	ropsigcfgassign->cmmnd = ropsigcfg_cmd_assign;
+	ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
 	sigcfg.ep = _fId.ep;
 	nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)sigcfg.ep, 0, skinNVindex_sstatus__arrayof10canframe);

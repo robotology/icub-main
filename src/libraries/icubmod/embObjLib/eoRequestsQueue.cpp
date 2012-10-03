@@ -66,11 +66,11 @@ void eoThreadEntry::init(void)
 
 int eoThreadEntry::synch()
 {
-	double timeout = 0.5f;
+	double timeout = 0.1f;
 
-	if( -1 == _synch.waitWithTimeout(timeout))
+	if( false == _synch.waitWithTimeout(timeout))
 	{
-		printf("Semaphore timed out!!\n");
+		// printf("Semaphore timed out!!\n");
 		return -1;
 	}
 
@@ -204,7 +204,6 @@ bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
         	printf("thread Id %d\n", *it);
         	if( (*it) == id )
         	{
-        		printf("Got it!!\n ");
         		it=fifo->erase(it);  //it now points to the next element
         	}
         	else

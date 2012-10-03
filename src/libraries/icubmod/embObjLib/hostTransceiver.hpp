@@ -73,10 +73,7 @@ public:
 	eOuint16_fp_uint16_t 	EPhash_function_ep2index;
 	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
-	// as an alternative ... create one methd which clears the remote vars, one which pushes one ack, and another the confirms them all.
-	void hostTransceiver_ConfigureRegularsOnRemote(void);
-
-	void load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
+	eOresult_t load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
 	void s_eom_hostprotoc_extra_protocoltransceiver_configure_regular_rops_on_board(void);
 
 	// somebody adds a set-rop  plus data.

@@ -67,7 +67,7 @@ typedef struct
 class eoThreadEntry
 {
 private:
-	// Semaphore where the thread will sleep onto -> change to ACE_semaphore because it supports timeouts
+	// Semaphore where the thread will sleep onto -> it supports timeout
 	ACE_thread_t _handle;
 	yarp::os::Semaphore _synch;
 	//ACE_Semaphore _synch;

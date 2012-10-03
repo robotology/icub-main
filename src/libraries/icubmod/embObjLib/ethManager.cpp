@@ -149,12 +149,12 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//
 	//	EMBOBJ INIT
 	//
-
 	if ( ( boardNum >= FIRST_BOARD) && ( boardNum <= LAST_BOARD) )
 	{
 		transceiver= new hostTransceiver;
 		transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
 	}
+	print_debug(AC_trace_file, "Initted transceiver\n");
 
 #if 0
 	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
@@ -459,11 +459,9 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 	_socket = new ACE_SOCK_Dgram();
 	if (-1 == _socket->open(local_addr) )
 	{
-		sprintf(tmp, "\n/---------------------------------------------------\\"
+		fprintf(stderr, "\n/---------------------------------------------------\\"
 				"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|"
 				"\n\\---------------------------------------------------/");
-		//YARP_ERROR(Logger::get(),tmp, Logger::get().log_files.f3);
-		//YARP_FAIL(Logger::get(),tmp);
 		return false;
 	}
 	ACE_thread_t id_recvThread;

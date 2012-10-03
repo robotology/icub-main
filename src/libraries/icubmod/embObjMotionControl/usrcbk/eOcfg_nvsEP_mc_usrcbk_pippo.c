@@ -268,7 +268,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig(eOcfg_nvsEP_mc_jointNumber_t xx
     printf("jConfig->pidposition.scale 		= 0x%X\n",	jConfig->pidposition.scale);
     printf("jConfig->minpositionofjoint		= 0x%X\n",	jConfig->minpositionofjoint);
 	printf("jConfig->maxpositionofjoint		= 0x%X\n",	jConfig->maxpositionofjoint);
-    printf("jConfig->controlmode			= 0x%X\n",	jConfig->controlmode);
+    printf("jConfig->controlmode			= 0x%X\n",	jConfig->motionmonitormode);
 	printf("ep = 0x%X\n", nv->ep);
 
 }
@@ -315,7 +315,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition(eOcfg_nvsEP_mc_mot
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 	printf("jconfig__pidposition controlmode, j=%d\n", xx);
-	jwake(xx, nv, jointNVindex_jconfig__controlmode);
+	jwake(xx, nv, jointNVindex_jcmmnds__controlmode);	//???
 }
 
 // --------------------------------------------------------------------------------------------------------------------

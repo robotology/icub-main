@@ -147,7 +147,7 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
 	EPhash_function_ep2index = hosttxrxcfg.hashfunction_ep2index;
 }
 
-void hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
+eOresult_t hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
 {
 	//pc104txrx
     eo_transceiver_ropinfo_t ropinfo;
@@ -157,8 +157,7 @@ void hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
     ropinfo.nvep        = ep;
 
     ropinfo.nvid = nvid;
-    eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
-    printf("load_occasional_rop res = 0x%0X\n", res);
+    return eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
 }
 
 void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regular_rops_on_board(void)
@@ -230,38 +229,6 @@ void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regul
 
     reset = (0==reset) ? (1) : (0);
 #endif
-}
-
-// vecchio //
-void hostTransceiver::hostTransceiver_ConfigureRegularsOnRemote(void)
-{
-    // 1. at first write the nv that we want to set: the EOK_cfg_nvsEP_mngmnt_NVID__upto15epid2signal
-    //    there are two alternative ways to do that:
-    //    A. QUICK MODE - to write directly onto the local struct of the endpoint. WE USE THIS SECOND WAY because we know
-    //       the name of the specific variable to use in the rop
-    //    B. FORMAL MODE (and more generic): to use teh nvscfg to retrieve the handle of a EOnv which is relative to the 
-    //       pair (endpoint, id) which we wnat to manipulate, and then to use the methods of EOnv to set the value of that variable.
-    //       we shall use this mode in function hostTransceiver_AddSetROP()
-    
-//    EOarray *upto15 = (EOarray*) & eo_cfg_nvsEP_mngmnt_usr_rem_board_mem_local->upto10rop2signal;
-#warning "cambiato?? per compilare scommentato definizione eOnvEPID_t in EOnv.h"
-//    eOnvEPID_t epid;
-
-    // clear the variable.
-//    eo_array_Reset(upto15);
-
-    // push back in teh array the first nv that the remote board shall signal
-//    epid.ep = EOK_cfg_nvsEP_base_endpoint;
-//    epid.id = EOK_cfg_nvsEP_base_NVID_ipnetwork__ipaddress;
-//    eo_array_PushBack(upto15, &epid);
-
-    // push back in teh array the second nv that the remote board shall signal
-//    epid.ep = EOK_cfg_nvsEP_base_endpoint;
-//    epid.id = EOK_cfg_nvsEP_base_NVID__bootprocess;
-//    eo_array_PushBack(upto15, &epid);
-    
-    // 2. then put the rop set<upto15epid2signal, data> inside the transceiver
-//    s_hostTransceiver_AddSetROP_with_data_already_set(EOK_cfg_nvsEP_mngmnt_endpoint, EOK_cfg_nvsEP_mngmnt_NVID__upto10rop2signal);
 }
 
 
