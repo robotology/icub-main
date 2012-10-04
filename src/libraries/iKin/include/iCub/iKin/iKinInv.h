@@ -1064,7 +1064,7 @@ public:
 
     /**
     * Sets the parameter gamma which is used to blend the contribute 
-    * of the task contorller versus the contribute of the joint
+    * of the task controller versus the contribute of the joint
     * controller. 
     * @param _gamma. 
     */
