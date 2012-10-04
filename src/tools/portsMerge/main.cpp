@@ -78,17 +78,24 @@ int main(int argc, char *argv[])
 {
     Network yarp;
 
-	int nPorts = 3;
 	BufferedPort<Bottle >   outPort;
     BufferedPort<Bottle >*  inPort  = 0;
 	Bottle*                 inData  = 0;
     yarp::os::Stamp*		inStamp = 0;
 	yarp::os::Stamp         outStamp;
 
+	int nPorts = argc-1;
+	if (nPorts == 0)
+	{
+		printf ("No input ports specified! \n");
+		return -1;
+	}
+
 	inPort  = new BufferedPort<Bottle > [nPorts];
 	inData  = new Bottle                [nPorts];
 	inStamp = new yarp::os::Stamp       [nPorts];
 
+	//open the ports
 	char buff[255];
 	string s = "/portsMerge";
 	for (int i = 0; i< nPorts; i++)
@@ -99,14 +106,15 @@ int main(int argc, char *argv[])
 	sprintf(buff,"%s/o0", s.c_str());
 	outPort.open(buff);
 
-	nPorts = argc-1;
+	//makes the connection
 	for (int i=1; i<argc; i++)
 	{
 		string tmp = argv[i];
-		bool b = yarp::os::Network::connect(tmp.c_str(),inPort[i].getName().c_str(),"udp",false);		
+		bool b = yarp::os::Network::connect(tmp.c_str(),inPort[i-1].getName().c_str(),"udp",false);		
 		if (b == false) return -1;
 	}
 
+	printf ("Module running\n");
     while(true)
     {
 		//read
