@@ -7,6 +7,7 @@ add_subdirectory(dataDumper)
 add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 add_subdirectory(iCubTest)
+add_subdirectory(portsMerge)
 
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)
