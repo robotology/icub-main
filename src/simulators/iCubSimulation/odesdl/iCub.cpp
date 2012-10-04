@@ -2659,7 +2659,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAnchor (LAjoints[2],   jP_leftArm[2][1], elev + jP_leftArm[2][2], jP_leftArm[2][0]);
         //dJointSetHingeAnchor (LAjoints[2],   0.117, elev +0.692, -0.026);
         dJointSetHingeAxis (LAjoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(LAjoints[2],dParamLoStop,  -52.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[2],dParamHiStop, 65.0*CTRL_DEG2RAD+safetyMargin);
+        dJointSetHingeParam(LAjoints[2],dParamLoStop,  -52.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[2],dParamHiStop, 80.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (LAjoints[3], body[4], body[6]); //joint left upper arm and left elbow mechanism
         dJointSetHingeAnchor (LAjoints[3],   jP_leftArm[3][1], elev + jP_leftArm[3][2], jP_leftArm[3][0]);
@@ -2821,7 +2821,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointAttach (RAjoints[2], body[3], body[5]); //joint right shoulder1 and right upper arm
         dJointSetHingeAnchor (RAjoints[2],   jP_rightArm[2][1], elev + jP_rightArm[2][2], jP_rightArm[2][0]);//dJointSetHingeAnchor (RAjoints[2],   -0.117,elev + 0.692, -0.026);
         dJointSetHingeAxis (RAjoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(RAjoints[2],dParamLoStop,  -65.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
+        dJointSetHingeParam(RAjoints[2],dParamLoStop,  -80.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
 
         dJointAttach (RAjoints[3], body[5], body[7]); //joint right upper arm and right elbow mechanism
         dJointSetHingeAnchor (RAjoints[3],   jP_rightArm[3][1], elev + jP_rightArm[3][2], jP_rightArm[3][0]);//dJointSetHingeAnchor (RAjoints[3],   -0.117,elev + 0.614, -0.026);
