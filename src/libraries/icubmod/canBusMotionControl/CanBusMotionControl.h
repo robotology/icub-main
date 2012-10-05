@@ -660,6 +660,7 @@ private:
 
     IServerLogger *mServerLogger;
 
+	bool readFullScaleAnalog(AnalogSensor* analogSensor, int ch);
     AnalogSensor *instantiateAnalog(yarp::os::Searchable& config, std::string id);
     void finiAnalog(AnalogSensor *s);
 

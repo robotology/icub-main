@@ -2025,6 +2025,53 @@ bool CanBusMotionControl::open (Searchable &config)
     return true;
 }
 
+bool CanBusMotionControl::readFullScaleAnalog(AnalogSensor* analogSensor, int ch)
+{
+	CanBusResources& res = RES (system_resources);
+	int destId=0x0200|analogSensor->getId();
+	analogSensor->getScaleFactor()[ch]=1e-9;
+	unsigned int i=0;
+	res.startPacket();
+	res._writeBuffer[0].setId(destId);
+	res._writeBuffer[0].getData()[0]=0x18;
+	res._writeBuffer[0].getData()[1]=ch;
+	res._writeBuffer[0].setLen(2);
+	res._writeMessages++;
+	res.writePacket();
+				
+	long int timeout=0;
+	bool full_scale_read=false;
+	do 
+	{
+		res.read();
+		for (i=0; i<res._readMessages; i++)
+		{
+			CanMessage& m = res._readBuffer[i];
+			unsigned int currId=m.getId();
+			if (currId==(0x0200|(analogSensor->getId()<<4)))
+				if (m.getLen()==4 &&
+					m.getData()[0]==0x18 &&
+					m.getData()[1]==ch)
+					{
+						analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
+						full_scale_read=true;
+						break;
+					}
+		}
+		yarp::os::Time::delay(0.002);
+		timeout++;
+	}
+	while(timeout<32 && full_scale_read==false);
+
+	if (full_scale_read==false) 
+		{							
+			fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
+			return false;
+		}
+
+	return true;
+}
+
 AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& config, std::string deviceid)
 {
     CanBusResources& res = RES (system_resources);
@@ -2106,49 +2153,22 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         {
                 //calibrated astrain board
                 if (analogCalibration==1)
-                {
+				{
                     //get the full scale values from the strain board
             		for (int ch=0; ch<6; ch++)
 			        {
-						analogSensor->getScaleFactor()[ch]=1e-9;
-				        unsigned int i=0;
-				        res.startPacket();
-				        res._writeBuffer[0].setId(destId);
-				        res._writeBuffer[0].getData()[0]=0x18;
-				        res._writeBuffer[0].getData()[1]=ch;
-				        res._writeBuffer[0].setLen(2);
-				        res._writeMessages++;
-				        res.writePacket();
-				
-				        long int timeout=0;
-				        bool full_scale_read=false;
-				        do 
-				        {
-					        res.read();
-					        for (i=0; i<res._readMessages; i++)
-					        {
-						        CanMessage& m = res._readBuffer[i];
-								unsigned int currId=m.getId();
-						        if (currId==(0x0200|(analogSensor->getId()<<4)))
-							        if (m.getLen()==4 &&
-								        m.getData()[0]==0x18 &&
-								        m.getData()[1]==ch)
-								        {
-									        analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
-									        full_scale_read=true;
-									        break;
-								        }
-					        }
-					        yarp::os::Time::delay(0.002);
-					        timeout++;
-				        }
-				        while(timeout<32 && full_scale_read==false);
-
-				        if (full_scale_read==false) 
-							{							
-								fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
-                                //yarp::os::Time::delay(3);
-							}
+						bool b=false;
+						int attempts = 0;
+						while(attempts<10) 
+						{
+							b = readFullScaleAnalog(analogSensor, ch);
+							if (b==true) break;
+							attempts++;
+						}
+						if (attempts>=10)
+						{
+							fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
+						}
 			        }
 
                     // debug messages
