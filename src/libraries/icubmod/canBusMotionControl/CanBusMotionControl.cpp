@@ -2164,6 +2164,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 							b = readFullScaleAnalog(analogSensor, ch);
 							if (b==true) break;
 							attempts++;
+							yarp::os::Time::delay(0.020);
 						}
 						if (attempts>=10)
 						{
