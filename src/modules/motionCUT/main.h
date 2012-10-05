@@ -47,8 +47,8 @@ also - and especially - with moving cameras.
       International Conference on Intelligent Robots and
       Systems</i>, San Francisco, CA, USA, 2011.
  
-\note If you're going to use the motionCUT for your work, please
-      quote it within any resulting publication.
+\note <b>If you're going to use the motionCUT for your work, 
+      please quote it within any resulting publication</b>.
  
 \note We warmly suggest to use OpenCV in conjunction with 
       multi-threading layers such as OpenMP and TBB in order to
