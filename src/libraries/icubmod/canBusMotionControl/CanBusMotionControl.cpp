@@ -2159,14 +2159,18 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
 			        {
 						bool b=false;
 						int attempts = 0;
-						while(attempts<10) 
+						while(attempts<15) 
 						{
 							b = readFullScaleAnalog(analogSensor, ch);
-							if (b==true) break;
+							if (b==true) 
+								{
+									if (attempts>0)	fprintf(stderr, "*** WARNING: Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
+									break;
+								}
 							attempts++;
 							yarp::os::Time::delay(0.020);
 						}
-						if (attempts>=10)
+						if (attempts>=15)
 						{
 							fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
 						}
