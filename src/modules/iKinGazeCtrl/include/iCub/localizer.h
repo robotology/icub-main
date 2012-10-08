@@ -98,6 +98,8 @@ public:
     bool   triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x);
     Vector getAbsAngles(const Vector &x);
     Vector get3DPoint(const string &type, const Vector &ang);
+    bool   getIntrinsicsMatrix(const string &type, Matrix &M);
+    bool   getExtrinsicsMatrix(const string &type, Matrix &M);
     bool   threadInit();
     void   afterStart(bool s);
     void   run();

@@ -673,6 +673,42 @@ protected:
         minVer.addString("min_allowed_vergence");
         minVer.addDouble(CTRL_RAD2DEG*commData.get_minAllowedVergence());
 
+        Bottle &intrinsicsLeft=info.addList();
+        intrinsicsLeft.addString("camera_intrinsics_left");
+        Bottle &intrinsicsLeftValues=intrinsicsLeft.addList();
+        Matrix PrjL;
+        if (loc->getIntrinsicsMatrix("left",PrjL))
+            for (int r=0; r<PrjL.rows(); r++)
+                for (int c=0; c<PrjL.cols(); c++)
+                    intrinsicsLeftValues.addDouble(PrjL(r,c));
+
+        Bottle &intrinsicsRight=info.addList();
+        intrinsicsRight.addString("camera_intrinsics_right");
+        Bottle &intrinsicsRightValues=intrinsicsRight.addList();
+        Matrix PrjR;
+        if (loc->getIntrinsicsMatrix("right",PrjR))
+            for (int r=0; r<PrjR.rows(); r++)
+                for (int c=0; c<PrjR.cols(); c++)
+                    intrinsicsRightValues.addDouble(PrjR(r,c));
+
+        Bottle &extrinsicsLeft=info.addList();
+        extrinsicsLeft.addString("camera_extrinsics_left");
+        Bottle &extrinsicsLeftValues=extrinsicsLeft.addList();
+        Matrix HL;
+        if (loc->getExtrinsicsMatrix("left",HL))
+            for (int r=0; r<HL.rows(); r++)
+                for (int c=0; c<HL.cols(); c++)
+                    extrinsicsLeftValues.addDouble(HL(r,c));
+
+        Bottle &extrinsicsRight=info.addList();
+        extrinsicsRight.addString("camera_extrinsics_right");
+        Bottle &extrinsicsRightValues=extrinsicsRight.addList();
+        Matrix HR;
+        if (loc->getExtrinsicsMatrix("right",HR))
+            for (int r=0; r<HR.rows(); r++)
+                for (int c=0; c<HR.cols(); c++)
+                    extrinsicsRightValues.addDouble(HR(r,c));
+
         Bottle &events=info.addList();
         events.addString("events");
         Bottle &eventsList=events.addList();

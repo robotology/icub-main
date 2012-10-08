@@ -611,6 +611,52 @@ void Localizer::handleAnglesOutput()
 
 
 /************************************************************************/
+bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M)
+{
+    if (type=="left")
+    {
+        if (PrjL!=NULL)
+        {
+            M=*PrjL;
+            return true;
+        }
+        else
+            return false;
+    }
+    else if (type=="right")
+    {
+        if (PrjR!=NULL)
+        {
+            M=*PrjR;
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool Localizer::getExtrinsicsMatrix(const string &type, Matrix &M)
+{
+    if (type=="left")
+    {
+        M=eyeL->asChain()->getHN();
+        return true;
+    }
+    else if (type=="right")
+    {
+        M=eyeR->asChain()->getHN();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 void Localizer::run()
 {
     handleMonocularInput();
