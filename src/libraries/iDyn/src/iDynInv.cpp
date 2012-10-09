@@ -1008,7 +1008,7 @@ bool BaseLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 //================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-FinalLinkNewtonEuler::FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb)
+FinalLinkNewtonEuler::FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const NewEulMode _mode, unsigned int verb)
 : OneLinkNewtonEuler(_mode,verb,NULL), eye4x4(eye(4,4)), eye3x3(eye(3,3)), zeros3x3(zeros(3,3)), zeros3(zeros(3))
 {
 	info = "final";
@@ -1017,9 +1017,19 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int 
 	w.resize(3);	w.zero();
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
+	HN.resize(4,4);	HN.eye();
+	if((_HN.rows()==4)&&(_HN.cols()==4))
+		HN = _HN;
+	else
+		if(verbose)
+        {
+            fprintf(stderr,"BaseLink error, could not set HN due to wrong dimensions: ( %d,%d) instead of (4,4). \n",_HN.rows(),_HN.cols());
+
+            fprintf(stderr," Default is set. \n");
+        }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, const NewEulMode _mode, unsigned int verb)
+FinalLinkNewtonEuler::FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const Vector &_F, const Vector &_Mu, const NewEulMode _mode, unsigned int verb)
 : OneLinkNewtonEuler(_mode,verb,NULL), eye4x4(eye(4,4)), eye3x3(eye(3,3)), zeros3x3(zeros(3,3)), zeros3(zeros(3))
 {
 	info = "final";
@@ -1029,6 +1039,16 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const Vector &_F, const Vector &_Mu, 
 	dw.resize(3);	dw.zero();
 	ddp.resize(3);	ddp.zero();
 	setAsFinal(_F,_Mu);
+	HN.resize(4,4);	HN.eye();
+	if((_HN.rows()==4)&&(_HN.cols()==4))
+		HN = _HN;
+	else
+		if(verbose)
+        {
+            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %d,%d) instead of (4,4). \n",_HN.rows(),_HN.cols());
+
+            fprintf(stderr," Default is set. \n");
+        }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
@@ -1683,7 +1703,7 @@ OneChainNewtonEuler::OneChainNewtonEuler(iDynChain *_c, string _info, const NewE
 		neChain[i+1]->setInfo(descript);
 	}
 	//then the final frame, for the backward - insertion as last
-	neChain[nLinks+1] = new FinalLinkNewtonEuler(mode,verbose);
+	neChain[nLinks+1] = new FinalLinkNewtonEuler(chain->getHN(),mode,verbose);
 
 	//the end effector is the last (nLinks+2-1 because it's an index)
 	nEndEff = nLinks+1;

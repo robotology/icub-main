@@ -624,6 +624,8 @@ protected:
 	yarp::sig::Vector F;	
 	///final moment
 	yarp::sig::Vector Mu;	
+	///final roto-traslation (if necessary)
+	yarp::sig::Matrix HN;
 
     // dummy matrices/vectors
     const yarp::sig::Matrix eye4x4;
@@ -638,7 +640,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+	FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
     * Constructor, initializing the final frame data
@@ -647,7 +649,7 @@ public:
 	* @param _mode the analysis mode (static/dynamic)
 	* @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+	FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
 	/**
      * Set the final frame data
