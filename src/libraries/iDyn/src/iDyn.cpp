@@ -1334,25 +1334,6 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
 	}
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::getH0() const
-{
-    return H0;
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynChain::setH0(const Matrix &_H0)
-{
-     if((_H0.cols()==4)&&(_H0.rows()==4))
-     {
-        H0 = _H0;
-        return true;
-     }
-     else
-     {
-        if(verbose) fprintf(stderr,"iDynChain: could not set H0 due to wrong sized matrix: %d x %d instead of 4x4 \n",_H0.rows(),_H0.cols());
-        return false;
-     }
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	//-----------
 	//  jacobian
@@ -2368,7 +2349,7 @@ bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubNeckInertialDyn::iCubNeckInertialDyn(const ChainComputationMode _mode)
 {
-    allocate("right");
+    allocate("head");
 	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2430,7 +2411,7 @@ bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubNeckInertialDynV2::iCubNeckInertialDynV2(const ChainComputationMode _mode)
 {
-    allocate("right");
+    allocate("head");
 	setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

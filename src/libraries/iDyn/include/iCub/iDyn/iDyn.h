@@ -1037,19 +1037,6 @@ public:
 	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
-    * Return the H0 base matrix of the chain
-    * @return H0, the base matrix of the chain
-    */
-	yarp::sig::Matrix getH0() const;
-
-    /**
-    * Set a new H0 base matrix in the chain
-    * @param H0 the (4x4) base matrix of the chain
-    * @return true if succeed, false otherwise
-    */
-	bool setH0(const yarp::sig::Matrix &_H0);
-
-    /**
     * Return the Denavit-Hartenberg matrix of the i-th link in the chain.
     * Note that all the links are considered (0<=i<N)
     * @param i the i-th link in the chain
