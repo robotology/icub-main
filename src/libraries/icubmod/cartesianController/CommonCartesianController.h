@@ -52,6 +52,7 @@
 #define IKINCARTCTRL_VOCAB_OPT_ISSOLVERON       VOCAB4('i','s','o','n')
 #define IKINCARTCTRL_VOCAB_OPT_POSE             VOCAB4('p','o','s','e')
 #define IKINCARTCTRL_VOCAB_OPT_INFO             VOCAB4('i','n','f','o')
+#define IKINCARTCTRL_VOCAB_OPT_TWEAK            VOCAB4('t','w','e','a')
 #define IKINCARTCTRL_VOCAB_OPT_REGISTER         VOCAB4('r','e','g','i')
 #define IKINCARTCTRL_VOCAB_OPT_UNREGISTER       VOCAB4('u','n','r','e')
 #define IKINCARTCTRL_VOCAB_OPT_LIST             VOCAB4('l','i','s','t')

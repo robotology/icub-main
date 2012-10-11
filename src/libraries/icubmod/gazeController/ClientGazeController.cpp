@@ -1699,6 +1699,58 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
 
 
 /************************************************************************/
+bool ClientGazeController::tweakSet(const Bottle &options)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("tweak");
+    command.addList()=options;
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::tweakGet(Bottle &options)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("tweak");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        if (reply.size()>1)
+        {
+            if (Bottle *optionsPart=reply.get(1).asList())
+                options=*optionsPart;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 ClientGazeController::~ClientGazeController()
 {
     close();

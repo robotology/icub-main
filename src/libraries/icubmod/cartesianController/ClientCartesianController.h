@@ -149,6 +149,8 @@ public:
     bool getInfo(yarp::os::Bottle &info);
     bool registerEvent(yarp::dev::CartesianEvent &event);
     bool unregisterEvent(yarp::dev::CartesianEvent &event);
+    bool tweakSet(const yarp::os::Bottle &options);
+    bool tweakGet(yarp::os::Bottle &options);
 
     virtual ~ClientCartesianController();
 };

@@ -657,6 +657,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         }
 
                         //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_TWEAK:
+                        {
+                            Bottle options;
+                            if (tweakGet(options))
+                            {   
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addList()=options;
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
                         default:
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
@@ -843,6 +858,22 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             else
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
     
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_TWEAK:
+                        {
+                            if (Bottle *options=command.get(2).asList())
+                            {
+                                if (tweakSet(*options))
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                else
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
                             break;
                         }
 
@@ -3087,6 +3118,26 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
     mutex.post();
 
     return events;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::tweakSet(const Bottle &options)
+{
+    return true;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::tweakGet(Bottle &options)
+{
+    if (attached)
+    {
+        options.clear();
+        return true;
+    }
+    else
+        return false;
 }
 
 

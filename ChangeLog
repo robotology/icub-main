@@ -1,3 +1,8 @@
+2012-10-11  Ugo Pattacini  <ugo.pattacini@iit.it>
+
+   * cartesian and gaze I/F's:
+   added a couple of new methods for low-level tweaking
+
 2012-09-04  Paul Fitzpatrick  <paul@robotrebuilt.com>
 
 	* src/simulators/iCubSimulation/wrapper/WorldManager.cpp

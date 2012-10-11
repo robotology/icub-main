@@ -1363,6 +1363,58 @@ bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
 
 
 /************************************************************************/
+bool ClientCartesianController::tweakSet(const Bottle &options)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TWEAK);
+    command.addList()=options;
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::tweakGet(Bottle &options)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TWEAK);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (reply.size()>1)
+        {
+            if (Bottle *optionsPart=reply.get(1).asList())
+                options=*optionsPart;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 ClientCartesianController::~ClientCartesianController()
 {
     close();

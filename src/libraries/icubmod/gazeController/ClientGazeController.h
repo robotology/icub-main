@@ -183,6 +183,8 @@ public:
     bool getInfo(yarp::os::Bottle &info);
     bool registerEvent(yarp::dev::GazeEvent &event);
     bool unregisterEvent(yarp::dev::GazeEvent &event);
+    bool tweakSet(const yarp::os::Bottle &options);
+    bool tweakGet(yarp::os::Bottle &options);
 
     virtual ~ClientGazeController();
 };

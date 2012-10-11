@@ -379,6 +379,9 @@ following ports:
       "head_version" (e.g. 1, 2, ...), the
       "min_allowed_vergence" (in degrees), a list of the
       available "events".
+    - [get] [tweak]: returns (enclosed in a list) a
+      property-like bottle containing low-level information on
+      the current controller's configuration.
     - [set] [Tneck] <val>: sets a new movements execution time
       for neck movements.
     - [set] [Teyes] <val>: sets a new movements execution time
@@ -402,6 +405,9 @@ following ports:
       parameters a further option "dominantEye" is available
       that enables the user to chose the dominant eye employed
       for the monocular approach.
+    - [set] [tweak] ((prop0 (<val> <val> ...)) (prop1) (<val>
+      <val> ...)): sets parameters for the low-level
+      controller's configuration.
     - [store]: store the controller context returning an integer
       identifier. The context comprises the values of internal
       controller variables, such as the tracking mode, the
@@ -723,6 +729,19 @@ protected:
         eventsList.addString("comm-timeout");
         eventsList.addString("*");
 
+        return true;
+    }
+
+    /************************************************************************/
+    bool tweakSet(const Bottle &options)
+    {
+        return true;
+    }
+
+    /************************************************************************/
+    bool tweakGet(Bottle &options)
+    {
+        options.clear();
         return true;
     }
 
@@ -1205,6 +1224,16 @@ public:
                                 return true;
                             }
                         }
+                        else if (type==VOCAB4('t','w','e','a'))
+                        {
+                            Bottle options;
+                            if (tweakGet(options))
+                            {
+                                reply.addVocab(ack);
+                                reply.addList()=options;
+                                return true;
+                            }
+                        }
                     }
 
                     break;
@@ -1287,6 +1316,18 @@ public:
                             {
                                 loc->setPidOptions(*bOpt);
                                 reply.addVocab(ack);
+                                return true;
+                            }
+                        }
+                        else if (type==VOCAB4('t','w','e','a'))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (tweakSet(*bOpt))
+                                    reply.addVocab(ack);
+                                else
+                                    reply.addVocab(nack);
+
                                 return true;
                             }
                         }
