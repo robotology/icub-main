@@ -193,7 +193,7 @@ protected:
         double            tol;
         bool              mode;
         bool              useReferences;
-        double            gamma;
+        double            straightness;
     };
 
     int contextIdCnt;
