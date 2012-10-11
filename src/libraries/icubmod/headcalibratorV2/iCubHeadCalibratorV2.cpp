@@ -190,15 +190,17 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     iPids = dynamic_cast<IPidControl *>(dd);
     iControlMode = dynamic_cast<IControlMode *>(dd);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode))
+    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
+        fprintf(logfile, "HEADCALIB[%d]: Error. This device cannot be calibrated\n", canID);
         return false;
+    }
 
     // ok we have all interfaces
     int nj=0;
-    bool ret=iEncoders->getAxes(&nj);
-
-    if (!ret)
+    if (!iEncoders->getAxes(&nj)) {
+        fprintf(logfile, "HEADCALIB[%d]: Error getting number of encoders\n", canID);
         return false;
+    }
 
     original_pid=new Pid[nj];
     limited_pid =new Pid[nj];
