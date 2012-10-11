@@ -3127,11 +3127,13 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
     Bottle &opt=const_cast<Bottle&>(options);
+    mutex.wait();
 
     // gamma
     if (opt.check("gamma"))
         ctrl->set_gamma(opt.find("gamma").asDouble());
 
+    mutex.post();
     return true;
 }
 
@@ -3141,6 +3143,7 @@ bool ServerCartesianController::tweakGet(Bottle &options)
 {
     if (attached)
     {
+        mutex.wait();
         options.clear();
 
         // gamma
@@ -3148,6 +3151,7 @@ bool ServerCartesianController::tweakGet(Bottle &options)
         gamma.addString("gamma");
         gamma.addDouble(ctrl->get_gamma());
 
+        mutex.post();
         return true;
     }
     else
