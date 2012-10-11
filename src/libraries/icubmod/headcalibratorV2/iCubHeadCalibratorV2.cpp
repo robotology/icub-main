@@ -454,17 +454,13 @@ bool iCubHeadCalibratorV2::checkGoneToZeroThreshold(int j)
 bool iCubHeadCalibratorV2::park(DeviceDriver *dd, bool wait)
 {
     int nj=0;
-    bool ret=false;
     abortParking=false;
 
-    ret=iEncoders->getAxes(&nj);
-    if (!ret)
+    if (!iEncoders || iEncoders->getAxes(&nj))
     {
-        fprintf(logfile, "HEADCALIB[%d]: error getting number of encoders\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: Error getting number of encoders\n", canID);
         return false;
     }
-
-
 
     int timeout = 0;
     fprintf(logfile, "HEADCALIB[%d]: Calling iCubHeadCalibratorV2::park() \n", canID);
