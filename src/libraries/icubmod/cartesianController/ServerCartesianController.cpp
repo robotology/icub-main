@@ -2840,6 +2840,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.tol=_tol;
         context.mode=_mode;
         context.useReferences=_useReference;
+        context.gamma=ctrl->get_gamma();
 
         *id=contextIdCnt++;
 
@@ -2878,7 +2879,8 @@ bool ServerCartesianController::restoreContext(const int id)
             setTrackingMode(context.mode);
             setReferenceMode(context.useReferences);
             setTrajTime(context.trajTime);
-            setInTargetTol(context.tol);            
+            setInTargetTol(context.tol);
+            ctrl->set_gamma(context.gamma);
 
             return true;
         }
@@ -3124,6 +3126,12 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
 /************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
+    Bottle &opt=const_cast<Bottle&>(options);
+
+    // gamma
+    if (opt.check("gamma"))
+        ctrl->set_gamma(opt.find("gamma").asDouble());
+
     return true;
 }
 
@@ -3134,6 +3142,12 @@ bool ServerCartesianController::tweakGet(Bottle &options)
     if (attached)
     {
         options.clear();
+
+        // gamma
+        Bottle &gamma=options.addList();
+        gamma.addString("gamma");
+        gamma.addDouble(ctrl->get_gamma());
+
         return true;
     }
     else
