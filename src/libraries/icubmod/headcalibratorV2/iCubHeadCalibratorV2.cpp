@@ -190,7 +190,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     iPids = dynamic_cast<IPidControl *>(dd);
     iControlMode = dynamic_cast<IControlMode *>(dd);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode))
         return false;
 
     // ok we have all interfaces
