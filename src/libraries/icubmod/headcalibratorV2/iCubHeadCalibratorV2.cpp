@@ -72,8 +72,8 @@ bool iCubHeadCalibratorV2::open (yarp::os::Searchable& config)
     homePos = new double[nj];
     homeVel=new double[nj];
 
-	logfile_name = p.findGroup("CALIBRATION").find("Logfile").asString();
-    if (logfile_name != "") 
+    logfile_name = p.findGroup("CALIBRATION").find("Logfile").asString();
+    if (logfile_name != "")
     {
         fprintf(stdout, "ARMCALIB::calibrator: opening logfile %s\n", logfile_name.c_str());
         logfile = fopen (logfile_name.c_str(), "w");
@@ -121,21 +121,21 @@ bool iCubHeadCalibratorV2::open (yarp::os::Searchable& config)
     for (i = 1; i < xtmp.size(); i++)
         homeVel[i-1] = xtmp.get(i).asDouble();
 
-   if (p.findGroup("CALIBRATION").check("MaxPWM")) 
-   {
-    xtmp = p.findGroup("CALIBRATION").findGroup("MaxPWM");
-    for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
-   }
-   else
-   {
-       fprintf(logfile, "HEADCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
-       for (i = 0; i < 3; i++) maxPWM[i] = 250;    //head
-       for (i = 3; i < 6; i++) maxPWM[i] = 1333;   //eyes do not use maxPWM
-       if (TORSO_IS_AVAILABLE)
+    if (p.findGroup("CALIBRATION").check("MaxPWM"))
+    {
+        xtmp = p.findGroup("CALIBRATION").findGroup("MaxPWM");
+        for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
+    }
+    else
+    {
+        fprintf(logfile, "HEADCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
+        for (i = 0; i < 3; i++) maxPWM[i] = 250;    //head
+        for (i = 3; i < 6; i++) maxPWM[i] = 1333;   //eyes do not use maxPWM
+        if (TORSO_IS_AVAILABLE)
         {
             for (i = 6; i < 9; i++) maxPWM[i] = 200;    //torso
         }
-   }
+    }
 
     return true;
 }
@@ -215,7 +215,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     //limit the pwm of head and torso  //
     /////////////////////////////////////
     //BLL board of the neck must receive calibration message before enabling PWM
-    for (k = 0; k < 3; k++) 
+    for (k = 0; k < 3; k++)
     {
         //bll boards are joint 0 1 2
         calibrateJoint(k);
@@ -228,7 +228,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     //BLL boards must receive calibration message before enabling PWM
     if (TORSO_IS_AVAILABLE)
     {
-        for (k = 6; k < nj; k++) 
+        for (k = 6; k < nj; k++)
         {
             //bll boards are joint 6 7 8 (9)
             calibrateJoint(k);
@@ -239,11 +239,11 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
             iPids->setPid(k,limited_pid[k]);
         }
     }
-    
+
     /////////////////////////////////////
     //enable all joints                //
     /////////////////////////////////////
-    for (k = 0; k < nj; k++) 
+    for (k = 0; k < nj; k++)
     {
         fprintf(logfile, "HEADCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
         iAmps->enableAmp(k);
@@ -320,7 +320,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
 /* for (k =0; k < 3; k++)
     {
         //LATER: calibrateJoint will be removed after enableAmp
-        calibrateJoint(eyeSetOfJoints[k]); 
+        calibrateJoint(eyeSetOfJoints[k]);
     }
     Time::delay(0.010);
     for (k =0; k < 3; k++)
@@ -338,7 +338,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
 */
     for (k =0; k < 3; k++)
     {
-        calibrateJoint(eyeSetOfJoints[k]); 
+        calibrateJoint(eyeSetOfJoints[k]);
         checkCalibrateJointEnded(eyeSetOfJoints[k]);
         goToZero(eyeSetOfJoints[k]);
         checkGoneToZero(eyeSetOfJoints[k]);
@@ -374,19 +374,16 @@ bool iCubHeadCalibratorV2::checkCalibrateJointEnded(int joint)
     }
     if (i == timeout)
     {
-        fprintf(logfile, "HEADCALIB::Timeout on joint %d while calibrating!\n", joint);
+        fprintf(logfile, "HEADCALIB[%d]: Timeout on joint %d while calibrating!\n", canID, joint);
         return false;
     }
     else if (abortCalib)
     {
-        fprintf(logfile, "HEADCALIB::aborting calibration of %d\n", joint);
+        fprintf(logfile, "HEADCALIB[%d]: Aborting calibration of %d\n", canID, joint);
         return false;
     }
-    else
-    {
-        fprintf(logfile, "HEADCALIB::calibration of joint %d done\n", joint);
-    }
 
+    fprintf(logfile, "HEADCALIB[%d]: Calibration of joint %d done\n", canID, joint);
     return true;
 }
 
@@ -413,12 +410,12 @@ void iCubHeadCalibratorV2::checkGoneToZero(int j)
         timeout ++;
         if (timeout >= GO_TO_ZERO_TIMEOUT)
         {
-            fprintf(logfile, "HEADCALIB[%d] Timeout on joint %d while going to zero!\n", canID, j);
+            fprintf(logfile, "HEADCALIB[%d]: Timeout on joint %d while going to zero!\n", canID, j);
             finished = true;
         }
     }
     if (abortCalib)
-        fprintf(logfile, "HEADCALIB[%d] abort wait for joint %d going to zero!\n", canID, j);
+        fprintf(logfile, "HEADCALIB[%d]: Abort wait for joint %d going to zero!\n", canID, j);
 }
 
 bool iCubHeadCalibratorV2::checkGoneToZeroThreshold(int j)
@@ -432,12 +429,12 @@ bool iCubHeadCalibratorV2::checkGoneToZeroThreshold(int j)
     {
         iEncoders->getEncoder(j, &ang);
         delta = fabs(ang-zeroPos[j]);
-        fprintf(logfile, "HEADCALIB[%d] (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, zeroPos[j], delta);
+        fprintf(logfile, "HEADCALIB[%d]: (joint %d) curr:%.2f des:%.2f -> delta:%.2f\n", canID, j, ang, zeroPos[j], delta);
         if (delta<POSITION_THRESHOLD)
         {
-            fprintf(logfile, "HEADCALIB[%d] (joint %d) completed! delta:%f\n", canID, j,delta);
+            fprintf(logfile, "HEADCALIB[%d]: (joint %d) completed! delta:%f\n", canID, j,delta);
             finished=true;
-    }
+        }
 
         Time::delay (0.5);
         timeout ++;
@@ -463,49 +460,49 @@ bool iCubHeadCalibratorV2::park(DeviceDriver *dd, bool wait)
     ret=iEncoders->getAxes(&nj);
     if (!ret)
     {
-        fprintf(logfile, "HEADCALIB[%d]: error getting number of encoders\n",canID);
+        fprintf(logfile, "HEADCALIB[%d]: error getting number of encoders\n", canID);
         return false;
     }
 
 
 
     int timeout = 0;
-    fprintf(logfile, "HEADCALIB[%d]: Calling iCubHeadCalibratorV2::park() \n",canID);
+    fprintf(logfile, "HEADCALIB[%d]: Calling iCubHeadCalibratorV2::park() \n", canID);
     iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 
     if (wait)
+    {
+        fprintf(logfile, "HEADCALIB[%d]: Moving to park positions \n", canID);
+        bool done=false;
+        while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
         {
-        fprintf(logfile, "HEADCALIB[%d]: Moving to park positions \n",canID);
-            bool done=false;
-            while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
+            iPosition->checkMotionDone(&done);
+            fprintf(logfile, ".");
+            Time::delay(1);
+            timeout++;
+        }
+        if(!done)
+        {
+            for(int j=0; j < nj; j++)
             {
-                iPosition->checkMotionDone(&done);
-                fprintf(logfile, ".");
-                Time::delay(1);
-                timeout++;
-            }
-            if(!done)
-            {
-                for(int j=0; j < nj; j++)
+                iPosition->checkMotionDone(j, &done);
+                if (iPosition->checkMotionDone(j, &done))
                 {
-                    iPosition->checkMotionDone(j, &done);
-                    if (iPosition->checkMotionDone(j, &done))
-                    {
-                        if (!done)
-                            fprintf(logfile, "iCubHeadCalibratorV2::park() : joint %d not in position ", j);
-                    }
-                    else
-                        fprintf(logfile, "iCubHeadCalibratorV2::park() : joint %d did not answer ", j);
+                    if (!done)
+                        fprintf(logfile, "iCubHeadCalibratorV2::park() : joint %d not in position ", j);
                 }
+                else
+                    fprintf(logfile, "iCubHeadCalibratorV2::park() : joint %d did not answer ", j);
             }
         }
+    }
 
     if (abortParking)
-        fprintf(logfile, "HEADCALIB[%d]::Park was aborted!\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: Park was aborted!\n", canID);
     else
-        fprintf(logfile, "HEADCALIB[%d]::Park was done!\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: Park was done!\n", canID);
     return true;
 }
 
@@ -518,7 +515,7 @@ bool iCubHeadCalibratorV2::quitCalibrate()
 
 bool iCubHeadCalibratorV2::quitPark()
 {
-    fprintf(logfile, "HEADCALIB[%d]::quitting park\n", canID);
+    fprintf(logfile, "HEADCALIB[%d]: Quitting park\n", canID);
     abortParking=true;
     return true;
 }
