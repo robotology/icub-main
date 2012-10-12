@@ -56,19 +56,19 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
 	// open ethResource, if needed
 
-	Property prop;
-	ACE_TCHAR tmp[126];
-	string str=config.toString().c_str();
-	xtmp = Bottle(config.findGroup("FEATURES"));
-	prop.fromString(str.c_str());
-	prop.unput("device");
-	prop.unput("subdevice");
-	// look for Ethernet device driver to use and put it into the "device" field.
-	Value &device=xtmp.find("device");
-	prop.put("device", device.asString().c_str());
+//	Property prop;
+//	ACE_TCHAR tmp[126];
+//	string str=config.toString().c_str();
+//	xtmp = Bottle(config.findGroup("FEATURES"));
+//	prop.fromString(str.c_str());
+//	prop.unput("device");
+//	prop.unput("subdevice");
+//	// look for Ethernet device driver to use and put it into the "device" field.
+//	Value &device=xtmp.find("device");
+//	prop.put("device", device.asString().c_str());
 
 	ethResCreator *resList = ethResCreator::instance();
-	res = resList->getResource(prop);
+	res = resList->getResource(config);
 
 
 	int period=config.find("Period").asInt();
@@ -277,7 +277,7 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 	EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
 	//	yarp::sig::Vector 		&pv = outPort.prepare();
 
-	print_debug(AC_debug_file, "\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
+	// print_debug(AC_debug_file, "\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
 
 	for(i=0; i<sk_array->head.size; i++)
 	{
@@ -321,17 +321,17 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 			}
 			triangle = (canframe->id & 0x000f);
 			msgtype= ((canframe->data[0])& 0x80);
-			print_debug(AC_debug_file, "\n data id 0x%04X, 0x", canframe->id);
+			// print_debug(AC_debug_file, "\n data id 0x%04X, 0x", canframe->id);
 
 			int index=16*12*mtbId + triangle*12;
 
-			print_debug(AC_debug_file,"%0X ", canframe->data[0]);
+			// print_debug(AC_debug_file,"%0X ", canframe->data[0]);
 			if (msgtype)
 			{
 				for(int k=0;k<5;k++)
 				{
 					data[index+k+7]=canframe->data[k+1];
-					print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
+					// print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
 				}
 			}
 			else
@@ -339,13 +339,13 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 				for(int k=0;k<7;k++)
 				{
 					this->data[index+k]=canframe->data[k+1];
-					print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
+					// print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
 				}
 			}
 		}
 		else
 		{
-			print_debug(AC_debug_file, "Unknown Message\n");
+			// print_debug(AC_debug_file, "Unknown Message\n");
 		}
 	}
 	return true;  // bool?

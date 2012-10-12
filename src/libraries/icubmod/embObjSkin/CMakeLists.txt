@@ -13,6 +13,6 @@ if (NOT SKIP_embObjSkin)
 
 	add_library(embObjSkin embObjSkin.h embObjSkin.cpp)
 	target_link_libraries(embObjSkin ethResources ${YARP_LIBRARIES})
-#	TARGET_LINK_LIBRARIES(embObjSkin ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+#	TARGET_LINK_LIBRARIES(embObjSkin DebugStream ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 	icub_export_library(embObjSkin)
 endif (NOT SKIP_embObjSkin)

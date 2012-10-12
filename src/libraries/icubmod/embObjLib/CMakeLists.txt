@@ -254,6 +254,6 @@ SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES})  
+TARGET_LINK_LIBRARIES(${PROJECTNAME} DebugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES})  
 
 icub_export_library(${PROJECTNAME})

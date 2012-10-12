@@ -22,7 +22,7 @@
 #include <iCub/FactoryInterface.h>
 
 // Logger interface
-#include "debugging.h"
+#include "Debug.h"
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
@@ -142,29 +142,38 @@ RobotInterfaceRemap::~RobotInterfaceRemap()
 
 void RobotInterfaceRemap::park(bool wait)
 {
-    // AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::park(bool wait)", Logger::get().log_files.f3);
-
     if (abortF)
         return;
 
     isParking=true;
 
-    RobotNetworkIt it=networks.begin();
-    while(it!=networks.end())
+    RobotPartIt it = parts.begin();
+    while(it!=parts.end())
     {
-        (*it)->startPark();
-        it++;
+    	//acquire calibration int
+    	IControlCalibration2 *iCtrlCalib =0x00;
+    	(*it)->driver.view(iCtrlCalib);				//prendi l'interfaccia IControlCalib2 del wrapper (il device della parte)
+
+    	iCtrlCalib->park();
+    	it++;
     }
 
-    it=networks.begin();
-    if (wait)
-    {
-        while(it!=networks.end())
-        {
-            (*it)->joinPark();
-            it++;
-        }
-    }
+//    RobotNetworkIt it=networks.begin();
+//    while(it!=networks.end())
+//    {
+//        (*it)->startPark();
+//        it++;
+//    }
+//
+//    it=networks.begin();
+//    if (wait)
+//    {
+//        while(it!=networks.end())
+//        {
+//            (*it)->joinPark();
+//            it++;
+//        }
+//    }
 
     isParking=false;
 }
@@ -494,6 +503,7 @@ bool RobotInterfaceRemap::initialize10(const std::string &inifile)
 
 bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 {
+	yTrace();
     fprintf(stderr, "Initialization from file, new version 2.0\n");
 
     std::string PATH;
@@ -661,15 +671,11 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
                 //save interface for later use
                 net->iCalib=iCrtlCalib;
 
-                net->calibrator.view(icalibrator);
+                net->calibrator.view(icalibrator);	// icalibrator contiene puntatore a interfaccia ICalibrator (alto livello) dell'oggetto calibratore
 
                 //set calibrator
-                net->iCalib->setCalibrator(icalibrator);
+                iCrtlCalib->setCalibrator(icalibrator);	// impongo all'oggetto calibratore di far riferimento al wrapper
 
-                //set calibrator
-                iCrtlCalib->setCalibrator(icalibrator);	// impongo al device mc di far riferimento al wrapper
-
-                net->driver.view(iCrtlCalib);
 
             }
             else
@@ -884,6 +890,7 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
 
 bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotOptions, RobotNetworkEntry &net)
 {
+	yTrace();
     std::string file=robotOptions.find("file").asString().c_str();
     std::string fullFilename;
     fullFilename=path;
@@ -915,10 +922,10 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     deviceParameters.put("FeatId",featId);
 
 
-    printf("\n\ndevice dev: %s\n", device.asString().c_str());
-    printf("subdevice dev: %s\n", subdevice.asString().c_str());
-    printf("candevice dev: %s\n", candevice.asString().c_str());
-    printf("PC104IpAddress dev: %s\n", PC104IpAddress.asString().c_str());
+//    printf("\n\ndevice dev: %s\n", device.asString().c_str());
+//    printf("subdevice dev: %s\n", subdevice.asString().c_str());
+//    printf("candevice dev: %s\n", candevice.asString().c_str());
+//    printf("PC104IpAddress dev: %s\n", PC104IpAddress.asString().c_str());
 
     ICUB_CAN_IDS *ids=can_ids.find(candevice.asString().c_str());
 

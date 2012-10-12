@@ -25,7 +25,7 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/impl/Logger.h>
 
-#include "debugging.h"
+#include "Debug.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -33,17 +33,11 @@ using namespace yarp::os::impl;
 
 bool keepGoingOn2 = true;
 
-#ifdef _AC_
-FILE *AC_trace_file = stdout;
-FILE *AC_debug_file = stdout;
-FILE *AC_error_file = stderr;
-#endif
-
 
 ethResCreator* ethResCreator::handle = 0x00;
 bool ethResCreator::initted = false;
 
-TheEthManager* TheEthManager::handle = 0x00;
+TheEthManager* TheEthManager::handle = NULL;
 int TheEthManager::i = false;
 
 
@@ -80,6 +74,7 @@ ethResources::~ethResources()
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
+	yTrace();
 	ACE_TCHAR tmp[126]; //, address[64];
 	Bottle xtmp, xtmp2;
 	Value val;
@@ -88,8 +83,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	printf("\nConfig: \n%s\n\n", config.toString().c_str() );
-	// AC_YARP_INFO(Logger::get(), "ethResources::open()", Logger::get().log_files.f3);
+	yDebug() << "\nEthResources open parameters: " << config.toString().c_str() << "\n";
 
 	//
 	// Get EMS ip addresses and port from config file, in order to correctly configure the transceiver.
@@ -97,14 +91,18 @@ bool ethResources::open(yarp::os::Searchable &config)
 	// extract eth group info
 	xtmp = Bottle(config.findGroup("ETH"));
 
-
 	xtmp2 = xtmp.findGroup("IpAddress");
+    if (xtmp2.isNull())
+    {
+        yError() << "EMS Ip Address not found\n";
+        return false;
+    }
 	strcpy(address, xtmp2.get(1).asString().c_str());
-	print_debug(AC_trace_file, "Ems ip address %s\n", address);
+	yDebug() << "Ems ip address " << address;
 
 	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
 	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-	// AC_YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
+
 	// Get EMS CmdPort from config file
 	xtmp2 = xtmp.findGroup("CmdPort");
 	rem_port = xtmp2.get(1).asInt();
@@ -113,8 +111,14 @@ bool ethResources::open(yarp::os::Searchable &config)
 
 	int boardNum=255;
 	xtmp2 = xtmp.findGroup("Ems");
-	printf("Ems %s - %d - %s\n", xtmp2.get(0).asString().c_str(), xtmp2.get(1).asInt(), xtmp2.get(2).asString().c_str());
+    if (xtmp2.isNull())
+    {
+        yError() << "EMS Board number identifier not found\n";
+        return false;
+    }
+
 	boardNum = xtmp2.get(1).asInt();
+	printf("Ems %d\n", boardNum);
 	//
 	// Fill 'info' and ID fields
 	//
@@ -132,11 +136,11 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//
 	xtmp2 = config.findGroup("PC104IpAddress");
 	strcpy(address, xtmp2.get(1).asString().c_str());
-	// AC_YARP_INFO(Logger::get(), String("PC104IpAddress:\t") + address, Logger::get().log_files.f3);
+
 	// ACE format
 	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
 	sprintf(tmp,"pc104.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), loc_ip1,loc_ip2,loc_ip3,loc_ip4);
-	// AC_YARP_INFO(Logger::get(),tmp, Logger::get().log_files.f4);
+
 
 	ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
 
@@ -154,42 +158,9 @@ bool ethResources::open(yarp::os::Searchable &config)
 		transceiver= new hostTransceiver;
 		transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
 	}
-	print_debug(AC_trace_file, "Initted transceiver\n");
 
-#if 0
-	// look through the config to know which features -E.P.- are required: motionControl, skin, analog... and create them
-	// Clean device and subdevice fileds
+	yDebug() << "Transceiver succesfully initted.";
 
-	Property prop;
-	string str=config.toString().c_str();
-	xtmp = Bottle(config.findGroup("FEATURES"));
-	prop.fromString(str.c_str());
-	prop.unput("device");
-	prop.unput("subdevice");
-	// look for Ethernet device driver to use and put it into the "device" field.
-	Value &motionControl=xtmp.find("motionControl");
-	strcpy(tmp, motionControl.asString().c_str());
-	prop.put("device", motionControl.asString().c_str());
-
-	createMotionControlHandler.open(prop);
-	createMotionControlHandler.view(motionCtrl);
-	motionCtrl->configureTransceiver(transceiver);
-
-	//motionCtrl.open(prop);
-
-
-	IPidControl       		*pipid;
-	IPositionControl       	*popod;
-	IVelocityControl		*vevel;
-	// motionCtrl->view(pipid);
-	// motionCtrl->view(popod);
-	// motionCtrl->view(vevel);
-
-	pipid = (IPidControl *) motionCtrl;
-	Pid p;
-	view(popod);
-	view(vevel);
-#endif
 	return true;
 }
 
@@ -205,24 +176,6 @@ void ethResources::getPack(uint8_t **pack, uint16_t *size)
 		transceiver->getTransmit(pack, size);
 }
 
-
-#if 0
-void ethResources::setCalibrator(ICalibrator *icalibrator)
-{
-	motionCtrl->setCalibrator(icalibrator);
-}
-
-void ethResources::getControlCalibration(IControlCalibration2 **icalib)
-{
-	createMotionControlHandler.view(*icalib);
-
-}
-
-void ethResources::getMotorController(DeviceDriver **iMC)
-{
-	*iMC =  this->motionCtrl;
-}
-#endif
 
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
@@ -441,16 +394,15 @@ TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1)
 
 	test = 0;
 	deviceNum = 0;
-	//_socket = 0;
 	sprintf(tmp, "TheEthManager::TheEthManager()");
 
 	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 	local_addr.addr_to_string(tmp, 64);
 	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
 
-	createSocket(local_addr);
 
-	//socket->enable(ACE_NONBLOCK);
+
+
 }
 
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
@@ -485,9 +437,16 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 
 TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
 {
+	// mutex
 	if (i == 0)
 	{
 		handle = new TheEthManager(local_addr);
+//		if(!handle->createSocket(local_addr))
+//		{
+//			delete handle;
+//			handle = NULL;
+//		}
+
 		// move the start during / right before the calibration command??
 
 		handle->sendThread.start();
@@ -499,6 +458,7 @@ TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
 #endif
 	}
 	i++;
+	//
 	return handle;
 }
 
@@ -507,15 +467,18 @@ TheEthManager *TheEthManager::instance()
 	return handle;
 }
 
+//TheEthManager *TheEthManager::quit()
+//{
+//	return handle;
+//}
+
 TheEthManager::~TheEthManager()
 {
 	char tmp[126];
 	sprintf(tmp, "TheEthManager::~TheEthManager() destructor call; handle= %p - i=%d", handle, i);
 	printf("TheEthManager::~TheEthManager()\n");
 
-	i--;
-	if (i == 0 )
-	{
+
 #ifdef _SEPARETED_THREADS_
 		keepGoingOn2 = false;
 		print_data();
@@ -525,10 +488,10 @@ TheEthManager::~TheEthManager()
 #endif
 
 		sprintf(tmp, "TheEthManager::~TheEthManager() - real destruction happens here handle= %p - i=%d", handle, i);
-		//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+
 		_socket->close();
-		delete handle;
-	}
+
+
 }
 
 bool TheEthManager::register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler)

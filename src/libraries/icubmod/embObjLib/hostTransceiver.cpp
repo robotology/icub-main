@@ -76,8 +76,6 @@ hostTransceiver::~hostTransceiver()
 
 void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize, uint8_t _board_n)
 {
-	// AC_YARP_INFO(Logger::get(),"hostTransceiver::init", Logger::get().log_files.f3);
-
     // the configuration of the transceiver: it is specific of a given remote board
 
     eOhosttransceiver_cfg_t hosttxrxcfg;

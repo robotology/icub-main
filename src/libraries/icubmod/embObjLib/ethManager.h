@@ -61,6 +61,8 @@ using namespace std;
 
 //#define _ICUB_CALLBACK_
 
+#include "Debug.h"
+
 using namespace std;
 
 // debug with workstation
@@ -116,16 +118,6 @@ private:
     uint8_t 					*udppkt_data;
    	uint16_t 					udppkt_size;
 
-   	// Protocol handlers
-//   	PolyDriver					createProtocolHandler;
-
-
-   	// Motion control handlers
-//   	PolyDriver					createMotionControlHandler;
-
-//   	PolyDriver					createSkinHandler;
-//   	PolyDriver					createAnalogHandler;
-
 public:
 
 	EMS_ID						id;
@@ -144,9 +136,7 @@ public:
     int send(void *data, size_t len);
     ACE_INET_Addr	getRemoteAddress();
     void getPack(uint8_t **pack, uint16_t *size);
-//    void setCalibrator(ICalibrator *icalibrator);
-//    void getControlCalibration(IControlCalibration2 **icalib);
-//    void getMotorController(DeviceDriver **iMC);
+
     void onMsgReception(uint8_t *data, uint16_t size);
 };
 

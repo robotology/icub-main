@@ -9,6 +9,8 @@ include(${YARP_MODULE_PATH}/YarpPlugin.cmake)
 
 project(icubmod)
 
+add_subdirectory(DebugStream)
+  
 BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
   add_subdirectory(canBusMotionControl)
@@ -37,6 +39,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(embObjLib)
   add_subdirectory(embObjMotionControl)
   add_subdirectory(embObjSkin) 
+  add_subdirectory(parametricCalibrator)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 

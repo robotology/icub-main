@@ -138,7 +138,7 @@ bool eoThreadFifo::push(eoThreadId id)
 
 eoRequestsQueue::eoRequestsQueue(int num_msgs)
 {
-	print_debug(AC_debug_file, "Allocating %d\n", num_msgs);
+	// print_debug(AC_debug_file, "Allocating %d\n", num_msgs);
 //	elements = num_msgs;
 //	njoints  = joints;
 	threadPool = new eoThreadArray[EO_THREADARRAY_MAX_THREADS];
@@ -165,7 +165,7 @@ int eoRequestsQueue::pop(int nv_index)
 {
 	if (whole_pendings<=0)
 	{
-		print_debug(AC_debug_file, "Error, queue of requests empty");
+		// print_debug(AC_debug_file, "Error, queue of requests empty");
 		return -1;
 	}
 

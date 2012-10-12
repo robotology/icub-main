@@ -40,7 +40,6 @@
 #include <list>
 #include "ace/Semaphore.h"
 
-#include "debugging.h"
 
 #define EO_THREADARRAY_MAX_THREADS 500
 
