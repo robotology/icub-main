@@ -142,8 +142,7 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 #include "ControlBoardWrapper.h"
 #include <yarp/dev/Drivers.h>
 
-
-
+#include "Debug.h"
 
 #include <yarp/os/impl/Logger.h>
 using namespace yarp::os::impl;
@@ -192,17 +191,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if( NULL == (AC_trace_file = fopen("/home/icub/trace.log", "w+")) )
-    {
-        printf("Cannot open file /home/icub/trace.log, using stdout\n");
-        AC_trace_file = stdout;
-    }
-
-    if( NULL == (AC_debug_file = fopen("/home/icub/debug.log", "w+")) )
-    {
-        printf("Cannot open file /home/icub/debug.log, using stdout\n");
-        AC_debug_file = stdout;
-    }
+    MyRobotInterface::Debug::setTraceFile("/home/icub/trace.log");
+    MyRobotInterface::Debug::setOutputFile("/home/icub/debug.log");
+    MyRobotInterface::Debug::setErrorFile("/home/icub/error.log");
 
     YARP_REGISTER_DEVICES(icubmod)
 
@@ -362,19 +353,13 @@ int main(int argc, char *argv[])
         iRobotInterface->finiCart();
     }
 
-    iRobotInterface->detachWrappers();
     iRobotInterface->park(); //default behavior is blocking (safer)
+    iRobotInterface->detachWrappers();
+
     iRobotInterface->closeNetworks();
     ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
     delete iRobotInterface;
     iRobotInterface=0;
 
-#ifdef _AC_
-    if( stdout != AC_trace_file)
-        fclose(AC_trace_file);
-
-    if( stdout != AC_debug_file)
-        fclose(AC_debug_file);
-#endif
     return 0;
 }

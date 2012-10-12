@@ -22,6 +22,11 @@ source_group("Header Files" FILES ${folder_header})
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 include(../../libraries/icubmod/embObjLib/embObjLib.conf)
 
+ADD_LIBRARY(Debug Debug.cpp Debug.h )
+TARGET_LINK_LIBRARIES(Debug)
+icub_export_library(Debug)
+    
+    
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
                     ${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/
                     ${iCubDev_INCLUDE_DIRS}
@@ -40,12 +45,14 @@ if(ICUB_USE_INTERFACEGUI)
                                     ${YARP_LIBRARIES}
                                     canLoaderLib
                                     icubmod
-                                    iCubInterfaceGuiLib)
+                                    iCubInterfaceGuiLib
+                                    Debug)
 else()
     target_link_libraries(iCubInterface iCubDev
                                     ${YARP_LIBRARIES}
                                     canLoaderLib
-                                    icubmod)
+                                    icubmod
+                                    Debug)
 endif()
 
 install(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
