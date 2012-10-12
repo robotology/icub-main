@@ -22,12 +22,13 @@ source_group("Header Files" FILES ${folder_header})
 set(BASE $ENV{ICUB_ROOT}/firmware/emBODY/)
 include(../../libraries/icubmod/embObjLib/embObjLib.conf)
 
-   
-    
+
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderLib
                     ${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/
                     ${iCubDev_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/ControlBoardWrapper2)
 
 
 if(ICUB_USE_INTERFACEGUI)

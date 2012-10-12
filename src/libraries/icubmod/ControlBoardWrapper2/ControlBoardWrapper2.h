@@ -57,7 +57,6 @@ inline void DEBUG_CW2(const char *fmt, ...)
 
 #include <yarp/os/impl/Logger.h>
 
-#include "ControlBoardWrapper.h"
 
 #ifdef MSVC
     #pragma warning(disable:4355)
@@ -74,7 +73,7 @@ using namespace yarp::os::impl;
 * head is a Bottle which contains the specification of the message type
 * body is a Vector which move the robot accordingly
 */
-//typedef PortablePair<Bottle, Vector> CommandMessage; //defined in ControlBoardWrapper.h
+typedef PortablePair<Bottle, Vector> CommandMessage;
 
 class ControlBoardWrapper2;
 

@@ -138,7 +138,6 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 
 #include "RobotInterfaceRemap.h"
 
-#include "ControlBoardWrapper2.h"
 #include "ControlBoardWrapper.h"
 #include <yarp/dev/Drivers.h>
 
@@ -196,11 +195,6 @@ int main(int argc, char *argv[])
     DebugStream::Debug::setErrorFile("/home/icub/error.log");
 
     YARP_REGISTER_DEVICES(icubmod)
-
-    //add local driver to factory
-    yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper2>
-        ("controlboardwrapper2",
-        "", "ControlBoardWrapper2"));
 
     yarp::dev::Drivers::factory().add(new DriverCreatorOf<ControlBoardWrapper>
         ("controlboardwrapper",
