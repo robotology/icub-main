@@ -20,7 +20,6 @@ const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 using namespace std;
 
-#include "debugging.h"
 
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
