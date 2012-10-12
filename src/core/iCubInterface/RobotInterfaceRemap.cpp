@@ -18,7 +18,6 @@
 #include <yarp/os/Os.h>
 
 #include "ControlBoardWrapper.h"
-#include "ControlBoardWrapper2.h"
 
 #include <iCub/FactoryInterface.h>
 
