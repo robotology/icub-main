@@ -378,7 +378,8 @@ following ports:
       bottle containing useful information, such as the
       "head_version" (e.g. 1, 2, ...), the
       "min_allowed_vergence" (in degrees), a list of the
-      available "events".
+      available "events", the intrinsic and extrinsic camera
+      parameters used.
     - [get] [tweak]: returns (enclosed in a list) a
       property-like bottle containing low-level information on
       the current controller's configuration.
