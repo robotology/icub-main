@@ -789,10 +789,9 @@ bool embObjMotionControl::init()
 
 	// invia configurazioni a caso
 
-
 	// attiva il loop di controllo
 	eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
-	nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_comm, dummy, applNVindex_cmmnds__go2state);
+	nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
 	if(EOK_uint16dummy == nvid)
 		return false;
 
