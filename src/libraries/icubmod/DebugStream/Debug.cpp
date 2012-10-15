@@ -55,6 +55,7 @@ void DebugStream::Debug::print_output(MsgType t,
                                          const char *func)
 {
     switch (t) {
+#ifdef DEBUG
     case TraceType:
         if (ftrc.is_open()) {
             if (verbose_output) {
@@ -85,6 +86,7 @@ void DebugStream::Debug::print_output(MsgType t,
             }
         }
         break;
+#endif
     case WarningType:
         if (ferr.is_open()) {
             if (verbose_output) {
@@ -127,6 +129,8 @@ void DebugStream::Debug::print_output(MsgType t,
             std::cerr << RED << "FATAL" << CLEAR << ": " << s.str() << std::endl;
         }
         yarp::os::exit(-1);
+        break;
+    default:
         break;
     }
 }
