@@ -825,7 +825,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
     bool ok = false;
     bool rec = false; // is the command recognized?
-    // if (caller->verbose())
+     if (caller->verbose())
         printf("command received: %s\n", cmd.toString().c_str());
     int code = cmd.get(0).asVocab();
 
