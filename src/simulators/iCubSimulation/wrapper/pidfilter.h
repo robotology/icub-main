@@ -37,7 +37,7 @@ private:
     double Kp,Kd,Ki;        //proportional, derivative and integral gains
 
     // integrative stuff
-    double Umax;            //maxium value of the control
+    double Umax;            //maximum value of the control
     double Sn;              //integal value
 
     //computes the pd portion of the control
@@ -62,6 +62,12 @@ public:
 
         Sn = 0;
         Umax = u_max;
+    }
+
+    inline void reset(double error = 0.0)
+    {
+        Sn = 0.0;
+        error_old = error;
     }
 
     // computes the PID control with anti reset wind up scheme
@@ -102,6 +108,86 @@ public:
     inline double getProportional(void) const { return Kp; }
     inline double getDerivative(void) const { return Kd; }
     inline double getIntegrative(void) const { return Ki; }
+};
+
+/**
+* First order low pass filter implementing the transfer function
+* H(s) = \frac{1}{1+\tau s}
+*/
+class FirstOrderLowPassFilter
+{
+protected:
+    double fc;              // cut frequency
+    double Ts;              // sample time
+    double y;               // filter current output
+    double yold;            // old output
+    double uold;            // old input
+    double a1, a2;
+    double b1, b2;
+
+    void computeCoeff()
+    {
+        double tau = 1.0/(2.0*3.1415926535897932384626433832795029*fc);
+        b1 = b2 = Ts;
+        a1 = 2.0*tau+Ts;
+        a2 = Ts-2.0*tau;
+    }
+
+public:
+    /**
+    * Creates a filter with specified parameters
+    * @param cutFrequency cut frequency (Hz).
+    * @param sampleTime sample time (s).
+    * @param y0 initial output.
+    */ 
+    FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime, const double y0){
+        fc = cutFrequency;
+        Ts = sampleTime;
+        computeCoeff();
+        init(y0);
+    }
+
+    /**
+    * Internal state reset. 
+    * @param y0 new internal state.
+    */ 
+    void init(const double y0)
+    {
+        y = y0;
+        yold = y0;
+        uold = (a1+a2)/(b1+b2)*y0;
+    }
+
+    /**
+    * Retrieve the cut frequency of the filter. 
+    * @return the cut frequency (Hz). 
+    */
+    double getCutFrequency() { return fc; }
+
+    /**
+    * Retrieve the sample time of the filter. 
+    * @return the sample time (s). 
+    */
+    double getSampleTime() { return Ts; }
+
+    /**
+    * Performs filtering on the actual input.
+    * @param u reference to the actual input. 
+    * @return the corresponding output. 
+    */ 
+    double filt(double u)
+    {
+        y = (b1*u + b2*uold - a2*yold) / a1;
+        uold = u;
+        yold = y;
+        return y;
+    }
+
+    /**
+    * Return current filter output.
+    * @return the filter output. 
+    */ 
+    double output() { return y; }
 };
 
 #endif 
