@@ -30,8 +30,8 @@ std::ofstream DebugStream::Debug::ferr;
  #define BLUE   (colored_output ? "\033[01;34m" : "")
  #define CLEAR  (colored_output ? "\033[00m" : "")
 
- bool DebugStream::Debug::colored_output(getenv("DebugStream_COLORED_OUTPUT") && (strcmp(getenv("DebugStream_COLORED_OUTPUT"), "1") == 0));
- bool DebugStream::Debug::verbose_output(getenv("DebugStream_VERBOSE_OUTPUT") && (strcmp(getenv("DebugStream_VERBOSE_OUTPUT"), "1") == 0));
+ bool DebugStream::Debug::colored_output(getenv("ICUB_COLORED_OUTPUT") && (strcmp(getenv("ICUB_COLORED_OUTPUT"), "1") == 0));
+ bool DebugStream::Debug::verbose_output(getenv("ICUB_VERBOSE_OUTPUT") && (strcmp(getenv("ICUB_VERBOSE_OUTPUT"), "1") == 0));
 
 #else // WIN32
 
