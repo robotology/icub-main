@@ -943,7 +943,7 @@ bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
         _mutex.wait();
         next_torques[axis] = ref;
         motor_on[axis] = true;
-		controlMode[axis] = MODE_TORQUE; 
+		//controlMode[axis] = MODE_TORQUE; 
 		_mutex.post();
         return true;
     }
