@@ -44,6 +44,8 @@ using namespace std;
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/os/Time.h>
 
 // _AC_
 // to clean creating an Interface with some common method for ethResources and something like that for the canBus
@@ -57,7 +59,9 @@ using namespace std;
 
 // ACE stuff
 #include <ace/ACE.h>
+#include "ace/Thread.h"
 #include <ace/SOCK_Dgram_Bcast.h>
+
 
 //#define _ICUB_CALLBACK_
 
@@ -85,6 +89,7 @@ using namespace std;
 
 #define _DEBUG_
 #define _SEPARETED_THREADS_
+#undef 	_SEPARETED_THREADS_
 
 namespace yarp{
     namespace dev{
@@ -97,26 +102,21 @@ namespace yarp{
 using namespace yarp::os;
 using namespace yarp::dev;
 
-#ifdef _SEPARETED_THREADS_
-	void *recvThread(void * arg);
-	#include "ace/Thread.h"
-#endif
 
-class yarp::dev::ethResources:  //public DeviceDriver,	// needed if I want to create this interface through the polydriver open (I guess)
-								public PolyDriver
+// Thread function used to receive messages from EMSs
+void *recvThread(void * arg);
+
+
+class yarp::dev::ethResources:  public PolyDriver
 								//public iCubDeviceInterface
 {
 private:
 	char 						info[SIZE_INFO];
 
 	TheEthManager  				*theEthManager_h;
-//	embObjMotionControl			*controller;
 
     ACE_INET_Addr				remote_dev;
     ACE_INET_Addr				remote_broadcast;
-
-    uint8_t 					*udppkt_data;
-   	uint16_t 					udppkt_size;
 
 public:
 
@@ -175,83 +175,71 @@ typedef std::list<ethResources *>::iterator ethResIt;
 
 
 
-
-
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
 
-class SendThread:	public RateThread
+class RecvThread:	public RateThread
 {
 	public:
-	SendThread();
-	~SendThread();
+	RecvThread();
+	~RecvThread();
 
 	private:
-    uint8_t						*data;
-    uint16_t					size;
-    ethResCreator 				*ethResList;
+
+
     ethResIt 					iterator;
 
     virtual bool threadInit();
 	virtual void run(void);
 };
 
-class yarp::dev::TheEthManager: public DeviceDriver
-#ifndef _SEPARETED_THREADS_
-,public RateThread
-#endif
+class yarp::dev::TheEthManager: public DeviceDriver,
+								public RateThread
 {
 private:
     TheEthManager();
     TheEthManager(ACE_INET_Addr local_addr);
 
-    static int					i;
+    static int					_deviceNum;
 	static TheEthManager 		*handle;
+	bool 						_socket_initted;
+	static yarp::os::Semaphore 	_mutex;
 	char 						info[SIZE_INFO];
 
 	ethResources				*res;
     ACE_SOCK_Dgram				*_socket;
-    int							deviceNum;
+
+	ACE_thread_t 				id_recvThread;
+    ethResCreator 				*ethResList;
+    uint8_t						*p_to_data;
+    uint16_t					bytes_to_send;
 
 protected:
     ACE_INET_Addr				local_addr;
-    SendThread					sendThread;
 
-
-#ifdef _SEPARETED_THREADS_
-
-	ACE_thread_t 				id_recvThread;
-#else
     // Thread
     virtual void run(void);
-	ACE_UINT16 					recv_size;
-	// recv phase
-	ACE_INET_Addr				sender_addr;
-	char 						incoming_msg[MAX_RECV_SIZE];
-#endif
-
 
 
 public:
+    bool threadInit();
     ~TheEthManager();
     PolyDriver 					polyDriver;
-	int							test;
 
     // Singleton access
-    static TheEthManager* instance();
-    static TheEthManager* instance(ACE_INET_Addr local_addr);
-    bool   register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler);
-    bool  createSocket(ACE_INET_Addr local_addr);
+    static 	TheEthManager* instance();
+    static 	TheEthManager* instance(ACE_INET_Addr local_addr);
+    bool   	register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler);
+    bool  	createSocket(ACE_INET_Addr local_addr);
 
     //Device Driver
     virtual bool open();
-    virtual bool initialize(yarp::os::Searchable &par);
     virtual bool close();
 
     //	Ethernet business
-    int send(void *data, size_t len, ACE_INET_Addr remote_addr);
+    int 	send(void *data, size_t len, ACE_INET_Addr remote_addr);
 };
 
 #endif

@@ -350,7 +350,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 
 	//
-	//  Tell EMS which NV I want to be signalled spontaneously
+	//  Tell EMS which NV I want to be signalled spontaneously and go to running mode
 	//
 	init();
 
@@ -719,7 +719,7 @@ bool embObjMotionControl::init()
 		}
 	}
 
-#warning "check that all this stuff doesn't go beyond the ropframe size!!!"
+#warning "TODO: check that all this stuff doesn't go beyond the ropframe size!!!"
 	//
 	// invia la configurazione dei giunti
 	//
@@ -807,10 +807,7 @@ bool embObjMotionControl::init()
 
 	// tell agent to prepare a rop to send
 	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid);
-
-
 	nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid);
-
 
 	return true;
 }

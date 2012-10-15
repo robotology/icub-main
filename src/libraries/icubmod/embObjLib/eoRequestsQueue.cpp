@@ -40,7 +40,8 @@ bool eoThreadArray::getId(int *i)
 }
 
 /////////////////////  eoThreadEntry  ///////////////////
-eoThreadEntry::eoThreadEntry():_synch(0)
+eoThreadEntry::eoThreadEntry():	_synch(0),
+								_mutex(1)
 {
 	clear();
 }

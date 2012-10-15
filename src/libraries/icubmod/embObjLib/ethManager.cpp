@@ -34,42 +34,25 @@ using namespace yarp::os::impl;
 bool keepGoingOn2 = true;
 
 
-ethResCreator* ethResCreator::handle = 0x00;
+ethResCreator* ethResCreator::handle = NULL;
 bool ethResCreator::initted = false;
 
 TheEthManager* TheEthManager::handle = NULL;
-int TheEthManager::i = false;
+int TheEthManager::_deviceNum = false;
+yarp::os::Semaphore TheEthManager::_mutex = 1;
 
 
 ethResources::ethResources()
 {
-	// AC_YARP_INFO(Logger::get(), "ethResources::ethResources()", Logger::get().log_files.f3);
-	char tmp[126];
-	transceiver = 0x00;
+	transceiver = NULL;
 	theEthManager_h = NULL;
-
-	udppkt_data = 0x00;
-	udppkt_size = 0;
-
-	// Protocol handlers
-	//createProtocolHandler = 0x00;					// for some reason polydrivers cannot be initialized
-	transceiver = 0x00;
-
-	// Motion control handlers
-	//createMotionControlHandler = 0x00;
-	//motionCtrl = 0x00;
-
-	//createSkinHandler = 0x00;
-	//createAnalogHandler = 0x00;
 }
 
 ethResources::~ethResources()
 {
-	char tmp[126];
-	sprintf(tmp, "\nethResources::~ethResources() 1 handle= %p ", theEthManager_h);
-	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	// Really nothing to do here??
+	delete transceiver;
 }
-
 
 
 bool ethResources::open(yarp::os::Searchable &config)
@@ -147,7 +130,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	// Get the pointer to the actual Singleton ethManager, or create it if it's the first time.
 	theEthManager_h = TheEthManager::instance(loc_dev);
 	remote_dev.addr_to_string(address, 64);
-	theEthManager_h->register_device(address, this);
+//	theEthManager_h->register_device(address, this);
 
 
 	//
@@ -164,7 +147,8 @@ bool ethResources::open(yarp::os::Searchable &config)
 	return true;
 }
 
-// ???? da eliminare...
+// Per inviare pacchetti in maniera asincrona rispetto al ciclo da 1 ms... anche robaccia che non sia eoStuff
+// Eliminare ???
 int ethResources::send(void *data, size_t len)
 {
 	return TheEthManager::instance()->send(data, len, remote_dev);
@@ -290,7 +274,7 @@ bool ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
 		return false;
 }
 
-
+#warning " vecchia interfaccia, eliminare??"
 uint8_t* ethResCreator::find(EMS_ID &id)
 {
 	// AC_YARP_INFO(Logger::get(), " ethResCreator::find", Logger::get().log_files.f3);
@@ -327,234 +311,43 @@ FEAT_ID ethResCreator::getFeatInfoFromEP(uint8_t ep)
 	return ethResCreator::class_lut[ep];
 }
 
+
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
-
-SendThread::SendThread() : RateThread(1)
-
-{
-	// AC_YARP_INFO(Logger::get(), "SendThread::SendThread()", Logger::get().log_files.f3);
-}
-
-SendThread::~SendThread()
-{
-
-}
-
-bool SendThread::threadInit()
-{
-	ethResList = ethResCreator::instance();
-	return true;
-}
-
-
-void SendThread::run()
-{
-	iterator = ethResList->begin();
-
-	while(iterator!=ethResList->end())
-	{
-		data = 0;
-		size = 0;
-		(*iterator)->getPack(&data, &size);
-		if(size > 20)
-		{
-			ACE_INET_Addr addr = (*iterator)->getRemoteAddress();
-			TheEthManager::instance()->send(data, (size_t)size, addr);
-			//printf("sent package of byte %d to %s\n", size, (*iterator)->address);
-		}
-		iterator++;
-	}
-}
-
-
-
-#ifdef _SEPARETED_THREADS_
-TheEthManager::TheEthManager()
-#else
-TheEthManager::TheEthManager() : RateThread(1000)
-#endif
-{
-	char tmp[126];
-	sprintf(tmp, "Error!!! Called constructor of ethResources without parameters!!! BTW, how can this be possible ???");
-	//YARP_FAIL(Logger::get(),tmp, Logger::get().log_files.f3);
-}
-
-#ifdef _SEPARETED_THREADS_
-TheEthManager::TheEthManager(ACE_INET_Addr local_addr)
-#else
-TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1)
-#endif
-{
-	char tmp[SIZE_INFO];
-	memset(info, 0x00, SIZE_INFO);
-	sprintf(info, "TheEthManager");
-
-	test = 0;
-	deviceNum = 0;
-	sprintf(tmp, "TheEthManager::TheEthManager()");
-
-	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
-	local_addr.addr_to_string(tmp, 64);
-	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
-
-
-
-
-}
-
-bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
-{
-	char tmp[SIZE_INFO];
-	_socket = new ACE_SOCK_Dgram();
-	if (-1 == _socket->open(local_addr) )
-	{
-		fprintf(stderr, "\n/---------------------------------------------------\\"
-				"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|"
-				"\n\\---------------------------------------------------/");
-		return false;
-	}
-	ACE_thread_t id_recvThread;
-	if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
-		printf(("Error in spawning recvThread\n"));
-
-	int n;
-	int m = sizeof(n);
-	_socket->get_option(SOL_SOCKET,SO_RCVBUF,(void *)&n, &m);
-	printf("SO_RCVBUF %d\n", n);
-	n = 1024*1024;
-	_socket->set_option(SOL_SOCKET,SO_RCVBUF,(void *)&n, m);
-	_socket->get_option(SOL_SOCKET,SO_RCVBUF,(void *)&n, &m);
-	printf("SO_RCVBUF %d\n", n);
-
-	_socket->get_option(SOL_SOCKET,SO_RCVLOWAT,(void *)&n, &m);
-	printf("SO_RCVLOWAT %d\n", n);
-
-	return true;
-}
-
-TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
-{
-	// mutex
-	if (i == 0)
-	{
-		handle = new TheEthManager(local_addr);
-//		if(!handle->createSocket(local_addr))
-//		{
-//			delete handle;
-//			handle = NULL;
-//		}
-
-		// move the start during / right before the calibration command??
-
-		handle->sendThread.start();
-#ifdef _SEPARETED_THREADS_
-
-		//nothing to do in this case
-#else
-		handle->start();
-#endif
-	}
-	i++;
-	//
-	return handle;
-}
-
-TheEthManager *TheEthManager::instance()
-{
-	return handle;
-}
-
-//TheEthManager *TheEthManager::quit()
-//{
-//	return handle;
-//}
-
-TheEthManager::~TheEthManager()
-{
-	char tmp[126];
-	sprintf(tmp, "TheEthManager::~TheEthManager() destructor call; handle= %p - i=%d", handle, i);
-	printf("TheEthManager::~TheEthManager()\n");
-
-
-#ifdef _SEPARETED_THREADS_
-		keepGoingOn2 = false;
-		print_data();
-		fflush(stdout);
-		sleep(1);
-		ACE_Thread::cancel(id_recvThread);
-#endif
-
-		sprintf(tmp, "TheEthManager::~TheEthManager() - real destruction happens here handle= %p - i=%d", handle, i);
-
-		_socket->close();
-
-
-}
-
-bool TheEthManager::register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler)
-{
-	//	// put this device handler in a list somehow
-	//		deviceList.resize(deviceNum +1);
-	//
-	//#ifdef _DEBUG_
-	//	DeviceEntry	dev;
-	//	strcpy(dev.id, "0");
-	//	dev.resource = 0x00;
-	//	int t=deviceList.size();
-	//	void *p=&deviceList;
-	//#endif
-	//	strcpy(deviceList[deviceNum].id, new_dev_id);
-	//	deviceList[deviceNum].resource = new_dev_handler;
-	//	deviceNum++;
-	//
-	//#ifdef _DEBUG_
-	//	for (int i=0; i<t; i++)
-	//		dev=deviceList[i];
-	//#endif
-	return true;
-}
-
-int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
-{
-	return _socket->send(data,len,remote_addr);
-}
-
-#ifdef _SEPARETED_THREADS_
 void *recvThread(void * arg)
 {
-	size_t 						n = MAX_RECV_SIZE;
-	ACE_TCHAR 					address[64];
-	ethResources				*ethRes;
-	ACE_SOCK_Dgram				*_socket = (ACE_SOCK_Dgram*)arg;
-	ACE_UINT16 					recv_size;
-	ACE_INET_Addr				sender_addr;
-	char 						incoming_msg[MAX_RECV_SIZE];
-	int							counter = 0;
+	size_t 			n = MAX_RECV_SIZE;
+	ACE_TCHAR 		address[64];
+	ethResources	*ethRes;
+	ACE_UINT16 		recv_size;
+	ACE_INET_Addr	sender_addr;
+	char 			incoming_msg[MAX_RECV_SIZE];
 
-	while (keepGoingOn2)
+    ACE_SOCK_Dgram *pSocket = (ACE_SOCK_Dgram*) arg;
+	while(keepGoingOn2)
 	{
 		// per ogni msg ricevuto
-		recv_size = _socket->recv((void *) incoming_msg, n, sender_addr, 0);
+		recv_size = pSocket->recv((void *) incoming_msg, n, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
-		//printf("Received new packet from address %s, size = %d\n", address, recv_size);
+		//	printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
 		if( recv_size > 0)
 		{
+			ethResIt iterator = ethResCreator::instance()->begin();
 			//check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
 
-			ethResIt iterator = ethResCreator::instance()->begin();
 			while(iterator!=ethResCreator::instance()->end())
 			{
 				if(strcmp((*iterator)->address, address) == 0)
 				{
+					// fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
 					ethRes = (*iterator);
 					memcpy(ethRes->recv_msg, incoming_msg, recv_size);
 					ethRes->onMsgReception(ethRes->recv_msg, recv_size);
-					break; // to skip remaining part of the for cycle
+					//continue; // to skip remaining part of the for cycle
 				}
 				iterator++;
 			}
@@ -563,81 +356,152 @@ void *recvThread(void * arg)
 		{
 			printf("Received weird msg of size %d\n", recv_size);
 		}
-		if(counter++ >= 10*1000)
-		{
-			print_data();
-			fflush(stdout);
-			counter = 0;
-		}
+		// old debug stuff
+		//	if(counter++ >= 10*1000)
+		//	{
+		//		print_data();
+		//		fflush(stdout);
+		//		counter = 0;
+		//	}
 	}
 	return NULL;
 }
 
-#else
-void TheEthManager::run()
+// EthManager uses 2 threads, one for sending and one for receiving.
+// The one embedded here is the sending thread because it will use the ACE timing feature.
+TheEthManager::TheEthManager() : RateThread(1)
 {
-	size_t 			n = MAX_RECV_SIZE;
-	ACE_TCHAR 		address[64];
-	ethResources	*ethRes;
-
-	// per ogni msg ricevuto
-	recv_size = _socket->recv((void *) incoming_msg, n, sender_addr, 0);
-
-	sender_addr.addr_to_string(address, 64);
-	//	printf("Received new packet from address %s, size = %d\n", address, recv_size);
-
-	if( recv_size > 0)
-	{
-		ethResIt iterator = ethResCreator::instance()->begin();
-
-		while(iterator!=ethResCreator::instance()->end())
-		{
-			if(strcmp((*iterator)->address, address) == 0)
-			{
-				// come fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
-				ethRes = (*iterator);
-				memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-				(*iterator)->onMsgReception(ethRes->recv_msg, recv_size);
-				//continue; // to skip remaining part of the for cycle
-			}
-			iterator++;
-		}
-	}
-
+	char tmp[126];
+	sprintf(tmp, "Error!!! Called constructor of ethResources without parameters!!! BTW, how can this be possible ???");
 }
 
-#endif
+TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1)
+{
+	char tmp[SIZE_INFO];
+	memset(info, 0x00, SIZE_INFO);
+	sprintf(info, "TheEthManager");
+
+	_socket_initted = false;
+
+	local_addr.addr_to_string(tmp, 64);
+
+	//TheEthManager::createSocket(local_addr);
+
+	_socket = new ACE_SOCK_Dgram();
+	if (-1 == _socket->open(local_addr) )
+	{
+		fprintf(stderr, "\n/---------------------------------------------------\\"
+						"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|"
+						"\n\\---------------------------------------------------/");
+		delete _socket;
+		_socket = NULL;
+		_socket_initted = false;
+	}
+	else
+		_socket_initted = true;
+
+
+	// If something went wrong, clean everything
+	printf("\ninitted = %s\n", _socket_initted ? "true" : "false");
+	if(!_socket_initted)
+	{
+		if(NULL !=handle)
+			delete handle;
+		handle = NULL;
+
+		if(NULL != _socket)
+			delete _socket;
+		_socket = NULL;
+	}
+	else
+	{
+		ACE_thread_t id_recvThread;
+		if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
+			printf(("Error in spawning recvThread\n"));
+	}
+}
+
+TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
+{
+	TheEthManager::_mutex.wait();
+	if (_deviceNum == 0)
+	{
+		handle = new TheEthManager(local_addr);
+		printf(" \n\nCalling EthManager Constructor\n\n");
+		// Start sending thread
+		handle->start();
+	}
+	_deviceNum++;
+
+	_mutex.post();
+	return handle;
+}
+
+TheEthManager *TheEthManager::instance()
+{
+	return handle;
+}
+
+TheEthManager::~TheEthManager()
+{
+	keepGoingOn2 = false;
+	Time::delay(1);
+	ACE_Thread::cancel(id_recvThread);
+	_socket->close();
+	delete _socket;
+}
+
+
+int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
+{
+	return _socket->send(data,len,remote_addr);
+}
+
+bool TheEthManager::threadInit()
+{
+	ethResList = ethResCreator::instance();
+	return true;
+}
+
+
+void TheEthManager::run()
+{
+	// send
+	ethResIt iterator = ethResList->begin();
+	ethResources *ethRes;
+	while(iterator!=ethResList->end())
+	{
+		p_to_data = 0;
+		bytes_to_send = 0;
+		ethRes = (*iterator);
+		ethRes->getPack(&p_to_data, &bytes_to_send);
+		if((bytes_to_send > 20) && (0 != p_to_data))
+		{
+			ACE_INET_Addr addr = ethRes->getRemoteAddress();
+			int ret = TheEthManager::instance()->send(p_to_data, (size_t)bytes_to_send, addr);
+			//printf("sent package of byte %d to %s\n", ret, (*iterator)->address);
+		}
+		iterator++;
+	}
+}
+
+
 
 // Probably useless
 bool TheEthManager::open()
 {
 	char tmp[126];
-	sprintf(tmp, "TheEthManager open - handle= %p - i=%d", handle, i);
-
-	//YARP_DEBUG(Logger::get(),tmp, Logger::get().log_files.f3);
+	sprintf(tmp, "TheEthManager open - handle= %p - i=%d", handle, _deviceNum);
 	return true;
 }
 
-// Probably useless
-bool TheEthManager::initialize(yarp::os::Searchable &par)
-{
-	// AC_YARP_INFO(Logger::get(),"TheEthManager::initialize()", Logger::get().log_files.f3);
-	return true;
-}
 
 bool TheEthManager::close()
 {
-#ifdef _SEPARETED_THREADS_
-	keepGoingOn2 = false;
-	print_data();
-	sleep(1);
-	ACE_Thread::cancel(id_recvThread);
+	_deviceNum--;
 
-#else
-	handle->stop();
-	handle->sendThread.stop();
-#endif
-	// AC_YARP_INFO(Logger::get(),"TheEthManager::close()", Logger::get().log_files.f3);
-	fflush(stdout);
+	if(0 == _deviceNum)
+		delete handle;
+
 	return true;
 }
