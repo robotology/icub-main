@@ -178,19 +178,19 @@ void ICubSim::setJointControlAction() {
     memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
     /*for(int i=0;i<5;i++){
         printf("LAJoint %d angle: %.3f\t", i, 180.0/M_PI*dJointGetHingeAngle(LAjoints[i]));
-        printf("vel: %.3f\t", 180.0/M_PI*dJointGetHingeParam(LAjoints[i], dParamVel));
+        printf("vel_d: %.3f\t", 180.0/M_PI*dJointGetHingeParam(LAjoints[i], dParamVel));
         printf("fmax: %.1f\t", dJointGetHingeParam(LAjoints[i], dParamFMax));
         printf("torque_d: %.1f\n", la_torques[i]);
     }*/
     /*for(int i=0;i<5;i++){
         printf("RAJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(RAjoints[i]));
-        printf("vel: %.1f\t", 180.0/M_PI*dJointGetHingeParam(RAjoints[i], dParamVel));
+        printf("vel_d: %.1f\t", 180.0/M_PI*dJointGetHingeParam(RAjoints[i], dParamVel));
         printf("fmax: %.1f\t", dJointGetHingeParam(RAjoints[i], dParamFMax));
         printf("torque_d: %.1f\n", ra_torques[i]);
     }*/
     /*for(int i=0;i<3;i++){
         printf("TorsoJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(Torsojoints[i]));
-        printf("vel: %.1f\t", 180.0/M_PI*dJointGetHingeParam(Torsojoints[i], dParamVel));
+        printf("vel_d: %.1f\t", 180.0/M_PI*dJointGetHingeParam(Torsojoints[i], dParamVel));
         printf("fmax: %.1f\t", dJointGetHingeParam(Torsojoints[i], dParamFMax));
         printf("torque_d: %.1f\n", Torso_torques[i]);
     }*/
@@ -1272,12 +1272,12 @@ void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
         dBodySetPosition (leye,    jP_leftEye[1][1], elev + jP_leftEye[1][2], jP_leftEye[1][0]);//dBodySetPosition (leye, -0.0, elev +0.89, -0.026);
         dBodySetPosition (reye,    jP_rightEye[1][1], elev + jP_rightEye[1][2], jP_rightEye[1][0]);//dBodySetPosition (reye, -0.0, elev +0.89, -0.026);
     }
-        // eyelids position
-        dBodySetPosition (topEyeLid, 0.0, elev + jP_head[3][2], 0.035);
-        dBodySetPosition (bottomEyeLid, 0.0, elev + jP_head[3][2], 0.035);
+    // eyelids position
+    dBodySetPosition (topEyeLid, 0.0, elev + jP_head[3][2], 0.035);
+    dBodySetPosition (bottomEyeLid, 0.0, elev + jP_head[3][2], 0.035);
 
-        dBodySetPosition (inertialBody, jP_inertial[1], elev + jP_inertial[2], jP_inertial[0]);
-    }
+    dBodySetPosition (inertialBody, jP_inertial[1], elev + jP_inertial[2], jP_inertial[0]);
+}
 
 #define FLAGIFY(flags,name) name = flags.name?"on":"off"
 
@@ -3073,16 +3073,16 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         }
     }
 
-        //----------------------------MOVE SHOULDERS 15 DEG------------------//
-        dQuaternion qShould,qShould1;
-        dQFromAxisAndAngle(qShould,0,1,0,0.2618);
-        dQFromAxisAndAngle(qShould1,0,1,0,-0.2618);
-        dBodySetQuaternion (torso[5], qShould);
-        dBodySetQuaternion (torso[4], qShould1);
-        dBodySetLinearVel(torso[5], 0.0, 0.0, 0.0);
-        dBodySetAngularVel(torso[5], 0.0, 0.0, 0.0);
-        dBodySetLinearVel(torso[4], 0.0, 0.0, 0.0);
-        dBodySetAngularVel(torso[4], 0.0, 0.0, 0.0);
+    //----------------------------MOVE SHOULDERS 15 DEG------------------//
+    dQuaternion qShould,qShould1;
+    dQFromAxisAndAngle(qShould,0,1,0,0.2618);
+    dQFromAxisAndAngle(qShould1,0,1,0,-0.2618);
+    dBodySetQuaternion (torso[5], qShould);
+    dBodySetQuaternion (torso[4], qShould1);
+    dBodySetLinearVel(torso[5], 0.0, 0.0, 0.0);
+    dBodySetAngularVel(torso[5], 0.0, 0.0, 0.0);
+    dBodySetLinearVel(torso[4], 0.0, 0.0, 0.0);
+    dBodySetAngularVel(torso[4], 0.0, 0.0, 0.0);
 
     /* Create a fixed hip joint */
     if (actfixedHip == "on"){// && actElevation == "off") {
