@@ -789,35 +789,54 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
 
 int OdeSdlSimulation::thread_ode(void *unused) {
     //SLD_AddTimer freezes the system if delay is too short. Instead use a while loop that waits if there was time left after the computation of ODE_process
-    long prevTime = (long) clock();
-    long timeLeft;
+    double cpms = 1e3 / CLOCKS_PER_SEC;
+    long lastOdeProcess = (long) (clock()*cpms);
     double avg_ode_step_length = 0.0;
-    double current_ode_step_length = 0.0;
     long count = 0;
     simrun = true;
+    double timeCache = ode_step_length;
+    long lastTimeCacheUpdate = (long) (clock()*cpms);
+    double alpha = 0.99;
+    // if realTime=true when delays occur the simulation tries to recover by running more steps in a row
+    // if realTime=false the simulation executes the simulation steps with a fixed rate irregardless of delays
+    bool realTime = true;
+    long temp;
+
     while (simrun) {
-        ODE_process(1, (void*)1);
-        // check for oderate
-        current_ode_step_length = (long) clock() - prevTime;
-        timeLeft = (long)(ode_step_length - current_ode_step_length);
-        if (timeLeft > 0) // wait if there is still time left in this frame
-            SDL_Delay(timeLeft);
-        
-        // check if the desired timestep is achieved, if not print a warning msg
-        count++;
-        avg_ode_step_length = ((count-1)*avg_ode_step_length + current_ode_step_length) / count;
-        if(count % (10000/ode_step_length)==0){
-            if(avg_ode_step_length > 1.2*ode_step_length){
-                printf("WARNING: the simulation is too slow, you should increase the parameter timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
-                    ode_step_length, avg_ode_step_length);
-            }
-            else if(avg_ode_step_length < 0.8*ode_step_length){
-                printf("INFO: the simulation can run faster, you can decrease the parameter timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
-                    ode_step_length, avg_ode_step_length);
-            }
+        temp = (long) (clock()*cpms);
+        timeCache += temp - lastTimeCacheUpdate;
+        lastTimeCacheUpdate = temp;
+        while(timeCache < ode_step_length){
+            SDL_Delay(ode_step_length-timeCache);
+            temp = (long) (clock()*cpms);
+            timeCache += temp - lastTimeCacheUpdate;
+            lastTimeCacheUpdate = temp;
         }
 
-        prevTime = (long) clock();
+        /*if(timeCache >= 2.0*ode_step_length) 
+            printf("Simulation delay: running %d steps in a row to recover.\n", (int)(timeCache/ode_step_length));*/
+
+        while(timeCache >= ode_step_length){
+            count++;
+            lastOdeProcess = (long) (clock()*cpms);
+            ODE_process(1, (void*)1);
+            avg_ode_step_length = alpha*avg_ode_step_length + (1.0-alpha)*((long) (clock()*cpms) -lastOdeProcess);
+            
+            if(realTime)
+                timeCache -= ode_step_length;
+            else
+                timeCache = 0.0;
+
+            // check if the desired timestep is achieved, if not, print a warning msg
+            if(count % (10000/ode_step_length)==0){
+                if(avg_ode_step_length >= ode_step_length+1)
+                    printf("WARNING: the simulation is too slow to run in real-time, you should increase the timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
+                        ode_step_length, avg_ode_step_length);
+                else if(avg_ode_step_length <= ode_step_length-1)
+                    printf("INFO: you could get a more accurate dynamics simulation by decreasing the timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
+                        ode_step_length, avg_ode_step_length);
+            }
+        }
     }
     return(0);
 }
