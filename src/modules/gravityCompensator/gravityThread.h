@@ -146,7 +146,7 @@ public:
 	
 	int gravity_mode;
 
-    gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, std::string icub_type);
+    gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type);
 
 	void setZeroJntAngVelAcc();
 	bool readAndUpdate(bool waitMeasure=false);

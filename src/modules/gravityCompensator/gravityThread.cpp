@@ -187,7 +187,7 @@ void  gravityCompensatorThread::setUpperMeasure()
     icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 }
 
-gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, string icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
+gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
 {   
 	gravity_mode = GRAVITY_COMPENSATION_ON;
 	wholeBodyName = "wholeBodyDynamics";
@@ -215,7 +215,7 @@ gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA,
 	iImp_leg_right		= 0;
 	iTqs_leg_right		= 0;
 	isCalibrated = false;
-	icub = new iCubWholeBody (DYNAMIC, VERBOSE, icub_type);
+	icub = new iCubWholeBody (icub_type,DYNAMIC, VERBOSE);
 
     //---------------------PORTS-------------------------//
 	port_inertial=new BufferedPort<Vector>;

@@ -214,11 +214,11 @@ public:
 		else robot_name = "icub";
 
 		//------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
-		string icub_type;
+		version_tag icub_type;
 		if (rf.check("headV2"))
 		{
 			fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
-			icub_type = "V2";
+			icub_type.head_version = 2;
 		}
 
 		//------------------CHECK IF LEGS ARE ENABLED-----------//
