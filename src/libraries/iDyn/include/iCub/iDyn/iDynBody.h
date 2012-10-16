@@ -98,10 +98,17 @@ enum FlowType{ RBT_NODE_IN, RBT_NODE_OUT };
 // JAC_IKIN = inverse flow wrt kinematics
 enum JacobType{ JAC_KIN, JAC_IKIN }; 
 
+
 #define RBT_HAS_SENSOR	    true
 #define RBT_NO_SENSOR	    false
 #define NODE_AFTER_ATTACH	true
 #define NODE_NO_ATTACH      false
+
+
+struct version_tag{
+	int head_version;
+	int legs_version;
+};
 
 //enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL }; 
 
@@ -1392,7 +1399,7 @@ protected:
 	/**
 	* Build the node.
 	*/
-	std::string tag;
+	version_tag tag;	
 	void build();
 
 public:
@@ -1403,7 +1410,7 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iCubUpperTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE, std::string _tag="");
+	iCubUpperTorso(version_tag tag, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 };
 
@@ -1425,7 +1432,7 @@ protected:
 	/**
 	* Build the node.
 	*/
-	std::string tag;
+	version_tag tag;
 	void build();
 
 public:
@@ -1436,11 +1443,9 @@ public:
 	* @param _mode the computation mode for kinematic/wrench using Newton-Euler's formula
 	* @param verb verbosity flag
 	*/
-	iCubLowerTorso(const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE, std::string _tag = "" );
+	iCubLowerTorso(version_tag _tag, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
 
 };
-
-
 
 
 /**
@@ -1456,7 +1461,7 @@ protected:
 	/// the rigid body transformation linking the UpperTorso node with the final link of the iCubTorsoDyn chain,
 	/// defining the connection between Upper and Lower Torso
 	RigidBodyTransformation * rbt;
-	std::string tag;
+	version_tag tag;
 
 public:
 
@@ -1473,13 +1478,13 @@ public:
 	yarp::sig::Vector upper_COM;
 	yarp::sig::Vector lower_COM;
 	yarp::sig::Matrix COM_Jacob;
-
+	double sw_getcom;
 	/**
 	* Constructor: build the nodes and creates the whole body
 	* @param mode the computation mode: DYNAMIC/STATIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
 	* @param verbose the verbosity level: NO_VERBOSE/VERBOSE/MORE_VERBOSE
 	*/
-	iCubWholeBody(const NewEulMode mode=DYNAMIC, unsigned int verbose=iCub::skinDynLib::VERBOSE, std::string _tag="");
+	iCubWholeBody(version_tag _tag, const NewEulMode mode=DYNAMIC, unsigned int verbose=iCub::skinDynLib::VERBOSE);
 
 	/**
 	* Standard destructor

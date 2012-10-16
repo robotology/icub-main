@@ -1485,6 +1485,46 @@ public:
 
 };
 
+/**
+* \ingroup iDyn
+*
+* A class for defining the 6-DOF iCub Leg
+*/
+class iCubLegDynV2 : public iDynLimb
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubLegDynV2();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" leg
+    */
+    iCubLegDynV2(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
+
+    /**
+    * Creates a new Leg from an already existing Leg object.
+    * @param leg is the Leg to be copied.
+    */
+    iCubLegDynV2(const iCubLegDyn &leg);
+
+    /**
+    * Alignes the Leg joints bounds with current values set aboard 
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Leg limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
+};
+
 
 /**
 * \ingroup iDyn

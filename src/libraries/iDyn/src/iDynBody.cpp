@@ -31,6 +31,7 @@ using namespace iCub::iKin;
 using namespace iCub::iDyn;
 using namespace iCub::skinDynLib;
 
+#define DEBUG_FOOT_COM
 //====================================
 //
 //		RIGID BODY TRANSFORMATION
@@ -2230,7 +2231,7 @@ void iDynSensorTorsoNode::clearContactList()
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubUpperTorso::iCubUpperTorso(const NewEulMode _mode, unsigned int verb, string _tag)
+iCubUpperTorso::iCubUpperTorso(version_tag _tag, const NewEulMode _mode, unsigned int verb)
 :iDynSensorTorsoNode("upper-torso",_mode,verb)
 {
 	tag=_tag;
@@ -2241,7 +2242,7 @@ void iCubUpperTorso::build()
 {
 	left	= new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
 	right	= new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
-	if (tag == "V2")
+	if (tag.head_version == 2)
 	{up		= new iCubNeckInertialDynV2(KINBWD_WREBWD);}
 	else
 	{up		= new iCubNeckInertialDyn(KINBWD_WREBWD);}
@@ -2293,7 +2294,7 @@ void iCubUpperTorso::build()
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb, string _tag)
+iCubLowerTorso::iCubLowerTorso(version_tag _tag, const NewEulMode _mode, unsigned int verb)
 :iDynSensorTorsoNode("lower-torso",_mode,verb)
 {
 	tag=_tag;
@@ -2302,18 +2303,34 @@ iCubLowerTorso::iCubLowerTorso(const NewEulMode _mode, unsigned int verb, string
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubLowerTorso::build()
 {
-	left	= new iCubLegDyn("left",KINFWD_WREBWD);
-	right	= new iCubLegDyn("right",KINFWD_WREBWD);
-	up		= new iCubTorsoDyn("lower",KINBWD_WREBWD);
 
 	SensorLinkNewtonEuler* legLeftSensor = new iCubLegSensorLink("left", mode, verbose);
 	SensorLinkNewtonEuler* legRightSensor = new iCubLegSensorLink("right", mode, verbose);
 	unsigned int SENSOR_LINK_INDEX = 1;
 
-    leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
+	if (tag.legs_version == 2)
+	{
+		left		= new iCubLegDynV2("left",KINFWD_WREBWD);
+		right		= new iCubLegDynV2("right",KINFWD_WREBWD);		
+
+		leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDynV2*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
         "leftLegContactSolver",mode,LEFT_LEG,verbose);
-	rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(right), SENSOR_LINK_INDEX, legRightSensor, 
+		rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDynV2*>(right), SENSOR_LINK_INDEX, legRightSensor, 
+        "rightLegContactSolver",mode,RIGHT_LEG,verbose);	
+	}
+	else
+	{
+		left	= new iCubLegDyn("left",KINFWD_WREBWD);
+		right	= new iCubLegDyn("right",KINFWD_WREBWD);
+
+		leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
+        "leftLegContactSolver",mode,LEFT_LEG,verbose);
+		rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(right), SENSOR_LINK_INDEX, legRightSensor, 
         "rightLegContactSolver",mode,RIGHT_LEG,verbose);
+	}
+
+	up		= new iCubTorsoDyn("lower",KINBWD_WREBWD);
+
 
 	HUp.resize(4,4);	HUp.zero();
 	HUp(0,1)=-1.0;  // 0 -1  0
@@ -2356,12 +2373,12 @@ void iCubLowerTorso::build()
 //====================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubWholeBody::iCubWholeBody(const NewEulMode mode, unsigned int verbose, string _tag)
+iCubWholeBody::iCubWholeBody(version_tag _tag, const NewEulMode mode, unsigned int verbose)
 {
 	//create all limbs
 	tag = _tag;
-	upperTorso = new iCubUpperTorso(mode,verbose,tag);
-	lowerTorso = new iCubLowerTorso(mode,verbose,tag);
+	upperTorso = new iCubUpperTorso(tag,mode,verbose);
+	lowerTorso = new iCubLowerTorso(tag,mode,verbose);
 	
 	//now create a connection between upperTorso node and Torso ( lowerTorso->up == Torso )
 	Matrix H(4,4);
@@ -2461,7 +2478,9 @@ bool iCubWholeBody::computeCOM()
 	whole_mass = lower_mass+upper_mass;
 	whole_COM  = ((upper_COM*upper_mass)+(lower_COM*lower_mass))/(upper_mass+lower_mass);
 	whole_COM.pop_back();
+	fprintf(stderr, "ROOT COM from computeCOM()\n%s\n", whole_COM.toString().c_str() );
 
+	sw_getcom = 1; //USEFUL FOR THE DOUBLE CALL TO getCOMjacobian()
 	return true;
 }
 
@@ -2472,11 +2491,30 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 	mass=0.0;
 	yarp::sig::Matrix T0;
 	yarp::sig::Matrix T1;
+	yarp::sig::Matrix hright;
+    
+ //    hright.resize(4,4);	hright.zero();
+	// double theta = CTRL_DEG2RAD * (180.0-15.0);
+	// hright(0,0)=1.0;		//  1  0  0
+	// hright(1,2)=1.0;		//  0  0  1  
+	// hright(2,1)=-1.0;		//  0 -1  0  
+	// hright(3,3)=1.0;		//  
+	// hright(2,3)=-0.1199;
+	// hright(1,3)=0.0681;
+	// yarp::sig::Matrix rot6x6; rot6x6.resize(6,6); rot6x6.zero();
+	// rot6x6.setSubmatrix(hright.submatrix(0,2,0,2),0,0);
+	// rot6x6.setSubmatrix(hright.submatrix(0,2,0,2),3,3);
+
 	switch (which_part) 
 	{
 		case BODY_PART_ALL:
 			COM=whole_COM;
 			mass=whole_mass;
+			
+			#ifdef DEBUG_FOOT_COM
+				fprintf(stderr, "Whole COM being computed w.r.t Foot Reference Frame... \n");		
+			#endif
+
 		break;
         case LOWER_BODY_PARTS:
             COM=this->lower_COM;
@@ -2693,6 +2731,91 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 	    L3.setRow(1,      Jac_Torso.getRow(5)*RcH(0)      +   -1*Jac_Torso.getRow(3)*RcH(2));
 	    L3.setRow(2,  -1*(Jac_Torso.getRow(4)*RcH(0))     +      Jac_Torso.getRow(3)*RcH(1));
 
+		//Preparing the hright matrix for passing COM Jacobian toRIGHT FOOT REFERENCE FRAME 	
+	    Matrix hright; 
+	    hright.resize(4,4);	hright.zero();
+		hright(0,0)=1.0;		//  1  0  0
+		hright(1,2)=1.0;		//  0  0  1  
+		hright(2,1)=-1.0;		//  0 -1  0  
+		hright(3,3)=1.0;		//  
+		hright(2,3)=-0.1199;hright(1,3)=0.0681;
+
+		Matrix rRf; rRf.resize(6,6); rRf.zero();
+		Matrix rTf; rTf.resize(4,4); rTf.zero();
+		Matrix fTr; fTr.resize(4,4); fTr.zero();
+		Matrix fLr; fLr.resize(6,32); fLr.zero();
+		Matrix fRr; fRr.resize(6,6); fRr.zero();
+		Vector rCw; rCw.resize(3); rCw.zero(); //Whole Body COM w.r.t. ROOT.
+		rCw = whole_COM;
+		Vector fCw; fCw.resize(3); fCw.zero();
+
+		Matrix fJr; fJr.resize(6,32); fJr.zero(); //Right Leg GeoJacobian from Root to Foot.
+		Matrix rJf; rJf.resize(6,32); rJf.zero(); //Right Leg GeoJacobianf rom Foot to Root.
+		Matrix HH; HH.resize(6,32); HH.zero();	  //To be used to obtain fJr.
+		Matrix LL; LL.resize(3,3); LL.zero();	  //Used to build HH.
+		Matrix hright_rot6x6; hright_rot6x6.resize(6,6); hright_rot6x6.zero(); //used to rotate right leg jacobian to root
+
+#ifdef DEBUG_FOOT_COM
+//DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+//DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+	    
+	    //Transforming the Whole Body (WB) COM Jacobian to the right foot reference frame
+	        rTf = lowerTorso->right->getH(); //Here we get rTf 
+	        rTf = hright*rTf;													//CHECKED
+
+	        hright_rot6x6.setSubmatrix(hright.submatrix(0,2,0,2), 0,0);			//CHECKED.
+	        hright_rot6x6.setSubmatrix(hright.submatrix(0,2,0,2), 3,3);
+
+	        rRf.setSubmatrix(rTf.submatrix(0,2,0,2), 0,0);						//CHECKED
+	        rRf.setSubmatrix(rTf.submatrix(0,2,0,2), 3,3); 						//CHECKED
+		//Now we need the geometric Jacobian of the right leg from FOOT to ROOT.
+			rJf.setSubmatrix( hright_rot6x6*lowerTorso->right->GeoJacobian(),0,6); //We first get the GeoJacobian from Foot to Root.
+		
+		//Now we build the H matrix that will be summed up to rJf in order to get fJr.
+		//But first we obtain individual elements of H for which we build matrix LL
+
+			//ALL LL LINES CHECKED.
+			LL(0,0) = rRf(1,0)*rTf(2,3) - rRf(2,0)*rTf(1,3); 
+			LL(0,1) = rRf(2,0)*rTf(0,3) - rRf(0,0)*rTf(2,3);
+			LL(0,2) = rRf(0,0)*rTf(1,3) - rRf(1,0)*rTf(0,3);
+
+			LL(1,0) = rRf(1,1)*rTf(2,3) - rRf(2,1)*rTf(1,3);
+			LL(1,1) = rRf(2,1)*rTf(0,3) - rRf(0,1)*rTf(2,3);
+			LL(1,2) = rRf(0,1)*rTf(1,3) - rRf(1,1)*rTf(0,3);
+
+			LL(2,0) = rRf(1,2)*rTf(2,3) - rRf(2,2)*rTf(1,3);
+			LL(2,1) = rRf(2,2)*rTf(0,3) - rRf(0,2)*rTf(2,3);
+			LL(2,2) = rRf(0,2)*rTf(1,3) - rRf(1,2)*rTf(0,3);
+
+			//ALL HHs CHECKED
+			HH.setSubrow( LL(0,0)*rJf.getRow(3) + LL(0,1)*rJf.getRow(4) + LL(0,2)*rJf.getRow(5) , 0,6);
+			HH.setSubrow( LL(1,0)*rJf.getRow(3) + LL(1,1)*rJf.getRow(4) + LL(1,2)*rJf.getRow(5) , 1,6);
+			HH.setSubrow( LL(2,0)*rJf.getRow(3) + LL(2,1)*rJf.getRow(4) + LL(2,2)*rJf.getRow(5) , 2,6);
+
+		//Now we add up the HH matrix to rRf.transposed()*rJf to fintally obtain fJr.
+			fJr = -1*HH - (rRf.transposed())*rJf; //TO BE ADDED TO fLr + fRr * rJw
+	
+        // Next matrix to fill in is fLr which is a 6x32 matrix filled with zeros except for the columns for the
+        // right leg. This matrix will be added to our 'rotated' jac.
+		// Thus, we first get fTr
+			fTr.setSubmatrix(rTf.submatrix(0,2,0,2).transposed() ,0,0);			//CHECKED
+			fTr.setSubcol(-1*fTr.submatrix(0,2,0,2)*rTf.subcol(0,3,3) ,0,3);	//CHECKED
+			fTr(3,3) = 1;
+
+			fRr.setSubmatrix(fTr.submatrix(0,2,0,2),0,0);						//CHECKED
+			fRr.setSubmatrix(fTr.submatrix(0,2,0,2),3,3);						//CHECKED
+		// Next we prepare the fLr matrix	
+			fCw = fTr.submatrix(0,2,0,2)*rCw;									//NEEDED LIKE THIS FROM THE EQUATION
+			fLr.setSubrow(-fCw(1)*fJr.getRow(5) + fCw(2)*fJr.getRow(4), 0,6);			
+			fLr.setSubrow( fCw(0)*fJr.getRow(5) - fCw(2)*fJr.getRow(3), 1,6);
+			fLr.setSubrow(-fCw(0)*fJr.getRow(4) + fCw(1)*fJr.getRow(3), 2,6);
+
+//DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+//DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
+#endif
+
+	Vector temp_com; temp_com.resize(4,1); temp_com.zero();
+
     unsigned int r,c,ct=0;
     double tmp, tmp2; tmp = tmp2 = 0.0;
     switch (which_part) 
@@ -2708,13 +2831,29 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         	for (c=0; c<3; c++, ct++){                                                          
             	jac(r,ct) *= tmp;
             	jac(r,ct) += tmp2*Jac_Torso(r,c);
-
             	jac(r,ct) += (upperTorso->total_mass_RT/whole_mass)*L1(r,c) + (upperTorso->total_mass_LF/whole_mass)*L2(r,c) + (upperTorso->total_mass_UP/whole_mass)*L3(r,c);
             }
             tmp = upperTorso->total_mass_LF /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
             tmp = upperTorso->total_mass_RT /  whole_mass; for (c=0; c<7; c++, ct++) jac(r,ct) *= tmp;
             tmp = upperTorso->total_mass_UP /  whole_mass; for (c=0; c<3; c++, ct++) jac(r,ct) *= tmp;
         }
+
+        #ifdef DEBUG_FOOT_COM
+		//Now we can finally add all the matricial terms that compose fJw
+			jac = fJr + fLr + fRr*jac;
+			fprintf(stderr, "ROOT COM from EXPERIMENTAL_getCOMjacobian(): \n%s\n", whole_COM.toString().c_str());
+			temp_com.setSubvector(0,whole_COM);		//CHECKED
+			temp_com(3)=1;							//CHECKED
+			if (sw_getcom)
+			{
+				temp_com = fTr*temp_com;				//CHECKED
+				whole_COM = temp_com.subVector(0,2);	//CHECKED
+				fprintf(stderr, "FOOT whole_COM from EXPERIMENTAL_getCOMjacobian(): \n%s\n", whole_COM.toString().c_str());
+			}
+			// whole_COM(0) = -temp_com(2);
+			// whole_COM(2) = temp_com(0);
+		#endif 
+
         break;
         case LOWER_BODY_PARTS:
         for (r=0; r<6; r++) 
@@ -2727,6 +2866,8 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
             for (c=0; c<7; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
         }
+
+
         break;
         case UPPER_BODY_PARTS:
         for (r=0; r<6; r++) 
@@ -2823,7 +2964,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &com_vel, Vector &dq)
 {
     Matrix jac;
+    sw_getcom = 0;
     EXPERIMENTAL_getCOMjacobian(which_part,jac);
+    sw_getcom = 1;
     
     Vector jvel; 
     getAllVelocities(jvel);
@@ -2832,4 +2975,3 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &com
     com_vel = jac*jvel;
     return true;
 }
-
