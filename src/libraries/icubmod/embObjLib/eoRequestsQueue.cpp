@@ -43,6 +43,7 @@ bool eoThreadArray::getId(int *i)
 eoThreadEntry::eoThreadEntry():	_synch(0),
 								_mutex(1)
 {
+	_timeout = 0.1f;
 	clear();
 }
 
@@ -60,21 +61,18 @@ void eoThreadEntry::clear()
 	unlock();
 }
 
-void eoThreadEntry::init(void)
+void eoThreadEntry::init(double to)
 {
-
+	double _timeout = to;
 }
 
 int eoThreadEntry::synch()
 {
-	double timeout = 0.1f;
-
-	if( false == _synch.waitWithTimeout(timeout))
+	if( false == _synch.waitWithTimeout(_timeout))
 	{
 		// printf("Semaphore timed out!!\n");
 		return -1;
 	}
-
 	return 0;
 }
 

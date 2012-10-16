@@ -71,10 +71,10 @@ private:
 	yarp::os::Semaphore _synch;
 	//ACE_Semaphore _synch;
 	int _pending;
-
-
 	int _timedOut;
     int _replied;   // needed?
+
+    double _timeout;
 
     // internal mutex, to avoid concurrent operationss
     yarp::os::Semaphore _mutex;
@@ -95,7 +95,7 @@ public:
     void clear();
 
     // initialize (?)
-    void init(void);
+    void init(double to);
 
     // set number of pending requests, reset
     inline void setPending(int pend)

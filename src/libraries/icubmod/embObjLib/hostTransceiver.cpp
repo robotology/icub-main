@@ -355,6 +355,7 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
     eo_transceiver_Transmit(pc104txrx, &pktTx, &numofrops);
     
     eo_packet_Payload_Get(pktTx, data, size);
+
     
 }
 
