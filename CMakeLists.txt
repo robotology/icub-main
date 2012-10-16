@@ -145,6 +145,7 @@ set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for i
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
+set(ENABLE_icubmod_controlboardwrapper2 TRUE CACHE BOOL "enable controlboardWrapper2")
 
 ###################### End options and definitions
 
