@@ -9,7 +9,7 @@ include(${YARP_MODULE_PATH}/YarpPlugin.cmake)
 
 project(icubmod)
 
-add_subdirectory(DebugStream)
+add_subdirectory(debugStream)
   
 BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
