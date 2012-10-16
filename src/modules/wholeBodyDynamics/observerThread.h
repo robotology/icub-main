@@ -47,6 +47,12 @@ using namespace std;
 
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 
+// struct version
+// {
+//     int head_version;
+//     int legs_version;
+// };
+
 // filter
 double lpf_ord1_3hz(double input, int j);
 
@@ -126,9 +132,10 @@ public:
     bool       add_legs_once;
 
 private:
-    string     robot_name;
-    string     local_name;
-    bool       autoconnect;
+    string      robot_name;
+    string      local_name;
+    bool        autoconnect;
+    version_tag icub_type;
 
     PolyDriver *ddAL;
     PolyDriver *ddAR;
@@ -269,7 +276,7 @@ private:
     void addSkinContacts();
 
 public:
-    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, string icub_type, bool _autoconnect=false );
+    inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag icub_type, bool _autoconnect=false );
     bool threadInit();
     inline thread_status_enum getThreadStatus() 
     {

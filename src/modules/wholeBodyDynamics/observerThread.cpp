@@ -167,7 +167,7 @@ void inverseDynamics::init_lower()
     FM_sens_low.resize(6,2); FM_sens_low.zero();
 }
 
-inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, string icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), local_name(_local_name) 
+inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag _icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), icub_type(_icub_type), local_name(_local_name) 
 {
     status_queue_size = 10;
     autoconnect = _autoconnect;
@@ -179,8 +179,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     auto_drift_comp = false;
     add_legs_once = false;
 
-    icub      = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
-    icub_sens = new iCubWholeBody(DYNAMIC, VERBOSE, icub_type);
+    icub      = new iCubWholeBody(icub_type, DYNAMIC, VERBOSE);
+    icub_sens = new iCubWholeBody(icub_type, DYNAMIC, VERBOSE);
     first = true;
     skinContactsTimestamp = 0.0;
 
@@ -579,6 +579,29 @@ void inverseDynamics::run()
     if (com_enabled)
     {
         icub->computeCOM();
+
+
+        if (com_vel_enabled)
+        {
+            //experimental
+            icub->EXPERIMENTAL_computeCOMjacobian();
+            icub->EXPERIMENTAL_getCOMjacobian(BODY_PART_ALL,com_jac);
+            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v,dq);
+            // icub->getCOM(BODY_PART_ALL, com_all, mass_all);  //This is called again to update the COM value with respect to the RIGHT FOOT reference frame in case it's necessary.
+
+//             icub->EXPERIMENTAL_getCOMjacobian(LOWER_BODY_PARTS,com_jac);
+//             icub->EXPERIMENTAL_getCOMvelocity(LOWER_BODY_PARTS,com_v,dq);
+//             fprintf(stderr,com_v.toString().c_str());
+
+//            icub->EXPERIMENTAL_getCOMjacobian(UPPER_BODY_PARTS,com_jac);
+//            icub->EXPERIMENTAL_getCOMvelocity(UPPER_BODY_PARTS,com_v,dq);
+            
+            // com_all.push_back(com_v[0]);
+            // com_all.push_back(com_v[1]);
+            // com_all.push_back(com_v[2]);
+        }
+        
+
         icub->getCOM(BODY_PART_ALL,     com_all, mass_all);
         icub->getCOM(LOWER_BODY_PARTS,  com_lb,  mass_lb);
         icub->getCOM(UPPER_BODY_PARTS,  com_ub,  mass_ub);
@@ -598,16 +621,15 @@ void inverseDynamics::run()
         com_hd.push_back (mass_hd);
         com_to.push_back (mass_to);
 
-        if (com_vel_enabled)
-        {
-            //experimental
-            icub->EXPERIMENTAL_computeCOMjacobian();
-            icub->EXPERIMENTAL_getCOMjacobian(BODY_PART_ALL,com_jac);
-            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v,dq);
+
+if (com_vel_enabled)
+{
             com_all.push_back(com_v[0]);
             com_all.push_back(com_v[1]);
             com_all.push_back(com_v[2]);
-        }
+}
+
+
         else
         {
             com_all.push_back(0);
@@ -957,9 +979,11 @@ void inverseDynamics::calibrateOffset()
 
     icub_sens->upperTorso->setInertialMeasure(it->inertial_w0,it->inertial_dw0,it->inertial_d2p0);
     Matrix F_sensor_up = icub_sens->upperTorso->estimateSensorsWrench(F_ext_up,false);
+    
     icub_sens->lowerTorso->setInertialMeasure(icub_sens->upperTorso->getTorsoAngVel(),icub_sens->upperTorso->getTorsoAngAcc(),icub_sens->upperTorso->getTorsoLinAcc());
     Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
-
+    
+    fprintf(stderr, "UP TILL THIS POINT\n");
     for (it=previous_status.begin() ; it != previous_status.end(); it++ )
     {
         /*

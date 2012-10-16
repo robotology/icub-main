@@ -326,11 +326,22 @@ public:
         else robot_name = "icub";
 
         //------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
-        string icub_type;
+        version_tag icub_type;
+
+        icub_type.head_version = 1;
+        icub_type.legs_version = 1;
+
         if (rf.check("headV2"))
         {
             fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
-            icub_type = "V2";
+            icub_type.head_version = 2;
+        }
+
+        //----------SPECIAL PARAM TO DEFINE LEGS VERSION--------//
+        if(rf.check("legsV2"))
+        {
+            fprintf(stderr, "'legsV2' option found. Using legsV2 kinematics. \n");
+            icub_type.legs_version = 2;
         }
 
         //-----------------CHECK IF AUTOCONNECT IS ON-----------//
@@ -682,6 +693,7 @@ int main(int argc, char * argv[])
         cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"                                        << endl;        
         cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"                               << endl;  
         cout << "\t--headV2          use the model of the headV2"                                                                     << endl;
+        cout << "\t--legsV2          use the model of legsV2"                                                                         << endl;
         cout << "\t--no_left_arm     disables the left arm"                                                                           << endl;
         cout << "\t--no_right_arm    disables the right arm"                                                                          << endl;
         cout << "\t--no_com          disables the com computation"                                                                    << endl;
