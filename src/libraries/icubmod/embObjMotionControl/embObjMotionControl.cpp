@@ -691,33 +691,69 @@ bool embObjMotionControl::init()
 	array->head.itemsize = sizeof(eOropSIGcfg_t);
 	ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
-	for(int j=_firstJoint; j<_firstJoint+_njoints;j++)
+	printf("\njointNVindex_jstatus nvid = %d (0x%04X)\n", nvid_ropsigcfgassign, nvid_ropsigcfgassign);
+
+	//for(int j=_firstJoint; j<_firstJoint+_njoints;j++)
+	int j = 0;
 	{
+		yDebug() << "configuring ropSig for joint " << j;
 		// basterebbero jstatus__basic e jstatus__ofpid, ma la differenza tra questi due e il jstatus completo sono 4 byte, per ora non utilizzati.
 		nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jstatus);
+		printf("\njointNVindex_jstatus nvid = %d (0x%04X)\n", nvid, nvid);
 		if(EOK_uint16dummy == nvid)
+		{
+			yError() << " NVID not found\n";
 			return false;
+		}
 		sigcfg.ep = _fId.ep;
 		sigcfg.id = nvid;
 		sigcfg.plustime = 0;
-		eo_array_PushBack(array, &sigcfg);
+		if(eores_OK != eo_array_PushBack(array, &sigcfg))
+			yError() << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
 
 		nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mstatus__basic);
 		if(EOK_uint16dummy == nvid)
+		{
+			yError() << " NVID not found\n";
 			return false;
+		}
+
 		sigcfg.ep = _fId.ep;
 		sigcfg.id = nvid;
 		sigcfg.plustime = 0;
-		eo_array_PushBack(array, &sigcfg);
+		if(eores_OK != eo_array_PushBack(array, &sigcfg))
+			yError() << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
 
 		if(j*2 >= NUMOFROPSIGCFG -1)
 		{
 			// A ropsigcfg vector can hold at max NUMOFROPSIGCFG (20) value. If more are needed, send another package,
 			// so wait some time to let ethManager send this package and then start again.
-			Time::delay(0.02);
+			yDebug() << "Too much variable in config array, splitting it in two pieces";
+			if( eores_OK != eo_nv_Set(nvRoot, array, eobool_true, eo_nv_upd_dontdo))
+			{
+				yError() << "ERROR eo_nv_Set !!";
+				return false;
+			}
+
+			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+			Time::delay(0.2);
 			eo_array_Reset(array);
+			array->head.capacity = NUMOFROPSIGCFG;
+			array->head.itemsize = sizeof(eOropSIGcfg_t);
+			ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 		}
 	}
+	// A ropsigcfg vector can hold at max NUMOFROPSIGCFG (20) value. If more are needed, send another package,
+	// so wait some time to let ethManager send this package and then start again.
+	if( eores_OK != eo_nv_Set(nvRoot, array, eobool_true, eo_nv_upd_dontdo))
+	{
+		yError() << "ERROR eo_nv_Set !!";
+		return false;
+	}
+
+	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	Time::delay(2);
+
 
 #warning "TODO: check that all this stuff doesn't go beyond the ropframe size!!!"
 	//
@@ -727,11 +763,17 @@ bool embObjMotionControl::init()
 	{
 		nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jconfig);
 		if(EOK_uint16dummy == nvid)
+		{
+			yError() << " NVID not found\n";
 			return false;
+		}
 		nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid);
 
 		if(NULL == nvRoot)
-			NV_NOT_FOUND;
+		{
+			yError() << " NV pointer found\n";
+			return false;
+		}
 
 
 		eOmc_joint_config_t	jconfig;
@@ -752,7 +794,7 @@ bool embObjMotionControl::init()
 
 		if( eores_OK != eo_nv_Set(nvRoot, &jconfig, eobool_true, eo_nv_upd_dontdo))
 		{
-			// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+			yError() << "ERROR eo_nv_Set !!";
 			return false;
 		}
 		res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
@@ -765,11 +807,14 @@ bool embObjMotionControl::init()
 	{
 		nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig);
 		if(EOK_uint16dummy == nvid)
+		{
+			yError() << " NVID not found\n";
 			return false;
+		}
 		nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid);
 
 		if(NULL == nvRoot)
-			NV_NOT_FOUND;
+			yError() << " NV pointer found\n";;
 
 
 		eOmc_motor_config_t	mconfig;
@@ -781,7 +826,7 @@ bool embObjMotionControl::init()
 
 		if( eores_OK != eo_nv_Set(nvRoot, &mconfig, eobool_true, eo_nv_upd_dontdo))
 		{
-			// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+			yError() << "ERROR eo_nv_Set !!";
 			return false;
 		}
 		res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
@@ -790,17 +835,24 @@ bool embObjMotionControl::init()
 	// invia configurazioni a caso
 
 	// attiva il loop di controllo
+	Time::delay(2);
 	eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
 	nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
 	if(EOK_uint16dummy == nvid)
+	{
+		yError() << " NVID not found\n";
 		return false;
+	}
 
 	EOnv 	*nv_p 				= res->transceiver->getNVhandler(endpoint_mn_appl, nvid);
+	if(NULL == nv_p)
+		yError() << " NV pointer found\n";;
+
 	eOmn_appl_state_t  desired 	= applstate_running;
 
 	if( eores_OK != eo_nv_Set(nv_p, &desired, eobool_true, eo_nv_upd_dontdo))
 	{
-		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+		yDebug() << "ERROR eo_nv_Set !!\n";
 		return false;
 	}
 
@@ -1013,7 +1065,10 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 	}
 	// Get the value
 	uint16_t size;
-	res->transceiver->getNVvalue(nvRoot, (uint8_t *)pid, &size);
+	eOmc_PID_t eoPID;
+	res->transceiver->getNVvalue(nvRoot, (uint8_t *)&eoPID, &size);
+    yDebug() << " GetPid returned values : kp = " << eoPID.kp << "kd = " <<  eoPID.kd << " ki = " << eoPID.ki;
+    copyPid_eo2iCub(&eoPID, pid);
 
 	return true;
 }
@@ -1910,8 +1965,6 @@ bool embObjMotionControl::setOpenLoopModeRaw(int j)
 
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
-	// print_debug(AC_trace_file, "embObjMotionControl::getControlModeRaw()");
-
 	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jstatus__basic);
 	EOnv	*nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid);
 
@@ -1921,42 +1974,50 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
-
-	// Sign up for waiting the reply
-	eoThreadEntry *tt = appendWaitRequest(j, nvid);
-	tt->setPending(1);
-
-	// wait here
-	if(-1 == tt->synch() )
-	{
-		int threadId;
-		yError() << "[ETH] getControlModeRaw timed out, joint " << j;
-		if(requestQueue->threadPool->getId(&threadId))
-			requestQueue->cleanTimeouts(threadId);
-		return false;
-	}
+//	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+//
+//	// Sign up for waiting the reply
+//	eoThreadEntry *tt = appendWaitRequest(j, nvid);
+//	tt->setPending(1);
+//
+//	// wait here
+//	if(-1 == tt->synch() )
+//	{
+//		int threadId;
+//		yError() << "[ETH] getControlModeRaw timed out, joint " << j;
+//		if(requestQueue->threadPool->getId(&threadId))
+//			requestQueue->cleanTimeouts(threadId);
+//		return false;
+//	}
 
 	uint16_t size;
+	eOmc_joint_status_basic_t	status;
 	eOmc_controlmode_t type;
-	res->transceiver->getNVvalue(nvRoot, (uint8_t*) &type, &size);
+	res->transceiver->getNVvalue(nvRoot, (uint8_t*) &status, &size);
 
-	switch(type)
+	//type = (eOmc_joint_status_basic_t) status.controlmodestatus;
+
+	printf("\nCurrent status for joint %d is ",j);
+	switch(status.controlmodestatus)
 	{
 		case eomc_controlmode_idle:
 	        *v=VOCAB_CM_IDLE;
+	        printf("IDLE\n");
 			break;
 
 		case eomc_controlmode_position:
 	        *v=VOCAB_CM_POSITION;
+	        printf("POSITION\n");
 			break;
 
 		case eomc_controlmode_velocity:
 	        *v=VOCAB_CM_VELOCITY;
+	        printf("VELOCITY\n");
 			break;
 
 		case eomc_controlmode_torque:
 	        *v=VOCAB_CM_TORQUE;
+	        printf("TORQUE\n");
 			break;
 
 		case eomc_controlmode_impedance_pos:
@@ -1973,6 +2034,7 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 
 		default:
 	        *v=VOCAB_CM_UNKNOWN;
+	        printf("UNKNOWN\n");
 			break;
 	}
 	return true;

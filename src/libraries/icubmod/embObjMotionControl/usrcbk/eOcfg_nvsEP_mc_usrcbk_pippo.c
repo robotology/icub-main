@@ -44,11 +44,11 @@
 #include "stdint.h"
 
 #include "EoCommon.h"
-#include "eOcfg_nvsEP_mc_hid.h"
 #include "EOnv_hid.h"
 
 //#include "eOcfg_nvsEP_mc_overridden.h"
-
+#include "eOcfg_nvsEP_mc_overridden.h"
+#include "eOcfg_nvsEP_mc_hid.h"
 
 #ifdef _ICUB_CALLBACK_
 //#include "IRobotInterface.h"
@@ -308,7 +308,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig__maxcurrentofmotor(eOcfg_nvsEP_
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
-	printf("jconfig__pidposition Callback, j=%d\n", xx);
+	printf("jconfig__pidposition Callback eoMotionControl, j=%d\n", xx);
 	jwake(xx, nv, jointNVindex_jconfig__pidposition);
 }
 

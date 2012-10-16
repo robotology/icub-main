@@ -11,5 +11,7 @@
 
 #ifdef _ICUB_CALLBACK_
 #define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition
+
+#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode
 #endif
 #endif /* PC104_MC_OVVERRIDE_H_ */
