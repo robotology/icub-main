@@ -65,7 +65,6 @@ inline void DEBUG_CW2(const char *fmt, ...)
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
-using namespace yarp::os::impl;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 

@@ -9,6 +9,6 @@ if (NOT SKIP_controlboardwrapper2)
    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS})
 
    add_library(controlboardwrapper2 ControlBoardWrapper2.cpp ControlBoardWrapper2.h)
-   target_link_libraries(controlboardwrapper2 DebugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+   target_link_libraries(controlboardwrapper2 DebugStream ${YARP_LIBRARIES})
    icub_export_library(controlboardwrapper2)
 endif (NOT SKIP_controlboardwrapper2)
