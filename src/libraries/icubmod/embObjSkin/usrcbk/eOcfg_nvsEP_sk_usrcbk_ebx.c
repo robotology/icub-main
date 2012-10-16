@@ -50,7 +50,7 @@
 #include "eOcfg_nvsEP_sk.h"
 #include "eOcfg_nvsEP_sk_hid.h"
 
-#include "eOcfg_nvsEP_sk_overridden_pc104.h"
+#include "eOcfg_nvsEP_sk_overridden.h"
 #include "eOcfg_nvsEP_sk_emsboard_usr_hid.h"
 
 // --------------------------------------------------------------------------------------------------------------------
