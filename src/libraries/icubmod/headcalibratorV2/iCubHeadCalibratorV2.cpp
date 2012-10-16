@@ -458,7 +458,7 @@ bool iCubHeadCalibratorV2::park(DeviceDriver *dd, bool wait)
     int nj=0;
     abortParking=false;
 
-    if (!iEncoders || iEncoders->getAxes(&nj))
+    if (!iEncoders || !iEncoders->getAxes(&nj))
     {
         fprintf(logfile, "HEADCALIB[%d]: Error getting number of encoders\n", canID);
         return false;
