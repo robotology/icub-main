@@ -1896,7 +1896,7 @@ bool ControlBoardWrapper2::attachAll(const PolyDriverList &polylist)
 
 void ControlBoardWrapper2::run()
 {
-    String tmp(partName.c_str());
+    std::string tmp(partName.c_str());
 
     yarp::sig::Vector& v = state_buffer.get();
     v.size(controlledJoints);

@@ -55,7 +55,7 @@ inline void DEBUG_CW2(const char *fmt, ...)
 #endif
 }
 
-#include <yarp/os/impl/Logger.h>
+//#include <yarp/os/impl/Logger.h>
 
 
 #ifdef MSVC
@@ -636,7 +636,7 @@ public:
     */
     virtual bool getPid(int j, Pid *p)
     {
-#warning "check for max number of joints!?!?!"
+//#warning "check for max number of joints!?!?!"
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
 
