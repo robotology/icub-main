@@ -860,10 +860,13 @@ bool MotorThread::threadInit()
     string partUsed=bMotor.check("part_used",Value("both_arms")).asString().c_str();
     setRate(bMotor.check("thread_period",Value(100)).asInt());
 
-    if (strcmp(rf.find("actions").asString().c_str(), "OPC"))
-        actions_path=rf.findPath("actions");
+    //if (strcmp(rf.find("actions").asString().c_str(), "OPC"))
+        //actions_path=rf.findPath("actions");
+        
+        
+    actions_path = "/usr/local/src/robot/iCub/app/actionsRenderingEngine/actions";
 
-    //fprintf(stdout,"path is %s \n",actions_path.c_str() );
+    fprintf(stdout,"----------------------------------------------------------------------path is %s \n",actions_path.c_str() );
     
     double eyesTrajTime=bMotor.check("eyes_traj_time",Value(1.0)).asDouble();
     double neckTrajTime=bMotor.check("neck_traj_time",Value(2.0)).asDouble();
@@ -1389,7 +1392,7 @@ void MotorThread::run()
                     tmp_action.addDouble(o[i]);
 
                 //here add timestamp to the files
-                tmp_action.addDouble(dragger.t0);//temporary for the data collection
+                //tmp_action.addDouble(dragger.t0);//temporary for the data collection
 
                 dragger.t0=Time::now();
             }
@@ -2584,7 +2587,9 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     string arm_name=(arm==LEFT?"left":"right");
 
-    ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+    //ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+    ifstream action_fin(("actions/"+arm_name+"/"+action_name+".action").c_str());
+
     if(action_fin.is_open())
     {
         fprintf(stdout,"Error! Action '%s' already learned... stopping\n",action_name.c_str());
@@ -2598,7 +2603,6 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-
     action[arm]->getCartesianIF(dragger.ctrl);
 
     if(dragger.ctrl==NULL)
@@ -2632,6 +2636,7 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
     if(arm_mode!=ARM_MODE_LEARN_ACTION)
         return false;
 
+    fprintf(stdout,"HERE\n");
     string arm_name=(dragger.arm==LEFT?"left":"right");
 
     bool success=true;
@@ -2640,12 +2645,15 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
 
     if(!skip)
     {
+         fprintf(stdout,"HERE1\n");
         if (actions_path != "")
         {
-            ofstream action_fout((actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
+            fprintf(stdout,"HERE2\n");
+            ofstream action_fout(("/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
 
             if(!action_fout.is_open())
             {
+                fprintf(stdout,"HERE3\n");
                 fprintf(stdout,"Error! Unable to open file '%s' for action %s\n",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
                 success=false;
             }
