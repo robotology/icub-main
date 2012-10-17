@@ -580,27 +580,12 @@ void inverseDynamics::run()
     {
         icub->computeCOM();
 
-
         if (com_vel_enabled)
         {
-            //experimental
             icub->EXPERIMENTAL_computeCOMjacobian();
             icub->EXPERIMENTAL_getCOMjacobian(BODY_PART_ALL,com_jac);
             icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v,dq);
-            // icub->getCOM(BODY_PART_ALL, com_all, mass_all);  //This is called again to update the COM value with respect to the RIGHT FOOT reference frame in case it's necessary.
-
-//             icub->EXPERIMENTAL_getCOMjacobian(LOWER_BODY_PARTS,com_jac);
-//             icub->EXPERIMENTAL_getCOMvelocity(LOWER_BODY_PARTS,com_v,dq);
-//             fprintf(stderr,com_v.toString().c_str());
-
-//            icub->EXPERIMENTAL_getCOMjacobian(UPPER_BODY_PARTS,com_jac);
-//            icub->EXPERIMENTAL_getCOMvelocity(UPPER_BODY_PARTS,com_v,dq);
-            
-            // com_all.push_back(com_v[0]);
-            // com_all.push_back(com_v[1]);
-            // com_all.push_back(com_v[2]);
-        }
-        
+        }      
 
         icub->getCOM(BODY_PART_ALL,     com_all, mass_all);
         icub->getCOM(LOWER_BODY_PARTS,  com_lb,  mass_lb);
@@ -621,15 +606,12 @@ void inverseDynamics::run()
         com_hd.push_back (mass_hd);
         com_to.push_back (mass_to);
 
-
-if (com_vel_enabled)
-{
+		if (com_vel_enabled)
+		{
             com_all.push_back(com_v[0]);
             com_all.push_back(com_v[1]);
             com_all.push_back(com_v[2]);
-}
-
-
+		}
         else
         {
             com_all.push_back(0);
@@ -979,11 +961,9 @@ void inverseDynamics::calibrateOffset()
 
     icub_sens->upperTorso->setInertialMeasure(it->inertial_w0,it->inertial_dw0,it->inertial_d2p0);
     Matrix F_sensor_up = icub_sens->upperTorso->estimateSensorsWrench(F_ext_up,false);
-    
     icub_sens->lowerTorso->setInertialMeasure(icub_sens->upperTorso->getTorsoAngVel(),icub_sens->upperTorso->getTorsoAngAcc(),icub_sens->upperTorso->getTorsoLinAcc());
     Matrix F_sensor_low = icub_sens->lowerTorso->estimateSensorsWrench(F_ext_low,false);
-    
-    fprintf(stderr, "UP TILL THIS POINT\n");
+
     for (it=previous_status.begin() ; it != previous_status.end(); it++ )
     {
         /*
