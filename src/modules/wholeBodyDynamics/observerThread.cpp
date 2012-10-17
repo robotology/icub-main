@@ -464,8 +464,8 @@ void inverseDynamics::run()
     F_RArm  = -1.0 * (current_status.ft_arm_right-Offset_RArm);
     F_LLeg  = -1.0 * (current_status.ft_leg_left-Offset_LLeg);
     F_RLeg  = -1.0 * (current_status.ft_leg_right-Offset_RLeg);
-    F_LFoot = +1.0 * (current_status.ft_foot_left-Offset_LFoot);
-    F_RFoot = +1.0 * (current_status.ft_foot_right-Offset_RFoot);
+    F_LFoot = -1.0 * (current_status.ft_foot_left-Offset_LFoot);
+    F_RFoot = -1.0 * (current_status.ft_foot_right-Offset_RFoot);
    //F_LFoot = 1.0 * (current_status.ft_foot_left);
    //F_RFoot = 1.0 * (current_status.ft_foot_right);
 
