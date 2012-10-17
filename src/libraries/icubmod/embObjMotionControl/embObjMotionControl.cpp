@@ -420,6 +420,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
     }
 
+
     if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints+1))
     {
         fprintf(stderr, "Using default value = 0 (disabled)\n");
@@ -752,7 +753,7 @@ bool embObjMotionControl::init()
 	}
 
 	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
-	Time::delay(2);
+	Time::delay(0.5);
 
 
 #warning "TODO: check that all this stuff doesn't go beyond the ropframe size!!!"
@@ -835,7 +836,7 @@ bool embObjMotionControl::init()
 	// invia configurazioni a caso
 
 	// attiva il loop di controllo
-	Time::delay(2);
+	Time::delay(0.5);
 	eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
 	nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
 	if(EOK_uint16dummy == nvid)

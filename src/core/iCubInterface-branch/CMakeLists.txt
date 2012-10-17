@@ -28,7 +28,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../tools/canLoader/canLoaderL
                     ${CMAKE_CURRENT_SOURCE_DIR}/robotInterface/
                     ${iCubDev_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/ControlBoardWrapper2)
+                    ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/controlBoardWrapper2)
 
 
 if(ICUB_USE_INTERFACEGUI)
@@ -44,13 +44,13 @@ if(ICUB_USE_INTERFACEGUI)
                                     canLoaderLib
                                     icubmod
                                     iCubInterfaceGuiLib
-                                    DebugStream)
+                                    debugStream)
 else()
     target_link_libraries(iCubInterface iCubDev
                                     ${YARP_LIBRARIES}
                                     canLoaderLib
                                     icubmod
-                                    DebugStream)
+                                    debugStream)
 endif()
 
 install(TARGETS iCubInterface DESTINATION bin COMPONENT Core)
