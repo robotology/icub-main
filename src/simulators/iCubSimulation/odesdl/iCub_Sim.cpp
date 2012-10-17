@@ -807,7 +807,7 @@ int OdeSdlSimulation::thread_ode(void *unused) {
         timeCache += temp - lastTimeCacheUpdate;
         lastTimeCacheUpdate = temp;
         while(timeCache < ode_step_length){
-            SDL_Delay(ode_step_length-timeCache);
+            SDL_Delay((unsigned int)(ode_step_length-timeCache));
             temp = (long) (clock()*cpms);
             timeCache += temp - lastTimeCacheUpdate;
             lastTimeCacheUpdate = temp;
