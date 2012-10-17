@@ -739,7 +739,7 @@ public:
     * Return the control status of torso joints.
     * @param torso the vector containing the control status of torso 
     *              joints
-    * @see getDOF(.) method of the cartesian interface.
+    * @see getDOF method of the cartesian interface.
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -752,7 +752,7 @@ public:
     * Change the control status of torso joints.
     * @param torso the vector containing the control status of torso
     *              joints
-    * @see setDOF(.) method of the cartesian interface.
+    * @see setDOF method of the cartesian interface.
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -762,8 +762,8 @@ public:
     virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
 
     /**
-    * Disable the controlled joints of torso as specified by open(.)
-    * and setTorsoJoints(.) methods. 
+    * Disable the controlled joints of torso as specified by open 
+    * and setTorsoJoints methods. 
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -773,8 +773,8 @@ public:
     virtual void disableTorsoDof();
 
     /**
-    * Enable the controlled joints of torso as specified by open(.) 
-    * and setTorsoJoints(.) methods. 
+    * Enable the controlled joints of torso as specified by open and
+    * setTorsoJoints methods. 
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
