@@ -582,8 +582,8 @@ public:
 
         while (!isStopping())
         {
-			if (!velInit)
-			{
+            if (!velInit)
+            {
                 if (checkInitConnection(velInitPort))
                 {
                     initVelCtrl(velInitPort, pRF);
@@ -591,49 +591,49 @@ public:
                 }
                 else
                     Time::delay(1.0);
-			}
-			else
-			{
-    			if (!closing)
-    				mutex.wait();
+            }
+            else
+            {
+                if (!closing)
+                    mutex.wait();
     
-    			if (firstRun)
-    			{
+                if (firstRun)
+                {
                     Bottle c,r;
                     c.addString("run");
                     velInitPort->write(c,r);
-    				send=readLine(p1,time1);
+                    send=readLine(p1,time1);
                     linEst.reset();
                     t=0.0;
                     filtElemsCnt=0;
-    				firstRun=false;
-    			}            
+                    firstRun=false;
+                }            
     
-    			if (send)
-    			{
-                    Vector cmd=formCommand(p1,t);
-    				velPort->write(cmd);
-    				send=false;
-    			}
-    
-    			if (readLine(p2,time2))
-    			{
-                    double dt=time2-time1;
-    				Time::delay(dt);
-                    t+=dt;
-    				p1=p2;
-    				time1=time2;
-    				send=true;
-    				mutex.post();
-    			}
-    			else
+                if (send)
                 {
-    				fin.close();
+                    Vector cmd=formCommand(p1,t);
+                    velPort->write(cmd);
+                    send=false;
+                }
+    
+                if (readLine(p2,time2))
+                {
+                    double dt=time2-time1;
+                    Time::delay(dt);
+                    t+=dt;
+                    p1=p2;
+                    time1=time2;
+                    send=true;
+                    mutex.post();
+                }
+                else
+                {
+                    fin.close();
                     Bottle c,r;
                     c.addString("susp");
                     velInitPort->write(c,r);
                 }
-			}
+            }
         }
     }
 };
