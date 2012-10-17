@@ -105,9 +105,16 @@ enum JacobType{ JAC_KIN, JAC_IKIN };
 #define NODE_NO_ATTACH      false
 
 
-struct version_tag{
+struct version_tag
+{
 	int head_version;
 	int legs_version;
+	
+	version_tag () 
+	{
+		head_version=1;
+		legs_version=1;
+	}
 };
 
 //enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL }; 
@@ -1038,7 +1045,7 @@ public:
 */
 class iDynSensorTorsoNode : public iDynSensorNode
 {
-protected:
+public:
 
 	/// roto-translational matrix defining the central-up base frame with respect to the torso node
 	yarp::sig::Matrix HUp;
@@ -1393,8 +1400,6 @@ public:
 */
 class iCubUpperTorso : public iDynSensorTorsoNode
 {
-	friend class iDyn::iCubWholeBody;
-
 protected:
 	/**
 	* Build the node.
@@ -1426,8 +1431,6 @@ public:
 */
 class iCubLowerTorso : public iDynSensorTorsoNode
 {
-	friend class iDyn::iCubWholeBody;
-
 protected:
 	/**
 	* Build the node.
