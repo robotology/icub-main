@@ -7,7 +7,9 @@
 SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
-add_definitions( -D_ICUB_CALLBACK_ -DEOCFG_NVSEP_MC_OVERRIDE -DEOCFG_NVSEP_SK_OVERRIDE)
+# defined in porting.h
+#add_definitions( -D_ICUB_CALLBACK_ -DEOCFG_NVSEP_MC_OVERRIDE -DEOCFG_NVSEP_SK_OVERRIDE)
+add_definitions( -D_ICUB_CALLBACK_)
 
 PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h )
 
@@ -56,18 +58,10 @@ set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_bodypart.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_jxx.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_jxxdefault.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_jxxmacro.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_mxx.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_mxxdefault.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_mxxmacro.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_jxxmacro.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_mxxmacro.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_usr_nvmacro.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_cxx.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_cxxdefault.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_con.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_usr.c
-#							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_leg_usr_pippo.c
 							
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerarm_con.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_lowerarm_usr.c
@@ -77,6 +71,7 @@ set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
 
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_torso_con.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_torso_usr.c
+
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperarm_con.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_upperarm_usr.c
 
@@ -116,13 +111,8 @@ set(NVS_SKIN_SOURCE			${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk.c
 
 
 set(NVS_CBK_SOURCE			${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
-							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_pippo.c
-#							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c
-#							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c														
-#							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_wholebody_usrcbk_pippo.c 
-#							${NVS_SENSORS_CBK_FOLDER}eOcfg_nvsEP_as_usrcbk_pippo.c
-#                           ${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_right_arm_usrcbk.cpp
-							)
+							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_icub.c	
+                               )
 
 
 # EmbObj-src
@@ -254,6 +244,6 @@ SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} DebugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES})  
+TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES})  
 
 icub_export_library(${PROJECTNAME})
