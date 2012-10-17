@@ -67,6 +67,8 @@ class iCubStatus
     Vector ft_arm_right;
     Vector ft_leg_left;
     Vector ft_leg_right;
+    Vector ft_foot_left;
+    Vector ft_foot_right;
 
     Vector inertial_w0,inertial_dw0,inertial_d2p0;
 
@@ -79,9 +81,11 @@ class iCubStatus
         ft_arm_right=0;
         ft_leg_left=0;
         ft_leg_right=0;
-        inertial_w0.resize(3);   inertial_w0.zero();
-        inertial_dw0.resize(3);  inertial_dw0.zero();
-        inertial_d2p0.resize(3); inertial_d2p0.zero();
+	    ft_foot_left=0;
+        ft_foot_right=0;
+        inertial_w0.resize(3);     inertial_w0.zero();
+        inertial_dw0.resize(3);    inertial_dw0.zero();
+        inertial_d2p0.resize(3);   inertial_d2p0.zero();
         all_q_up.resize(3+7+7);    all_q_up.zero();
         all_dq_up.resize(3+7+7);   all_dq_up.zero();
         all_d2q_up.resize(3+7+7);  all_d2q_up.zero();
@@ -92,6 +96,8 @@ class iCubStatus
         ft_arm_right.resize(6);    ft_arm_right.zero();
         ft_leg_left.resize(6);     ft_leg_left.zero();
         ft_leg_right.resize(6);    ft_leg_right.zero();
+		ft_foot_left.resize(6);    ft_foot_left.zero();
+        ft_foot_right.resize(6);   ft_foot_right.zero();
     }
 
     Vector get_q_head()    {return all_q_up.subVector(0,2);}
@@ -161,6 +167,8 @@ private:
     BufferedPort<Vector> *port_ft_arm_right;
     BufferedPort<Vector> *port_ft_leg_left;
     BufferedPort<Vector> *port_ft_leg_right;
+	BufferedPort<Vector> *port_ft_foot_left;
+    BufferedPort<Vector> *port_ft_foot_right;
     BufferedPort<Vector> *port_inertial_thread;
     BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_contacts;
 
@@ -177,10 +185,14 @@ private:
     BufferedPort<Vector> *port_external_wrench_LA;
     BufferedPort<Vector> *port_external_wrench_RL;
     BufferedPort<Vector> *port_external_wrench_LL;
+    BufferedPort<Vector> *port_external_wrench_RF;
+    BufferedPort<Vector> *port_external_wrench_LF;
     BufferedPort<Vector> *port_external_cartesian_wrench_RA;
     BufferedPort<Vector> *port_external_cartesian_wrench_LA;
     BufferedPort<Vector> *port_external_cartesian_wrench_RL;
     BufferedPort<Vector> *port_external_cartesian_wrench_LL;
+    BufferedPort<Vector> *port_external_cartesian_wrench_RF;
+    BufferedPort<Vector> *port_external_cartesian_wrench_LF;
     BufferedPort<Vector> *port_sensor_wrench_RL;
     BufferedPort<Vector> *port_sensor_wrench_LL;
     BufferedPort<Vector> *port_model_wrench_RL;
@@ -242,11 +254,15 @@ private:
     Vector F_ext_left_arm, F_ext_right_arm, F_ext_torso;
     Vector F_ext_cartesian_left_arm, F_ext_cartesian_right_arm;
     Vector F_ext_left_leg, F_ext_right_leg;
+	Vector F_ext_left_foot, F_ext_right_foot;
     Vector F_sns_left_leg, F_sns_right_leg;
     Vector F_mdl_left_leg, F_mdl_right_leg;
     Vector F_ext_cartesian_left_leg, F_ext_cartesian_right_leg;
+	Vector F_ext_cartesian_left_foot, F_ext_cartesian_right_foot;
     Vector F_LLeg, F_RLeg; 
+	Vector F_LFoot, F_RFoot; 
     Vector F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
+    Vector F_iDyn_LFoot, F_iDyn_RFoot, Offset_LFoot, Offset_RFoot;
     Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
     Vector F_ext_sens_right_arm, F_ext_sens_left_arm;       // external wrench seen at the F/T sensors
     Vector F_ext_sens_right_leg, F_ext_sens_left_leg;       // external wrench seen at the F/T sensors
