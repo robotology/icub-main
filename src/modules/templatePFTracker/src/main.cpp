@@ -24,9 +24,7 @@ This module expects a template from the following port /templatePFTracker/templa
 Particle filtering is a Monte Carlo sampling approach to Bayesian filtering.The particle filtering algorithm maintains a probability distribution over the state of the system it is monitoring, in this case, the state -- location, scale, etc. -- of the object being tracked. Particle filtering represents the distribution as a set of weighted samples, or particles. Each particle describes one possible location of the object being tracked. The set of particles contains more weight at locations where the object being tracked is more likely to be. The most probable state of the object is determined by finding the location in the particle filtering distribution with the highest weight.
 
 \section lib_sec Libraries
-
-YARP
-OPENCV
+YARP libraries and OpenCV
 
 \section parameters_sec Parameters
 
@@ -127,10 +125,6 @@ None
 \section out_data_sec Output Data Files
 
 None
-
-\section conf_file_sec Configuration Files
-
-\c templatePFTracker.ini  in \c $ICUB_ROOT/app/particleFiltering/conf \n
 
 \section tested_os_sec Tested OS
 

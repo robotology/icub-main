@@ -1,5 +1,5 @@
 # Copyright: 2009 RobotCub Consortium
-# Author: Vadim Tikhanoff, Carlo Ciliberto
+# Author: Vadim Tikhanoff
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
