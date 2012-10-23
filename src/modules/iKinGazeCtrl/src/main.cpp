@@ -57,7 +57,11 @@ interface, please go \ref icub_gaze_interface "here".
       try to keep on working with just the head part.
  
 \note <b>If you're going to use this controller for your work, 
-      please quote it within any resulting publication</b>.
+      please quote it within any resulting publication</b>: U.
+      Pattacini, "Modular Cartesian Controllers for Humanoid
+      Robots: Design and Implementation on the iCub," <i>Ph.D.
+      dissertation</i>, RBCS, Istituto Italiano di Tecnologia,
+      Genova, 2010.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
