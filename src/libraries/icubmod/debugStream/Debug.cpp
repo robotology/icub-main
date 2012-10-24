@@ -74,7 +74,7 @@ void DebugStream::Debug::print_output(MsgType t,
     case DebugType:
         if (fout.is_open()) {
             if (verbose_output) {
-                ftrc << "D: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
+            	fout << "D: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
             } else {
                 fout << "DEBUG: " << s.str() << std::endl;
             }
