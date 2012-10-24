@@ -18,38 +18,38 @@
     <module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
-        <node>rclab-desktop001</node>
+        <node>icubsrv</node>
         <tag>camcalib_left</tag>
     </module> 
     <module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
-        <node>rclab-desktop001</node>
+        <node>icubsrv</node>
         <tag>camcalib_right</tag> 
     </module> 
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
-      <node>rclab-desktop001</node>
+      <node>icubsrv</node>
 	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
-      <node>rclab-desktop001</node>
+      <node>icubsrv</node>
 	<tag>viewright</tag>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_left</tag>
-	  <node>rclab-desktop001</node>
+	  <node>icubsrv</node>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_right</tag>
-	  <node>rclab-desktop001</node>
+	  <node>icubsrv</node>
    </module>
 <connection>
   <output>/icub/cam/left</output>
