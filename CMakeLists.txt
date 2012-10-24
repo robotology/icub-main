@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-# New build system. Exploit new cmake 2.6 features (export). 
+# New build system. Exploit new cmake 2.6 features (export).
 
 #reduce warning level with cmake 2.6
 cmake_minimum_required(VERSION 2.6)
@@ -27,10 +27,10 @@ set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MI
 
 set(YARP_VERSION ${YARP_VERSION}.${ICUB_REQYARP_VERSION_TWEAK})
 
-# unfortunately VERSION_LESS is unavailable with cmake 2.6.? 
+# unfortunately VERSION_LESS is unavailable with cmake 2.6.?
 if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
         # # find yarp, accept all versions, then manually check YARP version
-       
+
         if (YARP_VERSION_MAJOR LESS ICUB_REQYARP_VERSION_MAJOR OR YARP_VERSION_MINOR LESS ICUB_REQYARP_VERSION)
            message(FATAL_ERROR "YARP version is not compatible, please update YARP")
         else()
@@ -54,10 +54,10 @@ if (YARP_HAS_MATH_LIB)
 else(YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
      message(FATAL_ERROR "YARP was found, but no libYARP_math was detected, please recompile yarp")
-endif(YARP_HAS_MATH_LIB) 
+endif(YARP_HAS_MATH_LIB)
 
 set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
-set_property(GLOBAL PROPERTY ICUB_TARGETS) 
+set_property(GLOBAL PROPERTY ICUB_TARGETS)
 set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFindDependencies.cmake
 
 ############# Options and definitions
@@ -176,7 +176,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
 
 ################ copying python scripts
 message(STATUS "Installing manager.py")
-install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh 
+install(FILES  app/default/scripts/manager.py app/default/scripts/icub-cluster-server.sh app/default/scripts/icub-cluster-run.sh
         DESTINATION bin COMPONENT Core PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
@@ -192,8 +192,8 @@ if (ICUB_EXPERIMENTAL_APP_INSTALL)
     add_dependencies(install_applications python-scripts)
 endif(ICUB_EXPERIMENTAL_APP_INSTALL)
 ###############################
-    
-# export the installed project 
+
+# export the installed project
 message(STATUS "Now exporting for install")
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
 
@@ -230,7 +230,7 @@ configure_file(
   IMMEDIATE @ONLY)
 
 include(${PROJECT_SOURCE_DIR}/conf/iCubPackage.cmake)
-  
+
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
 
