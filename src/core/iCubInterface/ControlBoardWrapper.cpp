@@ -248,6 +248,8 @@ void CommandsHelper::handleTorqueMsg(const yarp::os::Bottle& cmd,
 						p.max_output = b.get(4).asDouble();
 						p.offset = b.get(5).asDouble();
 						p.scale = b.get(6).asDouble();
+						p.stiction_pos_val = b.get(7).asDouble();
+						p.stiction_neg_val = b.get(8).asDouble();
 						*ok = torque->setTorquePid(j, p);
 					}
 					break;
@@ -270,6 +272,8 @@ void CommandsHelper::handleTorqueMsg(const yarp::os::Bottle& cmd,
 								p[i].max_output = c.get(4).asDouble();
 								p[i].offset = c.get(5).asDouble();
 								p[i].scale = c.get(6).asDouble();
+								p[i].stiction_pos_val = c.get(7).asDouble();
+								p[i].stiction_neg_val = c.get(8).asDouble();
 							}
 							*ok = torque->setTorquePids(p);
 							delete[] p;
@@ -392,6 +396,8 @@ void CommandsHelper::handleTorqueMsg(const yarp::os::Bottle& cmd,
 							b.addDouble(p.max_output);
 							b.addDouble(p.offset);
 							b.addDouble(p.scale);
+							b.addDouble(p.stiction_pos_val);
+							b.addDouble(p.stiction_neg_val);
 						}
 						break;
 
@@ -411,6 +417,8 @@ void CommandsHelper::handleTorqueMsg(const yarp::os::Bottle& cmd,
 								c.addDouble(p[i].max_output);
 								c.addDouble(p[i].offset);
 								c.addDouble(p[i].scale);
+								c.addDouble(p[i].stiction_pos_val);
+								c.addDouble(p[i].stiction_neg_val);
 							}
 							delete[] p;
 						}
@@ -621,6 +629,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                     p.max_output = b.get(4).asDouble();
                     p.offset = b.get(5).asDouble();
                     p.scale = b.get(6).asDouble();
+					p.stiction_pos_val = b.get(7).asDouble();
+					p.stiction_neg_val = b.get(8).asDouble();
                     ok = pid->setPid(j, p);
                 }
                 break;
@@ -643,6 +653,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                             p[i].max_output = c.get(4).asDouble();
                             p[i].offset = c.get(5).asDouble();
                             p[i].scale = c.get(6).asDouble();
+							p[i].stiction_pos_val = c.get(7).asDouble();
+							p[i].stiction_neg_val = c.get(8).asDouble();
                         }
                         ok = pid->setPids(p);
                         delete[] p;
@@ -977,6 +989,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                     b.addDouble(p.max_output);
                     b.addDouble(p.offset);
                     b.addDouble(p.scale);
+					b.addDouble(p.stiction_pos_val);
+					b.addDouble(p.stiction_neg_val);
                 }
                 break;
 
@@ -996,6 +1010,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                         c.addDouble(p[i].max_output);
                         c.addDouble(p[i].offset);
                         c.addDouble(p[i].scale);
+						c.addDouble(p[i].stiction_pos_val);
+						c.addDouble(p[i].stiction_neg_val);
                     }
                     delete[] p;
                 }

@@ -1,3 +1,10 @@
+2012-10-23  Marco Randazzo  <marco.randazzo@iit.it>
+
+    * src/libraries/icubmod/controlBoardWrapper2/ControlBoardWrapper2.cpp
+    Stiction_pos_val and stiction_neg_val parameters have been added to the yarp::dev::Pid class.
+	All the related methods (get/set pid) have been modified accordingly.
+    Requires YARP_VERSION_TWEAK = 9424.
+
 2012-10-11  Ugo Pattacini  <ugo.pattacini@iit.it>
 
    * cartesian and gaze I/F's:
