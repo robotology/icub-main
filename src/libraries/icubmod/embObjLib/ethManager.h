@@ -52,7 +52,7 @@ using namespace std;
 //#include "../ethManager/iCubDeviceInterface.h"
 //#include "../embObjMotionControl/embObjMotionControl.h"
 #include "hostTransceiver.hpp"
-#include "embObjLibInterface.h"
+//#include "embObjLibInterface.h"
 #include "debugFunctions.h"
 #include "FeatureInterface.h"
 #include <map>
@@ -67,29 +67,25 @@ using namespace std;
 
 #include "Debug.h"
 
-using namespace std;
 
-// debug with workstation
-#define DEBUG_LAPTOP_IP			"10.255.37.155" 	// <- dhcp;
-#define DEBUG_WORKSTATION_IP 	"10.255.37.24" // ip della workstation qui dietro.
 
-// to use inside the robot
-#define DEFAULT_PC104_IP		"10.0.0.1" 			// <- fix;
-#define DEBUG_PC104_IP			"1.1.1.1" 			// <- fix;
-#define DEBUG_EMS_IP			"10.0.0.2" 			// <- fix;
-
-#define PC104_IP				DEBUG_LAPTOP_IP
-#define	EMS_IP					DEBUG_EMS_IP
-#define DEFAULT_PORT			3333
+//// debug with workstation
+//#define DEBUG_LAPTOP_IP			"10.255.37.155" 	// <- dhcp;
+//#define DEBUG_WORKSTATION_IP 	"10.255.37.24" // ip della workstation qui dietro.
+//
+//// to use inside the robot
+//#define DEFAULT_PC104_IP		"10.0.0.1" 			// <- fix;
+//#define DEBUG_PC104_IP			"1.1.1.1" 			// <- fix;
+//#define DEBUG_EMS_IP			"10.0.0.2" 			// <- fix;
+//
+//#define PC104_IP				DEBUG_LAPTOP_IP
+//#define	EMS_IP					DEBUG_EMS_IP
+//#define DEFAULT_PORT			3333
 
 //#define	MAX_RECV_SIZE			512
 #define	MAX_RECV_SIZE			1500
 #define	SIZE_INFO				126
 #define MAX_ICUB_EP				32
-
-#define _DEBUG_
-#define _SEPARETED_THREADS_
-#undef 	_SEPARETED_THREADS_
 
 namespace yarp{
     namespace dev{
@@ -99,30 +95,38 @@ namespace yarp{
     }
 }
 
+typedef struct
+{
+		char 		name[64];
+		uint8_t		ip1;
+		uint8_t		ip2;
+		uint8_t		ip3;
+		uint8_t		ip4;
+}EMS_ID;
+
 using namespace yarp::os;
 using namespace yarp::dev;
-
+using namespace std;
 
 // Thread function used to receive messages from EMSs
 void *recvThread(void * arg);
 
 
 class yarp::dev::ethResources:  public PolyDriver
-								//public iCubDeviceInterface
 {
 private:
 	char 						info[SIZE_INFO];
+	int							how_many_features;
 
 	TheEthManager  				*theEthManager_h;
 
     ACE_INET_Addr				remote_dev;
     ACE_INET_Addr				remote_broadcast;
 
-public:
 
-	EMS_ID						id;
+public:
+	EMS_ID						id;				// to be removed
    	hostTransceiver				*transceiver;
-	ACE_TCHAR					address[64];
 
 	ethResources();
     ~ethResources();
@@ -131,7 +135,8 @@ public:
 	ACE_UINT16 					recv_size;
 
 	ethResources* already_exists(yarp::os::Searchable &config);
-    virtual bool open(yarp::os::Searchable &par);
+    bool open(yarp::os::Searchable &par);
+    bool ethResources::registerFeature(yarp::os::Searchable &config);
 
     int send(void *data, size_t len);
     ACE_INET_Addr	getRemoteAddress();
@@ -146,15 +151,13 @@ public:
 // -------------------------------------------------------------------\\
 
 
-class yarp::dev::ethResCreator: public std::list<ethResources *>,
-								public IEmbObjResList
+class yarp::dev::ethResCreator: public std::list<ethResources *>
 {
 	private:
-
+		static yarp::os::Semaphore 	_mutex;
 		static ethResCreator 		*handle;
 		static bool					initted;
 		int							how_many_boards;
-		FEAT_ID						linkTable[MAX_ICUB_EP];
 		map 						<eOnvEP_t, FEAT_ID> class_lut;
 
 		ethResCreator();
@@ -162,12 +165,13 @@ class yarp::dev::ethResCreator: public std::list<ethResources *>,
 		bool						compareIds(EMS_ID id2beFound, EMS_ID comparingId);
 
 	public:
+		void						close(void);
 		static ethResCreator* 		instance();
 		ethResources* 				getResource(yarp::os::Searchable &config);
+		bool 						removeResource(ethResources* to_be_removed);
 		void 						addLUTelement(FEAT_ID id);
 		void *						getHandleFromEP(eOnvEP_t ep);
 		FEAT_ID 					getFeatInfoFromEP(uint8_t ep);
-		virtual uint8_t*			find(EMS_ID &id);
 };
 
 typedef std::list<ethResources *>::iterator ethResIt;
@@ -200,7 +204,6 @@ class yarp::dev::TheEthManager: public DeviceDriver,
 {
 private:
     TheEthManager();
-    TheEthManager(ACE_INET_Addr local_addr);
 
     static int					_deviceNum;
 	static TheEthManager 		*handle;
@@ -208,13 +211,12 @@ private:
 	static yarp::os::Semaphore 	_mutex;
 	char 						info[SIZE_INFO];
 
-	ethResources				*res;
+//	ethResources				*res;
     ACE_SOCK_Dgram				*_socket;
 
 	ACE_thread_t 				id_recvThread;
     ethResCreator 				*ethResList;
     uint8_t						*p_to_data;
-    uint16_t					bytes_to_send;
 
 protected:
     ACE_INET_Addr				local_addr;
@@ -231,8 +233,10 @@ public:
     // Singleton access
     static 	TheEthManager* instance();
     static 	TheEthManager* instance(ACE_INET_Addr local_addr);
+
     bool   	register_device(ACE_TCHAR *new_dev_id, ethResources *new_dev_handler);
     bool  	createSocket(ACE_INET_Addr local_addr);
+    bool	isInitted(void);
 
     //Device Driver
     virtual bool open();

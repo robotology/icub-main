@@ -31,37 +31,39 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-bool keepGoingOn2 = true;
+static bool keepGoingOn2 = true;
 
 
 ethResCreator* ethResCreator::handle = NULL;
+yarp::os::Semaphore ethResCreator::_mutex = 1;
 bool ethResCreator::initted = false;
 
 TheEthManager* TheEthManager::handle = NULL;
-int TheEthManager::_deviceNum = false;
 yarp::os::Semaphore TheEthManager::_mutex = 1;
-
+int TheEthManager::_deviceNum = 0;
 
 ethResources::ethResources()
 {
-	transceiver = NULL;
-	theEthManager_h = NULL;
+	how_many_features 	= 0;
+	transceiver 		= NULL;
+	theEthManager_h 	= NULL;
 }
 
 ethResources::~ethResources()
 {
-	// Really nothing to do here??
-	delete transceiver;
+	// What to do here??
+	if(NULL != transceiver)
+		delete transceiver;
 }
 
 
 bool ethResources::open(yarp::os::Searchable &config)
 {
 	yTrace();
-	ACE_TCHAR tmp[126]; //, address[64];
-	Bottle xtmp, xtmp2;
+	ACE_TCHAR tmp[126], address_tmp_string[64];
+	Bottle xtmp2;
 	Value val;
-	//	string str=config.toString().c_str();
+
 	ACE_UINT16 loc_port, rem_port;
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
@@ -71,8 +73,9 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//
 	// Get EMS ip addresses and port from config file, in order to correctly configure the transceiver.
 	//
+
 	// extract eth group info
-	xtmp = Bottle(config.findGroup("ETH"));
+	Bottle xtmp = Bottle(config.findGroup("ETH"));
 
 	xtmp2 = xtmp.findGroup("IpAddress");
     if (xtmp2.isNull())
@@ -80,58 +83,57 @@ bool ethResources::open(yarp::os::Searchable &config)
         yError() << "EMS Ip Address not found\n";
         return false;
     }
-	strcpy(address, xtmp2.get(1).asString().c_str());
-	yDebug() << "Ems ip address " << address;
+    // identify ip address
+	strcpy(address_tmp_string, xtmp2.get(1).asString().c_str());
+	yDebug() << "Ems ip address " << address_tmp_string;
+	sscanf(address_tmp_string,"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
 
-	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
-	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-
-	// Get EMS CmdPort from config file
+	// identify port
 	xtmp2 = xtmp.findGroup("CmdPort");
 	rem_port = xtmp2.get(1).asInt();
-	// ACE format
+
+	// Build ip addess/port in ACE format
 	remote_dev.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
 
+	// identify EMS board number
 	int boardNum=255;
 	xtmp2 = xtmp.findGroup("Ems");
     if (xtmp2.isNull())
     {
-        yError() << "EMS Board number identifier not found\n";
-        return false;
+        yError() << "[ethResources] EMS Board number identifier not found\n";
+        //return false;
+        boardNum = 2;
     }
+    else
+    	boardNum = xtmp2.get(1).asInt();
 
-	boardNum = xtmp2.get(1).asInt();
-	printf("Ems %d\n", boardNum);
+    printf("Ems %d\n", boardNum);
+
 	//
-	// Fill 'info' and ID fields
+	// Fill 'info' field
 	//
 	memset(info, 0x00, SIZE_INFO);
 	sprintf(info, "ethResources - referred to EMS: %d.%d.%d.%d", rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-	id.ip1=rem_ip1;
-	id.ip2=rem_ip2;
-	id.ip3=rem_ip3;
-	id.ip4=rem_ip4;
-	strcpy(id.name, "Dunno");
-	printf("%s\n", info);
 
 	//
 	// Get PC104 ip address from config file
 	//
 	xtmp2 = config.findGroup("PC104IpAddress");
-	strcpy(address, xtmp2.get(1).asString().c_str());
+	strcpy(address_tmp_string, xtmp2.get(1).asString().c_str());
 
 	// ACE format
-	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
-	sprintf(tmp,"pc104.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), loc_ip1,loc_ip2,loc_ip3,loc_ip4);
-
-
+	sscanf(address_tmp_string,"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
 	ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
 
 	// Get the pointer to the actual Singleton ethManager, or create it if it's the first time.
 	theEthManager_h = TheEthManager::instance(loc_dev);
-	remote_dev.addr_to_string(address, 64);
-//	theEthManager_h->register_device(address, this);
-
+	if(theEthManager_h == NULL)
+	{
+		yError() << "\n----------------------------"  \
+				 << "\n while creating ETH MANAGER "  \
+				 << "\n----------------------------";
+		return false;
+	}
 
 	//
 	//	EMBOBJ INIT
@@ -142,12 +144,26 @@ bool ethResources::open(yarp::os::Searchable &config)
 		transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
 	}
 
+	how_many_features = 1;
 	yDebug() << "Transceiver succesfully initted.";
 
 	return true;
 }
 
-// Per inviare pacchetti in maniera asincrona rispetto al ciclo da 1 ms... anche robaccia che non sia eoStuff
+bool ethResources::registerFeature(yarp::os::Searchable &config)
+{
+	how_many_features++;
+	return true;
+}
+
+bool ethResources::mayclose()
+{
+	how_many_features--;
+	if(how_many_features <= 0)
+	return true;
+}
+
+// Per inviare pacchetti in maniera asincrona rispetto al ciclo da 1 ms... anche roba che non sia eoStuff
 // Eliminare ???
 int ethResources::send(void *data, size_t len)
 {
@@ -171,6 +187,10 @@ ACE_INET_Addr	ethResources::getRemoteAddress()
 	return	remote_dev;
 }
 
+
+
+
+
 // -------------------------------------------------------------------\\
 //            ethResCreator   Singleton
 // -------------------------------------------------------------------\\
@@ -182,74 +202,74 @@ ethResCreator::ethResCreator()
 
 ethResCreator::~ethResCreator()
 {
-	ethResIt iterator = this->begin();
-	while(iterator != this->end())
+	if(this->size() != 0)
 	{
-		delete (*iterator);
-		iterator++;
+		ethResIt iterator = this->begin();
+		while(iterator != this->end())
+		{
+			delete (*iterator);
+			iterator++;
+		}
 	}
 }
 
 ethResCreator *ethResCreator::instance()
 {
-	if (initted == false)
+	ethResCreator::_mutex.wait();
+	if ( !initted && keepGoingOn2)
 		handle = new ethResCreator();
 
 	initted = true;
+	ethResCreator::_mutex.post();
 	return handle;
+}
+
+void ethResCreator::close()
+{
+	ethResCreator::~ethResCreator();
 }
 
 ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 {
-	ACE_TCHAR tmp[126], address[64];
-	Bottle xtmp, xtmp2;
-	//	string str=config.toString().c_str();
-	ACE_UINT16 loc_port, rem_port;
-	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
-	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
+	ACE_TCHAR 	remote_address[64];
+	Bottle 		xtmp2;
 
-	// AC_YARP_INFO(Logger::get(), " ethResCreator::getResource", Logger::get().log_files.f3);
+	ACE_UINT16 	rem_port;
+	ACE_UINT32 	rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
 	//
 	// Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
 	//	a pointer to an already existing object
 	//
 
-	xtmp = Bottle(config.findGroup("ETH"));
+	Bottle xtmp = Bottle(config.findGroup("ETH"));
 	xtmp2 = xtmp.findGroup("IpAddress");
-	strcpy(address, xtmp2.get(1).asString().c_str());
-	sprintf(tmp,"EMS IpAddress %s", address);
-	// AC_YARP_INFO(Logger::get(), tmp, Logger::get().log_files.f3);
+	strcpy(remote_address, xtmp2.get(1).asString().c_str());
 
-	sscanf(xtmp2.get(1).asString().c_str(),"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
-	sprintf(tmp,"remote01.address: %s, %d:%d:%d:%d\n", xtmp2.get(1).asString().c_str(), rem_ip1,rem_ip2,rem_ip3,rem_ip4);
+
+	sscanf(remote_address,"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
+
 	// Get EMS CmdPort from config file
 	xtmp2 = xtmp.findGroup("CmdPort");
 	rem_port = xtmp2.get(1).asInt();
 
 	// ACE format
-	ACE_INET_Addr tmp_addr;
-	tmp_addr.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
-
-	EMS_ID id;
-	id.ip1=rem_ip1;
-	id.ip2=rem_ip2;
-	id.ip3=rem_ip3;
-	id.ip4=rem_ip4;
-
+	ACE_INET_Addr remote_addr_tmp;
+	remote_addr_tmp.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
 
 	ethResources *newRes = NULL;
 	ethResIt iterator = this->begin();
 
 	while(iterator!=this->end())
 	{
-		if(this->compareIds(id, (*iterator)->id))
-			//if(tmp_addr == (*iterator)->getRemoteAddress() )
+		if((*iterator)->getRemoteAddress() == remote_addr_tmp)
+//		if(strcmp((*iterator)->address, address) == 0)
+//		if(this->compareIds(id, (*iterator)->id))
 		{
 			// device already exist.
-			// AC_YARP_INFO(Logger::get(), String("device already exist\n") + address, Logger::get().log_files.f3);
-
+			yDebug() << "Returning a pointer to an alreasy existing device.";
 			newRes = (*iterator);
+			break;
 		}
 		iterator++;
 	}
@@ -257,13 +277,44 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	if ( NULL == newRes)
 	{
 		// device doesn't exist yet, create it
-		// AC_YARP_INFO(Logger::get(), String("device doesn't exist yet, create it\n") + address, Logger::get().log_files.f3);
+		yDebug() << "device doesn't exist yet, creating it.";
 		newRes = new ethResources;
-		newRes->open(config);
-		how_many_boards++;
-		this->push_back(newRes);
+		if(!newRes->open(config))
+		{
+			printf("Error opening new EMS!!");
+			if(NULL != newRes)
+				delete newRes;
+
+			newRes = NULL;
+		}
+		else
+		{
+			how_many_boards++;
+			this->push_back(newRes);
+		}
 	}
 	return newRes;
+}
+
+bool ethResCreator::removeResource(ethResources* to_be_removed)
+{
+	to_be_removed->close();
+	if(this->size() != 0)
+	{
+		ethResIt iterator = this->begin();
+		while(iterator != this->end())
+		{
+			if((*iterator)->getRemoteAddress() == to_be_removed->getRemoteAddress())
+			{
+				delete (*iterator);
+				return true;
+			}
+			iterator++;
+		}
+		yError() << "[ethResCreator] Asked to remove an entry but it wan not found!\n";
+	}
+	yError() << "[ethResCreator] Asked to remove an entry in an empty list!\n";
+	return false;
 }
 
 bool ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
@@ -274,26 +325,6 @@ bool ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
 		return false;
 }
 
-#warning " vecchia interfaccia, eliminare??"
-uint8_t* ethResCreator::find(EMS_ID &id)
-{
-	// AC_YARP_INFO(Logger::get(), " ethResCreator::find", Logger::get().log_files.f3);
-
-	ethResources *res = NULL;
-	ethResIt iterator = this->begin();
-
-	while(iterator!=this->end())
-	{
-		if(this->compareIds(id, (*iterator)->id))
-		{
-			// device found
-			res = (*iterator);
-			break;
-		}
-		iterator++;
-	}
-	//res->
-}
 
 void ethResCreator::addLUTelement(FEAT_ID id)
 {
@@ -332,16 +363,17 @@ void *recvThread(void * arg)
 		recv_size = pSocket->recv((void *) incoming_msg, n, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
-		printf("Received new packet from address %s, size = %d\n", address, recv_size);
+		//printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
-		if( recv_size > 0)
+		if( (recv_size > 0) && (keepGoingOn2) )
 		{
 			ethResIt iterator = ethResCreator::instance()->begin();
 			//check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
 
 			while(iterator!=ethResCreator::instance()->end())
 			{
-				if(strcmp((*iterator)->address, address) == 0)
+				if((*iterator)->getRemoteAddress() == sender_addr)
+//				if(strcmp((*iterator)->address, address) == 0)
 				{
 					// fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
 					ethRes = (*iterator);
@@ -356,6 +388,8 @@ void *recvThread(void * arg)
 		{
 			printf("Received weird msg of size %d\n", recv_size);
 		}
+
+
 		// old debug stuff
 		//	if(counter++ >= 10*1000)
 		//	{
@@ -371,69 +405,71 @@ void *recvThread(void * arg)
 // The one embedded here is the sending thread because it will use the ACE timing feature.
 TheEthManager::TheEthManager() : RateThread(1)
 {
-	char tmp[126];
-	sprintf(tmp, "Error!!! Called constructor of ethResources without parameters!!! BTW, how can this be possible ???");
-}
-
-TheEthManager::TheEthManager(ACE_INET_Addr local_addr) : RateThread(1)
-{
 	char tmp[SIZE_INFO];
 	memset(info, 0x00, SIZE_INFO);
 	sprintf(info, "TheEthManager");
+	ethResList = ethResCreator::instance();
+
+	p_to_data = NULL;
 
 	_socket_initted = false;
+	_socket = NULL;
+	id_recvThread = -1;
+}
 
-	local_addr.addr_to_string(tmp, 64);
-
-	//TheEthManager::createSocket(local_addr);
-
+bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
+{
 	_socket = new ACE_SOCK_Dgram();
+	yDebug() << "PC104 Address " << local_addr.get_host_addr();
 	if (-1 == _socket->open(local_addr) )
 	{
-		fprintf(stderr, "\n/---------------------------------------------------\\"
-						"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|"
-						"\n\\---------------------------------------------------/");
+		yError() <<  "\n/---------------------------------------------------\\" \
+				 <<		"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|" \
+				 <<		"\n\\---------------------------------------------------/";
 		delete _socket;
 		_socket = NULL;
 		_socket_initted = false;
 	}
 	else
+	{
 		_socket_initted = true;
 
-
-	// If something went wrong, clean everything
-	printf("\ninitted = %s\n", _socket_initted ? "true" : "false");
-	if(!_socket_initted)
-	{
-		if(NULL !=handle)
-			delete handle;
-		handle = NULL;
-
-		if(NULL != _socket)
-			delete _socket;
-		_socket = NULL;
-	}
-	else
-	{
 		ACE_thread_t id_recvThread;
 		if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
 			printf(("Error in spawning recvThread\n"));
+
+		// Start sending thread
+		handle->start();
 	}
+	return _socket_initted;
+}
+
+bool TheEthManager::isInitted(void)
+{
+	return _socket_initted;
 }
 
 TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
 {
 	TheEthManager::_mutex.wait();
+	bool ret = false;
 	if (_deviceNum == 0)
 	{
-		handle = new TheEthManager(local_addr);
-		printf(" \n\nCalling EthManager Constructor\n\n");
-		// Start sending thread
-		handle->start();
-	}
-	_deviceNum++;
+		printf("\n\nCalling EthManager Constructor\n\n");
 
-	_mutex.post();
+		handle = new TheEthManager();
+		ret = handle->createSocket(local_addr);
+		if(!ret )
+		{
+			delete handle;
+			handle = NULL;
+		}
+	}
+
+	if(handle)
+		_deviceNum++;
+
+	TheEthManager::_mutex.post();
 	return handle;
 }
 
@@ -446,15 +482,25 @@ TheEthManager::~TheEthManager()
 {
 	keepGoingOn2 = false;
 	Time::delay(1);
-	ACE_Thread::cancel(id_recvThread);
-	_socket->close();
-	delete _socket;
+	if(id_recvThread != -1)
+		ACE_Thread::cancel(id_recvThread);
+
+	if(isInitted())
+	{
+		_socket->close();
+		delete _socket;
+	}
 }
 
 
 int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
 {
-	return _socket->send(data,len,remote_addr);
+	if(_socket_initted)
+		return _socket->send(data,len,remote_addr);
+	else
+		yError() << "Local ETH Socket NOT correctly initted!";
+
+	return -1;
 }
 
 bool TheEthManager::threadInit()
@@ -467,8 +513,11 @@ bool TheEthManager::threadInit()
 void TheEthManager::run()
 {
 	// send
-	ethResIt iterator = ethResList->begin();
-	ethResources *ethRes;
+	ACE_TCHAR		address_tmp[64];
+	ethResIt 		iterator = ethResList->begin();
+	ethResources 	*ethRes;
+	uint16_t 		bytes_to_send = 0;
+
 	while(iterator!=ethResList->end())
 	{
 		p_to_data = 0;
@@ -479,7 +528,8 @@ void TheEthManager::run()
 		{
 			ACE_INET_Addr addr = ethRes->getRemoteAddress();
 			int ret = TheEthManager::instance()->send(p_to_data, (size_t)bytes_to_send, addr);
-			//printf("sent package of byte %d to %s\n", ret, (*iterator)->address);
+//			(*iterator)->getRemoteAddress().addr_to_string(address_tmp, 64);
+//			printf("sent package of byte %d to %s\n", ret, address_tmp);
 		}
 		iterator++;
 	}

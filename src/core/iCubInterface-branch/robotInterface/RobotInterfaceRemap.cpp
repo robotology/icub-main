@@ -1110,14 +1110,14 @@ bool RobotInterfaceRemap::closeNetworks()
     RobotNetworkEntry *tmpNet;
     int n=networks.size();
 
-    while(n--)
-    {
-        tmpNet=networks.back();
-        tmpNet->close();
-        std::cout<<"Closed network: " << tmpNet->id << endl;
-        delete tmpNet;
-        networks.pop_back();
-    }
+//    while(n--)
+//    {
+//        tmpNet=networks.back();
+//        tmpNet->close();
+//        std::cout<<"Closed network: " << tmpNet->id << endl;
+//        delete tmpNet;
+//        networks.pop_back();
+//    }
 
     #ifdef _USE_INTERFACEGUI
     if (mServerLogger)
@@ -1130,7 +1130,7 @@ bool RobotInterfaceRemap::closeNetworks()
     }
     #endif
 
-    skinparts.close();
+//    skinparts.close();
 
     if (!gyro.isValid())
         gyro.close();

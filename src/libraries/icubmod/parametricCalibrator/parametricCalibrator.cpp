@@ -18,10 +18,10 @@ using namespace yarp::dev;
 
 // calibrator for the arm of the Arm iCub
 
-const int PARK_TIMEOUT=30;
-const double GO_TO_ZERO_TIMEOUT=10; //seconds
-const int CALIBRATE_JOINT_TIMEOUT=2;  // era 25
-const double POSITION_THRESHOLD=2.0;
+const int 		PARK_TIMEOUT=30;
+const double 	GO_TO_ZERO_TIMEOUT		= 1; //seconds how many? // was 10
+const int 		CALIBRATE_JOINT_TIMEOUT	= 1;  // era 25
+const double 	POSITION_THRESHOLD		= 2.0;
 
 int numberOfJoints =0;
 
@@ -274,7 +274,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 	limited_pid =new Pid[nj];
 
 	Bit=joints.begin();
-	while(Bit != Bend)			// per ogni set di giunti
+	while( (Bit != Bend) && (!abortCalib) )			// per ogni set di giunti
 	{
 		setOfJoint_idx++;
 		tmp.clear();
@@ -282,17 +282,17 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
 		lit  = tmp.begin();
 		lend = tmp.end();
-		while(lit != lend)		// per ogni giunto del set
+		while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
 		{
 			if ((*lit) > totJointsToCalibrate)		// check the axes actually exists
 			{
-				yError() << "Asked ti calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< totJointsToCalibrate << ")";
-//				return false;
+				yError() << "Asked to calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< totJointsToCalibrate << ")";
+				return false;
 			}
 			if(!iPids->getPid((*lit),&original_pid[(*lit)]) )
 			{
 				yError() << "getPid joint " << (*lit) << "failed... aborting calibration";
-//				return false;
+				return false;
 			}
 			limited_pid[(*lit)]=original_pid[(*lit)];
 			limited_pid[(*lit)].max_int=maxPWM[(*lit)];
@@ -319,8 +319,27 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 		Time::delay(1.0);	// needed?
 
 
-		if(!checkCalibrateJointEnded((*Bit)) )
-//			return false;
+		if(checkCalibrateJointEnded((*Bit)) )
+		{
+			yDebug() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibration done!\n";
+			lit  = tmp.begin();
+			lend = tmp.end();
+			while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+			{
+				iPids->setPid((*lit),original_pid[(*lit)]);
+				lit++;
+			}
+		}
+	    else			// keep pid safe  and go on
+	    {
+			yError() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibration went wrong! Disabling axes and keeping safe pid limit\n";
+			while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+			{
+	            iAmps->disableAmp((*lit));
+				lit++;
+			}
+	    }
+
 
 		lit  = tmp.begin();
 		while(lit != lend)		// per ogni giunto del set
@@ -331,17 +350,32 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 		}
 		Time::delay(1.0);	// needed?
 
+		bool goneToZero = true;
 		lit  = tmp.begin();
 		while(lit != lend)		// per ogni giunto del set
 		{
 			// abs sensors is BLL style
-			checkGoneToZero(*lit);
+			goneToZero &= checkGoneToZero(*lit);
 			lit++;
 		}
+
+		if(goneToZero)
+		{
+			yDebug() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Reached zero position!\n";
+	    }
+	    else			// keep pid safe and go on
+	    {
+			yError() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: some axis got timeout while reaching zero position... disabling this set of axes\n";
+			while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+			{
+	            iAmps->disableAmp((*lit));
+				lit++;
+			}
+	    }
+
 		// Go to the next set of joints to calibrate... if any
 		Bit++;
 	}
-
 	return calibration_ok;
 }
 

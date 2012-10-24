@@ -49,7 +49,7 @@ class eoThreadArray;
 class eoThreadEntry;
 class eoRequestsQueue;
 
-// A structure to hold a request (joint (not so useful), nvid and waiting thread)
+// A structure to hold a request :joint (not so useful), nvid and waiting thread
 typedef struct
 {
     int joint;
@@ -69,7 +69,6 @@ private:
 	// Semaphore where the thread will sleep onto -> it supports timeout
 	ACE_thread_t _handle;
 	yarp::os::Semaphore _synch;
-	//ACE_Semaphore _synch;
 	int _pending;
 	int _timedOut;
     int _replied;   // needed?

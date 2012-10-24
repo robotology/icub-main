@@ -14,6 +14,7 @@
 eoThreadArray::eoThreadArray()
 {
 	index=0;
+	//pool=new eoThreadEntry;
 	pool=new eoThreadEntry[EO_THREADARRAY_MAX_THREADS];
 	//    for(int k=0;k<EO_THREADLIST_MAX_THREADS;k++)
 	//        pool[k].init(ic);
@@ -35,6 +36,7 @@ bool eoThreadArray::getId(int *i)
         {
             ret=getNew(self,id);
         }
+    printf("Thread id = %d", id);
     *i=id;
     return ret;
 }
@@ -137,10 +139,9 @@ bool eoThreadFifo::push(eoThreadId id)
 
 eoRequestsQueue::eoRequestsQueue(int num_msgs)
 {
-	// print_debug(AC_debug_file, "Allocating %d\n", num_msgs);
 //	elements = num_msgs;
 //	njoints  = joints;
-	threadPool = new eoThreadArray[EO_THREADARRAY_MAX_THREADS];
+	threadPool = new eoThreadArray;//[EO_THREADARRAY_MAX_THREADS];
 	num_of_messages = num_msgs;
 	requests   = new eoThreadFifo[num_of_messages];
 	whole_pendings = 0;

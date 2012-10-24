@@ -171,7 +171,7 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 {
 private:
     int 					tot_packet_recv, errors;
-    tm						*hr_time1, *hr_time2;
+//    tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
     char 					recv_time_string[40];
     timeval					th_time;
@@ -230,6 +230,8 @@ private:
 
 
 	uint16_t 		NVnumber;		// keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+private:
+	bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
 
 public:
     embObjMotionControl();
@@ -253,7 +255,7 @@ public:
     void getMotorController(DeviceDriver *iMC);
 //    void waitSem();
 //    void postSem();
-    bool alloc(int nj);
+    bool alloc(int njoints);
     bool init(void);
 
     ///////// 	PID INTERFACE		/////////
