@@ -25,7 +25,7 @@ message(STATUS "YARP is version: ${YARP_VERSION} tweak number ${YARP_VERSION_TWE
 
 set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
 
-set(YARP_VERSION ${YARP_VERSION}.${ICUB_REQYARP_VERSION_TWEAK})
+set(YARP_VERSION ${YARP_VERSION}.${YARP_VERSION_TWEAK})
 
 # unfortunately VERSION_LESS is unavailable with cmake 2.6.?
 if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_VERSION LESS 4)
@@ -37,7 +37,11 @@ if (CMAKE_MAJOR_VERSION EQUAL 2 AND CMAKE_MINOR_VERSION EQUAL 6 AND CMAKE_PATCH_
             if(YARP_VERSION_PATCH LESS ICUB_REQYARP_VERSION_PATCH)
                message(FATAL_ERROR "YARP version is not compatible, please update YARP")
             else()
-               message(STATUS "found compatible YARP version")
+                if(YARP_VERSION_TWEAK LESS ICUB_REQYARP_VERSION_TWEAK)
+                    message(FATAL_ERROR "YARP version is not compatible, please update YARP")
+                else()
+                    message(STATUS "found compatible YARP version")
+                endif()
             endif()
         endif()
 else()
