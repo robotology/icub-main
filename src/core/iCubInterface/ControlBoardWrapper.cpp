@@ -49,117 +49,117 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
             {
                 //possible contro modes are: VOCAB_CM_TORQUE, VOCAB_CM_POSITION, VOCAB_CM_VELOCITY
                 // iControlMode->...
-				int p=-1;
-				int axis = cmd.get(3).asInt();
-				switch (cmd.get(2).asInt())
-					{
-						case VOCAB_CM_POSITION:
-							p=1;
-							*ok = iControlMode->setPositionMode(axis);
-						break;
-						case VOCAB_CM_VELOCITY:
-							p=2;
-							//*ok = iControlMode->setVelocityMode(axis);
-						break;
-						case VOCAB_CM_TORQUE:
-							p=3;
-							*ok = iControlMode->setTorqueMode(axis);
-						break;
-						case VOCAB_CM_IMPEDANCE_POS:
-							p=4;
-							*ok = iControlMode->setImpedancePositionMode(axis);
-						break;
-						case VOCAB_CM_IMPEDANCE_VEL:
-							p=5;
-							*ok = iControlMode->setImpedanceVelocityMode(axis);
-						break;
-						case VOCAB_CM_OPENLOOP:
-							p=50;
-							*ok = iControlMode->setOpenLoopMode(axis);
-						break;
-						default:
-							p=-1;
-							*ok = false;
-						break;
-					}
+                int p=-1;
+                int axis = cmd.get(3).asInt();
+                switch (cmd.get(2).asInt())
+                    {
+                        case VOCAB_CM_POSITION:
+                            p=1;
+                            *ok = iControlMode->setPositionMode(axis);
+                        break;
+                        case VOCAB_CM_VELOCITY:
+                            p=2;
+                            //*ok = iControlMode->setVelocityMode(axis);
+                        break;
+                        case VOCAB_CM_TORQUE:
+                            p=3;
+                            *ok = iControlMode->setTorqueMode(axis);
+                        break;
+                        case VOCAB_CM_IMPEDANCE_POS:
+                            p=4;
+                            *ok = iControlMode->setImpedancePositionMode(axis);
+                        break;
+                        case VOCAB_CM_IMPEDANCE_VEL:
+                            p=5;
+                            *ok = iControlMode->setImpedanceVelocityMode(axis);
+                        break;
+                        case VOCAB_CM_OPENLOOP:
+                            p=50;
+                            *ok = iControlMode->setOpenLoopMode(axis);
+                        break;
+                        default:
+                            p=-1;
+                            *ok = false;
+                        break;
+                    }
                 *rec=true; //or false
             }
             break;
         case VOCAB_GET:
             {
-				if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODES)
-				{
-					int *p = new int[controlledJoints];
-					*ok = iControlMode->getControlModes(p);
-					response.addVocab(VOCAB_IS);
-					response.addVocab(VOCAB_CM_CONTROL_MODES);   
-					Bottle& b = response.addList();
-					int i;
-					for (i = 0; i < controlledJoints; i++)
-					{
-						switch (p[i])
-						{
-							case 0: //IDLE
-								b.addVocab(VOCAB_CM_UNKNOWN);
-							break;
-							case 1:
-								b.addVocab(VOCAB_CM_POSITION);
-							break;				
-							case 2:
-								b.addVocab(VOCAB_CM_VELOCITY);
-							break;
-							case 3:
-								b.addVocab(VOCAB_CM_TORQUE);
-							break;
-							case 4: 
-								b.addVocab(VOCAB_CM_IMPEDANCE_POS);
-							break;
-							case 5: 
-								b.addVocab(VOCAB_CM_IMPEDANCE_VEL);
-							break;
-							default:
-								b.addVocab(VOCAB_CM_UNKNOWN);
-							break;
-						}
-					}
-					delete[] p;
-					*rec=true;
-				}
+                if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODES)
+                {
+                    int *p = new int[controlledJoints];
+                    *ok = iControlMode->getControlModes(p);
+                    response.addVocab(VOCAB_IS);
+                    response.addVocab(VOCAB_CM_CONTROL_MODES);   
+                    Bottle& b = response.addList();
+                    int i;
+                    for (i = 0; i < controlledJoints; i++)
+                    {
+                        switch (p[i])
+                        {
+                            case 0: //IDLE
+                                b.addVocab(VOCAB_CM_UNKNOWN);
+                            break;
+                            case 1:
+                                b.addVocab(VOCAB_CM_POSITION);
+                            break;                
+                            case 2:
+                                b.addVocab(VOCAB_CM_VELOCITY);
+                            break;
+                            case 3:
+                                b.addVocab(VOCAB_CM_TORQUE);
+                            break;
+                            case 4: 
+                                b.addVocab(VOCAB_CM_IMPEDANCE_POS);
+                            break;
+                            case 5: 
+                                b.addVocab(VOCAB_CM_IMPEDANCE_VEL);
+                            break;
+                            default:
+                                b.addVocab(VOCAB_CM_UNKNOWN);
+                            break;
+                        }
+                    }
+                    delete[] p;
+                    *rec=true;
+                }
 
                 else if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
                 {
-					int p=-1;
-					int axis = cmd.get(3).asInt();
-					*ok = iControlMode->getControlMode(axis, &p);
+                    int p=-1;
+                    int axis = cmd.get(3).asInt();
+                    *ok = iControlMode->getControlMode(axis, &p);
 
                     response.addVocab(VOCAB_IS);
-					response.addInt(axis);
+                    response.addInt(axis);
                     response.addVocab(VOCAB_CM_CONTROL_MODE);
 
-					switch (p)
-					{
-						case 0: //IDLE
-							response.addVocab(VOCAB_CM_UNKNOWN);
-						break;
-						case 1:
-							response.addVocab(VOCAB_CM_POSITION);
-						break;				
-						case 2:
-							response.addVocab(VOCAB_CM_VELOCITY);
-						break;
-						case 3:
-							response.addVocab(VOCAB_CM_TORQUE);
-						break;
-						case 4: 
-							response.addVocab(VOCAB_CM_IMPEDANCE_POS);
-						break;
-						case 5: 
-							response.addVocab(VOCAB_CM_IMPEDANCE_VEL);
-						break;
-						default:
-							response.addVocab(VOCAB_CM_UNKNOWN);
-						break;
-					}
+                    switch (p)
+                    {
+                        case 0: //IDLE
+                            response.addVocab(VOCAB_CM_UNKNOWN);
+                        break;
+                        case 1:
+                            response.addVocab(VOCAB_CM_POSITION);
+                        break;                
+                        case 2:
+                            response.addVocab(VOCAB_CM_VELOCITY);
+                        break;
+                        case 3:
+                            response.addVocab(VOCAB_CM_TORQUE);
+                        break;
+                        case 4: 
+                            response.addVocab(VOCAB_CM_IMPEDANCE_POS);
+                        break;
+                        case 5: 
+                            response.addVocab(VOCAB_CM_IMPEDANCE_VEL);
+                        break;
+                        default:
+                            response.addVocab(VOCAB_CM_UNKNOWN);
+                        break;
+                    }
                     *rec=true;
                  }
             }
@@ -175,307 +175,307 @@ void CommandsHelper::handleControlModeMsg(const yarp::os::Bottle& cmd,
 void CommandsHelper::handleTorqueMsg(const yarp::os::Bottle& cmd, 
         yarp::os::Bottle& response, bool *rec, bool *ok) 
 {
-	if (!torque)
-	{
-		*ok=false;
-		return;
-	}
+    if (!torque)
+    {
+        *ok=false;
+        return;
+    }
 
-	int code = cmd.get(0).asVocab();
+    int code = cmd.get(0).asVocab();
     switch (code)
     {
-		case VOCAB_SET:
-			{
-				*rec = true;
-				if (caller->verbose())
-					printf("set command received\n");
-	            
-				switch(cmd.get(2).asVocab())
-				{
-					case VOCAB_REF: 
-					{
-						*ok = torque->setRefTorque(cmd.get(3).asInt(), cmd.get(4).asDouble());
-					}
-					break;
+        case VOCAB_SET:
+            {
+                *rec = true;
+                if (caller->verbose())
+                    printf("set command received\n");
+                
+                switch(cmd.get(2).asVocab())
+                {
+                    case VOCAB_REF: 
+                    {
+                        *ok = torque->setRefTorque(cmd.get(3).asInt(), cmd.get(4).asDouble());
+                    }
+                    break;
 
-					case VOCAB_REFS: 
-					{
-						Bottle& b = *(cmd.get(3).asList());
-						int i;
-						const int njs = b.size();
-						if (njs==controlledJoints)
-						{
-							double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-							for (i = 0; i < njs; i++)
-								p[i] = b.get(i).asDouble();
-							*ok = torque->setRefTorques (p);
-							delete[] p;
-						}
-					}
-					break;
+                    case VOCAB_REFS: 
+                    {
+                        Bottle& b = *(cmd.get(3).asList());
+                        int i;
+                        const int njs = b.size();
+                        if (njs==controlledJoints)
+                        {
+                            double *p = new double[njs];    // LATER: optimize to avoid allocation. 
+                            for (i = 0; i < njs; i++)
+                                p[i] = b.get(i).asDouble();
+                            *ok = torque->setRefTorques (p);
+                            delete[] p;
+                        }
+                    }
+                    break;
 
-					case VOCAB_LIM: 
-					{
-						*ok = torque->setTorqueErrorLimit (cmd.get(3).asInt(), cmd.get(4).asDouble());
-					}
-					break;
+                    case VOCAB_LIM: 
+                    {
+                        *ok = torque->setTorqueErrorLimit (cmd.get(3).asInt(), cmd.get(4).asDouble());
+                    }
+                    break;
 
-					case VOCAB_LIMS: 
-					{
-						Bottle& b = *(cmd.get(3).asList());
-						int i;
-						const int njs = b.size();
-						if (njs==controlledJoints)
-						{
-							double *p = new double[njs];    // LATER: optimize to avoid allocation. 
-							for (i = 0; i < njs; i++)
-								p[i] = b.get(i).asDouble();
-							*ok = torque->setTorqueErrorLimits (p);
-							delete[] p;                
-						}        
-					}
-					break;
+                    case VOCAB_LIMS: 
+                    {
+                        Bottle& b = *(cmd.get(3).asList());
+                        int i;
+                        const int njs = b.size();
+                        if (njs==controlledJoints)
+                        {
+                            double *p = new double[njs];    // LATER: optimize to avoid allocation. 
+                            for (i = 0; i < njs; i++)
+                                p[i] = b.get(i).asDouble();
+                            *ok = torque->setTorqueErrorLimits (p);
+                            delete[] p;                
+                        }        
+                    }
+                    break;
 
-					case VOCAB_PID: 
-					{
-						Pid p;
-						int j = cmd.get(3).asInt();
-						Bottle& b = *(cmd.get(4).asList());
-						p.kp = b.get(0).asDouble();
-						p.kd = b.get(1).asDouble();
-						p.ki = b.get(2).asDouble();
-						p.max_int = b.get(3).asDouble();
-						p.max_output = b.get(4).asDouble();
-						p.offset = b.get(5).asDouble();
-						p.scale = b.get(6).asDouble();
-						p.stiction_pos_val = b.get(7).asDouble();
-						p.stiction_neg_val = b.get(8).asDouble();
-						*ok = torque->setTorquePid(j, p);
-					}
-					break;
+                    case VOCAB_PID: 
+                    {
+                        Pid p;
+                        int j = cmd.get(3).asInt();
+                        Bottle& b = *(cmd.get(4).asList());
+                        p.kp = b.get(0).asDouble();
+                        p.kd = b.get(1).asDouble();
+                        p.ki = b.get(2).asDouble();
+                        p.max_int = b.get(3).asDouble();
+                        p.max_output = b.get(4).asDouble();
+                        p.offset = b.get(5).asDouble();
+                        p.scale = b.get(6).asDouble();
+                        p.stiction_pos_val = b.get(7).asDouble();
+                        p.stiction_neg_val = b.get(8).asDouble();
+                        *ok = torque->setTorquePid(j, p);
+                    }
+                    break;
 
-					case VOCAB_PIDS: 
-					{
-						Bottle& b = *(cmd.get(3).asList());
-						int i;
-						const int njs = b.size();
-						if (njs==controlledJoints)
-						{
-							Pid *p = new Pid[njs];
-							for (i = 0; i < njs; i++)
-							{
-								Bottle& c = *(b.get(i).asList());
-								p[i].kp = c.get(0).asDouble();
-								p[i].kd = c.get(1).asDouble();
-								p[i].ki = c.get(2).asDouble();
-								p[i].max_int = c.get(3).asDouble();
-								p[i].max_output = c.get(4).asDouble();
-								p[i].offset = c.get(5).asDouble();
-								p[i].scale = c.get(6).asDouble();
-								p[i].stiction_pos_val = c.get(7).asDouble();
-								p[i].stiction_neg_val = c.get(8).asDouble();
-							}
-							*ok = torque->setTorquePids(p);
-							delete[] p;
-						}
-					}
-					break;
+                    case VOCAB_PIDS: 
+                    {
+                        Bottle& b = *(cmd.get(3).asList());
+                        int i;
+                        const int njs = b.size();
+                        if (njs==controlledJoints)
+                        {
+                            Pid *p = new Pid[njs];
+                            for (i = 0; i < njs; i++)
+                            {
+                                Bottle& c = *(b.get(i).asList());
+                                p[i].kp = c.get(0).asDouble();
+                                p[i].kd = c.get(1).asDouble();
+                                p[i].ki = c.get(2).asDouble();
+                                p[i].max_int = c.get(3).asDouble();
+                                p[i].max_output = c.get(4).asDouble();
+                                p[i].offset = c.get(5).asDouble();
+                                p[i].scale = c.get(6).asDouble();
+                                p[i].stiction_pos_val = c.get(7).asDouble();
+                                p[i].stiction_neg_val = c.get(8).asDouble();
+                            }
+                            *ok = torque->setTorquePids(p);
+                            delete[] p;
+                        }
+                    }
+                    break;
 
-					case VOCAB_RESET: 
-						{
-							*ok = torque->resetTorquePid (cmd.get(3).asInt());
-						}
-					break;
+                    case VOCAB_RESET: 
+                        {
+                            *ok = torque->resetTorquePid (cmd.get(3).asInt());
+                        }
+                    break;
 
-					case VOCAB_DISABLE:
-						{
-							*ok = torque->disableTorquePid (cmd.get(3).asInt());              
-						}
-					break;
+                    case VOCAB_DISABLE:
+                        {
+                            *ok = torque->disableTorquePid (cmd.get(3).asInt());              
+                        }
+                    break;
 
-					case VOCAB_ENABLE: 
-						{
-							*ok = torque->enableTorquePid (cmd.get(3).asInt());                   
-						}
-					break;
+                    case VOCAB_ENABLE: 
+                        {
+                            *ok = torque->enableTorquePid (cmd.get(3).asInt());                   
+                        }
+                    break;
 
-					case VOCAB_TORQUE_MODE: 
+                    case VOCAB_TORQUE_MODE: 
                         {
                             *ok = torque->setTorqueMode();
-						}
-					break;
+                        }
+                    break;
 
-				}
-			}
-		break;
+                }
+            }
+        break;
 
-		case VOCAB_GET:
-			{
-				*rec = true;
-				if (caller->verbose())
-					printf("get command received\n");
-				int tmp = 0;
-				double dtmp = 0.0;
-				response.addVocab(VOCAB_IS);
-				response.add(cmd.get(1));
+        case VOCAB_GET:
+            {
+                *rec = true;
+                if (caller->verbose())
+                    printf("get command received\n");
+                int tmp = 0;
+                double dtmp = 0.0;
+                response.addVocab(VOCAB_IS);
+                response.add(cmd.get(1));
 
-				switch(cmd.get(2).asVocab()) 
-				{
-					case VOCAB_AXES:
-						{
-							int tmp;
-							*ok = torque->getAxes(&tmp);
-							response.addInt(tmp);
-						}
-					break;
+                switch(cmd.get(2).asVocab()) 
+                {
+                    case VOCAB_AXES:
+                        {
+                            int tmp;
+                            *ok = torque->getAxes(&tmp);
+                            response.addInt(tmp);
+                        }
+                    break;
 
-					case VOCAB_TRQ:
-						{
-							*ok = torque->getTorque(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
+                    case VOCAB_TRQ:
+                        {
+                            *ok = torque->getTorque(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
 
-					case VOCAB_TRQS:
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorques(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
+                    case VOCAB_TRQS:
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorques(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
 
-				    case VOCAB_ERR: 
-						{
-							*ok = torque->getTorqueError(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_ERR: 
+                        {
+                            *ok = torque->getTorqueError(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_ERRS: 
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorqueErrors(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_ERRS: 
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorqueErrors(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_OUTPUT: 
-						{
-							*ok = torque->getTorquePidOutput(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_OUTPUT: 
+                        {
+                            *ok = torque->getTorquePidOutput(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_OUTPUTS: 
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorquePidOutputs(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_OUTPUTS: 
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorquePidOutputs(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_PID: 
-						{
-							Pid p;
-							*ok = torque->getTorquePid(cmd.get(3).asInt(), &p);
-							Bottle& b = response.addList();
-							b.addDouble(p.kp);
-							b.addDouble(p.kd);
-							b.addDouble(p.ki);
-							b.addDouble(p.max_int);
-							b.addDouble(p.max_output);
-							b.addDouble(p.offset);
-							b.addDouble(p.scale);
-							b.addDouble(p.stiction_pos_val);
-							b.addDouble(p.stiction_neg_val);
-						}
-						break;
+                    case VOCAB_PID: 
+                        {
+                            Pid p;
+                            *ok = torque->getTorquePid(cmd.get(3).asInt(), &p);
+                            Bottle& b = response.addList();
+                            b.addDouble(p.kp);
+                            b.addDouble(p.kd);
+                            b.addDouble(p.ki);
+                            b.addDouble(p.max_int);
+                            b.addDouble(p.max_output);
+                            b.addDouble(p.offset);
+                            b.addDouble(p.scale);
+                            b.addDouble(p.stiction_pos_val);
+                            b.addDouble(p.stiction_neg_val);
+                        }
+                        break;
 
-					case VOCAB_PIDS: 
-						{
-							Pid *p = new Pid[controlledJoints];
-							*ok = torque->getTorquePids(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-							{
-								Bottle& c = b.addList();
-								c.addDouble(p[i].kp);
-								c.addDouble(p[i].kd);
-								c.addDouble(p[i].ki);
-								c.addDouble(p[i].max_int);
-								c.addDouble(p[i].max_output);
-								c.addDouble(p[i].offset);
-								c.addDouble(p[i].scale);
-								c.addDouble(p[i].stiction_pos_val);
-								c.addDouble(p[i].stiction_neg_val);
-							}
-							delete[] p;
-						}
-						break;
+                    case VOCAB_PIDS: 
+                        {
+                            Pid *p = new Pid[controlledJoints];
+                            *ok = torque->getTorquePids(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                            {
+                                Bottle& c = b.addList();
+                                c.addDouble(p[i].kp);
+                                c.addDouble(p[i].kd);
+                                c.addDouble(p[i].ki);
+                                c.addDouble(p[i].max_int);
+                                c.addDouble(p[i].max_output);
+                                c.addDouble(p[i].offset);
+                                c.addDouble(p[i].scale);
+                                c.addDouble(p[i].stiction_pos_val);
+                                c.addDouble(p[i].stiction_neg_val);
+                            }
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_REFERENCE: 
-						{
-							*ok = torque->getRefTorque(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_REFERENCE: 
+                        {
+                            *ok = torque->getRefTorque(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_REFERENCES:
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getRefTorques(p);
-								Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_REFERENCES:
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getRefTorques(p);
+                                Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_LIM:
-						{
-							*ok = torque->getTorqueErrorLimit(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_LIM:
+                        {
+                            *ok = torque->getTorqueErrorLimit(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_LIMS: 
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorqueErrorLimits(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_LIMS: 
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorqueErrorLimits(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-				}
-			}
-		break;
-	}
+                }
+            }
+        break;
+    }
     //rec --> true se il comando e' riconosciuto
     //ok --> contiene il return value della chiamata all'interfaccia
     // ...*ok=torque->setPid();
-	//torque->
+    //torque->
 }
 
 void ImplementCallbackHelper::onRead(CommandMessage& v) 
 {
     //printf("Data received on the control channel of size: %d\n", v.body.size());
-    //	int i;
+    //    int i;
 
     Bottle& b = v.head;
     //    printf("bottle: %s\n", b.toString().c_str());
@@ -504,9 +504,9 @@ void ImplementCallbackHelper::onRead(CommandMessage& v)
     case VOCAB_VELOCITY_MOVES:
         {
             //          printf("Received a velocity command\n");
-            //			for (i = 0; i < v.body.size(); i++)
-            //				printf("%.2f ", v.body[i]);
-            //			printf("\n");
+            //            for (i = 0; i < v.body.size(); i++)
+            //                printf("%.2f ", v.body[i]);
+            //            printf("\n");
             if (vel) 
             {
                 bool ok = vel->velocityMove(&(v.body[0]));
@@ -541,14 +541,14 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
         printf("command received: %s\n", cmd.toString().c_str());
     int code = cmd.get(0).asVocab();
 
-	if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_TORQUE))
-			{
-                //		handleTorqueMsg(cmd, response, &rec, &ok);
-			}
+    if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_TORQUE))
+            {
+                //        handleTorqueMsg(cmd, response, &rec, &ok);
+            }
     else if ((cmd.size()>1) && (cmd.get(1).asVocab()==VOCAB_ICONTROLMODE))
-		    {
+            {
                 //      handleControlModeMsg(cmd, response, &rec, &ok);
-			}
+            }
     else
     {
     switch (code)
@@ -629,8 +629,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                     p.max_output = b.get(4).asDouble();
                     p.offset = b.get(5).asDouble();
                     p.scale = b.get(6).asDouble();
-					p.stiction_pos_val = b.get(7).asDouble();
-					p.stiction_neg_val = b.get(8).asDouble();
+                    p.stiction_pos_val = b.get(7).asDouble();
+                    p.stiction_neg_val = b.get(8).asDouble();
                     ok = pid->setPid(j, p);
                 }
                 break;
@@ -653,8 +653,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                             p[i].max_output = c.get(4).asDouble();
                             p[i].offset = c.get(5).asDouble();
                             p[i].scale = c.get(6).asDouble();
-							p[i].stiction_pos_val = c.get(7).asDouble();
-							p[i].stiction_neg_val = c.get(8).asDouble();
+                            p[i].stiction_pos_val = c.get(7).asDouble();
+                            p[i].stiction_neg_val = c.get(8).asDouble();
                         }
                         ok = pid->setPids(p);
                         delete[] p;
@@ -989,8 +989,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                     b.addDouble(p.max_output);
                     b.addDouble(p.offset);
                     b.addDouble(p.scale);
-					b.addDouble(p.stiction_pos_val);
-					b.addDouble(p.stiction_neg_val);
+                    b.addDouble(p.stiction_pos_val);
+                    b.addDouble(p.stiction_neg_val);
                 }
                 break;
 
@@ -1010,8 +1010,8 @@ bool CommandsHelper::respond(const yarp::os::Bottle& cmd,
                         c.addDouble(p[i].max_output);
                         c.addDouble(p[i].offset);
                         c.addDouble(p[i].scale);
-						c.addDouble(p[i].stiction_pos_val);
-						c.addDouble(p[i].stiction_neg_val);
+                        c.addDouble(p[i].stiction_pos_val);
+                        c.addDouble(p[i].stiction_neg_val);
                     }
                     delete[] p;
                 }
@@ -1273,15 +1273,15 @@ bool CommandsHelper::initialize() {
     addUsage("[set] [vmo] $iAxisNumber $fVelocity", "command the velocity of an axis");
     addUsage("[get] [enc] $iAxisNumber", "get the encoder value for an axis");
 
-	std::string args;
+    std::string args;
     for (int i=0; i<controlledJoints; i++) {
         if (i>0) {
             args += " ";
         }
-		//Removed to clean dependencies with yarp internal classes, Lorenzo.
+        //Removed to clean dependencies with yarp internal classes, Lorenzo.
         //args = args + "$f" + yarp::NetType::toString(i);
     }
-	addUsage((std::string("[set] [poss] (")+args+")").c_str(), 
+    addUsage((std::string("[set] [poss] (")+args+")").c_str(), 
         "command the position of all axes");
     addUsage((std::string("[set] [rels] (")+args+")").c_str(), 
         "command the relative position of all axes");
@@ -1333,8 +1333,8 @@ bool ControlBoardWrapper::attachAll(const PolyDriverList &sub)
         subdevice->view(calib2);
         subdevice->view(info);
         subdevice->view(iTimed);
-		subdevice->view(torque);
-		subdevice->view(iControlMode);
+        subdevice->view(torque);
+        subdevice->view(iControlMode);
     }
     else
         return false;
