@@ -134,15 +134,15 @@ public:
     uint8_t 					recv_msg[512];
 	ACE_UINT16 					recv_size;
 
-	ethResources* already_exists(yarp::os::Searchable &config);
-    bool open(yarp::os::Searchable &par);
-    bool ethResources::registerFeature(yarp::os::Searchable &config);
+	ethResources* 	already_exists(yarp::os::Searchable &config);
+    bool 			open(yarp::os::Searchable &par);
+    bool 			registerFeature(yarp::os::Searchable &config);
 
-    int send(void *data, size_t len);
+    int 			send(void *data, size_t len);
     ACE_INET_Addr	getRemoteAddress();
-    void getPack(uint8_t **pack, uint16_t *size);
+    void 			getPack(uint8_t **pack, uint16_t *size);
 
-    void onMsgReception(uint8_t *data, uint16_t size);
+    void 			onMsgReception(uint8_t *data, uint16_t size);
 };
 
 

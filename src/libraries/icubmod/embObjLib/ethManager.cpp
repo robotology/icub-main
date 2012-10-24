@@ -156,12 +156,12 @@ bool ethResources::registerFeature(yarp::os::Searchable &config)
 	return true;
 }
 
-bool ethResources::mayclose()
-{
-	how_many_features--;
-	if(how_many_features <= 0)
-	return true;
-}
+//bool ethResources::mayclose()
+//{
+//	how_many_features--;
+//	if(how_many_features <= 0)
+//	return true;
+//}
 
 // Per inviare pacchetti in maniera asincrona rispetto al ciclo da 1 ms... anche roba che non sia eoStuff
 // Eliminare ???
@@ -226,7 +226,7 @@ ethResCreator *ethResCreator::instance()
 
 void ethResCreator::close()
 {
-	ethResCreator::~ethResCreator();
+//	ethResCreator::~ethResCreator();
 }
 
 ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
