@@ -3,7 +3,7 @@ function saveNetwork(net)
 % in the proper format required by the ctrlLib framework.
 %
 % Copyright: (C) 2010 RobotCub Consortium
-% Authors: Ugo Pattacini
+% Author: Ugo Pattacini
 % CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 fid=fopen('network.ini','w');
