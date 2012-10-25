@@ -862,12 +862,11 @@ bool MotorThread::threadInit()
 
     //if (strcmp(rf.find("actions").asString().c_str(), "OPC"))
         //actions_path=rf.findPath("actions");
-        
-        
-    actions_path = "/usr/local/src/robot/iCub/app/actionsRenderingEngine/actions";
-
-    fprintf(stdout,"----------------------------------------------------------------------path is %s \n",actions_path.c_str() );
     
+    actions_path = rf.getContextPath().c_str();
+    actions_path+= "/";
+    actions_path+= bMotor.check("actions",Value("actions")).asString().c_str();
+
     double eyesTrajTime=bMotor.check("eyes_traj_time",Value(1.0)).asDouble();
     double neckTrajTime=bMotor.check("neck_traj_time",Value(2.0)).asDouble();
 
@@ -878,10 +877,8 @@ bool MotorThread::threadInit()
     stereo_track=bMotor.check("stereo_track",Value("on")).asString()=="on";
     dominant_eye=(bMotor.check("dominant_eye",Value("left")).asString()=="left")?LEFT:RIGHT;
 
-
     Bottle *neckPitchRange=bMotor.find("neck_pitch_range").asList();
     Bottle *neckRollRange=bMotor.find("neck_roll_range").asList();
-
 
     //open ports
     disparityPort.open(("/"+name+"/disparity:io").c_str());
@@ -1107,8 +1104,6 @@ bool MotorThread::threadInit()
         }
     }
 
-
-
     //torso impedence values
     vector<double> torso_stiffness(0),torso_damping(0);
     Bottle *bImpedanceTorsoStiff=bMotor.find("impedence_torso_stiffness").asList();
@@ -1147,9 +1142,7 @@ bool MotorThread::threadInit()
         if (partUsed=="both_arms" || (partUsed=="left_arm" && arm==LEFT)
                                   || (partUsed=="right_arm" && arm==RIGHT))
         {
-            // parsing left_arm config options
-            
-
+            // parsing arm-dependent config options
             if (bArm[arm].isNull())
             {
                 fprintf(stdout,"Missing %s parameter list!\n",arm_name[arm].c_str());
@@ -1170,9 +1163,7 @@ bool MotorThread::threadInit()
             //option_tmp.put("grasp_model_file",rf.findFile(grasp_model_name.c_str()).c_str());
 
             string tmpGraspPath=rf.getContextPath().c_str();
-
             option_tmp.put("grasp_model_file",(tmpGraspPath+"/"+bArm[arm].find("grasp_model_file").asString().c_str()).c_str());
-
 
             fprintf(stdout,"***** Instantiating primitives for %s\n",arm_name[arm].c_str());
             action[arm]=new ActionPrimitivesLayer2(option_tmp);
@@ -1216,13 +1207,11 @@ bool MotorThread::threadInit()
         }
     }
 
-
     //set impedance on or off
     status_impedance_on=false;
     bool impedance_from_start=bMotor.check("impedance",Value("off")).asString()=="on";
     setImpedance(impedance_from_start);
     fprintf(stdout,"Impedance set %s\n",(status_impedance_on?"on":"off"));
-
 
     //init the kinematics offsets and table height
     string kinematics_file=bMotor.find("kinematics_file").asString().c_str();
@@ -2587,9 +2576,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     string arm_name=(arm==LEFT?"left":"right");
 
-    //ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
-    ifstream action_fin(("actions/"+arm_name+"/"+action_name+".action").c_str());
-
+    ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
     if(action_fin.is_open())
     {
         fprintf(stdout,"Error! Action '%s' already learned... stopping\n",action_name.c_str());
@@ -2636,24 +2623,18 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
     if(arm_mode!=ARM_MODE_LEARN_ACTION)
         return false;
 
-    fprintf(stdout,"HERE\n");
     string arm_name=(dragger.arm==LEFT?"left":"right");
 
     bool success=true;
-
     bool skip=checkOptions(options,"skip");
 
     if(!skip)
     {
-         fprintf(stdout,"HERE1\n");
         if (actions_path != "")
         {
-            fprintf(stdout,"HERE2\n");
             ofstream action_fout(("/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
-
             if(!action_fout.is_open())
             {
-                fprintf(stdout,"HERE3\n");
                 fprintf(stdout,"Error! Unable to open file '%s' for action %s\n",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
                 success=false;
             }

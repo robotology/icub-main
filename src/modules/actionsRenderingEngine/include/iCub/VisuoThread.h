@@ -37,10 +37,6 @@
 
 #include <iCub/utils.h>
 
-
-#define LEFT        0
-#define RIGHT       1
-
 #define PARAM_FIXATION              VOCAB4('f','i','x','a')
 #define PARAM_MOTION                VOCAB4('m','o','t','i')
 #define PARAM_TRACK                 VOCAB4('t','r','a','c')
