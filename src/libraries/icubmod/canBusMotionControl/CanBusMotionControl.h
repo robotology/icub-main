@@ -56,42 +56,42 @@ class ThreadPool2;
 class RequestsQueue;
 struct SpeedEstimationParameters
 {
-	double jnt_Vel_estimator_shift;
-	double jnt_Acc_estimator_shift;
-	double mot_Vel_estimator_shift;
-	double mot_Acc_estimator_shift;
+    double jnt_Vel_estimator_shift;
+    double jnt_Acc_estimator_shift;
+    double mot_Vel_estimator_shift;
+    double mot_Acc_estimator_shift;
 
-	SpeedEstimationParameters()
-	{
-		jnt_Vel_estimator_shift=0;
-		jnt_Acc_estimator_shift=0;
-		mot_Vel_estimator_shift=0;
-		mot_Acc_estimator_shift=0;
-	}
+    SpeedEstimationParameters()
+    {
+        jnt_Vel_estimator_shift=0;
+        jnt_Acc_estimator_shift=0;
+        mot_Vel_estimator_shift=0;
+        mot_Acc_estimator_shift=0;
+    }
 };
 
 struct ImpedanceLimits
 {
-	double min_stiff;
-	double max_stiff;
-	double min_damp;
-	double max_damp;
-	double param_a;
-	double param_b;
-	double param_c;
+    double min_stiff;
+    double max_stiff;
+    double min_damp;
+    double max_damp;
+    double param_a;
+    double param_b;
+    double param_c;
 
-	public:
-	ImpedanceLimits()
-	{
-		min_stiff=0; max_stiff=0;
-		min_damp=0;  max_damp=0;
-		param_a=0; param_a=0; param_c=0;
-	}
+    public:
+    ImpedanceLimits()
+    {
+        min_stiff=0; max_stiff=0;
+        min_damp=0;  max_damp=0;
+        param_a=0; param_a=0; param_c=0;
+    }
 
-	double get_min_stiff() {return min_stiff;}
-	double get_max_stiff() {return max_stiff;}
-	double get_min_damp()  {return min_damp;}
-	double get_max_damp()  {return max_damp;}
+    double get_min_stiff() {return min_stiff;}
+    double get_max_stiff() {return max_stiff;}
+    double get_min_damp()  {return min_damp;}
+    double get_max_damp()  {return max_damp;}
 };
 /**
 * \file CanBusMotionControl.h 
@@ -133,23 +133,23 @@ public:
     */
     ~CanBusMotionControlParameters ();
 
-	struct DebugParameters
-	{
-		double data[8];
-		bool   enabled;
-		DebugParameters() {for (int i=0; i<8; i++) data[i]=0; enabled=false;}
-	};
+    struct DebugParameters
+    {
+        double data[8];
+        bool   enabled;
+        DebugParameters() {for (int i=0; i<8; i++) data[i]=0; enabled=false;}
+    };
 
-	struct ImpedanceParameters
-	{
-		double stiffness;
-		double damping;
-		bool   enabled;
-		ImpedanceLimits limits;
-		ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
-	};
+    struct ImpedanceParameters
+    {
+        double stiffness;
+        double damping;
+        bool   enabled;
+        ImpedanceLimits limits;
+        ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
+    };
 
-	bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
+    bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
 
     bool fromConfig(yarp::os::Searchable &config);
     bool alloc(int nj);
@@ -160,33 +160,34 @@ public:
     int _rxTimeout;
     int *_broadcast_mask;
 
-    int _networkN;								/** network number */
-    int _njoints;								/** number of joints/axes/controlled motors */
-    unsigned char *_destinations;       		/** destination addresses */
-    unsigned char _my_address;					/** my address */
-    int _polling_interval;						/** thread polling interval [ms] */
-    int _timeout;								/** number of cycles before timing out */
+    int _networkN;                              /** network number */
+    int _njoints;                               /** number of joints/axes/controlled motors */
+    unsigned char *_destinations;               /** destination addresses */
+    unsigned char _my_address;                  /** my address */
+    int _polling_interval;                      /** thread polling interval [ms] */
+    int _timeout;                               /** number of cycles before timing out */
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to encoder conversion factors */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
-	Pid *_tpids;								/** initial torque gains */
-	bool _tpidsEnabled;							/** abilitation for torque gains */
-	SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-	DebugParameters *_debug_params;             /** debug parameters */
-	ImpedanceParameters *_impedance_params;		/** impedance parameters */
-	ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+    Pid *_tpids;                                /** initial torque gains */
+    bool _tpidsEnabled;                         /** abilitation for torque gains */
+    SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
+    DebugParameters *_debug_params;             /** debug parameters */
+    ImpedanceParameters *_impedance_params;     /** impedance parameters */
+    ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
-	int *_velocityShifts;                       /** velocity shifts */
-	int *_velocityTimeout;                      /** velocity shifts */
-	int *_torqueSensorId;						/** Id of associated Joint Torque Sensor */
-	int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
-	double *_maxTorque;						    /** Max torque of a joint */
-	double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
+    int *_velocityShifts;                       /** velocity shifts */
+    int *_velocityTimeout;                      /** velocity shifts */
+    double *_optical_factor;                    /** reduction ratio of the optical encoder on motor axis */ 
+    int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
+    int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
+    double *_maxTorque;                         /** Max torque of a joint */
+    double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
 };
 
 class AnalogData
@@ -233,13 +234,13 @@ public:
         ANALOG_FORMAT_16,
     };
 
-	enum SensorStatus
+    enum SensorStatus
     {
         ANALOG_IDLE=0,
         ANALOG_OK=1,
-		ANALOG_NOT_RESPONDING=-1,
-		ANALOG_SATURATION=-2,
-		ANALOG_ERROR=-3,
+        ANALOG_NOT_RESPONDING=-1,
+        ANALOG_SATURATION=-2,
+        ANALOG_ERROR=-3,
     };
 
 private:
@@ -251,26 +252,26 @@ private:
 
     ////////////////////
     AnalogData *data;
-	short status;
-	double timeStamp;
-	double* scaleFactor;
+    short status;
+    double timeStamp;
+    double* scaleFactor;
     yarp::os::Semaphore mutex;
     AnalogDataFormat dataFormat;
     yarp::os::Bottle initMsg;
     yarp::os::Bottle speedMsg;
-	yarp::os::Bottle closeMsg;
+    yarp::os::Bottle closeMsg;
     std::string deviceIdentifier;
     short boardId;
-	short useCalibration;
-	bool  isVirtualSensor; //RANDAZ
+    short useCalibration;
+    bool  isVirtualSensor; //RANDAZ
 
     bool decode8(const unsigned char *msg, int id, double *data);
     bool decode16(const unsigned char *msg, int id, double *data);
 
 public:
-	CanBackDoor* backDoor; //RANDAZ
+    CanBackDoor* backDoor; //RANDAZ
 
-	AnalogSensor();
+    AnalogSensor();
     ~AnalogSensor();
     bool handleAnalog(void *);
 
@@ -301,7 +302,7 @@ public:
     short getId()
     { return boardId;}
 
-	short getStatus()
+    short getStatus()
     { return status;}
 
     bool isOpen()
@@ -312,17 +313,17 @@ public:
             return false;
     }
 
- 	short getUseCalibration()
-		{return useCalibration;}
-	double* getScaleFactor()
-		{return scaleFactor;}
-	double getScaleFactor(int chan)
-		{
-			if (chan>=0 && chan<data->size())
-				return scaleFactor[chan];
-			else
-				return 0;
-		}
+    short getUseCalibration()
+        {return useCalibration;}
+    double* getScaleFactor()
+        {return scaleFactor;}
+    double getScaleFactor(int chan)
+        {
+            if (chan>=0 && chan<data->size())
+                return scaleFactor[chan];
+            else
+                return 0;
+        }
 
     bool open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualSensor);
 
@@ -331,7 +332,7 @@ public:
     virtual int getState(int ch);
     virtual int getChannels();
     virtual int calibrateChannel(int ch, double v);
-	virtual int calibrateSensor();
+    virtual int calibrateSensor();
     virtual int calibrateSensor(const yarp::sig::Vector& value)
     {
         return calibrateSensor();
@@ -346,25 +347,25 @@ public:
 
 class speedEstimationHelper
 {
-	int  jointsNum;
-	SpeedEstimationParameters *estim_params;
-	
-	public:
-	speedEstimationHelper (int njoints, SpeedEstimationParameters* estim_parameters );
-	inline int getNumberOfJoints ()
-	{ 
-		return jointsNum;
-	}
-	inline SpeedEstimationParameters getEstimationParameters (int jnt)
-	{
-		if (jnt>=0 && jnt<jointsNum) return estim_params[jnt];
-		SpeedEstimationParameters empty_params;
-		return empty_params;
-	}
-	inline ~speedEstimationHelper()
-	{
-		delete [] estim_params;
-	}
+    int  jointsNum;
+    SpeedEstimationParameters *estim_params;
+    
+    public:
+    speedEstimationHelper (int njoints, SpeedEstimationParameters* estim_parameters );
+    inline int getNumberOfJoints ()
+    { 
+        return jointsNum;
+    }
+    inline SpeedEstimationParameters getEstimationParameters (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return estim_params[jnt];
+        SpeedEstimationParameters empty_params;
+        return empty_params;
+    }
+    inline ~speedEstimationHelper()
+    {
+        delete [] estim_params;
+    }
 };
 
 #define BOARD_TYPE_4DC    0x03
@@ -372,238 +373,238 @@ class speedEstimationHelper
 
 struct can_protocol_info
 {
-	int major;
-	int minor;
+    int major;
+    int minor;
 };
 
 struct firmware_info
 {
-	int joint;
-	int network_number;
-	std::string network_name;
-	int board_can_id;
-	int board_type;
-	int fw_major;
-	int fw_version;
-	int fw_build;
-	can_protocol_info can_protocol;
-	int ack;
+    int joint;
+    int network_number;
+    std::string network_name;
+    int board_can_id;
+    int board_type;
+    int fw_major;
+    int fw_version;
+    int fw_build;
+    can_protocol_info can_protocol;
+    int ack;
 
-	inline void print_info()
-	{
-		fprintf(stderr,"%s [%d] joint: %d can_address: %2d ",network_name.c_str(),network_number,joint,board_can_id);
-		
-		if (board_type==0)
-		{
-			fprintf(stderr,"Unable to detect firmware version. Old firmware running?");
-		}
-		else
-		{
-		   if (board_type==BOARD_TYPE_4DC) fprintf(stderr,"board type: 3 (4DC) ");
-		   if (board_type==BOARD_TYPE_BLL) fprintf(stderr,"board type: 4 (BLL) ");
-		   fprintf(stderr,"version:%2x.%2x build:%3d CAN_protocol:%d.%d", fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);
-		}
-		fprintf(stderr,"\n");
-	}
+    inline void print_info()
+    {
+        fprintf(stderr,"%s [%d] joint: %d can_address: %2d ",network_name.c_str(),network_number,joint,board_can_id);
+        
+        if (board_type==0)
+        {
+            fprintf(stderr,"Unable to detect firmware version. Old firmware running?");
+        }
+        else
+        {
+           if (board_type==BOARD_TYPE_4DC) fprintf(stderr,"board type: 3 (4DC) ");
+           if (board_type==BOARD_TYPE_BLL) fprintf(stderr,"board type: 4 (BLL) ");
+           fprintf(stderr,"version:%2x.%2x build:%3d CAN_protocol:%d.%d", fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);
+        }
+        fprintf(stderr,"\n");
+    }
 
 };
 
 class firmwareVersionHelper
 {
-	int  jointsNum;
-	
-	public:
-	firmware_info* infos;
-	can_protocol_info icub_protocol;
+    int  jointsNum;
+    
+    public:
+    firmware_info* infos;
+    can_protocol_info icub_protocol;
 
-	firmwareVersionHelper(int joints, firmware_info* f_infos, can_protocol_info& protocol)
-	{
-		icub_protocol = protocol;
-		jointsNum=joints;
-		infos = new firmware_info [jointsNum];
-		for (int i=0; i<jointsNum; i++)
-		{
-			infos[i] = f_infos[i];
-		}
-	}
-	inline int getNumberOfJoints ()
-	{ 
-		return jointsNum;
-	}
-	bool checkFirmwareVersions()
-	{
-		for (int j=0; j<jointsNum; j++)
-		{
-			if (infos[j].board_type==0)
-			{
-				printMessageSevereError();
-				return false;
-			}
+    firmwareVersionHelper(int joints, firmware_info* f_infos, can_protocol_info& protocol)
+    {
+        icub_protocol = protocol;
+        jointsNum=joints;
+        infos = new firmware_info [jointsNum];
+        for (int i=0; i<jointsNum; i++)
+        {
+            infos[i] = f_infos[i];
+        }
+    }
+    inline int getNumberOfJoints ()
+    { 
+        return jointsNum;
+    }
+    bool checkFirmwareVersions()
+    {
+        for (int j=0; j<jointsNum; j++)
+        {
+            if (infos[j].board_type==0)
+            {
+                printMessageSevereError();
+                return false;
+            }
 
-			if (infos[j].ack==0)
-			{
-				printMessageSevereError();
-				return false;
-			}
+            if (infos[j].ack==0)
+            {
+                printMessageSevereError();
+                return false;
+            }
 
-		    if (infos[j].board_type==BOARD_TYPE_BLL)
-			{
-				// Note: Also BLL2DC firmware is identified BLL. This is intentional.
-				if (infos[j].fw_build<LAST_BLL_BUILD) 
-				{
-					printMessagePleaseUpgradeFirmware();
-					return true;
-				}
-				if (infos[j].fw_build>LAST_BLL_BUILD)
-				{
-					printMessagePleaseUpgradeiCub();
-					return true;
-				}
-			}
+            if (infos[j].board_type==BOARD_TYPE_BLL)
+            {
+                // Note: Also BLL2DC firmware is identified BLL. This is intentional.
+                if (infos[j].fw_build<LAST_BLL_BUILD) 
+                {
+                    printMessagePleaseUpgradeFirmware();
+                    return true;
+                }
+                if (infos[j].fw_build>LAST_BLL_BUILD)
+                {
+                    printMessagePleaseUpgradeiCub();
+                    return true;
+                }
+            }
 
-		    if (infos[j].board_type==BOARD_TYPE_4DC)
-			{
-				if (infos[j].fw_build<LAST_MC4_BUILD) 
-				{
-					printMessagePleaseUpgradeFirmware();
-					return true;
-				}
-				if (infos[j].fw_build>LAST_MC4_BUILD) 
-				{
-					printMessagePleaseUpgradeiCub();
-					return true;
-				}
-			}
-		}
-		return true;
-	}
-	inline void printFirmwareVersions()
-	{
-		fprintf(stderr,"\n");
-		fprintf(stderr,"**********************************\n");
-		fprintf(stderr,"iCubInterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
-		fprintf(stderr,"Firmware report:\n");
-		for (int j=0; j<jointsNum; j++)
-		{
-			infos[j].print_info();
-		}
-		fprintf(stderr,"**********************************\n");
-		fprintf(stderr,"\n");
-	}
-	inline void printMessagePleaseUpgradeFirmware()
-	{
-		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
-		fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
-		fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
-		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"\n");
-	}
-	inline void printMessagePleaseUpgradeiCub()
-	{
-		fprintf(stderr,"\n");
-		fprintf(stderr,"#################################################################################################\n");
-		fprintf(stderr,"#################################################################################################\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
-		fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
-		fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
-		fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"#################################################################################################\n");
-		fprintf(stderr,"#################################################################################################\n");
-		fprintf(stderr,"\n");
-	}
-	inline void printMessageSevereError()
-	{
-		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"  It has been detected that your control boards are not using the same\n");
-		fprintf(stderr,"  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
-		fprintf(stderr,"  Please update your system (iCubInterface and/or your control board firmware.\n");
-		fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
-		fprintf(stderr,"\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"###################################################################################\n");
-		fprintf(stderr,"\n");
-	}
-	inline ~firmwareVersionHelper()
-	{
-		delete [] infos;
-		infos = 0;
-	}
+            if (infos[j].board_type==BOARD_TYPE_4DC)
+            {
+                if (infos[j].fw_build<LAST_MC4_BUILD) 
+                {
+                    printMessagePleaseUpgradeFirmware();
+                    return true;
+                }
+                if (infos[j].fw_build>LAST_MC4_BUILD) 
+                {
+                    printMessagePleaseUpgradeiCub();
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
+    inline void printFirmwareVersions()
+    {
+        fprintf(stderr,"\n");
+        fprintf(stderr,"**********************************\n");
+        fprintf(stderr,"iCubInterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
+        fprintf(stderr,"Firmware report:\n");
+        for (int j=0; j<jointsNum; j++)
+        {
+            infos[j].print_info();
+        }
+        fprintf(stderr,"**********************************\n");
+        fprintf(stderr,"\n");
+    }
+    inline void printMessagePleaseUpgradeFirmware()
+    {
+        fprintf(stderr,"\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"\n");
+        fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
+        fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
+        fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
+        fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+        fprintf(stderr,"\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"\n");
+    }
+    inline void printMessagePleaseUpgradeiCub()
+    {
+        fprintf(stderr,"\n");
+        fprintf(stderr,"#################################################################################################\n");
+        fprintf(stderr,"#################################################################################################\n");
+        fprintf(stderr,"\n");
+        fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
+        fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
+        fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
+        fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
+        fprintf(stderr,"\n");
+        fprintf(stderr,"#################################################################################################\n");
+        fprintf(stderr,"#################################################################################################\n");
+        fprintf(stderr,"\n");
+    }
+    inline void printMessageSevereError()
+    {
+        fprintf(stderr,"\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"\n");
+        fprintf(stderr,"  It has been detected that your control boards are not using the same\n");
+        fprintf(stderr,"  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
+        fprintf(stderr,"  Please update your system (iCubInterface and/or your control board firmware.\n");
+        fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+        fprintf(stderr,"\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"###################################################################################\n");
+        fprintf(stderr,"\n");
+    }
+    inline ~firmwareVersionHelper()
+    {
+        delete [] infos;
+        infos = 0;
+    }
 };
 
 class axisImpedanceHelper
 {
-	int  jointsNum;
-	ImpedanceLimits* impLimits;
-	
-	public:
-	axisImpedanceHelper(int njoints, ImpedanceLimits* imped_limits );
+    int  jointsNum;
+    ImpedanceLimits* impLimits;
+    
+    public:
+    axisImpedanceHelper(int njoints, ImpedanceLimits* imped_limits );
 
-	inline ~axisImpedanceHelper()
-	{
-		delete [] impLimits;
-		impLimits=0;		
-		   }
-	
-	inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
+    inline ~axisImpedanceHelper()
+    {
+        delete [] impLimits;
+        impLimits=0;
+           }
+    
+    inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
 };
 
 class axisTorqueHelper
 {
-	int  jointsNum;
-	int* torqueSensorId;						/** Id of associated Joint Torque Sensor */
-	int* torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
-	double* maximumTorque;
-	double* newtonsToSensor;
+    int  jointsNum;
+    int* torqueSensorId;                        /** Id of associated Joint Torque Sensor */
+    int* torqueSensorChan;                      /** Channel of associated Joint Torque Sensor */
+    double* maximumTorque;
+    double* newtonsToSensor;
 
-	public:
-	axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens );
-	inline int getTorqueSensorId (int jnt)
-	{
-		if (jnt>=0 && jnt<jointsNum) return torqueSensorId[jnt];
-		return 0;
-	}						
-	inline int getTorqueSensorChan (int jnt)
-	{
-		if (jnt>=0 && jnt<jointsNum) return torqueSensorChan[jnt];
-		return 0;
-	}
-	inline double getMaximumTorque (int jnt)
-	{
-		if (jnt>=0 && jnt<jointsNum) return maximumTorque[jnt];
-		return 0;
-	}						
-	inline double getNewtonsToSensor (int jnt)
-	{
-		if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
-		return 0;
-	}
-	inline int getNumberOfJoints ()
-	{ 
-		return jointsNum;
-	}
-	inline ~axisTorqueHelper()
-	{
-		delete [] torqueSensorId;
-		delete [] torqueSensorChan;
-		delete [] maximumTorque;
-		delete [] newtonsToSensor;
-		torqueSensorId=0;						
-		torqueSensorChan=0;						
-		maximumTorque=0;						
-		newtonsToSensor=0;						
-	}
+    public:
+    axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens );
+    inline int getTorqueSensorId (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return torqueSensorId[jnt];
+        return 0;
+    }
+    inline int getTorqueSensorChan (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return torqueSensorChan[jnt];
+        return 0;
+    }
+    inline double getMaximumTorque (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return maximumTorque[jnt];
+        return 0;
+    }
+    inline double getNewtonsToSensor (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
+        return 0;
+    }
+    inline int getNumberOfJoints ()
+    {
+        return jointsNum;
+    }
+    inline ~axisTorqueHelper()
+    {
+        delete [] torqueSensorId;
+        delete [] torqueSensorChan;
+        delete [] maximumTorque;
+        delete [] newtonsToSensor;
+        torqueSensorId=0;
+        torqueSensorChan=0;
+        maximumTorque=0;
+        newtonsToSensor=0;
+    }
 };
 
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
@@ -616,9 +617,9 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IControlCalibrationRaw,
             public IDebugInterfaceRaw,
             public IControlLimitsRaw,
-			public ITorqueControlRaw,
-			public IImpedanceControlRaw,
-			public IOpenLoopControlRaw,
+            public ITorqueControlRaw,
+            public IImpedanceControlRaw,
+            public IOpenLoopControlRaw,
             public IControlModeRaw,
             public IPreciselyTimed,
             public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
@@ -630,11 +631,11 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
             public ImplementControlLimits<CanBusMotionControl, IControlLimits>,
-			public ImplementTorqueControl,
-			public ImplementImpedanceControl,
-			public ImplementOpenLoopControl,
+            public ImplementTorqueControl,
+            public ImplementImpedanceControl,
+            public ImplementOpenLoopControl,
             public ImplementControlMode,
-			public ImplementDebugInterface,
+            public ImplementDebugInterface,
             public IFactoryInterface,
             public IClientLogger
 {
@@ -660,7 +661,7 @@ private:
 
     IServerLogger *mServerLogger;
 
-	bool readFullScaleAnalog(AnalogSensor* analogSensor, int ch);
+    bool readFullScaleAnalog(AnalogSensor* analogSensor, int ch);
     AnalogSensor *instantiateAnalog(yarp::os::Searchable& config, std::string id);
     void finiAnalog(AnalogSensor *s);
 
@@ -788,7 +789,7 @@ public:
     //
     /////////////////////////////// END Position Control INTERFACE
 
-	//
+    //
     /// TORQUE CONTROL INTERFACE RAW
 //    virtual bool getAxes(int *ax);
     virtual bool getRefTorqueRaw(int j, double *ref_trq);
@@ -815,37 +816,37 @@ public:
     virtual bool setTorqueErrorLimitsRaw(const double *limits);
     virtual bool getTorqueErrorRaw(int j, double *err);
     virtual bool getTorqueErrorsRaw(double *errs);
-	virtual bool setTorqueModeRaw();
+    virtual bool setTorqueModeRaw();
     virtual bool getTorquePidOutputRaw(int j, double *v);
     virtual bool getTorquePidOutputsRaw(double *v);
  
     //
     /////////////////////////////// END Torque Control INTERFACE
 
-	//
+    //
     /// IMPEDANCE CONTROL INTERFACE RAW
     virtual bool getImpedanceRaw(int j, double *stiff, double *damp);  
     virtual bool setImpedanceRaw(int j, double  stiff, double  damp);   
     virtual bool getImpedanceOffsetRaw(int j, double *offs);  
     virtual bool setImpedanceOffsetRaw(int j, double  offs);   
-	virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
+    virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
 
-	//
+    //
     /////////////////////////////// END Impedance Control INTERFACE
 
     // ControlMode
     virtual bool setPositionModeRaw(int j);
     virtual bool setVelocityModeRaw(int j);
     virtual bool setTorqueModeRaw(int j);
-	virtual bool setImpedancePositionModeRaw(int j);
-	virtual bool setImpedanceVelocityModeRaw(int j);
-	virtual bool setOpenLoopModeRaw(int j);
+    virtual bool setImpedancePositionModeRaw(int j);
+    virtual bool setImpedanceVelocityModeRaw(int j);
+    virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
-	virtual bool getControlModesRaw(int* v);
+    virtual bool getControlModesRaw(int* v);
 
-	///////////// OpenLoop control interface raw
+    ///////////// OpenLoop control interface raw
     ///
-	virtual bool setOpenLoopModeRaw();
+    virtual bool setOpenLoopModeRaw();
     virtual bool setOutputRaw(int axis, double v);
     virtual bool setOutputsRaw(const double *v);
     //virtual bool getOutputRaw(int j, double *out); //already in PID interface
@@ -861,12 +862,14 @@ public:
     //
     /////////////////////////////// END Velocity Control INTERFACE
 
-	//Shift factors for velocity control
-	bool setVelocityShift(int j, double val);
-	//Timeout factors for velocity control
-	bool setVelocityTimeout(int j, double val);
-	//Shift factors for speed / acceleration estimation
-	bool setSpeedEstimatorShift(int j, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc);
+    //Shift factors for velocity control
+    bool setVelocityShiftRaw(int j, double val);
+    //Timeout factors for velocity control
+    bool setVelocityTimeoutRaw(int j, double val);
+    //Shift factors for speed / acceleration estimation
+    bool setSpeedEstimatorShiftRaw(int j, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc);
+    //Factor used to make correspond optical encoder units to joint angle degrees
+    bool setOpticalRatioRaw(int axis, double ratio);
 
 
     //////////////////////// BEGIN EncoderInterface
@@ -911,20 +914,20 @@ public:
     virtual bool saveBootMemory();
 
     // IDebug Interface
-	virtual bool setParameterRaw(int j, unsigned int type, double value);
-	virtual bool getParameterRaw(int j, unsigned int type, double* value);
-	virtual bool setDebugParameterRaw(int j, unsigned int index, double value);
-	virtual bool getDebugParameterRaw(int j, unsigned int index, double* value);
-	virtual bool setDebugReferencePositionRaw(int j, double value);
-	virtual bool getDebugReferencePositionRaw(int j, double *value);
-	virtual bool getRotorPositionRaw(int j, double* value);
-	virtual bool getRotorPositionsRaw(double *value);
+    virtual bool setParameterRaw(int j, unsigned int type, double value);
+    virtual bool getParameterRaw(int j, unsigned int type, double* value);
+    virtual bool setDebugParameterRaw(int j, unsigned int index, double value);
+    virtual bool getDebugParameterRaw(int j, unsigned int index, double* value);
+    virtual bool setDebugReferencePositionRaw(int j, double value);
+    virtual bool getDebugReferencePositionRaw(int j, double *value);
+    virtual bool getRotorPositionRaw(int j, double* value);
+    virtual bool getRotorPositionsRaw(double *value);
     virtual bool getRotorSpeedRaw(int j, double* value);
-	virtual bool getRotorSpeedsRaw(double *value);
-	virtual bool getRotorAccelerationRaw(int j, double* value);
-	virtual bool getRotorAccelerationsRaw(double *value);
-	virtual bool getJointPositionRaw(int j, double* value);
-	virtual bool getJointPositionsRaw(double *value);
+    virtual bool getRotorSpeedsRaw(double *value);
+    virtual bool getRotorAccelerationRaw(int j, double* value);
+    virtual bool getRotorAccelerationsRaw(double *value);
+    virtual bool getJointPositionRaw(int j, double* value);
+    virtual bool getJointPositionsRaw(double *value);
 
     /////// Limits
     virtual bool setLimitsRaw(int axis, double min, double max);
@@ -934,7 +937,7 @@ public:
     virtual yarp::os::Stamp getLastInputStamp();
 
     // Firmware version
-	bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
+    bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
@@ -969,26 +972,27 @@ protected:
 
     // helper functions
     bool _writeWord16 (int msg, int axis, short s);
-    bool _writeWord16Ex (int msg, int axis, short s1, short s2, bool check);
+    bool _writeWord16Ex (int msg, int axis, short s1, short s2, bool check=true);
     bool _readWord16 (int msg, int axis, short& value);
+    bool _readWord16Ex (int msg, int axis, short& value1, short& value2);
     bool _readWord16Array (int msg, double *out);
     bool _readDWord (int msg, int axis, int& value);
     bool _readDWordArray (int msg, double *out);
     bool _writeDWord (int msg, int axis, int value);
     bool _writeNone  (int msg, int axis);
-	bool _writeByte8 (int msg, int axis, int value);
+    bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
-	axisTorqueHelper      *_axisTorqueHelper;
-	axisImpedanceHelper   *_axisImpedanceHelper;
-	firmwareVersionHelper *_firmwareVersionHelper;
-	speedEstimationHelper *_speedEstimationHelper;
+    axisTorqueHelper      *_axisTorqueHelper;
+    axisImpedanceHelper   *_axisImpedanceHelper;
+    firmwareVersionHelper *_firmwareVersionHelper;
+    speedEstimationHelper *_speedEstimationHelper;
 
     // internal stuff.
-    double *_ref_speeds;		// used for position control.
-    double *_command_speeds;	// used for velocity control.
-    double *_ref_accs;			// for velocity control, in position min jerk eq is used.
-	double *_ref_torques;		// for torque control.
-    double *_ref_positions;		// for position control.
+    double *_ref_speeds;        // used for position control.
+    double *_command_speeds;    // used for velocity control.
+    double *_ref_accs;            // for velocity control, in position min jerk eq is used.
+    double *_ref_torques;        // for torque control.
+    double *_ref_positions;        // for position control.
 
     enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000 };
     enum { CAN_SKIP_ADDR = 0x80 };
@@ -1002,9 +1006,9 @@ protected:
                 return MAX_SHORT;
         else
             if  (x>0)
-				return short(x + .5);
-			else
-				return short(x - .5);
+                return short(x + .5);
+            else
+                return short(x - .5);
     }
 
     inline int S_32(double x) const
@@ -1016,9 +1020,9 @@ protected:
                 return MAX_INT;
         else
             if  (x>0)
-				return int(x + .5);
-			else
-				return int(x - .5);
+                return int(x + .5);
+            else
+                return int(x - .5);
     }
 };
 

@@ -1399,6 +1399,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _limitsMin=0;
     _currentLimits=0;
     _velocityShifts=0;
+    _optical_factor=0;
     _velocityTimeout=0;
     _torqueSensorId=0;
     _torqueSensorChan=0;
@@ -1444,12 +1445,14 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
     _currentLimits=allocAndCheck<double>(nj);
+    _optical_factor=allocAndCheck<double>(nj);
     _velocityShifts=allocAndCheck<int>(CAN_MAX_CARDS);
     _velocityTimeout=allocAndCheck<int>(CAN_MAX_CARDS);
     memset(_limitsMin, 0, sizeof(double)*nj);
     memset(_limitsMax, 0, sizeof(double)*nj);
     memset(_currentLimits, 0, sizeof(double)*nj);
     memset(_velocityShifts, 0, sizeof(int)*nj);
+    memset(_optical_factor, 0, sizeof(double)*nj);
     memset(_velocityTimeout, 0, sizeof(int)*nj);
 
     _my_address = 0;
@@ -1479,10 +1482,11 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_axisMap);
     checkAndDestroy<unsigned char>(_destinations);
     checkAndDestroy<int>(_velocityShifts);
+    checkAndDestroy<double>(_optical_factor);
     checkAndDestroy<int>(_velocityTimeout);
-    checkAndDestroy<int>(_torqueSensorId);                    
+    checkAndDestroy<int>(_torqueSensorId);
     checkAndDestroy<int>(_torqueSensorChan);
-    checkAndDestroy<double>(_maxTorque);                    
+    checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
 
     checkAndDestroy<Pid>(_pids);
@@ -1963,16 +1967,16 @@ bool CanBusMotionControl::open (Searchable &config)
 
     // set limits, on encoders and max current
     for(i = 0; i < p._njoints; i++) {
-        setVelocityShift(i, p._velocityShifts[i]);
-        setVelocityTimeout(i, p._velocityTimeout[i]);
+        setVelocityShiftRaw(i, p._velocityShifts[i]);
+        setVelocityTimeoutRaw(i, p._velocityTimeout[i]);
     }
 
     // set parameters for speed/acceleration estimation
     for(i = 0; i < p._njoints; i++) {
-        setSpeedEstimatorShift(i,p._estim_params[i].jnt_Vel_estimator_shift,
-                                 p._estim_params[i].jnt_Acc_estimator_shift,
-                                 p._estim_params[i].mot_Vel_estimator_shift,
-                                 p._estim_params[i].mot_Acc_estimator_shift);
+        setSpeedEstimatorShiftRaw(i,p._estim_params[i].jnt_Vel_estimator_shift,
+                                    p._estim_params[i].jnt_Acc_estimator_shift,
+                                    p._estim_params[i].mot_Vel_estimator_shift,
+                                    p._estim_params[i].mot_Acc_estimator_shift);
     }
     _speedEstimationHelper = new speedEstimationHelper(p._njoints, p._estim_params);
     
@@ -3241,7 +3245,7 @@ bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
     _writeWord16 (CAN_SET_OFFSET, axis, S_16(pid.offset));
     _writeWord16 (CAN_SET_SCALE, axis, S_16(pid.scale));
     _writeWord16 (CAN_SET_TLIM, axis, S_16(pid.max_output));
-
+    _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val));
     return true;
 }
 
@@ -3440,6 +3444,7 @@ bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
         return false;
 
     short s;
+    short s2;
 
     DEBUG("Calling GET_P_GAIN\n");
     _readWord16 (CAN_GET_P_GAIN, axis, s); out->kp = double(s);
@@ -3455,7 +3460,10 @@ bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
     _readWord16 (CAN_GET_SCALE, axis, s); out->scale = double(s);
     DEBUG("Calling CAN_GET_TLIM\n");
     _readWord16 (CAN_GET_TLIM, axis, s); out->max_output = double(s);
+    DEBUG("Calling CAN_SET_POS_STICTION_PARAMS\n");
+    _readWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_pos_val = double(s); out->stiction_neg_val = double(s2);
     DEBUG("Get PID done!\n");
+    
 
     return true;
 }
@@ -3468,6 +3476,7 @@ bool CanBusMotionControl::getPidsRaw (Pid *out)
     for (i = 0; i < r.getJoints(); i++)
     {
         short s;
+        short s2;
         _readWord16 (CAN_GET_P_GAIN, i, s); out[i].kp = double(s);
         _readWord16 (CAN_GET_D_GAIN, i, s); out[i].kd = double(s);
         _readWord16 (CAN_GET_I_GAIN, i, s); out[i].ki = double(s);
@@ -3475,6 +3484,7 @@ bool CanBusMotionControl::getPidsRaw (Pid *out)
         _readWord16 (CAN_GET_OFFSET, i, s); out[i].offset= double(s);
         _readWord16 (CAN_GET_SCALE, i, s); out[i].scale = double(s);
         _readWord16 (CAN_GET_TLIM, i, s); out[i].max_output = double(s);
+        _readWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, s, s2 ); out[i].stiction_pos_val = double(s); out[i].stiction_neg_val = double(s2);
     }
 
     return true;
@@ -3525,8 +3535,8 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
-
-
+    _writeWord16Ex (CAN_SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val));
+    
     return true;
 }
 
@@ -3647,6 +3657,14 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
     out->max_int= *((short *)(data));
 
     t->clear();
+
+    DEBUG("Calling CAN_GET_TORQUE_STICTION_PARAMS\n");
+    short s1;
+    short s2;
+    _readWord16Ex (CAN_GET_TORQUE_STICTION_PARAMS, axis, s1, s2 );
+    out->stiction_pos_val = double(s1); 
+    out->stiction_neg_val = double(s2);
+
     return true;
 }
 
@@ -3669,13 +3687,14 @@ bool CanBusMotionControl::setPidsRaw(const Pid *pids)
 
     int i;
     for (i = 0; i < r.getJoints(); i++) {
-        _writeWord16 (CAN_SET_P_GAIN, i, S_16(pids[i].kp));
-        _writeWord16 (CAN_SET_D_GAIN, i, S_16(pids[i].kd));
-        _writeWord16 (CAN_SET_I_GAIN, i, S_16(pids[i].ki));
-        _writeWord16 (CAN_SET_ILIM_GAIN, i, S_16(pids[i].max_int));
-        _writeWord16 (CAN_SET_OFFSET, i, S_16(pids[i].offset));
-        _writeWord16 (CAN_SET_SCALE, i, S_16(pids[i].scale));
-        _writeWord16 (CAN_SET_TLIM, i, S_16(pids[i].max_output));
+        _writeWord16   (CAN_SET_P_GAIN, i, S_16(pids[i].kp));
+        _writeWord16   (CAN_SET_D_GAIN, i, S_16(pids[i].kd));
+        _writeWord16   (CAN_SET_I_GAIN, i, S_16(pids[i].ki));
+        _writeWord16   (CAN_SET_ILIM_GAIN, i, S_16(pids[i].max_int));
+        _writeWord16   (CAN_SET_OFFSET, i, S_16(pids[i].offset));
+        _writeWord16   (CAN_SET_SCALE, i, S_16(pids[i].scale));
+        _writeWord16   (CAN_SET_TLIM, i, S_16(pids[i].max_output));
+        _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, S_16(pids[i].stiction_pos_val), S_16(pids[i].stiction_neg_val));
     }
 
     return true;
@@ -5035,7 +5054,7 @@ bool CanBusMotionControl::setMaxCurrentRaw(int axis, double v)
     return _writeDWord (CAN_SET_CURRENT_LIMIT, axis, S_32(v));
 }
 
-bool CanBusMotionControl::setVelocityShift(int axis, double shift)
+bool CanBusMotionControl::setVelocityShiftRaw(int axis, double shift)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
@@ -5043,7 +5062,7 @@ bool CanBusMotionControl::setVelocityShift(int axis, double shift)
     return _writeWord16 (CAN_SET_VEL_SHIFT, axis, S_16(shift));
 }
 
-bool CanBusMotionControl::setSpeedEstimatorShift(int axis, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc)
+bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
@@ -5063,7 +5082,7 @@ bool CanBusMotionControl::setSpeedEstimatorShift(int axis, double jnt_speed, dou
     return true;
 }
 
-bool CanBusMotionControl::setVelocityTimeout(int axis, double timeout)
+bool CanBusMotionControl::setVelocityTimeoutRaw(int axis, double timeout)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
@@ -5323,7 +5342,7 @@ bool CanBusMotionControl::_writeDWord (int msg, int axis, int value)
 }
 
 /// two shorts in a single Can message (both must belong to the same control card).
-bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2, bool checkAxisEven=true)
+bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2, bool checkAxisEven)
 {
     /// prepare Can message.
     CanBusResources& r = RES(system_resources);
@@ -5568,6 +5587,63 @@ bool CanBusMotionControl::_readWord16 (int msg, int axis, short& value)
     }
 
     value = *((short *)(m->getData()+1));
+    t->clear();
+    return true;
+}
+
+bool CanBusMotionControl::_readWord16Ex (int msg, int axis, short& value1, short& value2)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    if (!ENABLED(axis))
+    {
+        value1 = 0;
+        value2 = 0;
+        return true;
+    }
+
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        fprintf(stderr, "More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        value1 = 0;
+        value2 = 0;
+        return false;
+    }
+
+    DEBUG("readWord16Ex: called from thread %d, axis %d msg %d\n", id, axis, msg);
+    r.startPacket();
+    r.addMessage (id, axis, msg);
+    r.writePacket(); //write immediatly
+
+    ThreadTable2 *t=threadPool->getThreadTable(id);
+    DEBUG("readWord16Ex: going to wait for packet %d\n", id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+    DEBUG("readWord16Ex: ok, wait done %d\n",id);
+
+    if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG("readWord16: message timed out\n");
+        value1 = 0;
+        value2 = 0;
+        return false;
+    }
+
+    CanMessage *m=t->get(0);
+
+    if (m==0)
+    {
+        return false;
+    }
+
+    value1 = *((short *)(m->getData()+1));
+    value2 = *((short *)(m->getData()+3));
     t->clear();
     return true;
 }
