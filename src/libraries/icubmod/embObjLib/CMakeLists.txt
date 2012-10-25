@@ -211,7 +211,7 @@ set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
 
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/ethManager.cpp
-						${EXTRA_FOLDER}/tools/debugFunctions.cpp
+#						${EXTRA_FOLDER}/tools/debugFunctions.cpp
 						${EXTRA_FOLDER}/eoRequestsQueue.cpp)
 
 set(embobj_source 		${BODY_COMMON_SOURCE} 
@@ -242,8 +242,13 @@ set(embobj_header 		${BODY_COMMON_SOURCE}
 SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
+include_directories (   ${CMAKE_CURRENT_SOURCE_DIR}
+                        ${embObj_includes}                     
+                        ${iCubDev_INCLUDE_DIRS}
+                        ${YARP_INCLUDE_DIRS})
+  
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES})  
+TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
 
 icub_export_library(${PROJECTNAME})

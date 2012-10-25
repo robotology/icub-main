@@ -75,7 +75,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	//
 
 	// extract eth group info
-	Bottle xtmp = Bottle(config.findGroup("ETH"));
+	Bottle &xtmp = config.findGroup("ETH");
 
 	xtmp2 = xtmp.findGroup("IpAddress");
     if (xtmp2.isNull())

@@ -11,11 +11,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <string.h>
+
+#ifdef WIN32
+	#pragma warning(disable:4355)
+#endif
+
 #include "EOnv_hid.h"
 #include "EoMotionControl.h"
 
 
-//#include "embObjMotionControl.h"
 
 #ifdef __cplusplus
 
