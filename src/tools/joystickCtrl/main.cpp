@@ -124,9 +124,9 @@ protected:
     int numButtons;
     int joy_id;
     SDL_Joystick* joy1;
-	
-	//button actions;
-	string button_actions [20];
+    
+    //button actions;
+    string button_actions [20];
 
     //variables read from the joystick
     int*    rawButtons;
@@ -320,35 +320,34 @@ public:
         port_axis_only.open("/joystickCtrl/raw_axis:o");
         port_buttons_only.open("/joystickCtrl/raw_buttons:o");
         
-		//get the list of the commands to be executed with the buttons
-		Bottle& exec_comm_bottle = rf.findGroup("BUTTONS_EXECUTE");
-		int joystick_actions_count = 0;
-		if (!exec_comm_bottle.isNull())
-		{ 
-			printf ( "associating the following actions to the buttons: \n");
-			
-			do
-			{
-				char tmp[80];
-				sprintf(tmp, "button%d", joystick_actions_count); 
-				if (exec_comm_bottle.check(tmp))
-				{
-					button_actions[joystick_actions_count] = exec_comm_bottle.find(tmp).toString();
-					printf ("%s %s\n", tmp, button_actions[joystick_actions_count].c_str());
-				}
-				else
-				{
-					break;
-				}
-				joystick_actions_count++;
-			}
-			while (joystick_actions_count<20);
-			printf ("\n");
-		}
-		if (joystick_actions_count==0)
-		{
-			fprintf ( stderr, "no actions specified for the joystick buttons. \n");
-		}
+        //get the list of the commands to be executed with the buttons
+        Bottle& exec_comm_bottle = rf.findGroup("BUTTONS_EXECUTE");
+        int joystick_actions_count = 0;
+        if (!exec_comm_bottle.isNull())
+        {
+            printf ( "associating the following actions to the buttons: \n");
+            do
+            {
+                char tmp[80];
+                sprintf(tmp, "button%d", joystick_actions_count); 
+                if (exec_comm_bottle.check(tmp))
+                {
+                    button_actions[joystick_actions_count] = exec_comm_bottle.find(tmp).toString();
+                    printf ("%s %s\n", tmp, button_actions[joystick_actions_count].c_str());
+                }
+                else
+                {
+                    break;
+                }
+                joystick_actions_count++;
+            }
+            while (joystick_actions_count<20);
+            printf ("\n");
+        }
+        if (joystick_actions_count==0)
+        {
+            fprintf ( stderr, "no actions specified for the joystick buttons. \n");
+        }
 
         // start SDL subsystem
         //SDL_Init(SDL_INIT_VIDEO);
@@ -547,8 +546,8 @@ public:
 
         // Sending data out on a Yarp port
         Bottle data;
-		Bottle axis_data;
-		Bottle buttons_data;
+        Bottle axis_data;
+        Bottle buttons_data;
         for(int i=0;i<num_outputs;i++)
         {            
             if (jointProperties[i].type == JTYPE_POLAR)
@@ -584,23 +583,23 @@ public:
             }
         }
 
-		//execute button actions
-		for (int i=0;i<numButtons;i++)
-		{
-			if (rawButtonsOld[i] == 0 && rawButtons[i] == 1)
-			{
-				//execute script
-				if (!button_actions[i].empty())
-				{
-				    printf ("executing script %d: %s\n", i, button_actions[i].c_str());
-				    int ret = system(button_actions[i].c_str());
-				}
-				else
-				{
-    				printf ("no scripts associated to button %d\n", i);
-				}
-			}
-		}
+        //execute button actions
+        for (int i=0;i<numButtons;i++)
+        {
+            if (rawButtonsOld[i] == 0 && rawButtons[i] == 1)
+            {
+                //execute script
+                if (!button_actions[i].empty())
+                {
+                    printf ("executing script %d: %s\n", i, button_actions[i].c_str());
+                    int ret = system(button_actions[i].c_str());
+                }
+                else
+                {
+                    printf ("no scripts associated to button %d\n", i);
+                }
+            }
+        }
 
         // Preparing data to be sent on the yarp ports
         for(int i=0;i<num_outputs;i++)
@@ -609,32 +608,32 @@ public:
                 data.addString(jointProperties[i].param_s.c_str());
             else
                 data.addDouble(outAxes[i]);
-        }	
+        }
         for (int i=0;i<numButtons;i++)
-		{
-			buttons_data.addDouble(rawButtons[i]);
-		}
-		for (int i=0;i<numAxes; i++)
-		{
-			axis_data.addDouble(rawAxes[i]);
-		}
+        {
+            buttons_data.addDouble(rawButtons[i]);
+        }
+        for (int i=0;i<numAxes; i++)
+        {
+            axis_data.addDouble(rawAxes[i]);
+        }
 
-		// Sending data on the yarp ports
-		if (port_command.getOutputCount()>0)
+        // Sending data on the yarp ports
+        if (port_command.getOutputCount()>0)
         {
-			port_command.prepare() = data;
-			port_command.write();
-		}
-		if (port_axis_only.getOutputCount()>0)
+            port_command.prepare() = data;
+            port_command.write();
+        }
+        if (port_axis_only.getOutputCount()>0)
         {
-			port_axis_only.prepare() = axis_data;
-			port_axis_only.write();
-		}
-		if (port_buttons_only.getOutputCount()>0)
+            port_axis_only.prepare() = axis_data;
+            port_axis_only.write();
+        }
+        if (port_buttons_only.getOutputCount()>0)
         {
-			port_buttons_only.prepare() = buttons_data;
-			port_buttons_only.write();
-		}
+            port_buttons_only.prepare() = buttons_data;
+            port_buttons_only.write();
+        }
 
         // Displaying status
         if (!silent) printStatus();
@@ -655,9 +654,9 @@ public:
         if (reverse)         delete [] reverse;
         port_command.interrupt();
         port_command.close();
-	    port_axis_only.interrupt();
+        port_axis_only.interrupt();
         port_axis_only.close();
-	    port_buttons_only.interrupt();
+        port_buttons_only.interrupt();
         port_buttons_only.close();
     }
 
