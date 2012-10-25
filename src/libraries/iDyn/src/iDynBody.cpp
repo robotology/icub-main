@@ -2841,14 +2841,12 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         #ifdef DEBUG_FOOT_COM
 		//Now we can finally add all the matricial terms that compose fJw
 			jac = fJr + fLr + fRr*jac;
-			fprintf(stderr, "ROOT COM from EXPERIMENTAL_getCOMjacobian(): \n%s\n", whole_COM.toString().c_str());
 			temp_com.setSubvector(0,whole_COM);		//CHECKED
 			temp_com(3)=1;							//CHECKED
 			if (sw_getcom)
 			{
 				temp_com = fTr*temp_com;				//CHECKED
 				whole_COM = temp_com.subVector(0,2);	//CHECKED
-				fprintf(stderr, "FOOT whole_COM from EXPERIMENTAL_getCOMjacobian(): \n%s\n", whole_COM.toString().c_str());
 			}
 			// whole_COM(0) = -temp_com(2);
 			// whole_COM(2) = temp_com(0);
