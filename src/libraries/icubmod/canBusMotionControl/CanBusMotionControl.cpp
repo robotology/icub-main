@@ -3460,8 +3460,8 @@ bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
     _readWord16 (CAN_GET_SCALE, axis, s); out->scale = double(s);
     DEBUG("Calling CAN_GET_TLIM\n");
     _readWord16 (CAN_GET_TLIM, axis, s); out->max_output = double(s);
-    DEBUG("Calling CAN_SET_POS_STICTION_PARAMS\n");
-    _readWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_pos_val = double(s); out->stiction_neg_val = double(s2);
+    DEBUG("Calling CAN_GET_POS_STICTION_PARAMS\n");
+    _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_pos_val = double(s); out->stiction_neg_val = double(s2);
     DEBUG("Get PID done!\n");
     
 
@@ -3484,7 +3484,7 @@ bool CanBusMotionControl::getPidsRaw (Pid *out)
         _readWord16 (CAN_GET_OFFSET, i, s); out[i].offset= double(s);
         _readWord16 (CAN_GET_SCALE, i, s); out[i].scale = double(s);
         _readWord16 (CAN_GET_TLIM, i, s); out[i].max_output = double(s);
-        _readWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, s, s2 ); out[i].stiction_pos_val = double(s); out[i].stiction_neg_val = double(s2);
+        _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, i, s, s2 ); out[i].stiction_pos_val = double(s); out[i].stiction_neg_val = double(s2);
     }
 
     return true;
