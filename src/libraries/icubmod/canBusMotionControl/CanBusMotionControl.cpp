@@ -3245,7 +3245,7 @@ bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
     _writeWord16 (CAN_SET_OFFSET, axis, S_16(pid.offset));
     _writeWord16 (CAN_SET_SCALE, axis, S_16(pid.scale));
     _writeWord16 (CAN_SET_TLIM, axis, S_16(pid.max_output));
-    _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val));
+    _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val), false);
     return true;
 }
 
@@ -3535,7 +3535,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
-    _writeWord16Ex (CAN_SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val));
+    _writeWord16Ex (CAN_SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val), false);
     
     return true;
 }
@@ -3694,7 +3694,7 @@ bool CanBusMotionControl::setPidsRaw(const Pid *pids)
         _writeWord16   (CAN_SET_OFFSET, i, S_16(pids[i].offset));
         _writeWord16   (CAN_SET_SCALE, i, S_16(pids[i].scale));
         _writeWord16   (CAN_SET_TLIM, i, S_16(pids[i].max_output));
-        _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, S_16(pids[i].stiction_pos_val), S_16(pids[i].stiction_neg_val));
+        _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, S_16(pids[i].stiction_pos_val), S_16(pids[i].stiction_neg_val), false);
     }
 
     return true;
