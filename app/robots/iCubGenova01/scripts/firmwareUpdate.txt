@@ -25,13 +25,13 @@ cfw2can 6 5 4DC.1.28.out.S
 cfw2can 6 7 4DC.1.30.out.S
 
 // left leg
-cfw2can 3 5  2BLL.1.51.out.S
-cfw2can 3 6  2BLL.1.51.out.S
-cfw2can 3 7  2BLL.1.51.out.S
+cfw2can 3 5  2BLL_IE.2.51.out.S
+cfw2can 3 6  2BLL_IE.2.51.out.S
+cfw2can 3 7  2BLL_IE.2.51.out.S
 // right leg
-cfw2can 4 8  2BLL.1.51.out.S
-cfw2can 4 9  2BLL.1.51.out.S
-cfw2can 4 10 2BLL.1.51.out.S
+cfw2can 4 8  2BLL_IE.2.51.out.S
+cfw2can 4 9  2BLL_IE.2.51.out.S
+cfw2can 4 10 2BLL_IE.2.51.out.S
 
 
 
