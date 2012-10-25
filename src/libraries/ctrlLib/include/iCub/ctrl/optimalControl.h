@@ -93,16 +93,16 @@ protected:
     yarp::sig::Matrix P;
 
     yarp::sig::Matrix TN, lastT;
-	yarp::sig::Matrix *Ti;
-	yarp::sig::Matrix *Li;
+    yarp::sig::Matrix *Ti;
+    yarp::sig::Matrix *Li;
     
     yarp::sig::Vector x;
 
     size_t n;
     size_t m;
-	int N;
+    int N;
 
-	bool verbose;
+    bool verbose;
 
 public:
      /**
@@ -114,23 +114,23 @@ public:
      * @param _P  Control cost matrix 
      * @param _VN Final state cost matrix
      */
-	 Riccati(const yarp::sig::Matrix &_A, const yarp::sig::Matrix &_B,
+     Riccati(const yarp::sig::Matrix &_A, const yarp::sig::Matrix &_B,
              const yarp::sig::Matrix &_V, const yarp::sig::Matrix &_P,
              const yarp::sig::Matrix &_VN, bool verb=false);
 
-	 /**
+     /**
      * Get stored L_i matrix; call this function only after solveRiccati()
      * 
      * @param step The time index of the i-th matrix
      */
-	 yarp::sig::Matrix L(int step);
+     yarp::sig::Matrix L(int step);
 
-	 /**
+     /**
      * Get stored T_i matrix; call this function only after solveRiccati()
      * 
      * @param step The time index of the i-th matrix
      */
-	 yarp::sig::Matrix T(int step);
+     yarp::sig::Matrix T(int step);
 
      /**
      * Initialization of algebraic Riccati equation
@@ -141,42 +141,42 @@ public:
      * @param _P  Control cost matrix 
      * @param _VN Final state cost matrix
      */
-	 void setProblemData(const yarp::sig::Matrix &_A, const yarp::sig::Matrix &_B,
+     void setProblemData(const yarp::sig::Matrix &_A, const yarp::sig::Matrix &_B,
                          const yarp::sig::Matrix &_V, const yarp::sig::Matrix &_P,
                          const yarp::sig::Matrix &_VN);
 
-	 /**
+     /**
      * Solve recursively discrete algebraic Riccati equation (DARE) 
      * and stores matrices Ti and Li, where i=0:N-1 is the time 
      * index 
      * 
      * @param steps The number N of steps of the finite horizon controller
      */
-	 void solveRiccati(int steps);
+     void solveRiccati(int steps);
 
-	 /**
+     /**
      * Compute the LQ feedback control, in the form: ret= - L(i) * x 
      * 
      * @param step The time index i
-	 * @param x The state vector
+     * @param x The state vector
      */
-	 yarp::sig::Vector doLQcontrol(int step, const yarp::sig::Vector &x);
+     yarp::sig::Vector doLQcontrol(int step, const yarp::sig::Vector &x);
 
-	 /**
+     /**
      * Compute the LQ feedback control, in the form: u= - L(i) * x 
      * 
      * @param step The time index i
-	 * @param x The state vector
-	 * @param ret The control vector
+     * @param x The state vector
+     * @param ret The control vector
      */
-	 void doLQcontrol(int step, const yarp::sig::Vector &x, yarp::sig::Vector &ret);
+     void doLQcontrol(int step, const yarp::sig::Vector &x, yarp::sig::Vector &ret);
 
-	 /**
+     /**
      * Enable or disable verbose feedback (that is, printing additional information) 
      * 
      * @param verb Flag for verbose mode
      */
-	 void setVerbose(bool verb=true);
+     void setVerbose(bool verb=true);
 };
 
 }
