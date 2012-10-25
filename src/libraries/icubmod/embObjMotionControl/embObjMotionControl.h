@@ -43,7 +43,7 @@
 #ifndef __embObjMotionControlh__
 #define __embObjMotionControlh__
 
-#undef __cplucplus
+//#undef __cplucplus
 
 using namespace std;
 
@@ -58,11 +58,13 @@ using namespace std;
 ///////////////////
 
 #include <iCub/FactoryInterface.h>
-#include <linux/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+//#include <linux/types.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
+//#include <arpa/inet.h>
 
+// debug interface
+#include <iCub/DebugInterfaces.h>
 
 // ACE udp socket
 #include <ace/ACE.h>
@@ -167,7 +169,9 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public ImplementPositionControl<embObjMotionControl, IPositionControl>,
 							public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
 				            public ImplementPidControl<embObjMotionControl, IPidControl>,
-				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>
+				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
+							public ImplementDebugInterface,
+							public IDebugInterfaceRaw
 {
 private:
     int 					tot_packet_recv, errors;
@@ -363,6 +367,48 @@ public:
 	virtual bool getAmpStatusRaw(int j, int *st);
 	/////////////// END AMPLIFIER INTERFACE
 
+	//----------------------------------------------\\
+	//	Debug interface
+	//----------------------------------------------\\
+
+	/* Set a generic parameter (for debug)
+	 * @param type is the CAN code representing the command message
+	 * @return true/false on success/failure
+	 */
+	bool setParameterRaw(int j, unsigned int type, double value);
+
+	/* Get a generic parameter (for debug)
+	 * @param type is the CAN code representing the command message
+	 * @return true/false on success/failure
+	 */
+	bool getParameterRaw(int j, unsigned int type, double* value);
+
+	/* Set a generic parameter (for debug)
+	 * @param index is the number of the debug parameter
+	 * @return true/false on success/failure
+	 */
+	bool setDebugParameterRaw(int j, unsigned int index, double value);
+
+	/* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
+	 * @param index is the number of the debug parameter
+	 * @return true/false on success/failure
+	 */
+	bool setDebugReferencePositionRaw(int j, double value);
+
+	/* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
+	 * @param index is the number of the debug parameter
+	 * @return true/false on success/failure
+	 */
+	bool getDebugParameterRaw(int j, unsigned int index, double* value);
+	bool getDebugReferencePositionRaw(int j, double* value);
+	bool getRotorPositionRaw         (int j, double* value);
+	bool getRotorPositionsRaw        (double* value);
+	bool getRotorSpeedRaw            (int j, double* value);
+	bool getRotorSpeedsRaw           (double* value);
+	bool getRotorAccelerationRaw     (int j, double* value);
+	bool getRotorAccelerationsRaw    (double* value);
+	bool getJointPositionRaw         (int j, double* value);
+	bool getJointPositionsRaw        (double* value);
 };
 
 #endif // include guard

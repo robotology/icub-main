@@ -32,7 +32,7 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 #warning "Macro EMS_capacityofropframeregulars defined by hand!! Find a way to have this number synchronized with EMS!!"
-#define EMS_capacityofropframeregulars 1024
+#define EMS_capacityofropframeregulars 1408
 
 // Utilities
 
@@ -151,6 +151,7 @@ embObjMotionControl::embObjMotionControl() :
 						ImplementPositionControl<embObjMotionControl, IPositionControl>(this),
 				        ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
 				        ImplementControlMode(this),
+				        ImplementDebugInterface(this),
 				        _mutex(1)
 {
 	udppkt_data 	= 0x00;
@@ -219,7 +220,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 	// Debug info
 	memset(info, 0x00, SIZE_INFO);
-	Bottle xtmp2;
+//	Bottle xtmp2;
 	ACE_TCHAR address[64] = {0};
 //	Bottle xtmp = Bottle(config.findGroup("ETH"));
 	strcpy(address, config.findGroup("ETH").check("IpAddress",Value(1), " EMS ip address").asString().c_str() );
@@ -255,9 +256,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 //
 //	yDebug() << "boardNum " << _fId.boardNum;
 
-	Bottle xtmpB = Bottle(config.findGroup("ETH"));
+	Bottle &xtmpB = (config.findGroup("ETH"));
 	int boardNum=255;
-	xtmp2 = xtmpB.findGroup("Ems");
+	Bottle &xtmp2 = xtmpB.findGroup("Ems");
     if (xtmp2.isNull())
     {
         yError() << "[embObjMotionContro] EMS Board number identifier not found\n";
@@ -336,7 +337,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-
+    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
 
 
 	//  Tell EMS which NV I want to be signalled spontaneously, configure joints and motors and go to running mode
@@ -738,7 +739,7 @@ bool embObjMotionControl::init()
 				yError() << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
 		}
 
-		if( (NUMOFROPSIGCFG - 1) <= ((j - old +1)*2))	// a ropSigCfg can store only 20 variables at time. If more are needed send 2 messages.
+		if( (NUMOFROPSIGCFG - 1) <= ((j - old +1)*2))	// a ropSigCfg can store only 20 variables at time. Send 2 messages if more are needed.
 		{
 			// A ropsigcfg vector can hold at max NUMOFROPSIGCFG (20) value. If more are needed, send another package,
 			// so wait some time to let ethManager send this package and then start again.
@@ -825,8 +826,8 @@ bool embObjMotionControl::init()
 			jconfig.velocitysetpointtimeout = _velocityTimeout[index];
 			jconfig.motionmonitormode = eomc_motionmonitorstatus_notmonitored;
 			// to do
-			jconfig.encoderconversionfactor = 0x00;
-			jconfig.encoderconversionoffset = 0x00;
+			jconfig.encoderconversionfactor = 1;
+			jconfig.encoderconversionoffset = 0;
 
 			if( eores_OK != eo_nv_Set(nvRoot, &jconfig, eobool_true, eo_nv_upd_dontdo))
 			{
@@ -2347,3 +2348,23 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 
 	return ret;
 }
+
+
+//----------------------------------------------\\
+//	Debug interface
+//----------------------------------------------\\
+
+bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value) 			{ };
+bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)			{ };
+bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value) 	{ };
+bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value) 	{ };
+bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value) 				{ };
+bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value) 				{ };
+bool embObjMotionControl::getRotorPositionRaw         (int j, double* value) 				{ };
+bool embObjMotionControl::getRotorPositionsRaw        (double* value)		 				{ };
+bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)		 		{ };
+bool embObjMotionControl::getRotorSpeedsRaw           (double* value) 						{ };
+bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)		 		{ };
+bool embObjMotionControl::getRotorAccelerationsRaw    (double* value) 						{ };
+bool embObjMotionControl::getJointPositionRaw         (int j, double* value) 				{ };
+bool embObjMotionControl::getJointPositionsRaw        (double* value) 						{ };
