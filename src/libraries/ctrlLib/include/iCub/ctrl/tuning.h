@@ -59,14 +59,14 @@ namespace ctrl
 * The employed algorithm makes use of an online Extended Kalman
 * Filter. 
 */
-class OnlineDCMotorParametersEstimator
+class OnlineDCMotorEstimator
 {
 protected:
     yarp::sig::Matrix A;
     yarp::sig::Matrix F;
     yarp::sig::Vector B;
     yarp::sig::Matrix C;
-    yarp::sig::Matrix Ct;    
+    yarp::sig::Matrix Ct;
     yarp::sig::Matrix Q;
     yarp::sig::Matrix P;
     yarp::sig::Vector x;
@@ -78,7 +78,7 @@ public:
     /**
      * Default constructor.
      */
-    OnlineDCMotorParametersEstimator();
+    OnlineDCMotorEstimator();
 
     /**
      * Initialize the estimation. 
@@ -236,6 +236,8 @@ public:
 class OnlinePCompensatorDesign
 {
 protected:
+    OnlineDCMotorEstimator  motor;
+    OnlineStictionEstimator stiction;
 
 public:
 };

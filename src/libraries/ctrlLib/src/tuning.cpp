@@ -29,7 +29,7 @@ using namespace iCub::ctrl;
 
 
 /**********************************************************************/
-OnlineDCMotorParametersEstimator::OnlineDCMotorParametersEstimator()
+OnlineDCMotorEstimator::OnlineDCMotorEstimator()
 {
     Vector x0(4,0.0);
     x0[2]=x0[3]=1.0;
@@ -38,9 +38,9 @@ OnlineDCMotorParametersEstimator::OnlineDCMotorParametersEstimator()
 
 
 /**********************************************************************/
-bool OnlineDCMotorParametersEstimator::init(const double Ts, const double Q,
-                                            const double R, const double P0,
-                                            const Vector &x0)
+bool OnlineDCMotorEstimator::init(const double Ts, const double Q,
+                                  const double R, const double P0,
+                                  const Vector &x0)
 {
     if (x0.length()<4)
         return false;
@@ -64,7 +64,7 @@ bool OnlineDCMotorParametersEstimator::init(const double Ts, const double Q,
 
 
 /**********************************************************************/
-Vector OnlineDCMotorParametersEstimator::estimate(const double u, const double y)
+Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
 {
     double &x1=x[0];
     double &x2=x[1];
