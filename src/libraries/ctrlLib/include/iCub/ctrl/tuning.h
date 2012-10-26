@@ -199,6 +199,13 @@ public:
      *    for the integral average of the error computed within the
      *    estimation time window.
      *  
+     * @b gamma (<double> <double>): specify the gains used for 
+     *    updating the stiction positive and negative values,
+     *    respectively.
+     *  
+     * @b theta (<double> <double>): specify the initial stiction 
+     *    positive and negative values, respectively.
+     *  
      * @return true/false on success/failure. 
      */
     bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
