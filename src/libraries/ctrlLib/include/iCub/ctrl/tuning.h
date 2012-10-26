@@ -136,6 +136,7 @@ protected:
     yarp::os::Semaphore        mutex;
     yarp::sig::Vector          gamma;
     yarp::sig::Vector          theta;
+    yarp::sig::Vector          done;
                               
     AWLinEstimator             velEst;
     AWQuadEstimator            accEst;
@@ -150,7 +151,7 @@ protected:
     double kp,ki,kd;
     double vel_thres,e_thres;
     double tg,xd_pos;    
-    bool   adapt,adaptOld,done;
+    bool   adapt,adaptOld;
 
     enum {rising, falling} state;
 
@@ -223,7 +224,7 @@ public:
      *  
      * @return true when |e_mean|<e_thres.
      */
-    bool isDone() const { return done; }
+    bool isDone();
 };
 
 
