@@ -150,7 +150,7 @@ protected:
     double kp,ki,kd;
     double vel_thres,e_thres;
     double tg,xd_pos;    
-    bool   adapt,adaptOld;
+    bool   adapt,adaptOld,done;
 
     enum {rising, falling} state;
 
@@ -210,6 +210,13 @@ public:
      *         as components of a 2x1 vector.
      */
     yarp::sig::Vector getEstimation();
+
+    /**
+     * Check the current estimation status.
+     *  
+     * @return true when |e_mean|<e_thres.
+     */
+    bool isDone() const { return done; }
 };
 
 

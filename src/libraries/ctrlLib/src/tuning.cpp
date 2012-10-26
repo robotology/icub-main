@@ -187,7 +187,7 @@ bool OnlineStictionEstimator::threadInit()
     tg=x_min;
     xd_pos=x_pos;
     state=(tg-x_pos>0.0)?rising:falling;
-    adapt=adaptOld=false;
+    adapt=adaptOld=done=false;
 
     trajGen.setTs(0.001*getRate());
     trajGen.setT(T);
@@ -257,7 +257,12 @@ void OnlineStictionEstimator::run()
     {
         Vector e_mean=cumErr/t;
         if (yarp::math::norm(e_mean)>e_thres)
+        {
             theta+=gamma*e_mean;
+            done=false;
+        }
+        else
+            done=true;
 
         intErr.reset(Vector(theta.length(),0.0));
     }
