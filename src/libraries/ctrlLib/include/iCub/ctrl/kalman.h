@@ -114,7 +114,7 @@ public:
 
     /**
      * Returns the estimated state vector given the current 
-     * measurement. 
+     * input and the current measurement.
      * 
      * @param u Current input. 
      * @param z Current measurement. 
