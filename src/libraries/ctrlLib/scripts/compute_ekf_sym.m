@@ -1,4 +1,4 @@
-function [xhat,yhat,F,H]=compute_ekf(xhat_1,u_1)
+function [xhat,yhat,F,H]=compute_ekf_sym(xhat_1,u_1)
 %#ok<*NASGU>
 %
 % Copyright: (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
