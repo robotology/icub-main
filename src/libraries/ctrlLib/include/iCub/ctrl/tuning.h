@@ -29,12 +29,14 @@
 #ifndef __TUNING_H__
 #define __TUNING_H__
 
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
-#include <yarp/dev/PolyDriver.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 #include <iCub/ctrl/math.h>
-#include <iCub/ctrl/kalman.h>
 #include <iCub/ctrl/pids.h>
+#include <iCub/ctrl/kalman.h>
+#include <iCub/ctrl/minJerkCtrl.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 
 namespace iCub
@@ -118,13 +120,95 @@ public:
 /**
 * \ingroup Tuning
 *
-* Online Stiction Estimator.
+* Online Stiction Estimator. 
+*  
+* Estimate the positive and negative stiction values. 
 */
-class OnlineStictionEstimator
+class OnlineStictionEstimator : public yarp::os::RateThread
 {
 protected:
+    yarp::dev::IControlMode   *imod;
+    yarp::dev::IControlLimits *ilim;
+    yarp::dev::IEncoders      *ienc;
+    yarp::dev::IPidControl    *ipid;
+
+    yarp::os::Semaphore        mutex;
+    yarp::sig::Vector          gamma;
+    yarp::sig::Vector          theta;
+                              
+    AWLinEstimator             velEst;
+    AWQuadEstimator            accEst;
+    parallelPID               *pid;
+    Integrator                 intErr;
+    minJerkTrajGen             trajGen;
+
+    int    joint;
+    double t0,T;
+    double x_min,x_max;
+    double x_pos,x_vel,x_acc;
+    double kp,ki,kd;
+    double vel_thres,e_thres;
+    double tg,xd_pos;    
+    bool   adapt,adaptOld;
+
+    enum {rising, falling} state;
+
+    bool threadInit();
+    void run();
+    void threadRelease();
 
 public:
+    /**
+     * Default constructor.
+     */
+    OnlineStictionEstimator();
+
+    /**
+     * Initialize the estimation. 
+     *  
+     * @param driver the device driver to control the robot part.
+     * @param options the configuration options. 
+     *  
+     * @note Available options are: 
+     *  
+     * @b Ts <double>: specify the estimator sample time given in 
+     *    seconds.
+     *  
+     * @b joint <int>: specify the joint to be controlled. 
+     *  
+     * @b T <double>: specify the period in seconds of the reference
+     *    waveform used for tracking.
+     *  
+     * @b kp <double>: specify the proportional term of the 
+     *    high-level controller for tracking purpose.
+     *  
+     * @b ki <double>: specify the integral term of the high-level 
+     *    controller for tracking purpose.
+     *  
+     * @b kd <double>: specify the derivative term of the 
+     *    high-level controller for tracking purpose.
+     *  
+     * @b vel_thres <double>: specify the velocity threshold used to 
+     *    identify the estimation time windows. The estimation is
+     *    carried out whenever |vel|<vel_thres.
+     *  
+     * @b e_thres <double>: specify the error threshold above which 
+     *    keep updating the stiction values. The estimation is
+     *    carried out until |e_mean|>e_thres, where e_mean accounts
+     *    for the integral average of the error computed within the
+     *    estimation time window.
+     *  
+     * @return true/false on success/failure. 
+     */
+    bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
+
+    /**
+     * Retrieve the estimation. 
+     *  
+     * @return Current positive and negative stiction values given 
+     *         as components of a 2x1 vector.
+     */
+    yarp::sig::Vector getEstimation();
 };
 
 

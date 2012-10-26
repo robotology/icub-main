@@ -15,13 +15,16 @@
  * Public License for more details
 */
 
+#include <algorithm>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/tuning.h>
 
+using namespace std;
+using namespace yarp::os;
+using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace yarp::dev;
 using namespace iCub::ctrl;
 
 
@@ -107,5 +110,182 @@ Vector OnlineDCMotorParametersEstimator::estimate(const double u, const double y
     return _x;
 }
 
+
+/**********************************************************************/
+OnlineStictionEstimator::OnlineStictionEstimator() :
+                         RateThread(1000),   velEst(32,4.0), accEst(32,4.0),
+                         trajGen(1,1.0,1.0), intErr(1.0,Vector(2,0.0))
+{
+    imod=NULL;
+    ilim=NULL;
+    ienc=NULL;
+    ipid=NULL;
+}
+
+
+/**********************************************************************/
+bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &options)
+{
+    Property &opt=const_cast<Property&>(options);
+    if (driver.isValid() && opt.check("joint"))
+    {
+        bool ok=true;
+        ok&=driver.view(imod);
+        ok&=driver.view(ilim);
+        ok&=driver.view(ienc);
+        ok&=driver.view(ipid);
+
+        if (!ok)
+            return false;
+
+        joint=opt.find("joint").asInt();
+        setRate((int)(1000.0*opt.check("Ts",Value(0.01)).asDouble()));
+
+        T=opt.check("T",Value(2.0)).asDouble();
+        kp=opt.check("kp",Value(10.0)).asDouble();
+        ki=opt.check("ki",Value(250.0)).asDouble();
+        kd=opt.check("kd",Value(15.0)).asDouble();
+        vel_thres=fabs(opt.check("vel_thres",Value(5.0)).asDouble());
+        e_thres=fabs(opt.check("e_thres",Value(1.0)).asDouble());
+
+        gamma.resize(2,0.001);
+        if (Bottle *pB=opt.find("gamma").asList()) 
+        {
+            size_t len=std::min(gamma.length(),(size_t)pB->size());
+            for (size_t i=0; i<len; i++)
+                gamma[i]=pB->get(i).asDouble();
+        }
+
+        theta.resize(2,0.0);
+        if (Bottle *pB=opt.find("theta").asList()) 
+        {
+            size_t len=std::min(theta.length(),(size_t)pB->size());
+            for (size_t i=0; i<len; i++)
+                theta[i]=pB->get(i).asDouble();
+        }
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**********************************************************************/
+bool OnlineStictionEstimator::threadInit()
+{
+    ilim->getLimits(joint,&x_min,&x_max);
+    double x_range=x_max-x_min;
+    x_min+=0.1*x_range;
+    x_max-=0.1*x_range;
+    imod->setOpenLoopMode(joint);
+
+    ienc->getEncoder(joint,&x_pos);
+    x_vel=0.0;
+    x_acc=0.0;
+
+    tg=x_min;
+    xd_pos=x_pos;
+    state=(tg-x_pos>0.0)?rising:falling;
+    adapt=adaptOld=false;
+
+    trajGen.setTs(0.001*getRate());
+    trajGen.setT(T);
+    trajGen.init(Vector(1,x_pos));
+
+    Vector Kp(1,kp),  Ki(1,ki),  Kd(1,kd);
+    Vector Wp(1,1.0), Wi(1,1.0), Wd(1,1.0);
+    Vector N(1,10.0), Tt(1,1.0);
+
+    Pid pidInfo;
+    ipid->getPid(joint,&pidInfo);
+    Matrix satLim(1,2);
+    satLim(0,0)=-pidInfo.max_int; satLim(0,1)=pidInfo.max_int;
+
+    pid=new parallelPID(0.001*getRate(),Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
+    pid->reset(Vector(1,0.0));
+
+    intErr.setTs(0.001*getRate());
+    intErr.reset(theta);
+
+    t0=Time::now();
+
+    return true;
+}
+
+
+/**********************************************************************/
+void OnlineStictionEstimator::run()
+{
+    mutex.wait();
+
+    ienc->getEncoder(joint,&x_pos);
+
+    AWPolyElement el;
+    el.data.resize(1,x_pos);
+    el.time=Time::now();
+    Vector vel=velEst.estimate(el); x_vel=vel[0];
+    Vector acc=accEst.estimate(el); x_acc=acc[0];
+
+    double t=Time::now()-t0;
+    if (t>2.0*trajGen.getT())
+    {
+        tg=(tg==x_min)?x_max:x_min;
+        state=(tg-x_pos>0.0)?rising:falling;
+        adapt=(fabs(x_vel)<vel_thres);
+        t0=Time::now();
+    }
+
+    trajGen.computeNextValues(Vector(1,tg));
+    xd_pos=trajGen.getPos()[0];        
+
+    Vector pid_out=pid->compute(Vector(1,xd_pos),Vector(1,x_pos));
+    double e_pos=xd_pos-x_pos;
+    double fw=(state==rising)?theta[0]:theta[1];
+    double u=fw+pid_out[0];
+
+    Vector adaptGate(theta.length(),0.0);
+    if ((fabs(x_vel)<vel_thres) && adapt)
+        adaptGate[(state==rising)?0:1]=1.0;
+    else
+        adapt=false;
+
+    Vector cumErr=intErr.integrate(e_pos*adaptGate);
+
+    // trigger on falling edge
+    if (!adapt && adaptOld)
+    {
+        Vector e_mean=cumErr/t;
+        if (yarp::math::norm(e_mean)>e_thres)
+            theta+=gamma*e_mean;
+
+        intErr.reset(Vector(theta.length(),0.0));
+    }
+
+    ipid->setOffset(joint,u);
+    adaptOld=adapt;
+
+    mutex.post();
+}
+
+
+/**********************************************************************/
+void OnlineStictionEstimator::threadRelease()
+{
+    ipid->setOffset(joint,0.0);
+    imod->setPositionMode(joint);
+    delete pid;
+}
+
+
+/**********************************************************************/
+Vector OnlineStictionEstimator::getEstimation()
+{
+    mutex.wait();
+    Vector values=theta;
+    mutex.post();
+
+    return values;
+}
 
 
