@@ -111,7 +111,8 @@ public:
     /**
      * Return the estimated state.
      * 
-     * @return Estimated state.
+     * @return Estimated state vector composed of position, 
+     *         velocity, \f$ \tau \f$ and \f$ K. \f$
      */
     yarp::sig::Vector get_x() const { return _x; }
 };
