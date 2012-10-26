@@ -10,6 +10,7 @@ SET(folder_source src/math.cpp
                   src/filters.cpp
                   src/kalman.cpp
                   src/pids.cpp
+                  src/tuning.cpp
                   src/adaptWinPolyEstimator.cpp
                   src/minJerkCtrl.cpp
                   src/functionEncoder.cpp
@@ -20,6 +21,7 @@ SET(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/filters.h
                   include/iCub/ctrl/kalman.h
                   include/iCub/ctrl/pids.h
+                  include/iCub/ctrl/tuning.h
                   include/iCub/ctrl/adaptWinPolyEstimator.h
                   include/iCub/ctrl/minJerkCtrl.h
                   include/iCub/ctrl/functionEncoder.h
