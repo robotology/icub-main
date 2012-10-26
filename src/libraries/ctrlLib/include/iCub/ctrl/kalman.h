@@ -65,6 +65,9 @@ protected:
 
     void initialize();
 
+    // Default constructor: not implemented.
+    Kalman();
+
 public:
     /**
      * Init a Kalman state estimator.
