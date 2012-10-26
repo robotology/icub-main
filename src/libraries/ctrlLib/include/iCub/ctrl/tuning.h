@@ -60,7 +60,15 @@ namespace ctrl
 class OnlineDCMotorParametersEstimator
 {
 protected:
-    Kalman *ekf;
+    yarp::sig::Matrix A;
+    yarp::sig::Matrix F;
+    yarp::sig::Vector B;
+    yarp::sig::Matrix C;
+    yarp::sig::Matrix Ct;    
+    yarp::sig::Matrix Q;
+    yarp::sig::Matrix P;
+    yarp::sig::Vector x;
+    double R;
     double Ts;
 
 public:
@@ -76,29 +84,33 @@ public:
      * @param Q Process noise covariance. 
      * @param R Measurement noise covariance. 
      * @param P0 Initial condition for estimated error covariance. 
-     * @param state0 A 4x1 vector containing respectively the 
-     *               initial conditions for position, velocity, \f$
-     *               \tau \f$ and \f$ K. \f$
+     * @param x0 A 4x1 vector containing respectively the initial 
+     *           conditions for position, velocity, \f$ \tau \f$ and
+     *           \f$ K. \f$
+     *  
+     * @return true/false on success/failure. 
      */
-    void init(const double Ts, const double Q, const double R,
-              const double P0, const yarp::sig::Vector &state0);
+    bool init(const double Ts, const double Q, const double R,
+              const double P0, const yarp::sig::Vector &x0);
 
     /**
      * Estimate the state vector given the current input and the 
      * current measurement. 
      * 
      * @param u Current input. 
-     * @param z Current measurement. 
+     * @param y Current measurement. 
      * 
      * @return Estimated state vector composed of position, 
      *         velocity, \f$ \tau \f$ and \f$ K. \f$
      */
-    yarp::sig::Vector estimate(const double u, const double z);
+    yarp::sig::Vector estimate(const double u, const double y);
 
     /**
-     * Destructor.
+     * Return the estimated state.
+     * 
+     * @return Estimated state.
      */
-    virtual ~OnlineDCMotorParametersEstimator();
+    yarp::sig::Vector get_x() const { return x; }
 };
 
 

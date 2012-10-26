@@ -83,7 +83,7 @@ Vector Kalman::filt(const Vector &u, const Vector &z)
     K=P*Ht*pinv(H*P*Ht+R);
 
     // correction
-    x=x+K*(z-H*x);
+    x+=K*(z-H*x);
     P=(I-K*H)*P;
 
     return x;
