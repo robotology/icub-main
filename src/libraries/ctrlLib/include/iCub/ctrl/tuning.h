@@ -46,13 +46,59 @@ namespace ctrl
 /**
 * \ingroup Tuning
 *
-* Online DC Motor Parameters Estimator.
+* Online DC Motor Parameters Estimator. 
+*  
+* Estimate the gain \f$ K \f$ and the mechanical time constant
+* \f$ \tau \f$ of the following DC motor transfer function with 
+*     voltage \f$ V \f$ as input and angular position \f$ \theta
+*     \f$ as output: \n
+*     \f$ \frac{\theta}{V}=\frac{K}{1+s\cdot\tau} \cdot
+*         \frac{1}{s}. \f$ \n
+* The employed algorithm makes use of an online Extended Kalman
+* Filter. 
 */
 class OnlineDCMotorParametersEstimator
 {
 protected:
+    Kalman *ekf;
+    double Ts;
 
 public:
+    /**
+     * Default constructor.
+     */
+    OnlineDCMotorParametersEstimator();
+
+    /**
+     * Initialize the estimation. 
+     *  
+     * @param Ts the estimator sample time given in seconds. 
+     * @param Q Process noise covariance. 
+     * @param R Measurement noise covariance. 
+     * @param P0 Initial condition for estimated error covariance. 
+     * @param state0 A 4x1 vector containing respectively the 
+     *               initial conditions for position, velocity, \f$
+     *               \tau \f$ and \f$ K. \f$
+     */
+    void init(const double Ts, const double Q, const double R,
+              const double P0, const yarp::sig::Vector &state0);
+
+    /**
+     * Estimate the state vector given the current input and the 
+     * current measurement. 
+     * 
+     * @param u Current input. 
+     * @param z Current measurement. 
+     * 
+     * @return Estimated state vector composed of position, 
+     *         velocity, \f$ \tau \f$ and \f$ K. \f$
+     */
+    yarp::sig::Vector estimate(const double u, const double z);
+
+    /**
+     * Destructor.
+     */
+    virtual ~OnlineDCMotorParametersEstimator();
 };
 
 

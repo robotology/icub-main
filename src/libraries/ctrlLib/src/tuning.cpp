@@ -25,6 +25,43 @@ using namespace iCub::ctrl;
 
 
 /**********************************************************************/
+OnlineDCMotorParametersEstimator::OnlineDCMotorParametersEstimator()
+{
+    ekf=NULL;
+    Vector state0(4,0.0);
+    state0[2]=state0[3]=1.0;
+    init(0.01,1.0,1.0,1e5,state0);
+}
 
 
+/**********************************************************************/
+void OnlineDCMotorParametersEstimator::init(const double Ts, const double Q,
+                                            const double R, const double P0,
+                                            const Vector &state0)
+{
+    this->Ts=Ts;
+    if (ekf!=NULL)
+    {
+        ekf->set_Q(Q*eye(4,4));
+        ekf->set_R(R*eye(1,1));
+    }
+    else
+        ekf=new Kalman(Matrix(4,4),Matrix(2,1),Matrix(1,1),Q*eye(4,4),R*eye(1,1));
+
+    ekf->init(state0,P0*eye(4,4));
+}
+
+
+/**********************************************************************/
+Vector OnlineDCMotorParametersEstimator::estimate(const double u, const double z)
+{
+    return Vector(4);
+}
+
+
+/**********************************************************************/
+OnlineDCMotorParametersEstimator::~OnlineDCMotorParametersEstimator()
+{
+    delete ekf;
+}
 
