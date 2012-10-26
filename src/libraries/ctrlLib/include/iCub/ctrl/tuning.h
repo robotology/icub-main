@@ -68,6 +68,7 @@ protected:
     yarp::sig::Matrix Q;
     yarp::sig::Matrix P;
     yarp::sig::Vector x;
+    yarp::sig::Vector _x;
     double R;
     double Ts;
 
@@ -110,7 +111,7 @@ public:
      * 
      * @return Estimated state.
      */
-    yarp::sig::Vector get_x() const { return x; }
+    yarp::sig::Vector get_x() const { return _x; }
 };
 
 

@@ -52,7 +52,9 @@ bool OnlineDCMotorParametersEstimator::init(const double Ts, const double Q,
     this->R=R;
 
     this->Ts=Ts;
-    x=x0.subVector(0,3);
+    x=_x=x0.subVector(0,3);
+    x[2]=1.0/_x[2];
+    x[3]=_x[3]/_x[2];
 
     return true;
 }
@@ -98,7 +100,11 @@ Vector OnlineDCMotorParametersEstimator::estimate(const double u, const double y
     x+=K*(y-C*x);
     P=(eye(4,4)-K*C)*P;
 
-    return x;
+    _x=x;
+    _x[2]=1.0/x[2];
+    _x[3]=x[3]/x[2];
+
+    return _x;
 }
 
 
