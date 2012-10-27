@@ -122,7 +122,7 @@ public:
      * 
      * @return vector containing \f$ \tau \f$ and \f$ K. \f$ 
      */
-    yarp::sig::Vector get_parameter() const { return _x.subVector(2,3); }
+    yarp::sig::Vector get_parameters() const { return _x.subVector(2,3); }
 };
 
 

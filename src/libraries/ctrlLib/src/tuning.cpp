@@ -103,7 +103,8 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
     x+=K*(y-C*x);
     P=(eye(4,4)-K*C)*P;
 
-    _x=x;
+    _x[0]=x[0];
+    _x[1]=x[1];
     _x[2]=1.0/x[2];
     _x[3]=x[3]/x[2];
 
