@@ -340,6 +340,7 @@ OnlinePCompensatorDesign::OnlinePCompensatorDesign()
 /**********************************************************************/
 bool OnlinePCompensatorDesign::configure(PolyDriver &driver, const Property &options)
 {
+    Property &opt=const_cast<Property&>(options);
     if (!driver.isValid())
         return false;
 
@@ -353,7 +354,7 @@ bool OnlinePCompensatorDesign::configure(PolyDriver &driver, const Property &opt
     if (!ok)
         return false;
 
-    Property &opt=const_cast<Property&>(options);
+    // configure plant estimator    
     Bottle &optPlant=opt.findGroup("plant_estimation");
     if (optPlant.isNull())
         return false;
@@ -382,6 +383,7 @@ bool OnlinePCompensatorDesign::configure(PolyDriver &driver, const Property &opt
     if (!plant.init(Ts,Q,R,P0,x0))
         return false;
 
+    // configure stiction estimator
     Bottle &optStiction=opt.findGroup("plant_stiction");
     if (!optStiction.isNull())
     {
