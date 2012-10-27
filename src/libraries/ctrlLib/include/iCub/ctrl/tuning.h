@@ -54,8 +54,7 @@ namespace ctrl
 * \f$ \tau \f$ of the following DC motor transfer function with 
 *     voltage \f$ V \f$ as input and angular position \f$ \theta
 *     \f$ as output: \n
-*     \f$ \frac{\theta}{V}=\frac{K}{1+s\cdot\tau} \cdot
-*         \frac{1}{s}. \f$ \n
+*     \f$ \theta/V=K/\(1+s\cdot\tau\) \cdot 1/s. \f$ \n
 * The employed algorithm makes use of an online Extended Kalman
 * Filter. 
 */
