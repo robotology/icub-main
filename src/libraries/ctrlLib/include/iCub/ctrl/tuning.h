@@ -116,6 +116,13 @@ public:
      *         velocity, \f$ \tau \f$ and \f$ K. \f$
      */
     yarp::sig::Vector get_x() const { return _x; }
+
+    /**
+     * Return the system parameters.
+     * 
+     * @return vector containing \f$ \tau \f$ and \f$ K. \f$ 
+     */
+    yarp::sig::Vector get_parameter() const { return _x.subVector(2,3); }
 };
 
 
