@@ -120,6 +120,7 @@ OnlineStictionEstimator::OnlineStictionEstimator() :
     ilim=NULL;
     ienc=NULL;
     ipid=NULL;
+    configured=false;
 }
 
 
@@ -164,7 +165,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
                 theta[i]=pB->get(i).asDouble();
         }
 
-        return true;
+        return configured=true;
     }
     else
         return false;
@@ -174,6 +175,9 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
 /**********************************************************************/
 bool OnlineStictionEstimator::threadInit()
 {
+    if (!configured)
+        return false;
+
     ilim->getLimits(joint,&x_min,&x_max);
     double x_range=x_max-x_min;
     x_min+=0.1*x_range;
@@ -209,6 +213,7 @@ bool OnlineStictionEstimator::threadInit()
     intErr.reset(theta);
 
     done=0.0;
+    doneEvent.reset();
     t0=Time::now();
 
     return true;
@@ -272,6 +277,9 @@ void OnlineStictionEstimator::run()
     adaptOld=adapt;
 
     mutex.post();
+
+    if (done[0]*done[1]!=0.0)
+        doneEvent.signal();
 }
 
 
@@ -281,6 +289,8 @@ void OnlineStictionEstimator::threadRelease()
     ipid->setOffset(joint,0.0);
     imod->setPositionMode(joint);
     delete pid;
+
+    doneEvent.signal();
 }
 
 
@@ -304,5 +314,92 @@ bool OnlineStictionEstimator::isDone()
 
     return ret;
 }
+
+
+/**********************************************************************/
+bool OnlineStictionEstimator::waitUntilDone()
+{
+    doneEvent.wait();
+    return isDone();
+}
+
+
+/**********************************************************************/
+OnlinePCompensatorDesign::OnlinePCompensatorDesign()
+{
+    imod=NULL;
+    ilim=NULL;
+    ienc=NULL;
+    ipid=NULL;
+    ipos=NULL;
+    configured=false;
+}
+
+
+/**********************************************************************/
+bool OnlinePCompensatorDesign::configure(PolyDriver &driver, const Property &options)
+{
+    if (!driver.isValid())
+        return false;
+
+    bool ok=true;
+    ok&=driver.view(imod);
+    ok&=driver.view(ilim);
+    ok&=driver.view(ienc);
+    ok&=driver.view(ipid);
+    ok&=driver.view(ipos);
+
+    if (!ok)
+        return false;
+
+    Property &opt=const_cast<Property&>(options);
+    Bottle &optPlant=opt.findGroup("plant_estimation");
+    if (optPlant.isNull())
+        return false;
+
+    if (!optPlant.check("joint"))
+        return false;
+
+    double x_min,x_max;
+    joint=optPlant.find("joint").asInt();
+    ilim->getLimits(joint,&x_min,&x_max);
+
+    x0.resize(4);
+    x0[0]=(x_min+x_max)/2.0;
+    x0[1]=0.0;
+    x0[2]=optPlant.check("tau",Value(1.0)).asDouble();
+    x0[3]=optPlant.check("K",Value(1.0)).asDouble();
+
+    double Ts=optPlant.check("Ts",Value(0.01)).asDouble();
+    double Q=optPlant.check("Q",Value(1.0)).asDouble();
+    double R=optPlant.check("R",Value(1.0)).asDouble();
+    double P0=optPlant.check("P0",Value(1e5)).asDouble();
+
+    max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
+    max_time=optPlant.check("max_time",Value(20.0)).asDouble();
+
+    if (!plant.init(Ts,Q,R,P0,x0))
+        return false;
+
+    Bottle &optStiction=opt.findGroup("plant_stiction");
+    if (!optStiction.isNull())
+    {
+        if (optStiction.check("enable",Value("off")).asString()=="on")
+        {
+            Property propStiction(optStiction.toString().c_str());
+
+            // enforce the equality between the "joint" properties
+            // values of the two groups
+            propStiction.unput("joint");
+            propStiction.put("joint",joint);
+
+            if (!stiction.configure(driver,propStiction))
+                return false;
+        }
+    }
+
+    return configured=true;
+}
+
 
 

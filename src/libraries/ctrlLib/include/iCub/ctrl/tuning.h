@@ -141,16 +141,17 @@ protected:
     yarp::dev::IEncoders      *ienc;
     yarp::dev::IPidControl    *ipid;
 
-    yarp::os::Semaphore        mutex;
-    yarp::sig::Vector          gamma;
-    yarp::sig::Vector          theta;
-    yarp::sig::Vector          done;
+    yarp::os::Semaphore mutex;
+    yarp::os::Event     doneEvent;
+    yarp::sig::Vector   gamma;
+    yarp::sig::Vector   theta;
+    yarp::sig::Vector   done;
                               
-    AWLinEstimator             velEst;
-    AWQuadEstimator            accEst;
-    parallelPID               *pid;
-    Integrator                 intErr;
-    minJerkTrajGen             trajGen;
+    AWLinEstimator   velEst;
+    AWQuadEstimator  accEst;
+    parallelPID     *pid;
+    Integrator       intErr;
+    minJerkTrajGen   trajGen;
 
     int    joint;
     double t0,T;
@@ -160,6 +161,7 @@ protected:
     double vel_thres,e_thres;
     double tg,xd_pos;    
     bool   adapt,adaptOld;
+    bool   configured;
 
     enum {rising, falling} state;
 
@@ -174,12 +176,12 @@ public:
     OnlineStictionEstimator();
 
     /**
-     * Initialize the estimation. 
+     * Configure the estimation. 
      *  
      * @param driver the device driver to control the robot part.
      * @param options the configuration options. 
      *  
-     * @note Available options are: 
+     * Available options are: 
      *  
      * @b Ts <double>: specify the estimator sample time given in 
      *    seconds.
@@ -220,6 +222,13 @@ public:
     bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
 
     /**
+     * Check the configuration status.
+     *  
+     * @return true iff configured successfully.
+     */
+    bool isConfigured() const { return configured; }
+
+    /**
      * Retrieve the estimation. 
      *  
      * @return Current positive and negative stiction values given 
@@ -233,6 +242,14 @@ public:
      * @return true when |e_mean|<e_thres.
      */
     bool isDone();
+
+    /**
+     * Wait until the condition |e_mean|<e_thres is met.
+     *  
+     * @return true iff the condition is met, false if the process 
+     *         is stopped before.
+     */
+    bool waitUntilDone();
 };
 
 
@@ -244,18 +261,88 @@ public:
 * Tune in an online fashion a P controller for a DC motor plant 
 * identified by means of \ref OnlineDCMotorEstimator .
 *  
-* The controller design is such that the compensated closed-loop 
-* system behaves like the following second order dynamics: 
+* The design of the controller is such that the compensated 
+* closed-loop system behaves like the following second order 
+* dynamics: 
 *  
 * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$
 */
 class OnlinePCompensatorDesign
 {
 protected:
-    OnlineDCMotorEstimator  motor;
+    OnlineDCMotorEstimator  plant;
     OnlineStictionEstimator stiction;
 
+    yarp::dev::IControlMode     *imod;
+    yarp::dev::IControlLimits   *ilim;
+    yarp::dev::IEncoders        *ienc;
+    yarp::dev::IPidControl      *ipid;
+    yarp::dev::IPositionControl *ipos;
+
+    yarp::sig::Vector x0;
+
+    int    joint;
+    double max_pwm,max_time;
+    bool   configured;
+
 public:
+    /**
+     * Default constructor.
+     */
+    OnlinePCompensatorDesign();
+
+    /**
+     * Configure the design.
+     *  
+     * @param driver the device driver to control the robot part.
+     * @param options the configuration options. 
+     *  
+     * Available options are to be given within the following 
+     * groups: 
+     *  
+     * @b [plant_estimation] 
+     *  
+     * @b joint <int>: specify the joint to be controlled. 
+     *  
+     * @b Ts <double>: specify the estimator sample time given in 
+     *    seconds.
+     *  
+     * @b Q <double>: specify the process noise covariance. 
+     *  
+     * @b R <double>: specify the measurement noise covariance. 
+     *  
+     * @b P0 <double>: specify the initial error covariance. 
+     *  
+     * @b tau <double>: specify the initial mechanical time constant 
+     *    given in seconds.
+     *  
+     * @b K <double>: specify the initial plant gain. 
+     *  
+     * @b max_pwm <double>: specify the amplitude of the squared 
+     *    voltage waveform applied to the joint for identification
+     *    purpose.
+     *  
+     * @b max_time <double>: specify in seconds the maximum time 
+     *    window for identification experiment.
+     *  
+     * @b [stiction_estimation] 
+     *  
+     * @b enable <string>: enable/disable stiction values 
+     * identification with "on"|"off". 
+     *  
+     * see \ref OnlineStictionEstimator for a detailed description 
+     * of available options. 
+     *  
+     * @return true/false on success/failure. 
+     */
+    bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
+
+    /**
+     * Check the configuration status.
+     *  
+     * @return true iff configured successfully.
+     */
+    bool isConfigured() const { return configured; }
 };
 
 }
