@@ -55,7 +55,7 @@ namespace ctrl
 *     function with voltage \f$ V \f$ as input and angular
 *     position \f$ \theta \f$ as output:
 *  
-* \f$ \theta/V=K/\left(1+s\cdot\tau\right) \cdot 1/s. \f$
+* \f$ \theta/V=K/\left(1+s\tau\right) \cdot 1/s. \f$
 *  
 * The employed algorithm makes use of an online Extended Kalman
 * Filter. 
