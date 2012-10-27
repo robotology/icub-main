@@ -51,10 +51,12 @@ namespace ctrl
 * Online DC Motor Parameters Estimator. 
 *  
 * Estimate the gain \f$ K \f$ and the mechanical time constant
-* \f$ \tau \f$ of the following DC motor transfer function with 
-*     voltage \f$ V \f$ as input and angular position \f$ \theta
-*     \f$ as output: \n
-*     \f$ \theta/V=K/\(1+s\cdot\tau\) \cdot 1/s. \f$ \n
+* \f$ \tau \f$ of the following DC motor second order transfer 
+*     function with voltage \f$ V \f$ as input and angular
+*     position \f$ \theta \f$ as output:
+*  
+* \f$ \theta/V=K/\left(1+s\cdot\tau\right) \cdot 1/s. \f$
+*  
 * The employed algorithm makes use of an online Extended Kalman
 * Filter. 
 */
@@ -230,7 +232,15 @@ public:
 /**
 * \ingroup Tuning
 *
-* Online P Compensator Design.
+* Online P Compensator Design. 
+*  
+* Tune in an online fashion a P controller for a DC motor plant 
+* identified by means of \ref OnlineDCMotorEstimator .
+*  
+* The controller design is such that the compensated closed-loop 
+* system behaves like the following second order dynamics: 
+*  
+* \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$
 */
 class OnlinePCompensatorDesign
 {
