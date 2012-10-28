@@ -300,7 +300,7 @@ public:
      * Available options are to be given within the following 
      * groups: 
      *  
-     * @b [plant_estimation] 
+     * <b>[plant_estimation]</b> 
      *  
      * @b joint <int>: specify the joint to be controlled. 
      *  
@@ -328,8 +328,7 @@ public:
      * @b max_time <double>: specify in seconds the maximum time 
      *    window for identification experiment.
      *  
-     *  
-     * @b [stiction_estimation] 
+     * <b>[stiction_estimation]</b>
      *  
      * @b enable <string>: enable/disable stiction values 
      * identification with "on"|"off". 
