@@ -256,9 +256,9 @@ public:
 /**
 * \ingroup Tuning
 *
-* Online P Compensator Design. 
+* Online Compensator Design. 
 *  
-* Tune in an online fashion a P controller for a DC motor plant 
+* Tune in an online fashion a controller for a DC motor plant 
 * identified by means of \ref OnlineDCMotorEstimator .
 *  
 * The design of the controller is such that the compensated 
@@ -267,7 +267,7 @@ public:
 *  
 * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$
 */
-class OnlinePCompensatorDesign
+class OnlineCompensatorDesign : public yarp::os::RateThread
 {
 protected:
     OnlineDCMotorEstimator  plant;
@@ -282,14 +282,14 @@ protected:
     yarp::sig::Vector x0;
 
     int    joint;
-    double max_pwm,max_time;
+    double max_pwm,pulse_period,max_time;
     bool   configured;
 
 public:
     /**
      * Default constructor.
      */
-    OnlinePCompensatorDesign();
+    OnlineCompensatorDesign();
 
     /**
      * Configure the design.
@@ -321,6 +321,9 @@ public:
      * @b max_pwm <double>: specify the amplitude of the squared 
      *    voltage waveform applied to the joint for identification
      *    purpose.
+     *  
+     * @b pulse_period <double>: specify in seconds the pulse 
+     *    period of the squared voltage waveform.
      *  
      * @b max_time <double>: specify in seconds the maximum time 
      *    window for identification experiment.

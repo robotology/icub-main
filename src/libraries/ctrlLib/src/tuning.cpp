@@ -326,7 +326,7 @@ bool OnlineStictionEstimator::waitUntilDone()
 
 
 /**********************************************************************/
-OnlinePCompensatorDesign::OnlinePCompensatorDesign()
+OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000)
 {
     imod=NULL;
     ilim=NULL;
@@ -338,7 +338,7 @@ OnlinePCompensatorDesign::OnlinePCompensatorDesign()
 
 
 /**********************************************************************/
-bool OnlinePCompensatorDesign::configure(PolyDriver &driver, const Property &options)
+bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
     if (!driver.isValid())
@@ -378,6 +378,7 @@ bool OnlinePCompensatorDesign::configure(PolyDriver &driver, const Property &opt
     double P0=optPlant.check("P0",Value(1e5)).asDouble();
 
     max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
+    pulse_period=optPlant.check("pulse_period",Value(2.0)).asDouble();
     max_time=optPlant.check("max_time",Value(20.0)).asDouble();
 
     if (!plant.init(Ts,Q,R,P0,x0))
