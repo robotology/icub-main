@@ -70,6 +70,7 @@ ELSEIF(UNIX)
    
    SET(IPOPT_LINK_FLAGS "")
 
+# Windows platforms
 ELSE()
 
    SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
