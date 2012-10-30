@@ -22,8 +22,8 @@
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/functionEncoder.h>
 
-#define CAST_FUNC(x)        (*static_cast<gsl_function*>(x))
-#define CAST_WS(x)          (static_cast<gsl_integration_workspace*>(x))
+#define CAST_GSLFUNC(x)     (static_cast<gsl_function*>(x))
+#define CAST_GSLWS(x)       (static_cast<gsl_integration_workspace*>(x))
 #define WAVELET_LUP_SIZE    57
 
 using namespace yarp::sig;
@@ -115,8 +115,8 @@ waveletEncoder::waveletEncoder()
     w=gsl_integration_workspace_alloc(1000);
     F=new gsl_function;
 
-    CAST_FUNC(F).function=&integrand;
-    CAST_FUNC(F).params=(void*)this;
+    CAST_GSLFUNC(F)->function=&integrand;
+    CAST_GSLFUNC(F)->params=(void*)this;
 }
 
 
@@ -188,7 +188,7 @@ Vector waveletEncoder::encode(Vector &Val, double R)
         double tau1=(waveLUP[0][0]+iCoeff)/R;
         double tau2=(waveLUP[WAVELET_LUP_SIZE-1][0]+iCoeff)/R;
 
-        gsl_integration_qag(&CAST_FUNC(F),tau1,tau2,1e-3,1e-2,1000,GSL_INTEG_GAUSS61,CAST_WS(w),
+        gsl_integration_qag(CAST_GSLFUNC(F),tau1,tau2,1e-3,1e-2,1000,GSL_INTEG_GAUSS61,CAST_GSLWS(w),
                             &Coeffs[iCoeff+1],&error);
     }
 
@@ -219,8 +219,8 @@ double waveletEncoder::decode(const Vector &Coeffs, double R, const double x)
 /************************************************************************/
 waveletEncoder::~waveletEncoder()
 {
-    gsl_integration_workspace_free(CAST_WS(w));
-    delete F;
+    gsl_integration_workspace_free(CAST_GSLWS(w));
+    delete CAST_GSLFUNC(F);
 }
 
 
