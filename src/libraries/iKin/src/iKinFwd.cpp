@@ -20,6 +20,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include <gsl/gsl_math.h>
+
 #include <iCub/iKin/iKinFwd.h>
 
 using namespace std;

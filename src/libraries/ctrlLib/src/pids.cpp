@@ -16,9 +16,11 @@
  * Public License for more details
 */
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/math/Math.h>
-#include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/math.h>
+#include <iCub/ctrl/pids.h>
 
 #define PID_SAT(x,L,H)      ((x)>(H)?(H):((x)<(L)?(L):(x)))
 

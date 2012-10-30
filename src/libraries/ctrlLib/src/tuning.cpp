@@ -16,6 +16,9 @@
 */
 
 #include <algorithm>
+
+#include <gsl/gsl_math.h>
+
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/tuning.h>

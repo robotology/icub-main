@@ -16,11 +16,13 @@
  * Public License for more details
 */
 
-#include <yarp/math/Math.h>
-#include <iCub/ctrl/neuralNetworks.h>
-
 #include <stdio.h>
 #include <sstream>
+
+#include <gsl/gsl_math.h>
+
+#include <yarp/math/Math.h>
+#include <iCub/ctrl/neuralNetworks.h>
 
 using namespace std;
 using namespace yarp::os;

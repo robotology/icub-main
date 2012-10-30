@@ -45,15 +45,16 @@
 #ifndef __CTRLMATH_H__
 #define __CTRLMATH_H__
 
-#include <gsl/gsl_math.h>
-
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 
+#ifndef M_PI
+    #define M_PI        3.14159265358979323846264338328
+#endif
+
 #define CTRL_RAD2DEG    (180.0/M_PI)
 #define CTRL_DEG2RAD    (M_PI/180.0)
-
 
 namespace iCub
 {
@@ -98,10 +99,7 @@ inline double norm2(const yarp::sig::Matrix &M, int col)
 * @param col is the column for the vector. 
 * @return ||v||.
 */
-inline double norm(const yarp::sig::Matrix &M, int col)
-{
-    return sqrt(norm2(M,col));
-}
+double norm(const yarp::sig::Matrix &M, int col);
 
 /**
 * \ingroup Maths
@@ -124,7 +122,6 @@ inline double sign(const double &v)
 * @return sign(v). 
 */
 yarp::sig::Vector sign(const yarp::sig::Vector &v);
-
 
 /**
 * \ingroup Maths

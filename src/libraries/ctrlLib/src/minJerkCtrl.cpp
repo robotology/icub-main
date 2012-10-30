@@ -17,6 +17,9 @@
 */
 
 #include <sstream>
+
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/minJerkCtrl.h>

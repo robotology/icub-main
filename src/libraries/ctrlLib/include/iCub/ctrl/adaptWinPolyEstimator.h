@@ -33,9 +33,10 @@
 #ifndef __ADAPTWINPOLYESTIMATOR_H__
 #define __ADAPTWINPOLYESTIMATOR_H__
 
+#include <deque>
+
 #include <yarp/sig/Vector.h>
 #include <iCub/ctrl/math.h>
-#include <deque>
 
 
 namespace iCub

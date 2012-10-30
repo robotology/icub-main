@@ -30,11 +30,11 @@
 #ifndef __PIDS_H__
 #define __PIDS_H__
 
+#include <deque>
+
 #include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
-
-#include <deque>
 
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/filters.h>

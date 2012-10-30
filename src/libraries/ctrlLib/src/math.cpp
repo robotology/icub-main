@@ -16,11 +16,13 @@
  * Public License for more details
 */
 
-#include <yarp/math/SVD.h>
-#include <iCub/ctrl/math.h>
-
 #include <string>
 #include <stdio.h>
+
+#include <gsl/gsl_math.h>
+
+#include <yarp/math/SVD.h>
+#include <iCub/ctrl/math.h>
 
 using namespace std;
 using namespace yarp::sig;
@@ -39,6 +41,13 @@ double iCub::ctrl::dot(const Matrix &A, int colA, const Matrix &B, int colB)
         ret+=A(i,colA)*B(i,colB);
 
     return ret;
+}
+
+
+/************************************************************************/
+double iCub::ctrl::norm(const Matrix &M, int col)
+{
+    return sqrt(norm2(M,col));
 }
 
 

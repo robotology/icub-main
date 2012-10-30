@@ -16,11 +16,13 @@
  * Public License for more details
 */
 
+#include <stdio.h>
+
+#include <gsl/gsl_math.h>
+
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/optimalControl.h>
-
-#include <stdio.h>
 
 using namespace yarp::sig;
 using namespace yarp::math;

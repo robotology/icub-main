@@ -18,6 +18,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <algorithm>
+
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>

@@ -30,11 +30,12 @@
 #ifndef __NEURALNETWORKS_H__
 #define __NEURALNETWORKS_H__
 
+#include <string>
+#include <deque>
+
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 #include <iCub/ctrl/math.h>
-#include <string>
-#include <deque>
 
 
 namespace iCub

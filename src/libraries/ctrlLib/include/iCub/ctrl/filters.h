@@ -30,9 +30,10 @@
 #ifndef __FILTERS_H__
 #define __FILTERS_H__
 
+#include <deque>
+
 #include <yarp/sig/Vector.h>
 #include <iCub/ctrl/math.h>
-#include <deque>
 
 
 namespace iCub

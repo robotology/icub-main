@@ -20,6 +20,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>

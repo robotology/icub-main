@@ -30,7 +30,6 @@
 #ifndef __FUNCTIONENCODER_H__
 #define __FUNCTIONENCODER_H__
 
-#include <gsl/gsl_integration.h>
 #include <yarp/sig/Vector.h>
 
 
@@ -49,10 +48,10 @@ namespace ctrl
 class waveletEncoder
 {
 protected:
-    gsl_integration_workspace *w;
-    gsl_function F;
-
+    void *w;
+    void *F;
     yarp::sig::Vector *pVal;
+
     unsigned int iCoeff;
     double Resolution;
 

@@ -74,6 +74,8 @@ Windows, Linux
 #include <string>
 #include <stdio.h>
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/Value.h>
 #include <yarp/os/Property.h>

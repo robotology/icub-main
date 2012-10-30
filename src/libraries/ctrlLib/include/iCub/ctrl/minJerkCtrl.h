@@ -32,6 +32,7 @@
 
 #include <string>
 #include <deque>
+
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>

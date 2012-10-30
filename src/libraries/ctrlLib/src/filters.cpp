@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <gsl/gsl_math.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/filters.h>
 

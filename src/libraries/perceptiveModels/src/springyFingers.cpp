@@ -19,6 +19,8 @@
 #include <stdarg.h>
 #include <iomanip>
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Network.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/math/Math.h>

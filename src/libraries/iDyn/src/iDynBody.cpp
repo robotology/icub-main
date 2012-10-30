@@ -16,11 +16,14 @@
 * Public License for more details
 */
 
-#include <iCub/iDyn/iDyn.h>
-#include <iCub/iDyn/iDynBody.h>
 #include <stdio.h>
 #include <iostream>
 #include <iomanip>
+
+#include <gsl/gsl_math.h>
+
+#include <iCub/iDyn/iDyn.h>
+#include <iCub/iDyn/iDynBody.h>
 
 using namespace std;
 using namespace yarp::os;
