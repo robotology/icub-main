@@ -33,8 +33,6 @@
 #ifndef __IKININV_H__
 #define __IKININV_H__
 
-#include <gsl/gsl_multimin.h>
-
 #include <yarp/os/Property.h>
 #include <iCub/ctrl/minJerkCtrl.h>
 #include <iCub/ctrl/pids.h>
@@ -57,12 +55,6 @@
 #define IKINCTRL_RET_MAXITER        3
 #define IKINCTRL_RET_EXHALT         4
                                     
-#define GSLALGOTYPE_STEEPEST        0
-#define GSLALGOTYPE_CONJ_FR         1
-#define GSLALGOTYPE_CONJ_PR         2
-#define GSLALGOTYPE_BFGS            3
-#define GSLALGOTYPE_NMSIMPLEX       4
-
 #define IKINCTRL_DISABLED           -1
 
 
@@ -761,126 +753,6 @@ public:
     * @return the safe area ratio.
     */
     double get_safeAreaRatio() const { return safeAreaRatio; }
-};
-
-
-/**
-* \ingroup iKinInv
-*
-* A class derived from iKinCtrl solving the minimization task:
-*  
-* \f[ 
-* q=\arg\min_q\left(\frac{1}{2}\cdot\left\|x_d-x\right\|^2+\sum_{i}\frac{1}{2}\cdot\left\|qf_i-q_i\right\|^2\right) 
-* \f] 
-*  
-* Implemented algorithms relying on GSL library are:
-* -# Steepest Descent Gradient 
-* -# Conjugate Gradient FR (Fletcher-Reeves) 
-* -# Conjugate Gradient PR (Polak-Ribiere) 
-* -# Quasi Newton BFGS (Broyden-Fletcher-Goldfarb-Shanno) 
-* -# Nelder-Mead Simplex 
-*/ 
-class GSLMinCtrl : public iKinCtrl
-{
-private:
-    // Default constructor: not implemented.
-    GSLMinCtrl();
-    // Copy constructor: not implemented.
-    GSLMinCtrl(const GSLMinCtrl&);
-    // Assignment operator: not implemented.
-    GSLMinCtrl &operator=(const GSLMinCtrl&);
-
-protected:
-    unsigned int algo_type;
-
-    yarp::sig::Vector q_set;
-    std::deque<int> hash_qf;
-    int q_set_len;
-
-    double step_size;
-    double tol;
-
-    bool fdfOn;
-
-    const gsl_multimin_fdfminimizer_type *T1;
-    gsl_multimin_fdfminimizer            *s1;
-    gsl_multimin_function_fdf             des1;
-
-    const gsl_multimin_fminimizer_type   *T2;
-    gsl_multimin_fminimizer              *s2;
-    gsl_multimin_function                 des2;
-
-    void         reset(const yarp::sig::Vector &q0);
-    virtual void inTargetFcn()         { }
-    virtual void deadLockRecoveryFcn() { }
-    virtual void printIter(const unsigned int verbose);
-
-    friend double _f(const gsl_vector *v, void *params);
-    friend void   _df(const gsl_vector *v, void *params, gsl_vector *g);
-    friend void   _fdf(const gsl_vector *v, void *params, double *f, gsl_vector *g);
-
-public:
-    /**
-    * Constructor. 
-    * @param c is the Chain object on which the control operates. Do 
-    *          not change Chain DOF from this point onwards!!
-    * @param _ctrlPose one of the following: 
-    *  IKINCTRL_POSE_FULL => complete pose control.
-    *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
-    *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param _algo_type is algorithm type; it can be one of: 
-    *   GSLALGOTYPE_STEEPEST
-    *   GSLALGOTYPE_CONJ_FR
-    *   GSLALGOTYPE_CONJ_PR
-    *   GSLALGOTYPE_BFGS
-    *   GSLALGOTYPE_NMSIMPLEX
-    * @param step_size the size of the first trial step
-    * @param tol is the accuracy of the line minimization; it is
-    *            considered successful if dot(p,g)<tol*|p|*|g|,
-    *            where p is the line direction and g is the
-    *            gradient.
-    */
-    GSLMinCtrl(iKinChain &c, unsigned int _ctrlPose, const unsigned int _algo_type,
-               double _step_size, double _tol);
-
-    virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
-    virtual void restart(const yarp::sig::Vector &q0) { iKinCtrl::restart(q0); reset(q0); }
-    virtual bool test_convergence(const double tol_size);
-    virtual std::string getAlgoName();
-
-    /**
-    * Enables the joint angles constraints check.
-    * @param sw is a vector containing non-zero elements in the 
-    *           corresponding position of the joint angle whose
-    *           value needs to be controlled.
-    */
-    void switch_qf(const yarp::sig::Vector &sw);
-
-    /**
-    * Sets the controlled joint angles target values.
-    * @param qf is a vector of target joint angles values.
-    */
-    void set_qf(const yarp::sig::Vector &qf);
-
-    /**
-    * Returns the controlled joint angles target values. 
-    * @return the vector of actual target joint angles.
-    */
-    yarp::sig::Vector get_qf() const { return q_set; }
-
-    virtual void set_q(const yarp::sig::Vector &q0) { iKinCtrl::set_q(q0); reset(q0); }
-    virtual yarp::sig::Vector get_x();
-    virtual yarp::sig::Vector get_e();
-    virtual yarp::sig::Vector get_grad();
-    virtual yarp::sig::Matrix get_J();
-    virtual double dist();
-    void set_size(double _size);
-    double get_size();
-
-    /**
-    * Default destructor.
-    */                                                         
-    virtual ~GSLMinCtrl();
 };
 
 

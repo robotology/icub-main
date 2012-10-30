@@ -60,6 +60,9 @@
 #ifndef __IKINFWD_H__
 #define __IKINFWD_H__
 
+#include <string>
+#include <deque>
+
 #include <yarp/os/Property.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/sig/Vector.h>
@@ -67,9 +70,6 @@
 #include <yarp/math/Math.h>
 
 #include <iCub/ctrl/math.h>
-
-#include <string>
-#include <deque>
 
 
 namespace iCub

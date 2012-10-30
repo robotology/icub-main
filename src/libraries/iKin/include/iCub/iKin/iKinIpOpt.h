@@ -34,10 +34,10 @@
 #ifndef __IKINIPOPT_H__
 #define __IKINIPOPT_H__
 
-#include <iCub/iKin/iKinInv.h>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 
+#include <iCub/iKin/iKinInv.h>
 
 namespace iCub
 {

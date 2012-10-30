@@ -203,6 +203,9 @@
 #ifndef __IKINSLV_H__
 #define __IKINSLV_H__
 
+#include <string>
+#include <deque>
+
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -214,9 +217,6 @@
 
 #include <iCub/iKin/iKinHlp.h>
 #include <iCub/iKin/iKinIpOpt.h>
-
-#include <string>
-#include <deque>
 
 
 namespace iCub
