@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>

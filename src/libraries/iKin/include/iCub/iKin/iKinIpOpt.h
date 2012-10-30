@@ -34,10 +34,12 @@
 #ifndef __IKINIPOPT_H__
 #define __IKINIPOPT_H__
 
-#include <IpTNLP.hpp>
-#include <IpIpoptApplication.hpp>
-
 #include <iCub/iKin/iKinInv.h>
+
+#define IKINIPOPT_DEFAULT_TRANSTOL      (1e-6)
+#define IKINIPOPT_DEFAULT_LWBOUNDINF    (-1e9)
+#define IKINIPOPT_DEFAULT_UPBOUNDINF    (+1e9)
+
 
 namespace iCub
 {
@@ -83,10 +85,9 @@ protected:
     yarp::sig::Vector uB;
     yarp::sig::Vector lB;
 
-    Ipopt::Number lowerBoundInf;
-    Ipopt::Number upperBoundInf;
-
-    bool active;
+    double lowerBoundInf;
+    double upperBoundInf;
+    bool   active;
 
     virtual void clone(const iKinLinIneqConstr *obj);
 
@@ -105,7 +106,7 @@ public:
     * @param _upperBoundInf specifies +inf when there is no upper
     *                       bound.
     */
-    iKinLinIneqConstr(Ipopt::Number _lowerBoundInf, Ipopt::Number _upperBoundInf);
+    iKinLinIneqConstr(const double _lowerBoundInf, const double _upperBoundInf);
 
     /**
     * Creates a new LinIneqConstr object from an already existing 
@@ -145,14 +146,14 @@ public:
     * @note default is -1e9.
     * @return -inf.
     */
-    Ipopt::Number &getLowerBoundInf() { return lowerBoundInf; }
+    double &getLowerBoundInf() { return lowerBoundInf; }
 
     /**
     * Returns a reference to the internal representation of +inf. 
     * @note default is +1e9. 
     * @return +inf.
     */
-    Ipopt::Number &getUpperBoundInf() { return upperBoundInf; }
+    double &getUpperBoundInf() { return upperBoundInf; }
 
     /**
     * Returns the state of inequality constraints evaluation.
@@ -178,174 +179,6 @@ public:
 /**
 * \ingroup iKinIpOpt
 *
-* Class for defining IpOpt NLP problem
-*/
-class iKin_NLP : public Ipopt::TNLP
-{
-private:
-    // Copy constructor: not implemented.
-    iKin_NLP(const iKin_NLP&);
-    // Assignment operator: not implemented.
-    iKin_NLP &operator=(const iKin_NLP&);
-
-protected:
-    iKinChain &chain;
-    iKinChain &chain2ndTask;
-
-    iKinLinIneqConstr &LIC;
-
-    unsigned int dim;
-    unsigned int dim_2nd;
-    unsigned int ctrlPose;
-
-    yarp::sig::Vector &xd;
-    yarp::sig::Vector &xd_2nd;
-    yarp::sig::Vector &w_2nd;
-    yarp::sig::Vector &qd_3rd;
-    yarp::sig::Vector &w_3rd;
-    yarp::sig::Vector  qd;
-    yarp::sig::Vector  q0;
-    yarp::sig::Vector  q;
-    bool   *exhalt;
-
-    yarp::sig::Vector  e_zero;
-    yarp::sig::Vector  e_xyz;
-    yarp::sig::Vector  e_ang;
-    yarp::sig::Vector  e_2nd;
-    yarp::sig::Vector  e_3rd;
-
-    yarp::sig::Matrix  J_zero;
-    yarp::sig::Matrix  J_xyz;
-    yarp::sig::Matrix  J_ang;
-    yarp::sig::Matrix  J_2nd;
-
-    yarp::sig::Vector *e_1st;
-    yarp::sig::Matrix *J_1st;
-
-    yarp::sig::Vector linC;
-
-    Ipopt::Number __obj_scaling;
-    Ipopt::Number __x_scaling;
-    Ipopt::Number __g_scaling;
-
-    Ipopt::Number lowerBoundInf;
-    Ipopt::Number upperBoundInf;
-
-    Ipopt::Number translationalTol;
-
-    iKinIterateCallback *callback;
-
-    double weight2ndTask;
-    double weight3rdTask;
-    bool firstGo;
-
-    virtual void computeQuantities(const Ipopt::Number *x);
-
-public:
-    /** default constructor */
-    iKin_NLP(iKinChain &c, unsigned int _ctrlPose, const yarp::sig::Vector &_q0, yarp::sig::Vector &_xd,
-             double _weight2ndTask, iKinChain &_chain2ndTask, yarp::sig::Vector &_xd_2nd,
-             yarp::sig::Vector &_w_2nd, double _weight3rdTask, yarp::sig::Vector &_qd_3rd,
-             yarp::sig::Vector &_w_3rd, iKinLinIneqConstr &_LIC, bool *_exhalt=NULL);
-
-    /** returns the solution */
-    yarp::sig::Vector get_qd() { return qd; }
-
-    /** sets callback */
-    void set_callback(iKinIterateCallback *_callback) { callback=_callback; }
-
-    /** sets scaling factors */
-    void set_scaling(Ipopt::Number _obj_scaling, Ipopt::Number _x_scaling, Ipopt::Number _g_scaling)
-    {
-        __obj_scaling=_obj_scaling;
-        __x_scaling  =_x_scaling;
-        __g_scaling  =_g_scaling;
-    }
-
-    /** sets scaling factors */
-    void set_bound_inf(Ipopt::Number lower, Ipopt::Number upper)
-    {
-        lowerBoundInf=lower;
-        upperBoundInf=upper;
-    }
-
-    /** sets translational tolerance */
-    void set_translational_tol(Ipopt::Number tol) { translationalTol=tol; }
-
-    /** default destructor */
-    virtual ~iKin_NLP() { }
-
-    /** Method to return some info about the nlp */
-    virtual bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-                              Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style);
-    
-    /** Method to return the bounds for my problem */
-    virtual bool get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
-                                 Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u);
-    
-    /** Method to return the starting point for the algorithm */
-    virtual bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number* x,
-                                    bool init_z, Ipopt::Number* z_L, Ipopt::Number* z_U,
-                                    Ipopt::Index m, bool init_lambda,
-                                    Ipopt::Number* lambda);
-    
-    /** Method to return the objective value */
-    virtual bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number& obj_value);
-    
-    /** Method to return the gradient of the objective */
-    virtual bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number* grad_f);
-    
-    /** Method to return the constraint residuals */
-    virtual bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Index m, Ipopt::Number* g);
-    
-    /** Method to return:
-    *   1) The structure of the jacobian (if "values" is NULL)
-    *   2) The values of the jacobian (if "values" is not NULL)
-    */
-    virtual bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,Ipopt::Index m,
-                            Ipopt::Index nele_jac, Ipopt::Index* iRow, Ipopt::Index *jCol,
-                            Ipopt::Number* values);
-    
-    /** Method to return:
-    *   1) The structure of the hessian of the lagrangian (if "values" is NULL)
-    *   2) The values of the hessian of the lagrangian (if "values" is not NULL)
-    */
-    virtual bool eval_h(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                        Ipopt::Number obj_factor, Ipopt::Index m, const Ipopt::Number* lambda,
-                        bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index* iRow,
-                        Ipopt::Index* jCol, Ipopt::Number* values);
-
-    /** overload this method to return scaling parameters. This is
-    *  only called if the options are set to retrieve user scaling.
-    *  There, use_x_scaling (or use_g_scaling) should get set to true
-    *  only if the variables (or constraints) are to be scaled.  This
-    *  method should return true only if the scaling parameters could
-    *  be provided.
-    */
-    virtual bool get_scaling_parameters(Ipopt::Number& obj_scaling,
-                                        bool& use_x_scaling, Ipopt::Index n, Ipopt::Number* x_scaling,
-                                        bool& use_g_scaling, Ipopt::Index m, Ipopt::Number* g_scaling);
-
-    /** This method is called once per iteration, after the iteration
-     *  summary output has been printed.
-     */
-    virtual bool intermediate_callback(Ipopt::AlgorithmMode mode, Ipopt::Index iter, Ipopt::Number obj_value,
-                                       Ipopt::Number inf_pr, Ipopt::Number inf_du, Ipopt::Number mu, Ipopt::Number d_norm,
-                                       Ipopt::Number regularization_size, Ipopt::Number alpha_du, Ipopt::Number alpha_pr,
-                                       Ipopt::Index ls_trials, const Ipopt::IpoptData* ip_data,
-                                       Ipopt::IpoptCalculatedQuantities* ip_cq);
-    
-    /** This method is called when the algorithm is complete so the TNLP can store/write the solution */
-    virtual void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n, const Ipopt::Number* x,
-                                   const Ipopt::Number* z_L, const Ipopt::Number* z_U, Ipopt::Index m,
-                                   const Ipopt::Number* g, const Ipopt::Number* lambda, Ipopt::Number obj_value,
-                                   const Ipopt::IpoptData* ip_data, Ipopt::IpoptCalculatedQuantities* ip_cq);
-};
-
-
-/**
-* \ingroup iKinIpOpt
-*
 * Class for inverting chain's kinematics based on IpOpt lib
 */
 class iKinIpOptMin
@@ -358,8 +191,7 @@ private:
     // Assignment operator: not implemented.
     iKinIpOptMin &operator=(const iKinIpOptMin&);
 
-    // cannot be accessed from outside
-    Ipopt::IpoptApplication *App;
+    void *App;
 
 protected:
     iKinChain &chain;
@@ -370,24 +202,15 @@ protected:
 
     unsigned int ctrlPose;    
 
-    Ipopt::Number obj_scaling;
-    Ipopt::Number x_scaling;
-    Ipopt::Number g_scaling;
+    double obj_scaling;
+    double x_scaling;
+    double g_scaling;
+    double lowerBoundInf;
+    double upperBoundInf;
+    double translationalTol;
 
-    Ipopt::Number lowerBoundInf;
-    Ipopt::Number upperBoundInf;
-
-    Ipopt::Number translationalTol;
-
-    /**
-    * Provides access to IpoptApplication's OptimizeTNLP method.
-    */
-    Ipopt::ApplicationReturnStatus optimize(const Ipopt::SmartPtr<Ipopt::TNLP>& tnlp);
-
-    /**
-    * Provides access to IpoptApplication's ReOptimizeTNLP method.
-    */
-    Ipopt::ApplicationReturnStatus reoptimize(const Ipopt::SmartPtr<Ipopt::TNLP>& tnlp);
+    int optimize(void *tnlp);
+    int reoptimize(void *tnlp);
 
 public:
     /**
@@ -458,14 +281,14 @@ public:
     * Sets Tolerance.
     * @param tol exits if norm(xd-x)<tol.
     */
-    void setTol(const Ipopt::Number tol);
+    void setTol(const double tol);
 
     /**
     * Sets Maximum Iteration.
     * @param max_iter exits if iter>=max_iter (max_iter<0 
     *                 (IKINCTRL_DISABLED) disables this check).
     */ 
-    void setMaxIter(const Ipopt::Index max_iter);
+    void setMaxIter(const int max_iter);
 
     /**
     * Sets Verbosity.
@@ -492,8 +315,8 @@ public:
     * @param x_scaling user scaling factor for variables. 
     * @param g_scaling user scaling factor for constraints. 
     */
-    void setUserScaling(const bool useUserScaling, const Ipopt::Number _obj_scaling,
-                        const Ipopt::Number _x_scaling, const Ipopt::Number _g_scaling);
+    void setUserScaling(const bool useUserScaling, const double _obj_scaling,
+                        const double _x_scaling, const double _g_scaling);
 
     /**
     * Enable\disable derivative test at each call to solve method 
@@ -510,14 +333,14 @@ public:
     * @param lower is a reference to return the lower bound.
     * @param upper is a reference to return the upper bound. 
     */
-    void getBoundsInf(Ipopt::Number &lower, Ipopt::Number &upper);
+    void getBoundsInf(double &lower, double &upper);
 
     /**
     * Sets the lower and upper bounds to represent -inf and +inf.
     * @param lower is the new lower bound. 
     * @param upper is the new upper bound. 
     */
-    void setBoundsInf(const Ipopt::Number lower, const Ipopt::Number upper);
+    void setBoundsInf(const double lower, const double upper);
 
     /**
     * Sets the tolerance used by the algorithm for translational 
@@ -525,7 +348,7 @@ public:
     * @note tolerance is applied to the squared norm. 
     * @param tol is the new translational tolerance.
     */
-    void setTranslationalTol(const Ipopt::Number tol) { translationalTol=tol; }
+    void setTranslationalTol(const double tol) { translationalTol=tol; }
 
     /**
     * Executes the IpOpt algorithm trying to converge on target. 
@@ -568,8 +391,7 @@ public:
     virtual yarp::sig::Vector solve(const yarp::sig::Vector &q0, yarp::sig::Vector &xd,
                                     double weight2ndTask, yarp::sig::Vector &xd_2nd, yarp::sig::Vector &w_2nd,
                                     double weight3rdTask, yarp::sig::Vector &qd_3rd, yarp::sig::Vector &w_3rd,
-                                    Ipopt::ApplicationReturnStatus *exit_code=NULL, bool *exhalt=NULL,
-                                    iKinIterateCallback *iterate=NULL);
+                                    int *exit_code=NULL, bool *exhalt=NULL, iKinIterateCallback *iterate=NULL);
 
     /**
     * Executes the IpOpt algorithm trying to converge on target. 

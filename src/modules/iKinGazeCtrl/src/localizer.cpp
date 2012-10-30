@@ -18,6 +18,8 @@
 
 #include <stdio.h>
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/math/SVD.h>
 #include <iCub/localizer.h>
 #include <iCub/solver.h>

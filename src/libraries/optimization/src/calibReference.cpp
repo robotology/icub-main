@@ -217,7 +217,6 @@ public:
         return true;
     }
 
-
     /****************************************************************/
     bool eval_h(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number obj_factor, Ipopt::Index m, const Ipopt::Number *lambda,
@@ -227,7 +226,6 @@ public:
         return true;
     }
     
-
     /****************************************************************/
     void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
                            const Ipopt::Number *x, const Ipopt::Number *z_L,

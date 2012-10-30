@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <algorithm>
 
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 
