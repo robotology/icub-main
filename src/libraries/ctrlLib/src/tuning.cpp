@@ -299,17 +299,6 @@ void OnlineStictionEstimator::threadRelease()
 
 
 /**********************************************************************/
-Vector OnlineStictionEstimator::getEstimation()
-{
-    mutex.wait();
-    Vector values=theta;
-    mutex.post();
-
-    return values;
-}
-
-
-/**********************************************************************/
 bool OnlineStictionEstimator::isDone()
 {
     mutex.wait();
@@ -325,6 +314,20 @@ bool OnlineStictionEstimator::waitUntilDone()
 {
     doneEvent.wait();
     return isDone();
+}
+
+
+/**********************************************************************/
+bool OnlineStictionEstimator::getResults(Vector &results)
+{
+    if (!configured)
+        return false;
+
+    mutex.wait();
+    results=theta;
+    mutex.post();
+
+    return true;
 }
 
 
@@ -382,8 +385,6 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
 
     max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
     pulse_period=optPlant.check("pulse_period",Value(2.0)).asDouble();
-    max_time=optPlant.check("max_time",Value(20.0)).asDouble();
-    validation_time=optPlant.check("validation_time",Value(0.0)).asDouble();
 
     if (!plant.init(Ts,Q,R,P0,x0))
         return false;
@@ -410,4 +411,36 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
 }
 
 
+/**********************************************************************/
+bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
+{
+    return true;
+}
+
+
+/**********************************************************************/
+bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
+{
+    return true;
+}
+
+
+/**********************************************************************/
+bool OnlineCompensatorDesign::isDone()
+{
+    return true;
+}
+
+
+bool OnlineCompensatorDesign::waitUntilDone()
+{
+    return true;
+}
+
+
+/**********************************************************************/
+bool OnlineCompensatorDesign::getResults(Property &results)
+{
+    return true;
+}
 

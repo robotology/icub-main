@@ -20,7 +20,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for PID tuning
+ * Classes for Compensators tuning
  *
  * \author Ugo Pattacini
  *
@@ -219,29 +219,21 @@ public:
      *  
      * @return true/false on success/failure. 
      */
-    bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
+    virtual bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
 
     /**
      * Check the configuration status.
      *  
      * @return true iff configured successfully.
      */
-    bool isConfigured() const { return configured; }
-
-    /**
-     * Retrieve the estimation. 
-     *  
-     * @return Current positive and negative stiction values given 
-     *         as components of a 2x1 vector.
-     */
-    yarp::sig::Vector getEstimation();
+    virtual bool isConfigured() const { return configured; }
 
     /**
      * Check the current estimation status.
      *  
      * @return true when |e_mean|<e_thres.
      */
-    bool isDone();
+    virtual bool isDone();
 
     /**
      * Wait until the condition |e_mean|<e_thres is met.
@@ -249,7 +241,17 @@ public:
      * @return true iff the condition is met, false if the process 
      *         is stopped before.
      */
-    bool waitUntilDone();
+    virtual bool waitUntilDone();
+
+    /**
+     * Retrieve the estimation. 
+     *  
+     * @param results Current positive and negative stiction values 
+     *                given as components of a 2x1 vector.
+     *  
+     * @return true/false on success/failure 
+     */
+    virtual bool getResults(yarp::sig::Vector &results);
 };
 
 
@@ -282,8 +284,7 @@ protected:
     yarp::sig::Vector x0;
 
     int    joint;
-    double max_pwm,pulse_period,max_time;
-    double validation_time;
+    double max_pwm,pulse_period;
     bool   configured;
 
 public:
@@ -326,14 +327,6 @@ public:
      * @b pulse_period <double>: specify in seconds the pulse 
      *    period of the squared voltage waveform.
      *  
-     * @b max_time <double>: specify in seconds the maximum time 
-     *    window for identification experiment.
-     *  
-     * @b validation_time <double>: specify whether to repeat the
-     *    experiment in order to provide the predicted plant
-     *    response. The parameter represents in seconds the time
-     *    window of the repetition.
-     *  
      * <b>[stiction_estimation]</b>
      *  
      * @b enable <string>: enable/disable stiction values 
@@ -344,14 +337,24 @@ public:
      *  
      * @return true/false on success/failure. 
      */
-    bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
+    virtual bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
 
     /**
      * Check the configuration status.
      *  
      * @return true iff configured successfully.
      */
-    bool isConfigured() const { return configured; }
+    virtual bool isConfigured() const { return configured; }
+
+    virtual bool startPlantEstimation(const yarp::os::Property &options);
+
+    virtual bool startPlantValidation(const yarp::os::Property &options);
+
+    virtual bool isDone();
+
+    virtual bool waitUntilDone();
+
+    virtual bool getResults(yarp::os::Property &results);
 };
 
 }
