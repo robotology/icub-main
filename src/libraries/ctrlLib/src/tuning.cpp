@@ -48,7 +48,7 @@ bool OnlineDCMotorEstimator::init(const double Ts, const double Q,
     A=F=eye(4,4);
     B.resize(4,0.0);
     C.resize(1,4); C(0,0)=1.0;
-    Ct=C.transposed();    
+    Ct=C.transposed();
 
     P=P0*eye(4,4);
     this->Q=Q*eye(4,4);
@@ -145,8 +145,8 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
 
         T=opt.check("T",Value(2.0)).asDouble();
         kp=opt.check("kp",Value(10.0)).asDouble();
-        ki=opt.check("ki",Value(250.0)).asDouble();
-        kd=opt.check("kd",Value(15.0)).asDouble();
+        ki=opt.check("ki",Value(0.0)).asDouble();
+        kd=opt.check("kd",Value(0.0)).asDouble();
         vel_thres=fabs(opt.check("vel_thres",Value(5.0)).asDouble());
         e_thres=fabs(opt.check("e_thres",Value(1.0)).asDouble());
 
@@ -380,6 +380,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
     pulse_period=optPlant.check("pulse_period",Value(2.0)).asDouble();
     max_time=optPlant.check("max_time",Value(20.0)).asDouble();
+    validation_time=optPlant.check("validation_time",Value(0.0)).asDouble();
 
     if (!plant.init(Ts,Q,R,P0,x0))
         return false;

@@ -283,6 +283,7 @@ protected:
 
     int    joint;
     double max_pwm,pulse_period,max_time;
+    double validation_time;
     bool   configured;
 
 public:
@@ -327,6 +328,11 @@ public:
      *  
      * @b max_time <double>: specify in seconds the maximum time 
      *    window for identification experiment.
+     *  
+     * @b validation_time <double>: specify whether to repeat the
+     *    experiment in order to provide the predicted plant
+     *    response. The parameter represents in seconds the time
+     *    window of the repetition.
      *  
      * <b>[stiction_estimation]</b>
      *  
