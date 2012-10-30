@@ -144,7 +144,7 @@ protected:
     yarp::os::Semaphore mutex;
     yarp::os::Event     doneEvent;
     yarp::sig::Vector   gamma;
-    yarp::sig::Vector   theta;
+    yarp::sig::Vector   stiction;
     yarp::sig::Vector   done;
                               
     AWLinEstimator   velEst;
@@ -163,11 +163,19 @@ protected:
     bool   adapt,adaptOld;
     bool   configured;
 
-    enum {rising, falling} state;
+    enum
+    {
+        rising,
+        falling
+    } state;
 
     bool threadInit();
     void run();
     void threadRelease();
+
+    // prevent user from calling them directly
+    bool start();
+    void stop();
 
 public:
     /**
@@ -214,7 +222,7 @@ public:
      *    updating the stiction positive and negative values,
      *    respectively.
      *  
-     * @b theta (<double> <double>): specify the initial stiction 
+     * @b stiction (<double> <double>): specify the initial stiction
      *    positive and negative values, respectively.
      *  
      * @return true/false on success/failure. 
@@ -227,6 +235,13 @@ public:
      * @return true iff configured successfully.
      */
     virtual bool isConfigured() const { return configured; }
+
+    /**
+     * Start off the estimation procedure.
+     *  
+     * @return true iff started successfully.
+     */
+    virtual bool startEstimation() { return start(); }
 
     /**
      * Check the current estimation status.
@@ -244,14 +259,24 @@ public:
     virtual bool waitUntilDone();
 
     /**
+     * Stop the estimation procedure.
+     */
+    virtual void stopEstimation() { stop(); }
+
+    /**
      * Retrieve the estimation. 
      *  
      * @param results Current positive and negative stiction values 
      *                given as components of a 2x1 vector.
      *  
-     * @return true/false on success/failure 
+     * @return true/false on success/failure.
      */
     virtual bool getResults(yarp::sig::Vector &results);
+
+    /**
+     * Destructor.
+     */
+    virtual ~OnlineStictionEstimator() { }
 };
 
 
@@ -267,7 +292,11 @@ public:
 * closed-loop system behaves like the following second order 
 * dynamics: 
 *  
-* \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$
+* \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
+*  
+* This class has three operative modes: one for the plant 
+* estimantion, one for the plant validation and one for the 
+* stiction estimation. 
 */
 class OnlineCompensatorDesign : public yarp::os::RateThread
 {
@@ -281,11 +310,30 @@ protected:
     yarp::dev::IPidControl      *ipid;
     yarp::dev::IPositionControl *ipos;
 
+    yarp::os::Semaphore mutex;
+    yarp::os::Event     doneEvent;
+    yarp::os::Port      port;
+
     yarp::sig::Vector x0;
 
     int    joint;
     double max_pwm,pulse_period;
     bool   configured;
+
+    enum
+    {
+        plant_estimation,
+        plant_validation,
+        stiction_estimation
+    } mode;
+
+    bool threadInit();    
+    void run();
+    void threadRelease();
+
+    // prevent user from calling them directly
+    bool start();
+    void stop();
 
 public:
     /**
@@ -302,9 +350,15 @@ public:
      * Available options are to be given within the following 
      * groups: 
      *  
-     * <b>[plant_estimation]</b> 
+     * <b>[general]</b> 
      *  
      * @b joint <int>: specify the joint to be controlled. 
+     *  
+     * @b port <string>: if given, this option specify the name of a 
+     *    yarp port to open in order to stream out relevant
+     *    information.
+     *  
+     * <b>[plant_estimation]</b>
      *  
      * @b Ts <double>: specify the estimator sample time given in 
      *    seconds.
@@ -329,11 +383,11 @@ public:
      *  
      * <b>[stiction_estimation]</b>
      *  
-     * @b enable <string>: enable/disable stiction values 
-     * identification with "on"|"off". 
-     *  
      * see \ref OnlineStictionEstimator for a detailed description 
      * of available options. 
+     *  
+     * @note the @b joint option is here overidden by the one within 
+     *       the [general] group
      *  
      * @return true/false on success/failure. 
      */
@@ -346,15 +400,94 @@ public:
      */
     virtual bool isConfigured() const { return configured; }
 
+    /**
+     * Start off the plant estimation procedure. 
+     *  
+     * @param options property containing the estimantion options. 
+     *                Available otions are: (@b max_time <double>)
+     *                specifies the maximum amount of time for the
+     *                experiment.
+     *  
+     * @note if active the yarp port streams out the estimator 
+     *       internal state.
+     *  
+     * @return true iff started successfully.
+     */
     virtual bool startPlantEstimation(const yarp::os::Property &options);
 
+    /**
+     * Start off the plant validation procedure. 
+     *  
+     * @param options property containing the validation options. 
+     *                Available otions are: (@b max_time <double>)
+     *                specifies the maximum amount of time for the
+     *                experiment; (@b tau <double>) specifies the
+     *                mechanical time constant of the plant to be
+     *                validated; (@b K <double>) specifies the plant
+     *                gain to be validated.
+     *  
+     * @note if active the yarp port streams out the predicted plant 
+     *       response.
+     *  
+     * @return true iff started successfully.
+     */
     virtual bool startPlantValidation(const yarp::os::Property &options);
 
+    /**
+     * Start off the stiction estimation procedure. 
+     *  
+     * @param options property containing the estimantion options. 
+     *                Available otions are: (@b max_time <double>)
+     *                specifies the maximum amount of time for the
+     *                experiment.
+     *  
+     * @note if active the yarp port streams out the stiction 
+     *       values.
+     *  
+     * @return true iff started successfully.
+     */
+    virtual bool startStictionEstimation(const yarp::os::Property &options);
+
+    /**
+     * Check the status of the current ongoing operation.
+     *  
+     * @return true iff ongoing operation is finished.
+     */
     virtual bool isDone();
 
+    /**
+     * Wait until the current ongoing operation is accomplished.
+     *  
+     * @return true iff ongoing operation is finished.
+     */
     virtual bool waitUntilDone();
 
+    /**
+     * Stop any ongoing operation.
+     */
+    virtual void stopOperation() { stop(); }
+
+    /**
+     * Retrieve the results of the current ongoing operation.
+     *  
+     * @param results property object containing the results 
+     *                depending on the current ongoing operation:
+     *                while estimating the plant results is (@b
+     *                position <double>) (@b velocity <double>) (@b
+     *                tau <double>) (@b K <double>); while
+     *                validating the plant results is (@b position
+     *                <double>); while estimating the stiction
+     *                values results is (@b stiction (<double>
+     *                <double>))
+     *  
+     * @return true/false on success/failure. 
+     */
     virtual bool getResults(yarp::os::Property &results);
+
+    /**
+     * Destructor.
+     */
+    virtual ~OnlineCompensatorDesign();
 };
 
 }

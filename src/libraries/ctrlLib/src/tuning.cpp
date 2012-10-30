@@ -161,12 +161,12 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
                 gamma[i]=pB->get(i).asDouble();
         }
 
-        theta.resize(2,0.0);
-        if (Bottle *pB=opt.find("theta").asList()) 
+        stiction.resize(2,0.0);
+        if (Bottle *pB=opt.find("stiction").asList()) 
         {
-            size_t len=std::min(theta.length(),(size_t)pB->size());
+            size_t len=std::min(stiction.length(),(size_t)pB->size());
             for (size_t i=0; i<len; i++)
-                theta[i]=pB->get(i).asDouble();
+                stiction[i]=pB->get(i).asDouble();
         }
 
         return configured=true;
@@ -214,7 +214,7 @@ bool OnlineStictionEstimator::threadInit()
     pid->reset(Vector(1,0.0));
 
     intErr.setTs(0.001*getRate());
-    intErr.reset(theta);
+    intErr.reset(stiction);
 
     done=0.0;
     doneEvent.reset();
@@ -251,10 +251,10 @@ void OnlineStictionEstimator::run()
 
     Vector pid_out=pid->compute(Vector(1,xd_pos),Vector(1,x_pos));
     double e_pos=xd_pos-x_pos;
-    double fw=(state==rising)?theta[0]:theta[1];
+    double fw=(state==rising)?stiction[0]:stiction[1];
     double u=fw+pid_out[0];
 
-    Vector adaptGate(theta.length(),0.0);
+    Vector adaptGate(stiction.length(),0.0);
     if ((fabs(x_vel)<vel_thres) && adapt)
         adaptGate[(state==rising)?0:1]=1.0;
     else
@@ -268,13 +268,13 @@ void OnlineStictionEstimator::run()
         Vector e_mean=cumErr/t;
         if (yarp::math::norm(e_mean)>e_thres)
         {
-            theta+=gamma*e_mean;
+            stiction+=gamma*e_mean;
             done[state]=0.0;
         }
         else
             done[state]=1.0;
 
-        intErr.reset(Vector(theta.length(),0.0));
+        intErr.reset(Vector(stiction.length(),0.0));
     }
 
     ipid->setOffset(joint,u);
@@ -301,6 +301,9 @@ void OnlineStictionEstimator::threadRelease()
 /**********************************************************************/
 bool OnlineStictionEstimator::isDone()
 {
+    if (!configured)
+        return false;
+
     mutex.wait();
     bool ret=(done[0]*done[1]!=0.0);
     mutex.post();
@@ -312,6 +315,9 @@ bool OnlineStictionEstimator::isDone()
 /**********************************************************************/
 bool OnlineStictionEstimator::waitUntilDone()
 {
+    if (!configured)
+        return false;
+
     doneEvent.wait();
     return isDone();
 }
@@ -324,7 +330,7 @@ bool OnlineStictionEstimator::getResults(Vector &results)
         return false;
 
     mutex.wait();
-    results=theta;
+    results=stiction;
     mutex.post();
 
     return true;
@@ -360,16 +366,32 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     if (!ok)
         return false;
 
+    // general options
+    Bottle &optGeneral=opt.findGroup("general");
+    if (optGeneral.isNull())
+        return false;
+
+    if (!optGeneral.check("joint"))
+        return false;
+
+    joint=optGeneral.find("joint").asInt();
+
+    if (optGeneral.check("port"))
+    {
+        string name=optGeneral.find("port").asString().c_str();
+        if (name[0]!='/')
+            name="/"+name;
+
+        if (!port.open(name.c_str()))
+            return false;
+    }
+
     // configure plant estimator    
     Bottle &optPlant=opt.findGroup("plant_estimation");
     if (optPlant.isNull())
         return false;
 
-    if (!optPlant.check("joint"))
-        return false;
-
-    double x_min,x_max;
-    joint=optPlant.find("joint").asInt();
+    double x_min,x_max;    
     ilim->getLimits(joint,&x_min,&x_max);
 
     x0.resize(4);
@@ -393,18 +415,15 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     Bottle &optStiction=opt.findGroup("plant_stiction");
     if (!optStiction.isNull())
     {
-        if (optStiction.check("enable",Value("off")).asString()=="on")
-        {
-            Property propStiction(optStiction.toString().c_str());
+        Property propStiction(optStiction.toString().c_str());
 
-            // enforce the equality between the "joint" properties
-            // values of the two groups
-            propStiction.unput("joint");
-            propStiction.put("joint",joint);
+        // enforce the equality between the "joint" properties
+        // values of the two groups
+        propStiction.unput("joint");
+        propStiction.put("joint",joint);
 
-            if (!stiction.configure(driver,propStiction))
-                return false;
-        }
+        if (!stiction.configure(driver,propStiction))
+            return false;
     }
 
     return configured=true;
@@ -412,35 +431,101 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
 
 
 /**********************************************************************/
+bool OnlineCompensatorDesign::threadInit()
+{
+    doneEvent.reset();
+    return true;
+}
+
+
+/**********************************************************************/
+void OnlineCompensatorDesign::run()
+{
+    mutex.wait();
+    mutex.post();
+}
+
+
+/**********************************************************************/
+void OnlineCompensatorDesign::threadRelease()
+{
+    doneEvent.signal();
+}
+
+
+/**********************************************************************/
 bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
 {
-    return true;
+    if (!configured)
+        return false;
+
+    mode=plant_estimation;
+    return start();
 }
 
 
 /**********************************************************************/
 bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 {
-    return true;
+    if (!configured)
+        return false;
+
+    mode=plant_validation;
+    return start();
+}
+
+
+/**********************************************************************/
+bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
+{
+    if (!configured)
+        return false;
+
+    mode=stiction_estimation;
+    return start();
 }
 
 
 /**********************************************************************/
 bool OnlineCompensatorDesign::isDone()
 {
+    if (!configured)
+        return false;
+
+    mutex.wait();
+    mutex.post();
+
     return true;
 }
 
 
 bool OnlineCompensatorDesign::waitUntilDone()
 {
-    return true;
+    if (!configured)
+        return false;
+
+    doneEvent.wait();
+    return isDone();
 }
 
 
 /**********************************************************************/
 bool OnlineCompensatorDesign::getResults(Property &results)
 {
+    if (!configured)
+        return false;
+
+    mutex.wait();
+    mutex.post();
+
     return true;
 }
+
+
+/**********************************************************************/
+OnlineCompensatorDesign::~OnlineCompensatorDesign()
+{
+    port.close();
+}
+
 
