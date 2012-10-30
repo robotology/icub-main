@@ -1,3 +1,6 @@
+2012-10-30  Ugo Pattacini  <ugo.pattacini@iit.it>
+   ctrlLib and iKin: removed explicit dependency from GSL and IPOPT
+
 2012-10-25  Marco Randazzo  <marco.randazzo@iit.it>
     
 	*/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp

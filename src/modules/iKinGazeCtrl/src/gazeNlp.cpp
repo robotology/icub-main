@@ -505,7 +505,7 @@ Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd, const Vector &gDir)
     nlp->set_translational_tol(translationalTol);
     nlp->setGravityDirection(gDir);
     
-    optimize(GetRawPtr(nlp));
+    static_cast<Ipopt::IpoptApplication*>(App)->OptimizeTNLP(GetRawPtr(nlp));
     return nlp->get_qd();
 }
 

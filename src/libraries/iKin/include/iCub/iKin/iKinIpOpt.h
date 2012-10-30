@@ -189,11 +189,11 @@ private:
     // Copy constructor: not implemented.
     iKinIpOptMin(const iKinIpOptMin&);
     // Assignment operator: not implemented.
-    iKinIpOptMin &operator=(const iKinIpOptMin&);
-
-    void *App;
+    iKinIpOptMin &operator=(const iKinIpOptMin&);    
 
 protected:
+    void *App;
+
     iKinChain &chain;
     iKinChain chain2ndTask;
 
@@ -208,9 +208,6 @@ protected:
     double lowerBoundInf;
     double upperBoundInf;
     double translationalTol;
-
-    int optimize(void *tnlp);
-    int reoptimize(void *tnlp);
 
 public:
     /**

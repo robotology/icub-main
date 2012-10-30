@@ -811,20 +811,6 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
 
 
 /************************************************************************/
-int iKinIpOptMin::optimize(void *tnlp)
-{
-    return CAST_IPOPTAPP(App)->OptimizeTNLP(*static_cast<SmartPtr<TNLP>*>(tnlp));
-}
-
-
-/************************************************************************/
-int iKinIpOptMin::reoptimize(void *tnlp)
-{
-    return CAST_IPOPTAPP(App)->ReOptimizeTNLP(*static_cast<SmartPtr<TNLP>*>(tnlp));
-}
-
-
-/************************************************************************/
 iKinIpOptMin::~iKinIpOptMin()
 {
     delete CAST_IPOPTAPP(App);
