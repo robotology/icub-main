@@ -19,7 +19,7 @@
 
 class TouchSensor
 {
-	bool calibrated_skin;
+    bool calibrated_skin;
 
 public:
 
@@ -30,10 +30,10 @@ public:
         B_MAX = b;
     }
 
-	void setCalibrationFlag (bool use_calibrated_skin)
-	{
-		calibrated_skin=use_calibrated_skin;
-	}
+    void setCalibrationFlag (bool use_calibrated_skin)
+    {
+        calibrated_skin=use_calibrated_skin;
+    }
 
     void resize(int width,int height,int margin)
     {
@@ -123,19 +123,19 @@ public:
         int dya,dyb,dxa,dxb;
 
         double remapped_activation[MAX_TAXELS];
-		switch (ilayoutNum)
-		{
-			case 0:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
-				break;
-			case 1:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[nTaxels-1-i]=activation[i];
-				break;
-			default:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
-				printf("WARN: unkwnown layout number.\n");
-				break;
-		}
+        switch (ilayoutNum)
+        {
+            case 0:
+                for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
+                break;
+            case 1:
+                for (int i=0; i<nTaxels; ++i)  remapped_activation[nTaxels-1-i]=activation[i];
+                break;
+            default:
+                for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
+                printf("WARN: unkwnown layout number.\n");
+                break;
+        }
 
         int maxRange2=m_maxRangeLight*m_maxRangeLight;
 
@@ -173,20 +173,20 @@ public:
         int index;
         double k0,k1;
         int dya,dyb,dxa,dxb;
-		double remapped_activation[MAX_TAXELS];
-		switch (ilayoutNum)
-		{
-			case 0:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
-				break;
-			case 1:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[nTaxels-1-i]=activation[i];
-				break;
-			default:
-				for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
-				printf("WARN: unkwnown layout number.\n");
-				break;
-		}
+        double remapped_activation[MAX_TAXELS];
+        switch (ilayoutNum)
+        {
+            case 0:
+                for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
+                break;
+            case 1:
+                for (int i=0; i<nTaxels; ++i)  remapped_activation[nTaxels-1-i]=activation[i];
+                break;
+            default:
+                for (int i=0; i<nTaxels; ++i)  remapped_activation[i]=activation[i];
+                printf("WARN: unkwnown layout number.\n");
+                break;
+        }
 
         for (int i=0; i<nTaxels; ++i) if (remapped_activation[i]>0.0)
         {
@@ -240,10 +240,10 @@ public:
         }
     }
 
-	void setActivationFromPortData(double val, int id)
+    void setActivationFromPortData(double val, int id)
     {
         if (calibrated_skin)
-		{
+        {
             if (val>244.0)
             {
                 activation[id]=244.0;
@@ -256,11 +256,11 @@ public:
             {
                 activation[id]=val;
             }
-		}
-		else
-		{
-			activation[id]=val<=244?double(244-val):0.0;
-		}
+        }
+        else
+        {
+            activation[id]=val<=244?double(244-val):0.0;
+        }
     }
 
     virtual void draw(unsigned char *image)

@@ -21,14 +21,16 @@ INCLUDE_DIRECTORIES(${Gthread_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src
                     ${ctrlLib_INCLUDE_DIRS}
                     ${GtkPlus_INCLUDE_DIRS}
-	            ${YARP_INCLUDE_DIRS})
+                    ${GSL_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
-				     icubmod
-				     ${GtkPlus_LIBRARIES}
-				     ${YARP_LIBRARIES})
+                                icubmod
+                                ${GtkPlus_LIBRARIES}
+                                ${GSL_LIBRARIES}
+                                ${YARP_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 

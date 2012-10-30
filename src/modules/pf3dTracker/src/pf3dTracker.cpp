@@ -771,7 +771,7 @@ bool PF3DTracker::updateModule()
                 else
                 {
                     cout<<"Wrong ID for color transformation policy:"<<_colorTransfPolicy<<". Quitting.\n";
-                    exit(1);
+                    return false;
                 }
             }
     
