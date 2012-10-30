@@ -155,6 +155,10 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 \author Ugo Pattacini
 */ 
 
+#include <iostream>
+#include <iomanip>
+#include <string>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
@@ -163,10 +167,6 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 #include <yarp/sig/Vector.h>
 
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
-
-#include <iostream>
-#include <iomanip>
-#include <string>
 
 using namespace std;
 using namespace yarp::os;

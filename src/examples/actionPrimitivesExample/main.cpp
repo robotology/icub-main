@@ -145,6 +145,12 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <deque>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Bottle.h>
@@ -154,12 +160,6 @@ Windows, Linux
 #include <yarp/dev/Drivers.h>
 #include <iCub/perception/models.h>
 #include <iCub/action/actionPrimitives.h>
-
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <string>
-#include <deque>
 
 #define USE_LEFT    0
 #define USE_RIGHT   1

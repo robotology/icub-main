@@ -11,19 +11,18 @@ set(folder_header include/iCub/optimization/calibReference.h)
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${IPOPT_INCLUDE_DIRS}
+include_directories(${PROJECT_SOURCE_DIR}/include                    
                     ${ctrlLib_INCLUDE_DIRS}
+                    ${IPOPT_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 
-target_link_libraries(${PROJECTNAME} ${IPOPT_LIBRARIES}
-                                     ctrlLib
+target_link_libraries(${PROJECTNAME} ctrlLib
+                                     ${IPOPT_LIBRARIES}
                                      ${YARP_LIBRARIES})
                  
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   EXTERNAL_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS}
                                    DEPENDS ctrlLib
                                    DESTINATION include/iCub/optimization
                                    FILES ${folder_header})

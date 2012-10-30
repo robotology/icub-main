@@ -63,18 +63,12 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/ResourceFinder.h>
-#include <yarp/dev/Wrapper.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CartesianControl.h>
-
 #include <iostream>
 #include <iomanip>
 #include <string>
+
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
 
 YARP_DECLARE_DEVICES(icubmod)
 

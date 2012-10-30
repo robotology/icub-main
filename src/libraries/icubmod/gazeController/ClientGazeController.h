@@ -40,6 +40,10 @@
 #ifndef __CLIENTGAZECONTROLLER_H__
 #define __CLIENTGAZECONTROLLER_H__
 
+#include <string>
+#include <set>
+#include <map>
+
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Stamp.h>
@@ -47,10 +51,6 @@
 
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/GazeControl.h>
-
-#include <string>
-#include <set>
-#include <map>
 
 
 // forward declaration

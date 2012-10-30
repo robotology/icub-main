@@ -173,24 +173,15 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Random.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/CartesianControl.h>
-#include <yarp/dev/GazeControl.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/math/Math.h>
+#include <string>
 
 #include <gsl/gsl_math.h>
-#include <iCub/ctrl/neuralNetworks.h>
 
-#include <string>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/math/Math.h>
+#include <iCub/ctrl/neuralNetworks.h>
 
 #define DEFAULT_THR_PER     20
 

@@ -75,6 +75,11 @@
 #ifndef __AFFACTIONPRIMITIVES_H__
 #define __AFFACTIONPRIMITIVES_H__
 
+#include <string>
+#include <deque>
+#include <set>
+#include <map>
+
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
@@ -86,11 +91,6 @@
 #include <yarp/sig/Vector.h>
 
 #include <iCub/perception/models.h>
-
-#include <string>
-#include <deque>
-#include <set>
-#include <map>
 
 #define ACTIONPRIM_DISABLE_EXECTIME    -1.0
 

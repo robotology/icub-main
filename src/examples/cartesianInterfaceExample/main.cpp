@@ -107,6 +107,11 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
+#include <string>
+#include <stdio.h>
+
+#include <gsl/gsl_math.h>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RateThread.h>
@@ -119,11 +124,6 @@ Windows, Linux
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
-
-#include <gsl/gsl_math.h>
-
-#include <string>
-#include <stdio.h>
 
 #define MAX_TORSO_PITCH     30.0    // [deg]
 #define EXECTIME_THRESDIST  0.3     // [m]

@@ -17,13 +17,13 @@ set(folder_source src/MILClassifier.cpp
 
 set(folder_header include/iCub/boostMIL/WeakClassifier.h 
                   include/iCub/boostMIL/ClassifierInput.h
-		          include/iCub/boostMIL/ClassifierFactory.h
-		          include/iCub/boostMIL/MILClassifier.h
-		          include/iCub/boostMIL/SelectorClassifier.h
-		          include/iCub/boostMIL/StrongClassifier.h
-		          include/iCub/boostMIL/OnlineBoost.h
-		          include/iCub/boostMIL/AdaBoost.h)
-				  
+                  include/iCub/boostMIL/ClassifierFactory.h
+                  include/iCub/boostMIL/MILClassifier.h
+                  include/iCub/boostMIL/SelectorClassifier.h
+                  include/iCub/boostMIL/StrongClassifier.h
+                  include/iCub/boostMIL/OnlineBoost.h
+                  include/iCub/boostMIL/AdaBoost.h)
+                             
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 

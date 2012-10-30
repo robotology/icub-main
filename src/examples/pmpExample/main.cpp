@@ -58,6 +58,7 @@ Windows, Linux
 
 #include <string>
 #include <stdio.h>
+
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/sig/Vector.h>

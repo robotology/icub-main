@@ -19,14 +19,14 @@
 #ifndef __SMITHPREDICTOR_H__
 #define __SMITHPREDICTOR_H__
 
+#include <deque>
+
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
 #include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/filters.h>
 #include <iCub/iKin/iKinFwd.h>
-
-#include <deque>
 
 
 // this class implements the Smith Predictor block

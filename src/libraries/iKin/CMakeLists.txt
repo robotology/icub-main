@@ -30,6 +30,7 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
                     ${ctrlLib_INCLUDE_DIRS}
+                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 IF(ICUB_USE_IPOPT)
@@ -39,23 +40,16 @@ ENDIF(ICUB_USE_IPOPT)
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
+                                     ${GSL_LIBRARIES}
                                      ${YARP_LIBRARIES})
 
 IF(ICUB_USE_IPOPT)
    TARGET_LINK_LIBRARIES(${PROJECTNAME} ${IPOPT_LIBRARIES})
 ENDIF(ICUB_USE_IPOPT)
 
-IF(ICUB_USE_IPOPT)
-    icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                       EXTERNAL_INCLUDE_DIRS ${IPOPT_INCLUDE_DIRS}
-                                       DEPENDS ctrlLib
-                                       DESTINATION include/iCub/iKin                                       
-                                       FILES ${folder_header})                                   
-ELSE(ICUB_USE_IPOPT)
-    icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                       DEPENDS ctrlLib
-                                       DESTINATION include/iCub/iKin
-                                       FILES ${folder_header})                                    
-ENDIF(ICUB_USE_IPOPT)
+icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                   DEPENDS ctrlLib
+                                   DESTINATION include/iCub/iKin
+                                   FILES ${folder_header})                                    
 
 

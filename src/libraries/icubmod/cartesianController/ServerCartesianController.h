@@ -40,6 +40,10 @@
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
 
+#include <set>
+#include <deque>
+#include <map>
+
 #include <yarp/os/Property.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
@@ -57,10 +61,6 @@
 #include <iCub/iKin/iKinHlp.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/iKin/iKinInv.h>
-
-#include <set>
-#include <deque>
-#include <map>
 
 #include "SmithPredictor.h"
 

@@ -40,6 +40,10 @@
 #ifndef __CLIENTCARTESIANCONTROLLER_H__
 #define __CLIENTCARTESIANCONTROLLER_H__
 
+#include <string>
+#include <set>
+#include <map>
+
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Stamp.h>
@@ -49,10 +53,6 @@
 #include <yarp/dev/CartesianControl.h>
 
 #include <iCub/iKin/iKinHlp.h>
-
-#include <string>
-#include <set>
-#include <map>
 
 
 // forward declaration

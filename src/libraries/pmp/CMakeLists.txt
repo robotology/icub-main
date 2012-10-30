@@ -21,10 +21,11 @@ source_group("Header Files" FILES ${folder_header_private} ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${ctrlLib_INCLUDE_DIRS}
+                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header_private} ${folder_header})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib icubmod)
+target_link_libraries(${PROJECTNAME} ctrlLib icubmod ${GSL_LIBRARIES} ${YARP_LIBRARIES})
 
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    DEPENDS ctrlLib

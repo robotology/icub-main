@@ -19,13 +19,13 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
-#include <yarp/os/Network.h>
-#include <yarp/os/Time.h>
-#include <yarp/math/Math.h>
-
 #include <stdio.h>
 #include <algorithm>
 #include <sstream>
+
+#include <yarp/os/Network.h>
+#include <yarp/os/Time.h>
+#include <yarp/math/Math.h>
 
 #include "ClientGazeController.h"
 
