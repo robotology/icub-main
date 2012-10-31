@@ -7,6 +7,7 @@
  */
 
 #include <yarp/os/Time.h>
+#include <yarp/dev/PolyDriver.h>
 
 #include "parametricCalibrator.h"
 #include <math.h>
@@ -216,12 +217,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 	int nj=0;
 	int totJointsToCalibrate = 0;
 
-	iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-	iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-	iEncoders = dynamic_cast<IEncoders *>(dd);
-	iPosition = dynamic_cast<IPositionControl *>(dd);
-	iPids = dynamic_cast<IPidControl *>(dd);
-	iControlMode = dynamic_cast<IControlMode *>(dd);
+    yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
+    p->view(iCalibrate);
+    p->view(iAmps);
+    p->view(iEncoders);
+    p->view(iPosition);
+    p->view(iPids);
+    p->view(iControlMode);
 
     if (!(iCalibrate && iAmps && iPosition && iPids && iControlMode)) {
         yError() << "CALIB: interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
