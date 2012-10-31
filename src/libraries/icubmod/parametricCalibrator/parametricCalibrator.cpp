@@ -223,8 +223,10 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 	iPids = dynamic_cast<IPidControl *>(dd);
 	iControlMode = dynamic_cast<IControlMode *>(dd);
 
-	if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
-		return false;
+    if (!(iCalibrate && iAmps && iPosition && iPids && iControlMode)) {
+        yError() << "CALIB: interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
+        return false;
+    }
 
 	if ( !iEncoders->getAxes(&nj))
 	{
