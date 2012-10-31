@@ -50,7 +50,7 @@ namespace ctrl
 * \ingroup PIDs
 *
 * A class for defining a saturated integrator based on Tustin 
-* formula: 1/s => Ts/2*(z+1)/(z-1)
+* formula: \f$ 1/s => T_s/2*(z+1)/(z-1) \f$
 */
 class Integrator
 {
@@ -208,12 +208,12 @@ public:
 *  
 * Components expressed in Laplace transform: 
 *  
-* - ep=Wp*ref-fb 
-* - ei=Wi*ref-fb 
-* - ed=Wd*ref-fb  
-* - P=Kp*ep
-* - I=(Ki*ei+(sat(u)-u)/Tt)/s
-* - D=Kd*ed*s/(1+s*Td/N) [Td=Kd/Kp]
+* - \f$ e_p=W_p*ref-fb \f$
+* - \f$ e_i=W_i*ref-fb \f$
+* - \f$ e_d=W_d*ref-fb \f$
+* - \f$ P=K_p*e_p \f$
+* - \f$ I=(K_i*e_i+(sat(u)-u)/T_t)/s \f$
+* - \f$ D=K_d*e_d*s/(1+s*T_d/N) [T_d=K_d/K_p] \f$
 */
 class parallelPID : public helperPID
 {
@@ -324,9 +324,9 @@ public:
 *  
 * Components expressed in Laplace transform: 
 *  
-* - P=Kp
-* - I=Kp/(Ti*s)
-* - D=Kd*s/(1+s*Td/N) [Td=Kd/Kp]
+* - \f$ P=K_p \f$
+* - \f$ I=K_p/(T_i*s) \f$
+* - \f$ D=K_d*s/(1+s*T_d/N) [T_d=K_d/K_p] \f$
 */
 class seriesPID : public helperPID
 {
