@@ -26,23 +26,23 @@ const double 	POSITION_THRESHOLD		= 2.0;
 
 int numberOfJoints =0;
 
-parametricCalibrator::parametricCalibrator()
+parametricCalibrator::parametricCalibrator() :
+    logfile(stderr),
+    type(NULL),
+    param1(NULL),
+    param2(NULL),
+    param3(NULL),
+    original_pid(NULL),
+    limited_pid(NULL),
+    maxPWM(NULL),
+    currPos(NULL),
+    currVel(NULL),
+    zeroPos(NULL),
+    zeroVel(NULL),
+    homeVel(0),
+    homePos(0),
+    abortCalib(false)
 {
-	logfile = stderr;
-	type   = NULL;
-	param1 = NULL;
-	param2 = NULL;
-	param3 = NULL;
-	original_pid = NULL;
-	limited_pid = NULL;
-	maxPWM = NULL;
-	currPos = NULL;
-	currVel = NULL;
-	zeroPos = NULL;
-	zeroVel = NULL;
-	homeVel=0;
-	homePos=0;
-    abortCalib = false;
 }
 
 parametricCalibrator::~parametricCalibrator()
