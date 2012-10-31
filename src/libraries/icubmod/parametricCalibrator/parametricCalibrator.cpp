@@ -47,7 +47,7 @@ parametricCalibrator::parametricCalibrator() :
 
 parametricCalibrator::~parametricCalibrator()
 {
-	//empty now
+    close();
 }
 
 bool parametricCalibrator::open (yarp::os::Searchable& config)
