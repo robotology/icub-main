@@ -344,7 +344,6 @@ OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000)
     ilim=NULL;
     ienc=NULL;
     ipid=NULL;
-    ipos=NULL;
     configured=false;
 }
 
@@ -361,7 +360,6 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     ok&=driver.view(ilim);
     ok&=driver.view(ienc);
     ok&=driver.view(ipid);
-    ok&=driver.view(ipos);
 
     if (!ok)
         return false;

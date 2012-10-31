@@ -304,11 +304,10 @@ protected:
     OnlineDCMotorEstimator  plant;
     OnlineStictionEstimator stiction;
 
-    yarp::dev::IControlMode     *imod;
-    yarp::dev::IControlLimits   *ilim;
-    yarp::dev::IEncoders        *ienc;
-    yarp::dev::IPidControl      *ipid;
-    yarp::dev::IPositionControl *ipos;
+    yarp::dev::IControlMode   *imod;
+    yarp::dev::IControlLimits *ilim;
+    yarp::dev::IEncoders      *ienc;
+    yarp::dev::IPidControl    *ipid;
 
     yarp::os::Semaphore mutex;
     yarp::os::Event     doneEvent;

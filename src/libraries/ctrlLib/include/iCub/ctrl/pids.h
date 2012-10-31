@@ -212,8 +212,9 @@ public:
 * - \f$ e_i=W_i*ref-fb \f$
 * - \f$ e_d=W_d*ref-fb \f$
 * - \f$ P=K_p*e_p \f$
-* - \f$ I=(K_i*e_i+(sat(u)-u)/T_t)/s \f$
-* - \f$ D=K_d*e_d*s/(1+s*T_d/N); \quad [T_d=K_d/K_p] \f$
+* - \f$ I=(K_i*e_i+(\text{sat}(u)-u)/T_t)/s \f$
+* - \f$ D=K_d*e_d \cdot s/(1+s \cdot T_d/N); \quad [T_d=K_d/K_p]
+*   \f$
 */
 class parallelPID : public helperPID
 {
@@ -326,7 +327,7 @@ public:
 *  
 * - \f$ P=K_p \f$
 * - \f$ I=K_p/(T_i*s) \f$
-* - \f$ D=K_d*s/(1+s*T_d/N); \quad [T_d=K_d/K_p] \f$
+* - \f$ D=K_d \cdot s/(1+s \cdot T_d/N); \quad [T_d=K_d/K_p] \f$
 */
 class seriesPID : public helperPID
 {
