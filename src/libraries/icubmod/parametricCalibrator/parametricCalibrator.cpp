@@ -41,6 +41,7 @@ parametricCalibrator::parametricCalibrator()
 	zeroVel = NULL;
 	homeVel=0;
 	homePos=0;
+    abortCalib = false;
 }
 
 parametricCalibrator::~parametricCalibrator()
@@ -205,7 +206,9 @@ bool parametricCalibrator::close ()
 
 bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il wrapper, non mc
 {
-	yTrace();
+    yTrace();
+    abortCalib=false;
+
 	bool calibration_ok = true;
 	bool goHome_ok = true;
 	int  setOfJoint_idx = 0;
@@ -213,7 +216,6 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 	int nj=0;
 	int totJointsToCalibrate = 0;
 
-	abortCalib=false;
 	iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
 	iAmps =  dynamic_cast<IAmplifierControl *>(dd);
 	iEncoders = dynamic_cast<IEncoders *>(dd);
