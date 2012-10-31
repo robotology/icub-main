@@ -169,40 +169,70 @@ bool parametricCalibrator::open (yarp::os::Searchable& config)
 
 bool parametricCalibrator::close ()
 {
-	if (type != NULL) delete[] type;
-	type = NULL;
-	if (param1 != NULL) delete[] param1;
-	param1 = NULL;
-	if (param2 != NULL) delete[] param2;
-	param2 = NULL;
-	if (param3 != NULL) delete[] param3;
-	param3 = NULL;
+    if (type != NULL) {
+        delete[] type;
+        type = NULL;
+    }
+    if (param1 != NULL) {
+        delete[] param1;
+        param1 = NULL;
+    }
+    if (param2 != NULL) {
+        delete[] param2;
+        param2 = NULL;
+    }
+    if (param3 != NULL) {
+        delete[] param3;
+        param3 = NULL;
+    }
 
-	if (maxPWM != NULL) delete [] maxPWM;
-	maxPWM = NULL;
-	if (original_pid != NULL) delete [] original_pid;
-	original_pid = NULL;
-	if (limited_pid != NULL) delete [] limited_pid;
-	limited_pid = NULL;
+    if (maxPWM != NULL) {
+        delete[] maxPWM;
+        maxPWM = NULL;
+    }
+    if (original_pid != NULL) {
+        delete[] original_pid;
+        original_pid = NULL;
+    }
+    if (limited_pid != NULL) {
+        delete[] limited_pid;
+        limited_pid = NULL;
+    }
 
-	if (currPos != NULL) delete[] currPos;
-	currPos = NULL;
-	if (currVel != NULL) delete[] currVel;
-	currVel = NULL;
+    if (currPos != NULL) {
+        delete[] currPos;
+        currPos = NULL;
+    }
+    if (currVel != NULL) {
+        delete[] currVel;
+        currVel = NULL;
+    }
 
-	if (zeroPos != NULL) delete[] zeroPos;
-	zeroPos = NULL;
-	if (zeroVel != NULL) delete[] zeroVel;
-	zeroVel = NULL;
+    if (zeroPos != NULL) {
+        delete[] zeroPos;
+        zeroPos = NULL;
+    }
+    if (zeroVel != NULL) {
+        delete[] zeroVel;
+        zeroVel = NULL;
+    }
 
-	if (homePos != NULL) delete[] homePos;
-	homePos = NULL;
-	if (homeVel != NULL) delete[] homeVel;
-	homeVel = NULL;
+    if (homePos != NULL) {
+        delete[] homePos;
+        homePos = NULL;
+    }
+    if (homeVel != NULL) {
+        delete[] homeVel;
+        homeVel = NULL;
+    }
 
-	if (logfile_name!="") fclose(logfile);
+    if (logfile_name != "") {
+        fclose(logfile);
+        logfile_name.clear();
+        logfile = stderr;
+    }
 
-	return true;
+    return true;
 }
 
 bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il wrapper, non mc
