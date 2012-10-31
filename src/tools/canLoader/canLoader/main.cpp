@@ -1404,41 +1404,41 @@ void fatal_error(int err)
 		case INVALID_CMD_STRING:
 			printf("Error parsing the command line. The correct format is:\n");
 			printf("canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-			exit(err);
+			::exit(err);
 		break;
 		case INVALID_PARAM_CANTYPE:
 			printf("ERROR: invalid --canDeviceType parameter \n");
 			printf("must be 'ecan' or 'pcan' or 'cfw2' or 'socketcan'\n");
-			exit(err);
+			::exit(err);
 		break;
 		case INVALID_PARAM_CANNUM:
 			printf("ERROR: invalid --canDeviceNum parameter \n");
 			printf("must be between 0 and 3\n");
-			exit(err);
+			::exit(err);
 		break;
 		case INVALID_PARAM_BOARDID:
 			printf("ERROR: invalid --boardId parameter \n");
 			printf("must be between 0 and 15\n");
-			exit(err);
+			::exit(err);
 		break;	
 		case INVALID_PARAM_FILE:
 			printf("ERROR: invalid --firmware parameter \n");
 			printf("file not found\n");
-			exit(err);
+			::exit(err);
 		break;	
 		case ERR_NO_BOARDS_FOUND:
 			printf("ERROR: no boards found \n");
 			printf("check canbus cable, power supply connection etc.\n");
-			exit(err);
+			::exit(err);
 		break;	
 		case ERR_BOARD_ID_NOT_FOUND:
 			printf("ERROR: the specified board is not available \n");
-			exit(err);
+			::exit(err);
 		break;	
 		case ERR_UNKNOWN:
 		default:
 			printf("Unknown error\n");
-			exit(ERR_UNKNOWN);
+			::exit(ERR_UNKNOWN);
 		break;
 
 	}
@@ -1483,7 +1483,7 @@ int myMain( int   argc, char *argv[] )
 				printf("parameter <t> is the name of the CAN bus driver. It can be 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'\n");
 				printf("parameter <x> is the number of the CAN bus (0-3)\n");
 				printf("parameter <y> is the CAN address of the board (0-15)\n");
-				exit(0);
+				::exit(0);
 		}				
 		if		(argc==9) 
 		{		
@@ -1579,7 +1579,7 @@ int myMain( int   argc, char *argv[] )
 					printf("Program terminated successfully!\n");
 				else
 					printf("Program terminated, DOWNLOAD FAILED!\n");
-				exit(ret); 
+				::exit(ret); 
 		}
 		if		(argc!=9) 
 		{

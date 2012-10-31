@@ -13,29 +13,21 @@
 #include <yarp/sig/Image.h>
 #include <yarp/os/IConfig.h>
 
-namespace iCub {
-    namespace contrib{
-        class ICalibTool;
-    }
-}
-
-using namespace yarp::os;
-using namespace yarp::sig;
-
 /**
  * Interface to calibrate and project input image based on camera's internal parameters and projection mode\n
  */
-class iCub::contrib::ICalibTool : public IConfig
+class ICalibTool : public yarp::os::IConfig
 {
 
 public:
 
     // IConfig
-    virtual bool open (Searchable &config) = 0;
+    virtual bool open (yarp::os::Searchable &config) = 0;
     virtual bool close () = 0;
-    virtual bool configure (Searchable &config) = 0;
+    virtual bool configure (yarp::os::Searchable &config) = 0;
 
-    virtual void apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & out) = 0;    
+    virtual void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,
+                       yarp::sig::ImageOf<yarp::sig::PixelRgb> & out) = 0;    
 };
 
 

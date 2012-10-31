@@ -8,6 +8,8 @@
  
 #include <iCub/SphericalCalibTool.h>
 
+using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 
 SphericalCalibTool::SphericalCalibTool(){

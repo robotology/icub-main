@@ -26,7 +26,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
     RobotFlags& flags = config.getFlags();
     if (!flags.valid) {
         printf("Robot flags are not set when creating iCubLogicalJoints\n");
-        exit(1);
+        ::exit(1);
     }
     
     ////////////////////////////////////////////////////////////

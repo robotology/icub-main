@@ -195,8 +195,4 @@ Linux and Windows.
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
-using namespace std;
-using namespace yarp::os;
-using namespace yarp::sig;
-
 

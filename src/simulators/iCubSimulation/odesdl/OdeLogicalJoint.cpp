@@ -105,7 +105,7 @@ void OdeLogicalJoint::init(const char *unit,
         universal = 2;
     } else {
         printf("Unknown axis type %s\n", type);
-        exit(1);
+        ::exit(1);
     }
     if (sunit=="leftarm") {
         joint = &(odeinit._iCub->LAjoints[index]);
@@ -156,7 +156,7 @@ void OdeLogicalJoint::init(const char *unit,
     }
     else {
         printf("Unknown body unit %s\n", unit);
-        exit(1);
+        ::exit(1);
     }
     feedback = new dJointFeedback;
     dJointSetFeedback(*joint, feedback);

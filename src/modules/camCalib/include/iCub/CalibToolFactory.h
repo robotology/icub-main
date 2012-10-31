@@ -19,7 +19,7 @@
 
 class CalibToolFactory {
 public:
-    virtual iCub::contrib::ICalibTool *create() = 0;
+    virtual ICalibTool *create() = 0;
     virtual yarp::os::ConstString getName() = 0;
 };
 
@@ -31,7 +31,7 @@ public:
     CalibToolFactoryOf(const char *name) : name(name) {
     }
 
-    virtual iCub::contrib::ICalibTool *create() {
+    virtual ICalibTool *create() {
         return new T;
     }
     
@@ -55,7 +55,7 @@ public:
         return pool;
     }
 
-    iCub::contrib::ICalibTool *get(const char *name) {
+    ICalibTool *get(const char *name) {
         for (unsigned int i=0; i<group.size(); i++) {
             if (group[i]->getName() == name) {
                 return group[i]->create();

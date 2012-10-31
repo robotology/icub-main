@@ -86,7 +86,7 @@ Inputs *extractInputFromFile(ifstream &stream)
     if((bot.size()-1) % 2 != 0)
     {
         cout << "Error! wrong bottle size!" << endl;
-        exit(1);
+        ::exit(1);
     }
 
     int n_features = (bot.size()-1)/2;
@@ -117,7 +117,7 @@ Inputs *extractInputFromFile(ifstream &stream)
     if(idx != vec->size())
     {
         cout << "Error! Filled " << idx << "elements but the vector has size " << vec->size() << endl;
-        exit(1);
+        ::exit(1);
     }
 
     return new Inputs(label,"mil",vec);

@@ -6,6 +6,8 @@
  
 #include <iCub/PinholeCalibTool.h>
 
+using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 
 PinholeCalibTool::PinholeCalibTool(){

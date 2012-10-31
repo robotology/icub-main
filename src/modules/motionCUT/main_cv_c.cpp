@@ -33,6 +33,10 @@
 #define NODE_OFF    cvScalar(0,0,255)
 #define NODE_ON     cvScalar(0,255,0)
 
+using namespace std;
+using namespace yarp::os;
+using namespace yarp::sig;
+
 
 /************************************************************************/
 class Blob

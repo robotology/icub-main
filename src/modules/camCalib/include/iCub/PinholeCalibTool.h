@@ -25,27 +25,16 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Value.h>
 
-
 // iCub
 #include <iCub/ICalibTool.h>
 
-namespace iCub {
-    namespace contrib{
-        class PinholeCalibTool;
-    }
-}
-
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace iCub::contrib;
-using namespace std;
 
 /**
  * Class to calibrate input image based on camera's internal parameters\n
- * Configuration: See iCub::contrib::PinholeCalibTool::configure
+ * Configuration: See PinholeCalibTool::configure
  */
 
-class iCub::contrib::PinholeCalibTool : public ICalibTool
+class PinholeCalibTool : public ICalibTool
 {
  private:
     
@@ -71,7 +60,7 @@ public:
     virtual ~PinholeCalibTool();
     
     /** open() passes on to configure()*/
-    virtual bool open (Searchable &config);
+    virtual bool open (yarp::os::Searchable &config);
     virtual bool close ();
     /**
       The PinholeCalibTool expects a configuration file as show below.
@@ -98,13 +87,14 @@ public:
       p1 -0.00195\n
       p2 0.00185\n
     */ 
-    virtual bool configure (Searchable &config);
+    virtual bool configure (yarp::os::Searchable &config);
 
   /** Apply calibration, in = rgb image, out = calibrated rgb image.
     * If necessary the output image is resized to match the size of the 
     * input image.
     */
-    void apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & out);    
+    void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,
+               yarp::sig::ImageOf<yarp::sig::PixelRgb> & out);    
     
 };
 

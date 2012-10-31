@@ -59,7 +59,7 @@
  *
  * - \c --name \c camcalib \n 
  *   specifies the name of the module (used to form the stem of module port names)  
- * For calibration configuration options see: iCub::contrib::PinholeCalibTool::configure
+ * For calibration configuration options see: PinholeCalibTool::configure
  * 
  *
  * Configuration File Parameters
@@ -92,7 +92,7 @@
  * Output port
  *
  * - \c /camCalib/out \n
- *	 Calibrated output image (rgb)
+ *   Calibrated output image (rgb)
  *
  * Rpc port
  *
@@ -116,8 +116,8 @@
  * OpenCV: http://opencvlibrary.sourceforge.net/CvReference#cv_3d\n
  * Matlab Toolbox: http://www.vision.caltech.edu/bouguetj/calib_doc/\n
  * 
- * \see iCub::contrib::CamCalibModule
- * \see iCub::contrib::CalibTool
+ * \see CamCalibModule
+ * \see CalibTool
  *
  * \author Lijin Aryananda, Jonas Ruesch
  *
@@ -138,8 +138,7 @@
 
 using namespace std;
 using namespace yarp::os;
-
-using namespace iCub::contrib;
+using namespace yarp::sig;
 
 
 int main(int argc, char *argv[]) {
@@ -149,11 +148,11 @@ int main(int argc, char *argv[]) {
     pool.add(new CalibToolFactoryOf<SphericalCalibTool>("spherical"));
 
     Network yarp;
-	ResourceFinder rf;
-	rf.setVerbose(true);
-	rf.setDefaultConfigFile("camCalib.ini"); //overridden by --from parameter
-	rf.setDefaultContext("camCalib"); //overridden by --context parameter
-	rf.configure("ICUB_ROOT", argc, argv);    
-	CamCalibModule module;    	
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultConfigFile("camCalib.ini"); //overridden by --from parameter
+    rf.setDefaultContext("camCalib"); //overridden by --context parameter
+    rf.configure("ICUB_ROOT", argc, argv);    
+    CamCalibModule module;      
     return module.runModule(rf);
 }

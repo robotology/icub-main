@@ -22,20 +22,11 @@
 #include <iCub/ICalibTool.h>
 #include <iCub/vis/spherical_projection.h>
 
-namespace iCub {
-    namespace contrib{
-        class SphericalCalibTool;
-    }
-}
-
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace iCub::contrib;
 
 /**
  * Interface to calibrate and spherically project input image\n
  */
-class iCub::contrib::SphericalCalibTool : public ICalibTool
+class SphericalCalibTool : public ICalibTool
 {
 private:
 
@@ -66,12 +57,13 @@ public:
     virtual ~SphericalCalibTool();
 
     // IConfig
-    virtual bool open (Searchable &config);
+    virtual bool open (yarp::os::Searchable &config);
     virtual bool close();
-    virtual bool configure (Searchable &config);
+    virtual bool configure (yarp::os::Searchable &config);
 
     // ICalibTool
-    void apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & out);    
+    void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,
+               yarp::sig::ImageOf<yarp::sig::PixelRgb> & out);    
 };
 
 

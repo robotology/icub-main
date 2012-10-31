@@ -17,7 +17,6 @@
 
 // yarp
 #include <yarp/os/all.h>
-#include <yarp/os/Stamp.h>
 #include <yarp/sig/all.h>
 
 // iCub
@@ -26,27 +25,12 @@
 #include <iCub/CalibToolFactory.h>
 #include <iCub/ICalibTool.h>
 
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace iCub::contrib;
-using namespace std;
-
-namespace iCub {
-    namespace contrib {
-        class CamCalibPort;
-        class CamCalibModule;
-    }
-}
-
-using namespace iCub::contrib;
-
-
 /**
  *
  * Camera Calibration Port class
  *
  */
-class iCub::contrib::CamCalibPort : public BufferedPort<ImageOf<PixelRgb> >
+class CamCalibPort : public yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >
 {
 private:
     yarp::os::Port *portImgOut;
@@ -56,7 +40,7 @@ private:
     double t0;
     double currSat;
 
-    virtual void onRead(ImageOf<PixelRgb> &yrpImgIn);
+    virtual void onRead(yarp::sig::ImageOf<yarp::sig::PixelRgb> &yrpImgIn);
 
 public:
     CamCalibPort();
@@ -74,7 +58,7 @@ public:
  * \see icub_camcalib
  *
  */
-class iCub::contrib::CamCalibModule : public RFModule {
+class CamCalibModule : public yarp::os::RFModule {
 
 private:
 
@@ -89,12 +73,12 @@ public:
     CamCalibModule();
     ~CamCalibModule();
     
-    /** Passes config on to iCub::contrib::CalibTool */
+    /** Passes config on to CalibTool */
     virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();
     virtual bool interruptModule();
     virtual bool updateModule();
-    virtual bool respond(const Bottle& command, Bottle& reply);
+    virtual bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
     virtual double getPeriod();
 
 };
