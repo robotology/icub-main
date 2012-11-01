@@ -592,6 +592,7 @@ bool OnlineCompensatorDesign::isDone()
 }
 
 
+/**********************************************************************/
 bool OnlineCompensatorDesign::waitUntilDone()
 {
     if (!configured)
