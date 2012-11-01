@@ -398,7 +398,7 @@ public:
      *  
      * @b K <double>: specify the initial plant gain. 
      *  
-     * @b max_pwm <double>: specify the amplitude of the squared 
+     * @b max_pwm <double>: specify the amplitude of the square 
      *    voltage waveform applied to the joint for identification
      *    purpose.
      *  
