@@ -135,7 +135,7 @@ public:
    * Return current filter output.
    * @return the filter output. 
    */ 
-   yarp::sig::Vector output();
+   yarp::sig::Vector output() const { return y; }
 };
 
 

@@ -35,6 +35,7 @@
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/pids.h>
 #include <iCub/ctrl/kalman.h>
+#include <iCub/ctrl/filters.h>
 #include <iCub/ctrl/minJerkCtrl.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 
@@ -325,6 +326,7 @@ class OnlineCompensatorDesign : public yarp::os::RateThread
 protected:
     OnlineDCMotorEstimator  plant;
     OnlineStictionEstimator stiction;
+    Filter                  predictor;
 
     yarp::dev::IControlMode   *imod;
     yarp::dev::IControlLimits *ilim;
@@ -352,6 +354,7 @@ protected:
         stiction_estimation
     } mode;
 
+    void controlJoint(double &enc, double &u);
     bool threadInit();    
     void run();
     void threadRelease();
@@ -448,8 +451,10 @@ public:
      *                validated; (@b K <double>) specifies the plant
      *                gain to be validated.
      *  
-     * @note if active, the yarp port streams out the predicted 
-     *       plant response.
+     * @note if active, the yarp port streams out, respectively, the 
+     *       commanded voltage, the actual encoder value and the
+     *       predicted plant response. Zero-padding allows being
+     *       consistent with the data size.
      *  
      * @return true iff started successfully.
      */
@@ -496,10 +501,9 @@ public:
      *                depending on the current ongoing operation:
      *                while estimating the plant results is (@b tau
      *                <double>) (@b K <double>); while validating
-     *                the plant results is (@b position <double>)
-     *                (@b velocity <double>); while estimating the
-     *                stiction values results is (@b stiction
-     *                (<double> <double>)).
+     *                the plant results is (@b position <double>);
+     *                while estimating the stiction values results
+     *                is (@b stiction (<double> <double>)).
      *  
      * @return true/false on success/failure. 
      */

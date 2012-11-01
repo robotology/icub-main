@@ -354,7 +354,8 @@ bool OnlineStictionEstimator::getResults(Vector &results)
 
 
 /**********************************************************************/
-OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000)
+OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000),
+                         predictor(Vector(3),Vector(3),Vector(1))
 {
     imod=NULL;
     ilim=NULL;
@@ -459,7 +460,19 @@ bool OnlineCompensatorDesign::threadInit()
             ienc->getEncoder(joint,&x0[0]);
             plant.init(P0,x0);
             x_tg=x_max;
-            pwm_pos=true;            
+            pwm_pos=true;
+            break;
+        }
+
+        // -----
+        case plant_validation:
+        {
+            double enc;
+            imod->setOpenLoopMode(joint);
+            ienc->getEncoder(joint,&enc);
+            predictor.init(Vector(1,enc));
+            x_tg=x_max;
+            pwm_pos=true;
             break;
         }
     }
@@ -468,6 +481,31 @@ bool OnlineCompensatorDesign::threadInit()
     t0=Time::now();
 
     return true;
+}
+
+
+/**********************************************************************/
+void OnlineCompensatorDesign::controlJoint(double &enc, double &u)
+{
+    ienc->getEncoder(joint,&enc);
+
+    // switch logic
+    if (x_tg==x_max)
+    {
+        if (enc>x_max)
+        {
+            x_tg=x_min;
+            pwm_pos=false;
+        }
+    }
+    else if (enc<x_min)
+    {
+        x_tg=x_max;
+        pwm_pos=true;
+    }
+
+    u=(pwm_pos?max_pwm:-max_pwm);
+    ipid->setOffset(joint,dpos_dV*u);
 }
 
 
@@ -484,26 +522,8 @@ void OnlineCompensatorDesign::run()
         // -----
         case plant_estimation:
         {
-            double enc;
-            ienc->getEncoder(joint,&enc);
-
-            // switch logic
-            if (x_tg==x_max)
-            {
-                if (enc>x_max)
-                {
-                    x_tg=x_min;
-                    pwm_pos=false;
-                }
-            }
-            else if (enc<x_min)
-            {
-                x_tg=x_max;
-                pwm_pos=true;
-            }
-
-            double u=(pwm_pos?max_pwm:-max_pwm);
-            ipid->setOffset(joint,dpos_dV*u);
+            double enc,u;
+            controlJoint(enc,u);
 
             plant.estimate(u,enc);
             if (port.getOutputCount()>0)
@@ -512,6 +532,26 @@ void OnlineCompensatorDesign::run()
                 info[0]=u;
                 info[1]=enc;
                 info=cat(info,plant.get_x());
+                port.write(info);
+            }
+
+            break;
+        }
+
+        // -----
+        case plant_validation:
+        {
+            double enc,u;
+            controlJoint(enc,u);
+
+            predictor.filt(Vector(1,u));
+            if (port.getOutputCount()>0)
+            {
+                Vector info(2);
+                info[0]=u;
+                info[1]=enc;
+                info=cat(info,predictor.output());
+                info=cat(info,Vector(3,0.0));   // zero-padding
                 port.write(info);
             }
 
@@ -529,6 +569,8 @@ void OnlineCompensatorDesign::threadRelease()
     {
         // -----
         case plant_estimation:
+        // -----
+        case plant_validation:
         {
             ipid->setOffset(joint,0.0);
             imod->setPositionMode(joint);
@@ -543,10 +585,10 @@ void OnlineCompensatorDesign::threadRelease()
 /**********************************************************************/
 bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
 {
+    Property &opt=const_cast<Property&>(options);
     if (!configured)
         return false;
-
-    Property &opt=const_cast<Property&>(options);
+    
     if (opt.check("max_time"))
         max_time=opt.find("max_time").asDouble();
     else
@@ -560,8 +602,30 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
 /**********************************************************************/
 bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 {
-    if (!configured)
+    Property &opt=const_cast<Property&>(options);
+    if (!configured || !opt.check("tau") || !opt.check("K"))
         return false;
+    
+    if (opt.check("max_time"))
+        max_time=opt.find("max_time").asDouble();
+    else
+        max_time=0.0;
+
+    double tau=opt.find("tau").asDouble();
+    double K=opt.find("K").asDouble();
+    double Ts=0.001*getRate();
+
+    // set up the digital filter
+    Vector num(3,1.0);
+    num[1]=2.0;
+    num*=(K*Ts*Ts)/2.0;
+
+    Vector den(3);
+    den[0]=2.0*tau+Ts;
+    den[1]=-4.0*tau;
+    den[2]=2.0*tau-Ts;
+
+    predictor.adjustCoeffs(num,den);
 
     mode=plant_validation;
     return start();
@@ -620,6 +684,14 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             Vector params=plant.get_parameters();
             results.put("tau",params[0]);
             results.put("K",params[1]);
+            break;
+        }
+
+        // -----
+        case plant_validation:
+        {
+            Vector response=predictor.output();
+            results.put("position",response[0]);
             break;
         }
     }
