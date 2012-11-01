@@ -379,9 +379,8 @@ public:
      *  
      * @b joint <int>: specify the joint to be controlled. 
      *  
-     * @b port <string>: if given, this option specify the name of a 
-     *    yarp port to open in order to stream out relevant
-     *    information.
+     * @b port <string>: if given, specify the name of a yarp port
+     *    to open in order to stream out relevant information.
      *  
      * <b>[plant_estimation]</b>
      *  
