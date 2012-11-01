@@ -98,6 +98,16 @@ public:
               const double P0, const yarp::sig::Vector &x0);
 
     /**
+     * Initialize the internal state.
+     *  
+     * @param P0 Initial condition for estimated error covariance.  
+     * @param x0 A 4x1 vector containing respectively the initial 
+     *           conditions for position, velocity, \f$ \tau \f$ and
+     *           \f$ K. \f$
+     */
+    bool init(const double P0, const yarp::sig::Vector &x0);
+
+    /**
      * Estimate the state vector given the current input and the 
      * current measurement. 
      * 
@@ -118,6 +128,13 @@ public:
     yarp::sig::Vector get_x() const { return _x; }
 
     /**
+     * Return the estimated error covariance.
+     * 
+     * @return Estimated error covariance.
+     */
+    yarp::sig::Matrix get_P() const { return P; }
+
+    /**
      * Return the system parameters.
      * 
      * @return vector containing \f$ \tau \f$ and \f$ K. \f$ 
@@ -131,7 +148,11 @@ public:
 *
 * Online Stiction Estimator. 
 *  
-* Estimate the positive and negative stiction values. 
+* Estimate the positive and negative stiction values. \n 
+* During the experiment, the joint is controlled by a high-level 
+* pid controller that commands directly the voltage in order to 
+* track a time varying reference position. During the 
+* transitions, the stiction values are estimated. 
 */
 class OnlineStictionEstimator : public yarp::os::RateThread
 {
@@ -154,6 +175,7 @@ protected:
     minJerkTrajGen   trajGen;
 
     int    joint;
+    double dpos_dV;
     double t0,T;
     double x_min,x_max;
     double x_pos,x_vel,x_acc;
@@ -191,10 +213,10 @@ public:
      *  
      * Available options are: 
      *  
+     * @b joint <int>: specify the joint to be controlled. 
+     *  
      * @b Ts <double>: specify the estimator sample time given in 
      *    seconds.
-     *  
-     * @b joint <int>: specify the joint to be controlled. 
      *  
      * @b T <double>: specify the period in seconds of the reference
      *    waveform used for tracking.
@@ -314,9 +336,13 @@ protected:
     yarp::os::Port      port;
 
     yarp::sig::Vector x0;
+    double            P0;
 
     int    joint;
-    double max_pwm,pulse_period;
+    double t0,dpos_dV;
+    double x_min,x_max,x_tg;
+    double max_time,max_pwm;
+    bool   pwm_pos;
     bool   configured;
 
     enum
@@ -377,16 +403,13 @@ public:
      *    voltage waveform applied to the joint for identification
      *    purpose.
      *  
-     * @b pulse_period <double>: specify in seconds the pulse 
-     *    period of the squared voltage waveform.
-     *  
      * <b>[stiction_estimation]</b>
      *  
      * see \ref OnlineStictionEstimator for a detailed description 
      * of available options. 
      *  
-     * @note the @b joint option is here overidden by the one within 
-     *       the [general] group
+     * @note the @b joint option is here overidden by the one 
+     *       specified within the [general] group.
      *  
      * @return true/false on success/failure. 
      */
@@ -407,8 +430,9 @@ public:
      *                specifies the maximum amount of time for the
      *                experiment.
      *  
-     * @note if active the yarp port streams out the estimator 
-     *       internal state.
+     * @note if active, the yarp port streams out, respectively, the
+     *       commanded voltage, the actual encoder value and the 4D
+     *       internal state of the estimator.
      *  
      * @return true iff started successfully.
      */
@@ -425,8 +449,8 @@ public:
      *                validated; (@b K <double>) specifies the plant
      *                gain to be validated.
      *  
-     * @note if active the yarp port streams out the predicted plant 
-     *       response.
+     * @note if active, the yarp port streams out the predicted 
+     *       plant response.
      *  
      * @return true iff started successfully.
      */
@@ -440,7 +464,7 @@ public:
      *                specifies the maximum amount of time for the
      *                experiment.
      *  
-     * @note if active the yarp port streams out the stiction 
+     * @note if active, the yarp port streams out the stiction 
      *       values.
      *  
      * @return true iff started successfully.
@@ -471,13 +495,12 @@ public:
      *  
      * @param results property object containing the results 
      *                depending on the current ongoing operation:
-     *                while estimating the plant results is (@b
-     *                position <double>) (@b velocity <double>) (@b
-     *                tau <double>) (@b K <double>); while
-     *                validating the plant results is (@b position
-     *                <double>); while estimating the stiction
-     *                values results is (@b stiction (<double>
-     *                <double>))
+     *                while estimating the plant results is (@b tau
+     *                <double>) (@b K <double>); while validating
+     *                the plant results is (@b position <double>)
+     *                (@b velocity <double>); while estimating the
+     *                stiction values results is (@b stiction
+     *                (<double> <double>)).
      *  
      * @return true/false on success/failure. 
      */

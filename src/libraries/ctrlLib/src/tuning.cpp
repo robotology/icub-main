@@ -67,6 +67,21 @@ bool OnlineDCMotorEstimator::init(const double Ts, const double Q,
 
 
 /**********************************************************************/
+bool OnlineDCMotorEstimator::init(const double P0, const Vector &x0)
+{
+    if (x0.length()<4)
+        return false;
+
+    P=P0*eye(4,4);
+    x=_x=x0.subVector(0,3);
+    x[2]=1.0/_x[2];
+    x[3]=_x[3]/_x[2];
+
+    return true;
+}
+
+
+/**********************************************************************/
 Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
 {
     double &x1=x[0];
@@ -207,6 +222,7 @@ bool OnlineStictionEstimator::threadInit()
 
     Pid pidInfo;
     ipid->getPid(joint,&pidInfo);
+    dpos_dV=(pidInfo.kp>=0.0?1.0:-1.0);
     Matrix satLim(1,2);
     satLim(0,0)=-pidInfo.max_int; satLim(0,1)=pidInfo.max_int;
 
@@ -277,7 +293,7 @@ void OnlineStictionEstimator::run()
         intErr.reset(Vector(stiction.length(),0.0));
     }
 
-    ipid->setOffset(joint,u);
+    ipid->setOffset(joint,dpos_dV*u);
     adaptOld=adapt;
 
     mutex.post();
@@ -373,7 +389,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
         return false;
 
     joint=optGeneral.find("joint").asInt();
-
+    
     if (optGeneral.check("port"))
     {
         string name=optGeneral.find("port").asString().c_str();
@@ -384,27 +400,31 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
             return false;
     }
 
-    // configure plant estimator    
+    // configure plant estimator
     Bottle &optPlant=opt.findGroup("plant_estimation");
     if (optPlant.isNull())
         return false;
 
-    double x_min,x_max;    
+    Pid pidInfo;
+    ipid->getPid(joint,&pidInfo);
+    dpos_dV=(pidInfo.kp>=0.0?1.0:-1.0);
+    
     ilim->getLimits(joint,&x_min,&x_max);
+    double x_range=x_max-x_min;
+    x_min+=0.1*x_range;
+    x_max-=0.1*x_range;
 
-    x0.resize(4);
-    x0[0]=(x_min+x_max)/2.0;
-    x0[1]=0.0;
+    x0.resize(4,0.0);
     x0[2]=optPlant.check("tau",Value(1.0)).asDouble();
     x0[3]=optPlant.check("K",Value(1.0)).asDouble();
 
     double Ts=optPlant.check("Ts",Value(0.01)).asDouble();
     double Q=optPlant.check("Q",Value(1.0)).asDouble();
     double R=optPlant.check("R",Value(1.0)).asDouble();
-    double P0=optPlant.check("P0",Value(1e5)).asDouble();
-
+    P0=optPlant.check("P0",Value(1e5)).asDouble();
     max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
-    pulse_period=optPlant.check("pulse_period",Value(2.0)).asDouble();
+
+    setRate((int)(1000.0*Ts));
 
     if (!plant.init(Ts,Q,R,P0,x0))
         return false;
@@ -415,8 +435,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     {
         Property propStiction(optStiction.toString().c_str());
 
-        // enforce the equality between the "joint" properties
-        // values of the two groups
+        // enforce the equality between the common properties
         propStiction.unput("joint");
         propStiction.put("joint",joint);
 
@@ -431,7 +450,23 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
 /**********************************************************************/
 bool OnlineCompensatorDesign::threadInit()
 {
+    switch (mode)
+    {
+        // -----
+        case plant_estimation:
+        {
+            imod->setOpenLoopMode(joint);
+            ienc->getEncoder(joint,&x0[0]);
+            plant.init(P0,x0);
+            x_tg=x_max;
+            pwm_pos=true;            
+            break;
+        }
+    }
+
     doneEvent.reset();
+    t0=Time::now();
+
     return true;
 }
 
@@ -439,7 +474,50 @@ bool OnlineCompensatorDesign::threadInit()
 /**********************************************************************/
 void OnlineCompensatorDesign::run()
 {
+    if (max_time>0.0)
+        if (Time::now()-t0>max_time)
+            askToStop();
+
     mutex.wait();
+    switch (mode)
+    {
+        // -----
+        case plant_estimation:
+        {
+            double enc;
+            ienc->getEncoder(joint,&enc);
+
+            // switch logic
+            if (x_tg==x_max)
+            {
+                if (enc>x_max)
+                {
+                    x_tg=x_min;
+                    pwm_pos=false;
+                }
+            }
+            else if (enc<x_min)
+            {
+                x_tg=x_max;
+                pwm_pos=true;
+            }
+
+            double u=(pwm_pos?max_pwm:-max_pwm);
+            ipid->setOffset(joint,dpos_dV*u);
+
+            plant.estimate(u,enc);
+            if (port.getOutputCount()>0)
+            {
+                Vector info(2);
+                info[0]=u;
+                info[1]=enc;
+                info=cat(info,plant.get_x());
+                port.write(info);
+            }
+
+            break;
+        }
+    }
     mutex.post();
 }
 
@@ -447,6 +525,17 @@ void OnlineCompensatorDesign::run()
 /**********************************************************************/
 void OnlineCompensatorDesign::threadRelease()
 {
+    switch (mode)
+    {
+        // -----
+        case plant_estimation:
+        {
+            ipid->setOffset(joint,0.0);
+            imod->setPositionMode(joint);
+            break;
+        }
+    }
+
     doneEvent.signal();
 }
 
@@ -456,6 +545,12 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
 {
     if (!configured)
         return false;
+
+    Property &opt=const_cast<Property&>(options);
+    if (opt.check("max_time"))
+        max_time=opt.find("max_time").asDouble();
+    else
+        max_time=0.0;
 
     mode=plant_estimation;
     return start();
@@ -513,7 +608,20 @@ bool OnlineCompensatorDesign::getResults(Property &results)
     if (!configured)
         return false;
 
+    results.clear();
+
     mutex.wait();
+    switch (mode)
+    {
+        // -----
+        case plant_estimation:
+        {
+            Vector params=plant.get_parameters();
+            results.put("tau",params[0]);
+            results.put("K",params[1]);
+            break;
+        }
+    }
     mutex.post();
 
     return true;
@@ -525,5 +633,6 @@ OnlineCompensatorDesign::~OnlineCompensatorDesign()
 {
     port.close();
 }
+
 
 
