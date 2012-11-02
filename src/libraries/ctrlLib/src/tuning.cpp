@@ -476,7 +476,7 @@ bool OnlineCompensatorDesign::threadInit()
             imod->setOpenLoopMode(joint);
             ienc->getEncoder(joint,&_x0[0]);
             predictor.init(_x0,predictor.get_P());
-            meas_update_cnt=0;
+            measure_update_cnt=0;
             x_tg=x_max;
             pwm_pos=true;
             break;
@@ -558,12 +558,12 @@ void OnlineCompensatorDesign::run()
             predictor.predict(Vector(1,u));
 
             // correction only when requested
-            if (meas_update_ticks>0)
+            if (measure_update_ticks>0)
             {
-                if (++meas_update_cnt>=meas_update_ticks)
+                if (++measure_update_cnt>=measure_update_ticks)
                 {
                     predictor.correct(Vector(1,enc));
-                    meas_update_cnt=0;
+                    measure_update_cnt=0;
                 }
             }
 
@@ -633,10 +633,10 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     else
         max_time=0.0;
 
-    if (opt.check("meas_update_ticks"))
-        meas_update_ticks=opt.find("meas_update_ticks").asInt();
+    if (opt.check("measure_update_ticks"))
+        measure_update_ticks=opt.find("measure_update_ticks").asInt();
     else
-        meas_update_ticks=100;
+        measure_update_ticks=100;
 
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();

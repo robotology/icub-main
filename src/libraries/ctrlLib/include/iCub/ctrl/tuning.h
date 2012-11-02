@@ -346,8 +346,8 @@ protected:
     double t0,dpos_dV;
     double x_min,x_max,x_tg;
     double max_time,max_pwm;
-    int    meas_update_ticks;
-    int    meas_update_cnt;
+    int    measure_update_ticks;
+    int    measure_update_cnt;
     bool   pwm_pos;
     bool   configured;
 
@@ -454,13 +454,13 @@ public:
      *                experiment; (@b tau <double>) specifies the
      *                mechanical time constant of the plant to be
      *                validated; (@b K <double>) specifies the plant
-     *                gain to be validated; (@b meas_update_ticks
-     *                <int>) specifies how many sample ticks to be
-     *                taken before updating the measurement in the
-     *                Kalman filter, if <= 0 then no update is
-     *                performed; (@b Q <double>) (@b R <double>)
-     *                (@b P0 <double>) are the well known Kalman
-     *                quantities for the noise statistics.
+     *                gain to be validated; (@b measure_update_ticks
+     *                <int>) specifies how many sample ticks to take
+     *                before updating the measurement in the Kalman
+     *                filter, if <= 0 then no update is performed;
+     *                (@b Q <double>) (@b R <double>) (@b P0
+     *                <double>) are the well known Kalman quantities
+     *                for the noise statistics.
      *  
      * @note if active, the yarp port streams out, respectively, the 
      *       commanded voltage, the actual encoder value and the
