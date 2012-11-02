@@ -445,6 +445,8 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
             return false;
     }
 
+    meanParams.resize(2,0.0);
+
     return configured=true;
 }
 
@@ -460,6 +462,8 @@ bool OnlineCompensatorDesign::threadInit()
             imod->setOpenLoopMode(joint);
             ienc->getEncoder(joint,&x0[0]);
             plant.init(P0,x0);
+            meanParams=0.0;
+            meanCnt=0;
             x_tg=x_max;
             pwm_pos=true;
             break;
@@ -528,12 +532,18 @@ void OnlineCompensatorDesign::run()
             commandJoint(enc,u);
             plant.estimate(u,enc);
 
+            // average parameters tau and K
+            meanParams*=meanCnt;
+            meanParams+=plant.get_parameters();
+            meanParams/=meanCnt++;
+
             if (port.getOutputCount()>0)
             {
                 Vector info(2);
                 info[0]=u;
                 info[1]=enc;
                 info=cat(info,plant.get_x());
+                info=cat(info,meanParams);
                 port.write(info);
             }
 
@@ -563,7 +573,7 @@ void OnlineCompensatorDesign::run()
                 info[0]=u;
                 info[1]=enc;
                 info=cat(info,predictor.get_x());
-                info=cat(info,Vector(2,0.0));   // zero-padding
+                info=cat(info,Vector(4,0.0));   // zero-padding
                 port.write(info);
             }
 
@@ -718,6 +728,8 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             Vector params=plant.get_parameters();
             results.put("tau",params[0]);
             results.put("K",params[1]);
+            results.put("tau_mean",meanParams[0]);
+            results.put("K_mean",meanParams[1]);
             break;
         }
 

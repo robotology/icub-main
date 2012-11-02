@@ -338,6 +338,8 @@ protected:
     yarp::os::Port      port;
 
     yarp::sig::Vector x0;
+    yarp::sig::Vector meanParams;
+    int               meanCnt;
     double            P0;
 
     int    joint;
@@ -436,7 +438,8 @@ public:
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       commanded voltage, the actual encoder value and the 4D
-     *       internal state of the estimator.
+     *       internal state of the estimator as well as the averaged
+     *       parameters.
      *  
      * @return true iff started successfully.
      */
@@ -510,7 +513,8 @@ public:
      * @param results property object containing the results 
      *                depending on the current ongoing operation:
      *                while estimating the plant results is (@b tau
-     *                <double>) (@b K <double>); while validating
+     *                <double>) (@b K <double>) (@b tau_mean
+     *                <double>) (K_mean <double>); while validating
      *                the plant results is (@b position <double>)
      *                (@b velocity <double>); while estimating the
      *                stiction values results is (@b stiction
