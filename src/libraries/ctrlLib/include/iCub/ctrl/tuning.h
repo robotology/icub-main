@@ -20,7 +20,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for Compensators tuning
+ * Classes for Compensators tuning.
  *
  * \author Ugo Pattacini
  *
@@ -318,7 +318,7 @@ public:
 * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
 *  
 * This class has three operative modes: one for the plant 
-* estimantion, one for the plant validation and one for the 
+* estimation, one for the plant validation and one for the 
 * stiction estimation. 
 */
 class OnlineCompensatorDesign : public yarp::os::RateThread
@@ -431,7 +431,7 @@ public:
     /**
      * Start off the plant estimation procedure. 
      *  
-     * @param options property containing the estimantion options. 
+     * @param options property containing the estimation options. 
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
      *                experiment.
@@ -476,7 +476,7 @@ public:
     /**
      * Start off the stiction estimation procedure. 
      *  
-     * @param options property containing the estimantion options. 
+     * @param options property containing the estimation options. 
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
      *                experiment.
