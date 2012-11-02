@@ -693,10 +693,7 @@ bool OnlineCompensatorDesign::isDone()
     if (!configured)
         return false;
 
-    mutex.wait();
-    mutex.post();
-
-    return true;
+    return !isRunning();
 }
 
 
