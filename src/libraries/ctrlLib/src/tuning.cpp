@@ -487,7 +487,7 @@ bool OnlineCompensatorDesign::threadInit()
 
 
 /**********************************************************************/
-void OnlineCompensatorDesign::controlJoint(double &enc, double &u)
+void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
 {
     ienc->getEncoder(joint,&enc);
 
@@ -525,7 +525,7 @@ void OnlineCompensatorDesign::run()
         case plant_estimation:
         {
             double enc,u;
-            controlJoint(enc,u);
+            commandJoint(enc,u);
             plant.estimate(u,enc);
 
             if (port.getOutputCount()>0)
@@ -544,7 +544,7 @@ void OnlineCompensatorDesign::run()
         case plant_validation:
         {
             double enc,u;
-            controlJoint(enc,u);
+            commandJoint(enc,u);
             predictor.predict(Vector(1,u));
 
             // correction only when requested

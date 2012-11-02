@@ -356,7 +356,7 @@ protected:
         stiction_estimation
     } mode;
 
-    void controlJoint(double &enc, double &u);
+    void commandJoint(double &enc, double &u);
     bool threadInit();    
     void run();
     void threadRelease();
