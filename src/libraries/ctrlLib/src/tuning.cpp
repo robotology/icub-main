@@ -222,7 +222,7 @@ bool OnlineStictionEstimator::threadInit()
 
     Pid pidInfo;
     ipid->getPid(joint,&pidInfo);
-    dpos_dV=(pidInfo.kp>=0.0?1.0:-1.0);
+    dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
     Matrix satLim(1,2);
     satLim(0,0)=-pidInfo.max_int; satLim(0,1)=pidInfo.max_int;
 
@@ -408,7 +408,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
 
     Pid pidInfo;
     ipid->getPid(joint,&pidInfo);
-    dpos_dV=(pidInfo.kp>=0.0?1.0:-1.0);
+    dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
     
     ilim->getLimits(joint,&x_min,&x_max);
     double x_range=x_max-x_min;
