@@ -326,7 +326,7 @@ class OnlineCompensatorDesign : public yarp::os::RateThread
 protected:
     OnlineDCMotorEstimator  plant;
     OnlineStictionEstimator stiction;
-    Filter                  predictor;
+    Kalman                  predictor;
 
     yarp::dev::IControlMode   *imod;
     yarp::dev::IControlLimits *ilim;
@@ -344,6 +344,8 @@ protected:
     double t0,dpos_dV;
     double x_min,x_max,x_tg;
     double max_time,max_pwm;
+    int    meas_update_ticks;
+    int    meas_update_cnt;
     bool   pwm_pos;
     bool   configured;
 
@@ -449,12 +451,20 @@ public:
      *                experiment; (@b tau <double>) specifies the
      *                mechanical time constant of the plant to be
      *                validated; (@b K <double>) specifies the plant
-     *                gain to be validated.
+     *                gain to be validated; (@b meas_update_ticks
+     *                <int>) specifies how many sample ticks to be
+     *                taken before updating the measurement in the
+     *                Kalman filter, if <= 0 then no update is
+     *                performed; (@b Q <double>) (@b R <double>)
+     *                (@b P0 <double>) are the well known Kalman
+     *                quantities for the noise statistics.
      *  
      * @note if active, the yarp port streams out, respectively, the 
      *       commanded voltage, the actual encoder value and the
-     *       predicted plant response. Zero-padding allows being
-     *       consistent with the data size.
+     *       predicted plant response which includes the estimated
+     *       position and velocity. Zero-padding allows being
+     *       consistent with the data size used for the estimation
+     *       mode.
      *  
      * @return true iff started successfully.
      */
@@ -501,9 +511,10 @@ public:
      *                depending on the current ongoing operation:
      *                while estimating the plant results is (@b tau
      *                <double>) (@b K <double>); while validating
-     *                the plant results is (@b position <double>);
-     *                while estimating the stiction values results
-     *                is (@b stiction (<double> <double>)).
+     *                the plant results is (@b position <double>)
+     *                (@b velocity <double>); while estimating the
+     *                stiction values results is (@b stiction
+     *                (<double> <double>)).
      *  
      * @return true/false on success/failure. 
      */

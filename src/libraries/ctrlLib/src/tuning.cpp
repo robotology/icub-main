@@ -355,7 +355,8 @@ bool OnlineStictionEstimator::getResults(Vector &results)
 
 /**********************************************************************/
 OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000),
-                         predictor(Vector(3),Vector(3),Vector(1))
+                         predictor(Matrix(2,2),Matrix(2,1),Matrix(1,2),
+                                   Matrix(2,2),Matrix(1,1))
 {
     imod=NULL;
     ilim=NULL;
@@ -467,10 +468,11 @@ bool OnlineCompensatorDesign::threadInit()
         // -----
         case plant_validation:
         {
-            double enc;
+            Vector _x0(2,0.0);
             imod->setOpenLoopMode(joint);
-            ienc->getEncoder(joint,&enc);
-            predictor.init(Vector(1,enc));
+            ienc->getEncoder(joint,&_x0[0]);
+            predictor.init(_x0,predictor.get_P());
+            meas_update_cnt=0;
             x_tg=x_max;
             pwm_pos=true;
             break;
@@ -524,8 +526,8 @@ void OnlineCompensatorDesign::run()
         {
             double enc,u;
             controlJoint(enc,u);
-
             plant.estimate(u,enc);
+
             if (port.getOutputCount()>0)
             {
                 Vector info(2);
@@ -543,15 +545,25 @@ void OnlineCompensatorDesign::run()
         {
             double enc,u;
             controlJoint(enc,u);
+            predictor.predict(Vector(1,u));
 
-            predictor.filt(Vector(1,u));
+            // correction only when requested
+            if (meas_update_ticks>0)
+            {
+                if (++meas_update_cnt>=meas_update_ticks)
+                {
+                    predictor.correct(Vector(1,enc));
+                    meas_update_cnt=0;
+                }
+            }
+
             if (port.getOutputCount()>0)
             {
                 Vector info(2);
                 info[0]=u;
                 info[1]=enc;
-                info=cat(info,predictor.output());
-                info=cat(info,Vector(3,0.0));   // zero-padding
+                info=cat(info,predictor.get_x());
+                info=cat(info,Vector(2,0.0));   // zero-padding
                 port.write(info);
             }
 
@@ -611,21 +623,43 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     else
         max_time=0.0;
 
+    if (opt.check("meas_update_ticks"))
+        meas_update_ticks=opt.find("meas_update_ticks").asInt();
+    else
+        meas_update_ticks=100;
+
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
     double Ts=0.001*getRate();
+    double a=1.0/tau;
+    double b=K/tau;
 
-    // set up the digital filter
-    Vector num(3,1.0);
-    num[1]=2.0;
-    num*=(K*Ts*Ts)/2.0;
+    double Q=opt.check("Q",Value(1.0)).asDouble();
+    double R=opt.check("R",Value(1.0)).asDouble();
+    double P0=opt.check("P0",Value(1e5)).asDouble();
 
-    Vector den(3);
-    den[0]=2.0*tau+Ts;
-    den[1]=-4.0*tau;
-    den[2]=2.0*tau-Ts;
+    // set up the Kalman filter
+    double _exp=exp(-Ts*a);
+    double _exp_1=1.0-_exp;
 
-    predictor.adjustCoeffs(num,den);
+    Matrix A=eye(2,2);
+    A(0,1)=_exp_1/a;
+    A(1,1)=_exp;
+
+    Matrix B(2,1);
+    B(0,0)=b*(a*Ts-_exp_1)/(a*a);
+    B(1,0)=b*A(0,1);
+
+    Matrix H(1,2);
+    H(0,0)=1.0;
+    H(0,1)=0.0;
+
+    predictor.set_A(A);
+    predictor.set_B(B);
+    predictor.set_H(H);
+    predictor.set_Q(Q*eye(2,2));
+    predictor.set_R(R*eye(1,1));
+    predictor.init(Vector(2,0.0),P0*eye(2,2));
 
     mode=plant_validation;
     return RateThread::start();
@@ -690,8 +724,9 @@ bool OnlineCompensatorDesign::getResults(Property &results)
         // -----
         case plant_validation:
         {
-            Vector response=predictor.output();
+            Vector response=predictor.get_x();
             results.put("position",response[0]);
+            results.put("velocity",response[1]);
             break;
         }
     }
