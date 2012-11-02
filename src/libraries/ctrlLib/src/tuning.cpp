@@ -636,7 +636,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 
     double Q=opt.check("Q",Value(1.0)).asDouble();
     double R=opt.check("R",Value(1.0)).asDouble();
-    double P0=opt.check("P0",Value(1e5)).asDouble();
+    double P0=opt.check("P0",Value(this->P0)).asDouble();
 
     // set up the Kalman filter
     double _exp=exp(-Ts*a);
