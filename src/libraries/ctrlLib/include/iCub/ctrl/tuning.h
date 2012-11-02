@@ -264,7 +264,7 @@ public:
      *  
      * @return true iff started successfully.
      */
-    virtual bool startEstimation() { return start(); }
+    virtual bool startEstimation() { return RateThread::start(); }
 
     /**
      * Check the current estimation status.
@@ -284,7 +284,7 @@ public:
     /**
      * Stop the estimation procedure.
      */
-    virtual void stopEstimation() { stop(); }
+    virtual void stopEstimation() { RateThread::stop(); }
 
     /**
      * Retrieve the estimation. 
@@ -492,7 +492,7 @@ public:
     /**
      * Stop any ongoing operation.
      */
-    virtual void stopOperation() { stop(); }
+    virtual void stopOperation() { RateThread::stop(); }
 
     /**
      * Retrieve the results of the current ongoing operation.

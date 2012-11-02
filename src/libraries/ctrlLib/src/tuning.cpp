@@ -595,7 +595,7 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
         max_time=0.0;
 
     mode=plant_estimation;
-    return start();
+    return RateThread::start();
 }
 
 
@@ -628,7 +628,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     predictor.adjustCoeffs(num,den);
 
     mode=plant_validation;
-    return start();
+    return RateThread::start();
 }
 
 
@@ -639,7 +639,7 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
         return false;
 
     mode=stiction_estimation;
-    return start();
+    return RateThread::start();
 }
 
 
