@@ -75,19 +75,29 @@ bool Kalman::init(const Vector &_x0, const Matrix &_P0)
 
 
 /**********************************************************************/
-Vector Kalman::filt(const Vector &u, const Vector &z)
+Vector Kalman::predict(const Vector &u)
 {
-    // prediction
     x=A*x+B*u;
     P=A*P*At+Q;
+    return x;
+}
 
-    // Kalman gain
+
+/**********************************************************************/
+Vector Kalman::correct(const Vector &z)
+{
     K=P*Ht*pinv(H*P*Ht+R);
-
-    // correction
     x+=K*(z-H*x);
     P=(I-K*H)*P;
+    return x;
+}
 
+
+/**********************************************************************/
+Vector Kalman::filt(const Vector &u, const Vector &z)
+{
+    predict(u);
+    correct(z);
     return x;
 }
 

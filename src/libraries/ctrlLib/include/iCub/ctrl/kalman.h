@@ -103,8 +103,28 @@ public:
     bool init(const yarp::sig::Vector &_x0, const yarp::sig::Matrix &_P0);
 
     /**
+     * Predicts the next state vector given the current input. 
+     * 
+     * @param u Current input. 
+     * 
+     * @return Estimated state vector.
+     */
+    yarp::sig::Vector predict(const yarp::sig::Vector &u);
+
+    /**
+     * Corrects the current estimation of the state vector given the
+     * current measurement. 
+     * 
+     * @param z Current measurement. 
+     * 
+     * @return Estimated state vector.
+     */
+    yarp::sig::Vector correct(const yarp::sig::Vector &z);
+
+    /**
      * Returns the estimated state vector given the current 
-     * measurement. 
+     * measurement by performing a prediction and then correcting 
+     * the result. 
      * 
      * @param z Current measurement.
      * 
@@ -114,7 +134,8 @@ public:
 
     /**
      * Returns the estimated state vector given the current 
-     * input and the current measurement.
+     * input and the current measurement by performing a prediction 
+     * and then correcting the result. 
      * 
      * @param u Current input. 
      * @param z Current measurement. 
