@@ -17,8 +17,8 @@
 
 #include <algorithm>
 #include <string>
-#include <string.h>
 #include <sstream>
+#include <stdio.h>
 
 #include <gsl/gsl_math.h>
 
