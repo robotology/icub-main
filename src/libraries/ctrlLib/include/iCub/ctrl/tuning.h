@@ -456,13 +456,16 @@ public:
      *  
      * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
      *  
-     * The plant is in the form: 
+     * The plant is assumed to be in the form: 
      *  
      * \f$ K/s \cdot 1/\left(1+s\tau\right). \f$ 
      *  
-     * The contorller is in the form: 
+     * The controller is in the form: 
      *  
-     * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right) \f$ 
+     * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right). \f$ 
+     *  
+     * The tuning is symbolic and by no means affect the gains of 
+     * the low-level controller. 
      * 
      * @param options property object containing the plant 
      *                characteristics as well as the design
@@ -555,6 +558,10 @@ public:
 
     /**
      * Start off the controller validation procedure. 
+     *  
+     * Once the validation has been carried out, then the low-level
+     * controller's paremeters are restored to their previous 
+     * values. 
      *  
      * @param options property containing the validation options. 
      *                Available otions are: (@b max_time <double>)
