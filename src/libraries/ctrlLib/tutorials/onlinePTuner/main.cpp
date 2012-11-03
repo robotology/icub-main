@@ -200,6 +200,10 @@ int main(int argc, char *argv[])
     designer.tuneController(pControllerRequirements,pController);
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
+    double ticks_degree_ratio=2.6;
+    double scale_factor=1<<8;
+    Kp*=scale_factor*ticks_degree_ratio;
+    printf("Kp to be set in the firmware = %g\n",Kp);
 
     // let's identify the stictions values as well
     Property pStictionEstimation;
@@ -255,7 +259,7 @@ int main(int argc, char *argv[])
         Time::delay(0.01);
     }
 
-    printf("Controller performance integral average error = %g [deg]\n",
+    printf("Controller performance: integral average error = %g [deg]\n",
            cumErr/pControllerValidation.find("max_time").asDouble());
 
     return 0;
