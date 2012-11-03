@@ -458,7 +458,7 @@ public:
      *  
      * The plant is in the form: 
      *  
-     * \f$ K/\left(1+s\tau\right) \cdot 1/s. \f$ 
+     * \f$ K/s \cdot 1/\left(1+s\tau\right). \f$ 
      *  
      * The contorller is in the form: 
      *  
@@ -479,7 +479,7 @@ public:
      *  
      * @note when designing a <i>P</i> controller it holds
      *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
-     *       design it holds \f$ 2\zeta\omega_n \geqslant 1/\tau. \f$
+     *       design it holds \f$ 2\zeta\omega_n \geq 1/\tau. \f$
      *       Therefore, the requirement on \f$ \omega \f$ (i.e.
      *       \f$ \omega=2\pi \cdot f_{cut} \f$ ) has always the
      *       priority.
