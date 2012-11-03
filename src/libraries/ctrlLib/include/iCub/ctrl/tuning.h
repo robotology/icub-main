@@ -552,7 +552,11 @@ public:
      *  
      * The plant is in the form: 
      *  
-     * \f$ \theta/V=K/\left(1+s\tau\right) \cdot 1/s. \f$
+     * \f$ K/\left(1+s\tau\right) \cdot 1/s. \f$ 
+     *  
+     * The contorller is in the form: 
+     *  
+     * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right) \f$ 
      * 
      * @param options property object containing the plant 
      *                characteristics as well as the design
@@ -569,7 +573,7 @@ public:
      *  
      * @note when designing a <i>P</i> controller it holds
      *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
-     *       design it holds \f$ 2\zeta\omega_n \leqslant 1/\tau. \f$
+     *       design it holds \f$ 2\zeta\omega_n \geqslant 1/\tau. \f$
      *       Therefore, the requirement on \f$ \omega \f$ has
      *       always the priority.
      *  

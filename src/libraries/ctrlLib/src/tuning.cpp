@@ -869,9 +869,9 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
         zeta=opt.check("zeta",Value(sqrt(2.0)/2.0)).asDouble();
         zeta=std::min(zeta,1.0/(2.0*tau*omega));
 
-        Kp=(omega*omega*tau)/K;
+        Kp=omega/(2.0*zeta*K);
         tau_d=1.0/(2.0*zeta*omega);
-        Kd=(omega*(1.0-tau/tau_d))/(2.0*K*zeta);
+        Kd=(tau/tau_d-1.0)/(4.0*zeta*zeta*K);
     }
     else
         return false;
