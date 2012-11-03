@@ -16,6 +16,9 @@
 */
 
 #include <algorithm>
+#include <string>
+#include <string.h>
+#include <sstream>
 
 #include <gsl/gsl_math.h>
 
@@ -163,8 +166,8 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
 
         T=opt.check("T",Value(2.0)).asDouble();
         kp=opt.check("kp",Value(10.0)).asDouble();
-        ki=opt.check("ki",Value(0.0)).asDouble();
-        kd=opt.check("kd",Value(0.0)).asDouble();
+        ki=opt.check("ki",Value(250.0)).asDouble();
+        kd=opt.check("kd",Value(15.0)).asDouble();
         vel_thres=fabs(opt.check("vel_thres",Value(5.0)).asDouble());
         e_thres=fabs(opt.check("e_thres",Value(1.0)).asDouble());
 
@@ -296,6 +299,11 @@ void OnlineStictionEstimator::run()
     ipid->setOffset(joint,dpos_dV*u);
     adaptOld=adapt;
 
+    // fill in info
+    info.unput("pwm");       info.put("pwm",u);
+    info.unput("feedback");  info.put("feedback",x_pos);
+    info.unput("reference"); info.put("reference",xd_pos);
+
     mutex.post();
 
     if (done[0]*done[1]!=0.0)
@@ -347,6 +355,20 @@ bool OnlineStictionEstimator::getResults(Vector &results)
 
     mutex.wait();
     results=stiction;
+    mutex.post();
+
+    return true;
+}
+
+
+/**********************************************************************/
+bool OnlineStictionEstimator::getInfo(Property &info)
+{
+    if (!configured)
+        return false;
+
+    mutex.wait();
+    info=this->info;
     mutex.post();
 
     return true;
@@ -438,7 +460,6 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
         Property propStiction(optStiction.toString().c_str());
 
         // enforce the equality between the common properties
-        propStiction.unput("joint");
         propStiction.put("joint",joint);
 
         if (!stiction.configure(driver,propStiction))
@@ -479,6 +500,13 @@ bool OnlineCompensatorDesign::threadInit()
             measure_update_cnt=0;
             x_tg=x_max;
             pwm_pos=true;
+            break;
+        }
+
+        // -----
+        case stiction_estimation:
+        {
+            stiction.startEstimation();
             break;
         }
     }
@@ -579,6 +607,33 @@ void OnlineCompensatorDesign::run()
 
             break;
         }
+
+        // -----
+        case stiction_estimation:
+        {
+            if (stiction.isDone())
+                askToStop();
+
+            if (port.getOutputCount()>0)
+            {
+                Property stiction_info;
+                stiction.getInfo(stiction_info);
+
+                Vector info(3);
+                info[0]=stiction_info.find("pwm").asDouble();
+                info[1]=stiction_info.find("feedback").asDouble();
+                info[2]=stiction_info.find("reference").asDouble();
+
+                Vector results;
+                stiction.getResults(results);
+                info=cat(info,results);
+                info=cat(info,Vector(3,0.0));   // zero-padding
+
+                port.write(info);
+            }
+
+            break;
+        }
     }
     mutex.post();
 }
@@ -596,6 +651,13 @@ void OnlineCompensatorDesign::threadRelease()
         {
             ipid->setOffset(joint,0.0);
             imod->setPositionMode(joint);
+            break;
+        }
+
+        // -----
+        case stiction_estimation:
+        {
+            stiction.stopEstimation();
             break;
         }
     }
@@ -679,8 +741,14 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 /**********************************************************************/
 bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
 {
+    Property &opt=const_cast<Property&>(options);
     if (!configured)
         return false;
+
+    if (opt.check("max_time"))
+        max_time=opt.find("max_time").asDouble();
+    else
+        max_time=0.0;
 
     mode=stiction_estimation;
     return RateThread::start();
@@ -738,8 +806,80 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             results.put("velocity",response[1]);
             break;
         }
+
+        // -----
+        case stiction_estimation:
+        {
+            Vector values;
+            stiction.getResults(values);
+            ostringstream str;
+            str<<"( ";
+            str<<values[0];
+            str<<" ";
+            str<<values[1];
+            str<<" )";
+            Value v(str.str().c_str());
+            results.put("stiction",v);
+            break;
+        }
     }
     mutex.post();
+
+    return true;
+}
+
+
+/**********************************************************************/
+bool OnlineCompensatorDesign::tuneController(const Property &options,
+                                             Property &results)
+{
+    Property &opt=const_cast<Property&>(options);
+    if (!opt.check("tau") || !opt.check("K") || !opt.check("type"))
+        return false;
+
+    double tau=opt.find("tau").asDouble();
+    double K=opt.find("K").asDouble();
+    string type=opt.check("type",Value("P")).asString().c_str();
+    double omega,zeta;
+    double Kp,Kd,tau_d;
+
+    // P design
+    if (strcmpi(type.c_str(),"P")==0)
+    {
+        if (opt.check("omega"))
+        {
+            omega=opt.find("omega").asDouble();
+            zeta=1.0/(2.0*tau*omega);
+        }
+        else if (opt.check("zeta"))
+        {
+            zeta=opt.find("zeta").asDouble();
+            omega=1.0/(2.0*tau*zeta);
+        }
+        else
+            return false;
+
+        Kp=(omega*omega*tau)/K;
+        Kd=tau_d=0.0;
+    }
+    // PD design
+    else if (strcmpi(type.c_str(),"PD")==0)
+    {
+        omega=opt.check("omega",Value(2.0*M_PI*2.0)).asDouble();
+        zeta=opt.check("zeta",Value(sqrt(2.0)/2.0)).asDouble();
+        zeta=std::min(zeta,1.0/(2.0*tau*omega));
+
+        Kp=(omega*omega*tau)/K;
+        tau_d=1.0/(2.0*zeta*omega);
+        Kd=(omega*(1.0-tau/tau_d))/(2.0*K*zeta);
+    }
+    else
+        return false;
+
+    results.clear();
+    results.put("Kp",Kp);
+    results.put("Kd",Kd);
+    results.put("tau_d",tau_d);
 
     return true;
 }
@@ -750,6 +890,7 @@ OnlineCompensatorDesign::~OnlineCompensatorDesign()
 {
     port.close();
 }
+
 
 
 

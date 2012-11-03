@@ -167,6 +167,7 @@ protected:
     yarp::os::Event     doneEvent;
     yarp::sig::Vector   gamma;
     yarp::sig::Vector   stiction;
+    yarp::os::Property  info;
     yarp::sig::Vector   done;
                               
     AWLinEstimator   velEst;
@@ -295,6 +296,20 @@ public:
      * @return true/false on success/failure.
      */
     virtual bool getResults(yarp::sig::Vector &results);
+
+    /**
+     * Retrieve useful information about the estimation experiment. 
+     *  
+     * @param info the property containing the info. Available info 
+     *             are: (@b pwm <double>) which specifies the
+     *             commanded voltage; (@b reference <double>) which
+     *             specifies the position reference; (@b feedback
+     *             <double>) which specifies the actual encoder
+     *             value.
+     *  
+     * @return true/false on success/failure.
+     */
+    virtual bool getInfo(yarp::os::Property &info);
 
     /**
      * Destructor.
@@ -466,8 +481,8 @@ public:
      *       commanded voltage, the actual encoder value and the
      *       predicted plant response which includes the estimated
      *       position and velocity. Zero-padding allows being
-     *       consistent with the data size used for the estimation
-     *       mode.
+     *       compliant with the data size used for the plant
+     *       estimation mode.
      *  
      * @return true iff started successfully.
      */
@@ -481,8 +496,11 @@ public:
      *                specifies the maximum amount of time for the
      *                experiment.
      *  
-     * @note if active, the yarp port streams out the stiction 
-     *       values.
+     * @note if active, the yarp port streams out, respectively, the
+     *       commanded voltage, the actual encoder value, the
+     *       position reference and the the stiction values.
+     *       Zero-padding allows being compliant with the data size
+     *       used for plant estimation mode.
      *  
      * @return true iff started successfully.
      */
@@ -523,6 +541,41 @@ public:
      * @return true/false on success/failure. 
      */
     virtual bool getResults(yarp::os::Property &results);
+
+    /**
+     * Tune symbolically the controller once given the plant 
+     * characteristics. The design requirement is to achieve the 
+     * closed-loop system represented by the following transfer 
+     * function: 
+     *  
+     * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
+     *  
+     * The plant is in the form: 
+     *  
+     * \f$ \theta/V=K/\left(1+s\tau\right) \cdot 1/s. \f$
+     * 
+     * @param options property object containing the plant 
+     *                characteristics as well as the design
+     *                requirements: (@b tau <double>) (@b K
+     *                <double>) (@b omega <double>) (@b zeta
+     *                <double>); (@b type <string>) specifies the
+     *                controller's architecture which can be "P" or
+     *                "PD".
+     * @param results property containing the design outcome in 
+     *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
+     *             parameters. The property's tags are respectively:
+     *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>.
+     * @return true/false on success/failure.
+     *  
+     * @note when designing a <i>P</i> controller it holds
+     *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
+     *       design it holds \f$ 2\zeta\omega_n \leqslant 1/\tau. \f$
+     *       Therefore, the requirement on \f$ \omega \f$ has
+     *       always the priority.
+     *  
+     * @return true/false on success/failure. 
+     */
+    virtual bool tuneController(const yarp::os::Property &options, yarp::os::Property &results);
 
     /**
      * Destructor.
