@@ -732,7 +732,6 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
     string type=opt.check("type",Value("P")).asString().c_str();
-    transform(type.begin(),type.end(),type.begin(),toupper);
     double omega,zeta;
     double Kp,Kd,tau_d;
 
