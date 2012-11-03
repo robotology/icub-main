@@ -18,7 +18,6 @@
 #include <algorithm>
 #include <string>
 #include <sstream>
-#include <stdio.h>
 
 #include <gsl/gsl_math.h>
 
@@ -733,11 +732,12 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
     string type=opt.check("type",Value("P")).asString().c_str();
+    transform(type.begin(),type.end(),type.begin(),toupper);
     double omega,zeta;
     double Kp,Kd,tau_d;
 
     // P design
-    if (strcmpi(type.c_str(),"P")==0)
+    if (type=="P")
     {
         if (opt.check("f_cut"))
         {
@@ -756,7 +756,7 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
         Kd=tau_d=0.0;
     }
     // PD design
-    else if (strcmpi(type.c_str(),"PD")==0)
+    else if (type=="PD")
     {
         omega=2.0*M_PI*opt.check("f_cut",Value(2.0*M_PI*2.0)).asDouble();
         zeta=opt.check("zeta",Value(1.0)).asDouble();
