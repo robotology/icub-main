@@ -866,8 +866,8 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     else if (strcmpi(type.c_str(),"PD")==0)
     {
         omega=2.0*M_PI*opt.check("f_cut",Value(2.0*M_PI*2.0)).asDouble();
-        zeta=opt.check("zeta",Value(sqrt(2.0)/2.0)).asDouble();
-        zeta=std::min(zeta,1.0/(2.0*tau*omega));
+        zeta=opt.check("zeta",Value(1.0)).asDouble();
+        zeta=std::max(zeta,1.0/(2.0*tau*omega));
 
         Kp=omega/(2.0*zeta*K);
         tau_d=1.0/(2.0*zeta*omega);
