@@ -846,9 +846,9 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     // P design
     if (strcmpi(type.c_str(),"P")==0)
     {
-        if (opt.check("omega"))
+        if (opt.check("cut_freq"))
         {
-            omega=opt.find("omega").asDouble();
+            omega=2.0*M_PI*opt.find("cut_freq").asDouble();
             zeta=1.0/(2.0*tau*omega);
         }
         else if (opt.check("zeta"))
@@ -865,7 +865,7 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     // PD design
     else if (strcmpi(type.c_str(),"PD")==0)
     {
-        omega=opt.check("omega",Value(2.0*M_PI*2.0)).asDouble();
+        omega=2.0*M_PI*opt.check("cut_freq",Value(2.0*M_PI*2.0)).asDouble();
         zeta=opt.check("zeta",Value(sqrt(2.0)/2.0)).asDouble();
         zeta=std::min(zeta,1.0/(2.0*tau*omega));
 
@@ -880,6 +880,8 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     results.put("Kp",Kp);
     results.put("Kd",Kd);
     results.put("tau_d",tau_d);
+    results.put("cut_freq",omega/(2.0*M_PI));
+    results.put("zeta",zeta);
 
     return true;
 }

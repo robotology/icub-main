@@ -561,7 +561,7 @@ public:
      * @param options property object containing the plant 
      *                characteristics as well as the design
      *                requirements: (@b tau <double>) (@b K
-     *                <double>) (@b omega <double>) (@b zeta
+     *                <double>) (@b cut_freq <double>) (@b zeta
      *                <double>); (@b type <string>) specifies the
      *                controller's architecture which can be "P" or
      *                "PD".
@@ -574,8 +574,9 @@ public:
      * @note when designing a <i>P</i> controller it holds
      *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
      *       design it holds \f$ 2\zeta\omega_n \geqslant 1/\tau. \f$
-     *       Therefore, the requirement on \f$ \omega \f$ has
-     *       always the priority.
+     *       Therefore, the requirement on \f$ \omega \f$ (i.e.
+     *       \f$ \omega=2\pi \cdot f_{cut} \f$ ) has always the
+     *           priority.
      *  
      * @return true/false on success/failure. 
      */
