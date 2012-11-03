@@ -474,7 +474,9 @@ public:
      * @param results property containing the design outcome in 
      *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
      *             parameters. The property's tags are respectively:
-     *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>.
+     *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>. Moreover,
+     *             parameters <b>f_cut</b> and <b>zeta</b> are also
+     *             returned.
      * @return true/false on success/failure.
      *  
      * @note when designing a <i>P</i> controller it holds

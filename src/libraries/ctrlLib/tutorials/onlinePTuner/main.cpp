@@ -11,7 +11,9 @@
 // Author: Ugo Pattacini - <ugo.pattacini@iit.it>
 
 #include <stdio.h>
+#include <math.h>
 #include <string>
+#include <sstream>
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
@@ -196,7 +198,65 @@ int main(int argc, char *argv[])
     pControllerRequirements.put("f_cut",2.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
-    printf("parameters: %s\n",pController.toString().c_str());
+    double Kp=pController.find("Kp").asDouble();
+    printf("found Kp = %g\n",Kp);
+
+    // let's identify the stictions values as well
+    Property pStictionEstimation;
+    pStictionEstimation.put("max_time",30.0);
+    designer.startStictionEstimation(pStictionEstimation);
+
+    printf("Estimation experiment will last %g seconds...\n",
+           pStictionEstimation.find("max_time").asDouble());
+
+    t0=Time::now();
+    while (!designer.isDone())
+    {
+        printf("elapsed %d [s]\n",(int)(Time::now()-t0));
+        Time::delay(1.0);
+    }
+
+    // retrieve the stiction values
+    designer.getResults(pResults);
+    Vector stiction(2);
+    stiction[0]=pResults.find("stiction").asList()->get(0).asDouble();
+    stiction[1]=pResults.find("stiction").asList()->get(1).asDouble();
+    printf("Stiction values: positive = %g; negative = %g\n",stiction[0],stiction[1]);
+
+    // now that we know P and stiction, let's try out our controller...
+    Property pControllerValidation;
+    pControllerValidation.put("max_time",20.0);
+    pControllerValidation.put("Kp",Kp);
+    ostringstream str;
+    str<<"( ";
+    str<<stiction[0];
+    str<<" ";
+    str<<stiction[1];
+    str<<" )";
+    pControllerValidation.put("stiction",Value(str.str().c_str()));
+    // let's run for the classical "min-jerk" reference input with a
+    // period of 2 seconds.
+    // we have also the "square" waveform at our disposal.
+    pControllerValidation.put("ref_type","min-jerk");
+    pControllerValidation.put("ref_period",2.0);
+    designer.startControllerValidation(pControllerValidation);
+
+    printf("Controller validation will last %g seconds...\n",
+           pControllerValidation.find("max_time").asDouble());
+
+    double cumErr=0.0;
+    while (!designer.isDone())
+    {
+        designer.getResults(pResults);
+        double ref=pResults.find("reference").asDouble();
+        double pos=pResults.find("position").asDouble();
+        cumErr+=0.01*fabs(ref-pos);
+
+        Time::delay(0.01);
+    }
+
+    printf("Controller performance integral average error = %g [deg]\n",
+           cumErr/pControllerValidation.find("max_time").asDouble());
 
     return 0;
 }

@@ -713,6 +713,7 @@ void OnlineCompensatorDesign::threadRelease()
         case controller_validation:
         {
             ipos->stop(joint);
+            ipid->setPid(joint,pidOld);
             break;
         }
     }
