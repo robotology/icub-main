@@ -561,7 +561,7 @@ public:
      * @param options property object containing the plant 
      *                characteristics as well as the design
      *                requirements: (@b tau <double>) (@b K
-     *                <double>) (@b cut_freq <double>) (@b zeta
+     *                <double>) (@b f_cut <double>) (@b zeta
      *                <double>); (@b type <string>) specifies the
      *                controller's architecture which can be "P" or
      *                "PD".
