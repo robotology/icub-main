@@ -165,9 +165,9 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         setRate((int)(1000.0*opt.check("Ts",Value(0.01)).asDouble()));
 
         T=opt.check("T",Value(2.0)).asDouble();
-        kp=opt.check("kp",Value(10.0)).asDouble();
-        ki=opt.check("ki",Value(250.0)).asDouble();
-        kd=opt.check("kd",Value(15.0)).asDouble();
+        Kp=opt.check("Kp",Value(10.0)).asDouble();
+        Ki=opt.check("Ki",Value(250.0)).asDouble();
+        Kd=opt.check("Kd",Value(15.0)).asDouble();
         vel_thres=fabs(opt.check("vel_thres",Value(5.0)).asDouble());
         e_thres=fabs(opt.check("e_thres",Value(1.0)).asDouble());
 
@@ -219,17 +219,18 @@ bool OnlineStictionEstimator::threadInit()
     trajGen.setT(T);
     trajGen.init(Vector(1,x_pos));
 
-    Vector Kp(1,kp),  Ki(1,ki),  Kd(1,kd);
-    Vector Wp(1,1.0), Wi(1,1.0), Wd(1,1.0);
-    Vector N(1,10.0), Tt(1,1.0);
+    Vector _Kp(1,Kp),  _Ki(1,Ki),  _Kd(1,Kd);
+    Vector _Wp(1,1.0), _Wi(1,1.0), _Wd(1,1.0);
+    Vector _N(1,10.0), _Tt(1,1.0);
 
     Pid pidInfo;
     ipid->getPid(joint,&pidInfo);
     dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
-    Matrix satLim(1,2);
-    satLim(0,0)=-pidInfo.max_int; satLim(0,1)=pidInfo.max_int;
+    Matrix _satLim(1,2);
+    _satLim(0,0)=-pidInfo.max_int;
+    _satLim(0,1)=pidInfo.max_int;
 
-    pid=new parallelPID(0.001*getRate(),Kp,Ki,Kd,Wp,Wi,Wd,N,Tt,satLim);
+    pid=new parallelPID(0.001*getRate(),_Kp,_Ki,_Kd,_Wp,_Wi,_Wd,_N,_Tt,_satLim);
     pid->reset(Vector(1,0.0));
 
     intErr.setTs(0.001*getRate());
@@ -300,8 +301,8 @@ void OnlineStictionEstimator::run()
     adaptOld=adapt;
 
     // fill in info
-    info.unput("pwm");       info.put("pwm",u);
-    info.unput("feedback");  info.put("feedback",x_pos);
+    info.unput("voltage");   info.put("voltage",u);
+    info.unput("position");  info.put("position",x_pos);
     info.unput("reference"); info.put("reference",xd_pos);
 
     mutex.post();
@@ -383,7 +384,8 @@ OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000),
     imod=NULL;
     ilim=NULL;
     ienc=NULL;
-    ipid=NULL;
+    ipos=NULL;
+    ipid=NULL;    
     configured=false;
 }
 
@@ -399,6 +401,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     ok&=driver.view(imod);
     ok&=driver.view(ilim);
     ok&=driver.view(ienc);
+    ok&=driver.view(ipos);
     ok&=driver.view(ipid);
 
     if (!ok)
@@ -506,7 +509,24 @@ bool OnlineCompensatorDesign::threadInit()
         // -----
         case stiction_estimation:
         {
-            stiction.startEstimation();
+            stiction.startEstimation();            
+            break;
+        }
+
+        // -----
+        case controller_validation:
+        {
+            imod->setPositionMode(joint);
+            x_tg=x_max;
+            if (controller_validation_ref_square)
+                ipid->setReference(joint,x_tg);
+            else
+            {
+                ipos->setRefAcceleration(joint,1e9);
+                ipos->setRefSpeed(joint,(x_max-x_min)/controller_validation_ref_period);
+                ipos->positionMove(joint,x_tg);
+            }
+            t1=Time::now();
             break;
         }
     }
@@ -546,8 +566,9 @@ void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
 /**********************************************************************/
 void OnlineCompensatorDesign::run()
 {
+    double t=Time::now();
     if (max_time>0.0)
-        if (Time::now()-t0>max_time)
+        if (t-t0>max_time)
             askToStop();
 
     mutex.wait();
@@ -620,14 +641,42 @@ void OnlineCompensatorDesign::run()
                 stiction.getInfo(stiction_info);
 
                 Vector info(3);
-                info[0]=stiction_info.find("pwm").asDouble();
-                info[1]=stiction_info.find("feedback").asDouble();
+                info[0]=stiction_info.find("voltage").asDouble();
+                info[1]=stiction_info.find("position").asDouble();
                 info[2]=stiction_info.find("reference").asDouble();
 
                 Vector results;
                 stiction.getResults(results);
                 info=cat(info,results);
                 info=cat(info,Vector(3,0.0));   // zero-padding
+
+                port.write(info);
+            }
+
+            break;
+        }
+
+        // -----
+        case controller_validation:
+        {
+            if (t-t1>controller_validation_ref_period)
+            {
+                x_tg=(x_tg==x_max?x_min:x_max);
+                t1=t;
+
+                if (controller_validation_ref_square)
+                    ipid->setReference(joint,x_tg);
+                else
+                    ipos->positionMove(joint,x_tg);                
+            }
+
+            if (port.getOutputCount()>0)
+            {
+                Vector info(3);
+                ipid->getOutput(joint,&info[0]);
+                ienc->getEncoder(joint,&info[1]);
+                ipid->getReference(joint,&info[2]);
+                info=cat(info,Vector(5,0.0));   // zero-padding
 
                 port.write(info);
             }
@@ -660,9 +709,74 @@ void OnlineCompensatorDesign::threadRelease()
             stiction.stopEstimation();
             break;
         }
+
+        // -----
+        case controller_validation:
+        {
+            ipos->stop(joint);
+            break;
+        }
     }
 
     doneEvent.signal();
+}
+
+
+/**********************************************************************/
+bool OnlineCompensatorDesign::tuneController(const Property &options,
+                                             Property &results)
+{
+    Property &opt=const_cast<Property&>(options);
+    if (!opt.check("tau") || !opt.check("K") || !opt.check("type"))
+        return false;
+
+    double tau=opt.find("tau").asDouble();
+    double K=opt.find("K").asDouble();
+    string type=opt.check("type",Value("P")).asString().c_str();
+    double omega,zeta;
+    double Kp,Kd,tau_d;
+
+    // P design
+    if (strcmpi(type.c_str(),"P")==0)
+    {
+        if (opt.check("f_cut"))
+        {
+            omega=2.0*M_PI*opt.find("f_cut").asDouble();
+            zeta=1.0/(2.0*tau*omega);
+        }
+        else if (opt.check("zeta"))
+        {
+            zeta=opt.find("zeta").asDouble();
+            omega=1.0/(2.0*tau*zeta);
+        }
+        else
+            return false;
+
+        Kp=(omega*omega*tau)/K;
+        Kd=tau_d=0.0;
+    }
+    // PD design
+    else if (strcmpi(type.c_str(),"PD")==0)
+    {
+        omega=2.0*M_PI*opt.check("f_cut",Value(2.0*M_PI*2.0)).asDouble();
+        zeta=opt.check("zeta",Value(1.0)).asDouble();
+        zeta=std::max(zeta,1.0/(2.0*tau*omega));
+
+        Kp=omega/(2.0*zeta*K);
+        tau_d=1.0/(2.0*zeta*omega);
+        Kd=(tau/tau_d-1.0)/(4.0*zeta*zeta*K);
+    }
+    else
+        return false;
+
+    results.clear();
+    results.put("Kp",Kp);
+    results.put("Kd",Kd);
+    results.put("tau_d",tau_d);
+    results.put("f_cut",omega/(2.0*M_PI));
+    results.put("zeta",zeta);
+
+    return true;
 }
 
 
@@ -756,6 +870,50 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
 
 
 /**********************************************************************/
+bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
+{
+    Property &opt=const_cast<Property&>(options);
+    if (!configured)
+        return false;
+
+    if (opt.check("max_time"))
+        max_time=opt.find("max_time").asDouble();
+    else
+        max_time=0.0;
+    
+    ipid->getPid(joint,&pidOld);
+    Pid pidNew=pidOld;
+
+    if (opt.check("Kp"))
+    {
+        // enforce the correct sign of Kp
+        double Kp=opt.find("Kp").asDouble();
+        Kp=(Kp*pidOld.kp>0.0)?Kp:-Kp;
+        pidNew.setKd(Kp);
+    }
+
+    if (opt.check("stiction"))
+    {
+        if (Bottle *pB=opt.find("stiction").asList())
+        {
+            if (pB->size()>=2)
+            {
+                double pos=pB->get(0).asDouble();
+                double neg=pB->get(1).asDouble();
+                pidNew.setStictionValues(pos,neg);
+            }
+        }
+    }
+
+    controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
+    controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
+
+    mode=controller_validation;
+    return RateThread::start();
+}
+
+
+/**********************************************************************/
 bool OnlineCompensatorDesign::isDone()
 {
     if (!configured)
@@ -818,70 +976,25 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             str<<" ";
             str<<values[1];
             str<<" )";
-            Value v(str.str().c_str());
-            results.put("stiction",v);
+            results.put("stiction",Value(str.str().c_str()));
+            break;
+        }
+
+        // -----
+        case controller_validation:
+        {
+            Vector info(3);
+            ipid->getOutput(joint,&info[0]);
+            ienc->getEncoder(joint,&info[1]);
+            ipid->getReference(joint,&info[2]);
+
+            results.put("voltage",info[0]);
+            results.put("position",info[1]);
+            results.put("reference",info[2]);
             break;
         }
     }
     mutex.post();
-
-    return true;
-}
-
-
-/**********************************************************************/
-bool OnlineCompensatorDesign::tuneController(const Property &options,
-                                             Property &results)
-{
-    Property &opt=const_cast<Property&>(options);
-    if (!opt.check("tau") || !opt.check("K") || !opt.check("type"))
-        return false;
-
-    double tau=opt.find("tau").asDouble();
-    double K=opt.find("K").asDouble();
-    string type=opt.check("type",Value("P")).asString().c_str();
-    double omega,zeta;
-    double Kp,Kd,tau_d;
-
-    // P design
-    if (strcmpi(type.c_str(),"P")==0)
-    {
-        if (opt.check("f_cut"))
-        {
-            omega=2.0*M_PI*opt.find("f_cut").asDouble();
-            zeta=1.0/(2.0*tau*omega);
-        }
-        else if (opt.check("zeta"))
-        {
-            zeta=opt.find("zeta").asDouble();
-            omega=1.0/(2.0*tau*zeta);
-        }
-        else
-            return false;
-
-        Kp=(omega*omega*tau)/K;
-        Kd=tau_d=0.0;
-    }
-    // PD design
-    else if (strcmpi(type.c_str(),"PD")==0)
-    {
-        omega=2.0*M_PI*opt.check("f_cut",Value(2.0*M_PI*2.0)).asDouble();
-        zeta=opt.check("zeta",Value(1.0)).asDouble();
-        zeta=std::max(zeta,1.0/(2.0*tau*omega));
-
-        Kp=omega/(2.0*zeta*K);
-        tau_d=1.0/(2.0*zeta*omega);
-        Kd=(tau/tau_d-1.0)/(4.0*zeta*zeta*K);
-    }
-    else
-        return false;
-
-    results.clear();
-    results.put("Kp",Kp);
-    results.put("Kd",Kd);
-    results.put("tau_d",tau_d);
-    results.put("f_cut",omega/(2.0*M_PI));
-    results.put("zeta",zeta);
 
     return true;
 }

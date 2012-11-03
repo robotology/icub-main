@@ -181,7 +181,7 @@ protected:
     double t0,T;
     double x_min,x_max;
     double x_pos,x_vel,x_acc;
-    double kp,ki,kd;
+    double Kp,Ki,Kd;
     double vel_thres,e_thres;
     double tg,xd_pos;    
     bool   adapt,adaptOld;
@@ -223,13 +223,13 @@ public:
      * @b T <double>: specify the period in seconds of the reference
      *    waveform used for tracking.
      *  
-     * @b kp <double>: specify the proportional term of the 
+     * @b Kp <double>: specify the proportional term of the 
      *    high-level controller for tracking purpose.
      *  
-     * @b ki <double>: specify the integral term of the high-level 
+     * @b Ki <double>: specify the integral term of the high-level 
      *    controller for tracking purpose.
      *  
-     * @b kd <double>: specify the derivative term of the 
+     * @b Kd <double>: specify the derivative term of the 
      *    high-level controller for tracking purpose.
      *  
      * @b vel_thres <double>: specify the velocity threshold used to 
@@ -301,9 +301,9 @@ public:
      * Retrieve useful information about the estimation experiment. 
      *  
      * @param info the property containing the info. Available info 
-     *             are: (@b pwm <double>) which specifies the
+     *             are: (@b voltage <double>) which specifies the
      *             commanded voltage; (@b reference <double>) which
-     *             specifies the position reference; (@b feedback
+     *             specifies the position reference; (@b position
      *             <double>) which specifies the actual encoder
      *             value.
      *  
@@ -332,9 +332,9 @@ public:
 *  
 * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
 *  
-* This class has three operative modes: one for the plant 
-* estimation, one for the plant validation and one for the 
-* stiction estimation. 
+* This class has four operative modes: one for the plant 
+* estimation, one for the plant validation, one for the stiction
+* estimation and one for validating the controller's design.
 */
 class OnlineCompensatorDesign : public yarp::os::RateThread
 {
@@ -343,10 +343,12 @@ protected:
     OnlineStictionEstimator stiction;
     Kalman                  predictor;
 
-    yarp::dev::IControlMode   *imod;
-    yarp::dev::IControlLimits *ilim;
-    yarp::dev::IEncoders      *ienc;
-    yarp::dev::IPidControl    *ipid;
+    yarp::dev::IControlMode     *imod;
+    yarp::dev::IControlLimits   *ilim;
+    yarp::dev::IEncoders        *ienc;
+    yarp::dev::IPositionControl *ipos;
+    yarp::dev::IPidControl      *ipid;    
+    yarp::dev::Pid               pidOld;
 
     yarp::os::Semaphore mutex;
     yarp::os::Event     doneEvent;
@@ -358,11 +360,13 @@ protected:
     double            P0;
 
     int    joint;
-    double t0,dpos_dV;
+    double t0,t1;
     double x_min,x_max,x_tg;
-    double max_time,max_pwm;
+    double max_time,max_pwm,dpos_dV;
     int    measure_update_ticks;
     int    measure_update_cnt;
+    bool   controller_validation_ref_square;
+    double controller_validation_ref_period;
     bool   pwm_pos;
     bool   configured;
 
@@ -370,7 +374,8 @@ protected:
     {
         plant_estimation,
         plant_validation,
-        stiction_estimation
+        stiction_estimation,
+        controller_validation
     } mode;
 
     void commandJoint(double &enc, double &u);
@@ -444,6 +449,46 @@ public:
     virtual bool isConfigured() const { return configured; }
 
     /**
+     * Tune symbolically the controller once given the plant 
+     * characteristics. The design requirement is to achieve the 
+     * closed-loop system represented by the following transfer 
+     * function: 
+     *  
+     * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
+     *  
+     * The plant is in the form: 
+     *  
+     * \f$ K/\left(1+s\tau\right) \cdot 1/s. \f$ 
+     *  
+     * The contorller is in the form: 
+     *  
+     * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right) \f$ 
+     * 
+     * @param options property object containing the plant 
+     *                characteristics as well as the design
+     *                requirements: (@b tau <double>) (@b K
+     *                <double>) (@b f_cut <double>) (@b zeta
+     *                <double>); (@b type <string>) specifies the
+     *                controller's architecture which can be "P" or
+     *                "PD".
+     * @param results property containing the design outcome in 
+     *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
+     *             parameters. The property's tags are respectively:
+     *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>.
+     * @return true/false on success/failure.
+     *  
+     * @note when designing a <i>P</i> controller it holds
+     *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
+     *       design it holds \f$ 2\zeta\omega_n \geqslant 1/\tau. \f$
+     *       Therefore, the requirement on \f$ \omega \f$ (i.e.
+     *       \f$ \omega=2\pi \cdot f_{cut} \f$ ) has always the
+     *       priority.
+     *  
+     * @return true/false on success/failure. 
+     */
+    virtual bool tuneController(const yarp::os::Property &options, yarp::os::Property &results);    
+
+    /**
      * Start off the plant estimation procedure. 
      *  
      * @param options property containing the estimation options. 
@@ -507,6 +552,30 @@ public:
     virtual bool startStictionEstimation(const yarp::os::Property &options);
 
     /**
+     * Start off the controller validation procedure. 
+     *  
+     * @param options property containing the validation options. 
+     *                Available otions are: (@b max_time <double>)
+     *                specifies the maximum amount of time for the
+     *                experiment; (@b Kp <double>) (@b Kd <double>)
+     *                (@b tau_d <double>) specify the controller's
+     *                gains; (@b stiction (<double> <double>))
+     *                specifies the stiction values; (@b ref_type
+     *                <string>) specifies the waveform of the
+     *                position reference ("square"|"min-jerk"); (@b
+     *                ref_period <double>) specifies the period of
+     *                the reference.
+     *  
+     * @note if active, the yarp port streams out, respectively, the
+     *       commanded voltage, the actual encoder value and the
+     *       position reference. Zero-padding allows being compliant
+     *       with the data size used for plant estimation mode.
+     *  
+     * @return true iff started successfully.
+     */
+    virtual bool startControllerValidation(const yarp::os::Property &options);
+
+    /**
      * Check the status of the current ongoing operation.
      *  
      * @return true iff ongoing operation is finished.
@@ -530,57 +599,20 @@ public:
      *  
      * @param results property object containing the results 
      *                depending on the current ongoing operation:
-     *                while estimating the plant results is (@b tau
+     *                while estimating the plant, results is (@b tau
      *                <double>) (@b K <double>) (@b tau_mean
      *                <double>) (K_mean <double>); while validating
-     *                the plant results is (@b position <double>)
+     *                the plant, results is (@b position <double>)
      *                (@b velocity <double>); while estimating the
-     *                stiction values results is (@b stiction
-     *                (<double> <double>)).
+     *                stiction values, results is (@b stiction
+     *                (<double> <double>)); while validation the
+     *                controller, results is (@b voltage <double>)
+     *                (@b reference <double>) (@b position
+     *                <double>).
      *  
      * @return true/false on success/failure. 
      */
     virtual bool getResults(yarp::os::Property &results);
-
-    /**
-     * Tune symbolically the controller once given the plant 
-     * characteristics. The design requirement is to achieve the 
-     * closed-loop system represented by the following transfer 
-     * function: 
-     *  
-     * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
-     *  
-     * The plant is in the form: 
-     *  
-     * \f$ K/\left(1+s\tau\right) \cdot 1/s. \f$ 
-     *  
-     * The contorller is in the form: 
-     *  
-     * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right) \f$ 
-     * 
-     * @param options property object containing the plant 
-     *                characteristics as well as the design
-     *                requirements: (@b tau <double>) (@b K
-     *                <double>) (@b f_cut <double>) (@b zeta
-     *                <double>); (@b type <string>) specifies the
-     *                controller's architecture which can be "P" or
-     *                "PD".
-     * @param results property containing the design outcome in 
-     *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
-     *             parameters. The property's tags are respectively:
-     *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>.
-     * @return true/false on success/failure.
-     *  
-     * @note when designing a <i>P</i> controller it holds
-     *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
-     *       design it holds \f$ 2\zeta\omega_n \geqslant 1/\tau. \f$
-     *       Therefore, the requirement on \f$ \omega \f$ (i.e.
-     *       \f$ \omega=2\pi \cdot f_{cut} \f$ ) has always the
-     *           priority.
-     *  
-     * @return true/false on success/failure. 
-     */
-    virtual bool tuneController(const yarp::os::Property &options, yarp::os::Property &results);
 
     /**
      * Destructor.
