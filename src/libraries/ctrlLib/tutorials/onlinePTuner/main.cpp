@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     string name=rf.check("name",Value("tuner")).asString().c_str();
     string robot=rf.check("robot",Value("icub")).asString().c_str();
     string part=rf.check("part",Value("right_arm")).asString().c_str();
-    int joint=rf.check("joint",Value(1)).asInt();
+    int joint=rf.check("joint",Value(11)).asInt();
 
     Property pOptions;
     pOptions.put("device","remote_controlboard");
