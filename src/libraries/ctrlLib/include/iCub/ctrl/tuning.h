@@ -487,7 +487,8 @@ public:
      *       design it holds \f$ 2\zeta\omega_n \geq 1/\tau. \f$
      *       Therefore, the requirement on \f$ \omega_n \f$ (i.e.
      *       \f$ \omega_n=2\pi \cdot f_{cut} \f$ ) has always the
-     *       priority.
+     *       priority and \f$ \zeta \f$ is computed accordingly to
+     *       meet those conditions in case they are not satisfied.
      *  
      * @return true/false on success/failure. 
      */
