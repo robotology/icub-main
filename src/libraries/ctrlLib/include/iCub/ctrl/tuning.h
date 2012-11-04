@@ -485,8 +485,8 @@ public:
      * @note when designing a <i>P</i> controller it holds
      *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
      *       design it holds \f$ 2\zeta\omega_n \geq 1/\tau. \f$
-     *       Therefore, the requirement on \f$ \omega \f$ (i.e.
-     *       \f$ \omega=2\pi \cdot f_{cut} \f$ ) has always the
+     *       Therefore, the requirement on \f$ \omega_n \f$ (i.e.
+     *       \f$ \omega_n=2\pi \cdot f_{cut} \f$ ) has always the
      *       priority.
      *  
      * @return true/false on success/failure. 
