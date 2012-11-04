@@ -464,7 +464,7 @@ public:
      *  
      * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right). \f$ 
      *  
-     * The tuning is symbolic and by no means affect the gains of 
+     * The tuning is symbolic and by no means affects the gains of 
      * the low-level controller. 
      * 
      * @param options property object containing the plant 
