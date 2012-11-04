@@ -152,8 +152,8 @@ public:
 * Estimate the positive and negative stiction values. \n 
 * During the experiment, the joint is controlled by a high-level 
 * pid controller that commands directly the voltage in order to 
-* track a time varying reference position. During the 
-* transitions, the stiction values are estimated. 
+* track a time varying reference position. The stiction values
+* are estimated during the rising and falling edge transitions.
 */
 class OnlineStictionEstimator : public yarp::os::RateThread
 {
@@ -449,16 +449,16 @@ public:
     virtual bool isConfigured() const { return configured; }
 
     /**
-     * Tune symbolically the controller once given the plant 
-     * characteristics. The design requirement is to achieve the 
-     * closed-loop system represented by the following transfer 
-     * function: 
+     * Tune the controller once given the plant characteristics. The
+     * design requirements \f$ \omega_n \f$ and \f$ \zeta \f$ are 
+     * such to achieve the closed-loop system represented by the 
+     * following transfer function: 
      *  
      * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
      *  
      * The plant is assumed to be in the form: 
      *  
-     * \f$ K/s \cdot 1/\left(1+s\tau\right). \f$ 
+     * \f$ K/\left(s \cdot \left(1+s\tau\right)\right). \f$ 
      *  
      * The controller is in the form: 
      *  
@@ -479,7 +479,7 @@ public:
      *             parameters. The property's tags are respectively:
      *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>. Moreover,
      *             parameters <b>f_cut</b> and <b>zeta</b> are also
-     *             returned.
+     *             returned as actually employed in the design.
      * @return true/false on success/failure.
      *  
      * @note when designing a <i>P</i> controller it holds

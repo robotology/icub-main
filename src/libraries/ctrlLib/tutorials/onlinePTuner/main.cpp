@@ -84,13 +84,15 @@ int main(int argc, char *argv[])
     // nonlinear effects - such as the stiction - make the final behaviour deviate
     // from this baseline, eventually requiring the integral part. Nonetheless,
     // if stiction is compensated separately, I is again not strictly needed.
+    // 
     // Finally, a few words about the D part. In order to include D within the design,
     // the derivative part must be implemented according to the standard which states
     // that D = Kd*s / (1 + tau_d*s).
     //
     // In the following a short example will guide you through the steps required
     // to identify the plant, validate the retrieved model and then design the
-    // P controller that meets the user specifications.
+    // P controller that meets the user specifications. Stiction identification is
+    // carried out as well.
 
     // First thing to do is to prepare configuration options
     // which are to be given in the form:
@@ -238,9 +240,10 @@ int main(int argc, char *argv[])
     str<<stiction[1];
     str<<" )";
     pControllerValidation.put("stiction",Value(str.str().c_str()));
-    // let's run for the classical "min-jerk" reference input with a
+    // let's go for the classical "min-jerk" reference input with a
     // period of 2 seconds.
-    // we have also the "square" waveform at our disposal.
+    // we have also the "square" waveform at our disposal, just in
+    // case we aim at measuring traditional controller step response.
     pControllerValidation.put("ref_type","min-jerk");
     pControllerValidation.put("ref_period",2.0);
     designer.startControllerValidation(pControllerValidation);
@@ -248,6 +251,9 @@ int main(int argc, char *argv[])
     printf("Controller validation will last %g seconds...\n",
            pControllerValidation.find("max_time").asDouble());
 
+    // let the experiment run and acquire information at a rate of
+    // 100 Hz; a quality figure is computed accounting for the
+    // controller's performance.
     double cumErr=0.0;
     while (!designer.isDone())
     {
