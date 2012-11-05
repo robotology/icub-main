@@ -1,0 +1,40 @@
+<application>
+<name>Stereo Camera Calibration</name>
+
+<dependencies>
+   <port>/icub/cam/left</port> 
+   <port>/icub/cam/right</port>
+</dependencies>
+
+
+<module>
+   <name>testStereoMatch</name>
+   <parameters></parameters>
+   <stdio>icubsrv</stdio>
+   <node>icubsrv</node>
+   <tag>testStereoMatch</tag>
+</module>
+ 
+<module>
+   <name>yarpview</name>
+   <parameters>--name /match/view </parameters>
+   <node>icubsrv</node>
+   <tag>images</tag>
+</module>
+
+<connection>
+  <from>/icub/cam/left</from>
+  <to>/teststereomatch/left</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/icub/cam/right</from>
+  <to>/teststereomatch/right</to>
+  <protocol>tcp</protocol>
+</connection>
+<connection>
+  <from>/teststereomatch/o</from>
+  <to>/match/view</to>
+  <protocol>tcp</protocol>
+</connection> 
+ </application>
