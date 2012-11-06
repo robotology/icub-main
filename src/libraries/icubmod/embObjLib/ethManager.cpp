@@ -357,13 +357,17 @@ void *recvThread(void * arg)
 	char 			incoming_msg[MAX_RECV_SIZE];
 
     ACE_SOCK_Dgram *pSocket = (ACE_SOCK_Dgram*) arg;
+
+    Time::delay(5);
+
+    printf("Starting RECV thread\n");
 	while(keepGoingOn2)
 	{
 		// per ogni msg ricevuto
 		recv_size = pSocket->recv((void *) incoming_msg, n, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
-		//printf("Received new packet from address %s, size = %d\n", address, recv_size);
+//		printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
 		if( (recv_size > 0) && (keepGoingOn2) )
 		{

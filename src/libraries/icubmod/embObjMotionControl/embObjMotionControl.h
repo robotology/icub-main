@@ -48,6 +48,8 @@
 using namespace std;
 
 /////  Yarp stuff
+#include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PolyDriver.h>
@@ -221,6 +223,9 @@ private:
 	int		_njoints;							// Number of joints handled by this EMS; this values will be extracted by the config file
     int 	_firstJoint;						// in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
 
+// debug
+    int 	start;
+    int 	end;
 
     // internal stuff
     bool    *_enabledAmp;		// Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
@@ -236,6 +241,8 @@ private:
 	uint16_t 		NVnumber;		// keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 private:
 	bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
+	void configure_mais(void);
+	void goToRun(void);
 
 public:
     embObjMotionControl();

@@ -46,7 +46,7 @@
 
 #include "eOcfg_EPs_board.h"
 
-
+#include <yarp/os/Semaphore.h>
 #include <yarp/dev/DeviceDriver.h>
 
 using namespace yarp::dev;
@@ -65,12 +65,13 @@ private:
 	EOpacket*           	pktRx;
 
 
-
 public:
 	hostTransceiver();
     ~hostTransceiver();
+
 	const EOconstvector* 	EPvector;
 	eOuint16_fp_uint16_t 	EPhash_function_ep2index;
+	yarp::os::Semaphore 	_mutex;
 	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
 	eOresult_t load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
@@ -93,7 +94,7 @@ public:
 	void getTransmit(uint8_t **data, uint16_t *size);
 
 	void getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
-	EOnv* getNVhandler(uint16_t endpoint, uint16_t id);
+	EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);
 	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
 
 	void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);

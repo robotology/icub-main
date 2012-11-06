@@ -9,9 +9,9 @@
 #define PC104_MC_OVVERRIDE_H_
 
 
-#ifdef _ICUB_CALLBACK_
+#ifdef EOCFG_NVSEP_MC_OVERRIDE
 #define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition
-
+#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic
 #define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode
 #endif
 #endif /* PC104_MC_OVVERRIDE_H_ */

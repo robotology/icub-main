@@ -63,3 +63,16 @@ bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvin
 
 	// Ora ho gli indici che mi servono per accedere alla tabella dei thread
 }
+
+void transceiver_wait(eOnvEP_t ep)
+{
+	embObjMotionControl * handler = (embObjMotionControl*) get_MChandler_fromEP(ep);
+	handler->res->transceiver->_mutex.wait();
+}
+
+void transceiver_post(eOnvEP_t ep)
+{
+	embObjMotionControl * handler = (embObjMotionControl*) get_MChandler_fromEP(ep);
+	handler->res->transceiver->_mutex.post();
+}
+

@@ -61,6 +61,9 @@ bool MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex);
 
 bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex);
 
+void transceiver_wait(eOnvEP_t ep);
+void transceiver_post(eOnvEP_t ep);
+
 #ifdef __cplusplus
 }
 #endif

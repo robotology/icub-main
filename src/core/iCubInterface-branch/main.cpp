@@ -190,9 +190,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    DebugStream::Debug::setTraceFile("/home/icub/trace.log");
-    DebugStream::Debug::setOutputFile("/home/icub/debug.log");
-    DebugStream::Debug::setErrorFile("/home/icub/error.log");
+    DebugStream::Debug::setTraceFile("/usr/local/src/robot/trace.log");
+    DebugStream::Debug::setOutputFile("/usr/local/src/robot/debug.log");
+    DebugStream::Debug::setErrorFile("/usr/local/src/robot/error.log");
 
     YARP_REGISTER_DEVICES(icubmod)
 

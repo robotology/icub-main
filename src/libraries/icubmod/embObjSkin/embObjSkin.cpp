@@ -213,9 +213,10 @@ bool EmbObjSkin::init()
 	eOnvID_t 					nvid;
 	EOnv 						*nvRoot;
 
+	EOnv nvtmp;
 	eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
 	nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
-	nvRoot = res->transceiver->getNVhandler(ep, nvid);
+	nvRoot = res->transceiver->getNVhandler(ep, nvid, &nvtmp);
 	if(NULL == nvRoot)
 	{
 		printf("\n>>> ERROR \ntransceiver->getNVhandler returned NULL!!\n");
@@ -233,8 +234,9 @@ bool EmbObjSkin::init()
 	//
 	//	config regulars
 	//
+	EOnv nvtmp_ropsigcfgassign;
 	eOnvID_t nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, dummy, commNVindex__ropsigcfgcommand);
-	cnv = res->transceiver->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign);
+	cnv = res->transceiver->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
 	ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->loc;
 	array = (EOarray*) &ropsigcfgassign->array;
 	eo_array_Reset(array);
@@ -249,9 +251,9 @@ bool EmbObjSkin::init()
 	eo_array_PushBack(array, &sigcfg);
 	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign);
 
-
+	EOnv nvtmp_go2state;
 	eOnvID_t nvid_go2state 		= eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-	EOnv 	*nv_p 				= res->transceiver->getNVhandler(endpoint_mn_appl, nvid_go2state);
+	EOnv 	*nv_p 				= res->transceiver->getNVhandler(endpoint_mn_appl, nvid_go2state, &nvtmp_go2state);
 	eOmn_appl_state_t  desired 	= applstate_running;
 
 	if( eores_OK != eo_nv_Set(nv_p, &desired, eobool_true, eo_nv_upd_dontdo))

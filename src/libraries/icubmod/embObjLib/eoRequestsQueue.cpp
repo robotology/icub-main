@@ -204,6 +204,9 @@ bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
         	printf("thread Id %d\n", *it);
         	if( (*it) == id )
         	{
+        		// to wake threads sleeping here ... is it correct this way??
+        		eoThreadEntry * th = threadPool->getThreadTable(id);
+        		th->push();
         		it=fifo->erase(it);  //it now points to the next element
         	}
         	else
