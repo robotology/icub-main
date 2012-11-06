@@ -374,12 +374,20 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 		if(_axisMap[i] <= _firstJoint)
 			_firstJoint = _axisMap[i];
 
+	double tmp_A2E;
 	// Encoder scales
 	if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints+1))
 		return false;
 	else
 		for (i = 1; i < xtmp.size(); i++)
-			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
+		{
+//			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
+			_angleToEncoder[i-1] = (1<<16) / 360;		// conversion factor from degrees to iCubDegrees
+			tmp_A2E = xtmp.get(i).asDouble();
+			_encoderconversionfactor = tmp_A2E / _angleToEncoder[i-1];
+			_encoderconversionoffset = 0;
+		}
+
 
 	// Rotor scales
 	if (!extractGroup(general, xtmp, "Rotor", "a list of scales for the rotor encoders", _njoints+1))
@@ -1335,7 +1343,7 @@ bool embObjMotionControl::disablePidRaw(int j)
 		return false;
 	}
 
-	eOmc_controlmode_t val = eomc_controlmode_switch_everything_off;
+	eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
 	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
@@ -1360,8 +1368,6 @@ bool embObjMotionControl::enablePidRaw(int j)
 		return false;
 	}
 
-	//eOmc_controlmode_t val = *(eOmc_controlmode_t *) nvRoot->loc;
-
 	if(false == _enabledAmp[j-_firstJoint] )
 	{
 		yWarning() << "Error: Enable Amp before enabling Pid!!  (embObjCtrl)\n";
@@ -1373,7 +1379,7 @@ bool embObjMotionControl::enablePidRaw(int j)
 
 	if(_calibrated[j-_firstJoint])
 	{
-		eOmc_controlmode_t val = eomc_controlmode_position;
+		eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
 
 		if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 		{
@@ -1404,7 +1410,7 @@ bool embObjMotionControl::setVelocityModeRaw()
 	eOnvID_t  nvid[_njoints];
 	EOnv	  *nvRoot[_njoints];
 
-	eOmc_controlmode_t val = eomc_controlmode_velocity;
+	eOmc_controlmode_command_t val = eomc_controlmode_cmd_velocity;
 	for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
 	{
 		nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -1520,27 +1526,28 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 		return false;
 	}
 
-	// Get controlmode NV pointer
-	eOnvID_t  nvid_controlmode;
-	EOnv	  *nvRoot_controlmode;
-	eOmc_controlmode_t val = eomc_controlmode_margin_reached;
-
-
-	nvid_controlmode   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-	nvRoot_controlmode = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_controlmode, &tmp_controlmode);
-
-	if(NULL == nvRoot_controlmode)
-	{
-		NV_NOT_FOUND;
-
-		return false;
-	}
-
-	if( eores_OK != eo_nv_Set(nvRoot_controlmode, &val, eobool_true, eo_nv_upd_dontdo))
-	{
-		yError() << "eo nv not set!\n";
-		return false;
-	}
+//   There is no more explicit command "go to calibration mode" but it is implicit in the calibration command
+//	// Get controlmode NV pointer
+//	eOnvID_t  nvid_controlmode;
+//	EOnv	  *nvRoot_controlmode;
+//	eOmc_controlmode_command_t val = eomc_controlmode_margin_reached;
+//
+//
+//	nvid_controlmode   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
+//	nvRoot_controlmode = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_controlmode, &tmp_controlmode);
+//
+//	if(NULL == nvRoot_controlmode)
+//	{
+//		NV_NOT_FOUND;
+//
+//		return false;
+//	}
+//
+//	if( eores_OK != eo_nv_Set(nvRoot_controlmode, &val, eobool_true, eo_nv_upd_dontdo))
+//	{
+//		yError() << "eo nv not set!\n";
+//		return false;
+//	}
 
 
 	// Get calibration command NV pointer
@@ -1556,83 +1563,75 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 	eOmc_calibrator_t calib;
 
+	calib.type = type;
+
 	switch(type)
 	{
 		// muove -> amp+pid, poi calib
 		case eomc_calibration_type0_hard_stops:
-			calib.type = eomc_calibration_type0_hard_stops;
 			calib.params.type0.pwmlimit = p1;
 			calib.params.type0.velocity = p2;
-//			eOmc_controlmode_t val = eomc_controlmode_margin_reached;
+
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError() << "eo nv not set!\n";
 				return false;
 			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_controlmode);
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		// fermo
 		case eomc_calibration_type1_abs_sens_analog:
-			calib.type = eomc_calibration_type1_abs_sens_analog;
 			calib.params.type1.position = p1;
 			calib.params.type1.velocity = p2;
-//			eOmc_controlmode_t val = eomc_controlmode_margin_reached;
+
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError() << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_controlmode);
 			break;
 
 		// muove
 		case eomc_calibration_type2_hard_stops_diff:
-			calib.type = eomc_calibration_type2_hard_stops_diff;
 			calib.params.type2.pwmlimit = p1;
 			calib.params.type2.velocity = p2;
-//			eOmc_controlmode_t val = eomc_controlmode_margin_reached;
+
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError() << "eo nv not set!\n";
 				return false;
 			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_controlmode);
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		// muove
 		case eomc_calibration_type3_abs_sens_digital:
-			calib.type = eomc_calibration_type3_abs_sens_digital;
 			calib.params.type3.position = p1;
 			calib.params.type3.velocity = p2;
 			calib.params.type3.offset   = p3;
-//			eOmc_controlmode_t val = eomc_controlmode_margin_reached;
+
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError() << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_controlmode);
 			break;
 
 		// muove
 		case eomc_calibration_type4_abs_and_incremental:
-			calib.type = eomc_calibration_type4_abs_and_incremental;
 			calib.params.type4.position   = p1;
 			calib.params.type3.velocity   = p2;
 			calib.params.type4.maxencoder = p3;
-//			eOmc_controlmode_t val = eomc_controlmode_margin_reached;
+
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError() << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_controlmode);
 			break;
 
 		default:
@@ -1651,7 +1650,9 @@ bool embObjMotionControl::doneRaw(int axis)
 	// used only in calibration procedure, for normal work use the checkMotionDone
 	yTrace();
 	EOnv tmp;
+	//
 	// get the control mode and check its value??? // e segnalato spontaneamente!! perche' fare una richiesta????
+	//
 	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)axis, jointNVindex_jstatus__basic);
 	EOnv	*nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
 
@@ -1661,22 +1662,22 @@ bool embObjMotionControl::doneRaw(int axis)
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
-
-	// Sign up for waiting the reply
-	eoThreadEntry *tt = appendWaitRequest(axis, nvid);
-	tt->setPending(1);
-
-	// wait here
-	if(-1 == tt->synch() )
-	{
-		int threadId;
-		yError() << "[ETH] Calibration done timed out, joint " << axis;
-
-		if(requestQueue->threadPool->getId(&threadId))
-			requestQueue->cleanTimeouts(threadId);
-		return false;
-	}
+//	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+//
+//	// Sign up for waiting the reply
+//	eoThreadEntry *tt = appendWaitRequest(axis, nvid);
+//	tt->setPending(1);
+//
+//	// wait here
+//	if(-1 == tt->synch() )
+//	{
+//		int threadId;
+//		yError() << "[ETH] Calibration done timed out, joint " << axis;
+//
+//		if(requestQueue->threadPool->getId(&threadId))
+//			requestQueue->cleanTimeouts(threadId);
+//		return false;
+//	}
 
 	uint16_t size;
 	eOmc_controlmode_t type;
@@ -1684,8 +1685,7 @@ bool embObjMotionControl::doneRaw(int axis)
 
 
 	// if the control mode is no longer a calibration type, it means calibration ended
-
-	if( ( eomc_controlmode_calib_abs_pos_sens == type) || ( eomc_controlmode_calib_hard_stops == type) ||	( eomc_controlmode_handle_hard_stops == type) || ( eomc_controlmode_margin_reached == type) || ( eomc_controlmode_calib_abs_and_inc) )
+	if( eomc_controlmode_calib == type)
 		return false;
 	else
 		return true;
@@ -1711,7 +1711,7 @@ bool embObjMotionControl::setPositionModeRaw()
 	eOnvID_t  nvid[_njoints];
 	EOnv	  nv[_njoints];
 
-	eOmc_controlmode_t val = eomc_controlmode_position;
+	eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
 	for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
 	{
 		nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -1964,10 +1964,10 @@ bool embObjMotionControl::stopRaw()
   // ControlMode
 bool embObjMotionControl::setPositionModeRaw(int j)
 {
-	EOnv tmpnv;
-	eOnvID_t  			nvid;
-	EOnv	  			*nvRoot;
-	uint32_t 	val = eomc_controlmode_position;
+	EOnv 						tmpnv;
+	eOnvID_t  					nvid;
+	EOnv	  		   			*nvRoot;
+	eOmc_controlmode_command_t 	val = eomc_controlmode_cmd_position;
 
 	nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 	nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
@@ -1978,7 +1978,7 @@ bool embObjMotionControl::setPositionModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, (eOmc_controlmode_t*)&val, eobool_true, eo_nv_upd_always))
+	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_always))
 	{
 		printf("\n>>> ERROR eo_nv_Set !!\n");
 		return false;
@@ -1991,10 +1991,10 @@ bool embObjMotionControl::setPositionModeRaw(int j)
 
 bool embObjMotionControl::setVelocityModeRaw(int j)
 {
-	eOnvID_t  			nvid;
-	EOnv 				tmpnv;
-	EOnv	  			*nvRoot;
-	uint32_t 	val = eomc_controlmode_velocity;
+	eOnvID_t  						nvid;
+	EOnv 							tmpnv;
+	EOnv	  						*nvRoot;
+	eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_velocity;
 
 	nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 	nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
@@ -2005,9 +2005,9 @@ bool embObjMotionControl::setVelocityModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, (eOmc_controlmode_t*)&val, eobool_true, eo_nv_upd_always))
+	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_always))
 	{
-		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+		yError() << "nv Set";
 		return false;
 	}
 
@@ -2018,10 +2018,10 @@ bool embObjMotionControl::setVelocityModeRaw(int j)
 
 bool embObjMotionControl::setTorqueModeRaw(int j)
 {
-	eOnvID_t  			nvid;
-	EOnv 				tmpnv;
-	EOnv	  			*nvRoot;
-	eOmc_controlmode_t 	val = eomc_controlmode_torque;
+	eOnvID_t  						nvid;
+	EOnv 							tmpnv;
+	EOnv	  						*nvRoot;
+	eOmc_controlmode_command_t 		val =  eomc_controlmode_cmd_torque;
 
 	nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 	nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
@@ -2045,10 +2045,10 @@ bool embObjMotionControl::setTorqueModeRaw(int j)
 
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
-	eOnvID_t  			nvid;
-	EOnv 				tmpnv;
-	EOnv	  			*nvRoot;
-	eOmc_controlmode_t 	val = eomc_controlmode_impedance_pos;
+	eOnvID_t  						nvid;
+	EOnv 							tmpnv;
+	EOnv	  						*nvRoot;
+	eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_impedance_pos;
 
 	nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 	nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
@@ -2072,10 +2072,10 @@ bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-	eOnvID_t  			nvid;
-	EOnv 				tmpnv;
-	EOnv	  			*nvRoot;
-	eOmc_controlmode_t 	val = eomc_controlmode_impedance_vel;
+	eOnvID_t  						nvid;
+	EOnv 							tmpnv;
+	EOnv	  						*nvRoot;
+	eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_impedance_vel;
 
 	nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 	nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
@@ -2099,10 +2099,10 @@ bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 
 bool embObjMotionControl::setOpenLoopModeRaw(int j)
 {
-	eOnvID_t  			nvid;
-	EOnv 				tmpnv;
-	EOnv	  			*nvRoot;
-	eOmc_controlmode_t 	val = eomc_controlmode_openloop;
+	eOnvID_t  						nvid;
+	EOnv 							tmpnv;
+	EOnv	  						*nvRoot;
+	eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_openloop;
 
 	nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 	nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
@@ -2154,14 +2154,14 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 
 	uint16_t size;
 	eOmc_joint_status_basic_t	status;
-	eOmc_controlmode_t type;
+	eOmc_controlmode_t  type;
 	res->transceiver->getNVvalue(nvRoot, (uint8_t*) &status, &size);
 
 	//type = (eOmc_joint_status_basic_t) status.controlmodestatus;
 
-	uint8_t val = status.controlmodestatus;
+	type = (eOmc_controlmode_t) status.controlmodestatus;
 //	printf("\nCurrent status for joint %d is ",j);
-	switch(val)
+	switch(type)
 	{
 		case eomc_controlmode_idle:
 	        *v=VOCAB_CM_IDLE;
@@ -2183,11 +2183,7 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 //	        printf("TORQUE\n");
 			break;
 
-		case eomc_controlmode_calib_abs_pos_sens:
-		case eomc_controlmode_calib_hard_stops:
-		case eomc_controlmode_margin_reached:
-		case eomc_controlmode_calib_abs_and_inc:
-		case eomc_controlmode_handle_hard_stops:
+		case eomc_controlmode_calib:
 			*v=VOCAB_CM_UNKNOWN;
 //			printf("CALIBRATING\n");
 			break;
@@ -2205,11 +2201,6 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 		case eomc_controlmode_openloop:
 	        *v=VOCAB_CM_OPENLOOP;
 //	        printf("VOCAB_CM_OPENLOOP\n");
-			break;
-
-		case 0xf0:
-	        *v=VOCAB_CM_IDLE;
-//	        printf("SWITCH EVERYTHING OFF\n");
 			break;
 
 		default:
@@ -2426,7 +2417,7 @@ bool embObjMotionControl::disableAmpRaw(int j)
 		return false;
 	}
 
-	eOmc_controlmode_t val = eomc_controlmode_switch_everything_off;
+	eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
 	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
