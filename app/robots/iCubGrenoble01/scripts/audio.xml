@@ -1,0 +1,29 @@
+<application>
+<name>iCubAudio</name>
+
+        <dependencies>
+        </dependencies>
+      
+        <module>
+                <name>yarpdev</name>
+		<parameters>--device portaudio --id 1 --c 2 --read --rate 48000 </parameters>
+                <node>pc104</node>
+                <tag>Audio Grabber</tag>
+        </module>
+
+        <module>
+                <name>yarphear --name /icub/hear</name>
+                <node>icubsrv</node>
+                <tag>Audio hearing</tag>
+        </module>
+   
+        
+
+
+        <connection>
+                <from>/grabber</from>
+                <to>/icub/hear</to>
+                <protocol>udp</protocol>
+        </connection>
+
+</application>
