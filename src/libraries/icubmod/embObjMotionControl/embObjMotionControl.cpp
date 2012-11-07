@@ -19,6 +19,8 @@
 
 // embObj includes
 
+#define IMPLEMENT_DEBUG_INTERFACE
+
 #include "embObjMotionControl.h"
 
 // Boards configurations
@@ -2501,7 +2503,7 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 	return ret;
 }
 
-
+#ifdef IMPLEMENT_DEBUG_INTERFACE
 //----------------------------------------------\\
 //	Debug interface
 //----------------------------------------------\\
@@ -2520,3 +2522,5 @@ bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)		 	
 bool embObjMotionControl::getRotorAccelerationsRaw    (double* value) 						{ };
 bool embObjMotionControl::getJointPositionRaw         (int j, double* value) 				{ };
 bool embObjMotionControl::getJointPositionsRaw        (double* value) 						{ };
+
+#endif

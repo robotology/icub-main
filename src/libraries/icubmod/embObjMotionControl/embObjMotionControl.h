@@ -171,9 +171,11 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public ImplementPositionControl<embObjMotionControl, IPositionControl>,
 							public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
 				            public ImplementPidControl<embObjMotionControl, IPidControl>,
-				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
-							public ImplementDebugInterface,
+				            public ImplementVelocityControl<embObjMotionControl, IVelocityControl>
+#ifdef IMPLEMENT_DEBUG_INTERFACE
+				            , public ImplementDebugInterface,
 							public IDebugInterfaceRaw
+#endif
 {
 private:
     int 					tot_packet_recv, errors;
@@ -375,7 +377,7 @@ public:
 	virtual bool getAmpStatusRaw(int *st);
 	virtual bool getAmpStatusRaw(int j, int *st);
 	/////////////// END AMPLIFIER INTERFACE
-
+#ifdef IMPLEMENT_DEBUG_INTERFACE
 	//----------------------------------------------\\
 	//	Debug interface
 	//----------------------------------------------\\
@@ -418,6 +420,7 @@ public:
 	bool getRotorAccelerationsRaw    (double* value);
 	bool getJointPositionRaw         (int j, double* value);
 	bool getJointPositionsRaw        (double* value);
+#endif
 };
 
 #endif // include guard
