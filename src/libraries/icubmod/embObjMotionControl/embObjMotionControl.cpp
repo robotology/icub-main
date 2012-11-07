@@ -384,8 +384,8 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 //			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
 			_angleToEncoder[i-1] = (1<<16) / 360;		// conversion factor from degrees to iCubDegrees
 			tmp_A2E = xtmp.get(i).asDouble();
-			_encoderconversionfactor = tmp_A2E / _angleToEncoder[i-1];
-			_encoderconversionoffset = 0;
+			_encoderconversionfactor[i-1] = tmp_A2E / _angleToEncoder[i-1];
+			_encoderconversionoffset[i-1] = 0;
 		}
 
 
