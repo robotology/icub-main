@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
     string robot=rf.check("robot",Value("icub")).asString().c_str();
     string part=rf.check("part",Value("right_arm")).asString().c_str();
     int joint=rf.check("joint",Value(11)).asInt();
+    double encoder=rf.check("encoder",Value(2.43)).asDouble();
+    double scale_factor=1<<rf.check("scale_factor",Value(8)).asInt();
 
     Property pOptions;
     pOptions.put("device","remote_controlboard");
@@ -202,9 +204,7 @@ int main(int argc, char *argv[])
     designer.tuneController(pControllerRequirements,pController);
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
-    double ticks_degree_ratio=2.6;
-    double scale_factor=1<<8;
-    Kp*=scale_factor*ticks_degree_ratio;
+    Kp*=scale_factor*encoder;
     printf("Kp to be set in the firmware = %g\n",Kp);
 
     // let's identify the stictions values as well
