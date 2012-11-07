@@ -108,6 +108,9 @@ bool embObjMotionControl::alloc(int nj)
 {
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
+    _encoderconversionoffset = allocAndCheck<double>(nj);
+    _encoderconversionfactor = allocAndCheck<double>(nj);
+
     _rotToEncoder = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
     _torqueSensorId= allocAndCheck<int>(nj);
@@ -218,7 +221,7 @@ embObjMotionControl::~embObjMotionControl()
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
-	yTrace();
+//	yTrace();
 
 	// Debug info
 	memset(info, 0x00, SIZE_INFO);
