@@ -503,9 +503,9 @@ public:
      *                experiment.
      *  
      * @note if active, the yarp port streams out, respectively, the
-     *       commanded voltage, the actual encoder value and the 4D
-     *       internal state of the estimator as well as the averaged
-     *       parameters.
+     *       mode id 0, the commanded voltage, the actual encoder
+     *       value and the 4D internal state of the estimator as
+     *       well as the averaged parameters.
      *  
      * @return true iff started successfully.
      */
@@ -528,12 +528,12 @@ public:
      *                <double>) are the well known Kalman quantities
      *                for the noise statistics.
      *  
-     * @note if active, the yarp port streams out, respectively, the 
-     *       commanded voltage, the actual encoder value and the
-     *       predicted plant response which includes the estimated
-     *       position and velocity. Zero-padding allows being
-     *       compliant with the data size used for the plant
-     *       estimation mode.
+     * @note if active, the yarp port streams out, respectively, the
+     *       mode id 1, the commanded voltage, the actual encoder
+     *       value and the predicted plant response which includes
+     *       the estimated position and velocity. Zero-padding
+     *       allows being compliant with the data size used for the
+     *       plant estimation mode.
      *  
      * @return true iff started successfully.
      */
@@ -548,10 +548,10 @@ public:
      *                experiment.
      *  
      * @note if active, the yarp port streams out, respectively, the
-     *       commanded voltage, the actual encoder value, the
-     *       position reference and the the stiction values.
-     *       Zero-padding allows being compliant with the data size
-     *       used for plant estimation mode.
+     *       mode id 2, the commanded voltage, the actual encoder
+     *       value, the position reference and the the stiction
+     *       values. Zero-padding allows being compliant with the
+     *       data size used for plant estimation mode.
      *  
      * @return true iff started successfully.
      */
@@ -577,9 +577,10 @@ public:
      *                the reference.
      *  
      * @note if active, the yarp port streams out, respectively, the
-     *       commanded voltage, the actual encoder value and the
-     *       position reference. Zero-padding allows being compliant
-     *       with the data size used for plant estimation mode.
+     *       mode id 3, the commanded voltage, the actual encoder
+     *       value and the position reference. Zero-padding allows
+     *       being compliant with the data size used for plant
+     *       estimation mode.
      *  
      * @return true iff started successfully.
      */

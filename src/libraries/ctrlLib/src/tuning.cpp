@@ -587,9 +587,10 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(2);
-                info[0]=u;
-                info[1]=enc;
+                Vector info(3);
+                info[0]=0.0;
+                info[1]=u;
+                info[2]=enc;
                 info=cat(info,plant.get_x());
                 info=cat(info,meanParams);
                 port.write(info);
@@ -617,9 +618,10 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(2);
-                info[0]=u;
-                info[1]=enc;
+                Vector info(3);
+                info[0]=1.0;
+                info[1]=u;
+                info[2]=enc;
                 info=cat(info,predictor.get_x());
                 info=cat(info,Vector(4,0.0));   // zero-padding
                 port.write(info);
@@ -639,10 +641,11 @@ void OnlineCompensatorDesign::run()
                 Property stiction_info;
                 stiction.getInfo(stiction_info);
 
-                Vector info(3);
-                info[0]=stiction_info.find("voltage").asDouble();
-                info[1]=stiction_info.find("position").asDouble();
-                info[2]=stiction_info.find("reference").asDouble();
+                Vector info(4);
+                info[0]=2.0;
+                info[1]=stiction_info.find("voltage").asDouble();
+                info[2]=stiction_info.find("position").asDouble();
+                info[3]=stiction_info.find("reference").asDouble();
 
                 Vector results;
                 stiction.getResults(results);
@@ -671,10 +674,11 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(3);
-                ipid->getOutput(joint,&info[0]);
-                ienc->getEncoder(joint,&info[1]);
-                ipid->getReference(joint,&info[2]);
+                Vector info(4);
+                info[0]=3.0;
+                ipid->getOutput(joint,&info[1]);
+                ienc->getEncoder(joint,&info[2]);
+                ipid->getReference(joint,&info[3]);
                 info=cat(info,Vector(5,0.0));   // zero-padding
 
                 port.write(info);
