@@ -583,7 +583,7 @@ void OnlineCompensatorDesign::run()
             // average parameters tau and K
             meanParams*=meanCnt;
             meanParams+=plant.get_parameters();
-            meanParams/=meanCnt++;
+            meanParams/=++meanCnt;
 
             if (port.getOutputCount()>0)
             {
