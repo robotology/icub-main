@@ -81,7 +81,7 @@ GtkLabel                *lblInfo;
 Port					guiRpcPort;             // to send rpc command to the module
 BufferedPort<Vector>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
 BufferedPort<Bottle>	driftCompInfoPort;      // for reading sporadic msgs (errors, warnings)
-Port                    wholeBodyRpcPort;       // port connected to wholeBodyDynamics rpc port
+//Port                    wholeBodyRpcPort;       // port connected to wholeBodyDynamics rpc port
 
 // global data
 guint                   timeoutId;              // id of the timeout callback function

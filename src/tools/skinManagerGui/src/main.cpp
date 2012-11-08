@@ -214,7 +214,7 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 	string guiRpcPortName			= "/" + guiName + "/rpc:o";
 	string guiMonitorPortName		= "/" + guiName + "/monitor:i";
     string guiInfoPortName		    = "/" + guiName + "/info:i";
-    string wholeBodyRpcPortName		= "/" + guiName + "/wholeBody/rpc";
+    //string wholeBodyRpcPortName		= "/" + guiName + "/wholeBody/rpc";
 	if (!guiRpcPort.open(guiRpcPortName.c_str())) {
 		string msg = string("Unable to open port ") + guiRpcPortName.c_str();
 		openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
@@ -230,11 +230,11 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 		openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
 		return false;
 	}
-    if (!wholeBodyRpcPort.open(wholeBodyRpcPortName.c_str())){
-		string msg = string("Unable to open port ") + wholeBodyRpcPortName.c_str();
-		openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
-		return false;
-	}
+ //   if (!wholeBodyRpcPort.open(wholeBodyRpcPortName.c_str())){
+	//	string msg = string("Unable to open port ") + wholeBodyRpcPortName.c_str();
+	//	openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
+	//	return false;
+	//}
 
     driftCompInfoPort.setStrict();
 	
@@ -255,8 +255,8 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 			+ driftCompInfoPortName.c_str() + ". Connect later.";
 		openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
 	}*/
-    if(!yarp.connect(wholeBodyRpcPort.getName().c_str(), "/wholeBodyDynamics/rpc:i"))
-		openDialog("Unable to connect to wholeBodyDynamics rpc port. Connect later.", GTK_MESSAGE_WARNING);
+    /*if(!yarp.connect(wholeBodyRpcPort.getName().c_str(), "/wholeBodyDynamics/rpc:i"))
+		openDialog("Unable to connect to wholeBodyDynamics rpc port. Connect later.", GTK_MESSAGE_WARNING);*/
     return true;
 }
 

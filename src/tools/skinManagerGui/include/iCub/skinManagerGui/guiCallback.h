@@ -24,12 +24,12 @@ static void clean_exit(){
 	guiRpcPort.interrupt();
 	driftCompMonitorPort.interrupt();
     driftCompInfoPort.interrupt();
-    wholeBodyRpcPort.interrupt();
+    //wholeBodyRpcPort.interrupt();
 
 	guiRpcPort.close();
 	driftCompMonitorPort.close();    
     driftCompInfoPort.close();
-    wholeBodyRpcPort.close();
+    //wholeBodyRpcPort.close();
 }
 
 static void on_window_destroy_event(GtkObject *object, gpointer user_data){
@@ -266,15 +266,15 @@ static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpoin
 	gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
 
 	// check whether the port is connected
-	if(wholeBodyRpcPort.getOutputCount()==0){
+	/*if(wholeBodyRpcPort.getOutputCount()==0){
 		printLog("Cannot reset F/T sensor offset because connection to wholeBodyDynamics not available.");
         return false;
-    }
+    }*/
 	// reset F/T sensor offset
-	Bottle b, resp;
+	/*Bottle b, resp;
     b.addInt(0);
 	guiRpcPort.write(b, resp);
-    printLog(string("WholeBodyDynamics response: ")+resp.toString().c_str());
+    printLog(string("WholeBodyDynamics response: ")+resp.toString().c_str());*/
 	return false;
 }
 
