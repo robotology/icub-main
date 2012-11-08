@@ -672,6 +672,9 @@ void OnlineCompensatorDesign::run()
                 {
                     pidCur=(pidCur==&pidOld?&pidNew:&pidOld);
                     ipid->setPid(joint,*pidCur);
+
+                    if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
+                        ipid->setOffset(joint,0.0);
                 }
 
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)

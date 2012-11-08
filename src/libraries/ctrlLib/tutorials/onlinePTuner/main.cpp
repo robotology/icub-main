@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     // here follow the parameters for the EKF along with the
     // initial values for tau and K
     bPlantEstimation.fromString("(plant_estimation (Ts 0.01) (Q 1.0) (R 1.0) (P0 100000.0) (tau 1.0) (K 1.0) (max_pwm 800.0))");
-    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (Kp 10.0) (Ki 250.0) (Kd 15.0) (vel_thres 5.0) (e_thres 1.0) (gamma (20.0 20.0)) (stiction (0.0 0.0)))");
+    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (Kp 10.0) (Ki 250.0) (Kd 15.0) (vel_thres 5.0) (e_thres 1.0) (gamma (30.0 30.0)) (stiction (0.0 0.0)))");
 
     // compose the overall configuration
     Bottle bConf=bGeneral;
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     // we can specify either the cut frequency (in Hz) or
     // the damping ratio - since we have just one degree
     // of freedom controller (P).
-    pControllerRequirements.put("f_cut",3.0);
+    pControllerRequirements.put("f_cut",4.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
     double Kp=pController.find("Kp").asDouble();
