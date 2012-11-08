@@ -339,6 +339,20 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         checkGoneToZero(eyeSetOfJoints[k]);
         Time::delay(0.010);
     }
+            //fprintf(logfile, "HEADCALIB::Waiting for joint %d movement\n", k);
+            calibration_ok &= checkGoneToZeroThreshold(eyeSetOfJoints[4]);
+        
+        if (calibration_ok)
+        {
+            fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
+ 
+            iPids->setPid(eyeSetOfJoints[4],original_pid[eyeSetOfJoints[4]]);
+        }
+        else
+        {
+            fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
+                iAmps->disableAmp(eyeSetOfJoints[4]);
+        }
 
 
     /////////////////////////////////////
