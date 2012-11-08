@@ -878,7 +878,7 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
 bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
-    if (!configured)
+    if (!configured || !opt.check("Kp"))
         return false;
 
     if (opt.check("max_time"))
@@ -889,13 +889,12 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     ipid->getPid(joint,&pidOld);
     Pid pidNew=pidOld;
 
-    if (opt.check("Kp"))
-    {
-        // enforce the correct sign of Kp
-        double Kp=opt.find("Kp").asDouble();
-        Kp=(Kp*pidOld.kp>0.0)?Kp:-Kp;
-        pidNew.setKd(Kp);
-    }
+    // enforce the correct sign of Kp
+    double Kp=opt.find("Kp").asDouble();
+    Kp=(Kp*pidOld.kp>0.0)?Kp:-Kp;
+    pidNew.setKd(Kp);
+    pidNew.setKd(0.0);
+    pidNew.setKi(0.0);
 
     if (opt.check("stiction"))
     {
@@ -909,6 +908,8 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
             }
         }
     }
+
+    ipid->setPid(joint,pidNew);
 
     controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
     controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
