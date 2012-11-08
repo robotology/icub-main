@@ -347,8 +347,10 @@ protected:
     yarp::dev::IControlLimits   *ilim;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPositionControl *ipos;
-    yarp::dev::IPidControl      *ipid;    
+    yarp::dev::IPidControl      *ipid;
+    yarp::dev::Pid              *pidCur;
     yarp::dev::Pid               pidOld;
+    yarp::dev::Pid               pidNew;
 
     yarp::os::Semaphore mutex;
     yarp::os::Event     doneEvent;
@@ -578,9 +580,10 @@ public:
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 3, the commanded voltage, the actual encoder
-     *       value and the position reference. Zero-padding allows
-     *       being compliant with the data size used for plant
-     *       estimation mode.
+     *       value, the position reference and a flag accounting for
+     *       the old pid behavior (0) or the new pid behavior (1).
+     *       Zero-padding allows being compliant with the data size
+     *       used for plant estimation mode.
      *  
      * @return true iff started successfully.
      */
@@ -616,10 +619,11 @@ public:
      *                the plant, results is (@b position <double>)
      *                (@b velocity <double>); while estimating the
      *                stiction values, results is (@b stiction
-     *                (<double> <double>)); while validation the
+     *                (<double> <double>)); while validating the
      *                controller, results is (@b voltage <double>)
      *                (@b reference <double>) (@b position
-     *                <double>).
+     *                <double>) (@b pid <string>), where @b pid is
+     *                "old"|"new".
      *  
      * @return true/false on success/failure. 
      */

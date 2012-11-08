@@ -515,6 +515,7 @@ bool OnlineCompensatorDesign::threadInit()
         // -----
         case controller_validation:
         {
+            pidCur=&pidOld;
             imod->setPositionMode(joint);
             x_tg=x_max;
             if (controller_validation_ref_square)
@@ -666,6 +667,12 @@ void OnlineCompensatorDesign::run()
                 x_tg=(x_tg==x_max?x_min:x_max);
                 t1=t;
 
+                if (x_tg==x_max)
+                {
+                    pidCur=(pidCur==&pidOld?&pidNew:&pidOld);
+                    ipid->setPid(joint,*pidCur);
+                }
+
                 if (controller_validation_ref_square)
                     ipid->setReference(joint,x_tg);
                 else
@@ -674,12 +681,13 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(4);
+                Vector info(5);
                 info[0]=3.0;
                 ipid->getOutput(joint,&info[1]);
                 ienc->getEncoder(joint,&info[2]);
                 ipid->getReference(joint,&info[3]);
-                info=cat(info,Vector(5,0.0));   // zero-padding
+                info[4]=(pidCur==&pidOld?0.0:1.0);
+                info=cat(info,Vector(4,0.0));   // zero-padding
 
                 port.write(info);
             }
@@ -887,7 +895,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
         max_time=0.0;
     
     ipid->getPid(joint,&pidOld);
-    Pid pidNew=pidOld;
+    pidNew=pidOld;
 
     // enforce the correct sign of Kp
     double Kp=opt.find("Kp").asDouble();
@@ -907,9 +915,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
                 pidNew.setStictionValues(pos,neg);
             }
         }
-    }
-
-    ipid->setPid(joint,pidNew);
+    }    
 
     controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
     controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
@@ -997,6 +1003,7 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             results.put("voltage",info[0]);
             results.put("position",info[1]);
             results.put("reference",info[2]);
+            results.put("pid",pidCur==&pidOld?"old":"new");
             break;
         }
     }
