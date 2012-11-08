@@ -366,9 +366,12 @@ protected:
     double x_min,x_max,x_tg;
     double max_time,max_pwm,dpos_dV;
     int    measure_update_ticks;
-    int    measure_update_cnt;
+    int    measure_update_cnt;    
     bool   controller_validation_ref_square;
     double controller_validation_ref_period;
+    bool   controller_validation_stiction_yarp;
+    double controller_validation_stiction_pos;
+    double controller_validation_stiction_neg;
     bool   pwm_pos;
     bool   configured;
 
@@ -572,11 +575,14 @@ public:
      *                experiment; (@b Kp <double>) (@b Kd <double>)
      *                (@b tau_d <double>) specify the controller's
      *                gains; (@b stiction (<double> <double>))
-     *                specifies the stiction values; (@b ref_type
-     *                <string>) specifies the waveform of the
-     *                position reference ("square"|"min-jerk"); (@b
-     *                ref_period <double>) specifies the period of
-     *                the reference.
+     *                specifies the stiction values;
+     *                (@b stiction_compensation <string>) specifies
+     *                whether the compensation is managed by the
+     *                "firmware" (default) or the "middleware";
+     *                (@b ref_type <string>) specifies the waveform
+     *                of the position reference ("square"|"min-jerk");
+     *                (@b ref_period <double>) specifies the period
+     *                of the reference.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 3, the commanded voltage, the actual encoder

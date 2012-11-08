@@ -240,6 +240,9 @@ int main(int argc, char *argv[])
     str<<stiction[1];
     str<<" )";
     pControllerValidation.put("stiction",Value(str.str().c_str()));
+    // we let yarp apply the stiction values upon transitions;
+    // by default the firmware takes care of it.
+    pControllerValidation.put("stiction_compensation","middleware");
     // let's go for the classical "min-jerk" reference input with a
     // period of 2 seconds.
     // we have also the "square" waveform at our disposal, just in

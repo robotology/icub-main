@@ -673,10 +673,18 @@ void OnlineCompensatorDesign::run()
                     ipid->setPid(joint,*pidCur);
                 }
 
+                if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
+                {
+                    if (x_tg==x_max)
+                        ipid->setOffset(joint,controller_validation_stiction_pos);
+                    else
+                        ipid->setOffset(joint,controller_validation_stiction_neg);
+                }
+
                 if (controller_validation_ref_square)
                     ipid->setReference(joint,x_tg);
                 else
-                    ipos->positionMove(joint,x_tg);                
+                    ipos->positionMove(joint,x_tg);
             }
 
             if (port.getOutputCount()>0)
@@ -745,7 +753,6 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
     string type=opt.check("type",Value("P")).asString().c_str();
-    transform(type.begin(),type.end(),type.begin(),::toupper);
     double omega,zeta;
     double Kp,Kd,tau_d;
 
@@ -903,6 +910,12 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     pidNew.setKd(Kp);
     pidNew.setKd(0.0);
     pidNew.setKi(0.0);
+    pidNew.setStictionValues(0.0,0.0);
+    
+    controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
+    controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
+    controller_validation_stiction_yarp=(opt.check("stiction_compensation",Value("firmware")).asString()!="firmware");
+    controller_validation_stiction_pos=controller_validation_stiction_neg=0.0;
 
     if (opt.check("stiction"))
     {
@@ -910,15 +923,15 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
         {
             if (pB->size()>=2)
             {
-                double pos=pB->get(0).asDouble();
-                double neg=pB->get(1).asDouble();
-                pidNew.setStictionValues(pos,neg);
+                controller_validation_stiction_pos=pB->get(0).asDouble();
+                controller_validation_stiction_neg=pB->get(1).asDouble();
+
+                if (!controller_validation_stiction_yarp)
+                    pidNew.setStictionValues(controller_validation_stiction_pos,
+                                             controller_validation_stiction_neg);
             }
         }
-    }    
-
-    controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
-    controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
+    }
 
     mode=controller_validation;
     return RateThread::start();
