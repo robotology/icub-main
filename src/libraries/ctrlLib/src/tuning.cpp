@@ -170,7 +170,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         vel_thres=fabs(opt.check("vel_thres",Value(5.0)).asDouble());
         e_thres=fabs(opt.check("e_thres",Value(1.0)).asDouble());
 
-        gamma.resize(2,0.001);
+        gamma.resize(2,1.0);
         if (Bottle *pB=opt.find("gamma").asList()) 
         {
             size_t len=std::min(gamma.length(),(size_t)pB->size());

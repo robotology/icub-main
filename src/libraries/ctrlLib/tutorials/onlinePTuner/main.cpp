@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
     // we can specify either the cut frequency (in Hz) or
     // the damping ratio - since we have just one degree
     // of freedom controller (P).
-    pControllerRequirements.put("f_cut",2.0);
+    pControllerRequirements.put("f_cut",3.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
     double Kp=pController.find("Kp").asDouble();
