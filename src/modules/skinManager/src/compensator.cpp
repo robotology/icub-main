@@ -163,9 +163,8 @@ void Compensator::calibrationDataCollection(){
 		if (zeroUpRawData==false)
 			skin_values[j] = MAX_SKIN - skin_values[j];
 		
-		if(skin_values[j]<0 || skin_values[j]>MAX_SKIN){
-			fprintf(stderr, "Error while reading the tactile data! Data out of range: %d\n", (int)skin_values[j]);
-		}
+		if(skin_values[j]<0 || skin_values[j]>MAX_SKIN)
+			sendInfoMsg("Error while reading the tactile data! Data out of range: "+toString(skin_values[j]));
 		else{
 			skin_empty[j][int(skin_values[j])]++;
 			start_sum[j] += int(skin_values[j]);
@@ -179,23 +178,35 @@ void Compensator::calibrationFinish(){
 	//get percentile
 	for (unsigned int i=0; i<skinDim; i++) {
 		//avg start value
-		baselines[i] = start_sum[i]/calibrationRead;
+		baselines[i] = start_sum[i]/ (calibrationRead!=0.0 ? calibrationRead : 1.0);
 		
 		//cumulative values
 		for (int j=1; j<=MAX_SKIN; j++) {
 			//standard_dev[i] += fabs(j-baselines[i]) * skin_empty[i][j];
-			skin_empty[i][j] += skin_empty[i][j-1] ;			
+			skin_empty[i][j] += skin_empty[i][j-1] ;
 		}
 		//standard_dev[i] /= (CAL_TIME*PERIOD);
 
-		//when do we cross the threshold?
-		for (int j=0; j<=MAX_SKIN; j++) {
-			if (skin_empty[i][j] > (calibrationRead*0.95)) {
-                // the threshold can not be less than MIN_TOUCH_THR
-				touchThresholds[i] = (double)j - baselines[i];
-				j = MAX_SKIN;   // break
-			}
-		}
+		//when do we cross the threshold? Compute 95 percentile
+        if( skin_empty[i][MAX_SKIN] < 0.95*calibrationRead )
+        {
+            sendInfoMsg("Error during calibration. Most readings were out of range.");
+            _isWorking = false;
+        }
+        else
+        {
+		    for (int j=0; j<=MAX_SKIN; j++) 
+            {
+			    if (skin_empty[i][j] > (calibrationRead*0.95)) 
+                {
+                    // the threshold can not be less than MIN_TOUCH_THR
+				    touchThresholds[i] = (double)j - baselines[i];
+				    j = MAX_SKIN;   // break
+			    }
+		    }
+        }
+
+        
 	}
     // store the initial baseline to compute the drift compensated later
     initialBaselines = baselines;
@@ -209,13 +220,16 @@ void Compensator::calibrationFinish(){
         if(baselines[i]!=255){
             baseline255 = false;
         }
-        if(robotName=="icubSim" || touchThresholds[i]>0.00001){
+        if(robotName=="icubSim" || touchThresholds[i]>1e-5){
             thresholdZero = false;
         }
     }
     if(baseline255 || thresholdZero){
         _isWorking = false;
-        sendInfoMsg("Either the baselines of all the taxels are 255 or the noises are 0. Probably there is a hardware problem.");
+        if(baseline255)
+            sendInfoMsg("The baselines of all the taxels are 255. Probably there is a hardware problem.");
+        if(thresholdZero)
+            sendInfoMsg("The noise of all taxels is 0. Probably there is a hardware problem.");
     }
     for (unsigned int i=0; i<skinDim; i++) 
         touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);
@@ -263,19 +277,14 @@ bool Compensator::readInputData(Vector& skin_values){
     }
 
     if(skin_values.size() != skinDim){
-        readErrorCounter++;        
-
-        stringstream msg;
-        msg<< "Unexpected size of the input array (raw tactile data): "<< skin_values.size();
-        sendInfoMsg(msg.str());
-
+        readErrorCounter++;
+        sendInfoMsg("Unexpected size of the input array (raw tactile data): "+toString(skin_values.size()));
         if(readErrorCounter>MAX_READ_ERROR){
             _isWorking = false;
             sendInfoMsg("Too many errors in a row. Stopping the compensator.");
         }
         return false;
     }
-    
 
     readErrorCounter = 0;
     return true;
@@ -292,27 +301,16 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	double d;
 	for(unsigned int i=0; i<skinDim; i++){
 	    // baseline compensation
-	    if( zeroUpRawData == false){
-		    d = (double)( MAX_SKIN - rawData(i) - baselines[i]);
-	    }else{
-		    d = (double)(rawData(i) - baselines[i]);
-	    }
-	    compensatedData[i] = d;	// save the data before applying filtering
+		d =  (double)( zeroUpRawData ? rawData(i)-baselines[i] : MAX_SKIN-rawData(i)-baselines[i] );
+	    d =  max<double>(0.0, min<double>( MAX_SKIN, d));
+	    compensatedData[i] = d;     // save the data before applying filtering
 
         // detect touch (before applying filtering, so the compensation algorithm is not affected by the filters)
-        if(d > touchThresholds[i] + addThreshold){
-		    touchDetected[i] = true;
-	    }else{
-		    touchDetected[i] = false;
-        }
-
+		touchDetected[i] = (d > touchThresholds[i] + addThreshold);
+	    
         // detect subtouch
-        if(d < -touchThresholds[i] - addThreshold){
-		    subTouchDetected[i] = true;
-	    }else{
-		    subTouchDetected[i] = false;
-        }
-
+		subTouchDetected[i] = (d < -touchThresholds[i] - addThreshold);
+	    
         // smooth filter
         if(smoothFilter){
 		    smoothFactorSem.wait();
@@ -325,18 +323,10 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	    // binarization filter
         // here we don't use the touchDetected array because, if the smooth filter is on,
         // we want to use the filtered values
-        if(d > touchThresholds[i] + addThreshold){
-            touchDetectedFilt[i] = true;
-            if(binarization)
-		        d = BIN_TOUCH;
-        }else{
-            touchDetectedFilt[i] = false;
-            if(binarization)
-	            d = BIN_NO_TOUCH;
-        }
+        touchDetectedFilt[i] = (d > touchThresholds[i] + addThreshold);
+        if(binarization)
+		    d = touchDetectedFilt[i] ? BIN_TOUCH : BIN_NO_TOUCH;
         
-      //  if(d<0) // if negative, set it to zero
-		    //d=0;
 	    compensatedData2Send[i] = d;
 	}
 
@@ -375,9 +365,9 @@ void Compensator::updateBaseline(){
         d = compensatedData(j);
 		if(fabs(d)>0.5){
             if(touchDetected[j]){
-                gain            = contactCompensationGain/50;                
+                gain            = contactCompensationGain*0.02;                
             }else{
-                gain            = compensationGain/50;                
+                gain            = compensationGain*0.02;
                 non_touching_taxels++;
             }
             change          = gain*d/touchThresholds[j];
