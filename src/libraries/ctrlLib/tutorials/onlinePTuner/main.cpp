@@ -117,15 +117,17 @@ int main(int argc, char *argv[])
     sGeneral+=pGeneral.toString().c_str();
     sGeneral+=')';
 
-    Bottle bGeneral,bPlantEstimation;
+    Bottle bGeneral,bPlantEstimation,bStictionEstimation;
     bGeneral.fromString(sGeneral.c_str());
     // here follow the parameters for the EKF along with the
     // initial values for tau and K
     bPlantEstimation.fromString("(plant_estimation (Ts 0.01) (Q 1.0) (R 1.0) (P0 100000.0) (tau 1.0) (K 1.0) (max_pwm 800.0))");
+    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (Kp 10.0) (Ki 250.0) (Kd 15.0) (vel_thres 5.0) (e_thres 1.0) (gamma (20.0 20.0)) (stiction (0.0 0.0)))");
 
     // compose the overall configuration
     Bottle bConf=bGeneral;
     bConf.append(bPlantEstimation);
+    bConf.append(bStictionEstimation);
     pOptions.fromString(bConf.toString().c_str());
 
     OnlineCompensatorDesign designer;
@@ -212,7 +214,7 @@ int main(int argc, char *argv[])
     pStictionEstimation.put("max_time",30.0);
     designer.startStictionEstimation(pStictionEstimation);
 
-    printf("Estimation experiment will last %g seconds...\n",
+    printf("Stiction estimation experiment will last no more than %g seconds...\n",
            pStictionEstimation.find("max_time").asDouble());
 
     t0=Time::now();
@@ -229,7 +231,8 @@ int main(int argc, char *argv[])
     stiction[1]=pResults.find("stiction").asList()->get(1).asDouble();
     printf("Stiction values: positive = %g; negative = %g\n",stiction[0],stiction[1]);
 
-    // now that we know P and stiction, let's try out our controller...
+    // now that we know P and stiction, let's try out our controller
+    // against the current version
     Property pControllerValidation;
     pControllerValidation.put("max_time",20.0);
     pControllerValidation.put("Kp",Kp);
@@ -239,7 +242,8 @@ int main(int argc, char *argv[])
     str<<" ";
     str<<stiction[1];
     str<<" )";
-    pControllerValidation.put("stiction",Value(str.str().c_str()));
+    Value val; val.fromString(str.str().c_str());
+    pControllerValidation.put("stiction",val);
     // we let yarp apply the stiction values upon transitions;
     // by default the firmware takes care of it.
     pControllerValidation.put("stiction_compensation","middleware");
@@ -254,22 +258,15 @@ int main(int argc, char *argv[])
     printf("Controller validation will last %g seconds...\n",
            pControllerValidation.find("max_time").asDouble());
 
-    // let the experiment run and acquire information at a rate of
-    // 100 Hz; a quality figure is computed accounting for the
-    // controller's performance.
-    double cumErr=0.0;
+    // in this experiment both the current controller and our controller 
+    // will act, one after other, each for a cycle of 1 rising and 1 falling
+    // transition in a row.
+    t0=Time::now();
     while (!designer.isDone())
     {
-        designer.getResults(pResults);
-        double ref=pResults.find("reference").asDouble();
-        double pos=pResults.find("position").asDouble();
-        cumErr+=0.01*fabs(ref-pos);
-
-        Time::delay(0.01);
+        printf("elapsed %d [s]\n",(int)(Time::now()-t0));
+        Time::delay(1.0);
     }
-
-    printf("Controller performance: integral average error = %g [deg]\n",
-           cumErr/pControllerValidation.find("max_time").asDouble());
 
     return 0;
 }

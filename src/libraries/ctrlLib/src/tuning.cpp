@@ -135,7 +135,7 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
 /**********************************************************************/
 OnlineStictionEstimator::OnlineStictionEstimator() :
                          RateThread(1000),   velEst(32,4.0), accEst(32,4.0),
-                         trajGen(1,1.0,1.0), intErr(1.0,Vector(2,0.0))
+                         trajGen(1,1.0,1.0), intErr(1.0,Vector(2,0.0)), done(2)
 {
     imod=NULL;
     ilim=NULL;
@@ -456,7 +456,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
         return false;
 
     // configure stiction estimator
-    Bottle &optStiction=opt.findGroup("plant_stiction");
+    Bottle &optStiction=opt.findGroup("stiction_estimation");
     if (!optStiction.isNull())
     {
         Property propStiction(optStiction.toString().c_str());
@@ -477,6 +477,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
 /**********************************************************************/
 bool OnlineCompensatorDesign::threadInit()
 {
+    bool ret=true;
     switch (mode)
     {
         // -----
@@ -508,7 +509,7 @@ bool OnlineCompensatorDesign::threadInit()
         // -----
         case stiction_estimation:
         {
-            stiction.startEstimation();            
+            ret=stiction.startEstimation();
             break;
         }
 
@@ -534,7 +535,7 @@ bool OnlineCompensatorDesign::threadInit()
     doneEvent.reset();
     t0=Time::now();
 
-    return true;
+    return ret;
 }
 
 
@@ -1001,7 +1002,8 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             str<<" ";
             str<<values[1];
             str<<" )";
-            results.put("stiction",Value(str.str().c_str()));
+            Value val; val.fromString(str.str().c_str());
+            results.put("stiction",val);
             break;
         }
 
