@@ -60,10 +60,7 @@ using namespace std;
 ///////////////////
 
 #include <iCub/FactoryInterface.h>
-//#include <linux/types.h>
-//#include <sys/socket.h>
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
+
 
 // debug interface
 #include <iCub/DebugInterfaces.h>
@@ -166,6 +163,8 @@ class yarp::dev::embObjMotionControl: 	public DeviceDriver,
 							public IPositionControlRaw,
 				            public IVelocityControlRaw,
 							public IControlModeRaw,
+				            public IControlLimitsRaw,
+				            public ImplementControlLimits<embObjMotionControl, IControlLimits>,
 							public ImplementControlMode,
 							public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
 							public ImplementPositionControl<embObjMotionControl, IPositionControl>,
@@ -421,6 +420,10 @@ public:
 	bool getJointPositionRaw         (int j, double* value);
 	bool getJointPositionsRaw        (double* value);
 #endif
+
+    /////// Limits
+    bool setLimitsRaw(int axis, double min, double max);
+    bool getLimitsRaw(int axis, double *min, double *max);
 };
 
 #endif // include guard
