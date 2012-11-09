@@ -325,7 +325,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
         // we want to use the filtered values
         touchDetectedFilt[i] = (d > touchThresholds[i] + addThreshold);
         if(binarization)
-		    d = touchDetectedFilt[i] ? BIN_TOUCH : BIN_NO_TOUCH;
+		    d = (double)(touchDetectedFilt[i] ? BIN_TOUCH : BIN_NO_TOUCH);
         
 	    compensatedData2Send[i] = d;
 	}
