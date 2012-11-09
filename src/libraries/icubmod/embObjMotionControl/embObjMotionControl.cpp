@@ -19,7 +19,7 @@
 
 // embObj includes
 
-#define IMPLEMENT_DEBUG_INTERFACE
+//#define IMPLEMENT_DEBUG_INTERFACE
 
 #include "embObjMotionControl.h"
 
@@ -157,7 +157,9 @@ embObjMotionControl::embObjMotionControl() :
 						ImplementPositionControl<embObjMotionControl, IPositionControl>(this),
 				        ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
 				        ImplementControlMode(this),
+#ifdef IMPLEMENT_DEBUG_INTERFACE
 				        ImplementDebugInterface(this),
+#endif
 				        ImplementControlLimits<embObjMotionControl, IControlLimits>(this),
 				        _mutex(1)
 {
@@ -354,7 +356,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+#ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
+#endif
     ImplementControlLimits<embObjMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
     //  Tell EMS which NV I want to be signaled spontaneously, configure joints and motors and go to running mode
@@ -399,7 +403,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 		for (i = 1; i < xtmp.size(); i++)
 		{
 //			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
-			_angleToEncoder[i-1] = (1<<16) / 360;		// conversion factor from degrees to iCubDegrees
+			_angleToEncoder[i-1] = (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
 			tmp_A2E = xtmp.get(i).asDouble();
 			_encoderconversionfactor[i-1] = tmp_A2E / _angleToEncoder[i-1];
 			_encoderconversionoffset[i-1] = 0;
@@ -496,228 +500,229 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
 
-//    ////// TORQUE PIDS
-//    Bottle TPidsGroup=config.findGroup("TORQUE_PIDS","TORQUE_PID parameters");
-//       if (TPidsGroup.isNull()) {
-//               fprintf(stderr, "Error: no TORQUE PIDS group found in config file, returning\n");
-//               return false;
-//       }
-//       else
-//       {
-//    	   printf("Torque Pids section found\n");
-//    	   _tpidsEnabled=true;
-//    	   for(j=0;j<_njoints;j++)
-//    	   {
-//    		   char str1[80];
-//    		   sprintf(str1, "TPid%d", j);
-//    		 //  Bottle &xtmp3 = config.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(str1);
-//
-//    		   _tpids[j].kp = TPidsGroup.get(1).asDouble();
-//    		   _tpids[j].kd = TPidsGroup.get(2).asDouble();
-//    		   _tpids[j].ki = TPidsGroup.get(3).asDouble();
-//
-//    		   _tpids[j].max_int = TPidsGroup.get(4).asDouble();
-//    		   _tpids[j].max_output = TPidsGroup.get(5).asDouble();
-//
-//    		   _tpids[j].scale = TPidsGroup.get(6).asDouble();
-//    		   _tpids[j].offset = TPidsGroup.get(7).asDouble();
-//    	   }
-//       }
+    ////// TORQUE PIDS
+    Bottle TPidsGroup=config.findGroup("TORQUE_PIDS","TORQUE_PID parameters");
+       if (TPidsGroup.isNull()) {
+               fprintf(stderr, "Error: no TORQUE PIDS group found in config file, returning\n");
+               return false;
+       }
+       else
+       {
+    	   printf("Torque Pids section found\n");
+    	   _tpidsEnabled=true;
+    	   for(j=0;j<_njoints;j++)
+    	   {
+    		   char str1[80];
+    		   sprintf(str1, "TPid%d", j);
+    		 //  Bottle &xtmp3 = config.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(str1);
 
-//
-//#warning "What to do with impedance??"
-//
-//    ////// IMPEDANCE DEFAULT VALUES   if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints+1))
-//    {
-//        fprintf(stderr, "Using default value = 0 (disabled)\n");
-//        for(i=1;i<_njoints+1; i++)
-//            _torqueSensorChan[i-1] = 0;
-//    }
-//    else
-//    {
-//        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-//    }
-//
-//    if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
-//    {
-//        fprintf(stderr, "IMPEDANCE parameters section found\n");
-//        for(j=0;j<_njoints;j++)
-//        {
-//            char str2[80];
-//            sprintf(str2, "Imp%d", j);
-//            if (config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(str2)==true)
-//            {
-//                xtmp = config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(str2);
-//                _impedance_params[j].enabled=true;
-//                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
-//                _impedance_params[j].damping   = xtmp.get(2).asDouble();
-//            }
-//        }
-//    }
-//    else
-//    {
-//        printf("Impedance section NOT enabled, skipping...\n");
-//    }
-//
-//	////// IMPEDANCE LIMITS (UNDER TESTING)
-//	for(j=0;j<_njoints;j++)
-//	{
-//		_impedance_limits[j].min_damp=  0.001;
-//		_impedance_limits[j].max_damp=  9.888;
-//		_impedance_limits[j].min_stiff= 0.002;
-//		_impedance_limits[j].max_stiff= 9.889;
-//		_impedance_limits[j].param_a=   0.011;
-//		_impedance_limits[j].param_b=   0.012;
-//		_impedance_limits[j].param_c=   0.013;
-//	}
-//
-//    /////// LIMITS
-//    Bottle &limits=config.findGroup("LIMITS");
-//    if (limits.isNull())
-//    {
-//        fprintf(stderr, "Group LIMITS not found in configuration file\n");
-//        return false;
-//    }
-//    	// current limit
-//    if (!extractGroup(limits, xtmp, "Currents","a list of current limits", _njoints+1))
-//        return false;
-//    else
-//    	for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
-//
-//    	// max limit
-//    if (!extractGroup(limits, xtmp, "Max","a list of maximum angles (in degrees)", _njoints+1))
-//        return false;
-//    else
-//    	for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
-//
-//    	// min limit
-//    if (!extractGroup(limits, xtmp, "Min","a list of minimum angles (in degrees)", _njoints+1))
-//        return false;
-//    else
-//    	for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
-//
-//    /////// [VELOCITY]
-//    Bottle &velocityGroup=config.findGroup("VELOCITY");
-//    if (!velocityGroup.isNull())
-//    {
-//    	/////// Shifts
-//    	if (!extractGroup(velocityGroup, xtmp, "Shifts", "a list of shifts to be used in the vmo control", _njoints+1))
-//    	{
-//    		fprintf(stderr, "Using default Shifts=4\n");
-//    		for(i=1;i<_njoints+1; i++)
-//    			_velocityShifts[i-1] = 4;   //Default value
-//    	}
-//    	else
-//    	{
-//    		for(i=1;i<xtmp.size(); i++)
-//    			_velocityShifts[i-1]=xtmp.get(i).asInt();
-//    	}
-//
-//    	/////// Timeout
-//    	xtmp.clear();
-//    	if (!extractGroup(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", _njoints+1))
-//    	{
-//    		fprintf(stderr, "Using default Timeout=1000, i.e 1s\n");
-//    		for(i=1;i<_njoints+1; i++)
-//    			_velocityTimeout[i-1] = 1000;   //Default value
-//    	}
-//    	else
-//    	{
-//    		for(i=1;i<xtmp.size(); i++)
-//    			_velocityTimeout[i-1]=xtmp.get(i).asInt();
-//    	}
-//
-//    	/////// Joint Speed Estimation
-//    	xtmp.clear();
-//    	if (!extractGroup(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints+1))
-//    	{
-//    		fprintf(stderr, "Using default value=5\n");
-//    		for(i=1;i<_njoints+1; i++)
-//    			_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
-//    	}
-//    	else
-//    	{
-//    		for(i=1;i<xtmp.size(); i++)
-//    			_estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
-//    	}
-//
-//    	/////// Motor Speed Estimation
-//    	xtmp.clear();
-//    	if (!extractGroup(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints+1))
-//    	{
-//    		fprintf(stderr, "Using default value=5\n");
-//    		for(i=1;i<_njoints+1; i++)
-//    			_estim_params[i-1].mot_Vel_estimator_shift = 5;   //Default value
-//    	}
-//    	else
-//    	{
-//    		for(i=1;i<xtmp.size(); i++)
-//    			_estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
-//    	}
-//
-//    	/////// Joint Acceleration Estimation
-//    	xtmp.clear();
-//    	if (!extractGroup(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints+1))
-//    	{
-//    		fprintf(stderr, "Using default value=5\n");
-//    		for(i=1;i<_njoints+1; i++)
-//    			_estim_params[i-1].jnt_Acc_estimator_shift = 5;   //Default value
-//    	}
-//    	else
-//    	{
-//    		for(i=1;i<xtmp.size(); i++)
-//    			_estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
-//    	}
-//
-//    	/////// Motor Acceleration Estimation
-//    	xtmp.clear();
-//    	if (!extractGroup(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints+1))
-//    	{
-//    		fprintf(stderr, "Using default value=5\n");
-//    		for(i=1;i<_njoints+1; i++)
-//    			_estim_params[i-1].mot_Acc_estimator_shift = 5;   //Default value
-//    	}
-//    	else
-//    	{
-//    		for(i=1;i<xtmp.size(); i++)
-//    			_estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
-//    	}
-//
-//    }
-//    else
-//    {
-//    	fprintf(stderr, "A suitable value for [VELOCITY] Shifts was not found. Using default Shifts=4\n");
-//    	for(i=1;i<_njoints+1; i++)
-//    		_velocityShifts[i-1] = 4;   //Default value
-//
-//    	fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
-//    	for(i=1;i<_njoints+1; i++)
-//    		_velocityTimeout[i-1] = 1000;   //Default value
-//
-//    	fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
-//    	for(i=1;i<_njoints+1; i++)
-//    	{
-//    		_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
-//    		_estim_params[i-1].jnt_Acc_estimator_shift = 5;
-//    		_estim_params[i-1].mot_Vel_estimator_shift = 5;
-//    		_estim_params[i-1].mot_Acc_estimator_shift = 5;
-//    	}
-//    }
-//
-//    Bottle& debug = config.findGroup("DEBUG");
-//    xtmp.clear();
-//    if (!extractGroup(debug, xtmp, "Jconf", "debug joint start", 3))
-//    {
-//    	start = _firstJoint;
-//    	end   = _firstJoint + _njoints;
-//    	// yDebug() << "NOT Found debug joint conf start " << start << "end " << end;
-//    }
-//    else
-//    {
-//    	start = xtmp.get(1).asInt();
-//    	end   = xtmp.get(2).asInt();
-//    	// yDebug() << "Found debug joint conf start " << start << "end " << end;
-//    }
+    		   _tpids[j].kp = TPidsGroup.get(1).asDouble();
+    		   _tpids[j].kd = TPidsGroup.get(2).asDouble();
+    		   _tpids[j].ki = TPidsGroup.get(3).asDouble();
+
+    		   _tpids[j].max_int = TPidsGroup.get(4).asDouble();
+    		   _tpids[j].max_output = TPidsGroup.get(5).asDouble();
+
+    		   _tpids[j].scale = TPidsGroup.get(6).asDouble();
+    		   _tpids[j].offset = TPidsGroup.get(7).asDouble();
+    	   }
+       }
+
+
+#warning "What to do with impedance??"
+
+    ////// IMPEDANCE DEFAULT VALUES
+    if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints+1))
+    {
+        fprintf(stderr, "Using default value = 0 (disabled)\n");
+        for(i=1;i<_njoints+1; i++)
+            _torqueSensorChan[i-1] = 0;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
+    }
+
+    if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
+    {
+        fprintf(stderr, "IMPEDANCE parameters section found\n");
+        for(j=0;j<_njoints;j++)
+        {
+            char str2[80];
+            sprintf(str2, "Imp%d", j);
+            if (config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(str2)==true)
+            {
+                xtmp = config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(str2);
+                _impedance_params[j].enabled=true;
+                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
+                _impedance_params[j].damping   = xtmp.get(2).asDouble();
+            }
+        }
+    }
+    else
+    {
+        printf("Impedance section NOT enabled, skipping...\n");
+    }
+
+	////// IMPEDANCE LIMITS (UNDER TESTING)
+	for(j=0;j<_njoints;j++)
+	{
+		_impedance_limits[j].min_damp=  0.001;
+		_impedance_limits[j].max_damp=  9.888;
+		_impedance_limits[j].min_stiff= 0.002;
+		_impedance_limits[j].max_stiff= 9.889;
+		_impedance_limits[j].param_a=   0.011;
+		_impedance_limits[j].param_b=   0.012;
+		_impedance_limits[j].param_c=   0.013;
+	}
+
+    /////// LIMITS
+    Bottle &limits=config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        fprintf(stderr, "Group LIMITS not found in configuration file\n");
+        return false;
+    }
+    	// current limit
+    if (!extractGroup(limits, xtmp, "Currents","a list of current limits", _njoints+1))
+        return false;
+    else
+    	for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
+
+    	// max limit
+    if (!extractGroup(limits, xtmp, "Max","a list of maximum angles (in degrees)", _njoints+1))
+        return false;
+    else
+    	for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
+
+    	// min limit
+    if (!extractGroup(limits, xtmp, "Min","a list of minimum angles (in degrees)", _njoints+1))
+        return false;
+    else
+    	for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
+
+    /////// [VELOCITY]
+    Bottle &velocityGroup=config.findGroup("VELOCITY");
+    if (!velocityGroup.isNull())
+    {
+    	/////// Shifts
+    	if (!extractGroup(velocityGroup, xtmp, "Shifts", "a list of shifts to be used in the vmo control", _njoints+1))
+    	{
+    		fprintf(stderr, "Using default Shifts=4\n");
+    		for(i=1;i<_njoints+1; i++)
+    			_velocityShifts[i-1] = 4;   //Default value
+    	}
+    	else
+    	{
+    		for(i=1;i<xtmp.size(); i++)
+    			_velocityShifts[i-1]=xtmp.get(i).asInt();
+    	}
+
+    	/////// Timeout
+    	xtmp.clear();
+    	if (!extractGroup(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", _njoints+1))
+    	{
+    		fprintf(stderr, "Using default Timeout=1000, i.e 1s\n");
+    		for(i=1;i<_njoints+1; i++)
+    			_velocityTimeout[i-1] = 1000;   //Default value
+    	}
+    	else
+    	{
+    		for(i=1;i<xtmp.size(); i++)
+    			_velocityTimeout[i-1]=xtmp.get(i).asInt();
+    	}
+
+    	/////// Joint Speed Estimation
+    	xtmp.clear();
+    	if (!extractGroup(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints+1))
+    	{
+    		fprintf(stderr, "Using default value=5\n");
+    		for(i=1;i<_njoints+1; i++)
+    			_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
+    	}
+    	else
+    	{
+    		for(i=1;i<xtmp.size(); i++)
+    			_estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
+    	}
+
+    	/////// Motor Speed Estimation
+    	xtmp.clear();
+    	if (!extractGroup(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints+1))
+    	{
+    		fprintf(stderr, "Using default value=5\n");
+    		for(i=1;i<_njoints+1; i++)
+    			_estim_params[i-1].mot_Vel_estimator_shift = 5;   //Default value
+    	}
+    	else
+    	{
+    		for(i=1;i<xtmp.size(); i++)
+    			_estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
+    	}
+
+    	/////// Joint Acceleration Estimation
+    	xtmp.clear();
+    	if (!extractGroup(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints+1))
+    	{
+    		fprintf(stderr, "Using default value=5\n");
+    		for(i=1;i<_njoints+1; i++)
+    			_estim_params[i-1].jnt_Acc_estimator_shift = 5;   //Default value
+    	}
+    	else
+    	{
+    		for(i=1;i<xtmp.size(); i++)
+    			_estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
+    	}
+
+    	/////// Motor Acceleration Estimation
+    	xtmp.clear();
+    	if (!extractGroup(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints+1))
+    	{
+    		fprintf(stderr, "Using default value=5\n");
+    		for(i=1;i<_njoints+1; i++)
+    			_estim_params[i-1].mot_Acc_estimator_shift = 5;   //Default value
+    	}
+    	else
+    	{
+    		for(i=1;i<xtmp.size(); i++)
+    			_estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
+    	}
+
+    }
+    else
+    {
+    	fprintf(stderr, "A suitable value for [VELOCITY] Shifts was not found. Using default Shifts=4\n");
+    	for(i=1;i<_njoints+1; i++)
+    		_velocityShifts[i-1] = 4;   //Default value
+
+    	fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
+    	for(i=1;i<_njoints+1; i++)
+    		_velocityTimeout[i-1] = 1000;   //Default value
+
+    	fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
+    	for(i=1;i<_njoints+1; i++)
+    	{
+    		_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
+    		_estim_params[i-1].jnt_Acc_estimator_shift = 5;
+    		_estim_params[i-1].mot_Vel_estimator_shift = 5;
+    		_estim_params[i-1].mot_Acc_estimator_shift = 5;
+    	}
+    }
+
+    Bottle& debug = config.findGroup("DEBUG");
+    xtmp.clear();
+    if (!extractGroup(debug, xtmp, "Jconf", "debug joint start", 3))
+    {
+    	start = _firstJoint;
+    	end   = _firstJoint + _njoints;
+    	// yDebug() << "NOT Found debug joint conf start " << start << "end " << end;
+    }
+    else
+    {
+    	start = xtmp.get(1).asInt();
+    	end   = xtmp.get(2).asInt();
+    	// yDebug() << "Found debug joint conf start " << start << "end " << end;
+    }
 
     return true;
 }
@@ -860,8 +865,8 @@ bool embObjMotionControl::init()
 	else
 	{
 
-		for(int j = start , index = start; j< end; j++, index++)
-//		for(int j=_firstJoint, index =0; j<_firstJoint + _njoints; j++, index++)
+//		for(int j = start , index = start; j< end; j++, index++)
+		for(int j=_firstJoint, index =0; j<_firstJoint + _njoints; j++, index++)
 		{
 			// yDebug() << " j = " << j << "index = " << index;
 			printf("sending j config j = %d", j);
@@ -902,6 +907,18 @@ bool embObjMotionControl::init()
 			jconfig.velocitysetpointtimeout = (uint16_t)_velocityTimeout[index];
 			jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 			// to do
+
+			printf(">>>>Setting max and min pos\n");
+			printf("\n j %d \nmin = %d\n",j, jconfig.minpositionofjoint);
+			printf("max = %d\n", jconfig.maxpositionofjoint);
+			printf("limits %d \nmin = %f\n",_limitsMin[index]);
+			printf("max = %f\n", _limitsMax[index]);
+
+			printf("_zeros = %f\n",_zeros[index]);
+			printf("_angleToEncoder = %f\n",_angleToEncoder[index]);
+			printf("result = %f\n", convertA2I(_limitsMax[index], _zeros[index], _angleToEncoder[index]) );
+
+
 			jconfig.encoderconversionfactor = 4;
 			jconfig.encoderconversionoffset = 5;
 
@@ -2590,26 +2607,32 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 	// Sign up for waiting the reply
 	eoThreadEntry *tt = appendWaitRequest(j, nvid_min);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
 	appendWaitRequest(j, nvid_max);
-	tt->setPending(2);
+	tt->setPending(1);
 
 	// wait here
 	if(-1 == tt->synch() )
 	{
 		int threadId;
-		printf("error at line %d", __LINE__); //yError () << "ask request timed out, joint " << j;
+		printf("\n\n--------------------\nTIMEOUT for joint %d\n-----------------------\n", j); //yError () << "ask request timed out, joint " << j;
 
 		if(requestQueue->threadPool->getId(&threadId))
 			requestQueue->cleanTimeouts(threadId);
-		return false;
+		//return false;
 	}
 	// Get the value
 	uint16_t size;
 
-	uint32_t	eomin, eomax;
+	int32_t	eomin, eomax;
 	res->transceiver->getNVvalue(nvRoot_min, (uint8_t *)&eomin, &size);
-	res->transceiver->getNVvalue(nvRoot_min, (uint8_t *)&eomin, &size);
+	res->transceiver->getNVvalue(nvRoot_max, (uint8_t *)&eomax, &size);
 	*min = (double)eomin;
 	*max = (double)eomax;
+	printf("\n j %d\n",j);
+	printf("min = %f\n", *min);
+	printf("max = %f\n", *max);
+	printf("size = %d\n", size);
+	printf("eomin = %d\n", eomin);
+	printf("eomax = %d\n", eomax);
     // yDebug() << " GetPid returned values : kp = " << eoPID.kp << "kd = " <<  eoPID.kd << " ki = " << eoPID.ki;
 
     return true;

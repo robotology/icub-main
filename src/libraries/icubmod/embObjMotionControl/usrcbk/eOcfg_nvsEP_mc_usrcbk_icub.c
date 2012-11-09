@@ -396,9 +396,17 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__maxpositionofjoint(eOcfg_nvsEP
 {
 	transceiver_wait(nv->ep);
 	eOmeas_position_t *jMaxPosition_b = nv->rem;
-	printf("\nmaxpositionofjoint for Joint num = %d\n", xx);
-	printf("ep = 0x%X\n", nv->ep);
-	printf("maxpositionofjoint = 0x%X\n", jMaxPosition_b);
+	printf("\nmaxpositionofjoint for Joint num = %d ", xx);
+	printf("pos = %d\n", *jMaxPosition_b);
+	transceiver_post(nv->ep);
+}
+
+extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__minpositionofjoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+{
+	transceiver_wait(nv->ep);
+	eOmeas_position_t *jMinPosition_b = nv->rem;
+	printf("\nminpositionofjoint for Joint num = %d ", xx);
+	printf("pos = %d\n", *jMinPosition_b);
 	transceiver_post(nv->ep);
 }
 
