@@ -563,7 +563,13 @@ public:
     virtual bool startStictionEstimation(const yarp::os::Property &options);
 
     /**
-     * Start off the controller validation procedure. 
+     * Start off the controller validation procedure. The specified 
+     * controller is put to test against the controller currently 
+     * set within the firmware. The validation experiment foresees 
+     * cycles of rising and falling transitions in the reference 
+     * trajectory. The control is therefore continuously switched 
+     * between the current and the new controller, one cycle after 
+     * other. 
      *  
      * Once the validation has been carried out, then the low-level
      * controller's paremeters are restored to their previous 
