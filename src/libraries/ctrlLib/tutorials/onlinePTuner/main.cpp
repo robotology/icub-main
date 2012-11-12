@@ -200,12 +200,16 @@ int main(int argc, char *argv[])
     // we can specify either the cut frequency (in Hz) or
     // the damping ratio - since we have just one degree
     // of freedom controller (P).
-    pControllerRequirements.put("f_cut",2.0);
+    pControllerRequirements.put("f_cut",1.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
-    printf("Kp to be set in the firmware = %g\n",Kp*=encoder);
+    // if Kp>>1 (e.g. with iCub's fingers),
+    // we retain just the first decimal digit
+    int scale=4;
+    Kp*=encoder*scale;
+    printf("Kp to be set in the firmware = %g (shift factor = %d)\n",Kp,scale);
 
     // let's identify the stictions values as well
     Property pStictionEstimation;
@@ -233,10 +237,8 @@ int main(int argc, char *argv[])
     // against the current version
     Property pControllerValidation;
     pControllerValidation.put("max_time",20.0);
-    // if Kp>>1 (e.g. with iCub's fingers), we can
-    // try to keep just the first decimal digit
-    pControllerValidation.put("Kp",Kp*(1<<4));
-    pControllerValidation.put("scale",4);
+    pControllerValidation.put("Kp",Kp);
+    pControllerValidation.put("scale",scale);
     ostringstream str;
     str<<"( ";
     str<<stiction[0];
