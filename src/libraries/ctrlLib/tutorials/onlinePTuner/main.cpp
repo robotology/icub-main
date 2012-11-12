@@ -233,10 +233,10 @@ int main(int argc, char *argv[])
     // against the current version
     Property pControllerValidation;
     pControllerValidation.put("max_time",20.0);
-    // when Kp>>1 (e.g. with iCub's fingers), there's no need
-    // to keep decimal digits
-    pControllerValidation.put("Kp",Kp);
-    pControllerValidation.put("scale",0);
+    // when Kp>>1 (e.g. with iCub's fingers), so we can
+    // try to keep just the first decimal digit
+    pControllerValidation.put("Kp",Kp*16.0);
+    pControllerValidation.put("scale",4);
     ostringstream str;
     str<<"( ";
     str<<stiction[0];
