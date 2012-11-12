@@ -78,7 +78,7 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
 
 bool nv_not_found(void)
 {
-	printf("error at line %d", __LINE__); //yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
+	yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
 	return false;
 }
 
@@ -90,13 +90,13 @@ bool embObjMotionControl::extractGroup(Bottle &input, Bottle &out, const std::st
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
     if (tmp.isNull())
     {
-        printf("error at line %d", __LINE__); //yError () << key1.c_str() << " not found\n";
+        yError () << key1.c_str() << " not found\n";
         return false;
     }
 
     if(tmp.size()!=size)
     {
-        printf("error at line %d", __LINE__); //yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
+        yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
         return false;
     }
 
@@ -109,8 +109,8 @@ bool embObjMotionControl::alloc(int nj)
 {
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
-    _encoderconversionoffset = allocAndCheck<double>(nj);
-    _encoderconversionfactor = allocAndCheck<double>(nj);
+    _encoderconversionoffset = allocAndCheck<float>(nj);
+    _encoderconversionfactor = allocAndCheck<float>(nj);
 
     _rotToEncoder = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
@@ -172,6 +172,7 @@ embObjMotionControl::embObjMotionControl() :
 	res				= NULL;
 	requestQueue 	= NULL;
 	_tpidsEnabled	= false;
+	_njoints 		= 0;
 
     _axisMap		= NULL;
     _angleToEncoder = NULL;
@@ -255,7 +256,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	ethResCreator *resList = ethResCreator::instance();
 	if(NULL == (res = resList->getResource(config)) )
 	{
-		printf("error at line %d", __LINE__); //yError () << "[embObjMotionContro] Unable to instantiate an EMS... check configuration file";
+		yError () << "[embObjMotionContro] Unable to instantiate an EMS... check configuration file";
 		return false;
 	}
 
@@ -280,7 +281,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	Bottle &xtmp2 = xtmpB.findGroup("Ems");
     if (xtmp2.isNull())
     {
-        printf("error at line %d", __LINE__); //yError () << "[embObjMotionContro] EMS Board number identifier not found\n";
+        yError () << "[embObjMotionContro] EMS Board number identifier not found\n";
         return false;
     }
 
@@ -318,7 +319,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 			break;
 		default:
 			_fId.ep = 255;
-			printf("error at line %d", __LINE__); //yError () << "\n eoMotion Control: Wrong board identifier number!!!";
+			yError () << "\n eoMotion Control: Wrong board identifier number!!!";
 			return false;
 			break;
 	}
@@ -405,7 +406,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 //			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
 			_angleToEncoder[i-1] = (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
 			tmp_A2E = xtmp.get(i).asDouble();
-			_encoderconversionfactor[i-1] = tmp_A2E / _angleToEncoder[i-1];
+			_encoderconversionfactor[i-1] = (float) (tmp_A2E / _angleToEncoder[i-1]);
 			_encoderconversionoffset[i-1] = 0;
 		}
 
@@ -761,7 +762,7 @@ bool embObjMotionControl::init()
 		// Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
 		if( ! (EMS_capacityofropframeregulars >= (totSigSize += jStatusSize)) )
 		{
-			printf("error at line %d", __LINE__); //yError () << "No space left on EMS device for setting new regular messages!! Skipping remaining" << _fId.name;
+			yError () << "No space left on EMS device for setting new regular messages!! Skipping remaining" << _fId.name;
 			break;
 		}
 
@@ -770,7 +771,7 @@ bool embObjMotionControl::init()
 //		printf("\njointNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
 		if(EOK_uint16dummy == nvid)
 		{
-			printf("error at line %d", __LINE__); //yError () << " NVID jointNVindex_jstatus not found for EndPoint" << _fId.ep << " joint " << j;
+			yError () << " NVID jointNVindex_jstatus not found for EndPoint" << _fId.ep << " joint " << j;
 		}
 		else
 		{
@@ -778,13 +779,13 @@ bool embObjMotionControl::init()
 			sigcfg.id = nvid;
 			sigcfg.plustime = 0;
 			if(eores_OK != eo_array_PushBack(array, &sigcfg))
-				printf("error at line %d", __LINE__); //yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
+				yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
 		}
 
 		// Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
 		if( ! (EMS_capacityofropframeregulars >= (totSigSize += mStatusSize)) )
 		{
-			printf("error at line %d", __LINE__); //yError () << "No space left on EMS device for setting new regular messages!! Skipping remaining on board" << _fId.name;
+			yError () << "No space left on EMS device for setting new regular messages!! Skipping remaining on board" << _fId.name;
 			break;
 		}
 
@@ -792,7 +793,7 @@ bool embObjMotionControl::init()
 //		printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
 		if(EOK_uint16dummy == nvid)
 		{
-			printf("error at line %d", __LINE__); //yError () << " NVID jointNVindex_jstatus not found for EndPoint" << _fId.ep << " joint " << j;
+			yError () << " NVID jointNVindex_jstatus not found for EndPoint" << _fId.ep << " joint " << j;
 		}
 		else
 		{
@@ -800,7 +801,7 @@ bool embObjMotionControl::init()
 			sigcfg.id = nvid;
 			sigcfg.plustime = 0;
 			if(eores_OK != eo_array_PushBack(array, &sigcfg))
-				printf("error at line %d", __LINE__); //yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
+				yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
 		}
 
 		if( (NUMOFROPSIGCFG - 1) <= ((j - old +1)*2))	// a ropSigCfg can store only 20 variables at time. Send 2 messages if more are needed.
@@ -810,7 +811,7 @@ bool embObjMotionControl::init()
 			// yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
 			if( eores_OK != eo_nv_Set(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "ERROR eo_nv_Set !!";
+				yError () << "ERROR eo_nv_Set !!";
 				return false;
 			}
 
@@ -827,13 +828,13 @@ bool embObjMotionControl::init()
 	// Send remaining stuff
 	if( eores_OK != eo_nv_Set(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
 	{
-		printf("error at line %d", __LINE__); //yError () << "ERROR eo_nv_Set !!";
+		yError () << "ERROR eo_nv_Set !!";
 		return false;
 	}
 
 	if( eores_OK !=  res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
 	{
-		printf("error at line %d", __LINE__); //yError () << "error load occasional rop, sig cfg\n";
+		yError () << "error load occasional rop, sig cfg\n";
 		return false;
 	}
 	else
@@ -860,12 +861,10 @@ bool embObjMotionControl::init()
 	// yDebug() << "Sending joint configuration";
 	if( EOK_HOSTTRANSCEIVER_capacityofrop < jConfigSize )
 	{
-		printf("error at line %d", __LINE__); //yError () << "Size of Joint Config is bigger than single ROP... cannot send it at all!! Fix it!!";
+		yError () << "Size of Joint Config is bigger than single ROP... cannot send it at all!! Fix it!!";
 	}
 	else
 	{
-
-//		for(int j = start , index = start; j< end; j++, index++)
 		for(int j=_firstJoint, index =0; j<_firstJoint + _njoints; j++, index++)
 		{
 			// yDebug() << " j = " << j << "index = " << index;
@@ -881,14 +880,14 @@ bool embObjMotionControl::init()
 			nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jconfig);
 			if(EOK_uint16dummy == nvid)
 			{
-				printf("error at line %d", __LINE__); //yError () << " NVID not found\n";
+				yError () << " NVID not found\n";
 				continue;
 			}
 			nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &nvtmp);
 
 			if(NULL == nvRoot)
 			{
-				printf("error at line %d", __LINE__); //yError () << " NV pointer not found\n" << _fId.name << "board number " <<_fId.boardNum << "joint " << j << "at line" << __LINE__;
+				yError () << " NV pointer not found\n" << _fId.name << "board number " <<_fId.boardNum << "joint " << j << "at line" << __LINE__;
 				continue;
 			}
 
@@ -908,23 +907,23 @@ bool embObjMotionControl::init()
 			jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 			// to do
 
-			printf(">>>>Setting max and min pos\n");
-			printf("\n j %d \nmin = %d\n",j, jconfig.minpositionofjoint);
-			printf("max = %d\n", jconfig.maxpositionofjoint);
-			printf("limits %d \nmin = %f\n",_limitsMin[index]);
-			printf("max = %f\n", _limitsMax[index]);
+//			printf(">>>>Setting max and min pos\n");
+//			printf("\n j %d \nmin = %d\n",j, jconfig.minpositionofjoint);
+//			printf("max = %d\n", jconfig.maxpositionofjoint);
+//			printf("limits %d \nmin = %f\n",_limitsMin[index]);
+//			printf("max = %f\n", _limitsMax[index]);
+//
+//			printf("_zeros = %f\n",_zeros[index]);
+//			printf("_angleToEncoder = %f\n",_angleToEncoder[index]);
+//			printf("result = %f\n", convertA2I(_limitsMax[index], _zeros[index], _angleToEncoder[index]) );
 
-			printf("_zeros = %f\n",_zeros[index]);
-			printf("_angleToEncoder = %f\n",_angleToEncoder[index]);
-			printf("result = %f\n", convertA2I(_limitsMax[index], _zeros[index], _angleToEncoder[index]) );
 
-
-			jconfig.encoderconversionfactor = 4;
-			jconfig.encoderconversionoffset = 5;
+			jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[index]);
+			jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[index]);
 
 			if( eores_OK != eo_nv_Set(nvRoot, &jconfig, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "ERROR eo_nv_Set !!";
+				yError () << "ERROR eo_nv_Set !!";
 				continue;
 			}
 
@@ -944,53 +943,55 @@ bool embObjMotionControl::init()
 	// invia la configurazione dei MOTORI   //
 	//////////////////////////////////////////
 
-	// yDebug() << "Sending motor configuration";
-//	if( EOK_HOSTTRANSCEIVER_capacityofrop < mConfigSize )
-//	{
-//		printf("error at line %d", __LINE__); //yError () << "Size of Motor Config is bigger than single ROP... cannot send it at all!! Fix it";
-//	}
-//	else
-//	{
-//		for(int j=_firstJoint, index =0; j<_firstJoint+_njoints;j++, index++)
-//		{
-//			// yDebug() << " j = " << j << "index = " << index;
-//
-//			if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += mConfigSize)) )
-//			{
-//				// yDebug() << "Too many stuff to be sent at once... splitting in more messages";
-//				Time::delay(0.1);
-//				totConfigSize = 0;
-//			}
-//
+	 yDebug() << "Sending motor MAX CURRENT ONLY";
+	if( EOK_HOSTTRANSCEIVER_capacityofrop < mConfigSize )
+	{
+		yError () << "Size of Motor Config is bigger than single ROP... cannot send it at all!! Fix it";
+	}
+	else
+	{
+		for(int j=_firstJoint, index =0; j<_firstJoint+_njoints;j++, index++)
+		{
+			// yDebug() << " j = " << j << "index = " << index;
+
+			if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += mConfigSize)) )
+			{
+				// yDebug() << "Too many stuff to be sent at once... splitting in more messages";
+				Time::delay(0.1);
+				totConfigSize = 0;
+			}
+
 //			nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig);
-//			if(EOK_uint16dummy == nvid)
-//			{
-//				printf("error at line %d", __LINE__); //yError () << " NVID not found\n";
-//				continue;
-//			}
-//			nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &nvtmp);
-//
-//			if(NULL == nvRoot)
-//				printf("error at line %d", __LINE__); //yError () << " NV pointer found\n";;
-//
-//
-//			eOmc_motor_config_t	mconfig;
-//			memset(&mconfig, 0x00, sizeof(eOmc_motor_config_t));
-//			// what to do here?
-//			//mconfig.pidcurrent = unknown;
-//			//mconfig.maxvelocityofmotor =  ????;
-//			mconfig.maxcurrentofmotor = _currentLimits[index];
-//
+			nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig__maxcurrentofmotor);
+			if(EOK_uint16dummy == nvid)
+			{
+				yError () << " NVID not found\n";
+				continue;
+			}
+			nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &nvtmp);
+
+			if(NULL == nvRoot)
+				yError () << " NV pointer found\n";;
+
+
+			eOmc_motor_config_t	mconfig;
+			memset(&mconfig, 0x00, sizeof(eOmc_motor_config_t));
+			// what to do here?
+			//mconfig.pidcurrent = unknown;
+			//mconfig.maxvelocityofmotor =  ????;
+			mconfig.maxcurrentofmotor = _currentLimits[index];
+
 //			if( eores_OK != eo_nv_Set(nvRoot, &mconfig, eobool_true, eo_nv_upd_dontdo))
-//			{
-//				printf("error at line %d", __LINE__); //yError () << "ERROR eo_nv_Set !!";
-//				continue;
-//			}
-//			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
-//			// Debugging... to much information can overload can queue on EMS
-//			Time::delay(0.05);
-//		}
-//	}
+			if( eores_OK != eo_nv_Set(nvRoot, &(_currentLimits[index]), eobool_true, eo_nv_upd_dontdo))
+			{
+				yError () << "ERROR eo_nv_Set !!";
+				continue;
+			}
+			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+			// Debugging... to much information can overload can queue on EMS
+			Time::delay(0.05);
+		}
+	}
 	Time::delay(0.1);
 
 
@@ -1024,15 +1025,15 @@ void embObjMotionControl::configure_mais(void)
 		nvid = eo_cfg_nvsEP_as_mais_NVID_Get(mais_ep, maisnum, maisNVindex_mconfig__datarate);
 		if(EOK_uint16dummy == nvid)
 		{
-			printf("error at line %d", __LINE__); //yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
+			yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
 			return;
 		}
 		nvRoot = res->transceiver->getNVhandler(mais_ep, nvid, &tmp);
 		if(NULL == nvRoot)
-			printf("error at line %d", __LINE__); //yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
+			yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
 
 		if( eores_OK != eo_nv_Set(nvRoot, &datarate, eobool_true, eo_nv_upd_dontdo))
-			printf("error at line %d", __LINE__); //yError () << "ERROR eo_nv_Set !!";
+			yError () << "ERROR eo_nv_Set !!";
 
 		res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid);
 
@@ -1040,15 +1041,15 @@ void embObjMotionControl::configure_mais(void)
 		nvid = eo_cfg_nvsEP_as_mais_NVID_Get(mais_ep, maisnum, maisNVindex_mconfig__mode);
 		if(EOK_uint16dummy == nvid)
 		{
-			printf("error at line %d", __LINE__); //yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
+			yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
 			return;
 		}
 		nvRoot = res->transceiver->getNVhandler(mais_ep, nvid, &tmp);
 		if(NULL == nvRoot)
-			printf("error at line %d", __LINE__); //yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
+			yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
 
 		if( eores_OK != eo_nv_Set(nvRoot, &maismode, eobool_true, eo_nv_upd_dontdo))
-			printf("error at line %d", __LINE__); //yError () << "ERROR eo_nv_Set !!";
+			yError () << "ERROR eo_nv_Set !!";
 
 		res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid);
 	}
@@ -1067,19 +1068,19 @@ void embObjMotionControl::goToRun(void)
 	nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
 	if(EOK_uint16dummy == nvid)
 	{
-		printf("error at line %d", __LINE__); //yError () << " NVID not found at line" << __LINE__;
+		yError () << " NVID not found at line" << __LINE__;
 		return;
 	}
 
 	EOnv 	*nvRoot 	= res->transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
 	if(NULL == nvRoot)
-		printf("error at line %d", __LINE__); //yError () << "NV pointer not found at line" << __LINE__;
+		yError () << "NV pointer not found at line" << __LINE__;
 
 	eOmn_appl_state_t  desired 	= applstate_running;
 
 	if( eores_OK != eo_nv_Set(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
 	{
-		printf("error at line %d", __LINE__); //yError () << "eo_nv_Set at line" << __LINE__;
+		yError () << "eo_nv_Set at line" << __LINE__;
 		return;
 	}
 
@@ -1135,13 +1136,13 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 	EOnv *nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
 
 	if(NULL == nvRoot)
-		printf("error at line %d", __LINE__); //yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
+		yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
 
 	eOmc_PID_t	outPid;
 	copyPid_iCub2eo(&pid, &outPid);
 	if( eores_OK != eo_nv_Set(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
 	{
-		printf("error at line %d", __LINE__); //yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
+		yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
 		return false;
 	}
 	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
@@ -1153,11 +1154,11 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 	nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
 
 	if(NULL == nvRoot)
-		printf("error at line %d", __LINE__); //yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
+		yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
 
 	if( eores_OK != eo_nv_Set(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
 	{
-		printf("error at line %d", __LINE__); //yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
+		yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
 		return false;
 	}
 	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
@@ -1281,7 +1282,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 	if(-1 == tt->synch() )
 	{
 		int threadId;
-		printf("error at line %d", __LINE__); //yError () << "getPid timed out, joint " << j;
+		yError () << "getPid timed out, joint " << j;
 
 		if(requestQueue->threadPool->getId(&threadId))
 			requestQueue->cleanTimeouts(threadId);
@@ -1329,7 +1330,7 @@ bool embObjMotionControl::getPidsRaw(Pid *pids)
 		if(-1 == tt->synch() )
 		{
 			int threadId;
-			printf("error at line %d", __LINE__); //yError () << "getPids timed out";
+			yError () << "getPids timed out";
 			if(requestQueue->threadPool->getId(&threadId))
 				requestQueue->cleanTimeouts(threadId);
 			return false;
@@ -1438,7 +1439,7 @@ bool embObjMotionControl::enablePidRaw(int j)
 
 		if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 		{
-			printf("error at line %d", __LINE__); //yError () <<  "\n>>> ERROR eo_nv_Set !!\n";
+			yError () <<  "\n>>> ERROR eo_nv_Set !!\n";
 			return false;
 		}
 
@@ -1600,7 +1601,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 //
 //	if( eores_OK != eo_nv_Set(nvRoot_controlmode, &val, eobool_true, eo_nv_upd_dontdo))
 //	{
-//		printf("error at line %d", __LINE__); //yError () << "eo nv not set!\n";
+//		yError () << "eo nv not set!\n";
 //		return false;
 //	}
 
@@ -1629,7 +1630,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "eo nv not set!\n";
+				yError () << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
@@ -1642,7 +1643,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "eo nv not set!\n";
+				yError () << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
@@ -1655,7 +1656,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "eo nv not set!\n";
+				yError () << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
@@ -1669,7 +1670,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "eo nv not set!\n";
+				yError () << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
@@ -1683,14 +1684,14 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
 			{
-				printf("error at line %d", __LINE__); //yError () << "eo nv not set!\n";
+				yError () << "eo nv not set!\n";
 				return false;
 			}
 			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		default:
-			printf("error at line %d", __LINE__); //yError () << "Calibration type unknown!! (embObjMotionControl)\n";
+			yError () << "Calibration type unknown!! (embObjMotionControl)\n";
 			return false;
 			break;
 	}
@@ -1727,7 +1728,7 @@ bool embObjMotionControl::doneRaw(int axis)
 //	if(-1 == tt->synch() )
 //	{
 //		int threadId;
-//		printf("error at line %d", __LINE__); //yError () << "[ETH] Calibration done timed out, joint " << axis;
+//		yError () << "[ETH] Calibration done timed out, joint " << axis;
 //
 //		if(requestQueue->threadPool->getId(&threadId))
 //			requestQueue->cleanTimeouts(threadId);
@@ -2062,7 +2063,7 @@ bool embObjMotionControl::setVelocityModeRaw(int j)
 
 	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_always))
 	{
-		printf("error at line %d", __LINE__); //yError () << "nv Set";
+		yError () << "nv Set";
 		return false;
 	}
 
@@ -2201,7 +2202,7 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 //	if(-1 == tt->synch() )
 //	{
 //		int threadId;
-//		printf("error at line %d", __LINE__); //yError () << "[ETH] getControlModeRaw timed out, joint " << j;
+//		yError () << "[ETH] getControlModeRaw timed out, joint " << j;
 //		if(requestQueue->threadPool->getId(&threadId))
 //			requestQueue->cleanTimeouts(threadId);
 //		return false;
@@ -2310,7 +2311,7 @@ bool embObjMotionControl::getEncoderRaw(int j, double *value)
 
 	if(NULL == nvRoot)
 	{
-		printf("error at line %d", __LINE__); //yError () << "Nv pointer not found\n";
+		yError () << "Nv pointer not found\n";
 		return false;
 	}
 
@@ -2597,7 +2598,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 
 	if( (NULL == nvRoot_min) || (NULL == nvRoot_max))
 	{
-		printf("error at line %d", __LINE__); //yError() << "nv root not found at line " << __LINE__;
+		yError() << "nv root not found at line " << __LINE__;
 		return false;
 	}
 

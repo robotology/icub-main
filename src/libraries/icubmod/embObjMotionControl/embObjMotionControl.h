@@ -201,8 +201,8 @@ private:
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
-    double *_encoderconversionfactor;           /** iCubDegrees to encoder conversion factors */
-    double *_encoderconversionoffset;           /** iCubDegrees offset */
+    float *_encoderconversionfactor;           /** iCubDegrees to encoder conversion factors */
+    float *_encoderconversionoffset;           /** iCubDegrees offset */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
