@@ -911,7 +911,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     // enforce the correct sign of Kp
     double Kp=opt.find("Kp").asDouble();
     Kp=(Kp*pidOld.kp>0.0)?Kp:-Kp;
-    pidNew.setKd(Kp);
+    pidNew.setKp(Kp);
     pidNew.setKd(0.0);
     pidNew.setKi(0.0);
     pidNew.setStictionValues(0.0,0.0);
