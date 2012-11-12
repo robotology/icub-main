@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     // the experiment foresees a direct control
     // in voltage (pwm)
     Property pPlantEstimation;
-    pPlantEstimation.put("max_time",10.0);
+    pPlantEstimation.put("max_time",20.0);
     designer.startPlantEstimation(pPlantEstimation);
 
     printf("Estimation experiment will last %g seconds...\n",
