@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
     // against the current version
     Property pControllerValidation;
     pControllerValidation.put("max_time",20.0);
-    // when Kp>>1 (e.g. with iCub's fingers), so we can
+    // if Kp>>1 (e.g. with iCub's fingers), we can
     // try to keep just the first decimal digit
     pControllerValidation.put("Kp",Kp*16.0);
     pControllerValidation.put("scale",4);
