@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     // here follow the parameters for the EKF along with the
     // initial values for tau and K
     bPlantEstimation.fromString("(plant_estimation (Ts 0.01) (Q 1.0) (R 1.0) (P0 100000.0) (tau 1.0) (K 1.0) (max_pwm 800.0))");
-    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (Kp 10.0) (Ki 250.0) (Kd 15.0) (vel_thres 5.0) (e_thres 1.0) (gamma (30.0 30.0)) (stiction (0.0 0.0)))");
+    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (vel_thres 5.0) (e_thres 1.0) (gamma (30.0 30.0)) (stiction (0.0 0.0)))");
 
     // compose the overall configuration
     Bottle bConf=bGeneral;
@@ -208,12 +208,17 @@ int main(int argc, char *argv[])
     // if Kp>>1 (e.g. with iCub's fingers),
     // we retain just the first decimal digit
     int scale=4;
-    Kp*=encoder*scale;
-    printf("Kp to be set in the firmware = %g (shift factor = %d)\n",Kp,scale);
+    double Kp_fw=Kp*encoder*scale;
+    printf("Kp to be set in the firmware = %g (shift factor = %d)\n",Kp_fw,scale);
 
     // let's identify the stictions values as well
     Property pStictionEstimation;
-    pStictionEstimation.put("max_time",30.0);
+    pStictionEstimation.put("max_time",60.0);
+    // the joint will be controlled under the action
+    // of a high-level PID controller
+    pStictionEstimation.put("Kp",Kp);
+    pStictionEstimation.put("Ki",0.0);
+    pStictionEstimation.put("Kd",0.0);
     designer.startStictionEstimation(pStictionEstimation);
 
     printf("Stiction estimation experiment will last no more than %g seconds...\n",
@@ -236,8 +241,8 @@ int main(int argc, char *argv[])
     // now that we know P and stiction, let's try out our controller
     // against the current version
     Property pControllerValidation;
-    pControllerValidation.put("max_time",20.0);
-    pControllerValidation.put("Kp",Kp);
+    pControllerValidation.put("max_time",40.0);
+    pControllerValidation.put("Kp",Kp_fw);
     pControllerValidation.put("scale",scale);
     ostringstream str;
     str<<"( ";

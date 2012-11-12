@@ -254,6 +254,14 @@ public:
     virtual bool configure(yarp::dev::PolyDriver &driver, const yarp::os::Property &options);
 
     /**
+     * Reconfigure the estimation after first initialization.
+     *  
+     * @param options the configuration options. 
+     * @return true/false on success/failure. 
+     */
+    virtual bool reconfigure(const yarp::os::Property &options);
+
+    /**
      * Check the configuration status.
      *  
      * @return true iff configured successfully.
@@ -550,7 +558,8 @@ public:
      * @param options property containing the estimation options. 
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
-     *                experiment.
+     *                experiment; all the other options used while
+     *                configuring the stiction estimator.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 2, the commanded voltage, the actual encoder

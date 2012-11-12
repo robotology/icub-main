@@ -194,6 +194,63 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
 
 
 /**********************************************************************/
+bool OnlineStictionEstimator::reconfigure(const Property &options)
+{
+    Property &opt=const_cast<Property&>(options);
+    if (configured)
+    {
+        if (opt.check("joint"))
+            joint=opt.find("joint").asInt();
+
+        if (opt.check("Ts"))
+            setRate((int)(1000.0*opt.find("Ts").asDouble()));
+
+        if (opt.check("T"))
+            T=opt.find("T").asDouble();
+
+        if (opt.check("Kp"))
+            Kp=opt.find("Kp").asDouble();
+
+        if (opt.check("Ki"))
+            Ki=opt.find("Ki").asDouble();
+
+        if (opt.check("Kd"))
+            Kd=opt.find("Kd").asDouble();
+
+        if (opt.check("vel_thres"))
+            vel_thres=opt.find("vel_thres").asDouble();
+
+        if (opt.check("e_thres"))
+            e_thres=opt.find("e_thres").asDouble();
+
+        if (opt.check("gamma"))
+        {
+            if (Bottle *pB=opt.find("gamma").asList()) 
+            {
+                size_t len=std::min(gamma.length(),(size_t)pB->size());
+                for (size_t i=0; i<len; i++)
+                    gamma[i]=pB->get(i).asDouble();
+            }
+        }
+
+        if (opt.check("stiction"))
+        {
+            if (Bottle *pB=opt.find("stiction").asList()) 
+            {
+                size_t len=std::min(stiction.length(),(size_t)pB->size());
+                for (size_t i=0; i<len; i++)
+                    stiction[i]=pB->get(i).asDouble();
+            }
+        }
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**********************************************************************/
 bool OnlineStictionEstimator::threadInit()
 {
     if (!configured)
@@ -462,6 +519,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
         Property propStiction(optStiction.toString().c_str());
 
         // enforce the equality between the common properties
+        propStiction.unput("joint");
         propStiction.put("joint",joint);
 
         if (!stiction.configure(driver,propStiction))
@@ -878,15 +936,19 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 
 /**********************************************************************/
 bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
-{
-    Property &opt=const_cast<Property&>(options);
+{    
     if (!configured)
         return false;
 
+    Property opt=options;
     if (opt.check("max_time"))
         max_time=opt.find("max_time").asDouble();
     else
         max_time=0.0;
+
+    opt.unput("joint");
+    if (!stiction.reconfigure(opt))
+        return false;
 
     mode=stiction_estimation;
     return RateThread::start();
