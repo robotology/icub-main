@@ -377,6 +377,8 @@ protected:
     int    measure_update_cnt;    
     bool   controller_validation_ref_square;
     double controller_validation_ref_period;
+    int    controller_validation_cycles_to_switch;
+    int    controller_validation_num_cycles;
     bool   controller_validation_stiction_yarp;
     double controller_validation_stiction_pos;
     double controller_validation_stiction_neg;
@@ -577,8 +579,7 @@ public:
      * set within the firmware. The validation experiment foresees 
      * cycles of rising and falling transitions in the reference 
      * trajectory. The control is therefore continuously switched 
-     * between the current and the new controller, one cycle after 
-     * other. 
+     * between the current and the new controller.
      *  
      * Once the validation has been carried out, then the low-level
      * controller's paremeters are restored to their previous 
@@ -597,7 +598,9 @@ public:
      *                (@b ref_type <string>) specifies the waveform
      *                of the position reference ("square"|"min-jerk");
      *                (@b ref_period <double>) specifies the period
-     *                of the reference.
+     *                of the reference; (@b cycles_to_switch <int>)
+     *                specifies the number of cycles during which
+     *                one controller is tested before the switch.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 3, the commanded voltage, the actual encoder

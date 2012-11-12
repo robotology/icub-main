@@ -585,6 +585,7 @@ bool OnlineCompensatorDesign::threadInit()
                 ipos->setRefSpeed(joint,(x_max-x_min)/controller_validation_ref_period);
                 ipos->positionMove(joint,x_tg);
             }
+            controller_validation_num_cycles=0;
             t1=Time::now();
             break;
         }
@@ -728,11 +729,15 @@ void OnlineCompensatorDesign::run()
 
                 if (x_tg==x_max)
                 {
-                    pidCur=(pidCur==&pidOld?&pidNew:&pidOld);                    
-                    if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
-                        ipid->setOffset(joint,0.0);
+                    if (++controller_validation_num_cycles>=controller_validation_cycles_to_switch)
+                    {
+                        pidCur=(pidCur==&pidOld?&pidNew:&pidOld);                    
+                        if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
+                            ipid->setOffset(joint,0.0);
 
-                    ipid->setPid(joint,*pidCur);
+                        ipid->setPid(joint,*pidCur);
+                        controller_validation_num_cycles=0;
+                    }
                 }
 
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
@@ -964,9 +969,10 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
 
     if (opt.check("scale"))
         pidNew.setScale(opt.find("scale").asInt());
-    
+
     controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
     controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
+    controller_validation_cycles_to_switch=opt.check("cycles_to_switch",Value(1)).asInt();
     controller_validation_stiction_yarp=(opt.check("stiction_compensation",Value("firmware")).asString()!="firmware");
     controller_validation_stiction_pos=controller_validation_stiction_neg=0.0;
 

@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 
     // let's start the plant estimation by
     // setting up an experiment that will
-    // last 10 seconds
+    // last 20 seconds
     //
     // the experiment foresees a direct control
     // in voltage (pwm)
@@ -261,14 +261,15 @@ int main(int argc, char *argv[])
     // case we aim at measuring traditional controller step response.
     pControllerValidation.put("ref_type","min-jerk");
     pControllerValidation.put("ref_period",2.0);
+    // in this experiment both the current controller and our controller 
+    // will act, one after other, each for 4 cycles of 1 rising and 1 falling
+    // transition in a row.
+    pControllerValidation.put("cycles_to_switch",4);
     designer.startControllerValidation(pControllerValidation);
 
     printf("Controller validation will last %g seconds...\n",
            pControllerValidation.find("max_time").asDouble());
 
-    // in this experiment both the current controller and our controller 
-    // will act, one after other, each for a cycle of 1 rising and 1 falling
-    // transition in a row.
     t0=Time::now();
     while (!designer.isDone())
     {
