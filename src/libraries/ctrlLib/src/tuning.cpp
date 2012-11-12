@@ -915,6 +915,9 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     pidNew.setKd(0.0);
     pidNew.setKi(0.0);
     pidNew.setStictionValues(0.0,0.0);
+
+    if (opt.check("scale"))
+        pidNew.setScale(opt.find("scale").asInt());
     
     controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
     controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();

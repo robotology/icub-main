@@ -579,9 +579,9 @@ public:
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
      *                experiment; (@b Kp <double>) (@b Kd <double>)
-     *                (@b tau_d <double>) specify the controller's
-     *                gains; (@b stiction (<double> <double>))
-     *                specifies the stiction values;
+     *                (@b tau_d <double>) (@b scale <int>) specify
+     *                the controller's gains; (@b stiction (<double>
+     *                <double>)) specifies the stiction values;
      *                (@b stiction_compensation <string>) specifies
      *                whether the compensation is managed by the
      *                "firmware" (default) or the "middleware";

@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
     string part=rf.check("part",Value("right_arm")).asString().c_str();
     int joint=rf.check("joint",Value(11)).asInt();
     double encoder=rf.check("encoder",Value(2.43)).asDouble();
-    double scale_factor=1<<rf.check("scale_factor",Value(8)).asInt();
 
     Property pOptions;
     pOptions.put("device","remote_controlboard");
@@ -206,8 +205,7 @@ int main(int argc, char *argv[])
     designer.tuneController(pControllerRequirements,pController);
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
-    Kp*=scale_factor*encoder;
-    printf("Kp to be set in the firmware = %g\n",Kp);
+    printf("Kp to be set in the firmware = %g\n",Kp*=encoder);
 
     // let's identify the stictions values as well
     Property pStictionEstimation;
@@ -235,7 +233,10 @@ int main(int argc, char *argv[])
     // against the current version
     Property pControllerValidation;
     pControllerValidation.put("max_time",20.0);
+    // when Kp>>1 (e.g. with iCub's fingers), there's no need
+    // to keep decimal digits
     pControllerValidation.put("Kp",Kp);
+    pControllerValidation.put("scale",0);
     ostringstream str;
     str<<"( ";
     str<<stiction[0];
