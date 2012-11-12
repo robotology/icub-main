@@ -868,11 +868,8 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
     Property &opt=const_cast<Property&>(options);
     if (!configured)
         return false;
-    
-    if (opt.check("max_time"))
-        max_time=opt.find("max_time").asDouble();
-    else
-        max_time=0.0;
+
+    max_time=opt.check("max_time",Value(0.0)).asDouble();
 
     mode=plant_estimation;
     return RateThread::start();
@@ -886,15 +883,8 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     if (!configured || !opt.check("tau") || !opt.check("K"))
         return false;
     
-    if (opt.check("max_time"))
-        max_time=opt.find("max_time").asDouble();
-    else
-        max_time=0.0;
-
-    if (opt.check("measure_update_ticks"))
-        measure_update_ticks=opt.find("measure_update_ticks").asInt();
-    else
-        measure_update_ticks=100;
+    max_time=opt.check("max_time",Value(0.0)).asDouble();
+    measure_update_ticks=opt.check("measure_update_ticks",Value(100)).asInt();
 
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
@@ -941,10 +931,7 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
         return false;
 
     Property opt=options;
-    if (opt.check("max_time"))
-        max_time=opt.find("max_time").asDouble();
-    else
-        max_time=0.0;
+    max_time=opt.check("max_time",Value(0.0)).asDouble();
 
     opt.unput("joint");
     if (!stiction.reconfigure(opt))
@@ -962,11 +949,8 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     if (!configured || !opt.check("Kp"))
         return false;
 
-    if (opt.check("max_time"))
-        max_time=opt.find("max_time").asDouble();
-    else
-        max_time=0.0;
-    
+    max_time=opt.check("max_time",Value(0.0)).asDouble();
+
     ipid->getPid(joint,&pidOld);
     pidNew=pidOld;
 
