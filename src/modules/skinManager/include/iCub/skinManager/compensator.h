@@ -53,11 +53,11 @@ class Compensator
 {
 private:
 	/* class constants */
-    static const int MAX_READ_ERROR = 100;		// max number of read errors before suspending the compensator
-	static const int MAX_SKIN = 255;			// max value you can read from the skin sensors
-    static const int MIN_TOUCH_THR = 1;			// min value assigned to the touch thresholds (i.e. the 95% percentile)
-	static const int BIN_TOUCH = 100;			// output value of the binarization filter when touch is detected
-	static const int BIN_NO_TOUCH = 0;			// output value of the binarization filter when no touch is detected
+    static const int MAX_READ_ERROR = 100;      // max number of read errors before suspending the compensator
+	static const int MAX_SKIN = 255;            // max value you can read from the skin sensors
+    static const int MIN_TOUCH_THR = 1;         // min value assigned to the touch thresholds (i.e. the 95% percentile)
+	static const double BIN_TOUCH;              // output value of the binarization filter when touch is detected
+	static const double BIN_NO_TOUCH;           // output value of the binarization filter when no touch is detected
 	
     // INIT
     unsigned int skinDim;						// number of taxels (for the hand it is 192)	

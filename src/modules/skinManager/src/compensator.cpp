@@ -30,6 +30,9 @@ using namespace yarp::math;
 using namespace iCub::skinManager;
 using namespace iCub::skinDynLib;
 
+const double Compensator::BIN_TOUCH     = 100.0;
+const double Compensator::BIN_NO_TOUCH  = 0.0;
+
 Compensator::Compensator(string _name, string _robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort, 
                          double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
                          bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkNum)
@@ -325,7 +328,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
         // we want to use the filtered values
         touchDetectedFilt[i] = (d > touchThresholds[i] + addThreshold);
         if(binarization)
-		    d = (double)(touchDetectedFilt[i] ? BIN_TOUCH : BIN_NO_TOUCH);
+		    d = ( touchDetectedFilt[i] ? BIN_TOUCH : BIN_NO_TOUCH );
         
 	    compensatedData2Send[i] = d;
 	}
