@@ -13,7 +13,7 @@
 
         <module>
                 <name>yarphear </name>
-		<parameters>--name /icub/hear >--buf 1 </parameters>
+		<parameters>--name /icub/hear --buf 1 </parameters>
                 <node>icubsrv</node>
                 <tag>Audio hearing</tag>
         </module>
