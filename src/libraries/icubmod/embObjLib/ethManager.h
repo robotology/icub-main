@@ -115,6 +115,8 @@ void *recvThread(void * arg);
 class yarp::dev::ethResources:  public PolyDriver
 {
 private:
+	static yarp::os::Semaphore 	_mutex;
+
 	char 						info[SIZE_INFO];
 	int							how_many_features;
 
@@ -200,7 +202,7 @@ class RecvThread:	public RateThread
 };
 
 class yarp::dev::TheEthManager: public DeviceDriver,
-								public RateThread
+								 public RateThread
 {
 private:
     TheEthManager();

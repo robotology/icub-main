@@ -150,7 +150,7 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
 
 eOresult_t hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
 {
-	yTrace();
+//	yTrace();
 //	_mutex.wait();
     eo_transceiver_ropinfo_t ropinfo;
     ropinfo.ropcfg      = eok_ropconfig_basic;
@@ -160,13 +160,13 @@ eOresult_t hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, ui
     ropinfo.nvid = nvid;
     eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
 //    _mutex.post();
-    yTrace();
+//    yTrace();
     return res;
 }
 
 void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regular_rops_on_board(void)
 {
-	yTrace();
+//	yTrace();
 #if 0
     EOarray *upto10 = (EOarray*) & eo_cfg_nvsEP_mngmnt_usr_rem_board_mem_local->upto10rop2signal;
     eOropSIGcfg_t sigcfg;
@@ -240,7 +240,7 @@ void hostTransceiver::s_eom_hostprotoc_extra_protocoltransceiver_configure_regul
 // somebody adds a set-rop  plus data.
 void hostTransceiver::hostTransceiver_AddSetROP(uint16_t ep, uint16_t id, uint8_t* data, uint16_t size)
 {
-	yTrace();
+//	yTrace();
 //	_mutex.wait();
     uint16_t ss;
     EOnv nv;
@@ -411,7 +411,7 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 
 void hostTransceiver::s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t ep, uint16_t id)
 {
-	yTrace();
+//	yTrace();
     eo_transceiver_ropinfo_t ropinfo;
 
     ropinfo.ropcfg      = eok_ropconfig_basic;
@@ -424,7 +424,7 @@ void hostTransceiver::s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t
 
 void hostTransceiver::s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id)
 {
-	yTrace();
+//	yTrace();
     eo_transceiver_ropinfo_t ropinfo;
     _mutex.wait();
     ropinfo.ropcfg      = eok_ropconfig_basic;
@@ -457,7 +457,7 @@ void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint1
 
 EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot)
 {
-	yTrace();
+//	yTrace();
 //	_mutex.wait();
 	uint16_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
 	EOtreenode	*nvTreenodeRoot= NULL;
@@ -481,14 +481,14 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot
 		nvRoot = eo_nvscfg_GetNV(this->pc104nvscfg, ondevindex, onendpointindex, onidindex, nvTreenodeRoot, nvRoot);
 	}
 //	_mutex.post();
-	yTrace();
+//	yTrace();
 	return(nvRoot);
 }
 
 
 void hostTransceiver::getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size)
 {
-	yTrace();
+//	yTrace();
     if (NULL == nvRoot)
     {
     	return;
@@ -496,7 +496,7 @@ void hostTransceiver::getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size)
 //    _mutex.wait();
     eo_nv_remoteGet(nvRoot, data, size);
 //    _mutex.post();
-    yTrace();
+//    yTrace();
 }
 
 
@@ -508,7 +508,7 @@ void hostTransceiver::getHostData(const EOconstvector **pEPvector, eOuint16_fp_u
 
 uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
 {
-	yTrace();
+//	yTrace();
 	const EOconstvector* EPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
 	uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
 	return eo_cfg_nvsEP_board_NVs_endpoint_numberof_get(EPvector, epindex);
@@ -516,7 +516,7 @@ uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
 
 uint16_t hostTransceiver::translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid)
 {
-	yTrace();
+//	yTrace();
 	EOconstvector* pEPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
 	uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
 	eOnvscfg_EP_t* EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(pEPvector,  epindex);

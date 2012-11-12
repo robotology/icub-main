@@ -42,6 +42,9 @@ TheEthManager* TheEthManager::handle = NULL;
 yarp::os::Semaphore TheEthManager::_mutex = 1;
 int TheEthManager::_deviceNum = 0;
 
+// ethResources stuff
+yarp::os::Semaphore ethResources::_mutex = 1;
+
 ethResources::ethResources()
 {
 	how_many_features 	= 0;
@@ -173,13 +176,22 @@ int ethResources::send(void *data, size_t len)
 void ethResources::getPack(uint8_t **pack, uint16_t *size)
 {
 	if (0 != transceiver)
+	{
+		_mutex.wait();
 		transceiver->getTransmit(pack, size);
+		_mutex.post();
+	}
 }
 
 
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
-	transceiver->onMsgReception(data, size);
+	if (0 != transceiver)
+	{
+		_mutex.wait();
+		transceiver->onMsgReception(data, size);
+		_mutex.post();
+	}
 }
 
 ACE_INET_Addr	ethResources::getRemoteAddress()
