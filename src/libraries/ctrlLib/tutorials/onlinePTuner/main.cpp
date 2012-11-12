@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
     pControllerValidation.put("max_time",20.0);
     // if Kp>>1 (e.g. with iCub's fingers), we can
     // try to keep just the first decimal digit
-    pControllerValidation.put("Kp",Kp*16.0);
+    pControllerValidation.put("Kp",Kp*(1<<4));
     pControllerValidation.put("scale",4);
     ostringstream str;
     str<<"( ";
