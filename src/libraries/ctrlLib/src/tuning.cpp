@@ -614,14 +614,14 @@ void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
         {
             x_tg=x_min;
             pwm_pos=false;
-            t=t1;
+            t1=t;
         }
     }
     else if ((enc<x_min) || timeoutExpired)
     {
         x_tg=x_max;
         pwm_pos=true;
-        t=t1;
+        t1=t;
     }
 
     u=(pwm_pos?max_pwm:-max_pwm);
