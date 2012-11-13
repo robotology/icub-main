@@ -485,25 +485,32 @@ public:
      * @param options property object containing the plant 
      *                characteristics as well as the design
      *                requirements: (@b tau <double>) (@b K
-     *                <double>) (@b f_cut <double>) (@b zeta
-     *                <double>); (@b type <string>) specifies the
-     *                controller's architecture which can be "P" or
-     *                "PD".
+     *                <double>) (@b f_n <double>) (@b zeta
+     *                <double>) (@b f_cut <double>); (@b type
+     *                <string>) specifies the controller's
+     *                architecture which can be "P" or "PD".
      * @param results property containing the design outcome in 
      *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
      *             parameters. The property's tags are respectively:
      *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>. Moreover,
-     *             parameters <b>f_cut</b> and <b>zeta</b> are also
-     *             returned as actually employed in the design.
+     *             parameters <b>f_n</b>, <b>zeta</b>, <b>f_cut</b>
+     *             are also returned as actually employed in the
+     *             design.
      * @return true/false on success/failure.
      *  
      * @note when designing a <i>P</i> controller it holds
      *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
      *       design it holds \f$ 2\zeta\omega_n \geq 1/\tau. \f$
      *       Therefore, the requirement on \f$ \omega_n \f$ (i.e.
-     *       \f$ \omega_n=2\pi \cdot f_{cut} \f$ ) has always the
+     *       \f$ \omega_n=2\pi \cdot f_n \f$ ) has always the
      *       priority and \f$ \zeta \f$ is computed accordingly to
      *       meet those conditions in case they are not satisfied.
+     *       Moreover, for a <i>P</i> controller, which is endowed
+     *       with only one degree of freedom, it is possible to
+     *       specify the cut frequency f_cut that has the priority
+     *       over the remaining requirements and corresponds to the
+     *       frequency at which the open loop response has a unitary
+     *       gain and thus sets up the closed loop bandwidth.
      *  
      * @return true/false on success/failure. 
      */

@@ -197,12 +197,16 @@ int main(int argc, char *argv[])
     Property pControllerRequirements,pController;
     pControllerRequirements.put("tau",tau);
     pControllerRequirements.put("K",K);
-    // we can specify either the cut frequency (in Hz) or
+    // we can specify either the natural frequency (in Hz) or
     // the damping ratio - since we have just one degree
-    // of freedom controller (P).
+    // of freedom controller (P). Therefore it is a common
+    // rule to specify the overal cut frequency (in Hz) which
+    // amounts to the frequency where the open loop response
+    // given by Kp * plant has a unitary gain
     pControllerRequirements.put("f_cut",1.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
+    printf("tuning results: %s",pController.toString().c_str());
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
     // if Kp>>1 (e.g. with iCub's fingers),
