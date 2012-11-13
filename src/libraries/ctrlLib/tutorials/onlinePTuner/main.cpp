@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     // here follow the parameters for the EKF along with the
     // initial values for tau and K
     bPlantEstimation.fromString("(plant_estimation (Ts 0.01) (Q 1.0) (R 1.0) (P0 100000.0) (tau 1.0) (K 1.0) (max_pwm 800.0))");
-    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (vel_thres 5.0) (e_thres 1.0) (gamma (30.0 30.0)) (stiction (0.0 0.0)))");
+    bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (vel_thres 5.0) (e_thres 1.0) (gamma (10.0 10.0)) (stiction (0.0 0.0)))");
 
     // compose the overall configuration
     Bottle bConf=bGeneral;
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
     pControllerRequirements.put("f_cut",1.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
-    printf("tuning results: %s",pController.toString().c_str());
+    printf("tuning results: %s\n",pController.toString().c_str());
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
     // if Kp>>1 (e.g. with iCub's fingers),
