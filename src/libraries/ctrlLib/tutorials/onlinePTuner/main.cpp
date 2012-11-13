@@ -144,6 +144,10 @@ int main(int argc, char *argv[])
     // in voltage (pwm)
     Property pPlantEstimation;
     pPlantEstimation.put("max_time",20.0);
+    // the switch_timeout option enforces a timeout
+    // in the voltage switching logic to produce
+    // rising and falling transitions.
+    pPlantEstimation.put("switch_timeout",2.0);
     designer.startPlantEstimation(pPlantEstimation);
 
     printf("Estimation experiment will last %g seconds...\n",
@@ -171,6 +175,7 @@ int main(int argc, char *argv[])
     // simulating the plant with a Kalman filter
     Property pPlantValidation;
     pPlantValidation.put("max_time",10.0);
+    pPlantValidation.put("switch_timeout",2.0);
     pPlantValidation.put("tau",tau);
     pPlantValidation.put("K",K);
     // the "measure_update_ticks" option tells that

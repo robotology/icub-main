@@ -373,6 +373,7 @@ protected:
     double t0,t1;
     double x_min,x_max,x_tg;
     double max_time,max_pwm,dpos_dV;
+    double switch_timeout;
     int    measure_update_ticks;
     int    measure_update_cnt;    
     bool   controller_validation_ref_square;
@@ -522,7 +523,9 @@ public:
      * @param options property containing the estimation options. 
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
-     *                experiment.
+     *                experiment; (@b switch_timeout <double>) if
+     *                greater than 0.0 specifies the timeout for
+     *                voltage switching logic.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 0, the commanded voltage, the actual encoder
@@ -539,16 +542,18 @@ public:
      * @param options property containing the validation options. 
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
-     *                experiment; (@b tau <double>) specifies the
-     *                mechanical time constant of the plant to be
-     *                validated; (@b K <double>) specifies the plant
-     *                gain to be validated; (@b measure_update_ticks
-     *                <int>) specifies how many sample ticks to take
-     *                before updating the measurement in the Kalman
-     *                filter, if <= 0 then no update is performed;
-     *                (@b Q <double>) (@b R <double>) (@b P0
-     *                <double>) are the well known Kalman quantities
-     *                for the noise statistics.
+     *                experiment; (@b switch_timeout <double>) if
+     *                greater than 0.0 specifies the timeout for
+     *                voltage switching logic; (@b tau <double>)
+     *                specifies the mechanical time constant of the
+     *                plant to be validated; (@b K <double>)
+     *                specifies the plant gain to be validated; (@b
+     *                measure_update_ticks <int>) specifies how many
+     *                sample ticks to take before updating the
+     *                measurement in the Kalman filter, if <= 0 then
+     *                no update is performed; (@b Q <double>) (@b R
+     *                <double>) (@b P0 <double>) are the well known
+     *                Kalman quantities for the noise statistics.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 1, the commanded voltage, the actual encoder

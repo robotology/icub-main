@@ -548,6 +548,7 @@ bool OnlineCompensatorDesign::threadInit()
             meanCnt=0;
             x_tg=x_max;
             pwm_pos=true;
+            t1=Time::now();
             break;
         }
 
@@ -561,6 +562,7 @@ bool OnlineCompensatorDesign::threadInit()
             measure_update_cnt=0;
             x_tg=x_max;
             pwm_pos=true;
+            t1=Time::now();
             break;
         }
 
@@ -601,21 +603,25 @@ bool OnlineCompensatorDesign::threadInit()
 /**********************************************************************/
 void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
 {
-    ienc->getEncoder(joint,&enc);
+    double t=Time::now();
+    bool timeoutExpired=(switch_timeout>0.0?t-t1>switch_timeout:false);
+    ienc->getEncoder(joint,&enc);    
 
     // switch logic
     if (x_tg==x_max)
     {
-        if (enc>x_max)
+        if ((enc>x_max) || timeoutExpired)
         {
             x_tg=x_min;
             pwm_pos=false;
+            t=t1;
         }
     }
-    else if (enc<x_min)
+    else if ((enc<x_min) || timeoutExpired)
     {
         x_tg=x_max;
         pwm_pos=true;
+        t=t1;
     }
 
     u=(pwm_pos?max_pwm:-max_pwm);
@@ -891,6 +897,7 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
         return false;
 
     max_time=opt.check("max_time",Value(0.0)).asDouble();
+    switch_timeout=opt.check("switch_timeout",Value(0.0)).asDouble();
 
     mode=plant_estimation;
     return RateThread::start();
@@ -905,6 +912,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
         return false;
     
     max_time=opt.check("max_time",Value(0.0)).asDouble();
+    switch_timeout=opt.check("switch_timeout",Value(0.0)).asDouble();
     measure_update_ticks=opt.check("measure_update_ticks",Value(100)).asInt();
 
     double tau=opt.find("tau").asDouble();
