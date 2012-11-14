@@ -282,6 +282,7 @@ bool OnlineStictionEstimator::threadInit()
     Pid pidInfo;
     ipid->getPid(joint,&pidInfo);
     dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
+    stiction*=dpos_dV;
     Matrix _satLim(1,2);
     _satLim(0,0)=-pidInfo.max_int;
     _satLim(0,1)=pidInfo.max_int;
@@ -411,7 +412,7 @@ bool OnlineStictionEstimator::getResults(Vector &results)
         return false;
 
     mutex.wait();
-    results=stiction;
+    results=dpos_dV*stiction;
     mutex.post();
 
     return true;

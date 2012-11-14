@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
     Vector stiction(2);
     stiction[0]=pResults.find("stiction").asList()->get(0).asDouble();
     stiction[1]=pResults.find("stiction").asList()->get(1).asDouble();
-    printf("Stiction values: positive = %g; negative = %g\n",stiction[0],stiction[1]);
+    printf("Stiction values: up = %g; down = %g\n",stiction[0],stiction[1]);
 
     // now that we know P and stiction, let's try out our controller
     // against the current version
