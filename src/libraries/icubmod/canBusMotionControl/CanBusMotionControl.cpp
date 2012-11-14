@@ -1097,8 +1097,8 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
         if (xtmp.size()==10)
         {
-            _pids[j].stiction_pos_val = xtmp.get(8).asDouble();
-            _pids[j].stiction_neg_val = xtmp.get(9).asDouble();
+            _pids[j].stiction_up_val = xtmp.get(8).asDouble();
+            _pids[j].stiction_down_val = xtmp.get(9).asDouble();
         }
     }
 
@@ -1147,8 +1147,8 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
             if (xtmp.size()==10)
             {
-                _pids[j].stiction_pos_val = xtmp.get(8).asDouble();
-                _pids[j].stiction_neg_val = xtmp.get(9).asDouble();
+                _pids[j].stiction_up_val = xtmp.get(8).asDouble();
+                _pids[j].stiction_down_val = xtmp.get(9).asDouble();
             }
         }
     }
@@ -3245,7 +3245,7 @@ bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
     _writeWord16 (CAN_SET_OFFSET, axis, S_16(pid.offset));
     _writeWord16 (CAN_SET_SCALE, axis, S_16(pid.scale));
     _writeWord16 (CAN_SET_TLIM, axis, S_16(pid.max_output));
-    _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val), false);
+    _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_up_val), S_16(pid.stiction_down_val), false);
     return true;
 }
 
@@ -3461,7 +3461,7 @@ bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
     DEBUG("Calling CAN_GET_TLIM\n");
     _readWord16 (CAN_GET_TLIM, axis, s); out->max_output = double(s);
     DEBUG("Calling CAN_GET_POS_STICTION_PARAMS\n");
-    _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_pos_val = double(s); out->stiction_neg_val = double(s2);
+    _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_up_val = double(s); out->stiction_down_val = double(s2);
     DEBUG("Get PID done!\n");
     
 
@@ -3484,7 +3484,7 @@ bool CanBusMotionControl::getPidsRaw (Pid *out)
         _readWord16 (CAN_GET_OFFSET, i, s); out[i].offset= double(s);
         _readWord16 (CAN_GET_SCALE, i, s); out[i].scale = double(s);
         _readWord16 (CAN_GET_TLIM, i, s); out[i].max_output = double(s);
-        _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, i, s, s2 ); out[i].stiction_pos_val = double(s); out[i].stiction_neg_val = double(s2);
+        _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, i, s, s2 ); out[i].stiction_up_val = double(s); out[i].stiction_down_val = double(s2);
     }
 
     return true;
@@ -3535,7 +3535,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
-    _writeWord16Ex (CAN_SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_pos_val), S_16(pid.stiction_neg_val), false);
+    _writeWord16Ex (CAN_SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_up_val), S_16(pid.stiction_down_val), false);
     
     return true;
 }
@@ -3662,8 +3662,8 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
     short s1;
     short s2;
     _readWord16Ex (CAN_GET_TORQUE_STICTION_PARAMS, axis, s1, s2 );
-    out->stiction_pos_val = double(s1); 
-    out->stiction_neg_val = double(s2);
+    out->stiction_up_val = double(s1); 
+    out->stiction_down_val = double(s2);
 
     return true;
 }
@@ -3694,7 +3694,7 @@ bool CanBusMotionControl::setPidsRaw(const Pid *pids)
         _writeWord16   (CAN_SET_OFFSET, i, S_16(pids[i].offset));
         _writeWord16   (CAN_SET_SCALE, i, S_16(pids[i].scale));
         _writeWord16   (CAN_SET_TLIM, i, S_16(pids[i].max_output));
-        _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, S_16(pids[i].stiction_pos_val), S_16(pids[i].stiction_neg_val), false);
+        _writeWord16Ex (CAN_SET_POS_STICTION_PARAMS, i, S_16(pids[i].stiction_up_val), S_16(pids[i].stiction_down_val), false);
     }
 
     return true;

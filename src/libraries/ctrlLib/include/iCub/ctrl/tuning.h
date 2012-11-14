@@ -149,11 +149,11 @@ public:
 *
 * Online Stiction Estimator. 
 *  
-* Estimate the positive and negative stiction values. \n 
+* Estimate the up and down stiction values. \n 
 * During the experiment, the joint is controlled by a high-level 
 * pid controller that commands directly the voltage in order to 
-* track a time varying reference position. The stiction values
-* are estimated during the rising and falling edge transitions.
+* track a time varying reference position. The stiction values 
+* are estimated during the rising and falling edge transitions. 
 */
 class OnlineStictionEstimator : public yarp::os::RateThread
 {
@@ -243,11 +243,10 @@ public:
      *    estimation time window.
      *  
      * @b gamma (<double> <double>): specify the gains used for 
-     *    updating the stiction positive and negative values,
-     *    respectively.
+     *    updating the stiction up and down values, respectively.
      *  
      * @b stiction (<double> <double>): specify the initial stiction
-     *    positive and negative values, respectively.
+     *    up and down values, respectively.
      *  
      * @return true/false on success/failure. 
      */
@@ -298,8 +297,8 @@ public:
     /**
      * Retrieve the estimation. 
      *  
-     * @param results Current positive and negative stiction values 
-     *                given as components of a 2x1 vector.
+     * @param results Current up and down stiction values given as 
+     *                components of a 2x1 vector.
      *  
      * @return true/false on success/failure.
      */
@@ -382,8 +381,8 @@ protected:
     int    controller_validation_cycles_to_switch;
     int    controller_validation_num_cycles;
     bool   controller_validation_stiction_yarp;
-    double controller_validation_stiction_pos;
-    double controller_validation_stiction_neg;
+    double controller_validation_stiction_up;
+    double controller_validation_stiction_down;
     bool   pwm_pos;
     bool   configured;
 

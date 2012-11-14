@@ -750,9 +750,9 @@ void OnlineCompensatorDesign::run()
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
                 {
                     if (x_tg==x_max)
-                        ipid->setOffset(joint,controller_validation_stiction_pos);
+                        ipid->setOffset(joint,controller_validation_stiction_up);
                     else
-                        ipid->setOffset(joint,controller_validation_stiction_neg);
+                        ipid->setOffset(joint,controller_validation_stiction_down);
                 }
 
                 if (controller_validation_ref_square)
@@ -1000,7 +1000,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     controller_validation_ref_sustain_time=opt.check("ref_sustain_time",Value(0.0)).asDouble();
     controller_validation_cycles_to_switch=opt.check("cycles_to_switch",Value(1)).asInt();
     controller_validation_stiction_yarp=(opt.check("stiction_compensation",Value("firmware")).asString()!="firmware");
-    controller_validation_stiction_pos=controller_validation_stiction_neg=0.0;
+    controller_validation_stiction_up=controller_validation_stiction_down=0.0;
 
     if (opt.check("stiction"))
     {
@@ -1008,12 +1008,12 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
         {
             if (pB->size()>=2)
             {
-                controller_validation_stiction_pos=pB->get(0).asDouble();
-                controller_validation_stiction_neg=pB->get(1).asDouble();
+                controller_validation_stiction_up=pB->get(0).asDouble();
+                controller_validation_stiction_down=pB->get(1).asDouble();
 
                 if (!controller_validation_stiction_yarp)
-                    pidNew.setStictionValues(controller_validation_stiction_pos,
-                                             controller_validation_stiction_neg);
+                    pidNew.setStictionValues(controller_validation_stiction_up,
+                                             controller_validation_stiction_down);
             }
         }
     }

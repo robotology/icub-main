@@ -1,3 +1,7 @@
+2012-11-14  Ugo Pattacini  <ugo.pattacini@iit.it>
+   stiction name values changed from positive/negative to up/down
+   (this required updating the yarp tweak number)
+
 2012-10-30  Ugo Pattacini  <ugo.pattacini@iit.it>
    ctrlLib and iKin: removed explicit dependency from GSL and IPOPT
 
