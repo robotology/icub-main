@@ -600,24 +600,24 @@ public:
      * @param options property containing the validation options. 
      *                Available otions are: (@b max_time <double>)
      *                specifies the maximum amount of time for the
-     *                experiment; (@b Kp <double>) (@b Kd <double>)
-     *                (@b tau_d <double>) (@b scale <int>) specify
-     *                the controller's gains; (@b stiction (<double>
-     *                <double>)) specifies the stiction values;
-     *                (@b stiction_compensation <string>) specifies
-     *                whether the compensation is managed by the
-     *                "firmware" (default) or the "middleware";
-     *                (@b ref_type <string>) specifies the waveform
-     *                of the position reference ("square"|"min-jerk");
-     *                (@b ref_period <double>) specifies the period
-     *                of the reference; (@b ref_sustain_time
-     *                <double>) specifies how log (in seconds) the
-     *                reference should be kept at the set-point
-     *                before switching (meaningful for min-jerk
-     *                reference type); (@b cycles_to_switch
-     *                <int>) specifies the number of cycles during
-     *                which one controller is tested before the
-     *                switch.
+     *                experiment; (@b Kp <double>) (@b Ki <double>)
+     *                (@b Kd <double>) (@b tau_d <double>) (@b scale
+     *                <int>) specify the controller's gains; (@b
+     *                stiction (<double><double>)) specifies the
+     *                stiction values; (@b stiction_compensation
+     *                <string>) specifies whether the compensation
+     *                is managed by the "firmware" (default) or the
+     *                "middleware"; (@b ref_type <string>) specifies
+     *                the waveform of the position reference
+     *                ("square"|"min-jerk"); (@b ref_period
+     *                <double>) specifies the period of the
+     *                reference; (@b ref_sustain_time <double>)
+     *                specifies how log (in seconds) the reference
+     *                should be kept at the set-point before
+     *                switching (meaningful for min-jerk reference
+     *                type); (@b cycles_to_switch <int>) specifies
+     *                the number of cycles during which one
+     *                controller is tested before the switch.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 3, the commanded voltage, the actual encoder

@@ -14,6 +14,7 @@
 #include <math.h>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
@@ -216,11 +217,14 @@ int main(int argc, char *argv[])
     printf("tuning results: %s\n",pController.toString().c_str());
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
-    // if Kp>>1 (e.g. with iCub's fingers),
-    // we retain just the first decimal digit
-    int scale=4;
+    int scale=8;
     double Kp_fw=Kp*encoder*scale;
-    printf("Kp to be set in the firmware = %g (shift factor = %d)\n",Kp_fw,scale);
+    // retain anyhow a little percentage of integral action
+    // to compensate for high nonlinearities in the steady-state.
+    double Ki_fw=std::max(((Kp/10.0)*encoder*scale)/1000.0,1.0);
+    printf("Kp (firmware) = %g\n",Kp_fw);
+    printf("Ki (firmware) = %g\n",Ki_fw);
+    printf("shift factor  = %d\n",scale);
 
     // let's identify the stictions values as well
     Property pStictionEstimation;
@@ -254,6 +258,7 @@ int main(int argc, char *argv[])
     Property pControllerValidation;
     pControllerValidation.put("max_time",60.0);
     pControllerValidation.put("Kp",Kp_fw);
+    pControllerValidation.put("Ki",Ki_fw);
     pControllerValidation.put("scale",scale);
     ostringstream str;
     str<<"( ";

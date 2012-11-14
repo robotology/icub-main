@@ -987,10 +987,14 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
 
     // enforce the correct sign of Kp
     double Kp=opt.find("Kp").asDouble();
+    double Ki=opt.check("Ki",Value(0.0)).asDouble();
+    double Kd=opt.check("Kd",Value(0.0)).asDouble();
     Kp=(Kp*pidOld.kp>0.0)?Kp:-Kp;
+    Ki=(Ki*pidOld.ki>0.0)?Ki:-Ki;
+    Kd=(Kd*pidOld.kd>0.0)?Kd:-Kd;
     pidNew.setKp(Kp);
-    pidNew.setKd(0.0);
-    pidNew.setKi(0.0);
+    pidNew.setKi(Ki);
+    pidNew.setKd(Kd);
     pidNew.setStictionValues(0.0,0.0);
 
     if (opt.check("scale"))
