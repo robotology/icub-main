@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
     pControllerValidation.put("ref_period",2.0);
     // for the "min-jerk" reference type it turns to be useful to
     // have a "sustain" time where the reference is kept to the
-    // final set-point before switching to the second value.
+    // final set-point before switching to the next value.
     pControllerValidation.put("ref_sustain_time",1.0);
     // in this experiment both the current controller and our controller 
     // will act, one after other, each for 4 cycles of 1 rising and 1 falling

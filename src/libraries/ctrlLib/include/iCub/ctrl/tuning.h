@@ -614,10 +614,11 @@ public:
      *                reference; (@b ref_sustain_time <double>)
      *                specifies how log (in seconds) the reference
      *                should be kept at the set-point before
-     *                switching (meaningful for min-jerk reference
-     *                type); (@b cycles_to_switch <int>) specifies
-     *                the number of cycles during which one
-     *                controller is tested before the switch.
+     *                switching to next value (meaningful for
+     *                min-jerk reference type); (@b cycles_to_switch
+     *                <int>) specifies the number of cycles during
+     *                which one controller is tested before the
+     *                switch.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 3, the commanded voltage, the actual encoder
