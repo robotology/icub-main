@@ -378,6 +378,7 @@ protected:
     int    measure_update_cnt;    
     bool   controller_validation_ref_square;
     double controller_validation_ref_period;
+    double controller_validation_ref_sustain_time;
     int    controller_validation_cycles_to_switch;
     int    controller_validation_num_cycles;
     bool   controller_validation_stiction_yarp;
@@ -610,9 +611,14 @@ public:
      *                (@b ref_type <string>) specifies the waveform
      *                of the position reference ("square"|"min-jerk");
      *                (@b ref_period <double>) specifies the period
-     *                of the reference; (@b cycles_to_switch <int>)
-     *                specifies the number of cycles during which
-     *                one controller is tested before the switch.
+     *                of the reference; (@b ref_sustain_time
+     *                <double>) specifies how log (in seconds) the
+     *                reference should be kept at the set-point
+     *                before switching (meaningful for min-jerk
+     *                reference type); (@b cycles_to_switch
+     *                <int>) specifies the number of cycles during
+     *                which one controller is tested before the
+     *                switch.
      *  
      * @note if active, the yarp port streams out, respectively, the
      *       mode id 3, the commanded voltage, the actual encoder

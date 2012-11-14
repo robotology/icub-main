@@ -728,7 +728,8 @@ void OnlineCompensatorDesign::run()
         // -----
         case controller_validation:
         {
-            if (t-t1>controller_validation_ref_period)
+            if (t-t1>controller_validation_ref_period+
+                controller_validation_ref_sustain_time)
             {
                 x_tg=(x_tg==x_max?x_min:x_max);
                 t1=t;
@@ -996,6 +997,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
 
     controller_validation_ref_square=(opt.check("ref_type",Value("square")).asString()=="square");
     controller_validation_ref_period=opt.check("ref_period",Value(2.0)).asDouble();
+    controller_validation_ref_sustain_time=opt.check("ref_sustain_time",Value(0.0)).asDouble();
     controller_validation_cycles_to_switch=opt.check("cycles_to_switch",Value(1)).asInt();
     controller_validation_stiction_yarp=(opt.check("stiction_compensation",Value("firmware")).asString()!="firmware");
     controller_validation_stiction_pos=controller_validation_stiction_neg=0.0;
