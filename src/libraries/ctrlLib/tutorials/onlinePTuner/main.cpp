@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     // amounts to the frequency where the open loop response
     // given by Kp * plant has a unity-gain; f_c determines
     // the bandwidth of the closed loop response.
-    pControllerRequirements.put("f_c",0.5);
+    pControllerRequirements.put("f_c",0.75);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
     printf("tuning results: %s\n",pController.toString().c_str());
