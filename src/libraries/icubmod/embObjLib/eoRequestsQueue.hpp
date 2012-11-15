@@ -100,7 +100,7 @@ public:
     inline void setPending(int pend)
     {
     	lock();
-    	_pending=pend;
+    	_pending+=pend;
     	_replied=0;
     	_timedOut=0;
     	unlock();
@@ -169,9 +169,9 @@ private:
             }
 
         i=index;
-        index++;
         pool[i].handle()=s;
         pool[i].id = index;
+        index++;
         return true;
     }
 

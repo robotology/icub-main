@@ -36,7 +36,7 @@ bool eoThreadArray::getId(int *i)
         {
             ret=getNew(self,id);
         }
-    printf("Thread id = %d", id);
+    printf("Get Id says = %d\n", id);
     *i=id;
     return ret;
 }
@@ -201,7 +201,7 @@ bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
         std::list<eoThreadId>::iterator end=fifo->end();
         while(it!=end)
         {
-        	printf("thread Id %d\n", *it);
+        	printf("Cleaning timeouts for thread Id %d\n", *it);
         	if( (*it) == id )
         	{
         		// to wake threads sleeping here ... is it correct this way??
