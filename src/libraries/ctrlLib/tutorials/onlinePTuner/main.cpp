@@ -217,10 +217,10 @@ int main(int argc, char *argv[])
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
     int scale=8;
-    double Kp_fw=Kp*encoder*scale;
+    double Kp_fw=Kp*encoder*(1<<scale);
     // retain anyhow a little percentage of integral action
     // to compensate for high nonlinearities in the steady-state.
-    double Ki_fw=std::max(((Kp/10.0)*encoder*scale)/1000.0,1.0);
+    double Ki_fw=std::max(((Kp/10.0)*encoder*(1<<scale))/1000.0,1.0);
     printf("Kp (firmware) = %g\n",Kp_fw);
     printf("Ki (firmware) = %g\n",Ki_fw);
     printf("shift factor  = %d\n",scale);
