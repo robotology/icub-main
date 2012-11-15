@@ -210,20 +210,15 @@ int main(int argc, char *argv[])
     // amounts to the frequency where the open loop response
     // given by Kp * plant has a unity-gain; f_c determines
     // the bandwidth of the closed loop response.
-    pControllerRequirements.put("f_c",1.0);
+    pControllerRequirements.put("f_c",0.5);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
     printf("tuning results: %s\n",pController.toString().c_str());
     double Kp=pController.find("Kp").asDouble();
     printf("found Kp = %g\n",Kp);
-    int scale=8;
+    int scale=4;
     double Kp_fw=Kp*encoder*(1<<scale);
-    // retain anyhow a little percentage of integral action
-    // to compensate for high nonlinearities in the steady-state.
-    double Ki_fw=std::max(((Kp/10.0)*encoder*(1<<scale))/1000.0,1.0);
-    printf("Kp (firmware) = %g\n",Kp_fw);
-    printf("Ki (firmware) = %g\n",Ki_fw);
-    printf("shift factor  = %d\n",scale);
+    printf("Kp (firmware) = %g; shift factor = %d\n",Kp_fw,scale);
 
     // let's identify the stictions values as well
     Property pStictionEstimation;
@@ -257,7 +252,6 @@ int main(int argc, char *argv[])
     Property pControllerValidation;
     pControllerValidation.put("max_time",60.0);
     pControllerValidation.put("Kp",Kp_fw);
-    pControllerValidation.put("Ki",Ki_fw);
     pControllerValidation.put("scale",scale);
     ostringstream str;
     str<<"( ";
