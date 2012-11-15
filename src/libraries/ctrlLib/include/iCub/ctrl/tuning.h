@@ -487,14 +487,14 @@ public:
      *                characteristics as well as the design
      *                requirements: (@b tau <double>) (@b K
      *                <double>) (@b f_n <double>) (@b zeta
-     *                <double>) (@b f_cut <double>); (@b type
+     *                <double>) (@b f_c <double>); (@b type
      *                <string>) specifies the controller's
      *                architecture which can be "P" or "PD".
      * @param results property containing the design outcome in 
      *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
      *             parameters. The property's tags are respectively:
      *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>. Moreover,
-     *             parameters <b>f_n</b>, <b>zeta</b>, <b>f_cut</b>
+     *             parameters <b>f_n</b>, <b>zeta</b>, <b>f_c</b>
      *             are also returned as actually employed in the
      *             design.
      * @return true/false on success/failure.
@@ -508,10 +508,11 @@ public:
      *       meet those conditions in case they are not satisfied.
      *       Moreover, for a <i>P</i> controller, which is endowed
      *       with only one degree of freedom, it is possible to
-     *       specify the cut frequency f_cut that has the priority
+     *       specify the cut frequency f_c that has the priority
      *       over the remaining requirements and corresponds to the
-     *       frequency at which the open loop response has a unitary
-     *       gain and thus sets up the closed loop bandwidth.
+     *       crossover frequency at which the open loop response has
+     *       a unity-gain and thus sets up the closed loop
+     *       bandwidth.
      *  
      * @return true/false on success/failure. 
      */

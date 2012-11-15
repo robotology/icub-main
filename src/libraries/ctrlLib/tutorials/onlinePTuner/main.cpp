@@ -206,12 +206,11 @@ int main(int argc, char *argv[])
     // we can specify either the natural frequency (in Hz) or
     // the damping ratio - since we have just one degree
     // of freedom controller (P). Therefore it is a common
-    // rule to specify the cut frequency (in Hz) which
+    // rule to specify the crossover frequency (in Hz) which
     // amounts to the frequency where the open loop response
-    // given by Kp * plant has a unitary gain; the cut
-    // frequency also determines the bandwidth of the
-    // closed loop response.
-    pControllerRequirements.put("f_cut",1.0);
+    // given by Kp * plant has a unity-gain; f_c determines
+    // the bandwidth of the closed loop response.
+    pControllerRequirements.put("f_c",1.0);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
     printf("tuning results: %s\n",pController.toString().c_str());
