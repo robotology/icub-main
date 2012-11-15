@@ -305,7 +305,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
 	for(unsigned int i=0; i<skinDim; i++){
 	    // baseline compensation
 		d =  (double)( zeroUpRawData ? rawData(i)-baselines[i] : MAX_SKIN-rawData(i)-baselines[i] );
-	    d =  max<double>(0.0, min<double>( MAX_SKIN, d));
+	    d =   min<double>( MAX_SKIN, d);
 	    compensatedData[i] = d;     // save the data before applying filtering
 
         // detect touch (before applying filtering, so the compensation algorithm is not affected by the filters)
@@ -330,7 +330,7 @@ bool Compensator::readRawAndWriteCompensatedData(){
         if(binarization)
 		    d = ( touchDetectedFilt[i] ? BIN_TOUCH : BIN_NO_TOUCH );
         
-	    compensatedData2Send[i] = d;
+	    compensatedData2Send[i] = max<double>(0.0, d); // trim only data to send because you need negative values for update baseline
 	}
 
 	compensatedTactileDataPort.write();
@@ -365,29 +365,33 @@ void Compensator::updateBaseline(){
 			}
 		}*/
 
+    
         d = compensatedData(j);
-		if(fabs(d)>0.5){
-            if(touchDetected[j]){
-                gain            = contactCompensationGain*0.02;                
-            }else{
-                gain            = compensationGain*0.02;
-                non_touching_taxels++;
-            }
-            change          = gain*d/touchThresholds[j];
-			baselines[j]    += change;
-            mean_change     += change;
+        if(touchDetected[j]){
+            gain            = contactCompensationGain*0.02;                
+        }else{
+            gain            = compensationGain*0.02;
+            non_touching_taxels++;
+        }
+        change          = gain*d/touchThresholds[j];
+		baselines[j]    += change;
+        mean_change     += change;
 
-            if(baselines[j]<0){
-                char* temp = new char[300];
-                sprintf(temp, "ERROR-Negative baseline. Port %s; tax %d; baseline %.2f; gain: %.4f; d: %.2f; raw: %.2f; change: %f; touchThr: %.2f", 
-                    SkinPart_s[skinPart].c_str(), j, baselines[j], gain, d, rawData[j], change, touchThresholds[j]);
-                sendInfoMsg(temp);
-            }
-		}        
+        if(j<5)
+        {
+            printf("%d touch detected %s, change %.6f, gain: %.3f\n", j, touchDetected[j]?"yes":"no", change, touchDetected[j]?contactCompensationGain:compensationGain);
+        }
+
+        if(baselines[j]<0){
+            char* temp = new char[300];
+            sprintf(temp, "ERROR-Negative baseline. Port %s; tax %d; baseline %.2f; gain: %.4f; d: %.2f; raw: %.2f; change: %f; touchThr: %.2f", 
+                SkinPart_s[skinPart].c_str(), j, baselines[j], gain, d, rawData[j], change, touchThresholds[j]);
+            sendInfoMsg(temp);
+        }      
     }
     
     //for compensating the taxels where we detected touch
-    if (non_touching_taxels>0 && non_touching_taxels<skinDim && mean_change!=0){
+    /*if (non_touching_taxels>0 && non_touching_taxels<skinDim && mean_change!=0){
         mean_change /= non_touching_taxels;
         for(unsigned int j=0; j<skinDim; j++) {
             if (touchDetected[j]) {
@@ -399,7 +403,7 @@ void Compensator::updateBaseline(){
                 }
             }
         }
-    }
+    }*/
 }
 
 bool Compensator::doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline){
