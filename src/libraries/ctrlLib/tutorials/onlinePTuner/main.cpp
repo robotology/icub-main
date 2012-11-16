@@ -210,6 +210,12 @@ int main(int argc, char *argv[])
     // amounts to the frequency where the open loop response
     // given by Kp * plant has a unity-gain; f_c determines
     // the bandwidth of the closed loop response.
+    // Requirements: track min-jerk profiles whose trajectory
+    // time is 2.0 seconds.
+    // From spectral analysis we know that the most of the
+    // frequency content of a signal composed of the given
+    // min-jerk pulses lies whithin the range [0,0.6] Hz.
+    // A crossover frequency of 0.75 is therefore suitable.
     pControllerRequirements.put("f_c",0.75);
     pControllerRequirements.put("type","P");
     designer.tuneController(pControllerRequirements,pController);
