@@ -1,3 +1,7 @@
+2012-11-19  Ugo Pattacini  <ugo.pattacini@iit.it>
+   tutorials iCub/main/src/libraries/${lib} moved under
+   iCub/tutorial/${lib}
+
 2012-11-17  Ugo Pattacini  <ugo.pattacini@iit.it>
    ctrlLib/tuning: added classes to handle online tuning of pid
 
