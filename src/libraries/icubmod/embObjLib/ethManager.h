@@ -82,10 +82,9 @@ using namespace std;
 //#define	EMS_IP					DEBUG_EMS_IP
 //#define DEFAULT_PORT			3333
 
-//#define	MAX_RECV_SIZE			512
-#define	MAX_RECV_SIZE			1500
+#define	RECV_BUFFER_SIZE		EOK_HOSTTRANSCEIVER_capacityofpacket
 #define	SIZE_INFO				126
-#define MAX_ICUB_EP				32
+#define    MAX_ICUB_EP				32
 
 namespace yarp{
     namespace dev{
@@ -133,7 +132,7 @@ public:
 	ethResources();
     ~ethResources();
 
-    uint8_t 					recv_msg[512];
+    uint8_t 					recv_msg[RECV_BUFFER_SIZE];
 	ACE_UINT16 					recv_size;
 
 	ethResources* 	already_exists(yarp::os::Searchable &config);
@@ -143,6 +142,7 @@ public:
     int 			send(void *data, size_t len);
     ACE_INET_Addr	getRemoteAddress();
     void 			getPack(uint8_t **pack, uint16_t *size);
+    ACE_UINT16		getBufferSize();
 
     void 			onMsgReception(uint8_t *data, uint16_t size);
 };
@@ -156,7 +156,7 @@ public:
 class yarp::dev::ethResCreator: public std::list<ethResources *>
 {
 	private:
-		static yarp::os::Semaphore 	_mutex;
+		static yarp::os::Semaphore 	_creatorMutex;
 		static ethResCreator 		*handle;
 		static bool					initted;
 		int							how_many_boards;

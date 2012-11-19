@@ -35,7 +35,7 @@ static bool keepGoingOn2 = true;
 
 
 ethResCreator* ethResCreator::handle = NULL;
-yarp::os::Semaphore ethResCreator::_mutex = 1;
+yarp::os::Semaphore ethResCreator::_creatorMutex = 1;
 bool ethResCreator::initted = false;
 
 TheEthManager* TheEthManager::handle = NULL;
@@ -183,6 +183,10 @@ void ethResources::getPack(uint8_t **pack, uint16_t *size)
 	}
 }
 
+ACE_UINT16	ethResources::getBufferSize()
+{
+	return (ACE_UINT16) RECV_BUFFER_SIZE;
+}
 
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
@@ -227,12 +231,13 @@ ethResCreator::~ethResCreator()
 
 ethResCreator *ethResCreator::instance()
 {
-	ethResCreator::_mutex.wait();
-	if ( !initted && keepGoingOn2)
+	if( !initted && keepGoingOn2)
+	{
+		_creatorMutex.wait();
 		handle = new ethResCreator();
-
-	initted = true;
-	ethResCreator::_mutex.post();
+		initted = true;
+		_creatorMutex.post();
+	}
 	return handle;
 }
 
@@ -254,6 +259,7 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	//	a pointer to an already existing object
 	//
 
+	_creatorMutex.wait();
 	Bottle xtmp = Bottle(config.findGroup("ETH"));
 	xtmp2 = xtmp.findGroup("IpAddress");
 	strcpy(remote_address, xtmp2.get(1).asString().c_str());
@@ -275,8 +281,6 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	while(iterator!=this->end())
 	{
 		if((*iterator)->getRemoteAddress() == remote_addr_tmp)
-//		if(strcmp((*iterator)->address, address) == 0)
-//		if(this->compareIds(id, (*iterator)->id))
 		{
 			// device already exist.
 			yDebug() << "Returning a pointer to an alreasy existing device.";
@@ -305,11 +309,13 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 			this->push_back(newRes);
 		}
 	}
+	_creatorMutex.post();
 	return newRes;
 }
 
 bool ethResCreator::removeResource(ethResources* to_be_removed)
 {
+	_creatorMutex.wait();
 	to_be_removed->close();
 	if(this->size() != 0)
 	{
@@ -319,12 +325,15 @@ bool ethResCreator::removeResource(ethResources* to_be_removed)
 			if((*iterator)->getRemoteAddress() == to_be_removed->getRemoteAddress())
 			{
 				delete (*iterator);
+				this->remove(*iterator);
+				_creatorMutex.post();
 				return true;
 			}
 			iterator++;
 		}
 		yError() << "[ethResCreator] Asked to remove an entry but it wan not found!\n";
 	}
+	_creatorMutex.post();
 	yError() << "[ethResCreator] Asked to remove an entry in an empty list!\n";
 	return false;
 }
@@ -361,12 +370,11 @@ FEAT_ID ethResCreator::getFeatInfoFromEP(uint8_t ep)
 
 void *recvThread(void * arg)
 {
-	size_t 			n = MAX_RECV_SIZE;
 	ACE_TCHAR 		address[64];
 	ethResources	*ethRes;
 	ACE_UINT16 		recv_size;
 	ACE_INET_Addr	sender_addr;
-	char 			incoming_msg[MAX_RECV_SIZE];
+	char 			incoming_msg[RECV_BUFFER_SIZE];
 
     ACE_SOCK_Dgram *pSocket = (ACE_SOCK_Dgram*) arg;
 
@@ -376,7 +384,7 @@ void *recvThread(void * arg)
 	while(keepGoingOn2)
 	{
 		// per ogni msg ricevuto
-		recv_size = pSocket->recv((void *) incoming_msg, n, sender_addr, 0);
+		recv_size = pSocket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
 //		printf("Received new packet from address %s, size = %d\n", address, recv_size);
@@ -389,13 +397,18 @@ void *recvThread(void * arg)
 			while(iterator!=ethResCreator::instance()->end())
 			{
 				if((*iterator)->getRemoteAddress() == sender_addr)
-//				if(strcmp((*iterator)->address, address) == 0)
 				{
-					// fare queste chiamate in parallelo, non "bloccanti" e magari togliere la memcpy?
 					ethRes = (*iterator);
-					memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-					ethRes->onMsgReception(ethRes->recv_msg, recv_size);
-					//continue; // to skip remaining part of the for cycle
+					if(recv_size > ethRes->getBufferSize() || (recv_size <=0) )
+					{
+						printf("Error, received a message of wrong size ( received %d bytes while buffer is %d bytes long)\n", recv_size, ethRes->getBufferSize());
+					}
+					else
+					{
+						memcpy(ethRes->recv_msg, incoming_msg, recv_size);
+						ethRes->onMsgReception(ethRes->recv_msg, recv_size);
+					}
+					continue; 	// to skip remaining part of the for cycle
 				}
 				iterator++;
 			}

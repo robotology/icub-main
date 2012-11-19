@@ -24,7 +24,7 @@
 #include "embObjMotionControl.h"
 
 // Boards configurations
-#include "EOnv_hid.h"
+//#include "EOnv_hid.h"
 
 #include "Debug.h"
 
@@ -235,23 +235,18 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	 Property prop;
 	 prop.fromString(str.c_str());
 
-	std::cout << " \n embObjMotionControl::open \n "<< config.toString().c_str() << std::endl;
-//	 Debug info
-	memset(info, 0x00, SIZE_INFO);
-//	Bottle xtmp2;
+	// get EMS ip address from config string
 	ACE_TCHAR address[64] = {0};
 	Bottle xtmp = Bottle(config.findGroup("ETH"));
 	strcpy(address, config.findGroup("ETH").check("IpAddress",Value(1), " EMS ip address").asString().c_str() );
 
-	strcpy(address, "10.0.1.8");
+//	 Debug info
+	memset(info, 0x00, SIZE_INFO);
+	sprintf(info, "embObjMotionControl - referred to EMS: %s\n", address);
 
-	Bottle &xtmp1 = xtmp.findGroup("IpAddress");
-	strcpy(address, xtmp1.get(1).asString().c_str());
-	sprintf(info, "embObjMotionControl - referred to EMS: %s", address);
-
+	yDebug() << "Opened " << info;
 
 //	 open ethResource, if needed
-
 
 	ethResCreator *resList = ethResCreator::instance();
 	if(NULL == (res = resList->getResource(config)) )
@@ -261,7 +256,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 	}
 
 	// Defining Unique Id
-	_fId.type = MotionControl;
+	//_fId.type = MotionControl;
 	std::string featId = "ciao"; //config.find("FeatId").asString().c_str();
 	cout << "FeatId = " << featId << endl;
 	strcpy(_fId.name, featId.c_str());
@@ -639,7 +634,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     	{
     		fprintf(stderr, "Using default value=5\n");
     		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
+    			_estim_params[i-1].jnt_Vel_estimator_shift = 0;   //Default value
     	}
     	else
     	{
@@ -653,7 +648,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     	{
     		fprintf(stderr, "Using default value=5\n");
     		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].mot_Vel_estimator_shift = 5;   //Default value
+    			_estim_params[i-1].mot_Vel_estimator_shift = 0;   //Default value
     	}
     	else
     	{
@@ -667,7 +662,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     	{
     		fprintf(stderr, "Using default value=5\n");
     		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].jnt_Acc_estimator_shift = 5;   //Default value
+    			_estim_params[i-1].jnt_Acc_estimator_shift = 0;   //Default value
     	}
     	else
     	{
@@ -694,7 +689,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     {
     	fprintf(stderr, "A suitable value for [VELOCITY] Shifts was not found. Using default Shifts=4\n");
     	for(i=1;i<_njoints+1; i++)
-    		_velocityShifts[i-1] = 4;   //Default value
+    		_velocityShifts[i-1] = 0;   //Default value // not used now!! In the future this value may (should?) be read from config file and sertnto the EMS
 
     	fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
     	for(i=1;i<_njoints+1; i++)
@@ -703,10 +698,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     	fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
     	for(i=1;i<_njoints+1; i++)
     	{
-    		_estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
-    		_estim_params[i-1].jnt_Acc_estimator_shift = 5;
-    		_estim_params[i-1].mot_Vel_estimator_shift = 5;
-    		_estim_params[i-1].mot_Acc_estimator_shift = 5;
+    		_estim_params[i-1].jnt_Vel_estimator_shift = 0;   //Default value
+    		_estim_params[i-1].jnt_Acc_estimator_shift = 0;
+    		_estim_params[i-1].mot_Vel_estimator_shift = 0;
+    		_estim_params[i-1].mot_Acc_estimator_shift = 0;
     	}
     }
 
@@ -757,7 +752,7 @@ bool embObjMotionControl::init()
 
 	for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
 	{
-		// yDebug() << "configuring ropSig for joint " << j;
+		 yDebug() << "configuring ropSig for joint " << j;
 
 		// Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
 		if( ! (EMS_capacityofropframeregulars >= (totSigSize += jStatusSize)) )
@@ -809,13 +804,15 @@ bool embObjMotionControl::init()
 			// A ropsigcfg vector can hold at max NUMOFROPSIGCFG (20) value. If more are needed, send another package,
 			// so wait some time to let ethManager send this package and then start again.
 			// yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
-			if( eores_OK != eo_nv_Set(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
+			if( !res->transceiver->nvSetData(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError () << "ERROR eo_nv_Set !!";
 				return false;
 			}
 
-			res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign);
+			if(!res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
+				return false;
+
 			Time::delay(0.1);				// Wait here, the ethManager thread will take care of sending the loaded message
 			printf("\n-----------------");
 			eo_array_Reset(array);
@@ -826,13 +823,13 @@ bool embObjMotionControl::init()
 		}
 	}
 	// Send remaining stuff
-	if( eores_OK != eo_nv_Set(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
 	{
 		yError () << "ERROR eo_nv_Set !!";
 		return false;
 	}
 
-	if( eores_OK !=  res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
+	if( !res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
 	{
 		yError () << "error load occasional rop, sig cfg\n";
 		return false;
@@ -907,43 +904,39 @@ bool embObjMotionControl::init()
 			jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 			// to do
 
-//			printf(">>>>Setting max and min pos\n");
-//			printf("\n j %d \nmin = %d\n",j, jconfig.minpositionofjoint);
-//			printf("max = %d\n", jconfig.maxpositionofjoint);
-//			printf("limits %d \nmin = %f\n",_limitsMin[index]);
-//			printf("max = %f\n", _limitsMax[index]);
-//
-//			printf("_zeros = %f\n",_zeros[index]);
-//			printf("_angleToEncoder = %f\n",_angleToEncoder[index]);
-//			printf("result = %f\n", convertA2I(_limitsMax[index], _zeros[index], _angleToEncoder[index]) );
+			yDebug() << "\n>>>>Setting max and min pos for joint " << j;
+			yDebug() << "\nFrom config" ;
+			yDebug() << "\nmin = " << _limitsMin[index];
+			yDebug() << "\nmax = " << _limitsMax[index];
+			yDebug() << "\njConfig" ;
+			yDebug() << "\nmin = " << jconfig.minpositionofjoint;
+			yDebug() << "\nmax = " << jconfig.maxpositionofjoint;
+			yDebug() << "_zeros = %f\n",_zeros[index];
+			yDebug() << "_angleToEncoder = %f\n",_angleToEncoder[index];
 
 
 			jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[index]);
 			jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[index]);
 
-			if( eores_OK != eo_nv_Set(nvRoot, &jconfig, eobool_true, eo_nv_upd_dontdo))
-			{
-				yError () << "ERROR eo_nv_Set !!";
+			if( !res->transceiver->nvSetData(nvRoot, &jconfig, eobool_true, eo_nv_upd_dontdo))
 				continue;
-			}
 
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+			if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid))
+				return false;
 
 			// Debugging... to much information can overload can queue on EMS
 			Time::delay(0.05);
 		}
 	}
-	// yDebug() << " Finished to send jconfig";
-
 	Time::delay(0.1);
-	// yTrace() << " Finished to send jconfig";
 
-	totConfigSize = 0;
+
 	//////////////////////////////////////////
 	// invia la configurazione dei MOTORI   //
 	//////////////////////////////////////////
 
-	 yDebug() << "Sending motor MAX CURRENT ONLY";
+	yDebug() << "Sending motor MAX CURRENT ONLY";
+	totConfigSize = 0;
 	if( EOK_HOSTTRANSCEIVER_capacityofrop < mConfigSize )
 	{
 		yError () << "Size of Motor Config is bigger than single ROP... cannot send it at all!! Fix it";
@@ -981,33 +974,34 @@ bool embObjMotionControl::init()
 			//mconfig.maxvelocityofmotor =  ????;
 			mconfig.maxcurrentofmotor = _currentLimits[index];
 
-//			if( eores_OK != eo_nv_Set(nvRoot, &mconfig, eobool_true, eo_nv_upd_dontdo))
-			if( eores_OK != eo_nv_Set(nvRoot, &(_currentLimits[index]), eobool_true, eo_nv_upd_dontdo))
+//			if( !res->transceiver->nvSetData(nvRoot, &mconfig, eobool_true, eo_nv_upd_dontdo))
+			if( !res->transceiver->nvSetData(nvRoot, &(_currentLimits[index]), eobool_true, eo_nv_upd_dontdo))
 			{
 				yError () << "ERROR eo_nv_Set !!";
 				continue;
 			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+			if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid))
+				return false;
 			// Debugging... to much information can overload can queue on EMS
 			Time::delay(0.05);
 		}
 	}
 	Time::delay(0.1);
 
-
 	return true;
 }
 
-void embObjMotionControl::configure_mais(void)
+bool embObjMotionControl::configure_mais(void)
 {
 	// invia configurazioni a caso
-	// yTrace();
+	 yTrace();
 	eOnvID_t nvid;
 	EOnv *nvRoot;
 	EOnv tmp;
 
-	// Mais per lettura posizioni dita, c'e' solo sulle mani
+	// Mais per lettura posizioni dita, c'e' solo sulle mani per ora
 	eOcfg_nvsEP_as_endpoint_t mais_ep = (eOcfg_nvsEP_as_endpoint_t)0;
+
 	if(_fId.ep == endpoint_mc_leftlowerarm )
 			mais_ep = endpoint_as_leftlowerarm;
 
@@ -1026,38 +1020,40 @@ void embObjMotionControl::configure_mais(void)
 		if(EOK_uint16dummy == nvid)
 		{
 			yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
-			return;
+			return false;
 		}
 		nvRoot = res->transceiver->getNVhandler(mais_ep, nvid, &tmp);
 		if(NULL == nvRoot)
 			yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
 
-		if( eores_OK != eo_nv_Set(nvRoot, &datarate, eobool_true, eo_nv_upd_dontdo))
-			yError () << "ERROR eo_nv_Set !!";
+		if( !res->transceiver->nvSetData(nvRoot, &datarate, eobool_true, eo_nv_upd_dontdo))
+			return false;
 
-		res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid) )
+			return false;
 
 		//set tx mode continuosly
 		nvid = eo_cfg_nvsEP_as_mais_NVID_Get(mais_ep, maisnum, maisNVindex_mconfig__mode);
 		if(EOK_uint16dummy == nvid)
 		{
 			yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
-			return;
+			return false;
 		}
 		nvRoot = res->transceiver->getNVhandler(mais_ep, nvid, &tmp);
 		if(NULL == nvRoot)
 			yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
 
-		if( eores_OK != eo_nv_Set(nvRoot, &maismode, eobool_true, eo_nv_upd_dontdo))
-			yError () << "ERROR eo_nv_Set !!";
+		if( !res->transceiver->nvSetData(nvRoot, &maismode, eobool_true, eo_nv_upd_dontdo))
+			return false;
 
-		res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid) )
+			return false;
 	}
 
 	Time::delay(0.1);
 }
 
-void embObjMotionControl::goToRun(void)
+bool embObjMotionControl::goToRun(void)
 {
 	// yTrace();
 	eOnvID_t nvid;
@@ -1066,26 +1062,22 @@ void embObjMotionControl::goToRun(void)
 	// attiva il loop di controllo
 	eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
 	nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-	if(EOK_uint16dummy == nvid)
-	{
-		yError () << " NVID not found at line" << __LINE__;
-		return;
-	}
 
 	EOnv 	*nvRoot 	= res->transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
 	if(NULL == nvRoot)
+	{
 		yError () << "NV pointer not found at line" << __LINE__;
+		return false;
+	}
 
 	eOmn_appl_state_t  desired 	= applstate_running;
 
-	if( eores_OK != eo_nv_Set(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
-	{
-		yError () << "eo_nv_Set at line" << __LINE__;
-		return;
-	}
+	if( !res->transceiver->nvSetData(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
+		return false;
 
 	// tell agent to prepare a rop to send
-	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid) )
+		return false;
 	}
 
 bool embObjMotionControl::close()
@@ -1114,7 +1106,6 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint16_t nvid)
 	req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid);
 
 	requestQueue->append(req);
-//
 	return requestQueue->threadPool->getThreadTable(req.threadId);
 }
 
@@ -1140,12 +1131,14 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 
 	eOmc_PID_t	outPid;
 	copyPid_iCub2eo(&pid, &outPid);
-	if( eores_OK != eo_nv_Set(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
+	//if( !res->transceiver->nvSetData(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
 	{
 		yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
 		return false;
 	}
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
 
 	// yDebug() << "Set pid joint " << j << "Kp " << pid.kp << " ki " << outPid.ki << " kd " << pid.kd;
 
@@ -1156,12 +1149,13 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 	if(NULL == nvRoot)
 		yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
 
-	if( eores_OK != eo_nv_Set(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
 	{
 		yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
 		return false;
 	}
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
 
 
 	return true;
@@ -1266,13 +1260,15 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
 	// yTrace();
 	EOnv tmp;
+	_mutex.wait();
 	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
 	EOnv	*nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
 
 	if(NULL == nvRoot)
 		NV_NOT_FOUND
 
-	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return  false;
 
 	// Sign up for waiting the reply
 	eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
@@ -1288,13 +1284,14 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 			requestQueue->cleanTimeouts(threadId);
 		return false;
 	}
+
 	// Get the value
 	uint16_t size;
 	eOmc_PID_t eoPID;
 	res->transceiver->getNVvalue(nvRoot, (uint8_t *)&eoPID, &size);
     // yDebug() << " GetPid returned values : kp = " << eoPID.kp << "kd = " <<  eoPID.kd << " ki = " << eoPID.ki;
     copyPid_eo2iCub(&eoPID, pid);
-
+	_mutex.post();
 	return true;
 }
 
@@ -1400,13 +1397,14 @@ bool embObjMotionControl::disablePidRaw(int j)
 	}
 
 	eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -1437,13 +1435,14 @@ bool embObjMotionControl::enablePidRaw(int j)
 	{
 		eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
 
-		if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
+		if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 		{
 			yError () <<  "\n>>> ERROR eo_nv_Set !!\n";
 			return false;
 		}
 
-		res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+			return false;
 	}
 	return true;
 }
@@ -1478,13 +1477,14 @@ bool embObjMotionControl::setVelocityModeRaw()
 			ret = false;
 		}
 
-		if( eores_OK != eo_nv_Set(nvRoot[index], &val, eobool_true, eo_nv_upd_dontdo))
+		if( !res->transceiver->nvSetData(nvRoot[index], &val, eobool_true, eo_nv_upd_dontdo))
 		{
 			// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 			return false;
 		}
 
-		res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]) )
+			return false;
 	}
 
 	return ret;
@@ -1511,13 +1511,14 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 	setpoint.to.velocity.value =  _command_speeds[index];
 	setpoint.to.velocity.withacceleration = _ref_accs[index];
 
-	if( eores_OK != eo_nv_Set(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -1548,13 +1549,14 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 		setpoint.to.velocity.value =  _command_speeds[index];
 		setpoint.to.velocity.withacceleration = _ref_accs[index];
 
-		if( eores_OK != eo_nv_Set(nvRoot[index], &setpoint, eobool_true, eo_nv_upd_dontdo))
+		if( !res->transceiver->nvSetData(nvRoot[index], &setpoint, eobool_true, eo_nv_upd_dontdo))
 		{
 			// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 			return false;
 		}
 
-		res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid[index]);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid[index]) )
+			return false;
 	}
 
 	return ret;
@@ -1599,7 +1601,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 //		return false;
 //	}
 //
-//	if( eores_OK != eo_nv_Set(nvRoot_controlmode, &val, eobool_true, eo_nv_upd_dontdo))
+//	if( !res->transceiver->nvSetData(nvRoot_controlmode, &val, eobool_true, eo_nv_upd_dontdo))
 //	{
 //		yError () << "eo nv not set!\n";
 //		return false;
@@ -1618,7 +1620,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 	}
 
 	eOmc_calibrator_t calib;
-
+	memset(&calib, 0x00, sizeof(calib));
 	calib.type = type;
 
 	switch(type)
@@ -1627,39 +1629,18 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 		case eomc_calibration_type0_hard_stops:
 			calib.params.type0.pwmlimit = p1;
 			calib.params.type0.velocity = p2;
-
-			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
-			{
-				yError () << "eo nv not set!\n";
-				return false;
-			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		// fermo
 		case eomc_calibration_type1_abs_sens_analog:
 			calib.params.type1.position = p1;
 			calib.params.type1.velocity = p2;
-
-			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
-			{
-				yError () << "eo nv not set!\n";
-				return false;
-			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		// muove
 		case eomc_calibration_type2_hard_stops_diff:
 			calib.params.type2.pwmlimit = p1;
 			calib.params.type2.velocity = p2;
-
-			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
-			{
-				yError () << "eo nv not set!\n";
-				return false;
-			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		// muove
@@ -1667,13 +1648,6 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 			calib.params.type3.position = p1;
 			calib.params.type3.velocity = p2;
 			calib.params.type3.offset   = p3;
-
-			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
-			{
-				yError () << "eo nv not set!\n";
-				return false;
-			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		// muove
@@ -1681,13 +1655,6 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 			calib.params.type4.position   = p1;
 			calib.params.type3.velocity   = p2;
 			calib.params.type4.maxencoder = p3;
-
-			if( eores_OK != eo_nv_Set(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
-			{
-				yError () << "eo nv not set!\n";
-				return false;
-			}
-			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib);
 			break;
 
 		default:
@@ -1695,6 +1662,12 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 			return false;
 			break;
 	}
+
+	if( !res->transceiver->nvSetData(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
+		return false;
+
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib) )
+		return false;
 
 	_calibrated[j-_firstJoint] = true;
 
@@ -1777,13 +1750,11 @@ bool embObjMotionControl::setPositionModeRaw()
 			ret = false;
 		}
 
-		if( eores_OK != eo_nv_Set(&nv[index], &val, eobool_true, eo_nv_upd_dontdo))
-		{
-			// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+		if( !res->transceiver->nvSetData(&nv[index], &val, eobool_true, eo_nv_upd_dontdo))
 			return false;
-		}
 
-		res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]))
+			return false;
 	}
 
 	return ret;
@@ -1810,13 +1781,14 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
 	setpoint.to.position.value =  _ref_positions[index];
 	setpoint.to.position.withvelocity = _ref_speeds[index];
 
-	if( eores_OK != eo_nv_Set(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -1861,12 +1833,13 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 	if( eomc_motionmonitormode_dontmonitor == val->motionmonitormode)
 	{
 		eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_forever;
-		if( eores_OK != eo_nv_Set(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
+		if( !res->transceiver->nvSetData(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
 		{
 			// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 			return false;
 		}
-		res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_config);
+		if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_config) )
+			return false;
 	}
 
 
@@ -1887,7 +1860,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 //		eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_dontmonitor;
 //		if( eomc_motionmonitormode_dontmonitor != *nvRoot_config->motionmonitormode)
 //		{
-//			if( eores_OK != eo_nv_Set(nvRoot_config, &val, eobool_true, eo_nv_upd_dontdo))
+//			if( !res->transceiver->nvSetData(nvRoot_config, &val, eobool_true, eo_nv_upd_dontdo))
 //			{
 //				// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 //				return false;
@@ -1996,13 +1969,15 @@ bool embObjMotionControl::stopRaw(int j)
 
 	eObool_t stop = eobool_true;
 
-	if( eores_OK != eo_nv_Set(nvRoot, &stop, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &stop, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
+
 	return true;
 }
 
@@ -2034,13 +2009,14 @@ bool embObjMotionControl::setPositionModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_always))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_always))
 	{
 		printf("\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -2061,13 +2037,14 @@ bool embObjMotionControl::setVelocityModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_always))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_always))
 	{
 		yError () << "nv Set";
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -2088,13 +2065,14 @@ bool embObjMotionControl::setTorqueModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -2115,13 +2093,14 @@ bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -2142,13 +2121,11 @@ bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-	{
-		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 		return false;
-	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid))
+		return false;
 
 	return true;
 }
@@ -2169,13 +2146,11 @@ bool embObjMotionControl::setOpenLoopModeRaw(int j)
 		return false;
 	}
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-	{
-		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 		return false;
-	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -2474,13 +2449,15 @@ bool embObjMotionControl::disableAmpRaw(int j)
 	}
 
 	eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+		return false;
+
 	return true;
 }
 
@@ -2527,13 +2504,14 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
 
 	eOmeas_current_t  maxCurrent = (eOmeas_current_t) val;
 
-	if( eores_OK != eo_nv_Set(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
+	if( !res->transceiver->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
 	{
 		// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+		return false;
 
 	return true;
 }
@@ -2602,13 +2580,16 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 		return false;
 	}
 
-	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_min);
-	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_max);
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_min) )
+		return false;
+
+	if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_max) )
+		return false;
 
 	// Sign up for waiting the reply
 	eoThreadEntry *tt = appendWaitRequest(j, nvid_min);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
 	appendWaitRequest(j, nvid_max);
-	tt->setPending(1);
+	tt->setPending(2);
 
 	// wait here
 	if(-1 == tt->synch() )

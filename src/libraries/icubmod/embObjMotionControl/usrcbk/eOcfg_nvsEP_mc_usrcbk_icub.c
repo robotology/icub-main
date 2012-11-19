@@ -216,7 +216,7 @@ static MYmotionController themotioncontrollers[3];
 void jwake(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, eOcfg_nvsEP_mc_jointNVindex_t nv_name)
 {
 	void *handler = (void*) get_MChandler_fromEP(nv->ep);
-	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);  // ce ne battiamo il belino
 	uint16_t epindex, nvindex;
 	EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
 	MCmutex_post(handler, epindex, nvindex);
@@ -268,6 +268,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumb
 
 #endif
 }
+
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "joint status full strong iCubInterface"

@@ -44,13 +44,17 @@ void * get_MChandler_fromEP(eOnvEP_t ep)
 bool MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex)
 {
 	//epindex in realtà non serve.
+	eoThreadEntry * th = NULL;
 	embObjMotionControl * handler = (embObjMotionControl*) p;
 	int threadId;
 	eoThreadFifo *fuffy = handler->requestQueue->getFifo(nvindex);
-	fuffy->pop(threadId);
-	eoThreadEntry * th = handler->requestQueue->threadPool->getThreadTable(threadId);
-	th->push();
-	return true;
+	if(fuffy->pop(threadId) )
+	{
+		th = handler->requestQueue->threadPool->getThreadTable(threadId);
+		th->push();
+		return true;
+	}
+	return false;
 }
 
 bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)

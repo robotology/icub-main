@@ -51,6 +51,11 @@
 
 using namespace yarp::dev;
 
+//static yarp::os::Semaphore _all_transceivers_mutex = 1;
+
+// debug
+void checkDataForDebug(uint8_t *data, uint16_t size);
+
 class hostTransceiver : public DeviceDriver
 //						public ITransceiver
 {
@@ -72,18 +77,22 @@ public:
 	const EOconstvector* 	EPvector;
 	eOuint16_fp_uint16_t 	EPhash_function_ep2index;
 	yarp::os::Semaphore 	_mutex;
+
+
 	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
-	eOresult_t load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
-	void s_eom_hostprotoc_extra_protocoltransceiver_configure_regular_rops_on_board(void);
 
 	// somebody adds a set-rop  plus data.
-	void hostTransceiver_AddSetROP(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t size);
+//	void hostTransceiver_AddSetROP(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t size);
+
+	// Set user data in the local memory, ready to be loaded by the load_occasional_rop method
+	bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
+
+	bool load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
 
 	// create a get nv rop
-	void s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id);
-
-	void s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t ep, uint16_t id);
+//	void s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id);
+//	void s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t ep, uint16_t id);
 
 	// somebody passes the received packet
 	void SetReceived(uint8_t *data, uint16_t size);
@@ -95,7 +104,7 @@ public:
 
 	void getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
 	EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);
-	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
+//	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
 
 	void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
 

@@ -49,7 +49,7 @@ typedef struct
 	const EOconstvector	*EPvector;
 	eOuint16_fp_uint16_t EPhash_function;
 
-	// Following are additional and optional info, DO NOT COUNT ON THEM as identifiers for searches!!
+	// Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
 	// They may be removed very soon!
 	FeatureType			 type;
 	char 				 name[64];
