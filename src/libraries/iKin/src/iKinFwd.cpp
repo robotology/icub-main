@@ -1721,7 +1721,7 @@ bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints
         chainJoints[0]=robotEncoders[offs+0];
         chainJoints[1]=robotEncoders[offs+4];
         chainJoints[2]=robotEncoders[offs+5]/2.0;
-        chainJoints[3]=robotEncoders[offs+5]/2.0;
+        chainJoints[3]=chainJoints[2];
     }
     else
         return false;
