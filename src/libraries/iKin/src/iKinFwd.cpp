@@ -1619,6 +1619,14 @@ iCubFinger::iCubFinger(const string &_type)
 iCubFinger::iCubFinger(const iCubFinger &finger)
 {
     clone(finger);
+}
+
+
+/************************************************************************/
+void iCubFinger::clone(const iKinLimb &limb)
+{
+    iKinLimb::clone(limb);
+    const iCubFinger &finger=static_cast<const iCubFinger&>(limb);
     this->hand=finger.hand;
     this->finger=finger.finger;
 }

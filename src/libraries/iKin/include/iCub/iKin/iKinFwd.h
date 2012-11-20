@@ -1086,6 +1086,7 @@ protected:
     std::string finger;
 
     virtual void allocate(const std::string &_type);
+    virtual void clone(const iKinLimb &limb);
 
 public:
     /**
