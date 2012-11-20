@@ -1714,15 +1714,17 @@ bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints
         return false;
 
     int offs=(robotEncoders.length()==16?7:0);
-    chainJoints.resize(getN());
+    chainJoints.resize(getN(),0.0);
 
     if (finger=="index")
     {
-        (*this)[0].setAng(chainJoints[offs+0]);
-        (*this)[1].setAng(chainJoints[offs+4]);
-        (*this)[2].setAng(chainJoints[offs+5]/2.0);
-        (*this)[3].setAng(chainJoints[offs+5]/2.0);
+        chainJoints[0]=robotEncoders[offs+0];
+        chainJoints[1]=robotEncoders[offs+4];
+        chainJoints[2]=robotEncoders[offs+5]/2.0;
+        chainJoints[3]=robotEncoders[offs+5]/2.0;
     }
+    else
+        return false;
 
     return true;
 }
