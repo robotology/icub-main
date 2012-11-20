@@ -40,18 +40,18 @@
 #include "LogicalJoints.h"
 
 //control mode definitions
-#define MODE_IDLE						0x00
-#define MODE_POSITION 					0x01
-#define MODE_VELOCITY					0x02
-#define MODE_TORQUE						0x03
-#define MODE_IMPEDANCE_POS				0x04
-#define MODE_IMPEDANCE_VEL				0x05
-#define MODE_CALIB_ABS_POS_SENS			0x10
-#define MODE_CALIB_HARD_STOPS			0x20
-#define MODE_HANDLE_HARD_STOPS			0x30
-#define MODE_MARGIN_REACHED    			0x40
-#define MODE_CALIB_ABS_AND_INCREMENTAL	0x41
-#define MODE_OPENLOOP               	0x50
+#define MODE_IDLE                       0x00
+#define MODE_POSITION                   0x01
+#define MODE_VELOCITY                   0x02
+#define MODE_TORQUE                     0x03
+#define MODE_IMPEDANCE_POS              0x04
+#define MODE_IMPEDANCE_VEL              0x05
+#define MODE_CALIB_ABS_POS_SENS         0x10
+#define MODE_CALIB_HARD_STOPS           0x20
+#define MODE_HANDLE_HARD_STOPS          0x30
+#define MODE_MARGIN_REACHED             0x40
+#define MODE_CALIB_ABS_AND_INCREMENTAL  0x41
+#define MODE_OPENLOOP               0x50
 
 namespace yarp{
     namespace dev{
@@ -69,9 +69,9 @@ class yarp::dev::iCubSimulationControl :
     public IAmplifierControlRaw,
     public IControlCalibrationRaw,
     public IControlLimitsRaw,
-	public IControlModeRaw,
-	public ImplementTorqueControl,
-	public ImplementControlMode,
+    public IControlModeRaw,
+    public ImplementTorqueControl,
+    public ImplementControlMode,
     public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
     public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
     public ImplementPidControl<iCubSimulationControl, IPidControl>,
@@ -229,11 +229,11 @@ class yarp::dev::iCubSimulationControl :
     virtual bool setPositionModeRaw(int j);
     virtual bool setVelocityModeRaw(int j);
     virtual bool setTorqueModeRaw(int j);
-	virtual bool setImpedancePositionModeRaw(int j);
-	virtual bool setImpedanceVelocityModeRaw(int j);
+    virtual bool setImpedancePositionModeRaw(int j);
+    virtual bool setImpedanceVelocityModeRaw(int j);
     virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *mode);
-	virtual bool getControlModesRaw(int* modes);
+    virtual bool getControlModesRaw(int* modes);
 
 //void run(void);
 
@@ -291,7 +291,7 @@ protected:
     double *angleToEncoder;                    
 
     double *zeros;                             /** encoder zeros */
-	double *newtonsToSensor;
+    double *newtonsToSensor;
 
     double *error_tol;
 
@@ -309,7 +309,7 @@ protected:
     double *refSpeed;
     double *refAccel;
     double *controlP;
-	int    *controlMode;
+    int    *controlMode;
 
     //bool velocityMode;
 };

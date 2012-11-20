@@ -52,8 +52,8 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncoders<iCubSimulationControl, IEncoders>(this),
-	ImplementTorqueControl(this),
-	ImplementControlMode(this),
+    ImplementTorqueControl(this),
+    ImplementControlMode(this),
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>(this),
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
     ImplementControlLimits<iCubSimulationControl, IControlLimits>(this),/* */
@@ -99,8 +99,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     angleToEncoder = allocAndCheck<double>(njoints);
     zeros = allocAndCheck<double>(njoints);
-	newtonsToSensor = allocAndCheck<double>(njoints);
-	controlMode = allocAndCheck<int>(njoints);
+    newtonsToSensor = allocAndCheck<double>(njoints);
+    controlMode = allocAndCheck<int>(njoints);
     
     limitsMin = allocAndCheck<double>(njoints);
     limitsMax = allocAndCheck<double>(njoints);
@@ -155,8 +155,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     }
     for (int i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
 
-	//torque sensor
-	for (int i = 1; i < njoints+1; i++) newtonsToSensor[i-1] = 1.0;
+    //torque sensor
+    for (int i = 1; i < njoints+1; i++) newtonsToSensor[i-1] = 1.0;
 
     ////////////////////////
     /*   LIMITS           */
@@ -203,7 +203,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         input = 0;
         inputs[axis] = 0;
         vels[axis] = 1;
-		controlMode[axis] = MODE_POSITION;
+        controlMode[axis] = MODE_POSITION;
    }
 
     ImplementPositionControl<iCubSimulationControl, IPositionControl>::
@@ -220,8 +220,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits<iCubSimulationControl, IControlLimits>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-	ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
-	ImplementControlMode::initialize(njoints, axisMap);
+    ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
+    ImplementControlMode::initialize(njoints, axisMap);
 
     if (!p.check("joint_device")) {
         printf("Need a device to access the joints\n");
@@ -280,8 +280,8 @@ bool iCubSimulationControl::close (void)
 
     checkAndDestroy<double>(angleToEncoder);
     checkAndDestroy<double>(zeros);
-	checkAndDestroy<double>(newtonsToSensor);
-	checkAndDestroy<int>(controlMode);
+    checkAndDestroy<double>(newtonsToSensor);
+    checkAndDestroy<int>(controlMode);
     checkAndDestroy<double>(limitsMin);
     checkAndDestroy<double>(limitsMax);
     checkAndDestroy<int>(axisMap);
@@ -302,7 +302,6 @@ bool iCubSimulationControl::close (void)
     return true;
 }
 
-
 void iCubSimulationControl::jointStep() {
     _mutex.wait();
     if (manager==NULL) {
@@ -314,6 +313,7 @@ void iCubSimulationControl::jointStep() {
             LogicalJoint& ctrl = manager->control(partSelec,axis); 
             if (!ctrl.isValid()) continue;
             current_pos[axis] = ctrl.getAngle();
+
             current_vel[axis] = ctrl.getVelocity();
             current_torques[axis] = ctrl.getTorque();
             //fprintf(stdout,"torques %lf \n",current_torques[axis]);
@@ -336,7 +336,6 @@ void iCubSimulationControl::jointStep() {
     }
     _mutex.post();
 }
-
 
 bool iCubSimulationControl::getAxes(int *ax)
 {
@@ -496,13 +495,23 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         else if(ref > limitsMax[axis])
             next_pos[axis] = limitsMax[axis];
         else
-            next_pos[axis] = ref;
-
-		if (controlMode[axis] != MODE_IMPEDANCE_POS && 
-			controlMode[axis] != MODE_IMPEDANCE_VEL ) 
-		    controlMode[axis] = MODE_POSITION; 
-		else 
-		    controlMode[axis] = MODE_IMPEDANCE_POS; 
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+                    next_pos[axis] = ref/2;
+                else if ( axis == 15 ) 
+                    next_pos[axis] = ref/3;
+                else 
+                    next_pos[axis] = ref;
+            }else
+                next_pos[axis] = ref;
+        }
+        if (controlMode[axis] != MODE_IMPEDANCE_POS && 
+            controlMode[axis] != MODE_IMPEDANCE_VEL ) 
+            controlMode[axis] = MODE_POSITION; 
+        else 
+           controlMode[axis] = MODE_IMPEDANCE_POS; 
         motor_on[axis]=true;
 
         if (verbosity)
@@ -512,7 +521,7 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
     }
     if (verbosity)
         printf("positionMoveRaw joint access too high %d \n",axis);
-    return false;    
+    return false;
 }
 
 bool iCubSimulationControl::positionMoveRaw(const double *refs)
@@ -529,7 +538,19 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
                 next_pos[axis] = limitsMax[axis];
             }
             else
-                next_pos[axis] = ref;
+            {
+                if (njoints == 16)
+                {
+                    if ( axis == 10 ||  axis == 12 || axis == 14 )
+                        next_pos[axis] = ref/2;
+                    else if ( axis == 15 ) 
+                        next_pos[axis] = ref/3;
+                    else 
+                        next_pos[axis] = ref;
+                }else
+                    next_pos[axis] = ref;
+            }
+
             motor_on[axis]=true;
             if (verbosity)
                 printf("moving joint %d of part %d to pos %f\n",axis,partSelec,next_pos[axis]);
@@ -683,11 +704,10 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
         _mutex.wait();
         next_vel[axis] = sp;
         motor_on[axis] = true;
-		if (controlMode[axis] != MODE_IMPEDANCE_POS && 
-			controlMode[axis] != MODE_IMPEDANCE_VEL ) 
-			controlMode[axis] = MODE_VELOCITY; 
-		else 
-		    controlMode[axis] = MODE_IMPEDANCE_VEL; 
+        if (controlMode[axis] != MODE_IMPEDANCE_POS && controlMode[axis] != MODE_IMPEDANCE_VEL ) 
+                controlMode[axis] = MODE_VELOCITY; 
+        else 
+            controlMode[axis] = MODE_IMPEDANCE_VEL; 
         _mutex.post();
         return true;
     }
@@ -736,7 +756,14 @@ bool iCubSimulationControl::getEncodersRaw(double *v)
 {
    _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
-        v[axis] = current_pos[axis];
+    {
+        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+            v[axis] = current_pos[axis]*2;
+        else if ( axis == 15 ) 
+            v[axis] = current_pos[axis]*3;
+        else 
+            v[axis] = current_pos[axis];
+    }
     _mutex.post();
     return true;
 }
@@ -745,7 +772,14 @@ bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
 {
     if((axis>=0) && (axis<njoints)) {
         _mutex.wait();
-        *v = current_pos[axis];
+        
+        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+            *v = current_pos[axis]*2;
+        else if ( axis == 15 ) 
+            *v = current_pos[axis]*3;
+        else 
+            *v = current_pos[axis];
+
         _mutex.post();
         return true;
     }
@@ -791,7 +825,7 @@ bool iCubSimulationControl::disableAmpRaw(int axis)
     if( (axis >=0) && (axis<njoints) )
         {
             _mutex.wait();
-			controlMode[axis] = MODE_IDLE;
+            controlMode[axis] = MODE_IDLE;
             motor_on[axis] = false;
             _mutex.post();
             return true;            
@@ -807,7 +841,7 @@ bool iCubSimulationControl::enableAmpRaw(int axis)
     if( (axis>=0) && (axis<njoints) )
         {
             _mutex.wait();
-			controlMode[axis] = MODE_POSITION;
+            controlMode[axis] = MODE_POSITION;
             motor_on[axis] = true;
             _mutex.post();
             return true;            
@@ -906,7 +940,7 @@ bool iCubSimulationControl::getTorqueRaw(int axis, double *sp)
          *sp = current_torques[axis];
          _mutex.post();
          return true;
-	}
+    }
     return false;
 }
 bool iCubSimulationControl::getTorquesRaw(double *sp)
@@ -943,8 +977,8 @@ bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
         _mutex.wait();
         next_torques[axis] = ref;
         motor_on[axis] = true;
-		//controlMode[axis] = MODE_TORQUE; 
-		_mutex.post();
+        //controlMode[axis] = MODE_TORQUE; 
+        _mutex.post();
         return true;
     }
     if (verbosity)
@@ -1106,36 +1140,36 @@ bool iCubSimulationControl::getControlModeRaw(int j, int *mode)
 {    
     if( (j >=0) && (j < njoints)) {
         _mutex.wait();
-		switch (controlMode[j])
-		{
-			case MODE_IDLE:
-				*mode=VOCAB_CM_IDLE;
-				break;
-			case MODE_POSITION:
-				*mode=VOCAB_CM_POSITION;
-				break;				
-			case MODE_VELOCITY:
-				*mode=VOCAB_CM_VELOCITY;
-				break;
-			case MODE_TORQUE:
-				*mode=VOCAB_CM_TORQUE;
-				break;
-			case MODE_IMPEDANCE_POS:
-				*mode=VOCAB_CM_IMPEDANCE_POS;
-				break;
-			case MODE_IMPEDANCE_VEL:
-				*mode=VOCAB_CM_IMPEDANCE_VEL;
-				break;
-			case MODE_OPENLOOP:
-				*mode=VOCAB_CM_OPENLOOP;
-				break;
-			default:
-				*mode=VOCAB_CM_UNKNOWN;
-				break;
-		}
+        switch (controlMode[j])
+        {
+            case MODE_IDLE:
+                *mode=VOCAB_CM_IDLE;
+                break;
+            case MODE_POSITION:
+                *mode=VOCAB_CM_POSITION;
+                break;
+            case MODE_VELOCITY:
+                *mode=VOCAB_CM_VELOCITY;
+                break;
+            case MODE_TORQUE:
+                *mode=VOCAB_CM_TORQUE;
+                break;
+            case MODE_IMPEDANCE_POS:
+                *mode=VOCAB_CM_IMPEDANCE_POS;
+                break;
+            case MODE_IMPEDANCE_VEL:
+                *mode=VOCAB_CM_IMPEDANCE_VEL;
+                break;
+            case MODE_OPENLOOP:
+                *mode=VOCAB_CM_OPENLOOP;
+                break;
+            default:
+                *mode=VOCAB_CM_UNKNOWN;
+                break;
+        }
          _mutex.post();
          return true;
-	}
+    }
     if (verbosity)
         printf("getControlModeRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
     return false; 
@@ -1144,33 +1178,33 @@ bool iCubSimulationControl::getControlModesRaw(int* modes)
 {
    _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
-    	switch (controlMode[axis])
-		{
-			case MODE_IDLE:
-				modes[axis]=VOCAB_CM_IDLE;
-				break;
-			case MODE_POSITION:
-				modes[axis]=VOCAB_CM_POSITION;
-				break;				
-			case MODE_VELOCITY:
-				modes[axis]=VOCAB_CM_VELOCITY;
-				break;
-			case MODE_TORQUE:
-				modes[axis]=VOCAB_CM_TORQUE;
-				break;
-			case MODE_IMPEDANCE_POS:
-				modes[axis]=VOCAB_CM_IMPEDANCE_POS;
-				break;
-			case MODE_IMPEDANCE_VEL:
-				modes[axis]=VOCAB_CM_IMPEDANCE_VEL;
-				break;
-			case MODE_OPENLOOP:
-				modes[axis]=VOCAB_CM_OPENLOOP;
-				break;
-			default:
-				modes[axis]=VOCAB_CM_UNKNOWN;
-				break;
-		}
+        switch (controlMode[axis])
+        {
+            case MODE_IDLE:
+                modes[axis]=VOCAB_CM_IDLE;
+                break;
+            case MODE_POSITION:
+                modes[axis]=VOCAB_CM_POSITION;
+                break;
+            case MODE_VELOCITY:
+                modes[axis]=VOCAB_CM_VELOCITY;
+                break;
+            case MODE_TORQUE:
+                modes[axis]=VOCAB_CM_TORQUE;
+                break;
+            case MODE_IMPEDANCE_POS:
+                modes[axis]=VOCAB_CM_IMPEDANCE_POS;
+                break;
+            case MODE_IMPEDANCE_VEL:
+                modes[axis]=VOCAB_CM_IMPEDANCE_VEL;
+                break;
+            case MODE_OPENLOOP:
+                modes[axis]=VOCAB_CM_OPENLOOP;
+                break;
+            default:
+                modes[axis]=VOCAB_CM_UNKNOWN;
+                break;
+        }
     _mutex.post();
     return true;
 }

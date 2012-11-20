@@ -364,7 +364,6 @@ bool worldSim::MyObject::create(const WorldOp& op, WorldResult& result, int idx)
     else
         geom[0] = dCreateBox (odeinit._iCub->iCub,size[0],size[1],size[2]);
 
-    
     if (op.dynamic.get()) {
         dGeomSetBody (geom[0],boxbody);
     }

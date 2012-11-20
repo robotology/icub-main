@@ -3109,7 +3109,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 ICubSim::~ICubSim() {
 
     //destroy all geoms 
-    if (actLegs == "off"){	
+    if (actLegs == "off"){
         dGeomDestroy(l_leg0_geom); dGeomDestroy(l_leg1_geom); dGeomDestroy(l_leg2_geom); dGeomDestroy(l_leg3_geom);
         dGeomDestroy(l_leg4_geom); dGeomDestroy(l_leg5_geom); dGeomDestroy(l_leg6_geom); dGeomDestroy(l_leg7_geom);
         dGeomDestroy(r_leg0_geom); dGeomDestroy(r_leg1_geom); dGeomDestroy(r_leg2_geom); dGeomDestroy(r_leg3_geom); 
