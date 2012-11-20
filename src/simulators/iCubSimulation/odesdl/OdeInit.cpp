@@ -112,6 +112,7 @@ void OdeInit::sendHomePos()
         refs[0] = -0*M_PI/180;
         refs[1] = 80*M_PI/180;
         refs[3] = 50*M_PI/180;
+        refs[7] = 59*M_PI/180;
         refs[8] = 20*M_PI/180; 
         refs[9] = 20*M_PI/180; 
         refs[10] = 20*M_PI/180;
@@ -121,6 +122,7 @@ void OdeInit::sendHomePos()
         refs[0] = -25*M_PI/180;
         refs[1] = 20*M_PI/180;
         refs[3] = 50*M_PI/180;
+        refs[7] = 59*M_PI/180;
         refs[8] = 20*M_PI/180; 
         refs[9] = 20*M_PI/180; 
         refs[10] = 20*M_PI/180;

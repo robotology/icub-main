@@ -193,7 +193,6 @@ class yarp::dev::iCubSimulationControl :
   virtual bool calibrateRaw(int j, double p);
   virtual bool doneRaw(int j);
 
-  
   /////// Limits
   virtual bool setLimitsRaw(int axis, double min, double max);
   virtual bool getLimitsRaw(int axis, double *min, double *max);

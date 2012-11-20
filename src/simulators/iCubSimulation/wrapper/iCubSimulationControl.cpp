@@ -502,6 +502,8 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
                     next_pos[axis] = ref/2;
                 else if ( axis == 15 ) 
                     next_pos[axis] = ref/3;
+                else if ( axis == 7 ) 
+                        next_pos[axis] = limitsMax[axis] - ref;
                 else 
                     next_pos[axis] = ref;
             }else
@@ -545,6 +547,8 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
                         next_pos[axis] = ref/2;
                     else if ( axis == 15 ) 
                         next_pos[axis] = ref/3;
+                    else if ( axis == 7 ) 
+                        next_pos[axis] = limitsMax[axis] - ref;
                     else 
                         next_pos[axis] = ref;
                 }else
@@ -761,6 +765,8 @@ bool iCubSimulationControl::getEncodersRaw(double *v)
             v[axis] = current_pos[axis]*2;
         else if ( axis == 15 ) 
             v[axis] = current_pos[axis]*3;
+        else if ( axis == 7 ) 
+            v[axis] = limitsMax[axis] - current_pos[axis]; 
         else 
             v[axis] = current_pos[axis];
     }
@@ -777,6 +783,8 @@ bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
             *v = current_pos[axis]*2;
         else if ( axis == 15 ) 
             *v = current_pos[axis]*3;
+        else if ( axis == 7 ) 
+            *v = limitsMax[axis] - current_pos[axis];
         else 
             *v = current_pos[axis];
 
