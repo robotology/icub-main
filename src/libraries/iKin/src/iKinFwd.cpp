@@ -1602,6 +1602,125 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
 
 
 /************************************************************************/
+iCubFinger::iCubFinger()
+{
+    allocate("right_index");
+}
+
+
+/************************************************************************/
+iCubFinger::iCubFinger(const string &_type)
+{
+    allocate(_type);
+}
+
+
+/************************************************************************/
+iCubFinger::iCubFinger(const iCubFinger &finger)
+{
+    clone(finger);
+    this->hand=finger.hand;
+    this->finger=finger.finger;
+}
+
+
+/************************************************************************/
+void iCubFinger::allocate(const string &_type)
+{
+    iKinLimb::allocate(_type);
+
+    size_t underscore=getType().find('_');
+    if (underscore!=string::npos)
+    {
+        hand=getType().substr(0,underscore);
+        finger=getType().substr(underscore+1,getType().length()-underscore-1);
+    }
+    else
+    {
+        type="right_index";
+        hand="right";
+        finger="index";
+    }
+
+    if (finger=="index")
+    {
+        Matrix H0(4,4);
+        H0(0,0)=0.898138; H0(0,1)=0.439714;  H0(0,2)=0.0;      H0(0,3)=0.00245549;
+        H0(1,0)=-0.43804; H0(1,1)=0.89472;   H0(1,2)=0.087156; H0(1,3)=-0.025320433;
+        H0(2,0)=0.038324; H0(2,1)=-0.078278; H0(2,2)=0.996195; H0(2,3)=-0.010973325;
+        H0(3,0)=0.0;      H0(3,1)=0.0;       H0(3,2)=0.0;      H0(3,3)=1.0;
+
+        if (hand=="left")
+            H0.setRow(2,-1.0*H0.getRow(2));
+
+        setH0(H0);
+
+        pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0259, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+    }
+}
+
+
+/************************************************************************/
+bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()<1)
+        return false;
+
+    IControlLimits &limFinger=*lim[0];
+    double min, max;
+
+    if (finger=="index")
+    {
+        if (!limFinger.getLimits(7,&min,&max))
+            return false;
+
+        (*this)[0].setMin(CTRL_DEG2RAD*min);
+        (*this)[0].setMax(CTRL_DEG2RAD*max);
+
+        if (!limFinger.getLimits(11,&min,&max))
+            return false;
+
+        (*this)[1].setMin(CTRL_DEG2RAD*min);
+        (*this)[1].setMax(CTRL_DEG2RAD*max);
+
+        if (!limFinger.getLimits(12,&min,&max))
+            return false;
+
+        (*this)[2].setMin(CTRL_DEG2RAD*min);
+        (*this)[2].setMax(CTRL_DEG2RAD*max/2.0);
+        (*this)[3].setMin(CTRL_DEG2RAD*min);
+        (*this)[3].setMax(CTRL_DEG2RAD*max/2.0);
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
+bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints)
+{
+    if ((robotEncoders.length()!=7) && (robotEncoders.length()!=16))
+        return false;
+
+    int offs=(robotEncoders.length()==16?7:0);
+    chainJoints.resize(getN());
+
+    if (finger=="index")
+    {
+        (*this)[0].setAng(chainJoints[offs+0]);
+        (*this)[1].setAng(chainJoints[offs+4]);
+        (*this)[2].setAng(chainJoints[offs+5]/2.0);
+        (*this)[3].setAng(chainJoints[offs+5]/2.0);
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 iCubLeg::iCubLeg()
 {
     allocate("right");
@@ -1940,6 +2059,7 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     return true;
 }
+
 
 
 

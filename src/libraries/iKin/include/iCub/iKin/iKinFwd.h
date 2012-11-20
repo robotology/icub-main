@@ -875,7 +875,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining generic Limb
+* A class for defining generic Limb.
 */
 class iKinLimb : public iKinChain
 {
@@ -1034,7 +1034,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 7-DOF iCub Arm
+* A class for defining the 7-DOF iCub Arm.
 */
 class iCubArm : public iKinLimb
 {
@@ -1074,7 +1074,78 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 6-DOF iCub Leg
+* A class for defining the iCub Finger. \n 
+* The outcomes of forward kinematics are relative to the 
+* reference frame attached to the corresponding iCubArm 
+* end-effector. 
+*/
+class iCubFinger : public iKinLimb
+{
+protected:
+    std::string hand;
+    std::string finger;
+
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubFinger();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between the finger's 
+    *              type which has to be passed in the form
+    *              <i><hand>_<finger></i>, where <i>hand</i>
+    *              accounts for "left"|"right" and finger for
+    *              "thumb"|"index"|"middle"|"ring"|"little".
+    */
+    iCubFinger(const std::string &_type);
+
+    /**
+    * Creates a new Finger from an already existing object.
+    * @param sensor is the object to be copied.
+    */
+    iCubFinger(const iCubFinger &finger);
+
+    /**
+    * Alignes the finger joints bounds with current values set 
+    * aboard the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Arm limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+
+    /**
+    * Retrieves the vector of actual finger's joint values (to be 
+    * used in conjuction with the iKinLimb methods) from the vector 
+    * of robot encoders. 
+    * @param robotEncoders the vector of robot encoders from which 
+    *                  to extract the joint values of the finger. It
+    *                  can be composed of 16 or 7 elements,
+    *                  depending if it comprises the arm encoders as
+    *                  well or just the hand encoders.
+    * @param chainJoints the vector containing the joints values to 
+    *                    be used with the iKinLimb methods.
+    * @return true/false on success/failure. 
+    *  
+    * @note This method accounts also for the underactuated joints, 
+    *       meaning that the actual number of DOFs for the index is
+    *       4 and not 3: one for the abduction movement, one for the
+    *       proximal movement and 2 coupled movements for the distal
+    *       joint (equally partitioned).
+    */
+    virtual bool getChainJoints(const yarp::sig::Vector &robotEncoders,
+                                yarp::sig::Vector &chainJoints);
+};
+
+
+/**
+* \ingroup iKinFwd
+*
+* A class for defining the 6-DOF iCub Leg.
 */
 class iCubLeg : public iKinLimb
 {
@@ -1114,7 +1185,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 5-DOF iCub Eye
+* A class for defining the 5-DOF iCub Eye.
 */
 class iCubEye : public iKinLimb
 {
@@ -1188,7 +1259,8 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 6-DOF Inertia Sensor Kinematics
+* A class for defining the 6-DOF Inertia Sensor Kinematics of 
+* the iCub. 
 */
 class iCubInertialSensor : public iKinLimb
 {
