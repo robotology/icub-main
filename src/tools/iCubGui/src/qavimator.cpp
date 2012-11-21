@@ -16,7 +16,6 @@
  */
 
 #include <qevent.h>
-#include <qfiledialog.h>
 #include <qmessagebox.h>
 #include <qmetaobject.h>
 #include <qsettings.h>
