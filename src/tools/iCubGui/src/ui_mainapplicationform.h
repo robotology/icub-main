@@ -18,12 +18,9 @@
 #ifndef UI_MAINAPPLICATIONFORM_H
 #define UI_MAINAPPLICATIONFORM_H
 
-#include <qaction.h>
 #include <qlayout.h>
 #include <qtabwidget.h>
-#include <qcombobox.h>
 #include <qspinbox.h>
-#include <qgroupbox.h>
 #include <qiconset.h>
 #include <qlabel.h>
 #include <qlineedit.h>
@@ -35,10 +32,16 @@
 #include <q3boxlayout.h>
 #include <q3toolbar.h>
 #include <q3mainwindow.h>
+#include <q3action.h>
+#include <q3combobox.h>
+#include <q3groupbox.h>
 #else // ICUB_USE_QT4_QT3_SUPPORT
 #include <qpopupmenu.h>
-#include <qboxlayout.h>
+#include <qlayout.h>
 #include <qtoolbar.h>
+#include <qaction.h>
+#include <qcombobox.h>
+#include <qgroupbox.h>
 #include <qmainwindow.h>
 #endif // ICUB_USE_QT4_QT3_SUPPORT
 
@@ -49,6 +52,25 @@
 class Ui_MainWindow
 {
 public:
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+    Q3Action *fileNewAction;
+    Q3Action *fileOpenAction;
+    Q3Action *fileAddAction;
+    Q3Action *fileSaveAction;
+    Q3Action *fileSaveAsAction;
+    Q3Action *fileExitAction;
+
+    Q3Action *optionsJointLimitsAction;
+    Q3Action *optionsShowTimelineAction;
+    Q3Action *optionsConfigureiCubGUIAction;
+
+    Q3Action *helpAboutAction;
+
+    Q3Action *resetCameraAction;
+
+    Q3Action *playAction;
+    Q3Action *fpsAction;
+#else // ICUB_USE_QT4_QT3_SUPPORT
     QAction *fileNewAction;
     QAction *fileOpenAction;
     QAction *fileAddAction;
@@ -66,6 +88,7 @@ public:
 
     QAction *playAction;
     QAction *fpsAction;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
 
     QWidget *centralwidget;
     QGridLayout *gridLayout;
@@ -113,9 +136,9 @@ public:
     QSpacerItem *spacerItem1;
     */
 
-    QWidget *fpsWidget;
     QLabel *fpsLabel;
     QSpinBox *fpsSpin;
+    QWidget *fpsWidget;
 
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
     Q3HBoxLayout *fpsLayout;
@@ -162,7 +185,32 @@ public:
         if (config.check("ypos")) ypos=config.find("ypos").asInt();
         MainWindow->move(xpos,ypos);
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        fileNewAction = new Q3Action(MainWindow);
+        fileOpenAction = new Q3Action(MainWindow);
+        fileSaveAction = new Q3Action(MainWindow);
+        fileSaveAsAction = new Q3Action(MainWindow);
+        fileExitAction = new Q3Action(MainWindow);
+        optionsJointLimitsAction = new Q3Action(MainWindow);
+        optionsShowTimelineAction = new Q3Action(MainWindow);
+        optionsConfigureiCubGUIAction = new Q3Action(MainWindow);
+        helpAboutAction = new Q3Action(MainWindow);
+        resetCameraAction = new Q3Action(MainWindow);
+        playAction = new Q3Action(MainWindow);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         fileNewAction = new QAction(MainWindow);
+        fileOpenAction = new QAction(MainWindow);
+        fileSaveAction = new QAction(MainWindow);
+        fileSaveAsAction = new QAction(MainWindow);
+        fileExitAction = new QAction(MainWindow);
+        optionsJointLimitsAction = new QAction(MainWindow);
+        optionsShowTimelineAction = new QAction(MainWindow);
+        optionsConfigureiCubGUIAction = new QAction(MainWindow);
+        helpAboutAction = new QAction(MainWindow);
+        resetCameraAction = new QAction(MainWindow);
+        playAction = new QAction(MainWindow);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
+
         fileNewAction->setName(QString::fromUtf8("fileNewAction"));
         QIconSet icon;
         icon.setPixmap(QPixmap(config.findPath("icons/filenew.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
@@ -171,7 +219,6 @@ public:
         fileNewAction->setShortcut("Ctrl+N");
         MainWindow->connect(fileNewAction,SIGNAL(activated()),MainWindow,SLOT(on_fileNewAction_triggered()));
 
-        fileOpenAction = new QAction(MainWindow);
         fileOpenAction->setName(QString::fromUtf8("fileOpenAction"));
         QIconSet icon1;
         icon1.setPixmap(QPixmap(config.findPath("icons/fileopen.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
@@ -180,7 +227,6 @@ public:
         fileOpenAction->setShortcut("Ctrl+O");
         MainWindow->connect(fileOpenAction,SIGNAL(activated()),MainWindow,SLOT(on_fileOpenAction_triggered()));
 
-        fileSaveAction = new QAction(MainWindow);
         fileSaveAction->setName(QString::fromUtf8("fileSaveAction"));
         QIconSet icon3;
         icon3.setPixmap(QPixmap(config.findPath("icons/filesave.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
@@ -189,7 +235,6 @@ public:
         fileSaveAction->setShortcut("Ctrl+S");
         MainWindow->connect(fileSaveAction,SIGNAL(activated()),MainWindow,SLOT(on_fileSaveAction_triggered()));
 
-        fileSaveAsAction = new QAction(MainWindow);
         fileSaveAsAction->setName(QString::fromUtf8("fileSaveAsAction"));
         QIconSet icon4;
         icon4.setPixmap(QPixmap(config.findPath("icons/filesaveas.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
@@ -198,35 +243,29 @@ public:
         fileSaveAsAction->setShortcut("Ctrl+A");
         MainWindow->connect(fileSaveAsAction,SIGNAL(activated()),MainWindow,SLOT(on_fileSaveAsAction_triggered()));
 
-        fileExitAction = new QAction(MainWindow);
         fileExitAction->setName(QString::fromUtf8("fileExitAction"));        
         fileExitAction->setText("Exit");
         fileExitAction->setShortcut("Ctrl+Q");
         MainWindow->connect(fileExitAction,SIGNAL(activated()),MainWindow,SLOT(on_fileExitAction_triggered()));
 
-        optionsJointLimitsAction = new QAction(MainWindow);
         optionsJointLimitsAction->setName(QString::fromUtf8("optionsJointLimitsAction"));
         optionsJointLimitsAction->setToggleAction(true);
         optionsJointLimitsAction->setText("Joint Limits");
         MainWindow->connect(optionsJointLimitsAction,SIGNAL(toggled(bool)),MainWindow,SLOT(on_optionsJointLimitsAction_toggled(bool)));
 
-        optionsShowTimelineAction = new QAction(MainWindow);
         optionsShowTimelineAction->setName(QString::fromUtf8("optionsShowTimelineAction"));
         optionsShowTimelineAction->setToggleAction(true);
         optionsShowTimelineAction->setText("Show Timeline");
         MainWindow->connect(optionsShowTimelineAction,SIGNAL(toggled(bool)),MainWindow,SLOT(on_optionsShowTimelineAction_toggled(bool)));
 
-        optionsConfigureiCubGUIAction = new QAction(MainWindow);
         optionsConfigureiCubGUIAction->setName(QString::fromUtf8("optionsConfigureiCubGUIAction"));
         optionsConfigureiCubGUIAction->setText("Configure iCubGUI...");
         MainWindow->connect(optionsConfigureiCubGUIAction,SIGNAL(activated()),MainWindow,SLOT(on_optionsConfigureiCubGUIAction_triggered()));
 
-        helpAboutAction = new QAction(MainWindow);
         helpAboutAction->setName(QString::fromUtf8("helpAboutAction"));
         helpAboutAction->setText("About...");
         MainWindow->connect(helpAboutAction,SIGNAL(activated()),MainWindow,SLOT(on_helpAboutAction_triggered()));
 
-        resetCameraAction = new QAction(MainWindow);
         resetCameraAction->setName(QString::fromUtf8("resetCameraAction"));
         QIconSet icon10;
         icon10.setPixmap(QPixmap(config.findPath("icons/resetcamera.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
@@ -235,7 +274,6 @@ public:
         resetCameraAction->setShortcut("Ctrl+0");
         MainWindow->connect(resetCameraAction,SIGNAL(activated()),MainWindow,SLOT(on_resetCameraAction_triggered()));
 
-        playAction = new QAction(MainWindow);
         playAction->setName(QString::fromUtf8("playAction"));
         QIconSet icon11;
         icon11.setPixmap(QPixmap(config.findPath("icons/play.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
