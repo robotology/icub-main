@@ -9,18 +9,18 @@ macro(checkandset_dependency package)
         set(ICUB_USE_${package} TRUE CACHE BOOL "Use package ${package}")
         message(STATUS "found ${package}")
     else (${package}_FOUND)
-    	  set(ICUB_HAS_${package} FALSE CACHE BOOL "" FORCE)
+        set(ICUB_HAS_${package} FALSE CACHE BOOL "" FORCE)
           set(ICUB_USE_${package} FALSE CACHE BOOL "Use package ${package}")
     endif (${package}_FOUND)
     mark_as_advanced(ICUB_HAS_${package})
-    
+
     if (NOT ${package}_FOUND AND ICUB_USE_${package})
         message("Warning: you requested to use the package ${package}, but it is unavailable (or was not found). This might lead to compile errors, we recommend you turn off the ICUB_USE_${package} flag.") 
     endif (NOT ${package}_FOUND AND ICUB_USE_${package})
-	
-	#store all dependency flags for later export
-	set_property(GLOBAL APPEND PROPERTY ICUB_DEPENDENCIES_FLAGS ICUB_USE_${package})
-	
+
+    #store all dependency flags for later export
+    set_property(GLOBAL APPEND PROPERTY ICUB_DEPENDENCIES_FLAGS ICUB_USE_${package})
+
 endmacro (checkandset_dependency)
 
 
@@ -62,7 +62,7 @@ if (OpenCV_FOUND)
     message(STATUS "OpenCV is previous 2.0 (some modules will be skipped)")  
     message(STATUS "Setting ICUB_OpenCV_LEGACY true")
   endif()
-  
+
   set(ICUB_LINK_DIRECTORIES ${ICUB_LINK_DIRECTORIES} ${OpenCV_LIB_DIR})
 endif()
 
