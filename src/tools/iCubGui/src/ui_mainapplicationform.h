@@ -31,12 +31,13 @@
 #include <qpushbutton.h>
 #include <qmenubar.h>
 #include <qtoolbar.h>
-#include <qboxlayout.h>
 
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
 #include <q3popupmenu.h>
+#include <qboxlayout.h>
 #else // ICUB_USE_QT4_QT3_SUPPORT
 #include <qpopupmenu.h>
+#include <qlayout.h>
 #endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #include "animationview.h"
