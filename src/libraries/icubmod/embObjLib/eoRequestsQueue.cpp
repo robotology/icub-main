@@ -200,9 +200,9 @@ bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
         std::list<eoThreadId>::iterator end=fifo->end();
         while(it!=end)
         {
-        	printf("Cleaning timeouts for thread Id %d\n", *it);
         	if( (*it) == id )
         	{
+        		printf("Cleaning timeouts for thread Id %d, req %d\n", id, i);
         		// to wake threads sleeping here ... is it correct this way??
         		eoThreadEntry * th = threadPool->getThreadTable(id);
         		th->push();

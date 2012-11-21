@@ -408,7 +408,7 @@ void *recvThread(void * arg)
 						memcpy(ethRes->recv_msg, incoming_msg, recv_size);
 						ethRes->onMsgReception(ethRes->recv_msg, recv_size);
 					}
-					continue; 	// to skip remaining part of the for cycle
+					//continue; 	// to skip remaining part of the for cycle // crea loop infinito perch`e prima del iterator++
 				}
 				iterator++;
 			}

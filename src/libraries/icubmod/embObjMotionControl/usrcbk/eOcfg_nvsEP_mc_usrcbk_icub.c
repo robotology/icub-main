@@ -283,7 +283,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 //	if(-1 == j)
 //		j = xx;
 //
-////	transceiver_wait(nv->ep);
+////	//transceiver_wait(nv->ep);
 //	if( (print) && (i>= T) && (xx == j) )
 //	{
 //		i = 0;
@@ -309,7 +309,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 //		printf("jStatus->position = 0x%X\n", jstatus->basic.position);
 ////		printf("jStatus->velocity = 0x%X\n", jstatus->basic.velocity);
 //	}
-//	transceiver_post(nv->ep);
+//	//transceiver_post(nv->ep);
 
 #endif
 }
@@ -322,7 +322,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumb
 	static int i = 0;
 	static bool print = false;
 
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 
 	if( (print) && (i>= 2000) && (xx == 0) )
 	{
@@ -348,14 +348,14 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumb
 		printf("mstatus_b->position = 0x%X\n", mstatus_b->position);
 //		printf("mstatus_b->velocity = 0x%X\n", mstatus_b->velocity);
 	}
-	transceiver_post(nv->ep);
+	//transceiver_post(nv->ep);
 #endif
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #ifdef _debug_jxx_jconfig_
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 	eOmc_joint_config_t *jConfig = nv->rem;
 	printf("\nmaxpositionofjoint for Joint num = %d\n", xx);
 	printf("jConfig->pidposition.kp 	= 0x%X\n",	jConfig->pidposition.kp		);
@@ -369,14 +369,16 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig(eOcfg_nvsEP_mc_jointNumber_t xx
 	printf("jConfig->maxpositionofjoint		= 0x%X\n",	jConfig->maxpositionofjoint);
     printf("jConfig->controlmode			= 0x%X\n",	jConfig->motionmonitormode);
 	printf("ep = 0x%X\n", nv->ep);
-	transceiver_post(nv->ep);
+	//transceiver_post(nv->ep);
 #endif
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
+#warning "mconfig strong iCubInterface"
+#define _debug_mxx_mconfig_
 #ifdef _debug_mxx_mconfig_
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 	eOmc_motor_config_t *jConfig = nv->rem;
 	printf("\nmaxpositionofjoint for Joint num = %d\n", xx);
 	printf("mConfig->pidcurrent.kp 	= 0x%X\n",	jConfig->pidcurrent.kp		);
@@ -389,53 +391,56 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig(eOcfg_nvsEP_mc_motorNumber_t xx
     printf("mConfig->maxvelocityofmotor		= 0x%X\n",	jConfig->maxvelocityofmotor);
 	printf("mConfig->maxcurrentofmotor		= 0x%X\n",	jConfig->maxcurrentofmotor);
 	printf("ep = 0x%X\n", nv->ep);
-	transceiver_post(nv->ep);
+	//transceiver_post(nv->ep);
 #endif
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__maxpositionofjoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 	eOmeas_position_t *jMaxPosition_b = nv->rem;
-	printf("\nmaxpositionofjoint for Joint num = %d ", xx);
+	printf("\nCallback: maxpositionofjoint for Joint num = %d ", xx);
 	printf("pos = %d\n", *jMaxPosition_b);
-	transceiver_post(nv->ep);
+	jwake(xx, nv, jointNVindex_jconfig__maxpositionofjoint);
+	//transceiver_post(nv->ep);
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__minpositionofjoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 	eOmeas_position_t *jMinPosition_b = nv->rem;
-	printf("\nminpositionofjoint for Joint num = %d ", xx);
+	printf("\ncallback: minpositionofjoint for Joint num = %d ", xx);
 	printf("pos = %d\n", *jMinPosition_b);
-	transceiver_post(nv->ep);
+	jwake(xx, nv, jointNVindex_jconfig__minpositionofjoint);
+	//transceiver_post(nv->ep);
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig__maxcurrentofmotor(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
-	transceiver_wait(nv->ep);
+#warning "maxcurrentofmoto strong iCubInterface"
+	//transceiver_wait(nv->ep);
 	eOmeas_position_t *jMaxCurrent_b = nv->rem;
-	printf("\nmaxcurrentofmotor for Joint num = %d\n", xx);
+	printf("\ncallback: maxcurrentofmotor for Joint num = %d\n", xx);
 	printf("ep = 0x%X\n", nv->ep);
 	printf("maxcurrentofmotor = 0x%X\n", jMaxCurrent_b);
-	transceiver_post(nv->ep);
+	//transceiver_post(nv->ep);
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "pidposition strong iCubInterface"
 	printf("jconfig__pidposition Callback eoMotionControl, j=%d ne'\n", xx);
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 	jwake(xx, nv, jointNVindex_jconfig__pidposition);
-	transceiver_post(nv->ep);
+	//transceiver_post(nv->ep);
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 	printf("jconfig__controlmode, j=%d\n", xx);
-	transceiver_wait(nv->ep);
+	//transceiver_wait(nv->ep);
 //	jwake(xx, nv, jointNVindex_jcmmnds__controlmode);	//???
-	transceiver_post(nv->ep);
+	//transceiver_post(nv->ep);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

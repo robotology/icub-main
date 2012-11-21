@@ -82,6 +82,15 @@ bool nv_not_found(void)
 	return false;
 }
 
+void embObjMotionControl::getMStatus(int j)
+{
+	EOnv *nvRoot;
+	EOnv nvtmp;
+	eOnvID_t nvid;
+
+	nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig);
+	res->transceiver->load_occasional_rop(eo_ropcode_ask, (uint16_t)_fId.ep, nvid);
+}
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
@@ -498,9 +507,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     ////// TORQUE PIDS
     Bottle TPidsGroup=config.findGroup("TORQUE_PIDS","TORQUE_PID parameters");
-       if (TPidsGroup.isNull()) {
-               fprintf(stderr, "Error: no TORQUE PIDS group found in config file, returning\n");
-               return false;
+       if (TPidsGroup.isNull())
+       {
+               fprintf(stderr, "Error: no TORQUE PIDS group found in config file, skipping\n");
+//               return false;
        }
        else
        {
@@ -855,7 +865,7 @@ bool embObjMotionControl::init()
 	EOnv nvtmp;
 
 	// yTrace();
-	// yDebug() << "Sending joint configuration";
+	 yDebug() << "Sending joint configuration";
 	if( EOK_HOSTTRANSCEIVER_capacityofrop < jConfigSize )
 	{
 		yError () << "Size of Joint Config is bigger than single ROP... cannot send it at all!! Fix it!!";
@@ -864,7 +874,7 @@ bool embObjMotionControl::init()
 	{
 		for(int j=_firstJoint, index =0; j<_firstJoint + _njoints; j++, index++)
 		{
-			// yDebug() << " j = " << j << "index = " << index;
+			 yDebug() << " j = " << j << "index = " << index;
 			printf("sending j config j = %d", j);
 
 			if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += jConfigSize)) )
@@ -905,14 +915,14 @@ bool embObjMotionControl::init()
 			// to do
 
 			yDebug() << "\n>>>>Setting max and min pos for joint " << j;
-			yDebug() << "\nFrom config" ;
-			yDebug() << "\nmin = " << _limitsMin[index];
-			yDebug() << "\nmax = " << _limitsMax[index];
-			yDebug() << "\njConfig" ;
-			yDebug() << "\nmin = " << jconfig.minpositionofjoint;
-			yDebug() << "\nmax = " << jconfig.maxpositionofjoint;
-			yDebug() << "_zeros = %f\n",_zeros[index];
-			yDebug() << "_angleToEncoder = %f\n",_angleToEncoder[index];
+			yDebug() << "From config file" ;
+			yDebug() << "deg min = " << _limitsMin[index];
+			yDebug() << "deg max = " << _limitsMax[index];
+			yDebug() << "jConfig" ;
+			yDebug() << "eomin = " << jconfig.minpositionofjoint;
+			yDebug() << "eomax = " << jconfig.maxpositionofjoint;
+			yDebug() << "zero deg = " <<_zeros[index];
+			yDebug() << "_angleToEncoder = " <<_angleToEncoder[index];
 
 
 			jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[index]);
@@ -922,7 +932,7 @@ bool embObjMotionControl::init()
 				continue;
 
 			if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid))
-				return false;
+				 continue;
 
 			// Debugging... to much information can overload can queue on EMS
 			Time::delay(0.05);
@@ -974,22 +984,32 @@ bool embObjMotionControl::init()
 			//mconfig.maxvelocityofmotor =  ????;
 			mconfig.maxcurrentofmotor = _currentLimits[index];
 
+			eOmeas_current_t	current = (eOmeas_current_t) _currentLimits[index];
+
+			yDebug() << "setting maxcurrent of motor " << index << " to " << _currentLimits[index] << "(" << current << ")";
 //			if( !res->transceiver->nvSetData(nvRoot, &mconfig, eobool_true, eo_nv_upd_dontdo))
-			if( !res->transceiver->nvSetData(nvRoot, &(_currentLimits[index]), eobool_true, eo_nv_upd_dontdo))
+			if( !res->transceiver->nvSetData(nvRoot, &current, eobool_true, eo_nv_upd_dontdo))
 			{
 				yError () << "ERROR eo_nv_Set !!";
 				continue;
 			}
 			if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid))
-				return false;
+			{
+				yError () << "ERROR eo_nv_Set !!";
+				continue;
+			}
 			// Debugging... to much information can overload can queue on EMS
-			Time::delay(0.05);
+			Time::delay(0.1);
+
+			getMStatus(j);
+			Time::delay(0.1);
 		}
 	}
 	Time::delay(0.1);
 
 	return true;
 }
+
 
 bool embObjMotionControl::configure_mais(void)
 {
@@ -1260,7 +1280,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
 	// yTrace();
 	EOnv tmp;
-	_mutex.wait();
+	//_mutex.wait();
 	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
 	EOnv	*nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
 
@@ -1291,7 +1311,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 	res->transceiver->getNVvalue(nvRoot, (uint8_t *)&eoPID, &size);
     // yDebug() << " GetPid returned values : kp = " << eoPID.kp << "kd = " <<  eoPID.kd << " ki = " << eoPID.ki;
     copyPid_eo2iCub(&eoPID, pid);
-	_mutex.post();
+	//_mutex.post();
 	return true;
 }
 
@@ -1574,39 +1594,17 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 	// Tenere il check o forzare questi sottostati?
 	if(!_enabledAmp[j-_firstJoint] )
 	{
-		printf("warning called calibration without enablin PWM"); //yError () << "PWM not enabled";
+		yDebug () << "Called calibrate for joint " << j << "with PWM(AMP) not enabled";
 //		return false;
 	}
 
 	if(!_enabledPid[j-_firstJoint])
 	{
-		printf("warning called calibration without enablin PWM"); //yError () << "PID not enabled";
+		yDebug () << "Called calibrate for joint " << j << "with PID not enabled";
 //		return false;
 	}
 
-//   There is no more explicit command "go to calibration mode" but it is implicit in the calibration command
-//	// Get controlmode NV pointer
-//	eOnvID_t  nvid_controlmode;
-//	EOnv	  *nvRoot_controlmode;
-//	eOmc_controlmode_command_t val = eomc_controlmode_margin_reached;
-//
-//
-//	nvid_controlmode   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-//	nvRoot_controlmode = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_controlmode, &tmp_controlmode);
-//
-//	if(NULL == nvRoot_controlmode)
-//	{
-//		NV_NOT_FOUND;
-//
-//		return false;
-//	}
-//
-//	if( !res->transceiver->nvSetData(nvRoot_controlmode, &val, eobool_true, eo_nv_upd_dontdo))
-//	{
-//		yError () << "eo nv not set!\n";
-//		return false;
-//	}
-
+//   There is no explicit command "go to calibration mode" but it is implicit in the calibration command
 
 	// Get calibration command NV pointer
 	EOnv tmp_calib;
@@ -1660,7 +1658,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 		default:
 			yError () << "Calibration type unknown!! (embObjMotionControl)\n";
 			return false;
-			break;
+			break;		//useless
 	}
 
 	if( !res->transceiver->nvSetData(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
@@ -2403,7 +2401,7 @@ bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 {
 	getEncoderRaw(j, encs);
 
-//	_mutex.wait();
+//	//_mutex.wait();
 //	double stamp=0;
 //	for (i = 0; i < r.getJoints(); i++) {
 //		v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
@@ -2414,7 +2412,7 @@ bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 //	}
 //
 //	stampEncoders.update(stamp);
-//	_mutex.post();
+//	//_mutex.post();
 }
 
 ////// Amplifier interface
@@ -2580,16 +2578,17 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 		return false;
 	}
 
+	// Sign up for waiting the reply
+	eoThreadEntry *tt = appendWaitRequest(j, nvid_min);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+	appendWaitRequest(j, nvid_max);
+	tt->setPending(2);
+
 	if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_min) )
 		return false;
 
 	if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_max) )
 		return false;
 
-	// Sign up for waiting the reply
-	eoThreadEntry *tt = appendWaitRequest(j, nvid_min);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-	appendWaitRequest(j, nvid_max);
-	tt->setPending(2);
 
 	// wait here
 	if(-1 == tt->synch() )

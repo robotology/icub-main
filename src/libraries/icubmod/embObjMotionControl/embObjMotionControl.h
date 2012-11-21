@@ -247,6 +247,7 @@ private:
 	bool configure_mais(void);
 	bool goToRun(void);
 
+	void getMStatus(int j);
 public:
     embObjMotionControl();
     ~embObjMotionControl();
