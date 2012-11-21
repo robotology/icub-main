@@ -29,7 +29,7 @@
 
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
 #include <q3popupmenu.h>
-#include <q3boxlayout.h>
+#include <q3hbox.h>
 #include <q3gridlayout.h>
 #include <q3toolbar.h>
 #include <q3mainwindow.h>
@@ -38,6 +38,7 @@
 #include <q3groupbox.h>
 #else // ICUB_USE_QT4_QT3_SUPPORT
 #include <qpopupmenu.h>
+#include <qhbox.h>
 #include <qlayout.h>
 #include <qtoolbar.h>
 #include <qaction.h>
@@ -78,7 +79,7 @@ public:
     Q3GridLayout *gridLayout;
     Q3GridLayout *gridLayout1;
 
-    Q3HBoxLayout *fpsLayout;
+    Q3HBox *fpsHBox;
     Q3PopupMenu *menuFile;
     Q3PopupMenu *menuOptions;
     Q3PopupMenu *menuHelp;
@@ -105,7 +106,7 @@ public:
     QGridLayout *gridLayout;
     QGridLayout *gridLayout1;
 
-    QHBoxLayout *fpsLayout;
+    QHBox *fpsHBox;
     QPopupMenu *menuFile;
     QPopupMenu *menuOptions;
     QPopupMenu *menuHelp;
@@ -114,7 +115,6 @@ public:
 
     QLabel *fpsLabel;
     QSpinBox *fpsSpin;
-    QWidget *fpsWidget;
 
     //QTabWidget *avatarPropsTab;
     /*
@@ -190,6 +190,7 @@ public:
         MainWindow->move(xpos,ypos);
 
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
+        toolBar = new Q3ToolBar(MainWindow);
         fileNewAction = new Q3Action(MainWindow);
         fileOpenAction = new Q3Action(MainWindow);
         fileSaveAction = new Q3Action(MainWindow);
@@ -202,6 +203,7 @@ public:
         resetCameraAction = new Q3Action(MainWindow);
         playAction = new Q3Action(MainWindow);
 #else // ICUB_USE_QT4_QT3_SUPPORT
+        toolBar = new QToolBar(MainWindow);
         fileNewAction = new QAction(MainWindow);
         fileOpenAction = new QAction(MainWindow);
         fileSaveAction = new QAction(MainWindow);
@@ -285,12 +287,22 @@ public:
         playAction->setText(QString());
         MainWindow->connect(playAction,SIGNAL(triggered()),MainWindow,SLOT(on_playAction_clicked()));
 
-        fpsWidget = new QWidget;
+
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        // HACK Part 1:
+        //      With QT4 child widget order is not considered and the
+        //      widgets are stacked instead. We use Q3Toolbar::setWidget
+        //      instead, that works (for some unknown reason)
+        fpsHBox = new Q3HBox;
+#else // ICUB_USE_QT4_QT3_SUPPORT
+        fpsHBox = new QHBox(toolBar);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
+        fpsLabel = new QLabel(fpsHBox);
+        fpsSpin = new QSpinBox(fpsHBox);
 
         QSizePolicy sizePolicy2(QSizePolicy::Fixed,QSizePolicy::Expanding);
         sizePolicy2.setHorStretch(0);
         sizePolicy2.setVerStretch(0);
-        fpsLabel = new QLabel(fpsWidget);
         fpsLabel->setText("FPS:");
         fpsLabel->setName(QString::fromUtf8("fpsLabel"));
         sizePolicy2.setHeightForWidth(fpsLabel->sizePolicy().hasHeightForWidth());
@@ -299,22 +311,12 @@ public:
         QSizePolicy sizePolicy4(QSizePolicy::Fixed,QSizePolicy::Fixed);
         sizePolicy4.setHorStretch(0);
         sizePolicy4.setVerStretch(0);
-        fpsSpin = new QSpinBox(fpsWidget);
         fpsSpin->setName(QString::fromUtf8("fpsSpin"));
         sizePolicy4.setHeightForWidth(fpsSpin->sizePolicy().hasHeightForWidth());
         fpsSpin->setSizePolicy(sizePolicy4);
         fpsSpin->setRange(1,50);
         fpsSpin->setValue(10);
         MainWindow->connect(fpsSpin,SIGNAL(valueChanged(int)),MainWindow,SLOT(on_fpsSpin_valueChanged(int)));
-
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
-        fpsLayout = new Q3HBoxLayout;
-#else // ICUB_USE_QT4_QT3_SUPPORT
-        fpsLayout = new QHBoxLayout;
-#endif // ICUB_USE_QT4_QT3_SUPPORT
-        fpsLayout->addWidget(fpsLabel);
-        fpsLayout->addWidget(fpsSpin);
-        fpsWidget->setLayout(fpsLayout);
 
         centralwidget = new QWidget(MainWindow);
         centralwidget->setName(QString::fromUtf8("centralwidget"));
@@ -377,11 +379,6 @@ public:
         MainWindow->menuBar()->insertItem("Help",menuHelp);
         helpAboutAction->addTo(menuHelp);
 
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
-        toolBar = new Q3ToolBar(MainWindow);
-#else // ICUB_USE_QT4_QT3_SUPPORT
-        toolBar = new QToolBar(MainWindow);
-#endif // ICUB_USE_QT4_QT3_SUPPORT
         toolBar->setName(QString::fromUtf8("toolBar"));
         toolBar->setGeometry(QRect(0,0,703,64));
         toolBar->setFixedHeight(64);
@@ -399,7 +396,12 @@ public:
 #endif // QT_NO_TOOLTIP
         toolBar->addSeparator();
         playAction->addTo(toolBar);
-        toolBar->setWidget(fpsWidget);
+
+        // HACK Part 2:
+        //      With Qt4 child widget order is not considered and the
+        //      widgets are stacked instead. We use Q3Toolbar::setWidget
+        //      instead, that works (for some unknown reason)
+        toolBar->setWidget(fpsHBox);
     } // setupUi
 };
 
