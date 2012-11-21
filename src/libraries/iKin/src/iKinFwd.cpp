@@ -1650,9 +1650,30 @@ void iCubFinger::allocate(const string &_type)
         finger="index";
     }
 
-    if (finger=="index")
+    Matrix H0(4,4);
+    if (finger=="thumb")
     {
-        Matrix H0(4,4);
+        H0(0,0)=0.478469;  H0(0,1)=0.063689; H0(0,2)=-0.875792; H0(0,3)=-0.0024029759;
+        H0(1,0)=-0.878095; H0(1,1)=0.039246; H0(1,2)=-0.476873; H0(1,3)=-0.01193433;
+        H0(2,0)=0.004;     H0(2,1)=0.997198; H0(2,2)=0.074703;  H0(2,3)=-0.00168926;
+        H0(3,0)=0.0;       H0(3,1)=0.0;      H0(3,2)=0.0;       H0(3,3)=1.0;
+
+        if (hand=="left")
+            H0.setRow(2,-1.0*H0.getRow(2));
+
+        setH0(H0);
+
+        pushLink(new iKinLink(   0.0,    0.0, -M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0210, 0.0056,       0.0, 0.0,               0.0,               0.0));
+        pushLink(new iKinLink(0.0260,    0.0,       0.0, 0.0,               0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0220,    0.0,       0.0, 0.0,               0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0168,    0.0, -M_PI/2.0, 0.0,               0.0, 90.0*CTRL_DEG2RAD));
+
+        // this is a dummy link
+        blockLink(1,0.0);
+    }
+    else if (finger=="index")
+    {        
         H0(0,0)=0.898138; H0(0,1)=0.439714;  H0(0,2)=0.0;      H0(0,3)=0.00245549;
         H0(1,0)=-0.43804; H0(1,1)=0.89472;   H0(1,2)=0.087156; H0(1,3)=-0.025320433;
         H0(2,0)=0.038324; H0(2,1)=-0.078278; H0(2,2)=0.996195; H0(2,3)=-0.010973325;
@@ -1668,6 +1689,22 @@ void iCubFinger::allocate(const string &_type)
         pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
+    else if (finger=="middle")
+    {
+        H0(0,0)=1.0; H0(0,1)=0.0; H0(0,2)=0.0;  H0(0,3)=0.0178;
+        H0(1,0)=0.0; H0(1,1)=0.0; H0(1,2)=-1.0; H0(1,3)=-0.00830233;
+        H0(2,0)=0.0; H0(2,1)=1.0; H0(2,2)=0.0;  H0(2,3)=-0.0118;
+        H0(3,0)=0.0; H0(3,1)=0.0; H0(3,2)=0.0;  H0(3,3)=1.0;
+
+        if (hand=="left")
+            H0.setRow(2,-1.0*H0.getRow(2));
+
+        setH0(H0);
+
+        pushLink(new iKinLink(0.0285, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0240, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+    }
 }
 
 
@@ -1680,7 +1717,29 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
     IControlLimits &limFinger=*lim[0];
     double min, max;
 
-    if (finger=="index")
+    if (finger=="thumb")
+    {
+        if (!limFinger.getLimits(8,&min,&max))
+            return false;
+
+        (*this)[0].setMin(CTRL_DEG2RAD*min);
+        (*this)[0].setMax(CTRL_DEG2RAD*max);
+
+        if (!limFinger.getLimits(9,&min,&max))
+            return false;
+
+        (*this)[2].setMin(CTRL_DEG2RAD*min);
+        (*this)[2].setMax(CTRL_DEG2RAD*max);
+
+        if (!limFinger.getLimits(10,&min,&max))
+            return false;
+
+        (*this)[3].setMin(CTRL_DEG2RAD*min);
+        (*this)[3].setMax(CTRL_DEG2RAD*max/2.0);
+        (*this)[4].setMin(CTRL_DEG2RAD*min);
+        (*this)[4].setMax(CTRL_DEG2RAD*max/2.0);
+    }
+    else if (finger=="index")
     {
         if (!limFinger.getLimits(7,&min,&max))
             return false;
@@ -1702,6 +1761,28 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         (*this)[3].setMin(CTRL_DEG2RAD*min);
         (*this)[3].setMax(CTRL_DEG2RAD*max/2.0);
     }
+    else if (finger=="middle")
+    {
+        if (!limFinger.getLimits(7,&min,&max))
+            return false;
+
+        (*this)[0].setMin(CTRL_DEG2RAD*min);
+        (*this)[0].setMax(CTRL_DEG2RAD*max);
+
+        if (!limFinger.getLimits(13,&min,&max))
+            return false;
+
+        (*this)[1].setMin(CTRL_DEG2RAD*min);
+        (*this)[1].setMax(CTRL_DEG2RAD*max);
+
+        if (!limFinger.getLimits(14,&min,&max))
+            return false;
+
+        (*this)[2].setMin(CTRL_DEG2RAD*min);
+        (*this)[2].setMax(CTRL_DEG2RAD*max/2.0);
+        (*this)[3].setMin(CTRL_DEG2RAD*min);
+        (*this)[3].setMax(CTRL_DEG2RAD*max/2.0);
+    }
 
     return true;
 }
@@ -1714,13 +1795,29 @@ bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints
         return false;
 
     int offs=(robotEncoders.length()==16?7:0);
-    chainJoints.resize(getN(),0.0);
-
-    if (finger=="index")
+    
+    if (finger=="thumb")
     {
+        chainJoints.resize(4);
+        chainJoints[0]=robotEncoders[offs+1];
+        chainJoints[1]=robotEncoders[offs+2];
+        chainJoints[2]=robotEncoders[offs+3]/2.0;
+        chainJoints[3]=chainJoints[2];
+    }
+    else if (finger=="index")
+    {
+        chainJoints.resize(4);
         chainJoints[0]=robotEncoders[offs+0];
         chainJoints[1]=robotEncoders[offs+4];
         chainJoints[2]=robotEncoders[offs+5]/2.0;
+        chainJoints[3]=chainJoints[2];
+    }
+    else if (finger=="middle")
+    {
+        chainJoints.resize(4);
+        chainJoints[0]=robotEncoders[offs+0];
+        chainJoints[1]=robotEncoders[offs+6];
+        chainJoints[2]=robotEncoders[offs+7]/2.0;
         chainJoints[3]=chainJoints[2];
     }
     else
