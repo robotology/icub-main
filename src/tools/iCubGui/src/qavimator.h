@@ -26,6 +26,14 @@
 #include <qfileinfo.h>
 #include <qiconset.h>
 
+
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+// This is required because moc won't skip the class definition,
+// therefore it's impossible to use
+// class qavimator : public Q3MainWindow, Ui::MainWindow
+typedef Q3MainWindow QMainWindow;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
+
 class qavimator : public QMainWindow, Ui::MainWindow
 {
     Q_OBJECT

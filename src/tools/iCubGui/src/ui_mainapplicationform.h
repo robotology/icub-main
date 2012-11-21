@@ -24,20 +24,22 @@
 #include <qcombobox.h>
 #include <qspinbox.h>
 #include <qgroupbox.h>
-#include <qmainwindow.h>
 #include <qiconset.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qmenubar.h>
-#include <qtoolbar.h>
 
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
 #include <q3popupmenu.h>
-#include <qboxlayout.h>
+#include <q3boxlayout.h>
+#include <q3toolbar.h>
+#include <q3mainwindow.h>
 #else // ICUB_USE_QT4_QT3_SUPPORT
 #include <qpopupmenu.h>
-#include <qlayout.h>
+#include <qboxlayout.h>
+#include <qtoolbar.h>
+#include <qmainwindow.h>
 #endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #include "animationview.h"
@@ -112,24 +114,30 @@ public:
     */
 
     QWidget *fpsWidget;
-    QHBoxLayout *fpsLayout;
     QLabel *fpsLabel;
     QSpinBox *fpsSpin;
 
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
+    Q3HBoxLayout *fpsLayout;
     Q3PopupMenu *menuFile;
     Q3PopupMenu *menuOptions;
     Q3PopupMenu *menuHelp;
+    Q3ToolBar *toolBar;
 #else // ICUB_USE_QT4_QT3_SUPPORT
+    QHBoxLayout *fpsLayout;
     QPopupMenu *menuFile;
     QPopupMenu *menuOptions;
     QPopupMenu *menuHelp;
-#endif // ICUB_USE_QT4_QT3_SUPPORT
     QToolBar *toolBar;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #define setShortcut(s) setAccel(QKeySequence(QString(s)))
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+    void setupUi(Q3MainWindow *MainWindow,yarp::os::ResourceFinder& config)
+#else // ICUB_USE_QT4_QT3_SUPPORT
     void setupUi(QMainWindow *MainWindow,yarp::os::ResourceFinder& config)
+#endif // ICUB_USE_QT4_QT3_SUPPORT
     {
         MainWindow->setName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(703, 818);
@@ -257,7 +265,11 @@ public:
         fpsSpin->setValue(10);
         MainWindow->connect(fpsSpin,SIGNAL(valueChanged(int)),MainWindow,SLOT(on_fpsSpin_valueChanged(int)));
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        fpsLayout = new Q3HBoxLayout;
+#else // ICUB_USE_QT4_QT3_SUPPORT
         fpsLayout = new QHBoxLayout;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         fpsLayout->addWidget(fpsLabel);
         fpsLayout->addWidget(fpsSpin);
         fpsWidget->setLayout(fpsLayout);
@@ -318,7 +330,11 @@ public:
         MainWindow->menuBar()->insertItem("Help",menuHelp);
         helpAboutAction->addTo(menuHelp);
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        toolBar = new Q3ToolBar(MainWindow);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         toolBar = new QToolBar(MainWindow);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         toolBar->setName(QString::fromUtf8("toolBar"));
         toolBar->setGeometry(QRect(0,0,703,64));
         toolBar->setFixedHeight(64);
@@ -336,9 +352,7 @@ public:
 #endif // QT_NO_TOOLTIP
         toolBar->addSeparator();
         playAction->addTo(toolBar);
-
-        fpsAction = toolBar->addWidget(fpsWidget);
-        fpsAction->setName(QString::fromUtf8("fpsAction"));
+        toolBar->setWidget(fpsWidget);
     } // setupUi
 };
 

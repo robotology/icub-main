@@ -32,7 +32,12 @@
 
 #define SVN_ID      "$Id: qavimator.cpp,v 1.3 2009/07/24 19:17:53 ale-scalzo Exp $"
 
-qavimator::qavimator(yarp::os::ResourceFinder& config) : QMainWindow(0)
+qavimator::qavimator(yarp::os::ResourceFinder& config) :
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+    Q3MainWindow(0)
+#else // ICUB_USE_QT4_QT3_SUPPORT
+    QMainWindow(0)
+#endif // ICUB_USE_QT4_QT3_SUPPORT
 {
     nFPS=10;
 
