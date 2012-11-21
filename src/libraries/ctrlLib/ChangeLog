@@ -3,7 +3,7 @@
 
 2012-30-03 Andrea Del Prete <andrea.delprete@iit.it>
       * minJerkCtrl: add class minJerkTrajGen that can generate approximately minimum 
-                     jerk pos/vel/acc trajectories using a third order LTI dynamical system.
+        jerk pos/vel/acc trajectories using a third order LTI dynamical system.
 
 2011-19-01 Ugo Pattacini <ugo.pattacini@iit.it>
       * "ctrlMath.*" changed into "math.*"
@@ -43,17 +43,17 @@
 
 2009-11-11 Ugo Pattacini <ugo.pattacini@iit.it>
       * ctrlMath: some functions moved to Yarp layer
-       * all headers: namespace rearranged
+      * all headers: namespace rearranged
 
 2009-07-29 Ugo Pattacini <ugo.pattacini@iit.it>
       * ctrlMath:
-         - SE3inv() added to invert 4 by 4 rototranslational matrix
-           (about 5 times faster than pinv())
+        - SE3inv() added to invert 4 by 4 rototranslational matrix
+          (about 5 times faster than pinv())
 
 2009-07-05 Ugo Pattacini <ugo.pattacini@iit.it>
       * trajectoryGenerator:
-         - removed MinJerkGenVelCtrl class
-         - MinJerkGen class modified
+        - removed MinJerkGenVelCtrl class
+        - MinJerkGen class modified
 
 2009-06-25 Ugo Pattacini <ugo.pattacini@iit.it>
       * All modules: "using namespace" removed from within header files
