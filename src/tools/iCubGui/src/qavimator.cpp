@@ -281,12 +281,12 @@ void qavimator::setPlaystate(PlayState state)
     // set play button icons according to play state
     if(state==PLAYSTATE_STOPPED)
     {
-        playButton->setIconSet(playIcon);
+        playAction->setIconSet(playIcon);
         qDebug("qavimator::setPlaystate(): STOPPED");
     }
     else if(state==PLAYSTATE_PLAYING)
     {
-        playButton->setIconSet(stopIcon);
+        playAction->setIconSet(stopIcon);
         qDebug("qavimator::setPlaystate(): PLAYING");
     }
     else
@@ -379,7 +379,7 @@ void qavimator::on_resetCameraAction_triggered()
 
 // ------- UI Element Slots --------
 
-void qavimator::on_playButton_clicked()
+void qavimator::on_playAction_clicked()
 {
     nextPlaystate();
 }

@@ -67,7 +67,7 @@ signals:
         void on_resetCameraAction_triggered();
 
         // ------- UI Element Slots --------
-        void on_playButton_clicked();
+        void on_playAction_clicked();
         void on_fpsSpin_valueChanged(int num);
         // end autoconnection from designer UI
 

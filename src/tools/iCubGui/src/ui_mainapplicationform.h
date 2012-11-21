@@ -31,6 +31,8 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qmenubar.h>
+#include <qtoolbar.h>
+#include <qboxlayout.h>
 
 #include "animationview.h"
 
@@ -53,6 +55,9 @@ public:
     QAction *helpAboutAction;
 
     QAction *resetCameraAction;
+
+    QAction *playAction;
+    QAction *fpsAction;
 
     QWidget *centralwidget;
     QGridLayout *gridLayout;
@@ -99,7 +104,9 @@ public:
     QHBoxLayout *hboxLayout;
     QSpacerItem *spacerItem1;
     */
-    QPushButton *playButton;
+
+    QWidget *fpsWidget;
+    QHBoxLayout *fpsLayout;
     QLabel *fpsLabel;
     QSpinBox *fpsSpin;
 
@@ -208,6 +215,41 @@ public:
         resetCameraAction->setShortcut("Ctrl+0");
         MainWindow->connect(resetCameraAction,SIGNAL(activated()),MainWindow,SLOT(on_resetCameraAction_triggered()));
 
+        playAction = new QAction(MainWindow);
+        playAction->setName(QString::fromUtf8("playAction"));
+        QIconSet icon11;
+        icon11.setPixmap(QPixmap(config.findPath("icons/play.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
+        playAction->setIconSet(icon11);
+        playAction->setText(QString());
+        MainWindow->connect(playAction,SIGNAL(triggered()),MainWindow,SLOT(on_playAction_clicked()));
+
+        fpsWidget = new QWidget;
+
+        QSizePolicy sizePolicy2(QSizePolicy::Fixed,QSizePolicy::Expanding);
+        sizePolicy2.setHorStretch(0);
+        sizePolicy2.setVerStretch(0);
+        fpsLabel = new QLabel(fpsWidget);
+        fpsLabel->setText("FPS:");
+        fpsLabel->setName(QString::fromUtf8("fpsLabel"));
+        sizePolicy2.setHeightForWidth(fpsLabel->sizePolicy().hasHeightForWidth());
+        fpsLabel->setSizePolicy(sizePolicy2);
+
+        QSizePolicy sizePolicy4(QSizePolicy::Fixed,QSizePolicy::Fixed);
+        sizePolicy4.setHorStretch(0);
+        sizePolicy4.setVerStretch(0);
+        fpsSpin = new QSpinBox(fpsWidget);
+        fpsSpin->setName(QString::fromUtf8("fpsSpin"));
+        sizePolicy4.setHeightForWidth(fpsSpin->sizePolicy().hasHeightForWidth());
+        fpsSpin->setSizePolicy(sizePolicy4);
+        fpsSpin->setRange(1,50);
+        fpsSpin->setValue(10);
+        MainWindow->connect(fpsSpin,SIGNAL(valueChanged(int)),MainWindow,SLOT(on_fpsSpin_valueChanged(int)));
+
+        fpsLayout = new QHBoxLayout;
+        fpsLayout->addWidget(fpsLabel);
+        fpsLayout->addWidget(fpsSpin);
+        fpsWidget->setLayout(fpsLayout);
+
         centralwidget = new QWidget(MainWindow);
         centralwidget->setName(QString::fromUtf8("centralwidget"));
         gridLayout = new QGridLayout(centralwidget);
@@ -269,37 +311,10 @@ public:
         toolBar->setLabel("Reset camera view to default position");
 #endif // QT_NO_TOOLTIP
         toolBar->addSeparator();
+        playAction->addTo(toolBar);
 
-        QSizePolicy sizePolicy2(QSizePolicy::Fixed,QSizePolicy::Expanding);
-        sizePolicy2.setHorStretch(0);
-        sizePolicy2.setVerStretch(0);
-        fpsLabel = new QLabel(toolBar);
-        fpsLabel->setText("FPS:");
-        fpsLabel->setName(QString::fromUtf8("fpsLabel"));
-        sizePolicy2.setHeightForWidth(fpsLabel->sizePolicy().hasHeightForWidth());
-        fpsLabel->setSizePolicy(sizePolicy2);
-
-        QSizePolicy sizePolicy4(QSizePolicy::Fixed,QSizePolicy::Fixed);
-        sizePolicy4.setHorStretch(0);
-        sizePolicy4.setVerStretch(0);
-        fpsSpin = new QSpinBox(toolBar);
-        fpsSpin->setName(QString::fromUtf8("fpsSpin"));
-        sizePolicy4.setHeightForWidth(fpsSpin->sizePolicy().hasHeightForWidth());
-        fpsSpin->setSizePolicy(sizePolicy4);
-        fpsSpin->setRange(1,50);
-        fpsSpin->setValue(10);
-        MainWindow->connect(fpsSpin,SIGNAL(valueChanged(int)),MainWindow,SLOT(on_fpsSpin_valueChanged(int)));
-
-        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Expanding);
-        sizePolicy1.setHorStretch(0);
-        sizePolicy1.setVerStretch(0);
-        playButton = new QPushButton(toolBar);
-        playButton->setName(QString::fromUtf8("playButton"));
-        playButton->setText(QString());
-        QIconSet icon11;
-        icon11.setPixmap(QPixmap(config.findPath("icons/play.png").c_str()), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
-        playButton->setIconSet(icon11);
-        MainWindow->connect(playButton,SIGNAL(clicked()),MainWindow,SLOT(on_playButton_clicked()));
+        fpsAction = toolBar->addWidget(fpsWidget);
+        fpsAction->setName(QString::fromUtf8("fpsAction"));
     } // setupUi
 };
 
