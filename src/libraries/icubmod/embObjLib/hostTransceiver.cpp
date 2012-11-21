@@ -160,46 +160,75 @@ bool hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
 	return ret;
 }
 
-//
-//// somebody adds a set-rop  plus data.
-//void hostTransceiver::hostTransceiver_AddSetROP(uint16_t ep, uint16_t id, uint8_t* data, uint16_t size)
-//{
-//	//	yTrace();
-//	_mutex.wait();
-//	uint16_t ss;
-//	EOnv nv;
-//
-//	// 1. search for teh EOnv with pair (ep, id)
-//
-//	//   if(eores_OK != eo_nvscfg_GetNV(thehosttransceiver.pc104nvscfg, thehosttransceiver.remoteipaddr, ep, id, &nv))
-//	{
-//		// there is no such variable with (remoteipaddr-ep-id)
-//		//       return;
-//	}
-//
-//	// 1bis. verify that the datasize is correct.
-//	ss = eo_nv_Size(&nv, data);
-//	if(ss < size)
-//	{
-//		// non faccio nulla intanto quando scrivo uso la capacita' della nv.
-//		// sarebbe bene pero' emettere un warning
-//	}
-//
-//
-//	// 2. set the data. dont force the set so that we dont write if the nv is readonly.
-//
-//	if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
-//	{
-//		// teh nv is not writeable
-//		//        _mutex.post();
-//		return;
-//	}
-//
-//
-//	// 3. add the rop
-//	s_hostTransceiver_AddSetROP_with_data_already_set(ep, id);
-//	_mutex.post();
-//}
+bool hostTransceiver::AddROP(eOropcode_t opc, uint16_t endpoint, uint16_t nvid, uint8_t* data, uint16_t size)
+{
+	uint16_t		ondevindex = 0, onendpointindex = 0 , onidindex = 0;
+	EOtreenode		*nvTreenodeRoot= NULL;
+	eOresult_t 		res;
+	EOnv			nv;
+	uint16_t 		nvSize;
+
+	// convetire come parametro, oppure mettere direttam l'indirizzo ip come parametro...
+	eOnvOwnership_t	nvownership = eo_nv_ownership_remote;
+
+	_mutex.wait();
+	res = eo_nvscfg_GetIndices(	this->pc104nvscfg, remoteipaddr, endpoint, nvid, &ondevindex,	&onendpointindex, &onidindex);
+
+	// if the nvscfg does not have the triple (ip, ep, id) then we return an error
+	if(eores_OK != res)
+	{
+		// Do something about this case?
+		yError() << "Error while loading ROP in ropframe\n";
+		_mutex.post();
+		return false;
+	}
+
+	// nv MUST be a pointer to an already existing object, created by the caller!!
+	if(NULL == eo_nvscfg_GetNV(this->pc104nvscfg, ondevindex, onendpointindex, onidindex, nvTreenodeRoot, &nv) )
+	{
+		// Do something about this case?
+		_mutex.post();
+		return false;
+	}
+
+
+	// Verify that the datasize is correct.
+	nvSize = eo_nv_Size(&nv, data);
+	if(nvSize < size)
+	{
+		// Do something about this case?
+		// sarebbe bene pero' emettere un warning
+		_mutex.post();
+		return false;
+	}
+
+	if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+	{
+		// the nv is not writeable
+		_mutex.post();
+		return false;
+	}
+
+
+	eo_transceiver_ropinfo_t ropinfo;
+
+	ropinfo.ropcfg      = eok_ropconfig_basic;
+	ropinfo.ropcode     = opc;
+	ropinfo.nvep        = endpoint;
+	ropinfo.nvid 		= nvid;
+
+	if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo))
+	{
+		yError() << "Error while loading ROP in ropframe\n";
+		_mutex.post();
+		return false;
+	}
+
+	_mutex.post();
+
+	// everything fine!
+	return true;
+}
 
 
 // somebody passes the received packet - this is used just as an interface
@@ -330,52 +359,6 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 }
 
 
-//void hostTransceiver::s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t ep, uint16_t id)
-//{
-//	//	yTrace();
-//	eo_transceiver_ropinfo_t ropinfo;
-//
-//	ropinfo.ropcfg      = eok_ropconfig_basic;
-//	ropinfo.ropcode     = eo_ropcode_set;
-//	ropinfo.nvep        = ep;
-//	ropinfo.nvid        = id;
-//
-//	eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
-//}
-
-//void hostTransceiver::s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id)
-//{
-//	//	yTrace();
-//	eo_transceiver_ropinfo_t ropinfo;
-//	_mutex.wait();
-//	ropinfo.ropcfg      = eok_ropconfig_basic;
-//	ropinfo.ropcode     = eo_ropcode_ask;
-//	ropinfo.nvep        = ep;
-//	ropinfo.nvid        = id;
-//
-//	eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
-//	_mutex.post();
-//}
-
-//// meglio nn usare?? il meccanismo di wait con tabella fare nel embObjMotCtrl anzichè qui
-//void hostTransceiver::askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size)
-//{
-//	// add the rop to the ropframe
-//	load_occasional_rop(eo_ropcode_ask, endpoint, id);
-//
-//	// wait fot the packet to be sent and for the reply to reach me!!
-//	EOnv nvtmp;
-//	EOnv *nv = getNVhandler( endpoint,  id, &nvtmp);
-//
-//
-//	//pthread_mutex_t mutex;
-//	//pthread_mutex_init(&mutex, NULL);
-//	//pthread_mutex_lock(&mutex);
-//
-//	// now, get the value
-//	//getNVvalue(nv, data, size);
-//}
-
 EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot)
 {
 	//	yTrace();
@@ -434,7 +417,7 @@ uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
 
 uint16_t hostTransceiver::translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid)
 {
-	yTrace();
+//	yTrace();
 	EOconstvector* pEPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
 	uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
 	eOnvscfg_EP_t* EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(pEPvector,  epindex);

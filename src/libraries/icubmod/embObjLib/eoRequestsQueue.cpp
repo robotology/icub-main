@@ -113,14 +113,13 @@ bool eoThreadEntry::timeout( )
 // A pop function; get and destroy from front, just get thread id
 bool eoThreadFifo::pop(eoThreadId &ret)
 {
-	eoThreadId tmp = -1;
+	ret = -1;
 	if (empty())
 		return false;
 
-	tmp=front();
+	ret=front();
 	pop_front();
 
-	ret=tmp;
 	return true;
 }
 

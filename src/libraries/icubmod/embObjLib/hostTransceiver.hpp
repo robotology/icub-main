@@ -85,6 +85,9 @@ public:
 	// somebody adds a set-rop  plus data.
 //	void hostTransceiver_AddSetROP(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t size);
 
+
+	bool AddROP(eOropcode_t opc, uint16_t endpoint, uint16_t nvid, uint8_t* data, uint16_t size);
+
 	// Set user data in the local memory, ready to be loaded by the load_occasional_rop method
 	bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
 

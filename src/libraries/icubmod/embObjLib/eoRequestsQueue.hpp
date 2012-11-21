@@ -62,13 +62,14 @@ typedef struct
 
 // This class represent a thread waiting for something.
 
-// era ThreadTable2
+// era ThreadTable2 NEL CAN
 class eoThreadEntry
 {
 private:
 	// Semaphore where the thread will sleep onto -> it supports timeout
-	ACE_thread_t _handle;
 	yarp::os::Semaphore _synch;
+	ACE_thread_t _handle;
+
 	int _pending;
 	int _timedOut;
     int _replied;   // needed?
@@ -169,7 +170,8 @@ private:
             }
 
         i=index;
-        pool[i].handle()=s;
+        pool[i].handle()= s; // ??
+//        pool[i]._handle = s;
         pool[i].id = index;
         index++;
         return true;
@@ -215,6 +217,7 @@ public:
 
 // A fifo of threads. There is one on each entry in the RequestsQueue.
 // Each elements actually points to the corresponding eoThreadEntry
+
 class eoThreadFifo: public std::list<eoThreadId>
 {
  public:
@@ -229,7 +232,7 @@ class eoThreadFifo: public std::list<eoThreadId>
 
 /////////////////////  eoRequestsQueue  ///////////////////
 
-// A table, the index is a given can message type+the joint number.
+// A table, the index is a given NVID for the specific joint.
 // Each entry stores a list of waiting threads.
 // At the moment the size of this table is statically determined (
 // maximum size, given the number of joints and the number of messages,
@@ -262,7 +265,7 @@ public:
     bool cleanTimeouts(eoThreadId id);
 
     inline int getNMessages()       {return num_of_messages;}
-    inline int getPending()      	{return whole_pendings;}
+    inline int getPending()      	 {return whole_pendings;}
 
     //    inline int getNJoints()
     //        {return njoints;}
