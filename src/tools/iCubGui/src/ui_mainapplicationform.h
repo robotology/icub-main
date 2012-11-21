@@ -24,7 +24,6 @@
 #include <qcombobox.h>
 #include <qspinbox.h>
 #include <qgroupbox.h>
-#include <qpopupmenu.h>
 #include <qmainwindow.h>
 #include <qiconset.h>
 #include <qlabel.h>
@@ -33,6 +32,12 @@
 #include <qmenubar.h>
 #include <qtoolbar.h>
 #include <qboxlayout.h>
+
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+#include <q3popupmenu.h>
+#else // ICUB_USE_QT4_QT3_SUPPORT
+#include <qpopupmenu.h>
+#endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #include "animationview.h"
 
@@ -110,9 +115,15 @@ public:
     QLabel *fpsLabel;
     QSpinBox *fpsSpin;
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+    Q3PopupMenu *menuFile;
+    Q3PopupMenu *menuOptions;
+    Q3PopupMenu *menuHelp;
+#else // ICUB_USE_QT4_QT3_SUPPORT
     QPopupMenu *menuFile;
     QPopupMenu *menuOptions;
     QPopupMenu *menuHelp;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
     QToolBar *toolBar;
 
 #define setShortcut(s) setAccel(QKeySequence(QString(s)))
@@ -270,7 +281,11 @@ public:
         MainWindow->menuBar()->setName(QString::fromUtf8("menubar"));
         MainWindow->menuBar()->setGeometry(QRect(0, 0, 703, 25));
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        menuFile = new Q3PopupMenu(MainWindow);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         menuFile = new QPopupMenu(MainWindow);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         menuFile->setName(QString::fromUtf8("menuFile"));
         menuFile->setCaption("File");
         MainWindow->menuBar()->insertItem("File",menuFile);
@@ -280,7 +295,11 @@ public:
         fileSaveAsAction->addTo(menuFile);
         fileExitAction->addTo(menuFile);
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        menuOptions = new Q3PopupMenu(MainWindow);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         menuOptions = new QPopupMenu(MainWindow);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         menuOptions->setName(QString::fromUtf8("menuOptions"));
         menuOptions->setCaption("Options");
         MainWindow->menuBar()->insertItem("Options",menuOptions);
@@ -288,7 +307,11 @@ public:
         optionsShowTimelineAction->addTo(menuOptions);
         optionsConfigureiCubGUIAction->addTo(menuOptions);
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        menuHelp = new Q3PopupMenu(MainWindow);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         menuHelp = new QPopupMenu(MainWindow);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         menuHelp->setName(QString::fromUtf8("menuHelp"));
         menuHelp->setCaption("Help");
         MainWindow->menuBar()->insertItem("Help",menuHelp);

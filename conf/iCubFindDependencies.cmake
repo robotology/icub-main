@@ -29,7 +29,6 @@ message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
 find_package(GSL)
 find_package(GtkMM)
-find_package(Qt3)
 find_package(GLUT)
 find_package(OpenCV)
 
@@ -42,6 +41,13 @@ find_package(Gthread)
 find_package(ACE)
 find_package(IPOPT)
 find_package(IPP)
+
+option(ICUB_USE_QT4_QT3_SUPPORT "Use Qt4 support library for Qt3, instead of Qt3" FALSE)
+if(ICUB_USE_QT4_QT3_SUPPORT)
+    find_package(Qt4 REQUIRED QtCore QtGui QtOpenGl Qt3Support)
+else(ICUB_USE_QT4_QT3_SUPPORT)
+    find_package(Qt3)
+endif(ICUB_USE_QT4_QT3_SUPPORT)
 
 message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
 
@@ -95,7 +101,6 @@ endif()
 message(STATUS "I have found the following libraries:")
 
 checkandset_dependency(GSL)
-checkandset_dependency(Qt3)
 checkandset_dependency(GLUT)
 checkandset_dependency(OpenGL)
 checkandset_dependency(ODE)
@@ -107,13 +112,14 @@ checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
 checkandset_dependency(OpenCV)
+if(ICUB_USE_QT4_QT3_SUPPORT)
+    checkandset_dependency(QT4)
+else(ICUB_USE_QT4_QT3_SUPPORT)
+    checkandset_dependency(Qt3)
+endif(ICUB_USE_QT4_QT3_SUPPORT)
+
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
     message(STATUS "found yarp math library")
 endif (YARP_HAS_LIBMATH)
-
-
-
-
-

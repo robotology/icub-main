@@ -78,9 +78,13 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
 
     leftMouseButton=false;
     modifier=0;
-    
+
     setMouseTracking(true);
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+    setFocusPolicy(Qt::StrongFocus);
+#else // ICUB_USE_QT4_QT3_SUPPORT
     setFocusPolicy(QWidget::StrongFocus);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
 
     pBVH=new BVH(mObjectsManager);
 
