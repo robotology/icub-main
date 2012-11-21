@@ -18,7 +18,6 @@
 #ifndef UI_SETTINGSDIALOGFORM_H
 #define UI_SETTINGSDIALOGFORM_H
 
-#include <qlayout.h>
 #include <qpushbutton.h>
 #include <qtabwidget.h>
 #include <qcheckbox.h>
@@ -28,27 +27,44 @@
 #include <qmetaobject.h>
 #include <qapplication.h>
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+#include <q3gridlayout.h>
+#include <q3boxlayout.h>
+#else // ICUB_USE_QT4_QT3_SUPPORT
+#include <qlayout.h>
+#endif // ICUB_USE_QT4_QT3_SUPPORT
+
+
 //QT_BEGIN_NAMESPACE
 
 class Ui_SettingsDialogForm
 {
 public:
-    QGridLayout *gridLayout;
     QPushButton *okButton;
     QPushButton *cancelButton;
     QPushButton *applyButton;
     QTabWidget *tabWidget4;
     QWidget *tab;
-    QGridLayout *gridLayout1;
     QSpacerItem *spacerItem;
-    QHBoxLayout *hboxLayout;
-    QVBoxLayout *vboxLayout;
     QCheckBox *useFogCheckbox;
-    QHBoxLayout *hboxLayout1;
     QLabel *floorTranslucencyLabel;
     QSpinBox *floorTranslucencySpin;
     QSpacerItem *spacerItem1;
     QSpacerItem *spacerItem2;
+
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+    Q3GridLayout *gridLayout;
+    Q3GridLayout *gridLayout1;
+    Q3HBoxLayout *hboxLayout;
+    Q3VBoxLayout *vboxLayout;
+    Q3HBoxLayout *hboxLayout1;
+#else // ICUB_USE_QT4_QT3_SUPPORT
+    QGridLayout *gridLayout;
+    QGridLayout *gridLayout1;
+    QHBoxLayout *hboxLayout;
+    QVBoxLayout *vboxLayout;
+    QHBoxLayout *hboxLayout1;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
 
     void setupUi(QDialog *SettingsDialogForm)
     {
@@ -57,7 +73,11 @@ public:
         //SettingsDialogForm->setWindowModality(Qt::WindowModal);
         SettingsDialogForm->setModal(true);
         SettingsDialogForm->resize(337, 200);
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        gridLayout = new Q3GridLayout(SettingsDialogForm);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         gridLayout = new QGridLayout(SettingsDialogForm);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         gridLayout->setSpacing(6);
         gridLayout->setMargin(11);
         gridLayout->setName(QString::fromUtf8("gridLayout"));
@@ -82,7 +102,11 @@ public:
         tabWidget4->setName(QString::fromUtf8("tabWidget4"));
         tab = new QWidget();
         tab->setName(QString::fromUtf8("tab"));
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        gridLayout1 = new Q3GridLayout(tab);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         gridLayout1 = new QGridLayout(tab);
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         gridLayout1->setSpacing(6);
         gridLayout1->setMargin(11);
         gridLayout1->setName(QString::fromUtf8("gridLayout1"));
@@ -91,10 +115,17 @@ public:
         //gridLayout1->addItem(spacerItem, 1, 0, 1, 1);
         gridLayout1->addMultiCell(spacerItem, 1, 1, 0, 0);
 
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        hboxLayout = new Q3HBoxLayout();
+        vboxLayout = new Q3VBoxLayout();
+        hboxLayout1 = new Q3HBoxLayout();
+#else // ICUB_USE_QT4_QT3_SUPPORT
         hboxLayout = new QHBoxLayout();
+        vboxLayout = new QVBoxLayout();
+        hboxLayout1 = new QHBoxLayout();
+#endif // ICUB_USE_QT4_QT3_SUPPORT
         hboxLayout->setSpacing(6);
         hboxLayout->setName(QString::fromUtf8("hboxLayout"));
-        vboxLayout = new QVBoxLayout();
         vboxLayout->setSpacing(6);
         vboxLayout->setName(QString::fromUtf8("vboxLayout"));
         useFogCheckbox = new QCheckBox(tab);
@@ -102,7 +133,6 @@ public:
 
         vboxLayout->addWidget(useFogCheckbox);
 
-        hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
         hboxLayout1->setName(QString::fromUtf8("hboxLayout1"));
         floorTranslucencyLabel = new QLabel(tab);

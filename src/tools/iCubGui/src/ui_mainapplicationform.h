@@ -30,6 +30,7 @@
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
 #include <q3popupmenu.h>
 #include <q3boxlayout.h>
+#include <q3gridlayout.h>
 #include <q3toolbar.h>
 #include <q3mainwindow.h>
 #include <q3action.h>
@@ -52,6 +53,9 @@
 class Ui_MainWindow
 {
 public:
+    QWidget *centralwidget;
+    AnimationView *animationView;
+
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
     Q3Action *fileNewAction;
     Q3Action *fileOpenAction;
@@ -70,6 +74,15 @@ public:
 
     Q3Action *playAction;
     Q3Action *fpsAction;
+
+    Q3GridLayout *gridLayout;
+    Q3GridLayout *gridLayout1;
+
+    Q3HBoxLayout *fpsLayout;
+    Q3PopupMenu *menuFile;
+    Q3PopupMenu *menuOptions;
+    Q3PopupMenu *menuHelp;
+    Q3ToolBar *toolBar;
 #else // ICUB_USE_QT4_QT3_SUPPORT
     QAction *fileNewAction;
     QAction *fileOpenAction;
@@ -88,12 +101,20 @@ public:
 
     QAction *playAction;
     QAction *fpsAction;
-#endif // ICUB_USE_QT4_QT3_SUPPORT
 
-    QWidget *centralwidget;
     QGridLayout *gridLayout;
     QGridLayout *gridLayout1;
-    AnimationView *animationView;
+
+    QHBoxLayout *fpsLayout;
+    QPopupMenu *menuFile;
+    QPopupMenu *menuOptions;
+    QPopupMenu *menuHelp;
+    QToolBar *toolBar;
+#endif // ICUB_USE_QT4_QT3_SUPPORT
+
+    QLabel *fpsLabel;
+    QSpinBox *fpsSpin;
+    QWidget *fpsWidget;
 
     //QTabWidget *avatarPropsTab;
     /*
@@ -136,23 +157,6 @@ public:
     QSpacerItem *spacerItem1;
     */
 
-    QLabel *fpsLabel;
-    QSpinBox *fpsSpin;
-    QWidget *fpsWidget;
-
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
-    Q3HBoxLayout *fpsLayout;
-    Q3PopupMenu *menuFile;
-    Q3PopupMenu *menuOptions;
-    Q3PopupMenu *menuHelp;
-    Q3ToolBar *toolBar;
-#else // ICUB_USE_QT4_QT3_SUPPORT
-    QHBoxLayout *fpsLayout;
-    QPopupMenu *menuFile;
-    QPopupMenu *menuOptions;
-    QPopupMenu *menuHelp;
-    QToolBar *toolBar;
-#endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #define setShortcut(s) setAccel(QKeySequence(QString(s)))
 
@@ -314,9 +318,14 @@ public:
 
         centralwidget = new QWidget(MainWindow);
         centralwidget->setName(QString::fromUtf8("centralwidget"));
+#ifdef ICUB_USE_QT4_QT3_SUPPORT
+        gridLayout = new Q3GridLayout(centralwidget);
+        gridLayout1 = new Q3GridLayout(0);
+#else // ICUB_USE_QT4_QT3_SUPPORT
         gridLayout = new QGridLayout(centralwidget);
-        gridLayout->setName(QString::fromUtf8("gridLayout"));
         gridLayout1 = new QGridLayout();
+#endif // ICUB_USE_QT4_QT3_SUPPORT
+        gridLayout->setName(QString::fromUtf8("gridLayout"));
         gridLayout1->setName(QString::fromUtf8("gridLayout1"));
         animationView = new AnimationView(centralwidget,config);
         animationView->setName(QString::fromUtf8("animationView"));
