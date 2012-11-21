@@ -85,14 +85,14 @@ for m in $targets; do
 	    ( (
 		    keys=`( find src/$m -iname "*.cpp" -exec grep -A 5 -i "@ingroup.*icub_module" {} \; | grep defgroup | sed "s/.*defgroup[ \t]*//" | sed "s/[ \t].*//" | sed "s/_/__/g" | sed "s/^/group__/" ) 2> /dev/null`
 		    spec=`echo "$d" | sed "s|.*/||g"`
-#		    spec_url="http://eris.liralab.it/wiki/$spec"
+#		    spec_url="http://wiki.icub.org/wiki/$spec"
 #		    rm -f junk.wget
 #		    ( wget -O junk.wget $spec_url ) > /dev/null 2> /dev/null
 #		echo hello > junk.wget
 #		    if grep -q "currently no text" junk.wget; then
-#			echo "<A HREF=http://eris.liralab.it/wiki/$spec>(add wiki)</a> "
+#			echo "<A HREF=http://wiki.icub.org/wiki/$spec>(add wiki)</a> "
 #		    else 
-#			echo "<A HREF=http://eris.liralab.it/wiki/$spec>(view wiki)</a> "
+#			echo "<A HREF=http://wiki.icub.org/wiki/$spec>(view wiki)</a> "
 #		    fi
 		    for k in $keys; do
 			echo "<A HREF='../html/$k.html'>(doc)</A> "

@@ -2124,7 +2124,7 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
     }
 
-    // virtual link that describes T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics )
+    // virtual link that describes T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics )
     pushLink(new iKinLink(        0.0,  0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
 
     // block virtual links

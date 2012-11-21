@@ -1,4 +1,4 @@
-<!-- note: this modality suffers from frame drops! use 640x480 with bayer encoding instead. see also http://eris.liralab.it/wiki/Getting_640x480_images -->
+<!-- note: this modality suffers from frame drops! use 640x480 with bayer encoding instead. see also http://wiki.icub.org/wiki/Getting_640x480_images -->
 
 <application>
 <name>Cameras 640x480</name>

@@ -3,7 +3,7 @@
 **/
 
 //---------------------------------------TEMPORARY-----------------------------------------------------------
-For an updated description of the simulator please refer to: http://eris.liralab.it/wiki/Simulator_README
+For an updated description of the simulator please refer to: http://wiki.icub.org/wiki/Simulator_README
 //-----------------------------------------------------------------------------------------------------------
 
 TABLE OF CONTENTS:
@@ -31,7 +31,7 @@ TABLE OF CONTENTS:
 BEFORE COMPILING
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-iCub Simulator prerequisites: Cmake, ACE, YARP, GTK, iCUB repository, ODE, SDL Please make sure you have everything installed correctly by following this link 	http://eris.liralab.it/wiki/ODE
+iCub Simulator prerequisites: Cmake, ACE, YARP, GTK, iCUB repository, ODE, SDL Please make sure you have everything installed correctly by following this link 	http://wiki.icub.org/wiki/ODE
 
 Once the libraries are installed, set your environment variables to:
 
@@ -113,7 +113,7 @@ iCub_SIM.exe
 CONTROLLING THE ROBOT:
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Current robot ports: please refer to http://eris.liralab.it/wiki/ICub_joints for further informations
+Current robot ports: please refer to http://wiki.icub.org/wiki/ICub_joints for further informations
 
 yarp rpc /icubSim/left_leg/rpc:i  (The left leg has 6 joints in the standard configuration)
 yarp rpc /icubSim/right_leg/rpc:i  (The structure is identical to the left leg)

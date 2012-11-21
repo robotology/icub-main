@@ -23,7 +23,7 @@
  *
  * Classes for inverse kinematics of serial-links chains and 
  * iCub limbs based on IpOpt. To install IpOpt see the <a
- * href="http://eris.liralab.it/wiki/Installing_IPOPT">wiki</a>.
+ * href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
  *
  * Date: first release 23/06/2008
  *

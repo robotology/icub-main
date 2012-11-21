@@ -43,7 +43,7 @@
  * Functionally, the module just converts an input image to a binary image based on the supplied threshold
  *
  * A complete tutorial for this example is available on the iCub wiki at 
- * http://eris.liralab.it/wiki/Summary_of_iCub_Software_Development_Guidelines
+ * http://wiki.icub.org/wiki/Summary_of_iCub_Software_Development_Guidelines
  *
  * 
  * \section lib_sec Libraries

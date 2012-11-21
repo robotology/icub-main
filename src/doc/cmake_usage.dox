@@ -10,7 +10,7 @@ environments to compile the code.
 
 For basic information about
 how to install use CMake, see:
- - <a href="http://eris.liralab.it/wiki/CMake">Installing and Using CMake</A>
+ - <a href="http://wiki.icub.org/wiki/CMake">Installing and Using CMake</A>
 
 If your module is independent of others in the repository at the code
 level, you don't have to do anything special.  Here's about the

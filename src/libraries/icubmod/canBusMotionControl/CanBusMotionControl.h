@@ -500,7 +500,7 @@ class firmwareVersionHelper
         fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
         fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
         fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
-        fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+        fprintf(stderr,"  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"###################################################################################\n");
         fprintf(stderr,"###################################################################################\n");
@@ -530,7 +530,7 @@ class firmwareVersionHelper
         fprintf(stderr,"  It has been detected that your control boards are not using the same\n");
         fprintf(stderr,"  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
         fprintf(stderr,"  Please update your system (iCubInterface and/or your control board firmware.\n");
-        fprintf(stderr,"  For further information please visit: http://eris.liralab.it/wiki/Firmware\n");
+        fprintf(stderr,"  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"###################################################################################\n");
         fprintf(stderr,"###################################################################################\n");

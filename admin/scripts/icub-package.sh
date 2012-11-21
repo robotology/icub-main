@@ -76,9 +76,9 @@ echo "rsync --recursive $REMOTE_DIR natta,robotcub@frs.sourceforge.net:/home/frs
 
 ################ old upload
 
-#scp $ARCHFILE_LINUX babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
-#scp $ARCHFILE_WINDOWS babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
-#scp $DEPFILE babybot@eris.liralab.it:/var/www/html/iCub/downloads/src/
+#scp $ARCHFILE_LINUX babybot@wiki.icub.org:/var/www/html/iCub/downloads/src/
+#scp $ARCHFILE_WINDOWS babybot@wiki.icub.org:/var/www/html/iCub/downloads/src/
+#scp $DEPFILE babybot@wiki.icub.org:/var/www/html/iCub/downloads/src/
 
 #scp $ARCHFILE_WINDOWS natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/win/$ARCHFILE_WINDOWS
 #scp $ARCHFILE_LINUX natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/snapshots/linux/$ARCHFILE_LINUX

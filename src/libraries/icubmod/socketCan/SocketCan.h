@@ -4,7 +4,7 @@
  * @ingroup icub_hardware_modules 
  * \defgroup socketcan socketcan
  *
- * Implements <a href="http://eris.liralab.it/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a linux socketcan. 
+ * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a linux socketcan.
  *
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo

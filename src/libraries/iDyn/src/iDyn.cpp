@@ -2478,7 +2478,7 @@ void iCubNeckInertialDyn::allocate(const string &_type)
     pushLink(new iDynLink(1.3368659,		    	  0,		     0,		         0,					    0,				  0,				   0,			 0,				 0,				0,		 0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
 	// NOTE: VERIFY THE DYNAMIC PARAMETERS OF THE HEAD (WRITTEN ABOVE)
 
-    // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
+    // virtual links that describe T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics)
     // The link below must have no dynamic parameters.
     pushLink(new iDynLink(0         ,		          0,             0,              0,			            0,                0,                   0,            0,              0,             0,          0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
 
@@ -2541,7 +2541,7 @@ void iCubNeckInertialDynV2::allocate(const string &_type)
     pushLink(new iDynLink(1.3368659*mhd,  0,0,0,  0,0,0,0,0,0,      0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
 	// NOTE: VERIFY THE DYNAMIC PARAMETERS OF THE HEAD (WRITTEN ABOVE)
 
-    // virtual links that describe T_nls (see http://eris.liralab.it/wiki/ICubInertiaSensorKinematics)
+    // virtual links that describe T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics)
     // The link below must have no dynamic parameters.
 	pushLink(new iDynLink(0*mhd,		   0,0,0,  0,0,0,0,0,0,     0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
 

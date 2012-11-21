@@ -21,7 +21,7 @@
  * @ingroup icub_hardware_modules 
  *  
  * Implements the server part of the <a 
- * href="http://eris.liralab.it/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian 
+ * href="http://wiki.icub.org/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
  * Interface</a>. 
  *  
  * @note Please read carefully the \ref icub_cartesian_interface

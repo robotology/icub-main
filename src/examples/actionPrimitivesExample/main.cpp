@@ -58,7 +58,7 @@ reach(x2+lift_displacement,o)).
 8) The robot steers the arm to home position. 
  
 \note A video on iCub grasping objects can be seen <a 
-    href="http://eris.liralab.it/misc/icubvideos/icub_grasps_sponges.wmv">here</a>.
+    href="http://wiki.icub.org/misc/icubvideos/icub_grasps_sponges.wmv">here</a>.
   
 \section lib_sec Libraries 
 - YARP libraries. 
