@@ -51,7 +51,7 @@ else(WIN32)
 endif(WIN32)
 
 if(ICUB_USE_QT4_QT3_SUPPORT)
-    find_package(Qt4 REQUIRED QtCore QtGui QtOpenGl Qt3Support)
+    find_package(Qt4 QtCore QtGui QtOpenGl Qt3Support)
 else(ICUB_USE_QT4_QT3_SUPPORT)
     find_package(Qt3)
 endif(ICUB_USE_QT4_QT3_SUPPORT)
