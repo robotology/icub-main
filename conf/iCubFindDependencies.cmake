@@ -42,7 +42,14 @@ find_package(ACE)
 find_package(IPOPT)
 find_package(IPP)
 
-option(ICUB_USE_QT4_QT3_SUPPORT "Use Qt4 support library for Qt3, instead of Qt3" FALSE)
+# Qt4 Qt3Support library is enabled by default on linux but for now we
+# keep itdisabled on windows
+if(WIN32)
+    option(ICUB_USE_QT4_QT3_SUPPORT "Use Qt4 Qt3Support library, instead of Qt3" FALSE)
+else(WIN32)
+    option(ICUB_USE_QT4_QT3_SUPPORT "Use Qt4 Qt3Support library, instead of Qt3" TRUE)
+endif(WIN32)
+
 if(ICUB_USE_QT4_QT3_SUPPORT)
     find_package(Qt4 REQUIRED QtCore QtGui QtOpenGl Qt3Support)
 else(ICUB_USE_QT4_QT3_SUPPORT)
