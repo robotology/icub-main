@@ -1684,7 +1684,7 @@ void iCubFinger::allocate(const string &_type)
 
         setH0(H0);
 
-        pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0259, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
@@ -1745,7 +1745,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
             return false;
 
         (*this)[0].setMin(CTRL_DEG2RAD*min);
-        (*this)[0].setMax(CTRL_DEG2RAD*max);
+        (*this)[0].setMax(CTRL_DEG2RAD*max/3.0);
 
         if (!limFinger.getLimits(11,&min,&max))
             return false;
@@ -1807,7 +1807,7 @@ bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints
     else if (finger=="index")
     {
         chainJoints.resize(4);
-        chainJoints[0]=robotEncoders[offs+0];
+        chainJoints[0]=robotEncoders[offs+0]/3.0;
         chainJoints[1]=robotEncoders[offs+4];
         chainJoints[2]=robotEncoders[offs+5]/2.0;
         chainJoints[3]=chainJoints[2];
