@@ -6,11 +6,13 @@
 
 function killFunc(){
 
-ssh -t icub@$1<<"END"
-    cd ${ICUB_DIR}/bin
+ssh -T icub@$1<<END
+    cd `echo "${2}"`/bin
+    echo ""
     pwd
-    for f in `ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print $9}'`; do       
-            kill `ps -ef | grep -i $f | grep -v grep | awk '{print $2}'` &>/dev/null
+    ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$9'`}' | while read line
+    do      
+       ps -ef | grep -i `echo '$line'` | grep -v grep | awk '{print `echo '$2'`}' | xargs kill &>/dev/null
     done
     yarp clean timeout 0.1 &>/dev/null
 END
@@ -22,14 +24,16 @@ echo ""
 }
 
 function actionFunc(){
-ssh -t icub@$1<<"END"
-    cd ${ICUB_DIR}/bin
-    pwd
+ssh -T icub@$1<<END
+    cd `echo "${2}"`/bin
     echo ""
     echo "I have found the follwing modules:"
-    for f in `ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print $9}'`; do 
-        ps -ef | grep -i $f | grep -v grep
+    ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$9'`}' | while read line 
+    do
+        ps -ef | grep -i `echo '$line'` | grep -v grep 
     done
+
+    exit
     echo ""
 END
 
@@ -38,7 +42,7 @@ echo "WARNING!!! Should I go ahead and kill these processes?"
 echo ""
 select yn in "Yes" "No"; do
     case $yn in
-        Yes ) killFunc $1; break;;
+        Yes ) killFunc $1 '${ICUB_DIR}'; break;;
         No ) exit;;
     esac
 done
@@ -51,7 +55,7 @@ if [[ -n "$1" ]] ; then
     echo "Are you sure you want to run this script on node "[$1]"?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) actionFunc $1; break;;
+            Yes ) actionFunc $1 '${ICUB_DIR}'; break;;
             No ) exit;;
         esac
     done
