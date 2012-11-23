@@ -4,6 +4,8 @@
 # Author: Vadim Tikhanoff & Marco Randazzo
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 
+count=0
+
 function killFunc(){
 
 ssh -T icub@$1<<END
@@ -20,6 +22,7 @@ END
 echo ""
 echo "You are now clean on $1"
 echo ""
+
 }
 
 function actionFunc(){
@@ -38,7 +41,7 @@ END
 }
 
 function askForYarp(){
-
+    count=1
     echo "WARNING!!! Should I go ahead run this script for yarp?"
     askForListFunc $1 '${YARP_DIR}'
 }
@@ -61,7 +64,13 @@ function askForListFunc(){
     echo "Are you sure you want to run this script on node "[$1]"?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes ) actionFunc $1 $2; askForKillFunc $1 $2; askForYarp $1; break;;
+            Yes )   actionFunc $1 $2; 
+                    askForKillFunc $1 $2; 
+                    if [ $count -eq 0 ] 
+                    then 
+                        askForYarp $1 
+                    fi; 
+                    break;;
             No ) exit;;
         esac
     done
