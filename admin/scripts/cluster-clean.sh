@@ -12,7 +12,7 @@ ssh -t icub@$1<<"END"
     for f in `ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print $9}'`; do       
             kill `ps -ef | grep -i $f | grep -v grep | awk '{print $2}'` &>/dev/null
     done
-    yarp clean &>/dev/null
+    yarp clean timeout 0.1 &>/dev/null
 END
 
 echo ""
@@ -26,7 +26,7 @@ ssh -t icub@$1<<"END"
     cd ${ICUB_DIR}/bin
     pwd
     echo ""
-    echo "terminator has found the following app:"
+    echo "I have found the follwing modules:"
     for f in `ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print $9}'`; do 
         ps -ef | grep -i $f | grep -v grep
     done
@@ -48,7 +48,7 @@ done
 
 if [[ -n "$1" ]] ; then
     echo ""
-    echo "Are you sure you want to run the terminator on node "[$1]"?"
+    echo "Are you sure you want to run this script on node "[$1]"?"
     select yn in "Yes" "No"; do
         case $yn in
             Yes ) actionFunc $1; break;;
@@ -56,6 +56,6 @@ if [[ -n "$1" ]] ; then
         esac
     done
 else
-    echo 'node is empty, please select node on which to run terminator on'
+    echo 'node is empty, please select which node you want to clean-up'
 fi
     
