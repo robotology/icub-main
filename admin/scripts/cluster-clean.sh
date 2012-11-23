@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright: (C) 2011 RobotCub Consortium
+# Copyright: (C) 2012 Robotics, Brain and Cognitive Sciences, Istituto Italiano di Tecnologia
 # Author: Vadim Tikhanoff & Marco Randazzo
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 
