@@ -29,7 +29,7 @@ function actionFunc(){
 ssh -T icub@$1<<END
     cd `echo "${2}"`/bin
     echo ""
-    echo "I have found the follwing modules:"
+    echo "I have found the following modules:"
     ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$9'`}' | while read line 
     do
         ps -ef | grep -i `echo '$line'` | grep -v grep 
