@@ -12,7 +12,7 @@ ssh -T icub@$1<<END
     cd `echo "${2}"`/bin
     echo ""
     pwd
-    ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$9'`}' | while read line
+    ls -l --time-style="long-iso" --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$8'`}' | while read line
     do      
        ps -ef | grep -i `echo '$line'` | grep -v grep | awk '{print `echo '$2'`}' | xargs kill -9 &>/dev/null
     done
@@ -30,11 +30,12 @@ ssh -T icub@$1<<END
     cd `echo "${2}"`/bin
     echo ""
     echo "I have found the following modules:"
-    ls -l --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$9'`}' | while read line 
+    
+    ls -l --time-style="long-iso" --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$8'`}' | while read line         
     do
         ps -ef | grep -iw `echo '$line'` | grep -v grep 
     done
-
+    
     exit
     echo ""
 END
