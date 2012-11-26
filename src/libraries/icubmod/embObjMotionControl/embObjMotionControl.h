@@ -221,6 +221,7 @@ private:
 	int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
 	double *_maxTorque;						    /** Max torque of a joint */
 	double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
+	bool  *checking_motiondone;					/* flag if I' m already waiting for motion done */
 
 // basic knowledge of my joints
 	int		_njoints;							// Number of joints handled by this EMS; this values will be extracted by the config file
