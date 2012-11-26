@@ -13,21 +13,11 @@
 #include <string.h>
 #include <iostream>
 
-
-#include <yarp/os/Log.h>
-#include <yarp/os/impl/Logger.h>
-
-// embObj includes
-
-//#define IMPLEMENT_DEBUG_INTERFACE
+#include <yarp/os/Time.h>
 
 #include "embObjMotionControl.h"
 
-// Boards configurations
-//#include "EOnv_hid.h"
-
 #include "Debug.h"
-
 
 
 using namespace yarp::dev;
@@ -138,6 +128,7 @@ bool embObjMotionControl::alloc(int nj)
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
     _currentLimits=allocAndCheck<double>(nj);
+    checking_motiondone=allocAndCheck<bool>(nj);
 
     _velocityShifts=allocAndCheck<int>(nj);
     _velocityTimeout=allocAndCheck<int>(nj);
@@ -209,6 +200,7 @@ embObjMotionControl::embObjMotionControl() :
 	_ref_speeds		= NULL;
 	_ref_torques	= NULL;
 
+	checking_motiondone = NULL;
 	// debug connection
 	tot_packet_recv	= 0;
 	errors			= 0;
@@ -715,20 +707,20 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     	}
     }
 
-    Bottle& debug = config.findGroup("DEBUG");
-    xtmp.clear();
-    if (!extractGroup(debug, xtmp, "Jconf", "debug joint start", 3))
-    {
-    	start = _firstJoint;
-    	end   = _firstJoint + _njoints;
-    	// yDebug() << "NOT Found debug joint conf start " << start << "end " << end;
-    }
-    else
-    {
-    	start = xtmp.get(1).asInt();
-    	end   = xtmp.get(2).asInt();
-    	// yDebug() << "Found debug joint conf start " << start << "end " << end;
-    }
+//    Bottle& debug = config.findGroup("DEBUG");
+//    xtmp.clear();
+//    if (!extractGroup(debug, xtmp, "Jconf", "debug joint start", 3))
+//    {
+//    	start = _firstJoint;
+//    	end   = _firstJoint + _njoints;
+//    	// yDebug() << "NOT Found debug joint conf start " << start << "end " << end;
+//    }
+//    else
+//    {
+//    	start = xtmp.get(1).asInt();
+//    	end   = xtmp.get(2).asInt();
+//    	// yDebug() << "Found debug joint conf start " << start << "end " << end;
+//    }
 
     return true;
 }
@@ -910,7 +902,7 @@ bool embObjMotionControl::init()
 
 			jconfig.maxpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMax[index], _zeros[index], _angleToEncoder[index]);
 			jconfig.minpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMin[index], _zeros[index], _angleToEncoder[index]);
-			jconfig.velocitysetpointtimeout = (uint16_t)_velocityTimeout[index];
+			jconfig.velocitysetpointtimeout = (eOmeas_time_t)_velocityTimeout[index];
 			jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 			// to do
 
@@ -1032,7 +1024,7 @@ bool embObjMotionControl::configure_mais(void)
 	if( mais_ep )
 	{
 		uint8_t						maisnum = 0;
-		uint8_t                     datarate = 10; //10 milli (like in icub_right_arm_safe.ini)
+		uint8_t                     datarate = 10; //10 milli (like in icub_right_arm_safe.ini)  // type ok
 		eOsnsr_maismode_t			maismode = snsr_maismode_txdatacontinuously;
 
 		//set mais datarate = 1millisec
@@ -1409,6 +1401,7 @@ bool embObjMotionControl::disablePidRaw(int j)
 	_enabledPid[j-_firstJoint] = false;
 
 	// yDebug() << "disablePidRaw AMP status " << _enabledAmp[j-_firstJoint];
+//	printf("nvid of disablePid 0x%04X\n", nvid);
 
 	if(NULL == nvRoot)
 	{
@@ -1444,12 +1437,13 @@ bool embObjMotionControl::enablePidRaw(int j)
 
 	if(false == _enabledAmp[j-_firstJoint] )
 	{
-		yWarning() << "Error: Enable Amp before enabling Pid!!  (embObjCtrl)\n";
-		return false;
+		yWarning() << "Enable Amp before enabling Pid!!  (embObjCtrl)\n";
+//		return false;
 	}
 
 	// se giunto non è calibrato non fa nulla, se è calibrato manda il control mode position
 	_enabledPid[j-_firstJoint] = true;
+	printf("nvid of enablePid 0x%04X\n", nvid);
 
 	if(_calibrated[j-_firstJoint])
 	{
@@ -1528,8 +1522,8 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 
 	eOmc_setpoint_t setpoint;
 	setpoint.type = eomc_setpoint_velocity;
-	setpoint.to.velocity.value =  _command_speeds[index];
-	setpoint.to.velocity.withacceleration = _ref_accs[index];
+	setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[index];
+	setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[index];
 
 	if( !res->transceiver->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
 	{
@@ -1566,8 +1560,8 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 		}
 
 	    _command_speeds[index] = sp[index] / 1000.0;   // save internally the new value of speed.
-		setpoint.to.velocity.value =  _command_speeds[index];
-		setpoint.to.velocity.withacceleration = _ref_accs[index];
+		setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[index];
+		setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[index];
 
 		if( !res->transceiver->nvSetData(nvRoot[index], &setpoint, eobool_true, eo_nv_upd_dontdo))
 		{
@@ -1625,34 +1619,34 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 	{
 		// muove -> amp+pid, poi calib
 		case eomc_calibration_type0_hard_stops:
-			calib.params.type0.pwmlimit = p1;
-			calib.params.type0.velocity = p2;
+			calib.params.type0.pwmlimit = (int16_t) p1;
+			calib.params.type0.velocity = (eOmeas_velocity_t) p2;
 			break;
 
 		// fermo
 		case eomc_calibration_type1_abs_sens_analog:
-			calib.params.type1.position = p1;
-			calib.params.type1.velocity = p2;
+			calib.params.type1.position = (int16_t) p1;
+			calib.params.type1.velocity = (eOmeas_velocity_t) p2;
 			break;
 
 		// muove
 		case eomc_calibration_type2_hard_stops_diff:
-			calib.params.type2.pwmlimit = p1;
-			calib.params.type2.velocity = p2;
+			calib.params.type2.pwmlimit = (int16_t) p1;
+			calib.params.type2.velocity = (eOmeas_velocity_t) p2;
 			break;
 
 		// muove
 		case eomc_calibration_type3_abs_sens_digital:
-			calib.params.type3.position = p1;
-			calib.params.type3.velocity = p2;
-			calib.params.type3.offset   = p3;
+			calib.params.type3.position = (int16_t) p1;
+			calib.params.type3.velocity = (eOmeas_velocity_t) p2;
+			calib.params.type3.offset   = (int32_t) p3;
 			break;
 
 		// muove
 		case eomc_calibration_type4_abs_and_incremental:
-			calib.params.type4.position   = p1;
-			calib.params.type3.velocity   = p2;
-			calib.params.type4.maxencoder = p3;
+			calib.params.type4.position   = (int16_t) p1;
+			calib.params.type3.velocity   = (eOmeas_velocity_t) p2;
+			calib.params.type4.maxencoder = (int32_t) p3;
 			break;
 
 		default:
@@ -1775,9 +1769,9 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
 	_ref_positions[index] = ref;   // save internally the new value of speed.
 
 	eOmc_setpoint_t setpoint;
-	setpoint.type = eomc_setpoint_position;
-	setpoint.to.position.value =  _ref_positions[index];
-	setpoint.to.position.withvelocity = _ref_speeds[index];
+	setpoint.type = (eOenum08_t) eomc_setpoint_position;
+	setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[index];
+	setpoint.to.position.withvelocity = (eOmeas_velocity_t) _ref_speeds[index];
 
 	if( !res->transceiver->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
 	{
@@ -1788,6 +1782,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
 	if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
 		return false;
 
+	yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6) << "\n";
 	return true;
 }
 
@@ -1818,6 +1813,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 	eOnvID_t nvid_config = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__motionmonitormode);
 	EOnv *nvRoot_config = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid_config, &tmpnv_config);
 
+//	printf("nvid of check motion done 0x%04X\n", nvid_config);
 	if(NULL == nvRoot_config)
 	{
 		NV_NOT_FOUND;
@@ -1827,9 +1823,9 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 	// monitor status until set point is reached, if it wasn't already set
 	// this is because the function has to be in a non blocking fashion and I want to avoid resending the same message over and over again!!
 
-	eOmc_joint_config_t *val = (eOmc_joint_config_t *) nvRoot_config->loc; //eomc_motionmonitormode_untilreached;
-	if( eomc_motionmonitormode_dontmonitor == val->motionmonitormode)
+	if(!checking_motiondone[j-_firstJoint])
 	{
+		checking_motiondone[j-_firstJoint] = true;
 		eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_forever;
 		if( !res->transceiver->nvSetData(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
 		{
@@ -1865,6 +1861,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 //			}
 //			res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_config);
 //		}
+//		checking_motiondone[j-_firstJoint]= false;
 	}
 	else
 		*flag = false;
@@ -1893,8 +1890,6 @@ bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
 	// save internally the new value of speed; it'll be used in the positionMove
 	int index = j-_firstJoint;
 	_ref_speeds[index] = sp;
-
-
 	return true;
 }
 
