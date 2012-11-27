@@ -23,7 +23,7 @@
 
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
-#include <OpenGL/glut.h>  //  Include GLUT, OpenGL, and GLU libraries
+#include <GLUT/glut.h>  //  Include GLUT, OpenGL, and GLU libraries
 #else
 #include <GL/glu.h>
 #include <GL/glut.h>  //  Include GLUT, OpenGL, and GLU libraries
