@@ -1,5 +1,5 @@
 WEB_USER=babybot
-WEB_SERVER=wiki.icub.org
+WEB_SERVER=eris.humanoids.iit.it
 WEB_DIR=/var/www/html/iCub
 
 WEB_DOC_DIR=$WEB_DIR
