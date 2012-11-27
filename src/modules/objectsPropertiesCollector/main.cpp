@@ -97,7 +97,18 @@ properties.
 <b>set</b> \n
 <i>Format</i>: [set] ((id <num>) ({prop0} <val0>) ...) \n 
 <i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: add/modify properties of the stored item.
+<i>Action</i>: add/modify properties of the stored item. 
+ 
+<b>lock</b> \n
+<i>Format</i>: [lock] ((id <num>)) \n 
+<i>Reply</i>: [nack]; [ack] \n 
+<i>Action</i>: lock the specified item; this way only the port 
+owner can modify it later on through a [set] request.
+ 
+<b>unlock</b> \n
+<i>Format</i>: [unlock] ((id <num>)) \n 
+<i>Reply</i>: [nack]; [ack] \n 
+<i>Action</i>: unlock the specified item.
  
 <b>time</b> \n
 <i>Format</i>: [time] ((id <num>)) \n 
@@ -244,28 +255,32 @@ reply: [ack] (id (1))
 using namespace std;
 using namespace yarp::os;
 
-#define CMD_ADD             VOCAB3('a','d','d')
-#define CMD_DEL             VOCAB3('d','e','l')
-#define CMD_GET             VOCAB3('g','e','t')
-#define CMD_SET             VOCAB3('s','e','t')
-#define CMD_TIME            VOCAB4('t','i','m','e')
-#define CMD_DUMP            VOCAB4('d','u','m','p')
-#define CMD_ASK             VOCAB3('a','s','k')
-#define CMD_SYNC            VOCAB4('s','y','n','c')
-#define CMD_ASYNC           VOCAB4('a','s','y','n')
-                            
-#define REP_ACK             VOCAB3('a','c','k')
-#define REP_NACK            VOCAB4('n','a','c','k')
-#define REP_UNKNOWN         VOCAB4('u','n','k','n')
-                            
-#define OPT_ALL             VOCAB3('a','l','l')
-                            
-#define PROP_ID             ("id")
-#define PROP_LIFETIMER      ("lifeTimer")
-#define PROP_SET            ("propSet")
-#define BCTAG_EMPTY         ("empty")
-#define BCTAG_SYNC          ("sync")
-#define BCTAG_ASYNC         ("async")
+#define CMD_ADD                         VOCAB3('a','d','d')
+#define CMD_DEL                         VOCAB3('d','e','l')
+#define CMD_GET                         VOCAB3('g','e','t')
+#define CMD_SET                         VOCAB3('s','e','t')
+#define CMD_LOCK                        VOCAB4('l','o','c','k')
+#define CMD_UNLOCK                      VOCAB4('u','n','l','o')
+#define CMD_TIME                        VOCAB4('t','i','m','e')
+#define CMD_DUMP                        VOCAB4('d','u','m','p')
+#define CMD_ASK                         VOCAB3('a','s','k')
+#define CMD_SYNC                        VOCAB4('s','y','n','c')
+#define CMD_ASYNC                       VOCAB4('a','s','y','n')
+                                        
+#define REP_ACK                         VOCAB3('a','c','k')
+#define REP_NACK                        VOCAB4('n','a','c','k')
+#define REP_UNKNOWN                     VOCAB4('u','n','k','n')
+                                        
+#define OPT_ALL                         VOCAB3('a','l','l')
+                                        
+#define PROP_ID                         ("id")
+#define PROP_LIFETIMER                  ("lifeTimer")
+#define PROP_LIFETIMER_VAL_DISABLED     (-1.0)
+#define PROP_OWNERSHIP_VAL_ALL          ("*")
+#define PROP_SET                        ("propSet")
+#define BCTAG_EMPTY                     ("empty")
+#define BCTAG_SYNC                      ("sync")
+#define BCTAG_ASYNC                     ("async")
 
 
 namespace relationalOperators
@@ -374,6 +389,11 @@ protected:
     {
         Property *prop;
         double    lastUpdate;
+        string    owner;
+
+        Item() : prop(NULL),
+                 lastUpdate(PROP_LIFETIMER_VAL_DISABLED),
+                 owner(PROP_OWNERSHIP_VAL_ALL) { }
     };
 
     /************************************************************************/
@@ -595,7 +615,6 @@ public:
 
             int id=b2->get(1).asInt();
             itemsMap[id].prop=new Property(b1.get(2).asList()->toString().c_str());
-            itemsMap[id].lastUpdate=-1.0;
 
             if (idCnt<=id)
                 idCnt=id+1;
@@ -742,18 +761,17 @@ public:
         if (content==NULL)
             return false;
 
-        mutex.wait();
         Property request(content->toString().c_str());
         if (!request.check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.post();
             return false;
         }
 
         int id=request.find(PROP_ID).asInt();
         printMessage("getting item %d ... ",id);
 
+        mutex.wait();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -787,52 +805,143 @@ public:
     }
 
     /************************************************************************/
-    bool set(Bottle *content)
+    bool set(Bottle *content, const string &agent)
     {
         if (content==NULL)
             return false;
 
-        mutex.wait();
         Property request(content->toString().c_str());
         if (!request.check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.post();
             return false;
         }
 
         int id=request.find(PROP_ID).asInt();
         printMessage("setting item %d ... ",id);
 
+        mutex.wait();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
-            Property *pProp=it->second.prop;
-            request.unput(PROP_ID);
-            Bottle b(request.toString().c_str());
-
-            printMessage("%s\n",b.toString().c_str());
-
-            for (int i=0; i<b.size(); i++)
+            string owner=it->second.owner;
+            if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
             {
-                Bottle *option=b.get(i).asList();
+                Property *pProp=it->second.prop;
+                request.unput(PROP_ID);
+                Bottle b(request.toString().c_str());
 
-                if (option->size()<2)
+                printMessage("%s\n",b.toString().c_str());
+
+                for (int i=0; i<b.size(); i++)
                 {
-                    printMessage("invalid property!\n");
-                    continue;
+                    Bottle *option=b.get(i).asList();
+
+                    if (option->size()<2)
+                    {
+                        printMessage("invalid property!\n");
+                        continue;
+                    }
+
+                    string prop=option->get(0).asString().c_str();
+                    Value  val=option->get(1);
+
+                    pProp->unput(prop.c_str());
+                    pProp->put(prop.c_str(),val);
                 }
 
-                string prop=option->get(0).asString().c_str();
-                Value  val=option->get(1);
-
-                pProp->unput(prop.c_str());
-                pProp->put(prop.c_str(),val);
+                it->second.lastUpdate=Time::now();                
+                mutex.post();
+                return true;
             }
+            else
+            {
+                printMessage("locked by [%s]!\n",owner.c_str());
+                mutex.post();
+                return false;
+            }
+        }
 
-            it->second.lastUpdate=Time::now();
-            mutex.post();
-            return true;
+        printMessage("not present!\n");
+        mutex.post();
+        return false;
+    }
+
+    /************************************************************************/
+    bool lock(Bottle *content, const string &agent)
+    {
+        if (content==NULL)
+            return false;
+
+        Property request(content->toString().c_str());
+        if (!request.check(PROP_ID))
+        {
+            printMessage("%s field not present within the request!\n",PROP_ID);
+            return false;
+        }
+
+        int id=request.find(PROP_ID).asInt();
+        printMessage("locking item %d ... ",id);
+
+        mutex.wait();
+        map<int,Item>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
+        {
+            string owner=it->second.owner;
+            if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
+            {
+                printMessage("successfully locked by [%s]!\n",agent.c_str());
+                it->second.owner=agent;
+                mutex.post();
+                return true;
+            }
+            else
+            {
+                printMessage("already locked by [%s]!\n",owner.c_str());
+                mutex.post();
+                return false;
+            }
+        }
+
+        printMessage("not present!\n");
+        mutex.post();
+        return false;
+    }
+
+    /************************************************************************/
+    bool unlock(Bottle *content, const string &agent)
+    {
+        if (content==NULL)
+            return false;
+
+        Property request(content->toString().c_str());
+        if (!request.check(PROP_ID))
+        {
+            printMessage("%s field not present within the request!\n",PROP_ID);
+            return false;
+        }
+
+        int id=request.find(PROP_ID).asInt();
+        printMessage("unlocking item %d ... ",id);
+
+        mutex.wait();
+        map<int,Item>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
+        {
+            string owner=it->second.owner;
+            if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
+            {
+                printMessage("successfully unlocked!\n");
+                it->second.owner=PROP_OWNERSHIP_VAL_ALL;
+                mutex.post();
+                return true;
+            }
+            else
+            {
+                printMessage("already locked by [%s]!\n",owner.c_str());
+                mutex.post();
+                return false;
+            }
         }
 
         printMessage("not present!\n");
@@ -1029,8 +1138,8 @@ public:
     /************************************************************************/
     void respond(ConnectionReader &connection, const Bottle &command, Bottle &reply)
     {
-        printMessage("[%s]: %s\n",connection.getRemoteContact().getName().c_str(),
-                                  command.toString().c_str());
+        string agent=connection.getRemoteContact().getName().c_str();
+        printMessage("[%s]: %s\n",agent.c_str(),command.toString().c_str());
 
         if (command.size()<1)
         {
@@ -1125,7 +1234,7 @@ public:
                 }
     
                 Bottle *content=command.get(1).asList();
-                if (set(content))
+                if (set(content,agent))
                 {
                     reply.addVocab(REP_ACK);
                     if (asyncBroadcast)
@@ -1134,6 +1243,42 @@ public:
                 else
                     reply.addVocab(REP_NACK);
     
+                break;
+            }
+
+            //-----------------
+            case CMD_LOCK:
+            {
+                if (command.size()<2)
+                {
+                    reply.addVocab(REP_NACK);
+                    break;
+                }
+
+                Bottle *content=command.get(1).asList();
+                if (lock(content,agent))
+                    reply.addVocab(REP_ACK);
+                else
+                    reply.addVocab(REP_NACK);
+
+                break;
+            }
+
+            //-----------------
+            case CMD_UNLOCK:
+            {
+                if (command.size()<2)
+                {
+                    reply.addVocab(REP_NACK);
+                    break;
+                }
+
+                Bottle *content=command.get(1).asList();
+                if (unlock(content,agent))
+                    reply.addVocab(REP_ACK);
+                else
+                    reply.addVocab(REP_NACK);
+
                 break;
             }
 
@@ -1289,7 +1434,6 @@ public:
                             {
                                 int id=idList->get(1).asInt();
                                 itemsMap[id].prop=new Property(item->tail().toString().c_str());
-                                itemsMap[id].lastUpdate=-1.0;
 
                                 if (idCnt<=id)
                                     idCnt=id+1;

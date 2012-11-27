@@ -1,3 +1,6 @@
+2012-11-27  Ugo Pattacini  <ugo.pattacini@iit.it>
+   objectsPropertiesCollector: added lock/unlock mechanism.
+
 2012-11-19  Ugo Pattacini  <ugo.pattacini@iit.it>
    tutorials iCub/main/src/libraries/${lib} moved under
    iCub/tutorial/${lib}
@@ -14,21 +17,21 @@
 
 2012-10-25  Marco Randazzo  <marco.randazzo@iit.it>
     
-	*/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
-	*/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
-	*/src/libraries/icubmod/motionControlLib/messages.h
-	implemented the new CAN messages:
+   */src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
+   */src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
+   */src/libraries/icubmod/motionControlLib/messages.h
+   implemented the new CAN messages:
     #define CAN_SET_OPTICAL_ENC_RATIO       92
-	#define CAN_SET_POS_STICTION_PARAMS     93
-	#define CAN_GET_POS_STICTION_PARAMS     94
-	#define CAN_SET_TORQUE_STICTION_PARAMS  95
-	#define CAN_GET_TORQUE_STICTION_PARAMS  96
-	
+   #define CAN_SET_POS_STICTION_PARAMS     93
+   #define CAN_GET_POS_STICTION_PARAMS     94
+   #define CAN_SET_TORQUE_STICTION_PARAMS  95
+   #define CAN_GET_TORQUE_STICTION_PARAMS  96
+   
 2012-10-23  Marco Randazzo  <marco.randazzo@iit.it>
 
     * src/libraries/icubmod/controlBoardWrapper2/ControlBoardWrapper2.cpp
     Stiction_pos_val and stiction_neg_val parameters have been added to the yarp::dev::Pid class.
-	All the related methods (get/set pid) have been modified accordingly.
+   All the related methods (get/set pid) have been modified accordingly.
     Requires YARP_VERSION_TWEAK = 9424.
 
 2012-10-11  Ugo Pattacini  <ugo.pattacini@iit.it>
@@ -38,20 +41,20 @@
 
 2012-09-04  Paul Fitzpatrick  <paul@robotrebuilt.com>
 
-	* src/simulators/iCubSimulation/wrapper/WorldManager.cpp
-	* src/simulators/iCubSimulation/wrapper/WorldOp.h
-	* src/simulators/iCubSimulation/odesdl/OdeWorldManager.cpp:
-	Applied Fabien Benureau's patch to query rotation angle of object
-	in simulator
+   * src/simulators/iCubSimulation/wrapper/WorldManager.cpp
+   * src/simulators/iCubSimulation/wrapper/WorldOp.h
+   * src/simulators/iCubSimulation/odesdl/OdeWorldManager.cpp:
+   Applied Fabien Benureau's patch to query rotation angle of object
+   in simulator
 
 2012-09-03 Alessandro Scalzo <alessandro.scalzo@iit.it>
-	* src/core/iCubInterface/RobotInterfaceRemap.cpp
-	* src/libraries/icubmod/sharedCan/CMakeLists.txt
+   * src/core/iCubInterface/RobotInterfaceRemap.cpp
+   * src/libraries/icubmod/sharedCan/CMakeLists.txt
     * src/libraries/icubmod/sharedCan/SharedCanBus.cpp
     * src/libraries/icubmod/sharedCan/SharedCanBus.h
-	
-	Added physdevice in iCubInterface configuration.
-	Pre-release of sharedcan bus interface.
+   
+   Added physdevice in iCubInterface configuration.
+   Pre-release of sharedcan bus interface.
 
 2012-08-30 Lorenzo Natale <lorenzo.natale@iit.it>
     *  src/animationview.h
@@ -149,7 +152,7 @@
 
 2012-01-28 Lorenzo Natale <lorenzo.natale@iit.it>
         * Added option to include or not test targets (less targets in Visual Studio projects)
-		
+           
 2012-01-27 Lorenzo Natale <lorenzo.natale@iit.it>
         * tagging 1.1.9
 
@@ -165,20 +168,20 @@
 
 2011-09-13 Lorenzo Natale <lorenzo.natale@iit.it>
     
-	* src/tools/iCubGui/src/qavimator.cpp
-	* src/tools/iCubGui/src/ui_mainapplicationform.h
-	
-	added width and hight options to control the size of the window
+   * src/tools/iCubGui/src/qavimator.cpp
+   * src/tools/iCubGui/src/ui_mainapplicationform.h
+   
+   added width and hight options to control the size of the window
 
 
 2011-10-28 Alessandro Scalzo <alessandro.scalzo@iit.it>
     Added dragonfly2raw driver (raw image framegrabber support).
     * main/src/libraries/icubmod/dragonfly2/common/*.*
-	* main/src/libraries/icubmod/dragonfly2/linux/*.*
-	* main/src/libraries/icubmod/dragonfly2/winnt/*.*
+   * main/src/libraries/icubmod/dragonfly2/linux/*.*
+   * main/src/libraries/icubmod/dragonfly2/winnt/*.*
 
 2011-10-07 Alessandro Scalzo <alessandro.scalzo@iit.it>
-	Added icons and colors in iCubInterfaceGui.
+   Added icons and colors in iCubInterfaceGui.
         * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiClient/GuiRawData.cpp
         * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiClient/GuiRawData.h
         * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiClient/iCubBoardGui.h
@@ -189,7 +192,7 @@
         * app/iCubInterfaceGui
 
 2011-10-05 Alessandro Scalzo <alessandro.scalzo@iit.it>
-    	Added error messages.
+           Added error messages.
         * main/src/libraries/icubmod/dragonfly2/linux/FirewireCameraDC1394-DR2_2.cpp
 
 2011-10-03 Ugo Pattacini <ugo.pattacini@iit.it>
@@ -204,8 +207,8 @@
         * main/src/tools/iCubInterfaceGui/iCubInterfaceGuiServer/mainServer.cpp
 
 2011-09-20 Randazzo Marco <marco.randazzo@iit.it>
-	* main/src/modules/torqueObserver is now deprecated
-	* main/src/modules/wrenchObserver is now deprecated
+   * main/src/modules/torqueObserver is now deprecated
+   * main/src/modules/wrenchObserver is now deprecated
 
 2011-09-18 Alessandro Scalzo <alessandro.scalzo@iit.it>
     * Committed bunch of changes to iCubInterfaceGui to 
@@ -235,11 +238,11 @@
 
 2011-09-06 Lorenzo Natale <lorenzo.natale@iit.it>
     * moved iCubInterfaceGuiLib to libraries to fix dependencies
-	
+   
 2011-08-26 Randazzo Marco <marco.randazzo@iit.it>
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
-	improved method yarp::dev::IImpedanceControl::getCurrentImpedanceLimit()
+   improved method yarp::dev::IImpedanceControl::getCurrentImpedanceLimit()
 
 2011-08-25 Randazzo Marco <marco.randazzo@iit.it>
     * CMakeLists.txt: iCub now requires YARP 2.3.11
@@ -248,25 +251,25 @@
     * main/src/tools/robotMotorGui/src/*
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
-	added new method yarp::dev::IImpedanceControl::getCurrentImpedanceLimit()
+   added new method yarp::dev::IImpedanceControl::getCurrentImpedanceLimit()
 
 2011-08-32 Lorenzo Natale <lorenzo.natale@iit.it>
     * tagging 1.1.6
-	
+   
 2011-08-18 Lorenzo Natale <lorenzo.natale@iit.it>
     * main/CMakeLists.txt: simpler YARP version check
 
 2011-07-21 Randazzo Marco <marco.randazzo@iit.it>
-	* main/src/core/iCubInterface/ControlBoardWrapper.cpp
-	* main/src/core/iCubInterface/ControlBoardWrapper2.cpp
-	* main/src/core/iCubInterface/ControlBoardWrapper2.h
-	Old methods of yarp::dev::IImpedanceControl have been removed (see 2011-05-26 changelog)
-	Fixed a mismatch between yarp and icub VOCABS for yarp::dev::IControlMode interface
-	
+   * main/src/core/iCubInterface/ControlBoardWrapper.cpp
+   * main/src/core/iCubInterface/ControlBoardWrapper2.cpp
+   * main/src/core/iCubInterface/ControlBoardWrapper2.h
+   Old methods of yarp::dev::IImpedanceControl have been removed (see 2011-05-26 changelog)
+   Fixed a mismatch between yarp and icub VOCABS for yarp::dev::IControlMode interface
+   
 2011-18-07  Lorenzo Natale  <lorenzo.natale@iit.it>
     * Forcing ICUB_APPLICATION_PREFIX from ICUB_ROOT
-	* Disable and complain if ICUB_ROOT is not set
-	
+   * Disable and complain if ICUB_ROOT is not set
+   
 2011-15-07  Lorenzo Natale  <lorenzo.natale@iit.it>
     * tagging version 1.1.3
 
@@ -274,7 +277,7 @@
      * main/src/libraries/icubmod/gazeController:
      new methods get3DPoint() and get3DPointOnPlane() added to
      facilitate 2d-3d mapping.
-	 
+    
 2011-06-1 Lorenzo Natale <lorenzo.natale@iit.it>
     * Tagging version 1.1.1
     
@@ -290,18 +293,18 @@
     * CMakeLists.txt: iCub now requires YARP 2.3.4
 
 2011-05-26 Randazzo Marco <marco.randazzo@iit.it>
-	* main/src/core/iCubInterface/ControlBoardWrapper2.cpp
-	* main/src/core/iCubInterface/ControlBoardWrapper2.h
+   * main/src/core/iCubInterface/ControlBoardWrapper2.cpp
+   * main/src/core/iCubInterface/ControlBoardWrapper2.h
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
-	* main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
-	- The following methods of yarp::dev::IImpedanceControl have been deprecated:
-	bool getImpedance(int j, double *stiffness, double *damping, double *offset)
-	bool setImpedance(int j, double stiffness,  double damping,  double offset)
-	Instead, use the new methods:
-	bool getImpedance(int j, double *stiffness, double *damping)
-	bool setImpedance(int j, double stiffness,  double damping)
-	THIS MODIFICATION REQUIRES A YARP UPDATE
-	
+   * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.h
+   - The following methods of yarp::dev::IImpedanceControl have been deprecated:
+   bool getImpedance(int j, double *stiffness, double *damping, double *offset)
+   bool setImpedance(int j, double stiffness,  double damping,  double offset)
+   Instead, use the new methods:
+   bool getImpedance(int j, double *stiffness, double *damping)
+   bool setImpedance(int j, double stiffness,  double damping)
+   THIS MODIFICATION REQUIRES A YARP UPDATE
+   
 2011-05-17 Randazzo Marco <marco.randazzo@iit.it>
     * main/src/libraries/icubmod/canBusMotionControl/CanBusMotionControl.cpp
     released new version of CanBusMotionControl with improved parsing of .ini files (by LorenzoNatale)
