@@ -831,15 +831,12 @@ public:
             if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
             {
                 Property *pProp=it->second.prop;
-                Property request(content->toString().c_str());
-                request.unput(PROP_ID);
-                Bottle b(request.toString().c_str());
 
-                printMessage("%s\n",b.toString().c_str());
+                printMessage("%s\n",content->toString().c_str());
 
-                for (int i=0; i<b.size(); i++)
+                for (int i=0; i<content->size(); i++)
                 {
-                    Bottle *option=b.get(i).asList();
+                    Bottle *option=content->get(i).asList();
 
                     if (option->size()<2)
                     {
@@ -849,6 +846,9 @@ public:
 
                     string prop=option->get(0).asString().c_str();
                     Value  val=option->get(1);
+
+                    if (prop==PROP_ID)
+                        continue;
 
                     pProp->unput(prop.c_str());
                     pProp->put(prop.c_str(),val);
