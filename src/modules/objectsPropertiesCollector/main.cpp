@@ -689,6 +689,12 @@ public:
         if (content==NULL)
             return false;
 
+        if (content->check(PROP_ID))
+        {
+            printMessage("%s field cannot be specified as a property!\n",PROP_ID);
+            return false;
+        }
+
         mutex.wait();
         Property *item=new Property(content->toString().c_str());
         itemsMap[idCnt].prop=item;
@@ -720,21 +726,20 @@ public:
             }
         }
 
-        Property request(content->toString().c_str());
-        if (!request.check(PROP_ID))
+        if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
         
-        int id=request.find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt();
         printMessage("removing item %d ... ",id);
 
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
-            Bottle *propSet=request.find(PROP_SET).asList();
+            Bottle *propSet=content->find(PROP_SET).asList();
             if (propSet!=NULL)
             {
                 for (int i=0; i<propSet->size(); i++)
@@ -761,14 +766,13 @@ public:
         if (content==NULL)
             return false;
 
-        Property request(content->toString().c_str());
-        if (!request.check(PROP_ID))
+        if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
             return false;
         }
 
-        int id=request.find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt();
         printMessage("getting item %d ... ",id);
 
         mutex.wait();
@@ -778,7 +782,7 @@ public:
             Property *pProp=it->second.prop;
             item.clear();
 
-            Bottle *propSet=request.find(PROP_SET).asList();
+            Bottle *propSet=content->find(PROP_SET).asList();
             if (propSet!=NULL)
             {
                 Property prop;
@@ -810,14 +814,13 @@ public:
         if (content==NULL)
             return false;
 
-        Property request(content->toString().c_str());
-        if (!request.check(PROP_ID))
+        if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
             return false;
         }
 
-        int id=request.find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt();
         printMessage("setting item %d ... ",id);
 
         mutex.wait();
@@ -828,6 +831,7 @@ public:
             if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
             {
                 Property *pProp=it->second.prop;
+                Property request(content->toString().c_str());
                 request.unput(PROP_ID);
                 Bottle b(request.toString().c_str());
 
@@ -873,14 +877,13 @@ public:
         if (content==NULL)
             return false;
 
-        Property request(content->toString().c_str());
-        if (!request.check(PROP_ID))
+        if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
             return false;
         }
 
-        int id=request.find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt();
         printMessage("locking item %d ... ",id);
 
         mutex.wait();
@@ -914,14 +917,13 @@ public:
         if (content==NULL)
             return false;
 
-        Property request(content->toString().c_str());
-        if (!request.check(PROP_ID))
+        if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
             return false;
         }
 
-        int id=request.find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt();
         printMessage("unlocking item %d ... ",id);
 
         mutex.wait();
@@ -956,15 +958,14 @@ public:
             return false;
 
         mutex.wait();
-        Property request(content->toString().c_str());
-        if (!request.check(PROP_ID))
+        if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
             mutex.post();
             return false;
         }
 
-        int id=request.find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt();
         printMessage("getting time elapsed from last update for item %d ... ",id);
 
         map<int,Item>::iterator it=itemsMap.find(id);
