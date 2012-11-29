@@ -46,7 +46,7 @@ Importantly, the module is capable of running in real-time.
 \section proto_sec Protocol
  
 Notation used hereafter to explain available commands: [.] is a 
-Vocab, {.} is a string, <.> is a Value (i.e. string, double, 
+Vocab, "." is a string, <.> is a Value (i.e. string, double, 
 int) or a List (so that also complex properties such as images 
 can be attached to the objects). 
  
@@ -68,14 +68,14 @@ The commands sent as bottles to the module port
 /<moduleName>/rpc are the following: 
  
 <b>add</b> \n
-<i>Format</i>: [add] (({prop0} <val0>) ({prop1} <val1>) ...) \n
-<i>Reply</i>: [nack]; [ack] (id <num>) \n 
+<i>Format</i>: [add] (("prop0" <val0>) ("prop1" <val1>) ...) \n
+<i>Reply</i>: [nack]; [ack] ("id" <num>) \n 
 <i>Action</i>: a new item is added to the database with the 
 given properties. \n 
 A unique identifier is returned that is used to access the item.
 
 <b>del</b> \n
-<i>Format</i>: [del] ((id <num>) (propSet ({prop0} {prop1} 
+<i>Format</i>: [del] (("id" <num>) (propSet ("prop0" "prop1" 
 ...))) \n
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: remove from the database the specified properties
@@ -85,9 +85,9 @@ The special command "[del] (all)" clears the current content of
 the database. 
  
 <b>get</b> \n
-<i>Format</i>: [get] ((id <num>) (propSet ({prop0} {prop1} 
+<i>Format</i>: [get] (("id" <num>) (propSet ("prop0" "prop1" 
 ...))) \n
-<i>Reply</i>: [nack]; [ack] (({prop0} <val0>) ({prop1} <val1>) 
+<i>Reply</i>: [nack]; [ack] (("prop0" <val0>) ("prop1" <val1>) 
 ...) \n 
 <i>Action</i>: return the required properties assigned to the 
 stored item. \n 
@@ -95,23 +95,29 @@ The special command "[get] ((id <num>))" returns all the
 properties. 
  
 <b>set</b> \n
-<i>Format</i>: [set] ((id <num>) ({prop0} <val0>) ...) \n 
+<i>Format</i>: [set] (("id" <num>) ("prop0" <val0>) ...) \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: add/modify properties of the stored item. 
  
 <b>lock</b> \n
-<i>Format</i>: [lock] ((id <num>)) \n 
+<i>Format</i>: [lock] (("id" <num>)) \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: lock the specified item; this way only the port 
 owner can modify it later on through a [set] request.
  
 <b>unlock</b> \n
-<i>Format</i>: [unlock] ((id <num>)) \n 
+<i>Format</i>: [unlock] (("id" <num>)) \n 
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: unlock the specified item.
  
+<b>islock</b> \n
+<i>Format</i>: [islock] (("id" <num>)) \n 
+<i>Reply</i>: [nack]; [ack] ("owner_name") \n 
+<i>Action</i>: ask if the item is locked; a name equal to "*" 
+means that the item is not locked.
+ 
 <b>time</b> \n
-<i>Format</i>: [time] ((id <num>)) \n 
+<i>Format</i>: [time] (("id" <num>)) \n 
 <i>Reply</i>: [nack]; [ack] (<time>) \n 
 <i>Action</i>: retrieve the time elapsed in seconds from the 
 last change occured on the stored item. \n 
@@ -138,9 +144,9 @@ optional.
 toward a yarp port whenever a change in the content occurs. 
  
 <b>ask</b> \n
-<i>Format</i>: [ask] (({prop0} < <val0>) || ({prop1} >= <val1>) 
+<i>Format</i>: [ask] (("prop0" < <val0>) || ("prop1" >= <val1>) 
 ...) \n 
-<i>Reply</i>: [nack]; [ack] (id (<num0> <num1> ...)) \n 
+<i>Reply</i>: [nack]; [ack] ("id" (<num0> <num1> ...)) \n 
 <i>Action</i>: query the database to find all the items whose 
 properties match the conditions given in the command. You can 
 compose multiple conditions using the boolean operators such as 
@@ -148,10 +154,10 @@ compose multiple conditions using the boolean operators such as
 expressed giving the property name, the value to compare with 
 and the corresponding relational operator (e.g. >, <=, ==, 
 ...).\n 
-Commands such as "[ask] (({prop0}) || ({prop1}))" will query 
-whether the properties exist or not. \n 
-The special command "[ask] (all)" returns the whole set of ids 
-present within the database. \n 
+Commands such as "[ask] ((prop0) || (prop1))" will query whether
+the properties exist or not. \n The special command "[ask] 
+(all)" returns the whole set of ids present within the database. 
+\n 
 In order to simplify the implementation, nested conditions such 
 as (cond1) && ((cond2) || (cond3)) are not handled; however, 
 this is not a real limitation since nested conditions can be 
@@ -261,6 +267,7 @@ using namespace yarp::os;
 #define CMD_SET                         VOCAB3('s','e','t')
 #define CMD_LOCK                        VOCAB4('l','o','c','k')
 #define CMD_UNLOCK                      VOCAB4('u','n','l','o')
+#define CMD_ISLOCK                      VOCAB4('i','s','l','o')
 #define CMD_TIME                        VOCAB4('t','i','m','e')
 #define CMD_DUMP                        VOCAB4('d','u','m','p')
 #define CMD_ASK                         VOCAB3('a','s','k')
@@ -761,7 +768,7 @@ public:
     }
 
     /************************************************************************/
-    bool get(Bottle *content, Bottle &item)
+    bool get(Bottle *content, Bottle &response)
     {
         if (content==NULL)
             return false;
@@ -780,7 +787,7 @@ public:
         if (it!=itemsMap.end())
         {
             Property *pProp=it->second.prop;
-            item.clear();
+            response.clear();
 
             Bottle *propSet=content->find(PROP_SET).asList();
             if (propSet!=NULL)
@@ -793,12 +800,12 @@ public:
                         prop.put(propName.c_str(),pProp->find(propName.c_str()));
                 }
 
-                item.fromString(prop.toString().c_str());
+                response.fromString(prop.toString().c_str());
             }
             else
-                item.fromString(pProp->toString().c_str());
+                response.fromString(pProp->toString().c_str());
 
-            printMessage("%s\n",item.toString().c_str());
+            printMessage("%s\n",response.toString().c_str());
             mutex.post();
             return true;
         }
@@ -952,7 +959,40 @@ public:
     }
 
     /************************************************************************/
-    bool time(Bottle *content, Bottle &item)
+    bool islock(Bottle *content, Bottle &response)
+    {
+        if (content==NULL)
+            return false;
+
+        mutex.wait();
+        if (!content->check(PROP_ID))
+        {
+            printMessage("%s field not present within the request!\n",PROP_ID);
+            mutex.post();
+            return false;
+        }
+
+        int id=content->find(PROP_ID).asInt();
+        printMessage("getting owner of the item %d ... ",id);
+
+        map<int,Item>::iterator it=itemsMap.find(id);
+        if (it!=itemsMap.end())
+        {
+            response.clear();
+            string &owner=it->second.owner;
+            response.addString(owner.c_str());
+            printMessage("[%s]\n",owner.c_str());
+            mutex.post();
+            return true;
+        }
+
+        printMessage("item not present!\n");
+        mutex.post();
+        return false;
+    }
+
+    /************************************************************************/
+    bool time(Bottle *content, Bottle &response)
     {
         if (content==NULL)
             return false;
@@ -971,16 +1011,16 @@ public:
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
-            item.clear();
+            response.clear();
             if (it->second.lastUpdate<0.0)
             {
-                item.addDouble(it->second.lastUpdate);
+                response.addDouble(it->second.lastUpdate);
                 printMessage("just loaded\n");
             }
             else
             {
                 double dt=Time::now()-it->second.lastUpdate;
-                item.addDouble(dt);
+                response.addDouble(dt);
                 printMessage("%g [s]\n",dt);
             }
             mutex.post();
@@ -993,7 +1033,7 @@ public:
     }
 
     /************************************************************************/
-    bool ask(Bottle *content, Bottle &items)
+    bool ask(Bottle *content, Bottle &response)
     {
         if (content==NULL)
             return false;
@@ -1005,10 +1045,10 @@ public:
             {
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
-                    items.clear();
+                    response.clear();
                 
                     for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
-                        items.addInt(it->first);
+                        response.addInt(it->first);
                 
                     mutex.post();
                     return true;
@@ -1088,7 +1128,7 @@ public:
             }
         }
 
-        items.clear();
+        response.clear();
 
         // apply the conditions to each item
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
@@ -1096,10 +1136,10 @@ public:
             // do recursion and keep only the item that
             // satisfies the whole list of conditions
             if (recursiveCheck(it->second.prop,condList,opList))
-                items.addInt(it->first);
+                response.addInt(it->first);
         }
 
-        printMessage("found items matching received conditions: (%s)\n",items.toString().c_str());
+        printMessage("found items matching received conditions: (%s)\n",response.toString().c_str());
         mutex.post();
         return true;
     }
@@ -1212,12 +1252,12 @@ public:
                     break;
                 }
 
-                Bottle item;
-                Bottle *content=command.get(1).asList();                
-                if (get(content,item))
+                Bottle response;
+                Bottle *content=command.get(1).asList();
+                if (get(content,response))
                 {
                     reply.addVocab(REP_ACK);
-                    reply.addList()=item;
+                    reply.addList()=response;
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1284,6 +1324,28 @@ public:
             }
 
             //-----------------
+            case CMD_ISLOCK:
+            {
+                if (command.size()<2)
+                {
+                    reply.addVocab(REP_NACK);
+                    break;
+                }
+
+                Bottle response;
+                Bottle *content=command.get(1).asList();
+                if (islock(content,response))
+                {
+                    reply.addVocab(REP_ACK);
+                    reply.addList()=response;
+                }
+                else
+                    reply.addVocab(REP_NACK);
+
+                break;
+            }
+
+            //-----------------
             case CMD_TIME:
             {
                 if (command.size()<2)
@@ -1292,12 +1354,12 @@ public:
                     break;
                 }
 
-                Bottle item;
-                Bottle *content=command.get(1).asList();                
-                if (time(content,item))
+                Bottle response;
+                Bottle *content=command.get(1).asList();
+                if (time(content,response))
                 {
                     reply.addVocab(REP_ACK);
-                    reply.addList()=item;
+                    reply.addList()=response;
                 }
                 else
                     reply.addVocab(REP_NACK);
@@ -1383,14 +1445,14 @@ public:
                     break;
                 }
 
-                Bottle items;
+                Bottle response;
                 Bottle *content=command.get(1).asList();
-                if (ask(content,items))
+                if (ask(content,response))
                 {
                     reply.addVocab(REP_ACK);
                     Bottle &b=reply.addList();
                     b.addString(PROP_ID);
-                    b.addList()=items;
+                    b.addList()=response;
                 }
                 else
                     reply.addVocab(REP_NACK);
