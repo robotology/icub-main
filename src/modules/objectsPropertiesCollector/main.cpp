@@ -144,15 +144,15 @@ optional.
 toward a yarp port whenever a change in the content occurs. 
  
 <b>ask</b> \n
-<i>Format</i>: [ask] (("prop0" < <val0>) || ("prop1" >= <val1>) 
-...) \n 
+<i>Format</i>: [ask] (("prop0" "<" <val0>) || ("prop1" ">=" 
+<val1>) ...) \n 
 <i>Reply</i>: [nack]; [ack] ("id" (<num0> <num1> ...)) \n 
 <i>Action</i>: query the database to find all the items whose 
 properties match the conditions given in the command. You can 
 compose multiple conditions using the boolean operators such as 
-'||' for \e or and '&&' for \e and and each condition has to be 
+"||" for \e or and "&&" for \e and and each condition has to be 
 expressed giving the property name, the value to compare with 
-and the corresponding relational operator (e.g. >, <=, ==, 
+and the corresponding relational operator (e.g. ">", "<=", "==",
 ...).\n 
 Commands such as "[ask] ((prop0) || (prop1))" will query whether
 the properties exist or not. \n The special command "[ask] 
