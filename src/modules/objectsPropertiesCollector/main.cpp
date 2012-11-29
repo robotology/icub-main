@@ -110,11 +110,11 @@ owner can modify it later on through a [set] request.
 <i>Reply</i>: [nack]; [ack] \n 
 <i>Action</i>: unlock the specified item.
  
-<b>islock</b> \n
-<i>Format</i>: [islock] (("id" <num>)) \n 
+<b>owner</b> \n
+<i>Format</i>: [owner] (("id" <num>)) \n 
 <i>Reply</i>: [nack]; [ack] ("owner_name") \n 
-<i>Action</i>: ask if the item is locked; a name equal to "*" 
-means that the item is not locked.
+<i>Action</i>: ask for the port name of the item owner; a name
+equal to "*" means that the item is not locked by any agent.
  
 <b>time</b> \n
 <i>Format</i>: [time] (("id" <num>)) \n 
@@ -267,7 +267,7 @@ using namespace yarp::os;
 #define CMD_SET                         VOCAB3('s','e','t')
 #define CMD_LOCK                        VOCAB4('l','o','c','k')
 #define CMD_UNLOCK                      VOCAB4('u','n','l','o')
-#define CMD_ISLOCK                      VOCAB4('i','s','l','o')
+#define CMD_OWNER                       VOCAB4('o','w','n','e')
 #define CMD_TIME                        VOCAB4('t','i','m','e')
 #define CMD_DUMP                        VOCAB4('d','u','m','p')
 #define CMD_ASK                         VOCAB3('a','s','k')
@@ -959,7 +959,7 @@ public:
     }
 
     /************************************************************************/
-    bool islock(Bottle *content, Bottle &response)
+    bool owner(Bottle *content, Bottle &response)
     {
         if (content==NULL)
             return false;
@@ -1324,7 +1324,7 @@ public:
             }
 
             //-----------------
-            case CMD_ISLOCK:
+            case CMD_OWNER:
             {
                 if (command.size()<2)
                 {
@@ -1334,7 +1334,7 @@ public:
 
                 Bottle response;
                 Bottle *content=command.get(1).asList();
-                if (islock(content,response))
+                if (owner(content,response))
                 {
                     reply.addVocab(REP_ACK);
                     reply.addList()=response;
