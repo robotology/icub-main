@@ -59,8 +59,7 @@ At startup an attempt is made to connect to
   expressed in [ms].
  
 - \e /<name>/emotions:o: this port serves to command the facial
-  expressions. At startup an attempt to connect to the proper
-  robot port is automatically made.
+  expressions.
  
 - \e /<name>/rpc: a remote procedure call port useful to query
   whether the robot is still speaking or not: the query command
@@ -76,7 +75,8 @@ Linux.
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/Port.h>
+#include <yarp/os/RpcClient.h>
+#include <yarp/os/RpcServer.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Time.h>
@@ -94,17 +94,20 @@ using namespace yarp::os;
 class MouthHandler : public RateThread
 {
     string state;
-    Port emotions;
+    RpcClient emotions;
     Semaphore mutex;
 
     /************************************************************************/
     void send()
     {
-        Bottle cmd, reply;
-        cmd.addVocab(Vocab::encode("set"));
-        cmd.addVocab(Vocab::encode("mou"));
-        cmd.addVocab(Vocab::encode(state.c_str()));
-        emotions.write(cmd,reply);
+        if (emotions.getOutputCount()>0)
+        {
+            Bottle cmd, reply;
+            cmd.addVocab(Vocab::encode("set"));
+            cmd.addVocab(Vocab::encode("mou"));
+            cmd.addVocab(Vocab::encode(state.c_str()));
+            emotions.write(cmd,reply);
+        }
     }
 
     /************************************************************************/
@@ -139,7 +142,6 @@ public:
         string name=rf.find("name").asString().c_str();
         string robot=rf.find("robot").asString().c_str();
         emotions.open(("/"+name+"/emotions:o").c_str());
-        //Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());        
 
         state="sur";
         setRate(rf.check("period",Value(200)).asInt());
@@ -287,7 +289,7 @@ class Launcher: public RFModule
 {
 protected:
     iSpeak speaker;
-    Port   rpc;
+    RpcServer rpc;
 
 public:
     /************************************************************************/
