@@ -279,11 +279,11 @@ using namespace yarp::os;
 #define REP_UNKNOWN                     VOCAB4('u','n','k','n')
                                         
 #define OPT_ALL                         VOCAB3('a','l','l')
+#define OPT_DISABLED                    (-1.0)
+#define OPT_OWNERSHIP_ALL               ("*")
                                         
 #define PROP_ID                         ("id")
 #define PROP_LIFETIMER                  ("lifeTimer")
-#define PROP_LIFETIMER_VAL_DISABLED     (-1.0)
-#define PROP_OWNERSHIP_VAL_ALL          ("*")
 #define PROP_SET                        ("propSet")
 #define BCTAG_EMPTY                     ("empty")
 #define BCTAG_SYNC                      ("sync")
@@ -399,8 +399,8 @@ protected:
         string    owner;
 
         Item() : prop(NULL),
-                 lastUpdate(PROP_LIFETIMER_VAL_DISABLED),
-                 owner(PROP_OWNERSHIP_VAL_ALL) { }
+                 lastUpdate(OPT_DISABLED),
+                 owner(OPT_OWNERSHIP_ALL) { }
     };
 
     /************************************************************************/
@@ -457,9 +457,6 @@ protected:
     /************************************************************************/
     void write(FILE *stream)
     {
-        if ((stream==stdout) && !verbose)
-            return;
-
         int i=0;
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
             fprintf(stream,"item_%d (%s %d) (%s)\n",
@@ -835,7 +832,7 @@ public:
         if (it!=itemsMap.end())
         {
             string owner=it->second.owner;
-            if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
+            if ((owner==OPT_OWNERSHIP_ALL) || (owner==agent))
             {
                 Property *pProp=it->second.prop;
 
@@ -898,7 +895,7 @@ public:
         if (it!=itemsMap.end())
         {
             string owner=it->second.owner;
-            if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
+            if ((owner==OPT_OWNERSHIP_ALL) || (owner==agent))
             {
                 printMessage("successfully locked by [%s]!\n",agent.c_str());
                 it->second.owner=agent;
@@ -938,10 +935,10 @@ public:
         if (it!=itemsMap.end())
         {
             string owner=it->second.owner;
-            if ((owner==PROP_OWNERSHIP_VAL_ALL) || (owner==agent))
+            if ((owner==OPT_OWNERSHIP_ALL) || (owner==agent))
             {
                 printMessage("successfully unlocked!\n");
-                it->second.owner=PROP_OWNERSHIP_VAL_ALL;
+                it->second.owner=OPT_OWNERSHIP_ALL;
                 mutex.post();
                 return true;
             }
