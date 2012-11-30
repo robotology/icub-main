@@ -139,7 +139,7 @@ public:
         string name=rf.find("name").asString().c_str();
         string robot=rf.find("robot").asString().c_str();
         emotions.open(("/"+name+"/emotions:o").c_str());
-        Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());        
+        //Network::connect(emotions.getName().c_str(),("/"+robot+"/face/emotions/in").c_str());        
 
         state="sur";
         setRate(rf.check("period",Value(200)).asInt());
