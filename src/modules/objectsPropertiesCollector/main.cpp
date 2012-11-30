@@ -114,7 +114,7 @@ owner can modify it later on through a [set] request.
 <i>Format</i>: [owner] (("id" <num>)) \n 
 <i>Reply</i>: [nack]; [ack] ("owner_name") \n 
 <i>Action</i>: ask for the port name of the item owner; a name
-equal to "*" means that the item is not locked by any agent.
+equal to "all" means that the item is not locked by any agent.
  
 <b>time</b> \n
 <i>Format</i>: [time] (("id" <num>)) \n 
@@ -280,7 +280,7 @@ using namespace yarp::os;
                                         
 #define OPT_ALL                         VOCAB3('a','l','l')
 #define OPT_DISABLED                    (-1.0)
-#define OPT_OWNERSHIP_ALL               ("*")
+#define OPT_OWNERSHIP_ALL               ("all")
                                         
 #define PROP_ID                         ("id")
 #define PROP_LIFETIMER                  ("lifeTimer")
