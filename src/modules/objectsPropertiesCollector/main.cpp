@@ -605,7 +605,8 @@ public:
             }
 
             Bottle *b2=b1.get(1).asList();
-            if (b2==NULL)
+            Bottle *b3=b1.get(2).asList();
+            if ((b2==NULL) || (b3==NULL))
             {
                 printMessage("error while loading %s!\n",tag.str().c_str());
                 continue;
@@ -618,7 +619,7 @@ public:
             }
 
             int id=b2->get(1).asInt();
-            itemsMap[id].prop=new Property(b1.get(2).asList()->toString().c_str());
+            itemsMap[id].prop=new Property(b3->toString().c_str());
 
             if (idCnt<=id)
                 idCnt=id+1;
@@ -840,25 +841,31 @@ public:
 
                 for (int i=0; i<content->size(); i++)
                 {
-                    Bottle *option=content->get(i).asList();
+                    if (Bottle *option=content->get(i).asList())
+                    {
+                        if (option->size()<2)
+                        {
+                            printMessage("invalid property!\n");
+                            continue;
+                        }
 
-                    if (option->size()<2)
+                        string prop=option->get(0).asString().c_str();
+                        Value  val=option->get(1);
+
+                        if (prop==PROP_ID)
+                            continue;
+
+                        pProp->unput(prop.c_str());
+                        pProp->put(prop.c_str(),val);
+                    }
+                    else
                     {
                         printMessage("invalid property!\n");
                         continue;
                     }
-
-                    string prop=option->get(0).asString().c_str();
-                    Value  val=option->get(1);
-
-                    if (prop==PROP_ID)
-                        continue;
-
-                    pProp->unput(prop.c_str());
-                    pProp->put(prop.c_str(),val);
                 }
 
-                it->second.lastUpdate=Time::now();                
+                it->second.lastUpdate=Time::now();
                 mutex.post();
                 return true;
             }
@@ -1068,38 +1075,61 @@ public:
         // parse the received conditions and build the lists
         for (int i=0; i<content->size(); i+=2)
         {
-            Bottle *b=content->get(i).asList();
-            Condition condition;
-            string operation;
-
-            if (b->size()==1)
+            if (Bottle *b=content->get(i).asList())
             {
-                condition.prop=b->get(0).asString().c_str();
-                condition.compare=&relationalOperators::alwaysTrue;
-            }
-            else if (b->size()>2)
-            {
-                condition.prop=b->get(0).asString().c_str();
-                operation=b->get(1).asString().c_str();
-                condition.val=b->get(2);
+                Condition condition;
+                string operation;
 
-                if (operation==">")
-                    condition.compare=&relationalOperators::greater;
-                else if (operation==">=")
-                    condition.compare=&relationalOperators::greaterEqual;
-                else if (operation=="<")
-                    condition.compare=&relationalOperators::lower;
-                else if (operation=="<=")
-                    condition.compare=&relationalOperators::lowerEqual;
-                else if (operation=="==")
-                    condition.compare=&relationalOperators::equal;
-                else if (operation=="!=")
-                    condition.compare=&relationalOperators::notEqual;
+                if (b->size()==1)
+                {
+                    condition.prop=b->get(0).asString().c_str();
+                    condition.compare=&relationalOperators::alwaysTrue;
+                }
+                else if (b->size()>2)
+                {
+                    condition.prop=b->get(0).asString().c_str();
+                    operation=b->get(1).asString().c_str();
+                    condition.val=b->get(2);
+
+                    if (operation==">")
+                        condition.compare=&relationalOperators::greater;
+                    else if (operation==">=")
+                        condition.compare=&relationalOperators::greaterEqual;
+                    else if (operation=="<")
+                        condition.compare=&relationalOperators::lower;
+                    else if (operation=="<=")
+                        condition.compare=&relationalOperators::lowerEqual;
+                    else if (operation=="==")
+                        condition.compare=&relationalOperators::equal;
+                    else if (operation=="!=")
+                        condition.compare=&relationalOperators::notEqual;
+                    else
+                    {
+                        printMessage("unknown relational operator '%s'!\n",operation.c_str());
+                        mutex.post();
+                        return false;
+                    }
+                }
                 else
                 {
-                    printMessage("unknown relational operator '%s'!\n",operation.c_str());
+                    printMessage("wrong condition given!\n");
                     mutex.post();
                     return false;
+                }
+
+                condList.push_back(condition);
+
+                if ((i+1)<content->size())
+                {
+                    operation=content->get(i+1).asString().c_str();
+                    if ((operation!="||") && (operation!="&&"))
+                    {
+                        printMessage("unknown boolean operator '%s'!\n",operation.c_str());
+                        mutex.post();
+                        return false;
+                    }
+                    else
+                        opList.push_back(operation);
                 }
             }
             else
@@ -1107,21 +1137,6 @@ public:
                 printMessage("wrong condition given!\n");
                 mutex.post();
                 return false;
-            }
-
-            condList.push_back(condition);
-
-            if ((i+1)<content->size())
-            {
-                operation=content->get(i+1).asString().c_str();
-                if ((operation!="||") && (operation!="&&"))
-                {
-                    printMessage("unknown boolean operator '%s'!\n",operation.c_str());
-                    mutex.post();
-                    return false;
-                }
-                else
-                    opList.push_back(operation);
             }
         }
 
