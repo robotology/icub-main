@@ -13,6 +13,12 @@
 
 * Update main/ChangeLog and ChangeLog with tag notice
 
+* check the YARP min required version in main/CMakeLists.txt, looking for the following lines
+	SET(ICUB_REQYARP_VERSION_MAJOR "x")
+	SET(ICUB_REQYARP_VERSION_MINOR "y")
+	SET(ICUB_REQYARP_VERSION_PATCH "z")
+
+
 * Make tag
   Commit new version, write down revision svn revision number (REVISION)
   
