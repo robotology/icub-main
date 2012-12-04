@@ -48,8 +48,11 @@ class CtrlThread: public yarp::os::RateThread
     double encoders_master [16];
     double encoders_slave  [16];
     bool   autoconnect;
-
+    Stamp  info;
+    
     BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_contacts;
+    BufferedPort<Vector> *port_left_arm;
+    BufferedPort<Vector> *port_right_arm;
 
 
     CtrlThread(unsigned int _period, ResourceFinder &_rf) :
@@ -67,7 +70,11 @@ class CtrlThread: public yarp::os::RateThread
         robot->init();
 
         port_skin_contacts = new BufferedPort<skinContactList>;
+        port_left_arm = new BufferedPort<Vector>;
+        port_right_arm = new BufferedPort<Vector>;
         port_skin_contacts->open(string("/demoForceControl2/skin_contacts:i").c_str());
+        port_left_arm->open("/demoForceControl2/left_arm:o");
+        port_right_arm->open("/demoForceControl2/right_arm:o");
 
         if (autoconnect)
         {
@@ -104,6 +111,7 @@ class CtrlThread: public yarp::os::RateThread
         int  i_touching_left=0;
         int  i_touching_right=0;
         int  i_touching_diff=0;
+        info.update();
         
         skinContactList *skinContacts  = port_skin_contacts->read(false);
         if(skinContacts)
@@ -138,6 +146,19 @@ class CtrlThread: public yarp::os::RateThread
         {
             robot->ienc[LEFT_ARM] ->getEncoders(encoders_master);
             robot->ienc[RIGHT_ARM]->getEncoders(encoders_slave);
+            if (port_left_arm->getOutputCount()>0)
+            {
+                port_left_arm->prepare()= Vector(16,encoders_master);
+                port_left_arm->setEnvelope(info);
+                port_left_arm->write();
+            }
+            if (port_right_arm->getOutputCount()>0)
+            {
+                port_right_arm->prepare()= Vector(16,encoders_slave);
+                port_right_arm->setEnvelope(info);
+                port_right_arm->write();
+            }            
+            
         //    robot->ipos[RIGHT_ARM] ->positionMove(3,encoders_master[3]);
             for (int i=jjj; i<5; i++)
             {
@@ -165,6 +186,7 @@ class CtrlThread: public yarp::os::RateThread
             {
                 robot->icmd[LEFT_ARM]->setTorqueMode(i);
                 robot->icmd[RIGHT_ARM]->setImpedancePositionMode(i);
+                //robot->icmd[RIGHT_ARM]->setPositionMode(i);
             }
         }
         else
@@ -172,6 +194,7 @@ class CtrlThread: public yarp::os::RateThread
             for (int i=jjj; i<5; i++)
             {
                 robot->icmd[LEFT_ARM]->setImpedancePositionMode(i);
+                //robot->icmd[LEFT_ARM]->setPositionMode(i);
                 robot->icmd[RIGHT_ARM]->setTorqueMode(i);
             }
         }
@@ -197,6 +220,8 @@ class CtrlThread: public yarp::os::RateThread
             robot->icmd[RIGHT_ARM]->setPositionMode(i);
         }
         closePort(port_skin_contacts);
+        closePort(port_left_arm);
+        closePort(port_right_arm);
     }
 };
 
