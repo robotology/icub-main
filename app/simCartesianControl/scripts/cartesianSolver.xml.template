@@ -4,12 +4,14 @@
         <dependencies>
         <port>/icubSim/left_arm/state:o</port>
         <port>/icubSim/right_arm/state:o</port>
+        <port>/icubSim/left_leg/state:o</port>
+        <port>/icubSim/right_leg/state:o</port>
         </dependencies>
       
         <module>
                 <name>simCartesianControl</name>
                 <node>pwrNode2</node>
-                <tag>armsController</tag>
+                <tag>limbsController</tag>
         </module>
 
         <module>
@@ -24,6 +26,20 @@
                 <parameters>--context simCartesianControl/conf --part left_arm</parameters>
                 <node>pwrNode4</node>
                 <tag>leftArmSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--context simCartesianControl/conf --part right_leg</parameters>
+                <node>pwrNode3</node>
+                <tag>rightLegSolver</tag>
+        </module>
+
+        <module>
+                <name>iKinCartesianSolver</name>
+                <parameters>--context simCartesianControl/conf --part left_leg</parameters>
+                <node>pwrNode4</node>
+                <tag>leftLegSolver</tag>
         </module>
 
 </application>

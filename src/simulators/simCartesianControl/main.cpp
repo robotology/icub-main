@@ -53,6 +53,9 @@ Follow this steps:
 --robot \e name 
 - specifies the simulated robot name to connect to. 
  
+--no_legs 
+- disable the control of robot's legs. 
+ 
 Other options are available but their default values should be 
 fine for normal use. If you are really curious then get into the
 short code :) 
@@ -82,26 +85,36 @@ class SimCartCtrlModule: public RFModule
 {
 protected:
     PolyDriver torso;
-    PolyDriver armR,    armL;
-    PolyDriver serverR, serverL;
+    PolyDriver armR,       armL;
+    PolyDriver legR,       legL;
+    PolyDriver serverArmR, serverArmL;
+    PolyDriver serverLegR, serverLegL;
 
 public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
-    {   
+    {
+        bool noLegs=rf.check("no_legs");
+
         Property optTorso("(device remote_controlboard)");
-        Property optArmR("(device remote_controlboard)"); 
-        Property optArmL("(device remote_controlboard)"); 
+        Property optArmR("(device remote_controlboard)");
+        Property optArmL("(device remote_controlboard)");
+        Property optLegR("(device remote_controlboard)");
+        Property optLegL("(device remote_controlboard)");
 
         string robot=rf.find("robot").asString().c_str();
         optTorso.put("remote",("/"+robot+"/torso").c_str());
         optArmR.put("remote",("/"+robot+"/right_arm").c_str());
         optArmL.put("remote",("/"+robot+"/left_arm").c_str());
+        optLegR.put("remote",("/"+robot+"/right_leg").c_str());
+        optLegL.put("remote",("/"+robot+"/left_leg").c_str());
 
         string local=rf.find("local").asString().c_str();
         optTorso.put("local",("/"+local+"/torso").c_str());
         optArmR.put("local",("/"+local+"/right_arm").c_str());
         optArmL.put("local",("/"+local+"/left_arm").c_str());
+        optLegR.put("local",("/"+local+"/right_leg").c_str());
+        optLegL.put("local",("/"+local+"/left_leg").c_str());
 
         if (!torso.open(optTorso) || !armR.open(optArmR) || !armL.open(optArmL))
         {
@@ -111,30 +124,68 @@ public:
             return false;
         }
 
-        PolyDriverList listR, listL;
-        listR.push(&torso,"torso");
-        listR.push(&armR,"right_arm");
-        listL.push(&torso,"torso");
-        listL.push(&armL,"left_arm");
+        if (!noLegs)
+        {
+            if (!legR.open(optLegR) || !legL.open(optLegL))
+            {
+                cout<<"Device drivers not available!"<<endl;
+                close();
 
-        Property optServerR("(device cartesiancontrollerserver)");
-        Property optServerL("(device cartesiancontrollerserver)");
-        optServerR.fromConfigFile(rf.findFile("right_arm_file"),false);
-        optServerL.fromConfigFile(rf.findFile("left_arm_file"),false);
+                return false;
+            }
+        }
 
-        if (!serverR.open(optServerR) || !serverL.open(optServerL))
+        PolyDriverList listArmR, listArmL, listLegR, listLegL;
+        listArmR.push(&torso,"torso");
+        listArmR.push(&armR,"right_arm");
+        listArmL.push(&torso,"torso");
+        listArmL.push(&armL,"left_arm");
+        listLegR.push(&legR,"right_leg");
+        listLegL.push(&legL,"left_leg");
+
+        Property optServerArmR("(device cartesiancontrollerserver)");
+        Property optServerArmL("(device cartesiancontrollerserver)");
+        Property optServerLegR("(device cartesiancontrollerserver)");
+        Property optServerLegL("(device cartesiancontrollerserver)");
+        optServerArmR.fromConfigFile(rf.findFile("right_arm_file"),false);
+        optServerArmL.fromConfigFile(rf.findFile("left_arm_file"),false);
+        optServerLegR.fromConfigFile(rf.findFile("right_leg_file"),false);
+        optServerLegL.fromConfigFile(rf.findFile("left_leg_file"),false);
+
+        if (!serverArmR.open(optServerArmR) || !serverArmL.open(optServerArmL))
         {
             close();    
             return false;
         }
 
-        IMultipleWrapper *wrapperR, *wrapperL;
-        serverR.view(wrapperR);
-        serverL.view(wrapperL);
-        if (!wrapperR->attachAll(listR) || !wrapperL->attachAll(listL))
+        if (!noLegs)
+        {
+            if (!serverLegR.open(optServerLegR) || !serverLegL.open(optServerLegL))
+            {
+                close();    
+                return false;
+            }
+        }
+
+        IMultipleWrapper *wrapperArmR, *wrapperArmL, *wrapperLegR, *wrapperLegL;
+        serverArmR.view(wrapperArmR);
+        serverArmL.view(wrapperArmL);
+        serverLegR.view(wrapperLegR);
+        serverLegL.view(wrapperLegL);
+
+        if (!wrapperArmR->attachAll(listArmR) || !wrapperArmL->attachAll(listArmL))
         {
             close();    
             return false;
+        }
+
+        if (!noLegs)
+        {
+            if (!wrapperLegR->attachAll(listLegR) || !wrapperLegL->attachAll(listLegL))
+            {
+                close();    
+                return false;
+            }
         }
 
         return true;
@@ -143,11 +194,17 @@ public:
     /************************************************************************/
     bool close()
     {
-        if (serverR.isValid())
-            serverR.close();
+        if (serverArmR.isValid())
+            serverArmR.close();
 
-        if (serverL.isValid())
-            serverL.close();
+        if (serverArmL.isValid())
+            serverArmL.close();
+
+        if (serverLegR.isValid())
+            serverLegR.close();
+
+        if (serverLegL.isValid())
+            serverLegL.close();
 
         if (torso.isValid())
             torso.close();
@@ -157,6 +214,12 @@ public:
 
         if (armL.isValid())
             armL.close();
+
+        if (legR.isValid())
+            legR.close();
+
+        if (legL.isValid())
+            legL.close();
 
         return true;
     }
@@ -185,6 +248,8 @@ int main(int argc, char *argv[])
     rf.setDefault("local","simCartesianControl");
     rf.setDefault("right_arm_file","cartesianRightArm.ini");
     rf.setDefault("left_arm_file","cartesianLeftArm.ini");
+    rf.setDefault("right_leg_file","cartesianRightLeg.ini");
+    rf.setDefault("left_leg_file","cartesianLeftLeg.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
     Network yarp;
