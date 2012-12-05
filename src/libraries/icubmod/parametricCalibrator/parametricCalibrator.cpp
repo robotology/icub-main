@@ -20,8 +20,8 @@ using namespace yarp::dev;
 // calibrator for the arm of the Arm iCub
 
 const int 		PARK_TIMEOUT=30;
-const double 	GO_TO_ZERO_TIMEOUT		= 1; //seconds how many? // was 10
-const int 		CALIBRATE_JOINT_TIMEOUT	= 1;  // era 25
+const double 	GO_TO_ZERO_TIMEOUT		= 10; //seconds how many? // was 10
+const int 		CALIBRATE_JOINT_TIMEOUT	= 25;
 const double 	POSITION_THRESHOLD		= 2.0;
 
 int numberOfJoints =0;
@@ -50,7 +50,7 @@ parametricCalibrator::~parametricCalibrator()
     close();
 }
 
-bool parametricCalibrator::open (yarp::os::Searchable& config)
+bool parametricCalibrator::open(yarp::os::Searchable& config)
 {
 	Property p;
 	p.fromString(config.toString());
@@ -92,7 +92,7 @@ bool parametricCalibrator::open (yarp::os::Searchable& config)
 	}
 	else
 	{
-		fprintf(stdout, "CALIB::calibrator: no logfile specified, errors displayed on standard stderr\n");
+		fprintf(stdout, "CALIB: no logfile specified, errors displayed on standard stderr\n");
 	}
 
 	Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
@@ -310,6 +310,10 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 	limited_pid =new Pid[nj];
 
 	Bit=joints.begin();
+
+	printf(" before sleep\n");
+	usleep(4 * 1000 * 1000);
+	printf("After sleep\n");
 	while( (Bit != Bend) && (!abortCalib) )			// per ogni set di giunti
 	{
 		setOfJoint_idx++;
@@ -320,9 +324,9 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 		lend = tmp.end();
 		while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
 		{
-			if ((*lit) > totJointsToCalibrate)		// check the axes actually exists
+			if ((*lit) >= nj)		// check the axes actually exists
 			{
-				yError() << "Asked to calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< totJointsToCalibrate << ")";
+				yError() << "Asked to calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< nj << ")";
 				return false;
 			}
 			if(!iPids->getPid((*lit),&original_pid[(*lit)]) )
@@ -436,6 +440,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 		lit  = set.begin();
 		while(lit != lend)		// per ogni giunto del set
 		{
+			printf("check calib joint ended (%d)\n", (*lit));
 			if (abortCalib)
 			{
 				yDebug() << "CALIB: aborted\n";
@@ -444,7 +449,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 			// Joint with absolute sensor doesn't need to move, so they are ok with just the calibration message,
 			// but I'll check anyway, in order to have everything the same
 			if( !(calibration_ok &=  iCalibrate->done((*lit))) )		// the assignement inside the if is INTENTIONAL
-			//	break;
+				break;
 			lit++;
 		}
 		Time::delay(1.0);
