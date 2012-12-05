@@ -46,7 +46,6 @@
 #include "EoCommon.h"
 #include "EOnv_hid.h"
 
-//#include "eOcfg_nvsEP_mc_overridden.h"
 #include "eOcfg_nvsEP_mc_overridden.h"
 #include "eOcfg_nvsEP_mc_hid.h"
 
@@ -57,158 +56,7 @@
 #endif
 
 
-//#include "eOcfg_nvsEP_mc_leg_con.h"
-//#include "eOcfg_nvsEP_mc_upperleg_con.h"
-//#include "eOcfg_nvsEP_mc_lowerleg_con.h"
-
-// --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern public interface
-// --------------------------------------------------------------------------------------------------------------------
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - #define with internal scope
-// --------------------------------------------------------------------------------------------------------------------
-// empty-section
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - typedef with internal scope
-// --------------------------------------------------------------------------------------------------------------------
-// empty-section
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - declaration of static functions
-// --------------------------------------------------------------------------------------------------------------------
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of static variables
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of extern public functions
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-// this function is common to all mc endpoint. if we define this one and we DO NOT redefine eo_cfg_nvsEP_mc_XXXX_usr_hid_UPDT_Jxx_jcmmnds__calibration,
-// where XXXX = [lowerleg, upperleg, lowerarm, upperarm, torso], then the orginal eo_cfg_nvsEP_mc_XXXX_usr_hid_UPDT_Jxx_jcmmnds__calibration() calls 
-// the following eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__calibration() when the nv is changed by a rop.
-// by redefining ONLY the more general eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__calibration(), every ems could use the very same code irrespectively of the
-// motion control endpoints whcih has loaded.
-
-// unfortunately, as eo_cfg_nvsEP_mc_lowerleg_usr_hid_UPDT_Jxx_jcmmnds__calibration() and eo_cfg_nvsEP_mc_upperleg_usr_hid_UPDT_Jxx_jcmmnds__calibration()
-// have been re-defined in files eOcfg_nvsEP_mc_lowerleg_usrcbk_pippo.c and eOcfg_nvsEP_mc_upperleg_usrcbk_pippo.c, ...
-// the following eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__calibration() is effectively called only on mc endpoints of arm and torso.
-//
-//extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__calibration(eo_cfg_nvsEP_mc_jointNumber_t jxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
-//{
-    //eObool_t theOwnershipIsLocal = (NULL == nv->rem) ? eobool_true : eobool_false;
-    //eOipv4addr_t ip; // = nv->ip;
-    //eOnvEP_t ep = nv->ep;
-    //
-    //
-    //jxx = jxx;                                              // the joint number 
-    //theOwnershipIsLocal = theOwnershipIsLocal;              // always eobool_true in ems
-    //ep = ep; 
-    //ip = ip;                                                // the ip is EO_COMMON_IPV4ADDR_LOCALHOST if owneship is local    
-    //
-    //
-    //// the ems processes this callback when it receives a command from the pc104. in nv->loc the ems retrieves the value to use
-    //eOmc_calibrator_t *jcal = (eOmc_calibrator_t*)nv->loc;
-    //
-    //// use jcal
-    //jcal = jcal;
-    
-//}
-
-typedef struct
-{
-    uint32_t dummy1;
-    uint32_t dummy2;
-} MYmotionController;
-
-static void motioncontroller_setpoint(MYmotionController *m, eOmc_setpoint_t *setp)
-{
-    switch(setp->type)
-    {
-        case eomc_setpoint_position:    
-        {
-            m->dummy1 = setp->to.position.value;
-            m->dummy2 = setp->to.position.withvelocity;
-        } break;
-        
-        default:
-        {
-            
-        } break;
-    }
-}
-
-static MYmotionController themotioncontrollers[3];
-
-// the following function is called (nad NOT the more specific one) when a setpoint is received in all the mc endpoints of teh whole body.
-// this function could be used to make the c code more generic inside the ems.
-//extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint(eo_cfg_nvsEP_mc_jointNumber_t jxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
-//{
-    //eObool_t theOwnershipIsLocal = (NULL == nv->rem) ? eobool_true : eobool_false;
-    //eOipv4addr_t ip = nv->ip;
-    //eOnvEP_t ep = nv->ep;
-    //
-    //
-    //jxx = jxx;                                              // the joint number 
-    //theOwnershipIsLocal = theOwnershipIsLocal;              // always eobool_true in ems
-    //ep = ep; 
-    //ip = ip;                                                // the ip is EO_COMMON_IPV4ADDR_LOCALHOST if owneship is local    
-    //
-    //
-    //// the ems processes this callback when it receives a command from the pc104. in nv->loc the ems retrieves the value to use
-    //eOmc_setpoint_t *jsetpoint = (eOmc_setpoint_t*)nv->loc;
-    //
-    //// use jsetpoint
-    //switch(jsetpoint->type)
-    //{
-    //    case eomc_setpoint_position:    
-    //    {
-    //        // use with the position motionController on joint number jxx (from 0 to ....)
-    //        eOmeas_position_t pos = jsetpoint->to.position.value;
-    //        eOmeas_velocity_t vel = jsetpoint->to.position.withvelocity;
-    //        pos = pos;
-    //        vel  = vel;
-    //        motioncontroller_setpoint(&themotioncontrollers[jxx], jsetpoint);
-    //    } break;
-    //
-    //
-    //} 
-    //
-//}
-
-
+#define DEG_2_ICUBDEG  182.04444
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
@@ -217,7 +65,7 @@ static MYmotionController themotioncontrollers[3];
 void jwake(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, eOcfg_nvsEP_mc_jointNVindex_t nv_name)
 {
 	void *handler = (void*) get_MChandler_fromEP(nv->ep);
-	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);  // ce ne battiamo il belino
+	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);  // ce ne battiamo il belino   // (??)
 	uint16_t epindex, nvindex;
 	EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
 	MCmutex_post(handler, epindex, nvindex);
@@ -235,7 +83,7 @@ void mwake(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv,  eOcfg_nvsEP_mc_moto
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "joint status basic strong iCubInterface"
-#define _debug_jstatus_basic_
+//#define _debug_jstatus_basic_
 #ifdef _debug_jstatus_basic_
 	static int i = 0;
 	static bool print = false;
@@ -266,14 +114,29 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumb
 		printf("jstatus_b->torque = 0x%X\n", jstatus_b->torque);
 		printf("jstatus_b->velocity = 0x%X\n", jstatus_b->velocity);
 	}
-
 #endif
+
+//	static int32_t zero = -360;
+//	static FILE *positionLog = NULL;
+//
+//	if(NULL == positionLog)
+//	{
+//		positionLog = fopen("/usr/local/src/robot/debugging/position.log", "w");
+//		if(NULL == positionLog)
+//			printf("Error opening file /usr/local/src/robot/debugging/position.log!!!!!!!!!!!!!!!!!!!!!!\n");
+//	}
+//	else //(NULL != positionLog)
+//	{
+//		eOmc_joint_status_basic_t *jstatus_b = nv->rem;
+//		if( (3 == xx) && (endpoint_mc_rightupperleg == nv->ep) )
+//			fprintf(positionLog, "pos = 0x%X\n", ((jstatus_b->position - zero ) /DEG_2_ICUBDEG ) );
+//	}
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "joint status full strong iCubInterface"
-#define _debug_jstatus_full_
+//#define _debug_jstatus_full_
 #ifdef  _debug_jstatus_full_
 #define T 500
 
@@ -313,6 +176,33 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 //	//transceiver_post(nv->ep);
 
 #endif
+
+	static int32_t zero = 360;			// dpvrebbe essere  -360, ma pare che qui "X - (-360)" sia diverso da " X+360"
+	static FILE *positionLog = NULL;
+	static bool init = false;
+	int32_t pos = -1;
+
+	if(NULL == positionLog)
+	{
+		if(false == init)
+		{
+			positionLog = fopen("/usr/local/src/robot/debugging/position.log", "w");
+			if(NULL == positionLog)
+				printf("Error opening file /usr/local/src/robot/debugging/position.log\n");
+			else
+				printf("positionLog file opened succesfully\n");
+		}
+	}
+	else
+	{
+		eOmc_joint_status_basic_t *jstatus_b = nv->rem;
+		if( (3 == xx) && (endpoint_mc_rightupperleg == nv->ep) )
+		{
+			pos = (jstatus_b->position / DEG_2_ICUBDEG) + zero;
+//			fprintf(positionLog, "%d\n", pos);
+		}
+	}
+	init = true;
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
@@ -377,7 +267,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig(eOcfg_nvsEP_mc_jointNumber_t xx
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "mconfig strong iCubInterface"
-#define _debug_mxx_mconfig_
+//#define _debug_mxx_mconfig_
 #ifdef _debug_mxx_mconfig_
 	//transceiver_wait(nv->ep);
 	eOmc_motor_config_t *jConfig = nv->rem;
@@ -444,10 +334,25 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode(eOcfg_nvsEP_mc_joi
 	//transceiver_post(nv->ep);
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-// - end-of-file (leave a blank line after)
-// --------------------------------------------------------------------------------------------------------------------
+extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+{
+#warning "joint jcmmnds setpoint strong iCubInterface"
 
+	eOmc_setpoint_t *setpoint_got = (eOmc_setpoint_t*) nv->rem;
+	static int32_t zero = 360;
+	static prev = 0;
+	int32_t pos;
 
+//	printf("Callback recv setpoint: \n");
+	uint16_t *checkProg = (uint16_t*) setpoint_got;
+//	printf("Prog Num %d\n", checkProg[1]);
+	pos = (setpoint_got->to.position.value / DEG_2_ICUBDEG) + zero;
+//	printf("position %d\n", pos);
+//	printf("velocity %d\n", setpoint_got->to.position.withvelocity);
 
+	if( (checkProg[1] - prev) != 1)
+		printf(">>>>>>Missing packet!! prev was %d, actual is %d (missing 0x%04X) <<<<<\n", prev, checkProg[1], prev+1);
 
+	prev = checkProg[1];
+	jwake(xx, nv, jointNVindex_jcmmnds__setpoint);
+}

@@ -23,11 +23,6 @@ using namespace std;
 
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
-	// Debug info
-	// AC_YARP_INFO(Logger::get(), "EmbObjSkin::open", Logger::get().log_files.f3);
-
-	printf("EmbObjSkin param %s\n", config.toString().c_str());
-
 	// Check input parameters
 	int i;
 	bool correct=true;
@@ -106,17 +101,25 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	cout << "FeatId = " << FeatId << endl;
 	strcpy(_fId.name, FeatId.c_str());
 
-#warning "Fix this"
-	if( 0 == strcmp("left_arm", _fId.name) )
-		_fId.ep = endpoint_sk_emsboard_leftlowerarm;		// fare in maniera più sicura
+	_fId.boardNum  = 255;
+	Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
+	if(val.isInt())
+		_fId.boardNum =val.asInt();
+	else
+		printf("No board number found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
-	if( 0 == strcmp("right_arm", _fId.name) )
-		_fId.ep = endpoint_sk_emsboard_rightlowerarm;
-
-
-	if(255 == _fId.ep)
+	switch(_fId.boardNum)
 	{
-		printf("\n ERROR: MotionControl endpoint not found!!!\n");
+	case 2:
+		_fId.ep = endpoint_sk_emsboard_leftlowerarm;
+		yDebug() << "Opening eoSkin class for left lower arm (eb2)\n";
+		break;
+	case 4:
+		_fId.ep = endpoint_sk_emsboard_rightlowerarm;
+		yDebug() << "Opening eoSkin class for right lower arm (eb4)\n";
+		break;
+	default:
+		yError() << "Requested non-existing Skin endpoint for board" << _fId.boardNum;
 		return false;
 	}
 
