@@ -1879,7 +1879,7 @@ PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
     string robot=options.check("robot",Value("icub")).asString().c_str();
     Property optLeg("(device remote_controlboard)");
 
-    string partLeg  =type=="left" ? "left_arm" : "right_arm";
+    string partLeg  =type=="left" ? "left_leg" : "right_leg";
     string remoteLeg="/"+robot+"/"+partLeg;
     string localLeg ="/"+slvName+"/"+partLeg;
 
