@@ -305,15 +305,11 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 		return false;
 	}
 
-
 	original_pid=new Pid[nj];
 	limited_pid =new Pid[nj];
 
 	Bit=joints.begin();
 
-	printf(" before sleep\n");
-	usleep(4 * 1000 * 1000);
-	printf("After sleep\n");
 	while( (Bit != Bend) && (!abortCalib) )			// per ogni set di giunti
 	{
 		setOfJoint_idx++;
