@@ -20,7 +20,7 @@ add_subdirectory(pmpServer)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(camCalib)
-    add_subdirectory(actionsRenderingEngine)
+ #   add_subdirectory(actionsRenderingEngine)
     add_subdirectory(motionCUT)
     add_subdirectory(pf3dTracker)
 

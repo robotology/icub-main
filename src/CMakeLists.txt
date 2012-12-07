@@ -5,6 +5,7 @@
 ## Order here is important, libraries go first because they set variables
 ## that are used by the other modules. 
 
+add_subdirectory(idl)
 add_subdirectory(libraries)
 add_subdirectory(examples)
 add_subdirectory(core)

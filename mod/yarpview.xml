@@ -1,0 +1,34 @@
+<module>
+	<name>yarpview</name>
+	<description> Yarp image viewer</description>
+	<version>1.0</version>
+	
+	<arguments>
+	</arguments>
+			
+	<authors>
+		<author email=""> Paul Fitzpatrick </author>
+	</authors>
+	
+	<data> 
+		<input>
+			<type>cartesian-image</type>
+			<port carrier="UDP">/yarpview/img:i</port>
+			<required>no</required>
+			<priority>no</priority>
+			<description></description>
+		</input>	
+	</data>		
+
+    <dependencies>
+        <computer>
+        </computer>
+    </dependencies>
+
+	<development>
+		<include></include>
+		<library>YARP</library>
+	</development>
+	
+</module>
+

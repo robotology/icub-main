@@ -117,13 +117,15 @@ This file can be edited at src/velocityControl/main.cpp.
 #include "yarp/os/Module.h"
 #include <string.h>
 
+#include <iCub/velocityControl/VelocityControlInterface.h>
+
 /*default rate for the control loop*/
 const int CONTROL_RATE=20;
 
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class VelControlModule: public RFModule {
+class VelControlModule: public RFModule, public iCub::VelocityControlInterface {
 private:
     PolyDriver driver;
     velControlThread *vc;
@@ -134,102 +136,139 @@ private:
     ////
 public:
   
-    virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply)
+    bool attach(yarp::os::Port &source)
     {
-        fprintf(stderr,"receiving command from port\n");
-        int index = 0;
-        int cmdSize = command.size();
-    
-        while(cmdSize>0)
-            {
-                switch(command.get(index).asVocab())  {
-                case  VOCAB4('s','u','s','p'):
-                    {
-                        reply.addVocab(Vocab::encode("ack"));
-                        vc->halt();
-                        cmdSize--;
-                        index++;
-                        break;
-                    }
-                case VOCAB3('r','u','n'):
-                    {
-                        reply.addVocab(Vocab::encode("ack"));
-                        vc->go();
-                        cmdSize--;
-                        index++;
-                        break;
-                    }
-                case VOCAB3('s','e','t'):
-                    {
-                        if (command.size()>=3)
-                            {
-                                int i=command.get(index+1).asInt();
-                                double pos=command.get(index+2).asDouble();
-                                vc->setRef(i, pos);
-                                index +=3;
-                                cmdSize-=3;
-                            }
-                        else
-                            {
-                                cmdSize--;
-                                index++;
-                                fprintf(stderr, "Invalid set message, ignoring\n");
-                            }
-                        reply.addVocab(Vocab::encode("ack"));
-                        break;
-                    }
-                case VOCAB4('s','v','e','l'):
-                    {
-                        if(command.size()>=3)
-                            {
-                                int i=command.get(index+1).asInt();
-                                double vel = command.get(index+2).asDouble();
-                                vc->setVel(i,vel);
-                                index += 3;
-                                cmdSize-=3;;
-                                reply.addVocab(Vocab::encode("ack"));
-                            }
-                        else
-                            {
-                                cmdSize--;
-                                index++;
-                                fprintf(stderr,"Invalid set vel message, ignoring\n");
-                                reply.addVocab(Vocab::encode("fail"));
-                            }
-                        break;
-                    }
-                case VOCAB4('g','a','i','n'):
-                    {
-                        if(command.size()>=3)
-                            {
-                                int i=command.get(index+1).asInt();
-                                double gain = command.get(index+2).asDouble();
-                                vc->setGain(i,gain);
-                                index+=3;
-                                cmdSize-=3;
-                                reply.addVocab(Vocab::encode("ack"));
-                            }
-                        else
-                            {
-                                cmdSize--;
-                                index++;
-                                fprintf(stderr,"Invalid set gain message, ignoring\n");
-                                reply.addVocab(Vocab::encode("fail"));
-                            }
-                        break;
-                    }
-                default:
-                    {
-                        cmdSize--;
-                        index++;
-                        return respond(command, reply); // call default
-                    }
-                }
-                return true;
-            }
-
-        return false;
+        return this->yarp().attachAsServer(source);
     }
+    
+    bool susp()
+    {
+         vc->halt();
+         return true;
+    };
+    
+    bool run()
+    {
+        vc->go();
+        return true;
+    };
+    
+    bool quit()
+    {
+         stopModule(false);
+         return true;
+    };
+    bool set_(const int32_t j, const double p)
+    {
+        vc->setRef(j, p);
+        return true;
+    };
+    bool svel(const int32_t j, const double v)
+    {
+        vc->setVel(j,v);
+        return true;
+    };
+    bool gain(const int32_t j, const double k)
+    {
+        vc->setGain(j,k);
+        return true;
+    };
+//     virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply)
+//     {
+//         fprintf(stderr,"receiving command from port\n");
+//         int index = 0;
+//         int cmdSize = command.size();
+//     
+//         while(cmdSize>0)
+//             {
+//                 switch(command.get(index).asVocab())  {
+//                 case  VOCAB4('s','u','s','p'):
+//                     {
+//                         reply.addVocab(Vocab::encode("ack"));
+//                         vc->halt();
+//                         cmdSize--;
+//                         index++;
+//                         break;
+//                     }
+//                 case VOCAB3('r','u','n'):
+//                     {
+//                         reply.addVocab(Vocab::encode("ack"));
+//                         vc->go();
+//                         cmdSize--;
+//                         index++;
+//                         break;
+//                     }
+//                 case VOCAB3('s','e','t'):
+//                     {
+//                         if (command.size()>=3)
+//                             {
+//                                 int i=command.get(index+1).asInt();
+//                                 double pos=command.get(index+2).asDouble();
+//                                 vc->setRef(i, pos);
+//                                 index +=3;
+//                                 cmdSize-=3;
+//                             }
+//                         else
+//                             {
+//                                 cmdSize--;
+//                                 index++;
+//                                 fprintf(stderr, "Invalid set message, ignoring\n");
+//                             }
+//                         reply.addVocab(Vocab::encode("ack"));
+//                         break;
+//                     }
+//                 case VOCAB4('s','v','e','l'):
+//                     {
+//                         if(command.size()>=3)
+//                             {
+//                                 int i=command.get(index+1).asInt();
+//                                 double vel = command.get(index+2).asDouble();
+//                                 vc->setVel(i,vel);
+//                                 index += 3;
+//                                 cmdSize-=3;;
+//                                 reply.addVocab(Vocab::encode("ack"));
+//                             }
+//                         else
+//                             {
+//                                 cmdSize--;
+//                                 index++;
+//                                 fprintf(stderr,"Invalid set vel message, ignoring\n");
+//                                 reply.addVocab(Vocab::encode("fail"));
+//                             }
+//                         break;
+//                     }
+//                 case VOCAB4('g','a','i','n'):
+//                     {
+//                         if(command.size()>=3)
+//                             {
+//                                 int i=command.get(index+1).asInt();
+//                                 double gain = command.get(index+2).asDouble();
+//                                 vc->setGain(i,gain);
+//                                 index+=3;
+//                                 cmdSize-=3;
+//                                 reply.addVocab(Vocab::encode("ack"));
+//                             }
+//                         else
+//                             {
+//                                 cmdSize--;
+//                                 index++;
+//                                 fprintf(stderr,"Invalid set gain message, ignoring\n");
+//                                 reply.addVocab(Vocab::encode("fail"));
+//                             }
+//                         break;
+//                     }
+//                 default:
+//                     {
+//                         cmdSize--;
+//                         index++;
+//                         return respond(command, reply); // call default
+//                     }
+//                 }
+//                 return true;
+//             }
+// 
+//         return false;
+//     }
   
     virtual bool configure(yarp::os::ResourceFinder &rf)
     {

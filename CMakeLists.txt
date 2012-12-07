@@ -159,6 +159,7 @@ if (__ICUB_INSTALL_APPLICATIONS__)
 endif(__ICUB_INSTALL_APPLICATIONS__)
 
 # Create everything needed to build our executables.
+set (ALLOW_IDL_GENERATION ON)
 add_subdirectory(src)
 
 ############ generate custom target that exports all applications
