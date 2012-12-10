@@ -1,0 +1,12 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x16\x00s\x00k\x00i\x00n\x00W\x00r\x00a\x00p\x00p\x00e\x00r)
+
+[CMake]
+BuildDirs=/usr/local/src/robot/iCub/main/build
+CMakeDir=/usr/share/cmake-2.8/Modules
+Current CMake Binary=file:///usr/bin/cmake
+CurrentBuildDir=file:///usr/local/src/robot/iCub/main/build
+CurrentBuildType=Debug
+CurrentInstallDir=
+Extra Arguments=
+ProjectRootRelative=../../../../

@@ -42,6 +42,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(embObjMotionControl)
   add_subdirectory(embObjSkin)
   add_subdirectory(parametricCalibrator)
+  add_subdirectory(skinWrapper)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 
