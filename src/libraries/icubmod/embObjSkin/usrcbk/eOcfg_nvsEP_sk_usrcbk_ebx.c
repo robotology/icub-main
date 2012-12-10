@@ -53,17 +53,6 @@
 #include "eOcfg_nvsEP_sk_overridden.h"
 #include "eOcfg_nvsEP_sk_emsboard_usr_hid.h"
 
-// --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern public interface
-// --------------------------------------------------------------------------------------------------------------------
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
-// --------------------------------------------------------------------------------------------------------------------
-
-//#include "eOcfg_nvsEP_mngmnt_usr_hid.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
@@ -73,11 +62,6 @@
 #define SKIN_POINTS4TRIANGLE_MAXNUM  		12 //each triangle sends 12 point (value)
 #define SKIN_RECCANFRAME4TRIANGLE_MAXNUM 	2 //each triangle sends 12 points in two can frame
 #define MAX_ACQUISITION 					10000
-
-// --------------------------------------------------------------------------------------------------------------------
-// - typedef with internal scope
-// --------------------------------------------------------------------------------------------------------------------
-// empty-section
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -102,16 +86,105 @@ uint8_t keepGoingOn = 1;
 uint8_t printed = 0;
 FILE * outFile1, *outFile2;
 
-// --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables
-// --------------------------------------------------------------------------------------------------------------------
-// empty-section
-
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern public functions
+//  CALLBACK VERA!!
 // --------------------------------------------------------------------------------------------------------------------
+
+
+
+extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+{
+#warning "skin strong callback iCubInterface"
+//	printf("new callback\n");
+	 s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
+
+	EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->rem;
+	int i;
+/*	Vale stats
+  	if(nv->ep == endpoint_sk_emsboard_rightlowerarm)
+	{
+		if(keepGoingOn)
+		{
+			s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(sk_array);
+
+		}
+		else if(!printed )
+		{
+			outFile1 = fopen("/usr/local/src/robot/pc104-logs/logHistogram.txt", "w+");
+			printf("fopen: %s\n",strerror(errno));
+			if(NULL == outFile1)
+			{
+				printf(" Te piacerebbe!\n");
+				outFile1 = stdout;
+			}
+			outFile2 = fopen("/usr/local/src/robot/pc104-logs/logTimestamp.txt", "w+");
+			printf("fopen: %s\n",strerror(errno));
+			if(NULL == outFile2)
+			{
+				printf(" Te piacerebbe!\n");
+				outFile2 = stdout;
+			}
+			s_eo_cfg__nvsEP_sk_hid_Histogram_Print();
+			s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print();
+			printf("fprintf: %s\n",strerror(errno));
+			fclose(outFile1);
+			fclose(outFile2);
+			printf("fclose: %s\n",strerror(errno));
+			printed = true;
+			printf("Catched 'sk_array->head.size' bigger or equal to 9 %d times\n", count);
+		}
+	}
+*/
+
+#ifdef _ICUB_CALLBACK_
+	FEAT_ID id;
+	id.type = Skin;
+	id.ep = nv->ep;
+
+	void *featList;
+	//	printf("iCub Callback, looking for %s\n", id.name);
+
+	findAndFill(&id, (char *)sk_array);
+#endif
+}
+
+
+// --------------------------------------------------------------------------------------------------------------------
+//  	UTILITIES
+// --------------------------------------------------------------------------------------------------------------------
+
+static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)
+{
+	/* Perform the carry for the later subtraction by updating y. */
+
+	if(_x->tv_usec < _y->tv_usec)
+	{
+		int nsec    = (_y->tv_usec - _x->tv_usec) / 1000000 + 1;
+
+		_y->tv_usec -= 1000000 * nsec;
+		_y->tv_sec  += nsec;
+	}
+
+	if(_x->tv_usec - _y->tv_usec > 1000000)
+	{
+		int nsec    = (_x->tv_usec - _y->tv_usec) / 1000000;
+
+		_y->tv_usec += 1000000 * nsec;
+		_y->tv_sec  -= nsec;
+	}
+
+	/* Compute the time remaining to wait. tv_usec is certainly positive. */
+
+	_result->tv_sec  = _x->tv_sec  - _y->tv_sec;
+	_result->tv_usec = _x->tv_usec - _y->tv_usec;
+
+	/* Return 1 if result is negative. */
+
+	return _x->tv_sec < _y->tv_sec;
+}
+
 
 void s_eo_cfg_nvsEP_sk_hid_Dump_Data( const EOnv* nv)
 {
@@ -163,6 +236,11 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data( const EOnv* nv)
 			triangle = (canframe->id & 0x000f);
 			msgtype= ((canframe->data[0])& 0x80);
 			//			printf("\n mtb %d triangle %d\n", mtbId, triangle);
+			dump[t] = canframe->data[1];
+			printf("%d\n", dump[p]);
+
+			continue;
+
 
 			if(t < MAX_ACQUISITION)
 			{
@@ -173,17 +251,18 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data( const EOnv* nv)
 					t++;
 				}
 			}
-			else if(t==MAX_ACQUISITION)
+			else //if(t==MAX_ACQUISITION)
 			{
 				for (p=0; p<MAX_ACQUISITION; p++)
 				{
 					fprintf(stdout, "%d\t\t%d%06d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
 				}
 
-				FILE *log = fopen("/tmp/iii/log.txt", "w");
-				if(NULL == log)
-					printf(" Te piacerebbe!\n");
-				else
+				FILE* log = stdout;
+//				FILE *log = fopen("/tmp/iii/log.txt", "w");
+//				if(NULL == log)
+//					printf(" Te piacerebbe!\n");
+//				else
 				{
 					fprintf(log, "valore  -  timestamp\n");
 					for (p=0; p<MAX_ACQUISITION; p++)
@@ -191,120 +270,15 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data( const EOnv* nv)
 						fprintf(log, "%d\t\t%d%d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
 						//fprintf(stdout, " 0x%0x\t\t%d:%d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
 					}
-					fclose(log);
+//					fclose(log);
 					printf("Fine!!\n");
 				}
-
-				// DIE HERE!!!
-				//while(1);
-				t++;
-
 			}
-			//else
-			//{
-			//	printf("Array full!!\n");
-			//}
-
+			t++;
 		}
 	}
 }
 
-//sk-update
-//#ifdef OVERRIDE_eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe
-extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
-{
-	//printf("new callback\n");
-	// s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
-	EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->rem;
-	int i;
-/*	Vale stats
-  	if(nv->ep == endpoint_sk_emsboard_rightlowerarm)
-	{
-		if(keepGoingOn)
-		{
-			s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(sk_array);
-
-		}
-		else if(!printed )
-		{
-			outFile1 = fopen("/usr/local/src/robot/pc104-logs/logHistogram.txt", "w+");
-			printf("fopen: %s\n",strerror(errno));
-			if(NULL == outFile1)
-			{
-				printf(" Te piacerebbe!\n");
-				outFile1 = stdout;
-			}
-			outFile2 = fopen("/usr/local/src/robot/pc104-logs/logTimestamp.txt", "w+");
-			printf("fopen: %s\n",strerror(errno));
-			if(NULL == outFile2)
-			{
-				printf(" Te piacerebbe!\n");
-				outFile2 = stdout;
-			}
-			s_eo_cfg__nvsEP_sk_hid_Histogram_Print();
-			s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print();
-			printf("fprintf: %s\n",strerror(errno));
-			fclose(outFile1);
-			fclose(outFile2);
-			printf("fclose: %s\n",strerror(errno));
-			printed = true;
-			printf("Catched 'sk_array->head.size' bigger or equal to 9 %d times\n", count);
-		}
-	}
-*/
-
-#ifdef _ICUB_CALLBACK_
-	FEAT_ID id;
-	id.type = Skin;
-	id.ep = nv->ep;
-
-	void *featList;
-	//	printf("iCub Callback, looking for %s\n", id.name);
-
-	findAndFill(&id, (char *)sk_array);
-#endif
-}
-//#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions
-// --------------------------------------------------------------------------------------------------------------------
-
-static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)
-{
-	/* Perform the carry for the later subtraction by updating y. */
-
-	if(_x->tv_usec < _y->tv_usec)
-	{
-		int nsec    = (_y->tv_usec - _x->tv_usec) / 1000000 + 1;
-
-		_y->tv_usec -= 1000000 * nsec;
-		_y->tv_sec  += nsec;
-	}
-
-	if(_x->tv_usec - _y->tv_usec > 1000000)
-	{
-		int nsec    = (_x->tv_usec - _y->tv_usec) / 1000000;
-
-		_y->tv_usec += 1000000 * nsec;
-		_y->tv_sec  -= nsec;
-	}
-
-	/* Compute the time remaining to wait. tv_usec is certainly positive. */
-
-	_result->tv_sec  = _x->tv_sec  - _y->tv_sec;
-	_result->tv_usec = _x->tv_usec - _y->tv_usec;
-
-	/* Return 1 if result is negative. */
-
-	return _x->tv_sec < _y->tv_sec;
-}
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions
-// --------------------------------------------------------------------------------------------------------------------
 void s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(EOarray_of_10canframes *sk_array)
 {
 	eOutil_canframe_t *canframe;
@@ -451,10 +425,4 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void)
 		fprintf(outFile2,"\n\n");
 	}
 }
-
-// --------------------------------------------------------------------------------------------------------------------
-// - end-of-file (leave a blank line after)
-// --------------------------------------------------------------------------------------------------------------------
-
-
 

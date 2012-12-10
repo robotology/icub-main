@@ -20,7 +20,6 @@ const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 using namespace std;
 
-
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
 	// Check input parameters
@@ -281,7 +280,6 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 	EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
 	//	yarp::sig::Vector 		&pv = outPort.prepare();
 
-	// print_debug(AC_debug_file, "\n--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
 
 	for(i=0; i<sk_array->head.size; i++)
 	{
@@ -319,23 +317,21 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 					mtbId = 6;
 					break;
 				default:
-					printf("Unexpected value %d\n", cardId);
+					yError() << "Unknown cardId from skin\n";
 					return false;
 					break;
 			}
 			triangle = (canframe->id & 0x000f);
 			msgtype= ((canframe->data[0])& 0x80);
-			// print_debug(AC_debug_file, "\n data id 0x%04X, 0x", canframe->id);
 
 			int index=16*12*mtbId + triangle*12;
 
-			// print_debug(AC_debug_file,"%0X ", canframe->data[0]);
 			if (msgtype)
 			{
 				for(int k=0;k<5;k++)
 				{
 					data[index+k+7]=canframe->data[k+1];
-					// print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
+//					 yError() << "fill data " << data[index+k+7];
 				}
 			}
 			else
@@ -343,13 +339,13 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 				for(int k=0;k<7;k++)
 				{
 					this->data[index+k]=canframe->data[k+1];
-					// print_debug(AC_debug_file, "%0X ", canframe->data[k+1]);
+//					 yError() << "fill data " << data[index+k];
 				}
 			}
 		}
 		else
 		{
-			// print_debug(AC_debug_file, "Unknown Message\n");
+			yError() << "Unknown Message received from skin\n";
 		}
 	}
 	return true;  // bool?
