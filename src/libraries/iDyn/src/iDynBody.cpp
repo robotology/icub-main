@@ -34,7 +34,7 @@ using namespace iCub::iKin;
 using namespace iCub::iDyn;
 using namespace iCub::skinDynLib;
 
-#define DEBUG_FOOT_COM
+// #define DEBUG_FOOT_COM
 //====================================
 //
 //		RIGID BODY TRANSFORMATION
@@ -2481,7 +2481,6 @@ bool iCubWholeBody::computeCOM()
 	whole_mass = lower_mass+upper_mass;
 	whole_COM  = ((upper_COM*upper_mass)+(lower_COM*lower_mass))/(upper_mass+lower_mass);
 	whole_COM.pop_back();
-	fprintf(stderr, "ROOT COM from computeCOM()\n%s\n", whole_COM.toString().c_str() );
 
 	sw_getcom = 1; //USEFUL FOR THE DOUBLE CALL TO getCOMjacobian()
 	return true;
@@ -2496,12 +2495,12 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 	yarp::sig::Matrix T1;
 	yarp::sig::Matrix hright;
     
- //    hright.resize(4,4);	hright.zero();
+    // hright.resize(4,4);	hright.zero();
 	// double theta = CTRL_DEG2RAD * (180.0-15.0);
 	// hright(0,0)=1.0;		//  1  0  0
 	// hright(1,2)=1.0;		//  0  0  1  
-	// hright(2,1)=-1.0;		//  0 -1  0  
-	// hright(3,3)=1.0;		//  
+	// hright(2,1)=-1.0;	//  0 -1  0  
+	// hright(3,3)=1.0;		  
 	// hright(2,3)=-0.1199;
 	// hright(1,3)=0.0681;
 	// yarp::sig::Matrix rot6x6; rot6x6.resize(6,6); rot6x6.zero();
