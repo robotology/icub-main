@@ -138,6 +138,7 @@ protected:
     IPositionControl *pos;
     IVelocityControl *vel;
     IOpenLoopControl *iOpenLoop;
+    int controlledAxes;
 
 public:
     /**

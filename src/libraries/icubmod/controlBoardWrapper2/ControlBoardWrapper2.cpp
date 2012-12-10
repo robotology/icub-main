@@ -224,6 +224,10 @@ ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
     pos = dynamic_cast<yarp::dev::IPositionControl *> (x);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (x);
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (x);
+
+    controlledAxes=0;
+    if (pos)
+        pos->getAxes(&controlledAxes);
 }
 
 void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
@@ -250,19 +254,25 @@ void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
             {
                 case VOCAB_IMP_PARAM:
                     {
-                        Bottle& b = *(cmd.get(4).asList());
-                        double stiff = b.get(0).asDouble();
-                        double damp = b.get(1).asDouble();
-                        *ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp);
-                        *rec=true;
+                        Bottle *b = cmd.get(4).asList();
+                        if (b!=NULL)
+                        {
+                            double stiff = b->get(0).asDouble();
+                            double damp = b->get(1).asDouble();
+                            *ok = iImpedance->setImpedance(cmd.get(3).asInt(),stiff,damp);
+                            *rec=true;
+                        }
                     }
                     break;
                 case VOCAB_IMP_OFFSET:
                     {
-                        Bottle& b = *(cmd.get(4).asList());
-                        double offs = b.get(0).asDouble();
-                        *ok = iImpedance->setImpedanceOffset(cmd.get(3).asInt(),offs);
-                        *rec=true;
+                        Bottle *b = cmd.get(4).asList();
+                        if (b!=NULL)
+                        {
+                            double offs = b->get(0).asDouble();
+                            *ok = iImpedance->setImpedanceOffset(cmd.get(3).asInt(),offs);
+                            *rec=true;
+                        }
                     }
                     break;
             }
@@ -460,14 +470,17 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 
                     case VOCAB_REFS:
                         {
-                            Bottle& b = *(cmd.get(3).asList());
+                            Bottle *b = cmd.get(3).asList();
+                            if (b==NULL)
+                                break;
+
                             int i;
-                            const int njs = b.size();
+                            const int njs = b->size();
                             if (njs==controlledJoints)
                                 {
                                     double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                     for (i = 0; i < njs; i++)
-                                        p[i] = b.get(i).asDouble();
+                                        p[i] = b->get(i).asDouble();
                                     *ok = torque->setRefTorques (p);
                                     delete[] p;
                                 }
@@ -482,14 +495,16 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 
                     case VOCAB_LIMS:
                         {
-                            Bottle& b = *(cmd.get(3).asList());
+                            Bottle *b = cmd.get(3).asList();
+                            if (b==NULL)
+                                break;
                             int i;
-                            const int njs = b.size();
+                            const int njs = b->size();
                             if (njs==controlledJoints)
                                 {
                                     double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                     for (i = 0; i < njs; i++)
-                                        p[i] = b.get(i).asDouble();
+                                        p[i] = b->get(i).asDouble();
                                     *ok = torque->setTorqueErrorLimits (p);
                                     delete[] p;
                                 }
@@ -500,42 +515,62 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
                         {
                             Pid p;
                             int j = cmd.get(3).asInt();
-                            Bottle& b = *(cmd.get(4).asList());
-                            p.kp = b.get(0).asDouble();
-                            p.kd = b.get(1).asDouble();
-                            p.ki = b.get(2).asDouble();
-                            p.max_int = b.get(3).asDouble();
-                            p.max_output = b.get(4).asDouble();
-                            p.offset = b.get(5).asDouble();
-                            p.scale = b.get(6).asDouble();
-                            p.stiction_up_val = b.get(7).asDouble();
-                            p.stiction_down_val = b.get(8).asDouble();
+                            Bottle *b = cmd.get(4).asList();
+
+                            if (b==NULL)
+                                break;
+
+                            p.kp = b->get(0).asDouble();
+                            p.kd = b->get(1).asDouble();
+                            p.ki = b->get(2).asDouble();
+                            p.max_int = b->get(3).asDouble();
+                            p.max_output = b->get(4).asDouble();
+                            p.offset = b->get(5).asDouble();
+                            p.scale = b->get(6).asDouble();
+                            p.stiction_up_val = b->get(7).asDouble();
+                            p.stiction_down_val = b->get(8).asDouble();
                             *ok = torque->setTorquePid(j, p);
                         }
                         break;
 
                     case VOCAB_PIDS:
                         {
-                            Bottle& b = *(cmd.get(3).asList());
+                            Bottle *b = cmd.get(3).asList();
+                            if (b==NULL)
+                                break;
+
                             int i;
-                            const int njs = b.size();
+                            const int njs = b->size();
                             if (njs==controlledJoints)
                                 {
+                                    bool allOK=true;
+
                                     Pid *p = new Pid[njs];
                                     for (i = 0; i < njs; i++)
                                         {
-                                            Bottle& c = *(b.get(i).asList());
-                                            p[i].kp = c.get(0).asDouble();
-                                            p[i].kd = c.get(1).asDouble();
-                                            p[i].ki = c.get(2).asDouble();
-                                            p[i].max_int = c.get(3).asDouble();
-                                            p[i].max_output = c.get(4).asDouble();
-                                            p[i].offset = c.get(5).asDouble();
-                                            p[i].scale = c.get(6).asDouble();
-                                            p[i].stiction_up_val = c.get(7).asDouble();
-                                            p[i].stiction_down_val = c.get(8).asDouble();
+                                            Bottle *c = b->get(i).asList();
+                                            if (c!=NULL)
+                                            {
+                                                p[i].kp = c->get(0).asDouble();
+                                                p[i].kd = c->get(1).asDouble();
+                                                p[i].ki = c->get(2).asDouble();
+                                                p[i].max_int = c->get(3).asDouble();
+                                                p[i].max_output = c->get(4).asDouble();
+                                                p[i].offset = c->get(5).asDouble();
+                                                p[i].scale = c->get(6).asDouble();
+                                                p[i].stiction_up_val = c->get(7).asDouble();
+                                                p[i].stiction_down_val = c->get(8).asDouble();
+                                            }
+                                            else
+                                            {
+                                                allOK=false;
+                                            }
                                         }
-                                    *ok = torque->setTorquePids(p);
+                                    if (allOK)
+                                        *ok = torque->setTorquePids(p);
+                                    else 
+                                        *ok=false;
+
                                     delete[] p;
                                 }
                         }
@@ -762,6 +797,19 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
 void ImplementCallbackHelper2::onRead(CommandMessage& v)
 {
     Bottle& b = v.head;
+    Vector& cmdVector = v.body;
+
+    // some consistency checks
+    if (controlledAxes!=cmdVector.size())
+    {
+        fprintf(stderr, "Received command vector with incorrect number of elements\n");
+        return;
+    }
+    if (cmdVector.data()==0)
+    {
+         fprintf(stderr, "Received null command vector\n");
+         return;
+    }
 
     switch (b.get(0).asVocab())
         {
@@ -775,7 +823,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
 
                 if (pos)
                     {
-                        bool ok = pos->positionMove(&(v.body[0]));
+                        bool ok = pos->positionMove(cmdVector.data());
                         if (!ok)
                             fprintf(stderr, "Issues while trying to start a position move\n");
                     }
@@ -792,7 +840,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
                 //            printf("\n");
                 if (vel)
                     {
-                        bool ok = vel->velocityMove(&(v.body[0]));
+                        bool ok = vel->velocityMove(cmdVector.data());
                         if (!ok)
                             fprintf(stderr, "Issues while trying to start a velocity move\n");
                     }
@@ -802,7 +850,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             {
                 if (iOpenLoop)
                     {
-                        bool ok=iOpenLoop->setOutputs(&(v.body[0]));
+                        bool ok=iOpenLoop->setOutputs(cmdVector.data());
                         if (!ok)
                             fprintf(stderr, "Issues while trying to command an open loop message\n");
                     }
@@ -945,14 +993,17 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_OUTPUTS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if (njs==controlledJoints)
                                 {
                                     double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                     for (i = 0; i < njs; i++)
-                                        p[i] = b.get(i).asDouble();
+                                        p[i] = b->get(i).asDouble();
                                     ok = iOpenLoop->setOutputs(p);
                                     delete[] p;
                                 }
@@ -972,42 +1023,66 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             {
                                 Pid p;
                                 int j = cmd.get(2).asInt();
-                                Bottle& b = *(cmd.get(3).asList());
-                                p.kp = b.get(0).asDouble();
-                                p.kd = b.get(1).asDouble();
-                                p.ki = b.get(2).asDouble();
-                                p.max_int = b.get(3).asDouble();
-                                p.max_output = b.get(4).asDouble();
-                                p.offset = b.get(5).asDouble();
-                                p.scale = b.get(6).asDouble();
-                                p.stiction_up_val = b.get(7).asDouble();
-                                p.stiction_down_val = b.get(8).asDouble();
+                                Bottle *b = cmd.get(3).asList();
+
+                                if (b==NULL)
+                                    break;
+
+                                p.kp = b->get(0).asDouble();
+                                p.kd = b->get(1).asDouble();
+                                p.ki = b->get(2).asDouble();
+                                p.max_int = b->get(3).asDouble();
+                                p.max_output = b->get(4).asDouble();
+                                p.offset = b->get(5).asDouble();
+                                p.scale = b->get(6).asDouble();
+                                p.stiction_up_val = b->get(7).asDouble();
+                                p.stiction_down_val = b->get(8).asDouble();
                                 ok = pid->setPid(j, p);
                             }
                             break;
 
                         case VOCAB_PIDS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if (njs==controlledJoints)
                                 {
                                     Pid *p = new Pid[njs];
+
+                                    bool allOK=true;
+
                                     for (i = 0; i < njs; i++)
                                     {
-                                        Bottle& c = *(b.get(i).asList());
-                                        p[i].kp = c.get(0).asDouble();
-                                        p[i].kd = c.get(1).asDouble();
-                                        p[i].ki = c.get(2).asDouble();
-                                        p[i].max_int = c.get(3).asDouble();
-                                        p[i].max_output = c.get(4).asDouble();
-                                        p[i].offset = c.get(5).asDouble();
-                                        p[i].scale = c.get(6).asDouble();
-                                        p[i].stiction_up_val = c.get(7).asDouble();
-                                        p[i].stiction_down_val = c.get(8).asDouble();
+                                        Bottle *c = b->get(i).asList();
+                                        
+
+                                        if (c!=NULL)
+                                        {
+                                            p[i].kp = c->get(0).asDouble();
+                                            p[i].kd = c->get(1).asDouble();
+                                            p[i].ki = c->get(2).asDouble();
+                                            p[i].max_int = c->get(3).asDouble();
+                                            p[i].max_output = c->get(4).asDouble();
+                                            p[i].offset = c->get(5).asDouble();
+                                            p[i].scale = c->get(6).asDouble();
+                                            p[i].stiction_up_val = c->get(7).asDouble();
+                                            p[i].stiction_down_val = c->get(8).asDouble();
+                                        }
+                                        else
+                                        {
+                                            allOK=false;
+                                        }
                                     }
-                                    ok = pid->setPids(p);
+                                    if (allOK)
+                                        ok = pid->setPids(p);
+                                    else
+                                        ok=false;
+
                                     delete[] p;
                                 }
                             }
@@ -1021,14 +1096,18 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_REFS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if (njs==controlledJoints)
                                 {
                                     double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                     for (i = 0; i < njs; i++)
-                                        p[i] = b.get(i).asDouble();
+                                        p[i] = b->get(i).asDouble();
                                     ok = pid->setReferences (p);
                                     delete[] p;
                                 }
@@ -1043,14 +1122,18 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_LIMS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
                                 int i;
-                                const int njs = b.size();
+
+                                if (b==NULL)
+                                    break;
+
+                                const int njs = b->size();
                                 if (njs==controlledJoints)
                                 {
                                     double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                     for (i = 0; i < njs; i++)
-                                        p[i] = b.get(i).asDouble();
+                                        p[i] = b->get(i).asDouble();
                                     ok = pid->setErrorLimits (p);
                                     delete[] p;
                                 }
@@ -1109,7 +1192,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 const int njs = b->size();
                                 if (njs!=controlledJoints)
                                     break;
-                                vect.size(njs);
+                                vect.resize(njs);
                                 for (i = 0; i < njs; i++)
                                     vect[i] = b->get(i).asDouble();
 
@@ -1128,7 +1211,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 const int njs = b->size();
                                 if (njs!=controlledJoints)
                                     break;
-                                vect.size(njs);
+                                vect.resize(njs);
                                 for (i = 0; i < njs; i++)
                                     vect[i] = b->get(i).asDouble();
                                 if (vel!=NULL)
@@ -1145,14 +1228,18 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_RELATIVE_MOVES:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if(njs!=controlledJoints)
                                     break;
                                 double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                 for (i = 0; i < njs; i++)
-                                    p[i] = b.get(i).asDouble();
+                                    p[i] = b->get(i).asDouble();
                                 ok = pos->relativeMove(p);
                                 delete[] p;
                             }
@@ -1166,14 +1253,18 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_REF_SPEEDS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if (njs!=controlledJoints)
                                     break;
                                 double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                 for (i = 0; i < njs; i++)
-                                    p[i] = b.get(i).asDouble();
+                                    p[i] = b->get(i).asDouble();
                                 ok = pos->setRefSpeeds(p);
                                 delete[] p;
                             }
@@ -1187,14 +1278,18 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_REF_ACCELERATIONS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if(njs!=controlledJoints)
                                     break;
                                 double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                 for (i = 0; i < njs; i++)
-                                    p[i] = b.get(i).asDouble();
+                                    p[i] = b->get(i).asDouble();
                                 ok = pos->setRefAccelerations(p);
                                 delete[] p;
                             }
@@ -1232,14 +1327,18 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_ENCODERS:
                             {
-                                Bottle& b = *(cmd.get(2).asList());
+                                Bottle *b = cmd.get(2).asList();
+
+                                if (b==NULL)
+                                    break;
+
                                 int i;
-                                const int njs = b.size();
+                                const int njs = b->size();
                                 if (njs!=controlledJoints)
                                     break;
                                 double *p = new double[njs];    // LATER: optimize to avoid allocation.
                                 for (i = 0; i < njs; i++)
-                                    p[i] = b.get(i).asDouble();
+                                    p[i] = b->get(i).asDouble();
                                 ok = enc->setEncoders(p);
                                 delete[] p;
                             }
@@ -1658,6 +1757,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 ok=amp->getAmpStatus(j, &itmp);
                                 response.addInt(itmp);
                             }
+                            break;
 
                         case VOCAB_LIMITS:
                             {
