@@ -338,24 +338,19 @@ bool ethResCreator::removeResource(ethResources* to_be_removed)
 	return false;
 }
 
-bool ethResCreator::compareIds(EMS_ID id2beFound, EMS_ID nextId)
-{
-	if( (id2beFound.ip1 == nextId.ip1) && (id2beFound.ip2 == nextId.ip2) && (id2beFound.ip3 == nextId.ip3) && (id2beFound.ip4 == nextId.ip4) )
-		return true;
-	else
-		return false;
-}
-
-
 void ethResCreator::addLUTelement(FEAT_ID id)
 {
+	_creatorMutex.wait();
 	ethResCreator::class_lut.insert(std::pair<uint8_t, FEAT_ID>(id.ep, id));
-	//ethResCreator::class_lut[id.ep] = id;		// does the same??
+	_creatorMutex.post();
 }
 
 void *ethResCreator::getHandleFromEP(eOnvEP_t ep)
 {
-	return ethResCreator::class_lut[ep].handle;
+	_creatorMutex.wait();
+	void * ret =ethResCreator::class_lut[ep].handle;
+	_creatorMutex.post();
+	return ret;
 }
 
 FEAT_ID ethResCreator::getFeatInfoFromEP(uint8_t ep)

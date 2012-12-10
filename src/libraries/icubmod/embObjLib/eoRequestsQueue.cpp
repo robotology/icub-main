@@ -36,7 +36,6 @@ bool eoThreadArray::getId(int *i)
         {
             ret=getNew(self,id);
         }
-    printf("Get Id says = %d\n", id);
     *i=id;
     return ret;
 }

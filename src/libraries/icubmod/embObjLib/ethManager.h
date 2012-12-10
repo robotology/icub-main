@@ -94,15 +94,6 @@ namespace yarp{
     }
 }
 
-typedef struct
-{
-		char 		name[64];
-		uint8_t		ip1;
-		uint8_t		ip2;
-		uint8_t		ip3;
-		uint8_t		ip4;
-}EMS_ID;
-
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
@@ -126,7 +117,6 @@ private:
 
 
 public:
-	EMS_ID						id;				// to be removed
    	hostTransceiver				*transceiver;
 
 	ethResources();
@@ -164,7 +154,6 @@ class yarp::dev::ethResCreator: public std::list<ethResources *>
 
 		ethResCreator();
 		~ethResCreator();
-		bool						compareIds(EMS_ID id2beFound, EMS_ID comparingId);
 
 	public:
 		void						close(void);
