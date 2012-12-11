@@ -2937,8 +2937,11 @@ void MotorThread::interrupt()
     suspendLearningModeAction(bInterrupt);
     suspendLearningModeKinOffset(bInterrupt);
 
-    setGazeIdle();
-    ctrl_gaze->stopControl();
+    if (ctrl_gaze!=NULL)
+    {
+        setGazeIdle();
+        ctrl_gaze->stopControl();
+    }
 
     if(action[LEFT]!=NULL)
     {
