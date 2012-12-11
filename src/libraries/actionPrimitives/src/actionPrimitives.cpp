@@ -440,6 +440,7 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
                 printMessage("failed to get weights from cartesian controller\n");
                 return false;
             }
+
             printMessage("%s limits: [%g,%g] deg; weight=%g\n",key.c_str(),min,max,weights[j]);
         }
 
@@ -632,11 +633,11 @@ bool ActionPrimitives::open(Property &opt)
     setTrackingMode(tracking_mode);
 
     // handle torso DOF's
-    if (handleTorsoDOF(opt,"torso_pitch",0)==false)
+    if (!handleTorsoDOF(opt,"torso_pitch",0))
         return false;
-    if (handleTorsoDOF(opt,"torso_roll",1)==false)
+    if (!handleTorsoDOF(opt,"torso_roll",1))
         return false;
-    if (handleTorsoDOF(opt,"torso_yaw",2)==false)
+    if (!handleTorsoDOF(opt,"torso_yaw",2))
         return false;
 
     Vector curDof;
