@@ -632,9 +632,12 @@ bool ActionPrimitives::open(Property &opt)
     setTrackingMode(tracking_mode);
 
     // handle torso DOF's
-    handleTorsoDOF(opt,"torso_pitch",0);
-    handleTorsoDOF(opt,"torso_roll",1);
-    handleTorsoDOF(opt,"torso_yaw",2);
+    if (handleTorsoDOF(opt,"torso_pitch",0)==false)
+        return false;
+    if (handleTorsoDOF(opt,"torso_roll",1)==false)
+        return false;
+    if (handleTorsoDOF(opt,"torso_yaw",2)==false)
+        return false;
 
     Vector curDof;
     cartCtrl->getDOF(curDof);
