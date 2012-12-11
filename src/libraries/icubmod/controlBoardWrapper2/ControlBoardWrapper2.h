@@ -152,6 +152,8 @@ public:
     * @param v is the Vector being received.
     */
     virtual void onRead(CommandMessage& v);
+
+    bool initialize();
 };
 
 class SubDevice

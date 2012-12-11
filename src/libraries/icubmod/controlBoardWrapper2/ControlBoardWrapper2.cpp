@@ -224,10 +224,6 @@ ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
     pos = dynamic_cast<yarp::dev::IPositionControl *> (x);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (x);
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (x);
-
-    controlledAxes=0;
-    if (pos)
-        pos->getAxes(&controlledAxes);
 }
 
 void CommandsHelper2::handleImpedanceMsg(const yarp::os::Bottle& cmd,
@@ -793,6 +789,14 @@ void CommandsHelper2::handleTorqueMsg(const yarp::os::Bottle& cmd,
     }
 }
 
+bool ImplementCallbackHelper2::initialize()
+{
+    controlledAxes=0;
+    if (pos)
+        pos->getAxes(&controlledAxes);
+    
+    return true;
+}
 
 void ImplementCallbackHelper2::onRead(CommandMessage& v)
 {
@@ -802,7 +806,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     // some consistency checks
     if (controlledAxes!=cmdVector.size())
     {
-        string str = yarp::os::Vocab::decode(b.get(0).asVocab());
+        yarp::os::ConstString str = yarp::os::Vocab::decode(b.get(0).asVocab());
         fprintf(stderr, "Received command vector with incorrect number of elements (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,cmdVector.size());
         return;
     }
@@ -859,7 +863,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             break;
         default:
             {
-                string str = yarp::os::Vocab::decode(b.get(0).asVocab());
+                yarp::os::ConstString str = yarp::os::Vocab::decode(b.get(0).asVocab());
                 fprintf(stderr, "Unrecognized message while receiving on command port (%s)\n",str.c_str());
             }
             break;
@@ -1945,6 +1949,13 @@ bool ControlBoardWrapper2::open(Searchable& prop)
             cerr<<"Error total number of mapped joints does not correspond to part joints"<<endl;
             return false;
         }
+
+    // initialize callback
+    if (!callback_impl.initialize())
+    {
+        cerr<<"Error could not initialize callback object"<<endl;
+        return false;
+    }
 
     partName=prop.check("name",Value("controlboard"),
                         "prefix for port names").asString().c_str();
