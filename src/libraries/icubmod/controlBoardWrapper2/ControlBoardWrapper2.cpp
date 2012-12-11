@@ -802,7 +802,8 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     // some consistency checks
     if (controlledAxes!=cmdVector.size())
     {
-        fprintf(stderr, "Received command vector with incorrect number of elements\n");
+        string str = yarp::os::Vocab::decode(b.get(0).asVocab());
+        fprintf(stderr, "Received command vector with incorrect number of elements (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,cmdVector.size());
         return;
     }
     if (cmdVector.data()==0)
@@ -858,7 +859,8 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             break;
         default:
             {
-                fprintf(stderr, "Unrecognized message while receiving on command port\n");
+                string str = yarp::os::Vocab::decode(b.get(0).asVocab());
+                fprintf(stderr, "Unrecognized message while receiving on command port (%s)\n",str.c_str());
             }
             break;
         }
