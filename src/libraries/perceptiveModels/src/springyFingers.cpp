@@ -51,7 +51,7 @@ bool SpringyFinger::fromProperty(const Property &options)
     neighbors.clear();
     lssvm.reset();
 
-    name=opt.find("name").asString().c_str();    
+    name=opt.find("name").asString().c_str();
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(360.0);
@@ -59,8 +59,8 @@ bool SpringyFinger::fromProperty(const Property &options)
     scaler.setUpperBoundOut(1.0);
 
     lssvm.setDomainSize(1);
-    lssvm.setC(4.0);
-    lssvm.getKernel()->setGamma(16.0);
+    lssvm.setC(1e4);
+    lssvm.getKernel()->setGamma(500.0);
 
     double defaultCalibVel;
     if ((name=="thumb") || (name=="index") || (name=="middle"))
