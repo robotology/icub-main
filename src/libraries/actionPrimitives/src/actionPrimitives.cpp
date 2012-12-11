@@ -435,7 +435,11 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
                 weights[j]=4.0;
                 cartCtrl->setRestWeights(weights,weights);
             }
-
+            else
+            {
+                printMessage("failed to get weights from cartesian controller\n");
+                return false;
+            }
             printMessage("%s limits: [%g,%g] deg; weight=%g\n",key.c_str(),min,max,weights[j]);
         }
 
