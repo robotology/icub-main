@@ -777,10 +777,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
 
     if(b.check("grasp_model_file"))
     {
-        string grasp_model_name=b.find("grasp_model_file").asString().c_str();
-
         string tmpGraspPath=rf.getContextPath().c_str();
-
         graspPath[arm]=tmpGraspPath+"/"+b.find("grasp_model_file").asString().c_str();
     }
 
@@ -1160,9 +1157,6 @@ bool MotorThread::threadInit()
 
             Property option_tmp(option);
             option_tmp.put("part",arm_name[arm].c_str());
-
-            string grasp_model_name=bArm[arm].find("grasp_model_file").asString().c_str();
-            //option_tmp.put("grasp_model_file",rf.findFile(grasp_model_name.c_str()).c_str());
 
             string tmpGraspPath=rf.getContextPath().c_str();
             option_tmp.put("grasp_model_file",(tmpGraspPath+"/"+bArm[arm].find("grasp_model_file").asString().c_str()).c_str());
