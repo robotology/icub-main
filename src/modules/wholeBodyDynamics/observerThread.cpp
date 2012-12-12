@@ -977,6 +977,8 @@ void inverseDynamics::threadRelease()
     closePort(port_COM_vel);
     fprintf(stderr, "Closing COM Jacobian port\n");
     closePort(port_COM_Jacobian);
+    fprintf(stderr, "Closing All Velocities port\n");
+    closePort(port_all_velocities);
 
     if (icub)      {delete icub; icub=0;}
     if (icub_sens) {delete icub_sens; icub=0;}
