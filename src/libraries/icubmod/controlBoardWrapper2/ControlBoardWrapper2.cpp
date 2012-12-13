@@ -807,7 +807,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     if (controlledAxes!=cmdVector.size())
     {
         yarp::os::ConstString str = yarp::os::Vocab::decode(b.get(0).asVocab());
-        fprintf(stderr, "Received command vector with incorrect number of elements (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,cmdVector.size());
+        fprintf(stderr, "Received command vector with incorrect number of elements (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,(int)cmdVector.size());
         return;
     }
     if (cmdVector.data()==0)
