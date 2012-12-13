@@ -1056,15 +1056,12 @@ bool MotorThread::threadInit()
     netOptions.fromConfigFile(rf.findFile(net_name.c_str()).c_str());
     if(net.configure(netOptions))
     {
-        fprintf(stdout,"\n Network:\n");
-        net.printStructure();
-
+        fprintf(stdout,"Neural network configured successfully\n");
         neuralNetworkAvailable=true;
     }
     else
     {
         fprintf(stdout,"Error while loading neural network!\n");
-
         neuralNetworkAvailable=false;
     }
 
