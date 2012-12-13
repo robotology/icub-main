@@ -260,9 +260,9 @@ public:
         }
         
         glPushMatrix();
-
         glTranslated(mPosx,mPosy,mPosz);
-        printw(0.0,0.0,1.2*mDimz,mName.c_str());
+        std::string text = mName + this->optional_label;
+        printw(0.0,0.0,1.2*mDimz,text.c_str());
 
         glRotated(mRotz0,0.0,0.0,1.0);
         glRotated(mRoty0,0.0,1.0,0.0);
@@ -357,6 +357,7 @@ public:
     int mW,mH;
     bool bTextured;
     unsigned char* mTextureBuffer;
+    std::string optional_label;
     
 protected:
     GLuint nTexID;

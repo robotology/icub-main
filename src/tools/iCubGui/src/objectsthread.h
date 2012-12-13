@@ -240,7 +240,49 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
 
         return;
     }
-    
+
+    if (cmd=="object_with_label")
+    {
+        std::string id    (msg->get(1).asString().c_str());
+        std::string label (msg->get(2).asString().c_str());
+
+        double dx=msg->get(3).asDouble();
+        double dy=msg->get(4).asDouble();
+        double dz=msg->get(5).asDouble();
+
+        double px=msg->get(6).asDouble();
+        double py=msg->get(7).asDouble();
+        double pz=msg->get(8).asDouble();
+
+        double rx=msg->get(9).asDouble();
+        double ry=msg->get(10).asDouble();
+        double rz=msg->get(11).asDouble();
+
+        int r=msg->get(12).asInt();
+        int g=msg->get(13).asInt();
+        int b=msg->get(14).asInt();
+        double alpha=msg->get(15).asDouble();
+
+        double Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
+        double Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
+        double Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
+
+        for (int i=0; i<(int)mObjects.size(); ++i)
+        {
+            if (*mObjects[i]==id)
+            {
+                mObjects[i]->set(dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
+                mObjects[i]->optional_label=label;
+                return;
+            }
+        }
+
+        VisionObj* obj= new VisionObj(id,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
+        obj->optional_label=label;
+        mObjects.push_back(obj);
+        return;
+    }
+
     if (cmd=="object")
     {
         std::string name(msg->get(1).asString().c_str());
