@@ -306,18 +306,7 @@ public:
         {
             local_name=rf.find("local").asString();
         }
-        
-        //---------------OPEN RPC PORT--------------------//
-        string rpcPortName = "/"+local_name+"/rpc:i";
-        rpcPort.open(rpcPortName.c_str());
-        attach(rpcPort);                  
 
-        //---------------OPEN INERTIAL PORTS--------------------//
-        port_filtered_output.open(string("/"+local_name+"/filtered/inertial:o").c_str());
-        port_inertial_input = new dataFilter(port_filtered_output, rf);
-        port_inertial_input->useCallback();
-        port_inertial_input->open(string("/"+local_name+"/unfiltered/inertial:i").c_str());
-        int rate = 10;
 
         //-----------------GET THE ROBOT NAME-------------------//
         string robot_name;
@@ -410,6 +399,7 @@ public:
         }
 
         //---------------------RATE-----------------------------//
+        int rate = 10;
         if (rf.check("rate"))
         {
             rate = rf.find("rate").asInt();
@@ -536,6 +526,17 @@ public:
                     return false;
                 }
         }     
+
+        //---------------OPEN RPC PORT--------------------//
+        string rpcPortName = "/"+local_name+"/rpc:i";
+        rpcPort.open(rpcPortName.c_str());
+        attach(rpcPort);                  
+
+        //---------------OPEN INERTIAL PORTS--------------------//
+        port_filtered_output.open(string("/"+local_name+"/filtered/inertial:o").c_str());
+        port_inertial_input = new dataFilter(port_filtered_output, rf);
+        port_inertial_input->useCallback();
+        port_inertial_input->open(string("/"+local_name+"/unfiltered/inertial:i").c_str());
 
         //--------------------------THREAD--------------------------
         inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
