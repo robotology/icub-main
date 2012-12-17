@@ -73,8 +73,9 @@ protected:
     yarp::sig::Matrix P;
     yarp::sig::Vector x;
     yarp::sig::Vector _x;
-    double R;
+    double uOld;
     double Ts;
+    double R;
 
 public:
     /**

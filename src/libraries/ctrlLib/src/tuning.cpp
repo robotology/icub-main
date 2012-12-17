@@ -64,6 +64,8 @@ bool OnlineDCMotorEstimator::init(const double Ts, const double Q,
     x[2]=1.0/_x[2];
     x[3]=_x[3]/_x[2];
 
+    uOld=0.0;
+
     return true;
 }
 
@@ -78,6 +80,8 @@ bool OnlineDCMotorEstimator::init(const double P0, const Vector &x0)
     x=_x=x0.subVector(0,3);
     x[2]=1.0/_x[2];
     x[3]=_x[3]/_x[2];
+
+    uOld=0.0;
 
     return true;
 }
@@ -105,14 +109,14 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
     F(0,1)=A(0,1);
     F(1,1)=A(1,1);
 
-    F(0,2)=-(x2*_exp_1)/_x3_2   + (u*x4*Ts*_exp_1)/_x3_2 - (2.0*u*B[0])/x3 + (Ts*x2*_exp)/x3;
-    F(1,2)=-(u*x4*_exp_1)/_x3_2 - Ts*x2*_exp             + (u*x4*Ts*_exp)/x3;
+    F(0,2)=-(x2*_exp_1)/_x3_2      + (uOld*x4*Ts*_exp_1)/_x3_2 - (2.0*uOld*B[0])/x3 + (Ts*x2*_exp)/x3;
+    F(1,2)=-(uOld*x4*_exp_1)/_x3_2 - Ts*x2*_exp                + (uOld*x4*Ts*_exp)/x3;
 
-    F(0,3)=u*_tmp_1;
-    F(1,3)=u*A(0,1);
+    F(0,3)=uOld*_tmp_1;
+    F(1,3)=uOld*A(0,1);
 
     // prediction
-    x=A*x+B*u;
+    x=A*x+B*uOld;
     P=F*P*F.transposed()+Q;
 
     // Kalman gain
@@ -127,6 +131,8 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
     _x[1]=x[1];
     _x[2]=1.0/x[2];
     _x[3]=x[3]/x[2];
+
+    uOld=u;
 
     return _x;
 }
