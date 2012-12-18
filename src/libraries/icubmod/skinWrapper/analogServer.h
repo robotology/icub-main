@@ -3,10 +3,10 @@
  #define ANALOG_SERVER_H_
  
  //#include <list>
- #include <vector>
- #include <iostream>
- #include <string>
- #include <sstream>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <sstream>
  
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
@@ -29,6 +29,8 @@
 
 #include <iCub/FactoryInterface.h>
 
+#include "Debug.h"
+
 using namespace yarp::sig;
 using namespace yarp::os;
 using namespace std;
@@ -37,8 +39,6 @@ using namespace std;
   * Handler of the rpc port related to an analog sensor.
   * Manage the calibration command received on the rpc port.
  **/
-
-
 class AnalogServerHandler: public yarp::os::PortReader
 {
     yarp::dev::IAnalogSensor* is;   // analog sensor to calibrate, when required

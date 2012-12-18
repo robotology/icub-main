@@ -5,13 +5,18 @@
  *
  */
 
+#include <yarp/os/Thread.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/Os.h>
+#include <iCub/FactoryInterface.h>
+
 #include "skinWrapper.h"
 
 skinWrapper::skinWrapper()
 {
     printf("\n\n\nskinWrapper constructor\n\n\n");
-    analogServer=0;
-    analog=0;
+    analogServer=NULL;
+    analog=NULL;
 }
 
 skinWrapper::~skinWrapper() { }
@@ -24,70 +29,48 @@ void skinWrapper::calibrate()
     }
 }
 
-// convertire in un wrapper vero con metodo attach!!!! 
 bool skinWrapper::open(yarp::os::Searchable &inputParams)
 {
-    printf("skinWrapper param 1 (params) = %s\n", inputParams.toString().c_str());
+    yTrace() << "skinWrapper param = " << inputParams.toString().c_str();
 
-    string str=inputParams.toString().c_str();
-    
+//     string str=inputParams.toString().c_str();
+
     Property params;
     params.fromString(inputParams.toString().c_str());
     bool correct=true;
-    correct=correct&&params.check("device");
-    if(params.check("robot") )
-    	printf("'robot' param found %s\n", params.find("robot").asString().c_str() );
-
-    if(params.check("name") )
-    	printf("'name' param found %s\n", params.find("robot").asString().c_str() );
-
-    if(params.check("robotName") )
-    	printf("'robotName' param found %s\n", params.find("robot").asString().c_str() );
-
-
-    printf("returning\n");
-    fflush(stdout);
-    return true;
-
-    correct=correct&&params.check("name");
-    //correct=correct&&params.check("FeatId");
-    //correct=correct&&params.check("canbusdevice");
-    //correct=correct&&params.check("ports");        // list of the ports where to send the tactile data
-    //
-    //    Bottle xtmp, xtmp2;
-    //
-    //    bool correct=true;
-    //
-    //    correct=correct&&robotOptions.check("GENERAL");
-    //
-    //    if(correct)
-    //        xtmp = Bottle(robotOptions.findGroup("GENERAL"));
-    //
-    //    correct=correct&&xtmp.check("PC104IpAddress");
-    //
-    //    if(correct)
-    //        xtmp2 = xtmp.findGroup("PC104IpAddress");
-    //
-    //    partOptions.put("PC104IpAddress", xtmp2.get(1).asString().c_str());
-
-    if (!correct)
+		
+/*  no more necessary with new architecture (right?)
+    if(!params.check("device") )
     {
-      yError() << "Some parameters are missing!!\n";
+        correct=false;
+        yError() << "SkinWrapper missing device namecheck your configuration file!! Quitting\n";
+        return false;
+    }
+*/
+    // Verify minimum set of parameters required
+    if(!params.check("robotName") )
+    {
+        correct=false;
+        yError() << "SkinWrapper missing robot Name, check your configuration file!! Quitting\n";
         return false;
     }
 
-    int period=20;
+    // port names are optional, do not check for correctness.
+
+
     if (params.check("period"))
     {
         period=params.find("period").asInt();
     }
     else
     {
+				period=20;
         std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
     }
 
-    // Open the device
-    std::string devicename=params.find("device").asString().c_str();
+/*  // Open the device -- no necessary, the factory will do the job, add an attach method for getting the IAnalogInterface from the sensor
+    
+		std::string devicename=params.find("device").asString().c_str();
     params.put("device", devicename.c_str());
 
     std::string canbusdevice=params.find("canbusdevice").asString().c_str();
@@ -108,23 +91,25 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
         driver.close();
         return false;
     }
-
+*/
     // Read the list of ports
-    std::string robotName=params.find("robot").asString().c_str();
+    std::string robotName=params.find("robotName").asString().c_str();
     std::string root_name;
     root_name+="/";
     root_name+=robotName;
     root_name+="/skin/";
 
-    std::vector<AnalogPortEntry> skinPorts;
-    if(!params.check("ports")){
+    
+    if(!params.check("ports"))
+		{
         // if there is no "ports" section take the name of the "skin" group as the only port name
         skinPorts.resize( (size_t)1);
         skinPorts[0].offset = 0;
         skinPorts[0].length = -1;
         skinPorts[0].port_name = root_name + this->id;
     }
-    else{
+    else
+		{
         Bottle *ports=params.find("ports").asList();
 
         if (!params.check("total_taxels", "number of taxels of the part"))
@@ -173,53 +158,69 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
             return false;
         }
     }
-
-    analogServer = new AnalogServer(skinPorts);
-    analogServer->setRate(period);
-    analogServer->attach(analog);
-    analogServer->start();
-
     return true;
 }
 
 bool skinWrapper::close()
 {
     std::cout<<"Closing skin part "<< id << endl;
-    if (analogServer)
+    if (NULL != analogServer)
     {
         analogServer->stop();
         delete analogServer;
     }
-    if (analog)
+    if (NULL != analog)
         analog=0;
 
     driver.close();
     return true;
 }
+// implementare i metodi attach e detach come un vero wrapper che si rispetti!!!! 
+bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
+{
+    yTrace();
+    if (skinDev.size() != 1)
+    {
+        std::cerr<<"skinWrapper: cannot attach more than one device\n";
+        return false;
+    }
 
+    yarp::dev::PolyDriver * subdevice=skinDev[0]->poly;
 
-//skinWrapper *SkinParts::find(const string &pName)
-//{
-//    SkinPartsIt it=begin();
-//    for(;it!=end(); it++)
-//    {
-//        if ((*it)->id==pName)
-//        {
-//            return (*it);
-//        }
-//    }
-//
-//    return 0;
-//}
-//
-//
-//
-//void SkinParts::close()
-//{
-//    // AC_YARP_INFO(Logger::get(),"SkinParts::close()", Logger::get().log_files.f3);
-//    SkinPartsIt it;
-//    for(it=this->begin(); it!=this->end(); it++)
-//    {
-//        (*it)->close();
-//    }
-//}
+    if (subdevice->isValid())
+    {
+        subdevice->view(analog);
+		}
+		else
+		{
+				yError() << "skinWrapper: subdevice passed to attach method is invalid!!!";
+				return false;
+		}
+		
+    // Create new analogServer (therefore it must be NULL) from an existing sensor (analog NOT NULL).
+    if( NULL != analogServer)
+		{
+			  yError() << "skinWrapper: analogServer already attached!!!";
+				return false;
+		}
+		
+    if(NULL == analog)
+		{
+				yError() << "skinWrapper: The analog sensor is not correctly instantiated, cannot attach !!!";
+				return false;
+		}
+		
+    // if we got this far every conditions are ok
+    analogServer = new AnalogServer(skinPorts);
+    analogServer->setRate(period);
+    analogServer->attach(analog);
+    analogServer->start();
+    return true;
+}
+
+bool skinWrapper::detachAll()
+{
+    yTrace();
+    analogServer->stop();
+    delete analogServer;
+}

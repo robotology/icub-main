@@ -12,23 +12,27 @@ using namespace std;
 
 AnalogServerHandler::AnalogServerHandler(const char* n)
 {
+	yTrace();
   rpcPort.open(n);
   rpcPort.setReader(*this);
 }
 
 AnalogServerHandler::~AnalogServerHandler()
 {
+	yTrace();
   rpcPort.close();
   is = 0;
 }
 
 void AnalogServerHandler::setInterface(yarp::dev::IAnalogSensor *is)
 {
+	yTrace();
     this->is = is;
 }
 
 bool AnalogServerHandler::_handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply)
 {
+	yTrace();
     if (is==0)
         return false;
 
@@ -101,9 +105,10 @@ bool AnalogServerHandler::read(yarp::os::ConnectionReader& connection)
   * on the port, i.e. an offset and a length.
   */
 
-AnalogPortEntry::AnalogPortEntry() { }
+AnalogPortEntry::AnalogPortEntry() { yTrace(); }
 AnalogPortEntry::AnalogPortEntry(const AnalogPortEntry &alt)
 {
+	yTrace();
     this->length = alt.length;
     this->offset = alt.offset;
     this->port_name = alt.port_name;
@@ -111,6 +116,7 @@ AnalogPortEntry::AnalogPortEntry(const AnalogPortEntry &alt)
 
 AnalogPortEntry &AnalogPortEntry::operator =(const AnalogPortEntry &alt)
 {
+	yTrace();
     this->length = alt.length;
     this->offset = alt.offset;
     this->port_name = alt.port_name;
@@ -126,6 +132,7 @@ AnalogPortEntry &AnalogPortEntry::operator =(const AnalogPortEntry &alt)
 // Constructor used when there is only one output port
 AnalogServer::AnalogServer(const char* name, int rate): RateThread(rate)
 {
+	yTrace();
     is=0;
     analogPorts.resize(1);
     analogPorts[0].offset = 0;
@@ -137,6 +144,7 @@ AnalogServer::AnalogServer(const char* name, int rate): RateThread(rate)
 // Contructor used when one or more output ports are specified
 AnalogServer::AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int rate): RateThread(rate)
 {
+	yTrace();
     is=0;
     this->analogPorts=_analogPorts;
     setHandlers();
@@ -144,12 +152,14 @@ AnalogServer::AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int
 
 AnalogServer::~AnalogServer()
 {
+	yTrace();
     threadRelease();
     is=0;
 }
 
 void AnalogServer::setHandlers()
 {
+	yTrace();
   for(unsigned int i=0;i<analogPorts.size(); i++){
     std::string rpcPortName = analogPorts[i].port_name;
     rpcPortName += "/rpc:i";
@@ -164,6 +174,7 @@ void AnalogServer::setHandlers()
   */
 void AnalogServer::attach(yarp::dev::IAnalogSensor *s)
 {
+	yTrace();
     is=s;
     for(unsigned int i=0;i<analogPorts.size(); i++){
         handlers[i]->setInterface(is);
@@ -173,6 +184,7 @@ void AnalogServer::attach(yarp::dev::IAnalogSensor *s)
 
 bool AnalogServer::threadInit()
 {
+	yTrace();
     for(unsigned int i=0; i<analogPorts.size(); i++){
         // open data port
         if (!analogPorts[i].port.open(analogPorts[i].port_name.c_str()))
@@ -183,7 +195,9 @@ bool AnalogServer::threadInit()
 
 void AnalogServer::threadRelease()
 {
-    for(unsigned int i=0; i<analogPorts.size(); i++){
+	yTrace();
+    for(unsigned int i=0; i<analogPorts.size(); i++)
+		{ 
         analogPorts[i].port.close();
     }
 }
