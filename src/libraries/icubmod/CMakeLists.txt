@@ -43,6 +43,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(embObjSkin)
   add_subdirectory(parametricCalibrator)
   add_subdirectory(skinWrapper)
+  add_subdirectory(coman)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 
@@ -52,3 +53,4 @@ ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)
 
 INSTALL(TARGETS icubmoddev DESTINATION bin)
 #INSTALL(TARGETS icubmod DESTINATION lib)
+
