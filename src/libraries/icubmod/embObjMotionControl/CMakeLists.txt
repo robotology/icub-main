@@ -1,4 +1,4 @@
-# Copyright: (C) 2010 RobotCub Consortium
+# Copyright: (C) 2012 RobotCub Consortium
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
