@@ -92,8 +92,6 @@ FILE * outFile1, *outFile2;
 //  CALLBACK VERA!!
 // --------------------------------------------------------------------------------------------------------------------
 
-
-
 extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "skin strong callback iCubInterface"
@@ -144,7 +142,7 @@ extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, cons
 	id.ep = nv->ep;
 
 	void *featList;
-	//	printf("iCub Callback, looking for %s\n", id.name);
+// 	printf("iCub Callback, looking for ep %d\n", id.ep);
 
 	findAndFill(&id, (char *)sk_array);
 #endif
@@ -235,9 +233,9 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data( const EOnv* nv)
 			}
 			triangle = (canframe->id & 0x000f);
 			msgtype= ((canframe->data[0])& 0x80);
-			//			printf("\n mtb %d triangle %d\n", mtbId, triangle);
+// 			printf("\n mtb %d triangle %d\n", mtbId, triangle);
 			dump[t] = canframe->data[1];
-			printf("%d\n", dump[p]);
+// 			printf("%d\n", dump[p]);
 
 			continue;
 

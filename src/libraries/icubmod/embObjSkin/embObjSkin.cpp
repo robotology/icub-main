@@ -63,7 +63,12 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	ethResCreator *resList = ethResCreator::instance();
 	res = resList->getResource(config);
 
-
+	if(NULL == res)
+	{
+		yError() << "EMS device not instantiated... unable to continue";
+		return false;		
+	}
+	
 	int period=config.find("Period").asInt();
 	setRate(period);
 
