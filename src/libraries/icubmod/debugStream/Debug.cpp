@@ -61,13 +61,13 @@ void DebugStream::Debug::print_output(MsgType t,
             if (verbose_output) {
                 ftrc << "T: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
             } else {
-                ftrc << "TRACE: " << s.str() << std::endl;
+                ftrc << "TRACE: " << func << s.str() << std::endl;
             }
         } else {
             if (verbose_output) {
                 std::cout << GREEN << "T" << CLEAR << ": " << file << ":" << line << " " << GREEN << func << CLEAR << ": " << s.str() << std::endl;
             } else {
-                std::cout << GREEN << "TRACE" << CLEAR << ": " << s.str() << std::endl;
+                std::cout << GREEN << "TRACE" << CLEAR << ": " << func << s.str() << std::endl;
             }
         }
         break;
