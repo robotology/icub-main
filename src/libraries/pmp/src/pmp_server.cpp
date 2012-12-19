@@ -266,7 +266,7 @@ PmpServer::PmpServer() : RateThread(20), If(0.0,Vector(7)), Iv(0.0,Vector(7))
     simulationFirstStep=false;
     doInitGuiTrajectory=false;
     offlineMode=false;
-    init=true;
+    initIntegration=true;
     verbosity=0;
     name="";
     activeIF="";
@@ -675,7 +675,7 @@ bool PmpServer::enableField()
 {
     if (isOpen)
     {
-        if (init)
+        if (initIntegration)
         {
             Vector pos,orien;
             iCtrlActive->getPose(pos,orien);
@@ -683,7 +683,7 @@ bool PmpServer::enableField()
             copyVectorData(pos,this->x);
             copyVectorData(orien,this->x);
             Iv.reset(x);
-            init=false;
+            initIntegration=false;
             mutex.post();
         }
         fieldEnabled=true;
@@ -980,8 +980,7 @@ bool PmpServer::setPointState(const Vector &x, const Vector &o,
         If.reset(this->xdot);
         Iv.reset(this->x);
 
-        if (init)
-            init=false;
+        initIntegration=false;
 
         printMessage(1,"point state changed to x = %s; xdot = %s\n",
                      this->x.toString().c_str(),this->xdot.toString().c_str());
@@ -1044,8 +1043,7 @@ bool PmpServer::setPointStateToTool()
             If.reset(this->xdot);
             Iv.reset(this->x);
 
-            if (init)
-                init=false;
+            initIntegration=false;
 
             printMessage(1,"point state changed to x = %s; xdot = %s\n",
                          this->x.toString().c_str(),this->xdot.toString().c_str());

@@ -116,7 +116,7 @@ protected:
     bool simulationEnabled;
     bool simulationFirstStep;
     bool offlineMode;
-    bool init;
+    bool initIntegration;
     bool doInitGuiTrajectory;
     int  verbosity;
     int  period;
