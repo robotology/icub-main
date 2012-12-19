@@ -677,8 +677,10 @@ bool PmpServer::enableField()
     {
         if (init)
         {
-            Vector o;
-            iCtrlActive->getPose(x,o);
+            Vector pos,orien;
+            iCtrlActive->getPose(pos,orien);
+            copyVectorData(pos,this->x);
+            copyVectorData(orien,this->x);
             Iv.reset(x);
             init=false;
         }
