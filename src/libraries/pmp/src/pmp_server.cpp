@@ -679,10 +679,12 @@ bool PmpServer::enableField()
         {
             Vector pos,orien;
             iCtrlActive->getPose(pos,orien);
+            mutex.wait();
             copyVectorData(pos,this->x);
             copyVectorData(orien,this->x);
             Iv.reset(x);
             init=false;
+            mutex.post();
         }
         fieldEnabled=true;
         printMessage(1,"field enabled\n");
