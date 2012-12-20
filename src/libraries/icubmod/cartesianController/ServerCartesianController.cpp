@@ -989,6 +989,9 @@ void ServerCartesianController::stopLimbVel()
             k=0;
         }
     }
+
+    velCmd=0.0;
+    xdot_set=0.0;
 }
 
 
@@ -2772,8 +2775,6 @@ bool ServerCartesianController::stopControlNoMutex()
         motionDone   =true;
         
         stopLimbVel();
-        velCmd=0.0;
-        xdot_set=0.0;
 
         txTokenLatchedStopControl=txToken;
         skipSlvRes=true;
