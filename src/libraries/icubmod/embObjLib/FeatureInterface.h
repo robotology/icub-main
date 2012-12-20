@@ -20,7 +20,7 @@
 #include "EOnv_hid.h"
 #include "EoMotionControl.h"
 
-
+#define SIZE_INFO		128
 
 #ifdef __cplusplus
 
@@ -33,8 +33,8 @@ extern "C"
 
 typedef enum
 {
-	MotionControl		= 0x00,
-	Skin				= 0x01,
+	MotionControl	= 0x00,
+	Skin					= 0x01,
 	Analog				= 0x02
 }FeatureType;
 
@@ -52,7 +52,7 @@ typedef struct
 	// Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
 	// They may be removed very soon!
 	FeatureType			 type;
-	char 				 name[64];
+	char 				 name[SIZE_INFO];
 }FEAT_ID;
 
 bool findAndFill(FEAT_ID *id, char *sk_array);

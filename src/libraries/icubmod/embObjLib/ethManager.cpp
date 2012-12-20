@@ -71,7 +71,7 @@ bool ethResources::open(yarp::os::Searchable &config)
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	yDebug() << "\nEthResources open parameters: " << config.toString().c_str() << "\n";
+	yTrace() << "\n\nEthResources open parameters: " << config.toString().c_str() << "\n";
 
 	//
 	// Get EMS ip addresses and port from config file, in order to correctly configure the transceiver.
@@ -104,17 +104,13 @@ bool ethResources::open(yarp::os::Searchable &config)
     if (xtmp2.isNull())
     {
         yError() << "[ethResources] EMS Board number identifier not found\n";
-        //return false;
+        return false;
         boardNum = 2;
     }
     else
     	boardNum = xtmp2.get(1).asInt();
 
-    printf("Ems %d\n", boardNum);
-
-	//
-	// Fill 'info' field
-	//
+	// Fill 'info' field with human friendly string
 	memset(info, 0x00, SIZE_INFO);
 	sprintf(info, "ethResources - referred to EMS: %d.%d.%d.%d", rem_ip1,rem_ip2,rem_ip3,rem_ip4);
 
@@ -132,9 +128,9 @@ bool ethResources::open(yarp::os::Searchable &config)
 	theEthManager_h = TheEthManager::instance(loc_dev);
 	if(theEthManager_h == NULL)
 	{
-		yError() << "\n----------------------------"  \
-				 << "\n while creating ETH MANAGER "  \
-				 << "\n----------------------------";
+		yError() 	<< "\n----------------------------"  \
+							<< "\n while creating ETH MANAGER "  \
+							<< "\n----------------------------";
 		return false;
 	}
 
@@ -203,10 +199,6 @@ ACE_INET_Addr	ethResources::getRemoteAddress()
 	return	remote_dev;
 }
 
-
-
-
-
 // -------------------------------------------------------------------\\
 //            ethResCreator   Singleton
 // -------------------------------------------------------------------\\
@@ -254,6 +246,9 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	ACE_UINT16 	rem_port;
 	ACE_UINT32 	rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
+	std::string str=config.toString().c_str();
+	yTrace() << "\n\n EthResCreator parameters\n" << str;
+	
 	//
 	// Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
 	//	a pointer to an already existing object
@@ -375,7 +370,7 @@ void *recvThread(void * arg)
 
     Time::delay(5);
 
-    printf("Starting RECV thread\n");
+    printf("Starting udp RECV thread\n");
 	while(keepGoingOn2)
 	{
 		// per ogni msg ricevuto
@@ -412,15 +407,6 @@ void *recvThread(void * arg)
 		{
 			printf("Received weird msg of size %d\n", recv_size);
 		}
-
-
-		// old debug stuff
-		//	if(counter++ >= 10*1000)
-		//	{
-		//		print_data();
-		//		fflush(stdout);
-		//		counter = 0;
-		//	}
 	}
 	return NULL;
 }
@@ -429,13 +415,11 @@ void *recvThread(void * arg)
 // The one embedded here is the sending thread because it will use the ACE timing feature.
 TheEthManager::TheEthManager() : RateThread(1)
 {
-	char tmp[SIZE_INFO];
 	memset(info, 0x00, SIZE_INFO);
 	sprintf(info, "TheEthManager");
 	ethResList = ethResCreator::instance();
 
 	p_to_data = NULL;
-
 	_socket_initted = false;
 	_socket = NULL;
 	id_recvThread = -1;
@@ -479,7 +463,7 @@ TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
 	bool ret = false;
 	if (_deviceNum == 0)
 	{
-		printf("\n\nCalling EthManager Constructor\n\n");
+		yTrace() << "Calling EthManager Constructor";
 
 		handle = new TheEthManager();
 		ret = handle->createSocket(local_addr);

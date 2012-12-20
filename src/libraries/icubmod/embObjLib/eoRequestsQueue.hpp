@@ -161,7 +161,7 @@ class eoThreadArray
 private:
     inline bool getNew(const ACE_thread_t &s, int &i)
     {
-        fprintf(stderr, "Registering new thread %d out of %d\n", index, EO_THREADARRAY_MAX_THREADS);
+//         fprintf(stderr, "Registering new thread %d out of %d\n", index, EO_THREADARRAY_MAX_THREADS);
         if (index>=EO_THREADARRAY_MAX_THREADS)
             {
                 fprintf(stderr, "ThreadPool: ERROR reached max number of threads\n");
