@@ -49,7 +49,7 @@ public:
      * Default constructor.
      */
     parametricCalibrator();
-    
+
     /**
      * Destructor.
      */
@@ -116,5 +116,7 @@ private:
     bool abortParking;
     FILE   *logfile;   
     std::string  logfile_name;
+    
+    std::string deviceName;
 };
 #endif
