@@ -14,9 +14,10 @@
 
 skinWrapper::skinWrapper()
 {
-    printf("\n\n\nskinWrapper constructor\n\n\n");
+    yTrace(); 
     analogServer=NULL;
     analog=NULL;
+		setId("undefinedPartName");
 }
 
 skinWrapper::~skinWrapper() { }
@@ -33,20 +34,15 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
 {
     yTrace() << "skinWrapper param = " << inputParams.toString().c_str();
 
-//     string str=inputParams.toString().c_str();
-
     Property params;
     params.fromString(inputParams.toString().c_str());
     bool correct=true;
 		
-/*  no more necessary with new architecture (right?)
-    if(!params.check("device") )
-    {
-        correct=false;
-        yError() << "SkinWrapper missing device namecheck your configuration file!! Quitting\n";
-        return false;
-    }
-*/
+		if(params.check("ports"))
+		{
+			Bottle *ports=params.find("ports").asList();
+			setId(ports->get(0).asString().c_str());
+		}
     // Verify minimum set of parameters required
     if(!params.check("robotName") )
     {
@@ -54,9 +50,6 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
         yError() << "SkinWrapper missing robot Name, check your configuration file!! Quitting\n";
         return false;
     }
-
-    // port names are optional, do not check for correctness.
-
 
     if (params.check("period"))
     {
@@ -99,7 +92,7 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
     root_name+=robotName;
     root_name+="/skin/";
 
-    
+		// port names are optional, do not check for correctness.
     if(!params.check("ports"))
 		{
         // if there is no "ports" section take the name of the "skin" group as the only port name
@@ -125,8 +118,8 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
 
             if (parameters.size()!=5)
             {
-                cerr<<"Error: check skin port parameters in part description"<<endl;
-                cerr<<"--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers"<<endl;
+                yError () <<"check skin port parameters in part description";
+                yError() << "--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers";
                 return false;
             }
 
@@ -178,7 +171,7 @@ bool skinWrapper::close()
 // implementare i metodi attach e detach come un vero wrapper che si rispetti!!!! 
 bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
 {
-    yTrace();
+    yTrace() ;
     if (skinDev.size() != 1)
     {
         std::cerr<<"skinWrapper: cannot attach more than one device\n";

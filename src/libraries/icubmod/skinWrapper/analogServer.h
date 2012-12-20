@@ -51,7 +51,7 @@ public:
     void setInterface(yarp::dev::IAnalogSensor *is);
 
     bool _handleIAnalog(yarp::os::Bottle &cmd, yarp::os::Bottle &reply);
-    
+
     virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
