@@ -75,12 +75,14 @@ protected:
 class TrajectoryObj : public GuiObj
 {
 public:
-    TrajectoryObj(std::string name,std::string label,int bufflen,double persistence,int r,int g,int b,double alpha,GLfloat width)
+    TrajectoryObj(std::string name,std::string label,int bufflen,double persistence,int r,int g,int b,double alpha,GLfloat width,bool world)
         : GuiObj(name,r,g,b,alpha)
     {
         mLabel=label;
         mWidth=width;
         mPersistence=persistence;
+
+        bWorld=world;
 
         mBufflen=bufflen;
 
@@ -183,6 +185,8 @@ public:
         delete [] mT;
     }
 
+    bool bWorld;
+
 protected:
     int mIndex;
     bool mFull;
@@ -211,8 +215,25 @@ public:
         nTexID=0;
         bTextured=false;
         mTextureBuffer=NULL;
+        bWorld=false;
        
         set(dimx,dimy,dimz,posx,posy,posz,rotx0,roty0,rotz0,rotx,roty,rotz,r,g,b,alpha);
+    }
+
+    VisionObj(std::string name,
+              double dimx,double dimy,double dimz,
+              double posx,double posy,double posz,
+              double rotx,double roty,double rotz,
+              int r,int g,int b,double alpha)
+        : GuiObj(name,r,g,b,alpha)
+    {   
+        mW=mH=0;
+        nTexID=0;
+        bTextured=false;
+        mTextureBuffer=NULL;
+        bWorld=true;
+       
+        set(dimx,dimy,dimz,posx,posy,posz,0.0,0.0,0.0,rotx,roty,rotz,r,g,b,alpha);
     }
 
     ~VisionObj()
@@ -264,9 +285,12 @@ public:
         std::string text = mName + this->optional_label;
         printw(0.0,0.0,1.2*mDimz,text.c_str());
 
-        glRotated(mRotz0,0.0,0.0,1.0);
-        glRotated(mRoty0,0.0,1.0,0.0);
-        glRotated(mRotx0,1.0,0.0,0.0);
+        if (!bWorld)
+        {
+            glRotated(mRotz0,0.0,0.0,1.0);
+            glRotated(mRoty0,0.0,1.0,0.0);
+            glRotated(mRotx0,1.0,0.0,0.0);
+        }
 
         glRotated(mRotz,0.0,0.0,1.0);
         glRotated(mRoty,0.0,1.0,0.0);
@@ -365,6 +389,7 @@ protected:
     double mPosx,mPosy,mPosz;
     double mRotx,mRoty,mRotz;
     double mRotx0,mRoty0,mRotz0;
+    bool bWorld;
 };
 
 #endif

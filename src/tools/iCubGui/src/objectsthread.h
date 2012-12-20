@@ -263,9 +263,16 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         int b=msg->get(14).asInt();
         double alpha=msg->get(15).asDouble();
 
-        double Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
-        double Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
-        double Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
+        double Px=px,Py=py,Pz=pz;
+
+        bool bWorld=(msg->size()>16 && msg->get(16).asString()=="WORLD");
+        
+        if (!bWorld)
+        {
+            Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
+            Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
+            Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
+        }
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
@@ -277,7 +284,16 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
             }
         }
 
-        VisionObj* obj= new VisionObj(id,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
+        VisionObj* obj;
+        if (bWorld)
+        {
+            obj=new VisionObj(id,dx,dy,dz,Px,Py,Pz,rx,ry,rz,r,g,b,alpha);
+        }
+        else
+        {
+            obj=new VisionObj(id,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
+        }
+
         obj->optional_label=label;
         mObjects.push_back(obj);
         return;
@@ -304,9 +320,16 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         int b=msg->get(13).asInt();
         double alpha=msg->get(14).asDouble();
 
-        double Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
-        double Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
-        double Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
+        double Px=px,Py=py,Pz=pz;
+
+        bool bWorld=(msg->size()>15 && msg->get(15).asString()=="WORLD");
+
+        if (!bWorld)
+        {
+            Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
+            Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
+            Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
+        }
 
         for (int i=0; i<(int)mObjects.size(); ++i)
         {
@@ -317,8 +340,15 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
             }
         }
 
-        mObjects.push_back(new VisionObj(name,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha));
-        
+        if (bWorld)
+        {
+            mObjects.push_back(new VisionObj(name,dx,dy,dz,Px,Py,Pz,rx,ry,rz,r,g,b,alpha));
+        }
+        else
+        {
+            mObjects.push_back(new VisionObj(name,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha));
+        }
+
         return;
     }
     
@@ -337,6 +367,8 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         double alpha=msg->get(8).asDouble();
         GLfloat width=(GLfloat)msg->get(9).asDouble();
 
+        bool bWorld=(msg->size()>10 && msg->get(10).asString()=="WORLD");
+
         for (int i=0; i<(int)mTrajectories.size(); ++i)
         {
             if (*mTrajectories[i]==name)
@@ -346,7 +378,7 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
             }
         }
 
-        mTrajectories.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width));
+        mTrajectories.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width,bWorld));
 
         return;
     }
@@ -359,15 +391,20 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         double y=msg->get(3).asDouble();
         double z=msg->get(4).asDouble();
 
-        double Px=R[0][0]*x+R[0][1]*y+R[0][2]*z+mPx;
-        double Py=R[1][0]*x+R[1][1]*y+R[1][2]*z+mPy;
-        double Pz=R[2][0]*x+R[2][1]*y+R[2][2]*z+mPz;
-
         for (int i=0; i<(int)mTrajectories.size(); ++i)
         {
             if (*mTrajectories[i]==name)
             {
-                mTrajectories[i]->update(Px,Py,Pz);
+                if (mTrajectories[i]->bWorld)
+                {
+                    mTrajectories[i]->update(x,y,z);
+                }
+                else
+                {
+                    mTrajectories[i]->update(R[0][0]*x+R[0][1]*y+R[0][2]*z+mPx,
+                                             R[1][0]*x+R[1][1]*y+R[1][2]*z+mPy,
+                                             R[2][0]*x+R[2][1]*y+R[2][2]*z+mPz);
+                }
                 return;
             }
         }
