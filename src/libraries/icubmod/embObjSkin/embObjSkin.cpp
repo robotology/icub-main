@@ -14,7 +14,7 @@
 #include <iostream>
 #include <string.h>
 
-const int CAN_DRIVER_BUFFER_SIZE=2047;
+// const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 #define SKIN_DEBUG 0
 
@@ -22,6 +22,9 @@ using namespace std;
 
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
+	std::string str=config.toString().c_str();
+	yTrace() << str;
+	
 	// Check input parameters
 	int i;
 	bool correct=true;
@@ -69,8 +72,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 		return false;		
 	}
 	
-	int period=config.find("Period").asInt();
-	setRate(period);
+// 	int period=config.find("Period").asInt();
+// 	setRate(period);
 
 	Bottle ids=config.findGroup("SkinCanIds").tail();
 
@@ -102,7 +105,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 	_fId.ep = 255;
 	_fId.type = Skin;
 	std::string FeatId = config.find("FeatId").asString().c_str();
-	cout << "FeatId = " << FeatId << endl;
 	strcpy(_fId.name, FeatId.c_str());
 
 	_fId.boardNum  = 255;
@@ -141,13 +143,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
 bool EmbObjSkin::close()
 {
-	RateThread::stop();
-//	if (pCanBufferFactory)
-//	{
-//		destroyBuffer(inBuffer);
-//		destroyBuffer(outBuffer);
-//	}
-//	driver.close();
+// 	RateThread::stop();
 	return true;
 }
 
@@ -177,8 +173,6 @@ int EmbObjSkin::getChannels()
 
 int EmbObjSkin::calibrateSensor()
 {
-	// AC_YARP_INFO(Logger::get(),"EmbObjSkin::calibrateSensor", Logger::get().log_files.f3);
-
 #warning "create a ROP to start/initialize the MTB, if needed"
 //	int 							j=0;
 //	eOmc_joint_config_t				a;
@@ -271,12 +265,14 @@ bool EmbObjSkin::init()
 	return true;
 }
 
+/*
 void EmbObjSkin::run()
 {	
 	mutex.wait();
 
 	mutex.post();
 }
+*/
 
 bool EmbObjSkin::fillData(char *raw_skin_data)
 {
@@ -356,11 +352,11 @@ bool EmbObjSkin::fillData(char *raw_skin_data)
 	return true;  // bool?
 }
 
-void EmbObjSkin::threadRelease()
-{
-#if SKIN_DEBUG
-	printf("SkinPrototype Thread releasing...\n");	
-	printf("... done.\n");
-#endif
-}
+// void EmbObjSkin::threadRelease()
+// {
+// #if SKIN_DEBUG
+// 	printf("SkinPrototype Thread releasing...\n");	
+// 
+// #endif
+// }
 

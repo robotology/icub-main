@@ -42,7 +42,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
 
-class EmbObjSkin : 	public RateThread,
+class EmbObjSkin : //	public RateThread,
 					public yarp::dev::IAnalogSensor,
 					public DeviceDriver,
 					public IiCubFeature
@@ -53,7 +53,7 @@ protected:
     ethResources *res;
     FEAT_ID		_fId;
 
-       yarp::os::Semaphore mutex;
+    yarp::os::Semaphore mutex;
 
     yarp::sig::VectorOf<int> cardId;
     size_t sensorsNum;
@@ -61,30 +61,28 @@ protected:
     yarp::sig::Vector data;
 
 public:
-    EmbObjSkin(int period=20) : RateThread(period),mutex(1)
-    {}
+    EmbObjSkin() : mutex(1) {};
+//     EmbObjSkin(int period=20) : RateThread(period),mutex(1)   {}
 
-    ~EmbObjSkin()
-    {
-    }
+    ~EmbObjSkin()  { }
 
     char		info[SIZE_INFO];
 
     virtual bool open(yarp::os::Searchable& config);
     bool 		 init();
     virtual bool close();
-   
+
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
     virtual int getChannels();
-	virtual int calibrateSensor();
+    virtual int calibrateSensor();
     virtual int calibrateChannel(int ch, double v);
 
     virtual int calibrateSensor(const yarp::sig::Vector& v);
     virtual int calibrateChannel(int ch);
 
-    virtual void threadRelease();
-    virtual void run();
+//     virtual void threadRelease();
+//     virtual void run();
 
     virtual bool fillData(char *data);
     virtual void setId(FEAT_ID &id);
