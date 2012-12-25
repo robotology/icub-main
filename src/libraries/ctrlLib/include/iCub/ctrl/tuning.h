@@ -509,11 +509,11 @@ public:
      *       meet those conditions in case they are not satisfied.
      *       Moreover, for a <i>P</i> controller, which is endowed
      *       with only one degree of freedom, it is possible to
-     *       specify the crossover frequency f_c that has the
+     *       specify the gain crossover frequency f_c that has the
      *       priority over the remaining requirements and represents
      *       the frequency at which the open loop response has a
      *       unity-gain, corresponding roughly to the closed-loop
-     *       cut frequency that in turn regulates the control
+     *       cut-off frequency that in turn regulates the control
      *       bandwidth.
      *  
      * @return true/false on success/failure. 
