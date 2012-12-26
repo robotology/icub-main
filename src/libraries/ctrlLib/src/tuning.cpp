@@ -343,7 +343,7 @@ void OnlineStictionEstimator::run()
     else
         adapt=false;
 
-    Vector cumErr=intErr.integrate(e_pos*adaptGate);
+    Vector cumErr=intErr.integrate(fabs(e_pos)*adaptGate);
 
     // trigger on falling edge
     if (!adapt && adaptOld)
