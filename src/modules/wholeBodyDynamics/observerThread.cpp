@@ -255,6 +255,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_COM_vel = new BufferedPort<Vector>;
     port_COM_Jacobian = new BufferedPort<Matrix>;
     port_all_velocities = new BufferedPort<Vector>;
+    port_root_position_mat = new BufferedPort<Matrix>;
+    port_root_position_vec = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
     port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
@@ -310,6 +312,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_COM_vel->open(string("/"+local_name+"/com_vel:o").c_str());
     port_COM_Jacobian->open(string("/"+local_name+"/com_jacobian:o").c_str());
     port_all_velocities->open(string("/"+local_name+"/all_velocities:o").c_str());
+    port_root_position_mat->open(string("/"+local_name+"/root_position_mat:o").c_str());
+    port_root_position_vec->open(string("/"+local_name+"/root_position_vec:o").c_str());
 
     if (autoconnect)
     {
@@ -778,12 +782,30 @@ void inverseDynamics::run()
     for (int i=0; i<3; i++) F_ext_cartesian_right_leg[i] = tmp1[i];
     for (int i=3; i<6; i++) F_ext_cartesian_right_leg[i] = tmp2[i-3];
 
-	//computation for the foot
-	Matrix foot_hn(4,4); foot_hn.zero();
-	foot_hn(0,2)=1;foot_hn(0,3)=-7.75;
-	foot_hn(1,1)=-1;
-	foot_hn(2,0)=-1;
-	foot_hn(3,3)=1;
+    //computation of the root
+    yarp::sig::Vector angles (3);
+    angles[0] = 0;
+    angles[1] = -90/180.0*M_PI;
+    angles[2] = 0;
+    yarp::sig::Matrix r1 = iCub::ctrl::euler2dcm(angles);
+    yarp::sig::Matrix ilhl = iCub::ctrl::SE3inv(lhl);
+    yarp::sig::Matrix foot_root_mat = r1*ilhl;
+    
+    yarp::sig::Vector foot_tmp = iCub::ctrl::dcm2euler(foot_root_mat);
+    yarp::sig::Vector foot_root_vec (6,0.0); 
+    foot_root_vec[0] = foot_root_mat[0][3];
+    foot_root_vec[1] = foot_root_mat[1][3];
+    foot_root_vec[2] = foot_root_mat[2][3];
+    foot_root_vec[3] = foot_tmp[0];
+    foot_root_vec[4] = foot_tmp[1];
+    foot_root_vec[5] = foot_tmp[2];
+    
+    //computation for the foot
+    Matrix foot_hn(4,4); foot_hn.zero();
+    foot_hn(0,2)=1;foot_hn(0,3)=-7.75;
+    foot_hn(1,1)=-1;
+    foot_hn(2,0)=-1;
+    foot_hn(3,3)=1;
 
     tmp1 = F_LFoot.subVector(0,2); tmp1.push_back(0.0); tmp1 = foot_hn * tmp1;
     tmp2 = F_LFoot.subVector(3,5); tmp2.push_back(0.0); tmp2 = foot_hn * tmp2;
@@ -812,10 +834,10 @@ void inverseDynamics::run()
     //sendVelAccData();
 
     if (com_vel_enabled)
-	{
-	    broadcastData<Vector> (com_v, port_COM_vel);
-		broadcastData<Vector> (dq, port_all_velocities);
-	    broadcastData<Matrix> (com_jac, port_COM_Jacobian);
+    {
+        broadcastData<Vector> (com_v, port_COM_vel);
+        broadcastData<Vector> (dq, port_all_velocities);
+        broadcastData<Matrix> (com_jac, port_COM_Jacobian);
     }
     broadcastData<Vector> (com_all, port_com_all);
     broadcastData<Vector> (com_lb,  port_com_lb);
@@ -851,6 +873,9 @@ void inverseDynamics::run()
     broadcastData<Vector> (F_ext_sens_left_arm,                     port_external_ft_arm_left);
     broadcastData<Vector> (F_ext_sens_right_leg,                    port_external_ft_leg_right);
     broadcastData<Vector> (F_ext_sens_left_leg,                     port_external_ft_leg_left);
+
+    broadcastData<Matrix> (foot_root_mat,                           port_root_position_mat);
+    broadcastData<Vector> (foot_root_vec,                           port_root_position_vec);
 }
 
 void inverseDynamics::threadRelease()
@@ -979,6 +1004,9 @@ void inverseDynamics::threadRelease()
     closePort(port_COM_Jacobian);
     fprintf(stderr, "Closing All Velocities port\n");
     closePort(port_all_velocities);
+    fprintf(stderr, "Closing Foot/Root port\n");
+    closePort(port_root_position_mat);
+    closePort(port_root_position_vec);
 
     if (icub)      {delete icub; icub=0;}
     if (icub_sens) {delete icub_sens; icub=0;}

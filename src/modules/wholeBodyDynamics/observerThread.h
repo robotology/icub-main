@@ -213,6 +213,8 @@ private:
     BufferedPort<Vector> *port_COM_vel;
     BufferedPort<Matrix> *port_COM_Jacobian;
     BufferedPort<Vector> *port_all_velocities;
+    BufferedPort<Matrix> *port_root_position_mat;
+    BufferedPort<Vector> *port_root_position_vec;
 
     // ports outputing the external dynamics seen at the F/T sensor
     BufferedPort<Vector> *port_external_ft_arm_left;
