@@ -796,9 +796,9 @@ void inverseDynamics::run()
     foot_root_vec[0] = foot_root_mat[0][3];
     foot_root_vec[1] = foot_root_mat[1][3];
     foot_root_vec[2] = foot_root_mat[2][3];
-    foot_root_vec[3] = foot_tmp[0];
-    foot_root_vec[4] = foot_tmp[1];
-    foot_root_vec[5] = foot_tmp[2];
+    foot_root_vec[3] = foot_tmp[0]*180.0/M_PI;
+    foot_root_vec[4] = foot_tmp[1]*180.0/M_PI;
+    foot_root_vec[5] = foot_tmp[2]*180.0/M_PI;
     
     //computation for the foot
     Matrix foot_hn(4,4); foot_hn.zero();
