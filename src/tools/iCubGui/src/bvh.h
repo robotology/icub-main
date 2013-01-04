@@ -77,7 +77,7 @@ public:
 
             if (encV) for (int i=0; i<6; ++i) dEncBase[i]=(*encV)[i];
 
-            mObjectsManager->readEncoders(dEncBase);
+            //mObjectsManager->readEncoders(dEncBase);
         }
 
         if (portEncTorso.getInputCount()>0)

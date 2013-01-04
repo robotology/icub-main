@@ -1,3 +1,10 @@
+2013-01-04 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* main/src/tools/iCubGui/src/bvh.h
+	* main/src/tools/iCubGui/src/bvhnoderoot.h
+	* main/src/tools/iCubGui/src/objectsthread.h
+	* main/src/tools/iCubGui/src/visionobj.h
+	Vision objects code restyling/bugfixing.
+
 2012-12-20 Ugo Pattacini <ugo.pattacini@iit.it>
    ServerCartesianController: bug fix.
    upon stop-control the task/joint velocities returned were different from 0.0

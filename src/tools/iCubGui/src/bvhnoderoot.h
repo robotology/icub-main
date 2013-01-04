@@ -33,26 +33,20 @@ public:
     }
         
     virtual void drawJoint(){}
-        
+      
     virtual void draw(double *encoders,BVHNode *pSelected)
     {
+        // world coordinates
+        glPushMatrix(); 
+
+        glTranslated(dX+encoders[nEnc+3],dY+encoders[nEnc+4],dZ+encoders[nEnc+5]);
+
+        glRotated(encoders[nEnc+2],0.0,0.0,1.0); // yaw
+        glRotated(encoders[nEnc+1],0.0,1.0,0.0); // pitch
+        glRotated(encoders[nEnc  ],1.0,0.0,0.0); // roll
+
+        // root coordinates
         glPushMatrix();
-        
-        glTranslated(dX,dY,dZ);
-
-        glPushMatrix();
-
-        glTranslated(encoders[nEnc+3],encoders[nEnc+4],encoders[nEnc+5]);
-
-        glRotated(encoders[nEnc],  0.0,0.0,1.0);
-        glRotated(encoders[nEnc+1],0.0,1.0,0.0);
-        glRotated(encoders[nEnc+2],1.0,0.0,0.0);
-
-        /*
-        glRotated(dYaw,  0.0,0.0,1.0);
-        glRotated(dPitch,0.0,1.0,0.0);
-        glRotated(dRoll, 1.0,0.0,0.0);
-        */
 
         if (pMesh)
         { 
@@ -68,13 +62,18 @@ public:
         }
 
         glPopMatrix();
+        // root coordinates
 
         if (mObjectsManager)
         {
-            mObjectsManager->draw();
+            mObjectsManager->update();
+            mObjectsManager->drawRootObjects();
         }
 
         glPopMatrix();
+        // world coordinates
+
+        if (mObjectsManager) mObjectsManager->drawWorldObjects();
     }
 
 protected:

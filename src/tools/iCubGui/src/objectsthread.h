@@ -40,8 +40,6 @@ class ObjectsManager
 public:
     ObjectsManager(const char *objPortName,const char *texPortName,const char *forcePortName)
     {
-        bReset=false;
-
         mObjPort.open((GUI_NAME+objPortName).c_str());
         mTexPort.open((GUI_NAME+texPortName).c_str());
         mForcePort.open((GUI_NAME+forcePortName).c_str());
@@ -50,11 +48,13 @@ public:
         mTexPort.setStrict();
         mForcePort.setStrict();
 
+        /*
         mPx=mPy=mPz=0.0;
         mRx=mRy=mRz=0.0;
         for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
                 R[i][j]=(double)(i==j);
+        */
     }
 
     ~ObjectsManager()
@@ -68,14 +68,24 @@ public:
         mForcePort.interrupt();
         mForcePort.close();
 
-        for (int i=0; i<(int)mObjects.size(); ++i)
+        for (int i=0; i<(int)mObjectsRoot.size(); ++i)
         {
-            if (mObjects[i]) delete mObjects[i];
+            if (mObjectsRoot[i]) delete mObjectsRoot[i];
         }
 
-        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        for (int i=0; i<(int)mObjectsWorld.size(); ++i)
         {
-            if (mTrajectories[i]) delete mTrajectories[i];
+            if (mObjectsWorld[i]) delete mObjectsWorld[i];
+        }
+
+        for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
+        {
+            if (mTrajectoriesRoot[i]) delete mTrajectoriesRoot[i];
+        }
+
+        for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i)
+        {
+            if (mTrajectoriesWorld[i]) delete mTrajectoriesWorld[i];
         }
     }
 
@@ -88,6 +98,7 @@ public:
     inline void manage(yarp::sig::VectorOf<unsigned char> *img);
     inline void manage(iCub::skinDynLib::skinContactList &forces);
 
+    /*
     void readEncoders(double *enc)
     {
         static const double DEG2RAD=M_PI/180.0;
@@ -112,8 +123,9 @@ public:
         R[1][0]=sA*cB; R[1][1]=sA*sB*sY+cA*cY; R[1][2]=sA*sB*cY-cA*sY;
         R[2][0]=  -sB; R[2][1]=   cB*sY;       R[2][2]=   cB*cY;
     }
+    */
 
-    void draw()
+    void update()
     {
         // objects
         for (yarp::os::Bottle *botObj; botObj=mObjPort.read(false);)
@@ -131,81 +143,43 @@ public:
         {        
             manage(*forces);
         }
+    }
 
-        if (bReset)
+    void drawRootObjects()
+    {
+        for (int i=0; i<(int)mObjectsRoot.size(); ++i)
         {
-            bReset=false;
-            
-            for (int i=0; i<(int)mObjects.size(); ++i) delete mObjects[i];
-            mObjects.clear();
-
-            for (int i=0; i<(int)mTrajectories.size(); ++i) delete mTrajectories[i];
-            mTrajectories.clear();
-
-            return;
+            if (mObjectsRoot[i]) mObjectsRoot[i]->draw();
         }
 
-        bool bPack=false;
-        for (int i=0; i<(int)mObjects.size(); ++i)
+        for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
         {
-            if (mObjects[i]->bDeleted)
-            {
-                delete mObjects[i];
-                mObjects[i]=NULL;
-                bPack=true;
-            }
-            else
-            {
-                mObjects[i]->draw();
-            }
+            if(mTrajectoriesRoot[i]) mTrajectoriesRoot[i]->draw();
+        }
+    }
+
+    void drawWorldObjects()
+    {
+        for (int i=0; i<(int)mObjectsWorld.size(); ++i)
+        {
+            if (mObjectsWorld[i]) mObjectsWorld[i]->draw();
         }
 
-        if (bPack)
+        for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i)
         {
-            int newsize=0;
-            int size=(int)mObjects.size();
-            for (int i=0; i<size; ++i)
-            {
-                if (mObjects[i]!=NULL) mObjects[newsize++]=mObjects[i];
-            }
-            mObjects.resize(newsize);
-        }
-
-        bPack=false;
-        for (int i=0; i<(int)mTrajectories.size(); ++i)
-        {
-            if (mTrajectories[i]->bDeleted)
-            {
-                delete mTrajectories[i];
-                mTrajectories[i]=NULL;
-                bPack=true;
-            }
-            else
-            {
-                mTrajectories[i]->draw();
-            }
-        }
-
-        if (bPack)
-        {
-            int newsize=0;
-            int size=(int)mTrajectories.size();
-            for (int i=0; i<size; ++i)
-            {
-                if (mTrajectories[i]!=NULL) mTrajectories[newsize++]=mTrajectories[i];
-            }
-            mTrajectories.resize(newsize);
+            if(mTrajectoriesWorld[i]) mTrajectoriesWorld[i]->draw();
         }
     }
     
 protected:
-    bool bReset;
-    std::vector<VisionObj*> mObjects;
-    std::vector<TrajectoryObj*> mTrajectories;
-
-    double mPx,mPy,mPz;
-    double mRx,mRy,mRz;
-    double R[3][3];
+    std::vector<VisionObj*> mObjectsRoot;
+    std::vector<VisionObj*> mObjectsWorld;
+    std::vector<TrajectoryObj*> mTrajectoriesRoot;
+    std::vector<TrajectoryObj*> mTrajectoriesWorld;
+    
+    //double mPx,mPy,mPz;
+    //double mRx,mRy,mRz;
+    //double R[3][3];
 
     BVHNode ***mAB;
 
@@ -220,7 +194,18 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
 
     if (cmd=="reset")
     {
-        bReset=true;
+        for (int i=0; i<(int)mObjectsRoot.size(); ++i) delete mObjectsRoot[i];
+        mObjectsRoot.clear();
+
+        for (int i=0; i<(int)mObjectsWorld.size(); ++i) delete mObjectsWorld[i];
+        mObjectsWorld.clear();
+
+        for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i) delete mTrajectoriesRoot[i];
+        mTrajectoriesRoot.clear();
+
+        for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i) delete mTrajectoriesWorld[i];
+        mTrajectoriesWorld.clear();
+        
         return;
     }
 
@@ -228,125 +213,113 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
     {
         std::string name(msg->get(1).asString().c_str());
         
-        for (int i=0; i<(int)mObjects.size(); ++i)
+        int size=(int)mObjectsRoot.size();
+        for (int i=0; i<size; ++i)
         {
-            if (*mObjects[i]==name) mObjects[i]->bDeleted=true;
+            if (mObjectsRoot[i] && *mObjectsRoot[i]==name)
+            {
+                --size;
+                delete mObjectsRoot[i];
+                for (int j=i; j<size; ++j) mObjectsRoot[j]=mObjectsRoot[j+1];
+                mObjectsRoot.resize(size);
+                return;
+            }
         }
 
-        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        size=(int)mObjectsWorld.size();
+        for (int i=0; i<(int)mObjectsWorld.size(); ++i)
         {
-            if (*mTrajectories[i]==name) mTrajectories[i]->bDeleted=true;
+            if (mObjectsWorld[i] && *mObjectsWorld[i]==name)
+            {
+                --size;
+                delete mObjectsWorld[i];
+                for (int j=i; j<size; ++j) mObjectsWorld[j]=mObjectsWorld[j+1];
+                mObjectsWorld.resize(size);
+                return;
+            }
+        }
+
+        size=(int)mTrajectoriesRoot.size();
+        for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
+        {
+            if (mTrajectoriesRoot[i] && *mTrajectoriesRoot[i]==name)
+            {
+                --size;
+                delete mTrajectoriesRoot[i];
+                for (int j=i; j<size; ++j) mTrajectoriesRoot[j]=mTrajectoriesRoot[j+1];
+                mTrajectoriesRoot.resize(size);
+                return;
+            }
+        }
+
+        size=(int)mTrajectoriesWorld.size();
+        for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i)
+        {
+            if (mTrajectoriesWorld[i] && *mTrajectoriesWorld[i]==name)
+            {
+                --size;
+                delete mTrajectoriesWorld[i];
+                for (int j=i; j<size; ++j) mTrajectoriesWorld[j]=mTrajectoriesWorld[j+1];
+                mTrajectoriesWorld.resize(size);
+                return;
+            }
         }
 
         return;
     }
 
-    if (cmd=="object_with_label")
+    if (cmd=="object" || cmd=="object_with_label")
     {
-        std::string id    (msg->get(1).asString().c_str());
-        std::string label (msg->get(2).asString().c_str());
+        int idd=1;
 
-        double dx=msg->get(3).asDouble();
-        double dy=msg->get(4).asDouble();
-        double dz=msg->get(5).asDouble();
+        std::string name(msg->get(idd++).asString().c_str());
+        std::string label(cmd=="object_with_label"?msg->get(idd++).asString().c_str():"");
 
-        double px=msg->get(6).asDouble();
-        double py=msg->get(7).asDouble();
-        double pz=msg->get(8).asDouble();
+        double dx=msg->get(idd++).asDouble();
+        double dy=msg->get(idd++).asDouble();
+        double dz=msg->get(idd++).asDouble();
 
-        double rx=msg->get(9).asDouble();
-        double ry=msg->get(10).asDouble();
-        double rz=msg->get(11).asDouble();
+        double px=msg->get(idd++).asDouble();
+        double py=msg->get(idd++).asDouble();
+        double pz=msg->get(idd++).asDouble();
 
-        int r=msg->get(12).asInt();
-        int g=msg->get(13).asInt();
-        int b=msg->get(14).asInt();
-        double alpha=msg->get(15).asDouble();
+        double rx=msg->get(idd++).asDouble();
+        double ry=msg->get(idd++).asDouble();
+        double rz=msg->get(idd++).asDouble();
 
-        double Px=px,Py=py,Pz=pz;
+        int r=msg->get(idd++).asInt();
+        int g=msg->get(idd++).asInt();
+        int b=msg->get(idd++).asInt();
 
-        bool bWorld=(msg->size()>16 && msg->get(16).asString()=="WORLD");
-        
-        if (!bWorld)
+        double alpha=msg->get(idd++).asDouble();
+
+        for (int i=0; i<(int)mObjectsRoot.size(); ++i)
         {
-            Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
-            Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
-            Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
-        }
-
-        for (int i=0; i<(int)mObjects.size(); ++i)
-        {
-            if (*mObjects[i]==id)
-            {
-                mObjects[i]->set(dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
-                mObjects[i]->optional_label=label;
+            if (mObjectsRoot[i] && *mObjectsRoot[i]==name)
+            {     
+                mObjectsRoot[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label);
                 return;
             }
         }
 
-        VisionObj* obj;
-        if (bWorld)
+        for (int i=0; i<(int)mObjectsWorld.size(); ++i)
         {
-            obj=new VisionObj(id,dx,dy,dz,Px,Py,Pz,rx,ry,rz,r,g,b,alpha);
-        }
-        else
-        {
-            obj=new VisionObj(id,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
-        }
-
-        obj->optional_label=label;
-        mObjects.push_back(obj);
-        return;
-    }
-
-    if (cmd=="object")
-    {
-        std::string name(msg->get(1).asString().c_str());
-
-        double dx=msg->get(2).asDouble();
-        double dy=msg->get(3).asDouble();
-        double dz=msg->get(4).asDouble();
-
-        double px=msg->get(5).asDouble();
-        double py=msg->get(6).asDouble();
-        double pz=msg->get(7).asDouble();
-
-        double rx=msg->get(8).asDouble();
-        double ry=msg->get(9).asDouble();
-        double rz=msg->get(10).asDouble();
-
-        int r=msg->get(11).asInt();
-        int g=msg->get(12).asInt();
-        int b=msg->get(13).asInt();
-        double alpha=msg->get(14).asDouble();
-
-        double Px=px,Py=py,Pz=pz;
-
-        bool bWorld=(msg->size()>15 && msg->get(15).asString()=="WORLD");
-
-        if (!bWorld)
-        {
-            Px=R[0][0]*px+R[0][1]*py+R[0][2]*pz+mPx;
-            Py=R[1][0]*px+R[1][1]*py+R[1][2]*pz+mPy;
-            Pz=R[2][0]*px+R[2][1]*py+R[2][2]*pz+mPz;
-        }
-
-        for (int i=0; i<(int)mObjects.size(); ++i)
-        {
-            if (*mObjects[i]==name)
-            {
-                mObjects[i]->set(dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha);
+            if (mObjectsWorld[i] && *mObjectsWorld[i]==name)
+            {     
+                mObjectsWorld[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label);
                 return;
             }
         }
 
+        bool bWorld=(msg->size()>idd && msg->get(idd).asString()=="WORLD");
+       
         if (bWorld)
         {
-            mObjects.push_back(new VisionObj(name,dx,dy,dz,Px,Py,Pz,rx,ry,rz,r,g,b,alpha));
+            mObjectsWorld.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label));
         }
         else
-        {
-            mObjects.push_back(new VisionObj(name,dx,dy,dz,Px,Py,Pz,mRx,mRy,mRz,rx,ry,rz,r,g,b,alpha));
+        {        
+            mObjectsRoot.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label));
         }
 
         return;
@@ -367,19 +340,35 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         double alpha=msg->get(8).asDouble();
         GLfloat width=(GLfloat)msg->get(9).asDouble();
 
-        bool bWorld=(msg->size()>10 && msg->get(10).asString()=="WORLD");
-
-        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
         {
-            if (*mTrajectories[i]==name)
+            if (mTrajectoriesRoot[i] && *mTrajectoriesRoot[i]==name)
             {
-                mTrajectories[i]->set(label,bufflen,persistence,R,G,B,alpha,width);
+                mTrajectoriesRoot[i]->set(label,bufflen,persistence,R,G,B,alpha,width);
                 return;
             }
         }
 
-        mTrajectories.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width,bWorld));
+        for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i)
+        {
+            if (mTrajectoriesWorld[i] && *mTrajectoriesWorld[i]==name)
+            {
+                mTrajectoriesWorld[i]->set(label,bufflen,persistence,R,G,B,alpha,width);
+                return;
+            }
+        }
 
+        bool bWorld=(msg->size()>10 && msg->get(10).asString()=="WORLD");
+
+        if (bWorld)
+        {
+            mTrajectoriesWorld.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width,bWorld));
+        }
+        else
+        {
+            mTrajectoriesRoot.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width,bWorld));
+        }
+        
         return;
     }
     
@@ -391,20 +380,20 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         double y=msg->get(3).asDouble();
         double z=msg->get(4).asDouble();
 
-        for (int i=0; i<(int)mTrajectories.size(); ++i)
+        for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
         {
-            if (*mTrajectories[i]==name)
+            if (mTrajectoriesRoot[i] && *mTrajectoriesRoot[i]==name)
             {
-                if (mTrajectories[i]->bWorld)
-                {
-                    mTrajectories[i]->update(x,y,z);
-                }
-                else
-                {
-                    mTrajectories[i]->update(R[0][0]*x+R[0][1]*y+R[0][2]*z+mPx,
-                                             R[1][0]*x+R[1][1]*y+R[1][2]*z+mPy,
-                                             R[2][0]*x+R[2][1]*y+R[2][2]*z+mPz);
-                }
+                mTrajectoriesRoot[i]->update(x,y,z);
+                return;
+            }
+        }
+
+        for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i)
+        {
+            if (mTrajectoriesWorld[i] && *mTrajectoriesWorld[i]==name)
+            {
+                mTrajectoriesWorld[i]->update(x,y,z);
                 return;
             }
         }
@@ -477,13 +466,24 @@ void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
         }
     }
 
-    for (int i=0; i<(int)mObjects.size(); ++i)
+    for (int i=0; i<(int)mObjectsRoot.size(); ++i)
     {
-        if (*mObjects[i]==objName)
+        if (mObjectsRoot[i] && *mObjectsRoot[i]==objName)
         {
-            mObjects[i]->mW=xdim2;
-            mObjects[i]->mH=ydim2;
-            mObjects[i]->mTextureBuffer=buffer;
+            mObjectsRoot[i]->mW=xdim2;
+            mObjectsRoot[i]->mH=ydim2;
+            mObjectsRoot[i]->mTextureBuffer=buffer;
+            return;
+        }
+    }
+
+    for (int i=0; i<(int)mObjectsWorld.size(); ++i)
+    {
+        if (mObjectsWorld[i] && *mObjectsWorld[i]==objName)
+        {
+            mObjectsWorld[i]->mW=xdim2;
+            mObjectsWorld[i]->mH=ydim2;
+            mObjectsWorld[i]->mTextureBuffer=buffer;
             return;
         }
     }
