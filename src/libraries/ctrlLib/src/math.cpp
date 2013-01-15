@@ -257,6 +257,55 @@ Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
     return Rza*Ryb*Rzg;
 }
 
+/************************************************************************/
+Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
+{
+    if ((R.rows()<3) || (R.cols()<3))
+    {
+        if (verbose)
+            fprintf(stderr,"dcm2rpy() failed\n");
+
+        return Vector(0);
+    }
+
+    Vector v(3);
+/*    double Rz1=atan2(R[1][0],R[0][0]);
+    double Rx3=atan2(R[2][1],R[2][2]);
+    double Ry2=atan2(-R[2][0],cos(Rz1)*R[0][0]+sin(Rz1)*R[1][0]);*/
+
+    double Ry2=atan2(-R[2][0],sqrt(R[2][1]*R[2][1]+R[2][2]*R[2][2]));
+    double ct = 1;//cos(Ry2);
+    double Rz1=atan2(R[1][0]/ct,R[0][0]/ct);
+    double Rx3=atan2(R[2][1]/ct,R[2][2]/ct);
+    v[0] = Rx3;
+    v[1] = Ry2;
+    v[2] = Rz1;
+
+    return v;
+}
+
+/************************************************************************/
+Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
+{
+    if (v.length()<3)
+    {
+        if (verbose)
+            fprintf(stderr,"rpy2dcm() failed\n");
+    
+        return Matrix(0,0);
+    }
+
+    Matrix Rz=eye(4,4);  Matrix Ry=eye(4,4);   Matrix Rx=eye(4,4);
+    double roll   = v[0];  double cr=cos(roll);    double sr=sin(roll);
+    double pitch  = v[1];  double cp=cos(pitch);   double sp=sin(pitch);
+    double yaw    = v[2];  double cy=cos(yaw);     double sy=sin(yaw);
+    
+    Rz(0,0)=cy;   Rz(1,1)=cy;   Rz(0,1)=-sy;  Rz(1,0)=sy;  //z-rotation with yaw
+    Ry(0,0)=cp;   Ry(2,2)=cp;   Ry(0,2)=-sp;  Ry(2,0)=sp;  //y-rotation with pitch
+    Rx(1,1)=cr;   Rx(2,2)=cr;   Rx(1,2)=-sr;  Rx(2,1)=sr;  //x-rotation with roll
+
+    return Rz*Ry*Rx;
+}
 
 /************************************************************************/
 Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
