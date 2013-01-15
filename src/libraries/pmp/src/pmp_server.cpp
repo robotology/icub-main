@@ -2053,7 +2053,7 @@ void PmpServer::updateGuiItem(const GuiRequest &req)
         int item=it->first;
         Item *pItem=it->second;
 
-        Vector ypr=CTRL_RAD2DEG*dcm2euler(axis2dcm(pItem->orientation));
+        Vector rpy=CTRL_RAD2DEG*dcm2rpy(axis2dcm(pItem->orientation));
 
         Bottle obj;
         obj.addString("object");        
@@ -2064,9 +2064,9 @@ void PmpServer::updateGuiItem(const GuiRequest &req)
         obj.addDouble(1000.0*pItem->center[0]);     // posX [mm]
         obj.addDouble(1000.0*pItem->center[1]);     // posY [mm]
         obj.addDouble(1000.0*pItem->center[2]);     // posZ [mm]
-        obj.addDouble(ypr[2]);                      // rotX [deg]
-        obj.addDouble(ypr[1]);                      // rotY [deg]
-        obj.addDouble(ypr[0]);                      // rotZ [deg]
+        obj.addDouble(rpy[0]);                      // rotX [deg]
+        obj.addDouble(rpy[1]);                      // rotY [deg]
+        obj.addDouble(rpy[2]);                      // rotZ [deg]
         obj.addInt((int)pItem->color[0]);           // col R
         obj.addInt((int)pItem->color[1]);           // col G
         obj.addInt((int)pItem->color[2]);           // col B

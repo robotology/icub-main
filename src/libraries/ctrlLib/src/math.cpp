@@ -257,6 +257,7 @@ Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
     return Rza*Ryb*Rzg;
 }
 
+
 /************************************************************************/
 Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
 {
@@ -269,9 +270,11 @@ Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
     }
 
     Vector v(3);
-/*    double Rz1=atan2(R[1][0],R[0][0]);
+    /* 
+    double Rz1=atan2(R[1][0],R[0][0]);
     double Rx3=atan2(R[2][1],R[2][2]);
-    double Ry2=atan2(-R[2][0],cos(Rz1)*R[0][0]+sin(Rz1)*R[1][0]);*/
+    double Ry2=atan2(-R[2][0],cos(Rz1)*R[0][0]+sin(Rz1)*R[1][0]);]);
+    */
 
     double Ry2=atan2(-R[2][0],sqrt(R[2][1]*R[2][1]+R[2][2]*R[2][2]));
     double ct = 1;//cos(Ry2);
@@ -284,6 +287,7 @@ Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
     return v;
 }
 
+
 /************************************************************************/
 Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
 {
@@ -295,10 +299,10 @@ Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
         return Matrix(0,0);
     }
 
-    Matrix Rz=eye(4,4);  Matrix Ry=eye(4,4);   Matrix Rx=eye(4,4);
-    double roll   = v[0];  double cr=cos(roll);    double sr=sin(roll);
-    double pitch  = v[1];  double cp=cos(pitch);   double sp=sin(pitch);
-    double yaw    = v[2];  double cy=cos(yaw);     double sy=sin(yaw);
+    Matrix Rz=eye(4,4); Matrix Ry=eye(4,4);   Matrix Rx=eye(4,4);
+    double roll=v[0];   double cr=cos(roll);  double sr=sin(roll);
+    double pitch=v[1];  double cp=cos(pitch); double sp=sin(pitch);
+    double yaw=v[2];    double cy=cos(yaw);   double sy=sin(yaw);
     
     Rz(0,0)=cy;   Rz(1,1)=cy;   Rz(0,1)=-sy;  Rz(1,0)=sy;  //z-rotation with yaw
     Ry(0,0)=cp;   Ry(2,2)=cp;   Ry(0,2)=-sp;  Ry(2,0)=sp;  //y-rotation with pitch
@@ -306,6 +310,7 @@ Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
 
     return Rz*Ry*Rx;
 }
+
 
 /************************************************************************/
 Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
