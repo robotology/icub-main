@@ -40,6 +40,7 @@ using namespace iCub::skinDynLib;
 using namespace std;
 
 #define TEST_LEG_SENSOR
+#define MEASURE_FROM_FOOT
 double lpf_ord1_3hz(double input, int j)
 { 
     if (j<0 || j>= MAX_JN)
@@ -236,15 +237,16 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 	port_external_cartesian_wrench_RF = new BufferedPort<Vector>;
 	port_external_cartesian_wrench_LF = new BufferedPort<Vector>;
     port_skin_contacts = new BufferedPort<skinContactList>;
-    port_com_all = new BufferedPort<Vector>;
-    port_com_lb  = new BufferedPort<Vector>;
-    port_com_ub  = new BufferedPort<Vector>;
-    port_com_la  = new BufferedPort<Vector>;
-    port_com_ra  = new BufferedPort<Vector>;
-    port_com_ll  = new BufferedPort<Vector>;
-    port_com_rl  = new BufferedPort<Vector>;
-    port_com_to  = new BufferedPort<Vector>;
-    port_com_hd  = new BufferedPort<Vector>;
+    port_com_all      = new BufferedPort<Vector>;
+    port_com_lb       = new BufferedPort<Vector>;
+    port_com_ub       = new BufferedPort<Vector>;
+    port_com_la       = new BufferedPort<Vector>;
+    port_com_ra       = new BufferedPort<Vector>;
+    port_com_ll       = new BufferedPort<Vector>;
+    port_com_rl       = new BufferedPort<Vector>;
+    port_com_to       = new BufferedPort<Vector>;
+    port_com_hd       = new BufferedPort<Vector>;
+    port_com_all_foot = new BufferedPort<Vector>;
     port_monitor = new BufferedPort<Vector>;
     port_contacts = new BufferedPort<skinContactList>;
     port_dumpvel = new BufferedPort<Vector>;
@@ -301,6 +303,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_com_rl ->open(string("/"+local_name+"/right_leg/com:o").c_str());
     port_com_hd ->open(string("/"+local_name+"/head/com:o").c_str());
     port_com_to ->open(string("/"+local_name+"/torso/com:o").c_str());
+    port_com_all_foot->open(string("/"+local_name+"/com_foot:o").c_str());
     port_skin_contacts->open(string("/"+local_name+"/skin_contacts:i").c_str());
     port_monitor->open(string("/"+local_name+"/monitor:o").c_str());
     port_contacts->open(string("/"+local_name+"/contacts:o").c_str());
@@ -608,6 +611,19 @@ void inverseDynamics::run()
 	Vector com_v; com_v.resize(3); com_v.zero();
     Vector dq; dq.resize(32,1); dq.zero();
 
+    // For balancing purposes
+
+    yarp::sig::Matrix rTf; rTf.resize(4,4); rTf.zero();
+    yarp::sig::Matrix fTr; fTr.resize(4,4); fTr.zero();
+
+    rTf = icub->lowerTorso->right->getH();
+
+    rTf = (icub->lowerTorso->getHRight()) * rTf;
+    fTr.setSubmatrix(rTf.submatrix(0,2,0,2).transposed() ,0,0);         //CHECKED
+    fTr.setSubcol(-1*fTr.submatrix(0,2,0,2)*rTf.subcol(0,3,3) ,0,3);    //CHECKED    
+    fTr(3,3) = 1;
+
+     
     if (com_enabled)
     {
         icub->computeCOM();
@@ -650,6 +666,11 @@ void inverseDynamics::run()
             com_all.push_back(0);
             com_all.push_back(0);
         }
+
+        #ifdef MEASURE_FROM_FOOT
+        com_all.setSubvector(0,fTr*com_all.subVector(0,2));
+        #endif
+
     }
     else
     {
@@ -967,6 +988,7 @@ void inverseDynamics::threadRelease()
     closePort(port_com_ll);
     closePort(port_com_hd);
     closePort(port_com_to);
+    closePort(port_com_all_foot);
 
     fprintf(stderr, "Closing inertial port\n");
     closePort(port_inertial_thread);
