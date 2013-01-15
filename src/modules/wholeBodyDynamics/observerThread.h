@@ -199,6 +199,7 @@ private:
     BufferedPort<Vector> *port_model_wrench_LL;
     BufferedPort<Vector> *port_external_wrench_TO;
     BufferedPort<Vector> *port_com_all;
+    BufferedPort<Vector> *port_com_all_foot;
     BufferedPort<Vector> *port_com_lb;
     BufferedPort<Vector> *port_com_ub;
     BufferedPort<Vector> *port_com_la;
