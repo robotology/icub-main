@@ -612,7 +612,7 @@ void inverseDynamics::run()
     Vector dq; dq.resize(32,1); dq.zero();
 
     // For balancing purposes
-
+    yarp::sig::Vector com_all_foot; com_all_foot.resize(3); com_all_foot.zero();
     yarp::sig::Matrix rTf; rTf.resize(4,4); rTf.zero();
     yarp::sig::Matrix fTr; fTr.resize(4,4); fTr.zero();
 
@@ -668,7 +668,9 @@ void inverseDynamics::run()
         }
 
         #ifdef MEASURE_FROM_FOOT
-        com_all.setSubvector(0,fTr*com_all.subVector(0,2));
+        com_all_foot.setSubvector(0,com_all.subVector(0,2));
+        com_all_foot.push_back(1);
+        com_all_foot = fTr*com_all_foot;
         #endif
 
     }
@@ -869,6 +871,7 @@ void inverseDynamics::run()
     broadcastData<Vector> (com_ra,  port_com_ra);
     broadcastData<Vector> (com_hd,  port_com_hd);
     broadcastData<Vector> (com_to,  port_com_to);
+    broadcastData<Vector> (com_all_foot, port_com_all_foot);
 
     broadcastData<Vector> (F_up,                                    port_external_wrench_TO);
     broadcastData<Vector> (F_ext_right_arm,                         port_external_wrench_RA);
@@ -1264,6 +1267,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     int sz = 0;
     if(inertial!=0)
     {
+//#define DEBUG_FIXED_INERTIAL
 #ifdef DEBUG_FIXED_INERTIAL
          (*inertial)[0] = 0;
          (*inertial)[1] = 0;
@@ -1279,6 +1283,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         current_status.inertial_w0 [1] =  (*inertial)[4]*CTRL_DEG2RAD;
         current_status.inertial_w0 [2] =  (*inertial)[5]*CTRL_DEG2RAD;
         current_status.inertial_dw0 = this->eval_domega(current_status.inertial_w0);
+        //printf ("%3.3f, %3.3f, %3.3f \n",current_status.inertial_d2p0[0],current_status.inertial_d2p0[1],current_status.inertial_d2p0[2]);
 #ifdef DEBUG_PRINT_INERTIAL
         printf ("meas_w  (rad/s):  %3.3f, %3.3f, %3.3f \n", w0[0],   w0[1],   w0[2]);
         printf ("meas_dwo(rad/s):  %3.3f, %3.3f, %3.3f \n", dw0[0],  dw0[1],  dw0[2]);
