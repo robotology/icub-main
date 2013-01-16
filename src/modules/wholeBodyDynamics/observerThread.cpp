@@ -814,15 +814,19 @@ void inverseDynamics::run()
     yarp::sig::Matrix ilhl = iCub::ctrl::SE3inv(lhl);
     yarp::sig::Matrix foot_root_mat = r1*ilhl;
     
-    yarp::sig::Vector foot_tmp = iCub::ctrl::dcm2euler(foot_root_mat);
+    yarp::sig::Vector foot_tmp = iCub::ctrl::dcm2rpy(foot_root_mat);
+    //printf ("before\n %s\n", foot_root_mat.toString().c_str());
     yarp::sig::Vector foot_root_vec (6,0.0); 
-    foot_root_vec[0] = foot_root_mat[0][3];
-    foot_root_vec[1] = foot_root_mat[1][3];
-    foot_root_vec[2] = foot_root_mat[2][3];
-    foot_root_vec[3] = foot_tmp[0]*180.0/M_PI;
-    foot_root_vec[4] = foot_tmp[1]*180.0/M_PI;
-    foot_root_vec[5] = foot_tmp[2]*180.0/M_PI;
-    
+    foot_root_vec[3] = foot_root_mat[0][3]*1000;
+    foot_root_vec[4] = foot_root_mat[1][3]*1000;
+    foot_root_vec[5] = foot_root_mat[2][3]*1000;
+    foot_root_vec[0] = foot_tmp[0]*180.0/M_PI;
+    foot_root_vec[1] = foot_tmp[1]*180.0/M_PI;
+    foot_root_vec[2] = foot_tmp[2]*180.0/M_PI;
+    //yarp::sig::Matrix test = iCub::ctrl::rpy2dcm(foot_tmp);
+    //printf ("afer\n %s\n", test.toString().c_str());
+    //printf ("angles %+.2f %+.2f %+.2f\n", foot_tmp[0]*180.0/M_PI, foot_tmp[1]*180.0/M_PI, foot_tmp[2]*180.0/M_PI);
+
     //computation for the foot
     Matrix foot_hn(4,4); foot_hn.zero();
     foot_hn(0,2)=1;foot_hn(0,3)=-7.75;
