@@ -92,11 +92,12 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
     root_name+=robotName;
     root_name+="/skin/";
 
+    std::vector<AnalogPortEntry> skinPorts;  // temporary, actual ports are owned by the analogserver
 		// port names are optional, do not check for correctness.
     if(!params.check("ports"))
 		{
         // if there is no "ports" section take the name of the "skin" group as the only port name
-        skinPorts.resize( (size_t)1);
+        skinPorts.resize( (size_t) 1);
         skinPorts[0].offset = 0;
         skinPorts[0].length = -1;
         skinPorts[0].port_name = root_name + this->id;
@@ -151,6 +152,10 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
             return false;
         }
     }
+
+    // If everything is ok create analog server, for now with period 0 (disabled I guess)
+    analogServer = new yarp::dev::AnalogServer(skinPorts);
+    analogServer->setRate(0);
     return true;
 }
 
@@ -168,6 +173,7 @@ bool skinWrapper::close()
     driver.close();
     return true;
 }
+
 // implementare i metodi attach e detach come un vero wrapper che si rispetti!!!! 
 bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
 {
@@ -183,28 +189,28 @@ bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
     if (subdevice->isValid())
     {
         subdevice->view(analog);
-		}
-		else
-		{
-				yError() << "skinWrapper: subdevice passed to attach method is invalid!!!";
-				return false;
-		}
-		
+    }
+    else
+    {
+        yError() << "skinWrapper: subdevice passed to attach method is invalid!!!";
+        return false;
+    }
+
     // Create new analogServer (therefore it must be NULL) from an existing sensor (analog NOT NULL).
     if( NULL != analogServer)
-		{
-			  yError() << "skinWrapper: analogServer already attached!!!";
-				return false;
-		}
-		
+    {
+        yError() << "skinWrapper: analogServer already attached!!!";
+        return false;
+    }
+
     if(NULL == analog)
-		{
-				yError() << "skinWrapper: The analog sensor is not correctly instantiated, cannot attach !!!";
-				return false;
-		}
-		
+    {
+        yError() << "skinWrapper: The analog sensor is not correctly instantiated, cannot attach !!!";
+        return false;
+    }
+
     // if we got this far every conditions are ok
-    analogServer = new AnalogServer(skinPorts);
+//     analogServer = new yarp::dev::AnalogServer(skinPorts);
     analogServer->setRate(period);
     analogServer->attach(analog);
     analogServer->start();

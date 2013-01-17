@@ -43,14 +43,14 @@
 #include "Debug.h"
 
 class skinWrapper : public yarp::dev::DeviceDriver,
-										public yarp::dev::IMultipleWrapper
+                    public yarp::dev::IMultipleWrapper
 {
 private:
-    AnalogServer *analogServer;
-		// Up to day the skinwrapper is able to handle (attach to) just one analog sensor device
+    yarp::dev::AnalogServer *analogServer;
+    // Up to day the skinwrapper is able to handle (attach to) just one analog sensor device
     int period;
-		yarp::dev::IAnalogSensor *analog;
-		std::vector<AnalogPortEntry> skinPorts;
+    yarp::dev::IAnalogSensor *analog;
+
 
 //    yarp::sig::Vector wholeData;      // may be useful if one the skin wrapper has to get data from more than one device...
 
@@ -71,9 +71,9 @@ public:
     {
         id=i;
     }
-    
-		bool attachAll(const yarp::dev::PolyDriverList &p);
-		bool detachAll();
+
+    bool attachAll(const yarp::dev::PolyDriverList &p);
+    bool detachAll();
 };
 
 #endif /* SKINWRAPPER_H_ */
