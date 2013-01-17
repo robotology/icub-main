@@ -307,6 +307,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     // Save eo data of this board/EP
     res->transceiver->getHostData(&_fId.EPvector, &_fId.EPhash_function);
     _fId.handle  = (this);
+//     _fId.handle = dynamic_cast<IiCubFeature*> (this);   //if embObjMC will need to derive from IiCubFearture, weird behaviour otherwise
 
     ethResCreator::instance()->addLUTelement(_fId);
     NVnumber = res->transceiver->getNVnumber(_fId.boardNum, _fId.ep);
@@ -350,7 +351,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     // e rischia di riempire e incasinare le code di ricezione del can?
     configure_mais();
 
-    goToRun();
+    res->goToRun();
     return true;
 }
 
@@ -456,7 +457,8 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     ////// PIDS
     Bottle pidsGroup=config.findGroup("PIDS", "PID parameters");
-    if (pidsGroup.isNull()) {
+    if (pidsGroup.isNull()) 
+    {
         fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
         return false;
     }
@@ -1027,33 +1029,6 @@ bool embObjMotionControl::configure_mais(void)
         if(!res->transceiver->load_occasional_rop(eo_ropcode_set, mais_ep, nvid) )
             return false;
     }
-}
-
-bool embObjMotionControl::goToRun(void)
-{
-    // yTrace();
-    eOnvID_t nvid;
-    EOnv tmp;
-
-    // attiva il loop di controllo
-    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
-    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-
-    EOnv 	*nvRoot 	= res->transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
-    if(NULL == nvRoot)
-    {
-        yError () << "NV pointer not found at line" << __LINE__;
-        return false;
-    }
-
-    eOmn_appl_state_t  desired 	= applstate_running;
-
-    if( !res->transceiver->nvSetData(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
-        return false;
-
-    // tell agent to prepare a rop to send
-    if(!res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid) )
-        return false;
 }
 
 bool embObjMotionControl::close()
@@ -1637,11 +1612,8 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 bool embObjMotionControl::doneRaw(int axis)
 {
     // used only in calibration procedure, for normal work use the checkMotionDone
-    //	// yTrace();
     EOnv tmp;
-    //
-    // get the control mode and check its value??? // e segnalato spontaneamente!! perche' fare una richiesta????
-    //
+
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)axis, jointNVindex_jstatus__basic);
     EOnv	*nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
 
@@ -1650,23 +1622,6 @@ bool embObjMotionControl::doneRaw(int axis)
         NV_NOT_FOUND;
         return false;
     }
-
-    //	res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
-    //
-    //	// Sign up for waiting the reply
-    //	eoThreadEntry *tt = appendWaitRequest(axis, nvid);
-    //	tt->setPending(1);
-    //
-    //	// wait here
-    //	if(-1 == tt->synch() )
-    //	{
-    //		int threadId;
-    //		yError () << "[ETH] Calibration done timed out, joint " << axis;
-    //
-    //		if(requestQueue->threadPool->getId(&threadId))
-    //			requestQueue->cleanTimeouts(threadId);
-    //		return false;
-    //	}
 
     uint16_t size;
     eOmc_controlmode_t type;
@@ -2641,4 +2596,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return true;
 }
 
-
+bool embObjMotionControl::setTorque(yarp::sig::Vector &vals)
+{
+    yTrace();
+}
