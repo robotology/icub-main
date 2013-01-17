@@ -13,6 +13,52 @@ add_definitions( -D_ICUB_CALLBACK_)
 
 PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h )
 
+set(EO_BASE_DIR         ${CMAKE_SOURCE_DIR}/../firmware/emBODY/)
+
+set(BODY_COMMON_FOLDER  ${EO_BASE_DIR}any-arch/body/embenv/envcom/)
+set(CORE_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/core/src/)
+set(CORE_API        ${EO_BASE_DIR}any-arch/sys/embobj/core/api/)
+set(CORE_VEE_FOLDER   ${EO_BASE_DIR}any-arch/sys/embobj/core-vee/src/)
+set(IPNET_FOLDER      ${EO_BASE_DIR}any-arch/sys/embobj/ipnet/src/)
+set(PROT_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/prot/src/)
+set(HAL_API_FOLDER    ${EO_BASE_DIR}any-arch/sys/abslayer/api/)
+set(PORTING_FOLDER    ${EO_BASE_DIR}porting/)
+
+if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
+    set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface-branch/)
+else()
+    set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface/)
+endif()
+
+set(PATH_TO_EP_SRC any-arch/sys/embobj/)
+set(PATH_TO_CALLBACK ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/)
+
+# schede varie
+set(NVS_TYPES       ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub/api/)
+set(NVS_EB_SRC_FOLDER     ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/board-eps/)
+
+
+# set(NVS_MC_SRC_FOLDER     ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-motioncontrol/src/)
+# set(NVS_MC_API_FOLDER     ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-motioncontrol/api/)
+# set(NVS_MC_CBK_FOLDER     ${PATH_TO_CALLBACK}/embObjMotionControl/usrcbk/)
+#
+# set(NVS_MNGMNT_SRC_FOLDER ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-management/src/)
+# set(NVS_MNGMNT_API_FOLDER ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-management/api/)
+# set(NVS_MNGMNT_CBK_FOLDER ${PATH_TO_CALLBACK}/embObjLib/usrcbk/)
+#
+# set(NVS_SENSORS_SRC_FOLDER  ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-analogsensors/src/)
+# set(NVS_SENSORS_API_FOLDER  ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-analogsensors/api/)
+
+#
+# set(NVS_SKIN_SRC_FOLDER   ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-skin/src/)
+# set(NVS_SKIN_API_FOLDER   ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-skin/api/)
+# set(NVS_SKIN_CBK_FOLDER   ${PATH_TO_CALLBACK}/embObjSkin/usrcbk/)
+
+# set(NVS_USR_SRC_FOLDER    ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/endpoints/usr-callbacks/src/)
+# set(NVS_USR_API_FOLDER    ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/endpoints/usr-callbacks/api/)
+# set(NVS_USR_CBK_FOLDER    ${EO_BASE_DIR}/${PATH_TO_CALLBACK}/icub-nvscfg/endpoints/usr-callbacks/usrcbk/)
+
+#--------------------------------------------------------#
 
 set(EXTRA_FOLDER  	    ${CMAKE_CURRENT_SOURCE_DIR}/)
 set(TRANSCEIVER_FOLDER	${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/ )
@@ -24,9 +70,10 @@ set(TRANSCEIVER_FOLDER	${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/ )
 # using embObjLib.conf...
  include(embObjLib.conf)
 
+  include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
+  
 # Debug messages
-# message(INFO " BASE=${BASE}")
-# message(INFO " lib_cmake - embObj_includes: ${embObj_includes}")
+#  message(INFO " lib_cmake - embObj_includes: ${embObj_includes}")
   	
 # get all files needed, collected in different lists for better organization and handling
 
@@ -105,14 +152,14 @@ set(NVS_SENSORS_SOURCE		${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as.c
 
 set(NVS_SKIN_SOURCE			${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk.c
 							${NVS_SKIN_CBK_FOLDER}eOcfg_nvsEP_sk_usrcbk_ebx.c
-							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_con.c							
+							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_con.c
 							${NVS_SKIN_SRC_FOLDER}eOcfg_nvsEP_sk_emsboard_usr.c )
 
 
 
-set(NVS_CBK_SOURCE			${NVS_MNGMNT_CBK_FOLDER}eOcfg_nvsEP_mngmnt_usr_ebx.c
-							${NVS_MC_CBK_FOLDER}eOcfg_nvsEP_mc_usrcbk_icub.c	
-                               )
+set(NVS_CBK_SOURCE      ${NVS_MNGMNT_CBK_FOLDER}embObjLib_mngmnt_callback.c
+                        ${NVS_MC_CBK_FOLDER}embObjMotionControl_callback.c
+                        ${NVS_SENSORS_CBK_FOLDER}embObjAnalogSensor_callback.c        )
 
 
 # EmbObj-src
@@ -243,7 +290,7 @@ SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
   
 include_directories (   ${CMAKE_CURRENT_SOURCE_DIR}
-                        ${embObj_includes}                     
+                        ${embObj_includes}
                         ${iCubDev_INCLUDE_DIRS}
                         ${YARP_INCLUDE_DIRS})
   

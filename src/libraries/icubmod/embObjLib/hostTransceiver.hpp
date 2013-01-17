@@ -60,59 +60,66 @@ class hostTransceiver : public DeviceDriver
 //						public ITransceiver
 {
 private:
-	EOhostTransceiver*  	hosttxrx;
-	EOtransceiver*      	pc104txrx;
-	EOnvsCfg*           	pc104nvscfg;
-	uint32_t            	localipaddr;
-	uint32_t            	remoteipaddr;
-	uint16_t            	ipport;
-	EOpacket*           	pktTx;
-	EOpacket*           	pktRx;
+    EOhostTransceiver*  	hosttxrx;
+    EOtransceiver*      	pc104txrx;
+    EOnvsCfg*           	pc104nvscfg;
+    uint32_t            	localipaddr;
+    uint32_t            	remoteipaddr;
+    uint16_t            	ipport;
+    EOpacket*           	pktTx;
+    EOpacket*           	pktRx;
 
 
 public:
-	hostTransceiver();
+    hostTransceiver();
     ~hostTransceiver();
 
-	const EOconstvector* 	EPvector;
-	eOuint16_fp_uint16_t 	EPhash_function_ep2index;
-	yarp::os::Semaphore 	_mutex;
+    const EOconstvector* 	EPvector;
+    eOuint16_fp_uint16_t 	EPhash_function_ep2index;
+    yarp::os::Semaphore 	_mutex;
 
 
-	void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
+    void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
 
-	// somebody adds a set-rop  plus data.
-//	void hostTransceiver_AddSetROP(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t size);
+    /* This method add a rop to be sent in the current ropframe.
+        Parameters are:
+        nvid: unique network variable identifier got with the appropriate eo_cfg_nvsEP_XXX_NVID_Get
+        endpoint: enum of the enpoint it has to operate into
+        data:  pointer to the data to be copied
+        ----
+        Note: size is calculated internally by getting Network Variable associated metadata
+        */
+    bool addSetMessage( eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data);
 
+    bool readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t* size);
 
-	bool AddROP(eOropcode_t opc, uint16_t endpoint, uint16_t nvid, uint8_t* data, uint16_t size);
+    // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
+    bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
 
-	// Set user data in the local memory, ready to be loaded by the load_occasional_rop method
-	bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
+    bool load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
 
-	bool load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
-
-	// create a get nv rop
+    // create a get nv rop
 //	void s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id);
 //	void s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t ep, uint16_t id);
 
-	// somebody passes the received packet
-	void SetReceived(uint8_t *data, uint16_t size);
-	// and Processes it
-	virtual void onMsgReception(uint8_t *data, uint16_t size);
+    // somebody passes the received packet
+    void SetReceived(uint8_t *data, uint16_t size);
+    // and Processes it
+    virtual void onMsgReception(uint8_t *data, uint16_t size);
 
-	// somebody retrieves what must be transmitted
-	void getTransmit(uint8_t **data, uint16_t *size);
+    // somebody retrieves what must be transmitted
+    void getTransmit(uint8_t **data, uint16_t *size);
 
-	void getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
-	EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);
+//     eOnvID_t getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint, FeatureType type);
+    bool getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
+    EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);
 //	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
 
-	void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
+    void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
 
-	uint16_t getNVnumber(int boardNum, eOnvEP_t ep);
-	uint16_t translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid);
+    uint16_t getNVnumber(int boardNum, eOnvEP_t ep);
+    uint16_t translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid);
 };
 
 #endif  // include-guard

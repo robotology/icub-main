@@ -105,36 +105,37 @@ void *recvThread(void * arg);
 class yarp::dev::ethResources:  public PolyDriver
 {
 private:
-	static yarp::os::Semaphore 	_mutex;
+    static yarp::os::Semaphore 	_mutex;
 
-	char 						info[SIZE_INFO];
-	int							how_many_features;
+    char              info[SIZE_INFO];
+    int               how_many_features;
 
-	TheEthManager  				*theEthManager_h;
+    TheEthManager      *theEthManager_h;
 
-    ACE_INET_Addr				remote_dev;
-    ACE_INET_Addr				remote_broadcast;
+    ACE_INET_Addr     remote_dev;
+    ACE_INET_Addr     remote_broadcast;
 
 
 public:
-   	hostTransceiver				*transceiver;
+   	hostTransceiver   *transceiver;
 
-	ethResources();
+    ethResources();
     ~ethResources();
 
-    uint8_t 					recv_msg[RECV_BUFFER_SIZE];
-	ACE_UINT16 					recv_size;
+    uint8_t           recv_msg[RECV_BUFFER_SIZE];
+    ACE_UINT16        recv_size;
 
-	ethResources* 	already_exists(yarp::os::Searchable &config);
-    bool 			open(yarp::os::Searchable &par);
-    bool 			registerFeature(yarp::os::Searchable &config);
+    ethResources*     already_exists(yarp::os::Searchable &config);
+    bool              open(yarp::os::Searchable &par);
+    bool              registerFeature(yarp::os::Searchable &config);
 
-    int 			send(void *data, size_t len);
-    ACE_INET_Addr	getRemoteAddress();
-    void 			getPack(uint8_t **pack, uint16_t *size);
-    ACE_UINT16		getBufferSize();
+    int               send(void *data, size_t len);
+    ACE_INET_Addr	    getRemoteAddress();
+    void              getPack(uint8_t **pack, uint16_t *size);
+    ACE_UINT16        getBufferSize();
 
-    void 			onMsgReception(uint8_t *data, uint16_t size);
+    void              onMsgReception(uint8_t *data, uint16_t size);
+    bool              goToRun(void);
 };
 
 

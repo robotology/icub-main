@@ -15,14 +15,14 @@
 
 using namespace yarp::sig;
 
-
 class IiCubFeature
 {
     public:
         virtual ~IiCubFeature() {};
-        virtual bool fillData(char *data ) =0;
-
-        virtual void setId(FEAT_ID &id) { };
+//         virtual void setId(FEAT_ID &id) { };
+// None of the following is a "MUST" because each module need just one of them
+        virtual bool fillData(void *data )  =0;         //skin data
+//         virtual bool fill_AS_data(void *as_array) =0;   // analogSensor data
 };
 
 #endif /* FEATUREINTERFACE_HID_H_ */

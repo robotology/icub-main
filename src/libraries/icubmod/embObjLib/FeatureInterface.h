@@ -33,29 +33,32 @@ extern "C"
 
 typedef enum
 {
-	MotionControl	= 0x00,
-	Skin					= 0x01,
-	Analog				= 0x02
-}FeatureType;
+    Management    = 0x00,
+    AnalogMais    = 0x01,
+    AnalogStrain  = 0x02,
+    MotionControl = 0x03,
+    Skin          = 0x04
+} FeatureType;
 
 
 typedef struct
 {
-	uint8_t				 boardNum;
-	eOnvEP_t 			 ep;
-	void				 *handle;
+    uint8_t       boardNum;
+    eOnvEP_t      ep;
+    void         *handle;
 
-	// eoStuff
-	const EOconstvector	*EPvector;
-	eOuint16_fp_uint16_t EPhash_function;
+    // eoStuff
+    const EOconstvector  *EPvector;
+    eOuint16_fp_uint16_t  EPhash_function;
 
-	// Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
-	// They may be removed very soon!
-	FeatureType			 type;
-	char 				 name[SIZE_INFO];
+    // Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
+    // They may be removed very soon!
+    FeatureType           type;
+    char                  name[SIZE_INFO];
 }FEAT_ID;
 
-bool findAndFill(FEAT_ID *id, char *sk_array);
+bool findAndFill(FEAT_ID *id, void *sk_array);
+bool handle_AS_data(FEAT_ID *id, void *as_array);
 void * get_MChandler_fromEP(eOnvEP_t ep);
 bool MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex);
 

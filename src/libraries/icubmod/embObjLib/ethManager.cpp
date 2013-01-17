@@ -7,13 +7,6 @@
  *
  */
 
-
-
-///
-/// $Id: TheEthManager.cpp,v 1.9 2008/03/08 10:07:01 babybot Exp $
-///
-
-//#include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Bottle.h>
 #include <string.h>
 #include <iostream>
@@ -199,6 +192,33 @@ ACE_INET_Addr	ethResources::getRemoteAddress()
 	return	remote_dev;
 }
 
+
+bool ethResources::goToRun(void)
+{
+    yTrace();
+    eOnvID_t nvid;
+    EOnv tmp;
+
+    // attiva il loop di controllo
+    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
+    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
+
+    EOnv  *nvRoot   = transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
+    if(NULL == nvRoot)
+    {
+        yError () << "NV pointer not found at line" << __LINE__;
+        return false;
+    }
+
+    eOmn_appl_state_t  desired  = applstate_running;
+
+    if( !transceiver->nvSetData(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
+        return false;
+
+    // tell agent to prepare a rop to send
+    if( !transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid) )
+        return false;
+}
 // -------------------------------------------------------------------\\
 //            ethResCreator   Singleton
 // -------------------------------------------------------------------\\
@@ -335,9 +355,11 @@ bool ethResCreator::removeResource(ethResources* to_be_removed)
 
 void ethResCreator::addLUTelement(FEAT_ID id)
 {
-	_creatorMutex.wait();
-	ethResCreator::class_lut.insert(std::pair<uint8_t, FEAT_ID>(id.ep, id));
-	_creatorMutex.post();
+    _creatorMutex.wait();
+    bool addLUT_res;
+    addLUT_res = ethResCreator::class_lut.insert(std::pair<uint8_t, FEAT_ID>(id.ep, id)).second;
+//     addLUT_res ? printf("ok add lut element") : printf("NON ok add lut element");
+    _creatorMutex.post();
 }
 
 void *ethResCreator::getHandleFromEP(eOnvEP_t ep)
@@ -377,7 +399,7 @@ void *recvThread(void * arg)
 		recv_size = pSocket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
-//		printf("Received new packet from address %s, size = %d\n", address, recv_size);
+    printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
 		if( (recv_size > 0) && (keepGoingOn2) )
 		{

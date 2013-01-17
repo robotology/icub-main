@@ -12,14 +12,18 @@
 #include <ethManager.h>
 #include "eOcfg_EPs_board.h"
 #include "embObjMotionControl.h"
+#include "embObjAnalogSensor.h"
+#include "embObjSkin.h"
 
 
-bool findAndFill(FEAT_ID *id, char *sk_array)
+bool findAndFill(FEAT_ID *id, void *sk_array)
 {
     // new with table, data stored in eoSkin;
 	// specie di view grezza, usare dynamic cast?
-    IiCubFeature * skin =  (IiCubFeature*) (ethResCreator::instance()->getHandleFromEP(id->ep));
-    if(NULL == skin)
+    EmbObjSkin * tmp =  (EmbObjSkin*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+    IiCubFeature * skin;
+
+    if(NULL == tmp)
     {
 //        printf( "/************************************\\\n"
 //                "            Parte non trovata!!!\n"
@@ -27,8 +31,10 @@ bool findAndFill(FEAT_ID *id, char *sk_array)
         return false;
     }
     else
-        skin->fillData(sk_array);
-
+    {
+        skin = dynamic_cast<IiCubFeature*>(tmp);
+        skin->fillData((void*)sk_array);
+    }
     return true;
 }
 
@@ -41,20 +47,44 @@ void * get_MChandler_fromEP(eOnvEP_t ep)
 	return h;
 }
 
+bool handle_AS_data(FEAT_ID *id, void *as_array)
+{
+    void *h = NULL;
+    h = ethResCreator::instance()->getHandleFromEP(id->ep);
+    IiCubFeature *iAnalog;
+
+    eOsnsr_arrayofupto12bytes_t * debug_tmp = (eOsnsr_arrayofupto12bytes_t*) as_array;
+  // specie di view grezza, usare dynamic cast?
+    embObjAnalogSensor * tmp =  (embObjAnalogSensor*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+    if(NULL == tmp)
+    {
+//        printf( "/************************************\\\n"
+//                "            Parte non trovata!!!\n"
+//                "\\***********************************/\n");
+        return false;
+    }
+    else
+    {
+        iAnalog = dynamic_cast<IiCubFeature*>(tmp);
+        iAnalog->fillData(as_array);
+    }
+    return true;
+}
+
 bool MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex)
 {
-	//epindex in realtà non serve.
-	eoThreadEntry * th = NULL;
-	embObjMotionControl * handler = (embObjMotionControl*) p;
-	int threadId;
-	eoThreadFifo *fuffy = handler->requestQueue->getFifo(nvindex);
-	if(fuffy->pop(threadId) )
-	{
-		th = handler->requestQueue->threadPool->getThreadTable(threadId);
-		th->push();
-		return true;
-	}
-	return false;
+    //epindex in realtà non serve.
+    eoThreadEntry * th = NULL;
+    embObjMotionControl * handler = (embObjMotionControl*) p;
+    int threadId;
+    eoThreadFifo *fuffy = handler->requestQueue->getFifo(nvindex);
+    if(fuffy->pop(threadId) )
+    {
+        th = handler->requestQueue->threadPool->getThreadTable(threadId);
+        th->push();
+        return true;
+    }
+    return false;
 }
 
 bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)
