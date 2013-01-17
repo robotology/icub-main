@@ -35,17 +35,15 @@
 #include <ethManager.h>
 #include "EoUtilities.h"
 
-#include "FeatureInterface.h"
-#include "FeatureInterface_hid.h"
+#include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
 
-class EmbObjSkin : //	public RateThread,
-					public yarp::dev::IAnalogSensor,
-					public DeviceDriver,
-					public IiCubFeature
+class EmbObjSkin :  public yarp::dev::IAnalogSensor,
+                    public DeviceDriver,
+                    public IiCubFeature
 {
 protected:
 
@@ -84,7 +82,7 @@ public:
 //     virtual void threadRelease();
 //     virtual void run();
 
-    virtual bool fillData(char *data);
+    virtual bool fillData(void *data);
     virtual void setId(FEAT_ID &id);
 };
 

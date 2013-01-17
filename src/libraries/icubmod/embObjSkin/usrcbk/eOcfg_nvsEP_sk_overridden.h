@@ -21,51 +21,9 @@
 #define _EOCFG_NVSEP_AS_OVERRIDDEN_H_
 
 
-
-
-/** @file       eOcfg_nvsEP_as_overridden.h
-	@brief      This header file gives the ...
-	@author     marco.accame@iit.it
-	@date       09/06/2011
-**/
-
-/** @defgroup eo_2desh2uilsdede2345er dcefcew
-    
-    @{		
- **/
-
-
-
-// - external dependencies --------------------------------------------------------------------------------------------
-// empty-section
-
-// - public #define  --------------------------------------------------------------------------------------------------
-// empty-section
-      
-
-
-// - declaration of public user-defined types ------------------------------------------------------------------------- 
-// empty-section
-
-    
-// - declaration of extern public variables, ... but better using use _get/_set instead -------------------------------
-// empty-section
-
-
-// - declaration of extern public functions ---------------------------------------------------------------------------
-
 #define OVERRIDE_eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe
 
 
 
-
-/** @}            
-    end of group eo_2desh2uilsdede2345er  
- **/
-
 #endif  // include-guard
-
-
-// - end-of-file (leave a blank line after)----------------------------------------------------------------------------
-
 

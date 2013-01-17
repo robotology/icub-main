@@ -143,7 +143,7 @@ extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, cons
 
 	void *featList;
 // 	printf("iCub Callback, looking for ep %d\n", id.ep);
-
+//   s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(sk_array);
 	findAndFill(&id, (char *)sk_array);
 #endif
 }
@@ -282,20 +282,20 @@ void s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(EOarray_of_10canframes *sk_ar
 	eOutil_canframe_t *canframe;
 	int i, j;
 
-	//	printf("--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
-	//	for(i=0; i<sk_array->head.size; i++)
-	//	{
-	//		canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
-	//		printf("SID = 0x%0x  ", canframe->id);
-	//		printf("DATA: 0x");
-	//		for(j=0; j<canframe->size;j++)
-	//		{
-	//			printf("%0x", canframe->data[j]);
-	//		}
-	//		printf("   tri = %0x,  %0x", (canframe->id & 0x000f), (((canframe->data[0])& 0x80) ? 0xC0 :0x40) );
-	//		printf("\n\n");
-	//
-	//	}
+		printf("--- ARRAY SIZE = %d  ---- \n", sk_array->head.size);
+		for(i=0; i<sk_array->head.size; i++)
+		{
+			canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
+			printf("SID = 0x%0x  ", canframe->id);
+			printf("DATA: 0x");
+			for(j=0; j<canframe->size;j++)
+			{
+				printf("%0x", canframe->data[j]);
+			}
+			printf("   tri = %0x,  %0x", (canframe->id & 0x000f), (((canframe->data[0])& 0x80) ? 0xC0 :0x40) );
+			printf("\n\n");
+	
+		}
 
 }
 
