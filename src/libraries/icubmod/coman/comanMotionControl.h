@@ -79,8 +79,8 @@ using namespace std;
 
 #include "eoRequestsQueue.hpp"
 
-// Move to a different file?
 
+#ifdef _OLD_STYLE_
 //
 //   Help structure
 //
@@ -149,7 +149,7 @@ struct SpeedEstimationParameters
         mot_Acc_estimator_shift=0;
     }
 };
-
+#endif
 
 ////////////////////////////////////////////
 // indirizzi ip
@@ -191,6 +191,7 @@ class yarp::dev::comanMotionControl: 	public DeviceDriver,
     public IDebugInterfaceRaw
 {
 private:
+#ifdef _OLD_STYLE_
     int 					tot_packet_recv, errors;
 //    tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
@@ -244,6 +245,7 @@ private:
     double 	*_command_speeds;	// used for velocity control.
     double 	*_ref_accs;			// for velocity control, in position min jerk eq is used.
     double 	*_ref_torques;		// for torque control.
+#endif
 
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);

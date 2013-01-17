@@ -29,6 +29,7 @@ using namespace yarp::os::impl;
 
 // Utilities
 
+#ifdef _OLD_STYLE_
 void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
 	out->kp = (int16_t)in->kp;
@@ -51,11 +52,13 @@ void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
 	out->scale = in->scale;
 }
 
+
 // This will be moved in the ImplXXXInterface
 double convertA2I(double angle_in_degrees, double zero, double factor)
 {
 	return (angle_in_degrees + zero) * factor;
 }
+#endif
 
 inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
@@ -101,6 +104,7 @@ bool comanMotionControl::extractGroup(Bottle &input, Bottle &out, const std::str
 
 bool comanMotionControl::alloc(int nj)
 {
+#ifdef _OLD_STYLE_
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
     _encoderconversionoffset = allocAndCheck<float>(nj);
@@ -139,8 +143,7 @@ bool comanMotionControl::alloc(int nj)
     _calibrated = allocAndCheck<bool>(nj);
 
     //	_debug_params=allocAndCheck<DebugParameters>(nj);
-
-
+#endif
     return true;
 }
 
@@ -156,6 +159,8 @@ comanMotionControl::comanMotionControl() :
     ImplementControlLimits<comanMotionControl, IControlLimits>(this),
     _mutex(1)
 {
+  yTrace();
+#ifdef _OLD_STYLE_
 		udppkt_data 	= 0x00;
     udppkt_size 	= 0x00;
 
@@ -204,6 +209,7 @@ comanMotionControl::comanMotionControl() :
     _enabledPid		= NULL;
     _enabledAmp 	= NULL;
     _calibrated		= NULL;
+#endif
 }
 
 comanMotionControl::~comanMotionControl()
@@ -214,28 +220,31 @@ comanMotionControl::~comanMotionControl()
 bool comanMotionControl::open(yarp::os::Searchable &config)
 {
 	 yTrace();
-	return NOT_YET_IMPLEMENTED("open");
-
+#ifdef _OLD_STYLE_
 //
 //  		INIT ALL INTERFACES
 //
-//     ImplementControlCalibration2<comanMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-//     ImplementAmplifierControl<comanMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-//     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-//     ImplementPositionControl<comanMotionControl, IPositionControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-//     ImplementPidControl<comanMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-//     ImplementControlMode::initialize(_njoints, _axisMap);
-//     ImplementVelocityControl<comanMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-//     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
-//     ImplementControlLimits<comanMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementControlCalibration2<comanMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementAmplifierControl<comanMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementPositionControl<comanMotionControl, IPositionControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementPidControl<comanMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementControlMode::initialize(_njoints, _axisMap);
+    ImplementVelocityControl<comanMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
+    ImplementControlLimits<comanMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
     return true;
+#else
+    return NOT_YET_IMPLEMENTED("open");
+#endif
 }
 
 
 bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 {
-	// yTrace();
+	yTrace();
+#ifdef _OLD_STYLE_
 	Bottle xtmp;
 	int i;
     Bottle general = config.findGroup("GENERAL");
@@ -582,7 +591,7 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 //    	end   = xtmp.get(2).asInt();
 //    	// yDebug() << "Found debug joint conf start " << start << "end " << end;
 //    }
-
+#endif
     return true;
 }
 
@@ -600,6 +609,7 @@ bool comanMotionControl::goToRun(void)
 bool comanMotionControl::close()
 {
     yTrace();
+#ifdef _OLD_STYLE_
     ImplementControlMode::uninitialize();
     ImplementEncodersTimed::uninitialize();
     ImplementPositionControl<comanMotionControl, IPositionControl>::uninitialize();
@@ -608,14 +618,17 @@ bool comanMotionControl::close()
     ImplementControlCalibration2<comanMotionControl, IControlCalibration2>::uninitialize();
     ImplementAmplifierControl<comanMotionControl, IAmplifierControl>::uninitialize();
 
-		return NOT_YET_IMPLEMENTED("close");
     return true;
+#else
+		return NOT_YET_IMPLEMENTED("close");
+#endif
 }
 
 
 eoThreadEntry * comanMotionControl::appendWaitRequest(int j, uint16_t nvid)
 {
-	// yTrace();
+	yTrace();
+#ifdef _OLD_STYLE_
 	eoRequest req;
 	if(!requestQueue->threadPool->getId(&req.threadId) )
 		fprintf(stderr, "Error: too much threads!! (comanMotionControl)");
@@ -624,6 +637,9 @@ eoThreadEntry * comanMotionControl::appendWaitRequest(int j, uint16_t nvid)
 
 	requestQueue->append(req);
 	return requestQueue->threadPool->getThreadTable(req.threadId);
+#else
+  return NULL;
+#endif 
 }
 
 ///////////// PID INTERFACE
