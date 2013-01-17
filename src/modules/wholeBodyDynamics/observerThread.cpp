@@ -615,15 +615,22 @@ void inverseDynamics::run()
     yarp::sig::Vector com_all_foot; com_all_foot.resize(3); com_all_foot.zero();
     yarp::sig::Matrix rTf; rTf.resize(4,4); rTf.zero();
     yarp::sig::Matrix fTr; fTr.resize(4,4); fTr.zero();
+    yarp::sig::Matrix lastRotTrans; lastRotTrans.resize(4,4); lastRotTrans.zero();
+    lastRotTrans(2,0)=lastRotTrans(3,3)=lastRotTrans(0,2)=1;
+    lastRotTrans(1,1)=-1;
 
     rTf = icub->lowerTorso->right->getH();
 
-    rTf = (icub->lowerTorso->getHRight()) * rTf;
-    fTr.setSubmatrix(rTf.submatrix(0,2,0,2).transposed() ,0,0);         //CHECKED
-    fTr.setSubcol(-1*fTr.submatrix(0,2,0,2)*rTf.subcol(0,3,3) ,0,3);    //CHECKED    
+    rTf = (icub->lowerTorso->getHRight()) * rTf*lastRotTrans;           //Until the world reference frame
+    fTr.setSubmatrix(rTf.submatrix(0,2,0,2).transposed(), 0, 0);         //CHECKED
+    fTr.setSubcol(-1*fTr.submatrix(0,2,0,2)*rTf.subcol(0,3,3), 0, 3);    //CHECKED    
     fTr(3,3) = 1;
 
-     
+    //filling distance from root projection onto the floor to the right foot. 
+    lastRotTrans(1,3)=-rTf(1,3);
+    lastRotTrans(2,3)= -rTf(0,3); 
+
+
     if (com_enabled)
     {
         icub->computeCOM();
