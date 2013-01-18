@@ -54,9 +54,13 @@ At startup an attempt is made to connect to
   synthesis. In case a double is received in place of a string,
   then the mouth will be controlled without actually uttering
   any word; that double accounts for the uttering time. \n
-  Optionally, as second parameter, an integer can be provided
-  that overrides the default period used to control the mouth,
-  expressed in [ms].
+  Optionally, as second parameter available in both modalities,
+  an integer can be provided that overrides the default period
+  used to control the mouth, expressed in [ms]. Negative values
+  are not processed and serve as placeholders. \n Finally,
+  available only in string mode, a third double can be provided
+  that establishes the uttering duration in seconds,
+  irrespective of the words actually spoken.
  
 - \e /<name>/emotions:o: this port serves to command the facial
   expressions.
@@ -96,6 +100,7 @@ class MouthHandler : public RateThread
     string state;
     RpcClient emotions;
     Semaphore mutex;
+    double t0, duration;
 
     /************************************************************************/
     void send()
@@ -123,6 +128,17 @@ class MouthHandler : public RateThread
         send();
 
         mutex.post();
+
+        if (duration>=0.0)
+            if (Time::now()-t0>=duration)
+                suspend();
+    }
+
+    /************************************************************************/
+    bool threadInit()
+    {
+        t0=Time::now();
+        return true;
     }
 
     /************************************************************************/
@@ -134,7 +150,7 @@ class MouthHandler : public RateThread
 
 public:
     /************************************************************************/
-    MouthHandler() : RateThread(1000) { }
+    MouthHandler() : RateThread(1000), duration(-1.0) { }
 
     /************************************************************************/
     void configure(ResourceFinder &rf)
@@ -148,15 +164,29 @@ public:
     }
 
     /************************************************************************/
+    void setAutoSuspend(const double duration)
+    {
+        this->duration=duration;
+    }
+
+    /************************************************************************/
+    void resume()
+    {
+        t0=Time::now();
+        RateThread::resume();        
+    }
+
+    /************************************************************************/
     void suspend()
     {
+        if (isSuspended())
+            return;
+
         RateThread::suspend();
 
         mutex.wait();
-
         state="hap";
         send();
-
         mutex.post();
     }
 };
@@ -211,6 +241,7 @@ class iSpeak : protected BufferedPort<Bottle>,
         bool onlyMouth=false;
         int rate=(int)mouth.getRate();
         bool resetRate=false;
+        double duration=-1.0;
 
         mutex.wait();
         if (buffer.size()>0)    // protect also the access to the size() method
@@ -233,17 +264,28 @@ class iSpeak : protected BufferedPort<Bottle>,
                 }
 
                 if (request.size()>1)
+                {
                     if (request.get(1).isInt())
                     {
-                        mouth.setRate(request.get(1).asInt());
-                        resetRate=true;
+                        int newRate=request.get(1).asInt();
+                        if (newRate>0)
+                        {
+                            mouth.setRate(newRate);
+                            resetRate=true;
+                        }
                     }
+
+                    if ((request.size()>2) && request.get(0).isString())
+                        if (request.get(2).isDouble() || request.get(2).isInt())
+                            duration=request.get(2).asDouble();
+                }
             }
         }
         mutex.post();
 
         if (speaking)
         {
+            mouth.setAutoSuspend(duration);
             if (mouth.isSuspended())
                 mouth.resume();
             else
