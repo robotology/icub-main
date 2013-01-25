@@ -1763,25 +1763,19 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
     else if (finger=="middle")
     {
-        if (!limFinger.getLimits(7,&min,&max))
+        if (!limFinger.getLimits(13,&min,&max))
             return false;
 
         (*this)[0].setMin(CTRL_DEG2RAD*min);
         (*this)[0].setMax(CTRL_DEG2RAD*max);
 
-        if (!limFinger.getLimits(13,&min,&max))
-            return false;
-
-        (*this)[1].setMin(CTRL_DEG2RAD*min);
-        (*this)[1].setMax(CTRL_DEG2RAD*max);
-
         if (!limFinger.getLimits(14,&min,&max))
             return false;
 
+        (*this)[1].setMin(CTRL_DEG2RAD*min);
+        (*this)[1].setMax(CTRL_DEG2RAD*max/2.0);
         (*this)[2].setMin(CTRL_DEG2RAD*min);
         (*this)[2].setMax(CTRL_DEG2RAD*max/2.0);
-        (*this)[3].setMin(CTRL_DEG2RAD*min);
-        (*this)[3].setMax(CTRL_DEG2RAD*max/2.0);
     }
 
     return true;
@@ -1814,11 +1808,10 @@ bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints
     }
     else if (finger=="middle")
     {
-        chainJoints.resize(4);
-        chainJoints[0]=robotEncoders[offs+0];
-        chainJoints[1]=robotEncoders[offs+6];
-        chainJoints[2]=robotEncoders[offs+7]/2.0;
-        chainJoints[3]=chainJoints[2];
+        chainJoints.resize(3);
+        chainJoints[0]=robotEncoders[offs+6];
+        chainJoints[1]=robotEncoders[offs+7]/2.0;
+        chainJoints[2]=chainJoints[1];
     }
     else
         return false;
