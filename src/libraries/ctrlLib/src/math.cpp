@@ -175,7 +175,7 @@ Matrix iCub::ctrl::axis2dcm(const Vector &v, unsigned int verbose)
 
     double c=cos(theta);
     double s=sin(theta);
-    double C=1-c;
+    double C=1.0-c;
 
     double xs =v[0]*s;
     double ys =v[1]*s;
