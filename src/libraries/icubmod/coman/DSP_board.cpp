@@ -31,6 +31,9 @@
     #define DPRINTF printf
 #endif
 
+// _AC_
+#include "Debug.h"
+
 /*extern*/ unsigned long long g_tStart;
 
 static unsigned long long get_time_ns(void)
@@ -231,19 +234,20 @@ void Dsp_Board::dump_log(void) {
  * @ingroup RoboMotorController
  * Set of gains of different controller types.
  */
-#ifdef C_WRAPPER
-    typedef char GainSet;
-    #define	VELOCITY_GAINS 0
-    #define	POSITION_GAINS 1
-    #define	TORQUE_GAINS   2
-#else
-    enum GainSet
-    {
-    	VELOCITY_GAINS = 0,
-    	POSITION_GAINS = 1,
-    	TORQUE_GAINS   = 2
-    };
-#endif
+// moved in the header
+// #ifdef C_WRAPPER
+//     typedef char GainSet;
+//     #define	VELOCITY_GAINS 0
+//     #define	POSITION_GAINS 1
+//     #define	TORQUE_GAINS   2
+// #else
+//     enum GainSet
+//     {
+//     	VELOCITY_GAINS = 0,
+//     	POSITION_GAINS = 1,
+//     	TORQUE_GAINS   = 2
+//     };
+// #endif
 
 /**
  * configure DSP board and get some parameter using TCP/IP 
@@ -262,7 +266,7 @@ void McBoard::configure(const YAML::Node &doc) {
     oss << board << (int)bId;
     board_node = doc.FindValue(oss.str());
     if (! board_node) {
-        ;//DPRINTF("%s NOT FOUND... using only mc_board node\n", oss.str().c_str());
+        yError() <<  oss.str().c_str() << "NOT FOUND... using only mc_board node";
     }
 
     // at least set bc_policy and bc_freq
@@ -360,7 +364,7 @@ void McBoard::configure(const YAML::Node &doc) {
     filter_setup[1] = 1;
     filter_setup[2] = 0;
     setItem(SET_FILTER_SAMPLES, &filter_setup, 3);
-    getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
+//     getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
     //DPRINTF("%d %d %d\n", filter_setup[0], filter_setup[1], filter_setup[2]);
      
     // 1 motor velocity sample
@@ -377,7 +381,7 @@ void McBoard::configure(const YAML::Node &doc) {
     filter_setup[1] = 10;
     filter_setup[2] = 0;
     setItem(SET_FILTER_SAMPLES, &filter_setup, 3);
-    getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
+//     getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
     //DPRINTF("%d %d %d\n", filter_setup[0], filter_setup[1], filter_setup[2]);
 
     // 3 voltage sample
@@ -385,7 +389,7 @@ void McBoard::configure(const YAML::Node &doc) {
     filter_setup[1] = 1;
     filter_setup[2] = 0;
     setItem(SET_FILTER_SAMPLES, &filter_setup, 3);
-    getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
+//     getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
     //DPRINTF("%d %d %d\n", filter_setup[0], filter_setup[1], filter_setup[2]);
 
     // 4 Current sample
@@ -393,7 +397,7 @@ void McBoard::configure(const YAML::Node &doc) {
     filter_setup[1] = 1;
     filter_setup[2] = 0;
     setItem(SET_FILTER_SAMPLES, &filter_setup, 3);
-    getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
+//     getItem(GET_FILTER_SAMPLES, &filter_setup[0], 1, REPLY_FILTER_SAMPLES,   &filter_setup, 3);
     //DPRINTF("%d %d %d\n", filter_setup[0], filter_setup[1], filter_setup[2]);
 
 

@@ -84,7 +84,10 @@ namespace yarp{
     class Boards_ctrl;
   }
 }
-  
+
+#define DEG2mRAD(X) (X*M_PI*1e5)/180
+#define DEG2RAD(X)  (X*M_PI)/180
+
 
 /**
  * @class Boards_ctrl
@@ -93,7 +96,8 @@ namespace yarp{
  * @brief Boards_ctrl class
  */
 
-class yarp::dev::Boards_ctrl : public yarp::dev::DeviceDriver
+
+class yarp::dev::Boards_ctrl// : public yarp::dev::DeviceDriver
 {
 
     /** @ingroup Boards_controller
@@ -106,19 +110,44 @@ class yarp::dev::Boards_ctrl : public yarp::dev::DeviceDriver
     /** @}
      */
 
+private:
+    int     r_pos[MAX_DSP_BOARDS];
+    short   r_vel[MAX_DSP_BOARDS];
+    short   r_tor[MAX_DSP_BOARDS];
+    unsigned long long  g_tStart;
+
+
+    std::vector<float> homePos;
+
+    // boards ID
+    std::vector<int> r_leg;
+    std::vector<int> l_leg;
+    std::vector<int> waist;
+    std::vector<int> r_arm;
+    std::vector<int> l_arm;
+    std::vector<int> neck;
+
 public:
     Boards_ctrl();
-    Boards_ctrl(const char * config);
+//     Boards_ctrl(const char * config);
     ~Boards_ctrl();
+
+    /* This function is called by the yarp Factory. The config is a container for all the
+     * needed configuration parameters. Now it just is the name of the file YAML has to read.
+     * Here all the initialization are done, regarding both socket and init of the remote boards */
+    virtual bool open(yarp::os::Searchable& config);
+
+
+    bool myOpen(const char *config);
 
     Dsp_Board * get_board(uint8_t bId) { return(_boards.find(bId) != _boards.end()) ? _boards[bId] : NULL;}
     Dsp_Board * operator[](int bId) { return(_boards.find(bId) != _boards.end()) ? _boards[bId] : NULL;} 
 
     void stop_rx_udp();
 
-    bool open(yarp::os::Searchable& config) { yTrace(); return true; }
-    bool close() {yTrace(); return true;}
-    
+    virtual bool close();
+    void start_control_body(std::vector<int> body);
+    void body_homing(int pos[], short vel[], short tor[]);
     void get_sync_data(void *);
     void get_bc_data(bc_data_t *);
 
@@ -156,6 +185,10 @@ protected:
     static void * rx_udp(void *);
     void on_bc_data(uint8_t *);
 
+    dsp_map_t _boards;
+    mcs_map_t _mcs;
+    fts_map_t _fts;
+    
 private:
 
     int         udp_sock;
@@ -171,10 +204,6 @@ private:
     pthread_cond_t  data_sync_cond;
 
     std::bitset<32>   bcMask, bcScanMask;   // Does this means max 32 boards??
-    dsp_map_t _boards;
-    mcs_map_t _mcs;
-    fts_map_t _fts;
-
 
 };
 

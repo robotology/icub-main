@@ -46,6 +46,7 @@
 //#undef __cplucplus
 
 using namespace std;
+using namespace yarp::os;
 
 /////  Yarp stuff
 #include <yarp/os/Bottle.h>
@@ -69,15 +70,17 @@ using namespace std;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-#include "FeatureInterface.h"
+#include "DSP_board.h"
+#include "Boards_iface.h"
 
-#include "EoMotionControl.h"
-#include <ethManager.h>
-//#include "../ethManager/ethManager.h"
-#include "../embObjLib/hostTransceiver.hpp"
-#include "IRobotInterface.h"
+#define SIZE_INFO   128
 
-#include "eoRequestsQueue.hpp"
+typedef struct
+{
+    uint8_t       boardNum;
+    void         *handle;
+    char          name[SIZE_INFO];
+}FEAT_ID;
 
 
 #ifdef _OLD_STYLE_
@@ -161,16 +164,17 @@ struct SpeedEstimationParameters
 #define EMS_MAX_CARDS		1				// TO BE REMOVED
 
 namespace yarp {
-namespace dev {
-class comanMotionControl;
-}
-}
+    namespace dev {
+        class comanMotionControl;
+        }
+    }
 
-void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
-void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
+static void copyPid_iCub2Coman(const Pid *iCubPid_in, GainSet Coman_pidType, pid_gains_t *ComanPid_out);
+static void copyPid_Coman2iCub(pid_gains_t *ComanPid_in, Pid *iCubPid_out, GainSet *Coman_pidType);
 
 
-class yarp::dev::comanMotionControl: 	public DeviceDriver,
+class yarp::dev::comanMotionControl:  public DeviceDriver,
+    public Boards_ctrl,
     public IPidControlRaw,
     public IControlCalibration2Raw,
     public IAmplifierControlRaw,
@@ -191,7 +195,6 @@ class yarp::dev::comanMotionControl: 	public DeviceDriver,
     public IDebugInterfaceRaw
 {
 private:
-#ifdef _OLD_STYLE_
     int 					tot_packet_recv, errors;
 //    tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
@@ -213,10 +216,8 @@ private:
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;								/** initial torque gains */
     bool _tpidsEnabled;							/** abilitation for torque gains */
-    SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-//	DebugParameters *_debug_params;             /** debug parameters */
-    ImpedanceParameters *_impedance_params;		/** impedance parameters */
-    ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+
+
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
@@ -236,6 +237,8 @@ private:
     int 	start;
     int 	end;
 
+    // memorize the type of control currently running
+    GainSet controlMode;
     // internal stuff
     bool    *_enabledAmp;		// Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
     bool    *_enabledPid;		// Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
@@ -245,25 +248,30 @@ private:
     double 	*_command_speeds;	// used for velocity control.
     double 	*_ref_accs;			// for velocity control, in position min jerk eq is used.
     double 	*_ref_torques;		// for torque control.
+
+#if 0
+    DebugParameters *_debug_params;             /** debug parameters */
+    ImpedanceParameters *_impedance_params;   /** impedance parameters */
+    ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+    SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 #endif
 
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-    bool configure_mais(void);
-    bool goToRun(void);
+//     bool configure_mais(void);
+//     bool goToRun(void);
+//     void getMStatus(int j);
 
-    void getMStatus(int j);
 public:
     comanMotionControl();
     ~comanMotionControl();
 
-    char					info[SIZE_INFO];
-    Semaphore				semaphore;
-    eoRequestsQueue			*requestQueue;	// tabella che contiene la lista delle attese
-    ethResources 			*res;
+    // stuff for boards handling
+    Boards_ctrl  boards_ctrl;
 
-    //debug
-    yarp::os::ConstString 	ethDevName;
+//     char					info[SIZE_INFO];
+    yarp::os::Semaphore				semaphore;
+//     eoRequestsQueue			*requestQueue;	// tabella che contiene la lista delle attese
 
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
@@ -271,8 +279,8 @@ public:
     bool fromConfig(yarp::os::Searchable &config);
 
     // _AC_
-    eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);
-    void getMotorController(DeviceDriver *iMC);
+//     eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);
+//     void getMotorController(DeviceDriver *iMC);
 //    void waitSem();
 //    void postSem();
     bool alloc(int njoints);

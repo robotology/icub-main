@@ -16,7 +16,6 @@
 #include <yarp/os/Time.h>
 
 #include "comanMotionControl.h"
-
 #include "Debug.h"
 
 
@@ -29,38 +28,42 @@ using namespace yarp::os::impl;
 
 // Utilities
 
-#ifdef _OLD_STYLE_
-void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
+// Pid is in icub fashion, pidType is an input, out is the output.
+static void copyPid_iCub2Coman(const Pid *iCubPid_in, GainSet Coman_pidType, pid_gains_t *ComanPid_out)
 {
-	out->kp = (int16_t)in->kp;
-	out->ki = (int16_t)in->ki;
-	out->kd = (int16_t)in->kd;
-	out->limitonintegral = (int16_t)in->max_int;
-	out->limitonoutput = (int16_t)in->max_output;
-	out->offset = (int16_t)in->offset;
-	out->scale = (int8_t)in->scale;
+    ComanPid_out->p = (int16_t)iCubPid_in->kp;
+    ComanPid_out->i = (int16_t)iCubPid_in->ki;
+    ComanPid_out->d = (int16_t)iCubPid_in->kd;
+    ComanPid_out->gain_set = Coman_pidType;
+    /*out->limitonintegral = (int16_t)in->max_int;
+    out->limitonoutput = (int16_t)in->max_output;
+    out->offset = (int16_t)in->offset;
+    out->scale = (int8_t)in->scale;
+    */
 }
 
-void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
+// Coman input, pidType and out are output values, theyr memory has to be allocated externally
+static void copyPid_Coman2iCub(pid_gains_t *ComanPid_in, Pid *iCubPid_out, GainSet *Coman_pidType)
 {
-	out->kp = in->kp;
-	out->ki = in->ki;
-	out->kd = in->kd;
-	out->max_int = in->limitonintegral;
-	out->max_output = in->limitonoutput;
-	out->offset = in->offset;
-	out->scale = in->scale;
+    iCubPid_out->kp = ComanPid_in->p;
+    iCubPid_out->ki = ComanPid_in->i;
+    iCubPid_out->kd = ComanPid_in->d;
+    *Coman_pidType = ComanPid_in->gain_set;
+//     out->max_int = in->limitonintegral;
+//     out->max_output = in->limitonoutput;
+//     out->offset = in->offset;
+//     out->scale = in->scale;
 }
 
 
 // This will be moved in the ImplXXXInterface
-double convertA2I(double angle_in_degrees, double zero, double factor)
+static double convertA2I(double angle_in_degrees, double zero, double factor)
 {
 	return (angle_in_degrees + zero) * factor;
 }
-#endif
 
-inline bool NOT_YET_IMPLEMENTED(const char *txt)
+
+static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
     fprintf(stderr, "%s not yet implemented for comanMotionControl\n", txt);
 
@@ -69,16 +72,12 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
 
 #define NV_NOT_FOUND	return nv_not_found();
 
-bool nv_not_found(void)
+static bool nv_not_found(void)
 {
-	yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
-	return false;
+    yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
+    return false;
 }
 
-void comanMotionControl::getMStatus(int j)
-{
-		NOT_YET_IMPLEMENTED("getMstatus");
-}
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
@@ -98,13 +97,13 @@ bool comanMotionControl::extractGroup(Bottle &input, Bottle &out, const std::str
     }
 
     out=tmp;
+
     return true;
 }
 
 
 bool comanMotionControl::alloc(int nj)
 {
-#ifdef _OLD_STYLE_
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
     _encoderconversionoffset = allocAndCheck<float>(nj);
@@ -119,10 +118,6 @@ bool comanMotionControl::alloc(int nj)
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
-
-    _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
-    _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
-    _estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
@@ -142,7 +137,11 @@ bool comanMotionControl::alloc(int nj)
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
 
-    //	_debug_params=allocAndCheck<DebugParameters>(nj);
+#if 0
+    _debug_params=allocAndCheck<DebugParameters>(nj);
+    _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
+    _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
+    _estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
 #endif
     return true;
 }
@@ -157,18 +156,19 @@ comanMotionControl::comanMotionControl() :
     ImplementControlMode(this),
     ImplementDebugInterface(this),
     ImplementControlLimits<comanMotionControl, IControlLimits>(this),
+//     Boards_ctrl(),
     _mutex(1)
 {
-  yTrace();
-#ifdef _OLD_STYLE_
-		udppkt_data 	= 0x00;
+    yTrace();
+//     boards_ctrl = NULL;
+// #ifdef _OLD_STYLE_
+    udppkt_data 	= 0x00;
     udppkt_size 	= 0x00;
 
     _pids			= NULL;
     _tpids			= NULL;
     _firstJoint 	= 0;
-    res				= NULL;
-    requestQueue 	= NULL;
+
     _tpidsEnabled	= false;
     _njoints 		= 0;
 
@@ -177,10 +177,6 @@ comanMotionControl::comanMotionControl() :
     _zeros			= NULL;
     _encoderconversionfactor = NULL;
     _encoderconversionoffset = NULL;
-
-    _impedance_params	= NULL;
-    _impedance_limits	= NULL;
-    _estim_params		= NULL;
 
     _limitsMin = NULL;
     _limitsMax = NULL;
@@ -205,24 +201,37 @@ comanMotionControl::comanMotionControl() :
     start			= 0;
     end				= 0;
 
+    controlMode = POSITION_GAINS;
+    
     // Check status of joints
     _enabledPid		= NULL;
     _enabledAmp 	= NULL;
     _calibrated		= NULL;
+// #endif
+#if 0
+    _impedance_params = NULL;
+    _impedance_limits = NULL;
+    _estim_params   = NULL;
+    res           = NULL;
+    requestQueue  = NULL;
 #endif
 }
 
 comanMotionControl::~comanMotionControl()
 {
-	yTrace();
+    yTrace();
 }
 
 bool comanMotionControl::open(yarp::os::Searchable &config)
 {
-	 yTrace();
-#ifdef _OLD_STYLE_
+    yTrace();
+
+
+    fromConfig(config);
+
+
 //
-//  		INIT ALL INTERFACES
+//      INIT ALL INTERFACES
 //
     ImplementControlCalibration2<comanMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<comanMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
@@ -234,381 +243,68 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
     ImplementControlLimits<comanMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
+    Boards_ctrl::open(config);
+
     return true;
-#else
-    return NOT_YET_IMPLEMENTED("open");
-#endif
+// #else
+//     return NOT_YET_IMPLEMENTED("open");
+// #endif
 }
 
 
 bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 {
-	yTrace();
-#ifdef _OLD_STYLE_
-	Bottle xtmp;
-	int i;
+    yTrace();
+    // yTrace();
+    Bottle xtmp;
+    int i;
     Bottle general = config.findGroup("GENERAL");
 
-	// leggere i valori da file
-	if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints+1))
-		return false;
+    _njoints = general.find("Joints").asInt();
+    alloc(_njoints);
 
-	for (i = 1; i < xtmp.size(); i++)
-		_axisMap[i-1] = xtmp.get(i).asInt();
+    // leggere i valori da file
+    if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints+1))
+        return false;
 
-	// extract info about the first joint controlled by this EMS.
-	_firstJoint = _axisMap[0];
-	for (i = 1; i < _njoints; i++)
-		if(_axisMap[i] <= _firstJoint)
-			_firstJoint = _axisMap[i];
+    for (i = 1; i < xtmp.size(); i++)
+        _axisMap[i-1] = xtmp.get(i).asInt();
 
-	double tmp_A2E;
-	// Encoder scales
-	if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints+1))
-		return false;
-	else
-		for (i = 1; i < xtmp.size(); i++)
-		{
-//			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
-			_angleToEncoder[i-1] = (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
-			tmp_A2E = xtmp.get(i).asDouble();
-			_encoderconversionfactor[i-1] = (float) (tmp_A2E / _angleToEncoder[i-1]);
-			_encoderconversionoffset[i-1] = 0;
-		}
+    // extract info about the first joint controlled by this EMS.
+    _firstJoint = _axisMap[0];
+    for (i = 1; i < _njoints; i++)
+        if(_axisMap[i] <= _firstJoint)
+            _firstJoint = _axisMap[i];
 
-
-	// Rotor scales
-	if (!extractGroup(general, xtmp, "Rotor", "a list of scales for the rotor encoders", _njoints+1))
-	{
-		fprintf(stderr, "Using default value = 1\n");
-		for(i=1;i<_njoints+1; i++)
-			_rotToEncoder[i-1] = 1.0;
-	}
-	else
-	{
-		int test = xtmp.size();
-		for (i = 1; i < xtmp.size(); i++)
-			_rotToEncoder[i-1] = xtmp.get(i).asDouble();
-	}
-
-	// Zero Values
-	if (!extractGroup(general, xtmp, "Zeros","a list of offsets for the zero point", _njoints+1))
-		return false;
-	else
-		for (i = 1; i < xtmp.size(); i++)
-			_zeros[i-1] = xtmp.get(i).asDouble();
-
-
-	// Torque Id
-    if (!extractGroup(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", _njoints+1))
-    {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
-        for(i=1;i<_njoints+1; i++)
-            _torqueSensorId[i-1] = 0;
-    }
+    // Encoder scales
+    if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints+1))
+        return false;
     else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
-    }
-
-
-    if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints+1))
-    {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
-        for(i=1;i<_njoints+1; i++)
-            _torqueSensorChan[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-    }
-
-    if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints+1))
-    {
-        fprintf(stderr, "Using default value = 0\n");
-        for(i=1;i<_njoints+1; i++)
-        {
-                _maxTorque[i-1] = 0;
-                _newtonsToSensor[i-1]=1;
-        }
-    }
-    else
-    {
         for (i = 1; i < xtmp.size(); i++)
-        {
-                _maxTorque[i-1] = xtmp.get(i).asInt();
-                _newtonsToSensor[i-1] = double(0x8000)/double(_maxTorque[i-1]);
-        }
-    }
+            _angleToEncoder[i-1] = xtmp.get(i).asDouble();
 
-    ////// PIDS
-    Bottle pidsGroup=config.findGroup("PIDS", "PID parameters");
-    if (pidsGroup.isNull()) {
-            fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
-            return false;
-    }
-
-    int j=0;
-    for(j=0;j<_njoints;j++)
-    {
-        char tmp[80];
-        sprintf(tmp, "Pid%d", j);
-
-        Bottle &xtmp2 = pidsGroup.findGroup(tmp);
-        _pids[j].kp = xtmp2.get(1).asDouble();
-        _pids[j].kd = xtmp2.get(2).asDouble();
-        _pids[j].ki = xtmp2.get(3).asDouble();
-
-        _pids[j].max_int = xtmp2.get(4).asDouble();
-        _pids[j].max_output = xtmp2.get(5).asDouble();
-
-        _pids[j].scale = xtmp2.get(6).asDouble();
-        _pids[j].offset = xtmp2.get(7).asDouble();
-    }
-
-
-    ////// TORQUE PIDS
-    Bottle TPidsGroup=config.findGroup("TORQUE_PIDS","TORQUE_PID parameters");
-       if (TPidsGroup.isNull())
-       {
-               fprintf(stderr, "Error: no TORQUE PIDS group found in config file, skipping\n");
-//               return false;
-       }
-       else
-       {
-    	   printf("Torque Pids section found\n");
-    	   _tpidsEnabled=true;
-    	   for(j=0;j<_njoints;j++)
-    	   {
-    		   char str1[80];
-    		   sprintf(str1, "TPid%d", j);
-    		 //  Bottle &xtmp3 = config.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(str1);
-
-    		   _tpids[j].kp = TPidsGroup.get(1).asDouble();
-    		   _tpids[j].kd = TPidsGroup.get(2).asDouble();
-    		   _tpids[j].ki = TPidsGroup.get(3).asDouble();
-
-    		   _tpids[j].max_int = TPidsGroup.get(4).asDouble();
-    		   _tpids[j].max_output = TPidsGroup.get(5).asDouble();
-
-    		   _tpids[j].scale = TPidsGroup.get(6).asDouble();
-    		   _tpids[j].offset = TPidsGroup.get(7).asDouble();
-    	   }
-       }
-
-
-#warning "What to do with impedance??"
-
-    ////// IMPEDANCE DEFAULT VALUES
-    if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints+1))
-    {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
-        for(i=1;i<_njoints+1; i++)
-            _torqueSensorChan[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-    }
-
-    if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
-    {
-        fprintf(stderr, "IMPEDANCE parameters section found\n");
-        for(j=0;j<_njoints;j++)
-        {
-            char str2[80];
-            sprintf(str2, "Imp%d", j);
-            if (config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(str2)==true)
-            {
-                xtmp = config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(str2);
-                _impedance_params[j].enabled=true;
-                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
-                _impedance_params[j].damping   = xtmp.get(2).asDouble();
-            }
-        }
-    }
-    else
-    {
-        printf("Impedance section NOT enabled, skipping...\n");
-    }
-
-	////// IMPEDANCE LIMITS (UNDER TESTING)
-	for(j=0;j<_njoints;j++)
-	{
-		_impedance_limits[j].min_damp=  0.001;
-		_impedance_limits[j].max_damp=  9.888;
-		_impedance_limits[j].min_stiff= 0.002;
-		_impedance_limits[j].max_stiff= 9.889;
-		_impedance_limits[j].param_a=   0.011;
-		_impedance_limits[j].param_b=   0.012;
-		_impedance_limits[j].param_c=   0.013;
-	}
-
-    /////// LIMITS
-    Bottle &limits=config.findGroup("LIMITS");
-    if (limits.isNull())
-    {
-        fprintf(stderr, "Group LIMITS not found in configuration file\n");
-        return false;
-    }
-    	// current limit
-    if (!extractGroup(limits, xtmp, "Currents","a list of current limits", _njoints+1))
+    // Zero Values
+    if (!extractGroup(general, xtmp, "Zeros","a list of offsets for the zero point", _njoints+1))
         return false;
     else
-    	for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
+        for (i = 1; i < xtmp.size(); i++)
+            _zeros[i-1] = xtmp.get(i).asDouble();
 
-    	// max limit
-    if (!extractGroup(limits, xtmp, "Max","a list of maximum angles (in degrees)", _njoints+1))
-        return false;
-    else
-    	for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
 
-    	// min limit
-    if (!extractGroup(limits, xtmp, "Min","a list of minimum angles (in degrees)", _njoints+1))
-        return false;
-    else
-    	for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
-
-    /////// [VELOCITY]
-    Bottle &velocityGroup=config.findGroup("VELOCITY");
-    if (!velocityGroup.isNull())
-    {
-    	/////// Shifts
-    	if (!extractGroup(velocityGroup, xtmp, "Shifts", "a list of shifts to be used in the vmo control", _njoints+1))
-    	{
-    		fprintf(stderr, "Using default Shifts=4\n");
-    		for(i=1;i<_njoints+1; i++)
-    			_velocityShifts[i-1] = 4;   //Default value
-    	}
-    	else
-    	{
-    		for(i=1;i<xtmp.size(); i++)
-    			_velocityShifts[i-1]=xtmp.get(i).asInt();
-    	}
-
-    	/////// Timeout
-    	xtmp.clear();
-    	if (!extractGroup(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", _njoints+1))
-    	{
-    		fprintf(stderr, "Using default Timeout=1000, i.e 1s\n");
-    		for(i=1;i<_njoints+1; i++)
-    			_velocityTimeout[i-1] = 1000;   //Default value
-    	}
-    	else
-    	{
-    		for(i=1;i<xtmp.size(); i++)
-    			_velocityTimeout[i-1]=xtmp.get(i).asInt();
-    	}
-
-    	/////// Joint Speed Estimation
-    	xtmp.clear();
-    	if (!extractGroup(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints+1))
-    	{
-    		fprintf(stderr, "Using default value=5\n");
-    		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].jnt_Vel_estimator_shift = 0;   //Default value
-    	}
-    	else
-    	{
-    		for(i=1;i<xtmp.size(); i++)
-    			_estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
-    	}
-
-    	/////// Motor Speed Estimation
-    	xtmp.clear();
-    	if (!extractGroup(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints+1))
-    	{
-    		fprintf(stderr, "Using default value=5\n");
-    		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].mot_Vel_estimator_shift = 0;   //Default value
-    	}
-    	else
-    	{
-    		for(i=1;i<xtmp.size(); i++)
-    			_estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
-    	}
-
-    	/////// Joint Acceleration Estimation
-    	xtmp.clear();
-    	if (!extractGroup(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints+1))
-    	{
-    		fprintf(stderr, "Using default value=5\n");
-    		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].jnt_Acc_estimator_shift = 0;   //Default value
-    	}
-    	else
-    	{
-    		for(i=1;i<xtmp.size(); i++)
-    			_estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
-    	}
-
-    	/////// Motor Acceleration Estimation
-    	xtmp.clear();
-    	if (!extractGroup(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints+1))
-    	{
-    		fprintf(stderr, "Using default value=5\n");
-    		for(i=1;i<_njoints+1; i++)
-    			_estim_params[i-1].mot_Acc_estimator_shift = 5;   //Default value
-    	}
-    	else
-    	{
-    		for(i=1;i<xtmp.size(); i++)
-    			_estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
-    	}
-
-    }
-    else
-    {
-    	fprintf(stderr, "A suitable value for [VELOCITY] Shifts was not found. Using default Shifts=4\n");
-    	for(i=1;i<_njoints+1; i++)
-    		_velocityShifts[i-1] = 0;   //Default value // not used now!! In the future this value may (should?) be read from config file and sertnto the EMS
-
-    	fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
-    	for(i=1;i<_njoints+1; i++)
-    		_velocityTimeout[i-1] = 1000;   //Default value
-
-    	fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
-    	for(i=1;i<_njoints+1; i++)
-    	{
-    		_estim_params[i-1].jnt_Vel_estimator_shift = 0;   //Default value
-    		_estim_params[i-1].jnt_Acc_estimator_shift = 0;
-    		_estim_params[i-1].mot_Vel_estimator_shift = 0;
-    		_estim_params[i-1].mot_Acc_estimator_shift = 0;
-    	}
-    }
-
-//    Bottle& debug = config.findGroup("DEBUG");
-//    xtmp.clear();
-//    if (!extractGroup(debug, xtmp, "Jconf", "debug joint start", 3))
-//    {
-//    	start = _firstJoint;
-//    	end   = _firstJoint + _njoints;
-//    	// yDebug() << "NOT Found debug joint conf start " << start << "end " << end;
-//    }
-//    else
-//    {
-//    	start = xtmp.get(1).asInt();
-//    	end   = xtmp.get(2).asInt();
-//    	// yDebug() << "Found debug joint conf start " << start << "end " << end;
-//    }
-#endif
     return true;
 }
 
 bool comanMotionControl::init()
 {
-	return NOT_YET_IMPLEMENTED("init");
+    return NOT_YET_IMPLEMENTED("init");
 }
 
-
-bool comanMotionControl::goToRun(void)
-{
-	NOT_YET_IMPLEMENTED("goToRun");
-}
 
 bool comanMotionControl::close()
 {
     yTrace();
+    Boards_ctrl::close();
+
 #ifdef _OLD_STYLE_
     ImplementControlMode::uninitialize();
     ImplementEncodersTimed::uninitialize();
@@ -620,148 +316,175 @@ bool comanMotionControl::close()
 
     return true;
 #else
-		return NOT_YET_IMPLEMENTED("close");
+    return NOT_YET_IMPLEMENTED("close");
 #endif
 }
 
 
-eoThreadEntry * comanMotionControl::appendWaitRequest(int j, uint16_t nvid)
-{
-	yTrace();
-#ifdef _OLD_STYLE_
-	eoRequest req;
-	if(!requestQueue->threadPool->getId(&req.threadId) )
-		fprintf(stderr, "Error: too much threads!! (comanMotionControl)");
-	req.joint = j;
-	req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid);
-
-	requestQueue->append(req);
-	return requestQueue->threadPool->getThreadTable(req.threadId);
-#else
-  return NULL;
-#endif 
-}
+// eoThreadEntry * comanMotionControl::appendWaitRequest(int j, uint16_t nvid)
+// {
+// 	yTrace();
+// #ifdef _OLD_STYLE_
+// 	eoRequest req;
+// 	if(!requestQueue->threadPool->getId(&req.threadId) )
+// 		fprintf(stderr, "Error: too much threads!! (comanMotionControl)");
+// 	req.joint = j;
+// 	req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid);
+// 
+// 	requestQueue->append(req);
+// 	return requestQueue->threadPool->getThreadTable(req.threadId);
+// #else
+//   return NULL;
+// #endif 
+// }
 
 ///////////// PID INTERFACE
 
 bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setPidRaw");
+    yTrace();
+    McBoard *joint_p;
+    pid_gains_t p_i_d;
+
+    copyPid_iCub2Coman(&pid, controlMode, &p_i_d);
+
+    joint_p = _mcs[j];
+    if( 0 == joint_p)
+    {
+        yError() << "Calling SetPid on a non-existing joint j" << j;
+        return false;
+    }
+    else
+        return (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );
 }
 
 bool comanMotionControl::setPidsRaw(const Pid *pids)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setPidsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setPidsRaw");
 }
 
 bool comanMotionControl::setReferenceRaw(int j, double ref)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setReferenceRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setReferenceRaw");
 }
 
 bool comanMotionControl::setReferencesRaw(const double *refs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setReferencesRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setReferencesRaw");
 }
 
 bool comanMotionControl::setErrorLimitRaw(int j, double limit)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setErrorLimitRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setErrorLimitRaw");
 }
 
 bool comanMotionControl::setErrorLimitsRaw(const double *limits)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setErrorLimitsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setErrorLimitsRaw");
 }
 
 bool comanMotionControl::getErrorRaw(int j, double *err)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getErrorRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getErrorRaw");
 }
 
 bool comanMotionControl::getErrorsRaw(double *errs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getErrorsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getErrorsRaw");
 }
 
 bool comanMotionControl::getOutputRaw(int j, double *out)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getOutputRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getOutputRaw");
 }
 
 bool comanMotionControl::getOutputsRaw(double *outs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getOutputsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getOutputsRaw");
 }
 
 bool comanMotionControl::getPidRaw(int j, Pid *pid)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getPidRaw");
+    yTrace();
+    pid_gains_t ComanPid, P_pid, T_pid;
+    GainSet pidType;
+    McBoard *joint_p = _mcs[j];
+
+    if( 0 == joint_p)
+    {
+        yError() << "Calling SetPid on a non-existing joint j" << j;
+        return false;
+    }
+
+ // get back PIDs from the boards
+    ComanPid.gain_set = controlMode;
+    joint_p->getItem(GET_PID_GAINS,      &ComanPid.gain_set, 1, REPLY_PID_GAINS, &ComanPid, sizeof(ComanPid));
+    copyPid_Coman2iCub(&P_pid, pid, &pidType);
+
+    return true;
 }
 
 bool comanMotionControl::getPidsRaw(Pid *pids)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getPidsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getPidsRaw");
 }
 
 bool comanMotionControl::getReferenceRaw(int j, double *ref)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getReferenceRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getReferenceRaw");
 }
 
 bool comanMotionControl::getReferencesRaw(double *refs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getReferencesRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getReferencesRaw");
 }
 
 bool comanMotionControl::getErrorLimitRaw(int j, double *limit)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getErrorLimitRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getErrorLimitRaw");
 }
 
 bool comanMotionControl::getErrorLimitsRaw(double *limits)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getErrorLimitsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getErrorLimitsRaw");
 }
 
 bool comanMotionControl::resetPidRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("resetPidRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("resetPidRaw");
 }
 
 bool comanMotionControl::disablePidRaw(int j)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("disablePidRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("disablePidRaw");
 }
 
 bool comanMotionControl::enablePidRaw(int j)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("enablePidRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("enablePidRaw");
 }
 
 bool comanMotionControl::setOffsetRaw(int j, double v)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setOffsetRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setOffsetRaw");
 }
 
 ////////////////////////////////////////
@@ -770,20 +493,20 @@ bool comanMotionControl::setOffsetRaw(int j, double v)
 
 bool comanMotionControl::setVelocityModeRaw()
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
 }
 
 bool comanMotionControl::velocityMoveRaw(int j, double sp)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("velocityMoveRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("velocityMoveRaw");
 }
 
 bool comanMotionControl::velocityMoveRaw(const double *sp)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("velocityMoveRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("velocityMoveRaw");
 }
 
 
@@ -793,14 +516,14 @@ bool comanMotionControl::velocityMoveRaw(const double *sp)
 
 bool comanMotionControl::calibrate2Raw(int j, unsigned int type, double p1, double p2, double p3)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("calibrate2Raw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("calibrate2Raw");
 }
 
 bool comanMotionControl::doneRaw(int axis)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("doneRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("doneRaw");
 }
 
 ////////////////////////////////////////
@@ -809,376 +532,421 @@ bool comanMotionControl::doneRaw(int axis)
 
 bool comanMotionControl::getAxes(int *ax)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getAxes");
+    {yTrace();}
+    *ax = _njoints;
+    return true;
 }
 
 bool comanMotionControl::setPositionModeRaw()
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("setPositionModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setPositionModeRaw");
 }
 
 bool comanMotionControl::positionMoveRaw(int j, double ref)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("positionMoveRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("positionMoveRaw");
 }
 
 bool comanMotionControl::positionMoveRaw(const double *refs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("positionMoveRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("positionMoveRaw");
 }
 
 bool comanMotionControl::relativeMoveRaw(int j, double delta)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("relativeMoveRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("relativeMoveRaw");
 }
 
 bool comanMotionControl::relativeMoveRaw(const double *deltas)
 {
-	yTrace();
+    yTrace();
     return NOT_YET_IMPLEMENTED("relativeMoveRaw");
+}
+
+bool comanMotionControl::checkMotionDoneRaw(bool *flag)
+{
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("checkMotionDoneRaw");
 }
 
 bool comanMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("checkMotionDoneRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("checkMotionDoneRaw");
 }
 
 bool comanMotionControl::setRefSpeedRaw(int j, double sp)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setRefSpeedRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setRefSpeedRaw");
 }
 
 bool comanMotionControl::setRefSpeedsRaw(const double *spds)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setRefSpeedsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setRefSpeedsRaw");
 }
 
 bool comanMotionControl::setRefAccelerationRaw(int j, double acc)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setRefAccelerationRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setRefAccelerationRaw");
 }
 
 bool comanMotionControl::setRefAccelerationsRaw(const double *accs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setRefAccelerationsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setRefAccelerationsRaw");
 }
 
 bool comanMotionControl::getRefSpeedRaw(int j, double *spd)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
 }
 
 bool comanMotionControl::getRefSpeedsRaw(double *spds)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getRefSpeedsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRefSpeedsRaw");
 }
 
 bool comanMotionControl::getRefAccelerationRaw(int j, double *acc)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getRefAccelerationRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRefAccelerationRaw");
 }
 
 bool comanMotionControl::getRefAccelerationsRaw(double *accs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getRefAccelerationsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRefAccelerationsRaw");
 }
 
 bool comanMotionControl::stopRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("stopRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("stopRaw");
 }
 
 bool comanMotionControl::stopRaw()
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("stopRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("stopRaw");
 }
 ///////////// END Position Control INTERFACE  //////////////////
 
-  // ControlMode
+// ControlMode
 bool comanMotionControl::setPositionModeRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setPositionModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setPositionModeRaw");
 }
 
 bool comanMotionControl::setVelocityModeRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setVelocityModeRaw");
 }
 
 bool comanMotionControl::setTorqueModeRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
 }
 
 bool comanMotionControl::setImpedancePositionModeRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setImpedancePositionModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setImpedancePositionModeRaw");
 }
 
 bool comanMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setImpedanceVelocityModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setImpedanceVelocityModeRaw");
 }
 
 bool comanMotionControl::setOpenLoopModeRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
 }
 
 bool comanMotionControl::getControlModeRaw(int j, int *v)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getControlModeRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("getControlModeRaw");
 }
 
 bool comanMotionControl::getControlModesRaw(int* v)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getControlModesRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("getControlModesRaw");
 }
 
 //////////////////////// BEGIN EncoderInterface
 
 bool comanMotionControl::setEncoderRaw(int j, double val)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setEncoder");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setEncoder");
 }
 
 bool comanMotionControl::setEncodersRaw(const double *vals)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setEncoders");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setEncoders");
 }
 
 bool comanMotionControl::resetEncoderRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("resetEncoderRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("resetEncoderRaw");
 }
 
 bool comanMotionControl::resetEncodersRaw()
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("resetEncodersRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("resetEncodersRaw");
 }
 
 bool comanMotionControl::getEncoderRaw(int j, double *value)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncoderRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("getEncoderRaw");
 }
 
 bool comanMotionControl::getEncodersRaw(double *encs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncodersRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("getEncodersRaw");
 }
 
 bool comanMotionControl::getEncoderSpeedRaw(int j, double *sp)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncoderSpeedRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("getEncoderSpeedRaw");
 }
 
 bool comanMotionControl::getEncoderSpeedsRaw(double *spds)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncoderSpeedsRaw");
+//     yTrace();
+//     return NOT_YET_IMPLEMENTED("getEncoderSpeedsRaw");
 }
 
 bool comanMotionControl::getEncoderAccelerationRaw(int j, double *acc)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getEncoderAccelerationRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getEncoderAccelerationRaw");
 }
 
 bool comanMotionControl::getEncoderAccelerationsRaw(double *accs)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncoderAccelerationsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getEncoderAccelerationsRaw");
 }
 
 ///////////////////////// END Encoder Interface
 
 bool comanMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncodersTimedRaw");
+    double tmp;
+    for(int i=0; i<_njoints; i++)
+    {
+        getEncoderTimedRaw(i, &tmp, &stamps[i]);
+        encs[i] = tmp;
+    }
 }
 
-bool comanMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
+bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getEncoderTimedRaw");
+    McBoard *joint_p = _mcs[j];
+
+    if( 0 == joint_p)
+    {
+//         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+        *enc = j;
+        *stamp = 0;
+        return true;
+    }
+    // viene probabilmente broadcastata... usare la ricezione udp per questo. Così è corretto?
+    mc_bc_data_t data;
+#warning "this implies a memcopy!! To be optimized!! And add timestamp"
+    joint_p->get_bc_data(&data);
+    *enc = (double) data.Position;
+
+    // fix this
+    *stamp = (double) 0x00;
+
+    return true;
 }
 
 ////// Amplifier interface
 //
 bool comanMotionControl::enableAmpRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("enableAmpRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("enableAmpRaw");
 }
 
 bool comanMotionControl::disableAmpRaw(int j)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("disableAmpRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("disableAmpRaw");
 }
 
 bool comanMotionControl::getCurrentRaw(int j, double *value)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getCurrentRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getCurrentRaw");
 }
 
 bool comanMotionControl::getCurrentsRaw(double *vals)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getCurrentsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getCurrentsRaw");
 }
 
 bool comanMotionControl::setMaxCurrentRaw(int j, double val)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setMaxCurrentRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setMaxCurrentRaw");
 }
 
 bool comanMotionControl::getAmpStatusRaw(int j, int *st)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getAmpStatusRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getAmpStatusRaw");
 }
 
 bool comanMotionControl::getAmpStatusRaw(int *sts)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("getAmpStatusRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getAmpStatusRaw");
 }
 
 //----------------------------------------------\\
 //	Debug interface
 //----------------------------------------------\\
 
-bool comanMotionControl::setParameterRaw(int j, unsigned int type, double value) 			
+bool comanMotionControl::setParameterRaw(int j, unsigned int type, double value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("setParameterRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setParameterRaw");
 }
 
-bool comanMotionControl::getParameterRaw(int j, unsigned int type, double* value)			
+bool comanMotionControl::getParameterRaw(int j, unsigned int type, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getParameterRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getParameterRaw");
 }
 
-bool comanMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value) 	
+bool comanMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getDebugParameterRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getDebugParameterRaw");
 }
 
-bool comanMotionControl::setDebugParameterRaw(int j, unsigned int index, double value) 	
+bool comanMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("setDebugParameterRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setDebugParameterRaw");
 }
 
-bool comanMotionControl::setDebugReferencePositionRaw(int j, double value) 				
+bool comanMotionControl::setDebugReferencePositionRaw(int j, double value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("setDebugReferencePositionRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setDebugReferencePositionRaw");
 }
 
-bool comanMotionControl::getDebugReferencePositionRaw(int j, double* value) 				
+bool comanMotionControl::getDebugReferencePositionRaw(int j, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getDebugReferencePositionRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getDebugReferencePositionRaw");
 }
 
-bool comanMotionControl::getRotorPositionRaw         (int j, double* value) 				
+bool comanMotionControl::getRotorPositionRaw         (int j, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getRotorPositionRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRotorPositionRaw");
 }
 
-bool comanMotionControl::getRotorPositionsRaw        (double* value)		 				
+bool comanMotionControl::getRotorPositionsRaw        (double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getRotorPositionsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRotorPositionsRaw");
 }
 
-bool comanMotionControl::getRotorSpeedRaw            (int j, double* value)		 		
+bool comanMotionControl::getRotorSpeedRaw            (int j, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getRotorSpeedRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRotorSpeedRaw");
 }
 
-bool comanMotionControl::getRotorSpeedsRaw           (double* value) 						
+bool comanMotionControl::getRotorSpeedsRaw           (double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getRotorSpeedsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRotorSpeedsRaw");
 }
 
-bool comanMotionControl::getRotorAccelerationRaw     (int j, double* value)		 		
+bool comanMotionControl::getRotorAccelerationRaw     (int j, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getRotorAccelerationRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRotorAccelerationRaw");
 }
 
-bool comanMotionControl::getRotorAccelerationsRaw    (double* value) 						
+bool comanMotionControl::getRotorAccelerationsRaw    (double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");
 }
 
-bool comanMotionControl::getJointPositionRaw         (int j, double* value) 				
+bool comanMotionControl::getJointPositionRaw         (int j, double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getJointPositionRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getJointPositionRaw");
 }
 
-bool comanMotionControl::getJointPositionsRaw        (double* value) 						
+bool comanMotionControl::getJointPositionsRaw        (double* value)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getJointPositionsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("getJointPositionsRaw");
 }
 
 
 // Limit interface
 bool comanMotionControl::setLimitsRaw(int j, double min, double max)
 {
-	yTrace();
-	return NOT_YET_IMPLEMENTED("setLimitsRaw");
+    yTrace();
+    return NOT_YET_IMPLEMENTED("setLimitsRaw");
 }
 
 bool comanMotionControl::getLimitsRaw(int j, double *min, double *max)
 {
-		yTrace();
-	return NOT_YET_IMPLEMENTED("getLimitsRaw");
-}
+    yTrace();
+    McBoard *joint_p = _mcs[j];
 
+    int _max_pos, _min_pos;  // boards use int, we use double;
+
+    if( 0 == joint_p)
+    {
+        yError() << "Calling SetPid on a non-existing joint j" << j;
+        return false;
+    }
+
+    joint_p->getItem(GET_MIN_POSITION,   NULL, 0, REPLY_MIN_POSITION, &_min_pos, sizeof(_min_pos));
+    joint_p->getItem(GET_MAX_POSITION,   NULL, 0, REPLY_MAX_POSITION, &_max_pos, sizeof(_max_pos));
+
+    yDebug() << "Max position " << _max_pos;
+    yDebug() << "Min position " << _min_pos;
+
+    *min = (double) _min_pos;
+    *max = (double) _max_pos;
+    return true;
+}
 

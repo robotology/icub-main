@@ -30,8 +30,17 @@
 //------------------------------------------------
 using namespace boost::accumulators;
 
+
+#warning "was under #ifndef C_WRAPPER... what does it means??"
+enum GainSet
+{
+    VELOCITY_GAINS = 0,
+    POSITION_GAINS = 1,
+    TORQUE_GAINS   = 2
+};
+
 struct __pid_gains_t {
-    char    gain_set;
+    GainSet    gain_set;
     int     p;
     int     i;
     int     d;
@@ -127,9 +136,8 @@ public:
 private:
 
     mc_bc_data_t bc_data;
-
     void do_log(uint8_t *);
-    
+
     int         _min_pos, _max_pos;
     short int   _min_vel, _max_vel;
     short int   _max_tor;

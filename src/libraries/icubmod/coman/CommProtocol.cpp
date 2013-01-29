@@ -87,72 +87,72 @@ void CommPacket::setChecksum()
 //////////////////////////////////////////////////////////////
 
 TCPCommPacket::TCPCommPacket(int cmdId) :
-	CommPacket(cmdId)
+    CommPacket(cmdId)
 {
+
 }
 
 int TCPCommPacket::sendToTCPSocket(int socketId)
 {
-	fillHeader();
-	setChecksum();
+    fillHeader();
+    setChecksum();
 
-	int bytesToSend = HEADER_SIZE + content[(int)OFFSET_PAYLOAD_SIZE] + 1; // 1 = checksum
-	if (send(socketId, content, bytesToSend, 0) != bytesToSend) {
+    int bytesToSend = HEADER_SIZE + content[(int)OFFSET_PAYLOAD_SIZE] + 1; // 1 = checksum
+    if (send(socketId, content, bytesToSend, 0) != bytesToSend) {
         return -1;
     }
 
-	return 0;
+    return 0;
 }
 
 int TCPCommPacket::recvFromTCPSocket(int socketId)
 {
-	int retValue = -1;
+    int retValue = -1;
 
-	// Receive header
-	if ((retValue = recv(socketId, content, HEADER_SIZE, 0)) == HEADER_SIZE)
-	{
-		if (verifyHeader())
-		{
-			payloadSize = content[(int)OFFSET_PAYLOAD_SIZE];
-			// Receive payload
-			if ((retValue = recv(socketId, &content[readOffset], payloadSize+1, 0)) == payloadSize+1) // 1 = checksum
-				if (verifyChecksum()) retValue = 0;
-		}
-	}
+    // Receive header
+    if ((retValue = recv(socketId, content, HEADER_SIZE, 0)) == HEADER_SIZE)
+    {
+        if (verifyHeader())
+        {
+            payloadSize = content[(int)OFFSET_PAYLOAD_SIZE];
+            // Receive payload
+            if ((retValue = recv(socketId, &content[readOffset], payloadSize+1, 0)) == payloadSize+1) // 1 = checksum
+                if (verifyChecksum()) retValue = 0;
+        }
+    }
 
-	return retValue;
+    return retValue;
 }
 
 //////////////////////////////////////////////////////////////
 //                      UDPCommPacket                       //
 //////////////////////////////////////////////////////////////
 
-UDPCommPacket::UDPCommPacket(int cmdId) :
-	CommPacket(cmdId)
+UDPCommPacket::UDPCommPacket(int cmdId) : CommPacket(cmdId)
 {
 }
 
 int UDPCommPacket::sendToUDPSocket(int socketId, sockaddr *to, socklen_t toLen)
 {
-	fillHeader();
-	setChecksum();
+    fillHeader();
+    setChecksum();
 
-	int bytesToSend = HEADER_SIZE + content[(int)OFFSET_PAYLOAD_SIZE] + 1; // 1 = checksum
-	if (sendto(socketId, content, bytesToSend, 0, to, toLen) != bytesToSend)
-		return -1;
+    int bytesToSend = HEADER_SIZE + content[(int)OFFSET_PAYLOAD_SIZE] + 1; // 1 = checksum
+    if (sendto(socketId, content, bytesToSend, 0, to, toLen) != bytesToSend)
+        return -1;
 
-	return 0;
+    return 0;
 }
 
 int UDPCommPacket::recvFromUDPSocket(int socketId, sockaddr *from, socklen_t *fromLen)
 {
-	int retValue = 0;
+    int retValue = 0;
 
-	if ((retValue = recvfrom(socketId, content, HEADER_SIZE+MAX_PAYLOAD_SIZE+1, 0, from, fromLen)) > 0)
-	{
-		payloadSize = content[(int)OFFSET_PAYLOAD_SIZE];
-		if (!verifyHeader() || !verifyChecksum()) retValue = -1;
-	}
+    if ((retValue = recvfrom(socketId, content, HEADER_SIZE+MAX_PAYLOAD_SIZE+1, 0, from, fromLen)) > 0)
+    {
+        payloadSize = content[(int)OFFSET_PAYLOAD_SIZE];
+        if (!verifyHeader() || !verifyChecksum()) retValue = -1;
+    }
 
-	return retValue;
+    return retValue;
 }

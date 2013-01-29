@@ -5,11 +5,15 @@
 
     Developer:
         Alessio Margan (2012-, alessio.margan@iit.it)
-    
+        Alberto Cardellino (2012, alberto.cardellino@iit.it)
 */
 
 
-#include <Boards_iface.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <functional>
 
 #include <sys/socket.h>
 #include <errno.h>
@@ -24,14 +28,13 @@
 
 #include <stdexcept>
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <algorithm>
-#include <functional>
 
+#include <Boards_iface.h>
 #include <CommProtocol.hpp>
+#include <utils.h>
 
+// _AC_
+#include "coman_HW_description.h"
 
 #ifdef RT_ENV
     #include <rtdk.h>
@@ -82,15 +85,112 @@ static int getIPv4(const char * dev, char * ipv4)
  *  
  */
 
-Boards_ctrl::Boards_ctrl()
+
+
+Boards_ctrl::Boards_ctrl() 
 {
-		yTrace();
-    Boards_ctrl("/usr/local/src/robot/coman/trial_config/app/basic.yaml");
+    yTrace() << "empty constructor that does nearly nothing";
+
+    g_tStart = 0;
+#warning "ottimizzabile?"
+    int size;
+    size = sizeof( arrayHomePos ) / sizeof ( *arrayHomePos );
+    std::vector<float> tmp1(&arrayHomePos[0], arrayHomePos+size);
+    homePos = tmp1;
+
+    size = sizeof( arrayRLeg ) / sizeof ( *arrayRLeg );
+    std::vector<int> tmp2(&arrayRLeg[0], arrayRLeg+size);
+    r_leg = tmp2;
+
+    size = sizeof( arrayRArm ) / sizeof ( *arrayRArm );
+    std::vector<int> tmp3(&arrayRArm[0], arrayRArm+size);
+    r_arm = tmp3;
+
+    size = sizeof( arrayLLeg ) / sizeof ( *arrayLLeg );
+    std::vector<int> tmp4(&arrayLLeg[0], arrayLLeg+size);
+    l_leg = tmp4;
+
+    size = sizeof( arrayLArm ) / sizeof ( *arrayLArm );
+    std::vector<int> tmp5(&arrayLArm[0], arrayLArm+size);
+    l_arm = tmp5;
+
+    size = sizeof( arrayNeck ) / sizeof ( *arrayNeck );
+    std::vector<int> tmp6(&arrayNeck[0], arrayNeck+size);
+    neck = tmp6;
+
+    size = sizeof( arrayWaist ) / sizeof ( *arrayWaist );
+    std::vector<int> tmp7(&arrayWaist[0], arrayWaist+size);
+    waist = tmp7;
 }
 
-Boards_ctrl::Boards_ctrl(const char *config) 
+bool Boards_ctrl::open(yarp::os::Searchable& config)
 {
-	yTrace();
+    yTrace() << "Open function";
+    // Do all the things needed to a correct initialization of the boards and sockets
+    myOpen("/usr/local/src/robot/coman/trial_config/app/basic.yaml");
+
+    // pthread stuff
+    init();
+
+    yDebug() << "Scan for active boards ....";
+    int numActive = scan4active();
+    yDebug() << "Found " <<  numActive << "boards";
+    // second chance ... with xeno+rtnet I need it !?!
+    // find out why wtih no rt patch I get all at the first time
+    yDebug() << "Scan for active boards ....";
+    numActive = scan4active();
+    yDebug() << "Found " <<  numActive << "boards";
+
+    configure_boards();
+
+    body_homing(r_pos, r_vel, r_tor);
+    set_velocity(r_vel, sizeof(r_vel));
+    set_position(r_pos, sizeof(r_pos));
+    set_torque(r_tor, sizeof(r_tor));
+
+    // test settings
+    test();
+    // ... WAIT  to let dsp thinking .... LEAVE HERE
+    sleep(1);
+
+    // tell to dps sets to start the controller
+    DPRINTF("Start control r_leg\n");
+    start_control_body(r_leg);
+
+    DPRINTF("Start control l_leg\n");
+    start_control_body(l_leg);
+
+    DPRINTF("Start control waist\n");
+    start_control_body(waist);
+
+    DPRINTF("Start control r_arm\n");
+    start_control_body(r_arm);
+
+    DPRINTF("Start control l_arm\n");
+    start_control_body(l_arm);
+
+    DPRINTF("Start control neck\n");
+    start_control_body(neck);
+
+
+    // global start time reference
+    // set before start bc_data ... rx_udp thread already running logging data
+    g_tStart = get_time_ns();
+
+    // tell to ALL dps to start broadcast data
+    start_stop_bc_boards(true);
+
+    // wait for homing ....
+    //ts.tv_sec = 5;
+    //clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
+    sleep(5);
+
+    return true;
+}
+
+bool Boards_ctrl::myOpen(const char *config)
+{
+    yTrace() << "was the constructor... will get the YAML config file name and call the actual open (old constructor)";
     int     broadcastOn = 1;
     struct timeval tv;
 
@@ -144,8 +244,6 @@ Boards_ctrl::Boards_ctrl(const char *config)
     dest_addr.sin_family        = AF_INET;
     dest_addr.sin_port          = htons(23);
     dest_addr.sin_addr.s_addr   = INADDR_BROADCAST;
-
-
 }
 
 /**
@@ -156,7 +254,7 @@ Boards_ctrl::Boards_ctrl(const char *config)
  */
 Boards_ctrl::~Boards_ctrl() 
 {
-	yTrace();
+    yTrace();
     for (dsp_map_t::iterator it = _boards.begin(); it != _boards.end(); it++) {
         delete it->second;
     }
@@ -168,6 +266,21 @@ Boards_ctrl::~Boards_ctrl()
     ::close(udp_sock);
 }
 
+bool Boards_ctrl::close()
+{
+    yTrace();
+    sleep(3);
+
+    start_stop_control(false);
+    stop_rx_udp();
+    start_stop_bc_boards(false);
+    start_stop_bc_boards(false);
+
+//     close(fd_info);
+//     close(fd_data);
+    return true;
+}
+
 /**
  * create Boards_ctrl::rx_udp(void *_) thread and initialize 
  * mutex and condition variable 
@@ -176,7 +289,7 @@ Boards_ctrl::~Boards_ctrl()
  */
 int Boards_ctrl::init(void) 
 {
-		yTrace();
+    yTrace();
 
     pthread_attr_t      attr;
     cpu_set_t           cpu_set;
@@ -187,16 +300,21 @@ int Boards_ctrl::init(void)
 
     // thread configuration and creation
     pthread_attr_init(&attr);
-    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-    //pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
-    pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-    schedparam.sched_priority = sched_get_priority_max(SCHED_FIFO);
-    pthread_attr_setschedparam(&attr, &schedparam);
-    pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    CPU_SET(2,&cpu_set);
+//     pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+//     //pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+//     pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+//     schedparam.sched_priority = sched_get_priority_max(SCHED_FIFO);
+//     pthread_attr_setschedparam(&attr, &schedparam);
+//     pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN);
+//     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+//     CPU_SET(2,&cpu_set);
     //pthread_attr_setaffinity_np(&attr, sizeof(cpu_set), &cpu_set);
-    pthread_create(&rx_upd_thread, &attr, rx_udp, (void*)this);
+    int error = 0;
+    if(0 != (error = pthread_create(&rx_upd_thread, &attr, rx_udp, (void*)this)) )
+    {
+        yError() << "Not able to start rx_udp thread, error = " << error;
+        perror(NULL);
+    }
     pthread_attr_destroy(&attr);
 
     return 0;
@@ -258,8 +376,8 @@ void Boards_ctrl::stop_rx_udp(){
  * 
  * @return void* 0
  */
-void * Boards_ctrl::rx_udp(void *_) {
-
+void * Boards_ctrl::rx_udp(void *_)
+{
     Boards_ctrl     * kls = (Boards_ctrl*)_;
 
     socklen_t           fromLength;
@@ -379,6 +497,36 @@ void Boards_ctrl::on_bc_data(uint8_t *bc_packet) {
 
 }
 
+void Boards_ctrl::start_control_body(std::vector<int> body)
+{
+
+    yDebug() << "start control ";
+    std::string str;
+    char tmp[20];
+    for (int j=0; j<body.size(); j++)
+    {
+        sprintf(tmp, "%d ", body[j]);
+        str.append(tmp);
+        start_stop_single_control((uint8_t)body[j],true);
+    }
+    yDebug() << str.c_str();
+}
+
+void Boards_ctrl::body_homing(int pos[], short vel[], short tor[])
+{
+
+    for (int i=0; i<homePos.size(); i++) {
+        pos[i] = DEG2mRAD(homePos[i]);
+    }
+    for (int i=0; i<homePos.size(); i++) {
+        vel[i] = DEG2RAD(20)*1000;
+    }
+    for (int i=0; i<homePos.size(); i++) {
+        tor[i] = 0;
+    }
+
+}
+
 void Boards_ctrl::get_sync_data(void * dst)
 {
 	pthread_mutex_lock(&data_sync_mutex);
@@ -420,7 +568,7 @@ int Boards_ctrl::scan4active(void) {
     int last_active = 0;
     UDPCommPacket pkt(GET_ACTIVE_BOARDS);
 
-    assert( ! pkt.sendToUDPSocket(udp_sock, (sockaddr *)&dest_addr, sizeof(dest_addr)));
+   /* assert( !*/ pkt.sendToUDPSocket(udp_sock, (sockaddr *)&dest_addr, sizeof(dest_addr));
     //while( pkt.sendToUDPSocket(udp_sock, (sockaddr *)&dest_addr, sizeof(dest_addr))) {}
 
     //while ( getActiveNum() < expected_num_boards && wait4scan-- ) {
@@ -445,8 +593,8 @@ int Boards_ctrl::scan4active(void) {
  * YAML::Node&) 
  * 
  */
-void Boards_ctrl::configure_boards(void) {
-
+void Boards_ctrl::configure_boards(void)
+{
     for (dsp_map_t::iterator it = _boards.begin(); it != _boards.end(); it++) {
         it->second->configure(doc);
         it->second->print_me();
@@ -662,6 +810,4 @@ int Boards_ctrl::set_stiffness_damping(int *des_stiff, int *des_damp, int nElem)
     }
 
     return pkt.sendToUDPSocket(udp_sock, (sockaddr *)&dest_addr, sizeof(dest_addr));
-
 }
-
