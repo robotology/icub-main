@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+  <device name="right_arm_mc_wrapper" type="controlboardwrapper2">
+      <param name="threadrate">  10  </param>
+      <paramlist name="networks">
+	<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
+	  <elem name="FirstSetOfJoints">  0  3  0  3 </elem>
+	  <elem name="SecondSetOfJoints"> 4 15  0 11 </elem>
+      </paramlist>
+
+      <param name="period"> 20 			</param>
+      <param name="name">   icub/right_arm	</param>
+      <param name="ports">  right_arm		</param>
+      <param name="joints"> 16			</param>
+
+
+      <action phase="startup" level="5" type="attach">
+	  <paramlist name="networks">
+	  <!-- The param value must match the device name in the corresponding emsX file -->
+	      <elem name="FirstSetOfJoints">  right_upper_arm_mc </elem>
+	      <elem name="SecondSetOfJoints"> right_lower_arm_mc </elem>
+	  </paramlist>
+      </action>
+
+      <action phase="shutdown" level="5" type="detach" />
+
+  <!-- Alternative
+      <action phase="startup" level="5" type="attach">
+	  <param name="device">torso</param>
+	  <param name="network">net_headtorso</param>
+      </action>
+      <action phase="shutdown" type="detach" level="5">
+	  <param name="device">torso</param>
+	  <param name="network">net_headtorso</param>
+      </action>
+  -->
+
+
+  <!--
+      <action phase="interrupt" type="abort" level="5" />
+
+      <action phase="shutdown" type="custom" level="1" />
+      <action phase="shutdown" type="custom" level="10" />
+      <action phase="shutdown" type="custom" level="30" />
+      <action phase="shutdown" type="custom" level="2" />
+  -->
+  </device>
+</devices>

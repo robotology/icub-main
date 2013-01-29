@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+ <!-- Initialization file for EMS 6 - Right Upper Leg, 4 dof -->
+
+ <devices>
+  <device name="right_upper_leg_mc" type="embObjMotionControl">
+      <params file="hardware/electronics/ems6-eln.xml" />
+      <params file="hardware/mechanicals/ems6-mec.xml" />
+  </device>
+</devices>

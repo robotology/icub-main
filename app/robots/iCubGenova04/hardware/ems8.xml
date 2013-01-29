@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+ <!-- Initialization file for EMS 8 - Left Upper Leg, 4 dof -->
+
+ <devices>
+  <device name="left_upper_leg_mc" type="embObjMotionControl">
+      <params file="hardware/electronics/ems8-eln.xml" />
+      <params file="hardware/mechanicals/ems8-mec.xml" />
+  </device>
+</devices>

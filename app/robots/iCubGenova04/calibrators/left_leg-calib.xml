@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device name="left_leg_calibrator" type="parametricCalibrator">
+
+		<group name="GENERAL">
+		    <param name="Joints">  6  </param> <!-- the number of joints of the robot part -->
+		    <param name="DeviceName"> left_leg_calibrator </param>
+		</group>
+
+		<group name="HOME">
+		    <!-- Joint                     	0             1             2             3             4             5      -->
+		    <param name="PositionHome"> 	137           137           137           137     	0.00          0.00	</param>
+		    <param name="VelocityHome">    	6             6             6             6 		10.00         10.00	</param>
+		</group>
+
+		<group name="CALIBRATION">
+		    <param name="Joints">  6  </param> <!-- the number of joints of the robot part -->
+		    <!-- Joint                     	0             1             2             3             4             5         -->
+		    <param name="CalibrationType">   	3             3             3             3    		 3             3	</param>
+		    <param name="Calibration1">      	137           137           137           137		2047.5        2047.5	</param>
+		    <param name="Calibration2">       	6             6             6             6 		10            10	</param>
+		    <param name="Calibration3">      	0             0             0             0		2047.5        2047.5	</param>
+		    <param name="PositionZero">        137           137           137           137		0             0 	</param>
+		    <param name="VelocityZero">       	6             6             6             6 		10            10	</param>
+		    <param name="MaxPWM">           	1000          1000          1000          1000		120           120	</param>
+		</group>
+
+		<param name="CALIB_ORDER"> (0 1 2 3 4 5) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">left_leg_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">left_leg_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

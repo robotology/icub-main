@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+ <!-- Initialization file for EMS 3 - Right Upper Arm, 4 dof -->
+ 
+<devices>
+  <device name="right_upper_arm_mc" type="embObjMotionControl">
+      <params file="hardware/electronics/ems3-eln.xml" />
+      <params file="hardware/mechanicals/ems3-mec.xml" />
+  </device>
+</devices>

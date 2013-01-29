@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<params>
+    <params file="hardware/electronics/pc104.xml" />
+
+    <group name="ETH">
+	<param name="IpAddress">	10.0.1.2	</param>
+	<param name="IpAddress">	10.0.1.2	</param>
+        <param name="Ems">		2		</param>
+        <param name="CmdPort">		12345		</param>
+        <param name="SrvPort">		4444		</param>
+    </group>
+
+  <!-- AXIS MAP HAS BEEN MOVED INTO THE MECHANICAL PART!!!! -->
+</params>

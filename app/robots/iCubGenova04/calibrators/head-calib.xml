@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device name="head_calibrator" type="headCalibratorV2">
+
+		<group name="GENERAL">
+		  <param name="Joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
+		    <param name="DeviceName"> head_calibratorV2 </param>	<!-- simple string to be used in code to have a human readable description -->
+		</group>
+
+		<group name="HOME">
+		    <!-- Joint                     0             1             2           	3	    4		  5-->
+		    <param name="PositionHome">    -30           0             0             0             0             0		</param>
+		    <param name="VelocityHome">    10            10            10            10            10            10		</param>
+		</group>
+
+		<group name="CALIBRATION">
+		    <param name="Joints"> 6 </param>  <!-- the number of joints of the robot part -->
+		    <!-- Joint                       0             1             2           -->
+		    <param name="CalibrationType">   0             0             0             0             0             0		</param>
+		    <param name="Calibration1">      500           1000          900           600           500           500		</param>
+		    <param name="Calibration2">      20            20            20            -20           20            20		</param>
+		    <param name="Calibration3">      0             0             0             0             0             0		</param>
+		    <param name="PositionZero">      0             0             0             0             0             0		</param>
+		    <param name="VelocityZero">      10            10            10            10            10            10		</param>
+		    <param name="MaxPWM">            250           250           600           600           600           600		</param>
+		</group>
+
+ <!-- check old calibrator for the correct sequence, then ask to Randazz -->
+		<param name="CALIB_ORDER"> (0 1 2) (3 4 5) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">torso_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">torso_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

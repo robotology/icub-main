@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+ <!-- Initialization file for EMS 7 - Right Lower Leg, 2 dof -->
+
+ <devices>
+  <device name="right_lower_leg_mc" type="embObjMotionControl">
+      <params file="hardware/electronics/ems7-eln.xml" />
+      <params file="hardware/mechanicals/ems7-mec.xml" />
+  </device>
+</devices>

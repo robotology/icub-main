@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+ <!-- Initialization file for EMS 5 - Torso, 3 dof -->
+
+ <devices>
+  <device name="torso_mc" type="embObjMotionControl">
+      <params file="hardware/electronics/ems5-eln.xml" />
+      <params file="hardware/mechanicals/ems5-mec.xml" />
+  </device>
+</devices>

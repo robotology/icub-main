@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device name="right_leg_calibrator" type="parametricCalibrator">
+
+		<group name="GENERAL">
+		    <param name="Joints">  6  </param> <!-- the number of joints of the robot part -->
+		    <param name="DeviceName"> right_leg_calibrator </param>
+		</group>
+
+		<group name="HOME">
+		    <!-- Joint                     0             1             2             3             4             5   		-->
+		    <param name="PositionHome">    -30           30            0             45            0             0             40            15            30            0             0             0             0             0             0             0  </param>
+		    <param name="VelocityHome">    10            10            10            10            30            30            30            100           10            10            10            10            10            10            10            10 </param>
+		</group>
+
+		<group name="CALIBRATION">
+		    <param name="Joints">16</param> <!-- the number of joints of the robot part -->
+		    <!-- Joint                     0             1             2             3             4             5      	 -->
+		    <param name="CalibrationType"> 3             3             3             3             3             3 		</param>
+		    <param name="Calibration1">    137           137           137           137 	    2047.5        2047.5 	</param>
+		    <param name="Calibration2">    6             6             6             6  	    10            10  		</param>
+		    <param name="Calibration3">    0             0             0             0   	    2047.5        2047.5	</param>
+		    <param name="PositionZero">    137           137           137           137	    0             0 		</param>
+		    <param name="VelocityZero">    6             6             6             6    	    10            10		</param>
+		    <param name="MaxPWM">          0             0             0             0  	    120           120  		</param>
+		</group>
+
+		<param name="CALIB_ORDER">(0 1 2 3 4 5) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">right_leg_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">right_leg_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>
