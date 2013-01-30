@@ -18,6 +18,11 @@
 bool addEncoderTimeStamp(FEAT_ID *id, int jointNum)
 {
     embObjMotionControl * tmp =  (embObjMotionControl*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+#warning "add timestamp"
+    if(tmp != 0)
+    {
+    	tmp->refreshEncoderTimeStamp(jointNum);
+    }
 }
 
 bool findAndFill(FEAT_ID *id, void *sk_array)
@@ -29,9 +34,10 @@ bool findAndFill(FEAT_ID *id, void *sk_array)
 
     if(NULL == tmp)
     {
-//        printf( "/************************************\\\n"
-//                "            Parte non trovata!!!\n"
-//                "\\***********************************/\n");
+        printf( "/************************************\\\n"
+                "            Parte non trovata!!!\n"
+                "\\***********************************/\n");
+        printf("EP = %d\n", id->ep);
         return false;
     }
     else
