@@ -387,9 +387,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++)
         {
             //			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
-            _angleToEncoder[i-1] = (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
+//        	int segno;
             tmp_A2E = xtmp.get(i).asDouble();
-            _encoderconversionfactor[i-1] = (float) (tmp_A2E / _angleToEncoder[i-1]);
+//        	segno =  tmp_A2E > 0 ? 1 : -1;
+
+            _angleToEncoder[i-1] =  (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
+            _encoderconversionfactor[i-1] = (float) (tmp_A2E  ) / _angleToEncoder[i-1];
             _encoderconversionoffset[i-1] = 0;
         }
 
@@ -1065,7 +1068,11 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint16_t nvid)
 
 void embObjMotionControl::refreshEncoderTimeStamp(int joint)
 {
+	static long int count = 0;
+	count++;
+    _mutex.wait();
     _encodersStamp[joint] = Time::now();
+    _mutex.post();
 }
 
 void embObjMotionControl::getMotorController(DeviceDriver *iMC)
@@ -1718,7 +1725,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
         return false;
 
-    yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6) << "\n";
+    yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6);
 
 
     /*
@@ -2377,15 +2384,30 @@ bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs)
 bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
     getEncodersRaw(encs);
+    _mutex.wait();
     for(int i=0; i<_njoints; i++)
         stamps[i] = _encodersStamp[i];
+
+    double tmp =  _encodersStamp[0];
+    _mutex.post();
+
+//    // debug print
+//    static long int nn1 =0;
+//    nn1++;
+//    if(nn1 == 100)
+//    {
+//    	printf("_encodersStamp[0] = %f\n", tmp);
+//    	nn1 = 0;
+//    }
 }
 
 bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 {
     getEncoderRaw(j, encs);
+    _mutex.wait();
     *stamp = _encodersStamp[j];
-    
+    _mutex.post();
+
     //	//_mutex.wait();
     //	double stamp=0;
     //	for (i = 0; i < r.getJoints(); i++) {
@@ -2607,7 +2629,9 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return true;
 }
 
+/*
 bool embObjMotionControl::setTorque(yarp::sig::Vector &vals)
 {
     yTrace();
 }
+*/

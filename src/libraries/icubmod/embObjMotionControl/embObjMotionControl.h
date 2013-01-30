@@ -58,7 +58,7 @@ using namespace std;
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include "yarp/dev/ControlBoardInterfacesImpl.inl" //ControlBoardHelper
 
-#include <yarp/dev/IVirtualAnalogSensor.h>
+//#include <yarp/dev/IVirtualAnalogSensor.h>
 ///////////////////
 
 #include <iCub/FactoryInterface.h>
@@ -363,7 +363,7 @@ public:
   /////////////// END AMPLIFIER INTERFACE
 
     //////  Virtual analo sensor
-    virtual bool setTorque(yarp::sig::Vector &vals);
+//    virtual bool setTorque(yarp::sig::Vector &vals);
 
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE

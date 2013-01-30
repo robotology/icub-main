@@ -210,6 +210,14 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 		}
 	}
 	init = true;
+
+	// Add timestamp
+    FEAT_ID id;
+    int jointNum = (int) xx;
+
+    id.ep = nv->ep;
+    id.type = MotionControl;
+    addEncoderTimeStamp( &id,  jointNum);
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
