@@ -15,6 +15,10 @@
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
 
+bool addEncoderTimeStamp(FEAT_ID *id, int jointNum)
+{
+    embObjMotionControl * tmp =  (embObjMotionControl*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+}
 
 bool findAndFill(FEAT_ID *id, void *sk_array)
 {

@@ -135,6 +135,7 @@ public:
     ACE_UINT16        getBufferSize();
 
     void              onMsgReception(uint8_t *data, uint16_t size);
+    bool              goToConfig(void);
     bool              goToRun(void);
 };
 
@@ -175,21 +176,21 @@ typedef std::list<ethResources *>::iterator ethResIt;
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
-
-class RecvThread:	public RateThread
-{
-	public:
-	RecvThread();
-	~RecvThread();
-
-	private:
-
-
-    ethResIt 					iterator;
-
-    virtual bool threadInit();
-	virtual void run(void);
-};
+// this is implemented with just a simple ACE::thread inside the TheEthManager class
+// class RecvThread:	public RateThread
+// {
+// 	public:
+// 	RecvThread();
+// 	~RecvThread();
+// 
+// 	private:
+// 
+// 
+//     ethResIt 					iterator;
+// 
+//     virtual bool threadInit();
+// 	virtual void run(void);
+// };
 
 class yarp::dev::TheEthManager: public DeviceDriver,
 								 public RateThread

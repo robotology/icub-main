@@ -57,6 +57,7 @@ typedef struct
     char                  name[SIZE_INFO];
 }FEAT_ID;
 
+bool addEncoderTimeStamp(FEAT_ID *id, int jointNum);
 bool findAndFill(FEAT_ID *id, void *sk_array);
 bool handle_AS_data(FEAT_ID *id, void *as_array);
 void * get_MChandler_fromEP(eOnvEP_t ep);

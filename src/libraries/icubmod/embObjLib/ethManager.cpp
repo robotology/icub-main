@@ -193,6 +193,33 @@ ACE_INET_Addr	ethResources::getRemoteAddress()
 }
 
 
+bool ethResources::goToConfig(void)
+{
+    yTrace();
+    eOnvID_t nvid;
+    EOnv tmp;
+
+    // attiva il loop di controllo
+    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
+    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
+
+    EOnv  *nvRoot   = transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
+    if(NULL == nvRoot)
+    {
+        yError () << "NV pointer not found at line" << __LINE__;
+        return false;
+    }
+
+    eOmn_appl_state_t  desired  = applstate_config;
+
+    if( !transceiver->nvSetData(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
+        return false;
+
+    // tell agent to prepare a rop to send
+    if( !transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid) )
+        return false;
+}
+
 bool ethResources::goToRun(void)
 {
     yTrace();
@@ -399,7 +426,7 @@ void *recvThread(void * arg)
 		recv_size = pSocket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0);
 
 		sender_addr.addr_to_string(address, 64);
-    printf("Received new packet from address %s, size = %d\n", address, recv_size);
+//     printf("Received new packet from address %s, size = %d\n", address, recv_size);
 
 		if( (recv_size > 0) && (keepGoingOn2) )
 		{
