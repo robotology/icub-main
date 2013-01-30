@@ -29,7 +29,7 @@ using namespace yarp::os::impl;
 
 // Utilities
 
-void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
+static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
     out->kp = (int16_t)in->kp;
     out->ki = (int16_t)in->ki;
@@ -40,7 +40,7 @@ void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
     out->scale = (int8_t)in->scale;
 }
 
-void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
+static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
 {
     out->kp = in->kp;
     out->ki = in->ki;
@@ -52,12 +52,12 @@ void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
 }
 
 // This will be moved in the ImplXXXInterface
-double convertA2I(double angle_in_degrees, double zero, double factor)
+static double convertA2I(double angle_in_degrees, double zero, double factor)
 {
     return (angle_in_degrees + zero) * factor;
 }
 
-inline bool NOT_YET_IMPLEMENTED(const char *txt)
+static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
     fprintf(stderr, "%s not yet implemented for embObjMotionControl\n", txt);
 
@@ -66,7 +66,7 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
 
 #define NV_NOT_FOUND	return nv_not_found();
 
-bool nv_not_found(void)
+static bool nv_not_found(void)
 {
     yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
     return false;
@@ -108,6 +108,7 @@ bool embObjMotionControl::alloc(int nj)
 {
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
+    _encodersStamp = allocAndCheck<double>(nj);
     _encoderconversionoffset = allocAndCheck<float>(nj);
     _encoderconversionfactor = allocAndCheck<float>(nj);
 
@@ -163,9 +164,11 @@ embObjMotionControl::embObjMotionControl() :
     ImplementControlLimits<embObjMotionControl, IControlLimits>(this),
     _mutex(1)
 {
+#ifdef _oblsolete_
     udppkt_data 	= 0x00;
     udppkt_size 	= 0x00;
-
+#endif
+    
     _pids			= NULL;
     _tpids			= NULL;
     _firstJoint 	= 0;
@@ -1058,6 +1061,11 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint16_t nvid)
 
     requestQueue->append(req);
     return requestQueue->threadPool->getThreadTable(req.threadId);
+}
+
+void embObjMotionControl::refreshEncoderTimeStamp(int joint)
+{
+    _encodersStamp[joint] = Time::now();
 }
 
 void embObjMotionControl::getMotorController(DeviceDriver *iMC)
@@ -2369,12 +2377,15 @@ bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs)
 bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
     getEncodersRaw(encs);
+    for(int i=0; i<_njoints; i++)
+        stamps[i] = _encodersStamp[i];
 }
 
 bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 {
     getEncoderRaw(j, encs);
-
+    *stamp = _encodersStamp[j];
+    
     //	//_mutex.wait();
     //	double stamp=0;
     //	for (i = 0; i < r.getJoints(); i++) {

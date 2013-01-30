@@ -142,8 +142,8 @@ namespace yarp{
     }
 }
 
-void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
-void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
+static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
+static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
@@ -170,6 +170,7 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 {
 private:
     int 					tot_packet_recv, errors;
+#ifdef _oblsolete_
     //    tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
     char 					recv_time_string[40];
@@ -177,10 +178,11 @@ private:
 
     uint8_t 				*udppkt_data;
     uint16_t 				udppkt_size;
-
+#endif
+    
     // embObj stuff
-    yarp::os::Semaphore 	_mutex;
-    FEAT_ID					_fId;
+    yarp::os::Semaphore     _mutex;
+    FEAT_ID                 _fId;
 
     // Joint/Mechanical data
 
@@ -192,6 +194,7 @@ private:
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
+    double  *_encodersStamp;                     /** keep information about acquisition time for encoders read */
     float *_encoderconversionfactor;           /** iCubDegrees to encoder conversion factors */
     float *_encoderconversionoffset;           /** iCubDegrees offset */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
@@ -261,6 +264,8 @@ public:
     // _AC_
     eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);
     void getMotorController(DeviceDriver *iMC);
+    void refreshEncoderTimeStamp(int joint);
+
 //    void waitSem();
 //    void postSem();
     bool alloc(int njoints);

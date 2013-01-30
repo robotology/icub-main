@@ -47,6 +47,7 @@
 #include "EOnv_hid.h"
 
 #include "eOcfg_nvsEP_mc_overridden.h"
+#include <FeatureInterface.h>
 #include "eOcfg_nvsEP_mc_hid.h"
 
 
@@ -131,6 +132,12 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumb
 //		if( (3 == xx) && (endpoint_mc_rightupperleg == nv->ep) )
 //			fprintf(positionLog, "pos = 0x%X\n", ((jstatus_b->position - zero ) /DEG_2_ICUBDEG ) );
 //	}
+    FEAT_ID id;
+    int jointNum = (int) xx;
+
+    id.ep = nv->ep;
+    id.type = MotionControl;
+    addEncoderTimeStamp( &id,  jointNum);
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
