@@ -9,24 +9,24 @@
 
 		<group name="HOME">
 		    <!-- Joint                     0             1             2           -->
-		    <param name="PositionHome">    0             0             -20		</param>
+		    <param name="PositionHome">    0             0             0		</param>
 		    <param name="VelocityHome">    10            10            10		</param>
 		</group>
 
 		<group name="CALIBRATION">
 		    <param name="Joints"> 3 </param>  <!-- the number of joints of the robot part -->
 		    <!-- Joint                       0             1             2           -->
-		    <param name="CalibrationType">   3             3             3 		</param>
-		    <param name="Calibration1">      2047.5        2047.5        2047.5	</param>
-		    <param name="Calibration2">      10            10            10		</param>
-		    <param name="Calibration3">      2047.5        2047.5        2047.5 	</param>
-		    <param name="PositionZero">      0             0             0 		</param>
-		    <param name="VelocityZero">      10            10            10		</param>
-		    <param name="MaxPWM">            120           120           120		</param>
+		    <param name="CalibrationType">   3             3             3              </param>
+		    <param name="Calibration1">      0             0             0              </param>
+		    <param name="Calibration2">      0             0             0              </param>
+		    <param name="Calibration3">      30365         45420         7973           </param>
+		    <param name="PositionZero">      0             0             0              </param>
+		    <param name="VelocityZero">      10            10            10             </param>
+		    <param name="MaxPWM">            3000          3000          3000           </param>
 		</group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
-		<param name="CALIB_ORDER">(0 1 2 )</param>
+		<param name="CALIB_ORDER"> (0 1 2) </param>
 
 		<action phase="startup" level="10" type="calibrate">
 		    <param name="target">torso_mc_wrapper</param>

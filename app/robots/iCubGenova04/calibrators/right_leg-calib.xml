@@ -8,21 +8,21 @@
 		</group>
 
 		<group name="HOME">
-		    <!-- Joint                     0             1             2             3             4             5   		-->
-		    <param name="PositionHome">    -30           30            0             45            0             0             40            15            30            0             0             0             0             0             0             0  </param>
-		    <param name="VelocityHome">    10            10            10            10            30            30            30            100           10            10            10            10            10            10            10            10 </param>
+                    <!-- Joint                          0               1               2               3               4               5       -->
+		    <param name="PositionHome">         0               0               0               0               0               0       </param>
+		    <param name="VelocityHome">         6               6               6               6               6               6       </param>
 		</group>
 
 		<group name="CALIBRATION">
 		    <param name="Joints">16</param> <!-- the number of joints of the robot part -->
-		    <!-- Joint                     0             1             2             3             4             5      	 -->
-		    <param name="CalibrationType"> 3             3             3             3             3             3 		</param>
-		    <param name="Calibration1">    137           137           137           137 	    2047.5        2047.5 	</param>
-		    <param name="Calibration2">    6             6             6             6  	    10            10  		</param>
-		    <param name="Calibration3">    0             0             0             0   	    2047.5        2047.5	</param>
-		    <param name="PositionZero">    137           137           137           137	    0             0 		</param>
-		    <param name="VelocityZero">    6             6             6             6    	    10            10		</param>
-		    <param name="MaxPWM">          0             0             0             0  	    120           120  		</param>
+		    <!-- Joint                     0            1               2               3               4               5        -->
+		    <param name="CalibrationType"> 3            3               3               3               3               3       </param>
+		    <param name="Calibration1">    0            0               0               0               0               0       </param>
+		    <param name="Calibration2">    0            0               0               0               0               0       </param>
+		    <param name="Calibration3">    49079        47877           64789           4478            31421           10085   </param>
+		    <param name="PositionZero">    0            0               0               0               0               0       </param>
+		    <param name="VelocityZero">    6            6               6               6               6               6       </param>
+		    <param name="MaxPWM">          2000          2000          2000          2000               2000            2000    </param>
 		</group>
 
 		<param name="CALIB_ORDER">(0 1 2 3 4 5) </param>

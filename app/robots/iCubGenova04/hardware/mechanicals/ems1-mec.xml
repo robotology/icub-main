@@ -4,8 +4,8 @@
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
         <!--                   		0             1             2             3 -->
         <param name="AxisMap"> 		0             1             2             3	</param>
-        <param name="Encoder">   -11.375       -11.375       -11.375       -11.375	</param>
-        <param name="Zeros">     -180.00       -315.00       -180.00       -180.00	</param>
+        <param name="Encoder">   -182.044      -182.044      -182.044      -182.044	</param>
+        <param name="Zeros">         -180          -315          24.2          -180	</param>
         <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C	</param>
         <param name="TorqueChan">	0             1             2             3	</param>
         <param name="TorqueMax"> 	8             8             8             8	</param>
@@ -24,18 +24,18 @@
     </group>
 
     <group name="LIMITS">
-        <!--                      0             1             2             3 -->
-        <param name="Max">        10            160.8         80            106	</param>
-        <param name="Min">        -95.5         0             -37           15		</param>
-        <param name="Currents">   7000    	7000    	7000        7000	</param>
+        <!--                            0               1               2             3 -->
+        <param name="Max">              10              161             80            105       </param>
+        <param name="Min">              -95.5           0               -37           0         </param>
+        <param name="Currents">         6000            6000            6000          6000      </param>
     </group>
 
     <group name="PIDS">
         <!--                 Proportional  Derivative     Integral   Integral Limit      PWM Limit     scale factor   offset 	-->
-        <param name="Pid0">  32000         50            	60      1333          		1333          13            0          </param>
-        <param name="Pid1">  32000         50            	60      1333          		1333          13            0          </param>
-        <param name="Pid2">  10000         0             	10      1333          		1333          13            0          </param>
-        <param name="Pid3">  32000         20            	60      1333          		1333          13            0          </param>
+        <param name="Pid0">  10            2             0             0                           4000             10                          0          </param>
+        <param name="Pid1">  10            2             0             0                           4000             10                          0          </param>
+        <param name="Pid2">  10            2             0             0                           4000             10                          0          </param>
+        <param name="Pid3">  10            20            0             0                           4000             10                          0          </param>
     </group>
 
     <group name="TORQUE_PIDS">

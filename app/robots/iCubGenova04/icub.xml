@@ -12,38 +12,40 @@
     <devices file="configurators/head.xml" />-->
     
       <!-- LEFT ARM -->
-    <devices file="hardware/ems1.xml" />		
-    <devices file="hardware/ems2.xml" />	
+    <devices file="hardware/ems1.xml" />
+    <devices file="hardware/ems2.xml" />
     <devices file="wrappers/left_arm-mcWrapper.xml" /> 
-    <!-- <devices file="calibrators/left_arm-calib.xml" />   
-    <devices file="wrappers/left_arm-skinWrapper.xml" /> -->
-    <!--<devices file="configurators/left_arm.xml" />-->
+    <devices file="calibrators/left_arm-calib.xml" />   
+    
+    <!--<devices file="wrappers/left_arm-skinWrapper.xml" />
+    <devices file="configurators/left_arm.xml" />
     <devices file="wrappers/left_arm-asWrapper.xml" /> -->
     
     
-    <!-- RIGHT ARM 
-    <devices file="hardware/ems3.xml" />	
-    <devices file="hardware/ems4.xml" />		-->
-<!--    <devices file="wrappers/right_arm-mcWrapper.xml" />
-  <devices file="calibrators/right_arm-calib.xml" />   
-    <devices file="wrappers/right_arm-skinWrapper.xml" /> 	 --> 
-    <!--<devices file="configurators/right_arm.xml" />-->
-
-</robot>
+        <!-- RIGHT ARM  -->
+    <devices file="hardware/ems3.xml" />
+    <devices file="hardware/ems4.xml" />
+    <devices file="wrappers/right_arm-mcWrapper.xml" />
+    <devices file="calibrators/right_arm-calib.xml" />   
+    
+    <!-- <devices file="wrappers/right_arm-skinWrapper.xml" />
+        <devices file="configurators/right_arm.xml" />-->
     
     <!-- TORSO -->
     <devices file="hardware/ems5.xml" />
     <devices file="wrappers/torso-mcWrapper.xml" />
+    <devices file="calibrators/torso-calib.xml" />
+    
     <!--  <devices file="wrappers/torso-skinWrapper.xml" />   -->
-    <devices file="calibrators/torso-calib.xml" />-->   
     <!--<devices file="configurators/torso.xml" />-->    
     
     
     <!-- LEFT LEG -->
     <devices file="hardware/ems6.xml" />
     <devices file="hardware/ems7.xml" />
-    <devices file="wrappers/left_leg-mcWrapper.xml" />-->   	
-    <devices file="calibrators/left_leg-calib.xml" />	
+    <devices file="wrappers/left_leg-mcWrapper.xml" /> 
+    <devices file="calibrators/left_leg-calib.xml" />
+    
     <!--<devices file="configurators/left_leg.xml" />-->
     
     
@@ -52,6 +54,7 @@
     <devices file="hardware/ems9.xml" />
     <devices file="wrappers/right_leg-mcWrapper.xml" />		
     <devices file="calibrators/right_leg-calib.xml" />
+    
     <!--<devices file="configurators/right_leg.xml" />-->
    
 </robot>
