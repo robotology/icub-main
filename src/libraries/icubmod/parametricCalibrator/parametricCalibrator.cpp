@@ -333,7 +333,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(isVanilla)
         {
-            yWarning() << deviceName "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
+            yWarning() << deviceName << "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
             return true;
         }
 
@@ -344,7 +344,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
             // Enable amp moved to MotionControl class;
             // Here we just call the calibration procedure
-            yWarning() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibrating... current enc values: " << currPos[(*lit)];
+            yWarning() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... current enc values: " << currPos[(*lit)];
             calibrateJoint((*lit));
             lit++;
         }
@@ -353,7 +353,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
-            yWarning() <<  "CALIB["  << setOfJoint_idx << "]: Calibration ended, going to zero!\n";
+            yWarning() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
             lit  = tmp.begin();
             lend = tmp.end();
             while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
@@ -364,7 +364,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
         else    // keep pid safe  and go on
         {
-            yError() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibration went wrong! Disabling axes and keeping safe pid limit\n";
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
             while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
@@ -405,11 +405,11 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(goneToZero)
         {
-            yDebug() <<  "CALIB["  << setOfJoint_idx << "]: Reached zero position!\n";
+            yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Reached zero position!\n";
         }
         else			// keep pid safe and go on
         {
-            yError() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
             while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
@@ -425,7 +425,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
 void parametricCalibrator::calibrateJoint(int joint)
 {
-    yDebug() << "CALIB[part?]: Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
+    yDebug() <<  deviceName  << ": Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
     iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
 }
 
