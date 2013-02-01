@@ -239,6 +239,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     Property prop;
     prop.fromString(str.c_str());
 
+    // Check Vanilla = do not use calibration!
+    isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
+    isVanilla = !!isVanilla;
+    yError() << "embObjMotionControl: Vanilla " << isVanilla;
+
     // get EMS ip address from config string
     ACE_TCHAR address[64] = {0};
     Bottle xtmp = Bottle(config.findGroup("ETH"));
@@ -386,12 +391,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     else
         for (i = 1; i < xtmp.size(); i++)
         {
-            //			_angleToEncoder[i-1] = xtmp.get(i).asDouble();
-//        	int segno;
             tmp_A2E = xtmp.get(i).asDouble();
-//        	segno =  tmp_A2E > 0 ? 1 : -1;
 
-            _angleToEncoder[i-1] =  (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
+            if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration 
+                _angleToEncoder[i-1] = 1;
+            else
+                _angleToEncoder[i-1] =  (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
             _encoderconversionfactor[i-1] = (float) (tmp_A2E  ) / _angleToEncoder[i-1];
             _encoderconversionoffset[i-1] = 0;
         }

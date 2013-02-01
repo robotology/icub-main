@@ -169,7 +169,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 #endif
 {
 private:
-    int 					tot_packet_recv, errors;
+    int           isVanilla;
+    int           tot_packet_recv, errors;
 #ifdef _oblsolete_
     //    tm						*hr_time1, *hr_time2;
     char 					send_time_string[40];
