@@ -184,32 +184,32 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 
 #endif
 
-	static int32_t zero = 360;			// dpvrebbe essere  -360, ma pare che qui "X - (-360)" sia diverso da " X+360"
-	static FILE *positionLog = NULL;
-	static bool init = false;
-	int32_t pos = -1;
-
-	if(NULL == positionLog)
-	{
-		if(false == init)
-		{
-			positionLog = fopen("/usr/local/src/robot/debugging/position.log", "w");
-			if(NULL == positionLog)
-				printf("Error opening file /usr/local/src/robot/debugging/position.log\n");
-			else
-				printf("positionLog file opened succesfully\n");
-		}
-	}
-	else
-	{
-		eOmc_joint_status_basic_t *jstatus_b = nv->rem;
-		if( (3 == xx) && (endpoint_mc_rightupperleg == nv->ep) )
-		{
-			pos = (jstatus_b->position / DEG_2_ICUBDEG) + zero;
-//			fprintf(positionLog, "%d\n", pos);
-		}
-	}
-	init = true;
+//	static int32_t zero = 360;			// dpvrebbe essere  -360, ma pare che qui "X - (-360)" sia diverso da " X+360"
+//	static FILE *positionLog = NULL;
+//	static bool init = false;
+//	int32_t pos = -1;
+//
+//	if(NULL == positionLog)
+//	{
+//		if(false == init)
+//		{
+//			positionLog = fopen("/usr/local/src/robot/debugging/position.log", "w");
+//			if(NULL == positionLog)
+//				printf("Error opening file /usr/local/src/robot/debugging/position.log\n");
+//			else
+//				printf("positionLog file opened succesfully!!\n");
+//		}
+//	}
+//	else
+//	{
+//		eOmc_joint_status_basic_t *jstatus_b = nv->rem;
+//		if( (3 == xx) && (endpoint_mc_rightupperleg == nv->ep) )
+//		{
+//			pos = (jstatus_b->position / DEG_2_ICUBDEG) + zero;
+////			fprintf(positionLog, "%d\n", pos);
+//		}
+//	}
+//	init = true;
 
 	// Add timestamp
     FEAT_ID id;
@@ -305,7 +305,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__maxpositionofjoint(eOcfg_nvsEP
 {
 	//transceiver_wait(nv->ep);
 	eOmeas_position_t *jMaxPosition_b = nv->rem;
-	printf("\nCallback: maxpositionofjoint for Joint num = %d ", xx);
+	printf("Callback: maxpositionofjoint for Joint num = %d ", xx);
 	printf("pos = %d\n", *jMaxPosition_b);
 	jwake(xx, nv, jointNVindex_jconfig__maxpositionofjoint);
 	//transceiver_post(nv->ep);
@@ -315,7 +315,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__minpositionofjoint(eOcfg_nvsEP
 {
 	//transceiver_wait(nv->ep);
 	eOmeas_position_t *jMinPosition_b = nv->rem;
-	printf("\ncallback: minpositionofjoint for Joint num = %d ", xx);
+	printf("callback: minpositionofjoint for Joint num = %d ", xx);
 	printf("pos = %d\n", *jMinPosition_b);
 	jwake(xx, nv, jointNVindex_jconfig__minpositionofjoint);
 	//transceiver_post(nv->ep);

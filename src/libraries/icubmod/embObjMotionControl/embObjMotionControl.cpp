@@ -1395,7 +1395,7 @@ bool embObjMotionControl::enablePidRaw(int j)
 
     if(false == _enabledAmp[j-_firstJoint] )
     {
-        yWarning() << "Enable Amp before enabling Pid!!  (embObjCtrl)\n";
+        yWarning() << "Please enable Amps before enabling Pid!!  (embObjCtrl)\n";
         //		return false;
     }
 
@@ -1673,6 +1673,11 @@ bool embObjMotionControl::setPositionModeRaw()
     eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
     for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
     {
+//        if(!_calibrated[j-_firstJoint])
+//        {
+//        	return false;
+//        }
+//
         nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
         if(NULL == res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index], &nv[index]) )
         {
@@ -1685,6 +1690,7 @@ bool embObjMotionControl::setPositionModeRaw()
 
         if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]))
             return false;
+
     }
 
     return ret;
@@ -2618,12 +2624,12 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     res->transceiver->getNVvalue(nvRoot_max, (uint8_t *)&eomax, &size);
     *min = (double)eomin;
     *max = (double)eomax;
-    printf("\n j %d\n",j);
-    printf("min = %f\n", *min);
-    printf("max = %f\n", *max);
-    printf("size = %d\n", size);
-    printf("eomin = %d\n", eomin);
-    printf("eomax = %d\n", eomax);
+//    printf("\n j %d\n",j);
+//    printf("min = %f\n", *min);
+//    printf("max = %f\n", *max);
+//    printf("size = %d\n", size);
+//    printf("eomin = %d\n", eomin);
+//    printf("eomax = %d\n", eomax);
     // yDebug() << " GetPid returned values : kp = " << eoPID.kp << "kd = " <<  eoPID.kd << " ki = " << eoPID.ki;
 
     return true;
