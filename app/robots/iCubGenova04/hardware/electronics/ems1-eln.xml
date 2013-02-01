@@ -5,8 +5,7 @@
     <params file="hardware/electronics/pc104.xml" />
 
     <group name="ETH">
-      <!-- <param name="IpAddress">	10.0.1.1	</param>  -->
-        <param name="IpAddress">	10.0.149.79	</param>
+ 	<param name="IpAddress">	10.0.1.1	</param> 
         <param name="Ems">		1		</param>
         <param name="CmdPort">		12345		</param>
         <param name="SrvPort">		4444		</param>
