@@ -4,6 +4,7 @@
 
  <devices>
   <device name="right_lower_leg_mc" type="embObjMotionControl">
+      <params file="general.xml" />
       <params file="hardware/electronics/ems7-eln.xml" />
       <params file="hardware/mechanicals/ems7-mec.xml" />
   </device>

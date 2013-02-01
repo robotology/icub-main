@@ -4,6 +4,7 @@
  
 <devices>
   <device name="right_upper_arm_mc" type="embObjMotionControl">
+      <params file="general.xml" />
       <params file="hardware/electronics/ems3-eln.xml" />
       <params file="hardware/mechanicals/ems3-mec.xml" />
   </device>

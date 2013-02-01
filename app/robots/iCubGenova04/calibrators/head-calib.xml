@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
 	<device name="head_calibrator" type="headCalibratorV2">
+                <params file="general.xml" />
 
 		<group name="GENERAL">
 		  <param name="Joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
-		    <param name="DeviceName"> head_calibratorV2 </param>	<!-- simple string to be used in code to have a human readable description -->
+		    <param name="DeviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
 		<group name="HOME">

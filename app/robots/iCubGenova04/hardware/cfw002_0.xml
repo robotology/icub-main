@@ -3,6 +3,7 @@
  <!-- Initialization file for cfw002  motor contol for the head - 6 joints -->
 <devices>
   <device name="head_mc" type="canmotioncontrol">
+      <params file="general.xml" />
       <params file="hardware/electronics/cfw002_0-eln.xml" />
       <params file="hardware/mechanicals/cfw002_0-mec.xml" />
   </device>
@@ -10,6 +11,7 @@
 </devices>
   
   <device name="torso_skin" type="skinprototype">
+      <params file="general.xml" />
       <params file="hardware/electronics/cfw002_0-eln.xml" />
   </device>
   

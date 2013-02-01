@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
 	<device name="torso_calibrator" type="parametricCalibrator">
-
+                <params file="general.xml" />
+                
 		<group name="GENERAL">
 		    <param name="Joints"> 3 </param> <!-- the number of joints of the robot part -->
-		    <param name="DeviceName"> torso_calibrator </param>
+		    <param name="DeviceName"> Torso Calibrator </param>
 		</group>
 
 		<group name="HOME">

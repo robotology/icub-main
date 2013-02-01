@@ -4,6 +4,7 @@
 
  <devices>
   <device name="torso_mc" type="embObjMotionControl">
+      <params file="general.xml" />
       <params file="hardware/electronics/ems5-eln.xml" />
       <params file="hardware/mechanicals/ems5-mec.xml" />
   </device>

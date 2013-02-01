@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
 	<device name="right_leg_calibrator" type="parametricCalibrator">
-
+                <params file="general.xml" />
+                
 		<group name="GENERAL">
 		    <param name="Joints">  6  </param> <!-- the number of joints of the robot part -->
-		    <param name="DeviceName"> right_leg_calibrator </param>
+		    <param name="DeviceName"> RL Calibrator </param>
 		</group>
 
 		<group name="HOME">
