@@ -27,7 +27,6 @@ const double 	POSITION_THRESHOLD		= 2.0;
 int numberOfJoints =0;
 
 parametricCalibrator::parametricCalibrator() :
-    logfile(stderr),
     type(NULL),
     param1(NULL),
     param2(NULL),
@@ -54,7 +53,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 {
     Property p;
     p.fromString(config.toString());
-    
+
     if (p.check("GENERAL")) 
     {
       if(p.findGroup("GENERAL").check("DeviceName"))
@@ -63,13 +62,13 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
       }
     }
 
-    yTrace() << "\n parameters: " << p.toString().c_str();
+    yTrace()  << deviceName.c_str() << "parameters: \n\t" << p.toString().c_str();
 
 
     int nj = p.findGroup("CALIBRATION").find("Joints").asInt();
     if (nj == 0)
     {
-        fprintf(logfile, "%s: Calibrator is for %d joints but device has %d\n", deviceName.c_str(), numberOfJoints, nj);
+        yDebug() << deviceName.c_str() <<  ": Calibrator is for %d joints but device has " << numberOfJoints;
         return false;
     }
 
@@ -85,17 +84,6 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     currVel = new double[nj];
     homePos = new double[nj];
     homeVel = new double[nj];
-
-    logfile_name = p.findGroup("CALIBRATION").find("Logfile").asString();
-    if (logfile_name != "")
-    {
-        fprintf(stdout, "CALIB::calibrator: opening logfile %s\n", logfile_name.c_str());
-        logfile = fopen (logfile_name.c_str(), "w");
-    }
-    else
-    {
-        fprintf(stdout, "CALIB: no logfile specified, errors displayed on standard stderr\n");
-    }
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
 
@@ -143,7 +131,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     }
     else
     {
-        fprintf(logfile, "CALIB[part?] :MaxPWM parameter not found, assuming 60\n");
+        yWarning() << deviceName.c_str()<< ": MaxPWM parameter not found, assuming 60";
         for (i = 1; i < nj+1; i++) maxPWM[i-1] = 60;
     }
 
@@ -226,12 +214,6 @@ bool parametricCalibrator::close ()
     if (homeVel != NULL) {
         delete[] homeVel;
         homeVel = NULL;
-    }
-
-    if (logfile_name != "") {
-        fclose(logfile);
-        logfile_name.clear();
-        logfile = stderr;
     }
 
     return true;
@@ -567,12 +549,11 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     if (wait)
     {
-        fprintf(logfile, "%s: Moving to park positions \n", deviceName.c_str());
+        yDebug() << deviceName.c_str() << ": Moving to park positions";
         bool done=false;
         while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
         {
             iPosition->checkMotionDone(&done);
-            fprintf(logfile, ".");
             Time::delay(1);
             timeout++;
         }
@@ -592,10 +573,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
         }
     }
 
-    if (abortParking)
-        fprintf(logfile, "%s: Park was aborted!\n", deviceName.c_str());
-    else
-        fprintf(logfile, "%s: Park was done!\n", deviceName.c_str());
+    yDebug() << "Park was " << (abortParking ? "aborted" : "done");
 
 // iCubInterface is already shutting down here... so even if errors occour, what else can I do?
 
@@ -604,14 +582,14 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
 bool parametricCalibrator::quitCalibrate()
 {
-    fprintf(logfile, "%s: Quitting calibrate\n", deviceName.c_str());
+    yDebug() << deviceName.c_str() << ": Quitting calibrate\n";
     abortCalib=true;
     return true;
 }
 
 bool parametricCalibrator::quitPark()
 {
-    fprintf(logfile, "%s: Quitting parking\n", deviceName.c_str());
+    yDebug() << deviceName.c_str() << ": Quitting parking\n";
     abortParking=true;
     return true;
 }
