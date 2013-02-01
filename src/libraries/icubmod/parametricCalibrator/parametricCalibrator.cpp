@@ -64,6 +64,10 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 
     yTrace()  << deviceName.c_str() << "parameters: \n\t" << p.toString().c_str();
 
+    // Check Vanilla = do not use calibration!
+    isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
+    isVanilla = !!isVanilla;
+    yError() << "embObjMotionControl: Vanilla " << isVanilla;
 
     int nj = p.findGroup("CALIBRATION").find("Joints").asInt();
     if (nj == 0)
@@ -326,6 +330,12 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         //
         // Calibrazione
         //
+
+        if(isVanilla)
+        {
+            yWarning() << deviceName "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
+            return true;
+        }
 
         lit  = tmp.begin();
         while(lit != lend)		// per ogni giunto del set

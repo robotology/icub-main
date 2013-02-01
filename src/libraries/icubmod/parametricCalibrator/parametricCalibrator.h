@@ -114,6 +114,8 @@ private:
     double *homePos;
     bool abortCalib;
     bool abortParking;
+
+    int           isVanilla;
 //     FILE   *logfile;   
 //     std::string  logfile_name;
     
