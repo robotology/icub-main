@@ -20,7 +20,7 @@ using namespace yarp::dev;
 // calibrator for the arm of the Arm iCub
 
 const int 		PARK_TIMEOUT=30;
-const double 	GO_TO_ZERO_TIMEOUT		= 10; //seconds how many? // was 10
+const double 	GO_TO_ZERO_TIMEOUT		= 5; //seconds how many? // was 10
 const int 		CALIBRATE_JOINT_TIMEOUT	= 25;
 const double 	POSITION_THRESHOLD		= 2.0;
 
@@ -69,7 +69,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     int nj = p.findGroup("CALIBRATION").find("Joints").asInt();
     if (nj == 0)
     {
-        fprintf(logfile, "CALIB[part?]: Calibrator is for %d joints but device has %d\n", numberOfJoints, nj);
+        fprintf(logfile, "%s: Calibrator is for %d joints but device has %d\n", deviceName.c_str(), numberOfJoints, nj);
         return false;
     }
 
@@ -303,15 +303,17 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
     if (totJointsToCalibrate > nj)
     {
-        yError() << "CALIB: too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than "<< nj;
+        yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than "<< nj;
         return false;
     }
 
     original_pid=new Pid[nj];
     limited_pid =new Pid[nj];
 
-    Bit=joints.begin();
+    yWarning() << "\n\nGoing to calibrate!!!!\n\n";
+    Time::delay(5);
 
+    Bit=joints.begin();
     while( (Bit != Bend) && (!abortCalib) )			// per ogni set di giunti
     {
         setOfJoint_idx++;
@@ -350,7 +352,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
             // Enable amp moved to MotionControl class;
             // Here we just call the calibration procedure
-            yDebug() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibrating... current enc values: " << currPos[(*lit)];
+            yWarning() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibrating... current enc values: " << currPos[(*lit)];
             calibrateJoint((*lit));
             lit++;
         }
@@ -359,7 +361,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
-            yDebug() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Calibration done!\n";
+            yWarning() <<  "CALIB["  << setOfJoint_idx << "]: Calibration ended, going to zero!\n";
             lit  = tmp.begin();
             lend = tmp.end();
             while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
@@ -377,7 +379,19 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 lit++;
             }
         }
+        Time::delay(0.5f);
 
+
+        lit  = tmp.begin();
+		while(lit != lend)		// per ogni giunto del set
+		{
+			// Abilita il giunto
+			iPosition->setPositionMode();
+			iAmps->enableAmp((*lit));
+			iPids->enablePid((*lit));
+			lit++;
+		}
+		Time::delay(0.5f);	// needed?
 
         lit  = tmp.begin();
         while(lit != lend)		// per ogni giunto del set
@@ -393,17 +407,17 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         while(lit != lend)		// per ogni giunto del set
         {
             // abs sensors is BLL style
-            goneToZero &= checkGoneToZero(*lit);
+            goneToZero &= checkGoneToZeroThreshold(*lit);
             lit++;
         }
 
         if(goneToZero)
         {
-            yDebug() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: Reached zero position!\n";
+            yDebug() <<  "CALIB["  << setOfJoint_idx << "]: Reached zero position!\n";
         }
         else			// keep pid safe and go on
         {
-            yError() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: some axis got timeout while reaching zero position... disabling this set of axes\n";
+            yError() <<  "CALIB["  << setOfJoint_idx << ":" << (*lit) << "]: some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
             while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
@@ -438,7 +452,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
         lit  = set.begin();
         while(lit != lend)		// per ogni giunto del set
         {
-            printf("check calib joint ended (%d)\n", (*lit));
+            yDebug() << "check calib joint ended, j" << (*lit);
             if (abortCalib)
             {
                 yDebug() << "CALIB: aborted\n";
@@ -507,38 +521,28 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     while ( (!finished) && (!abortCalib))
     {
         iEncoders->getEncoder(j, &angj);
-        for (int l=0; l<4; l++)
-        {
-            iEncoders->getEncoder(l, &ang[l]);
-            iPids->getOutput(l,&pwm[l]);
-        }
 
         delta = fabs(angj-zeroPos[j]);
-        fprintf(logfile, "%s , joint %d:  curr:%+7.2f des:%+7.2f -> delta:%+7.2f \
-                        *** encs: %+7.2f %+7.2f %+7.2f %+7.2f pwms: %+7.2f %+7.2f %+7.2f %+7.2f\n",
-                deviceName.c_str(), j, angj, zeroPos[j], delta,
-                ang[0], ang[1], ang[2], ang[3],
-                pwm[0], pwm[1], pwm[2], pwm[3]);
-        if (delta<POSITION_THRESHOLD)
+        yWarning() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta;
+
+        if (delta < POSITION_THRESHOLD)
         {
-            fprintf(logfile, "%s, joint %d: completed! delta:%f\n", deviceName.c_str(), j,delta);
+        	yWarning() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta;
             finished=true;
         }
 
-        if (logfile_name != "")
-            Time::delay (0.1);
-        else
-            Time::delay (0.5);
-
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
-            fprintf(logfile, "%s, joint %d: Timeout while going to zero!\n", deviceName.c_str(), j);
+        	yWarning() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
             return false;
         }
+        if (abortCalib)
+        {
+               yWarning() <<  deviceName.c_str() << " joint " << j << " Abort wait while going to zero!\n";
+               break;
+        }
+        Time::delay(0.5);
     }
-    if (abortCalib)
-        fprintf(logfile, "%s, joint %d: Abort wait while going to zero!\n", deviceName.c_str(), j);
-
     return finished;
 }
 
@@ -551,7 +555,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     if ( !iEncoders->getAxes(&nj))
     {
-        yError() << "CALIB[part?]: error getting number of encoders" ;
+        yError() << deviceName << ": error getting number of encoders" ;
         return false;
     }
 
