@@ -1125,7 +1125,7 @@ public:
     * of robot encoders. 
     * @param robotEncoders the vector of robot encoders from which 
     *                  to extract the joint values of the finger. It
-    *                  can be composed of 16 or 7 elements,
+    *                  can be composed of 16 or 9 elements,
     *                  depending if it comprises the arm encoders as
     *                  well or just the hand encoders.
     * @param chainJoints the vector containing the joints values to 
@@ -1133,10 +1133,10 @@ public:
     * @return true/false on success/failure. 
     *  
     * @note This method accounts also for the underactuated joints, 
-    *       meaning that the actual number of DOFs for the index is
-    *       4 and not 3: one for the abduction movement, one for the
-    *       proximal movement and 2 coupled movements for the distal
-    *       joint (equally partitioned).
+    *       meaning that the actual number of DOFs of the index, for
+    *       example, is 4 and not 3: one for the abduction movement,
+    *       one for the proximal movement and 2 coupled movements
+    *       for the distal joint (equally partitioned).
     */
     virtual bool getChainJoints(const yarp::sig::Vector &robotEncoders,
                                 yarp::sig::Vector &chainJoints);

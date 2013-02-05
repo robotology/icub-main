@@ -1785,7 +1785,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
 /************************************************************************/
 bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints)
 {
-    if ((robotEncoders.length()!=7) && (robotEncoders.length()!=16))
+    if ((robotEncoders.length()!=9) && (robotEncoders.length()!=16))
         return false;
 
     int offs=(robotEncoders.length()==16?7:0);
