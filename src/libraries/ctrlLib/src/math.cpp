@@ -277,7 +277,7 @@ Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
     */
 
     double Ry2=atan2(-R[2][0],sqrt(R[2][1]*R[2][1]+R[2][2]*R[2][2]));
-    double ct = 1;//cos(Ry2);
+    double ct = 1.0;//cos(Ry2);
     double Rz1=atan2(R[1][0]/ct,R[0][0]/ct);
     double Rx3=atan2(R[2][1]/ct,R[2][2]/ct);
     v[0] = Rx3;
