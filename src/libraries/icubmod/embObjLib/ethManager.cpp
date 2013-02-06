@@ -417,10 +417,17 @@ void *recvThread(void * arg)
 
     ACE_SOCK_Dgram *pSocket = (ACE_SOCK_Dgram*) arg;
 
-    Time::delay(5);
+    ethResIt iterator = ethResCreator::instance()->begin();
+    while( (NULL == pSocket) || (NULL == *iterator) )
+    {
+    	yError() << "socket o ethResCreator non pronto, aspetto un po'";
+    	Time::delay(1);
+    }
 
-    printf("Starting udp RECV thread\n");
-	while(keepGoingOn2)
+    yTrace();
+    yError() << "Starting udp RECV thread\n";
+
+    while(keepGoingOn2)
 	{
 		// per ogni msg ricevuto
 		recv_size = pSocket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0);
@@ -438,6 +445,13 @@ void *recvThread(void * arg)
 				if((*iterator)->getRemoteAddress() == sender_addr)
 				{
 					ethRes = (*iterator);
+					if(ethRes == NULL || ethRes->transceiver == NULL)
+					{
+						yError() << "trying to access a non initted ethres";
+						iterator++;
+						continue;
+					}
+
 					if(recv_size > ethRes->getBufferSize() || (recv_size <=0) )
 					{
 						printf("Error, received a message of wrong size ( received %d bytes while buffer is %d bytes long)\n", recv_size, ethRes->getBufferSize());
@@ -457,6 +471,7 @@ void *recvThread(void * arg)
 			printf("Received weird msg of size %d\n", recv_size);
 		}
 	}
+    printf("\n Exiting recv thread \n");
 	return NULL;
 }
 
@@ -495,6 +510,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 		if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
 			printf(("Error in spawning recvThread\n"));
 
+		Time::delay(0.5);
 		// Start sending thread
 		handle->start();
 	}
@@ -575,11 +591,23 @@ void TheEthManager::run()
 	ethResources 	*ethRes;
 	uint16_t 		bytes_to_send = 0;
 
-	while(iterator!=ethResList->end())
+	while( iterator != ethResList->end() )
 	{
 		p_to_data = 0;
 		bytes_to_send = 0;
+		if(NULL == *iterator)
+		{
+			yError() << "EthManager::run, iterator==NULL";
+			continue;
+		}
+
 		ethRes = (*iterator);
+		if(NULL == ethRes->transceiver)
+		{
+			yError() << "EthManager::run, iterator==NULL";
+			continue;
+		}
+
 		ethRes->getPack(&p_to_data, &bytes_to_send);
 		if((bytes_to_send > 20) && (0 != p_to_data))
 		{

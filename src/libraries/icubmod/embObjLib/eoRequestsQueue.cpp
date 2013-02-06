@@ -44,7 +44,7 @@ bool eoThreadArray::getId(int *i)
 eoThreadEntry::eoThreadEntry():	_synch(0),
 								_mutex(1)
 {
-	_timeout = 0.1f;
+	_timeout = 1.1f;
 	clear();
 }
 

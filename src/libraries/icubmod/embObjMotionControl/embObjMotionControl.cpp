@@ -242,7 +242,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     // Check Vanilla = do not use calibration!
     isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
     isVanilla = !!isVanilla;
-    yError() << "embObjMotionControl: Vanilla " << isVanilla;
+    yWarning() << "embObjMotionControl: Vanilla " << isVanilla;
 
     // get EMS ip address from config string
     ACE_TCHAR address[64] = {0};
@@ -393,7 +393,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             tmp_A2E = xtmp.get(i).asDouble();
 
-            if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration 
+            if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration
                 _angleToEncoder[i-1] = 1;
             else
                 _angleToEncoder[i-1] =  (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
@@ -527,7 +527,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     ////// IMPEDANCE DEFAULT VALUES
     if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints+1))
     {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
+        yWarning() <<  "Using default value = 0 (disabled)";
         for(i=1; i<_njoints+1; i++)
             _torqueSensorChan[i-1] = 0;
     }
@@ -538,7 +538,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
     {
-        fprintf(stderr, "IMPEDANCE parameters section found\n");
+        yWarning() << "IMPEDANCE parameters section found";
         for(j=0; j<_njoints; j++)
         {
             char str2[80];
@@ -554,7 +554,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
     else
     {
-        printf("Impedance section NOT enabled, skipping...\n");
+        yWarning() << "Impedance section NOT enabled, skipping.";
     }
 
     ////// IMPEDANCE LIMITS (UNDER TESTING)
@@ -573,7 +573,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
     {
-        fprintf(stderr, "Group LIMITS not found in configuration file\n");
+        yWarning() << "Group LIMITS not found in configuration file";
         return false;
     }
     // current limit
@@ -1229,7 +1229,7 @@ bool embObjMotionControl::getOutputsRaw(double *outs)
 
 bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
-    // yTrace();
+	yTrace() << _fId.name << "joint" << j;
     EOnv tmp;
     //_mutex.wait();
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
@@ -1546,7 +1546,7 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 
 bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, double p2, double p3)
 {
-    // yTrace();
+     yTrace() << _fId.name;
     EOnv tmp_controlmode;
     // Tenere il check o forzare questi sottostati?
     if(!_enabledAmp[j-_firstJoint] )
@@ -1631,6 +1631,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 bool embObjMotionControl::doneRaw(int axis)
 {
+	yTrace() << _fId.name;
     // used only in calibration procedure, for normal work use the checkMotionDone
     EOnv tmp;
 
@@ -1703,6 +1704,7 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
+	yTrace() << _fId.name << "joint" << j;
     // mutex took here was used for test to insure will have both set and get in the same ropframe (debug purpose)
     //	res->transceiver->_mutex.wait();
 

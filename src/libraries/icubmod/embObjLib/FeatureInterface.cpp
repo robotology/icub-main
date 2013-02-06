@@ -19,7 +19,7 @@ bool addEncoderTimeStamp(FEAT_ID *id, int jointNum)
 {
     embObjMotionControl * tmp =  (embObjMotionControl*) (ethResCreator::instance()->getHandleFromEP(id->ep));
 #warning "add timestamp"
-    if(tmp != 0)
+    if(tmp != NULL)
     {
     	tmp->refreshEncoderTimeStamp(jointNum);
     }

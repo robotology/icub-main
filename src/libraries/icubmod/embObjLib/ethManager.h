@@ -130,7 +130,7 @@ public:
     bool              registerFeature(yarp::os::Searchable &config);
 
     int               send(void *data, size_t len);
-    ACE_INET_Addr	    getRemoteAddress();
+    ACE_INET_Addr	  getRemoteAddress();
     void              getPack(uint8_t **pack, uint16_t *size);
     ACE_UINT16        getBufferSize();
 

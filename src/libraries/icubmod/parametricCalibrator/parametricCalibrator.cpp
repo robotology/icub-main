@@ -40,6 +40,7 @@ parametricCalibrator::parametricCalibrator() :
     zeroVel(NULL),
     homeVel(0),
     homePos(0),
+    zeroPosThreshold(0),
     abortCalib(false)
 {
 }
@@ -67,7 +68,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     // Check Vanilla = do not use calibration!
     isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
     isVanilla = !!isVanilla;
-    yError() << "embObjMotionControl: Vanilla " << isVanilla;
+    yWarning() << "embObjMotionControl: Vanilla " << isVanilla;
 
     int nj = p.findGroup("CALIBRATION").find("Joints").asInt();
     if (nj == 0)
@@ -88,6 +89,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     currVel = new double[nj];
     homePos = new double[nj];
     homeVel = new double[nj];
+    zeroPosThreshold = new double[nj];
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
 
@@ -139,6 +141,16 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
         for (i = 1; i < nj+1; i++) maxPWM[i-1] = 60;
     }
 
+    if (p.findGroup("CALIBRATION").check("PosZeroThreshold"))
+    {
+        xtmp = p.findGroup("CALIBRATION").findGroup("PosZeroThreshold");
+        for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
+    }
+    else
+    {
+        yWarning() << deviceName.c_str()<< ": zero position threshold not found, assuming 2 degrees, this may be too strict for fingers...";
+        for (i = 1; i < nj+1; i++) zeroPosThreshold[i-1] = POSITION_THRESHOLD;
+    }
 
     xtmp = p.findGroup("CALIB_ORDER");
 
@@ -244,13 +256,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     p->view(iControlMode);
 
     if (!(iCalibrate && iAmps && iPosition && iPids && iControlMode)) {
-        yError() << "CALIB: interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
+        yError() << deviceName << ": interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
         return false;
     }
 
     if ( !iEncoders->getAxes(&nj))
     {
-        yError() << "CALIB: error getting number of encoders" ;
+        yError() << deviceName << "CALIB: error getting number of encoders" ;
         return false;
     }
 
@@ -296,9 +308,16 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     original_pid=new Pid[nj];
     limited_pid =new Pid[nj];
 
-    yWarning() << "\n\nGoing to calibrate!!!!\n\n";
-    Time::delay(5);
+    if(isVanilla)
+        yWarning() << deviceName << "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
+    else
+    	yWarning() << deviceName << "\n\nGoing to calibrate!!!!\n\n";
 
+    yTrace() << "before";
+    // to be removed ... (?)
+    Time::delay(10.0f);
+
+    yTrace() << "After";
     Bit=joints.begin();
     while( (Bit != Bend) && (!abortCalib) )			// per ogni set di giunti
     {
@@ -312,12 +331,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         {
             if ((*lit) >= nj)		// check the axes actually exists
             {
-                yError() << "Asked to calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< nj << ")";
+                yError() << deviceName << "Asked to calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< nj << ")";
                 return false;
             }
             if(!iPids->getPid((*lit),&original_pid[(*lit)]) )
             {
-                yError() << "getPid joint " << (*lit) << "failed... aborting calibration";
+                yError() << deviceName << "getPid joint " << (*lit) << "failed... aborting calibration";
+//                yWarning() << " commented exit on error for debug";
+//                continue;
                 return false;
             }
             limited_pid[(*lit)]=original_pid[(*lit)];
@@ -333,8 +354,8 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(isVanilla)
         {
-            yWarning() << deviceName << "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
-            return true;
+            Bit++;
+            continue;
         }
 
         lit  = tmp.begin();
@@ -344,11 +365,22 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
             // Enable amp moved to MotionControl class;
             // Here we just call the calibration procedure
-            yWarning() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... current enc values: " << currPos[(*lit)];
+            yWarning() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values BEFORE calib: " << currPos[(*lit)];
             calibrateJoint((*lit));
             lit++;
         }
         Time::delay(1.0);	// needed?
+
+        lit  = tmp.begin();
+        while(lit != lend)		// per ogni giunto del set
+        {
+            iEncoders->getEncoders(currPos);
+
+            // Enable amp moved to MotionControl class;
+            // Here we just call the calibration procedure
+            yWarning() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
+            lit++;
+        }
 
 
         if(checkCalibrateJointEnded((*Bit)) )
@@ -515,11 +547,11 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
         iEncoders->getEncoder(j, &angj);
 
         delta = fabs(angj-zeroPos[j]);
-        yWarning() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta;
+        yWarning() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
 
-        if (delta < POSITION_THRESHOLD)
+        if (delta < zeroPosThreshold[j])
         {
-        	yWarning() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta;
+        	yWarning() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;
         }
 
@@ -557,6 +589,12 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);			// all joints together????
 
+    if(isVanilla)
+    {
+        yWarning() << deviceName << "Vanilla flag is on!! Faking park!!";
+        return true;
+    }
+
     if (wait)
     {
         yDebug() << deviceName.c_str() << ": Moving to park positions";
@@ -575,7 +613,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
                 {
                     if (!done)
                         yError() << deviceName << ", joint " << j << ": not in position after timeout";
-                    // else means that asxe get to the position right after the timeout.... do nothing here
+                    // else means that axes get to the position right after the timeout.... do nothing here
                 }
                 else	// if the CALL to checkMotionDone fails for timeout
                     yError() << deviceName << ", joint " << j << ": did not answer during park";

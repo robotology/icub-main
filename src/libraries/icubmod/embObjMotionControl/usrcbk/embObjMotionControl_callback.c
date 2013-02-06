@@ -59,6 +59,40 @@
 
 #define DEG_2_ICUBDEG  182.04444
 
+void ep2char(char* str, uint16_t ep)
+{
+	switch(	ep)
+	{
+	case endpoint_mc_leftupperarm:
+		memcpy(str, "LA U MC\0", strlen("LA U MC\0")+1);
+		break;
+	case endpoint_mc_leftlowerarm:
+		memcpy(str, "LA L MC\0", strlen("LA L MC\0")+1);
+		break;
+	case endpoint_mc_rightupperarm:
+		memcpy(str, "RA U MC\0", strlen("RA U MC\0")+1);
+		break;
+	case endpoint_mc_rightlowerarm:
+		memcpy(str, "RA L MC\0", strlen("RA L MC\0")+1);
+		break;
+	case endpoint_mc_torso:
+		memcpy(str, "T MC\0", strlen("T MC\0")+1);
+		break;
+	case endpoint_mc_leftupperleg:
+		memcpy(str, "LL U MC\0", strlen("LL U MC\0")+1);
+		break;
+	case endpoint_mc_leftlowerleg:
+		memcpy(str, "LL L MC\0", strlen("LL L MC\0")+1);
+		break;
+	case endpoint_mc_rightupperleg:
+		memcpy(str, "RL U MC\0", strlen("RL U MC\0")+1);
+		break;
+	case endpoint_mc_rightlowerleg:
+		memcpy(str, "RL L MC\0", strlen("RL L MC\0")+1);
+		break;
+	}
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
@@ -66,6 +100,11 @@
 void jwake(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, eOcfg_nvsEP_mc_jointNVindex_t nv_name)
 {
 	void *handler = (void*) get_MChandler_fromEP(nv->ep);
+	if(NULL == handler)
+	{
+		printf("eoMC class not found\n");
+		return;
+	}
 	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);  // ce ne battiamo il belino   // (??)
 	uint16_t epindex, nvindex;
 	EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
@@ -305,7 +344,9 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__maxpositionofjoint(eOcfg_nvsEP
 {
 	//transceiver_wait(nv->ep);
 	eOmeas_position_t *jMaxPosition_b = nv->rem;
-	printf("Callback: maxpositionofjoint for Joint num = %d ", xx);
+	char str[16];
+	ep2char(str, nv->ep);
+	printf("Callback: maxpositionofjoint for ep 0x%0X (%s) Joint num = %d ", nv->ep, str, xx);
 	printf("pos = %d\n", *jMaxPosition_b);
 	jwake(xx, nv, jointNVindex_jconfig__maxpositionofjoint);
 	//transceiver_post(nv->ep);
@@ -335,7 +376,9 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig__maxcurrentofmotor(eOcfg_nvsEP_
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "pidposition strong iCubInterface"
-	printf("jconfig__pidposition Callback eoMotionControl, j=%d ne'\n", xx);
+	char str[16];
+	ep2char(str, nv->ep);
+	printf("jconfig__pidposition Callback eoMotionControl, ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, xx, xx);
 	//transceiver_wait(nv->ep);
 	jwake(xx, nv, jointNVindex_jconfig__pidposition);
 	//transceiver_post(nv->ep);

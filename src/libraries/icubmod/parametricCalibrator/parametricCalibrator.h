@@ -112,6 +112,7 @@ private:
     double *zeroPos;
     double *homeVel;
     double *homePos;
+    double *zeroPosThreshold;
     bool abortCalib;
     bool abortParking;
 
