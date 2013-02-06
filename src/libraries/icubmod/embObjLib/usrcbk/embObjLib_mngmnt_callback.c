@@ -68,8 +68,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
-
-static void s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(EOarray* array);
+//this function has been commented because not called in pc104
+//static void s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(EOarray* array);
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
@@ -118,7 +118,8 @@ extern void eo_cfg_nvsEP_mngmnt_usr_hid_INIT__ropsigcfgassign(uint16_t n, const 
     
     if(eobool_false == theOwnershipIsRemote)
     {   // function is called from within the local board
-        s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(arrayloc);  
+    	//this function has been commented because not called in pc104
+        //s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(arrayloc);
     }
     else
     {   // function is called from within the remote host because it has initialised its data
@@ -137,7 +138,8 @@ extern void eo_cfg_nvsEP_mngmnt_usr_hid_UPDT__ropsigcfgcommand(uint16_t n, const
     
     if(eobool_false == theOwnershipIsRemote)
     {   // function is called from within the local board
-        s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(arrayloc);  
+    	//this function has been commented because not called in pc104
+        //s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(arrayloc);
     }
     else
     {   // function is called from within the remote host because it has received a say or a sig
@@ -152,42 +154,42 @@ extern void eo_cfg_nvsEP_mngmnt_usr_hid_UPDT__ropsigcfgcommand(uint16_t n, const
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
-
-static void s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(EOarray* array)
-{
-    uint8_t size, i;
-    eOropSIGcfg_t *sigcfg;
-    eo_transceiver_ropinfo_t ropinfo;
-    EOtransceiver* theems00transceiver; 
-
-    eOresult_t res;
-    
-    if(NULL == (theems00transceiver = eo_boardtransceiver_GetHandle()))
-    {
-        return;
-    }
-    
-    if((eo_array_ItemSize(array) != sizeof(eOropSIGcfg_t)) || (NUMOFROPSIGCFG != eo_array_Capacity(array)) || ((size = eo_array_Size(array)) > NUMOFROPSIGCFG))
-    {
-        return;
-    }
-
-    eo_transceiver_rop_regular_Clear(theems00transceiver);
-
-    for(i=0; i<size; i++)
-    {
-        sigcfg = (eOropSIGcfg_t*)eo_array_At(array, i);
-        //#warning --> so far the regular rops are sent with a eok_ropconfig_basic, that is to say: without time64bit
-        ropinfo.ropcfg              = eok_ropconfig_basic;
-        ropinfo.ropcfg.plustime     = sigcfg->plustime;
-        ropinfo.ropcode             = eo_ropcode_sig;
-        ropinfo.nvep                = sigcfg->ep;    
-        ropinfo.nvid                = sigcfg->id;
-        res = eo_transceiver_rop_regular_Load(theems00transceiver, &ropinfo);
-        res = res;
-    }
-
-}
+//this function has been commented because not called in pc104
+//static void s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(EOarray* array)
+//{
+//    uint8_t size, i;
+//    eOropSIGcfg_t *sigcfg;
+//    eo_transceiver_ropinfo_t ropinfo;
+//    EOtransceiver* theems00transceiver;
+//
+//    eOresult_t res;
+//
+//    if(NULL == (theems00transceiver = eo_boardtransceiver_GetHandle()))
+//    {
+//        return;
+//    }
+//
+//    if((eo_array_ItemSize(array) != sizeof(eOropSIGcfg_t)) || (NUMOFROPSIGCFG != eo_array_Capacity(array)) || ((size = eo_array_Size(array)) > NUMOFROPSIGCFG))
+//    {
+//        return;
+//    }
+//
+//    eo_transceiver_rop_regular_Clear(theems00transceiver);
+//
+//    for(i=0; i<size; i++)
+//    {
+//        sigcfg = (eOropSIGcfg_t*)eo_array_At(array, i);
+//        //#warning --> so far the regular rops are sent with a eok_ropconfig_basic, that is to say: without time64bit
+//        ropinfo.ropcfg              = eok_ropconfig_basic;
+//        ropinfo.ropcfg.plustime     = sigcfg->plustime;
+//        ropinfo.ropcode             = eo_ropcode_sig;
+//        ropinfo.nvep                = sigcfg->ep;
+//        ropinfo.nvid                = sigcfg->id;
+//        res = eo_transceiver_rop_regular_Load(theems00transceiver, &ropinfo);
+//        res = res;
+//    }
+//
+//}
 
 
 
