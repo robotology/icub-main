@@ -195,32 +195,32 @@ private:
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
-    double  *_encodersStamp;                     /** keep information about acquisition time for encoders read */
-    float *_encoderconversionfactor;           /** iCubDegrees to encoder conversion factors */
-    float *_encoderconversionoffset;           /** iCubDegrees offset */
+    double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
+    float *_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
+    float *_encoderconversionoffset;            /** iCubDegrees offset */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
-    Pid *_tpids;								/** initial torque gains */
-    bool _tpidsEnabled;							/** abilitation for torque gains */
+    Pid *_tpids;                                /** initial torque gains */
+    bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     //	DebugParameters *_debug_params;             /** debug parameters */
-    ImpedanceParameters *_impedance_params;		/** impedance parameters */
+    ImpedanceParameters *_impedance_params;     /** impedance parameters */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
-    int *_torqueSensorId;						/** Id of associated Joint Torque Sensor */
-    int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
-    double *_maxTorque;						    /** Max torque of a joint */
+    int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
+    int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
+    double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
-    bool  *checking_motiondone;					/* flag if I' m already waiting for motion done */
+    bool  *checking_motiondone;                 /* flag telling if I' m already waiting for motion done */
 
     // basic knowledge of my joints
-    int		_njoints;							// Number of joints handled by this EMS; this values will be extracted by the config file
-    int 	_firstJoint;						// in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
+    int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
+    int   _firstJoint;                          // in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
 
     // debug
     int 	start;
@@ -247,10 +247,9 @@ public:
     embObjMotionControl();
     ~embObjMotionControl();
 
-    char					info[SIZE_INFO];
-    Semaphore				semaphore;
-    eoRequestsQueue			*requestQueue;	// tabella che contiene la lista delle attese
-    
+    char                info[SIZE_INFO];
+    Semaphore           semaphore;
+    eoRequestsQueue     *requestQueue;	// tabella che contiene la lista delle attese
 
     // embObj stuff -- this is better if private... do a get method!!
     ethResources      *res;

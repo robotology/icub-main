@@ -233,7 +233,12 @@ embObjMotionControl::~embObjMotionControl()
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
-    std::string str=config.toString().c_str();
+    std::string str;
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
+        str=config.toString().c_str();
+    else
+        str="\n";
+
     yTrace() << str;
 
     Property prop;

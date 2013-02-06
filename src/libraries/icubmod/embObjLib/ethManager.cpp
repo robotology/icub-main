@@ -40,16 +40,16 @@ yarp::os::Semaphore ethResources::_mutex = 1;
 
 ethResources::ethResources()
 {
-	how_many_features 	= 0;
-	transceiver 		= NULL;
-	theEthManager_h 	= NULL;
+    how_many_features   = 0;
+    transceiver         = NULL;
+    theEthManager_h     = NULL;
 }
 
 ethResources::~ethResources()
 {
-	// What to do here??
-	if(NULL != transceiver)
-		delete transceiver;
+    // What to do here??
+    if(NULL != transceiver)
+        delete transceiver;
 }
 
 
@@ -64,7 +64,14 @@ bool ethResources::open(yarp::os::Searchable &config)
 	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
 	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	yTrace() << "\n\nEthResources open parameters: " << config.toString().c_str() << "\n";
+   std::string str;
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
+        str=config.toString().c_str();
+    else
+        str="\n";
+
+    yTrace() << str;
+
 
 	//
 	// Get EMS ip addresses and port from config file, in order to correctly configure the transceiver.
@@ -293,9 +300,14 @@ ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
 	ACE_UINT16 	rem_port;
 	ACE_UINT32 	rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-	std::string str=config.toString().c_str();
-	yTrace() << "\n\n EthResCreator parameters\n" << str;
-	
+   std::string str;
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
+        str=config.toString().c_str();
+    else
+        str="\n";
+
+    yTrace() << str;
+
 	//
 	// Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
 	//	a pointer to an already existing object

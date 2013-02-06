@@ -63,7 +63,13 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
       }
     }
 
-    yTrace()  << deviceName.c_str() << "parameters: \n\t" << p.toString().c_str();
+   std::string str;
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
+        str=config.toString().c_str();
+    else
+        str="\n";
+
+    yTrace() << deviceName.c_str() << str;
 
     // Check Vanilla = do not use calibration!
     isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
