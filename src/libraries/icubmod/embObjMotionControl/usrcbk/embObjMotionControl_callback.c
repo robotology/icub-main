@@ -57,6 +57,9 @@
 #endif
 
 
+
+
+
 #define DEG_2_ICUBDEG  182.04444
 
 void ep2char(char* str, uint16_t ep)
@@ -257,6 +260,15 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
     id.ep = nv->ep;
     id.type = MotionControl;
     addEncoderTimeStamp( &id,  jointNum);
+#ifdef _SETPOINT_TEST_
+    //per test
+    setpoint_test_data_t *rec_test_data_ptr;
+    eOmc_joint_status_t *jstatus = nv->rem;
+    uint8_t *aux = (uint8_t*)jstatus;
+    rec_test_data_ptr = (setpoint_test_data_t *)&aux[16];
+
+    check_received_debug_data(&id, jointNum, rec_test_data_ptr);
+#endif
 }
 
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)

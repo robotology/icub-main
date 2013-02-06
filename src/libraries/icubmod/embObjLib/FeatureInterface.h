@@ -57,6 +57,27 @@ typedef struct
     char                  name[SIZE_INFO];
 }FEAT_ID;
 
+
+#ifdef _SETPOINT_TEST_
+typedef enum
+{
+    proccessed_all_rec_pkt              = 0,
+    reached_cfgmaxnumofRXpackets        = 1,
+    error_in_reception                  = 2,
+    rx_phase_finished                   = 3
+}exit_rx_phase_contitions_t;
+typedef struct
+{
+    eOabstime_t             time;           //8B
+    eOmeas_position_t       setpoint;      //4B
+    uint8_t                 numofrecpkt;    //num of pkt(ropframe) received
+    uint8_t                 numofprocesspkt; //num of pkt (ropframe) processed
+    uint8_t                 exit_rx_phase_cond; //code of couse of exit from rx phase (use exit_rx_phase_contitions_t)
+    uint8_t                 looptime;
+}setpoint_test_data_t;
+
+void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *test_data_ptr);
+#endif
 bool addEncoderTimeStamp(FEAT_ID *id, int jointNum);
 bool findAndFill(FEAT_ID *id, void *sk_array);
 bool handle_AS_data(FEAT_ID *id, void *as_array);

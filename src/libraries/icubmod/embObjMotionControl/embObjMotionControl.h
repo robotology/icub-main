@@ -134,8 +134,14 @@ struct SpeedEstimationParameters
 		mot_Acc_estimator_shift=0;
 	}
 };
-
-
+#ifdef _SETPOINT_TEST_
+typedef struct
+{
+	uint64_t send_time;
+	uint64_t last_time;
+	eOmeas_position_t pos;
+}debug_data_of_joint_t;
+#endif
 namespace yarp{
     namespace dev{
         class embObjMotionControl;
@@ -255,7 +261,9 @@ public:
     ethResources      *res;
     //debug
     yarp::os::ConstString 	ethDevName;
-
+#ifdef _SETPOINT_TEST_
+    debug_data_of_joint_t *j_debug_data;
+#endif
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();

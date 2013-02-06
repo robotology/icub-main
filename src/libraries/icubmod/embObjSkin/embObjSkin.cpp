@@ -9,7 +9,9 @@
 
 #include <embObjSkin.h>
 #include "EOnv_hid.h"
-
+#ifdef _SETPOINT_TEST_
+#include "EOYtheSystem.h"
+#endif
 #include <yarp/os/Time.h>
 #include <iostream>
 #include <string.h>
@@ -216,6 +218,9 @@ bool EmbObjSkin::init()
     EOnv 						*nvRoot;
 
     EOnv nvtmp;
+
+    eoy_sys_Initialise(NULL, NULL, NULL);
+
     eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
     nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
     nvRoot = res->transceiver->getNVhandler(ep, nvid, &nvtmp);

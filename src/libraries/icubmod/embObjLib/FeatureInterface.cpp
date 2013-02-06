@@ -14,7 +14,11 @@
 #include "embObjMotionControl.h"
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
-
+#ifdef _SETPOINT_TEST_
+#include <time.h>
+#include <sys/time.h>
+#include "EOYtheSystem.h"
+#endif
 bool addEncoderTimeStamp(FEAT_ID *id, int jointNum)
 {
     embObjMotionControl * tmp =  (embObjMotionControl*) (ethResCreator::instance()->getHandleFromEP(id->ep));
@@ -119,4 +123,78 @@ void transceiver_post(eOnvEP_t ep)
 	embObjMotionControl * handler = (embObjMotionControl*) get_MChandler_fromEP(ep);
 	handler->res->transceiver->_mutex.post();
 }
+
+#ifdef _SETPOINT_TEST_
+static void s_print_test_data(int jointNum, setpoint_test_data_t *test_data_ptr, uint64_t diff_ms)
+{
+	printf("\n\n ******* IN CBK J_STATUS n=%d, diff=(ms)%llu, rec_pkt=%u , process_pkt=%u, exit_rx_phase_cond=%u\n\n",jointNum, diff_ms, test_data_ptr->numofrecpkt, test_data_ptr->numofprocesspkt, test_data_ptr->exit_rx_phase_cond);
+}
+
+void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *test_data_ptr)
+{
+    struct timespec curr_time;
+    static int count = 0;
+    uint64_t curr_time_us;
+    uint64_t diff_ms = 0;
+    embObjMotionControl * tmp =  (embObjMotionControl*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+#warning "check_received_debug_data"
+
+    if(tmp == 0)
+    {
+    	printf("error in heck_received_debug_data\n");
+    }
+
+    //only for joint num 0 verify loop time
+    if(jointNum == 0)
+    {
+    	if(test_data_ptr->looptime >10)
+    	{
+    		printf("--------- LOOP TIME----- %u\n", test_data_ptr->looptime);
+    	}
+    }
+
+    //check if received values are default
+    if( (test_data_ptr->time == 0xABABABABABABABAB) &&
+        (test_data_ptr->setpoint == 0xCCCCCCCC) &&
+        (test_data_ptr->numofrecpkt == 0xFF) &&
+        (test_data_ptr->numofprocesspkt == 0xEE) &&
+        (test_data_ptr->exit_rx_phase_cond == 0xDD)
+      )
+    {
+    	tmp->j_debug_data[jointNum].last_time = test_data_ptr->time;
+    	return; //no setpoint are received!!
+    }
+
+
+    if(test_data_ptr->time == tmp->j_debug_data[jointNum].last_time)
+    {
+    	return; //la scheda non ha più riceviuto set point
+    }
+    else
+    {
+    	tmp->j_debug_data[jointNum].last_time = test_data_ptr->time;
+    }
+
+    curr_time_us = eoy_sys_abstime_get(eoy_sys_GetHandle());
+    diff_ms = (curr_time_us - test_data_ptr->time) /1000;
+
+
+    if( (diff_ms >3) || (test_data_ptr->numofrecpkt != test_data_ptr->numofprocesspkt) || (test_data_ptr->exit_rx_phase_cond != proccessed_all_rec_pkt) )
+    {
+    	s_print_test_data(jointNum, test_data_ptr, diff_ms);
+    }
+    else
+    {
+    	printf("| ");
+    	fflush(stdout);
+    }
+
+
+    if(tmp->j_debug_data[jointNum].pos != test_data_ptr->setpoint)
+    {
+    	printf("******* IN CBK J_STATUS n=%d received pos %d instead of %d\n", jointNum, test_data_ptr->setpoint, tmp->j_debug_data[jointNum].pos);
+    }
+
+}
+#endif
 

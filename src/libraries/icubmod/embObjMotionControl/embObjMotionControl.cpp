@@ -16,7 +16,9 @@
 #include <yarp/os/Time.h>
 
 #include "embObjMotionControl.h"
-
+#ifdef _SETPOINT_TEST_
+#include "EOYtheSystem.h"
+#endif
 #include "Debug.h"
 
 
@@ -143,7 +145,9 @@ bool embObjMotionControl::alloc(int nj)
     _enabledAmp = allocAndCheck<bool>(nj);
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
-
+#ifdef _SETPOINT_TEST_
+    j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
+#endif
     //	_debug_params=allocAndCheck<DebugParameters>(nj);
 
 
@@ -732,7 +736,9 @@ bool embObjMotionControl::init()
     EOarray						*array;
     eOropSIGcfg_t 				sigcfg;
     int 						old = 0;
-
+#ifdef _SETPOINT_TEST_
+    eoy_sys_Initialise(NULL, NULL, NULL);
+#endif
     eOnvID_t nvid, nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, 0, commNVindex__ropsigcfgcommand);
     EOnv *nvRoot_ropsigcfgassign;
     EOnv nv_ropsigcfgassign;
@@ -1733,7 +1739,9 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
     setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[index];
     setpoint.to.position.withvelocity = (eOmeas_velocity_t) _ref_speeds[index];
-
+#ifdef _SETPOINT_TEST_
+    j_debug_data[j].pos = setpoint.to.position.value;
+#endif
     if( !res->transceiver->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
     {
         printf("\n>>> ERROR eo_nv_Set !!\n");
