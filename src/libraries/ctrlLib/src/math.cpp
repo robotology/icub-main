@@ -304,9 +304,9 @@ Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
     double pitch=v[1];  double cp=cos(pitch); double sp=sin(pitch);
     double yaw=v[2];    double cy=cos(yaw);   double sy=sin(yaw);
     
-    Rz(0,0)=cy;   Rz(1,1)=cy;   Rz(0,1)=-sy;  Rz(1,0)=sy;  //z-rotation with yaw
-    Ry(0,0)=cp;   Ry(2,2)=cp;   Ry(0,2)=-sp;  Ry(2,0)=sp;  //y-rotation with pitch
-    Rx(1,1)=cr;   Rx(2,2)=cr;   Rx(1,2)=-sr;  Rx(2,1)=sr;  //x-rotation with roll
+    Rz(0,0)=cy; Rz(1,1)=cy; Rz(0,1)=-sy; Rz(1,0)=sy;    // z-rotation with yaw
+    Ry(0,0)=cp; Ry(2,2)=cp; Ry(0,2)=-sp; Ry(2,0)=sp;    // y-rotation with pitch
+    Rx(1,1)=cr; Rx(2,2)=cr; Rx(1,2)=-sr; Rx(2,1)=sr;    // x-rotation with roll
 
     return Rz*Ry*Rx;
 }
