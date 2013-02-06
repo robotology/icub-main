@@ -1,3 +1,6 @@
+2013-02-06 Andrea Del Prete <andrea.delprete@iit.it>
+      * iKinFwd.cpp/h: fasthessian and djacobian made faster
+
 2012-11-21 Ugo Pattacini <ugo.pattacini@iit.it>
       * iKinFwd.cpp/h: added kinematics for the iCub fingers
 
