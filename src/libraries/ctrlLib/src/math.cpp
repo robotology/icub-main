@@ -245,14 +245,14 @@ Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
         return Matrix(0,0);
     }
 
-    Matrix Rza=eye(4,4);  Matrix Ryb=eye(4,4);   Matrix Rzg=eye(4,4);
-    double alpha = v[0];  double ca=cos(alpha);  double sa=sin(alpha);
-    double beta  = v[1];  double cb=cos(beta);   double sb=sin(beta);
-    double gamma = v[2];  double cg=cos(gamma);  double sg=sin(gamma);
+    Matrix Rza=eye(4,4); Matrix Ryb=eye(4,4);  Matrix Rzg=eye(4,4);
+    double alpha=v[0];   double ca=cos(alpha); double sa=sin(alpha);
+    double beta=v[1];    double cb=cos(beta);  double sb=sin(beta);
+    double gamma=v[2];   double cg=cos(gamma); double sg=sin(gamma);
     
-    Rza(0,0)=ca;   Rza(1,1)=ca;   Rza(1,0)=sa;   Rza(0,1)=-sa;
-    Rzg(0,0)=cg;   Rzg(1,1)=cg;   Rzg(1,0)=sg;   Rzg(0,1)=-sg;
-    Ryb(0,0)=cb;   Ryb(2,2)=cb;   Ryb(2,0)=-sb;  Ryb(0,2)= sb;
+    Rza(0,0)=ca; Rza(1,1)=ca; Rza(1,0)= sa; Rza(0,1)=-sa;
+    Rzg(0,0)=cg; Rzg(1,1)=cg; Rzg(1,0)= sg; Rzg(0,1)=-sg;
+    Ryb(0,0)=cb; Ryb(2,2)=cb; Ryb(2,0)=-sb; Ryb(0,2)= sb;
 
     return Rza*Ryb*Rzg;
 }
