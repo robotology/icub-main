@@ -23,7 +23,7 @@ using namespace std;
 
 #include "EoCommon.h"
 #include "EOnv_hid.h"
-
+#include "EOrop.h"
 #include "Debug.h"
 
 
@@ -140,15 +140,21 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
 bool hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
 {
     bool ret = false;
-    eo_transceiver_ropinfo_t ropinfo;
+    eOropdescriptor_t ropdesc;
 
-    ropinfo.ropcfg      = eok_ropconfig_basic;
-    ropinfo.ropcode     = opc;
-    ropinfo.nvep        = ep;
-    ropinfo.nvid 		= nvid;
+
+	ropdesc.configuration = eok_ropconfiguration_basic;
+	ropdesc.configuration.plustime = 1;
+	ropdesc.ropcode = opc;
+	ropdesc.ep = ep;
+	ropdesc.id = nvid;
+	ropdesc.size = 0;
+	ropdesc.data = NULL;
+    ropdesc.signature = 0;
+
 
     _mutex.wait();
-    eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo);
+    eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc);
     _mutex.post();
 
     if(eores_OK == res)
@@ -217,19 +223,25 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
     if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
     {
         // the nv is not writeable
-        yError() << "Maybe you are rying to write a read only Network variable";
+        yError() << "Maybe you are trying to write a read only Network variable";
         _mutex.post();
         return false;
     }
 
-    eo_transceiver_ropinfo_t ropinfo;
 
-    ropinfo.ropcfg      = eok_ropconfig_basic;
-    ropinfo.ropcode     = eo_ropcode_set;
-    ropinfo.nvep        = endPoint;
-    ropinfo.nvid        = nvid;
+    eOropdescriptor_t ropdesc;
 
-    if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropinfo))
+
+	ropdesc.configuration = eok_ropconfiguration_basic;
+	ropdesc.configuration.plustime = 1;
+	ropdesc.ropcode = eo_ropcode_set;
+	ropdesc.ep = endPoint;
+	ropdesc.id = nvid;
+	ropdesc.size = 0;
+	ropdesc.data = NULL;
+    ropdesc.signature = 0;
+
+    if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
     {
         yError() << "Error while loading ROP in ropframe\n";
         _mutex.post();
