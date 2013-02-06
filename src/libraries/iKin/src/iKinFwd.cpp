@@ -275,10 +275,8 @@ void iKinChain::clone(const iKinChain &c)
     HN        =c.HN;
     curr_q    =c.curr_q;    
     verbose   =c.verbose;
-    hess_Jl   =c.hess_Jl;
-    hess_Jo   =c.hess_Jo;
-    hess_Jlnkl=c.hess_Jlnkl;
-    hess_Jlnko=c.hess_Jlnko;
+    hess_J    =c.hess_J;
+    hess_Jlnk =c.hess_Jlnk;
 
     allList.assign(c.allList.begin(),c.allList.end());
     quickList.assign(c.quickList.begin(),c.quickList.end());
@@ -1192,9 +1190,7 @@ void iKinChain::prepareForHessian()
         return;
     }
 
-    Matrix J=GeoJacobian();
-    hess_Jl=J.submatrix(0,2,0,J.cols()-1);
-    hess_Jo=J.submatrix(3,J.rows()-1,0,J.cols()-1);
+    hess_J=GeoJacobian();
 }
 
 
@@ -1212,13 +1208,25 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
     // ref. E.D. Pohl, H. Lipkin, "A New Method of Robotic Motion Control Near Singularities",
     // Advanced Robotics, 1991
     Vector h(6,0.0);
-    if (i<j)
+    if(i<j)
     {
-        h.setSubvector(0,cross(hess_Jo,i,hess_Jl,j));
-        h.setSubvector(3,cross(hess_Jo,i,hess_Jo,j));
+        //h.setSubvector(0,cross(hess_Jo,i,hess_Jl,j));
+        h[0] = hess_J(4,i)*hess_J(2,j) - hess_J(5,i)*hess_J(1,j);
+        h[1] = hess_J(5,i)*hess_J(0,j) - hess_J(3,i)*hess_J(2,j);
+        h[2] = hess_J(3,i)*hess_J(1,j) - hess_J(4,i)*hess_J(0,j);
+        //h.setSubvector(3,cross(hess_Jo,i,hess_Jo,j));
+        h(3) = hess_J(4,i)*hess_J(5,j)-hess_J(5,i)*hess_J(4,j);
+        h(4) = hess_J(5,i)*hess_J(3,j)-hess_J(3,i)*hess_J(5,j);
+        h(5) = hess_J(3,i)*hess_J(4,j)-hess_J(4,i)*hess_J(3,j);
     }
     else
-        h.setSubvector(0,cross(hess_Jo,j,hess_Jl,i));
+    {
+        //h.setSubvector(0, cross(Jo,j,Jl,i));
+        h[0] = hess_J(4,j)*hess_J(2,i) - hess_J(5,j)*hess_J(1,i);
+        h[1] = hess_J(5,j)*hess_J(0,i) - hess_J(3,j)*hess_J(2,i);
+        h[2] = hess_J(3,j)*hess_J(1,i) - hess_J(4,j)*hess_J(0,i);
+        h[3]=h[4]=h[5]=0.0;
+    }
 
     return h;
 }
@@ -1244,9 +1252,7 @@ void iKinChain::prepareForHessian(const unsigned int lnk)
         return;
     }
 
-    Matrix J=GeoJacobian(lnk);
-    hess_Jlnkl=J.submatrix(0,2,0,J.cols()-1);
-    hess_Jlnko=J.submatrix(3,J.rows()-1,0,J.cols()-1);
+    hess_Jlnk=GeoJacobian(lnk);
 }
 
 
@@ -1265,11 +1271,23 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
     Vector h(6,0.0);
     if (i<j)
     {
-        h.setSubvector(0,cross(hess_Jlnko,i,hess_Jlnkl,j));
-        h.setSubvector(3,cross(hess_Jlnko,i,hess_Jlnko,j));
+        //h.setSubvector(0,cross(hess_Jlnko,i,hess_Jlnkl,j));
+        h[0] = hess_Jlnk(4,i)*hess_Jlnk(2,j) - hess_Jlnk(5,i)*hess_Jlnk(1,j);
+        h[1] = hess_Jlnk(5,i)*hess_Jlnk(0,j) - hess_Jlnk(3,i)*hess_Jlnk(2,j);
+        h[2] = hess_Jlnk(3,i)*hess_Jlnk(1,j) - hess_Jlnk(4,i)*hess_Jlnk(0,j);
+        //h.setSubvector(3,cross(hess_Jlnko,i,hess_Jlnko,j));
+        h[3] = hess_Jlnk(4,i)*hess_Jlnk(5,j)-hess_Jlnk(5,i)*hess_Jlnk(4,j);
+        h[4] = hess_Jlnk(5,i)*hess_Jlnk(3,j)-hess_Jlnk(3,i)*hess_Jlnk(5,j);
+        h[5] = hess_Jlnk(3,i)*hess_Jlnk(4,j)-hess_Jlnk(4,i)*hess_Jlnk(3,j);
     }
     else
-        h.setSubvector(0,cross(hess_Jlnko,j,hess_Jlnkl,i));
+    {
+        //h.setSubvector(0,cross(hess_Jlnko,j,hess_Jlnkl,i));
+        h[0] = hess_Jlnk(4,j)*hess_Jlnk(2,i) - hess_Jlnk(5,j)*hess_Jlnk(1,i);
+        h[1] = hess_Jlnk(5,j)*hess_Jlnk(0,i) - hess_Jlnk(3,j)*hess_Jlnk(2,i);
+        h[2] = hess_Jlnk(3,j)*hess_Jlnk(1,i) - hess_Jlnk(4,j)*hess_Jlnk(0,i);
+        h[3]=h[4]=h[5]=0.0;
+    }
 
     return h;
 }
@@ -1278,10 +1296,40 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
 /************************************************************************/
 Matrix iKinChain::DJacobian(const Vector &dq)
 {
-    prepareForHessian();
+    Matrix J = GeoJacobian();
     Matrix dJ(6,DOF);
-    Vector tmp(6,0.0);
+    dJ.zero();
+    double dqj, dqi, a, b, c;
+    for (unsigned int i=0; i<DOF; i++)  // i: col
+    {
+        for (unsigned int j=0; j<=i; j++)  // j: row
+        {
+            dqj = dq(j);
+            
+            a = J(4,j)*J(2,i) - J(5,j)*J(1,i);
+            b = J(5,j)*J(0,i) - J(3,j)*J(2,i);
+            c = J(3,j)*J(1,i) - J(4,j)*J(0,i);
+            dJ(0,i) += dqj*a;
+            dJ(1,i) += dqj*b;
+            dJ(2,i) += dqj*c;
+            dJ(3,i) += dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
+            dJ(4,i) += dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
+            dJ(5,i) += dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
+            
+            if(i!=j)
+            {
+                dqi = dq(i);
+                dJ(0,j) += dqi*a;
+                dJ(1,j) += dqi*b;
+                dJ(2,j) += dqi*c;
+            }
+        }
+    }
+    return dJ;
 
+    /* OLD IMPLEMENTATION (SLOWER, BUT CLEARER)
+    prepareForHessian();
+    Vector tmp(6,0.0);
     for (unsigned int i=0; i<DOF; i++)
     {
         for (unsigned int j=0; j<DOF; j++)
@@ -1289,19 +1337,47 @@ Matrix iKinChain::DJacobian(const Vector &dq)
 
         dJ.setCol(i,tmp);
         tmp.zero();
-    }
-    
-    return dJ;
+    }*/
 }
 
 
 /************************************************************************/
 Matrix iKinChain::DJacobian(const unsigned int lnk, const Vector &dq)
 {
-    prepareForHessian(lnk);
+    Matrix J = GeoJacobian(lnk);
     Matrix dJ(6,lnk-1);
-    Vector tmp(6,0.0);
+    dJ.zero();
+    double dqj, dqi, a, b, c;
+    for (unsigned int i=0; i<lnk; i++)  // i: col
+    {
+        for (unsigned int j=0; j<=i; j++)  // j: row
+        {
+            dqj = dq(j);
+            
+            a = J(4,j)*J(2,i) - J(5,j)*J(1,i);
+            b = J(5,j)*J(0,i) - J(3,j)*J(2,i);
+            c = J(3,j)*J(1,i) - J(4,j)*J(0,i);
+            dJ(0,i) += dqj*a;
+            dJ(1,i) += dqj*b;
+            dJ(2,i) += dqj*c;
+            dJ(3,i) += dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
+            dJ(4,i) += dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
+            dJ(5,i) += dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
+            
+            if(i!=j)
+            {
+                dqi = dq(i);
+                dJ(0,j) += dqi*a;
+                dJ(1,j) += dqi*b;
+                dJ(2,j) += dqi*c;
+            }
+        }
+    }
+    return dJ;
 
+    // OLD IMPLEMENTATION (SLOWER, BUT CLEARER)
+    /*prepareForHessian(lnk);
+    Vector tmp(6,0.0);
     for (unsigned int i=0; i<lnk; i++)
     {
         for (unsigned int j=0; j<lnk; j++)
@@ -1309,9 +1385,7 @@ Matrix iKinChain::DJacobian(const unsigned int lnk, const Vector &dq)
 
         dJ.setCol(i,tmp);
         tmp.zero();
-    }
-    
-    return dJ;
+    }*/
 }
 
 

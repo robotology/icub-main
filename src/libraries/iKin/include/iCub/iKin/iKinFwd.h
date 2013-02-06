@@ -374,8 +374,8 @@ protected:
     std::deque<unsigned int> hash;
     std::deque<unsigned int> hash_dof;
 
-    yarp::sig::Matrix hess_Jl,hess_Jo;
-    yarp::sig::Matrix hess_Jlnkl,hess_Jlnko;
+    yarp::sig::Matrix hess_J;
+    yarp::sig::Matrix hess_Jlnk;
 
     virtual void clone(const iKinChain &c);
     virtual void build();
