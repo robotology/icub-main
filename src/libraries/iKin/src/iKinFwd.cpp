@@ -1276,9 +1276,9 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
         h[1] = hess_Jlnk(5,i)*hess_Jlnk(0,j) - hess_Jlnk(3,i)*hess_Jlnk(2,j);
         h[2] = hess_Jlnk(3,i)*hess_Jlnk(1,j) - hess_Jlnk(4,i)*hess_Jlnk(0,j);
         //h.setSubvector(3,cross(hess_Jlnko,i,hess_Jlnko,j));
-        h[3] = hess_Jlnk(4,i)*hess_Jlnk(5,j)-hess_Jlnk(5,i)*hess_Jlnk(4,j);
-        h[4] = hess_Jlnk(5,i)*hess_Jlnk(3,j)-hess_Jlnk(3,i)*hess_Jlnk(5,j);
-        h[5] = hess_Jlnk(3,i)*hess_Jlnk(4,j)-hess_Jlnk(4,i)*hess_Jlnk(3,j);
+        h[3] = hess_Jlnk(4,i)*hess_Jlnk(5,j) - hess_Jlnk(5,i)*hess_Jlnk(4,j);
+        h[4] = hess_Jlnk(5,i)*hess_Jlnk(3,j) - hess_Jlnk(3,i)*hess_Jlnk(5,j);
+        h[5] = hess_Jlnk(3,i)*hess_Jlnk(4,j) - hess_Jlnk(4,i)*hess_Jlnk(3,j);
     }
     else
     {
