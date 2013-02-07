@@ -965,15 +965,15 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 
     col=col>3 ? 3 : col;
 
-    Matrix J(6,i);
+    Matrix J(6,i+1);
     Matrix H,dH,_H;
     Vector dr;
 
-    for (unsigned int j=0; j<i; j++)
+    for (unsigned int j=0; j<=i; j++)
     {
         H=dH=H0;
 
-        for (unsigned int k=0; k<i; k++)
+        for (unsigned int k=0; k<=i; k++)
         {
             _H=allList[k]->getH();
             H*=_H;
