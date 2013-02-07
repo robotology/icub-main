@@ -975,11 +975,11 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 
         for (unsigned int k=0; k<=i; k++)
         {
-            _H=allList[k]->getH();
+            _H=allList[k]->getH(true);
             H*=_H;
 
             if (j==k)
-                dH*=allList[k]->getDnH();
+                dH*=allList[k]->getDnH(1,true);
             else
                 dH*=_H;
         }

@@ -1,3 +1,6 @@
+2013-02-07 Ugo Pattacini <ugo.pattacini@iit.it>
+      * iKinFwd.cpp/h: iKinChain::AnaJacobian(i,col) fixed
+
 2013-02-06 Andrea Del Prete <andrea.delprete@iit.it>
       * iKinFwd.cpp/h: fasthessian and djacobian made faster
 
