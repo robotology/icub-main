@@ -84,14 +84,14 @@ static void handle_data(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const
 extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "strain status calib values update strong iCubInterface"
-    printf("iCub AS status calib values Callback\n");
+//     printf("iCub AS status calib values Callback\n");
     handle_data(sxx, nv, time, sign);
 }
 
 extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "strain status UNcalib values update strong iCubInterface"
-    printf("iCub AS status UNcalib values Callback\n");
+//     printf("iCub AS status UNcalib values Callback\n");
     handle_data(sxx, nv, time, sign);
 }
 
@@ -102,16 +102,17 @@ static void handle_data(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const
     eOsnsr_arrayofupto12bytes_t *jstatus_b = nv->rem;
 
 #ifdef _debug_as_data
-    printf("iCub AS status full Callback\n");
+//     printf("iCub AS status full Callback\n");
 #endif
     FEAT_ID id;
     id.type = Skin;
     id.ep = nv->ep;
 
     int i=0;
-    printf("0x");
+/*  printf("0x");
     for( i=0; i<16; i++)
         printf("%02X", ((char*) jstatus_b)[i]);
     printf("\n\n");
+*/
     handle_AS_data(&id, (void *)jstatus_b);
 }

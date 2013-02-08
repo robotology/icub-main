@@ -212,6 +212,9 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         scaleFactor[i]=1;
     }
 
+    // Tell EMS to go into config state, otherwise something doesn't work correctly.
+#warning "go to config message before getting strain fullscale... investigate more
+//     res->goToConfig();
     // Check inital size of array...  it should be zero.
     bool gotFullScaleValues = false;
     int timeout, NVsize;
@@ -219,7 +222,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     EOnv tmpNV, *p_tmpNV;
     eOnvID_t nvid_strain_config, nvid_fullscale;
     eOsnsr_arrayofupto12bytes_t fullscale_values;
-/*  can't do a reset if array is not correctly initialized with functio eo_new_blablabla.
+/*  can't do a reset if array is not correctly initialized with eo_new_blablabla function.
  * This needs knowing how data are actually stored, bytes dimension etc... which is quite low level knowledge to be placed here.
     I rely on the fact that iitialization of the variable is correctly done by transceiver.
      eo_array_New(&fullscale_values)
@@ -254,7 +257,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
     res->transceiver->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
 
-    timeout = 1;
+    timeout = 15;
     // wait for rensponse
     if(_useCalibration)
     {
@@ -270,6 +273,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
                 break;
             }
             timeout--;
+            printf("full scale val not arrived yet... retrying in 1 sec\n");
             Time::delay(1);
         }
 
@@ -285,15 +289,23 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 //         return false;
         }
 
-        uint16_t *msg;
+        char *msg;
 
-        for(int i=0; i<_channels; i++)
+        if(gotFullScaleValues)
         {
-        // Get the k-th element of the array as a 2 bytes msg
-            msg = (uint16_t*) eo_array_At((EOarray*) &fullscale_values, i);
+            yWarning() << "GOT full scale values!! YUPPIE!!\n";
 
-            // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback)
-            scaleFactor[i]=(((uint16_t)(msg[0]))<<8) | msg[1];
+            for(int i=0; i<_channels; i++)
+            {
+                // Get the k-th element of the array as a 2 bytes msg
+                msg = (char*) eo_array_At((EOarray*) &fullscale_values, i);
+
+
+                // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback)
+                scaleFactor[i]= 0;
+                scaleFactor[i]= ( (uint16_t)(msg[0]<<8) | msg[1] );
+            }
+
         }
         strainConfig.mode = snsr_strainmode_txcalibrateddatacontinuously;
     }
@@ -465,36 +477,40 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
     // Called by eoCallback.
 //     yTrace();
     mutex.wait();
-    printf("\nembObj Analog Sensor fill_as_data\n");
+//     printf("\nembObj Analog Sensor fill_as_data\n");
     // do the decode16 code
     eOsnsr_arrayofupto12bytes_t  *as_array = (eOsnsr_arrayofupto12bytes_t*) as_array_raw;
-    char msg[2];
+    uint8_t msg[2];
     double *_buffer = data->getBuffer();
 
-    printf("_useCalibration: %d\n", _useCalibration);
+//     printf("_useCalibration: %d\n", _useCalibration);
     for(int k=0; k<_channels; k++)
     {
         // Get the kth element of the array as a 2 bytes msg
         memcpy(msg, (char*) eo_array_At((EOarray*) as_array, k), 2);
         // Got from canBusMotionControl
-        _buffer[k]=(((unsigned short)(msg[1]))<<8)+msg[0]-0x8000;
+        _buffer[k]= (short)( ( (((unsigned short)(msg[1]))<<8)+msg[0]) - (unsigned short) (0x8000) );
 
-//         uint16_t testAAA = 0;
-//         uint16_t testBBB = 0;
-//         uint16_t testCCC = 0;
-//         testAAA = msg[1];
-//         testBBB = testAAA << 8;
-//         testCCC = testBBB + msg[0];
-//         
-//         printf("0x%04X(%X %X) vs 0x%04X\n", (uint16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
-//         printf("%d(%d %d) vs %d\n", (uint16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
+        uint16_t testAAA = 0;
+        uint16_t testBBB = 0;
+        int16_t testCCC = 0;
+        testAAA = msg[1];
+        testBBB = testAAA << 8;
+        testCCC = (int16_t) (testBBB + msg[0]);
 
+        if (k==4)
+        {
+        printf("0x%04X(%X %X) vs 0x%04X\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
+        printf("%d(%d %d) vs %d\n\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
+        }
+        
+        
         if (_useCalibration==1)
         {
             _buffer[k]=_buffer[k]*scaleFactor[k]/float(0x8000);
         }
     }
-    printf("\n");
+//     printf("\n");
     mutex.post();
     return AS_OK;
 }
