@@ -219,7 +219,9 @@ bool EmbObjSkin::init()
 
     EOnv nvtmp;
 
+#ifdef _SETPOINT_TEST_
     eoy_sys_Initialise(NULL, NULL, NULL);
+#endif
 
     eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
     nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
