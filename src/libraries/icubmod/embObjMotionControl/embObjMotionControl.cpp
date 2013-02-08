@@ -733,9 +733,10 @@ bool embObjMotionControl::init()
 {
     // yTrace();
     eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
-    EOarray						*array;
-    eOropSIGcfg_t 				sigcfg;
-    int 						old = 0;
+    EOarray                   *array;
+    eOropSIGcfg_t             sigcfg;
+    int                       old = 0;
+
 #ifdef _SETPOINT_TEST_
     eoy_sys_Initialise(NULL, NULL, NULL);
 #endif

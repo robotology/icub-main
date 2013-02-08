@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 SET(PROJECTNAME analogServer)
-PROJECT(${PROJECTNAME})
+#PROJECT(${PROJECTNAME})
 
 PREPARE_DEVICE(analogServer TYPE AnalogServer INCLUDE ${PROJECTNAME}.h)
 
