@@ -334,11 +334,9 @@ public:
 * Tune in an online fashion a controller for a DC motor plant 
 * identified by means of \ref OnlineDCMotorEstimator .
 *  
-* The design of the controller is such that the compensated 
-* closed-loop system behaves like the following second order 
-* dynamics: 
-*  
-* \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
+* The design of the controller is such that the properties of 
+* the compensated closed-loop system comply with specifications 
+* given in terms of bandwidth and disturbance rejection. 
 *  
 * This class has four operative modes: one for the plant 
 * estimation, one for the plant validation, one for the stiction
@@ -467,11 +465,8 @@ public:
 
     /**
      * Tune the controller once given the plant characteristics. The
-     * design requirements \f$ \omega_n \f$ and \f$ \zeta \f$ are 
-     * such to achieve the closed-loop system represented by the 
-     * following transfer function: 
-     *  
-     * \f$ \omega_n^2/\left(s^2+2\zeta\omega_ns+\omega_n^2\right) \f$ 
+     * design requirements for the closed loop system are given in 
+     * terms of bandwidth and properties for disturbance rejection.
      *  
      * The plant is assumed to be in the form: 
      *  
@@ -479,7 +474,7 @@ public:
      *  
      * The controller is in the form: 
      *  
-     * \f$ K_p + K_d \cdot s/\left(1+\tau_d \cdot s\right). \f$ 
+     * \f$ K_p + K_i/s. \f$ 
      *  
      * The tuning is symbolic and by no means affects the gains of 
      * the low-level controller. 
@@ -487,34 +482,26 @@ public:
      * @param options property object containing the plant 
      *                characteristics as well as the design
      *                requirements: (@b tau <double>) (@b K
-     *                <double>) (@b f_n <double>) (@b zeta
-     *                <double>) (@b f_c <double>); (@b type
-     *                <string>) specifies the controller's
-     *                architecture which can be "P" or "PD".
+     *                <double>) (@b f_c <double>) (@b T_dr
+     *                <double>); (@b type <string>) specifies the
+     *                controller's architecture which can be "P" or
+     *                "PI".
      * @param results property containing the design outcome in 
-     *             terms of \f$ K_p, K_d, \tau_d \f$ controller's
+     *             terms of \f$ K_p, K_i \f$ controller's
      *             parameters. The property's tags are respectively:
-     *             <b>Kp</b>, <b>Kd</b>, <b>tau_d</b>. Moreover,
-     *             parameters <b>f_n</b>, <b>zeta</b>, <b>f_c</b>
-     *             are also returned as actually employed in the
-     *             design.
+     *             <b>Kp</b>, <b>Ki</b>.
      * @return true/false on success/failure.
      *  
-     * @note when designing a <i>P</i> controller it holds
-     *       \f$ 2\zeta\omega_n=1/\tau, \f$ whereas for a <i>PD</i>
-     *       design it holds \f$ 2\zeta\omega_n \geq 1/\tau. \f$
-     *       Therefore, the requirement on \f$ \omega_n \f$ (i.e.
-     *       \f$ \omega_n=2\pi \cdot f_n \f$ ) has always the
-     *       priority and \f$ \zeta \f$ is computed accordingly to
-     *       meet those conditions in case they are not satisfied.
-     *       Moreover, for a <i>P</i> controller, which is endowed
-     *       with only one degree of freedom, it is possible to
-     *       specify the gain crossover frequency f_c that has the
-     *       priority over the remaining requirements and represents
-     *       the frequency at which the open loop response has a
-     *       unity-gain, corresponding roughly to the closed-loop
-     *       cut-off frequency that in turn regulates the control
-     *       bandwidth.
+     * @note When designing a <i>P</i> controller the user is 
+     *       required to specify the gain crossover frequency
+     *       <b>f_c</b> in Hz that represents the frequency at which
+     *       the open loop response has a unity-gain, corresponding
+     *       roughly to the closed-loop cut-off frequency regulating
+     *       the control bandwidth. \n
+     *       When designing a <i>PI</i> the integral part is
+     *       employed for disturbance rejection in that it tries to
+     *       cut down a step-wise disturbance in a time window
+     *       specified by <b>T_dr</b> parameter, given in seconds.
      *  
      * @return true/false on success/failure. 
      */

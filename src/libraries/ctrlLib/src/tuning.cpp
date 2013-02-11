@@ -828,70 +828,41 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
                                              Property &results)
 {
     Property &opt=const_cast<Property&>(options);
-    if (!opt.check("tau") || !opt.check("K") || !opt.check("type"))
+    if (!opt.check("tau")  || !opt.check("K") ||
+        !opt.check("type") || !opt.check("f_c"))
         return false;
 
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
-    string type=opt.check("type",Value("P")).asString().c_str();
-    double omega_n,omega_c,zeta;
-    double Kp,Kd,tau_d;
+    string type=opt.check("type",Value("PI")).asString().c_str();
+    double omega_c=2.0*M_PI*opt.find("f_c").asDouble();
+    double Kp,Ki;
 
     // P design
     if (type=="P")
     {
-        if (opt.check("f_c"))
-        {
-            omega_c=2.0*M_PI*opt.find("f_c").asDouble();
-            Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
-            omega_n=sqrt(Kp*K/tau);
-            zeta=1.0/(2.0*tau*omega_n);
-        }
-        else
-        {
-            if (opt.check("f_n"))
-            {
-                omega_n=2.0*M_PI*opt.find("f_n").asDouble();
-                zeta=1.0/(2.0*tau*omega_n);
-            }
-            else if (opt.check("zeta"))
-            {
-                zeta=opt.find("zeta").asDouble();
-                omega_n=1.0/(2.0*tau*zeta);
-            }
-            else
-                return false;
-
-            Kp=(omega_n*omega_n*tau)/K;
-            double tau_2=tau*tau;
-            omega_c=sqrt((sqrt(1.0+4.0*Kp*Kp*K*K*tau_2)-1.0)/(2.0*tau_2));
-        }
-        
-        Kd=tau_d=0.0;
+        Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
+        Ki=0.0;
     }
-    // PD design
-    else if (type=="PD")
+    // PI design
+    else if (type=="PI")
     {
-        omega_n=2.0*M_PI*opt.check("f_n",Value(2.0*M_PI*2.0)).asDouble();
-        zeta=opt.check("zeta",Value(1.0)).asDouble();
-        zeta=std::max(zeta,1.0/(2.0*tau*omega_n));
+        double T_dr=1.0/omega_c;
+        if (opt.check("T_dr"))
+            T_dr=opt.find("T_dr").asDouble();
 
-        Kp=omega_n/(2.0*zeta*K);
-        tau_d=1.0/(2.0*zeta*omega_n);
-        Kd=(tau/tau_d-1.0)/(4.0*zeta*zeta*K);
-        double tau_2=tau_d*tau_d;
-        omega_c=sqrt((sqrt(1.0+4.0*Kp*Kp*K*K*tau_2)-1.0)/(2.0*tau_2));
+        double tau_dr=T_dr/3.0;
+        double omega_dr=1.0/tau_dr;
+
+        Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
+        Ki=omega_dr*(Kp-(omega_dr*(1.0-omega_dr*tau))/K);
     }
     else
         return false;
 
     results.clear();
     results.put("Kp",Kp);
-    results.put("Kd",Kd);
-    results.put("tau_d",tau_d);
-    results.put("f_n",omega_n/(2.0*M_PI));
-    results.put("f_c",omega_c/(2.0*M_PI));
-    results.put("zeta",zeta);
+    results.put("Ki",Ki);
 
     return true;
 }
