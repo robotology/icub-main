@@ -854,8 +854,17 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
         double tau_dr=T_dr/3.0;
         double omega_dr=1.0/tau_dr;
 
+        // reinforce omega_dr as the slowest pole among the three
+        omega_dr=std::min(omega_dr,1.0/(3.0*tau));
+
         Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
         Ki=omega_dr*(Kp-(omega_dr*(1.0-omega_dr*tau))/K);
+
+        // reinforce no mutual dependence between Kp and Ki design
+        Ki=std::min(Ki,sqrt(10.0)*omega_c*Kp);
+
+        // reinforce stable closed loop system
+        Ki=std::min(Ki,Kp/tau);
     }
     else
         return false;
