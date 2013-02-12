@@ -971,7 +971,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     ipid->getPid(joint,&pidOld);
     pidNew=pidOld;
 
-    // enforce the correct sign of Kp
+    // enforce the correct sign of gains
     double Kp=opt.find("Kp").asDouble();
     double Ki=opt.check("Ki",Value(0.0)).asDouble();
     double Kd=opt.check("Kd",Value(0.0)).asDouble();
