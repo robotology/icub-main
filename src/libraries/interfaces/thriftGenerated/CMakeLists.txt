@@ -8,7 +8,8 @@ project(${PROJECTNAME})
 set(THRIFT_HEADERS)
 set(THRIFT_SOURCES)
 
-set(fileList iCub_velocityControl_VelocityControlInterface_thrift.cmake)
+set(fileList iCub_velocityControl_VelocityControlInterface_thrift.cmake
+			 iCub_iSpeak_iSpeakThrift_thrift.cmake)
 
 foreach(scriptFile ${fileList})
   include(${scriptFile})

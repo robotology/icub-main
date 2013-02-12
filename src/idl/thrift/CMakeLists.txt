@@ -3,7 +3,8 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0 and later.
 
 #SET(THRIFT_FILES_LIST iCub/actionsRendering/actionsRenderingEngineInterface.thrift iCub/actionsRendering/gazeHead.thrift)
-SET(THRIFT_FILES_LIST iCub/velocityControl/VelocityControlInterface.thrift)
+SET(THRIFT_FILES_LIST iCub/velocityControl/VelocityControlInterface.thrift 
+					  iCub/iSpeak/iSpeakThrift.thrift)
 include(${YARP_MODULE_PATH}/YarpIDL.cmake)
 
 set(generated_libs_dir "${CMAKE_CURRENT_SOURCE_DIR}/../../libraries/interfaces/thriftGenerated")
