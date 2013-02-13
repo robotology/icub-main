@@ -64,6 +64,8 @@ bool OnlineDCMotorEstimator::init(const double Ts, const double Q,
     x[2]=1.0/_x[2];
     x[3]=_x[3]/_x[2];
 
+    uOld=0.0;
+
     return true;
 }
 
@@ -78,6 +80,8 @@ bool OnlineDCMotorEstimator::init(const double P0, const Vector &x0)
     x=_x=x0.subVector(0,3);
     x[2]=1.0/_x[2];
     x[3]=_x[3]/_x[2];
+
+    uOld=0.0;
 
     return true;
 }
@@ -105,14 +109,14 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
     F(0,1)=A(0,1);
     F(1,1)=A(1,1);
 
-    F(0,2)=-(x2*_exp_1)/_x3_2   + (u*x4*Ts*_exp_1)/_x3_2 - (2.0*u*B[0])/x3 + (Ts*x2*_exp)/x3;
-    F(1,2)=-(u*x4*_exp_1)/_x3_2 - Ts*x2*_exp             + (u*x4*Ts*_exp)/x3;
+    F(0,2)=-(x2*_exp_1)/_x3_2      + (uOld*x4*Ts*_exp_1)/_x3_2 - (2.0*uOld*B[0])/x3 + (Ts*x2*_exp)/x3;
+    F(1,2)=-(uOld*x4*_exp_1)/_x3_2 - Ts*x2*_exp                + (uOld*x4*Ts*_exp)/x3;
 
-    F(0,3)=u*_tmp_1;
-    F(1,3)=u*A(0,1);
+    F(0,3)=uOld*_tmp_1;
+    F(1,3)=uOld*A(0,1);
 
     // prediction
-    x=A*x+B*u;
+    x=A*x+B*uOld;
     P=F*P*F.transposed()+Q;
 
     // Kalman gain
@@ -127,6 +131,8 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
     _x[1]=x[1];
     _x[2]=1.0/x[2];
     _x[3]=x[3]/x[2];
+
+    uOld=u;
 
     return _x;
 }
@@ -822,70 +828,50 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
                                              Property &results)
 {
     Property &opt=const_cast<Property&>(options);
-    if (!opt.check("tau") || !opt.check("K") || !opt.check("type"))
+    if (!opt.check("tau")  || !opt.check("K") ||
+        !opt.check("type") || !opt.check("f_c"))
         return false;
 
     double tau=opt.find("tau").asDouble();
     double K=opt.find("K").asDouble();
-    string type=opt.check("type",Value("P")).asString().c_str();
-    double omega_n,omega_c,zeta;
-    double Kp,Kd,tau_d;
+    string type=opt.check("type",Value("PI")).asString().c_str();
+    double omega_c=2.0*M_PI*opt.find("f_c").asDouble();
+    double Kp,Ki;
 
     // P design
     if (type=="P")
     {
-        if (opt.check("f_c"))
-        {
-            omega_c=2.0*M_PI*opt.find("f_c").asDouble();
-            Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
-            omega_n=sqrt(Kp*K/tau);
-            zeta=1.0/(2.0*tau*omega_n);
-        }
-        else
-        {
-            if (opt.check("f_n"))
-            {
-                omega_n=2.0*M_PI*opt.find("f_n").asDouble();
-                zeta=1.0/(2.0*tau*omega_n);
-            }
-            else if (opt.check("zeta"))
-            {
-                zeta=opt.find("zeta").asDouble();
-                omega_n=1.0/(2.0*tau*zeta);
-            }
-            else
-                return false;
-
-            Kp=(omega_n*omega_n*tau)/K;
-            double tau_2=tau*tau;
-            omega_c=sqrt((sqrt(1.0+4.0*Kp*Kp*K*K*tau_2)-1.0)/(2.0*tau_2));
-        }
-        
-        Kd=tau_d=0.0;
+        Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
+        Ki=0.0;
     }
-    // PD design
-    else if (type=="PD")
+    // PI design
+    else if (type=="PI")
     {
-        omega_n=2.0*M_PI*opt.check("f_n",Value(2.0*M_PI*2.0)).asDouble();
-        zeta=opt.check("zeta",Value(1.0)).asDouble();
-        zeta=std::max(zeta,1.0/(2.0*tau*omega_n));
+        double T_dr=1.0/omega_c;
+        if (opt.check("T_dr"))
+            T_dr=opt.find("T_dr").asDouble();
 
-        Kp=omega_n/(2.0*zeta*K);
-        tau_d=1.0/(2.0*zeta*omega_n);
-        Kd=(tau/tau_d-1.0)/(4.0*zeta*zeta*K);
-        double tau_2=tau_d*tau_d;
-        omega_c=sqrt((sqrt(1.0+4.0*Kp*Kp*K*K*tau_2)-1.0)/(2.0*tau_2));
+        double tau_dr=T_dr/3.0;
+        double omega_dr=1.0/tau_dr;
+
+        // reinforce omega_dr as the slowest pole among the three
+        omega_dr=std::min(omega_dr,1.0/(3.0*tau));
+
+        Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
+        Ki=omega_dr*(Kp-(omega_dr*(1.0-omega_dr*tau))/K);
+
+        // reinforce no mutual dependency between Kp and Ki design
+        Ki=std::min(Ki,sqrt(10.0)*omega_c*Kp);
+
+        // reinforce stable closed loop system
+        Ki=std::min(Ki,Kp/tau);
     }
     else
         return false;
 
     results.clear();
     results.put("Kp",Kp);
-    results.put("Kd",Kd);
-    results.put("tau_d",tau_d);
-    results.put("f_n",omega_n/(2.0*M_PI));
-    results.put("f_c",omega_c/(2.0*M_PI));
-    results.put("zeta",zeta);
+    results.put("Ki",Ki);
 
     return true;
 }
@@ -985,7 +971,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     ipid->getPid(joint,&pidOld);
     pidNew=pidOld;
 
-    // enforce the correct sign of Kp
+    // enforce the correct sign of gains
     double Kp=opt.find("Kp").asDouble();
     double Ki=opt.check("Ki",Value(0.0)).asDouble();
     double Kd=opt.check("Kd",Value(0.0)).asDouble();

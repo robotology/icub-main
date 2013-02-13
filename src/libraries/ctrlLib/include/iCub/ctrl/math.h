@@ -197,12 +197,12 @@ yarp::sig::Matrix axis2dcm(const yarp::sig::Vector &v, unsigned int verbose=0);
 /**
 * \ingroup Maths
 *
-* Converts a dcm (direction cosine matrix) rotation matrix to euler angles. Three angles are returned in
+* Converts a dcm (direction cosine matrix) rotation matrix to euler angles (ZYZ). Three angles are returned in
 * a vector with the following format:
 * \f[  \mathbf{v} = [\alpha, \beta, \gamma ]\f]
 * such that the returned matrix satisfies the following:
-* \f[  R = R_z(\alpha) R_z(\beta) R_z(\gamma) \f]
-* @param R is the input matrix.
+* \f[  R = R_z(\alpha) R_y(\beta) R_z(\gamma) \f]
+* @param R is the input ZYZ rotation matrix.
 * @param verbose sets some verbosity.  
 * @return 3 by 1 vector for the Euler angles representation.
 */
@@ -211,16 +211,44 @@ yarp::sig::Vector dcm2euler(const yarp::sig::Matrix &R, unsigned int verbose=0);
 /**
 * \ingroup Maths
 *
-* Converts euler angles vector in the corresponding dcm (direction cosine matrix) rotation matrix. The
+* Converts euler angles (ZYZ) vector in the corresponding dcm (direction cosine matrix) rotation matrix. The
 * three euler angles are specified in a vector with the following structure:
 * \f[  \mathbf{v} = [\alpha, \beta, \gamma ]\f]
 * and the returned matrix is:
-* \f[  R = R_z(\alpha) R_z(\beta) R_z(\gamma) \f]
+* \f[  R = R_z(\alpha) R_y(\beta) R_z(\gamma) \f]
 * @param euler is the input vector (alpha=z-rotation, beta=y-rotation, gamma=z-rotation).
 * @param verbose sets some verbosity.  
-* @return 3 by 3 matrix representing the rotation.
+* @return 3 by 3 matrix representing the ZYZ rotation.
 */
 yarp::sig::Matrix euler2dcm(const yarp::sig::Vector &euler, unsigned int verbose=0);
+
+/**
+* \ingroup Maths
+*
+* Converts a dcm (direction cosine matrix) rotation matrix to roll-pitch-yaw angles. Three angles are returned in
+* a vector with the following format:
+* \f[  \mathbf{v} = [\psi, \theta, \phi ]\f]
+* such that the returned matrix satisfies the following:
+* \f[  R = R_z(\phi) R_y(\theta) R_x(\psi) \f]
+* @param R is the input ZYX rotation matrix.
+* @param verbose sets some verbosity.  
+* @return 3 by 1 vector for the roll pitch-yaw-angles representation.
+*/
+yarp::sig::Vector dcm2rpy(const yarp::sig::Matrix &R, unsigned int verbose=0);
+
+/**
+* \ingroup Maths
+*
+* Converts roll-pitch-yaw angles in the corresponding dcm (direction cosine matrix) rotation matrix. The
+* three angles are specified in a vector with the following structure:
+* \f[  \mathbf{v} = [\psi, \theta, \phi ]\f]
+* and the returned matrix is:
+* \f[  R = R_z(\phi) R_y(\theta) R_x(\psi) \f]
+* @param rpy is the input vector (\psi=roll x-rotation, \theta=pitch y-rotation, \phi=yaw z-rotation).
+* @param verbose sets some verbosity.  
+* @return 3 by 3 matrix representing the ZYX rotation.
+*/
+yarp::sig::Matrix rpy2dcm(const yarp::sig::Vector &rpy, unsigned int verbose=0);
 
 /**
 * \ingroup Maths
