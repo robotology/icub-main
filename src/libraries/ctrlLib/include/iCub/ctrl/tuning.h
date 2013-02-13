@@ -498,10 +498,11 @@ public:
      *       the open loop response has a unity-gain, corresponding
      *       roughly to the closed-loop cut-off frequency regulating
      *       the control bandwidth. \n
-     *       When designing a <i>PI</i> the integral part is
-     *       employed for disturbance rejection in that it tries to
-     *       cut down a step-wise disturbance in a time window
-     *       specified by <b>T_dr</b> parameter, given in seconds.
+     *       When designing a <i>PI</i> controller the integral part
+     *       is employed separately for disturbance rejection in
+     *       that it tries to cancel out a step-wise disturbance in
+     *       a time window specified by <b>T_dr</b> parameter, given
+     *       in seconds.
      *  
      * @return true/false on success/failure. 
      */
