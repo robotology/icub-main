@@ -860,7 +860,7 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
         Kp=(omega_c/K)*sqrt(1.0+omega_c*omega_c*tau*tau);
         Ki=omega_dr*(Kp-(omega_dr*(1.0-omega_dr*tau))/K);
 
-        // reinforce no mutual dependence between Kp and Ki design
+        // reinforce no mutual dependency between Kp and Ki design
         Ki=std::min(Ki,sqrt(10.0)*omega_c*Kp);
 
         // reinforce stable closed loop system
