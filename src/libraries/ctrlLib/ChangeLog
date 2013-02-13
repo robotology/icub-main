@@ -1,3 +1,6 @@
+2013-02-13 Ugo Pattacini <ugo.pattacini@iit.it>
+      * tuning: added PI controller design
+
 2012-11-20 Ugo Pattacini <ugo.pattacini@iit.it>
       * tuning: added classes for pid online tuning
 
