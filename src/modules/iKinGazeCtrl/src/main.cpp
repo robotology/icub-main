@@ -261,12 +261,12 @@ following ports:
   configuration during movement (Vector of 9 double). The order
   for torso angles is the one defined by kinematic chain
   (reversed order). Useful in conjunction with the \ref
-  iKinGazeView "viewer". Units in deg.
+  iKinGazeView "viewer". Units in degrees.
 
 - \e /<ctrlName>/<part>/angles:o returns the current 
   azimuth/elevation couple wrt to the absolute head position,
   together with the current vergence (Vector of 3 double). Units
-  in deg.
+  in degrees.
  
 - \e /<ctrlName>/<part>/events:o streams out the event 
   associated to the controller's state. \n
