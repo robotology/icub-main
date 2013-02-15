@@ -2656,9 +2656,48 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return true;
 }
 
-/*
-bool embObjMotionControl::setTorque(yarp::sig::Vector &vals)
+bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
 {
-    yTrace();
+    bool ret = true;
+
+    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    {
+        ret &= setTorque(j, fTorques[j]);
+    }
+    
+    return ret;
 }
-*/
+
+bool embObjMotionControl::setTorque(int j, double fTorque)
+{
+	yTrace() << _fId.name << "joint" << j;
+   
+    EOnv tmp;
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
+
+    EOnv *nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
+    int index = j-_firstJoint;
+
+    if(NULL == nvRoot)
+    {
+        NV_NOT_FOUND;
+        return false;
+    }
+
+    //_ref_positions[index] = ref;
+    
+    eOmeas_torque_t meas_torque = (eOmeas_torque_t)fTorque;
+    
+    if( !res->transceiver->nvSetData(nvRoot, &meas_torque, eobool_true, eo_nv_upd_dontdo))
+    {
+        printf("\n>>> ERROR eo_nv_Set !!\n");
+        return false;
+    }
+
+    if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
+        return false;
+
+    yDebug() << "Measured torque EP" << _fId.ep << "j" << j << meas_torque << " at time: " << (Time::now()/1e6);
+
+    return true;
+}

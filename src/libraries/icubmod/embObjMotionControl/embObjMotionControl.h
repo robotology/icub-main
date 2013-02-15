@@ -58,7 +58,7 @@ using namespace std;
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include "yarp/dev/ControlBoardInterfacesImpl.inl" //ControlBoardHelper
 
-//#include <yarp/dev/IVirtualAnalogSensor.h>
+#include <yarp/dev/IVirtualAnalogSensor.h>
 ///////////////////
 
 #include <iCub/FactoryInterface.h>
@@ -168,11 +168,14 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
                                         public ImplementPositionControl<embObjMotionControl, IPositionControl>,
                                         public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
                                         public ImplementPidControl<embObjMotionControl, IPidControl>,
-                                        public ImplementVelocityControl<embObjMotionControl, IVelocityControl>
+                                        public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
+                                        public IVirtualAnalogSensor
+                                        /*                                        
                                         #ifdef IMPLEMENT_DEBUG_INTERFACE
                                         , public ImplementDebugInterface,
                                         public IDebugInterfaceRaw
-#endif
+                                        #endif
+                                        */
 {
 private:
     int           isVanilla;
@@ -370,9 +373,9 @@ public:
     virtual bool getAmpStatusRaw(int j, int *st);
   /////////////// END AMPLIFIER INTERFACE
 
-    //////  Virtual analo sensor
-//    virtual bool setTorque(yarp::sig::Vector &vals);
-
+    //////  Virtual analog sensor
+    virtual bool setTorque(yarp::sig::Vector &vals);
+    bool setTorque(int j, double fTorque);
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     //----------------------------------------------\\

@@ -19,11 +19,9 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Stamp.h>
 #include <yarp/os/Vocab.h>
 
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/PreciselyTimed.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/Wrapper.h>
@@ -47,94 +45,126 @@ using namespace yarp::sig;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-/* the control command message type
-* head is a Bottle which contains the specification of the message type
-* body is a Vector which move the robot accordingly
-*/
-typedef PortablePair<Bottle, Vector> CommandMessage;
-
 class VirtualAnalogServer;
 
 class AnalogSubDevice
 {
 public:
-    std::string id;
-    int base;
-    int top;
-    int myChannels;
-
-    bool configuredF;
-    bool attachedF;
-
-    PolyDriver            *device;
-    IPreciselyTimed       *iTimed;
-    IVirtualAnalogSensor  *sensor;
-    
-    yarp::sig::Vector encoders;
-    yarp::sig::Vector encodersTimes;
-
     AnalogSubDevice();
+   ~AnalogSubDevice();
 
-    bool attach(PolyDriver *d, const std::string &id);
+    bool attach(PolyDriver *driver, const std::string &key);
     void detach();
 
-    bool configure(int base, int top, int channels, const std::string &id);
+    bool configure(int map0, int map1, const std::string &key);
+   
+    bool isAttached(){ return mIsAttached; }
 
-    bool isAttached()
-    { return attachedF; }
-};
+    void setTorque(int joint,double torque)
+    {
+        if (joint<mMap0 || mMap1<joint) return;
 
-struct DevicesLutEntry
-{
-    int offset; //an offset, the device is mapped starting from this joint
-    int deviceEntry; //index to the joint corresponding subdevice in the list
-};
+        mTorques[joint-mMap0]=torque;
+    }
 
+    void flushTorques()
+    {
+        if (mpSensor) mpSensor->setTorque(mTorques);
+    }
 
-/**
-* Callback implementation after buffered input.
-*/
-class ImplementCallbackHelper2 : public TypedReaderCallback<CommandMessage> {
+    const std::string& getKey(){ return mKey; }
+
 protected:
-    IVirtualAnalogSensor  *IVAnalog;
-    int controlledAxes;
+    std::string mKey;
+    
+    int mMap0,mMap1; 
 
-public:
-    /**
-    * Constructor.
-    * @param x is the instance of the container class using the callback.
-    */
-    ImplementCallbackHelper2(VirtualAnalogServer *x);
+    yarp::sig::Vector mTorques;
 
-    /**
-    * Callback function.
-    * @param v is the Vector being received.
-    */
-    virtual void onRead(CommandMessage& v);
-
-    bool initialize();
+    bool mIsConfigured;
+    bool mIsAttached;
+    
+    PolyDriver            *mpDevice;
+    IVirtualAnalogSensor  *mpSensor;
 };
+
+
+
+///////////////////////////////////////////////////
+
+class VirtualAnalogServer : public DeviceDriver, public Thread, public IMultipleWrapper
+{
+public:
+    VirtualAnalogServer() : mMutex(1)
+    {
+        mIsVerbose=false;
+        mNChannels=0;
+        mNSubdevs=0;
+    }
+
+    ~VirtualAnalogServer()
+    {
+        close();
+    }
+
+    // DeviceDriver //////////////////////////////////////////////////////////
+    virtual bool open(Searchable& config);
+    virtual bool close();
+    //////////////////////////////////////////////////////////////////////////
+
+    // Thread ////////////////////////////////////////////////////////////////
+    virtual void run();    
+    //////////////////////////////////////////////////////////////////////////
+
+    // IMultipleWrapper //////////////////////////////////////////////////////
+    virtual bool attachAll(const yarp::dev::PolyDriverList &p);
+    virtual bool detachAll()
+    {
+        mMutex.wait();
+
+        for (int k=0; k<mNSubdevs; ++k)
+        {
+            mSubdevices[k].detach();
+        }
+
+        mMutex.post();
+        return true;
+    }
+    //////////////////////////////////////////////////////////////////////////
+
+protected:
+
+    yarp::os::Semaphore mMutex;
+
+    bool mIsVerbose;
+
+    int mNChannels;
+    int mNSubdevs;
+
+    std::vector<int> mChan2Board;
+    std::vector<int> mChan2BAddr;
+
+    std::vector<AnalogSubDevice> mSubdevices;
+    yarp::os::BufferedPort<yarp::sig::Vector> mPortInputTorques;
+};
+
+
+
+
 
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-/*
-* A modified version of the network wrapper. Similar
-* to the the network wrapper in YARP, but it
-* maps only a subpart of the underlying device.
-* Allows also deferred attach/detach of a subdevice.
-*/
+#if 0
 class VirtualAnalogServer : public DeviceDriver,
-                            public RateThread,
-                            public IMultipleWrapper,
-                            public IPreciselyTimed,
-                            public IVirtualAnalogSensor
+                            public Thread,
+                            public IMultipleWrapper
 {
 private:
     bool spoke;
     bool verb;
 
-        // Remapping support
+    // Remapping support
     int               base;
     int               top;
     int               channels;
@@ -142,30 +172,7 @@ private:
     std::vector<DevicesLutEntry> lut;                   // size is the number of joint, it says which subdevice that joint is handled by
     std::vector<AnalogSubDevice> subdevices;            // size is the number of devices, each handling one or more joints
 
-    inline AnalogSubDevice *getSubdevice(unsigned int i);
-
-    Stamp time;                           // envelope to attach to the state port
-    Semaphore timeMutex;
-
-//     rpc port stuff   // Useful??
-//     Port rpc_p;     // RPC to configure the robot
-//     CommandsHelper2 command_reader;
-//     PortReaderBuffer<CommandMessage> control_buffer;
-
-
-    Port inputStreamingData_p; // in port to command the robot
-    PortReaderBuffer<Bottle> inputStreamingData_buffer;
-    ImplementCallbackHelper2 inputStreamingData_callback;
-
-    // Useful?
-
-//     Vector            encoders;
-
-//     //utility
-//     int               thread_period;
-//     std::string       partName;
-// 
-
+    yarp::os::BufferedPort<yarp::sig::Vector> portInputTorques;
 
 
 public:
@@ -173,7 +180,10 @@ public:
     * Constructor.
     */
     VirtualAnalogServer();
-    virtual ~VirtualAnalogServer()  { close();  }
+    /**
+    * Destructor.
+    */
+    virtual ~VirtualAnalogServer(){ close(); }
 
     /**
     * Return the value of the verbose flag.
@@ -181,19 +191,10 @@ public:
     */
     bool verbose() const { return verb; }
 
-    /**
-    * Default open() method.
-    * @return always false since initialization requires parameters.
-    */
-    virtual bool open() { return false; }
-
-    /**
-    * Close the device driver by deallocating all resources and closing ports.
-    * @return true if successful or false otherwise.
-    */
-    virtual bool close();
 
 
+    //////////////////////////////////////////////////////////////////////////
+    // DeviceDriver
     /**
     * Open the device driver.
     * @param prop is a Searchable object which contains the parameters.
@@ -204,21 +205,52 @@ public:
     * - calibrator to specify the name of the calibrator object (created through a PolyDriver).
     * and all parameters required by the wrapped device driver.
     */
-    virtual bool open(Searchable& prop);
+    virtual bool open(Searchable& config);
+    /**
+    * Close the device driver by deallocating all resources and closing ports.
+    * @return true if successful or false otherwise.
+    */
+    virtual bool close();
+    //
+    //////////////////////////////////////////////////////////////////////////
+
+
+
+    //////////////////////////////////////////////////////////////////////////
+    // Thread
+    virtual void run();    
+    //
+    //////////////////////////////////////////////////////////////////////////
+
+
+    
+    //////////////////////////////////////////////////////////////////////////
+    // IMultipleWrapper
+    virtual bool attachAll(const yarp::dev::PolyDriverList &p);
 
     virtual bool detachAll()
     {
         RateThread::stop();
 
-        int devices=device.subdevices.size();
-        for(int k=0;k<devices;k++)
-            device.getSubdevice(k)->detach();
+        for(unsigned int k=0; k<subdevices.size(); ++k)
+        {
+        }
 
         return true;
     }
+    //
+    //////////////////////////////////////////////////////////////////////////
 
-    virtual bool attachAll(const yarp::dev::PolyDriverList &l);
 
+    //////////////////////////////////////////////////////////////////////////
+    // IVirtualAnalogSensor
+    virtual int configure(yarp::os::Searchable &config);
+    virtual int setTorque(yarp::sig::Vector &torques);
+    virtual int getChannels();
+    //
+    //////////////////////////////////////////////////////////////////////////
 };
 
+
+#endif
 #endif

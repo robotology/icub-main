@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 set(PROJECTNAME virtualAnalogServer)
-prepare_device(${PROJECTNAME} TYPE virtualAnalogServer
+prepare_device(${PROJECTNAME} TYPE VirtualAnalogServer
                INCLUDE ${PROJECTNAME}.h)
 
 

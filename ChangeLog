@@ -1,3 +1,11 @@
+2013-02-15 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* main/src/libraries/icubmod/virtualAnalogServer/virtualAnalogServer.h
+	* main/src/libraries/icubmod/virtualAnalogServer/virtualAnalogServer.cpp
+	* main/src/libraries/icubmod/virtualAnalogServer/CMakeLists.txt
+	* main/src/libraries/icubmod/embObjMotionControl/embObjMotionControl.h
+    * main/src/libraries/icubmod/embObjMotionControl/embObjMotionControl.cpp	
+    Added torque data flow from wholeBodyDynamics to iCubInterface/robotInterface->EMS.
+
 2013-01-04 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* main/src/tools/iCubGui/src/bvh.h
 	* main/src/tools/iCubGui/src/bvhnoderoot.h
