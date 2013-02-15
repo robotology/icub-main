@@ -288,15 +288,26 @@ void McBoard::configure(const YAML::Node &doc) {
     getItem(GET_MIN_POSITION,   NULL, 0, REPLY_MIN_POSITION, &_min_pos, sizeof(_min_pos));
     getItem(GET_MAX_POSITION,   NULL, 0, REPLY_MAX_POSITION, &_max_pos, sizeof(_max_pos));
 
+    printf("Max position %d\n", _max_pos);
+    printf("Min position %d\n", _min_pos);
+
     getItem(GET_MIN_VELOCITY,   NULL, 0, REPLY_MIN_VELOCITY, &_min_vel, sizeof(_min_vel));
     getItem(GET_MAX_VELOCITY,   NULL, 0, REPLY_MAX_VELOCITY, &_max_vel, sizeof(_max_vel));
 
+    printf("Max velocity %d\n", _max_vel);
+    printf("Min velocity %d\n", _min_vel);
+
     getItem(GET_MAX_TORQUE,     NULL, 0, REPLY_MAX_TORQUE,   &_max_tor, sizeof(_max_tor));
+
+    printf("Max torque %d\n", _max_tor);
 
     getItem(GET_DESIRED_POSITION,   NULL, 0, REPLY_DESIRED_POSITION, &_des_pos, sizeof(_des_pos));
     getItem(GET_DESIRED_VELOCITY,   NULL, 0, REPLY_DESIRED_VELOCITY, &_des_vel, sizeof(_des_vel));
     getItem(GET_DESIRED_TORQUE,     NULL, 0, REPLY_DESIRED_TORQUE,   &_des_tor, sizeof(_des_tor));
 
+    printf("Des position %d\n", _des_pos);
+    printf("Des velocity %d\n", _des_vel);
+    printf("Des Torque   %d\n", _des_tor);
 
     // set specific board attribute
     if ( board_node ) {
@@ -345,16 +356,26 @@ void McBoard::configure(const YAML::Node &doc) {
         }
 
     }
-
+    int ret;
     // read back PIDs anyway
     V_pid.gain_set = VELOCITY_GAINS;
     getItem(GET_PID_GAINS,      &V_pid.gain_set, 1, REPLY_PID_GAINS, &V_pid, sizeof(V_pid));
+    printf("Vel PID Kp %d Ki %d Kd %d (ret %d)\n", V_pid.p, V_pid.i, V_pid.d, ret);
+
+    printf("\ngoing to ask os pid!!\n");
+//    sleep(10);
     P_pid.gain_set = POSITION_GAINS;
     getItem(GET_PID_GAINS,      &P_pid.gain_set, 1, REPLY_PID_GAINS, &P_pid, sizeof(P_pid));
+    printf("Pos PID Kp %d Ki %d Kd %d (ret %d)\n", P_pid.p, P_pid.i, P_pid.d, ret);
+
+//    sleep(10);
+
     T_pid.gain_set = TORQUE_GAINS;
     getItem(GET_PID_GAINS,      &T_pid.gain_set, 1, REPLY_PID_GAINS, &T_pid, sizeof(T_pid));
+    printf("Tor PID Kp %d Ki %d Kd %d (ret %d)\n", T_pid.p, T_pid.i, T_pid.d, ret);
 
     getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &_motor_config, 2);
+    //getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &_motor_config2, 2);
 
     getItem(GET_TORQUE_FACTORS, NULL, 0, REPLY_TORQUE_FACTORS, &_torque_factor, sizeof(_torque_factor));
 

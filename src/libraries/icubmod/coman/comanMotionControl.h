@@ -21,23 +21,19 @@
 
 /**
  * @ingroup icub_hardware_modules
- * \defgroup eth2ems eth2ems
  *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a ems to can bus device.
- * This is the eth2ems module device.
- *
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
+ * Copyright (C) 2012 iCubFacility - Istituto Italiano di Tecnologia
  *
  * Author: Alberto Cardellino
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- * This file can be edited at src/modules/....h
+ * This file can be edited at src/modules/libraries/icubmod/coman.h
  *
  */
 
 //
-// $Id: comanMotionControl.h,v 1.5 2008/06/25 22:33:53 nat Exp $
+// $Id: comanMotionControl.h,v 1.0 2013/02/5 $
 //
 
 #ifndef __comanMotionControl_h__
@@ -70,17 +66,14 @@ using namespace yarp::os;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
+#include "comanFTsensor.h"
+
 #include "DSP_board.h"
 #include "Boards_iface.h"
 
 #define SIZE_INFO   128
 
-typedef struct
-{
-    uint8_t       boardNum;
-    void         *handle;
-    char          name[SIZE_INFO];
-}FEAT_ID;
+
 
 
 #ifdef _OLD_STYLE_
@@ -154,14 +147,6 @@ struct SpeedEstimationParameters
 };
 #endif
 
-////////////////////////////////////////////
-// indirizzi ip
-#define DEFAULT_LAPTOP_IP	"10.255.37.155" // da usare col pc104
-#define DEFAULT_EMS_IP 		"127.0.0.1"		// "10.255.39.152"  ip della workstation qui dietro.
-#define DEFAULT_EMS_PORT	33333
-
-
-#define EMS_MAX_CARDS		1				// TO BE REMOVED
 
 namespace yarp {
     namespace dev {
@@ -174,7 +159,6 @@ static void copyPid_Coman2iCub(pid_gains_t *ComanPid_in, Pid *iCubPid_out, GainS
 
 
 class yarp::dev::comanMotionControl:  public DeviceDriver,
-    public Boards_ctrl,
     public IPidControlRaw,
     public IControlCalibration2Raw,
     public IAmplifierControlRaw,
@@ -195,59 +179,53 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public IDebugInterfaceRaw
 {
 private:
-    int 					tot_packet_recv, errors;
-//    tm						*hr_time1, *hr_time2;
-    char 					send_time_string[40];
-    char 					recv_time_string[40];
-    timeval					th_time;
 
-    uint8_t 				*udppkt_data;
-    uint16_t 				udppkt_size;
+     ///////////// coman specific  ///////////////
+    // TODO separate the FT sensor hanfling from MC!!
+    comanFTsensor         *FTsensor;
+    Boards_ctrl           *boards_ctrl;
+    mcs_map_t             _mcs;
+    GainSet               controlMode;                        // memorize the type of control currently running
 
-    yarp::os::Semaphore 	_mutex;
-    FEAT_ID					_fId;
+    ////////  canonical
+    yarp::os::Semaphore   _mutex;
 
-    int *_axisMap;                              /** axis remapping lookup-table */
-    double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
-    float *_encoderconversionfactor;           /** iCubDegrees to encoder conversion factors */
-    float *_encoderconversionoffset;           /** iCubDegrees offset */
-    double *_rotToEncoder;                      /** angle to rotor conversion factors */
-    double *_zeros;                             /** encoder zeros */
-    Pid *_pids;                                 /** initial gains */
-    Pid *_tpids;								/** initial torque gains */
-    bool _tpidsEnabled;							/** abilitation for torque gains */
+    int                   *_axisMap;                          /** axis remapping lookup-table */
+    double                *_angleToEncoder;                   /** angle to iCubDegrees conversion factors */
+    float                 *_encoderconversionfactor;          /** iCubDegrees to encoder conversion factors */
+    float                 *_encoderconversionoffset;          /** iCubDegrees offset */
+    double                *_rotToEncoder;                     /** angle to rotor conversion factors */
+    double                *_zeros;                            /** encoder zeros */
+    Pid                   *_pids;                             /** initial gains */
+    Pid                   *_tpids;                            /** initial torque gains */
+    bool                  _tpidsEnabled;                      /** abilitation for torque gains */
 
 
-    double *_limitsMin;                         /** joint limits, max*/
-    double *_limitsMax;                         /** joint limits, min*/
-    double *_currentLimits;                     /** current limits */
-    int *_velocityShifts;                       /** velocity shifts */
-    int *_velocityTimeout;                      /** velocity shifts */
-    int *_torqueSensorId;						/** Id of associated Joint Torque Sensor */
-    int *_torqueSensorChan;						/** Channel of associated Joint Torque Sensor */
-    double *_maxTorque;						    /** Max torque of a joint */
-    double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
-    bool  *checking_motiondone;					/* flag if I' m already waiting for motion done */
+    double                *_limitsMin;                        /** joint limits, max*/
+    double                *_limitsMax;                        /** joint limits, min*/
+    double                *_currentLimits;                    /** current limits */
+    int                   *_velocityShifts;                   /** velocity shifts */
+    int                   *_velocityTimeout;                  /** velocity shifts */
+    int                   *_torqueSensorId;                   /** Id of associated Joint Torque Sensor */
+    int                   *_torqueSensorChan;                 /** Channel of associated Joint Torque Sensor */
+    double                *_maxTorque;                        /** Max torque of a joint */
+    double                *_newtonsToSensor;                  /** Newtons to force sensor units conversion factors */
+    bool                  *checking_motiondone;               /* flag if I' m already waiting for motion done */
 
 // basic knowledge of my joints
-    int		_njoints;							// Number of joints handled by this EMS; this values will be extracted by the config file
-    int 	_firstJoint;						// in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
+    int                   _njoints;                           // Number of joints handled by this EMS; this values will be extracted by the config file
+    int                   _firstJoint;                        // in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
 
-// debug
-    int 	start;
-    int 	end;
 
-    // memorize the type of control currently running
-    GainSet controlMode;
     // internal stuff
-    bool    *_enabledAmp;		// Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
-    bool    *_enabledPid;		// Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
-    bool    *_calibrated;		// Flag to know if the calibrate function has been called for the joint
-    double 	*_ref_positions;	// used for position control.
-    double 	*_ref_speeds;		// used for position control.
-    double 	*_command_speeds;	// used for velocity control.
-    double 	*_ref_accs;			// for velocity control, in position min jerk eq is used.
-    double 	*_ref_torques;		// for torque control.
+    bool                  *_enabledAmp;             // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
+    bool                  *_enabledPid;             // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
+    bool                  *_calibrated;             // Flag to know if the calibrate function has been called for the joint
+    double                *_ref_positions;          // used for position control.
+    double                *_ref_speeds;             // used for position control.
+    double                *_command_speeds;         // used for velocity control.
+    double                *_ref_accs;               // for velocity control, in position min jerk eq is used.
+    double                *_ref_torques;            // for torque control.
 
 #if 0
     DebugParameters *_debug_params;             /** debug parameters */
@@ -258,29 +236,19 @@ private:
 
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-//     bool configure_mais(void);
-//     bool goToRun(void);
-//     void getMStatus(int j);
 
 public:
     comanMotionControl();
     ~comanMotionControl();
 
-    // stuff for boards handling
-    Boards_ctrl  boards_ctrl;
-
-//     char					info[SIZE_INFO];
-    yarp::os::Semaphore				semaphore;
-//     eoRequestsQueue			*requestQueue;	// tabella che contiene la lista delle attese
+    char                     info[SIZE_INFO];
+    yarp::os::Semaphore         semaphore;
 
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
 
-    // _AC_
-//     eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);
-//     void getMotorController(DeviceDriver *iMC);
 //    void waitSem();
 //    void postSem();
     bool alloc(int njoints);

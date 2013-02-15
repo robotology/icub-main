@@ -5,12 +5,15 @@
 # Name of the project must correspond to the class name that needs to be 
 # instantiated by the factory
 
-SET(THIS_LIB comanMotionControl)
-PROJECT(${THIS_LIB})
+SET(COMAN_MC comanMotionControl)
+SET(COMAN_FT comanFTsensor)
 
-PREPARE_DEVICE(${THIS_LIB} TYPE ${THIS_LIB} INCLUDE ${THIS_LIB}.h  WRAPPER controlboard)
+PROJECT(COMAN)
 
-IF (NOT SKIP_${THIS_LIB} )
+PREPARE_DEVICE(${COMAN_MC} TYPE ${COMAN_MC} INCLUDE ${COMAN_MC}.h  WRAPPER controlboard)
+PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analogServer)
+
+IF (NOT SKIP_COMAN )
 
   if (USE_REALTIME) 
     add_definitions(-DRT_ENV)
@@ -23,6 +26,7 @@ IF (NOT SKIP_${THIS_LIB} )
   CommProtocol.cpp
   DSP_board.cpp
   comanMotionControl.cpp
+  comanFTsensor.cpp
   )
 
   set(HEADERS_TO_INSTALL
@@ -31,15 +35,22 @@ IF (NOT SKIP_${THIS_LIB} )
   definitions.h
   DSP_board.h
   comanMotionControl.h
+  comanFTsensor.h
   )
 
+  #add_definitions("-std=c++0x")
+
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ../debugStream/)
-  #add_library(${THIS_LIB} STATIC ${ThisLib_SOURCES})
-  add_library(${THIS_LIB} ${ThisLib_SOURCES})
-  target_link_libraries(${THIS_LIB} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
+
+  add_library(${COMAN_MC} ${ThisLib_SOURCES})
+  add_library(${COMAN_FT} ${ThisLib_SOURCES})
+
+  target_link_libraries(${COMAN_MC} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
+  target_link_libraries(${COMAN_FT} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
 
 #   install(TARGETS ${THIS_LIB} ARCHIVE DESTINATION lib)
 #   install(FILES ${HEADERS_TO_INSTALL} DESTINATION include)
 
-  icub_export_library(${THIS_LIB} )
-ENDIF (NOT SKIP_${THIS_LIB} )
+  icub_export_library(${COMAN_MC} )
+  icub_export_library(${COMAN_FT} )
+ENDIF (NOT SKIP_COMAN )

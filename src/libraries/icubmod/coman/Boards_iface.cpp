@@ -55,6 +55,9 @@ using namespace yarp::dev;
 
 const char th_name[] = "udp_rx";
 
+Boards_ctrl* Boards_ctrl::handle = NULL;
+yarp::os::Semaphore Boards_ctrl::_mutex = 1;
+
 // MOVE in utils or something else
 static int getIPv4(const char * dev, char * ipv4)
 {
@@ -85,6 +88,16 @@ static int getIPv4(const char * dev, char * ipv4)
  *  
  */
 
+Boards_ctrl *Boards_ctrl::instance()
+{
+    Boards_ctrl::_mutex.wait();
+    if(handle == NULL)
+    {
+        handle = new Boards_ctrl;
+    }
+    Boards_ctrl::_mutex.post();
+    return handle;
+}
 
 
 Boards_ctrl::Boards_ctrl() 
@@ -126,6 +139,18 @@ Boards_ctrl::Boards_ctrl()
 bool Boards_ctrl::open(yarp::os::Searchable& config)
 {
     yTrace() << "Open function";
+    Boards_ctrl::_mutex.wait();
+    {
+        if(initted)
+        {
+            yDebug() << "Already initted!";
+            Boards_ctrl::_mutex.post();
+            return true;
+        }
+    }
+
+    yarp::os::Bottle general = config.findGroup("GENERAL");
+
     // Do all the things needed to a correct initialization of the boards and sockets
     myOpen("/usr/local/src/robot/coman/trial_config/app/basic.yaml");
 
@@ -173,7 +198,8 @@ bool Boards_ctrl::open(yarp::os::Searchable& config)
     start_control_body(neck);
 
 
-    // global start time reference
+    // global start time reference\\\\\\\\\\\\
+
     // set before start bc_data ... rx_udp thread already running logging data
     g_tStart = get_time_ns();
 
@@ -184,8 +210,19 @@ bool Boards_ctrl::open(yarp::os::Searchable& config)
     //ts.tv_sec = 5;
     //clock_nanosleep(CLOCK_REALTIME, 0, &ts, NULL);
     sleep(5);
-
+    initted = true;
+    Boards_ctrl::_mutex.post();
     return true;
+}
+
+mcs_map_t Boards_ctrl::get_mcs_map()
+{
+    return _mcs;
+}
+
+fts_map_t Boards_ctrl::get_fts_map()
+{
+    return _fts;
 }
 
 bool Boards_ctrl::myOpen(const char *config)

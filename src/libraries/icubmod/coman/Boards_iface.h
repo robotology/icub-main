@@ -78,6 +78,8 @@
 
 #include <Debug.h>
 #include <yarp/dev/Drivers.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/os/Bottle.h>
 
 namespace yarp{
   namespace dev {
@@ -87,6 +89,16 @@ namespace yarp{
 
 #define DEG2mRAD(X) (X*M_PI*1e5)/180
 #define DEG2RAD(X)  (X*M_PI)/180
+
+/** @ingroup Boards_controller
+    *  @brief maps of boards <bId, instance ref>
+    *  @{
+    */
+typedef std::map<int, Dsp_Board*>   dsp_map_t;
+typedef std::map<int, McBoard*>     mcs_map_t;
+typedef std::map<int, FtBoard*>     fts_map_t;
+/** @}
+    */
 
 
 /**
@@ -99,27 +111,21 @@ namespace yarp{
 
 class yarp::dev::Boards_ctrl// : public yarp::dev::DeviceDriver
 {
-
-    /** @ingroup Boards_controller
-     *  @brief maps of boards <bId, instance ref>
-     *  @{
-     */
-    typedef std::map<int, Dsp_Board*>   dsp_map_t;
-    typedef std::map<int, McBoard*>     mcs_map_t;
-    typedef std::map<int, FtBoard*>     fts_map_t;
-    /** @}
-     */
-
 private:
+    // singleton stuff
+    Boards_ctrl();
+    bool                          initted;
+    static yarp::os::Semaphore    _mutex;
+    static Boards_ctrl            *handle;
+
     int     r_pos[MAX_DSP_BOARDS];
     short   r_vel[MAX_DSP_BOARDS];
     short   r_tor[MAX_DSP_BOARDS];
     unsigned long long  g_tStart;
 
-
+    // initialization values
     std::vector<float> homePos;
-
-    // boards ID
+    // vector conteining boards IDs (?)
     std::vector<int> r_leg;
     std::vector<int> l_leg;
     std::vector<int> waist;
@@ -128,7 +134,7 @@ private:
     std::vector<int> neck;
 
 public:
-    Boards_ctrl();
+    static Boards_ctrl *instance();
 //     Boards_ctrl(const char * config);
     ~Boards_ctrl();
 
@@ -178,6 +184,9 @@ public:
 
     /** @} */ // end of UDP_cmd
 
+    mcs_map_t get_mcs_map();
+    fts_map_t get_fts_map();
+
 protected:
 
     void factory_board(uint8_t *);
@@ -188,7 +197,7 @@ protected:
     dsp_map_t _boards;
     mcs_map_t _mcs;
     fts_map_t _fts;
-    
+
 private:
 
     int         udp_sock;
@@ -204,6 +213,7 @@ private:
     pthread_cond_t  data_sync_cond;
 
     std::bitset<32>   bcMask, bcScanMask;   // Does this means max 32 boards??
+
 
 };
 

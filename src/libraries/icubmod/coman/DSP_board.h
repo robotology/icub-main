@@ -32,20 +32,34 @@ using namespace boost::accumulators;
 
 
 #warning "was under #ifndef C_WRAPPER... what does it means??"
-enum GainSet
-{
-    VELOCITY_GAINS = 0,
-    POSITION_GAINS = 1,
-    TORQUE_GAINS   = 2
-};
+#define C_WRAPPER
+#ifdef C_WRAPPER
+    typedef char GainSet;
+    #define VELOCITY_GAINS 0
+    #define POSITION_GAINS 1
+    #define TORQUE_GAINS   2
+#else
+    enum GainSet
+    {
+      VELOCITY_GAINS = 0,
+      POSITION_GAINS = 1,
+      TORQUE_GAINS   = 2
+    };
+#endif
+
+#define VERIFYsizeof(sname, ssize)    typedef uint8_t sname##ssize[ ( ssize == sizeof(sname) ) ? (1) : (-1)];
+
 
 struct __pid_gains_t {
     GainSet    gain_set;
     int     p;
     int     i;
     int     d;
-}  __attribute__((__packed__));
+}__attribute__ ((gcc_struct, __packed__));
+
 typedef __pid_gains_t pid_gains_t;
+
+VERIFYsizeof(__pid_gains_t, 13);
 
 /**
  * @class Dsp_Board
@@ -145,7 +159,7 @@ private:
     pid_gains_t V_pid, P_pid, T_pid;
 
     torque_factor_t _torque_factor;
-    short int   _motor_config;
+    short int   _motor_config, _motor_config2;
 };
 
 

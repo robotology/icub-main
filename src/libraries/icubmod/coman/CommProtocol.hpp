@@ -28,6 +28,8 @@
 #define PROGRAMMED_FW_VER_VERSION_SIZE (8+1) //string length INCLUDING the terminator character
 #define PROGRAMMED_FW_VER_DATETIME_SIZE (20+1)//string length INCLUDING the terminator character
 
+#include "Debug.h"
+
 // List of commands
 enum Commands
 {

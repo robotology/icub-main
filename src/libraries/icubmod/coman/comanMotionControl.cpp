@@ -23,8 +23,6 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-#warning "Macro EMS_capacityofropframeregulars defined by hand!! Find a way to have this number synchronized with EMS!!"
-#define EMS_capacityofropframeregulars 1204
 
 // Utilities
 
@@ -70,14 +68,6 @@ static inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
-#define NV_NOT_FOUND	return nv_not_found();
-
-static bool nv_not_found(void)
-{
-    yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
-    return false;
-}
-
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
@@ -92,7 +82,7 @@ bool comanMotionControl::extractGroup(Bottle &input, Bottle &out, const std::str
 
     if(tmp.size()!=size)
     {
-        yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
+        //yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
         return false;
     }
 
@@ -156,14 +146,10 @@ comanMotionControl::comanMotionControl() :
     ImplementControlMode(this),
     ImplementDebugInterface(this),
     ImplementControlLimits<comanMotionControl, IControlLimits>(this),
-//     Boards_ctrl(),
     _mutex(1)
 {
     yTrace();
-//     boards_ctrl = NULL;
-// #ifdef _OLD_STYLE_
-    udppkt_data 	= 0x00;
-    udppkt_size 	= 0x00;
+    boards_ctrl = NULL;
 
     _pids			= NULL;
     _tpids			= NULL;
@@ -196,25 +182,13 @@ comanMotionControl::comanMotionControl() :
 
     checking_motiondone = NULL;
     // debug connection
-    tot_packet_recv	= 0;
-    errors			= 0;
-    start			= 0;
-    end				= 0;
 
     controlMode = POSITION_GAINS;
-    
+
     // Check status of joints
     _enabledPid		= NULL;
     _enabledAmp 	= NULL;
     _calibrated		= NULL;
-// #endif
-#if 0
-    _impedance_params = NULL;
-    _impedance_limits = NULL;
-    _estim_params   = NULL;
-    res           = NULL;
-    requestQueue  = NULL;
-#endif
 }
 
 comanMotionControl::~comanMotionControl()
@@ -243,19 +217,23 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
     ImplementControlLimits<comanMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
-    Boards_ctrl::open(config);
-
+    boards_ctrl = Boards_ctrl::instance();
+    if(boards_ctrl == NULL)
+    {
+        yError() << "unable to open Boards_ctrl class!";
+        return false;
+    }
+    boards_ctrl->open(config);
+    // TODO fix this!
+#warning "<><> TODO: This is a copy of the mcs map. Verify that things will never change after this copy or use a pointer (better) <><>"
+    _mcs = boards_ctrl->get_mcs_map();
     return true;
-// #else
-//     return NOT_YET_IMPLEMENTED("open");
-// #endif
 }
 
 
 bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 {
     yTrace();
-    // yTrace();
     Bottle xtmp;
     int i;
     Bottle general = config.findGroup("GENERAL");
@@ -303,7 +281,7 @@ bool comanMotionControl::init()
 bool comanMotionControl::close()
 {
     yTrace();
-    Boards_ctrl::close();
+    boards_ctrl->close();
 
 #ifdef _OLD_STYLE_
     ImplementControlMode::uninitialize();
@@ -321,28 +299,11 @@ bool comanMotionControl::close()
 }
 
 
-// eoThreadEntry * comanMotionControl::appendWaitRequest(int j, uint16_t nvid)
-// {
-// 	yTrace();
-// #ifdef _OLD_STYLE_
-// 	eoRequest req;
-// 	if(!requestQueue->threadPool->getId(&req.threadId) )
-// 		fprintf(stderr, "Error: too much threads!! (comanMotionControl)");
-// 	req.joint = j;
-// 	req.nvid = res->transceiver->translate_NVid2index(_fId.boardNum, _fId.ep, nvid);
-// 
-// 	requestQueue->append(req);
-// 	return requestQueue->threadPool->getThreadTable(req.threadId);
-// #else
-//   return NULL;
-// #endif 
-// }
-
 ///////////// PID INTERFACE
 
 bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 {
-    yTrace();
+    yTrace() << "joint " << j << "KP" << pid.kp;
     McBoard *joint_p;
     pid_gains_t p_i_d;
 
@@ -415,20 +376,22 @@ bool comanMotionControl::getOutputsRaw(double *outs)
 bool comanMotionControl::getPidRaw(int j, Pid *pid)
 {
     yTrace();
-    pid_gains_t ComanPid, P_pid, T_pid;
+    pid_gains_t ComanPid;
+    ComanPid.p = ComanPid.i = ComanPid.d = 0;
     GainSet pidType;
     McBoard *joint_p = _mcs[j];
 
-    if( 0 == joint_p)
+    if( NULL == joint_p)
     {
-        yError() << "Calling SetPid on a non-existing joint j" << j;
+        yError() << "Calling GetPid on a non-existing joint j" << j;
         return false;
     }
 
  // get back PIDs from the boards
     ComanPid.gain_set = controlMode;
     joint_p->getItem(GET_PID_GAINS,      &ComanPid.gain_set, 1, REPLY_PID_GAINS, &ComanPid, sizeof(ComanPid));
-    copyPid_Coman2iCub(&P_pid, pid, &pidType);
+    yDebug() << "Coman pid kp " << ComanPid.p << "ki "<< ComanPid.i << "kd " << ComanPid.d;
+    copyPid_Coman2iCub(&ComanPid, pid, &pidType);
 
     return true;
 }
@@ -715,28 +678,61 @@ bool comanMotionControl::resetEncodersRaw()
     return NOT_YET_IMPLEMENTED("resetEncodersRaw");
 }
 
-bool comanMotionControl::getEncoderRaw(int j, double *value)
+bool comanMotionControl::getEncoderRaw(int j, double *enc)
 {
-//     yTrace();
-//     return NOT_YET_IMPLEMENTED("getEncoderRaw");
+    McBoard *joint_p = _mcs[j];
+
+    if( NULL == joint_p)
+    {
+//         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+        *enc = j;   // return the joint number!!
+        return false;
+    }
+    // viene probabilmente broadcastata... usare la ricezione udp per questo. Così è corretto?
+    mc_bc_data_t data;
+#warning "this implies a memcopy!! To be optimized!! And add timestamp"
+    joint_p->get_bc_data(&data);
+    *enc = (double) data.Position;
+    return true;
 }
 
 bool comanMotionControl::getEncodersRaw(double *encs)
 {
-//     yTrace();
-//     return NOT_YET_IMPLEMENTED("getEncodersRaw");
+    double tmp;
+    for(int i=0; i<_njoints; i++)
+    {
+        getEncoderRaw(i, &tmp);
+        encs[i] = tmp;
+    }
 }
 
-bool comanMotionControl::getEncoderSpeedRaw(int j, double *sp)
+bool comanMotionControl::getEncoderSpeedRaw(int j, double *spd)
 {
-//     yTrace();
-//     return NOT_YET_IMPLEMENTED("getEncoderSpeedRaw");
+    McBoard *joint_p = _mcs[j];
+
+    if( NULL == joint_p)
+    {
+//         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+        *spd = j;   // return the joint number!!
+        return false;
+    }
+    // viene probabilmente broadcastata... usare la ricezione udp per questo. Così è corretto?
+    mc_bc_data_t data;
+#warning "this implies a memcopy!! To be optimized!! And add timestamp"
+    joint_p->get_bc_data(&data);
+    *spd = (double) data.Velocity;
+
+    return true;
 }
 
 bool comanMotionControl::getEncoderSpeedsRaw(double *spds)
 {
-//     yTrace();
-//     return NOT_YET_IMPLEMENTED("getEncoderSpeedsRaw");
+    double tmp;
+    for(int i=0; i<_njoints; i++)
+    {
+        getEncoderSpeed(i, &tmp);
+        spds[i] = tmp;
+    }
 }
 
 bool comanMotionControl::getEncoderAccelerationRaw(int j, double *acc)
@@ -767,12 +763,12 @@ bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 {
     McBoard *joint_p = _mcs[j];
 
-    if( 0 == joint_p)
+    if( NULL == joint_p)
     {
 //         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
-        *enc = j;
+        *enc = j;   // return the joint number!!
         *stamp = 0;
-        return true;
+        return false;
     }
     // viene probabilmente broadcastata... usare la ricezione udp per questo. Così è corretto?
     mc_bc_data_t data;
@@ -780,8 +776,7 @@ bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
     joint_p->get_bc_data(&data);
     *enc = (double) data.Position;
 
-    // fix this
-    *stamp = (double) 0x00;
+    *stamp = data.Timestamp;
 
     return true;
 }
@@ -802,14 +797,31 @@ bool comanMotionControl::disableAmpRaw(int j)
 
 bool comanMotionControl::getCurrentRaw(int j, double *value)
 {
-    yTrace();
-    return NOT_YET_IMPLEMENTED("getCurrentRaw");
+    McBoard *joint_p = _mcs[j];
+
+    if( NULL == joint_p)
+    {
+//         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+        *value = j;   // return the joint number!!
+        return false;
+    }
+    // viene probabilmente broadcastata... usare la ricezione udp per questo. Così è corretto?
+    mc_bc_data_t data;
+#warning "this implies a memcopy!! To be optimized!! And add timestamp"
+    joint_p->get_bc_data(&data);
+    *value = (double) data.Current;
+
+    return true;
 }
 
 bool comanMotionControl::getCurrentsRaw(double *vals)
 {
-    yTrace();
-    return NOT_YET_IMPLEMENTED("getCurrentsRaw");
+    double tmp;
+    for(int i=0; i<_njoints; i++)
+    {
+        getCurrentRaw(i, &tmp);
+        vals[i] = tmp;
+    }
 }
 
 bool comanMotionControl::setMaxCurrentRaw(int j, double val)
