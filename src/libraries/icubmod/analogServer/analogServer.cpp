@@ -173,23 +173,22 @@ AnalogServer::AnalogServer(): RateThread(0)
 {
     yTrace();
     _rate = 0;
-    analogSensor_p=0;
+    analogSensor_p = NULL;
 }
 
 AnalogServer::~AnalogServer()
 {
-  yTrace();
+    yTrace();
     threadRelease();
     _rate = 0;
-    analogSensor_p=0;
+    analogSensor_p = NULL;
 }
 
 void AnalogServer::setHandlers()
 {
   yTrace();
   for(unsigned int i=0;i<analogPorts.size(); i++){
-    std::string rpcPortName = analogPorts[i].port_name;
-    rpcPortName += "/rpc:i";
+
     AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
     handlers.push_back(ash);
   }
@@ -215,7 +214,8 @@ bool AnalogServer::attachAll(const PolyDriverList &analog2attach)
     {
         Idevice2attach->view(analogSensor_p);
     }
-    else
+
+    if(NULL == analogSensor_p)
     {
         yError() << "AnalogServer: subdevice passed to attach method is invalid!!!";
         return false;
@@ -233,7 +233,7 @@ void AnalogServer::attach(yarp::dev::IAnalogSensor *s)
 {
     yTrace();
     analogSensor_p=s;
-    for(unsigned int i=0;i<analogPorts.size(); i++)
+    for(unsigned int i=0; i<analogPorts.size(); i++)
     {
         handlers[i]->setInterface(analogSensor_p);
     }
@@ -280,8 +280,8 @@ bool AnalogServer::open(yarp::os::Searchable &config)
     if(!params.check("robotName") )   // ?? qui dentro, da dove lo pesco ??
     {
         correct=false;
-        yError() << "SkinWrapper missing robot Name, check your configuration file!! Quitting\n";
-//         return false;
+        yError() << "AnalogServer missing robot Name, check your configuration file!! Quitting\n";
+        return false;
     }
 
     if(params.check("deviceId"))
@@ -307,13 +307,14 @@ bool AnalogServer::open(yarp::os::Searchable &config)
     std::string root_name;
     root_name+="/";
     root_name+=robotName;
-    root_name+= "/" + this->id + "/analog:o";
+    root_name+= "/" + this->id + "/analog";
+    rpcPortName = root_name + "/rpc:i";
 
     // port names are optional, do not check for correctness.
     if(!params.check("ports"))
     {
      // if there is no "ports" section take the name of the "skin" group as the only port name
-        createPort((root_name ).c_str(), _rate );
+        createPort((root_name+":o" ).c_str(), _rate );
 
 //         tmpPorts.resize( (size_t) 1);
 //         tmpPorts[0].offset = 0;
@@ -360,7 +361,7 @@ bool AnalogServer::open(yarp::os::Searchable &config)
 
             tmpPorts[k].length = taxels;
             tmpPorts[k].offset = wBase;
-            tmpPorts[k].port_name = root_name+string(ports->get(k).asString().c_str());
+            tmpPorts[k].port_name = root_name+":o"+string(ports->get(k).asString().c_str());
 
             createPorts(tmpPorts, _rate);
             totalT+=taxels;
@@ -368,7 +369,7 @@ bool AnalogServer::open(yarp::os::Searchable &config)
 
         if (totalT!=total_taxels)
         {
-            cerr<<"Error total number of mapped taxels does not correspond to total taxels"<<endl;
+            yError() << "Error total number of mapped taxels does not correspond to total taxels";
             return false;
         }
     }

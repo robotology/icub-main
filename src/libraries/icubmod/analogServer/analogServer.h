@@ -89,6 +89,8 @@ class yarp::dev::AnalogServer:  public yarp::os::RateThread,
                                 public yarp::dev::DeviceDriver,
                                 public yarp::dev::IMultipleWrapper
 {
+private:
+    std::string rpcPortName;
     std::string id;
     yarp::dev::IAnalogSensor *analogSensor_p;   // the analog sensor to read from
     std::vector<AnalogPortEntry> analogPorts;   // the list of output ports
