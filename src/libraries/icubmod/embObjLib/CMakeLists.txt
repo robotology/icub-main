@@ -174,7 +174,10 @@ set(CORE_FOLDER_SOURCE  	${CORE_FOLDER}/EOarray.c
 							${CORE_FOLDER}/EOlist.c
 							${CORE_FOLDER}/EOtheErrorManager.c
 							${CORE_FOLDER}/EOtheMemoryPool.c
-							${CORE_FOLDER}/EOvector.c)
+							${CORE_FOLDER}/EOvector.c
+							${CORE_FOLDER}/EOYtheSystem.c
+							
+							)
 
 set(CORE_VEE_SOURCE			${CORE_VEE_FOLDER}/EOVmutex.c
 							${CORE_VEE_FOLDER}/EOVtask.c
@@ -201,6 +204,7 @@ set(CORE_API_HEADER	  			${CORE_API}/EOarray.h
 #						${CORE_API}/EOVstorage.h
 #						${CORE_API}/EOVtask.h
 #						${CORE_API}/EOVtheSystem.h
+                        ${CORE_API}/EOYtheSystem.h
 						)						
 
 						
@@ -216,6 +220,7 @@ set(CORE_FOLDER_HEADER	  			${CORE_API}/EOarray_hid.h
 						${CORE_API}/EOtheErrorManager_hid.h
 						${CORE_API}/EOtheMemoryPool_hid.h
 						${CORE_API}/EOvector_hid.h
+						${CORE_API}/EOYtheSystem_hid.h
 						)
 
 # EmbObj-NV & Protocol files

@@ -72,8 +72,8 @@ typedef struct
     eOmeas_position_t       setpoint;      //4B
     uint8_t                 numofrecpkt;    //num of pkt(ropframe) received
     uint8_t                 numofprocesspkt; //num of pkt (ropframe) processed
-    uint8_t                 exit_rx_phase_cond; //code of couse of exit from rx phase (use exit_rx_phase_contitions_t)
-    uint8_t                 looptime;
+    int8_t                  exit_cond;
+    uint8_t                 diff_packets;
 }setpoint_test_data_t;
 
 void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *test_data_ptr);

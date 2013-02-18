@@ -68,23 +68,10 @@ using namespace std;
 #include "Debug.h"
 
 
-
-//// debug with workstation
-//#define DEBUG_LAPTOP_IP			"10.255.37.155" 	// <- dhcp;
-//#define DEBUG_WORKSTATION_IP 	"10.255.37.24" // ip della workstation qui dietro.
-//
-//// to use inside the robot
-//#define DEFAULT_PC104_IP		"10.0.0.1" 			// <- fix;
-//#define DEBUG_PC104_IP			"1.1.1.1" 			// <- fix;
-//#define DEBUG_EMS_IP			"10.0.0.2" 			// <- fix;
-//
-//#define PC104_IP				DEBUG_LAPTOP_IP
-//#define	EMS_IP					DEBUG_EMS_IP
-//#define DEFAULT_PORT			3333
-
+#define EMPTY_PACKET_SIZE		20
 #define	RECV_BUFFER_SIZE		EOK_HOSTTRANSCEIVER_capacityofpacket
 #define	SIZE_INFO				126
-#define    MAX_ICUB_EP				32
+#define MAX_ICUB_EP				32
 
 namespace yarp{
     namespace dev{
@@ -110,7 +97,7 @@ private:
     char              info[SIZE_INFO];
     int               how_many_features;
 
-    TheEthManager      *theEthManager_h;
+
 
     ACE_INET_Addr     remote_dev;
     ACE_INET_Addr     remote_broadcast;
@@ -119,6 +106,8 @@ private:
 public:
    	hostTransceiver   *transceiver;
 
+   	TheEthManager      *theEthManager_h;
+   	bool				isRunning;
     ethResources();
     ~ethResources();
 
@@ -201,9 +190,10 @@ private:
     static int					_deviceNum;
 	static TheEthManager 		*handle;
 	bool 						_socket_initted;
-	static yarp::os::Semaphore 	_mutex;
+
 	char 						info[SIZE_INFO];
 
+	bool						keepGoingOn;
 //	ethResources				*res;
     ACE_SOCK_Dgram				*_socket;
 
@@ -220,6 +210,10 @@ protected:
 
 public:
     bool threadInit();
+    void threadRelease();
+
+    static yarp::os::Semaphore 	_mutex;
+
     ~TheEthManager();
     PolyDriver 					polyDriver;
 

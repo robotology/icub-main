@@ -430,9 +430,15 @@ void *recvThread(void * arg)
     ACE_SOCK_Dgram *pSocket = (ACE_SOCK_Dgram*) arg;
 
     ethResIt iterator = ethResCreator::instance()->begin();
-    while( (NULL == pSocket) || (NULL == *iterator) )
+    while( NULL == pSocket )
     {
-    	yError() << "socket o ethResCreator non pronto, aspetto un po'";
+    	yError() << "socket  aspetto un po'";
+    	Time::delay(1);
+    }
+
+    while( NULL == *iterator )
+    {
+    	yError() << "ethResCreator non pronto, aspetto un po'";
     	Time::delay(1);
     }
 
@@ -491,6 +497,7 @@ void *recvThread(void * arg)
 // The one embedded here is the sending thread because it will use the ACE timing feature.
 TheEthManager::TheEthManager() : RateThread(1)
 {
+	yTrace();
 	memset(info, 0x00, SIZE_INFO);
 	sprintf(info, "TheEthManager");
 	ethResList = ethResCreator::instance();
@@ -499,6 +506,7 @@ TheEthManager::TheEthManager() : RateThread(1)
 	_socket_initted = false;
 	_socket = NULL;
 	id_recvThread = -1;
+	keepGoingOn = true;
 }
 
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
@@ -536,6 +544,7 @@ bool TheEthManager::isInitted(void)
 
 TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
 {
+	yTrace();
 	TheEthManager::_mutex.wait();
 	bool ret = false;
 	if (_deviceNum == 0)
@@ -565,6 +574,7 @@ TheEthManager *TheEthManager::instance()
 
 TheEthManager::~TheEthManager()
 {
+	yTrace();
 	keepGoingOn2 = false;
 	Time::delay(1);
 	if(id_recvThread != -1)
@@ -590,20 +600,25 @@ int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
 
 bool TheEthManager::threadInit()
 {
+	yTrace();
 	ethResList = ethResCreator::instance();
 	return true;
 }
 
+void TheEthManager::threadRelease()
+{
+	yTrace();
+}
 
 void TheEthManager::run()
 {
 	// send
-	ACE_TCHAR		address_tmp[64];
+	ACE_TCHAR		address_tmp[128];
 	ethResIt 		iterator = ethResList->begin();
 	ethResources 	*ethRes;
 	uint16_t 		bytes_to_send = 0;
 
-	while( iterator != ethResList->end() )
+	while( iterator != ethResList->end() && (keepGoingOn) )
 	{
 		p_to_data = 0;
 		bytes_to_send = 0;
@@ -621,11 +636,19 @@ void TheEthManager::run()
 		}
 
 		ethRes->getPack(&p_to_data, &bytes_to_send);
-		if((bytes_to_send > 20) && (0 != p_to_data))
+		if((bytes_to_send > EMPTY_PACKET_SIZE) && (0 != p_to_data))
 		{
 			ACE_INET_Addr addr = ethRes->getRemoteAddress();
 			int ret = TheEthManager::instance()->send(p_to_data, (size_t)bytes_to_send, addr);
-//			(*iterator)->getRemoteAddress().addr_to_string(address_tmp, 64);
+//			char  tmp[bytes_to_send+10];
+//			int i=0;
+//			snprintf(tmp, "%s",p_to_data,bytes_to_send);
+//			for( i=0; i<bytes_to_send; i++)
+//				tmp[i] = p_to_data[i];
+//			tmp[i++] = '\0';
+//			String tmp2(tmp);
+//			yDebug() << "Sent message to " << (*iterator)->getRemoteAddress().addr_to_string(address_tmp, 128) << "at time " << Time::now() << "with content" << tmp2.c_str();
+////
 //			printf("sent package of byte %d to %s\n", ret, address_tmp);
 		}
 		iterator++;
@@ -637,6 +660,7 @@ void TheEthManager::run()
 // Probably useless
 bool TheEthManager::open()
 {
+	yTrace();
 	char tmp[126];
 	sprintf(tmp, "TheEthManager open - handle= %p - i=%d", handle, _deviceNum);
 	return true;
@@ -646,9 +670,13 @@ bool TheEthManager::open()
 bool TheEthManager::close()
 {
 	_deviceNum--;
-
+	yTrace();
 	if(0 == _deviceNum)
+	{
+		keepGoingOn = false;
+		Time::delay(2);
 		delete handle;
+	}
 
 	return true;
 }

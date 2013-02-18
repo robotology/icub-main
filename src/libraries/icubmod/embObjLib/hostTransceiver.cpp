@@ -398,6 +398,19 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
     _mutex.post();
 }
 
+/*
+// somebody retrieves what must be transmitted
+void hostTransceiver::getTransmit(uint8_t *_data, uint16_t *size) //**data
+{
+    uint16_t numofrops;
+    uint8_t *data; //
+    _mutex.wait();
+    eo_transceiver_Transmit(pc104txrx, &pktTx, &numofrops);
+    eo_packet_Payload_Get(pktTx, &data, size);
+    memcpy(data, _data, size);
+    _mutex.post();
+}
+*/
 
 EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot)
 {
