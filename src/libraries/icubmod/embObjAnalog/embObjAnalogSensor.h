@@ -19,7 +19,6 @@
 #include <yarp/os/RateThread.h>
 #include <string>
 #include <list>
-#include <boost/concept_check.hpp>
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
