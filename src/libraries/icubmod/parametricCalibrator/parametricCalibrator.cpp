@@ -20,8 +20,8 @@ using namespace yarp::dev;
 // calibrator for the arm of the Arm iCub
 
 const int 		PARK_TIMEOUT=30;
-const double 	GO_TO_ZERO_TIMEOUT		= 5; //seconds how many? // was 10
-const int 		CALIBRATE_JOINT_TIMEOUT	= 25;
+const double 	GO_TO_ZERO_TIMEOUT		= 10; //seconds how many? // was 10
+const int 		CALIBRATE_JOINT_TIMEOUT	= 20;
 const double 	POSITION_THRESHOLD		= 2.0;
 
 int numberOfJoints =0;
@@ -181,6 +181,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 
 bool parametricCalibrator::close ()
 {
+	yTrace();
     if (type != NULL) {
         delete[] type;
         type = NULL;
@@ -343,8 +344,6 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             if(!iPids->getPid((*lit),&original_pid[(*lit)]) )
             {
                 yError() << deviceName << "getPid joint " << (*lit) << "failed... aborting calibration";
-//                yWarning() << " commented exit on error for debug";
-//                continue;
                 return false;
             }
             limited_pid[(*lit)]=original_pid[(*lit)];
@@ -371,23 +370,19 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
             // Enable amp moved to MotionControl class;
             // Here we just call the calibration procedure
-            yWarning() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values BEFORE calib: " << currPos[(*lit)];
             calibrateJoint((*lit));
             lit++;
         }
-        Time::delay(1.0);	// needed?
 
         lit  = tmp.begin();
         while(lit != lend)		// per ogni giunto del set
         {
             iEncoders->getEncoders(currPos);
-
-            // Enable amp moved to MotionControl class;
-            // Here we just call the calibration procedure
-            yWarning() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
+            yDebug() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
             lit++;
         }
 
+        Time::delay(4.0f);
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
@@ -409,8 +404,6 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 lit++;
             }
         }
-        Time::delay(0.5f);
-
 
         lit  = tmp.begin();
 		while(lit != lend)		// per ogni giunto del set
@@ -553,17 +546,17 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
         iEncoders->getEncoder(j, &angj);
 
         delta = fabs(angj-zeroPos[j]);
-        yWarning() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
+        yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
 
         if (delta < zeroPosThreshold[j])
         {
-        	yWarning() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
+        	yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;
         }
 
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
-        	yWarning() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
+        	yError() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
             return false;
         }
         if (abortCalib)
