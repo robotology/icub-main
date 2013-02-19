@@ -437,7 +437,7 @@ public:
     *  
     * \b rest_pos <(double double ...)>: example (rest_pos (20.0 0.0
     *    0.0 ...)), specifies in degrees the joints rest position
-    *    used as secondary task in the minimization. The lenght of
+    *    used as secondary task in the minimization. The length of
     *    the provided list should match the number of chain's links.
     *    Default values are (0.0 0.0 0.0 ...).
     *  

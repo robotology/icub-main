@@ -64,7 +64,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     getAlignHN(camerasFile,"ALIGN_KIN_LEFT",eyeL->asChain());
     getAlignHN(camerasFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
-    // get the lenght of the half of the eyes baseline
+    // get the length of the half of the eyes baseline
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
     
     if (Robotable)
