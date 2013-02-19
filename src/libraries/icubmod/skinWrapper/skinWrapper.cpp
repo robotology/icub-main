@@ -57,7 +57,7 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
     }
     else
     {
-				period=20;
+        period=20;
         std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
     }
 
@@ -196,8 +196,8 @@ bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
         return false;
     }
 
-    // Create new analogServer (therefore it must be NULL) from an existing sensor (analog NOT NULL).
-    if( NULL != analogServer)
+    // Check if both analogServer and analogSensor are ok before doing attach.
+    if( NULL == analogServer)
     {
         yError() << "skinWrapper: analogServer already attached!!!";
         return false;
