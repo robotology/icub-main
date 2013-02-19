@@ -15,14 +15,15 @@ PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h )
 
 set(EO_BASE_DIR         ${CMAKE_SOURCE_DIR}/../firmware/emBODY/)
 
-set(BODY_COMMON_FOLDER  ${EO_BASE_DIR}any-arch/body/embenv/envcom/)
-set(CORE_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/core/src/)
-set(CORE_API        ${EO_BASE_DIR}any-arch/sys/embobj/core/api/)
-set(CORE_VEE_FOLDER   ${EO_BASE_DIR}any-arch/sys/embobj/core-vee/src/)
-set(IPNET_FOLDER      ${EO_BASE_DIR}any-arch/sys/embobj/ipnet/src/)
-set(PROT_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/prot/src/)
-set(HAL_API_FOLDER    ${EO_BASE_DIR}any-arch/sys/abslayer/api/)
-set(PORTING_FOLDER    ${EO_BASE_DIR}porting/)
+#set(BODY_COMMON_FOLDER  ${EO_BASE_DIR}any-arch/body/embenv/envcom/)
+#set(CORE_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/core/src/)
+#set(CORE_API        ${EO_BASE_DIR}any-arch/sys/embobj/core/api/)
+#set(CORE_YEE          ${EO_BASE_DIR}any-arch/sys/embobj/core-yee/)
+#set(CORE_VEE_FOLDER   ${EO_BASE_DIR}any-arch/sys/embobj/core-vee/src/)
+#set(IPNET_FOLDER      ${EO_BASE_DIR}any-arch/sys/embobj/ipnet/src/)
+#set(PROT_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/prot/src/)
+#set(HAL_API_FOLDER    ${EO_BASE_DIR}any-arch/sys/abslayer/api/)
+#set(PORTING_FOLDER    ${EO_BASE_DIR}porting/)
 
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
     set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface-branch/)
@@ -175,7 +176,7 @@ set(CORE_FOLDER_SOURCE  	${CORE_FOLDER}/EOarray.c
 							${CORE_FOLDER}/EOtheErrorManager.c
 							${CORE_FOLDER}/EOtheMemoryPool.c
 							${CORE_FOLDER}/EOvector.c
-							${CORE_FOLDER}/EOYtheSystem.c
+							${CORE_YEE}/src/EOYtheSystem.c
 							
 							)
 
@@ -204,7 +205,7 @@ set(CORE_API_HEADER	  			${CORE_API}/EOarray.h
 #						${CORE_API}/EOVstorage.h
 #						${CORE_API}/EOVtask.h
 #						${CORE_API}/EOVtheSystem.h
-                        ${CORE_API}/EOYtheSystem.h
+            ${CORE_YEE}/api/EOYtheSystem.h
 						)						
 
 						
