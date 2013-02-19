@@ -1127,11 +1127,9 @@ public:
     *                  to extract the joint values of the finger. It
     *                  can be composed of 16 or 9 elements,
     *                  depending if it comprises the arm encoders as
-    *                  well or just the hand encoders. Units in
-    *                  radians.
+    *                  well or just the hand encoders.
     * @param chainJoints the vector containing the joints values to 
-    *                    be used with the iKinLimb methods. Units in
-    *                    radians.
+    *                    be used with the iKinLimb methods.
     * @return true/false on success/failure. 
     *  
     * @note This method accounts also for the underactuated joints, 
