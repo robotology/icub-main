@@ -245,7 +245,7 @@ public:
         dBodyID cylbody;            // the body
         dGeomID cylgeom[GPB];       // geometries representing this body
         dReal radius;
-        dReal lenght;
+        dReal length;
 
         virtual dBodyID getBody() const { return cylbody; }
         virtual dGeomID getGeometry() const { return cylgeom[0]; }

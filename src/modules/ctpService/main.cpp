@@ -215,7 +215,7 @@ protected:
         if ((offset+size)>nJoints)
         {
             cerr<<"Error: detected possible overflow, skipping"<<endl;
-            cerr<<"For debug --> joints: "<<nJoints<< " off: "<<offset<<" cmd lenght: "<<size<<endl;
+            cerr<<"For debug --> joints: "<<nJoints<< " off: "<<offset<<" cmd length: "<<size<<endl;
             return;
         }
 

@@ -120,7 +120,7 @@ public:
    * @note den[0] shall not be 0. 
    * @note the adjustment is carried out iff num.size() and 
    *       den.size() match the existing numerator and denominator
-   *       lenghts.
+   *       lengths.
    */ 
    bool adjustCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 

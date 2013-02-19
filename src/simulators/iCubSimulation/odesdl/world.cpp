@@ -136,13 +136,13 @@ void worldSim::draw(){
     for (int i=0; i<cylOBJNUM; i++) {
         glColor3d(color1[i][0],color1[i][1],color1[i][2]);
         glPushMatrix();LDEsetM(dBodyGetPosition(cyl_obj[i].cylbody),dBodyGetRotation(cyl_obj[i].cylbody));
-        DrawCylinder(cyl_obj[i].radius,cyl_obj[i].lenght,false,textured,2);glPopMatrix();
+        DrawCylinder(cyl_obj[i].radius,cyl_obj[i].length,false,textured,2);glPopMatrix();
     }
 
     for (int i=0; i<S_cylOBJNUM; i++) {
         glColor3d(s_color1[i][0],s_color1[i][1],s_color1[i][2]);
         glPushMatrix();LDEsetM(dGeomGetPosition(s_cyl_obj[i].cylgeom[0]),dGeomGetRotation(s_cyl_obj[i].cylgeom[0]));
-        DrawCylinder(s_cyl_obj[i].radius,s_cyl_obj[i].lenght,false,textured,2);glPopMatrix();
+        DrawCylinder(s_cyl_obj[i].radius,s_cyl_obj[i].length,false,textured,2);glPopMatrix();
     }
 
     for (int i=0; i<MODEL_NUM; i++){
@@ -381,19 +381,19 @@ bool worldSim::MyObject1::create(const WorldOp& op, WorldResult& result, int idx
         return false;
     }
     radius = op.radius.get();
-    lenght = op.length.get();
+    length = op.length.get();
     OdeInit& odeinit = OdeInit::get();
     if (op.dynamic.get()) {
         dMass m;
         dMassSetZero(&m);
         cylbody = dBodyCreate (odeinit.world);
-        dMassSetCylinderTotal (&m,DENSITY,3,radius,lenght);
+        dMassSetCylinderTotal (&m,DENSITY,3,radius,length);
         dBodySetMass (cylbody,&m);
     }
     if (op.collide.get())
-        cylgeom[0] = dCreateCylinder(odeinit.space,radius,lenght);
+        cylgeom[0] = dCreateCylinder(odeinit.space,radius,length);
     else
-        cylgeom[0] = dCreateCylinder(odeinit._iCub->iCub,radius,lenght);
+        cylgeom[0] = dCreateCylinder(odeinit._iCub->iCub,radius,length);
 
     if (op.dynamic.get()) {
         dGeomSetBody (cylgeom[0],cylbody);

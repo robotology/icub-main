@@ -30,7 +30,7 @@ bool BlobAnalysis(IplImage* inputImage, uchar threshold, IplImage* maskImage,
 void Subsume(blob_vector &RegionData, int, int*, CBlob*, CBlob*, bool, int, int );
 //! Reallocata el vector auxiliar de blobs subsumats
 int *NewSubsume(int *SubSumedRegion, int elems_inbuffer);
-//! Retorna el perimetre extern d'una run lenght
+//! Retorna el perimetre extern d'una run length
 double GetExternPerimeter( int start, int end, int row, int width, int height, IplImage *maskImage );
 
 #endif //_CLASSE_BLOBEXTRACTION_INCLUDED

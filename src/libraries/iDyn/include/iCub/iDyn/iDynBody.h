@@ -518,8 +518,8 @@ public:
 * A virtual node, connecting multiple limbs, is set.
 * The limbs can exchange kinematics and wrench information with the node 
 * through a RigidBodyTransfromation. The node only has kinematic (w,dw,ddp) and wrench (F,Mu) information: no
-* mass, lenght, inertia, COM, or else. 
-* Each limb is connected to the node by a roto-translation matrix, which must be set when a limb is 
+* mass, length, inertia, COM, or else. Each limb is connected to
+* the node by a roto-translation matrix, which must be set when a limb is 
 * attached to the node: a RigidBodyTransfromation object is then created, which allows the proper 
 * computation of wrench and kinematic variables.
 * When multiple limbs are attached to a node, the kinematic variables are set by a single limb, having

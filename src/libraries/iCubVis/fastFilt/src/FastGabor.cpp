@@ -148,8 +148,8 @@ AllocateResources():
 	scales : vector containing the scale values
 	norients : number of orientations in the gabor filter bank
 	orients : vector containing the orientation values (in degrees)
-	nwav : number of wavelenghths in the gabor filter bank 
-	wavs : vector containing the wavelenght values (in pixels)
+	nwav : number of wavelengths in the gabor filter bank 
+	wavs : vector containing the wavelength values (in pixels)
 	sw_table : boolean matrix of "nlevels" lines and "nwavs" columns indicating 
 	           which combinations scale/wavelength are to process
 **********************************************************************************/

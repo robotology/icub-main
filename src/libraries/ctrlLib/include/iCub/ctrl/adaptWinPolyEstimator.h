@@ -145,7 +145,7 @@ public:
 
     /**
     * Reinitializes the internal state. 
-    * @note Windows lenghts are brought to the maximum value N and 
+    * @note Windows lengths are brought to the maximum value N and 
     *       output remains zero as long as fed data size reaches N.
     */
     void reset();

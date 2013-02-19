@@ -116,10 +116,10 @@ bool AtrousGabor::IsAllocated()
 /*********************************************************************************
 AllocateResources():
 	- Creates internal structures and memory space for the required computations
-	- Orientations are expressed in degrees and Wavelenght in pixels
+	- Orientations are expressed in degrees and Wavelength in pixels
 	- If neither orientations nor wavelengths are specified, only computes 
 	the gaussian levels. 
-	- If orientation is specified but wavelenghts are not specified, computes 
+	- If orientation is specified but wavelengths are not specified, computes 
 	only gaussian and laplacian decompositions.
 
 ARGUMENTS:
@@ -714,7 +714,7 @@ void AtrousGabor::GetScales(double *scales)
 }
 /*********************************************************************************
 GetWavelengths():
-	Returns the wavelenght values configured for this object	
+	Returns the wavelength values configured for this object	
 **********************************************************************************/
 void AtrousGabor::GetWavelengths(double *wavelengths)
 {
@@ -733,7 +733,7 @@ void AtrousGabor::GetOrientations(double *orientations)
 
 /*********************************************************************************
 GetScaleWavTable():
-	Returns the table with computable scale/wavelenght combinations
+	Returns the table with computable scale/wavelength combinations
 **********************************************************************************/
 void AtrousGabor::GetScaleWavTable(bool *scalewavtable)
 {

@@ -796,7 +796,8 @@ double CBlobGetMaxYatMinX::operator()(const CBlob &blob) const
 - PARAMETERS:
 - RESULT:
 - RESTRICTIONS:
-	- See below to see how the lenght and the breadth are aproximated
+    - See below to see how the length and the breadth are
+      aproximated
 - AUTHOR: Ricard Borr�
 - CREATION DATE: 25-05-2005.
 - MODIFICATION: Date. Author. Description.
@@ -868,11 +869,12 @@ double CBlobGetRoughness::operator()(const CBlob &blob) const
 */
 /**
 - FUNCTION: CBlobGetLength
-- FUNCTIONALITY: Calculates the lenght of the blob (the biggest axis of the blob)
+- FUNCTIONALITY: Calculates the length of the blob (the biggest 
+  axis of the blob)
 - PARAMETERS:
 - RESULT:
 - RESTRICTIONS:
-	- The lenght is an aproximation to the real lenght
+	- The length is an aproximation to the real length
 - AUTHOR: Ricard Borr�
 - CREATION DATE: 25-05-2005.
 - MODIFICATION: Date. Author. Description.
