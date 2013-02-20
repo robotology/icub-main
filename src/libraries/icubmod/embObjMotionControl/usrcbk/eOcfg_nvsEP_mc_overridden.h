@@ -15,5 +15,6 @@
 #define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic
 #define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode
 #define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint
+#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidtorque
 #endif
 #endif /* PC104_MC_OVVERRIDE_H_ */
