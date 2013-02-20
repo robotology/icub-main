@@ -1,11 +1,20 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/*
-* Copyright (C) 2012 Robotcub Consortium
-* Author: Alberto Cardellino
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-*/
+/* Copyright (C) 2012  iCub Facility, Istituto Italiano di Tecnologia
+ * Author: Alberto Cardellino
+ * email: alberto.cardellino@iit.it
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+ */
 
 /// general purpose stuff.
 
@@ -24,15 +33,10 @@
 /// specific to this device driver.
 #include "comanFTsensor.h"
 
-// #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #ifdef WIN32
 #pragma warning(once:4355)
 #endif
-
-const int REPORT_PERIOD=6; //seconds
-const double BCAST_STATUS_TIMEOUT=6; //seconds
-
 
 using namespace yarp;
 using namespace yarp::os;
@@ -141,9 +145,9 @@ comanFTsensor::comanFTsensor()
 
 comanFTsensor::~comanFTsensor()
 {
-//     if (!data)
-//         delete data;
-    if (!scaleFactor)
+    if(FTmap != NULL)
+        delete FTmap;
+    if (scaleFactor != NULL)
         delete scaleFactor;
 }
 
@@ -183,44 +187,12 @@ int comanFTsensor::read(yarp::sig::Vector &out)
 
     mutex.wait();
     status = AS_OK;
-//       if (!data)
-//       {
-//           mutex.post();
-//           return false;
-//       }
-
-    // errors are not handled for now... it'll always be OK!!
-//        if (status!=IAnalogSensor::AS_OK)
-//       {
-//           switch (status)
-//           {
-//               case IAnalogSensor::AS_OVF:
-//                   {
-//                       counterSat++;
-//                   }
-//                   break;
-//               case IAnalogSensor::AS_ERROR:
-//                   {
-//                       counterError++;
-//                   }
-//                   break;
-//               case IAnalogSensor::AS_TIMEOUT:
-//                   {
-//                      counterTimeout++;
-//                   }
-//                   break;
-//               default:
-//               {
-//                   counterError++;
-//               }
-//           }
-//           mutex.post();
-//           return status;
-//       }
-
 
     // TODO
     int sensor_idx = 0;
+    // Che TIPO di dato è (int, double...)??? Chi lo decide???
+    out.resize(numberOfBoards * _channels);
+
     for(int idx = 0; idx < numberOfBoards; idx++)
     {
         FtBoard *ftSensor = NULL;
@@ -228,7 +200,10 @@ int comanFTsensor::read(yarp::sig::Vector &out)
         ftSensor = _fts[sensor_idx]; // sensor_ids = boardId
         if( NULL == ftSensor)
         {
-            yError() << "Trying to read data from a non-existing FT sensor " << sensor_idx << ", check your config file";
+            //yError() << "Trying to read data from a non-existing FT sensor " << sensor_idx << ", check your config file";
+            for(int tmp_idx = 0; tmp_idx < _channels; tmp_idx++)
+                out[idx*_channels + tmp_idx] = 0;
+            continue;
             //return AS_ERROR;
         }
 
@@ -238,7 +213,6 @@ int comanFTsensor::read(yarp::sig::Vector &out)
 
 
         // ci sono 6 valori da leggere per ogni FT, per ora!!
-        out.resize(_channels);
         out[idx*_channels + 0] = data.fx;
         out[idx*_channels + 1] = data.fy;
         out[idx*_channels + 2] = data.fz;
