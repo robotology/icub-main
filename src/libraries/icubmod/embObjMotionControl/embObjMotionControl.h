@@ -169,6 +169,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
                                         public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
                                         public ImplementPidControl<embObjMotionControl, IPidControl>,
                                         public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
+                                        public ITorqueControlRaw,
+                                        public ImplementTorqueControl,
                                         public IVirtualAnalogSensor
                                         /*                                        
                                         #ifdef IMPLEMENT_DEBUG_INTERFACE
@@ -244,7 +246,7 @@ private:
     double 	*_command_speeds;	// used for velocity control.
     double 	*_ref_accs;			// for velocity control, in position min jerk eq is used.
     double 	*_ref_torques;		// for torque control.
-
+    double  *_externalTorques;    //!< Save the torque computed from the wholeBodyTorqueObserver for echo.
 
     uint16_t 		NVnumber; 		// keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 private:
@@ -425,6 +427,33 @@ public:
     /////// Limits
     bool setLimitsRaw(int axis, double min, double max);
     bool getLimitsRaw(int axis, double *min, double *max);
+
+    // Torque control
+    bool setTorqueModeRaw();
+    bool getTorqueRaw(int j, double *t);
+    bool getTorquesRaw(double *t);
+    bool getTorqueRangeRaw(int j, double *min, double *max);
+    bool getTorqueRangesRaw(double *min, double *max);
+    bool setRefTorquesRaw(const double *t);
+    bool setRefTorqueRaw(int j, double t);
+    bool getRefTorquesRaw(double *t);
+    bool getRefTorqueRaw(int j, double *t);
+    bool setTorquePidRaw(int j, const Pid &pid);
+    bool setTorquePidsRaw(const Pid *pids);
+    bool setTorqueErrorLimitRaw(int j, double limit);
+    bool setTorqueErrorLimitsRaw(const double *limits);
+    bool getTorqueErrorRaw(int j, double *err);
+    bool getTorqueErrorsRaw(double *errs);
+    bool getTorquePidOutputRaw(int j, double *out);
+    bool getTorquePidOutputsRaw(double *outs);
+    bool getTorquePidRaw(int j, Pid *pid);
+    bool getTorquePidsRaw(Pid *pids);
+    bool getTorqueErrorLimitRaw(int j, double *limit);
+    bool getTorqueErrorLimitsRaw(double *limits);
+    bool resetTorquePidRaw(int j);
+    bool disableTorquePidRaw(int j);
+    bool enableTorquePidRaw(int j);
+    bool setTorqueOffsetRaw(int j, double v);
 };
 
 #endif // include guard

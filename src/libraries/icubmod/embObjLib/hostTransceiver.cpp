@@ -141,15 +141,13 @@ bool hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
 {
     bool ret = false;
     eOropdescriptor_t ropdesc;
-
-
-	ropdesc.configuration = eok_ropconfiguration_basic;
-	ropdesc.configuration.plustime = 1;
-	ropdesc.ropcode = opc;
-	ropdesc.ep = ep;
-	ropdesc.id = nvid;
-	ropdesc.size = 0;
-	ropdesc.data = NULL;
+    ropdesc.configuration = eok_ropconfiguration_basic;
+    ropdesc.configuration.plustime = 1;
+    ropdesc.ropcode = opc;
+    ropdesc.ep = ep;
+    ropdesc.id = nvid;
+    ropdesc.size = 0;
+    ropdesc.data = NULL;
     ropdesc.signature = 0;
 
 
@@ -161,7 +159,7 @@ bool hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
         ret = true;
     else
     {
-        yError() << "Error while loading ROP in ropframe\n";
+        yError() << "Error while loading ROP in ropframe!!\n";
         ret = false;
     }
     return ret;
@@ -207,9 +205,12 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
     EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
 
+    if(NULL == nvRoot)
+        yError() << "Unable to get pointer to desired NV with id" << nvid;
+
     _mutex.wait();
 
-//     // Verify that the datasize is correct.
+//     // Verify that the datasize is correct. Get size from caller
 //     nvSize = eo_nv_Size(&nv, data);
 //     if( (nvSize < size) || (0 == size) )
 //     {
@@ -223,22 +224,20 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
     if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
     {
         // the nv is not writeable
-        yError() << "Maybe you are trying to write a read only Network variable";
+        yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
         _mutex.post();
         return false;
     }
 
 
     eOropdescriptor_t ropdesc;
-
-
-	ropdesc.configuration = eok_ropconfiguration_basic;
-	ropdesc.configuration.plustime = 1;
-	ropdesc.ropcode = eo_ropcode_set;
-	ropdesc.ep = endPoint;
-	ropdesc.id = nvid;
-	ropdesc.size = 0;
-	ropdesc.data = NULL;
+    ropdesc.configuration = eok_ropconfiguration_basic;
+    ropdesc.configuration.plustime = 1;
+    ropdesc.ropcode = eo_ropcode_set;
+    ropdesc.ep = endPoint;
+    ropdesc.id = nvid;
+    ropdesc.size = 0;
+    ropdesc.data = NULL;
     ropdesc.signature = 0;
 
     if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
@@ -255,6 +254,24 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 }
 
 
+// bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
+// {
+//     
+// }
+
+bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
+{
+    EOnv nv;
+    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+
+    if(NULL == nvRoot)
+        yError() << "Unable to get pointer to desired NV with id" << nvid;
+
+    _mutex.wait();
+
+    getNVvalue(nvRoot, data, size);
+    return true;
+}
 
 bool hostTransceiver::readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t *size)
 {

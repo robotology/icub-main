@@ -145,6 +145,9 @@ bool embObjMotionControl::alloc(int nj)
     _enabledAmp = allocAndCheck<bool>(nj);
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
+
+    _externalTorques = allocAndCheck<double>(nj);
+
 #ifdef _SETPOINT_TEST_
     j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
 #endif
@@ -165,62 +168,58 @@ embObjMotionControl::embObjMotionControl() :
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
 #endif
+    ImplementTorqueControl(this),
     ImplementControlLimits<embObjMotionControl, IControlLimits>(this),
     _mutex(1)
 {
-#ifdef _oblsolete_
-    udppkt_data 	= 0x00;
-    udppkt_size 	= 0x00;
-#endif
-    
-    _pids			= NULL;
-    _tpids			= NULL;
-    _firstJoint 	= 0;
-    res				= NULL;
-    requestQueue 	= NULL;
-    _tpidsEnabled	= false;
-    _njoints 		= 0;
+    _pids         = NULL;
+    _tpids        = NULL;
+    _firstJoint   = 0;
+    res           = NULL;
+    requestQueue  = NULL;
+    _tpidsEnabled = false;
+    _njoints      = 0;
+    _axisMap      = NULL;
+    _zeros        = NULL;
 
-    _axisMap		= NULL;
-    _angleToEncoder = NULL;
-    _zeros			= NULL;
     _encoderconversionfactor = NULL;
     _encoderconversionoffset = NULL;
+    _angleToEncoder = NULL;
+    
+    _impedance_params = NULL;
+    _impedance_limits = NULL;
+    _estim_params     = NULL;
 
-    _impedance_params	= NULL;
-    _impedance_limits	= NULL;
-    _estim_params		= NULL;
-
-    _limitsMin = NULL;
-    _limitsMax = NULL;
-    _currentLimits = NULL;
-    _velocityShifts = NULL;
-    _velocityTimeout = NULL;
-    _torqueSensorId = NULL;
+    _limitsMin        = NULL;
+    _limitsMax        = NULL;
+    _currentLimits    = NULL;
+    _velocityShifts   = NULL;
+    _velocityTimeout  = NULL;
+    _torqueSensorId   = NULL;
     _torqueSensorChan = NULL;
-    _maxTorque = NULL;
-    _newtonsToSensor = NULL;
-    _rotToEncoder	= NULL;
-    _ref_accs		= NULL;
-    _command_speeds = NULL;
-    _ref_positions 	= NULL;
-    _ref_speeds		= NULL;
-    _ref_torques	= NULL;
+    _maxTorque        = NULL;
+    _newtonsToSensor  = NULL;
+    _rotToEncoder     = NULL;
+    _ref_accs         = NULL;
+    _command_speeds   = NULL;
+    _ref_positions    = NULL;
+    _ref_speeds       = NULL;
+    _ref_torques      = NULL;
 
     checking_motiondone = NULL;
     // debug connection
-    tot_packet_recv	= 0;
-    errors			= 0;
-    start			= 0;
-    end				= 0;
+    tot_packet_recv   = 0;
+    errors            = 0;
+    start             = 0;
+    end               = 0;
 
     // Check status of joints
-    _enabledPid		= NULL;
-    _enabledAmp 	= NULL;
-    _calibrated		= NULL;
-
+    _enabledPid       = NULL;
+    _enabledAmp       = NULL;
+    _calibrated       = NULL;
+    _externalTorques  = NULL;
     // NV stuff
-    NVnumber 		= 0;
+    NVnumber          = 0;
 }
 
 embObjMotionControl::~embObjMotionControl()
@@ -273,7 +272,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     // Saving User Friendly Id
     memset(_fId.name, 0x00, SIZE_INFO);
-    sprintf(_fId.name, info);
+    sprintf(_fId.name, "%s", info);
     _fId.boardNum  = 255;
 
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
@@ -359,6 +358,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 #endif
     ImplementControlLimits<embObjMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
+    ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     //  Tell EMS which NV I want to be signaled spontaneously, configure joints and motors and go to running mode
 
     init();
@@ -1183,11 +1183,21 @@ bool embObjMotionControl::setErrorLimitsRaw(const double *limits)
 bool embObjMotionControl::getErrorRaw(int j, double *err)
 {
     EOnv tmp;
+    int mycontrolMode;
+    /* Values in pid.XXX fields are valid ONLY IF we are in the corresponding control mode.
+    Read it from the signalled message so we are sure that mode and pid values are coherent to each other */
+    getControlModeRaw(j, &mycontrolMode);
+    if(VOCAB_CM_POSITION != mycontrolMode )
+    {
+        yWarning() << "Asked for Torque PID Error while not in Torque control mode. Returning zeros";
+        err = 0;
+        return false;
+    }
 
     // Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
     // the EMS I'm referring to.
-
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__ofpid);
+
     EOnv *nvRoot = res->transceiver->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
 
     if(NULL == nvRoot)
@@ -1241,7 +1251,7 @@ bool embObjMotionControl::getOutputsRaw(double *outs)
 
 bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
-	yTrace() << _fId.name << "joint" << j;
+    yTrace() << _fId.name << "joint" << j;
     EOnv tmp;
     //_mutex.wait();
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
@@ -1251,7 +1261,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
         NV_NOT_FOUND
 
         // Sign up for waiting the reply
-        eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
     tt->setPending(1);
 
     if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
@@ -1284,7 +1294,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)
 {
-    // yTrace();
+    yTrace();
 
     bool ret = true;
     eoThreadEntry *tt = NULL;
@@ -1682,7 +1692,7 @@ bool embObjMotionControl::getAxes(int *ax)
 
 bool embObjMotionControl::setPositionModeRaw()
 {
-    // yTrace();
+    yTrace();
 
     bool ret = true;
     eOnvID_t  nvid[_njoints];
@@ -1716,7 +1726,7 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
-	yTrace() << _fId.name << "joint" << j;
+    yTrace() << _fId.name << "joint" << j;
     // mutex took here was used for test to insure will have both set and get in the same ropframe (debug purpose)
     //	res->transceiver->_mutex.wait();
 
@@ -1997,10 +2007,10 @@ bool embObjMotionControl::stopRaw()
 // ControlMode
 bool embObjMotionControl::setPositionModeRaw(int j)
 {
-    // yTrace();
-    EOnv 						tmpnv;
-    eOnvID_t  					nvid;
-    EOnv	  		   			*nvRoot;
+    yTrace();
+    EOnv              tmpnv;
+    eOnvID_t          nvid;
+    EOnv              *nvRoot;
     eOmc_controlmode_command_t 	val = eomc_controlmode_cmd_position;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -2663,15 +2673,15 @@ bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
     for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
     {
         ret &= setTorque(j, fTorques[j]);
+        _externalTorques[j] = fTorques[j];
     }
-    
     return ret;
 }
 
 bool embObjMotionControl::setTorque(int j, double fTorque)
 {
-	yTrace() << _fId.name << "joint" << j;
-   
+    yTrace() << _fId.name << "joint" << j;
+
     EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
 
@@ -2701,3 +2711,297 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
 
     return true;
 }
+
+// Torque control
+bool embObjMotionControl::setTorqueModeRaw()
+{
+    bool ret = true;
+    eOmc_controlmode_command_t val = eomc_controlmode_cmd_torque;
+    for(int j=0; j<_njoints; j++)
+    {
+        eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__controlmode);
+        ret &= res->transceiver->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getTorqueRaw(int j, double *t)
+{
+    *t = _externalTorques[j];
+    return true;
+}
+
+bool embObjMotionControl::getTorquesRaw(double *t)
+{
+    for(int j=0; j<_njoints; j++)
+        t[j] = _externalTorques[j];
+    return true;
+}
+
+bool embObjMotionControl::getTorqueRangeRaw(int j, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueRangeRaw");
+}
+
+bool embObjMotionControl::getTorqueRangesRaw(double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueRangesRaw");
+}
+
+bool embObjMotionControl::setRefTorquesRaw(const double *t)
+{
+    bool ret = true;
+    for(int j=0; j<_njoints && ret; j++)
+        ret &= setRefTorqueRaw(j, t[j]);
+    return ret;
+}
+
+bool embObjMotionControl::setRefTorqueRaw(int j, double t)
+{
+    yTrace() << _fId.name << "joint" << j;
+
+    eOmc_setpoint_t setpoint;
+    setpoint.type = (eOenum08_t) eomc_setpoint_torque;
+    setpoint.to.torque.value =  (eOmeas_torque_t) t;
+
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
+    return res->transceiver->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
+}
+
+bool embObjMotionControl::getRefTorquesRaw(double *t)
+{
+    bool ret = true;
+    for(int j=0; j<_njoints && ret; j++)
+        ret &= getRefTorqueRaw(j, &t[j]);
+    return ret;
+}
+
+bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
+{
+    yTrace() << _fId.name << "joint" << j;
+
+    EOnv tmp;
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__setpoint);
+    EOnv  *nvRoot = res->transceiver->getNVhandler( (uint16_t)_fId.ep,  nvid, &tmp);
+
+    if(NULL == nvRoot)
+        NV_NOT_FOUND
+
+        // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+    {
+        printf("Error load rop\n");
+        return  false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "getRefTorque timed out, joint " << j;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_setpoint_t mysetpoint;
+    res->transceiver->getNVvalue(nvRoot, (uint8_t *)&mysetpoint, &size);
+
+    *t = (double) mysetpoint.to.torque.value;
+    return true;
+}
+
+bool embObjMotionControl::setTorquePidRaw(int j, const Pid &pid)
+{
+    eOmc_PID_t  outPid;
+    copyPid_iCub2eo(&pid, &outPid);
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__pidtorque);
+    return res->transceiver->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *)&outPid);
+}
+
+bool embObjMotionControl::setTorquePidsRaw(const Pid *pids)
+{
+    bool ret = true;
+    for(int j=0; j<_njoints && ret; j++)
+        ret &= setTorquePidRaw(j, pids[j]);
+    return ret;
+}
+
+bool embObjMotionControl::getTorqueErrorRaw(int j, double *err)
+{
+    uint16_t size;
+    bool ret = true;
+    eOmc_joint_status_ofpid_t pid_status;
+    int mycontrolMode;
+    /* Values in pid.XXX fields are valid ONLY IF we are in the corresponding control mode.
+    Read it from the signalled message so we are sure that mode and pid values are coherent to each other */
+
+    getControlModeRaw(j, &mycontrolMode);
+    if(VOCAB_CM_TORQUE != mycontrolMode)
+    {
+        yWarning() << "Asked for Torque PID Error while not in Torque control mode. Returning zeros";
+        err = 0;
+        return false;
+    }
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__ofpid);
+
+    ret = res->transceiver->readBufferedValue(nvid, _fId.ep, (uint8_t *)&pid_status, &size);
+    *err = (double) pid_status.error;
+    return ret;
+}
+
+bool embObjMotionControl::getTorqueErrorsRaw(double *errs)
+{
+    bool ret = true;
+    for(int j=0; j<_njoints && ret; j++)
+        ret &= getTorqueErrorRaw(j, &errs[j]);
+    return ret;
+}
+
+bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
+{
+    yTrace() << _fId.name << "joint" << j;
+    EOnv tmp;
+    //_mutex.wait();
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidtorque);
+    EOnv  *nvRoot = res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
+
+    if(NULL == nvRoot)
+        NV_NOT_FOUND
+
+    // Sign up for waiting the reply FIRST OF ALL!!
+    eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if(!res->transceiver->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
+    {
+        printf("Error load rop\n");
+        return  false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "getPid timed out, joint " << j;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_PID_t eoPID;
+    res->transceiver->getNVvalue(nvRoot, (uint8_t *)&eoPID, &size);
+    copyPid_eo2iCub(&eoPID, pid);
+
+    //_mutex.post();
+    return true;
+}
+
+bool embObjMotionControl::getTorquePidsRaw(Pid *pids)
+{
+    yTrace();
+    bool ret = true;
+    eoThreadEntry *tt = NULL;
+
+    //  EOnv tmp[_njoints];
+    eOnvID_t  nvid[_njoints];
+    EOnv    nv[_njoints];
+    eoRequest req;
+
+    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    {
+        nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidtorque);
+        if(NULL == res->transceiver->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid[index], &nv[index]) )
+            NV_NOT_FOUND;
+
+        // Sign up for waiting the reply
+        tt = appendWaitRequest(j, nvid[index]);
+    }
+
+    printf("waiting for %d replies\n", _njoints);
+    if( NULL != tt)
+    {
+        tt->setPending(_njoints);
+
+        // wait just once for all data
+        // wait here
+        if(-1 == tt->synch() )
+        {
+            int threadId;
+            yError () << "getPids timed out";
+            if(requestQueue->threadPool->getId(&threadId))
+                requestQueue->cleanTimeouts(threadId);
+            return false;
+        }
+    }
+    else
+        return false;
+    // copy data received to the caller
+    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    {
+        eOmc_PID_t *tmpPid = (eOmc_PID16_t *) &nv[index];  //tmpPid doesn't need to be an array, because it's just a cast of an existing data.
+        copyPid_eo2iCub(&tmpPid[index], &pids[index]);
+    }
+
+    return ret;
+}
+
+bool embObjMotionControl::setTorqueErrorLimitRaw(int j, double limit)
+{
+    return NOT_YET_IMPLEMENTED("setTorqueErrorLimitRaw");
+}
+
+bool embObjMotionControl::setTorqueErrorLimitsRaw(const double *limits)
+{
+    return NOT_YET_IMPLEMENTED("setTorqueErrorLimitsRaw");
+}
+
+bool embObjMotionControl::getTorquePidOutputRaw(int j, double *out)
+{
+    return NOT_YET_IMPLEMENTED("getTorquePidOutputRaw");
+}
+
+bool embObjMotionControl::getTorquePidOutputsRaw(double *outs)
+{
+    return NOT_YET_IMPLEMENTED("getTorquePidOutputsRaw");
+}
+
+bool embObjMotionControl::getTorqueErrorLimitRaw(int j, double *limit)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueErrorLimitRaw");
+}
+
+bool embObjMotionControl::getTorqueErrorLimitsRaw(double *limits)
+{
+    return NOT_YET_IMPLEMENTED("getTorqueErrorLimitsRaw");
+}
+
+bool embObjMotionControl::resetTorquePidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("resetTorquePidRaw");
+}
+
+bool embObjMotionControl::disableTorquePidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("disableTorquePidRaw");
+}
+
+bool embObjMotionControl::enableTorquePidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("enableTorquePidRaw");
+}
+
+bool embObjMotionControl::setTorqueOffsetRaw(int j, double v)
+{
+    return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
+}
+

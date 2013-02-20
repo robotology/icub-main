@@ -41,6 +41,7 @@ typedef enum
 } FeatureType;
 
 
+/** \anchor FEAT_ID  Ma ciao! */
 typedef struct
 {
     uint8_t       boardNum;

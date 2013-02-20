@@ -91,6 +91,7 @@ public:
         Note: size is calculated internally by getting Network Variable associated metadata
         */
     bool addSetMessage( eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data);
+    bool readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
 
     bool readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t* size);
 
