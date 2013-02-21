@@ -6,6 +6,7 @@ file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml)
 file(GLOB firmware ${CMAKE_CURRENT_SOURCE_DIR}/scripts/firmwareUpdate.txt)
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 file(GLOB crawling_conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/crawling/*.ini)
+file(GLOB balancing_conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/balancing/*.ini)
 
 icub_app_install(${appname} 
 				FILES ${scripts}
@@ -19,6 +20,9 @@ icub_app_install(${appname}
 icub_app_install(${appname} 
 				FILES ${crawling_conf}
 				DESTINATION conf/crawling)	
+icub_app_install(${appname} 
+				FILES ${balancing_conf}
+				DESTINATION conf/balancing)	
 
 
 
