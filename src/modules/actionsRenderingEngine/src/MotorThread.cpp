@@ -515,7 +515,7 @@ bool MotorThread::stereoToCartesianNetwork(const Vector &stereo, Vector &xd)
 Vector MotorThread::randomDeployOffset()
 {
     Vector offset(3);
-    offset[0]=Rand::scalar(-0.1, 0.0);
+    offset[0]=Rand::scalar(-0.05,0.0);
     offset[1]=Rand::scalar(-0.05,0.05);
     offset[2]=0.0;
 
@@ -1563,14 +1563,14 @@ bool MotorThread::reach(Bottle &options)
 
     action[arm]->enableReachingTimeout(reachingTimeout);
 
-    if(f)
+    // go up straightaway
     {
         Vector x,o;
         action[arm]->getPose(x,o);
 
         if(!side)
             action[arm]->pushAction(x+graspAboveRelief,o);
-    
+
         action[arm]->checkActionsDone(f,true);
     }
 
