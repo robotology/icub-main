@@ -224,16 +224,17 @@ bool VirtualAnalogServer::attachAll(const PolyDriverList &polylist)
         }
    }
 
-    //Thread::start();
-
     mMutex.post();
+
+    Thread::start();    
+
     return true;
 }
 
 void VirtualAnalogServer::run()
 {
     yarp::sig::Vector *pTorques;
-    
+
     while (Thread::isRunning())
     {
         pTorques=mPortInputTorques.read();
@@ -246,8 +247,11 @@ void VirtualAnalogServer::run()
             {
                 for (int i=0; i<mNChannels; ++i)
                 {
+                    //printf("%lf  ",(*pTorques)[i]);
                     mSubdevices[mChan2Board[i]].setTorque(mChan2BAddr[i],(*pTorques)[i]);
                 }
+
+                printf("\n");
             }
 
             for (int d=0; d<mNSubdevs; ++d)

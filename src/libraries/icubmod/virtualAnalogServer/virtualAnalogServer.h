@@ -128,6 +128,9 @@ public:
         }
 
         mMutex.post();
+
+        close();
+
         return true;
     }
     //////////////////////////////////////////////////////////////////////////
@@ -148,109 +151,6 @@ protected:
     yarp::os::BufferedPort<yarp::sig::Vector> mPortInputTorques;
 };
 
-
-
-
-
-
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-#if 0
-class VirtualAnalogServer : public DeviceDriver,
-                            public Thread,
-                            public IMultipleWrapper
-{
-private:
-    bool spoke;
-    bool verb;
-
-    // Remapping support
-    int               base;
-    int               top;
-    int               channels;
-
-    std::vector<DevicesLutEntry> lut;                   // size is the number of joint, it says which subdevice that joint is handled by
-    std::vector<AnalogSubDevice> subdevices;            // size is the number of devices, each handling one or more joints
-
-    yarp::os::BufferedPort<yarp::sig::Vector> portInputTorques;
-
-
-public:
-    /**
-    * Constructor.
-    */
-    VirtualAnalogServer();
-    /**
-    * Destructor.
-    */
-    virtual ~VirtualAnalogServer(){ close(); }
-
-    /**
-    * Return the value of the verbose flag.
-    * @return the verbose flag.
-    */
-    bool verbose() const { return verb; }
-
-
-
-    //////////////////////////////////////////////////////////////////////////
-    // DeviceDriver
-    /**
-    * Open the device driver.
-    * @param prop is a Searchable object which contains the parameters.
-    * Allowed parameters are:
-    * - verbose or v to print diagnostic information while running.
-    * - subdevice to specify the name of the wrapped device.
-    * - name to specify the predix of the port names.
-    * - calibrator to specify the name of the calibrator object (created through a PolyDriver).
-    * and all parameters required by the wrapped device driver.
-    */
-    virtual bool open(Searchable& config);
-    /**
-    * Close the device driver by deallocating all resources and closing ports.
-    * @return true if successful or false otherwise.
-    */
-    virtual bool close();
-    //
-    //////////////////////////////////////////////////////////////////////////
-
-
-
-    //////////////////////////////////////////////////////////////////////////
-    // Thread
-    virtual void run();    
-    //
-    //////////////////////////////////////////////////////////////////////////
-
-
-    
-    //////////////////////////////////////////////////////////////////////////
-    // IMultipleWrapper
-    virtual bool attachAll(const yarp::dev::PolyDriverList &p);
-
-    virtual bool detachAll()
-    {
-        RateThread::stop();
-
-        for(unsigned int k=0; k<subdevices.size(); ++k)
-        {
-        }
-
-        return true;
-    }
-    //
-    //////////////////////////////////////////////////////////////////////////
-
-
-    //////////////////////////////////////////////////////////////////////////
-    // IVirtualAnalogSensor
-    virtual int configure(yarp::os::Searchable &config);
-    virtual int setTorque(yarp::sig::Vector &torques);
-    virtual int getChannels();
-    //
-    //////////////////////////////////////////////////////////////////////////
-};
-
-
-#endif
 #endif
