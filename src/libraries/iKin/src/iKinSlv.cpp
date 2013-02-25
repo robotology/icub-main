@@ -32,7 +32,7 @@
 #define CARTSLV_DEFAULT_TOL                 1e-3
 #define CARTSLV_WEIGHT_2ND_TASK             0.01
 #define CARTSLV_WEIGHT_3RD_TASK             0.01
-#define CARTSLV_UNCTRLEDJNTS_THRES          0.1     // [deg]
+#define CARTSLV_UNCTRLEDJNTS_THRES          1.0     // [deg]
 
 using namespace std;
 using namespace yarp::os;
