@@ -113,6 +113,7 @@ This file can be edited at src/velocityControl/main.cpp.
 #include <yarp/os/Time.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/RFModule.h>
 #include "velControlThread.h"
 #include "yarp/os/Module.h"
 #include <string.h>
