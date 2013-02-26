@@ -515,8 +515,8 @@ bool MotorThread::stereoToCartesianNetwork(const Vector &stereo, Vector &xd)
 Vector MotorThread::randomDeployOffset()
 {
     Vector offset(3);
-    offset[0]=Rand::scalar(-0.05,0.0);
-    offset[1]=Rand::scalar(-0.05,0.05);
+    offset[0]=Rand::scalar(-0.01,0.0);
+    offset[1]=Rand::scalar(-0.02,0.02);
     offset[2]=0.0;
 
     return offset;
