@@ -1655,9 +1655,9 @@ bool MotorThread::point(Bottle &options)
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
         look(options);
-        ctrl_gaze->setTrackingMode(true);
+        //keepFixation(options);
+        //ctrl_gaze->setTrackingMode(true);
     }
 
     arm=checkArm(arm,target);
