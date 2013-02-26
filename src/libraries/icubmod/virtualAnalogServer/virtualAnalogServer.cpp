@@ -233,7 +233,7 @@ bool VirtualAnalogServer::attachAll(const PolyDriverList &polylist)
 
 void VirtualAnalogServer::run()
 {
-    yarp::sig::Vector *pTorques;
+    yarp::os::Bottle *pTorques;
 
     while (Thread::isRunning())
     {
@@ -243,15 +243,35 @@ void VirtualAnalogServer::run()
         {
             mMutex.wait();
 
-            if (pTorques->length()==mNChannels)
+            switch (pTorques->get(0).asInt())
             {
-                for (int i=0; i<mNChannels; ++i)
-                {
-                    //printf("%lf  ",(*pTorques)[i]);
-                    mSubdevices[mChan2Board[i]].setTorque(mChan2BAddr[i],(*pTorques)[i]);
-                }
+            case 1: //arm torque message
+                mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //shoulder 1 pitch
+                mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //shoulder 2 roll
+                mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //shoulder 3 yaw
+                mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //elbow
+                mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //wrist pronosupination
+                mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //wrist yaw
+                mSubdevices[mChan2Board[6]].setTorque(mChan2BAddr[6],pTorques->get(7).asDouble()); //wrist pitch
+            break;
+        
+            case 2: //legs torque message
+                mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //hip pitch
+                mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //hip roll
+                mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //hip yaw
+                mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //knee
+                mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //ankle pitch
+                mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //ankle roll
+            break;
 
-                printf("\n");
+            case 4: // torso
+                mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //torso yaw (respect gravity)
+                mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //torso roll (lateral movement)
+                mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //torso pitch (front-back movement)
+            break;
+            
+            default:
+                fprintf(stderr, "Warning: got unexpected %d message on virtualAnalogServer.\n",pTorques->get(0).asInt());
             }
 
             for (int d=0; d<mNSubdevs; ++d)

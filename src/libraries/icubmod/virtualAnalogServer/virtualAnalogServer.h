@@ -148,7 +148,7 @@ protected:
     std::vector<int> mChan2BAddr;
 
     std::vector<AnalogSubDevice> mSubdevices;
-    yarp::os::BufferedPort<yarp::sig::Vector> mPortInputTorques;
+    yarp::os::BufferedPort<yarp::os::Bottle> mPortInputTorques;
 };
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS
