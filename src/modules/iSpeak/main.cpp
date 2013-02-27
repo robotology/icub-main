@@ -27,13 +27,15 @@ utter them, also controlling the facial expressions.
 
 The behavior is pretty intuitive and does not need any further
 detail.\n 
-This module has been tested only on Linux since it requires some
-linux based packages such as <b>festival</b> or <b>espeak</b>: 
-<i>sudo apt-get install [festival]|[espeak]</i>. 
-
+This module can make use of the following speech synthesis 
+packages: \n
+-# <b>festival</b>;
+-# <b>espeak</b>.
+ 
 \section lib_sec Libraries 
 - YARP libraries. 
-- Festival package for speech synthesis (under linux).
+- Festival package for speech synthesis (under linux). 
+- eSpeak package for speech synthesis (under linux and windows).
 
 \section parameters_sec Parameters
 --name \e name 
@@ -49,6 +51,11 @@ linux based packages such as <b>festival</b> or <b>espeak</b>:
 --package \e pck 
 - The parameter \e pck specifies the package used for utterance; 
   it could be "festival" (default) or "espeak".
+ 
+--package_options \e opt 
+- The parameter \e opt is a string specifying further 
+  command-line options to be used with the chosen package. Refer
+  to the package documentation for the available options.
  
 \section portsa_sec Ports Accessed
 At startup an attempt is made to connect to 
@@ -70,13 +77,16 @@ At startup an attempt is made to connect to
 - \e /<name>/emotions:o: this port serves to command the facial
   expressions.
  
-- \e /<name>/rpc: a remote procedure call port useful to query
-  whether the robot is still speaking or not: the query command
-  is the vocab [stat], whereas the response will be a string:
-  either "speaking" or "quiet".
+- \e /<name>/rpc: a remote procedure call port used for the 
+  following run-time querie: \n
+  -# [stat]: returns "speaking" or "quiet".
+  -# [set] [opt] "package_options": set new package dependent
+   command-line options.
+  -# [get] [opt]: returns a string containing the current
+   package dependent command-line option.
 
 \section tested_os_sec Tested OS
-Linux. 
+Linux and Windows.
 
 \author Ugo Pattacini
 */ 
@@ -203,6 +213,7 @@ class iSpeak : protected BufferedPort<Bottle>,
 {
     string name;
     string package;
+    string package_options;
     deque<Bottle> buffer;
     Semaphore mutex;
     
@@ -239,10 +250,13 @@ class iSpeak : protected BufferedPort<Bottle>,
         string command("echo \"");
         command+=phrase;
         command+="\" | ";
+
         if (package=="espeak")
-            command+="espeak";
+            command+="espeak ";
         else
-            command+="festival --tts";
+            command+="festival --tts ";
+
+        command+=package_options;
 
         system(command.c_str());
     }
@@ -330,17 +344,33 @@ public:
     {
         name=rf.find("name").asString().c_str();
         package=rf.find("package").asString().c_str();
+        package_options=rf.find("package_options").asString().c_str();
         if ((package!="festival") && (package!="espeak"))
             package="festival";
 
         mouth.configure(rf);
+
+        printf("iSpeak wraps around \"%s\" speech synthesizer\n",package.c_str());
+        printf("starting command-line options: \"%s\"\n",package_options.c_str());
     }
     
     /************************************************************************/
     bool isSpeaking() const
     {
         return speaking;
-    }    
+    }
+
+    /************************************************************************/
+    string get_package_options() const
+    {
+        return package_options;
+    }
+
+    /************************************************************************/
+    void set_package_options(const string &package_options)
+    {
+        this->package_options=package_options;
+    }
 };
 
 
@@ -382,13 +412,35 @@ public:
     /************************************************************************/
     bool respond(const Bottle &command, Bottle &reply)
     {
-        if (command.get(0).asVocab()==VOCAB4('s','t','a','t'))
+        int cmd0=command.get(0).asVocab();
+        if (cmd0==Vocab::encode("stat"))
         {
             reply.addString(speaker.isSpeaking()?"speaking":"quiet");
             return true;
         }
-        else
-            return RFModule::respond(command,reply);
+
+        if (command.size()>1)
+        {
+            int cmd1=command.get(1).asVocab();
+            if (cmd1==Vocab::encode("opt"))
+            {
+                if (cmd0==Vocab::encode("get"))
+                {
+                    reply.addString(speaker.get_package_options().c_str());
+                    return true;
+                }
+
+                if (cmd0==Vocab::encode("set"))
+                {
+                    string cmd2=command.get(2).asString().c_str();
+                    speaker.set_package_options(cmd2);
+                    reply.addString("ack");
+                    return true;
+                }
+            }
+        }
+
+        return RFModule::respond(command,reply);
     }
 
     /************************************************************************/
@@ -420,6 +472,7 @@ int main(int argc, char *argv[])
     rf.setDefault("name","iSpeak");
     rf.setDefault("robot","icub");
     rf.setDefault("package","festival");
+    rf.setDefault("package_options","");
     rf.configure("ICUB_ROOT",argc,argv);
 
     Launcher launcher;
