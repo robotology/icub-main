@@ -83,7 +83,7 @@ At startup an attempt is made to connect to
   -# [set] [opt] "package_options": set new package dependent
    command-line options.
   -# [get] [opt]: returns a string containing the current
-   package dependent command-line option.
+   package dependent command-line options.
 
 \section tested_os_sec Tested OS
 Linux and Windows.
