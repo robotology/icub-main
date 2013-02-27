@@ -27,8 +27,9 @@ utter them, also controlling the facial expressions.
 
 The behavior is pretty intuitive and does not need any further
 detail.\n 
-This module has been tested only on Linux since it requires the 
-<b>festival</b> package: <i>sudo apt-get install festival</i>.
+This module has been tested only on Linux since it requires some
+linux based packages such as <b>festival</b> or <b>espeak</b>: 
+<i>sudo apt-get install [festival]|[espeak]</i>. 
 
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -44,6 +45,10 @@ This module has been tested only on Linux since it requires the
  
 --period \e T 
 - The period given in [ms] for controlling the mouth. 
+ 
+--package \e pck 
+- The parameter \e pck specifies the package used for utterance; 
+  it could be "festival" (default) or "espeak".
  
 \section portsa_sec Ports Accessed
 At startup an attempt is made to connect to 
@@ -197,6 +202,7 @@ class iSpeak : protected BufferedPort<Bottle>,
                public    RateThread
 {
     string name;
+    string package;
     deque<Bottle> buffer;
     Semaphore mutex;
     
@@ -230,7 +236,15 @@ class iSpeak : protected BufferedPort<Bottle>,
     /************************************************************************/
     void speak(const string &phrase)
     {
-        system(("echo \""+phrase+"\" | festival --tts").c_str());        
+        string command("echo \"");
+        command+=phrase;
+        command+="\" | ";
+        if (package=="espeak")
+            command+="espeak";
+        else
+            command+="festival --tts";
+
+        system(command.c_str());
     }
 
     /************************************************************************/
@@ -315,6 +329,10 @@ public:
     void configure(ResourceFinder &rf)
     {
         name=rf.find("name").asString().c_str();
+        package=rf.find("package").asString().c_str();
+        if ((package!="festival") && (package!="espeak"))
+            package="festival";
+
         mouth.configure(rf);
     }
     
@@ -401,6 +419,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefault("name","iSpeak");
     rf.setDefault("robot","icub");
+    rf.setDefault("package","festival");
     rf.configure("ICUB_ROOT",argc,argv);
 
     Launcher launcher;
