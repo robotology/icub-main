@@ -101,12 +101,12 @@ set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 # get the current version of the iCub build
 include(${PROJECT_SOURCE_DIR}/conf/iCubVersion.cmake)
 
+# add functionalities like icub_add_library/icub_add_executable
+include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
+
 # Import common options (disable flags in windows, rpath, etc..)
 # These options are shared with projects in contrib.
 include(${PROJECT_SOURCE_DIR}/conf/iCubOptions.cmake)
-
-# add functionalities like icub_add_library/icub_add_executable
-include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
 
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
