@@ -79,10 +79,10 @@ At startup an attempt is made to connect to
  
 - \e /<name>/rpc: a remote procedure call port used for the 
   following run-time querie: \n
-  -# [stat]: returns "speaking" or "quiet".
-  -# [set] [opt] "package_options": set new package dependent
+  - [stat]: returns "speaking" or "quiet".
+  - [set] [opt] "package_options": set new package dependent
    command-line options.
-  -# [get] [opt]: returns a string containing the current
+  - [get] [opt]: returns a string containing the current
    package dependent command-line options.
 
 \section tested_os_sec Tested OS
