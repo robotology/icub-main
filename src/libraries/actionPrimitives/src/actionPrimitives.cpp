@@ -1319,7 +1319,8 @@ void ActionPrimitives::run()
     {
         // check whether all the remaining active joints have come
         // to a complete stop
-        if (handMoveDone=isHandSeqEnded())
+        handMoveDone=isHandSeqEnded();
+        if (handMoveDone)
         {    
             printMessage("hand WP reached\n");
 

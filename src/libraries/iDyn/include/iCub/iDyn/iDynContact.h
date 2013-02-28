@@ -68,19 +68,19 @@ protected:
     // UTILITY METHODS
     //***************************************************************************************
 
-	/**
-	 * Compute the rototraslation matrix from frame a to frame b.
-	 */
-	yarp::sig::Matrix getHFromAtoB(unsigned int a, unsigned int b);
+    /**
+     * Compute the rototraslation matrix from frame a to frame b.
+     */
+    yarp::sig::Matrix getHFromAtoB(unsigned int a, unsigned int b);
 
-	/**
-	 * Compute the wrench of the specified contact expressed w.r.t. the root reference
-	 * frame of the chain (not the 0th frame, but the root).
-	 */
-	yarp::sig::Vector projectContact2Root(const iCub::skinDynLib::dynContact &c);
+    /**
+     * Compute the wrench of the specified contact expressed w.r.t. the root reference
+     * frame of the chain (not the 0th frame, but the root).
+     */
+    yarp::sig::Vector projectContact2Root(const iCub::skinDynLib::dynContact &c);
 
 public:
-	
+    
 
     /**
      * Constructor.
@@ -119,10 +119,10 @@ public:
 
     /**
      * Add a new element to the contact list. The content of this new element is initialized to a copy of "contact".
-	 * @param contact the contact to add
-	 * @return true if the operation is successful, false otherwise (eg index out of range)
+     * @param contact the contact to add
+     * @return true if the operation is successful, false otherwise (eg index out of range)
      */
-	bool addContact(const iCub::skinDynLib::dynContact &contact);
+    bool addContact(const iCub::skinDynLib::dynContact &contact);
 
     /**
      * Add the specified elements to the contact list.
@@ -153,7 +153,7 @@ public:
     /**
      * Compute an estimate of the external and internal contact wrenches (joint torques included).
      */
-	void computeWrenchFromSensorNewtonEuler();
+    void computeWrenchFromSensorNewtonEuler();
 
     //***************************************************************************************
     // GET METHODS
@@ -165,9 +165,9 @@ public:
     const iCub::skinDynLib::dynContactList& getContactList() const;
 
     /**
-	 * Returns the end effector force-moment as a single (6x1) vector
-	 * @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
-	 */
+     * Returns the end effector force-moment as a single (6x1) vector
+     * @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
+     */
     yarp::sig::Vector getForceMomentEndEff() const;
 
     /**

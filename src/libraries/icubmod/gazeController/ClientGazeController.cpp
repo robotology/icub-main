@@ -823,7 +823,7 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
 bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &pxr,
                                               Vector &x)
 {
-    if (!connected || (pxl.length()<2) && (pxr.length()<2))
+    if (!connected || ((pxl.length()<2) && (pxr.length()<2)))
         return false;
 
     Bottle command, reply;
@@ -1402,7 +1402,7 @@ bool ClientGazeController::waitMotionDone(const double period, const double time
     {
         Time::delay(period);
 
-        if (!checkMotionDone(&done) || (timeout>0.0) && ((Time::now()-t0)>timeout))
+        if (!checkMotionDone(&done) || ((timeout>0.0) && ((Time::now()-t0)>timeout)))
             return false;
     }
 
@@ -1446,7 +1446,7 @@ bool ClientGazeController::waitSaccadeDone(const double period, const double tim
     {
         Time::delay(period);
 
-        if (!checkSaccadeDone(&done) || (timeout>0.0) && ((Time::now()-t0)>timeout))
+        if (!checkSaccadeDone(&done) || ((timeout>0.0) && ((Time::now()-t0)>timeout)))
             return false;
     }
 
@@ -1501,7 +1501,7 @@ bool ClientGazeController::storeContext(int *id)
 /************************************************************************/
 bool ClientGazeController::restoreContext(const int id)
 {
-    if (!connected || (contextIdList.find(id)==contextIdList.end()) && (id!=0))
+    if (!connected || ((contextIdList.find(id)==contextIdList.end()) && (id!=0)))
         return false;
 
     Bottle command, reply;

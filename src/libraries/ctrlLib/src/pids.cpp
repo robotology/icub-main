@@ -92,7 +92,8 @@ Vector Integrator::saturate(const Vector &v)
 /************************************************************************/
 void Integrator::setSaturation(bool _applySat)
 {
-    if (applySat=_applySat)
+    applySat=_applySat;
+    if (applySat)
         y=saturate(y);
 }
 

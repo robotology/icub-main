@@ -77,21 +77,21 @@ const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forwa
 // contact flags
 //enum ContactStatus { NO_CONTACT, CONTACT };
 
-	class iDynLink;
-	class iDynChain;
-	class iDynLimb;
-	class iCubArmDyn;
-	class iCubArmNoTorsoDyn;
-	class iCubLegDyn;
-	class iCubEyeDyn;
-	class iCubEyeNeckRefDyn;
-	class iCubInertialSensorDyn;
-	class iDynSensor;
-	class iDynSensorLeg;
-	class iDynSensorArm;
-	class iGenericFrame;
+    class iDynLink;
+    class iDynChain;
+    class iDynLimb;
+    class iCubArmDyn;
+    class iCubArmNoTorsoDyn;
+    class iCubLegDyn;
+    class iCubEyeDyn;
+    class iCubEyeNeckRefDyn;
+    class iCubInertialSensorDyn;
+    class iDynSensor;
+    class iDynSensorLeg;
+    class iDynSensorArm;
+    class iGenericFrame;
     class iFrameOnLink;
-	class iFTransformation;
+    class iFTransformation;
 
 
 
@@ -105,382 +105,382 @@ class OneLinkNewtonEuler
 {
 protected:
 
-	/// STATIC/DYNAMIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
-	NewEulMode mode;	
-	///info or useful notes
-	std::string	info;
-	///verbosity flag
-	unsigned int verbose;
-	///z0=[0 0 1]'
-	yarp::sig::Vector z0;
-	///z^{i-1}_{m_{i}}		versor rotating solidally with link i, projected in frame i ==>> constant
-	yarp::sig::Vector zm;	
-	///the corresponding iDynLink 
-	iDyn::iDynLink *link;	
+    /// STATIC/DYNAMIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
+    NewEulMode mode;    
+    ///info or useful notes
+    std::string info;
+    ///verbosity flag
+    unsigned int verbose;
+    ///z0=[0 0 1]'
+    yarp::sig::Vector z0;
+    ///z^{i-1}_{m_{i}}      versor rotating solidally with link i, projected in frame i ==>> constant
+    yarp::sig::Vector zm;   
+    ///the corresponding iDynLink 
+    iDyn::iDynLink *link;   
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   set methods  
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   set methods  
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
-	* Set the OneLink force: either the corresponding iDynLink force, or the one declared as member
-	* in the child classes derived from OneLink, such as SensorLink
-	* @param _F a (3x1) vector of forces
-	* @return true if size is correct, false otherwise
-	*/
-	virtual bool setForce(const yarp::sig::Vector &_F);
+    /**
+    * Set the OneLink force: either the corresponding iDynLink force, or the one declared as member
+    * in the child classes derived from OneLink, such as SensorLink
+    * @param _F a (3x1) vector of forces
+    * @return true if size is correct, false otherwise
+    */
+    virtual bool setForce(const yarp::sig::Vector &_F);
 
-	/**
-	* Set the OneLink moment: either the corresponding iDynLink moment, or the one declared as member
-	* in the child classes derived from OneLink, such as SensorLink
-	* @param _Mu a 3x1 vector of moments
-	* @return true if size is correct, false otherwise
-	*/
-	virtual bool setMoment(const yarp::sig::Vector &_Mu);
+    /**
+    * Set the OneLink moment: either the corresponding iDynLink moment, or the one declared as member
+    * in the child classes derived from OneLink, such as SensorLink
+    * @param _Mu a 3x1 vector of moments
+    * @return true if size is correct, false otherwise
+    */
+    virtual bool setMoment(const yarp::sig::Vector &_Mu);
 
-	/**
-	* Set the OneLink torque, ie the corresponding iDynLink joint torque (nothing
-	* in the child classes derived from OneLink, such as SensorLink)
-	* @param _Tau a real torque value
-	*/
-	virtual void setTorque(const double _Tau);
+    /**
+    * Set the OneLink torque, ie the corresponding iDynLink joint torque (nothing
+    * in the child classes derived from OneLink, such as SensorLink)
+    * @param _Tau a real torque value
+    */
+    virtual void setTorque(const double _Tau);
 
-	/**
-	* Set the OneLink angular velocity (w), ie the corresponding iDynLink angular 
-	* velocity (w) (in the child classes derived from OneLink, it depends)
-	* @param _w angular velocity
-	*/
-	virtual bool setAngVel(const yarp::sig::Vector &_w);
-	
-	/**
-	* Set the OneLink angular acceleration (dw), ie the corresponding iDynLink angular 
-	* acceleration (dw) (in the child classes derived from OneLink, it depends)
-	* @param _dw angular acceleration
-	*/
-	virtual bool setAngAcc(const yarp::sig::Vector &_dw);
-	/**
-	* Set the OneLink linear acceleration (ddp), ie the corresponding iDynLink linear 
-	* acceleration (ddp) (in the child classes derived from OneLink, it depends)
-	* @param _ddp linear acceleration
-	*/
-	virtual bool setLinAcc(const yarp::sig::Vector &_ddp);
-	/**
-	* Set the OneLink linear acceleration of the COM (ddpC), ie the corresponding 
-	* iDynLink linear acceleration of the COM (ddpC) (nothing in the child classes 
-	* derived from OneLink, except for SensorLink)
-	* @param _ddpC linear acceleration of the COM
-	*/
-	virtual bool setLinAccC(const yarp::sig::Vector &_ddpC);
-	/**
-	* Set the OneLink angular acceleration of the motor (dwM), ie the corresponding 
-	* iDynLink angular acceleration of the COM (dwM) (nothing in the child classes
-	* derived from OneLink)
-	* @param _dwM angular acceleration of the motor
-	*/
-	virtual bool setAngAccM(const yarp::sig::Vector &_dwM);
+    /**
+    * Set the OneLink angular velocity (w), ie the corresponding iDynLink angular 
+    * velocity (w) (in the child classes derived from OneLink, it depends)
+    * @param _w angular velocity
+    */
+    virtual bool setAngVel(const yarp::sig::Vector &_w);
+    
+    /**
+    * Set the OneLink angular acceleration (dw), ie the corresponding iDynLink angular 
+    * acceleration (dw) (in the child classes derived from OneLink, it depends)
+    * @param _dw angular acceleration
+    */
+    virtual bool setAngAcc(const yarp::sig::Vector &_dw);
+    /**
+    * Set the OneLink linear acceleration (ddp), ie the corresponding iDynLink linear 
+    * acceleration (ddp) (in the child classes derived from OneLink, it depends)
+    * @param _ddp linear acceleration
+    */
+    virtual bool setLinAcc(const yarp::sig::Vector &_ddp);
+    /**
+    * Set the OneLink linear acceleration of the COM (ddpC), ie the corresponding 
+    * iDynLink linear acceleration of the COM (ddpC) (nothing in the child classes 
+    * derived from OneLink, except for SensorLink)
+    * @param _ddpC linear acceleration of the COM
+    */
+    virtual bool setLinAccC(const yarp::sig::Vector &_ddpC);
+    /**
+    * Set the OneLink angular acceleration of the motor (dwM), ie the corresponding 
+    * iDynLink angular acceleration of the COM (dwM) (nothing in the child classes
+    * derived from OneLink)
+    * @param _dwM angular acceleration of the motor
+    */
+    virtual bool setAngAccM(const yarp::sig::Vector &_dwM);
 
-	 //~~~~~~~~~~~~~~~~~~~~~~
-	 //   core computation
-	 //~~~~~~~~~~~~~~~~~~~~~~
+     //~~~~~~~~~~~~~~~~~~~~~~
+     //   core computation
+     //~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
+    /**
      * [Forward Newton-Euler] compute angular velocity of the link
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeAngVel( OneLinkNewtonEuler *prev);
+     void computeAngVel( OneLinkNewtonEuler *prev);
 
-	 /**
+     /**
      * [Forward Newton-Euler] compute angular velocity of the previous link
-	 * frame
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+     * frame
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeAngVelBackward( OneLinkNewtonEuler *prev);
+     void computeAngVelBackward( OneLinkNewtonEuler *prev);
 
-	/**
+    /**
      * [Forward Newton-Euler] compute angular acceleration of the link
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeAngAcc( OneLinkNewtonEuler *prev);
+     void computeAngAcc( OneLinkNewtonEuler *prev);
 
-	 /**
+     /**
      * [Forward Newton-Euler] compute angular acceleration of the previous link frame
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeAngAccBackward( OneLinkNewtonEuler *prev);
+     void computeAngAccBackward( OneLinkNewtonEuler *prev);
 
-	/**
+    /**
      * [Forward Newton-Euler] compute linear acceleration of the reference frame of the link
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeLinAcc( OneLinkNewtonEuler *prev);
-	 
-	/**
+     void computeLinAcc( OneLinkNewtonEuler *prev);
+     
+    /**
      * [Forward Newton-Euler] compute linear acceleration of the reference frame of the previous link
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeLinAccBackward( OneLinkNewtonEuler *prev);
+     void computeLinAccBackward( OneLinkNewtonEuler *prev);
 
-	/**
+    /**
      * [Forward Newton-Euler] compute linear acceleration of the center of mass
-	  * @return ddpC
+      * @return ddpC
      */
-	 void computeLinAccC();
+     void computeLinAccC();
 
-	/**
+    /**
      * [Forward Newton-Euler] compute angular acceleration of the rotor
-	  * @param prev the OneLinkNewtonEuler class of the previous link
-	  * @return dwM
+      * @param prev the OneLinkNewtonEuler class of the previous link
+      * @return dwM
      */
-	 void computeAngAccM( OneLinkNewtonEuler *prev);
+     void computeAngAccM( OneLinkNewtonEuler *prev);
 
- 	/**
+    /**
      * [Backward Newton-Euler] compute force from the following link
-	  * @param next the OneLinkNewtonEuler class of the following link
+      * @param next the OneLinkNewtonEuler class of the following link
      */
-	 void computeForceBackward( OneLinkNewtonEuler *next);
+     void computeForceBackward( OneLinkNewtonEuler *next);
 
-  	/**
+    /**
      * [Inverse Newton-Euler] compute force from the previous link
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeForceForward( OneLinkNewtonEuler *prev);
+     void computeForceForward( OneLinkNewtonEuler *prev);
 
-  	/**
+    /**
      * [Backward Newton-Euler] compute moment from the following link
-	  * @param next the OneLinkNewtonEuler class of the following link
+      * @param next the OneLinkNewtonEuler class of the following link
      */
-	 void computeMomentBackward( OneLinkNewtonEuler *next);
+     void computeMomentBackward( OneLinkNewtonEuler *next);
 
-  	/**
+    /**
      * [Inverse Newton-Euler] compute moment from the previous link
-	  * @param prev the OneLinkNewtonEuler class of the previous link
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
-	 void computeMomentForward( OneLinkNewtonEuler *prev);
+     void computeMomentForward( OneLinkNewtonEuler *prev);
 
 
 public:
 
-	/**
+    /**
     * Default constructor 
     */
-	OneLinkNewtonEuler(iDyn::iDynLink *dlink=NULL);
+    OneLinkNewtonEuler(iDyn::iDynLink *dlink=NULL);
   
-	/**
+    /**
      * Constructor, with initialization of some data
      */
     OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb = iCub::skinDynLib::NO_VERBOSE, iDyn::iDynLink *dlink=NULL);
-	 	 
-	/**
+         
+    /**
      * Set everything to zero; R is set to an identity matrix
      */
-	void zero();
+    void zero();
 
-	/**
+    /**
      * Virtual method to set the frame as the base one: this is useful to initialize the forward phase of
-	 * Newton-Euler's method. The BaseLink class is used to this scope.
+     * Newton-Euler's method. The BaseLink class is used to this scope.
      */
-	virtual bool setAsBase(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
-	virtual bool setAsBase(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    virtual bool setAsBase(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+    virtual bool setAsBase(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
-	/**
+    /**
      * Set the frame as the final one: this is useful to initialize the backward phase of
-	  * Newton-Euler's method, by setting F and Mu; R is an identity matrix
-	  * @param _F the final force
-	  * @param _Mu the final moment
+      * Newton-Euler's method, by setting F and Mu; R is an identity matrix
+      * @param _F the final force
+      * @param _Mu the final moment
      */
-	virtual bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    virtual bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
-	/**
+    /**
      * Set the frame as the final one: this is useful to initialize the backward phase of
-	  * Euler's method, by setting w, dw and ddp; R is an identity matrix
-	  * @param _w the final angular velocity
-	  * @param _dw the final angular acceleration
-	  * @param _ddp the final linear acceleration
+      * Euler's method, by setting w, dw and ddp; R is an identity matrix
+      * @param _w the final angular velocity
+      * @param _dw the final angular acceleration
+      * @param _ddp the final linear acceleration
      */
-	virtual bool setAsFinal(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+    virtual bool setAsFinal(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
 
-	/**
+    /**
      * Set measured force and moment in a 'sensor' frame: this is useful to initialize the forward phase of the Inverse
-	  * Newton-Euler's method, by setting F and Mu, measured by the corresponding F/T sensor
-	  * @param _F the sensor force
-	  * @param _Mu the sensor moment
+      * Newton-Euler's method, by setting F and Mu, measured by the corresponding F/T sensor
+      * @param _F the sensor force
+      * @param _Mu the sensor moment
      */
-	virtual bool setMeasuredFMu(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    virtual bool setMeasuredFMu(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
-	/**
-     * Set measured torque in a joint torque sensor frame	  
-	 * @param _Tau the sensor torque
+    /**
+     * Set measured torque in a joint torque sensor frame     
+     * @param _Tau the sensor torque
      */
-	virtual bool setMeasuredTorque(const double _Tau);
-	
-	/**
+    virtual bool setMeasuredTorque(const double _Tau);
+    
+    /**
      * Useful to print some information..
      */
-	virtual std::string toString() const;
+    virtual std::string toString() const;
 
  
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   set methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   set methods
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
-	* Set the verbosity level of comments during operations
-	* @param verb, a boolean flag
-	*/
-	 void setVerbose(unsigned int verb = iCub::skinDynLib::VERBOSE);
- 	/**
-	* Set the operation mode (static,dynamic etc)
-	* @param _mode the NewEulMode defining the type of operations
-	*/
-	 void setMode(const NewEulMode _mode);
- 	/**
-	* Set the zM vector
-	* @param _zm a (3x1) vector zM
-	* @return true if size is correct, false otherwise
-	*/
-	 bool setZM(const yarp::sig::Vector &_zm);
- 	/**
-	* Set some information about this OneLink class
-	* @param _info a string
-	*/
-	 void setInfo(const std::string &_info);
+    /**
+    * Set the verbosity level of comments during operations
+    * @param verb, a boolean flag
+    */
+     void setVerbose(unsigned int verb = iCub::skinDynLib::VERBOSE);
+    /**
+    * Set the operation mode (static,dynamic etc)
+    * @param _mode the NewEulMode defining the type of operations
+    */
+     void setMode(const NewEulMode _mode);
+    /**
+    * Set the zM vector
+    * @param _zm a (3x1) vector zM
+    * @return true if size is correct, false otherwise
+    */
+     bool setZM(const yarp::sig::Vector &_zm);
+    /**
+    * Set some information about this OneLink class
+    * @param _info a string
+    */
+     void setInfo(const std::string &_info);
 
 
-	 //~~~~~~~~~~~~~~~~~~~~~~
-	 //   get methods
-	 //~~~~~~~~~~~~~~~~~~~~~~
+     //~~~~~~~~~~~~~~~~~~~~~~
+     //   get methods
+     //~~~~~~~~~~~~~~~~~~~~~~
 
-  	/**
-	* @return the operation mode (static, dynamic etc)
-	*/
-	 NewEulMode				getMode()		const;
-  	/**
-	* @return zM vector (3x1)
-	*/
-	 yarp::sig::Vector		getZM()			const;
- 	/**
-	* @return the info string
-	*/
-	 std::string			getInfo()		const;
- 	/**
-	* @return w = angular velocity (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getAngVel()		const;
- 	/**
-	* @return dw = angular acceleration (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getAngAcc()		const;
- 	/**
-	* @return dwM = angular acceleration of the rotor (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getAngAccM()	const;
- 	/**
-	* @return ddp = d2p = linear acceleration (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getLinAcc()		const;
- 	/**
-	* @return ddpC = d2pC = linear acceleration of the center of mass (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getLinAccC()	const;
-  	/**
-	* @return F = force (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getForce()		const;
-   	/**
-	* @return Mu = moment (3x1)
-	*/
-	 virtual const yarp::sig::Vector&	getMoment(bool isBase = false)		const;
-   	/**
-	* @return Tau = torque (1x1)
-	*/
-	 virtual double				getTorque()		const;
     /**
-	* @return Im
-	*/
-	 virtual double				getIm()		const;
+    * @return the operation mode (static, dynamic etc)
+    */
+     NewEulMode             getMode()       const;
     /**
-	* @return Fs = static friction
-	*/
- 	 virtual double				getFs()		const;
+    * @return zM vector (3x1)
+    */
+     yarp::sig::Vector      getZM()         const;
     /**
-	* @return Fv = viscous friction
-	*/
- 	 virtual double				getFv()		const;
+    * @return the info string
+    */
+     std::string            getInfo()       const;
     /**
-	* @return ddq = d2q = joint acceleration
-	*/
-	 virtual double				getD2q()	const;
+    * @return w = angular velocity (3x1)
+    */
+     virtual const yarp::sig::Vector&   getAngVel()     const;
+    /**
+    * @return dw = angular acceleration (3x1)
+    */
+     virtual const yarp::sig::Vector&   getAngAcc()     const;
+    /**
+    * @return dwM = angular acceleration of the rotor (3x1)
+    */
+     virtual const yarp::sig::Vector&   getAngAccM()    const;
+    /**
+    * @return ddp = d2p = linear acceleration (3x1)
+    */
+     virtual const yarp::sig::Vector&   getLinAcc()     const;
+    /**
+    * @return ddpC = d2pC = linear acceleration of the center of mass (3x1)
+    */
+     virtual const yarp::sig::Vector&   getLinAccC()    const;
+    /**
+    * @return F = force (3x1)
+    */
+     virtual const yarp::sig::Vector&   getForce()      const;
+    /**
+    * @return Mu = moment (3x1)
+    */
+     virtual const yarp::sig::Vector&   getMoment(bool isBase = false)      const;
+    /**
+    * @return Tau = torque (1x1)
+    */
+     virtual double             getTorque()     const;
+    /**
+    * @return Im
+    */
+     virtual double             getIm()     const;
+    /**
+    * @return Fs = static friction
+    */
+     virtual double             getFs()     const;
+    /**
+    * @return Fv = viscous friction
+    */
+     virtual double             getFv()     const;
+    /**
+    * @return ddq = d2q = joint acceleration
+    */
+     virtual double             getD2q()    const;
      /**
-	* @return dq = dq = joint velocity
-	*/
-	 virtual double				getDq()		const;
+    * @return dq = dq = joint velocity
+    */
+     virtual double             getDq()     const;
     /**
-	* @return Kr
-	*/
-	 virtual double				getKr()		const;
+    * @return Kr
+    */
+     virtual double             getKr()     const;
     /**
-	* @return m = mass of the link
-	*/
-	 virtual double				getMass()	const;
+    * @return m = mass of the link
+    */
+     virtual double             getMass()   const;
     /**
-	* @return I = inertia of the link
-	*/
-  	 virtual const yarp::sig::Matrix&	getInertia() const;
+    * @return I = inertia of the link
+    */
+     virtual const yarp::sig::Matrix&   getInertia() const;
     /**
-	* @return H = (4x4) the Denavit-Hartenberg roto-translational matrix describing the link
-	*/
- 	 virtual const yarp::sig::Matrix&	getH();
+    * @return H = (4x4) the Denavit-Hartenberg roto-translational matrix describing the link
+    */
+     virtual const yarp::sig::Matrix&   getH();
     /**
-	* @return R = (3x3) rotational matrix from the Denavit-Hartenberg roto-translational matrix describing the link
-	*/
- 	 virtual const yarp::sig::Matrix&	getR();
+    * @return R = (3x3) rotational matrix from the Denavit-Hartenberg roto-translational matrix describing the link
+    */
+     virtual const yarp::sig::Matrix&   getR();
     /**
-	* @return RC = (3x3) rotational matrix from the roto-translational matrix of the link COM
-	*/
-	virtual const yarp::sig::Matrix&	getRC();
-	/**
-	* @return r = (3x1) distance vector from the Denavit-Hartenberg roto-translational matrix describing the distance vector between frames <i> and <i-1>
-	*/
-	 virtual const yarp::sig::Vector&	getr(bool proj=false);
+    * @return RC = (3x3) rotational matrix from the roto-translational matrix of the link COM
+    */
+    virtual const yarp::sig::Matrix&    getRC();
+    /**
+    * @return r = (3x1) distance vector from the Denavit-Hartenberg roto-translational matrix describing the distance vector between frames <i> and <i-1>
+    */
+     virtual const yarp::sig::Vector&   getr(bool proj=false);
      /**
-	* @return rC = (3x1) distance vector from the roto-translational matrix of the link COM, describing the distance vector between COM and frame <i>
-	*/
-	 virtual const yarp::sig::Vector&	getrC(bool proj=false);
+    * @return rC = (3x1) distance vector from the roto-translational matrix of the link COM, describing the distance vector between COM and frame <i>
+    */
+     virtual const yarp::sig::Vector&   getrC(bool proj=false);
 
 
-	 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 //   main computation methods
-	 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     //   main computation methods
+     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
+    /**
      * [Forward Newton-Euler] Compute w, dw, ddp, ddpC, dwM
-	  * @param prev the OneLinkNewtonEuler class of the previous link 
+      * @param prev the OneLinkNewtonEuler class of the previous link 
      */
-	 void ForwardKinematics( OneLinkNewtonEuler *prev);
+     void ForwardKinematics( OneLinkNewtonEuler *prev);
  
-	/**
+    /**
      * [Backward Kinematic computation] Compute w, dw, ddp, ddpC, dwM
-	  * @param prev the OneLinkNewtonEuler class of the previous link 
+      * @param prev the OneLinkNewtonEuler class of the previous link 
      */
-	 void BackwardKinematics( OneLinkNewtonEuler *prev);
+     void BackwardKinematics( OneLinkNewtonEuler *prev);
 
-	/**
+    /**
      * [Backward Newton-Euler] Compute F, Mu, Tau
-	  * @param next the OneLinkNewtonEuler class of the following link 
+      * @param next the OneLinkNewtonEuler class of the following link 
      */
-	 void BackwardWrench( OneLinkNewtonEuler *next);
+     void BackwardWrench( OneLinkNewtonEuler *next);
 
-	/**
+    /**
      * [Inverse Newton-Euler] Compute F, Mu, Tau
-	  * @param prev the OneLinkNewtonEuler class of the previous link 
+      * @param prev the OneLinkNewtonEuler class of the previous link 
      */
-	 void ForwardWrench( OneLinkNewtonEuler *prev);
-	
- 	/**
+     void ForwardWrench( OneLinkNewtonEuler *prev);
+    
+    /**
      * [all] Compute joint torque; moment must be pre-computed
-	  * @param next the OneLinkNewtonEuler class of the following link
+      * @param next the OneLinkNewtonEuler class of the following link
      */
-	 virtual void computeTorque(OneLinkNewtonEuler *prev);
+     virtual void computeTorque(OneLinkNewtonEuler *prev);
 
 };
 
@@ -495,22 +495,22 @@ public:
 class BaseLinkNewtonEuler : public OneLinkNewtonEuler
 {
 protected:
-	///initial angular velocity
-	yarp::sig::Vector w;	
-	///initial angular acceleration
-	yarp::sig::Vector dw;
-	///initial linear acceleration
-	yarp::sig::Vector ddp;	
-	///base roto-traslation (if necessary)
-	yarp::sig::Matrix H0;
-	///initial force
-	yarp::sig::Vector F;
-	///initial moment
-	yarp::sig::Vector Mu;
+    ///initial angular velocity
+    yarp::sig::Vector w;    
+    ///initial angular acceleration
+    yarp::sig::Vector dw;
+    ///initial linear acceleration
+    yarp::sig::Vector ddp;  
+    ///base roto-traslation (if necessary)
+    yarp::sig::Matrix H0;
+    ///initial force
+    yarp::sig::Vector F;
     ///initial moment
-	yarp::sig::Vector Mu0;
-	///corresponding torque
-	double Tau;			
+    yarp::sig::Vector Mu;
+    ///initial moment
+    yarp::sig::Vector Mu0;
+    ///corresponding torque
+    double Tau;         
 
     // dummy matrixes/vectors
     const yarp::sig::Matrix eye3x3;
@@ -519,85 +519,85 @@ protected:
 
 public:
 
-	/**
+    /**
     * Default constructor 
-	* @param _H0 the base roto-translation
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _H0 the base roto-translation
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+    BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor, initializing the base data
-	* @param _H0 the base roto-translation
-	* @param _w	the initial angular velocity
-	* @param _dw the initial angular acceleration
-	* @param _ddp the initial linear acceleration
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _H0 the base roto-translation
+    * @param _w the initial angular velocity
+    * @param _dw the initial angular acceleration
+    * @param _ddp the initial linear acceleration
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, 
+    BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, 
         const yarp::sig::Vector &_ddp, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
      * Sets the base data
-	 * @param _w	the initial angular velocity
-	 * @param _dw the initial angular acceleration
-	 * @param _ddp the initial linear acceleration
+     * @param _w    the initial angular velocity
+     * @param _dw the initial angular acceleration
+     * @param _ddp the initial linear acceleration
      */
-	bool setAsBase(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
-		/**
+    bool setAsBase(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+        /**
      * Sets the base data
-	 * @param _F	the initial angular velocity
-	 * @param _Mu the initial angular acceleration
+     * @param _F    the initial angular velocity
+     * @param _Mu the initial angular acceleration
      */
-	bool setAsBase(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    bool setAsBase(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   get methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   get methods
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	 const yarp::sig::Vector&	getAngVel()		const;
-	 const yarp::sig::Vector&	getAngAcc()		const;
-	 const yarp::sig::Vector&	getAngAccM()	const;
-	 const yarp::sig::Vector&	getLinAcc()		const;
-	 const yarp::sig::Vector&	getLinAccC()	const;
-	 	
-	 // redefine the other unuseful methods 
-	 // to avoid errors due to missing link
+     const yarp::sig::Vector&   getAngVel()     const;
+     const yarp::sig::Vector&   getAngAcc()     const;
+     const yarp::sig::Vector&   getAngAccM()    const;
+     const yarp::sig::Vector&   getLinAcc()     const;
+     const yarp::sig::Vector&   getLinAccC()    const;
+        
+     // redefine the other unuseful methods 
+     // to avoid errors due to missing link
 
-	 const yarp::sig::Vector&	getForce()		const;
-	 const yarp::sig::Vector&	getMoment(bool isBase = false) const;
-	 double				getTorque()		const;
-	 const yarp::sig::Matrix&	getR();		
-	 const yarp::sig::Matrix&	getRC();	
-	 double				getIm()		const;
-	 double				getD2q()	const;
-	 double				getDq()		const;
-	 double				getKr()		const;
-  	 double				getFs()		const;
- 	 double				getFv()		const;
-	 double				getMass()	const;
-   	 const yarp::sig::Matrix&	getInertia()const;
-	 const yarp::sig::Vector&	getr(bool proj=false);
-	 const yarp::sig::Vector&	getrC(bool proj=false);
+     const yarp::sig::Vector&   getForce()      const;
+     const yarp::sig::Vector&   getMoment(bool isBase = false) const;
+     double             getTorque()     const;
+     const yarp::sig::Matrix&   getR();     
+     const yarp::sig::Matrix&   getRC();    
+     double             getIm()     const;
+     double             getD2q()    const;
+     double             getDq()     const;
+     double             getKr()     const;
+     double             getFs()     const;
+     double             getFv()     const;
+     double             getMass()   const;
+     const yarp::sig::Matrix&   getInertia()const;
+     const yarp::sig::Vector&   getr(bool proj=false);
+     const yarp::sig::Vector&   getrC(bool proj=false);
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   set methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   set methods
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	 bool setForce(const yarp::sig::Vector &_F);
-	 bool setMoment(const yarp::sig::Vector &_Mu);
-	 void setTorque(const double _Tau);
- 	 bool setAngVel(const yarp::sig::Vector &_w);
-	 bool setAngAcc(const yarp::sig::Vector &_dw);
-	 bool setLinAcc(const yarp::sig::Vector &_ddp);
-	 bool setLinAccC(const yarp::sig::Vector &_ddpC);
-	 bool setAngAccM(const yarp::sig::Vector &_dwM);
+     bool setForce(const yarp::sig::Vector &_F);
+     bool setMoment(const yarp::sig::Vector &_Mu);
+     void setTorque(const double _Tau);
+     bool setAngVel(const yarp::sig::Vector &_w);
+     bool setAngAcc(const yarp::sig::Vector &_dw);
+     bool setLinAcc(const yarp::sig::Vector &_ddp);
+     bool setLinAccC(const yarp::sig::Vector &_ddpC);
+     bool setAngAccM(const yarp::sig::Vector &_dwM);
 
-	 // other methods
+     // other methods
 
-	 std::string toString() const;
+     std::string toString() const;
 
 
 };
@@ -614,18 +614,18 @@ public:
 class FinalLinkNewtonEuler : public OneLinkNewtonEuler
 {
 protected:
-	///initial angular velocity
-	yarp::sig::Vector w;	
-	///initial angular acceleration
-	yarp::sig::Vector dw;
-	///initial linear acceleration
-	yarp::sig::Vector ddp;	
-	///final force
-	yarp::sig::Vector F;	
-	///final moment
-	yarp::sig::Vector Mu;	
-	///final roto-traslation (if necessary)
-	yarp::sig::Matrix HN;
+    ///initial angular velocity
+    yarp::sig::Vector w;    
+    ///initial angular acceleration
+    yarp::sig::Vector dw;
+    ///initial linear acceleration
+    yarp::sig::Vector ddp;  
+    ///final force
+    yarp::sig::Vector F;    
+    ///final moment
+    yarp::sig::Vector Mu;   
+    ///final roto-traslation (if necessary)
+    yarp::sig::Matrix HN;
 
     // dummy matrices/vectors
     const yarp::sig::Matrix eye4x4;
@@ -635,77 +635,77 @@ protected:
 
 public:
 
-	/**
+    /**
     * Default constructor 
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+    FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor, initializing the final frame data
-	* @param _F the final force
-	* @param _Mu the final moment
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _F the final force
+    * @param _Mu the final moment
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+    FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
      * Set the final frame data
-	  * @param _F the final force
-	  * @param _Mu the final moment
-	  * @return true if dimensions are correct, false otherwise
+      * @param _F the final force
+      * @param _Mu the final moment
+      * @return true if dimensions are correct, false otherwise
      */
-	bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
-	
-	/**
+    bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    
+    /**
      * Set the final frame data
-	  * @param _w the final force
-	  * @param _dw the final force
-	  * @param _ddp the final moment
-	  * @return true if dimensions are correct, false otherwise
+      * @param _w the final force
+      * @param _dw the final force
+      * @param _ddp the final moment
+      * @return true if dimensions are correct, false otherwise
      */
-	bool setAsFinal(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
+    bool setAsFinal(const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, const yarp::sig::Vector &_ddp);
 
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   get methods
-	//~~~~~~~~~~~~~~~~~~~~~~
-	const yarp::sig::Vector&	getForce()		const;
-	const yarp::sig::Vector&	getMoment(bool isBase = false)		const;
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   get methods
+    //~~~~~~~~~~~~~~~~~~~~~~
+    const yarp::sig::Vector&    getForce()      const;
+    const yarp::sig::Vector&    getMoment(bool isBase = false)      const;
 
-	// redefine the other unuseful methods to avoid errors due to missing link
-	const yarp::sig::Vector&	getAngVel()		const;
-	const yarp::sig::Vector&	getAngAcc()		const;
-	const yarp::sig::Vector&	getAngAccM()	const;
-	const yarp::sig::Vector&	getLinAcc()		const;
-	const yarp::sig::Vector&	getLinAccC()	const;
-	double				getTorque()		const;
- 	const yarp::sig::Matrix&	getH();
-	const yarp::sig::Matrix&	getR();		
-	const yarp::sig::Matrix&	getRC();	
-	double				getIm()		const;
-  	double				getFs()		const;
- 	double				getFv()		const;
-	double				getD2q()	const;
-	double				getDq()		const;
-	double				getKr()		const;
-	double				getMass()	const;
-   	const yarp::sig::Matrix&	getInertia()const;
-	const yarp::sig::Vector&	getr(bool proj=false);
-	const yarp::sig::Vector&	getrC(bool proj=false);
-	bool setForce(const yarp::sig::Vector &_F);
-	bool setMoment(const yarp::sig::Vector &_Mu);
-	void setTorque(const double _Tau);
-	bool setAngVel(const yarp::sig::Vector &_w);
-	bool setAngAcc(const yarp::sig::Vector &_dw);
-	bool setLinAcc(const yarp::sig::Vector &_ddp);
-	bool setLinAccC(const yarp::sig::Vector &_ddpC);
-	bool setAngAccM(const yarp::sig::Vector &_dwM);
+    // redefine the other unuseful methods to avoid errors due to missing link
+    const yarp::sig::Vector&    getAngVel()     const;
+    const yarp::sig::Vector&    getAngAcc()     const;
+    const yarp::sig::Vector&    getAngAccM()    const;
+    const yarp::sig::Vector&    getLinAcc()     const;
+    const yarp::sig::Vector&    getLinAccC()    const;
+    double              getTorque()     const;
+    const yarp::sig::Matrix&    getH();
+    const yarp::sig::Matrix&    getR();     
+    const yarp::sig::Matrix&    getRC();    
+    double              getIm()     const;
+    double              getFs()     const;
+    double              getFv()     const;
+    double              getD2q()    const;
+    double              getDq()     const;
+    double              getKr()     const;
+    double              getMass()   const;
+    const yarp::sig::Matrix&    getInertia()const;
+    const yarp::sig::Vector&    getr(bool proj=false);
+    const yarp::sig::Vector&    getrC(bool proj=false);
+    bool setForce(const yarp::sig::Vector &_F);
+    bool setMoment(const yarp::sig::Vector &_Mu);
+    void setTorque(const double _Tau);
+    bool setAngVel(const yarp::sig::Vector &_w);
+    bool setAngAcc(const yarp::sig::Vector &_dw);
+    bool setLinAcc(const yarp::sig::Vector &_ddp);
+    bool setLinAccC(const yarp::sig::Vector &_ddpC);
+    bool setAngAccM(const yarp::sig::Vector &_dwM);
 
-	//other
-	std::string toString() const;
+    //other
+    std::string toString() const;
 };
 
 
@@ -722,27 +722,27 @@ public:
 class SensorLinkNewtonEuler : public OneLinkNewtonEuler
 {
 protected:
-	/// measured or estimated force
-	yarp::sig::Vector F;
-	/// measured or estimated moment
-	yarp::sig::Vector Mu;	
-	
-	/// angular velocity
-	yarp::sig::Vector w;
-	/// angular acceleration
-	yarp::sig::Vector dw;
-	/// linear acceleration
-	yarp::sig::Vector ddp;	
-	/// linear acceleration of the COM
-	yarp::sig::Vector ddpC;	
-	/// the roto-translational matrix from the i-th link to the sensor: it's the matrix describing the sensor position and orientation with respect to the frame of the link where the sensor is placed on
-	yarp::sig::Matrix H;
-	/// the roto-translational matrix of the COM of the semi-link (bewteen sensor and ith link frame)
-	yarp::sig::Matrix COM;
-	/// the semi-link inertia
-	yarp::sig::Matrix I;	
-	/// the semi-link mass (the portion of link defined by the sensor)
-	double m;				
+    /// measured or estimated force
+    yarp::sig::Vector F;
+    /// measured or estimated moment
+    yarp::sig::Vector Mu;   
+    
+    /// angular velocity
+    yarp::sig::Vector w;
+    /// angular acceleration
+    yarp::sig::Vector dw;
+    /// linear acceleration
+    yarp::sig::Vector ddp;  
+    /// linear acceleration of the COM
+    yarp::sig::Vector ddpC; 
+    /// the roto-translational matrix from the i-th link to the sensor: it's the matrix describing the sensor position and orientation with respect to the frame of the link where the sensor is placed on
+    yarp::sig::Matrix H;
+    /// the roto-translational matrix of the COM of the semi-link (bewteen sensor and ith link frame)
+    yarp::sig::Matrix COM;
+    /// the semi-link inertia
+    yarp::sig::Matrix I;    
+    /// the semi-link mass (the portion of link defined by the sensor)
+    double m;               
 
     yarp::sig::Matrix R;
     yarp::sig::Matrix RC;
@@ -754,122 +754,122 @@ protected:
 
 public:
 
-	/**
+    /**
     * Default constructor 
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+    SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor 
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
-	
+    SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
+    
 
-	/**
+    /**
      * Set the sensor measured force/moment - if measured by a FT sensor
-	  * @param _F the final force
-	  * @param _Mu the final moment
-	  * @return true if dimensions are correct, false otherwise
+      * @param _F the final force
+      * @param _Mu the final moment
+      * @return true if dimensions are correct, false otherwise
      */
-	bool setMeasuredFMu(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    bool setMeasuredFMu(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
-	/**
+    /**
      * Set a new sensor or new sensor properties
-	 * @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
-	 * @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
-	 * @param _m the mass of the semi-link
-	 * @param _I the inertia of the semi-link
+     * @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
+     * @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
+     * @param _m the mass of the semi-link
+     * @param _I the inertia of the semi-link
      */
-	bool setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I);
+    bool setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I);
 
-	/**
+    /**
      * Compute w,dw,ddp,dppC given the reference frame of the link where the sensor is
-	 * @param link the iDynLink class of the same link 
+     * @param link the iDynLink class of the same link 
      */
-	 void ForwardAttachToLink( iDynLink *link);
+     void ForwardAttachToLink( iDynLink *link);
 
- 	/**
+    /**
      * Compute F,Mu given the reference frame of the link where the sensor is
-	 * @param link the iDynLink class of the same link 
+     * @param link the iDynLink class of the same link 
      */
-	 void BackwardAttachToLink( iDynLink *link);
+     void BackwardAttachToLink( iDynLink *link);
 
-	 /**
+     /**
      * Forward the sensor forces and moments, measured by the sensor, to the reference
-	 * frame of the link where the sensor is: this method is the base for the inverse 
-	 * Newton-Euler algorithm, since it forwards the sensor measurements to the iDynChain
-	 * @param link the iDynLink class of the same link 
+     * frame of the link where the sensor is: this method is the base for the inverse 
+     * Newton-Euler algorithm, since it forwards the sensor measurements to the iDynChain
+     * @param link the iDynLink class of the same link 
      */
-	 void ForwardForcesMomentsToLink( iDynLink *link);
+     void ForwardForcesMomentsToLink( iDynLink *link);
 
- 	/**
+    /**
      * Get the sensor force and moment in a single (6x1) vector
-	 * @return a (6x1) vector where 0:2=force 3:5=moment
+     * @return a (6x1) vector where 0:2=force 3:5=moment
      */
-	yarp::sig::Vector getForceMoment() const;
+    yarp::sig::Vector getForceMoment() const;
 
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   get methods
-	//~~~~~~~~~~~~~~~~~~~~~~
-	const yarp::sig::Vector&	getAngVel()		const;
-	const yarp::sig::Vector&	getAngAcc()		const;
-	const yarp::sig::Vector&	getLinAcc()		const;
-	const yarp::sig::Vector&	getLinAccC()	const;
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   get methods
+    //~~~~~~~~~~~~~~~~~~~~~~
+    const yarp::sig::Vector&    getAngVel()     const;
+    const yarp::sig::Vector&    getAngAcc()     const;
+    const yarp::sig::Vector&    getLinAcc()     const;
+    const yarp::sig::Vector&    getLinAccC()    const;
 
-	const yarp::sig::Vector&	getForce()		const;
-	const yarp::sig::Vector&	getMoment(bool isBase = false)		const;
-	
-	double				getIm()		const;
- 	double				getFs()		const;
- 	double				getFv()		const;
-	double				getD2q()	const;
-	double				getDq()		const;
-	double				getKr()		const;
-	const yarp::sig::Vector&	getAngAccM()const;
-	double				getTorque()	const;
-	const yarp::sig::Matrix&	getH()		const;
+    const yarp::sig::Vector&    getForce()      const;
+    const yarp::sig::Vector&    getMoment(bool isBase = false)      const;
+    
+    double              getIm()     const;
+    double              getFs()     const;
+    double              getFv()     const;
+    double              getD2q()    const;
+    double              getDq()     const;
+    double              getKr()     const;
+    const yarp::sig::Vector&    getAngAccM()const;
+    double              getTorque() const;
+    const yarp::sig::Matrix&    getH()      const;
 
-	double				getMass()	const;
-  	const yarp::sig::Matrix&	getInertia()const;
- 	const yarp::sig::Matrix&	getR();
-	const yarp::sig::Matrix&	getRC();
-	const yarp::sig::Vector&	getr(bool proj=false);
-	const yarp::sig::Vector&	getrC(bool proj=false);
+    double              getMass()   const;
+    const yarp::sig::Matrix&    getInertia()const;
+    const yarp::sig::Matrix&    getR();
+    const yarp::sig::Matrix&    getRC();
+    const yarp::sig::Vector&    getr(bool proj=false);
+    const yarp::sig::Vector&    getrC(bool proj=false);
 
-	bool setForce(const yarp::sig::Vector &_F);
-	bool setMoment(const yarp::sig::Vector &_Mu);
-	void setTorque(const double _Tau);
-	bool setAngVel(const yarp::sig::Vector &_w);
-	bool setAngAcc(const yarp::sig::Vector &_dw);
-	bool setLinAcc(const yarp::sig::Vector &_ddp);
-	bool setLinAccC(const yarp::sig::Vector &_ddpC);
-	bool setAngAccM(const yarp::sig::Vector &_dwM);
+    bool setForce(const yarp::sig::Vector &_F);
+    bool setMoment(const yarp::sig::Vector &_Mu);
+    void setTorque(const double _Tau);
+    bool setAngVel(const yarp::sig::Vector &_w);
+    bool setAngAcc(const yarp::sig::Vector &_dw);
+    bool setLinAcc(const yarp::sig::Vector &_ddp);
+    bool setLinAccC(const yarp::sig::Vector &_ddpC);
+    bool setAngAccM(const yarp::sig::Vector &_dwM);
 
-	/**
+    /**
      * Useful to print some information..
      */
-	std::string toString() const;
+    std::string toString() const;
 
-	// redefinitions but using iDynLink instead of OneLinkNeutonEuler
-	// that because it is used by IDynInvSensor
+    // redefinitions but using iDynLink instead of OneLinkNeutonEuler
+    // that because it is used by IDynInvSensor
 
-	 void computeAngVel	( iDynLink *link);
-	 void computeAngAcc	( iDynLink *link);
-	 void computeLinAcc	( iDynLink *link);
-	 void computeLinAccC( );
-	 void computeForce	( iDynLink *link);
-	 void computeMoment	( iDynLink *link);
+     void computeAngVel ( iDynLink *link);
+     void computeAngAcc ( iDynLink *link);
+     void computeLinAcc ( iDynLink *link);
+     void computeLinAccC( );
+     void computeForce  ( iDynLink *link);
+     void computeMoment ( iDynLink *link);
 
-	 void computeForceToLink ( iDynLink *link);
-	 void computeMomentToLink( iDynLink *link);
+     void computeForceToLink ( iDynLink *link);
+     void computeMomentToLink( iDynLink *link);
 
-	 // virtual function to be called by specific sensorLinks
-	 virtual std::string getType() const;
+     // virtual function to be called by specific sensorLinks
+     virtual std::string getType() const;
 
 };
 
@@ -880,169 +880,169 @@ public:
 */
 class OneChainNewtonEuler
 {
-	friend class iDynChain;
+    friend class iDynChain;
 
 protected:
 
-	/// the real kinematic/dynamic chain of the robot
-	iDyn::iDynChain *chain;	
-	/// the chain of links/frames for Newton-Euler computations
-	OneLinkNewtonEuler ** neChain;	
+    /// the real kinematic/dynamic chain of the robot
+    iDyn::iDynChain *chain; 
+    /// the chain of links/frames for Newton-Euler computations
+    OneLinkNewtonEuler ** neChain;  
 
-	/// number of links
-	unsigned int nLinks;		
-	/// the index of the end-effector in the chain (the last frame)
-	unsigned int nEndEff;		
+    /// number of links
+    unsigned int nLinks;        
+    /// the index of the end-effector in the chain (the last frame)
+    unsigned int nEndEff;       
 
-	/// static/dynamic/dynamicWrotor
-	NewEulMode mode;
-	/// info or useful notes
-	std::string	info;
-	/// verbosity flag
-	unsigned int verbose;
+    /// static/dynamic/dynamicWrotor
+    NewEulMode mode;
+    /// info or useful notes
+    std::string info;
+    /// verbosity flag
+    unsigned int verbose;
 
 public:
 
   /**
     * Constructor (note: without FT sensor)
     */
-	OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    OneChainNewtonEuler(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* Standard destructor
-	*/
-	~OneChainNewtonEuler();
+    /**
+    * Standard destructor
+    */
+    ~OneChainNewtonEuler();
 
-	/**
+    /**
      * Useful to print some information..
      */
-	std::string toString() const;
+    std::string toString() const;
 
-	/**
+    /**
      * Useful to debug, getting the intermediate computations after the forward phase
      */
-	bool getVelAccAfterForward(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &dwM, yarp::sig::Vector &ddp, yarp::sig::Vector &ddpC) const;
+    bool getVelAccAfterForward(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &dwM, yarp::sig::Vector &ddp, yarp::sig::Vector &ddpC) const;
 
-	/**
+    /**
      * Useful to debug, getting the intermediate computations after the forward phase
      */
-	bool getWrenchAfterForward(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
+    bool getWrenchAfterForward(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
 
-	/**
+    /**
      * This method is used by iDynChain to retrieve kinematic information for connection with one or more
-	 * iDynLimb, through iDynNode.
+     * iDynLimb, through iDynNode.
      */
-	void getVelAccBase(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
-	
-	/**
+    void getVelAccBase(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
+    
+    /**
      * This method is used by iDynChain to retrieve kinematic information for connection with one or more
-	 * iDynLimb, through iDynNode.
+     * iDynLimb, through iDynNode.
      */
-	void getVelAccEnd(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
+    void getVelAccEnd(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
 
-	/**
+    /**
      * This method is used by iDynChain to retrieve wrench information for connection with one or more
-	 * iDynLimb, through iDynNode.
+     * iDynLimb, through iDynNode.
      */
-	void getWrenchBase(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
-	
-	/**
+    void getWrenchBase(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
+    
+    /**
      * This method is used by iDynChain to retrieve wrench information for connection with one or more
-	 * iDynLimb, through iDynNode.
+     * iDynLimb, through iDynNode.
      */
-	void getWrenchEnd(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
+    void getWrenchEnd(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   set methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   set methods
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
-	void setMode(const NewEulMode _mode);
- 	void setInfo(const std::string _info);
-	
-	/**
-	* [classic] Initialize the base with measured or known kinematics variables
-	* @param w0 angular velocity
-	* @param dw0 angular acceleration
-	* @param ddp0 linear acceleration
-	* @return true if succeeds, false otherwise
-	*/
-	bool initKinematicBase(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
-	
-	/**
-	* [inverse] Initialize the end-effector finalLink with measured or known kinematics variables
-	* @param w0 angular velocity
-	* @param dw0 angular acceleration
-	* @param ddp0 linear acceleration
-	* @return true if succeeds, false otherwise
-	*/
-	bool initKinematicEnd(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
-	
-	/**
-	* [classic] Initialize the end-effector finalLink with measured or known wrench
-	* @param F0 force
-	* @param Mu0 moment
-	* @return true if succeeds, false otherwise
-	*/
-	bool initWrenchEnd(const yarp::sig::Vector &F0,const yarp::sig::Vector &Mu0);
+    void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
+    void setMode(const NewEulMode _mode);
+    void setInfo(const std::string _info);
+    
+    /**
+    * [classic] Initialize the base with measured or known kinematics variables
+    * @param w0 angular velocity
+    * @param dw0 angular acceleration
+    * @param ddp0 linear acceleration
+    * @return true if succeeds, false otherwise
+    */
+    bool initKinematicBase(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
+    
+    /**
+    * [inverse] Initialize the end-effector finalLink with measured or known kinematics variables
+    * @param w0 angular velocity
+    * @param dw0 angular acceleration
+    * @param ddp0 linear acceleration
+    * @return true if succeeds, false otherwise
+    */
+    bool initKinematicEnd(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
+    
+    /**
+    * [classic] Initialize the end-effector finalLink with measured or known wrench
+    * @param F0 force
+    * @param Mu0 moment
+    * @return true if succeeds, false otherwise
+    */
+    bool initWrenchEnd(const yarp::sig::Vector &F0,const yarp::sig::Vector &Mu0);
 
-	/**
-	* [inverse] Initialize the base with measured or known wrench
-	* @param F0 force
-	* @param Mu0 moment
-	* @return true if succeeds, false otherwise
-	*/
-	bool initWrenchBase(const yarp::sig::Vector &F0,const yarp::sig::Vector &Mu0);
-
-
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   get methods
-	//~~~~~~~~~~~~~~~~~~~~~~
-
-	/**
-	* @return information about the chain
-	*/
-	std::string			getInfo()		const;
-
-	/**
-	* @return the computational mode: static/dynamic/etc
-	*/
-	NewEulMode			getMode()		const;
+    /**
+    * [inverse] Initialize the base with measured or known wrench
+    * @param F0 force
+    * @param Mu0 moment
+    * @return true if succeeds, false otherwise
+    */
+    bool initWrenchBase(const yarp::sig::Vector &F0,const yarp::sig::Vector &Mu0);
 
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   main computation methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   get methods
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
+    /**
+    * @return information about the chain
+    */
+    std::string         getInfo()       const;
+
+    /**
+    * @return the computational mode: static/dynamic/etc
+    */
+    NewEulMode          getMode()       const;
+
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //   main computation methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    /**
      * [classic/inverse] Base function for forward of classical Newton-Euler.
      */
-	void ForwardKinematicFromBase();
-	
-	/**
+    void ForwardKinematicFromBase();
+    
+    /**
      * [classic/inverse] Forward of classical Newton-Euler, after initializing the base link
      */
-	void ForwardKinematicFromBase(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+    void ForwardKinematicFromBase(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
-	/**
+    /**
      * [inverse] Base function for forward of classical Newton-Euler.
      */
-	void BackwardKinematicFromEnd();
-	
-	/**
+    void BackwardKinematicFromEnd();
+    
+    /**
      * [inverse] Forward of classical Newton-Euler, after initializing the base link
      */
-	void BackwardKinematicFromEnd(const yarp::sig::Vector &we, const yarp::sig::Vector &dwe, const yarp::sig::Vector &ddpe);
+    void BackwardKinematicFromEnd(const yarp::sig::Vector &we, const yarp::sig::Vector &dwe, const yarp::sig::Vector &ddpe);
 
-	/**
+    /**
      * [classic] Base function for backward of classical Newton-Euler.
      */
-	void BackwardWrenchFromEnd();
+    void BackwardWrenchFromEnd();
 
-	/**
+    /**
      * [classic] Backward of classical Newton-Euler, after initializing the final link
      */
-	void BackwardWrenchFromEnd(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
+    void BackwardWrenchFromEnd(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
     /**
      * Computes all the torques in the chain, assuming that all the internal wrenches
@@ -1050,57 +1050,57 @@ public:
      */
     void computeTorques();
 
-	/**
+    /**
      * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
-	 * forward of forces and moments using the inverse formula
+     * forward of forces and moments using the inverse formula
      */
-	void ForwardWrenchFromBase();
+    void ForwardWrenchFromBase();
 
-	/**
+    /**
      * [inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
-	 * backward of forces and moments using the classical formula
-	 * @param lSens the i-th link, where the sensor is attached to
-	 * @return true if the operation is successful, false otherwise (eg out of range index)
-	 */
-	void ForwardWrenchFromBase(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
-
-	/**
-     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
-	 * forward of forces and moments using the inverse formula
-	 * @param lSens the i-th link, where the sensor is attached to
-	 * @return true if the operation is successful, false otherwise (eg out of range index)
+     * backward of forces and moments using the classical formula
+     * @param lSens the i-th link, where the sensor is attached to
+     * @return true if the operation is successful, false otherwise (eg out of range index)
      */
-	bool ForwardWrenchToEnd(unsigned int lSens);
+    void ForwardWrenchFromBase(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
-	/**
+    /**
+     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
+     * forward of forces and moments using the inverse formula
+     * @param lSens the i-th link, where the sensor is attached to
+     * @return true if the operation is successful, false otherwise (eg out of range index)
+     */
+    bool ForwardWrenchToEnd(unsigned int lSens);
+
+    /**
      * [classic/inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
-	 * backward of forces and moments using the classical formula
-	 * @param lSens the i-th link, where the sensor is attached to
-	 * @return true if the operation is successful, false otherwise (eg out of range index)
-	 */
-	bool BackwardWrenchToBase(unsigned int lSens);
+     * backward of forces and moments using the classical formula
+     * @param lSens the i-th link, where the sensor is attached to
+     * @return true if the operation is successful, false otherwise (eg out of range index)
+     */
+    bool BackwardWrenchToBase(unsigned int lSens);
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   computations for contacts
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //   computations for contacts
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
+    /**
      * Base function for inverse Newton-Euler: from the lA-th link to the lB-th, 
-	 * forward of forces and moments using the inverse formula; lA < lB
-	 * @param lA the lA-th link
+     * forward of forces and moments using the inverse formula; lA < lB
+     * @param lA the lA-th link
      * @param lB the lB-th link
-	 * @return true if the operation is successful, false otherwise (eg out of range index)
+     * @return true if the operation is successful, false otherwise (eg out of range index)
      */
-	bool ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
+    bool ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
 
-	/**
+    /**
      * Base function for inverse Newton-Euler: from the lA-th link to the lB-th, 
-	 * backward of forces and moments; lA > lB
-	 * @param lA the lA-th link
+     * backward of forces and moments; lA > lB
+     * @param lA the lA-th link
      * @param lB the lB-th link
-	 * @return true if the operation is successful, false otherwise (eg out of range index)
+     * @return true if the operation is successful, false otherwise (eg out of range index)
      */
-	bool BackwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
+    bool BackwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
 
 };
 
@@ -1221,144 +1221,144 @@ public:
 */
 class iDynInvSensor
 {
-	friend class iFTransformation;
+    friend class iFTransformation;
 protected:
 
-	/// the link where the sensor is attached to
-	unsigned int lSens;		
-	/// the sensor
-	SensorLinkNewtonEuler * sens;
-	/// the iDynChain describing the robotic chain
-	iDynChain * chain;	
-	/// static/dynamic/etc..
-	NewEulMode mode;
-	/// verbosity flag
-	unsigned int verbose;
-	/// a string with useful information if needed
-	std::string info;
+    /// the link where the sensor is attached to
+    unsigned int lSens;     
+    /// the sensor
+    SensorLinkNewtonEuler * sens;
+    /// the iDynChain describing the robotic chain
+    iDynChain * chain;  
+    /// static/dynamic/etc..
+    NewEulMode mode;
+    /// verbosity flag
+    unsigned int verbose;
+    /// a string with useful information if needed
+    std::string info;
 
 public:
 
-	/**
+    /**
     * Constructor without FT sensor: the sensor must be set with setSensor()
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _info a string with information
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param _info a string with information
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensor(iDyn::iDynChain *_c, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor with FT sensor
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param i the i-th link to whom the sensor is attached
-	* @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
-	* @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
-	* @param _m the mass of the semi-link
-	* @param _I the inertia of the semi-link
-	* @param _info a string with information
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param i the i-th link to whom the sensor is attached
+    * @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
+    * @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
+    * @param _m the mass of the semi-link
+    * @param _I the inertia of the semi-link
+    * @param _info a string with information
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = 0);
+    iDynInvSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, const std::string &_info, const NewEulMode _mode = DYNAMIC, unsigned int verb = 0);
 
-	/**
+    /**
      * Set a new sensor or new sensor properties
-	 * @param i the i-th link to whom the sensor is attached
-	 * @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
-	 * @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
-	 * @param _m the mass of the semi-link
-	 * @param _I the inertia of the semi-link
-	 * @return true if the operation is successful, false otherwise (eg if index is out of range)
+     * @param i the i-th link to whom the sensor is attached
+     * @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
+     * @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
+     * @param _m the mass of the semi-link
+     * @param _I the inertia of the semi-link
+     * @return true if the operation is successful, false otherwise (eg if index is out of range)
      */
-	bool setSensor(unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I);
+    bool setSensor(unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I);
 
     bool setSensor(unsigned int i, SensorLinkNewtonEuler* sensor);
 
-	/**
+    /**
      * Compute forces and moments at the sensor frame; this method calls special Forward and Backward methods of
-	 * SensorLink, using Newton-Euler's formula applied in the link where the sensor is placed on; the link is 
-	 * automatically found, being specified by the index in the chain and the chain itself; 
+     * SensorLink, using Newton-Euler's formula applied in the link where the sensor is placed on; the link is 
+     * automatically found, being specified by the index in the chain and the chain itself; 
      * The case of a contact (ie external force) acting in the host link is not currently implemented.
      */
-	void computeSensorForceMoment();
+    void computeSensorForceMoment();
 
-	/**
+    /**
      * Print some information
-	 */
-	std::string			toString()	const;
-
-	/**
-     * Returns the sensor estimated force
-	 * @return the force at the sensor frame
-	 */
-	yarp::sig::Vector	getSensorForce()	const;
-
-	/**
-     * Returns the sensor estimated moment
-	 * @return the moment at the sensor frame
-	 */
-	yarp::sig::Vector	getSensorMoment()	const;
-
- 	/**
-     * Get the sensor force and moment in a single (6x1) vector
-	 * @return a (6x1) vector where 0:2=force 3:5=moment
      */
-	yarp::sig::Vector getSensorForceMoment() const;
-	
+    std::string         toString()  const;
+
+    /**
+     * Returns the sensor estimated force
+     * @return the force at the sensor frame
+     */
+    yarp::sig::Vector   getSensorForce()    const;
+
+    /**
+     * Returns the sensor estimated moment
+     * @return the moment at the sensor frame
+     */
+    yarp::sig::Vector   getSensorMoment()   const;
+
+    /**
+     * Get the sensor force and moment in a single (6x1) vector
+     * @return a (6x1) vector where 0:2=force 3:5=moment
+     */
+    yarp::sig::Vector getSensorForceMoment() const;
+    
     /**
      * Get the sensor roto-translational matrix defining its position/orientation wrt the link
-	 * @return a (4x4) matrix
+     * @return a (4x4) matrix
      */
-	yarp::sig::Matrix getH() const;
+    yarp::sig::Matrix getH() const;
     
     /**
-	 * Get the mass of the portion of link defined between sensor and i-th frame
-	 * @return the mass of the semi-link
-	 */
-	double getMass() const;
-
- 	/**
-	 * Get the sensor roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
-	 * @return a (4x4) matrix
+     * Get the mass of the portion of link defined between sensor and i-th frame
+     * @return the mass of the semi-link
      */
-	yarp::sig::Matrix getCOM() const;
+    double getMass() const;
 
-	/**
-	 * Get the inertia of the portion of link defined between sensor and i-th frame
-	 * @return a (3x3) matrix, inertia of the semi-link
-	 */
-	yarp::sig::Matrix getInertia() const;
+    /**
+     * Get the sensor roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
+     * @return a (4x4) matrix
+     */
+    yarp::sig::Matrix getCOM() const;
 
-	//~~~~~~~~~~~~~~
-	// set methods
-	//~~~~~~~~~~~~~~
+    /**
+     * Get the inertia of the portion of link defined between sensor and i-th frame
+     * @return a (3x3) matrix, inertia of the semi-link
+     */
+    yarp::sig::Matrix getInertia() const;
 
-	void setMode(const NewEulMode _mode = DYNAMIC);
-	void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
-	void setInfo(const std::string &_info);
-	void setSensorInfo(const std::string &_info);
+    //~~~~~~~~~~~~~~
+    // set methods
+    //~~~~~~~~~~~~~~
+
+    void setMode(const NewEulMode _mode = DYNAMIC);
+    void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
+    void setInfo(const std::string &_info);
+    void setSensorInfo(const std::string &_info);
     
     /**
-	 * Set the dynamic parameters of the the portion of link defined between sensor and i-th frame.
-	 * @param _m is the semi-link mass
-	 * @param _HC is the rototranslation matrix from the link frame to the center of mass
-	 * @param _I is the Inertia matrix
+     * Set the dynamic parameters of the the portion of link defined between sensor and i-th frame.
+     * @param _m is the semi-link mass
+     * @param _HC is the rototranslation matrix from the link frame to the center of mass
+     * @param _I is the Inertia matrix
      * @return true if operation is successful (ie matrices size is correct, and the sensor is defined), false otherwise
-	 */
-	bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
+     */
+    bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
 
-	//~~~~~~~~~~~~~~
-	// get methods
-	//~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~
+    // get methods
+    //~~~~~~~~~~~~~~
 
-	std::string getInfo() const;
-	std::string getSensorInfo() const;
-	unsigned int getSensorLink()	const;
-	yarp::sig::Vector getTorques() const;	
+    std::string getInfo() const;
+    std::string getSensorInfo() const;
+    unsigned int getSensorLink()    const;
+    yarp::sig::Vector getTorques() const;   
 
-	//destructor
-	virtual ~iDynInvSensor();
+    //destructor
+    virtual ~iDynInvSensor();
 
 };
 
@@ -1373,24 +1373,24 @@ public:
 class iCubArmSensorLink : public SensorLinkNewtonEuler
 {
 protected:
-	
-	/// the arm type: left/right
-	std::string type;
+    
+    /// the arm type: left/right
+    std::string type;
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor parameters are automatically set with "right" or "left" choice
-	* @param _type a string "left"/"right" 
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _type a string "left"/"right" 
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the arm type: left/right
-	*/
-	std::string getType() const;
+    /**
+    * @return type the arm type: left/right
+    */
+    std::string getType() const;
 
 };
 
@@ -1405,24 +1405,24 @@ public:
 class iCubLegSensorLink : public SensorLinkNewtonEuler
 {
 protected:
-	
-	/// the leg type: left/right
-	std::string type;
+    
+    /// the leg type: left/right
+    std::string type;
 
-	public:
+    public:
 
-	/**
+    /**
     * Constructor: the sensor parameters are automatically set with "right" or "left" choice
-	* @param _type a string "left"/"right" 
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _type a string "left"/"right" 
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iCubLegSensorLink(const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iCubLegSensorLink(const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the leg type: left/right
-	*/
-	std::string getType() const;
+    /**
+    * @return type the leg type: left/right
+    */
+    std::string getType() const;
 
 };
 
@@ -1441,28 +1441,28 @@ class iDynInvSensorArm : public iDynInvSensor
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iCubArmDyn where the sensor is placed on
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
-	* there is not a specification of the iCubArmDyn, but the part must be specified
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _type a string setting the arm type
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * there is not a specification of the iCubArmDyn, but the part must be specified
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param _type a string setting the arm type
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensorArm(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the arm type: left/arm
-	*/
-	std::string getType() const;
+    /**
+    * @return type the arm type: left/arm
+    */
+    std::string getType() const;
 
 
 };
@@ -1481,28 +1481,28 @@ class iDynInvSensorArmNoTorso : public iDynInvSensor
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubArmNoTorsoDyn where the sensor is placed on
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iCubArmNoTorsoDyn where the sensor is placed on
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
-	* there is not a specification of the iCubArmNoTorsoDyn, but the part must be specified
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _type a string setting the arm type
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * there is not a specification of the iCubArmNoTorsoDyn, but the part must be specified
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param _type a string setting the arm type
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensorArmNoTorso(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensorArmNoTorso(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the arm type: left/arm
-	*/
-	std::string getType() const;
+    /**
+    * @return type the arm type: left/arm
+    */
+    std::string getType() const;
 
 
 };
@@ -1521,27 +1521,27 @@ class iDynInvSensorLeg : public iDynInvSensor
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubLegDyn where the sensor is placed on
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iCubLegDyn where the sensor is placed on
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _type a string setting the leg type
-	* @param _mode the analysis mode (STATIC/DYNAMIC)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param _type a string setting the leg type
+    * @param _mode the analysis mode (STATIC/DYNAMIC)
+    * @param verb flag for verbosity
     */
-	iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynInvSensorLeg(iDyn::iDynChain *_c, const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the leg type: left/arm
-	*/
-	std::string getType() const;
+    /**
+    * @return type the leg type: left/arm
+    */
+    std::string getType() const;
 
 
 };
@@ -1569,159 +1569,159 @@ class iDynSensor: public iDynInvSensor
 
 public:
 
-	/**
+    /**
     * Constructor without FT sensor: the sensor must be set with setSensor()
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param _info a string with information
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param _info a string with information
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynSensor(iDyn::iDynChain *_c, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
 
-	/**
+    /**
     * Constructor with FT sensor
-	* @param _c a pointer to the iDynChain where the sensor is placed on
-	* @param i the i-th link to whom the sensor is attached
-	* @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
-	* @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
-	* @param _m the mass of the semi-link
-	* @param _I the inertia of the semi-link
-	* @param _info a string with information
-	* @param _mode the analysis mode (static/dynamic)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iDynChain where the sensor is placed on
+    * @param i the i-th link to whom the sensor is attached
+    * @param _H the roto-traslational matrix from the reference frame of the i-th link to the sensor
+    * @param _HC the roto-traslational matrix of the center of mass of the semi-link defined by the sensor in the i-th link
+    * @param _m the mass of the semi-link
+    * @param _I the inertia of the semi-link
+    * @param _info a string with information
+    * @param _mode the analysis mode (static/dynamic)
+    * @param verb flag for verbosity
     */
-	iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynSensor(iDyn::iDynChain *_c, unsigned int i, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, const double _m, const yarp::sig::Matrix &_I, std::string _info, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	 * Set the sensor measured force and moment
+    /**
+     * Set the sensor measured force and moment
      * @param F the sensor force (3x1)
-	 * @param Mu the sensor moment (3x1)
-	 * @return true if the operation is successful, false otherwise (ie wrong vector size)
-	 */
-	bool setSensorMeasures(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
+     * @param Mu the sensor moment (3x1)
+     * @return true if the operation is successful, false otherwise (ie wrong vector size)
+     */
+    bool setSensorMeasures(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
-	/**
-	 * Set the sensor measured force and moment at once. The measure vector (6x1) is made
-	 * of 0:2=force 3:5=moment
+    /**
+     * Set the sensor measured force and moment at once. The measure vector (6x1) is made
+     * of 0:2=force 3:5=moment
      * @param FM the sensor force and moment (6x1)
-	 * @return true if the operation is successful, false otherwise (ie wrong vector size)
-	 */
-	bool setSensorMeasures(const yarp::sig::Vector &FM);
+     * @return true if the operation is successful, false otherwise (ie wrong vector size)
+     */
+    bool setSensorMeasures(const yarp::sig::Vector &FM);
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   main computation methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //   main computation methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
-	 * The main computation method: given the FT sensor measurements, compute forces moments 
-	 * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
-	 * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
-	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
-	 * from sensor to base the classical backward pass is run.
+    /**
+     * The main computation method: given the FT sensor measurements, compute forces moments 
+     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+     * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
+     * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+     * from sensor to base the classical backward pass is run.
      * @param F the sensor force (3x1)
-	 * @param Mu the sensor moment (3x1)
-	 * @return true if the operation is successful, false otherwise (ie wrong vector size)
-	 */
-	virtual bool computeFromSensorNewtonEuler(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
+     * @param Mu the sensor moment (3x1)
+     * @return true if the operation is successful, false otherwise (ie wrong vector size)
+     */
+    virtual bool computeFromSensorNewtonEuler(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
-	/**
-	 * The main computation method: given the FT sensor measurements, compute forces moments 
-	 * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
-	 * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
-	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
-	 * from sensor to base the classical backward pass is run.
+    /**
+     * The main computation method: given the FT sensor measurements, compute forces moments 
+     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+     * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
+     * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+     * from sensor to base the classical backward pass is run.
      * @param FMu the sensor force and moment (6x1)
-	 * @return true if the operation is successful, false otherwise (ie wrong vector size)
-	 */
-	virtual bool computeFromSensorNewtonEuler(const yarp::sig::Vector &FMu);
+     * @return true if the operation is successful, false otherwise (ie wrong vector size)
+     */
+    virtual bool computeFromSensorNewtonEuler(const yarp::sig::Vector &FMu);
 
-	/**
-	 * The main computation method: given the FT sensor measurements, compute forces moments 
-	 * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
-	 * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
-	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
-	 * from sensor to base the classical backward pass is run.
-	 * This method only perform the computations: the force and moment measured on the sensor
-	 * must be set before calling this method using setSensorMeasures()
-	 */
-	virtual void computeFromSensorNewtonEuler();
+    /**
+     * The main computation method: given the FT sensor measurements, compute forces moments 
+     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+     * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
+     * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+     * from sensor to base the classical backward pass is run.
+     * This method only perform the computations: the force and moment measured on the sensor
+     * must be set before calling this method using setSensorMeasures()
+     */
+    virtual void computeFromSensorNewtonEuler();
 
-	/**
-	 * The main computation method: given the FT sensor measurements, compute forces moments 
-	 * and torques in the iDynChain. The kinematic pass is already performed. Only the wrench 
-	 * computation are performed here: from sensor to end-effector
-	 * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
-	 * from sensor to base the classical backward pass is run.
-	 * This method only perform the computations: the force and moment measured on the sensor
-	 * must be set before calling this method using setSensorMeasures()
-	 * This method is called by iDynSensorNode.
-	 */
-	virtual void computeWrenchFromSensorNewtonEuler();
+    /**
+     * The main computation method: given the FT sensor measurements, compute forces moments 
+     * and torques in the iDynChain. The kinematic pass is already performed. Only the wrench 
+     * computation are performed here: from sensor to end-effector
+     * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
+     * from sensor to base the classical backward pass is run.
+     * This method only perform the computations: the force and moment measured on the sensor
+     * must be set before calling this method using setSensorMeasures()
+     * This method is called by iDynSensorNode.
+     */
+    virtual void computeWrenchFromSensorNewtonEuler();
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//  get methods, overloaded from iDyn
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //  get methods, overloaded from iDyn
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
+    /**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
     * @return a 3xN matrix with forces, in the form: i-th col = F_i
     */
-	yarp::sig::Matrix getForces() const;
+    yarp::sig::Matrix getForces() const;
 
-	/**
+    /**
     * Returns the links moments as a matrix, where the i-th col is the i-th moment
     * @return a 3xN matrix with moments, in the form: i-th col = Mu_i
     */
-	yarp::sig::Matrix getMoments() const;
+    yarp::sig::Matrix getMoments() const;
 
-	/**
+    /**
     * Returns the links torque as a vector
     * @return a Nx1 vector with the torques
     */
-	yarp::sig::Vector getTorques() const;
+    yarp::sig::Vector getTorques() const;
 
-	/**
+    /**
     * Returns the i-th link force
     * @return the i-th link force
     */
-	yarp::sig::Vector getForce(const unsigned int iLink) const;
+    yarp::sig::Vector getForce(const unsigned int iLink) const;
 
-	/**
+    /**
     * Returns the i-th link moment
     * @return the i-th link moment
     */
-	yarp::sig::Vector getMoment(const unsigned int iLink) const;
+    yarp::sig::Vector getMoment(const unsigned int iLink) const;
 
-	/**
+    /**
     * Returns the i-th link torque
     * @return the i-th link torque
     */
-	double getTorque(const unsigned int iLink) const;
+    double getTorque(const unsigned int iLink) const;
 
-	/**
+    /**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
     * @return a 3x(N+2) matrix with forces, in the form: i-th col = F_i
     */
-	yarp::sig::Matrix getForcesNewtonEuler() const;
+    yarp::sig::Matrix getForcesNewtonEuler() const;
 
-	/**
+    /**
     * Returns the links moments as a matrix, where the i-th col is the i-th moment
     * @return a 3x(N+2) matrix with moments, in the form: i-th col = Mu_i
     */
-	yarp::sig::Matrix getMomentsNewtonEuler() const;
+    yarp::sig::Matrix getMomentsNewtonEuler() const;
 
-	/**
+    /**
     * Returns the links torque as a vector
     * @return a Nx1 vector with the torques
     */
-	yarp::sig::Vector getTorquesNewtonEuler() const;
+    yarp::sig::Vector getTorquesNewtonEuler() const;
 
-	/**
+    /**
     * Returns the end-effector force-moment as a single (6x1) vector
     * @return a 6x1 vector with the the end-effector force-moment
     */
-	virtual yarp::sig::Vector getForceMomentEndEff() const;
+    virtual yarp::sig::Vector getForceMomentEndEff() const;
 
 
 };
@@ -1744,18 +1744,18 @@ class iDynSensorArm : public iDynSensor
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
-	* @param _mode the analysis mode (static/dynamic/etc)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iCubArmDyn where the sensor is placed on
+    * @param _mode the analysis mode (static/dynamic/etc)
+    * @param verb flag for verbosity
     */
-	iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the arm sensor type: left/arm
-	*/
-	std::string getType() const;
+    /**
+    * @return type the arm sensor type: left/arm
+    */
+    std::string getType() const;
 
 
 };
@@ -1776,18 +1776,18 @@ class iDynSensorArmNoTorso : public iDynSensor
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubArmDyn where the sensor is placed on
-	* @param _mode the analysis mode (static/dynamic/etc)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iCubArmDyn where the sensor is placed on
+    * @param _mode the analysis mode (static/dynamic/etc)
+    * @param verb flag for verbosity
     */
-	iDynSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the arm sensor type: left/arm
-	*/
-	std::string getType() const;
+    /**
+    * @return type the arm sensor type: left/arm
+    */
+    std::string getType() const;
 
 
 };
@@ -1807,18 +1807,18 @@ class iDynSensorLeg : public iDynSensor
 
 public:
 
-	/**
+    /**
     * Constructor: the sensor is automatically set with "right" or "left" choice
-	* @param _c a pointer to the iCubLegDyn where the sensor is placed on
-	* @param _mode the analysis mode (static/dynamic/etc)
-	* @param verb flag for verbosity
+    * @param _c a pointer to the iCubLegDyn where the sensor is placed on
+    * @param _mode the analysis mode (static/dynamic/etc)
+    * @param verb flag for verbosity
     */
-	iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    iDynSensorLeg(iDyn::iCubLegDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
-	/**
-	* @return type the leg sensor type: left/arm
-	*/
-	std::string getType() const;
+    /**
+    * @return type the leg sensor type: left/arm
+    */
+    std::string getType() const;
 
 
 };

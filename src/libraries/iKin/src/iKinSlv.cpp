@@ -1836,7 +1836,8 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
         newDOF[i]=_dof[i];
 
     // check whether shoulder's axes are treated properly
-    if (!(newDOF[3]&&newDOF[4]&&newDOF[5] || !newDOF[3]&&!newDOF[4]&&!newDOF[5]))
+    if (!(((newDOF[3]!=0.0) && (newDOF[4]!=0)   && (newDOF[5]!=0)) || 
+          ((newDOF[3]==0.0) && (newDOF[4]==0.0) && (newDOF[5]==0.0))))
     {        
         // restore previous condition:
         // they all shall be on or off

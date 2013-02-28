@@ -59,6 +59,7 @@ public:
     virtual yarp::os::Property toProperty() const;
     virtual yarp::sig::Vector getField(const yarp::sig::Vector &x,
                                        const yarp::sig::Vector &xdot)=0;
+    virtual ~Item() { }
 };
 
 

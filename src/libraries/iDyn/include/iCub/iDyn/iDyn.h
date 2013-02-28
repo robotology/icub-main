@@ -80,8 +80,8 @@ namespace iCub
 
 namespace iDyn
 {
-	//void printMatrix(std::string s, const yarp::sig::Matrix &m);
-	void printVector(std::string s, const yarp::sig::Vector &v);
+    //void printMatrix(std::string s, const yarp::sig::Matrix &m);
+    void printVector(std::string s, const yarp::sig::Vector &v);
     void notImplemented(const unsigned int verbose);
     void notImplemented(const unsigned int verbose, const std::string &msg);
     void workInProgress(const unsigned int verbose, const std::string &msg);
@@ -118,8 +118,8 @@ namespace iDyn
 */
 class iDynLink : public iKin::iKinLink
 {
-	friend class iDynChain;
-	friend class OneLinkNewtonEuler;
+    friend class iDynChain;
+    friend class OneLinkNewtonEuler;
 
 protected:
     // DH rototranslation matrix (it's the same matrix you get calling iKinLink->getH(true) but it's stored here for performance reason)
@@ -130,110 +130,110 @@ protected:
     // flag that is true is if H_store is valid, false otherwise
     bool H_store_valid;
 
-	/// m_i, mass
-	double m;	
-	///4x4, H^i_{C_i} = R^i_{C_i}, r^i_{i,C_i}, roto-translation matrix from i to Ci, constant
-	yarp::sig::Matrix HC;
+    /// m_i, mass
+    double m;   
+    ///4x4, H^i_{C_i} = R^i_{C_i}, r^i_{i,C_i}, roto-translation matrix from i to Ci, constant
+    yarp::sig::Matrix HC;
     ///3x3, R^i_{C_i} rotational part of HC, constant
-	yarp::sig::Matrix RC;
+    yarp::sig::Matrix RC;
     ///3x1, r^i_{i,C_i}, translational part of HC, constant
     yarp::sig::Vector rc, rc_proj;
-	///3x3, I^i_i, inertia matrix, constant
-	yarp::sig::Matrix I;	
-	/// dq, joint vel
-	double dq;
-	/// ddq=d2q, joint acc
-	double ddq;					
-	///1x3, w^i_i				angular velocity
-	yarp::sig::Vector w;
-	///1x3, dw^i_i				angular acceleration
-	yarp::sig::Vector dw;
-	///1x3, dw^{i-1}_{m_i}		angular acceleration of rotor
-	yarp::sig::Vector dwM;		
+    ///3x3, I^i_i, inertia matrix, constant
+    yarp::sig::Matrix I;    
+    /// dq, joint vel
+    double dq;
+    /// ddq=d2q, joint acc
+    double ddq;                 
+    ///1x3, w^i_i               angular velocity
+    yarp::sig::Vector w;
+    ///1x3, dw^i_i              angular acceleration
+    yarp::sig::Vector dw;
+    ///1x3, dw^{i-1}_{m_i}      angular acceleration of rotor
+    yarp::sig::Vector dwM;      
 
-	///1x3, dp^i_i				linear velocity of frame i
-	yarp::sig::Vector dp;	
-	///1x3, dp^i_{C_i}			linear velocity of center of mass C_i
-	yarp::sig::Vector dpC;	
-	///1x3, d2p=ddp^i_i			linear acceleration of frame i
-	yarp::sig::Vector ddp;	
-	///1x3, d2p=ddp^i_{C_i}		linear acceleration of center of mass C_i
-	yarp::sig::Vector ddpC;		
+    ///1x3, dp^i_i              linear velocity of frame i
+    yarp::sig::Vector dp;   
+    ///1x3, dp^i_{C_i}          linear velocity of center of mass C_i
+    yarp::sig::Vector dpC;  
+    ///1x3, d2p=ddp^i_i         linear acceleration of frame i
+    yarp::sig::Vector ddp;  
+    ///1x3, d2p=ddp^i_{C_i}     linear acceleration of center of mass C_i
+    yarp::sig::Vector ddpC;     
 
-	///1x3, f^i_i			force
-	yarp::sig::Vector F;
-	///1x3, mu^i_i			moment
-	yarp::sig::Vector Mu;	
-	/// tau_i				joint torque
-	double Tau;					
+    ///1x3, f^i_i           force
+    yarp::sig::Vector F;
+    ///1x3, mu^i_i          moment
+    yarp::sig::Vector Mu;   
+    /// tau_i               joint torque
+    double Tau;                 
 
-	//only including motor dynamic
+    //only including motor dynamic
 
-	///I_{m_i}	rotor inertia
-	double Im;	
-	///k_{r,i}	inertia constant
-	double kr;	
-	///F_{v,i}	viscous friction
-	double Fv;	
-	///F_{s,i}	static friction
-	double Fs;					
+    ///I_{m_i}  rotor inertia
+    double Im;  
+    ///k_{r,i}  inertia constant
+    double kr;  
+    ///F_{v,i}  viscous friction
+    double Fv;  
+    ///F_{s,i}  static friction
+    double Fs;                  
 
-	/**
-	* Default constructor : not implemented
-	*/
-	iDynLink();
+    /**
+    * Default constructor : not implemented
+    */
+    iDynLink();
 
-	/**
-	* Clone function
-	*/
-	virtual void clone(const iDynLink &l);  
+    /**
+    * Clone function
+    */
+    virtual void clone(const iDynLink &l);  
 
     virtual void updateHstore();
 
 public:
 
-	//~~~~~~~~~~~~~~~~~~~~~~
-	//   set methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~
+    //   set methods
+    //~~~~~~~~~~~~~~~~~~~~~~
 
-	/**
-	* Set the dynamic parameters of both Link and motor.
+    /**
+    * Set the dynamic parameters of both Link and motor.
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
     * @param _I is the Inertia matrix
-	* @param _kr is the rotor constant
-	* @param _Fv is the viscous friction constant
-	* @param _Fs is the static friction constant
-	* @param _Im is the rotor inertia
-	* @return true if operation is successful (ie matrices size is correct), false otherwise
-	*/
-	 bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im);
+    * @param _kr is the rotor constant
+    * @param _Fv is the viscous friction constant
+    * @param _Fs is the static friction constant
+    * @param _Im is the rotor inertia
+    * @return true if operation is successful (ie matrices size is correct), false otherwise
+    */
+     bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im);
 
-	/**
-	* Set the dynamic parameters of the Link.
+    /**
+    * Set the dynamic parameters of the Link.
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
     * @param _I is the Inertia matrix
-	* @return true if operation is successful (ie matrices size is correct), false otherwise
-	*/
-	 bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
+    * @return true if operation is successful (ie matrices size is correct), false otherwise
+    */
+     bool setDynamicParameters(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
 
-	/**
-	* Set the dynamic parameters of the Link if the chain is in a static situation (inertia is null).
+    /**
+    * Set the dynamic parameters of the Link if the chain is in a static situation (inertia is null).
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
-	* @return true if operation is successful (ie matrices size is correct), false otherwise
-	*/
-	 bool setStaticParameters(const double _m, const yarp::sig::Matrix &_HC);
-	 
-	/**
+    * @return true if operation is successful (ie matrices size is correct), false otherwise
+    */
+     bool setStaticParameters(const double _m, const yarp::sig::Matrix &_HC);
+     
+    /**
     * Sets the link inertia
     * @param _I is the inertia matrix 
-	* @return true if operation is successful (ie matrices size is correct), false otherwise
+    * @return true if operation is successful (ie matrices size is correct), false otherwise
     */
-	 bool setInertia(const yarp::sig::Matrix &_I);
+     bool setInertia(const yarp::sig::Matrix &_I);
 
- 	/**
+    /**
     * Sets the link inertia matrix by setting the 6 inertial parameters
     * @param Ixx is the xx component of the inertia matrix of the link
     * @param Ixy is the xy component of the inertia matrix of the link
@@ -242,13 +242,13 @@ public:
     * @param Iyz is the yz component of the inertia matrix of the link
     * @param Izz is the zz component of the inertia matrix of the link
     */
-	 void setInertia(const double Ixx, const double Ixy, const double Ixz, const double Iyy, const double Iyz, const double Izz);
+     void setInertia(const double Ixx, const double Ixy, const double Ixz, const double Iyy, const double Iyz, const double Izz);
 
-	/**
+    /**
     * Sets the link mass
     * @param _m is the mass
     */
-	 void setMass(const double _m);
+     void setMass(const double _m);
 
     /**
     * Sets the joint position (position constraints are evaluated).
@@ -257,197 +257,197 @@ public:
     */
     double setAng(const double _teta);
 
-	/**
+    /**
     * Sets the joint velocity 
     * @param _dteta is the new velocity value 
     * @return current joint velocity (velocity constraints can be evaluated - not done at the moment)
     */
-	 double setDAng(const double _dteta);
+     double setDAng(const double _dteta);
     
-	 /**
+     /**
     * Sets the joint acceleration 
     * @param _ddteta is the new acceleration value 
     * @return current joint acceleration (acceleration constraints can be evaluated - not done at the moment)
     */
-	 double setD2Ang(const double _ddteta);
+     double setD2Ang(const double _ddteta);
 
-	 /**
+     /**
     * Gets the linear velocity of the link 
     * @return current link velocity (the computation is not implemented at the moment)
     */
- 	 const yarp::sig::Vector& getLinVel()  const;
+     const yarp::sig::Vector& getLinVel()  const;
 
- 	 /**
+     /**
     * Gets the linear velocity of the COM 
     * @return current COM velocity (the computation is not implemented at the moment)
     */
-	 const yarp::sig::Vector& getLinVelC() const;
+     const yarp::sig::Vector& getLinVelC() const;
 
-	 /**
+     /**
     * Sets the joint angle position, velocity, acceleration. constraints are automatically checked if present.
     * @param _teta is the new position value 
-	* @param _dteta is the new velocity value 
+    * @param _dteta is the new velocity value 
     * @param _ddteta is the new acceleration value 
     */
-	 void setAngPosVelAcc(const double _teta,const double _dteta,const double _ddteta);
+     void setAngPosVelAcc(const double _teta,const double _dteta,const double _ddteta);
 
-	/**
-	* Set the roto-translation matrix from i to COM
+    /**
+    * Set the roto-translation matrix from i to COM
     * @param _HC is the roto-translational matrix describing the rotation of the link reference frame w.r.t. the COM and the distance vector bewteen them
-	* @return true if operation is successful (ie matrix size is correct), false otherwise
-	*/
-	 bool setCOM(const yarp::sig::Matrix &_HC);
-	/**
-	* Set the distance vector from i to COM; the rotation is not modified (set to identity as default)
+    * @return true if operation is successful (ie matrix size is correct), false otherwise
+    */
+     bool setCOM(const yarp::sig::Matrix &_HC);
+    /**
+    * Set the distance vector from i to COM; the rotation is not modified (set to identity as default)
     * @param _rC is distance vector bewteen the link reference frame and the COM
-	* @return true if operation is successful (ie vector size is correct), false otherwise
-	*/
-	 bool setCOM(const yarp::sig::Vector &_rC);
+    * @return true if operation is successful (ie vector size is correct), false otherwise
+    */
+     bool setCOM(const yarp::sig::Vector &_rC);
 
-	/**
-	* Set the roto-translation matrix from i to COM, where the rotational part is and identity matrix, and the traslation is specified by the three parameters
+    /**
+    * Set the roto-translation matrix from i to COM, where the rotational part is and identity matrix, and the traslation is specified by the three parameters
     * @param _rCx is the x component of the distance vector of COM wrt the link frame 
     * @param _rCy is the y component of the distance vector of COM wrt the link frame 
     * @param _rCz is the z component of the distance vector of COM wrt the link frame
-	*/
-	 void setCOM(const double _rCx, const double _rCy, const double _rCz);
+    */
+     void setCOM(const double _rCx, const double _rCy, const double _rCz);
 
-	/**
+    /**
     * Sets the joint force, in the link frame: F^i_i
     * @param _F is the measured/computed force 
-	* @return true if operation is successful (ie vector size is correct), false otherwise
+    * @return true if operation is successful (ie vector size is correct), false otherwise
     */
-	 bool setForce(const yarp::sig::Vector &_F);
+     bool setForce(const yarp::sig::Vector &_F);
 
- 	/**
+    /**
     * Sets the joint moment, in the link frame: Mu^i_i
     * @param _Mu is the measured/computed moment 
-	* @return true if operation is successful (ie vector size is correct), false otherwise
+    * @return true if operation is successful (ie vector size is correct), false otherwise
     */
-	 bool setMoment(const yarp::sig::Vector &_Mu);
+     bool setMoment(const yarp::sig::Vector &_Mu);
 
- 	/**
+    /**
     * Sets the joint force and moment, in the link frame: F^i_i , Mu^i_i
     * @param _F is the measured/computed force 
-	* @param _Mu is the measured/computed moment 
-	* @return true if operation is successful (ie vectors size is correct), false otherwise
-    */	 
-	 bool setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    * @param _Mu is the measured/computed moment 
+    * @return true if operation is successful (ie vectors size is correct), false otherwise
+    */   
+     bool setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
- 	/**
+    /**
     * Sets the joint moment, in the link frame: Tau_i
     * @param _Tau is the measured/computed moment 
     */
-	 void setTorque(const double _Tau);
+     void setTorque(const double _Tau);
 
 
-	 //~~~~~~~~~~~~~~~~~~~~~~
-	 //   get methods
-	 //~~~~~~~~~~~~~~~~~~~~~~
-	
+     //~~~~~~~~~~~~~~~~~~~~~~
+     //   get methods
+     //~~~~~~~~~~~~~~~~~~~~~~
+    
      /**
-	* Get the inertia matrix
-	* @return I the inertia matrix (4x4)
-	*/
-	 const yarp::sig::Matrix&		getInertia()	const;
+    * Get the inertia matrix
+    * @return I the inertia matrix (4x4)
+    */
+     const yarp::sig::Matrix&       getInertia()    const;
      /**
-	* Get the link mass
-	* @return m the link mass
-	*/
-	 double					getMass()		const;
-	 double					getIm()			const;
-	 double					getKr()			const;
-	 double					getFs()			const;
-	 double					getFv()			const;
+    * Get the link mass
+    * @return m the link mass
+    */
+     double                 getMass()       const;
+     double                 getIm()         const;
+     double                 getKr()         const;
+     double                 getFs()         const;
+     double                 getFv()         const;
      /**
-	* Get the roto-translational matrix describing the COM
-	* @return HC the roto-translational matrix of the COM (4x4)
-	*/
-	 const yarp::sig::Matrix&		getCOM()		const;
+    * Get the roto-translational matrix describing the COM
+    * @return HC the roto-translational matrix of the COM (4x4)
+    */
+     const yarp::sig::Matrix&       getCOM()        const;
     /**
-	* Get the joint velocity
-	* @return dq the joint velocity
-	*/
-	 double					getDAng()		const;
+    * Get the joint velocity
+    * @return dq the joint velocity
+    */
+     double                 getDAng()       const;
     /**
-	* Get the joint acceleration
-	* @return ddq =d2q the joint acceleration
-	*/
-	 double					getD2Ang()		const;
+    * Get the joint acceleration
+    * @return ddq =d2q the joint acceleration
+    */
+     double                 getD2Ang()      const;
      /**
-	* Get the angular velocity of the link
-	* @return w the angular velocity of the link (3x1)
-	*/
-	 const yarp::sig::Vector&	getW()		const;
+    * Get the angular velocity of the link
+    * @return w the angular velocity of the link (3x1)
+    */
+     const yarp::sig::Vector&   getW()      const;
     /**
-	* Get the angular acceleration of the link
-	* @return dW the angular acceleration of the link (3x1)
-	*/	
-	 const yarp::sig::Vector&	getdW()		const;
-   	/**
-	* Get the angular acceleration of the motor
-	* @return dWM the angular acceleration of the motor (3x1)
-	*/	
-	 const yarp::sig::Vector&	getdWM()	const;
-   	/**
-	* Get the linear acceleration of the link
-	* @return ddpC the linear acceleration of the link (3x1)
-	*/	
-	 const yarp::sig::Vector&	getLinAcc()		const;
-  	/**
-	* Get the linear acceleration of the COM
-	* @return ddpC the linear acceleration of the COM (3x1)
-	*/	
-	 const yarp::sig::Vector&	getLinAccC()	const;
-  	/**
-	* Get the link force
-	* @return Mu the link force (3x1)
-	*/	
-	 const yarp::sig::Vector&	getForce()		const;
- 	/**
-	* Get the link moment
-	* @return Mu the link moment (3x1)
-	*/	
-	 const yarp::sig::Vector&	getMoment()		const;
-	/**
-	* Get the joint torque
-	* @return Tau the joint torque
-	*/	
-	 double				getTorque()		const;
+    * Get the angular acceleration of the link
+    * @return dW the angular acceleration of the link (3x1)
+    */  
+     const yarp::sig::Vector&   getdW()     const;
+    /**
+    * Get the angular acceleration of the motor
+    * @return dWM the angular acceleration of the motor (3x1)
+    */  
+     const yarp::sig::Vector&   getdWM()    const;
+    /**
+    * Get the linear acceleration of the link
+    * @return ddpC the linear acceleration of the link (3x1)
+    */  
+     const yarp::sig::Vector&   getLinAcc()     const;
+    /**
+    * Get the linear acceleration of the COM
+    * @return ddpC the linear acceleration of the COM (3x1)
+    */  
+     const yarp::sig::Vector&   getLinAccC()    const;
+    /**
+    * Get the link force
+    * @return Mu the link force (3x1)
+    */  
+     const yarp::sig::Vector&   getForce()      const;
+    /**
+    * Get the link moment
+    * @return Mu the link moment (3x1)
+    */  
+     const yarp::sig::Vector&   getMoment()     const;
+    /**
+    * Get the joint torque
+    * @return Tau the joint torque
+    */  
+     double             getTorque()     const;
     /**
     * Redefine the getH of iKinLink so that it does not compute the H matrix if the
     * joint angles have not changed since the last call to this method.
-    */	
+    */  
     const yarp::sig::Matrix&    getH();
-	/**
-	* Get the link rotational matrix, from the Denavit-Hartenberg matrix
-	* @return R the link rotational matrix (3x3)
-	*/	
-	const yarp::sig::Matrix&		getR();
-	/**
-	* Get the link COM's rotational matrix, from the COM matrix
-	* @return R the COM rotational matrix (3x3)
-	*/	
-	const yarp::sig::Matrix&		getRC()     const;
+    /**
+    * Get the link rotational matrix, from the Denavit-Hartenberg matrix
+    * @return R the link rotational matrix (3x3)
+    */  
+    const yarp::sig::Matrix&        getR();
+    /**
+    * Get the link COM's rotational matrix, from the COM matrix
+    * @return R the COM rotational matrix (3x3)
+    */  
+    const yarp::sig::Matrix&        getRC()     const;
 
-	/**
-	* Get the link distance vector r, or r*R if projection is specified
-	* @param proj true/false enables or disable the projection along the rotation of the link
-	* @return r if false, r*R if true
-	*/	
-	const yarp::sig::Vector&		getr(bool proj=false);
-	/**
-	* Get the COM distance vector rC, or rC*R if projection is specified
-	* @param proj true/false enables or disable the projection along the rotation of the link
-	* @return rC if false, rC*R if true
-	*/	
-	const yarp::sig::Vector&		getrC(bool proj=false) const;
+    /**
+    * Get the link distance vector r, or r*R if projection is specified
+    * @param proj true/false enables or disable the projection along the rotation of the link
+    * @return r if false, r*R if true
+    */  
+    const yarp::sig::Vector&        getr(bool proj=false);
+    /**
+    * Get the COM distance vector rC, or rC*R if projection is specified
+    * @param proj true/false enables or disable the projection along the rotation of the link
+    * @return rC if false, rC*R if true
+    */  
+    const yarp::sig::Vector&        getrC(bool proj=false) const;
 
-	 //~~~~~~~~~~~~~~~~~~~~~~
-	 //   basic functions
-	 //~~~~~~~~~~~~~~~~~~~~~~
+     //~~~~~~~~~~~~~~~~~~~~~~
+     //   basic functions
+     //~~~~~~~~~~~~~~~~~~~~~~
   
-	/**
+    /**
      * Constructor, with initialization of kinematic data; dynamic data are set to zero, while the roto-translational matrix for the COM 
     * @param _A is the link length
     * @param _D is the link offset 
@@ -456,9 +456,9 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
     */
-	iDynLink(double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
-	 
-	/**
+    iDynLink(double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+     
+    /**
      * Constructor, with initialization of kinematic and dynamic data
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
@@ -470,9 +470,9 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
      */
-	iDynLink(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
 
-	/**
+    /**
     * Constructor, with initialization of kinematic and dynamic data
     * @param _m is the Link mass
     * @param _C is the distance vector of COM wrt the link frame, the orientation of COM is the same of the link
@@ -484,9 +484,9 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
      */
-	iDynLink(const double _m, const yarp::sig::Vector &_C, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(const double _m, const yarp::sig::Vector &_C, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
 
-	/**
+    /**
     * Constructor, with initialization of kinematic and dynamic data
     * @param _m is the Link mass
     * @param _rCx is the x component of the distance vector of COM wrt the link frame 
@@ -505,22 +505,22 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
      */
-	iDynLink(const double _m, const double _rCx, const double _rCy, const double _rCz, const double Ixx, const double Ixy, const double Ixz, const double Iyy, const double Iyz, const double Izz, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(const double _m, const double _rCx, const double _rCy, const double _rCz, const double Ixx, const double Ixy, const double Ixz, const double Iyy, const double Iyz, const double Izz, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
 
-	/**
+    /**
      * Copy constructor
      */
-	iDynLink(const iDynLink &c);
+    iDynLink(const iDynLink &c);
 
-	/**
+    /**
      * Set all dynamic parameters to zero
      */
-	void zero();
-	 
-	/**
+    void zero();
+     
+    /**
      * Overload of operator =
      */
-	iDynLink &operator=(const iDynLink &c);
+    iDynLink &operator=(const iDynLink &c);
 
 };
 
@@ -533,56 +533,56 @@ public:
 */
 class iDynChain : public iKin::iKinChain
 {
-	friend class OneChainNewtonEuler;
-	friend class iDynInvSensor;
-	friend class iDynSensor;
-	friend class RigidBodyTransformation;
+    friend class OneChainNewtonEuler;
+    friend class iDynInvSensor;
+    friend class iDynSensor;
+    friend class RigidBodyTransformation;
     friend class iDynContactSolver;
 
 protected:
-	
-	/// specifies the 'direction' of recursive computation of kinematics variables (w,dw,d2p): FORWARD, BACKWARD
-	ChainIterationMode iterateMode_kinematics;	
-	/// specifies the 'direction' of recursive computation of wrenches (F,Mu): FORWARD, BACKWARD
-	ChainIterationMode iterateMode_wrench;
+    
+    /// specifies the 'direction' of recursive computation of kinematics variables (w,dw,d2p): FORWARD, BACKWARD
+    ChainIterationMode iterateMode_kinematics;  
+    /// specifies the 'direction' of recursive computation of wrenches (F,Mu): FORWARD, BACKWARD
+    ChainIterationMode iterateMode_wrench;
 
-	//curr_q = q pos is already in iKinChain
-	///q vel
-	yarp::sig::Vector curr_dq;	
-	///q acc
-	yarp::sig::Vector curr_ddq;	
+    //curr_q = q pos is already in iKinChain
+    ///q vel
+    yarp::sig::Vector curr_dq;  
+    ///q acc
+    yarp::sig::Vector curr_ddq; 
 
-	///pointer to OneChainNewtonEuler class, to be used for computing forces and torques
-	OneChainNewtonEuler *NE;
+    ///pointer to OneChainNewtonEuler class, to be used for computing forces and torques
+    OneChainNewtonEuler *NE;
 
     const yarp::sig::Vector zero0;
 
-	/**
-	* Clone function
-	*/
-	virtual void clone(const iDynChain &c);
+    /**
+    * Clone function
+    */
+    virtual void clone(const iDynChain &c);
 
-	/**
-	* Build chains and lists
-	*/	
-	virtual void build();
+    /**
+    * Build chains and lists
+    */  
+    virtual void build();
 
-	/**
-	* Dispose
-	*/	
-	virtual void dispose();
+    /**
+    * Dispose
+    */  
+    virtual void dispose();
 
-	/**
-	* Returns a pointer to the ith iDynLink
-	* @param i is the Link position
-	* @return pointer to ith link
-	*/
-	iDynLink * refLink(const unsigned int i);
+    /**
+    * Returns a pointer to the ith iDynLink
+    * @param i is the Link position
+    * @return pointer to ith link
+    */
+    iDynLink * refLink(const unsigned int i);
 
 
 public:
 
-	/**
+    /**
     * Default constructor 
     */
     iDynChain();
@@ -608,14 +608,14 @@ public:
     */
     yarp::sig::Vector setAng(const yarp::sig::Vector &q);
 
-	/**
+    /**
     * Sets the free joint angles velocity to values of dq[i]
     * @param dq is a vector containing values for each DOF's velocity
     * @return the actual DOF velocity vector (velocity constraints can be evaluated - not done at the moment)
     */
     yarp::sig::Vector setDAng(const yarp::sig::Vector &dq);
 
-	/**
+    /**
     * Sets the free joint angles acceleration to values of ddq[i]
     * @param ddq is a vector containing values for each DOF's acceleration
     * @return the actual DOF acceleration values (acceleration constraints can be evaluated - not done at the moment)
@@ -689,25 +689,25 @@ public:
     * Returns the link masses as a vector
     * @return a vector with all the link masses
     */
-	yarp::sig::Vector getMasses() const;
+    yarp::sig::Vector getMasses() const;
 
-	/**
+    /**
     * Set the link masses at once
     * @return true if operation is successful, false otherwise
     */
-	bool setMasses(yarp::sig::Vector _m);
+    bool setMasses(yarp::sig::Vector _m);
 
     /**
     * Returns the i-th link mass
     * @return the i-th link mass
     */
- 	double getMass(const unsigned int i) const;
+    double getMass(const unsigned int i) const;
 
-	/**
+    /**
     * Set the i-th link mass
     * @return true if operation is successful, false otherwise
     */
-	bool setMass(const unsigned int i, const double _m);
+    bool setMass(const unsigned int i, const double _m);
 
     /**
     * Returns the i-th link inertia matrix
@@ -715,255 +715,255 @@ public:
     */
     yarp::sig::Matrix getInertia(const unsigned int i) const;
 
-	/**
+    /**
     * Returns the links forces as a matrix, where the i-th col is the i-th force
     * @return a 3xN matrix with forces, in the form: i-th col = F_i
     */
-	yarp::sig::Matrix getForces() const;
+    yarp::sig::Matrix getForces() const;
 
-	/**
+    /**
     * Returns the links moments as a matrix, where the i-th col is the i-th moment
     * @return a 3xN matrix with moments, in the form: i-th col = Mu_i
     */
-	yarp::sig::Matrix getMoments() const;
+    yarp::sig::Matrix getMoments() const;
 
-	/**
+    /**
     * Returns the links torque as a vector
     * @return a vector with the torques
     */
-	yarp::sig::Vector getTorques() const;
+    yarp::sig::Vector getTorques() const;
 
-	/**
+    /**
     * Returns the i-th link force
     * @return the i-th link force
     */
-	const yarp::sig::Vector& getForce(const unsigned int iLink) const;
+    const yarp::sig::Vector& getForce(const unsigned int iLink) const;
 
-	/**
+    /**
     * Returns the i-th link moment
     * @return the i-th link moment
     */
-	const yarp::sig::Vector& getMoment(const unsigned int iLink) const;
+    const yarp::sig::Vector& getMoment(const unsigned int iLink) const;
 
-	/**
+    /**
     * Returns the i-th link torque
     * @return the i-th link torque
     */
-	double getTorque(const unsigned int iLink) const;
+    double getTorque(const unsigned int iLink) const;
 
-	/**
+    /**
     * Returns the i-th link linear velocity
     * @return the i-th link linear velocity
     */
-	yarp::sig::Vector getLinVel(const unsigned int i) const;
+    yarp::sig::Vector getLinVel(const unsigned int i) const;
 
-	/**
+    /**
     * Returns the i-th link linear velocity of the COM
     * @return the i-th link linear velocity of the COM
     */
-	yarp::sig::Vector getLinVelCOM(const unsigned int i) const;
+    yarp::sig::Vector getLinVelCOM(const unsigned int i) const;
 
-	/**
+    /**
     * Returns the i-th link linear acceleration
     * @return the i-th link linear acceleration
     */
-	yarp::sig::Vector getLinAcc(const unsigned int i) const;
+    yarp::sig::Vector getLinAcc(const unsigned int i) const;
 
-	/**
+    /**
     * Returns the i-th link linear acceleration of the COM
     * @return the i-th link linear acceleration of the COM
     */
-	const yarp::sig::Vector& getLinAccCOM(const unsigned int i) const;
+    const yarp::sig::Vector& getLinAccCOM(const unsigned int i) const;
 
-	/**
+    /**
     * Returns the i-th link angular velocity
     * @return the i-th link angular velocity
     */
-	yarp::sig::Vector getAngVel(const unsigned int i) const;
+    yarp::sig::Vector getAngVel(const unsigned int i) const;
 
-	/**
+    /**
     * Returns the i-th link angular acceleration
     * @return the i-th link angular acceleration
     */
-	yarp::sig::Vector getAngAcc (const unsigned int i) const;
+    yarp::sig::Vector getAngAcc (const unsigned int i) const;
 
-	/**
-	* Set the dynamic parameters of the i-th Link with motor.
+    /**
+    * Set the dynamic parameters of the i-th Link with motor.
     * @param i the i-th Link
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
     * @param _I is the Inertia matrix
-	* @param _kr is the rotor constant
-	* @param _Fv is the viscous friction constant
-	* @param _Fs is the static friction constant
-	* @param _Im is the rotor inertia
-	*/
-	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im);
+    * @param _kr is the rotor constant
+    * @param _Fv is the viscous friction constant
+    * @param _Fs is the static friction constant
+    * @param _Im is the rotor inertia
+    */
+    bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im);
 
-	/**
-	* Set the dynamic parameters of the i-th Link.
+    /**
+    * Set the dynamic parameters of the i-th Link.
     * @param i the i-th Link
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
     * @param _I is the Inertia matrix
-	*/
-	bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
+    */
+    bool setDynamicParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I);
 
-	/**
-	* Set the dynamic parameters of the i-th Link if the chain is in a static situation (inertia is null).
+    /**
+    * Set the dynamic parameters of the i-th Link if the chain is in a static situation (inertia is null).
     * @param i the i-th Link
-	* @param _m is the Link mass
+    * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
-	*/
-	bool setStaticParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC);
+    */
+    bool setStaticParameters(const unsigned int i, const double _m, const yarp::sig::Matrix &_HC);
 
-	/**
-	* Prepare for the Newton-Euler recursive computation of forces and torques
-	*/
-	void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
+    /**
+    * Prepare for the Newton-Euler recursive computation of forces and torques
+    */
+    void prepareNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
-	/**
-	* Compute forces and torques with the Newton-Euler recursive algorithm: forward
-	* and backward phase are performed, and results are stored in the links; to get
-	* resulting forces and torques, one can call getForces() and getMoments() methods.
+    /**
+    * Compute forces and torques with the Newton-Euler recursive algorithm: forward
+    * and backward phase are performed, and results are stored in the links; to get
+    * resulting forces and torques, one can call getForces() and getMoments() methods.
     * The function parameters contain the information for initializing the kinematic
     * and wrench phase.
-	*/
-	bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+    */
+    bool computeNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 
-	/**
-	* Compute forces and torques with the Newton-Euler recursive algorithm: forward
-	* and backward phase are performed, and results are stored in the links; to get
-	* resulting forces and torques, one can call getForces() and getMoments() methods; 
-	* before calling this method, initNewtonEuler() must be called.
-	*/
-	bool computeNewtonEuler();
+    /**
+    * Compute forces and torques with the Newton-Euler recursive algorithm: forward
+    * and backward phase are performed, and results are stored in the links; to get
+    * resulting forces and torques, one can call getForces() and getMoments() methods; 
+    * before calling this method, initNewtonEuler() must be called.
+    */
+    bool computeNewtonEuler();
 
-	/**
-	* Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
-	* and the final (virtual link) forces and moments Fend and Muend
-	*/
-	bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
-	
-	/**
-	* Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
-	* and the final (virtual link) forces and moments Fend and Muend all to zero
-	*/
-	bool initNewtonEuler();
+    /**
+    * Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
+    * and the final (virtual link) forces and moments Fend and Muend
+    */
+    bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+    
+    /**
+    * Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
+    * and the final (virtual link) forces and moments Fend and Muend all to zero
+    */
+    bool initNewtonEuler();
 
-	/**
-	* Set the computation mode for Newton-Euler (static/dynamic/etc)
-	*/
-	void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
+    /**
+    * Set the computation mode for Newton-Euler (static/dynamic/etc)
+    */
+    void setModeNewtonEuler(const NewEulMode NewEulMode_s=DYNAMIC);
 
-	/**
+    /**
     * Returns the links forces as a matrix, where the (i+1)-th col is the i-th force
     * @return a 3x(N+2) matrix with forces, in the form: (i+1)-th col = F_i
     */
-	yarp::sig::Matrix getForcesNewtonEuler() const;
+    yarp::sig::Matrix getForcesNewtonEuler() const;
 
-	/**
+    /**
     * Returns the links moments as a matrix, where the (i+1)-th col is the i-th moment
     * @return a 3x(N+2) matrix with moments, in the form: (i+1)-th col = Mu_i
     */
-	yarp::sig::Matrix getMomentsNewtonEuler() const;
+    yarp::sig::Matrix getMomentsNewtonEuler() const;
 
-	/**
+    /**
     * Returns the links torque as a vector
     * @return a Nx1 vector with the torques
     */
-	yarp::sig::Vector getTorquesNewtonEuler() const;
+    yarp::sig::Vector getTorquesNewtonEuler() const;
 
-	/**
-	* Returns the end effector force-moment as a single (6x1) vector
-	* @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
-	*/
-	yarp::sig::Vector getForceMomentEndEff() const;
+    /**
+    * Returns the end effector force-moment as a single (6x1) vector
+    * @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
+    */
+    yarp::sig::Vector getForceMomentEndEff() const;
 
-	/**
+    /**
     * Set the iteration direction during recursive computation of kinematics variables
-	* (w,dw,d2p,d2pC). Default is FORWARD, which is also set in the constructor.
+    * (w,dw,d2p,d2pC). Default is FORWARD, which is also set in the constructor.
     * @param _iterateMode_kinematics FORWARD/BACKWARD
     */
-	void setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics = FORWARD );
+    void setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics = FORWARD );
 
-	/**
+    /**
     * Set the iteration direction during recursive computation of wrench variables
-	* (F,Mu,Tau). Default is BACKWARD, which is also set in the constructor.
+    * (F,Mu,Tau). Default is BACKWARD, which is also set in the constructor.
     * @param _iterateMode_wrench FORWARD/BACKWARD
     */
-	void setIterModeWrench(const ChainIterationMode _iterateMode_wrench = BACKWARD );
+    void setIterModeWrench(const ChainIterationMode _iterateMode_wrench = BACKWARD );
 
-	/**
+    /**
     * Set the computation mode during recursive computation of kinematics (w,dw,d2p,d2pC)
-	* and wrench variables(F,Mu,Tau). The mode is NE_KIN_WRE_kw, where the suffix 'kw' identifies 
-	* the modes for the kinematics ('k') and wrench ('w') computations: 
-	* {FF,FB,BF,BB} where the F stands for FORWARD and B for BACKWARD. 
-	* Default mode is KINFWD_WREBWD, which sets Kinematics=FORWARD and Wrench=BACKWARD. 
-	* @param mode NE_KIN_WRE_{FF,FB,BF,BB}
+    * and wrench variables(F,Mu,Tau). The mode is NE_KIN_WRE_kw, where the suffix 'kw' identifies 
+    * the modes for the kinematics ('k') and wrench ('w') computations: 
+    * {FF,FB,BF,BB} where the F stands for FORWARD and B for BACKWARD. 
+    * Default mode is KINFWD_WREBWD, which sets Kinematics=FORWARD and Wrench=BACKWARD. 
+    * @param mode NE_KIN_WRE_{FF,FB,BF,BB}
     */
-	void setIterMode(const ChainComputationMode mode = KINFWD_WREBWD);
+    void setIterMode(const ChainComputationMode mode = KINFWD_WREBWD);
 
-	/**
+    /**
     * Get the iteration direction during recursive computation of kinematics variables
-	* (w,dw,d2p,d2pC). 
+    * (w,dw,d2p,d2pC). 
     * @return iterateMode_kinematics
     */
-	ChainIterationMode getIterModeKinematic() const;
+    ChainIterationMode getIterModeKinematic() const;
 
-	/**
+    /**
     * Get the iteration direction during recursive computation of wrench variables
-	* (F,Mu,Tau).
+    * (F,Mu,Tau).
     * @return iterateMode_wrench
     */
-	ChainIterationMode getIterModeWrench() const;
+    ChainIterationMode getIterModeWrench() const;
 
-	/**
-	* Calls the proper method to compute kinematics variables: either
-	* ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method 
-	* is protected and it is used by iDynSensor and iDynNode for the Kinematics computations.
-	*/
-	void computeKinematicNewtonEuler();
+    /**
+    * Calls the proper method to compute kinematics variables: either
+    * ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method 
+    * is protected and it is used by iDynSensor and iDynNode for the Kinematics computations.
+    */
+    void computeKinematicNewtonEuler();
 
-	/**
-	* Calls the proper method to compute wrench variables: either
-	* BackwardWrenchFromEnd() or ForwardWrenchFromBase(). This method 
-	* is protected and it is used by iDynSensor and iDynNode for the Wrench computations.
-	*/
-	void computeWrenchNewtonEuler();
+    /**
+    * Calls the proper method to compute wrench variables: either
+    * BackwardWrenchFromEnd() or ForwardWrenchFromBase(). This method 
+    * is protected and it is used by iDynSensor and iDynNode for the Wrench computations.
+    */
+    void computeWrenchNewtonEuler();
 
-	/**
-	* Calls the proper method to set kinematics variables in OneChainNewtonEuler: either
-	* initKinematicBase() or initKinematicEnd(). This method 
-	* is protected and it is used by RigidBodyTransformation for setting the Kinematics 
-	* variables.
+    /**
+    * Calls the proper method to set kinematics variables in OneChainNewtonEuler: either
+    * initKinematicBase() or initKinematicEnd(). This method 
+    * is protected and it is used by RigidBodyTransformation for setting the Kinematics 
+    * variables.
     * @param w0 angular velocity
     * @param dw0 angular acceleration
     * @param ddp0 linear acceleration
     * @return true if succeed, false otherwise
-	*/
-	bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
+    */
+    bool initKinematicNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
-	/**
-	* Calls the proper method to set wrench variables in OneChainNewtonEuler: either
-	* initKinematicBase() or initKinematicEnd(). This method 
-	* is protected and it is used by RigidBodyTransformation for setting the Kinematics 
-	* variables.
+    /**
+    * Calls the proper method to set wrench variables in OneChainNewtonEuler: either
+    * initKinematicBase() or initKinematicEnd(). This method 
+    * is protected and it is used by RigidBodyTransformation for setting the Kinematics 
+    * variables.
     * @param Fend external force
     * @param Muend external moment
     * @return true if succeed, false otherwise
-	*/
-	bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
+    */
+    bool initWrenchNewtonEuler(const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
 
-	/**
-	* Calls the proper method to get kinematics variables in OneChainNewtonEuler either
-	* in the base or in the final link. This method is used by RigidBodyTransformation 
-	* for setting the kinematics variables.
+    /**
+    * Calls the proper method to get kinematics variables in OneChainNewtonEuler either
+    * in the base or in the final link. This method is used by RigidBodyTransformation 
+    * for setting the kinematics variables.
     * @param w the vector which will contain the angular velocity
     * @param dw the vector which will contain the angular acceleration
     * @param ddp the vector which will contain the linear acceleration
-	*/
-	void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
+    */
+    void getKinematicNewtonEuler( yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
 
     /**
     * Get the kinematic information of the i-th frame in the OneChainNewtonEuler associated
@@ -973,7 +973,7 @@ public:
     * @param dw the vector which will contain the angular acceleration
     * @param ddp the vector which will contain the linear acceleration
     */
-	void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
+    void getFrameKinematic(unsigned int i, yarp::sig::Vector &w, yarp::sig::Vector &dw, yarp::sig::Vector &ddp);
 
     /**
     * Get the wrench information of the i-th frame in the OneChainNewtonEuler associated
@@ -982,59 +982,59 @@ public:
     * @param F the vector which will contain the force
     * @param Mu the vector which will contain the moment
     */
-	void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu);
-	/**
-	* Calls the proper method to get wrench variables in OneChainNewtonEuler either
-	* in the base or in the final link. This method is used by RigidBodyTransformation 
-	* for setting the wrench variables.
-	*/
-	void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu);
-	
-	/**
+    void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu);
+    /**
+    * Calls the proper method to get wrench variables in OneChainNewtonEuler either
+    * in the base or in the final link. This method is used by RigidBodyTransformation 
+    * for setting the wrench variables.
+    */
+    void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu);
+    
+    /**
     * Destructor. 
     */
     virtual ~iDynChain();
 
 
-	//------------
-	// jacobians
-	//------------
+    //------------
+    // jacobians
+    //------------
 
-	/**
-	* Compute the Jacobian from link 0 to iLinkN. 
-	* This method is used to compute the Jacobian between two links in two different chains.
-	* @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
-	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
-	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
-	*/
-	yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN , const yarp::sig::Matrix &Pn );
-
-	/**
-	* Compute the Jacobian from link 0 to iLinkN. 
-	* This method is used to compute the Jacobian between two links in two different chains.
-	* @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
-	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
-	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+    /**
+    * Compute the Jacobian from link 0 to iLinkN. 
+    * This method is used to compute the Jacobian between two links in two different chains.
+    * @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
+    * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
     * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
-	*/
-    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
-	
-	/**
-	* Compute the Jacobian of the chain, from link 0 to N. 
-	* This method is used to compute the Jacobian between two links in two different chains.
-	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
-	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
-	*/
-	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn );
+    */
+    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN , const yarp::sig::Matrix &Pn );
 
-	/**
-	* Compute the Jacobian of the chain, from link 0 to N. 
-	* This method is used to compute the Jacobian between two links in two different chains.
-	* @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
-	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
-	* @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
-	*/
-	yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
+    /**
+    * Compute the Jacobian from link 0 to iLinkN. 
+    * This method is used to compute the Jacobian between two links in two different chains.
+    * @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
+    * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+    * @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+    * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+    */
+    yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
+    
+    /**
+    * Compute the Jacobian of the chain, from link 0 to N. 
+    * This method is used to compute the Jacobian between two links in two different chains.
+    * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+    * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+    */
+    yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn );
+
+    /**
+    * Compute the Jacobian of the chain, from link 0 to N. 
+    * This method is used to compute the Jacobian between two links in two different chains.
+    * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
+    * @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+    * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
+    */
+    yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
     * Return the Denavit-Hartenberg matrix of the i-th link in the chain.
@@ -1042,38 +1042,38 @@ public:
     * @param i the i-th link in the chain
     * @return the Denavit-Hartenberg matrix of the i-th link
     */
-	yarp::sig::Matrix getDenHart(unsigned int i);
+    yarp::sig::Matrix getDenHart(unsigned int i);
 
     //---------------
-	// jacobians COM
-	//---------------
+    // jacobians COM
+    //---------------
 
     /**
-	* Compute the Jacobian of the COM of link indexed iLink. 
+    * Compute the Jacobian of the COM of link indexed iLink. 
     * The chain considered for the computation is the entire kinematic chain, between
     * links 0 and N-1. Hence, the Jacobian is 6xN (differently from the Jacobian of the i-th link
     * which assumes the chain to be from 0 to iLink, and differently from the Jacobian of the end-effector
     * which is 6xDOF).
-	* @param iLinkN the index of the link, in the chain
-	* @return the Jacobian matrix of the COM of the iLink of the chain 
-	*/
-	yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink);
+    * @param iLinkN the index of the link, in the chain
+    * @return the Jacobian matrix of the COM of the iLink of the chain 
+    */
+    yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink);
 
     /**
-	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
-	* @param iLinkN the index of the link, in the chain, being the final  frame for the Jacobian computation
+    * Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
+    * @param iLinkN the index of the link, in the chain, being the final  frame for the Jacobian computation
     * @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
     * @return the Jacobian matrix of the COM of the iLink of the chain 
-	*/
-	yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn);
+    */
+    yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn);
 
     /**
-	* Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
-	* @param iLinkN the index of the link, in the chain, being the final frame for the Jacobian computation
-	* @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
-	* @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
+    * Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
+    * @param iLinkN the index of the link, in the chain, being the final frame for the Jacobian computation
+    * @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
+    * @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
     * @return the Jacobian matrix of the COM of the iLink of the chain 
-	*/
+    */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
     /**
@@ -1090,8 +1090,8 @@ public:
 
 
     //---------------------------
-	// Lagrange Formulation
-	//---------------------------
+    // Lagrange Formulation
+    //---------------------------
 
     /**
     * Compute the joint space mass matrix considering only the active joints.
@@ -1293,7 +1293,7 @@ public:
     * @return a pointer to a Chain object with the same Links of 
     *         Limb.
     */
-	iDynChain *asChain() { return static_cast<iDynChain*>(this); }
+    iDynChain *asChain() { return static_cast<iDynChain*>(this); }
 
     /**
     * Returns the Limb type as a string. 
@@ -1301,22 +1301,22 @@ public:
     */
     std::string getType() { return type; }
 
-	/**
+    /**
     * Destructor. 
     */
     virtual ~iDynLimb();
 
-	/**
+    /**
     * Alignes the Limb joints bounds with current values set aboard 
     * the robot - see also iKin.
-	* This method is empty in iDynLimb because it's limb-specific: see
-	* the implementations for iCubLimbs.
+    * This method is empty in iDynLimb because it's limb-specific: see
+    * the implementations for iCubLimbs.
     * @param lim is the ordered list of control interfaces that 
     *            allows to access the Limb limits.
     * @return true/false on success/failure. 
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim)
-	{ notImplemented(verbose); return true; }
+    { notImplemented(verbose); return true; }
 
 };
 
@@ -1349,7 +1349,7 @@ public:
     */
     iCubArmDyn(const iCubArmDyn &arm);
 
-	/**
+    /**
     * Alignes the Arm joints bounds with current values set aboard 
     * the iCub. 
     * @param lim is the ordered list of control interfaces that 
@@ -1391,7 +1391,7 @@ public:
     */
     iCubArmNoTorsoDyn(const iCubArmNoTorsoDyn &arm);
 
-	/**
+    /**
     * Alignes the Arm joints bounds with current values set aboard 
     * the iCub. 
     * @param lim is the ordered list of control interfaces that 
@@ -1421,7 +1421,7 @@ public:
 
     /**
     * Constructor. Note that the type is not influential at the moment, 
-	* but the distinction could be useful for future developments.
+    * but the distinction could be useful for future developments.
     * @param _type is a string to discriminate between "upper" and "lower" torso
     */
     iCubTorsoDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
@@ -1432,7 +1432,7 @@ public:
     */
     iCubTorsoDyn(const iCubTorsoDyn &torso);
 
-	/**
+    /**
     * Alignes the Torso joints bounds with current values set aboard 
     * the iCub. 
     * @param lim is the ordered list of control interfaces that 
