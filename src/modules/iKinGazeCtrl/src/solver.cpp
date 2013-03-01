@@ -36,8 +36,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              RateThread(_period),     drvTorso(_drvTorso),       drvHead(_drvHead),
                              commData(_commData),     robotName(_robotName),     ctrl(_ctrl),
                              localName(_localName),   camerasFile(_camerasFile), eyeTiltMin(_eyeTiltMin),
-                             eyeTiltMax(_eyeTiltMax), saccadesOn(_saccadesOn),   headV2(_headV2),
-                             period(_period),         Ts(_period/1000.0)
+                             eyeTiltMax(_eyeTiltMax), eyesBoundVer(-1.0),        saccadesOn(_saccadesOn),
+                             headV2(_headV2),         period(_period),           Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
     counterRotGain=_counterRotGain;
@@ -102,6 +102,15 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         nJointsTorso=3;
         nJointsHead =6;
 
+        // apply tilt bounds to eyes
+        double min=std::max(CTRL_DEG2RAD*eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
+        double max=std::min(CTRL_DEG2RAD*eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
+        (*chainNeck)[nJointsTorso+3].setMin(min);
+        (*chainNeck)[nJointsTorso+3].setMax(max);
+
+        copyJointsBounds(chainNeck,chainEyeL);
+        copyJointsBounds(chainEyeL,chainEyeR);
+
         // create bounds matrix for integrators
         // just for eye part
         lim.resize(3,2);
@@ -124,6 +133,13 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         // impose starting vergence != 0.0
         fbHead[5]=commData->get_minAllowedVergence();
     }
+
+    // save original eyes tilt and pan bounds
+    orig_eye_tilt_min=(*chainEyeL)[nJointsTorso+3].getMin();
+    orig_eye_tilt_max=(*chainEyeL)[nJointsTorso+3].getMax();
+    orig_eye_pan_min=(*chainEyeL)[nJointsTorso+4].getMin();
+    orig_eye_pan_max=(*chainEyeL)[nJointsTorso+4].getMax();
+    orig_lim=lim;
 
     // Instantiate integrator
     qd.resize(3);
@@ -157,6 +173,69 @@ bool EyePinvRefGen::getGyro(Vector &data)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool EyePinvRefGen::bindEyes(const double ver)
+{
+    if (ver>=0.0)
+    {
+        eyesBoundVer=ver;
+        double ver_rad=CTRL_DEG2RAD*eyesBoundVer;
+
+        // block tilt and pan of the left eye
+        (*chainEyeL)[nJointsTorso+3].setMin(0.0);          (*chainEyeL)[nJointsTorso+3].setMax(0.0);
+        (*chainEyeL)[nJointsTorso+4].setMin(ver_rad/2.0);  (*chainEyeL)[nJointsTorso+4].setMax(ver_rad/2.0);
+
+        // block tilt and pan of the right eye
+        (*chainEyeR)[nJointsTorso+3].setMin(0.0);          (*chainEyeR)[nJointsTorso+3].setMax(0.0);
+        (*chainEyeR)[nJointsTorso+4].setMin(-ver_rad/2.0); (*chainEyeR)[nJointsTorso+4].setMax(-ver_rad/2.0);
+
+        // change the limits of the integrator
+        lim(0,0)=lim(0,1)=0.0;
+        lim(1,0)=lim(1,1)=0.0;
+        lim(2,0)=lim(2,1)=ver_rad;
+        I->setLim(lim);
+
+        stopControl();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool EyePinvRefGen::clearEyes()
+{
+    if (eyesBoundVer>=0.0)
+    {
+        eyesBoundVer=-1.0;
+
+        // reinstate tilt and pan bound of the left eye
+        (*chainEyeL)[nJointsTorso+3].setMin(orig_eye_tilt_min); (*chainEyeL)[nJointsTorso+3].setMax(orig_eye_tilt_max);
+        (*chainEyeL)[nJointsTorso+4].setMin(orig_eye_pan_min);  (*chainEyeL)[nJointsTorso+4].setMax(orig_eye_pan_max);
+
+        // reinstate tilt and pan bound of the right eye
+        (*chainEyeR)[nJointsTorso+3].setMin(orig_eye_tilt_min); (*chainEyeR)[nJointsTorso+3].setMax(orig_eye_tilt_max);
+        (*chainEyeR)[nJointsTorso+4].setMin(orig_eye_pan_min);  (*chainEyeR)[nJointsTorso+4].setMax(orig_eye_pan_max);
+
+        // reinstate the limits of the integrator
+        lim=orig_lim;
+        I->setLim(lim);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+void EyePinvRefGen::manageBindEyes(const double ver)
+{
+    if (!bindEyes(ver))
+        clearEyes();
 }
 
 
@@ -365,10 +444,10 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
             // compensate neck rotation at eyes level
-            if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
-            else
+            if ((eyesBoundVer>=0.0) || !computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
                 commData->set_counterv(zeros(3));
+            else
+                commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             
             // reset eyes controller and integral upon saccades transition on=>off
             if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
@@ -492,8 +571,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
 
         // joints bounds alignment
         alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
-        copyJointsBounds(chainNeck,chainEyeL);
-        copyJointsBounds(chainEyeL,chainEyeR);
 
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
@@ -505,6 +582,12 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         nJointsTorso=3;
         nJointsHead =6;
 
+        // apply tilt bounds to eyes
+        double min=std::max(CTRL_DEG2RAD*eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
+        double max=std::min(CTRL_DEG2RAD*eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
+        (*chainNeck)[nJointsTorso+3].setMin(min);
+        (*chainNeck)[nJointsTorso+3].setMax(max);
+
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
 
@@ -512,7 +595,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         fbHead[5]=commData->get_minAllowedVergence();
     }
 
-    // store neck pitch/yaw bounds
+    copyJointsBounds(chainNeck,chainEyeL);
+    copyJointsBounds(chainEyeL,chainEyeR);
+
+    // store neck pitch/roll/yaw bounds
     neckPitchMin=(*chainNeck)[3].getMin();
     neckPitchMax=(*chainNeck)[3].getMax();
     neckRollMin =(*chainNeck)[4].getMin();
@@ -894,7 +980,7 @@ void Solver::run()
         Vector xdUserTol=computeTargetUserTolerance(xd);
         neckPos=invNeck->solve(neckPos,xdUserTol,*pgDir);
 
-        // update neck pitch,roll,yaw        
+        // update neck pitch,roll,yaw
         commData->set_qd(0,neckPos[0]);
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);

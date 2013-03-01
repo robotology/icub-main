@@ -70,7 +70,12 @@ protected:
     exchangeData         *commData;
     Controller           *ctrl;
     xdPort               *port_xd;
-    Integrator           *I;    
+    Integrator           *I;
+
+    double                orig_eye_tilt_min;
+    double                orig_eye_tilt_max;
+    double                orig_eye_pan_min;
+    double                orig_eye_pan_max;
 
     BufferedPort<Vector> port_inertial;
     Semaphore mutex;
@@ -88,6 +93,7 @@ protected:
     int nJointsHead;
     double eyeTiltMin;
     double eyeTiltMax;
+    double eyesBoundVer;
     int    saccadesRxTargets;
     double saccadesClock;
     double saccadesInhibitionPeriod;
@@ -95,7 +101,7 @@ protected:
     double eyesHalfBaseline;
     double Ts;
     
-    Matrix lim;
+    Matrix orig_lim,lim;
     Vector fbTorso;
     Vector fbHead;
     Vector qd,fp;
@@ -114,7 +120,7 @@ public:
 
     void   set_xdport(xdPort *_port_xd)                     { port_xd=_port_xd;                }
     void   enable()                                         { genOn=true;                      }
-    void   disable()                                        { genOn=false;                     }    
+    void   disable()                                        { genOn=false;                     }
     Vector getCounterRotGain() const                        { return counterRotGain;           }
     void   setSaccades(const bool sw)                       { saccadesOn=sw;                   }
     bool   isSaccadesOn() const                             { return saccadesOn;               }
@@ -122,8 +128,12 @@ public:
     void   setSaccadesActivationAngle(const double angle)   { saccadesActivationAngle=angle;   }
     double getSaccadesInhibitionPeriod() const              { return saccadesInhibitionPeriod; }
     double getSaccadesActivationAngle() const               { return saccadesActivationAngle;  }
+    double getEyesBoundVer() const                          { return eyesBoundVer;             }
     void   setCounterRotGain(const Vector &gain);
-    bool   getGyro(Vector &data);    
+    bool   getGyro(Vector &data);
+    bool   bindEyes(const double ver);
+    bool   clearEyes();
+    void   manageBindEyes(const double ver);
     bool   threadInit();
     void   afterStart(bool s);
     void   run();

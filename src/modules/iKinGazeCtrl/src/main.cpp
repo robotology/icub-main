@@ -314,9 +314,12 @@ following ports:
       range given in degrees.
     - [bind] [yaw] <min> <max>: bind the neck yaw within a range
       given in degrees.
+    - [bind] [eyes] <ver>: bind the eyes to look always straight
+      with a specified vergence given in degrees.
     - [clear] [pitch]: restore the neck pitch range.
     - [clear] [roll]: restore the neck roll range.
     - [clear] [yaw]: restore the neck yaw range.
+    - [clear] [eyes]: restore the eyes movements.
     - [get] [Tneck]: returns the neck movements execution time.
     - [get] [Teyes]: returns the eyes movements execution time.
     - [get] [vor]: returns the vor gain.
@@ -335,6 +338,9 @@ following ports:
       neck roll joint.
     - [get] [yaw]: returns in degrees the current range of
       neck yaw joint.
+    - [get] [eyes]: returns in degrees the vergence set when
+      eyes are bound to look straight ahead; a negative values
+      means no constraint.
     - [get] [ntol]: returns in degrees the current user
       tolerance for gazing with the neck.
     - [get] [des]: returns the desired head joints angles that
@@ -540,6 +546,7 @@ protected:
         double neckYawMin;
         double neckYawMax;
         double neckAngleUserTolerance;
+        double eyesBoundVer;
         Vector counterRotGain;
         bool   saccadesOn;
         double saccadesInhibitionPeriod;
@@ -608,6 +615,7 @@ protected:
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
         slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
         context.neckAngleUserTolerance=slv->getNeckAngleUserTolerance();
+        context.eyesBoundVer=eyesRefGen->getEyesBoundVer();
         context.counterRotGain=eyesRefGen->getCounterRotGain();
         context.saccadesOn=eyesRefGen->isSaccadesOn();
         context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
@@ -638,6 +646,7 @@ protected:
             slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
             slv->bindNeckYaw(context.neckYawMin,context.neckYawMax);
             slv->setNeckAngleUserTolerance(context.neckAngleUserTolerance);
+            eyesRefGen->manageBindEyes(context.eyesBoundVer);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
             eyesRefGen->setSaccades(context.saccadesOn);
             eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
@@ -1005,6 +1014,14 @@ public:
                             reply.addVocab(ack);
                             reply.addDouble(min_deg);
                             reply.addDouble(max_deg);
+                            return true;
+                        }
+                        else if (type==VOCAB4('e','y','e','s'))
+                        {
+                            double ver=eyesRefGen->getEyesBoundVer();
+
+                            reply.addVocab(ack);
+                            reply.addDouble(ver);
                             return true;
                         }
                         else if (type==VOCAB4('n','t','o','l'))
@@ -1417,24 +1434,34 @@ public:
                     if (command.size()>2)
                     {
                         int joint=command.get(1).asVocab();
-                        double min=command.get(2).asDouble();
-                        double max=command.get(3).asDouble();
-
                         if (joint==VOCAB4('p','i','t','c'))
                         {
+                            double min=command.get(2).asDouble();
+                            double max=command.get(3).asDouble();
                             slv->bindNeckPitch(min,max);
                             reply.addVocab(ack);
                             return true;
                         }
                         else if (joint==VOCAB4('r','o','l','l'))
                         {
+                            double min=command.get(2).asDouble();
+                            double max=command.get(3).asDouble();
                             slv->bindNeckRoll(min,max);
                             reply.addVocab(ack);
                             return true;
                         }
                         else if (joint==VOCAB3('y','a','w'))
                         {
+                            double min=command.get(2).asDouble();
+                            double max=command.get(3).asDouble();
                             slv->bindNeckYaw(min,max);
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB4('e','y','e','s'))
+                        {
+                            double ver=command.get(2).asDouble();
+                            eyesRefGen->bindEyes(ver);
                             reply.addVocab(ack);
                             return true;
                         }
@@ -1464,6 +1491,12 @@ public:
                         else if (joint==VOCAB3('y','a','w'))
                         {
                             slv->clearNeckYaw();
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (joint==VOCAB4('e','y','e','s'))
+                        {
+                            eyesRefGen->clearEyes();
                             reply.addVocab(ack);
                             return true;
                         }

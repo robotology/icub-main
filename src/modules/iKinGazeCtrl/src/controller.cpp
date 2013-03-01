@@ -76,8 +76,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
         // joints bounds alignment
         lim=alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
-        copyJointsBounds(chainNeck,chainEyeL);
-        copyJointsBounds(chainEyeL,chainEyeR);
 
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
@@ -92,6 +90,12 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     {
         nJointsTorso=3;
         nJointsHead =6;
+
+        // apply tilt bounds to eyes
+        double min=std::max(CTRL_DEG2RAD*eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
+        double max=std::min(CTRL_DEG2RAD*eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
+        (*chainNeck)[nJointsTorso+3].setMin(min);
+        (*chainNeck)[nJointsTorso+3].setMax(max);
         
         // create bounds matrix for integrators
         lim.resize(nJointsHead,2);
@@ -107,6 +111,9 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         fbTorso.resize(nJointsTorso,0.0);
         fbHead.resize(nJointsHead,0.0);
     }
+
+    copyJointsBounds(chainNeck,chainEyeL);
+    copyJointsBounds(chainEyeL,chainEyeR);
 
     // find minimum allowed vergence
     findMinimumAllowedVergence();
@@ -296,9 +303,9 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
 {
     mutexCtrl.wait();
 
-    posHead->setRefSpeed(3,CTRL_RAD2DEG*vel[0]);
-    posHead->setRefSpeed(4,CTRL_RAD2DEG*vel[1]);
-    posHead->setRefSpeed(5,CTRL_RAD2DEG*vel[2]);
+    posHead->setRefSpeed(3,vel[0]);
+    posHead->setRefSpeed(4,vel[1]);
+    posHead->setRefSpeed(5,vel[2]);
 
     // enforce joints bounds
     ang[0]=std::min(std::max(lim(3,0),ang[0]),lim(3,1));
