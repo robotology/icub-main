@@ -1,0 +1,58 @@
+<application>
+<name>ctp service legs</name>
+<dependencies>
+</dependencies> 
+   
+   <module>
+      <name>ctpservice</name>
+      <parameters>--robot icub --part right_leg --period 10</parameters>
+	  <node>icubsrv</node>
+	<tag>ctp_rl</tag>
+   </module>
+   <module>
+      <name>ctpservice</name>
+      <parameters>--robot icub --part left_leg --period 10</parameters>
+	  <node>icubsrv</node>
+	<tag>ctp_ll</tag>
+   </module>
+   <module>
+      <name>velocityControl</name>
+      <parameters>--robot icub --part right_leg --period 10</parameters>
+      <node>icubsrv</node>
+	<tag>vc_rl</tag>
+   </module>
+   <module>
+      <name>velocityControl</name>
+      <parameters>--robot icub --part left_leg --period 10</parameters>
+      <node>icubsrv</node>
+	<tag>vc_ll</tag>
+   </module>
+
+
+<connection>
+      <from>/ctpservice/left_leg/vc:o</from>
+      <to>/icub/vc/left_leg/fastCommand</to>
+      <protocol>udp</protocol>
+</connection>
+
+<connection>
+      <from>/ctpservice/right_leg/vc:o</from>
+      <to>/icub/vc/right_leg/fastCommand</to>
+      <protocol>udp</protocol>
+</connection>
+
+
+
+<connection>
+      <from>/ctpservice/left_leg/vcInit:o</from>
+      <to>/icub/vc/left_leg/input</to>
+	  <protocol>tcp</protocol>
+</connection>
+
+<connection>
+      <from>/ctpservice/right_leg/vcInit:o</from>
+      <to>/icub/vc/right_leg/input</to>
+	  <protocol>tcp</protocol>
+</connection>
+
+</application>
