@@ -115,7 +115,7 @@ struct ImpedanceParameters
 		double stiffness;
 		double damping;
 		bool   enabled;
-		ImpedanceLimits limits;
+		//ImpedanceLimits limits;
 		ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
 };
 
@@ -137,9 +137,13 @@ struct SpeedEstimationParameters
 #ifdef _SETPOINT_TEST_
 typedef struct
 {
-	uint64_t send_time;
-	uint64_t last_time;
-	eOmeas_position_t pos;
+	yarp::os::Semaphore     mutex;
+	uint64_t 				send_time;
+	eOmeas_position_t 		last_pos;
+	eOmeas_position_t 		pos;
+	bool					gotIt;
+	int						count_old;
+	bool					wtf;
 }debug_data_of_joint_t;
 #endif
 namespace yarp{
@@ -162,6 +166,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
                                         public IVelocityControlRaw,
                                         public IControlModeRaw,
                                         public IControlLimitsRaw,
+                                        public IImpedanceControlRaw,
+                                        public ImplementImpedanceControl,
                                         public ImplementControlLimits<embObjMotionControl, IControlLimits>,
                                         public ImplementControlMode,
                                         public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
@@ -192,6 +198,7 @@ private:
     uint16_t 				udppkt_size;
 #endif
     
+    bool initted;
     // embObj stuff
     yarp::os::Semaphore     _mutex;
     FEAT_ID                 _fId;
@@ -374,7 +381,7 @@ public:
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
   /////////////// END AMPLIFIER INTERFACE
-
+    FEAT_ID getFeat_id();
     //////  Virtual analog sensor
     virtual bool setTorque(yarp::sig::Vector &vals);
     bool setTorque(int j, double fTorque);
@@ -454,6 +461,33 @@ public:
     bool disableTorquePidRaw(int j);
     bool enableTorquePidRaw(int j);
     bool setTorqueOffsetRaw(int j, double v);
+
+
+#if 1	// deriva dalla classe, serve rimetterle anche qui nell'header o si fa solo per chiarezza??
+    virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
+
+    /** Set current impedance parameters (stiffness,damping) for a specific joint.
+     * @return success/failure
+     */
+    virtual bool setImpedanceRaw(int j, double stiffness, double damping);
+
+    /** Set current force Offset for a specific joint.
+     * @return success/failure
+     */
+    virtual bool setImpedanceOffsetRaw(int j, double offset);
+
+    /** Get current force Offset for a specific joint.
+     * @return success/failure
+     */
+    virtual bool getImpedanceOffsetRaw(int j, double* offset);
+
+    /** Get the current impedandance limits for a specific joint.
+     * @return success/failure
+     */
+    virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
+#endif
+    // helper function for reading/writing impedance parameters
+    bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 };
 
 #endif // include guard

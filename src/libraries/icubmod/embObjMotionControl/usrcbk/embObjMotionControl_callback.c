@@ -260,8 +260,21 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
     id.ep = nv->ep;
     id.type = MotionControl;
     addEncoderTimeStamp( &id,  jointNum);
+
+//	eOmc_joint_status_t *jstatus = nv->rem;
+//	static uint8_t old_control_mode[16] = {0};
+//    if(old_control_mode[xx] != jstatus->basic.controlmodestatus)
+//    {
+//
+//    	printf("\n\n******************\n");
+//    	printf("  j %d, controlmode=%d\n", xx, jstatus->basic.controlmodestatus);
+//    	printf("******************\n");
+//    	old_control_mode[xx] = jstatus->basic.controlmodestatus;
+//    }
 #ifdef _SETPOINT_TEST_
     //per test
+
+    static
     setpoint_test_data_t *rec_test_data_ptr;
     eOmc_joint_status_t *jstatus = nv->rem;
     uint8_t *aux = (uint8_t*)jstatus;
@@ -432,4 +445,13 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint(eOcfg_nvsEP_mc_jointN
 
     prev = checkProg[1];
     jwake(xx, nv, jointNVindex_jcmmnds__setpoint);
+}
+
+extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__impedance(eOcfg_nvsEP_mc_jointNumber_t j, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+{
+#warning "joint jconfig impedance strong iCubInterface"
+    char str[16];
+    ep2char(str, nv->ep);
+    printf("Impedance Params Callback ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, j, j);
+    jwake(j, nv, jointNVindex_jconfig__impedance);
 }
