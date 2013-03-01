@@ -181,8 +181,8 @@ bool EyePinvRefGen::bindEyes(const double ver)
 {
     if (ver>=0.0)
     {
-        eyesBoundVer=ver;
-        double ver_rad=CTRL_DEG2RAD*eyesBoundVer;
+        double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->get_minAllowedVergence());
+        eyesBoundVer=CTRL_RAD2DEG*ver_rad;
 
         // block tilt and pan of the left eye
         (*chainEyeL)[nJointsTorso+3].setMin(0.0);          (*chainEyeL)[nJointsTorso+3].setMax(0.0);
