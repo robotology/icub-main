@@ -109,7 +109,7 @@ protected:
     bool blockNeckJoint(const std::string &joint, const double min, const double max);
     bool blockNeckJoint(const std::string &joint, const int j);
     bool getNeckJointRange(const std::string &joint, double *min, double *max);
-    bool clearNeckJoint(const std::string &joint);
+    bool clearJoint(const std::string &joint);
     void eventHandling(yarp::os::Bottle &event);
 
 public:
@@ -165,12 +165,16 @@ public:
     bool bindNeckYaw(const double min, const double max);
     bool blockNeckYaw(const double val);
     bool blockNeckYaw();
+    bool blockEyes(const double ver);
+    bool blockEyes();
     bool getNeckPitchRange(double *min, double *max);
     bool getNeckRollRange(double *min, double *max);
     bool getNeckYawRange(double *min, double *max);
+    bool getBlockedVergence(double *ver);
     bool clearNeckPitch();
     bool clearNeckRoll();
     bool clearNeckYaw();
+    bool clearEyes();
     bool getNeckAngleUserTolerance(double *angle);
     bool setNeckAngleUserTolerance(const double angle);
     bool checkMotionDone(bool *f);

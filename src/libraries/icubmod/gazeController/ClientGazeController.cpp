@@ -1149,20 +1149,7 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const int j)
         return false;
 
     Vector *val=portStateHead.read(true);
-
-    Bottle command, reply;
-    command.addString("bind");
-    command.addString(joint.c_str());
-    command.addDouble((*val)[j]);
-    command.addDouble((*val)[j]);
-
-    if (!portRpc.write(command,reply))
-    {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
-        return false;
-    }
-
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return blockNeckJoint(joint,(*val)[j],(*val)[j]);
 }
 
 
@@ -1195,7 +1182,7 @@ bool ClientGazeController::getNeckJointRange(const string &joint, double *min,
 
 
 /************************************************************************/
-bool ClientGazeController::clearNeckJoint(const string &joint)
+bool ClientGazeController::clearJoint(const string &joint)
 {
     if (!connected)
         return false;
@@ -1278,6 +1265,38 @@ bool ClientGazeController::blockNeckYaw()
 
 
 /************************************************************************/
+bool ClientGazeController::blockEyes(const double ver)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("bind");
+    command.addString("eyes");
+    command.addDouble(ver);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::blockEyes()
+{
+    if (!connected)
+        return false;
+
+    Vector *val=portStateHead.read(true);
+    return blockEyes((*val)[5]);
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getNeckPitchRange(double *min, double *max)
 {
     return getNeckJointRange("pitch",min,max);
@@ -1299,23 +1318,56 @@ bool ClientGazeController::getNeckYawRange(double *min, double *max)
 
 
 /************************************************************************/
+bool ClientGazeController::getBlockedVergence(double *ver)
+{
+    if (!connected || (ver==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("eyes");
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>2))
+    {
+        *ver=reply.get(1).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::clearNeckPitch()
 {
-    return clearNeckJoint("pitch");
+    return clearJoint("pitch");
 }
 
 
 /************************************************************************/
 bool ClientGazeController::clearNeckRoll()
 {
-    return clearNeckJoint("roll");
+    return clearJoint("roll");
 }
 
 
 /************************************************************************/
 bool ClientGazeController::clearNeckYaw()
 {
-    return clearNeckJoint("yaw");
+    return clearJoint("yaw");
+}
+
+
+/************************************************************************/
+bool ClientGazeController::clearEyes()
+{
+    return clearJoint("eyes");
 }
 
 

@@ -1,3 +1,6 @@
+2013-03-01 Ugo Pattacini <ugo.pattacini@iit.it>
+   * iKinGazeCtrl now can block eyes too
+
 2013-02-15 Alessandro Scalzo <alessandro.scalzo@iit.it>
 	* main/src/libraries/icubmod/virtualAnalogServer/virtualAnalogServer.h
 	* main/src/libraries/icubmod/virtualAnalogServer/virtualAnalogServer.cpp
