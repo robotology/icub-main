@@ -561,7 +561,7 @@ public:
         }
         else
         {
-            cout<<"Unable to laod file"<<endl;
+            cout<<"Unable to load file: "<<fileName<<endl;
             return false;
         }
     }
