@@ -555,11 +555,15 @@ public:
             fin.getline(&line[0],sizeof(line),'\n');
             fin.getline(&line[0],sizeof(line),'\n');
             firstRun=true;
+            cout<<"File loaded"<<endl;
             mutex.post();
             return true;
         }
         else
+        {
+            cout<<"Unable to laod file"<<endl;
             return false;
+        }
     }
 
     void onStop()
