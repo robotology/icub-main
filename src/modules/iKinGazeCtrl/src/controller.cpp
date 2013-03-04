@@ -464,6 +464,8 @@ void Controller::run()
         else
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
     }
+    else
+        vdegOld=0.0;
 
     for (int i=0; i<3; i++)
     {
@@ -476,7 +478,7 @@ void Controller::run()
     if (Robotable)
     {
         for (size_t i=0; i<v.length(); i++)
-            if ((v[i]>-minAbsVel) && (v[i]<minAbsVel) && (v[i]!=0.0))
+            if ((v[i]!=0.0) && (v[i]>-minAbsVel) && (v[i]<minAbsVel))
                 v[i]=iCub::ctrl::sign(qd[i]-fbHead[i])*minAbsVel;
     }
 
@@ -589,6 +591,8 @@ void Controller::threadRelease()
 void Controller::suspend()
 {
     stopLimbsVel();
+    commData->get_isCtrlActive()=false;
+    commData->get_isSaccadeUnderway()=false;
     fprintf(stdout,"\nController has been suspended!\n\n");
     RateThread::suspend();
     notifyEvent("suspended");

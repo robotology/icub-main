@@ -1238,7 +1238,7 @@ void ServerCartesianController::sendVelocity(const Vector &v)
                 double thres=lDsc[j].minAbsVels[k];
 
                 // apply bang-bang control to compensate for unachievable low velocities
-                if ((v_cnt>-thres) && (v_cnt<thres) && (v_cnt!=0.0))
+                if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
                     v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
 
                 lVel[j]->velocityMove(lRmp[j][k],velCmd[cnt]=v_cnt);
