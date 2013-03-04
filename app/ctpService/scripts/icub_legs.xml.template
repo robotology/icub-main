@@ -6,25 +6,25 @@
    <module>
       <name>ctpService</name>
       <parameters>--robot icub --part right_leg --period 10 --from velocityControlLeg.ini</parameters>
-	  <node>icub15</node>
+	  <node>node1</node>
 	<tag>ctp_rl</tag>
    </module>
    <module>
       <name>ctpService</name>
       <parameters>--robot icub --part left_leg --period 10 --from velocityControlLeg.ini</parameters>
-	  <node>icub15</node>
+	  <node>node2</node>
 	<tag>ctp_ll</tag>
    </module>
    <module>
       <name>velocityControl</name>
       <parameters>--robot icub --part right_leg --period 10</parameters>
-      <node>icub15</node>
+      <node>node3</node>
 	<tag>vc_rl</tag>
    </module>
    <module>
       <name>velocityControl</name>
       <parameters>--robot icub --part left_leg --period 10</parameters>
-      <node>icub15</node>
+      <node>node4</node>
 	<tag>vc_ll</tag>
    </module>
 
