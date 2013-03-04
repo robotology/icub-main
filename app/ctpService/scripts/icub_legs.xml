@@ -4,27 +4,27 @@
 </dependencies> 
    
    <module>
-      <name>ctpservice</name>
-      <parameters>--robot icub --part right_leg --period 10</parameters>
-	  <node>icubsrv</node>
+      <name>ctpService</name>
+      <parameters>--robot icub --part right_leg --period 10 --from velocityControlLeg.ini</parameters>
+	  <node>icub15</node>
 	<tag>ctp_rl</tag>
    </module>
    <module>
-      <name>ctpservice</name>
-      <parameters>--robot icub --part left_leg --period 10</parameters>
-	  <node>icubsrv</node>
+      <name>ctpService</name>
+      <parameters>--robot icub --part left_leg --period 10 --from velocityControlLeg.ini</parameters>
+	  <node>icub15</node>
 	<tag>ctp_ll</tag>
    </module>
    <module>
       <name>velocityControl</name>
       <parameters>--robot icub --part right_leg --period 10</parameters>
-      <node>icubsrv</node>
+      <node>icub15</node>
 	<tag>vc_rl</tag>
    </module>
    <module>
       <name>velocityControl</name>
       <parameters>--robot icub --part left_leg --period 10</parameters>
-      <node>icubsrv</node>
+      <node>icub15</node>
 	<tag>vc_ll</tag>
    </module>
 

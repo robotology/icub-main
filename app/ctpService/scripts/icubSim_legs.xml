@@ -4,14 +4,14 @@
 </dependencies> 
    
    <module>
-      <name>ctpservice</name>
-      <parameters>--robot icubSim --part right_leg --period 10</parameters>
+      <name>ctpService</name>
+      <parameters>--robot icubSim --part right_leg --period 10 --from velocityControlLeg.ini</parameters>
 	  <node>icubsrv</node>
 	<tag>ctp_rl</tag>
    </module>
    <module>
-      <name>ctpservice</name>
-      <parameters>--robot icubSim --part left_leg --period 10</parameters>
+      <name>ctpService</name>
+      <parameters>--robot icubSim --part left_leg --period 10 --from velocityControlLeg.ini</parameters>
 	  <node>icubsrv</node>
 	<tag>ctp_ll</tag>
    </module>
