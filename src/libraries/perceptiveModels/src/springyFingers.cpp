@@ -54,7 +54,7 @@ bool SpringyFinger::fromProperty(const Property &options)
     name=opt.find("name").asString().c_str();
 
     scaler.setLowerBoundIn(0.0);
-    scaler.setUpperBoundIn(360.0);
+    scaler.setUpperBoundIn(255.0);
     scaler.setLowerBoundOut(0.0);
     scaler.setUpperBoundOut(1.0);
 
