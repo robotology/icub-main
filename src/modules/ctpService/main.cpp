@@ -715,8 +715,17 @@ public:
             return false;
         
         string fileName=contextPath+"/"+cmd.get(1).asString().c_str();
-        reply.addVocab(Vocab::encode("ack"));
-        return velThread.go(fileName);
+        bool ret = velThread.go(fileName);
+        if (ret)
+        {
+            reply.addVocab(Vocab::encode("ack"));
+        }
+        else
+        {
+            reply.addVocab(Vocab::encode("nack"));
+            reply.addString("Unable to load file");
+        }
+        return ret;
     }
 
     bool handle_wait(const Bottle &cmd, Bottle &reply)
