@@ -406,14 +406,17 @@ private:
             return true;
         }
         else
+        {
             return false;
+        }
     }
 
-    void initVelCtrl(Port *p, ResourceFinder *rf)
+    bool initVelCtrl(Port *p, ResourceFinder *rf)
     {
         int i = 0;
         bool cont = true;
         char numberId[64];
+        bool ret = true;
 
         while(cont)
         {
@@ -433,6 +436,11 @@ private:
             else
                 cont = false;
         }                
+        if (i==0)
+        {
+            ret = false;
+            cout << " velCtrl: missing 'gain' parameters" << endl;
+        }
 
         i = 0;
         cont = true;
@@ -453,7 +461,14 @@ private:
             }
             else
                 cont = false;
-        }     
+        }
+        if (i==0)
+        {
+            ret = false;
+            cout << " velCtrl: missing 'svel' parameters" << endl;
+        }
+
+        return ret;
     }
 
     bool readLine(Vector &v, double &time)
@@ -590,7 +605,15 @@ public:
             {
                 if (checkInitConnection(velInitPort))
                 {
-                    initVelCtrl(velInitPort, pRF);
+                    bool b = initVelCtrl(velInitPort, pRF);
+                    if (b)
+                    {
+                        cout << "velocity control initialized. gain, svel parameters loaded" << endl;
+                    }
+                    else
+                    {
+                        cout << "***  velocity control missing init parameters! (gain, svel)" << endl;
+                    }
                     velInit = true;
                 }
                 else
@@ -796,6 +819,7 @@ public:
         velInitPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vcInit:o").c_str());
         velThread.attachVelPort(&velPort);
         velThread.attachVelInitPort(&velInitPort);
+        cout << "Using parameters:" << endl << rf.toString() << endl;
         velThread.attachRF(&rf);
         cout << "***** starting the thread" << endl;
         velThread.start();
