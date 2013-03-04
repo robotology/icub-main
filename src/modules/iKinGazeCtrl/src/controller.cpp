@@ -243,7 +243,7 @@ void Controller::stopLimbsVel()
     if (Robotable)
     {
         mutexCtrl.wait();
-        velHead->velocityMove(zeros(nJointsHead).data());
+        velHead->velocityMove(zeros(nJointsHead).data());   // vel==0.0 is always achievable
         mutexCtrl.post();
     }
 }

@@ -976,7 +976,7 @@ void ServerCartesianController::stopLimbVel()
     for (unsigned int i=0; i<chain->getN(); i++)
     {
         if (!(*chain)[i].isBlocked())
-            lVel[j]->velocityMove(lRmp[j][k],0.0);
+            lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
 
         if (++k>=lJnt[j])
         {
