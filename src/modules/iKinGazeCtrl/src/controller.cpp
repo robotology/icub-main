@@ -242,13 +242,8 @@ void Controller::stopLimbsVel()
 {
     if (Robotable)
     {
-        // this timeout prevents the stop() from
-        // being overwritten by the last velocityMove()
-        // which travels on a different connection.
-        Time::delay(2*Ts);
-
         mutexCtrl.wait();
-        velHead->stop();
+        velHead->velocityMove(zeros(nJointsHead).data());
         mutexCtrl.post();
     }
 }
