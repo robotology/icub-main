@@ -21,6 +21,7 @@
 
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/RpcClient.h>
+#include <yarp/os/PortInfo.h>
 #include <yarp/os/PortReport.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Vocab.h>
