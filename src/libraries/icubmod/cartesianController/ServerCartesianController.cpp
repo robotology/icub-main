@@ -2852,7 +2852,7 @@ bool ServerCartesianController::storeContext(int *id)
 bool ServerCartesianController::restoreContext(const int id)
 {
     if (attached)
-    {        
+    {
         mutex.wait();
 
         map<int,Context>::iterator itr=contextMap.find(id);
@@ -2882,6 +2882,20 @@ bool ServerCartesianController::restoreContext(const int id)
         }
         else
             return false;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::deleteContext(const int id)
+{
+    map<int,Context>::iterator itr=contextMap.find(id);
+    if (itr!=contextMap.end())
+    {
+        contextMap.erase(itr);
+        return true;
     }
     else
         return false;

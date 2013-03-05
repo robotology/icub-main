@@ -184,6 +184,7 @@ public:
     bool stopControl();
     bool storeContext(int *id);
     bool restoreContext(const int id);
+    bool deleteContext(const int id);
     bool getInfo(yarp::os::Bottle &info);
     bool registerEvent(yarp::dev::GazeEvent &event);
     bool unregisterEvent(yarp::dev::GazeEvent &event);

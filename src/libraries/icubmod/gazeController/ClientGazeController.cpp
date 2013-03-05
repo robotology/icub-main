@@ -1572,6 +1572,32 @@ bool ClientGazeController::restoreContext(const int id)
 
 
 /************************************************************************/
+bool ClientGazeController::deleteContext(const int id)
+{
+    if (!connected || ((contextIdList.find(id)==contextIdList.end()) && (id!=0)))
+        return false;
+
+    Bottle command, reply;
+    command.addString("del");
+    command.addList().addInt(id);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    {
+        contextIdList.erase(id);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::deleteContexts()
 {
     if (!connected)

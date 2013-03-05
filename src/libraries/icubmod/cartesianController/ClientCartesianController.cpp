@@ -1184,6 +1184,32 @@ bool ClientCartesianController::restoreContext(const int id)
 
 
 /************************************************************************/
+bool ClientCartesianController::deleteContext(const int id)
+{
+    if (!connected || ((contextIdList.find(id)==contextIdList.end()) && (id!=0)))
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_DELETE);
+    command.addList().addInt(id);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        contextIdList.erase(id);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
 bool ClientCartesianController::deleteContexts()
 {
     if (!connected)

@@ -1,3 +1,6 @@
+2013-05-01 Ugo Pattacini <ugo.pattacini@iit.it>
+   * gaze and cartesian I/F's: method deleteContext() added
+
 2013-03-01 Ugo Pattacini <ugo.pattacini@iit.it>
    * iKinGazeCtrl now can block eyes too
 
