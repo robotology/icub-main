@@ -26,6 +26,28 @@ const double 	POSITION_THRESHOLD		= 2.0;
 
 int numberOfJoints =0;
 
+// TODO use it!!
+#warning "Use extractGroup to verify size of parameters matches with number of joints, this will avoid crashes"
+static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+{
+    size++;  // size includes also the name of the parameter
+    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
+    if (tmp.isNull())
+    {
+        yError () << key1.c_str() << " not found\n";
+        return false;
+    }
+
+    if(tmp.size()!=size)
+    {
+        yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
+        return false;
+    }
+
+    out=tmp;
+    return true;
+}
+
 parametricCalibrator::parametricCalibrator() :
     type(NULL),
     param1(NULL),
@@ -406,15 +428,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
 
         lit  = tmp.begin();
-		while(lit != lend)		// per ogni giunto del set
-		{
-			// Abilita il giunto
-			iPosition->setPositionMode();
-			iAmps->enableAmp((*lit));
-			iPids->enablePid((*lit));
-			lit++;
-		}
-		Time::delay(0.5f);	// needed?
+        while(lit != lend)      // per ogni giunto del set
+        {
+            // Abilita il giunto
+            iControlMode->setPositionMode(j);
+            lit++;
+        }
+
+        Time::delay(0.5f);  // needed?
 
         lit  = tmp.begin();
         while(lit != lend)		// per ogni giunto del set
@@ -502,7 +523,7 @@ void parametricCalibrator::goToZero(int j)
 {
     if (abortCalib)
         return;
-    iControlMode->setPositionMode(j);
+
     iPosition->setRefSpeed(j, zeroVel[j]);
     iPosition->positionMove(j, zeroPos[j]);
 }
