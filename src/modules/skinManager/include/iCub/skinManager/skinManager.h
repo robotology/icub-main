@@ -215,6 +215,7 @@ This file can be edited at ICUB_HOME/main/src/modules/skinManager/include/iCub/s
 
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
+#include <yarp/os/Vocab.h>
 
 #include "iCub/skinManager/compensationThread.h"
 #include "iCub/skinDynLib/rpcSkinManager.h"

@@ -64,6 +64,7 @@
 //#include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Vocab.h>
 
 
 using namespace yarp::os;

@@ -91,19 +91,12 @@ Linux and Windows.
 \author Ugo Pattacini
 */ 
 
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RpcClient.h>
-#include <yarp/os/RpcServer.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Time.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <deque>
+
+#include <yarp/os/all.h>
 
 using namespace std;
 using namespace yarp::os;

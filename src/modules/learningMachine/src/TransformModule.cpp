@@ -21,6 +21,7 @@
 #include <cassert>
 
 #include <yarp/os/Network.h>
+#include <yarp/os/Vocab.h>
 
 #include "iCub/learningMachine/TransformModule.h"
 

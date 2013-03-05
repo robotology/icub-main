@@ -23,6 +23,7 @@
 #include <yarp/os/RpcClient.h>
 #include <yarp/os/PortReport.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Vocab.h>
 #include <yarp/sig/Vector.h>
 
 #include <iostream>

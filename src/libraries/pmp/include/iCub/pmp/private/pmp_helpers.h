@@ -19,6 +19,7 @@
 #define __PMP_HELPERS_H__
 
 #include <string>
+#include <yarp/os/Vocab.h>
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 

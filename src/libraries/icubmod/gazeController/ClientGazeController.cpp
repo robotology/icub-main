@@ -25,6 +25,7 @@
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Vocab.h>
 #include <yarp/math/Math.h>
 
 #include "ClientGazeController.h"

@@ -34,6 +34,7 @@
 #include <yarp/os/Port.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Vocab.h>
 
 #define TWOPI  6.283185307179586
 
