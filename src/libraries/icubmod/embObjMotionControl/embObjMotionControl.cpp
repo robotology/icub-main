@@ -2766,7 +2766,7 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
 
     //_ref_positions[index] = ref;
     
-    eOmeas_torque_t meas_torque = (eOmeas_torque_t)fTorque;
+    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(1000.0*fTorque);
     
     if( !res->transceiver->nvSetData(nvRoot, &meas_torque, eobool_true, eo_nv_upd_dontdo))
     {
