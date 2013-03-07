@@ -2750,6 +2750,8 @@ bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
 
 bool embObjMotionControl::setTorque(int j, double fTorque)
 {
+	static const double NEWTON2SCALE=32768.0/12.0;
+
     yTrace() << _fId.name << "joint" << j;
 
     EOnv tmp;
@@ -2766,7 +2768,7 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
 
     //_ref_positions[index] = ref;
     
-    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(1000.0*fTorque);
+    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
     
     if( !res->transceiver->nvSetData(nvRoot, &meas_torque, eobool_true, eo_nv_upd_dontdo))
     {
