@@ -1,11 +1,10 @@
 // head 
-cfw2can 0 1 2BLLDC.1.62.out.S
-cfw2can 0 2 4DC.2.15.out.S
+cfw2can 0 1 4DC.1.11.out.S
+cfw2can 0 3 4DC.1.15.out.S
 
 // torso
 cfw2can 0 5 2BLL.1.54.out.S
 cfw2can 0 6 2BLL.1.52.out.S
-cfw2can 0 14 4DC.2.15.out.S
 
 // left_arm
 cfw2can 1 1 2BLL.1.50.out.S
