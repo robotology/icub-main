@@ -342,10 +342,11 @@ bool RobotInterface::instantiateInertial(Property &options)
     portName+="/inertial";
     p.put("name", portName.c_str());
 
-    // create a device for the arm
+    // create a device for the inertial
     gyro.open(p);
     if (!gyro.isValid())
     {
+        fprintf(stderr, "Inertial system failed to open!\n");
         return false;
     }
 
