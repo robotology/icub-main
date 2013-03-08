@@ -13,11 +13,15 @@
 
 * Update main/ChangeLog and ChangeLog with tag notice
 
-* check the YARP min required version in main/CMakeLists.txt, looking for the following lines
+* Make sure the YARP min required version in main/CMakeLists.txt matches the 
+  the latest release of YARP (in pariticular if ICUB_REQYARP_VERSION_TWEAK is not 0).
+  Update it if needed the following lines:
 	SET(ICUB_REQYARP_VERSION_MAJOR "x")
 	SET(ICUB_REQYARP_VERSION_MINOR "y")
 	SET(ICUB_REQYARP_VERSION_PATCH "z")
-
+    set(ICUB_REQYARP_VERSION_TWEAK "twk")
+    
+    (twk should be zero since we do not release YARP versions with twk != 0)
 
 * Make tag
   Commit new version, write down revision svn revision number (REVISION)
