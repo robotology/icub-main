@@ -76,7 +76,7 @@ void activate_buttons()
     gtk_widget_set_sensitive(des_all_button,bHaveSelected);
         
     gtk_widget_set_sensitive(discover_button,true);
-    gtk_widget_set_sensitive(upload_button,bHaveSelected);
+    gtk_widget_set_sensitive(upload_button,nsel==1);
 
     gtk_widget_set_sensitive(boot_upd_button,bHaveSelected);
     gtk_widget_set_sensitive(boot_app_button,bHaveSelected);
@@ -452,7 +452,12 @@ static void upload_cbk(GtkButton *button,gpointer user_data)
 {  
     if (!gUpdater.getBoardList().numSelected())
     {
-        dialog_message(GTK_MESSAGE_ERROR,"No Boards selected!","Select one or more boards to download the firmware");
+        dialog_message(GTK_MESSAGE_ERROR,"No board selected!","Select a board to download the firmware");
+        return;
+    }
+    else if (gUpdater.getBoardList().numSelected()!=1)
+    {
+        dialog_message(GTK_MESSAGE_ERROR,"Too many boards selected!","Select a single board to download the firmware");
         return;
     }
 

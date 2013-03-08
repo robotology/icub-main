@@ -20,7 +20,7 @@ public:
               ACE_UINT8 release,
               ACE_UINT8 build)
     {
-        mSelected=true;
+        mSelected=false;
 
         mAddress=address;
         mMask=mask;
