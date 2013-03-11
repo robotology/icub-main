@@ -491,9 +491,25 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
     {
         _mutex.wait();
         if(ref< limitsMin[axis])
-            next_pos[axis] = limitsMin[axis];
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 7 )
+                    next_pos[axis] = limitsMax[axis];
+            }
+            else
+                next_pos[axis] = limitsMin[axis];
+        }
         else if(ref > limitsMax[axis])
-            next_pos[axis] = limitsMax[axis];
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 7 )
+                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
+            }
+            else
+                next_pos[axis] = limitsMax[axis];
+        }
         else
         {
             if (njoints == 16)
@@ -502,9 +518,9 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
                     next_pos[axis] = ref/2;
                 else if ( axis == 15 ) 
                     next_pos[axis] = ref/3;
-                else if ( axis == 7 ) 
-                        next_pos[axis] = limitsMax[axis] - ref;
-                else 
+                else if ( axis == 7 )
+                    next_pos[axis] = fabs(limitsMax[axis] - ref);
+                else
                     next_pos[axis] = ref;
             }else
                 next_pos[axis] = ref;
@@ -533,11 +549,25 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
         {
             controlMode[axis] = MODE_POSITION;
             double ref = refs[axis];
-            if(ref< limitsMin[axis]){
-                next_pos[axis] = limitsMin[axis];
+            if(ref< limitsMin[axis])
+            {
+                if (njoints == 16)
+                {
+                    if ( axis == 7 )
+                        next_pos[axis] = limitsMax[axis];
+                }
+                else
+                    next_pos[axis] = limitsMin[axis];
             }
-            else if(ref > limitsMax[axis]){
-                next_pos[axis] = limitsMax[axis];
+            else if(ref > limitsMax[axis])
+            {
+                if (njoints == 16)
+                {
+                    if ( axis == 7 )
+                        next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
+                }
+                else
+                    next_pos[axis] = limitsMax[axis];
             }
             else
             {
@@ -548,7 +578,7 @@ bool iCubSimulationControl::positionMoveRaw(const double *refs)
                     else if ( axis == 15 ) 
                         next_pos[axis] = ref/3;
                     else if ( axis == 7 ) 
-                        next_pos[axis] = limitsMax[axis] - ref;
+                        next_pos[axis] = fabs(limitsMax[axis] - ref);
                     else 
                         next_pos[axis] = ref;
                 }else
@@ -679,13 +709,13 @@ bool iCubSimulationControl::getRefAccelerationsRaw(double *accs)
 bool iCubSimulationControl::stopRaw(int axis)
 {
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            next_pos[axis] = current_pos[axis];
-            next_vel[axis] = 0.0;
-            _mutex.post();
-            return true;
-        }
+    {
+        _mutex.wait();
+        next_pos[axis] = current_pos[axis];
+        next_vel[axis] = 0.0;
+        _mutex.post();
+        return true;
+    }
     if (verbosity)
         printf("stopRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     return false;
@@ -693,7 +723,8 @@ bool iCubSimulationControl::stopRaw(int axis)
 bool iCubSimulationControl::stopRaw()
 {
     _mutex.wait();
-    for(int axis=0;axis<njoints;axis++){
+    for(int axis=0;axis<njoints;axis++)
+    {
         next_pos[axis] = current_pos[axis];
         next_vel[axis] = 0.0;
     }
