@@ -1685,6 +1685,11 @@ iCubFinger::iCubFinger()
 /************************************************************************/
 iCubFinger::iCubFinger(const string &_type)
 {
+    type="right_index_na";
+    hand="right";
+    finger="index";
+    version="na";
+
     allocate(_type);
 }
 
@@ -1716,21 +1721,32 @@ void iCubFinger::allocate(const string &_type)
     {
         hand=getType().substr(0,underscore);
         finger=getType().substr(underscore+1,getType().length()-underscore-1);
-    }
-    else
-    {
-        type="right_index";
-        hand="right";
-        finger="index";
+
+        underscore=finger.find('_');
+        if (underscore!=string::npos)
+        {
+            version=finger.substr(underscore+1,finger.length()-underscore-1);
+            finger=finger.substr(0,underscore);
+        }
     }
 
     Matrix H0(4,4);
     if (finger=="thumb")
     {
-        H0(0,0)=0.478469;  H0(0,1)=0.063689; H0(0,2)=-0.875792; H0(0,3)=-0.024029759;
-        H0(1,0)=-0.878095; H0(1,1)=0.039246; H0(1,2)=-0.476873; H0(1,3)=-0.01193433;
-        H0(2,0)=0.004;     H0(2,1)=0.997198; H0(2,2)=0.074703;  H0(2,3)=-0.00168926;
-        H0(3,0)=0.0;       H0(3,1)=0.0;      H0(3,2)=0.0;       H0(3,3)=1.0;
+        if (version=="a")
+        {
+            H0(0,0)=0.121132;  H0(0,1)=0.043736; H0(0,2)=-0.991672; H0(0,3)=-0.025391770;
+            H0(1,0)=-0.958978; H0(1,1)=0.263104; H0(1,2)=-0.105535; H0(1,3)=-0.011783901;
+            H0(2,0)=0.256297;  H0(2,1)=0.963776; H0(2,2)=0.073812;  H0(2,3)=-0.0017018;
+            H0(3,0)=0.0;       H0(3,1)=0.0;      H0(3,2)=0.0;       H0(3,3)=1.0;
+        }
+        else
+        {
+            H0(0,0)=0.478469;  H0(0,1)=0.063689; H0(0,2)=-0.875792; H0(0,3)=-0.024029759;
+            H0(1,0)=-0.878095; H0(1,1)=0.039246; H0(1,2)=-0.476873; H0(1,3)=-0.01193433;
+            H0(2,0)=0.004;     H0(2,1)=0.997198; H0(2,2)=0.074703;  H0(2,3)=-0.00168926;
+            H0(3,0)=0.0;       H0(3,1)=0.0;      H0(3,2)=0.0;       H0(3,3)=1.0;
+        }
 
         if (hand=="left")
             H0.setRow(2,-1.0*H0.getRow(2));

@@ -1084,6 +1084,7 @@ class iCubFinger : public iKinLimb
 protected:
     std::string hand;
     std::string finger;
+    std::string version;
 
     virtual void allocate(const std::string &_type);
     virtual void clone(const iKinLimb &limb);
@@ -1098,9 +1099,17 @@ public:
     * Constructor. 
     * @param _type is a string to discriminate between the finger's 
     *              type which has to be passed in the form
-    *              <i><hand>_<finger></i>, where <i>hand</i>
-    *              accounts for "left"|"right" and finger for
-    *              "thumb"|"index"|"middle"|"ring"|"little".
+    *              <i><hand>_<finger>_<version></i>, where
+    *              <i>hand</i> accounts for "left"|"right",
+    *              <i>finger</i> for
+    *              "thumb"|"index"|"middle"|"ring"|"little", and
+    *              <i>version</i> for "na"|"a"|"b".
+    *  
+    * @note "na" (i.e. not-applicable) is the default hardware 
+    *       version for index, middle, ring and little finger,
+    *       whereas "b" is the default for the thumb; "a" and "b"
+    *       refer to different mechanical configurations, please see
+    *       the manual.
     */
     iCubFinger(const std::string &_type);
 
