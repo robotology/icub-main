@@ -1738,10 +1738,10 @@ void iCubFinger::allocate(const string &_type)
         setH0(H0);
 
         pushLink(new iKinLink(   0.0,    0.0, -M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0210, 0.0056,       0.0, 0.0,               0.0,  0.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0260,    0.0,       0.0, 0.0,               0.0, 90.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0220,    0.0,       0.0, 0.0,               0.0, 90.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0168,    0.0, -M_PI/2.0, 0.0,               0.0, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0210, 0.0056,       0.0, 0.0,  0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0260,    0.0,       0.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0220,    0.0,       0.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0168,    0.0, -M_PI/2.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
 
         // this is a dummy link
         blockLink(1,0.0);
@@ -2192,7 +2192,7 @@ void iCubInertialSensor::allocate(const string &_type)
     }
 
     // virtual link that describes T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics )
-    pushLink(new iKinLink(        0.0,  0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
+    pushLink(new iKinLink(        0.0,  0.0066,  M_PI/2.0,       0.0,   0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
 
     // block virtual links
     blockLink(6,0.0);
