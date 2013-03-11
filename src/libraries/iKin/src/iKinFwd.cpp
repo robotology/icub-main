@@ -1708,6 +1708,7 @@ void iCubFinger::clone(const iKinLimb &limb)
     const iCubFinger &finger=static_cast<const iCubFinger&>(limb);
     this->hand=finger.hand;
     this->finger=finger.finger;
+    this->version=finger.version;
 }
 
 
