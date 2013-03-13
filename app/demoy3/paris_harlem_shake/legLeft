@@ -100,15 +100,15 @@ jointVelocities 10 10 10 10 10 10
 timing 2.00 
 
 [POSITION24] 
-jointPositions 40 25 0 0 0 0
+jointPositions 0 8 0 0 0 -8
 jointVelocities 10 10 10 10 10 10
 timing 2.00  
 [POSITION25] 
-jointPositions 40 25 35 -40 17 -14
+jointPositions 0 8 0 0 0 -8
 jointVelocities 10 10 10 10 10 10
 timing 2.00  
 [POSITION26] 
-jointPositions 40 25 0 0 0 0
+jointPositions 0 8 0 0 0 -8
 jointVelocities 10 10 10 10 10 10
 timing 2.00  
 [POSITION27] 
