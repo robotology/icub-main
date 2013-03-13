@@ -2,6 +2,25 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
+MACRO(icub_install_with_rpath)
+    #########################################################################
+    # Control setting an rpath
+    if (NOT MSVC)
+        set(ICUB_INSTALL_WITH_RPATH FALSE CACHE BOOL "Set an rpath after installing the executables")
+        #mark_as_advanced(ICUB_ENABLE_FORCE_RPATH)
+    endif (NOT MSVC)
+
+    if (ICUB_INSTALL_WITH_RPATH )
+        # when building, don't use the install RPATH already
+        # (but later on when installing), this tells cmake to relink 
+        # at install, so in-tree binaries have correct rpath
+        SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+        SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+        SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
+    endif (ICUB_INSTALL_WITH_RPATH )
+ENDMACRO(icub_install_with_rpath)
+
 ##### options
 if(MSVC)
     MESSAGE(STATUS "Running on windows")    

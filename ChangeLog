@@ -1,3 +1,6 @@
+2013-13-03 Lorenzo Natale <lorenzo.natale@iit.it>
+   * Moved macro icub_install_with_rpath() to iCubOptions.cmake from iCubHelpers.cmake
+
 2013-05-01 Ugo Pattacini <ugo.pattacini@iit.it>
    * gaze and cartesian I/F's: method deleteContext() added
 
