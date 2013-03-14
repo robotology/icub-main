@@ -4,7 +4,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6.4)
 project(iCubInterfaceGui)
 
 if(ICUB_USE_GtkMM)
