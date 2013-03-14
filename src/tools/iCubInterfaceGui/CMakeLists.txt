@@ -5,7 +5,7 @@
 #
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(iCubInterfaceGui)
+project(iCubInterfaceGui)
 
 if(ICUB_USE_GtkMM)
     add_subdirectory(iCubInterfaceGuiClient)

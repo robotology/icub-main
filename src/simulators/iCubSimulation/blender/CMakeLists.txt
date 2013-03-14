@@ -1,6 +1,6 @@
 
 # Copyright (C) 2010 Paul Fitzpatrick
-# CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 # Compile reusable parts of the simulator as a library.
 # This is particularly targeted at Blender integration.
@@ -13,28 +13,29 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-PROJECT(blysim)
+project(blysim)
 
-SET(BASE ${CMAKE_CURRENT_SOURCE_DIR}/..)
-ADD_DEFINITIONS(-DOMIT_LOGPOLAR)
+set(BASE ${CMAKE_CURRENT_SOURCE_DIR}/..)
+add_definitions(-DOMIT_LOGPOLAR)
 
-FIND_PACKAGE(YARP REQUIRED)
+find_package(YARP REQUIRED)
 
-INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${BASE}/wrapper)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${YARP_INCLUDE_DIRS}
+                    ${BASE}/wrapper)
+                    ${CMAKE_CURRENT_SOURCE_DIR})
 
-FILE(GLOB_RECURSE wrapper_source ${BASE}/wrapper/*.cpp)
-FILE(GLOB_RECURSE wrapper_header ${BASE}/wrapper/*.h)
+file(GLOB_RECURSE wrapper_source ${BASE}/wrapper/*.cpp)
+file(GLOB_RECURSE wrapper_header ${BASE}/wrapper/*.h)
 
-ADD_LIBRARY(blysim ${wrapper_source} ${wrapper_header}
-  FakeWorldManager.cpp
-  BlenderSimulationBundle.cpp
-  BlenderLogicalJoints.h  BlenderSimulationBundle.h  BlenderSimulation.h
+add_library(blysim ${wrapper_source}
+                   ${wrapper_header}
+                   FakeWorldManager.cpp
+                   BlenderSimulationBundle.cpp
+                   BlenderLogicalJoints.h
+                   BlenderSimulationBundle.h
+                   BlenderSimulation.h
   )
-TARGET_LINK_LIBRARIES(blysim ${YARP_LIBRARIES})
+target_link_libraries(blysim ${YARP_LIBRARIES})
 
-ADD_EXECUTABLE(blysim_sanity_check test.cpp)
-TARGET_LINK_LIBRARIES(blysim_sanity_check blysim)
-
-
+add_executable(blysim_sanity_check test.cpp)
+target_link_libraries(blysim_sanity_check blysim)

@@ -4,14 +4,14 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-SET(PROJECTNAME learningMachine)
-PROJECT(${PROJECTNAME})
+set(PROJECTNAME learningMachine)
+project(${PROJECTNAME})
 
-FIND_PACKAGE(YARP)
+find_package(YARP)
 
-SET(LM_LIB ${PROJECTNAME})
+set(LM_LIB ${PROJECTNAME})
 
-SET(LM_HEADER
+set(LM_HEADER
     ../include/iCub/learningMachine/DatasetRecorder.h
     ../include/iCub/learningMachine/DummyLearner.h
     ../include/iCub/learningMachine/FactoryT.h
@@ -39,7 +39,7 @@ SET(LM_HEADER
     ../include/iCub/learningMachine/TransformerCatalogue.h
     ../include/iCub/learningMachine/TransformerPortable.h )
 
-SET(LM_MACHINE_SRC
+set(LM_MACHINE_SRC
     ../src/DatasetRecorder.cpp
     ../src/DummyLearner.cpp
     ../src/IFixedSizeLearner.cpp
@@ -48,7 +48,7 @@ SET(LM_MACHINE_SRC
     ../src/Prediction.cpp
     ../src/RLSLearner.cpp )
 
-SET(LM_TRANSFORMER_SRC
+set(LM_TRANSFORMER_SRC
     ../src/FixedRangeScaler.cpp
     ../src/IFixedSizeTransformer.cpp
     ../src/IScaler.cpp
@@ -59,20 +59,20 @@ SET(LM_TRANSFORMER_SRC
     ../src/SparseSpectrumFeature.cpp
     ../src/Standardizer.cpp )
 
-SET(LM_SUPPORT_SRC
-    ../src/Math.cpp 
+set(LM_SUPPORT_SRC
+    ../src/Math.cpp
     ../src/Serialization.cpp )
 
 # declare groups of source and header files -- makes things pretty in MSVC.
-SOURCE_GROUP("Source Files" FILES ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC})
-SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
+source_group("Source Files" FILES ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC})
+source_group("Header Files" FILES ${LM_HEADER})
 
 # add YARP include directories
-INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+include_directories(${YARP_INCLUDE_DIRS})
 
 # add our include files into our compiler's search path.
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ../include)
+include_directories(${PROJECT_SOURCE_DIR} ../include)
 
-ADD_LIBRARY(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC} ${LM_HEADER})
+add_library(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC} ${LM_HEADER})
 
-TARGET_LINK_LIBRARIES(${LM_LIB} ${YARP_LIBRARIES})
+target_link_libraries(${LM_LIB} ${YARP_LIBRARIES})

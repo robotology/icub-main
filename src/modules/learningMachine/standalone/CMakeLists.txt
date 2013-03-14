@@ -4,35 +4,35 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-SET(PROJECTNAME learningMachine)
+set(PROJECTNAME learningMachine)
 
-FIND_PACKAGE(YARP)
+find_package(YARP)
 
-SET(LM_LIB_DIR ../../library/standalone)
+set(LM_LIB_DIR ../../library/standalone)
 
-SET(LM_TRAIN_EXEC lmtrain)
-SET(LM_PREDICT_EXEC lmpredict)
-SET(LM_TRANSFORM_EXEC lmtransform)
-SET(LM_TEST_EXEC lmtest)
-SET(LM_MERGE_EXEC lmmerge)
+set(LM_TRAIN_EXEC lmtrain)
+set(LM_PREDICT_EXEC lmpredict)
+set(LM_TRANSFORM_EXEC lmtransform)
+set(LM_TEST_EXEC lmtest)
+set(LM_MERGE_EXEC lmmerge)
 
 PROJECT(${PROJECTNAME})
 
 # Source code Groups
-SET(LM_MODULE_SRC 
+set(LM_MODULE_SRC
     ../src/IMachineLearnerModule.cpp )
-SET(LM_EVENT_SRC 
+set(LM_EVENT_SRC
     ../src/DispatcherManager.cpp
-    ../src/EventDispatcher.cpp 
+    ../src/EventDispatcher.cpp
     ../src/IEvent.cpp
-    ../src/IEventListener.cpp 
+    ../src/IEventListener.cpp
     ../src/IPortEventListener.cpp
-    ../src/PredictEvent.cpp 
+    ../src/PredictEvent.cpp
     ../src/PredictEventListener.cpp
-    ../src/TrainEvent.cpp 
+    ../src/TrainEvent.cpp
     ../src/TrainEventListener.cpp )
 
-SET(LM_HEADER 
+set(LM_HEADER
     ../include/iCub/learningMachine/DispatcherManager.h
     ../include/iCub/learningMachine/EventDispatcher.h
     ../include/iCub/learningMachine/EventListenerCatalogue.h
@@ -51,37 +51,36 @@ SET(LM_HEADER
     ../include/iCub/learningMachine/TransformModule.h )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
-SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC} 
+source_group("Source Files" FILES ${LM_MODULE_SRC}
                                   ${LM_EVENT_SRC} )
-SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
+source_group("Header Files" FILES ${LM_HEADER})
 
 
 # add YARP include directories
-INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+include_directories(${YARP_INCLUDE_DIRS})
 # add ACE dependence (temporary workaround)
-INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIRS})
+include_directories(${ACE_INCLUDE_DIRS})
 # add learningMachine library include directories
-INCLUDE_DIRECTORIES(${LM_LIB_DIR}/../include)
+include_directories(${LM_LIB_DIR}/../include)
 # add our include files into our compiler's search path.
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../include)
+include_directories(${PROJECT_SOURCE_DIR}/../include)
 
-LINK_DIRECTORIES(${LINK_DIRECTORIES} ${LM_LIB_DIR})
-SET(LM_LIB learningMachine)
-
-
-
-ADD_EXECUTABLE(${LM_TRAIN_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} ../src/TrainModule.cpp ../src/PredictModule.cpp ../src/bin/train.cpp)
-ADD_EXECUTABLE(${LM_PREDICT_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} ../src/PredictModule.cpp ../src/bin/predict.cpp)
-ADD_EXECUTABLE(${LM_TRANSFORM_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} ../src/TransformModule.cpp ../src/bin/transform.cpp)
-ADD_EXECUTABLE(${LM_TEST_EXEC} ../src/bin/test.cpp)
-ADD_EXECUTABLE(${LM_MERGE_EXEC} ../src/bin/merge.cpp)
-
-TARGET_LINK_LIBRARIES(${LM_TRAIN_EXEC} ${LM_LIB} ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(${LM_PREDICT_EXEC} ${LM_LIB} ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(${LM_TRANSFORM_EXEC} ${LM_LIB} ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(${LM_TEST_EXEC} ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(${LM_MERGE_EXEC} ${YARP_LIBRARIES})
+link_directories(${LINK_DIRECTORIES} ${LM_LIB_DIR})
+set(LM_LIB learningMachine)
 
 
-INSTALL(TARGETS ${LM_TRAIN_EXEC} ${LM_PREDICT_EXEC} ${LM_TRANSFORM_EXEC} ${LM_TEST_EXEC} ${LM_MERGE_EXEC} DESTINATION bin)
 
+add_executable(${LM_TRAIN_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} ../src/TrainModule.cpp ../src/PredictModule.cpp ../src/bin/train.cpp)
+add_executable(${LM_PREDICT_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} ../src/PredictModule.cpp ../src/bin/predict.cpp)
+add_executable(${LM_TRANSFORM_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} ../src/TransformModule.cpp ../src/bin/transform.cpp)
+add_executable(${LM_TEST_EXEC} ../src/bin/test.cpp)
+add_executable(${LM_MERGE_EXEC} ../src/bin/merge.cpp)
+
+target_link_libraries(${LM_TRAIN_EXEC} ${LM_LIB} ${YARP_LIBRARIES})
+target_link_libraries(${LM_PREDICT_EXEC} ${LM_LIB} ${YARP_LIBRARIES})
+target_link_libraries(${LM_TRANSFORM_EXEC} ${LM_LIB} ${YARP_LIBRARIES})
+target_link_libraries(${LM_TEST_EXEC} ${YARP_LIBRARIES})
+target_link_libraries(${LM_MERGE_EXEC} ${YARP_LIBRARIES})
+
+
+install(TARGETS ${LM_TRAIN_EXEC} ${LM_PREDICT_EXEC} ${LM_TRANSFORM_EXEC} ${LM_TEST_EXEC} ${LM_MERGE_EXEC} DESTINATION bin)

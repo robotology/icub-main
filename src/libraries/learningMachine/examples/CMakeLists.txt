@@ -4,34 +4,33 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-SET(PROJECTNAME lmExample)
+set(projectNAME lmExample)
 
-SET(LMLIB_DIRECT lmlibdirect)
-SET(LMLIB_INDIRECT lmlibindirect)
-SET(LMLIB_PORTABLE lmlibportable)
+set(LMLIB_DIRECT lmlibdirect)
+set(LMLIB_INDIRECT lmlibindirect)
+set(LMLIB_PORTABLE lmlibportable)
 
-PROJECT(${PROJECTNAME})
+project(${projectNAME})
 
-FIND_PACKAGE(YARP)
+find_package(YARP)
 # uncomment later
-#FIND_PACKAGE(ICUB)
+#find_package(ICUB)
 
-SET(LEARNINGMACHINE_DIR "..")
+set(LEARNINGMACHINE_DIR "..")
 
 #LINK_LIBRARIES(learningMachine)
-#INCLUDE_DIRECTORIES(${learningMachine_INCLUDE_DIRS})
+#include_directories(${learningMachine_INCLUDE_DIRS})
 # swap later with previous line
-INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${LEARNINGMACHINE_DIR}/include)
-LINK_DIRECTORIES(${LINK_DIRECTORIES} ${LEARNINGMACHINE_DIR}/standalone)
+include_directories(${YARP_INCLUDE_DIRS})
+include_directories(${LEARNINGMACHINE_DIR}/include)
+link_directories(${LINK_DIRECTORIES} ${LEARNINGMACHINE_DIR}/standalone)
 
 
-ADD_EXECUTABLE(${LMLIB_DIRECT} ${LMLIB_DIRECT}.cpp)
-ADD_EXECUTABLE(${LMLIB_INDIRECT} ${LMLIB_INDIRECT}.cpp)
-ADD_EXECUTABLE(${LMLIB_PORTABLE} ${LMLIB_PORTABLE}.cpp)
+add_executable(${LMLIB_DIRECT} ${LMLIB_DIRECT}.cpp)
+add_executable(${LMLIB_INDIRECT} ${LMLIB_INDIRECT}.cpp)
+add_executable(${LMLIB_PORTABLE} ${LMLIB_PORTABLE}.cpp)
 
 # remove later
-TARGET_LINK_LIBRARIES(${LMLIB_DIRECT} learningMachine ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(${LMLIB_INDIRECT} learningMachine ${YARP_LIBRARIES})
-TARGET_LINK_LIBRARIES(${LMLIB_PORTABLE} learningMachine ${YARP_LIBRARIES})
-
+target_link_libraries(${LMLIB_DIRECT} learningMachine ${YARP_LIBRARIES})
+target_link_libraries(${LMLIB_INDIRECT} learningMachine ${YARP_LIBRARIES})
+target_link_libraries(${LMLIB_PORTABLE} learningMachine ${YARP_LIBRARIES})
