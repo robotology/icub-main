@@ -13,10 +13,10 @@
 
   
       <!--  Skin -->
-  <!-- <device name="left_lower_arm_skin" type="embObjSkin">
+  <device name="left_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />
       <params file="hardware/electronics/ems2-eln.xml" />
-      <params file="hardware/mechanicals/ems2-skin.xml" /> 
-  </device>                                                -->
+      <!-- <params file="hardware/mechanicals/ems2-skin.xml" />  -->
+  </device>                                                
 </devices>
   

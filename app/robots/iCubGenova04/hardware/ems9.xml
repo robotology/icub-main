@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
- <!-- Initialization file for EMS 9 - Left Lower Leg, 2 dof -->
+ <!-- Initialization file for EMS 9 - Right Lower Leg, 2 dof -->
  
  <devices>
-  <device name="left_lower_leg_mc" type="embObjMotionControl">
+  <device name="right_lower_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/ems9-eln.xml" />
       <params file="hardware/mechanicals/ems9-mec.xml" />

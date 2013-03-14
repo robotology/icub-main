@@ -31,16 +31,31 @@
         <!--                      0             1               2            3      -->
         <param name="Max">        10            161           80            105         </param>
         <param name="Min">        -95.5         0             -37           0           </param>
-        <param name="Currents">   6000          6000          6000          6000        </param>
+        <param name="Currents">   8000          8000          8000          5000        </param>
+    </group>
+
+    <group name="IMPEDANCE">
+      <param name="Imp0">	0.2	0.0	</param>
+      <param name="Imp1">	0.2	0.0	</param>
+      <param name="Imp2">	0.2	0.0	</param>
+      <param name="Imp3">	0.2	0.0	</param>
     </group>
 
     <group name="PIDS">
-        <!--                 Proportional  Derivative    Integral      Integral Limit       PWM Limit     scale factor     offset -->
-        <param name="Pid0">     -10            2            0             0                  4000             10               0        </param>
-        <param name="Pid1">     -10            2            0             0                  4000             10               0        </param>
-        <param name="Pid2">     -10            2            0             0                  4000             10               0        </param>
-        <param name="Pid3">     -10            20           0             0                  4000             10               0        </param>
+        <!--                 Proportional  Derivative     Integral   Integral Limit      PWM Limit     scale factor   offset 	-->
+        <param name="Pid0">  -3             7               0             0                7000             10          0          </param>
+        <param name="Pid1">  -2             7               0             0                7000             10          0          </param>
+        <param name="Pid2">  -3             5               0             0                7000             10          0          </param>
+        <param name="Pid3">  -4             5               0             0                7000             10          0          </param>
     </group>
+
+    <group name="TORQUE_PIDS">
+        <param name="TPid0"> -1  	   0   	    	   0	         0    		  3000    	   10  	       0          </param>
+        <param name="TPid1"> -1  	   0	           0		 0    		  3000    	   10  	       0 	  </param>
+        <param name="TPid2"> -1 	   0   		   0   		 0    		  3000    	   10  	       0 	  </param>
+        <param name="TPid3"> -1            0   		   0   		 0    		  3000    	   10  	       0 	  </param>
+    </group>
+
 
     <!--
     <group name="TORQUE_PIDS">

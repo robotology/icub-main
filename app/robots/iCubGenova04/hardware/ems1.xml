@@ -4,16 +4,18 @@
 
 <devices>
 
-
   <device name="left_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/ems1-eln.xml" />
       <params file="hardware/mechanicals/ems1-mec.xml" />
   </device>
-  
-  <!-- <device name="left_upper_arm_strain" type="embObjAnalogSensor">
+
+
+
+  <device name="left_upper_arm_strain" type="embObjAnalogSensor">
       <params file="general.xml" />
       <params file="hardware/electronics/ems1-eln.xml" />
       <params file="hardware/analog/ems1-strain.xml" />
-  </device> --> 
+  </device>  
+
 </devices>

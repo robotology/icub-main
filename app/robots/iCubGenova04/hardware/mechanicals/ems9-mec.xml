@@ -33,17 +33,20 @@
         <param name="Currents">                 7000.00       7000.00   </param>
     </group>
 
+    <group name="IMPEDANCE">
+      <param name="Imp0">	0.4	0.01	</param>
+      <param name="Imp1">	0.4	0.01	</param>
+    </group>
+
     <group name="PIDS">
         <!--                 Proportional  Derivative    Integral      Integral Limit      PWM Limit     scale factor   offset -->
         <param name="Pid0">     -10            20            500             0                 3000          10           0             </param>
         <param name="Pid1">     -10            20            500             0                 3000          10           0             </param>
     </group>
 
-    <!--
     <group name="TORQUE_PIDS">
         <param name="TPid0"> 	0             0             0             1333          	1333          10            0 		</param>
         <param name="TPid1">	0             0             0             1333          	1333          10            0 		</param>
     </group>
-    -->
 
 </params>

@@ -6,13 +6,11 @@
     <paramlist name="networks">
       <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
 	<elem name="FirstSetOfJoints">  0  3  0  3 </elem> 
-	<elem name="SecondSetOfJoints"> 4 15  0 11 </elem> 
-
-	
+	<elem name="SecondSetOfJoints"> 4 15  0 11 </elem> 	
     </paramlist>
 
     <param name="period"> 20 			</param>
-    <param name="name">   icub/left_arm	</param>
+    <param name="name">   icub/left_arm		</param>
     <param name="ports">  left_arm		</param>
     <param name="joints"> 16			</param>
     

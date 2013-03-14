@@ -5,7 +5,7 @@
    <group name="GENERAL"> 
         <param name="CanAddress">     0x0D	</param>	<!-- not used anymore ??-->
 	<param name="Format">		16	</param>	<!-- not used anymore -->
-        <param name="Channels"> 	 6	</param>
+        <param name="Channels"> 	 6 	</param>
         <param name="Period">		 1	</param>
 	<param name="UseCalibration">	 1	</param>
     </group>

@@ -21,8 +21,8 @@
 		    <param name="Calibration1">         0               0               0               0               0               0       </param>
 		    <param name="Calibration2">         0               0               0               0               0               0       </param>
 		    <param name="Calibration3">         48078           22519           6317            25887           32167           64407   </param>
-		    <param name="PositionZero">         0               0               0               0               0               0       </param>
-		    <param name="VelocityZero">         6               6               6               6               6               6     </param>
+		    <param name="PositionZero">         10               10             10             -10              10              10      </param>
+		    <param name="VelocityZero">         6               6               6               6               6               6       </param>
 		    <param name="MaxPWM">               2000            2000            2000            2000            2000            2000    </param>
 		</group>
 
