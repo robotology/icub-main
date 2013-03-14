@@ -136,6 +136,17 @@ MACRO(icub_export_library target)
   endif()
   ##############################################
 
+  # Compile libraries using -fPIC to produce position independent code
+  # For CMAKE_VERSION >= 2.8.10 this is handled in iCubOptions.cmake
+  # using the CMAKE_POSITION_INDEPENDENT_CODE flag
+  if(CMAKE_COMPILER_IS_GNUCXX AND NOT BUILD_SHARED_LIBS)
+    if(CMAKE_VERSION VERSION_EQUAL "2.8.9")
+      set_target_properties(${target} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+    elseif(CMAKE_VERSION VERSION_LESS "2.8.9")
+      set_target_properties(${target} PROPERTIES COMPILE_FLAGS -fPIC)
+    endif()
+  endif()
+
   #### Export rules
   if (files AND destination)
     if (VERBOSE)

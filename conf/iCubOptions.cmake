@@ -64,3 +64,15 @@ if(NOT MSVC)
         set(BUILD_SHARED_LIBS ON)
     endif()
 endif()
+
+#########################################################################
+# Compile libraries using -fPIC to produce position independent code
+# since CMake 2.8.10 the variable CMAKE_POSITION_INDEPENDENT_CODE is
+# used by cmake to determine whether position indipendent code
+# executable and library targets should be created
+# For older versions the position independent code is handled in
+# iCubHelpers.cmake, in the icub_export_library macro (and obviously
+# only for targets exported using that macro)
+if(CMAKE_VERSION VERSION_GREATER "2.8.9")
+    set(CMAKE_POSITION_INDEPENDENT_CODE "TRUE")
+endif()
