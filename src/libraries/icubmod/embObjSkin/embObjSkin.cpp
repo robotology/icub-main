@@ -291,7 +291,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
     uint8_t 				i, triangle = 0;
     EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
     //	yarp::sig::Vector 		&pv = outPort.prepare();
-
+    static int error = 0;
 
     for(i=0; i<sk_array->head.size; i++)
     {
@@ -355,9 +355,18 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
                 }
             }
         }
+        else if(canframe->id == 0x100)
+        {
+        	/* Can frame with id =0x100 contains Debug info. SO I skip it.*/
+        	return true;
+        }
         else
         {
-            yError() << "Unknown Message received from skin\n";
+        	if(error == 0)
+        		yError() << "Unknown Message received from skin: frameID=" << canframe->id << "\n" ;
+        	error++;
+        	if (error == 10000)
+        		error = 0;
         }
     }
     return true;  // bool?
