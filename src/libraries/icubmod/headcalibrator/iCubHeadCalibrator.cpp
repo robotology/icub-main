@@ -183,15 +183,28 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
     fprintf(stderr, "HEAD::CALIB Calling iCubHeadCalibrator::calibrate\n");
     abortCalib=false;
 
-    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-    iEncoders = dynamic_cast<IEncoders *>(dd);
-    iPosition = dynamic_cast<IPositionControl *>(dd);
-    iPids = dynamic_cast<IPidControl *>(dd);
-	iControlMode = dynamic_cast<IControlMode *>(dd);
+    PolyDriver * poly = dynamic_cast<PolyDriver *> (dd);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    poly->view(iCalibrate);
+    poly->view(iAmps);
+    poly->view(iEncoders);
+    poly->view(iPosition);
+    poly->view(iPids);
+    poly->view(iControlMode);
+
+//    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
+//    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
+//    iEncoders = dynamic_cast<IEncoders *>(dd);
+//    iPosition = dynamic_cast<IPositionControl *>(dd);
+//    iPids = dynamic_cast<IPidControl *>(dd);
+//    iControlMode = dynamic_cast<IControlMode *>(dd);
+
+
+    if (!(iCalibrate&&iAmps&&iEncoders&&iPosition&&iPids&&iControlMode))
+    {
+        fprintf(stdout, "HEADCALIB: Error. This device cannot be calibrated\n");
         return false;
+    }
 
     // ok we have all interfaces
     int nj=0;
