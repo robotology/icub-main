@@ -171,13 +171,24 @@ bool VirtualAnalogServer::open(Searchable& config)
         return false;
     }
 
-    std::string portName="/";
-    portName+=config.check("name",Value("controlboard"),"prefix for port names").asString().c_str();
-    portName+="/torque:i";
-
-    if (!mPortInputTorques.open(portName.c_str()))
+    // Verify minimum set of parameters required
+    if(!config.check("robotName") )   // ?? qui dentro, da dove lo pesco ??
     {
-        cerr << "can't open port " << portName.c_str() << endl;
+        yError() << "VirtualAnalogServer missing robot Name, check your configuration file!! Quitting\n";
+        return false;
+    }
+
+    std::string root_name;
+    std::string port_name = config.check("name",Value("controlboard"),"prefix for port names").asString().c_str();
+    std::string robot_name = config.find("robotName").asString().c_str();
+
+    root_name+="/";
+    root_name+=robot_name;
+    root_name+= "/joint_vsens" + port_name + ":i";
+
+    if (!mPortInputTorques.open(root_name.c_str()))
+    {
+        cerr << "can't open port " << root_name.c_str() << endl;
         return false;
     }
 
