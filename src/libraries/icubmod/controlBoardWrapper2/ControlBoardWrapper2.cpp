@@ -151,7 +151,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
         }
     else
         {
-            cerr<<"Invalid device (isValid() returned false"<<endl;
+            cerr<<"Invalid device " << k << " (isValid() returned false)"<<endl;
             return false;
         }
 

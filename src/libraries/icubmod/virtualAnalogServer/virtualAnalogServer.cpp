@@ -74,7 +74,7 @@ bool AnalogSubDevice::attach(yarp::dev::PolyDriver *device, const std::string &k
     }
     else
     {
-        cerr << "Invalid device (isValid() returned false" << endl;
+        cerr << "Invalid device " << k << " (isValid() returned false)" << endl;
         return false;
     }
 
