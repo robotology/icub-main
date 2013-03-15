@@ -89,12 +89,13 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     Bottle config = _config.findGroup("GENERAL");
     if (!validate(config, xtmp, "Period","transmetting period of the sensor", 1))
     {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
+        yError() << "embObjAnalogSensor Using default value = 0 (disabled)";
         _period = 0;
     }
     else
     {
         _period = xtmp.get(1).asInt();
+        yDebug() << "embObjAnalogSensor Using value of" << _period;
     }
 
     if (!validate(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
@@ -244,7 +245,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     yDebug() << "using pointer itemsize is " << eo_array_ItemSize((EOarray*) p_tmpNV->rem);
  
     // when initialized, size shuold be zero... check it
-    NVsize = eo_array_Size((EOarray*) &fullscale_values);
+    NVsize = eo_array_Size((EOarray*) p_tmpNV->rem);
     if(0 != NVsize)
         yError() << "Initial size of array is different from zero (" << NVsize << ")!!!";
 
@@ -257,7 +258,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
     res->transceiver->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
 
-    timeout = 15;
+    timeout = 4;
     // wait for rensponse
     if(_useCalibration)
     {
@@ -266,7 +267,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
             // read fullscale values
             res->transceiver->readValue( nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
             // If data arrives, size is bigger than zero
-            NVsize = eo_array_Size((EOarray*) &fullscale_values);
+            NVsize = eo_array_Size((EOarray*) p_tmpNV->rem);
             if(0 != NVsize)
             {
                 gotFullScaleValues = true;
@@ -279,31 +280,41 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
         if (0 == timeout)
         {
-            yError() << "ETH Analog sensor: request for calibration parameters timed out";
+            yError() << "ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNum;
 //         return false;  // commented for denug purpose... uncomment!!
         }
 
         if( (NVsize != _channels)  )
         {
-            yError() << "Analog sensor Calibration data has a different size from channels number in configuration file!! Aborting!";
+            yError() << "Analog sensor Calibration data has a different size from channels number in configuration file!! Aborting! NVsize" << NVsize << "channels " << _channels;
+            gotFullScaleValues = true;
 //         return false;
         }
 
-        char *msg;
+        uint8_t *msg;
+
+        yError() << "capacity " << fullscale_values.head.capacity;
+        yError() << "itemsize " << fullscale_values.head.itemsize;
+        yError() << "size " << fullscale_values.head.size;
 
         if(gotFullScaleValues)
         {
-            yWarning() << "GOT full scale values!! YUPPIE!!\n";
+            yWarning() << "GOT full scale values!! YUPPIE!!for board " << _fId.boardNum;
 
-            for(int i=0; i<_channels; i++)
+            for(int k=0; k<12; k++)
+            	printf("%d(0x%0X) ", fullscale_values.data[k], fullscale_values.data[k]);
+            printf("\n");
+
+			for(int i=0; i<_channels; i++)
             {
                 // Get the k-th element of the array as a 2 bytes msg
-                msg = (char*) eo_array_At((EOarray*) &fullscale_values, i);
+                msg = (uint8_t*) eo_array_At((EOarray*) &fullscale_values, i);
 
 
                 // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback)
                 scaleFactor[i]= 0;
                 scaleFactor[i]= ( (uint16_t)(msg[0]<<8) | msg[1] );
+                yError() << " scale factor[" << i << "] = " << scaleFactor[i];
             }
 
         }
@@ -498,12 +509,12 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
         testBBB = testAAA << 8;
         testCCC = (int16_t) (testBBB + msg[0]);
 
-        if (k==4)
-        {
-        printf("0x%04X(%X %X) vs 0x%04X\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
-        printf("%d(%d %d) vs %d\n\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
-        }
-        
+//        if (k==4)
+//        {
+//        printf("0x%04X(%X %X) vs 0x%04X\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
+//        printf("%d(%d %d) vs %d\n\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
+//        }
+//
         
         if (_useCalibration==1)
         {
