@@ -131,7 +131,7 @@ int getJoint(const T &m, const unsigned char *invM)
 
 const int DEBUG_PRINTF_BUFFER_LENGTH=255;
 
-inline void DEBUG(const char *fmt, ...)
+inline void DEBUG_FUNC(const char *fmt, ...)
 {
 #ifdef CAN_DEBUG
     va_list ap; 
@@ -209,7 +209,7 @@ private:
 public:
     RequestsQueue(int joints, int num_msgs)
     {
-        DEBUG("Allocating %d x %d\n", joints, num_msgs);
+        DEBUG_FUNC("Allocating %d x %d\n", joints, num_msgs);
         elements=joints*num_msgs;
         requests=new ThreadFifo[elements];
         num_of_messages=num_msgs;
@@ -227,7 +227,7 @@ public:
         unsigned int i=msg&0x7F;
         // fprintf(stderr, "Asking FIFO for joint:%d msg:%d\n", j, i);
         int index=j*num_of_messages+i;
-        DEBUG("%d %d\n", index, elements);
+        DEBUG_FUNC("%d %d\n", index, elements);
 
         if ((index>=0)&&(index<elements))
             return requests+index;
@@ -240,7 +240,7 @@ public:
     {
         if (pendings<=0)
             {
-                DEBUG("Error, queue of requests empty");
+                DEBUG_FUNC("Error, queue of requests empty");
                 return -1;
             }
 

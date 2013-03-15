@@ -1646,7 +1646,7 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
 
     _initialized=true;
 
-    DEBUG("CanBusResources::initialized correctly\n");
+    DEBUG_FUNC("CanBusResources::initialized correctly\n");
     return true;
 }
 
@@ -1747,7 +1747,7 @@ bool CanBusResources::writePacket ()
 
     unsigned int sent=0;
 
-    DEBUG("Sending buffer:\n");
+    DEBUG_FUNC("Sending buffer:\n");
     for(unsigned int k=0; k<_writeMessages;k++)
     {
         PRINT_CAN_MESSAGE("El:", _writeBuffer[k]);
@@ -2026,7 +2026,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         RateThread::stop();
         _opened = false;
-        DEBUG("checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
+        DEBUG_FUNC("checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
         return false;
     }
     /////////////////////////////////
@@ -2037,7 +2037,7 @@ bool CanBusMotionControl::open (Searchable &config)
 #endif
 
     _opened = true;
-    DEBUG("CanBusMotionControl::open returned true\n");
+    DEBUG_FUNC("CanBusMotionControl::open returned true\n");
     return true;
 }
 
@@ -2985,9 +2985,9 @@ void CanBusMotionControl:: run()
             averageThreadTime=0;
         }
 
-    //DEBUG("CanBusMotionControl::thread running [%d]: wait\n", mycount);
+    //DEBUG_FUNC("CanBusMotionControl::thread running [%d]: wait\n", mycount);
     _mutex.wait ();
-    //DEBUG("posted\n");
+    //DEBUG_FUNC("posted\n");
 
     if (r.read () != true)
         r.printMessage("%s [%d] CAN: read failed\n", canDevName.c_str(), r._networkN);
@@ -3022,7 +3022,7 @@ void CanBusMotionControl:: run()
     //
     if (r.requestsQueue->getPending()>0)
         {
-            DEBUG("There are %d pending messages, read msgs: %d\n", 
+            DEBUG_FUNC("There are %d pending messages, read msgs: %d\n", 
                   r.requestsQueue->getPending(), r._readMessages);
             for (i = 0; i < r._readMessages; i++)
                 {
@@ -3048,16 +3048,16 @@ void CanBusMotionControl:: run()
                                     fprintf(stderr, "Asked a bad thread id, this is probably a bug, check threadPool\n");
                                     continue;
                                 }
-                            DEBUG("Pushing reply\n");
+                            DEBUG_FUNC("Pushing reply\n");
                             //push reply to thread's list of replies
                             if (!t->push(m))
-                                DEBUG("Warning, error while pushing a reply, this ir probably an error\n");
+                                DEBUG_FUNC("Warning, error while pushing a reply, this ir probably an error\n");
                         }
                 }
         }
     else
         {
-            //DEBUG("Thread loop: no pending messages\n");
+            //DEBUG_FUNC("Thread loop: no pending messages\n");
         }
 
     //    counter ++;
@@ -3082,7 +3082,7 @@ bool CanBusMotionControl::setPositionModeRaw(int j)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Calling SET_CONTROL_MODE (position)\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE (position)\n");
     return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_POSITION);
 }
 
@@ -3091,7 +3091,7 @@ bool CanBusMotionControl::setOpenLoopModeRaw(int j)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Calling SET_CONTROL_MODE (open loop)\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE (open loop)\n");
     return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_OPENLOOP);
 }
 
@@ -3100,7 +3100,7 @@ bool CanBusMotionControl::setVelocityModeRaw(int j)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Calling SET_CONTROL_MODE (velocity)\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE (velocity)\n");
     return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_VELOCITY);
 }
 
@@ -3109,7 +3109,7 @@ bool CanBusMotionControl::setTorqueModeRaw(int j)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Calling SET_CONTROL_MODE (torque)\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE (torque)\n");
     return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_TORQUE);
 }
 
@@ -3118,7 +3118,7 @@ bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Calling SET_CONTROL_MODE (impedance pos)\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE (impedance pos)\n");
     return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE_POS);
 }
 
@@ -3127,13 +3127,13 @@ bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Calling SET_CONTROL_MODE (impedance vel)\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE (impedance vel)\n");
     return _writeByte8(CAN_SET_CONTROL_MODE,j,MODE_IMPEDANCE_VEL);
 }
 
 bool CanBusMotionControl::getControlModesRaw(int *v)
 {
-    DEBUG("Calling GET_CONTROL_MODES\n");
+    DEBUG_FUNC("Calling GET_CONTROL_MODES\n");
     CanBusResources& r = RES(system_resources);
     int i;
     int temp;
@@ -3184,7 +3184,7 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
 
     short s;
 
-    DEBUG("Calling GET_CONTROL_MODE\n");
+    DEBUG_FUNC("Calling GET_CONTROL_MODE\n");
     //_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
 
     _mutex.wait();
@@ -3284,7 +3284,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getImpedanceRaw: message timed out\n");
+        DEBUG_FUNC("getImpedanceRaw: message timed out\n");
         //@@@ TODO: check here
         //*stiff = 0;
         //*damp = 0;
@@ -3365,7 +3365,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
 
      if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getImpedanceOffset: message timed out\n");
+        DEBUG_FUNC("getImpedanceOffset: message timed out\n");
         //@@@ TODO: check here
         //*off=0;
         return false;
@@ -3394,7 +3394,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("setImpedanceRaw\n");
+    DEBUG_FUNC("setImpedanceRaw\n");
 
     if (!ENABLED(axis))
         return true;
@@ -3420,7 +3420,7 @@ bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("setImpedanceOffsetRaw\n");
+    DEBUG_FUNC("setImpedanceOffsetRaw\n");
 
     if (!ENABLED(axis))
         return true;
@@ -3446,23 +3446,23 @@ bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
     short s;
     short s2;
 
-    DEBUG("Calling GET_P_GAIN\n");
+    DEBUG_FUNC("Calling GET_P_GAIN\n");
     _readWord16 (CAN_GET_P_GAIN, axis, s); out->kp = double(s);
-    DEBUG("Calling CAN_GET_D_GAIN\n");
+    DEBUG_FUNC("Calling CAN_GET_D_GAIN\n");
     _readWord16 (CAN_GET_D_GAIN, axis, s); out->kd = double(s);
-    DEBUG("Calling CAN_GET_I_GAIN\n");
+    DEBUG_FUNC("Calling CAN_GET_I_GAIN\n");
     _readWord16 (CAN_GET_I_GAIN, axis, s); out->ki = double(s);
-    DEBUG("Calling CAN_GET_ILIM_GAIN\n");
+    DEBUG_FUNC("Calling CAN_GET_ILIM_GAIN\n");
     _readWord16 (CAN_GET_ILIM_GAIN, axis, s); out->max_int = double(s);
-    DEBUG("Calling CAN_GET_OFFSET\n");
+    DEBUG_FUNC("Calling CAN_GET_OFFSET\n");
     _readWord16 (CAN_GET_OFFSET, axis, s); out->offset= double(s);
-    DEBUG("Calling CAN_GET_SCALE\n");
+    DEBUG_FUNC("Calling CAN_GET_SCALE\n");
     _readWord16 (CAN_GET_SCALE, axis, s); out->scale = double(s);
-    DEBUG("Calling CAN_GET_TLIM\n");
+    DEBUG_FUNC("Calling CAN_GET_TLIM\n");
     _readWord16 (CAN_GET_TLIM, axis, s); out->max_output = double(s);
-    DEBUG("Calling CAN_GET_POS_STICTION_PARAMS\n");
+    DEBUG_FUNC("Calling CAN_GET_POS_STICTION_PARAMS\n");
     _readWord16Ex (CAN_GET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_up_val = double(s); out->stiction_down_val = double(s2);
-    DEBUG("Get PID done!\n");
+    DEBUG_FUNC("Get PID done!\n");
     
 
     return true;
@@ -3510,7 +3510,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("setTorquePidRaw\n");
+    DEBUG_FUNC("setTorquePidRaw\n");
 
     if (!ENABLED(axis))
         return true;
@@ -3558,7 +3558,7 @@ bool CanBusMotionControl::getTorquePidOutputsRaw(double *b)
 
 bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 {
-    DEBUG("Calling CAN_GET_TORQUE_PID \n");
+    DEBUG_FUNC("Calling CAN_GET_TORQUE_PID \n");
 
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -3594,7 +3594,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getTorquePid: message timed out\n");
+        DEBUG_FUNC("getTorquePid: message timed out\n");
         //@@@ TODO: check here
         // value=0;
         return false;
@@ -3622,7 +3622,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 
     _mutex.wait();
     
-    DEBUG("Calling CAN_GET_TORQUE_PIDLIMITS\n");
+    DEBUG_FUNC("Calling CAN_GET_TORQUE_PIDLIMITS\n");
    
     r.startPacket();
     r.addMessage (id, axis, CAN_GET_TORQUE_PIDLIMITS);
@@ -3635,7 +3635,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getTorquePidLimits: message timed out\n");
+        DEBUG_FUNC("getTorquePidLimits: message timed out\n");
         //@@@ TODO: check here
         // value=0;
         return false;
@@ -3658,7 +3658,7 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
 
     t->clear();
 
-    DEBUG("Calling CAN_GET_TORQUE_STICTION_PARAMS\n");
+    DEBUG_FUNC("Calling CAN_GET_TORQUE_STICTION_PARAMS\n");
     short s1;
     short s2;
     _readWord16Ex (CAN_GET_TORQUE_STICTION_PARAMS, axis, s1, s2 );
@@ -3975,7 +3975,7 @@ bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* v
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getParameterRaw: message timed out\n");
+        DEBUG_FUNC("getParameterRaw: message timed out\n");
         //@@@ TODO: check here
         // value=0;
         return false;
@@ -4034,7 +4034,7 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getDebugParameterRaw: message timed out\n");
+        DEBUG_FUNC("getDebugParameterRaw: message timed out\n");
         //@@@ TODO: check here
         // value=0;
         return false;
@@ -4181,7 +4181,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("getFirmwareVersion: message timed out\n");
+        DEBUG_FUNC("getFirmwareVersion: message timed out\n");
         fw_info->board_type= 0;
         fw_info->fw_major= 0;
         fw_info->fw_version= 0;
@@ -5099,7 +5099,7 @@ bool CanBusMotionControl::calibrateRaw(int axis, double p)
 bool CanBusMotionControl::doneRaw(int axis)
 {
     short value = 0;
-    DEBUG("Calling doneRaw for joint %d\n", axis);
+    DEBUG_FUNC("Calling doneRaw for joint %d\n", axis);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5245,7 +5245,7 @@ bool CanBusMotionControl::_writeNone (int msg, int axis)
         return true;
     }
 
-    DEBUG("Write None msg:%d axis:%d\n", msg, axis);
+    DEBUG_FUNC("Write None msg:%d axis:%d\n", msg, axis);
     _mutex.wait();
 
     r.startPacket();
@@ -5267,7 +5267,7 @@ bool CanBusMotionControl::_writeWord16 (int msg, int axis, short s)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Writing Word16 msg:%d axis:%d\n", msg, axis);
+    DEBUG_FUNC("Writing Word16 msg:%d axis:%d\n", msg, axis);
     if (!ENABLED(axis))
         return true;
 
@@ -5294,7 +5294,7 @@ bool CanBusMotionControl::_writeByte8 (int msg, int axis, int value)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Writing byte msg:%d axis:%d\n", msg, axis);
+    DEBUG_FUNC("Writing byte msg:%d axis:%d\n", msg, axis);
 
     if (!ENABLED(axis))
         return true;
@@ -5321,7 +5321,7 @@ bool CanBusMotionControl::_writeDWord (int msg, int axis, int value)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG("Writing DWord msg:%d axis:%d\n", msg, axis);
+    DEBUG_FUNC("Writing DWord msg:%d axis:%d\n", msg, axis);
 
     if (!ENABLED(axis))
         return true;
@@ -5353,7 +5353,7 @@ bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2,
     if (checkAxisEven)
         ACE_ASSERT ((axis % 2) == 0);/// axis is even.
 
-    DEBUG("Write Word16Ex  msg:%d axis:%d\n", msg, axis);
+    DEBUG_FUNC("Write Word16Ex  msg:%d axis:%d\n", msg, axis);
 
     if (!ENABLED(axis))
         return true;
@@ -5454,7 +5454,7 @@ bool CanBusMotionControl::_readDWord (int msg, int axis, int& value)
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("readDWord: message timed out\n");
+        DEBUG_FUNC("readDWord: message timed out\n");
         value = 0;
         return false;
     }
@@ -5513,7 +5513,7 @@ bool CanBusMotionControl::_readDWordArray (int msg, double *out)
 
     if (!r.getErrorStatus() || t->timedOut())
     {
-        DEBUG("readDWordArray: at least one message timed out\n");
+        DEBUG_FUNC("readDWordArray: at least one message timed out\n");
         memset (out, 0, sizeof(double) * r.getJoints());
         return false;
     }
@@ -5560,21 +5560,21 @@ bool CanBusMotionControl::_readWord16 (int msg, int axis, short& value)
         return false;
     }
 
-    DEBUG("readWord16: called from thread %d, axis %d msg %d\n", id, axis, msg);
+    DEBUG_FUNC("readWord16: called from thread %d, axis %d msg %d\n", id, axis, msg);
     r.startPacket();
     r.addMessage (id, axis, msg);
     r.writePacket(); //write immediatly
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
-    DEBUG("readWord16: going to wait for packet %d\n", id);
+    DEBUG_FUNC("readWord16: going to wait for packet %d\n", id);
     t->setPending(r._writeMessages);
     _mutex.post();
     t->synch();
-    DEBUG("readWord16: ok, wait done %d\n",id);
+    DEBUG_FUNC("readWord16: ok, wait done %d\n",id);
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("readWord16: message timed out\n");
+        DEBUG_FUNC("readWord16: message timed out\n");
         value = 0;
         return false;
     }
@@ -5615,21 +5615,21 @@ bool CanBusMotionControl::_readWord16Ex (int msg, int axis, short& value1, short
         return false;
     }
 
-    DEBUG("readWord16Ex: called from thread %d, axis %d msg %d\n", id, axis, msg);
+    DEBUG_FUNC("readWord16Ex: called from thread %d, axis %d msg %d\n", id, axis, msg);
     r.startPacket();
     r.addMessage (id, axis, msg);
     r.writePacket(); //write immediatly
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
-    DEBUG("readWord16Ex: going to wait for packet %d\n", id);
+    DEBUG_FUNC("readWord16Ex: going to wait for packet %d\n", id);
     t->setPending(r._writeMessages);
     _mutex.post();
     t->synch();
-    DEBUG("readWord16Ex: ok, wait done %d\n",id);
+    DEBUG_FUNC("readWord16Ex: ok, wait done %d\n",id);
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG("readWord16: message timed out\n");
+        DEBUG_FUNC("readWord16: message timed out\n");
         value1 = 0;
         value2 = 0;
         return false;
@@ -5692,7 +5692,7 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
 
     if (!r.getErrorStatus()||(t->timedOut()))
     {
-        DEBUG("readWord16Array: at least one message timed out\n");
+        DEBUG_FUNC("readWord16Array: at least one message timed out\n");
         memset (out, 0, sizeof(double) * r.getJoints());
         return false;
     }
