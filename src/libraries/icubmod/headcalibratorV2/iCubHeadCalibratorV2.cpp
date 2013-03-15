@@ -6,7 +6,7 @@
 *
 */
 
-
+#include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Time.h>
 
 #include "iCubHeadCalibratorV2.h"
@@ -75,12 +75,12 @@ bool iCubHeadCalibratorV2::open (yarp::os::Searchable& config)
     logfile_name = p.findGroup("CALIBRATION").find("Logfile").asString();
     if (logfile_name != "")
     {
-        fprintf(stdout, "ARMCALIB::calibrator: opening logfile %s\n", logfile_name.c_str());
+        fprintf(stdout, "HEADCALIB::calibrator: opening logfile %s\n", logfile_name.c_str());
         logfile = fopen (logfile_name.c_str(), "w");
     }
     else
     {
-        fprintf(stdout, "ARMCALIB::calibrator: no logfile specified, errors displayed on standard stderr\n");
+        fprintf(stdout, "HEADCALIB::calibrator: no logfile specified, errors displayed on standard stderr\n");
     }
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
@@ -183,14 +183,25 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     fprintf(logfile, "Calling iCubHeadCalibratorV2::calibrate\n");
     abortCalib=false;
 
-    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-    iEncoders = dynamic_cast<IEncoders *>(dd);
-    iPosition = dynamic_cast<IPositionControl *>(dd);
-    iPids = dynamic_cast<IPidControl *>(dd);
-    iControlMode = dynamic_cast<IControlMode *>(dd);
+    PolyDriver * poly = dynamic_cast<PolyDriver *> (dd);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
+    poly->view(iCalibrate);
+    poly->view(iAmps);
+    poly->view(iEncoders);
+    poly->view(iPosition);
+    poly->view(iPids);
+    poly->view(iControlMode);
+
+//    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
+//    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
+//    iEncoders = dynamic_cast<IEncoders *>(dd);
+//    iPosition = dynamic_cast<IPositionControl *>(dd);
+//    iPids = dynamic_cast<IPidControl *>(dd);
+//    iControlMode = dynamic_cast<IControlMode *>(dd);
+
+
+    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode))
+    {
         fprintf(logfile, "HEADCALIB[%d]: Error. This device cannot be calibrated\n", canID);
         return false;
     }
