@@ -36,13 +36,23 @@ bool findAndFill(FEAT_ID *id, void *sk_array)
     EmbObjSkin * tmp =  (EmbObjSkin*) (ethResCreator::instance()->getHandleFromEP(id->ep));
     IiCubFeature * skin;
 
+    static int error = 0;
     if(NULL == tmp)
     {
-        printf( "/************************************\\\n"
-                "            Parte non trovata!!!\n"
-                "\\***********************************/\n");
-        printf("EP = %d\n", id->ep);
-        return false;
+    	if(error == 0)
+    	{
+    		printf( "/************************************\\\n"
+    				"            Parte non trovata!!!\n"
+    				"\\***********************************/\n");
+
+        	printf("EP = %d\n", id->ep);
+    	}
+    	error++;
+
+    	if (error == 10000)
+    	{error = 0;}
+
+    	return false;
     }
     else
     {
@@ -70,12 +80,22 @@ bool handle_AS_data(FEAT_ID *id, void *as_array)
     eOsnsr_arrayofupto12bytes_t * debug_tmp = (eOsnsr_arrayofupto12bytes_t*) as_array;
   // specie di view grezza, usare dynamic cast?
     embObjAnalogSensor * tmp =  (embObjAnalogSensor*) (ethResCreator::instance()->getHandleFromEP(id->ep));
+
+    static int error = 0;
     if(NULL == tmp)
     {
-//        printf( "/************************************\\\n"
-//                "            Parte non trovata!!!\n"
-//                "\\***********************************/\n");
-        return false;
+    	if(error == 0)
+    	{
+        printf( "/************************************\\\n"
+                "            AS non trovato!!!\n"
+                "\\***********************************/\n");
+    	}
+    	error++;
+
+    	if (error == 10000)
+    		{error = 0;}
+
+    	return false;
     }
     else
     {
