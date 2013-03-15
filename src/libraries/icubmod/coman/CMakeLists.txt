@@ -49,7 +49,7 @@ IF (NOT SKIP_${COMAN_MC} )
 #   install(TARGETS ${THIS_LIB} ARCHIVE DESTINATION lib)
 #   install(FILES ${HEADERS_TO_INSTALL} DESTINATION include)
   icub_export_library(${COMAN_MC} )
-ENDIF (NOT SKIP_${CPMAN_MC} )
+ENDIF (NOT SKIP_${COMAN_MC} )
 
 IF (NOT SKIP_${COMAN_FT} )
 add_library(${COMAN_FT} ${ThisLib_SOURCES})
