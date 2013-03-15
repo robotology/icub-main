@@ -40,7 +40,7 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
 
     if(tmp.size()!=size)
     {
-        yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
+        yError () << key1.c_str() << " incorrect number of entries"; // in board " << _fId.name << '[' << _fId.boardNum << ']';
         return false;
     }
 
@@ -431,7 +431,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         while(lit != lend)      // per ogni giunto del set
         {
             // Abilita il giunto
-            iControlMode->setPositionMode(j);
+            iControlMode->setPositionMode((*lit));
             lit++;
         }
 
