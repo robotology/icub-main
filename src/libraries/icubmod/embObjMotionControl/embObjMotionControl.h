@@ -461,6 +461,7 @@ public:
     bool disableTorquePidRaw(int j);
     bool enableTorquePidRaw(int j);
     bool setTorqueOffsetRaw(int j, double v);
+    int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
 
 
 #if 1	// deriva dalla classe, serve rimetterle anche qui nell'header o si fa solo per chiarezza??

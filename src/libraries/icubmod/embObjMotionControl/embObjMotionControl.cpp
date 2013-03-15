@@ -900,8 +900,8 @@ bool embObjMotionControl::init()
             copyPid_iCub2eo(&_pids[index],  &jconfig.pidvelocity);
             copyPid_iCub2eo(&_tpids[index], &jconfig.pidtorque);
 
-            jconfig.impedance.damping	= _impedance_params[j].damping;
-            jconfig.impedance.stiffness	= _impedance_params[j].stiffness;
+            jconfig.impedance.damping	= (eOmeas_stiffness_t) _impedance_params[j].damping * 1000;
+            jconfig.impedance.stiffness	= (eOmeas_damping_t) _impedance_params[j].stiffness * 1000;
             jconfig.impedance.offset	= 0; //impedance_params[j];
 //            jconfig.impedance.filler02	= (uint8_t) 0;
 
@@ -1813,12 +1813,15 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
 #endif
     if( !res->transceiver->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
     {
-        printf("\n>>> ERROR eo_nv_Set !!\n");
+        yError() << "position move eo_nv_Set board" << _fId.boardNum << " joint" << j;
         return false;
     }
 
     if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-        return false;
+    {
+    	yError() << "position move load rop board" << _fId.boardNum << "joint " << j;
+    	return false;
+    }
 
     yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6);
 
@@ -1956,7 +1959,7 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
 
 bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
 {
-    // yTrace();
+    yTrace() << _fId.name << "joint" << j << "Value" << sp;
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
     int index = j-_firstJoint;
@@ -1966,7 +1969,7 @@ bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
 
 bool embObjMotionControl::setRefSpeedsRaw(const double *spds)
 {
-    // yTrace();
+    yTrace();
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
     for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
@@ -2768,7 +2771,7 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
 
     //_ref_positions[index] = ref;
     
-    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
+    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(1000.0*fTorque);
     
     if( !res->transceiver->nvSetData(nvRoot, &meas_torque, eobool_true, eo_nv_upd_dontdo))
     {
@@ -2799,12 +2802,14 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
+//	yTrace() << "joint " << j;
     *t = _externalTorques[j];
     return true;
 }
 
 bool embObjMotionControl::getTorquesRaw(double *t)
 {
+//	yTrace();
     for(int j=0; j<_njoints; j++)
         t[j] = _externalTorques[j];
     return true;
@@ -3085,8 +3090,8 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
 	if(!getWholeImpedanceRaw(j, val))
 		return false;
 
-	val.stiffness 	= stiffness;
-	val.damping 	= damping;
+	val.stiffness 	= (eOmeas_stiffness_t) stiffness * 1000;
+	val.damping 	= (eOmeas_damping_t) damping * 1000;
 
 	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
 	ret &= res->transceiver->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
