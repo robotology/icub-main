@@ -18,23 +18,21 @@
 
 #include <algorithm>
 
-#include <yarp/os/Time.h>
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const string &_robotName, const string &_localName, const string &_camerasFile,
+                       const string &_robotName, const string &_localName, const ResourceFinder &rf_cameras,
                        const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
                        const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
                        const unsigned int _period) :
-                       RateThread(_period),       drvTorso(_drvTorso),     drvHead(_drvHead),
-                       commData(_commData),       robotName(_robotName),   localName(_localName),
-                       camerasFile(_camerasFile), neckTime(_neckTime),     eyesTime(_eyesTime),
-                       eyeTiltMin(_eyeTiltMin),   eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel),
-                       headV2(_headV2),           period(_period),         Ts(_period/1000.0),
-                       printAccTime(0.0)
+                       RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
+                       commData(_commData),     robotName(_robotName), localName(_localName),
+                       neckTime(_neckTime),     eyesTime(_eyesTime),   eyeTiltMin(_eyeTiltMin),
+                       eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel), headV2(_headV2),
+                       period(_period),         Ts(_period/1000.0),    printAccTime(0.0)
 {
     Robotable=(drvHead!=NULL);
 
@@ -54,8 +52,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     chainEyeR=eyeR->asChain();
 
     // add aligning matrices read from configuration file
-    getAlignHN(camerasFile,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(camerasFile,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
 
     if (Robotable)
     {

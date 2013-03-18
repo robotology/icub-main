@@ -21,13 +21,8 @@
 
 #include <string>
 
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
 
 #include <iCub/ctrl/pids.h>
@@ -58,7 +53,6 @@ protected:
     Stamp txInfo_ang;
 
     string localName;
-    string camerasFile;
     unsigned int period;
     bool headV2;
     
@@ -84,7 +78,7 @@ protected:
 
 public:
     Localizer(exchangeData *_commData, const string &_localName,
-              const string &_camerasFile, const bool _headV2,
+              const ResourceFinder &rf_cameras, const bool _headV2,
               const unsigned int _period);
 
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }

@@ -21,15 +21,10 @@
 
 #include <string>
 
-#include <yarp/os/Network.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
 #include <yarp/math/Math.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
 
 #include <iCub/ctrl/pids.h>
 #include <iCub/gazeNlp.h>
@@ -83,7 +78,6 @@ protected:
     unsigned int period;
     string robotName;
     string localName;
-    string camerasFile;
     bool Robotable;
     bool headV2;
     bool saccadesOn;
@@ -114,7 +108,7 @@ protected:
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                   const string &_robotName, Controller *_ctrl, const string &_localName,
-                  const string &_camerasFile, const double _eyeTiltMin, const double _eyeTiltMax,
+                  const ResourceFinder &rf_cameras, const double _eyeTiltMin, const double _eyeTiltMax,
                   const bool _saccadesOn, const Vector &_counterRotGain, const bool _headV2,
                   const unsigned int _period);
 
@@ -164,7 +158,6 @@ protected:
     Semaphore           mutex;
 
     string localName;
-    string camerasFile;
     unsigned int period;
     bool Robotable;
     bool headV2;
@@ -198,7 +191,7 @@ protected:
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-           const string &_localName, const string &_camerasFile, const double _eyeTiltMin,
+           const string &_localName, const ResourceFinder &rf_cameras, const double _eyeTiltMin,
            const double _eyeTiltMax, const bool _headV2, const unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target

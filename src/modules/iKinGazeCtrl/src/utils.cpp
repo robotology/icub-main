@@ -18,8 +18,6 @@
 
 #include <algorithm>
 
-#include <yarp/os/Time.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
@@ -356,91 +354,90 @@ Matrix exchangeData::get_fpFrame()
 
 
 /************************************************************************/
-bool getCamPrj(const string &camerasFile, const string &type, Matrix **Prj)
+bool getCamPrj(const ResourceFinder &rf_cameras, const string &type, Matrix **Prj)
 {
     *Prj=NULL;
 
-    if (camerasFile.size())
+    string message="Intrinsic parameters for "+type+" group";
+    Bottle &parType=const_cast<ResourceFinder&>(rf_cameras).findGroup(type.c_str());
+
+    if (parType.size())
     {
-        Property par;
-        par.fromConfigFile(camerasFile.c_str());
-
-        Bottle parType=par.findGroup(type.c_str());
-        string warning="Intrinsic parameters for "+type+" group not found";
-
-        if (parType.size())
+        if (parType.check("cx") && parType.check("cy") &&
+            parType.check("fx") && parType.check("fy"))
         {
-            if (parType.check("cx") && parType.check("cy") &&
-                parType.check("fx") && parType.check("fy"))
-            {
-                double cx=parType.find("cx").asDouble();
-                double cy=parType.find("cy").asDouble();
-                double fx=parType.find("fx").asDouble();
-                double fy=parType.find("fy").asDouble();
+            double cx=parType.find("cx").asDouble();
+            double cy=parType.find("cy").asDouble();
+            double fx=parType.find("fx").asDouble();
+            double fy=parType.find("fy").asDouble();
 
-                Matrix K=eye(3,3);
-                Matrix Pi=zeros(3,4);
+            fprintf(stdout,"%s found:\n",message.c_str());
+            fprintf(stdout,"cx = %g\n",cx);
+            fprintf(stdout,"cy = %g\n",cy);
+            fprintf(stdout,"fx = %g\n",fx);
+            fprintf(stdout,"fy = %g\n",fy);
 
-                K(0,0)=fx; K(1,1)=fy;
-                K(0,2)=cx; K(1,2)=cy; 
-                
-                Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
+            Matrix K=eye(3,3);
+            Matrix Pi=zeros(3,4);
 
-                *Prj=new Matrix;
-                **Prj=K*Pi;
+            K(0,0)=fx; K(1,1)=fy;
+            K(0,2)=cx; K(1,2)=cy; 
+            
+            Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
 
-                return true;
-            }
-            else
-                fprintf(stdout,"%s\n",warning.c_str());
+            *Prj=new Matrix;
+            **Prj=K*Pi;
+
+            return true;
         }
-        else
-            fprintf(stdout,"%s\n",warning.c_str());
     }
+
+    fprintf(stdout,"%s not found!\n",message.c_str());
 
     return false;
 }
 
 
 /************************************************************************/
-bool getAlignHN(const string &camerasFile, const string &type, iKinChain *chain)
+bool getAlignHN(const ResourceFinder &rf_cameras, const string &type, iKinChain *chain)
 {
     if (chain!=NULL)
     {
-        Property par;
-        string warning="Aligning matrix for "+type+" group not found";
-        if (par.fromConfigFile(camerasFile.c_str()))
+        string message="Aligning matrix for "+type+" group";
+        Bottle &parType=const_cast<ResourceFinder&>(rf_cameras).findGroup(type.c_str());
+
+        if (parType.size()>0)
         {
-            Bottle parType=par.findGroup(type.c_str());
-            if (parType.size()>0)
+            if (Bottle *bH=parType.find("HN").asList())
             {
-                if (Bottle *bH=parType.find("HN").asList())
-                {
-                    int i=0;
-                    int j=0;
+                int i=0;
+                int j=0;
 
-                    Matrix HN(4,4); HN=0.0;
-                    for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
-                    {    
-                        HN(i,j)=bH->get(cnt).asDouble();
-                        if (++j>=HN.cols())
-                        {
-                            i++;
-                            j=0;
-                        }
+                Matrix HN(4,4); HN=0.0;
+                for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
+                {    
+                    HN(i,j)=bH->get(cnt).asDouble();
+                    if (++j>=HN.cols())
+                    {
+                        i++;
+                        j=0;
                     }
-
-                    // enforce the homogeneous property
-                    HN(3,0)=HN(3,1)=HN(3,2)=0.0;
-                    HN(3,3)=1.0;
-
-                    chain->setHN(HN);
-                    return true;
                 }
+
+                // enforce the homogeneous property
+                HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+                HN(3,3)=1.0;
+
+                chain->setHN(HN);
+
+                fprintf(stdout,"%s found:\n",message.c_str());
+                fprintf(stdout,"%s\n",HN.toString(3,3).c_str());
+
+                return true;
             }
         }
 
-        fprintf(stdout,"%s\n",warning.c_str());
+        fprintf(stdout,"%s not found!\n",message.c_str());
     }
 
     return false;

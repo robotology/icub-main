@@ -22,13 +22,10 @@
 #include <string>
 #include <algorithm>
 
-#include <yarp/os/Thread.h>
-#include <yarp/os/Event.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
-#include <yarp/dev/PolyDriver.h>
 
 #include <iCub/gazeNlp.h>
 
@@ -145,13 +142,13 @@ inline double sat(const double val, const double min, const double max)
 // Allocates Projection Matrix Prj for the camera read from camerasFile
 // type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}
 // Returns true if correctly configured
-bool getCamPrj(const string &camerasFile, const string &type, Matrix **Prj);
+bool getCamPrj(const ResourceFinder &rf_cameras, const string &type, Matrix **Prj);
 
 
 // Allocates the two aligning matrices read from camerasFile
 // type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}
 // Returns true if correctly configured
-bool getAlignHN(const string &camerasFile, const string &type, iKinChain *chain);
+bool getAlignHN(const ResourceFinder &rf_cameras, const string &type, iKinChain *chain);
 
 
 // Aligns head joints bounds with current onboard bounds.

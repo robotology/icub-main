@@ -494,16 +494,9 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
 
 #include <iCub/localizer.h>
 #include <iCub/solver.h>
@@ -770,7 +763,6 @@ public:
         string robotName;
         string partName;
         string torsoName;
-        string camerasFile;
         double neckTime;
         double eyesTime;
         double eyeTiltMin;
@@ -780,6 +772,8 @@ public:
         bool   Robotable;
         double ping_robot_tmo;
         Vector counterRotGain(2);
+
+        ResourceFinder rf_cameras;
 
         Time::turboBoost();
 
@@ -807,15 +801,15 @@ public:
 
         if (rf.check("camerasFile"))
         {
+            rf_cameras.setVerbose(true);
             if (rf.check("camerasContext"))
-                rf.setDefaultContext(rf.find("camerasContext").asString().c_str());
+                rf_cameras.setDefaultContext(rf.find("camerasContext").asString().c_str());
+            else
+                rf_cameras.setDefaultContext(rf.getContext().c_str());
 
-            camerasFile=rf.findFile(rf.find("camerasFile").asString().c_str());
-            if (camerasFile=="")
-                return false;
+            rf_cameras.setDefaultConfigFile(rf.find("camerasFile").asString().c_str());
+            rf_cameras.configure("ICUB_ROOT",0,NULL);
         }
-        else
-            camerasFile.clear();
 
         if (headV2)
             fprintf(stdout,"Controller configured for head 2.0\n");
@@ -876,17 +870,17 @@ public:
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!
         ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,camerasFile,neckTime,eyesTime,
+                            localHeadName,rf_cameras,neckTime,eyesTime,
                             eyeTiltMin,eyeTiltMax,minAbsVel,headV2,10);
 
-        loc=new Localizer(&commData,localHeadName,camerasFile,headV2,10);
+        loc=new Localizer(&commData,localHeadName,rf_cameras,headV2,10);
 
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,ctrl,
-                                     localHeadName,camerasFile,eyeTiltMin,eyeTiltMax,
+                                     localHeadName,rf_cameras,eyeTiltMin,eyeTiltMax,
                                      saccadesOn,counterRotGain,headV2,20);
 
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
-                       localHeadName,camerasFile,eyeTiltMin,eyeTiltMax,headV2,20);
+                       localHeadName,rf_cameras,eyeTiltMin,eyeTiltMax,headV2,20);
 
         // this switch-on order does matter !!
         eyesRefGen->start();

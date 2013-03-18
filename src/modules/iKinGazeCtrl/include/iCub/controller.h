@@ -22,16 +22,10 @@
 #include <string>
 #include <set>
 
-#include <yarp/os/Bottle.h>
-#include <yarp/os/Port.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
 #include <yarp/math/Math.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
 
 #include <iCub/ctrl/minJerkCtrl.h>
 #include <iCub/ctrl/pids.h>
@@ -81,7 +75,6 @@ protected:
     Semaphore mutexData;
     string robotName;
     string localName;
-    string camerasFile;
     unsigned int period;
     bool tiltDone;
     bool panDone;
@@ -118,7 +111,7 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               const string &_robotName, const string &_localName, const string &_camerasFile,
+               const string &_robotName, const string &_localName, const ResourceFinder &rf_cameras,
                const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
                const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
                const unsigned int _period);
