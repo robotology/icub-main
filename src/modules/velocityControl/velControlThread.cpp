@@ -104,8 +104,9 @@ void velControlThread::run()
 
 		//we calculate the command Adding the ffVelocities
 		command(k) = Kp(k)*error(k) + Kd(k)*error_d(k) + ffVelocities(k);
+        //printf ("%+3.3f ", command(k));
 	}
-
+    //printf ("\n");
 	//    std::cout << command.toString() << std::endl;
 
 	limitSpeed(command);
@@ -118,7 +119,7 @@ void velControlThread::run()
 		fprintf(targetSpeedFile,"%f ",command(i));
 	fprintf(targetSpeedFile,"%f\n",t_start-time_watch);
 #endif
-
+    //printf ("%s\n", command.toString().c_str());
 	if(!suspended) {
 		int trials = 0;
 		while(!ivel->velocityMove(command.data())){
@@ -197,8 +198,9 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 	driver->view(ivel);
 	driver->view(ienc);
 	driver->view(imod);
+    driver->view(ipid);
 
-	if ( (ivel==0)||(ienc==0) || (imod==0))
+	if ( (ivel==0)||(ienc==0) || (imod==0) || (ipid==0))
 		return false;
 
 	ivel->getAxes(&nJoints);

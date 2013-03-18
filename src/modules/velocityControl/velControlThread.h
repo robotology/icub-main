@@ -23,7 +23,8 @@ private:
     char robotName[255];
     yarp::dev::IVelocityControl *ivel;
     yarp::dev::IEncoders        *ienc;
-	yarp::dev::IControlMode     *imod;
+    yarp::dev::IControlMode     *imod;
+    yarp::dev::IPidControl      *ipid;
     int nJoints;
     yarp::dev::PolyDriver *driver;
 
