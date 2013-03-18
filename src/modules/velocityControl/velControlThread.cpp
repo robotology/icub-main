@@ -120,18 +120,30 @@ void velControlThread::run()
 	fprintf(targetSpeedFile,"%f\n",t_start-time_watch);
 #endif
     //printf ("%s\n", command.toString().c_str());
-	if(!suspended) {
-		int trials = 0;
-		while(!ivel->velocityMove(command.data())){
-			trials++;
-			fprintf(stderr,"velcontrol ERROR>> velocity move sent false\n");
-			if(trials>10) {
-				fprintf(stderr, "velcontrol ERROR>> tried 10 times to velocityMove, halting...\n");
-				this->halt();
-				break;
-			}
-		}
-	}
+	if(!suspended)
+    {
+        if (0)
+        {
+            //this is used to directly command positions, with no minum jerk tajectory
+            //not to be used (risky!), unless you know wahat you are doing.
+            ipid->setReferences(this->targets.data());
+        }
+        else
+        {
+            int trials = 0;
+            while(!ivel->velocityMove(command.data()))
+            {
+                trials++;
+                fprintf(stderr,"velcontrol ERROR>> velocity move sent false\n");
+                if(trials>10)
+                {
+                fprintf(stderr, "velcontrol ERROR>> tried 10 times to velocityMove, halting...\n");
+                this->halt();
+                break;
+                }
+            }
+        }
+    }
 	_mutex.post();
 
 }
