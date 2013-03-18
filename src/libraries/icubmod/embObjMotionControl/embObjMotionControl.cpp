@@ -2487,7 +2487,7 @@ bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs)
 
 bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
-    getEncodersRaw(encs);
+    bool ret = getEncodersRaw(encs);
     _mutex.wait();
     for(int i=0; i<_njoints; i++)
         stamps[i] = _encodersStamp[i];
@@ -2503,11 +2503,12 @@ bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 //    	printf("_encodersStamp[0] = %f\n", tmp);
 //    	nn1 = 0;
 //    }
+    return ret;
 }
 
 bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 {
-    getEncoderRaw(j, encs);
+    bool ret = getEncoderRaw(j, encs);
     _mutex.wait();
     *stamp = _encodersStamp[j];
     _mutex.post();
@@ -2524,6 +2525,7 @@ bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
     //
     //	stampEncoders.update(stamp);
     //	//_mutex.post();
+    return ret;
 }
 
 ////// Amplifier interface
@@ -2755,7 +2757,7 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
 {
 	static const double NEWTON2SCALE=32768.0/12.0;
 
-    yTrace() << _fId.name << "joint" << j;
+//    yTrace() << _fId.name << "joint" << j;
 
     EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
@@ -2771,7 +2773,7 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
 
     //_ref_positions[index] = ref;
     
-    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(1000.0*fTorque);
+    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
     
     if( !res->transceiver->nvSetData(nvRoot, &meas_torque, eobool_true, eo_nv_upd_dontdo))
     {
@@ -2782,7 +2784,7 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
     if(!res->transceiver->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
         return false;
 
-    yDebug() << "Measured torque EP" << _fId.ep << "j" << j << meas_torque << " at time: " << (Time::now()/1e6);
+  //  yDebug() << "Measured torque EP" << _fId.ep << "j" << j << meas_torque << " at time: " << (Time::now()/1e6);
 
     return true;
 }
