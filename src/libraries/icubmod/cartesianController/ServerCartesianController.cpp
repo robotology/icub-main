@@ -1665,11 +1665,10 @@ bool ServerCartesianController::close()
         delete[] lRmp[i];
 
     lDsc.clear();
-    lLim.clear();
     lEnc.clear();
     lEnt.clear();
     lPid.clear();
-    lVel.clear();    
+    lVel.clear();
     lJnt.clear();
     lRmp.clear();
 
@@ -1729,14 +1728,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         {
             fprintf(stdout,"ok\n");
 
-            IControlLimits   *lim;
             IEncoders        *enc;
             IEncodersTimed   *ent;
             IPidControl      *pid;
-            IVelocityControl *vel;            
+            IVelocityControl *vel;
             int               joints;
 
-            drivers[j]->poly->view(lim);
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(vel);
             encTimedEnabled&=drivers[j]->poly->view(ent);
@@ -1771,11 +1768,10 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
                     lDsc[i].minAbsVels[k]=tmp[k];
             }
 
-            lLim.push_back(lim);
             lEnc.push_back(enc);
             lEnt.push_back(ent);
             lPid.push_back(pid);
-            lVel.push_back(vel);            
+            lVel.push_back(vel);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
         }

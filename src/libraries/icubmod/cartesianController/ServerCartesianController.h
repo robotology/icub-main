@@ -137,7 +137,6 @@ protected:
     SmithPredictor     smithPredictor;
     
     std::deque<DriverDescriptor>             lDsc;
-    std::deque<yarp::dev::IControlLimits*>   lLim;
     std::deque<yarp::dev::IEncoders*>        lEnc;
     std::deque<yarp::dev::IEncodersTimed*>   lEnt;
     std::deque<yarp::dev::IPidControl*>      lPid;
