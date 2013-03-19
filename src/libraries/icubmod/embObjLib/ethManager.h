@@ -61,7 +61,7 @@
 #include "Debug.h"
 
 
-#define EMPTY_PACKET_SIZE         20
+#define EMPTY_PACKET_SIZE         28
 #define BUFFER_SIZE               EOK_HOSTTRANSCEIVER_capacityofpacket
 #define SIZE_INFO                 126
 #define MAX_ICUB_EP               32
