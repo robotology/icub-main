@@ -118,21 +118,7 @@ public:
 
     // IMultipleWrapper //////////////////////////////////////////////////////
     virtual bool attachAll(const yarp::dev::PolyDriverList &p);
-    virtual bool detachAll()
-    {
-        mMutex.wait();
-
-        for (int k=0; k<mNSubdevs; ++k)
-        {
-            mSubdevices[k].detach();
-        }
-
-        mMutex.post();
-
-        close();
-
-        return true;
-    }
+    virtual bool detachAll();
     //////////////////////////////////////////////////////////////////////////
 
 protected:

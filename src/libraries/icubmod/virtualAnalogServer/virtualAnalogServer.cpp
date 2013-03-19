@@ -237,11 +237,26 @@ bool VirtualAnalogServer::attachAll(const PolyDriverList &polylist)
 
     mMutex.post();
 
-    Thread::start();    
+    Thread::start();
 
     return true;
 }
 
+bool VirtualAnalogServer::detachAll()
+{
+    mMutex.wait();
+
+    for(int k=0; k<mNSubdevs; ++k)
+    {
+        mSubdevices[k].detach();
+    }
+
+    mMutex.post();
+
+//     close();
+
+    return true;
+}
 void VirtualAnalogServer::run()
 {
     yarp::os::Bottle *pTorques;
@@ -282,7 +297,7 @@ void VirtualAnalogServer::run()
             break;
             
             default:
-                fprintf(stderr, "Warning: got unexpected %d message on virtualAnalogServer.\n",pTorques->get(0).asInt());
+                yError() << "Warning: got unexpected " << pTorques->get(0).asInt() << " message on virtualAnalogServer.";
             }
 
             for (int d=0; d<mNSubdevs; ++d)
