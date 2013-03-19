@@ -22,6 +22,7 @@ class velControlThread: public yarp::os::RateThread
 private:
     char robotName[255];
     yarp::dev::IVelocityControl *ivel;
+    yarp::dev::IPositionControl *ipos;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IControlMode     *imod;
     yarp::dev::IPidControl      *ipid;
