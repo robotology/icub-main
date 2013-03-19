@@ -15,6 +15,7 @@
 
 using namespace yarp::sig;
 
+
 class IiCubFeature
 {
     public:

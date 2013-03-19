@@ -66,19 +66,18 @@ typedef struct
 class eoThreadEntry
 {
 private:
-	// Semaphore where the thread will sleep onto -> it supports timeout
-	yarp::os::Semaphore _synch;
-	ACE_thread_t _handle;
+    // Semaphore where the thread will sleep onto -> it supports timeout
+    yarp::os::Semaphore _synch;
+    ACE_thread_t _handle;
 
-	int _pending;
-	int _timedOut;
+    int _pending;
+    int _timedOut;
     int _replied;   // needed?
 
     double _timeout;
 
     // internal mutex, to avoid concurrent operationss
     yarp::os::Semaphore _mutex;
-
 
     inline void lock()
     { _mutex.wait(); }
@@ -105,7 +104,7 @@ public:
     	_replied=0;
     	_timedOut=0;
     	unlock();
-    }; // if inline link error...???
+    };
 
     // wait on semaphore, usually thread sleeps here after
     // has issued a list of requests to the can
@@ -206,7 +205,7 @@ public:
     inline eoThreadEntry *getThreadTable(int id)
     {
         if ((id<0) || (id>EO_THREADARRAY_MAX_THREADS))
-            return 0;
+            return NULL;
 
         return pool+id;
     }
@@ -221,6 +220,7 @@ public:
 class eoThreadFifo: public std::list<eoThreadId>
 {
  public:
+    yarp::os::Semaphore _mutex;
     eoThreadFifo(){}
 
     // A pop function; get and destroy from front, just get thread id

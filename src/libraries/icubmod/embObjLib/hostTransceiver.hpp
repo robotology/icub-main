@@ -56,33 +56,35 @@ using namespace yarp::dev;
 // debug
 void checkDataForDebug(uint8_t *data, uint16_t size);
 
-class hostTransceiver : public DeviceDriver
-//						public ITransceiver
+class hostTransceiver
 {
-private:
-    EOhostTransceiver*  	hosttxrx;
-    EOtransceiver*      	pc104txrx;
-    EOnvsCfg*           	pc104nvscfg;
-    uint32_t            	localipaddr;
-    uint32_t            	remoteipaddr;
-    uint16_t            	ipport;
-    EOpacket*           	pktTx;
-    EOpacket*           	pktRx;
+protected:
+    EOhostTransceiver    *hosttxrx;
+    EOtransceiver        *pc104txrx;
+    EOnvsCfg             *pc104nvscfg;
+    uint32_t              localipaddr;
+    uint32_t              remoteipaddr;
+    uint16_t              ipport;
+//     EOpacket              TxPkt;
+//     EOpacket              RxPkt;
+    EOpacket             *p_TxPkt;
+    EOpacket             *p_RxPkt;
 
+    int                   bytesUsed;
 
 public:
     hostTransceiver();
     ~hostTransceiver();
 
-    const EOconstvector* 	EPvector;
-    eOuint16_fp_uint16_t 	EPhash_function_ep2index;
-    yarp::os::Semaphore 	_mutex;
+    const EOconstvector*  EPvector;
+    eOuint16_fp_uint16_t  EPhash_function_ep2index;
+    yarp::os::Semaphore   transMutex;
 
 
-    void init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
+    bool init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
 
-    /* This method add a rop to be sent in the current ropframe.
+    /*! This method add a rop to be sent in the current ropframe.
         Parameters are:
         nvid: unique network variable identifier got with the appropriate eo_cfg_nvsEP_XXX_NVID_Get
         endpoint: enum of the enpoint it has to operate into
@@ -91,6 +93,7 @@ public:
         Note: size is calculated internally by getting Network Variable associated metadata
         */
     bool addSetMessage( eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data);
+    bool addGetMessage( eOnvID_t nvid, eOnvEP_t endPoint);
     bool readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
 
     bool readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t* size);
@@ -109,9 +112,13 @@ public:
     // and Processes it
     virtual void onMsgReception(uint8_t *data, uint16_t size);
 
-    // somebody retrieves what must be transmitted
+    /* Ask the transceiver to get the ropframe to be sent
+     * This pointer will be modified by the getPack function to point to the TX buffer.
+     * No need to allocate memory here */
+protected:
     void getTransmit(uint8_t **data, uint16_t *size);
 
+public:
 //     eOnvID_t getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint, FeatureType type);
     bool getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
     EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);

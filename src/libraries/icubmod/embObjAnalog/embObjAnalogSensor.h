@@ -22,7 +22,6 @@
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
-#include <ethManager.h>
 #include <hostTransceiver.hpp>
 
 
@@ -34,6 +33,7 @@
 namespace yarp{
     namespace dev{
         class embObjAnalogSensor;
+        class TheEthManager;
     }
 }
 
@@ -94,6 +94,7 @@ public:
 private:
 
     //! embObj stuff
+    TheEthManager      *ethManager;
     ethResources    *res;
     FEAT_ID         _fId;
 
@@ -110,12 +111,6 @@ private:
     int             _channels;
     short           _useCalibration;
 
-    // obsolete
-//    short           boardId;            // used in CAN analogSensor
-//    AnalogDataFormat dataFormat;        // used in CAN analogSensor
-//    bool            isVirtualSensor;    //RANDAZ ... a new class for virtual sensor will be create
-
-
     AnalogData *data;
     short status;
 
@@ -123,14 +118,15 @@ private:
     double* scaleFactor;
     yarp::os::Semaphore mutex;
 
-    yarp::os::Bottle initMsg;
-    yarp::os::Bottle speedMsg;
-    yarp::os::Bottle closeMsg;
-    std::string deviceIdentifier;
+//     yarp::os::Bottle initMsg;
+//     yarp::os::Bottle speedMsg;
+//     yarp::os::Bottle closeMsg;
+//     std::string deviceIdentifier;
 
 
-    // Read useful data from config and check fir correctness
+    // Read useful data from config and check for correctness
     bool fromConfig(yarp::os::Searchable &config);
+    bool getFullscaleValues();
 public:
 
     embObjAnalogSensor();
@@ -140,7 +136,8 @@ public:
     // An open function yarp factory compatible
 //     bool open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualSensor);
     bool open(yarp::os::Searchable &config);
-    
+    bool close();
+
     //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
@@ -164,16 +161,6 @@ public:
         sat=counterSat;
         err=counterError;
         to=counterTimeout;
-    }
-
-    void setDeviceId(std::string id)
-    {
-        deviceIdentifier=id;
-    }
-
-    std::string getDeviceId()
-    {
-        return deviceIdentifier;
     }
 
     // will this be substitute by an axis map?

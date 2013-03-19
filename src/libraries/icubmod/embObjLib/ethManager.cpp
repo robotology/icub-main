@@ -7,676 +7,687 @@
  *
  */
 
-#include <yarp/os/Bottle.h>
-#include <string.h>
-#include <iostream>
-#include <stdio.h>
-
-#include <yarp/dev/PolyDriver.h>
-#include <ace/config.h>
-#include "ethManager.h"
-#include <yarp/os/Log.h>
-#include <yarp/os/impl/Logger.h>
-
-#include "Debug.h"
+#include <string>
+#include <ethManager.h>
+#include <ethResource.h>
+#include <yarp/os/impl/PlatformTime.h>
+#include <errno.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-static bool keepGoingOn2 = true;
-
-
-ethResCreator* ethResCreator::handle = NULL;
-yarp::os::Semaphore ethResCreator::_creatorMutex = 1;
-bool ethResCreator::initted = false;
-
 TheEthManager* TheEthManager::handle = NULL;
-yarp::os::Semaphore TheEthManager::_mutex = 1;
-int TheEthManager::_deviceNum = 0;
+yarp::os::Semaphore TheEthManager::managerMutex = 1;
 
-// ethResources stuff
-yarp::os::Semaphore ethResources::_mutex = 1;
 
-ethResources::ethResources()
+#if 0
+ethResources* TheEthManager::getResource(yarp::os::Searchable &config)
 {
-    how_many_features   = 0;
-    transceiver         = NULL;
-    theEthManager_h     = NULL;
-}
+    std::string   str;
+    Bottle        xtmp2;
+    ACE_TCHAR     remote_address[64];
+    ACE_TCHAR     address_tmp_string[64];
+    ACE_UINT16    rem_port;
+    ACE_UINT32    rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
-ethResources::~ethResources()
-{
-    // What to do here??
-    if(NULL != transceiver)
-        delete transceiver;
-}
-
-
-bool ethResources::open(yarp::os::Searchable &config)
-{
-	yTrace();
-	ACE_TCHAR tmp[126], address_tmp_string[64];
-	Bottle xtmp2;
-	Value val;
-
-	ACE_UINT16 loc_port, rem_port;
-	ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
-	ACE_UINT32 rem_ip1,rem_ip2,rem_ip3,rem_ip4;
-
-   std::string str;
     if(config.findGroup("GENERAL").find("Verbose").asInt())
-        str=config.toString().c_str();
+        {str=config.toString().c_str();}
     else
-        str="\n";
-
+        {str=" ";}
     yTrace() << str;
 
 
-	//
-	// Get EMS ip addresses and port from config file, in order to correctly configure the transceiver.
-	//
+    /* Get a Socket for the PC104 This needs a reading from config file, at least for the port to use...
+    * If the socket is already initialized the createSocket function does nothing, it is also thread safe  */
+    ACE_UINT32 loc_ip1,loc_ip2,loc_ip3,loc_ip4;
+    xtmp2 = config.findGroup("PC104IpAddress");
+    strcpy(address_tmp_string, xtmp2.get(1).asString().c_str());
 
-	// extract eth group info
-	Bottle &xtmp = config.findGroup("ETH");
+    // ACE format
+    sscanf(address_tmp_string,"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
+    ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
 
-	xtmp2 = xtmp.findGroup("IpAddress");
-    if (xtmp2.isNull())
+    if(!createSocket(loc_dev))
+        {return false;}
+
+
+    //
+    // Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
+    // a pointer to an already existing object
+    //
+
+    Bottle xtmp = Bottle(config.findGroup("ETH"));
+    xtmp2 = xtmp.findGroup("IpAddress");
+    strcpy(remote_address, xtmp2.get(1).asString().c_str());
+    sscanf(remote_address,"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
+
+    // Get EMS CmdPort from config file
+    xtmp2 = xtmp.findGroup("CmdPort");
+    rem_port = xtmp2.get(1).asInt();
+
+    // ACE format
+    ACE_INET_Addr remote_addr_tmp;
+    remote_addr_tmp.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
+
+    ethResources *newRes = NULL;
+
+    managerMutex.wait();
+    ethResIt iterator = EMS_list.begin();
+
+    while(iterator != EMS_list.end())
     {
-        yError() << "EMS Ip Address not found\n";
-        return false;
+        if((*iterator)->getRemoteAddress() == remote_addr_tmp)
+        {
+            // device already exist.
+            newRes = (*iterator);
+            break;
+        }
+        iterator++;
     }
-    // identify ip address
-	strcpy(address_tmp_string, xtmp2.get(1).asString().c_str());
-	yDebug() << "Ems ip address " << address_tmp_string;
-	sscanf(address_tmp_string,"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
 
-	// identify port
-	xtmp2 = xtmp.findGroup("CmdPort");
-	rem_port = xtmp2.get(1).asInt();
-
-	// Build ip addess/port in ACE format
-	remote_dev.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
-
-	// identify EMS board number
-	int boardNum=255;
-	xtmp2 = xtmp.findGroup("Ems");
-    if (xtmp2.isNull())
+    if(NULL == newRes)
     {
-        yError() << "[ethResources] EMS Board number identifier not found\n";
-        return false;
-        boardNum = 2;
+        // device doesn't exist yet, create it
+        yDebug() << "Creating EMS device with IP " << remote_address;
+        newRes = new ethResources;
+        if(!newRes->open(config))
+        {
+            printf("Error creating new EMS!!");
+            if(NULL != newRes)
+                delete newRes;
+
+            newRes = NULL;
+        }
+        else
+        {
+            nBoards++;
+            EMS_list.push_back(newRes);
+        }
+    }
+    managerMutex.post();
+    return newRes;
+}
+
+bool TheEthManager::removeResource(ethResources* to_be_removed)
+{
+    managerMutex.wait();
+    to_be_removed->close();
+    if(EMS_list.size() != 0)
+    {
+        ethResIt iterator = EMS_list.begin();
+        while(iterator != EMS_list.end())
+        {
+            if((*iterator)->getRemoteAddress() == to_be_removed->getRemoteAddress())
+            {
+                delete (*iterator);
+                EMS_list.remove(*iterator);
+                managerMutex.post();
+                return true;
+            }
+            iterator++;
+        }
+        yError() << "EthManager: Asked to remove an entry but it was not found!\n";
     }
     else
-    	boardNum = xtmp2.get(1).asInt();
+        yError() << "EthManager: Asked to remove an entry in an empty list!\n";
 
-	// Fill 'info' field with human friendly string
-	memset(info, 0x00, SIZE_INFO);
-	sprintf(info, "ethResources - referred to EMS: %d.%d.%d.%d", rem_ip1,rem_ip2,rem_ip3,rem_ip4);
-
-	//
-	// Get PC104 ip address from config file
-	//
-	xtmp2 = config.findGroup("PC104IpAddress");
-	strcpy(address_tmp_string, xtmp2.get(1).asString().c_str());
-
-	// ACE format
-	sscanf(address_tmp_string,"%d.%d.%d.%d",&loc_ip1, &loc_ip2, &loc_ip3, &loc_ip4);
-	ACE_INET_Addr loc_dev(rem_port, (loc_ip1<<24)|(loc_ip2<<16)|(loc_ip3<<8)|loc_ip4);
-
-	// Get the pointer to the actual Singleton ethManager, or create it if it's the first time.
-	theEthManager_h = TheEthManager::instance(loc_dev);
-	if(theEthManager_h == NULL)
-	{
-		yError() 	<< "\n----------------------------"  \
-							<< "\n while creating ETH MANAGER "  \
-							<< "\n----------------------------";
-		return false;
-	}
-
-	//
-	//	EMBOBJ INIT
-	//
-	if ( ( boardNum >= FIRST_BOARD) && ( boardNum <= LAST_BOARD) )
-	{
-		transceiver= new hostTransceiver;
-		transceiver->init(eo_common_ipv4addr(loc_ip1,loc_ip2,loc_ip3,loc_ip4), eo_common_ipv4addr(rem_ip1,rem_ip2,rem_ip3,rem_ip4), rem_port, EOK_HOSTTRANSCEIVER_capacityofpacket, boardNum);
-	}
-
-	how_many_features = 1;
-	yDebug() << "Transceiver succesfully initted.";
-
-	return true;
+    managerMutex.post();
+    return false;
 }
-
-bool ethResources::registerFeature(yarp::os::Searchable &config)
-{
-	how_many_features++;
-	return true;
-}
-
-//bool ethResources::mayclose()
-//{
-//	how_many_features--;
-//	if(how_many_features <= 0)
-//	return true;
-//}
-
-// Per inviare pacchetti in maniera asincrona rispetto al ciclo da 1 ms... anche roba che non sia eoStuff
-// Eliminare ???
-int ethResources::send(void *data, size_t len)
-{
-	return TheEthManager::instance()->send(data, len, remote_dev);
-}
-
-void ethResources::getPack(uint8_t **pack, uint16_t *size)
-{
-	if (0 != transceiver)
-	{
-		_mutex.wait();
-		transceiver->getTransmit(pack, size);
-		_mutex.post();
-	}
-}
-
-ACE_UINT16	ethResources::getBufferSize()
-{
-	return (ACE_UINT16) RECV_BUFFER_SIZE;
-}
-
-void ethResources::onMsgReception(uint8_t *data, uint16_t size)
-{
-	if (0 != transceiver)
-	{
-		_mutex.wait();
-		transceiver->onMsgReception(data, size);
-		_mutex.post();
-	}
-}
-
-ACE_INET_Addr	ethResources::getRemoteAddress()
-{
-	return	remote_dev;
-}
-
-
-bool ethResources::goToConfig(void)
-{
-    yTrace();
-    eOnvID_t nvid;
-    EOnv tmp;
-
-    // attiva il loop di controllo
-    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
-    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-
-    EOnv  *nvRoot   = transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
-    if(NULL == nvRoot)
-    {
-        yError () << "NV pointer not found at line" << __LINE__;
-        return false;
-    }
-
-    eOmn_appl_state_t  desired  = applstate_config;
-
-    if( !transceiver->nvSetData(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
-        return false;
-
-    // tell agent to prepare a rop to send
-    if( !transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid) )
-        return false;
-}
-
-bool ethResources::goToRun(void)
-{
-    yTrace();
-    eOnvID_t nvid;
-    EOnv tmp;
-
-    // attiva il loop di controllo
-    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
-    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-
-    EOnv  *nvRoot   = transceiver->getNVhandler(endpoint_mn_appl, nvid, &tmp);
-    if(NULL == nvRoot)
-    {
-        yError () << "NV pointer not found at line" << __LINE__;
-        return false;
-    }
-
-    eOmn_appl_state_t  desired  = applstate_running;
-
-    if( !transceiver->nvSetData(nvRoot, &desired, eobool_true, eo_nv_upd_dontdo))
-        return false;
-
-    // tell agent to prepare a rop to send
-    if( !transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid) )
-        return false;
-}
-// -------------------------------------------------------------------\\
-//            ethResCreator   Singleton
-// -------------------------------------------------------------------\\
-
-ethResCreator::ethResCreator()
-{
-	how_many_boards = 0;
-}
-
-ethResCreator::~ethResCreator()
-{
-	if(this->size() != 0)
-	{
-		ethResIt iterator = this->begin();
-		while(iterator != this->end())
-		{
-			delete (*iterator);
-			iterator++;
-		}
-	}
-}
-
-ethResCreator *ethResCreator::instance()
-{
-	if( !initted && keepGoingOn2)
-	{
-		_creatorMutex.wait();
-		handle = new ethResCreator();
-		initted = true;
-		_creatorMutex.post();
-	}
-	return handle;
-}
-
-void ethResCreator::close()
-{
-//	ethResCreator::~ethResCreator();
-}
-
-ethResources* ethResCreator::getResource(yarp::os::Searchable &config)
-{
-	ACE_TCHAR 	remote_address[64];
-	Bottle 		xtmp2;
-
-	ACE_UINT16 	rem_port;
-	ACE_UINT32 	rem_ip1,rem_ip2,rem_ip3,rem_ip4;
-
-   std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
-        str=config.toString().c_str();
-    else
-        str="\n";
-
-    yTrace() << str;
-
-	//
-	// Get EMS ip addresses from config file, to see if we need to instantiate a new Resources or simply return
-	//	a pointer to an already existing object
-	//
-
-	_creatorMutex.wait();
-	Bottle xtmp = Bottle(config.findGroup("ETH"));
-	xtmp2 = xtmp.findGroup("IpAddress");
-	strcpy(remote_address, xtmp2.get(1).asString().c_str());
-
-
-	sscanf(remote_address,"%d.%d.%d.%d",&rem_ip1, &rem_ip2, &rem_ip3, &rem_ip4);
-
-	// Get EMS CmdPort from config file
-	xtmp2 = xtmp.findGroup("CmdPort");
-	rem_port = xtmp2.get(1).asInt();
-
-	// ACE format
-	ACE_INET_Addr remote_addr_tmp;
-	remote_addr_tmp.set(rem_port, (rem_ip1<<24)|(rem_ip2<<16)|(rem_ip3<<8)|rem_ip4);
-
-	ethResources *newRes = NULL;
-	ethResIt iterator = this->begin();
-
-	while(iterator!=this->end())
-	{
-		if((*iterator)->getRemoteAddress() == remote_addr_tmp)
-		{
-			// device already exist.
-			yDebug() << "Returning a pointer to an alreasy existing device.";
-			newRes = (*iterator);
-			break;
-		}
-		iterator++;
-	}
-
-	if ( NULL == newRes)
-	{
-		// device doesn't exist yet, create it
-		yDebug() << "device doesn't exist yet, creating it.";
-		newRes = new ethResources;
-		if(!newRes->open(config))
-		{
-			printf("Error opening new EMS!!");
-			if(NULL != newRes)
-				delete newRes;
-
-			newRes = NULL;
-		}
-		else
-		{
-			how_many_boards++;
-			this->push_back(newRes);
-		}
-	}
-	_creatorMutex.post();
-	return newRes;
-}
-
-bool ethResCreator::removeResource(ethResources* to_be_removed)
-{
-	_creatorMutex.wait();
-	to_be_removed->close();
-	if(this->size() != 0)
-	{
-		ethResIt iterator = this->begin();
-		while(iterator != this->end())
-		{
-			if((*iterator)->getRemoteAddress() == to_be_removed->getRemoteAddress())
-			{
-				delete (*iterator);
-				this->remove(*iterator);
-				_creatorMutex.post();
-				return true;
-			}
-			iterator++;
-		}
-		yError() << "[ethResCreator] Asked to remove an entry but it wan not found!\n";
-	}
-	_creatorMutex.post();
-	yError() << "[ethResCreator] Asked to remove an entry in an empty list!\n";
-	return false;
-}
-
-void ethResCreator::addLUTelement(FEAT_ID id)
-{
-    _creatorMutex.wait();
-    bool addLUT_res;
-    addLUT_res = ethResCreator::class_lut.insert(std::pair<uint8_t, FEAT_ID>(id.ep, id)).second;
-//     addLUT_res ? printf("ok add lut element") : printf("NON ok add lut element");
-    _creatorMutex.post();
-}
-
-void *ethResCreator::getHandleFromEP(eOnvEP_t ep)
-{
-	_creatorMutex.wait();
-	void * ret =ethResCreator::class_lut[ep].handle;
-	_creatorMutex.post();
-	return ret;
-}
-
-FEAT_ID ethResCreator::getFeatInfoFromEP(uint8_t ep)
-{
-	return ethResCreator::class_lut[ep];
-}
+#endif
 
 
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
-void *recvThread(void * arg)
+ethResources *TheEthManager::requestResource(FEAT_ID *request)
 {
-	ACE_TCHAR 		address[64];
-	ethResources	*ethRes;
-	ACE_UINT16 		recv_size;
-	ACE_INET_Addr	sender_addr;
-	char 			incoming_msg[RECV_BUFFER_SIZE];
+    yTrace() << request->boardNum;
+    // Check if local socket is initted, if not do it.
+    ACE_TCHAR       address[64];
+    sprintf(address, "%s:%d", request->PC104ipAddr.string, request->PC104ipAddr.port);
 
-    ACE_SOCK_Dgram *pSocket = (ACE_SOCK_Dgram*) arg;
+    //ACE_INET_Addr myIP(address, AF_INET);
 
-    ethResIt iterator = ethResCreator::instance()->begin();
-    while( NULL == pSocket )
+    ACE_UINT32 hostip = (request->PC104ipAddr.ip1 << 24) | (request->PC104ipAddr.ip2 << 16) | (request->PC104ipAddr.ip3 << 8) | (request->PC104ipAddr.ip4);
+    ACE_INET_Addr myIP((u_short)request->PC104ipAddr.port, hostip);
+    myIP.dump();
+    char tmp_addr[64];
+
+    if(!createSocket(myIP) )
+    {  return NULL;  }
+
+      ethResources *newRes = NULL;
+
+    // Grab the mutex
+    managerMutex.wait();
+
+    int justCreated = false;
+    ACE_INET_Addr tmpIp;
+    ethResIt iterator = EMS_list.begin();
+    while(iterator != EMS_list.end())
     {
-    	yError() << "socket  aspetto un po'";
-    	Time::delay(1);
+        (*iterator)->getRemoteAddress().addr_to_string(tmp_addr, 64);
+       // tmpIp->addr_to_string(tmp_addr, 64);
+        //(*iterator)->getRemoteAddress().addr_to_string(tmp_addr, 64);
+        if( strcmp(tmp_addr, request->EMSipAddr.string) == 0)
+        {
+            // device already exists, return the pointer.
+            newRes = (*iterator);
+            break;
+        }
+        iterator++;
     }
 
-    while( NULL == *iterator )
+    managerMutex.post();
+
+    if(NULL == newRes)
     {
-    	yError() << "ethResCreator non pronto, aspetto un po'";
-    	Time::delay(1);
+        // device doesn't exist yet, create it
+        yDebug() << "Creating EMS device with IP " << request->EMSipAddr.string;
+        newRes = new ethResources;
+        if(!newRes->open(*request))
+        {
+            yError() << "Error creating new EMS!!";
+            if(NULL != newRes)
+                delete newRes;
+
+            newRes = NULL;
+//            managerMutex.post(); //?
+            return NULL;
+        }
+        justCreated = true;
     }
 
-    yTrace();
-    yError() << "Starting udp RECV thread\n";
+    // If this point is reached everything must be ok... i.e. newRes != NULL.
+    managerMutex.wait();
 
-    while(keepGoingOn2)
-	{
-		// per ogni msg ricevuto
-		recv_size = pSocket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0);
+    // the push_back has to be done only once for EMS
+    if(justCreated)
+        EMS_list.push_back(newRes);
 
-		sender_addr.addr_to_string(address, 64);
-//     printf("Received new packet from address %s, size = %d\n", address, recv_size);
+    // The registerFeature has to be done always
+    newRes->registerFeature(request);
+    addLUTelement(request);
 
-		if( (recv_size > 0) && (keepGoingOn2) )
-		{
-			ethResIt iterator = ethResCreator::instance()->begin();
-			//check_received_pkt(&sender_addr, (void *) incoming_msg, recv_size);
-
-			while(iterator!=ethResCreator::instance()->end())
-			{
-				if((*iterator)->getRemoteAddress() == sender_addr)
-				{
-					ethRes = (*iterator);
-					if(ethRes == NULL || ethRes->transceiver == NULL)
-					{
-						yError() << "trying to access a non initted ethres";
-						iterator++;
-						continue;
-					}
-
-					if(recv_size > ethRes->getBufferSize() || (recv_size <=0) )
-					{
-						printf("Error, received a message of wrong size ( received %d bytes while buffer is %d bytes long)\n", recv_size, ethRes->getBufferSize());
-					}
-					else
-					{
-						memcpy(ethRes->recv_msg, incoming_msg, recv_size);
-						ethRes->onMsgReception(ethRes->recv_msg, recv_size);
-					}
-					//continue; 	// to skip remaining part of the for cycle // crea loop infinito perch`e prima del iterator++
-				}
-				iterator++;
-			}
-		}
-		else
-		{
-			printf("Received weird msg of size %d\n", recv_size);
-		}
-	}
-    printf("\n Exiting recv thread \n");
-	return NULL;
+    managerMutex.post();
+    return newRes;
 }
 
-// EthManager uses 2 threads, one for sending and one for receiving.
-// The one embedded here is the sending thread because it will use the ACE timing feature.
-TheEthManager::TheEthManager() : RateThread(1)
-{
-	yTrace();
-	memset(info, 0x00, SIZE_INFO);
-	sprintf(info, "TheEthManager");
-	ethResList = ethResCreator::instance();
 
-	p_to_data = NULL;
-	_socket_initted = false;
-	_socket = NULL;
-	id_recvThread = -1;
-	keepGoingOn = true;
+
+int TheEthManager::releaseResource(FEAT_ID resource)
+{
+    yTrace() << resource.boardNum;
+    int           ret           = 0;
+    int           stillUsed     = 0;
+    ethResources  *res2release  = NULL;
+    char tmp_addr[64];
+
+    ethResources *tmpEthRes;
+    ACE_INET_Addr  tmp_ace_addr;
+
+    managerMutex.wait();
+
+    removeLUTelement(resource);
+
+    ethResIt iterator = EMS_list.begin();
+    while(iterator != EMS_list.end())
+    {
+        tmpEthRes = (*iterator);
+        tmp_ace_addr = tmpEthRes->getRemoteAddress();
+        tmp_ace_addr.addr_to_string(tmp_addr, 64);
+        if( strcmp(tmp_addr, resource.EMSipAddr.string) == 0)
+        {
+            // device exists
+            res2release = (*iterator);
+            stillUsed = res2release->deregisterFeature(resource);
+            if( !! stillUsed)
+            {
+                ret = 1;
+                break;
+            }
+            else
+            {
+                res2release->close();
+                EMS_list.remove(res2release);
+                delete res2release;
+                ret = 1;
+                break;
+            }
+        }
+        iterator++;
+    }
+
+    if(EMS_list.size() == 0 )
+        yError() << "EMS_list.size() = 0";
+
+    if(boards_map.size() == 0 )
+        yError() << "boards_map.size = 0";
+
+    if(     (EMS_list.size() == 0 ) && (boards_map.size() != 0 ) 
+        ||  (EMS_list.size() != 0 ) && (boards_map.size() == 0 ) )
+    {
+        yError() << "Something strange happened... EMS_list.size is" << EMS_list.size() << "while boards_map.size is "<< boards_map.size();
+    }
+
+    if(!ret)
+        yError() << "EthManager: Trying to release a non existing resource" << resource.name << " for boardId " << resource.boardNum << "maybe already deleted?";
+
+    if( (EMS_list.size() == 0 ) && (boards_map.size() == 0 ) )
+        ret = -1;
+
+    managerMutex.post();
+    return ret;
+}
+
+
+void TheEthManager::addLUTelement(FEAT_ID *id)
+{
+    yTrace() << id->boardNum;
+    /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
+    // Defining the var addLUT_result to have the true/false result of the insert operation...
+    // it is unlikely to fail, so keep it or not?
+    //std::pair<_Rb_tree_iterator <std::pair <const eOnvEP_t, FEAT_ID > >, bool > addLUT_result;
+    //addLUT_result =
+    boards_map.insert(std::pair<uint8_t, FEAT_ID>(id->ep, *id)).second;
+    // Check result of insertion
+    //addLUT_result.second ? yWarning() << "ok add lut element" : yError() << "NON ok add lut element";
+}
+
+bool TheEthManager::removeLUTelement(FEAT_ID element)
+{
+    yTrace() << element.boardNum;
+    /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
+    bool ret;
+    int n = (int) boards_map .erase(element.ep);
+
+    switch(n)
+    {
+        case 0:
+        {
+            yError() << "Trying to remove a non-existing element";
+            ret = false;
+            break;
+        }
+
+        case 1:
+        {
+            yDebug() << "FEAT_ID element removed succesfully from the map";
+            ret = true;
+            break;
+        }
+        default:
+        {
+            yError() << "More than one element were removed with key board num " << element.boardNum << "ep " << element.ep;
+            ret = true;
+            break;
+        }
+    }
+}
+
+void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
+{
+    yTrace();
+//     managerMutex.wait();
+    void * ret = boards_map[ep].handle;
+//     managerMutex.post();
+    return ret;
+}
+
+FEAT_ID TheEthManager::getFeatInfoFromEP(uint8_t ep)
+{
+    yTrace();
+    FEAT_ID ret_val;
+//     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run
+    ret_val = boards_map[ep];
+//     managerMutex.post();
+    return ret_val;
+}
+
+
+TheEthManager::TheEthManager()
+{
+    yTrace();
+    memset(info, 0x00, SIZE_INFO);
+    sprintf(info, "TheEthManager");
+
+    UDP_initted = false;
+    UDP_socket  = NULL;
 }
 
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 {
-	_socket = new ACE_SOCK_Dgram();
-	yDebug() << "PC104 Address " << local_addr.get_host_addr();
-	if (-1 == _socket->open(local_addr) )
-	{
-		yError() <<  "\n/---------------------------------------------------\\" \
-				 <<		"\n|eStiketzi pensa che qualcosa non abbia funzionato!!|" \
-				 <<		"\n\\---------------------------------------------------/";
-		delete _socket;
-		_socket = NULL;
-		_socket_initted = false;
-	}
-	else
-	{
-		_socket_initted = true;
+    yTrace();
+    managerMutex.wait();
 
-		ACE_thread_t id_recvThread;
-		if(ACE_Thread::spawn((ACE_THR_FUNC)recvThread, (void*) _socket, THR_CANCEL_ENABLE, &id_recvThread )==-1)
-			printf(("Error in spawning recvThread\n"));
+//     if(NULL == handle)
+//     {
+//         yError() << "Called createSocket while EthManager is not instantiated";
+//         handle = TheEthManager::instance();
+//     }
 
-		Time::delay(0.5);
-		// Start sending thread
-		handle->start();
-	}
-	return _socket_initted;
+    if(!UDP_initted)
+    {
+        UDP_socket = new ACE_SOCK_Dgram();
+        char tmp[64];
+        if(-1 == UDP_socket->open(local_addr))
+        {
+            local_addr.addr_to_string(tmp, 64);
+            yError() <<   "\n/---------------------------------------------------\\"
+                     <<   "\n| Unable to bind to local IP address " << tmp
+                     <<   "\n\\---------------------------------------------------/";
+            delete UDP_socket;
+            UDP_socket = NULL;
+            UDP_initted = false;
+        }
+        else
+        {
+            UDP_initted = true;
+
+            sender = new EthSender();
+            receiver = new EthReceiver();
+
+            //managerMutex.post();
+
+            sender->config(UDP_socket, this);
+            receiver->config(UDP_socket, this);
+            /* Start the threads sending to and receiving messages from the boards.
+             * It will execute the threadInit and pass its return value to the following calls
+             * afterStart to check if they started correctly.
+             */
+            bool ret1, ret2;
+            ret1 = sender->start();
+            ret2 = receiver->start();
+
+            //managerMutex.wait();
+            if(!ret1 || !ret2)
+            {
+                yError() << "EthManager: issue while starting threads for UDP communication with EMSs";
+
+                // stop kills and waits.
+                if(sender->isRunning() )
+                    sender->stop();
+
+                if(receiver->isRunning() )
+                    receiver->stop();
+
+                delete UDP_socket;
+                UDP_initted = false;
+                return false;
+            }
+            else
+            {
+                yTrace() << "Both sending and Receiving thread started correctly!";
+
+            }
+        }
+    }
+
+    managerMutex.post();
+    return UDP_initted;
 }
 
 bool TheEthManager::isInitted(void)
 {
-	return _socket_initted;
-}
-
-TheEthManager *TheEthManager::instance(ACE_INET_Addr local_addr)
-{
-	yTrace();
-	TheEthManager::_mutex.wait();
-	bool ret = false;
-	if (_deviceNum == 0)
-	{
-		yTrace() << "Calling EthManager Constructor";
-
-		handle = new TheEthManager();
-		ret = handle->createSocket(local_addr);
-		if(!ret )
-		{
-			delete handle;
-			handle = NULL;
-		}
-	}
-
-	if(handle)
-		_deviceNum++;
-
-	TheEthManager::_mutex.post();
-	return handle;
+    yTrace();
+    bool ret;
+    managerMutex.wait();
+    ret = UDP_initted;
+    managerMutex.post();
+    return ret;
 }
 
 TheEthManager *TheEthManager::instance()
 {
-	return handle;
+    yTrace();
+    managerMutex.wait();
+    if (NULL == handle)
+    {
+        yTrace() << "Calling EthManager Constructor";
+        handle = new TheEthManager();
+        if (NULL == handle)
+            yError() << "While calling EthManager constructor";
+        else
+            initCallback((void*)handle);
+    }
+    managerMutex.post();
+
+    return handle;
+}
+
+bool TheEthManager::killYourself()
+{
+    yTrace();
+    //TODO harakiri
+    delete handle;
 }
 
 TheEthManager::~TheEthManager()
 {
-	yTrace();
-	keepGoingOn2 = false;
-	Time::delay(1);
-	if(id_recvThread != -1)
-		ACE_Thread::cancel(id_recvThread);
+    yTrace();
+    int timeout = 5;
 
-	if(isInitted())
-	{
-		_socket->close();
-		delete _socket;
-	}
+    // Stop method also make a join waiting the thread to exit
+    sender->stop();
+    receiver->stop();
+
+        // Close UDP socket
+    if(isInitted())
+    {
+        UDP_socket->close();
+        delete UDP_socket;
+        UDP_initted = false;
+    }
+
+    managerMutex.wait();
+    // Destroy all EMS boards
+    if(EMS_list.size() != 0)
+    {
+        ethResIt iterator = EMS_list.begin();
+
+        while(iterator != EMS_list.end())
+        {
+            delete(*iterator);
+            iterator++;
+        }
+    }
+    managerMutex.post();
 }
-
 
 int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
 {
-	if(_socket_initted)
-		return _socket->send(data,len,remote_addr);
-	else
-		yError() << "Local ETH Socket NOT correctly initted!";
-
-	return -1;
+    ssize_t ret = UDP_socket->send(data,len,remote_addr);
+    return ret;
 }
-
-bool TheEthManager::threadInit()
-{
-	yTrace();
-	ethResList = ethResCreator::instance();
-	return true;
-}
-
-void TheEthManager::threadRelease()
-{
-	yTrace();
-}
-
-void TheEthManager::run()
-{
-	// send
-	ACE_TCHAR		address_tmp[128];
-	ethResIt 		iterator = ethResList->begin();
-	ethResources 	*ethRes;
-	uint16_t 		bytes_to_send = 0;
-
-	while( iterator != ethResList->end() && (keepGoingOn) )
-	{
-		p_to_data = 0;
-		bytes_to_send = 0;
-		if(NULL == *iterator)
-		{
-			yError() << "EthManager::run, iterator==NULL";
-			continue;
-		}
-
-		ethRes = (*iterator);
-		if(NULL == ethRes->transceiver)
-		{
-			yError() << "EthManager::run, iterator==NULL";
-			continue;
-		}
-
-		ethRes->getPack(&p_to_data, &bytes_to_send);
-		if((bytes_to_send > EMPTY_PACKET_SIZE) && (0 != p_to_data))
-		{
-			ACE_INET_Addr addr = ethRes->getRemoteAddress();
-			int ret = TheEthManager::instance()->send(p_to_data, (size_t)bytes_to_send, addr);
-//			char  tmp[bytes_to_send+10];
-//			int i=0;
-//			snprintf(tmp, "%s",p_to_data,bytes_to_send);
-//			for( i=0; i<bytes_to_send; i++)
-//				tmp[i] = p_to_data[i];
-//			tmp[i++] = '\0';
-//			String tmp2(tmp);
-//			yDebug() << "Sent message to " << (*iterator)->getRemoteAddress().addr_to_string(address_tmp, 128) << "at time " << Time::now() << "with content" << tmp2.c_str();
-////
-//			printf("sent package of byte %d to %s\n", ret, address_tmp);
-		}
-		iterator++;
-	}
-}
-
-
 
 // Probably useless
 bool TheEthManager::open()
 {
-	yTrace();
-	char tmp[126];
-	sprintf(tmp, "TheEthManager open - handle= %p - i=%d", handle, _deviceNum);
-	return true;
+    yTrace();
+    return true;
 }
-
 
 bool TheEthManager::close()
 {
-	_deviceNum--;
-	yTrace();
-	if(0 == _deviceNum)
-	{
-		keepGoingOn = false;
-		Time::delay(2);
-		delete handle;
-	}
+    yTrace();
+//     nBoards--;
+//     yTrace();
+//     if(0 == nBoards)
+//     {
+//         keepGoingOn = false;
+//         Time::delay(2);
+//         delete handle;
+//     }
 
-	return true;
+    return true;
+}
+
+EthSender::EthSender() : RateThread(1)
+{
+    yTrace();
+}
+
+bool EthSender::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
+{
+    yTrace();
+    send_socket = pSocket;
+    ethManager  = _ethManager;
+    ethResList  = &(_ethManager->EMS_list);
+}
+
+bool EthSender::threadInit()
+{
+    yTrace() << "Do some initialization here if needed";
+    return true;
+}
+
+void EthSender::run()
+{
+    ethResources  *ethRes;
+    ACE_TCHAR     address_tmp[128];
+    uint16_t      bytes_to_send = 0;
+    ethResIt      iterator;
+
+    ethManager->managerMutex.wait();
+    for(iterator = ethResList->begin(); iterator != ethResList->end() && (isRunning()); iterator++)
+    {
+        p_sendData = NULL;
+        bytes_to_send = 0;
+        if(NULL == *iterator)
+        {
+            yError() << "EthManager::run, iterator==NULL";
+            continue;
+        }
+
+        ethRes = (*iterator);
+
+        // This uses directly the pointer of the transceiver
+        ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send);
+        if((bytes_to_send > EMPTY_PACKET_SIZE) && (NULL != p_sendData))
+        {
+            ACE_INET_Addr addr = ethRes->getRemoteAddress();
+            int ret = ethManager->send(p_sendData, (size_t)bytes_to_send, addr);
+        }
+
+        // This will copy the data from the transceiver into private memory
+        /* ethRes->getTxPack(&sendBuffer, &bytes_to_send);
+        if(bytes_to_send > EMPTY_PACKET_SIZE)
+        {
+            ACE_INET_Addr addr = ethRes->getRemoteAddress();
+            int ret = TheEthManager::instance()->send(sendBuffer, (size_t)bytes_to_send, addr);
+        }
+        */
+    }
+    ethManager->managerMutex.post();
+}
+
+EthReceiver::EthReceiver()
+{
+    yTrace();
+}
+
+void EthReceiver::onStop()
+{
+    uint8_t tmp;
+    ethManager->send( &tmp, 1, ethManager->local_addr);
+};
+
+EthReceiver::~EthReceiver()
+{
+    yTrace();
+}
+
+bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
+{
+    yTrace();
+    recv_socket = pSocket;
+    ethManager  = _ethManager;
+    ethResList  = &(_ethManager->EMS_list);
+}
+
+
+bool EthReceiver::threadInit()
+{
+    yTrace() << "Do some initialization here if needed";
+    return true;
+}
+
+void EthReceiver::run()
+{
+    yTrace();
+    ACE_TCHAR     address[64];
+    ethResources  *ethRes;
+    ssize_t       recv_size;
+    ACE_INET_Addr sender_addr;
+    char          incoming_msg[RECV_BUFFER_SIZE];
+
+    ethResIt iteratoreLista, fineLista;
+
+//     while( NULL == recv_socket )
+//     {
+//         yError() << "socket non inizializzato... come è possibile???";
+//         Time::delay(1);
+//     }
+
+    yTrace() << "Starting udp RECV thread\n";
+
+    ACE_Time_Value recvTimeOut;
+    fromDouble(recvTimeOut, 1.0);
+
+    //while(isRunning())
+    while(!isStopping())
+    {
+#warning
+        // per ogni msg ricevuto  -1 visto come 65535!!
+        recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
+
+        sender_addr.addr_to_string(address, 64);
+//     printf("Received new packet from address %s, size = %d\n", address, recv_size);
+
+        if( (recv_size > 0) && (isRunning()) )
+        {
+            ethManager->managerMutex.wait();
+            iteratoreLista = ethManager->EMS_list.begin();
+            while(iteratoreLista != ethManager->EMS_list.end())
+            {
+                if( (*iteratoreLista)->getRemoteAddress() == sender_addr)
+                {
+                    ethRes = (*iteratoreLista);
+                    if(ethRes == NULL)      // possibile questo caso?? TODO verificare
+                    {
+                        yError() << "trying to access a non initted ethres";
+                        iteratoreLista++;
+                        break;  //?
+                    }
+
+                    if(recv_size > ethRes->getBufferSize() || (recv_size <= 0) )
+                    {
+                        yError() << "EthReceiver got a message of wrong size ( received" << recv_size << " bytes while buffer is" << ethRes->getBufferSize() << " bytes long)";
+                    }
+                    else
+                    {
+                        memcpy(ethRes->recv_msg, incoming_msg, recv_size);
+                        ethRes->onMsgReception(ethRes->recv_msg, recv_size);
+                    }
+                    break;  //? devo uscire da questo while e rimanere in quello più esterno.
+                }
+
+                iteratoreLista++;
+            }
+            ethManager->managerMutex.post();
+        }
+        else if(errno == ETIME)
+        {
+            yWarning() << "No message received from the EMS boards for " << recvTimeOut.sec() << "sec";
+        }
+        else
+        {
+            yWarning() << "Received weird msg of size" << recv_size;
+        }
+    }
+    yTrace() << "Exiting recv thread";
+    return;
 }

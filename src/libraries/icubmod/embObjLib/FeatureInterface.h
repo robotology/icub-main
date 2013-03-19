@@ -20,7 +20,7 @@
 #include "EOnv_hid.h"
 #include "EoMotionControl.h"
 
-#define SIZE_INFO		128
+#define SIZE_INFO     128
 
 #ifdef __cplusplus
 
@@ -41,13 +41,25 @@ typedef enum
 } FeatureType;
 
 
-/** \anchor FEAT_ID  Ma ciao! */
 typedef struct
 {
-    uint8_t       boardNum;
-    eOnvEP_t      ep;
-    void         *handle;
+    uint16_t  port;
+    int       ip1,ip2,ip3,ip4;
+    char      string[64];
+}FEAT_ip_addr;
 
+/** \anchor FEAT_ID   */
+typedef struct
+{
+    uint8_t         boardNum;
+    eOnvEP_t        ep;
+    void            *handle;
+
+//    ACE_INET_Addr   PC104ipAddr;
+//    ACE_INET_Addr   EMSipAddr;
+
+    FEAT_ip_addr      PC104ipAddr;
+    FEAT_ip_addr      EMSipAddr;
     // eoStuff
     const EOconstvector  *EPvector;
     eOuint16_fp_uint16_t  EPhash_function;
@@ -79,6 +91,7 @@ typedef struct
 
 void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *test_data_ptr);
 #endif
+void initCallback(void *p);
 bool addEncoderTimeStamp(FEAT_ID *id, int jointNum);
 bool findAndFill(FEAT_ID *id, void *sk_array);
 bool handle_AS_data(FEAT_ID *id, void *as_array);

@@ -32,58 +32,59 @@
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
 
+// embObj includes
 #include <ethManager.h>
+#include <ethResource.h>
 #include "EoUtilities.h"
-
 #include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
+using namespace yarp::sig;
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
                     public IiCubFeature
 {
 protected:
+    TheEthManager   *ethManager;
+    PolyDriver      resource;
+    ethResources    *res;
+    FEAT_ID         _fId;
+    bool            initted;
+    Semaphore       mutex;
 
-    PolyDriver resource;
-    ethResources *res;
-    FEAT_ID		_fId;
+    VectorOf<int>   cardId;
+    size_t          sensorsNum;
+    Vector          data;
 
-    yarp::os::Semaphore mutex;
 
-    yarp::sig::VectorOf<int> cardId;
-    size_t sensorsNum;
+    bool            init();
 
-    yarp::sig::Vector data;
 
 public:
-    EmbObjSkin() : mutex(1) {};
-//     EmbObjSkin(int period=20) : RateThread(period),mutex(1)   {}
+    EmbObjSkin();
+    ~EmbObjSkin()   { }
 
-    ~EmbObjSkin()  { }
+    char            info[SIZE_INFO];
 
-    char		info[SIZE_INFO];
+    virtual bool    open(yarp::os::Searchable& config);
 
-    virtual bool open(yarp::os::Searchable& config);
-    bool 		 init();
-    virtual bool close();
+    virtual bool    close();
 
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual int calibrateSensor();
-    virtual int calibrateChannel(int ch, double v);
+    virtual int     read(yarp::sig::Vector &out);
+    virtual int     getState(int ch);
+    virtual int     getChannels();
+    virtual int     calibrateSensor();
+    virtual int     calibrateChannel(int ch, double v);
 
-    virtual int calibrateSensor(const yarp::sig::Vector& v);
-    virtual int calibrateChannel(int ch);
+    virtual int     calibrateSensor(const yarp::sig::Vector& v);
+    virtual int     calibrateChannel(int ch);
 
-//     virtual void threadRelease();
-//     virtual void run();
-
-    virtual bool fillData(void *data);
-    virtual void setId(FEAT_ID &id);
+    virtual bool    fillData(void *data);
+    virtual void    setId(FEAT_ID &id);
+    bool            isInitted(void);
 };
 
 #endif

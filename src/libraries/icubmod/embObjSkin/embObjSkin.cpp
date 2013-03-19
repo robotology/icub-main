@@ -7,40 +7,68 @@
  *
  */
 
-#include <embObjSkin.h>
-#include "EOnv_hid.h"
-#ifdef _SETPOINT_TEST_
-#include "EOYtheSystem.h"
-#endif
-#include <yarp/os/Time.h>
+// system includes
 #include <iostream>
 #include <string.h>
 
-// const int CAN_DRIVER_BUFFER_SIZE=2047;
+// Ace & Yarp includes
+#include <yarp/os/Time.h>
 
-#define SKIN_DEBUG 0
+// embObj  includes
+#include "EOnv_hid.h"   // TODO needed??
+#include <embObjSkin.h>
+
+// Debug inlcludes
+#ifdef _SETPOINT_TEST_
+#include "EOYtheSystem.h"
+#endif
 
 using namespace std;
 
+EmbObjSkin::EmbObjSkin() :  mutex(1)
+{
+    res         = NULL;
+    ethManager  = NULL;
+    initted     = false;
+    sensorsNum  = 0;
+    memset(info, 0x00, (size_t)SIZE_INFO);
+};
+
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
-    std::string str=config.toString().c_str();
+    std::string str;
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
+        str=config.toString().c_str();
+    else
+        str="\n";
     yTrace() << str;
 
+    // Tmp variables
+    Bottle          groupEth, parameter;
+//     ACE_TCHAR       address[64];
+    int      port;
+
+    // Get both PC104 and EMS ip addresses and port from config file
+    groupEth  = Bottle(config.findGroup("ETH"));
+    Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
+    port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
+    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str(), port);
+    _fId.PC104ipAddr.port = port;
+
+    Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
+    sprintf(_fId.EMSipAddr.string, "%s", parameter2.toString().c_str());
+    _fId.EMSipAddr.port = port;
+
+    sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
+    sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
+
+    sprintf(_fId.EMSipAddr.string,"%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
+    sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+
     // Check input parameters
-    int i;
     bool correct=true;
-    //correct &= config.check("Period");
 
-    memset(info, 0x00, (size_t)SIZE_INFO);
-    Bottle xtmp, xtmp2;
-    ACE_TCHAR address[64];
-    xtmp = Bottle(config.findGroup("ETH"));
-    xtmp2 = xtmp.findGroup("IpAddress");
-    //correct &= xtmp.check("IpAddress");
-
-    strcpy(address, xtmp2.get(1).asString().c_str());
-    sprintf(info, "EmbObjSkin - referred to EMS: %s", address);
+    sprintf(info, "EmbObjSkin - referred to EMS: %s", _fId.PC104ipAddr.string);
 
     if (!correct)
     {
@@ -48,48 +76,23 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    //
-    //	CONFIGURATION
-    //
-
-    // open ethResource, if needed
-
-//	Property prop;
-//	ACE_TCHAR tmp[126];
-//	string str=config.toString().c_str();
-//	xtmp = Bottle(config.findGroup("FEATURES"));
-//	prop.fromString(str.c_str());
-//	prop.unput("device");
-//	prop.unput("subdevice");
-//	// look for Ethernet device driver to use and put it into the "device" field.
-//	Value &device=xtmp.find("device");
-//	prop.put("device", device.asString().c_str());
-
-    ethResCreator *resList = ethResCreator::instance();
-    res = resList->getResource(config);
-
-    if(NULL == res)
+    ethManager = TheEthManager::instance();
+    if(NULL == ethManager)
     {
-        yError() << "EMS device not instantiated... unable to continue";
+        yFatal() << "Unable to instantiate ethManager";
         return false;
     }
-
-// 	int period=config.find("Period").asInt();
-// 	setRate(period);
 
     Bottle ids=config.findGroup("SkinCanIds").tail();
 
     if (ids.size()>1)
     {
-        cerr<<"Warning: EmbObjSkin id list contains more than one entry -> devices will be merged. "<<endl;
+        yWarning() <<"EmbObjSkin id list contains more than one entry -> devices will be merged.";
     }
     for (int i=0; i<ids.size(); i++)
     {
         int id = ids.get(i).asInt();
         cardId.push_back (id);
-#if SKIN_DEBUG
-        fprintf(stderr, "Id reading from %d\n", id);
-#endif
     }
 
 
@@ -103,7 +106,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         data[i]=(double)255;
 
     // fill FEAT_ID data
-    memset(&_fId, 0x00, sizeof(FEAT_ID) );
     _fId.ep = 255;
     _fId.type = Skin;
     std::string FeatId = config.find("FeatId").asString().c_str();
@@ -133,20 +135,30 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     //N.B.: use a dynamic_cast to extract correct interface when using this pointer
     _fId.handle = (this);
-    // Save eo data of this board/EP
-    res->transceiver->getHostData(&_fId.EPvector, &_fId.EPhash_function);
 
-    resList->addLUTelement(_fId);
-
-    //RateThread::start();
+    /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
+    *  and boradNum to the ethManagerin order to create the ethResource requested.
+    * I'll Get back the very same sturct filled with other data useful for future handling
+    * like the EPvector and EPhash_function */
+    res = ethManager->requestResource(&_fId);
+    if(NULL == res)
+    {
+        yError() << "EMS device not instantiated... unable to continue";
+        return false;
+    }
 
     init();
+    res->goToRun();
+    printf("EmbObj Skin for board %d intatiated correctly\n", _fId.boardNum);
     return true;
 }
 
 bool EmbObjSkin::close()
 {
-// 	RateThread::stop();
+    int ret = ethManager->releaseResource(_fId);
+    res = NULL;
+    if(ret == -1)
+        ethManager->killYourself();
     return true;
 }
 
@@ -182,7 +194,7 @@ int EmbObjSkin::calibrateSensor()
 //	uint16_t						sizze;
 //
 //	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_leftlowerarm, 0x00, skinNVindex_sconfig__sigmode);
-//	res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_sk_emsboard_leftlowerarm, nvid);
+//	res->load_occasional_rop(eo_ropcode_set, endpoint_sk_emsboard_leftlowerarm, nvid);
 
     return true;
 }
@@ -209,15 +221,14 @@ bool EmbObjSkin::init()
     char str[128];
     int j = 0;
 
-    EOnv 						*cnv;
-    eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
-    EOarray						*array;
-    eOropSIGcfg_t 				sigcfg;
+    EOnv                        *cnv;
+    eOmn_ropsigcfg_command_t    *ropsigcfgassign;
+    EOarray                     *array;
+    eOropSIGcfg_t               sigcfg;
     eOcfg_nvsEP_mn_commNumber_t dummy = 0;
-    eOnvID_t 					nvid;
-    EOnv 						*nvRoot;
-
-    EOnv nvtmp;
+    eOnvID_t                    nvid;
+    EOnv                        *nvRoot;
+    EOnv                        nvtmp;
 
 #ifdef _SETPOINT_TEST_
     eoy_sys_Initialise(NULL, NULL, NULL);
@@ -225,10 +236,10 @@ bool EmbObjSkin::init()
 
     eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
     nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
-    nvRoot = res->transceiver->getNVhandler(ep, nvid, &nvtmp);
+    nvRoot = res->getNVhandler(ep, nvid, &nvtmp);
     if(NULL == nvRoot)
     {
-        printf("\n>>> ERROR \ntransceiver->getNVhandler returned NULL!!\n");
+        printf("\n>>> ERROR \ngetNVhandler returned NULL!!\n");
         return false;
     }
     uint8_t dat = 1;
@@ -238,14 +249,14 @@ bool EmbObjSkin::init()
         return false;
     }
     // tell agent to prepare a rop to send
-    res->transceiver->load_occasional_rop(eo_ropcode_set, ep, nvid);
+    res->load_occasional_rop(eo_ropcode_set, ep, nvid);
 
     //
     //	config regulars
     //
     EOnv nvtmp_ropsigcfgassign;
     eOnvID_t nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, dummy, commNVindex__ropsigcfgcommand);
-    cnv = res->transceiver->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
+    cnv = res->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
     ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->loc;
     array = (EOarray*) &ropsigcfgassign->array;
     eo_array_Reset(array);
@@ -258,39 +269,26 @@ bool EmbObjSkin::init()
     sigcfg.id = nvid;
     sigcfg.plustime = 0;
     eo_array_PushBack(array, &sigcfg);
-    res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign);
-
-
-    res->goToRun();
+    res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign);
 
     /*EOnv nvtmp_go2state;
     eOnvID_t nvid_go2state 		= eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-    EOnv 	*nv_p 				= res->transceiver->getNVhandler(endpoint_mn_appl, nvid_go2state, &nvtmp_go2state);
+    EOnv 	*nv_p 				= res->getNVhandler(endpoint_mn_appl, nvid_go2state, &nvtmp_go2state);
     eOmn_appl_state_t  desired 	= applstate_running;
 
     if( eores_OK != eo_nv_Set(nv_p, &desired, eobool_true, eo_nv_upd_dontdo))
     printf("error!!");
     // tell agent to prepare a rop to send
-    res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid_go2state);    */
+    res->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid_go2state);    */
 
     return true;
 }
 
-/*
-void EmbObjSkin::run()
-{
-	mutex.wait();
-
-	mutex.post();
-}
-*/
-
 bool EmbObjSkin::fillData(void *raw_skin_data)
 {
-    uint8_t 				msgtype = 0;
-    uint8_t 				i, triangle = 0;
+    uint8_t           msgtype = 0;
+    uint8_t           i, triangle = 0;
     EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
-    //	yarp::sig::Vector 		&pv = outPort.prepare();
     static int error = 0;
 
     for(i=0; i<sk_array->head.size; i++)
@@ -369,6 +367,6 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
         		error = 0;
         }
     }
-    return true;  // bool?
+    return true;
 }
 

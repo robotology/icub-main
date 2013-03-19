@@ -11,7 +11,7 @@ PROJECT(${PROJECTNAME})
 #add_definitions( -D_ICUB_CALLBACK_ -DEOCFG_NVSEP_MC_OVERRIDE -DEOCFG_NVSEP_SK_OVERRIDE)
 add_definitions( -D_ICUB_CALLBACK_)
 
-PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h )
+PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h ethResource.h)
 
 set(EO_BASE_DIR         ${CMAKE_SOURCE_DIR}/../firmware/emBODY/)
 
@@ -264,6 +264,7 @@ set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
 
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/ethManager.cpp
+						${EXTRA_FOLDER}/ethResource.cpp
 #						${EXTRA_FOLDER}/tools/debugFunctions.cpp
 						${EXTRA_FOLDER}/eoRequestsQueue.cpp)
 

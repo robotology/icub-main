@@ -164,7 +164,6 @@ bool skinWrapper::close()
     std::cout<<"Closing skin part "<< id << endl;
     if (NULL != analogServer)
     {
-        analogServer->stop();
         delete analogServer;
     }
     if (NULL != analog)
@@ -221,5 +220,5 @@ bool skinWrapper::detachAll()
 {
     yTrace();
     analogServer->stop();
-    delete analogServer;
+    return true;
 }

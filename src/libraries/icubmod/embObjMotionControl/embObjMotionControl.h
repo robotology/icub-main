@@ -20,7 +20,7 @@
 // update comment hereafter
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_hardware_modules
  * \defgroup eth2ems eth2ems
  *
  * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a ems to can bus device.
@@ -74,9 +74,10 @@ using namespace std;
 #include "FeatureInterface.h"
 
 #include "EoMotionControl.h"
-#include <ethManager.h>
+// #include <ethManager.h>
+#include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
-#include "IRobotInterface.h"
+// #include "IRobotInterface.h"
 
 #include "eoRequestsQueue.hpp"
 
@@ -85,119 +86,144 @@ using namespace std;
 //
 //   Help structure
 //
+using namespace yarp::os;
 
 struct ImpedanceLimits
 {
-	double min_stiff;
-	double max_stiff;
-	double min_damp;
-	double max_damp;
-	double param_a;
-	double param_b;
-	double param_c;
+    double min_stiff;
+    double max_stiff;
+    double min_damp;
+    double max_damp;
+    double param_a;
+    double param_b;
+    double param_c;
 
-	public:
-	ImpedanceLimits()
-	{
-		min_stiff=0; max_stiff=0;
-		min_damp=0;  max_damp=0;
-		param_a=0; param_b=0; param_c=0;
-	}
+public:
+    ImpedanceLimits()
+    {
+        min_stiff=0;
+        max_stiff=0;
+        min_damp=0;
+        max_damp=0;
+        param_a=0;
+        param_b=0;
+        param_c=0;
+    }
 
-	double get_min_stiff() {return min_stiff;}
-	double get_max_stiff() {return max_stiff;}
-	double get_min_damp()  {return min_damp;}
-	double get_max_damp()  {return max_damp;}
+    double get_min_stiff()
+    {
+        return min_stiff;
+    }
+    double get_max_stiff()
+    {
+        return max_stiff;
+    }
+    double get_min_damp()
+    {
+        return min_damp;
+    }
+    double get_max_damp()
+    {
+        return max_damp;
+    }
 };
 
 struct ImpedanceParameters
 {
-		double stiffness;
-		double damping;
-		bool   enabled;
-		//ImpedanceLimits limits;
-		ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
+    double stiffness;
+    double damping;
+    bool   enabled;
+    //ImpedanceLimits limits;
+    ImpedanceParameters()
+    {
+        stiffness=0;
+        damping=0;
+        enabled=false;
+    }
 };
 
 struct SpeedEstimationParameters
 {
-	double jnt_Vel_estimator_shift;
-	double jnt_Acc_estimator_shift;
-	double mot_Vel_estimator_shift;
-	double mot_Acc_estimator_shift;
+    double jnt_Vel_estimator_shift;
+    double jnt_Acc_estimator_shift;
+    double mot_Vel_estimator_shift;
+    double mot_Acc_estimator_shift;
 
-	SpeedEstimationParameters()
-	{
-		jnt_Vel_estimator_shift=0;
-		jnt_Acc_estimator_shift=0;
-		mot_Vel_estimator_shift=0;
-		mot_Acc_estimator_shift=0;
-	}
+    SpeedEstimationParameters()
+    {
+        jnt_Vel_estimator_shift=0;
+        jnt_Acc_estimator_shift=0;
+        mot_Vel_estimator_shift=0;
+        mot_Acc_estimator_shift=0;
+    }
 };
+
 #ifdef _SETPOINT_TEST_
 typedef struct
 {
-	yarp::os::Semaphore     mutex;
-	uint64_t 				send_time;
-	eOmeas_position_t 		last_pos;
-	eOmeas_position_t 		pos;
-	bool					gotIt;
-	int						count_old;
-	bool					wtf;
-}debug_data_of_joint_t;
+    yarp::os::Semaphore     mutex;
+    uint64_t                send_time;
+    eOmeas_position_t       last_pos;
+    eOmeas_position_t       pos;
+    bool                    gotIt;
+    int                     count_old;
+    bool                    wtf;
+} debug_data_of_joint_t;
 #endif
-namespace yarp{
-    namespace dev{
-        class embObjMotionControl;
+
+namespace yarp {
+    namespace dev  {
+    class embObjMotionControl;
     }
 }
+using namespace yarp::dev;
 
 static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
 static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
-                                        public IPidControlRaw,
-                                        public IControlCalibration2Raw,
-                                        public IAmplifierControlRaw,
-                                        public IEncodersTimedRaw,
-                                        public ImplementEncodersTimed,
-                                        public IPositionControlRaw,
-                                        public IVelocityControlRaw,
-                                        public IControlModeRaw,
-                                        public IControlLimitsRaw,
-                                        public IImpedanceControlRaw,
-                                        public ImplementImpedanceControl,
-                                        public ImplementControlLimits<embObjMotionControl, IControlLimits>,
-                                        public ImplementControlMode,
-                                        public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
-                                        public ImplementPositionControl<embObjMotionControl, IPositionControl>,
-                                        public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
-                                        public ImplementPidControl<embObjMotionControl, IPidControl>,
-                                        public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
-                                        public ITorqueControlRaw,
-                                        public ImplementTorqueControl,
-                                        public IVirtualAnalogSensor
-                                        /*                                        
-                                        #ifdef IMPLEMENT_DEBUG_INTERFACE
-                                        , public ImplementDebugInterface,
-                                        public IDebugInterfaceRaw
-                                        #endif
-                                        */
+    public IPidControlRaw,
+    public IControlCalibration2Raw,
+    public IAmplifierControlRaw,
+    public IEncodersTimedRaw,
+    public ImplementEncodersTimed,
+    public IPositionControlRaw,
+    public IVelocityControlRaw,
+    public IControlModeRaw,
+    public IControlLimitsRaw,
+    public IImpedanceControlRaw,
+    public ImplementImpedanceControl,
+    public ImplementControlLimits<embObjMotionControl, IControlLimits>,
+    public ImplementControlMode,
+    public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
+    public ImplementPositionControl<embObjMotionControl, IPositionControl>,
+    public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
+    public ImplementPidControl<embObjMotionControl, IPidControl>,
+    public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
+    public ITorqueControlRaw,
+    public ImplementTorqueControl,
+    public IVirtualAnalogSensor
+/*
+#ifdef IMPLEMENT_DEBUG_INTERFACE
+, public ImplementDebugInterface,
+public IDebugInterfaceRaw
+#endif
+*/
 {
 private:
     int           isVanilla;
     int           tot_packet_recv, errors;
 #ifdef _oblsolete_
-    //    tm						*hr_time1, *hr_time2;
-    char 					send_time_string[40];
-    char 					recv_time_string[40];
-    timeval					th_time;
+    //    tm                        *hr_time1, *hr_time2;
+    char                    send_time_string[40];
+    char                    recv_time_string[40];
+    timeval                 th_time;
 
-    uint8_t 				*udppkt_data;
-    uint16_t 				udppkt_size;
+    uint8_t                 *udppkt_data;
+    uint16_t                udppkt_size;
 #endif
-    
+
     bool initted;
     // embObj stuff
     yarp::os::Semaphore     _mutex;
@@ -205,11 +231,11 @@ private:
 
     // Joint/Mechanical data
 
-    //    int _networkN;								/** network number */
-    //    unsigned char *_destinations;       		/** destination addresses */
-    //    unsigned char _my_address;					/** my address */
-    //    int _polling_interval;						/** thread polling interval [ms] */
-    //    int _timeout;								/** number of cycles before timing out */
+    //    int _networkN;                                /** network number */
+    //    unsigned char *_destinations;             /** destination addresses */
+    //    unsigned char _my_address;                    /** my address */
+    //    int _polling_interval;                        /** thread polling interval [ms] */
+    //    int _timeout;                             /** number of cycles before timing out */
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
@@ -222,7 +248,7 @@ private:
     Pid *_tpids;                                /** initial torque gains */
     bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-    //	DebugParameters *_debug_params;             /** debug parameters */
+    //  DebugParameters *_debug_params;             /** debug parameters */
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
@@ -241,25 +267,25 @@ private:
     int   _firstJoint;                          // in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
 
     // debug
-    int 	start;
-    int 	end;
+    int     start;
+    int     end;
 
     // internal stuff
-    bool    *_enabledAmp;		// Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
-    bool    *_enabledPid;		// Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
-    bool    *_calibrated;		// Flag to know if the calibrate function has been called for the joint
-    double 	*_ref_positions;	// used for position control.
-    double 	*_ref_speeds;		// used for position control.
-    double 	*_command_speeds;	// used for velocity control.
-    double 	*_ref_accs;			// for velocity control, in position min jerk eq is used.
-    double 	*_ref_torques;		// for torque control.
+    bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
+    bool    *_enabledPid;       // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
+    bool    *_calibrated;       // Flag to know if the calibrate function has been called for the joint
+    double  *_ref_positions;    // used for position control.
+    double  *_ref_speeds;       // used for position control.
+    double  *_command_speeds;   // used for velocity control.
+    double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
+    double  *_ref_torques;      // for torque control.
     double  *_externalTorques;    //!< Save the torque computed from the wholeBodyTorqueObserver for echo.
 
-    uint16_t 		NVnumber; 		// keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+    uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool configure_mais(void);
-
+    bool dealloc();
     void getMStatus(int j);
 public:
     embObjMotionControl();
@@ -267,12 +293,14 @@ public:
 
     char                info[SIZE_INFO];
     Semaphore           semaphore;
-    eoRequestsQueue     *requestQueue;	// tabella che contiene la lista delle attese
+    eoRequestsQueue     *requestQueue;  // tabella che contiene la lista delle attese
 
     // embObj stuff -- this is better if private... do a get method!!
     ethResources      *res;
+    yarp::dev::TheEthManager     *ethManager;
+
     //debug
-    yarp::os::ConstString 	ethDevName;
+    yarp::os::ConstString   ethDevName;
 #ifdef _SETPOINT_TEST_
     debug_data_of_joint_t *j_debug_data;
 #endif
@@ -281,17 +309,13 @@ public:
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
 
-    // _AC_
-    eoThreadEntry * appendWaitRequest(int j, uint16_t nvid);
-    void getMotorController(DeviceDriver *iMC);
+    eoThreadEntry *appendWaitRequest(int j, uint16_t nvid);
     void refreshEncoderTimeStamp(int joint);
 
-//    void waitSem();
-//    void postSem();
     bool alloc(int njoints);
     bool init(void);
 
-    ///////// 	PID INTERFACE		/////////
+    /////////   PID INTERFACE   /////////
     virtual bool setPidRaw(int j, const Pid &pid);
     virtual bool setPidsRaw(const Pid *pids);
     virtual bool setReferenceRaw(int j, double ref);
@@ -346,7 +370,7 @@ public:
 
     /////////////////////////////// END Position Control INTERFACE
 
-        // ControlMode
+    // ControlMode
     virtual bool setPositionModeRaw(int j);
     virtual bool setVelocityModeRaw(int j);
     virtual bool setTorqueModeRaw(int j);
@@ -354,7 +378,7 @@ public:
     virtual bool setImpedanceVelocityModeRaw(int j);
     virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
-    virtual bool getControlModesRaw(int* v);
+    virtual bool getControlModesRaw(int *v);
 
     //////////////////////// BEGIN EncoderInterface
     virtual bool resetEncoderRaw(int j);
@@ -380,7 +404,7 @@ public:
     virtual bool setMaxCurrentRaw(int j, double val);
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
-  /////////////// END AMPLIFIER INTERFACE
+    /////////////// END AMPLIFIER INTERFACE
     FEAT_ID getFeat_id();
     //////  Virtual analog sensor
     virtual bool setTorque(yarp::sig::Vector &vals);
@@ -388,47 +412,47 @@ public:
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     //----------------------------------------------\\
-    //	Debug interface
+    //  Debug interface
     //----------------------------------------------\\
 
-  /* Set a generic parameter (for debug)
-    * @param type is the CAN code representing the command message
-    * @return true/false on success/failure
-    */
+    /* Set a generic parameter (for debug)
+      * @param type is the CAN code representing the command message
+      * @return true/false on success/failure
+      */
     bool setParameterRaw(int j, unsigned int type, double value);
 
-  /* Get a generic parameter (for debug)
-    * @param type is the CAN code representing the command message
-    * @return true/false on success/failure
-    */
-    bool getParameterRaw(int j, unsigned int type, double* value);
+    /* Get a generic parameter (for debug)
+      * @param type is the CAN code representing the command message
+      * @return true/false on success/failure
+      */
+    bool getParameterRaw(int j, unsigned int type, double *value);
 
-  /* Set a generic parameter (for debug)
-    * @param index is the number of the debug parameter
-    * @return true/false on success/failure
-    */
+    /* Set a generic parameter (for debug)
+      * @param index is the number of the debug parameter
+      * @return true/false on success/failure
+      */
     bool setDebugParameterRaw(int j, unsigned int index, double value);
 
-  /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
-    * @param index is the number of the debug parameter
-    * @return true/false on success/failure
-    */
+    /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
+      * @param index is the number of the debug parameter
+      * @return true/false on success/failure
+      */
     bool setDebugReferencePositionRaw(int j, double value);
 
-  /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
-    * @param index is the number of the debug parameter
-    * @return true/false on success/failure
-    */
-    bool getDebugParameterRaw(int j, unsigned int index, double* value);
-    bool getDebugReferencePositionRaw(int j, double* value);
-    bool getRotorPositionRaw         (int j, double* value);
-    bool getRotorPositionsRaw        (double* value);
-    bool getRotorSpeedRaw            (int j, double* value);
-    bool getRotorSpeedsRaw           (double* value);
-    bool getRotorAccelerationRaw     (int j, double* value);
-    bool getRotorAccelerationsRaw    (double* value);
-    bool getJointPositionRaw         (int j, double* value);
-    bool getJointPositionsRaw        (double* value);
+    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
+      * @param index is the number of the debug parameter
+      * @return true/false on success/failure
+      */
+    bool getDebugParameterRaw(int j, unsigned int index, double *value);
+    bool getDebugReferencePositionRaw(int j, double *value);
+    bool getRotorPositionRaw(int j, double *value);
+    bool getRotorPositionsRaw(double *value);
+    bool getRotorSpeedRaw(int j, double *value);
+    bool getRotorSpeedsRaw(double *value);
+    bool getRotorAccelerationRaw(int j, double *value);
+    bool getRotorAccelerationsRaw(double *value);
+    bool getJointPositionRaw(int j, double *value);
+    bool getJointPositionsRaw(double *value);
 #endif
 
     /////// Limits
@@ -464,7 +488,7 @@ public:
     int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
 
 
-#if 1	// deriva dalla classe, serve rimetterle anche qui nell'header o si fa solo per chiarezza??
+#if 1   // deriva dalla classe, serve rimetterle anche qui nell'header o si fa solo per chiarezza??
     virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
 
     /** Set current impedance parameters (stiffness,damping) for a specific joint.
@@ -480,7 +504,7 @@ public:
     /** Get current force Offset for a specific joint.
      * @return success/failure
      */
-    virtual bool getImpedanceOffsetRaw(int j, double* offset);
+    virtual bool getImpedanceOffsetRaw(int j, double *offset);
 
     /** Get the current impedandance limits for a specific joint.
      * @return success/failure

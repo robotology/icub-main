@@ -126,7 +126,7 @@ void mwake(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv,  eOcfg_nvsEP_mc_moto
 extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
 #warning "joint status basic strong iCubInterface"
-//#define _debug_jstatus_basic_
+#define _debug_jstatus_basic_
 #ifdef _debug_jstatus_basic_
     static int i = 0;
     static bool print = false;
@@ -145,7 +145,7 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumb
         print = true;
     }
 
-    if(print)
+  //  if(print)
     {
         eOmc_joint_status_basic_t *jstatus_b = nv->rem;
         printf("\njstatus__basic for Joint num = %d\n", xx);

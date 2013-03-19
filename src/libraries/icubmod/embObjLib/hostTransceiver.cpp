@@ -12,40 +12,41 @@
 
 using namespace std;
 
-#include "stdint.h"
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "string.h"
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
-#include <yarp/os/impl/Logger.h>
 
 #include "EoCommon.h"
 #include "EOnv_hid.h"
 #include "EOrop.h"
 #include "Debug.h"
 
+#include <yarp/os/Time.h>
 
 #define _DEBUG_ON_FILE_
 #undef _DEBUG_ON_FILE_
 
 #ifdef _DEBUG_ON_FILE_
-#define SOGLIA						70000
-#define MAX_ACQUISITION 			10000
+#define SOGLIA                70000
+#define MAX_ACQUISITION       10000
 uint64_t idx = 0;
 uint64_t max_idx = MAX_ACQUISITION*7*16*2 / 8;
 uint64_t utime[MAX_ACQUISITION*16*7*2*2] = {0};
 uint64_t errors[MAX_ACQUISITION*16*7*2*2][2] = {0};
 uint64_t nErr=0;
-FILE *outFile = NULL;
+FILE *outFile = NULL;waiting for new ms";
 #endif
 
 
 
-hostTransceiver::hostTransceiver()
+hostTransceiver::hostTransceiver() : transMutex(1)
 {
     yTrace();
+    bytesUsed = 0;
 }
 
 hostTransceiver::~hostTransceiver()
@@ -53,14 +54,14 @@ hostTransceiver::~hostTransceiver()
     yTrace();
 }
 
-void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize, uint8_t _board_n)
+bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize, uint8_t _board_n)
 {
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
     eOhosttransceiver_cfg_t hosttxrxcfg;
-    hosttxrxcfg.remoteboardipv4addr   	= 	_remoteipaddr;
-    hosttxrxcfg.remoteboardipv4port 	=  	_ipport;
-    hosttxrxcfg.tobedefined 			=   0;
+    hosttxrxcfg.remoteboardipv4addr   = _remoteipaddr;
+    hosttxrxcfg.remoteboardipv4port   = _ipport;
+    hosttxrxcfg.tobedefined           =   0;
 
 
     switch(_board_n)
@@ -101,6 +102,9 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
         hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb9;
         hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb9_fptr_hashfunction_ep2index;
         break;
+    default:
+        yError() << "Got a non existing board number" << _board_n;
+        return false;
     }
 
     localipaddr  = _localipaddr;
@@ -109,31 +113,43 @@ void hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
 
     // initialise the transceiver: it creates a EOtransceiver and its nvsCfg by loading all the endpoints
     hosttxrx     = eo_hosttransceiver_New(&hosttxrxcfg);
+    if(hosttxrx == NULL)
+        return false;
 
     // retrieve teh transceiver
     pc104txrx    = eo_hosttransceiver_Transceiver(hosttxrx);
+    if(pc104txrx == NULL)
+        return false;
 
     // retrieve the nvscfg
     pc104nvscfg  = eo_hosttransceiver_NVsCfg(hosttxrx);
+    if(pc104nvscfg == NULL)
+        return false;
 
-    pktTx = eo_packet_New(_pktsize);
-    pktRx = eo_packet_New(_pktsize);
+    p_TxPkt = eo_packet_New(_pktsize);
+    if(p_TxPkt == NULL)
+        return false;
+
+    p_RxPkt = eo_packet_New(_pktsize);
+    if(p_RxPkt == NULL)
+        return false;
 
     // save board specific configs for later use (they may be needed by some callbacks)
     EPvector = hosttxrxcfg.vectorof_endpoint_cfg;
     EPhash_function_ep2index = hosttxrxcfg.hashfunction_ep2index;
+    return true;
 }
 
 bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd)
 {
-    _mutex.wait();
+    transMutex.wait();
     bool ret = true;
     if( eores_OK != eo_nv_Set(nv, dat, forceset, upd))
     {
         yError() << "Error while setting NV data\n";
         ret = false;
     }
-    _mutex.post();
+    transMutex.post();
     return ret;
 }
 
@@ -151,9 +167,9 @@ bool hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t
     ropdesc.signature = 0;
 
 
-    _mutex.wait();
+    transMutex.wait();
     eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc);
-    _mutex.post();
+    transMutex.post();
 
     if(eores_OK == res)
         ret = true;
@@ -206,26 +222,38 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
     EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
 
     if(NULL == nvRoot)
+    {
         yError() << "Unable to get pointer to desired NV with id" << nvid;
+        return false;
+    }
 
-    _mutex.wait();
+    transMutex.wait();
+
+    nvSize = eo_nv_Size(&nv, data);   //TODO calcolare dimesione corretta, tenendo conto di tempo e signature
 
 //     // Verify that the datasize is correct. Get size from caller
-//     nvSize = eo_nv_Size(&nv, data);
 //     if( (nvSize < size) || (0 == size) )
 //     {
 //         // Do something about this case?
 //         // sarebbe bene pero' emettere un warning
 //         yError() << "AddRop, wrong size, skip";
-//         _mutex.post();
+//         transMutex.post();
 //         return false;
 //     }
+
+    bytesUsed += nvSize;
+    while(nvSize >= EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals)
+    {
+        yWarning() << "Ropframe occasional is full, splitting in another message. (actually just sleeping 1 ms)";
+        yarp::os::Time::delay(0.001);
+        bytesUsed = 0;
+    }
 
     if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
     {
         // the nv is not writeable
         yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
-        _mutex.post();
+        transMutex.post();
         return false;
     }
 
@@ -243,21 +271,71 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
     if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
     {
         yError() << "Error while loading ROP in ropframe\n";
-        _mutex.post();
+        transMutex.post();
         return false;
     }
 
-    _mutex.post();
+    transMutex.post();
 
     // everything fine!
     return true;
 }
 
 
-// bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
-// {
-//     
-// }
+bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
+{
+    bool ret;
+    uint16_t    nvSize;
+    eOresult_t    res;
+    EOnv          nv;
+
+    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+
+    if(NULL == nvRoot)
+        yError() << "Unable to get pointer to desired NV with id" << nvid;
+
+    transMutex.wait();
+
+    nvSize = 8;  //TODO calcolare dimesione vera, tenendo conto di tempo e signature
+
+//     // Verify that the datasize is correct. Get size from caller
+//     if( (nvSize < size) || (0 == size) )
+//     {
+//         // Do something about this case?
+//         // sarebbe bene pero' emettere un warning
+//         yError() << "AddRop, wrong size, skip";
+//         transMutex.post();
+//         return false;
+//     }
+
+    bytesUsed += nvSize;
+    while(nvSize >= EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals)
+    {
+        yWarning() << "Ropframe occasional is full, splitting in another message. (actually just sleeping 1 ms)";
+        yarp::os::Time::delay(0.001);
+    }
+
+
+    eOropdescriptor_t ropdesc;
+    ropdesc.configuration = eok_ropconfiguration_basic;
+    ropdesc.configuration.plustime = 1;
+    ropdesc.ropcode = eo_ropcode_ask;
+    ropdesc.ep = endPoint;
+    ropdesc.id = nvid;
+    ropdesc.size = 0;
+    ropdesc.data = NULL;
+    ropdesc.signature = 0;
+
+    if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+    {
+        yError() << "Error while loading ROP in ropframe\n";
+        transMutex.post();
+        return false;
+    }
+
+    transMutex.post();
+    return true;
+}
 
 bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
 {
@@ -265,10 +343,10 @@ bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_
     EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
 
     if(NULL == nvRoot)
+    {
         yError() << "Unable to get pointer to desired NV with id" << nvid;
-
-    _mutex.wait();
-
+        return false;
+    }
     getNVvalue(nvRoot, data, size);
     return true;
 }
@@ -293,14 +371,10 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
 {
     uint16_t numofrops;
     uint64_t txtime;
-    _mutex.wait();
-    eo_packet_Payload_Set(pktRx, data, size);
-    eo_packet_Addressing_Set(pktRx, remoteipaddr, ipport);
-    eo_transceiver_Receive(pc104txrx, pktRx, &numofrops, &txtime);
-    _mutex.post();
 
-    // Debug
-    //	checkDataForDebug(data, size);
+    eo_packet_Payload_Set(p_RxPkt, data, size);
+    eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
+    eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
 }
 
 // and Processes it
@@ -405,14 +479,17 @@ void checkDataForDebug(uint8_t *data, uint16_t size)
 #endif
 }
 
-// somebody retrieves what must be transmitted
+/* This function just modify the pointer 'data', in order to point to transceiver's memory where a copy of the ropframe
+ * to be sent is stored.
+ * The memory holding this ropframe will be written ONLY in case of a new call of eo_transceiver_Transmit function,
+ * therefore it is safe to use it. No concurrency is involved here.
+ */
 void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 {
     uint16_t numofrops;
-    _mutex.wait();
-    eo_transceiver_Transmit(pc104txrx, &pktTx, &numofrops);
-    eo_packet_Payload_Get(pktTx, data, size);
-    _mutex.post();
+    bytesUsed = 0;
+    eo_transceiver_Transmit(pc104txrx, &p_TxPkt, &numofrops);
+    eo_packet_Payload_Get(p_TxPkt, data, size);
 }
 
 /*
@@ -439,7 +516,7 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot
     // convetire come parametro, oppure mettere direttam l'indirizzo ip come parametro...
     eOnvOwnership_t	nvownership = eo_nv_ownership_remote;
 
-    _mutex.wait();
+//    _mutex.wait();
     res = eo_nvscfg_GetIndices(	this->pc104nvscfg, remoteipaddr, endpoint, id, &ondevindex,	&onendpointindex, &onidindex);
 
     // if the nvscfg does not have the triple (ip, ep, id) then we return an error
@@ -453,21 +530,21 @@ EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot
         // nvRoot MUST be a pointer to an already existing object, created by the caller!!
         nvRoot = eo_nvscfg_GetNV(this->pc104nvscfg, ondevindex, onendpointindex, onidindex, nvTreenodeRoot, nvRoot);
     }
-    _mutex.post();
+//    _mutex.post();
     return(nvRoot);
 }
 
 
 bool hostTransceiver::getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size)
 {
-    //  yTrace();
+    bool ret;
     if (NULL == nvRoot)
     {   // should return false as error
         return false;
     }
-    _mutex.wait();
-    bool ret = (eores_OK == eo_nv_remoteGet(nvRoot, data, size));
-    _mutex.post();
+//     transMutex.wait();
+    (eores_OK == eo_nv_remoteGet(nvRoot, data, size)) ? ret = true : ret = false;
+//     _mutex.post();
     return ret;
 }
 

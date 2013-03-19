@@ -7,8 +7,12 @@
 *
 */
 
-/// general purpose stuff.
+// general purpose stuff.
+#include <string>
+#include <iostream>
+#include <string.h>
 
+// Yarp Includes
 #include <yarp/os/Time.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -16,18 +20,11 @@
 #include <ace/config.h>
 #include <ace/Log_Msg.h>
 
-// #include "ThreadTable2.h"
-// #include "ThreadPool2.h"
 
-#include <string>
-#include <iostream>
-#include <string.h>
-
-
-/// specific to this device driver.
-#include "embObjAnalogSensor.h"
-
-// #include <yarp/dev/ControlBoardInterfacesImpl.inl>
+// specific to this device driver.
+#include <embObjAnalogSensor.h>
+#include <ethManager.h>
+#include <Debug.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -49,7 +46,7 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
-static inline bool validate(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+static inline bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
 {
     size++;  // size includes also the name of the parameter
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
@@ -74,7 +71,6 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 {
     Bottle xtmp;
 
- 
   // embObj parameters, in ETH group
     Value val =_config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
@@ -87,7 +83,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     // Analog Sensor stuff
     Bottle config = _config.findGroup("GENERAL");
-    if (!validate(config, xtmp, "Period","transmetting period of the sensor", 1))
+    if (!extractGroup(config, xtmp, "Period","transmetting period of the sensor", 1))
     {
         yError() << "embObjAnalogSensor Using default value = 0 (disabled)";
         _period = 0;
@@ -98,7 +94,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         yDebug() << "embObjAnalogSensor Using value of" << _period;
     }
 
-    if (!validate(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
+    if (!extractGroup(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
     {
         fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (disabled)\n");
         _channels = 0;
@@ -109,7 +105,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         _channels = xtmp.get(1).asInt();
     }
 
-    if (!validate(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
+    if (!extractGroup(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
     {
         fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (Don't use calibration)\n");
         _useCalibration = 0;
@@ -118,6 +114,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     {
         _useCalibration = xtmp.get(1).asInt();
     }
+    return true;
 };
 
 
@@ -147,31 +144,58 @@ embObjAnalogSensor::~embObjAnalogSensor()
 
 bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 {
-    Property prop;
-    std::string str=config.toString().c_str();
+    std::string str;
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
+        str=config.toString().c_str();
+    else
+        str="\n";
     yTrace() << str;
+
+    // Read stuff from config file
+    if(!fromConfig(config))
+    {
+        yError() << "embObjAnalogSensor missing some configuration parameter. Check logs and your config file.";
+        return false;
+    }
+
+    // Tmp variables
+    Bottle          groupEth;
+    ACE_TCHAR       address[64];
+    ACE_UINT16      port;
+
+
+    // Get both PC104 and EMS ip addresses and port from config file
+    groupEth  = Bottle(config.findGroup("ETH"));
+    Bottle parameter1( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
+    port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
+    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str(), port);
+    _fId.PC104ipAddr.port = port;
+
+    Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
+    sprintf(_fId.EMSipAddr.string, "%s", parameter2.toString().c_str());
+    _fId.EMSipAddr.port = port;
+
+    sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
+    sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
+
+    sprintf(_fId.EMSipAddr.string,"%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
+    sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+
+    //   Debug info
+    memset(info, 0x00, SIZE_INFO);
+    sprintf(info, "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);
+    sprintf(_fId.name, "%s", info);       // Saving User Friendly Id
 
     // Set dummy values
     _fId.boardNum  = 255;
     _fId.ep = 255;
 
-    fromConfig(config);
-    prop.fromString(str.c_str());
-
-    // get EMS ip address from config string
-    ACE_TCHAR address[64] = {0};
-    Bottle xtmp = Bottle(config.findGroup("ETH"));
-    strcpy(address, config.findGroup("ETH").check("IpAddress",Value(1), "EMS ip address").asString().c_str() );
-
-    //   Debug info
-    memset(info, 0x00, SIZE_INFO);
-    sprintf(info, "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);
-
-    //   open ethResource, if needed
-    ethResCreator *resList = ethResCreator::instance();
-    if(NULL == (res = resList->getResource(config)) )
+    Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
+    if(val.isInt())
+        _fId.boardNum =val.asInt();
+    else
     {
-        yError () << "embObjAnalogSensor: Unable to instantiate an EMS... check configuration file";
+        yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.PC104ipAddr.string;
         return false;
     }
 
@@ -197,9 +221,30 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         break;
     default:
         _fId.ep = 255;
-        yError () << "\n embObjAnalogSensor: Found non-existing board identifier number!!!";
+        yError () << "\n embObjAnalogSensor: Found non-existing board identifier number" << _fId.boardNum << "!!!";
         return false;
         break;
+    }
+
+    ethManager = TheEthManager::instance();
+    if(NULL == ethManager)
+    {
+        yFatal() << "Unable to instantiate ethManager";
+        return false;
+    }
+
+    //N.B.: use a dynamic_cast to extract correct interface when using this pointer
+    _fId.handle = (this);
+
+    /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
+    *  and boradNum to the ethManagerin order to create the ethResource requested.
+    * I'll Get back the very same sturct filled with other data useful for future handling
+    * like the EPvector and EPhash_function */
+    res = ethManager->requestResource(&_fId);
+    if(NULL == res)
+    {
+        yError() << "EMS device not instantiated... unable to continue";
+        return false;
     }
 
     data=new AnalogData(_channels, _channels+1);
@@ -216,6 +261,38 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     // Tell EMS to go into config state, otherwise something doesn't work correctly.
 #warning "go to config message before getting strain fullscale... investigate more
 //     res->goToConfig();
+
+    eOsnsr_strain_config_t strainConfig;
+    strainConfig.datarate = _period;
+    strainConfig.signaloncefullscale = eobool_false;
+
+    if(_useCalibration)
+    {
+        if( ! getFullscaleValues() )
+        {
+//             yError() << "EmbObj AnalogSensor, problem while getting fullscale values!";
+            return false;
+        }
+        strainConfig.mode = snsr_strainmode_txcalibrateddatacontinuously;
+    }
+    else
+    {
+        strainConfig.mode = snsr_strainmode_txuncalibrateddatacontinuously;
+    }
+
+    eOnvID_t nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
+    res->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
+
+    // Set variable to be signalled
+    init();
+    res->goToRun();
+
+    printf("EmbObj Analog Sensor for board %d intatiated correctly", _fId.boardNum);
+    return true;
+}
+
+bool embObjAnalogSensor::getFullscaleValues()
+{
     // Check inital size of array...  it should be zero.
     bool gotFullScaleValues = false;
     int timeout, NVsize;
@@ -235,19 +312,19 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     if(EOK_uint16dummy == nvid_fullscale)
         yError() << "nvid not found";
 
-    p_tmpNV = res->transceiver->getNVhandler( _fId.ep, nvid_fullscale, &tmpNV);
+    p_tmpNV = res->getNVhandler( _fId.ep, nvid_fullscale, &tmpNV);
 
     // tmpNVsize is the actual dimension of the array expressed in bytes, it is NOT the number of elements the array contains
-    res->transceiver->readValue( nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
+    res->readValue( nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
 
     yDebug() << "using pointer size     is " << eo_array_Size((EOarray*)     p_tmpNV->rem) << "or" << tmpNVsize;
     yDebug() << "using pointer capacity is " << eo_array_Capacity((EOarray*) p_tmpNV->rem);
     yDebug() << "using pointer itemsize is " << eo_array_ItemSize((EOarray*) p_tmpNV->rem);
- 
+
     // when initialized, size shuold be zero... check it
     NVsize = eo_array_Size((EOarray*) p_tmpNV->rem);
     if(0 != NVsize)
-        yError() << "Initial size of array is different from zero (" << NVsize << ")!!!";
+        yError() << "Initial size of array is different from zero (" << NVsize << ") for board" << _fId.boardNum;
 
      // Prepare analog sensor
     eOsnsr_strain_config_t strainConfig;
@@ -256,103 +333,73 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     strainConfig.signaloncefullscale = eobool_true;
 
     nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
-    res->transceiver->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
+    res->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
 
-    timeout = 4;
+    timeout = 5;
+
     // wait for rensponse
-    if(_useCalibration)
+    while(!gotFullScaleValues && (timeout != 0))
     {
-        while(!gotFullScaleValues && (timeout != 0) )
-        {
-            // read fullscale values
-            res->transceiver->readValue( nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
-            // If data arrives, size is bigger than zero
-            NVsize = eo_array_Size((EOarray*) p_tmpNV->rem);
-            if(0 != NVsize)
-            {
-                gotFullScaleValues = true;
-                break;
-            }
-            timeout--;
-            printf("full scale val not arrived yet... retrying in 1 sec\n");
-            Time::delay(1);
-        }
+        Time::delay(1);
+        // read fullscale values
+        res->readValue(nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
+        // If data arrives, size is bigger than zero
+        NVsize = eo_array_Size((EOarray *) p_tmpNV->rem);
 
-        if (0 == timeout)
+        if(0 != NVsize)
         {
-            yError() << "ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNum;
-//         return false;  // commented for denug purpose... uncomment!!
-        }
-
-        if( (NVsize != _channels)  )
-        {
-            yError() << "Analog sensor Calibration data has a different size from channels number in configuration file!! Aborting! NVsize" << NVsize << "channels " << _channels;
             gotFullScaleValues = true;
-//         return false;
+            break;
         }
 
-        uint8_t *msg;
-
-        yError() << "capacity " << fullscale_values.head.capacity;
-        yError() << "itemsize " << fullscale_values.head.itemsize;
-        yError() << "size " << fullscale_values.head.size;
-
-        if(gotFullScaleValues)
-        {
-            yWarning() << "GOT full scale values!! YUPPIE!!for board " << _fId.boardNum;
-
-            for(int k=0; k<12; k++)
-            	printf("%d(0x%0X) ", fullscale_values.data[k], fullscale_values.data[k]);
-            printf("\n");
-
-			for(int i=0; i<_channels; i++)
-            {
-                // Get the k-th element of the array as a 2 bytes msg
-                msg = (uint8_t*) eo_array_At((EOarray*) &fullscale_values, i);
-
-
-                // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback)
-                scaleFactor[i]= 0;
-                scaleFactor[i]= ( (uint16_t)(msg[0]<<8) | msg[1] );
-                yError() << " scale factor[" << i << "] = " << scaleFactor[i];
-            }
-
-        }
-        strainConfig.mode = snsr_strainmode_txcalibrateddatacontinuously;
+        timeout--;
+        yDebug() << "full scale val not arrived yet... retrying in 1 sec";
     }
-    else
+
+    if((false == gotFullScaleValues) && (0 == timeout))
     {
-        strainConfig.mode = snsr_strainmode_txuncalibrateddatacontinuously;
+        yError() << "ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNum;
+        return false;
     }
 
-    // Set analog sensor to start signalling data
-    strainConfig.datarate = _period;
-    strainConfig.signaloncefullscale = eobool_false;
+    if((NVsize != _channels))
+    {
+        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for board" << _fId.boardNum << "Aborting";
+        return false;
+    }
 
-//     nvid_strain_config = eo_cfg_nvsEP_as_mais_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_maisNumber_t) 0, (eOcfg_nvsEP_as_maisNVindex_t) strainNVindex_sconfig);
-    res->transceiver->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
+    uint8_t *msg;
 
-    // Set variable to be signalled
-    init();
+    yError() << "capacity " << fullscale_values.head.capacity;
+    yError() << "itemsize " << fullscale_values.head.itemsize;
+    yError() << "size " << fullscale_values.head.size;
 
-    // Save eo data of this board/EP
-    _fId.type=AnalogStrain;
-    res->transceiver->getHostData(&_fId.EPvector, &_fId.EPhash_function);
+    if(gotFullScaleValues)
+    {
+        yWarning() << "GOT full scale values for board" << _fId.boardNum;
 
-    //N.B.: use a dynamic_cast to extract correct interface when using this pointer
-    _fId.handle  = (this);
+        yDebug() << "Fullscale values for board " << _fId.boardNum << "are:";
+        for(int k=0; k<12; k++)
+            yDebug() << "channel " << fullscale_values.data[k] << "full scale value " << fullscale_values.data[k];
 
-    memset(_fId.name, 0x00, SIZE_INFO);
-    sprintf(_fId.name, "%s", info);       // Saving User Friendly Id
-    resList->addLUTelement(_fId);
-    res->goToRun();
+        for(int i=0; i<_channels; i++)
+        {
+            // Get the k-th element of the array as a 2 bytes msg
+            msg = (uint8_t *) eo_array_At((EOarray *) &fullscale_values, i);
+
+            // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback)
+            scaleFactor[i]= 0;
+            scaleFactor[i]= ((uint16_t)(msg[0]<<8) | msg[1]);
+            yError() << " scale factor[" << i << "] = " << scaleFactor[i];
+        }
+    }
+
     return true;
 }
 
 bool embObjAnalogSensor::init()
 {
     yTrace();
-    eOsnsr_strain_config_t strainConfig;
     eOnvID_t nvid;
 
     // Configure values to be sent regularly
@@ -364,7 +411,7 @@ bool embObjAnalogSensor::init()
     EOarray                   *array;                     // array containing nvids to be signalled
 
     nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, 0, commNVindex__ropsigcfgcommand);
-    nvRoot_ropsigcfgassign = res->transceiver->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign, &nv_ropsigcfgassign);
+    nvRoot_ropsigcfgassign = res->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign, &nv_ropsigcfgassign);
 
     ropsigcfgassign = (eOmn_ropsigcfg_command_t*) nvRoot_ropsigcfgassign->loc;
     array = (EOarray*) &ropsigcfgassign->array;
@@ -391,7 +438,7 @@ bool embObjAnalogSensor::init()
             yError () << " EmbObj Analog Sensor while loading ropSig Array  at line " << __LINE__;
     }
 
-    if(!res->transceiver->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
+    if(!res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
         return false;
 }
 
@@ -524,4 +571,15 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
 //     printf("\n");
     mutex.post();
     return AS_OK;
+}
+
+bool embObjAnalogSensor::close()
+{
+    data=new AnalogData(_channels, _channels+1);
+    scaleFactor=new double[_channels];
+    int ret = ethManager->releaseResource(_fId);
+    if(ret == -1)
+        ethManager->killYourself();
+    res = NULL;
+    return true;
 }
