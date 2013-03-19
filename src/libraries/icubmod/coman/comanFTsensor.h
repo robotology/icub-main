@@ -69,10 +69,10 @@ namespace yarp{
 
 typedef int AnalogDataFormat;
 /*! class yarp::dev::comanFTsensor
- * 
+ *
  */
-class yarp::dev::comanFTsensor:         public yarp::dev::DeviceDriver,
-                                        public yarp::dev::IAnalogSensor
+class yarp::dev::comanFTsensor:     public yarp::dev::DeviceDriver,
+                                    public yarp::dev::IAnalogSensor
 {
 private:
 
@@ -91,7 +91,6 @@ private:
 
     bool            isVirtualSensor;    //RANDAZ ... a new class for virtual sensor will be create
 
-
 //     AnalogData *data;
     short status;
 
@@ -103,7 +102,6 @@ private:
     yarp::os::Bottle speedMsg;
     yarp::os::Bottle closeMsg;
     std::string deviceIdentifier;
-
 
     // Read useful data from config and check fir correctness
     bool fromConfig(yarp::os::Searchable &config);
