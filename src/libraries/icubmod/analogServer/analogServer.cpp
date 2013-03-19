@@ -227,6 +227,12 @@ bool AnalogServer::attachAll(const PolyDriverList &analog2attach)
 bool AnalogServer::detachAll()
 {
     yTrace();
+    analogSensor_p = NULL;
+    for(unsigned int i=0; i<analogPorts.size(); i++)
+    {
+        handlers[i]->setInterface(analogSensor_p);
+    }
+    return true;
 }
 
 void AnalogServer::attach(yarp::dev::IAnalogSensor *s)
@@ -239,6 +245,15 @@ void AnalogServer::attach(yarp::dev::IAnalogSensor *s)
     }
 }
 
+void AnalogServer::detach()
+{
+    yTrace();
+    analogSensor_p = NULL;;
+    for(unsigned int i=0; i<analogPorts.size(); i++)
+    {
+        handlers[i]->setInterface(analogSensor_p);
+    }
+}
 
 bool AnalogServer::threadInit()
 {

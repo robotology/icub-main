@@ -1,6 +1,5 @@
-
- #ifndef ANALOG_SERVER_H_
- #define ANALOG_SERVER_H_
+#ifndef ANALOG_SERVER_H_
+#define ANALOG_SERVER_H_
 
  //#include <list>
 #include <vector>
@@ -122,8 +121,10 @@ public:
       */
     bool attachAll(const PolyDriverList &p);
     bool detachAll();
-    
+
     void attach(yarp::dev::IAnalogSensor *s);
+    void detach();
+
     bool threadInit();
     void threadRelease();
     void run();
