@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <yarp/dev/DeviceDriver.h>
+#include <yarp/os/Semaphore.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
@@ -84,6 +85,8 @@ public:
     virtual bool quitCalibrate();
 
 private:
+    yarp::os::Semaphore calibMutex;
+
     void calibrateJoint(int j);
     void goToZero(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
@@ -113,13 +116,11 @@ private:
     double *homeVel;
     double *homePos;
     double *zeroPosThreshold;
-    bool abortCalib;
-    bool abortParking;
+    bool    abortCalib;
+    bool    abortParking;
+    bool    isCalibrated;
+    int     isVanilla;
 
-    int           isVanilla;
-//     FILE   *logfile;   
-//     std::string  logfile_name;
-    
     std::string deviceName;
 };
 #endif

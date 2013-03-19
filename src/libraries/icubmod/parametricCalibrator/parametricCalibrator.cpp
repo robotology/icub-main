@@ -40,7 +40,7 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
 
     if(tmp.size()!=size)
     {
-        yError () << key1.c_str() << " incorrect number of entries"; // in board " << _fId.name << '[' << _fId.boardNum << ']';
+        yError () << key1.c_str() << " incorrect number of entries in board.";
         return false;
     }
 
@@ -63,17 +63,21 @@ parametricCalibrator::parametricCalibrator() :
     homeVel(0),
     homePos(0),
     zeroPosThreshold(0),
-    abortCalib(false)
+    abortCalib(false),
+    isCalibrated(false),
+    calibMutex(1)
 {
 }
 
 parametricCalibrator::~parametricCalibrator()
 {
+    yTrace();
     close();
 }
 
 bool parametricCalibrator::open(yarp::os::Searchable& config)
 {
+    yTrace();
     Property p;
     p.fromString(config.toString());
 
@@ -203,7 +207,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 
 bool parametricCalibrator::close ()
 {
-	yTrace();
+    yTrace();
     if (type != NULL) {
         delete[] type;
         type = NULL;
@@ -267,9 +271,7 @@ bool parametricCalibrator::close ()
 bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il wrapper, non mc
 {
     yTrace();
-    abortCalib=false;
-
-    bool calibration_ok = true;
+    abortCalib  = false;
     bool goHome_ok = true;
     int  setOfJoint_idx = 0;
 
@@ -318,13 +320,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         lend = tmp.end();
         totJointsToCalibrate += tmp.size();
 
-//   printf("Joints calibration order :\n");
-//   while(lit != lend)
-//   {
-//     printf("%d,", (*lit));
-//     lit++;
-//   }
-//   printf("\n");
+        printf("Joints calibration order :\n");
+
+        while(lit != lend)
+        {
+            printf("%d,", (*lit));
+            lit++;
+        }
+        printf("\n");
         Bit++;
     }
 
@@ -342,13 +345,8 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     else
     	yWarning() << deviceName << "\n\nGoing to calibrate!!!!\n\n";
 
-    yTrace() << "before";
-    // to be removed ... (?)
-    Time::delay(10.0f);
-
-    yTrace() << "After";
     Bit=joints.begin();
-    while( (Bit != Bend) && (!abortCalib) )			// per ogni set di giunti
+    while( (Bit != Bend) && (!abortCalib) )   // per ogni set di giunti
     {
         setOfJoint_idx++;
         tmp.clear();
@@ -356,14 +354,15 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         lit  = tmp.begin();
         lend = tmp.end();
-        while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+        while( (lit != lend) && (!abortCalib) )     // per ogni giunto del set
         {
-            if ((*lit) >= nj)		// check the axes actually exists
+            if ( ((*lit) <0) || ((*lit) >= nj) )   // check the axes actually exists
             {
-                yError() << deviceName << "Asked to calibrate joint" << (*lit) << ", which is bigger than the number of axes for this part ("<< nj << ")";
+                yError() << deviceName << "Asked to calibrate joint" << (*lit) << ", which is negative OR bigger than the number of axes for this part ("<< nj << ")";
                 return false;
             }
-            if(!iPids->getPid((*lit),&original_pid[(*lit)]) )
+
+            if(!iPids->getPid((*lit), &original_pid[(*lit)]) )
             {
                 yError() << deviceName << "getPid joint " << (*lit) << "failed... aborting calibration";
                 return false;
@@ -371,7 +370,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             limited_pid[(*lit)]=original_pid[(*lit)];
             limited_pid[(*lit)].max_int=maxPWM[(*lit)];
             limited_pid[(*lit)].max_output=maxPWM[(*lit)];
-            iPids->setPid((*lit),limited_pid[(*lit)]);			// per i giunti delle 4dc, il valore da usare è quello normale
+            iPids->setPid((*lit),limited_pid[(*lit)]);      // per i giunti delle 4dc, il valore da usare è quello normale
             lit++;
         }
 
@@ -379,29 +378,23 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         // Calibrazione
         //
 
-        if(isVanilla)
+        if(isVanilla)     // if this flag is on, fake calibration
         {
             Bit++;
             continue;
         }
 
-        lit  = tmp.begin();
-        while(lit != lend)		// per ogni giunto del set
+        for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
         {
-            iEncoders->getEncoders(currPos);
-
-            // Enable amp moved to MotionControl class;
+            // Enable amp moved into EMS class;
             // Here we just call the calibration procedure
             calibrateJoint((*lit));
-            lit++;
         }
 
-        lit  = tmp.begin();
-        while(lit != lend)		// per ogni giunto del set
+        for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
         {
             iEncoders->getEncoders(currPos);
             yDebug() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
-            lit++;
         }
 
         Time::delay(4.0f);
@@ -411,7 +404,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             yWarning() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
             lit  = tmp.begin();
             lend = tmp.end();
-            while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
             {
                 iPids->setPid((*lit),original_pid[(*lit)]);
                 lit++;
@@ -420,7 +413,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         else    // keep pid safe  and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
-            while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
                 lit++;
@@ -428,27 +421,27 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
 
         lit  = tmp.begin();
-        while(lit != lend)      // per ogni giunto del set
+        while(lit != lend)    // per ogni giunto del set
         {
             // Abilita il giunto
             iControlMode->setPositionMode((*lit));
             lit++;
         }
 
-        Time::delay(0.5f);  // needed?
+        Time::delay(0.5f);    // needed?
 
         lit  = tmp.begin();
-        while(lit != lend)		// per ogni giunto del set
+        while(lit != lend)    // per ogni giunto del set
         {
             // Manda in Home
             goToZero((*lit));
             lit++;
         }
-        Time::delay(1.0);	// needed?
+        Time::delay(1.0);     // needed?
 
         bool goneToZero = true;
         lit  = tmp.begin();
-        while(lit != lend)		// per ogni giunto del set
+        while(lit != lend)    // per ogni giunto del set
         {
             // abs sensors is BLL style
             goneToZero &= checkGoneToZeroThreshold(*lit);
@@ -459,7 +452,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         {
             yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Reached zero position!\n";
         }
-        else			// keep pid safe and go on
+        else          // keep pid safe and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
             while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
@@ -472,7 +465,10 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         // Go to the next set of joints to calibrate... if any
         Bit++;
     }
-    return calibration_ok;
+    calibMutex.wait();
+    isCalibrated = true;
+    calibMutex.post();
+    return isCalibrated;
 }
 
 void parametricCalibrator::calibrateJoint(int joint)
@@ -493,22 +489,23 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
     while(!calibration_ok && (timeout <= CALIBRATE_JOINT_TIMEOUT))
     {
         calibration_ok = true;
+        Time::delay(1.0);
         lit  = set.begin();
-        while(lit != lend)		// per ogni giunto del set
+        while(lit != lend)    // per ogni giunto del set
         {
             yDebug() << "check calib joint ended, j" << (*lit);
             if (abortCalib)
             {
-                yDebug() << "CALIB: aborted\n";
+                yWarning() << "CALIB: aborted\n";
             }
 
             // Joint with absolute sensor doesn't need to move, so they are ok with just the calibration message,
             // but I'll check anyway, in order to have everything the same
-            if( !(calibration_ok &=  iCalibrate->done((*lit))) )		// the assignement inside the if is INTENTIONAL
+            if( !(calibration_ok &=  iCalibrate->done((*lit))) )  // the assignement inside the if is INTENTIONAL
                 break;
             lit++;
         }
-        Time::delay(1.0);
+
         timeout++;
     }
 
@@ -521,6 +518,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 
 void parametricCalibrator::goToZero(int j)
 {
+    yTrace();
     if (abortCalib)
         return;
 
@@ -554,7 +552,7 @@ bool parametricCalibrator::checkGoneToZero(int j)
 // Not used anymore... EMS knows wath to do. Just ask if motion is done!! ^_^
 bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 {
-// wait.
+    // wait.
     bool finished = false;
     double ang[4];
     double angj = 0;
@@ -597,17 +595,27 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     bool ret=false;
     abortParking=false;
 
+    calibMutex.wait();
+    if(!isCalibrated)
+    {
+        yWarning() << "Calling park without calibration... skipping";
+        calibMutex.post();
+        return true;
+    }
+    calibMutex.post();
+
     if ( !iEncoders->getAxes(&nj))
     {
-        yError() << deviceName << ": error getting number of encoders" ;
+        yError() << deviceName << ": error getting number of encoders";
         return false;
     }
 
     int timeout = 0;
 
     iPosition->setPositionMode();
+    Time::delay(0.01);
     iPosition->setRefSpeeds(homeVel);
-    iPosition->positionMove(homePos);			// all joints together????
+    iPosition->positionMove(homePos);     // all joints together????
 
     if(isVanilla)
     {
@@ -651,7 +659,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 bool parametricCalibrator::quitCalibrate()
 {
     yDebug() << deviceName.c_str() << ": Quitting calibrate\n";
-    abortCalib=true;
+    abortCalib = true;
     return true;
 }
 
