@@ -78,7 +78,7 @@ using namespace yarp::dev;
 using namespace std;
 
 
-class yarp::dev::ethResources:  //public    PolyDriver,
+class yarp::dev::ethResources:  public DeviceDriver,
                                 public hostTransceiver
 {
 private:

@@ -330,7 +330,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
 
 void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
 {
-    yTrace();
+//    yTrace();
 //     managerMutex.wait();
     void * ret = boards_map[ep].handle;
 //     managerMutex.post();
@@ -339,7 +339,7 @@ void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
 
 FEAT_ID TheEthManager::getFeatInfoFromEP(uint8_t ep)
 {
-    yTrace();
+//    yTrace();
     FEAT_ID ret_val;
 //     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run
     ret_val = boards_map[ep];
@@ -632,21 +632,25 @@ void EthReceiver::run()
 //         Time::delay(1);
 //     }
 
-    yTrace() << "Starting udp RECV thread\n";
+    yError() << "Starting udp RECV thread\n";
 
     ACE_Time_Value recvTimeOut;
     fromDouble(recvTimeOut, 1.0);
 
+    static int NPR=0;
     //while(isRunning())
     while(!isStopping())
     {
-#warning
         // per ogni msg ricevuto  -1 visto come 65535!!
         recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
 
         sender_addr.addr_to_string(address, 64);
-//     printf("Received new packet from address %s, size = %d\n", address, recv_size);
-
+        NPR++;
+        if(NPR >= 99997)
+        {
+        	yWarning() << "Received new packet from address" << address << " and size " << recv_size;
+        	NPR=0;
+        }
         if( (recv_size > 0) && (isRunning()) )
         {
             ethManager->managerMutex.wait();
@@ -688,6 +692,6 @@ void EthReceiver::run()
             yWarning() << "Received weird msg of size" << recv_size;
         }
     }
-    yTrace() << "Exiting recv thread";
+    yError() << "Exiting recv thread";
     return;
 }

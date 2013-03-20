@@ -557,7 +557,7 @@ void hostTransceiver::getHostData(const EOconstvector **pEPvector, eOuint16_fp_u
 
 uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
 {
-    yTrace();
+//    yTrace();
     const EOconstvector* EPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
     uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
     return eo_cfg_nvsEP_board_NVs_endpoint_numberof_get(EPvector, epindex);
