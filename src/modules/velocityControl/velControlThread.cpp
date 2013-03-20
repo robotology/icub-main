@@ -124,9 +124,16 @@ void velControlThread::run()
     {
         if (0)
         {
-            //this is used to directly command positions, with no minum jerk tajectory
+            //@@@this is used to directly command positions, with no minum jerk tajectory
             //not to be used (risky!), unless you know wahat you are doing.
-            ipid->setReferences(this->targets.data());
+            //ipid->setReferences(this->targets.data());
+            for(int i=0;i<nJoints;i++)
+            {
+                if (fabs(targets(i)-encoders(i))>6.0)
+                    ipos->positionMove(i,targets(i));
+                else
+                    ipid->setReference(i,targets(i));
+            }
         }
         else
         {
