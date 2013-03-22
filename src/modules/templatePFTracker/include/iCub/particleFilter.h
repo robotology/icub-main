@@ -230,9 +230,12 @@ private:
 
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *tpl;
     std::string moduleName;
+    
+
 public:
     PARTICLEManager();
     ~PARTICLEManager();
+    bool            shouldSend;
 
     void setName(std::string module);
     bool threadInit();     
@@ -252,6 +255,7 @@ class PARTICLEModule:public yarp::os::RFModule
     
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
     PARTICLEManager *particleManager;
+    
 
 public:
 

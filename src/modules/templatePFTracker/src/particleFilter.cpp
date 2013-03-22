@@ -778,6 +778,7 @@ bool PARTICLEManager::threadInit()
     particleThreadLeft->setName((moduleName + "/left").c_str());
     particleThreadRight->setName((moduleName + "/right").c_str());
 
+    shouldSend = false;
     particleThreadLeft->start();
     particleThreadRight->start();
     return true;
@@ -799,6 +800,7 @@ void PARTICLEManager::run()
     
     if (tpl!=NULL) 
     {
+        shouldSend = true;
         particleThreadLeft->setTemplate(tpl);
         particleThreadRight->setTemplate(tpl);
     }
@@ -815,36 +817,40 @@ void PARTICLEManager::run()
     averageTempLeft = averageTempLeft *100;
         //fprintf(stdout,"the average is %lf \n",averageTempLeft *100);
 
-    if (target.getOutputCount() > 0 && targetTemp.size() > 4 && 
-        fabs(leftStamp.getTime()-rightStamp.getTime())<0.002) 
-    {
-        //fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[2], targetTemp[3]);
-        Stamp propagatedStamp(leftStamp.getCount(),0.5*(leftStamp.getTime()+rightStamp.getTime()));
-        target.setEnvelope(propagatedStamp);        
-        target.write(targetTemp);
-    }
-    if (disparityPort.getOutputCount() > 0 && targetTemp.size())
-    {
-        //fprintf(stdout,"getting ready to send\n");
-        Bottle cmd, reply;
-        cmd.addDouble(targetTemp[0]);
-        cmd.addDouble(targetTemp[1]);
-        cmd.addDouble(targetTemp[6]);
-        cmd.addDouble(targetTemp[7]);
-        fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[6], targetTemp[7]);
-        
-        disparityPort.write(cmd,reply);
-        
-        Bottle targets;
-        targets.addDouble(reply.get(0).asDouble());
-        targets.addDouble(reply.get(1).asDouble());
-        targets.addDouble(reply.get(2).asDouble());
-        targets.addDouble(0.0);
-        targets.addDouble(0.0);
-        targets.addDouble(0.0);
-        targets.addDouble(averageTempLeft);
-        
-        target3D.write(targets);
+
+    if (shouldSend)
+    { 
+        if (target.getOutputCount() > 0 && targetTemp.size() > 4 && 
+            fabs(leftStamp.getTime()-rightStamp.getTime())<0.002) 
+        {
+            //fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[2], targetTemp[3]);
+            Stamp propagatedStamp(leftStamp.getCount(),0.5*(leftStamp.getTime()+rightStamp.getTime()));
+            target.setEnvelope(propagatedStamp);        
+            target.write(targetTemp);
+        }
+        if (disparityPort.getOutputCount() > 0 && targetTemp.size())
+        {
+            //fprintf(stdout,"getting ready to send\n");
+            Bottle cmd, reply;
+            cmd.addDouble(targetTemp[0]);
+            cmd.addDouble(targetTemp[1]);
+            cmd.addDouble(targetTemp[6]);
+            cmd.addDouble(targetTemp[7]);
+            fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[6], targetTemp[7]);
+            
+            disparityPort.write(cmd,reply);
+            
+            Bottle targets;
+            targets.addDouble(reply.get(0).asDouble());
+            targets.addDouble(reply.get(1).asDouble());
+            targets.addDouble(reply.get(2).asDouble());
+            targets.addDouble(0.0);
+            targets.addDouble(0.0);
+            targets.addDouble(0.0);
+            targets.addDouble(averageTempLeft);
+            
+            target3D.write(targets);
+        }
     }
     //clear templates
     if(templLeft.templ!=NULL)
@@ -902,9 +908,10 @@ bool PARTICLEModule::configure(yarp::os::ResourceFinder &rf)
     particleManager = new PARTICLEManager();
 
     /*pass the name of the module in order to create ports*/
-    particleManager->setName(moduleName);
+    particleManager->setName(moduleName);    
     /* now start the thread to do the work */
     particleManager->start();
+    
     
     return true ;     
 }
@@ -942,6 +949,12 @@ bool PARTICLEModule::respond(const Bottle& command, Bottle& reply)
     else if (command.get(0).asString()=="help") 
     {
         cout << helpMessage;
+        reply.addString("ok");
+    }
+    else if (command.get(0).asString()=="reset") 
+    {
+        cout << "reset has been asked "<< endl;
+        particleManager->shouldSend=false;
         reply.addString("ok");
     }
     else
