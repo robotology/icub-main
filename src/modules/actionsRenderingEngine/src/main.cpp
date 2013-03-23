@@ -1044,6 +1044,7 @@ public:
 
                     case CMD_DROP:
                     {
+                        //to be fixed by config ini...choice of either check for holding or not
                         //if(!motorThr->isHolding(command))
                         //{
                         //    reply.addVocab(NACK);
