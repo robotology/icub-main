@@ -344,6 +344,7 @@ Windows, Linux
 #define CMD_TRACK                   VOCAB4('t','r','a','c')
 #define CMD_EXPECT                  VOCAB4('e','x','p','e')
 #define CMD_GIVE                    VOCAB4('g','i','v','e')
+#define CMD_CLOSE                   VOCAB4('c','l','o','s')
 
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
@@ -722,6 +723,13 @@ public:
 
                         break;
                     }
+                    case CMD_CLOSE:
+                    {
+                        motorThr->grasp(command);
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
 
                     //----------- for retro_compatibility -----------------
                     case CMD_GET:
@@ -1036,14 +1044,14 @@ public:
 
                     case CMD_DROP:
                     {
-                        if(!motorThr->isHolding(command))
-                        {
-                            reply.addVocab(NACK);
-                            reply.addString("Nothing to drop. Not holding anything");
-                            motorThr->release(command);
-                            motorThr->goHome(command);
-                            break;
-                        }
+                        //if(!motorThr->isHolding(command))
+                        //{
+                        //    reply.addVocab(NACK);
+                        //    reply.addString("Nothing to drop. Not holding anything");
+                        //    motorThr->release(command);
+                        //    motorThr->goHome(command);
+                        //    break;
+                       // }
 
                         if(check(command,"over") && command.size()>2)
                             visuoThr->getTarget(command.get(2),command);

@@ -1870,8 +1870,6 @@ bool MotorThread::release(Bottle &options)
 
     return true;
 }
-
-
 bool MotorThread::goHome(Bottle &options)
 {
     bool head_home=(checkOptions(options,"head") || checkOptions(options,"gaze"));
