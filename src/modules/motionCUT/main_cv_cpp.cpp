@@ -386,10 +386,10 @@ public:
                 if (fixedRadius && (radius<cropRadius))
                 {
                     radius=cropRadius;
-                    x=std:min(x,cropRadius);
-                    x=std:min(x,pImgBgrIn->width()-cropRadius-1);
-                    y=std:min(y,cropRadius);
-                    y=std:min(y,pImgBgrIn->height()-cropRadius-1);
+                    x=std::min(x,cropRadius);
+                    x=std::min(x,pImgBgrIn->width()-cropRadius-1);
+                    y=std::min(y,cropRadius);
+                    y=std::min(y,pImgBgrIn->height()-cropRadius-1);
                 }
  
                 int radius2=radius<<1;
