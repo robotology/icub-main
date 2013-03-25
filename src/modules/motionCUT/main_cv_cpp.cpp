@@ -64,6 +64,7 @@ protected:
     int blobMinSizeThres;
     int framesPersistence;
     int cropRadius;
+    bool fixedRadius;
     bool verbosity;
     bool inhibition;
     int nodesNum;
@@ -106,6 +107,7 @@ public:
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
         cropRadius=rf.check("cropRadius",Value(40)).asInt();
+        fixedRadius=rf.check("fixedRadius",Value("true")).asString()=="true";
         verbosity=rf.check("verbosity");
         inhibition=false;
 
@@ -362,6 +364,7 @@ public:
                 nodesPort.write(nodesBottle);
             }
 
+
             if ((blobsPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
                 blobsPort.setEnvelope(stamp);
@@ -376,7 +379,23 @@ public:
                 int radius=std::min(cropRadius,x);
                 radius=std::min(radius,y);
                 radius=std::min(radius,pImgBgrIn->width()-x-1);
-                radius=std::min(radius,pImgBgrIn->height()-y-1);                
+                radius=std::min(radius,pImgBgrIn->height()-y-1);              
+
+                if(fixedRadius=true && radius<cropRadius)
+                {
+                    radius=cropRadius;
+                    if(x<cropRadius)
+                        x=cropRadius;
+                    if(x>pImgBgrIn->width()-cropRadius-1)
+                        x=pImgBgrIn->width()-cropRadius-1;
+
+
+                    if(y<cropRadius)
+                        y=cropRadius;
+                    if(y>pImgBgrIn->height()-cropRadius-1)
+                        y=pImgBgrIn->height()-cropRadius-1;
+                }
+  
                 int radius2=radius<<1;
 
                 ImageOf<PixelBgr> cropImg;

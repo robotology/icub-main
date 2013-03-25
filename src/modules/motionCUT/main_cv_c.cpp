@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+
 #include "main.h"
 #include <cv.h>
 
@@ -73,6 +74,7 @@ protected:
     int blobMinSizeThres;
     int framesPersistence;
     int cropRadius;
+    bool fixedRadius;
     bool verbosity;
     bool inhibition;
     int nodesNum;
@@ -164,6 +166,7 @@ public:
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
         cropRadius=rf.check("cropRadius",Value(40)).asInt();
+        fixedRadius=rf.check("fixedRadius",Value("true")).asString()=="true";
         verbosity=rf.check("verbosity");
         inhibition=false;        
 
@@ -205,17 +208,20 @@ public:
             fprintf(stdout,"Process started successfully\n");
             fprintf(stdout,"\n");
             fprintf(stdout,"Using ...\n");
-            fprintf(stdout,"name              = %s\n",name.c_str());
-            fprintf(stdout,"coverXratio       = %g\n",coverXratio);
-            fprintf(stdout,"coverYratio       = %g\n",coverYratio);
-            fprintf(stdout,"nodesStep         = %d\n",nodesStep);
-            fprintf(stdout,"winSize           = %d\n",winSize);
-            fprintf(stdout,"recogThres        = %g\n",recogThres);
-            fprintf(stdout,"recogThresAbs     = %g\n",recogThresAbs);
-            fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
-            fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
-            fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
-            fprintf(stdout,"cropRadius        = %d\n",cropRadius);
+            fprintf(stdout,"name               = %s\n",name.c_str());
+            fprintf(stdout,"coverXratio        = %g\n",coverXratio);
+            fprintf(stdout,"coverYratio        = %g\n",coverYratio);
+            fprintf(stdout,"nodesStep          = %d\n",nodesStep);
+            fprintf(stdout,"winSize            = %d\n",winSize);
+            fprintf(stdout,"recogThres         = %g\n",recogThres);
+            fprintf(stdout,"recogThresAbs      = %g\n",recogThresAbs);
+            fprintf(stdout,"adjNodesThres      = %d\n",adjNodesThres);
+            fprintf(stdout,"blobMinSizeThres   = %d\n",blobMinSizeThres);
+            fprintf(stdout,"framesPersistence  = %d\n",framesPersistence);
+            if(fixedRadius)
+                fprintf(stdout,"cropRadius (fixed) = %d\n",cropRadius);
+            else               
+                fprintf(stdout,"cropRadius (var)    = %d\n",cropRadius);
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             fprintf(stdout,"numThreads        = %d\n",numThreads);
@@ -461,7 +467,24 @@ public:
                 int radius=std::min(cropRadius,x);
                 radius=std::min(radius,y);
                 radius=std::min(radius,pImgBgrIn->width()-x-1);
-                radius=std::min(radius,pImgBgrIn->height()-y-1);                
+                radius=std::min(radius,pImgBgrIn->height()-y-1);  
+
+                if(fixedRadius=true && radius<cropRadius)
+                {
+                    radius=cropRadius;
+                    if(x<cropRadius)
+                        x=cropRadius;
+                    if(x>pImgBgrIn->width()-cropRadius-1)
+                        x=pImgBgrIn->width()-cropRadius-1;
+
+
+                    if(y<cropRadius)
+                        y=cropRadius;
+                    if(y>pImgBgrIn->height()-cropRadius-1)
+                        y=pImgBgrIn->height()-cropRadius-1;
+                }
+  
+              
                 int radius2=radius<<1;
 
                 ImageOf<PixelBgr> cropImg;
