@@ -2266,12 +2266,16 @@ void iCubLegDyn::allocate(const string &_type)
     iDynLimb::allocate(_type);
 
     Matrix H0(4,4);
-    H0.eye();       
-    setH0(H0);
+    H0.eye();
     
 #ifdef  LEGS_NO_WEIGHT
     if(getType()=="right")
     {
+        H0(0,0) =  1;   H0(0,1) =  0;   H0(0,2) =  0;   H0(0,3) =       0;
+        H0(1,0) =  0;   H0(1,1) =  0;   H0(1,2) =  1;   H0(1,3) =  0.0681;
+        H0(2,0) =  0;   H0(2,1) = -1;   H0(2,2) =  0;   H0(2,3) = -0.1199;
+        H0(3,0) =  0;   H0(3,1) =  0;   H0(3,2) =  0;   H0(3,3) =       1;
+        setH0(H0);
         //create iDynLink from parameters calling
         //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
         //                    m            rcx        rcy        rcZ               I1          I2          I3          I4          I5          I6          A            D          alpha     offset                   
@@ -2285,6 +2289,12 @@ void iCubLegDyn::allocate(const string &_type)
     }
     else
     {
+        H0(0,0) =  1;   H0(0,1) =  0;   H0(0,2) =  0;   H0(0,3) =       0;
+        H0(1,0) =  0;   H0(1,1) =  0;   H0(1,2) =  1;   H0(1,3) = -0.0681;
+        H0(2,0) =  0;   H0(2,1) = -1;   H0(2,2) =  0;   H0(2,3) = -0.1199;
+        H0(3,0) =  0;   H0(3,1) =  0;   H0(3,2) =  0;   H0(3,3) =       1;
+        setH0(H0);
+
         pushLink(new iDynLink(0,         -0.0782, -0.00637,    0.00093,    471.076e-6,   2.059e-6,   1.451e-6,  346.478e-6,   1.545e-6,510.315e-6,         0.0,         0.0,   -M_PI/2.0,   M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,         0.00296, -0.00072,   -0.03045,   738.0487e-6,  -0.074e-6,  -0.062e-6,  561.583e-6,  10.835e-6,294.119e-6,         0.0,         0.0,   -M_PI/2.0,   M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,         0.00144,  0.06417,   -0.00039,   7591.073e-6, -67.260e-6,   2.267e-6,1423.0245e-6,36.37582e-6,7553.84e-6,         0.0,     -0.2236,    M_PI/2.0,  -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
@@ -2298,6 +2308,12 @@ void iCubLegDyn::allocate(const string &_type)
         //create iDynLink from parameters calling
         //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
 
+        H0(0,0) =  1;   H0(0,1) =  0;   H0(0,2) =  0;   H0(0,3) =       0;
+        H0(1,0) =  0;   H0(1,1) =  0;   H0(1,2) =  1;   H0(1,3) =  0.0681;
+        H0(2,0) =  0;   H0(2,1) = -1;   H0(2,2) =  0;   H0(2,3) = -0.1199;
+        H0(3,0) =  0;   H0(3,1) =  0;   H0(3,2) =  0;   H0(3,3) =       1;
+	setH0(H0);
+
         pushLink(new iDynLink(0.754,      -0.0782,  -0.00637, -0.00093,             0,          0,          0,          0,          0,          0,         0.0,         0.0,    M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.526,      0.00296,  -0.00072,  0.03045,             0,          0,          0,          0,          0,          0,         0.0,         0.0,    M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(2.175,      0.00144,   0.06417,  0.00039,             0,          0,          0,          0,          0,          0,         0.0,      0.2236,   -M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
@@ -2308,6 +2324,12 @@ void iCubLegDyn::allocate(const string &_type)
     }
     else
     {
+        H0(0,0) =  1;   H0(0,1) =  0;   H0(0,2) =  0;   H0(0,3) =       0;
+        H0(1,0) =  0;   H0(1,1) =  0;   H0(1,2) =  1;   H0(1,3) = -0.0681;
+        H0(2,0) =  0;   H0(2,1) = -1;   H0(2,2) =  0;   H0(2,3) = -0.1199;
+        H0(3,0) =  0;   H0(3,1) =  0;   H0(3,2) =  0;   H0(3,3) =       1;
+        setH0(H0);
+
         pushLink(new iDynLink(0.754,      -0.0782, -0.00637,   0.00093,     471.076e-6,   2.059e-6,  1.451e-6,  346.478e-6,   1.545e-6, 510.315e-6,        0.0,         0.0,   -M_PI/2.0,   M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.526,      0.00296, -0.00072,  -0.03045,    738.0487e-6,  -0.074e-6, -0.062e-6,  561.583e-6,  10.835e-6, 294.119e-6,        0.0,         0.0,   -M_PI/2.0,   M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(2.175,      0.00144,  0.06417,  -0.00039,    7591.073e-6, -67.260e-6,  2.267e-6,1423.0245e-6,36.37258e-6,7553.849e-6,        0.0,     -0.2236,    M_PI/2.0,  -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
@@ -2368,7 +2390,7 @@ void iCubLegDynV2::allocate(const string &_type)
     iDynLimb::allocate(_type);
 
     Matrix H0(4,4);
-    H0.eye();       
+    H0.eye();
     setH0(H0);
 
 #ifdef LEGS_NO_WEIGHT
