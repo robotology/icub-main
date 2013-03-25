@@ -229,6 +229,7 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     ethResources *tmpEthRes;
     ACE_INET_Addr  tmp_ace_addr;
 
+    stopThreads();
     managerMutex.wait();
 
     removeLUTelement(resource);
@@ -267,7 +268,7 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     if(boards_map.size() == 0 )
         yError() << "boards_map.size = 0";
 
-    if(     (EMS_list.size() == 0 ) && (boards_map.size() != 0 ) 
+    if(     (EMS_list.size() == 0 ) && (boards_map.size() != 0 )
         ||  (EMS_list.size() != 0 ) && (boards_map.size() == 0 ) )
     {
         yError() << "Something strange happened... EMS_list.size is" << EMS_list.size() << "while boards_map.size is "<< boards_map.size();
@@ -276,7 +277,7 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     if(!ret)
         yError() << "EthManager: Trying to release a non existing resource" << resource.name << " for boardId " << resource.boardNum << "maybe already deleted?";
 
-    if( (EMS_list.size() == 0 ) && (boards_map.size() == 0 ) )
+    if( (EMS_list.size() == 0 ) || (boards_map.size() == 0 ) )
         ret = -1;
 
     managerMutex.post();
@@ -308,14 +309,14 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     {
         case 0:
         {
-            yError() << "Trying to remove a non-existing element";
+            yError() << "Trying to remove a non-existing element" << element.name << "maybe already removed?";
             ret = false;
             break;
         }
 
         case 1:
         {
-            yDebug() << "FEAT_ID element removed succesfully from the map";
+            yDebug() << "FEAT_ID element removed succesfully from the map" << element.name;
             ret = true;
             break;
         }
@@ -407,12 +408,8 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
             {
                 yError() << "EthManager: issue while starting threads for UDP communication with EMSs";
 
-                // stop kills and waits.
-                if(sender->isRunning() )
-                    sender->stop();
-
-                if(receiver->isRunning() )
-                    receiver->stop();
+                // stop threads
+                stopThreads();
 
                 delete UDP_socket;
                 UDP_initted = false;
@@ -465,16 +462,24 @@ bool TheEthManager::killYourself()
     delete handle;
 }
 
+bool TheEthManager::stopThreads()
+{
+    bool ret = true;
+    // Stop method also make a join waiting the thread to exit
+    if(sender->isRunning() )
+        sender->stop();
+    if(receiver->isRunning() )
+        ret = receiver->stop();
+
+    return ret;
+}
+
 TheEthManager::~TheEthManager()
 {
     yTrace();
     int timeout = 5;
 
-    // Stop method also make a join waiting the thread to exit
-    sender->stop();
-    receiver->stop();
-
-        // Close UDP socket
+    // Close UDP socket
     if(isInitted())
     {
         UDP_socket->close();
@@ -492,6 +497,16 @@ TheEthManager::~TheEthManager()
         {
             delete(*iterator);
             iterator++;
+        }
+    }
+
+    if(boards_map.size() != 0)
+    {
+        std::map<eOnvEP_t, FEAT_ID>::iterator mIt;
+        for(mIt = boards_map.begin(); mIt!=boards_map.end(); mIt++)
+        {
+            yError() << "Feature " << mIt->second.name << "was not correctly removed from map.., removing it now in the EthManager destructor.";
+            removeLUTelement(mIt->second);
         }
     }
     managerMutex.post();
@@ -550,19 +565,41 @@ void EthSender::run()
     ACE_TCHAR     address_tmp[128];
     uint16_t      bytes_to_send = 0;
     ethResIt      iterator;
+    ethResRIt    riterator, _rBegin, _rEnd;
+
+    /*
+        Usare un revers iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
+        la lista con un iteratore anche durante la fase iniziale in cui vengono ancora aggiunti degli elementi,
+        in teoria senza crashare. Al più salvarsi il puntatore alla rbegin sotto mutex prima di iniziare il ciclo,
+        giusto per evitare che venga aggiunto un elemento in concomitanza con la lettura dell rbegin stesso.
+        Siccome gli elementi vengono aggiunti solamente in coda alla lista, questa iterazione a ritroso non
+        dovrebbe avere altri problemi e quindi safe anche senza ilmutex che prende TUTTO il ciclo.
+
+      std::list<int> mylist;
+    for (int i=1; i<=5; ++i) mylist.push_back(i);
+
+    std::cout << "mylist backwards:";
+    for (std::list<int>::reverse_iterator rit=mylist.rbegin(); rit!=mylist.rend(); ++rit)
+    std::cout << ' ' << *rit;
+  */
 
     ethManager->managerMutex.wait();
-    for(iterator = ethResList->begin(); iterator != ethResList->end() && (isRunning()); iterator++)
+    //for(iterator = ethResList->begin(); iterator != ethResList->end() && (isRunning()); iterator++)
+    _rBegin = ethResList->rbegin();
+    _rEnd = ethResList->rend();
+    ethManager->managerMutex.post();
+
+    for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
     {
         p_sendData = NULL;
         bytes_to_send = 0;
-        if(NULL == *iterator)
+        if(NULL == *riterator)
         {
             yError() << "EthManager::run, iterator==NULL";
             continue;
         }
 
-        ethRes = (*iterator);
+        ethRes = (*riterator);
 
         // This uses directly the pointer of the transceiver
         ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send);
@@ -581,7 +618,7 @@ void EthSender::run()
         }
         */
     }
-    ethManager->managerMutex.post();
+    //ethManager->managerMutex.post();
 }
 
 EthReceiver::EthReceiver()
@@ -624,13 +661,10 @@ void EthReceiver::run()
     ACE_INET_Addr sender_addr;
     char          incoming_msg[RECV_BUFFER_SIZE];
 
-    ethResIt iteratoreLista, fineLista;
-
-//     while( NULL == recv_socket )
-//     {
-//         yError() << "socket non inizializzato... come è possibile???";
-//         Time::delay(1);
-//     }
+    // TODO aggiunto per debugging. tenere tempo trascorso dall'ultima ricezione di un msg da parte della ems i-esima.
+    double        notHeardFrom[10];  // 10 max num of boards
+    for( int i=0; i<10; i++)
+        notHeardFrom[i] = yarp::os::Time::now();      
 
     yError() << "Starting udp RECV thread\n";
 
@@ -644,6 +678,11 @@ void EthReceiver::run()
         // per ogni msg ricevuto  -1 visto come 65535!!
         recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
 
+        if( recv_size > 60000)
+        {
+            yWarning() << "Huge message received " << recv_size;
+        }
+
         sender_addr.addr_to_string(address, 64);
         NPR++;
         if(NPR >= 99997)
@@ -654,20 +693,30 @@ void EthReceiver::run()
         if( (recv_size > 0) && (isRunning()) )
         {
             ethManager->managerMutex.wait();
-            iteratoreLista = ethManager->EMS_list.begin();
-            while(iteratoreLista != ethManager->EMS_list.end())
-            {
-                if( (*iteratoreLista)->getRemoteAddress() == sender_addr)
-                {
-                    ethRes = (*iteratoreLista);
-                    if(ethRes == NULL)      // possibile questo caso?? TODO verificare
-                    {
-                        yError() << "trying to access a non initted ethres";
-                        iteratoreLista++;
-                        break;  //?
-                    }
+            //iteratoreLista = ethManager->EMS_list.begin();
+            // new, reverse iterator
+            ethResRIt    riterator, _rBegin, _rEnd;
+            _rBegin = ethResList->rbegin();
+            _rEnd = ethResList->rend();
+            ethManager->managerMutex.post();
 
-                    if(recv_size > ethRes->getBufferSize() || (recv_size <= 0) )
+            riterator = _rBegin;
+
+            for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
+            while(riterator != _rEnd)
+            //while(iteratoreLista != ethManager->EMS_list.end())
+            {
+//                 if( riterator == NULL)      // possibile questo caso?? TODO verificare
+//                 {
+//                     yError() << "trying to access a non initted ethres";
+//                     riterator++;
+//                     break;  //
+//                 }
+                if( (*riterator)->getRemoteAddress() == sender_addr)
+                {
+                    ethRes = (*riterator);
+
+                    if(recv_size > ethRes->getBufferSize() )
                     {
                         yError() << "EthReceiver got a message of wrong size ( received" << recv_size << " bytes while buffer is" << ethRes->getBufferSize() << " bytes long)";
                     }
@@ -676,12 +725,12 @@ void EthReceiver::run()
                         memcpy(ethRes->recv_msg, incoming_msg, recv_size);
                         ethRes->onMsgReception(ethRes->recv_msg, recv_size);
                     }
-                    break;  //? devo uscire da questo while e rimanere in quello più esterno.
+                    break;  // devo uscire da questo while e rimanere in quello più esterno.
                 }
 
-                iteratoreLista++;
+                riterator++;
             }
-            ethManager->managerMutex.post();
+            //ethManager->managerMutex.post();
         }
         else if(errno == ETIME)
         {

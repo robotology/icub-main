@@ -83,6 +83,7 @@ class EthSender;
 class EthReceiver;
 
 typedef std::list<ethResources *>::iterator ethResIt;
+typedef std::list<ethResources *>::reverse_iterator ethResRIt;
 
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
@@ -144,8 +145,9 @@ public:
      *  @return True if initted, false otherwise
      */
     bool isInitted(void);
-    bool open();
-    bool close();
+    bool open(void);
+    bool stopThreads(void);
+    bool close(void);
 
     // Methods for EMS handling
 //     /*! @fn     ethResources* getResource(yarp::os::Searchable &config);

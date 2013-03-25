@@ -214,6 +214,7 @@ eOnvID_t hostTransceiver::getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint
 
 bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
 {
+#if 0
     bool ret;
     uint16_t    nvSize;
     eOresult_t    res;
@@ -279,6 +280,63 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
     // everything fine!
     return true;
+#endif
+    uint16_t    nvSize;
+    eOresult_t    res;
+    EOnv          nv;
+
+    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+
+    if(NULL == nvRoot)
+    {
+        yError() << "Unable to get pointer to desired NV with id" << nvid;
+        return false;
+    }
+
+    transMutex.wait();
+
+    nvSize = eo_nv_Size(&nv, data);   //TODO calcolare dimesione corretta, tenendo conto di tempo e signature
+
+
+    if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+    {
+        // the nv is not writeable
+        yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+        transMutex.post();
+        return false;
+    }
+
+
+    eOropdescriptor_t ropdesc;
+    ropdesc.configuration = eok_ropconfiguration_basic;
+    ropdesc.configuration.plustime = 1;
+    ropdesc.ropcode = eo_ropcode_set;
+    ropdesc.ep = endPoint;
+    ropdesc.id = nvid;
+    ropdesc.size = 0;
+    ropdesc.data = NULL;
+    ropdesc.signature = 0;
+
+    transMutex.post();
+    bool ret = false;
+
+    for(int i=0; ( (i<5) && (!ret) ); i++)
+    {
+        transMutex.wait();
+        if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+        {
+            yError() << "Error while loading ROP in ropframe\n";
+            transMutex.post();
+             yarp::os::Time::delay(0.001);
+
+        }
+        else
+        {
+            transMutex.post();
+            ret = true;
+        }
+    }
+    return ret;
 }
 
 
