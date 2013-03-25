@@ -147,7 +147,10 @@ public:
             fprintf(stdout,"adjNodesThres     = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres  = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence = %d\n",framesPersistence);
-            fprintf(stdout,"cropRadius        = %d\n",cropRadius);
+            if (fixedRadius)
+                fprintf(stdout,"cropRadius (fixed) = %d\n",cropRadius);
+            else               
+                fprintf(stdout,"cropRadius (var)   = %d\n",cropRadius);
             fprintf(stdout,"numThreads        = OpenCV version does not support OpenMP multi-threading\n");
             fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");            
             fprintf(stdout,"\n");
@@ -364,7 +367,6 @@ public:
                 nodesPort.write(nodesBottle);
             }
 
-
             if ((blobsPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
                 blobsPort.setEnvelope(stamp);
@@ -379,23 +381,17 @@ public:
                 int radius=std::min(cropRadius,x);
                 radius=std::min(radius,y);
                 radius=std::min(radius,pImgBgrIn->width()-x-1);
-                radius=std::min(radius,pImgBgrIn->height()-y-1);              
+                radius=std::min(radius,pImgBgrIn->height()-y-1);
 
-                if(fixedRadius=true && radius<cropRadius)
+                if (fixedRadius && (radius<cropRadius))
                 {
                     radius=cropRadius;
-                    if(x<cropRadius)
-                        x=cropRadius;
-                    if(x>pImgBgrIn->width()-cropRadius-1)
-                        x=pImgBgrIn->width()-cropRadius-1;
-
-
-                    if(y<cropRadius)
-                        y=cropRadius;
-                    if(y>pImgBgrIn->height()-cropRadius-1)
-                        y=pImgBgrIn->height()-cropRadius-1;
+                    x=std:min(x,cropRadius);
+                    x=std:min(x,pImgBgrIn->width()-cropRadius-1);
+                    y=std:min(y,cropRadius);
+                    y=std:min(y,pImgBgrIn->height()-cropRadius-1);
                 }
-  
+ 
                 int radius2=radius<<1;
 
                 ImageOf<PixelBgr> cropImg;

@@ -16,7 +16,6 @@
  * Public License for more details
 */
 
-
 #include "main.h"
 #include <cv.h>
 
@@ -168,7 +167,7 @@ public:
         cropRadius=rf.check("cropRadius",Value(40)).asInt();
         fixedRadius=rf.check("fixedRadius",Value("true")).asString()=="true";
         verbosity=rf.check("verbosity");
-        inhibition=false;        
+        inhibition=false;
 
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
 
@@ -218,10 +217,10 @@ public:
             fprintf(stdout,"adjNodesThres      = %d\n",adjNodesThres);
             fprintf(stdout,"blobMinSizeThres   = %d\n",blobMinSizeThres);
             fprintf(stdout,"framesPersistence  = %d\n",framesPersistence);
-            if(fixedRadius)
+            if (fixedRadius)
                 fprintf(stdout,"cropRadius (fixed) = %d\n",cropRadius);
             else               
-                fprintf(stdout,"cropRadius (var)    = %d\n",cropRadius);
+                fprintf(stdout,"cropRadius (var)   = %d\n",cropRadius);
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             fprintf(stdout,"numThreads        = %d\n",numThreads);
@@ -467,24 +466,17 @@ public:
                 int radius=std::min(cropRadius,x);
                 radius=std::min(radius,y);
                 radius=std::min(radius,pImgBgrIn->width()-x-1);
-                radius=std::min(radius,pImgBgrIn->height()-y-1);  
+                radius=std::min(radius,pImgBgrIn->height()-y-1);
 
-                if(fixedRadius=true && radius<cropRadius)
+                if (fixedRadius && (radius<cropRadius))
                 {
                     radius=cropRadius;
-                    if(x<cropRadius)
-                        x=cropRadius;
-                    if(x>pImgBgrIn->width()-cropRadius-1)
-                        x=pImgBgrIn->width()-cropRadius-1;
-
-
-                    if(y<cropRadius)
-                        y=cropRadius;
-                    if(y>pImgBgrIn->height()-cropRadius-1)
-                        y=pImgBgrIn->height()-cropRadius-1;
+                    x=std::min(x,cropRadius);
+                    x=std::min(x,pImgBgrIn->width()-cropRadius-1);
+                    y=std::min(y,cropRadius);
+                    y=std::min(y,pImgBgrIn->height()-cropRadius-1);
                 }
-  
-              
+
                 int radius2=radius<<1;
 
                 ImageOf<PixelBgr> cropImg;

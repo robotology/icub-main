@@ -116,6 +116,11 @@ YARP libraries and OpenCV
   around the center of the largest blob detected, which will be
   then sent out through the corresponding port.
  
+--fixedRadius \e flag 
+- If the \e flag is true (as per default), then the current 
+  cropping radius will never go under the value specified for
+  the \e cropRadius parameter.
+ 
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
   threads allocated by parallelized OpenCV functions. This
