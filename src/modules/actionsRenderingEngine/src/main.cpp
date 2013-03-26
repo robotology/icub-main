@@ -345,6 +345,7 @@ Windows, Linux
 #define CMD_EXPECT                  VOCAB4('e','x','p','e')
 #define CMD_GIVE                    VOCAB4('g','i','v','e')
 #define CMD_CLOSE                   VOCAB4('c','l','o','s')
+#define CMD_GAZE                    VOCAB4('r','e','l','e')
 
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
@@ -726,6 +727,13 @@ public:
                     case CMD_CLOSE:
                     {
                         motorThr->grasp(command);
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+                    case CMD_GAZE:
+                    {
+                        motorThr->clearIt(command);
                         reply.addVocab(ACK);
 
                         break;

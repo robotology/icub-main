@@ -356,6 +356,8 @@ public:
     bool expect(Bottle &options);
     bool give(Bottle &options);
 
+    bool clearIt(Bottle &options);
+
     // explore
     bool exploreTorso(Bottle &options);
     bool exploreHand(Bottle &options);
