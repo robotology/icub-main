@@ -1835,6 +1835,8 @@ bool MotorThread::clearIt(Bottle &options)
     setGazeIdle();
     ctrl_gaze->blockEyes(5.0);
     ctrl_gaze->setSaccadesStatus(0);
+
+    return true;
 }
 
 bool MotorThread::grasp(Bottle &options)
