@@ -26,6 +26,7 @@
 #include "string.h" 
 #include "OPCprotocolManager.h"
 
+
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of extern public interface
 // --------------------------------------------------------------------------------------------------------------------
@@ -42,6 +43,8 @@ extern void on_rec_ipnet_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, 
 extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 
 extern void on_rec_transceiver_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
+extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
@@ -88,7 +91,16 @@ typedef struct
 } EOMtheEMStransceiverDEBUG_t;
 
 
-extern EOMtheIPnetDEBUG_t eom_ipnet_hid_DEBUG_of_ems =
+typedef struct
+{   // 4 is MAX_JOINTS but i use 4 to avoid ... problems with the host
+	uint8_t					    boardid;
+    uint8_t                     count[4];
+    int32_t                     position[4];
+    int32_t                     velocity[4];
+} EOemsControllerDEBUG_t;
+
+
+EOMtheIPnetDEBUG_t eom_ipnet_hid_DEBUG =
 {
     .datagrams_failed_to_go_in_rxfifo               = 0,
     .datagrams_failed_to_go_in_txosalqueue          = 0,
@@ -96,7 +108,7 @@ extern EOMtheIPnetDEBUG_t eom_ipnet_hid_DEBUG_of_ems =
     .datagrams_failed_to_be_sent_by_ipal            = 0    
 };
 
-extern EOMtheEMSrunnerDEBUG_t eom_emsrunner_hid_DEBUG_of_ems =
+EOMtheEMSrunnerDEBUG_t eom_emsrunner_hid_DEBUG =
 {
     .numberofperiods                            = 0,
     .cumulativeabsoluteerrorinperiod            = 0,
@@ -108,7 +120,7 @@ extern EOMtheEMSrunnerDEBUG_t eom_emsrunner_hid_DEBUG_of_ems =
     .datagrams_failed_to_go_in_txsocket         = 0  
 };
 
-extern EOMtheEMStransceiverDEBUG_t eom_emstransceiver_hid_DEBUG_of_ems =
+EOMtheEMStransceiverDEBUG_t eom_emstransceiver_hid_DEBUG =
 {
     .rxinvalidropframes                     = 0,
     .errorsinsequencenumber                 = 0,
@@ -119,33 +131,54 @@ extern EOMtheEMStransceiverDEBUG_t eom_emstransceiver_hid_DEBUG_of_ems =
     .cannotloadropinoccasionals             = 0    
 };
 
+
+EOemsControllerDEBUG_t eo_emsController_hid_DEBUG =
+{
+		.boardid 							= 0,
+		.count								= {0,0,0,0},
+		.position							= {0,0,0,0},
+		.velocity							= {0,0,0,0}
+};
+
+#define eom_ipnet_hid_DEBUG_id 				1
+#define eom_emsrunner_hid_DEBUG_id		 	2
+#define eom_emstransceiver_hid_DEBUG_id 	3
+#define eo_emsController_hid_DEBUG_id 		4
+
 static opcprotman_var_map_t s_myarray[] = 
 {
     {
-        .var        = 1,
-        .size       = sizeof(EOMtheIPnetDEBUG_t),
-        .ptr        = &eom_ipnet_hid_DEBUG_of_ems,
+        .var        = eom_ipnet_hid_DEBUG_id,
+        .size       = sizeof(eom_ipnet_hid_DEBUG),
+        .ptr        = &eom_ipnet_hid_DEBUG,
         .onrec      = on_rec_ipnet_debug
     },
     {
-        .var        = 2,
-        .size       = sizeof(EOMtheEMSrunnerDEBUG_t),
-        .ptr        = &eom_emsrunner_hid_DEBUG_of_ems,
+        .var        = eom_emsrunner_hid_DEBUG_id,
+        .size       = sizeof(eom_emsrunner_hid_DEBUG),
+        .ptr        = &eom_emsrunner_hid_DEBUG,
         .onrec      = on_rec_runner_debug
     },
     {
-        .var        = 3,
-        .size       = sizeof(EOMtheEMStransceiverDEBUG_t),
-        .ptr        = &eom_emstransceiver_hid_DEBUG_of_ems,
+        .var        = eom_emstransceiver_hid_DEBUG_id,
+        .size       = sizeof(eom_emstransceiver_hid_DEBUG),
+        .ptr        = &eom_emstransceiver_hid_DEBUG,
         .onrec      = on_rec_transceiver_debug
     },
+    {
+        .var        = eo_emsController_hid_DEBUG_id,
+        .size       = sizeof(eo_emsController_hid_DEBUG),
+        .ptr        = &eo_emsController_hid_DEBUG,
+        .onrec      = on_rec_emscontroller_debug
+    }
     
 };
 
-extern opcprotman_cfg_t opcprotmanCFGv0x1234 =
+
+opcprotman_cfg_t opcprotmanCFGv0x1234 =
 {
     .databaseversion        = 0x1234,
-    .numberofvariables      = 3,
+    .numberofvariables      = 4,
     .arrayofvariablemap     = s_myarray
 };
 
@@ -246,6 +279,60 @@ extern void on_rec_transceiver_debug(opcprotman_opc_t opc, opcprotman_var_map_t*
     
 }
 
+
+extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{   // for the host
+
+	EOemsControllerDEBUG_t* data = (EOemsControllerDEBUG_t*)recdata;
+	uint8_t i;
+
+    switch(opc)
+    {
+
+        default:
+        case opcprotman_opc_set:
+        {   // nobody can order that to us
+            // we just dont do it ...
+        } break;
+
+        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+        {
+
+            float enc_factor , zero, enc_factor_6=182.044 , enc_factor_8=182.044, zero_6=180, zero_8=-180;
+            //note: encoder factor is equal on both boards
+            float vel, pos;
+
+            if(data->boardid == 8)
+            {
+                enc_factor = enc_factor_8;
+                zero = zero_8;
+            }
+            else if(data->boardid == 6)
+            {
+                enc_factor = enc_factor_6;
+                zero = zero_6;
+            }
+            else
+            {
+                printf("\n\n ERROR: un expected board!!! %d \n ", data->boardid);
+                return;
+            }
+
+            printf("\n\n-----received data emsController---\n");
+            printf("BOARD-ID %d\n", data->boardid);
+            for( i=0;i<4;i++)
+            {
+                pos = (data->position[i]/enc_factor)-zero;
+                vel = data->velocity[i]/enc_factor;//rimosso fabs percheè se no non compilava, tanto non serviva piuù percheè enco_factor è sempre positivo
+
+            	printf("\t\t j %d: count=%u  pos=%f (%d)  vel=%f (%d)\n", i, data->count[i], pos, data->position[i], vel, data->velocity[i]);
+            }
+
+        } break;
+    }
+
+}
 
 
 // --------------------------------------------------------------------------------------------------------------------
