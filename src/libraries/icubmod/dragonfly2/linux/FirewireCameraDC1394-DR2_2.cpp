@@ -936,9 +936,26 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
 {
 	m_AcqMutex.wait();
 
-	if (!m_bCameraOn || dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame)!=DC1394_SUCCESS)
+	if (!m_bCameraOn)
 	{
 		m_AcqMutex.post();
+		return false;
+	}
+
+    dc1394error_t ret=dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame); 
+
+	if (ret!=DC1394_SUCCESS)
+	{
+        if (ret<0)
+        {
+            fprintf(stderr,"\nWARNING: dc1394_capture_dequeue returned %d\n\n",ret);
+        }
+        else
+        {
+            fprintf(stderr,"\nERROR: dc1394_capture_dequeue returned %d\n\n",ret);
+        }
+		
+        m_AcqMutex.post();
 		return false;
 	}
 	
