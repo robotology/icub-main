@@ -44,7 +44,7 @@
 
 //embody stuff
 #include "EoCommon.h"
-
+#include "EoMotionControl.h"
 #include "eODeb_eoProtoParser.h"
 #include "eOtheEthLowLevelParser.h"
 //pcap stuff
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     
     //1) init data
     sprintf(dev, "eth1");
-    sprintf(filter_exp, " ");
+    sprintf(filter_exp, "src host 10.0.1.104");
     
     //2) parse arguments
     if(argc>1)
@@ -231,12 +231,18 @@ int main(int argc, char *argv[])
 // --------------------------------------------------------------------------------------------------------------------
 static void s_process_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
-
+//    printf("process pkt\n");
     //eOTheEthLowLevParser_DissectPacket(eo_ethLowLevParser_GetHandle, packet);
     
     ////currently use thelow level parser and appl paser separately
     eOethLowLevParser_packetInfo_t pktInfo;
-    eOTheEthLowLevParser_GetUDPdatagramPayload(eo_ethLowLevParser_GetHandle(), (uint8_t*)packet, &pktInfo);
+    eOresult_t res;
+
+    res  = eOTheEthLowLevParser_GetUDPdatagramPayload(eo_ethLowLevParser_GetHandle(), (uint8_t*)packet, &pktInfo);
+    if(eores_OK != res)
+    {
+        return;
+    }
     eODeb_eoProtoParser_RopFrameDissect(eODeb_eoProtoParser_GetHandle(), &pktInfo);
 }
 
@@ -255,6 +261,75 @@ static void my_cbk_onNVfound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_
 	return;
 }
 
+static void my_cbk_onNVsetpointFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_eoProtoParser_ropAdditionalInfo_t *ropAddInfo_ptr)
+{
+    eOmc_setpoint_t * setpoint_ptr = (eOmc_setpoint_t *)ropAddInfo_ptr->desc.data;
+    uint8_t board = 0, j;	
+    float enc_factor, zero, enc_factor_6=182.044 , enc_factor_8=182.044, zero_6=180, zero_8=-180;
+
+	//printf("NV found!!: ep=%x id=%x\n", ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
+	
+    if(ropAddInfo_ptr->desc.ep == 0x18)
+    {
+        board = 8;
+        enc_factor = enc_factor_8;
+        zero = zero_8;
+    }
+    else if(ropAddInfo_ptr->desc.ep == 0x16)
+    {
+        board = 6;
+        enc_factor = enc_factor_6;
+        zero = zero_6;
+    }
+    else
+    {
+        printf("\n\n ERROR: un expected ep!!! %d \n ", ropAddInfo_ptr->desc.ep);
+        return;
+    }
+
+    if(setpoint_ptr->type != eomc_setpoint_position)
+    {
+        printf("ERR: no setpoint position. typse= %d", setpoint_ptr->type);
+        return;
+    }
+
+    switch(ropAddInfo_ptr->desc.id)
+    {
+        case 0xbc1a:
+        {
+            j = 0;
+        }break;
+
+        case 0xbc3a:
+        {
+            j = 1;
+        }break;
+
+        case 0xbc5a:
+        {
+            j = 2;
+        }break;
+
+        case 0xbc7a:
+        {
+            j = 3;
+        }break;
+        default:
+        {
+            printf("ERROR: receiv unexpected nvid %x", ropAddInfo_ptr->desc.id);
+            return;
+        }
+    }
+    float vel, pos;
+
+    pos = (setpoint_ptr->to.position.value/enc_factor)-zero;
+    vel = setpoint_ptr->to.position.withvelocity/fabs(enc_factor);
+
+    printf("board %d  j %d   pos %f (%d)  vel %f (%d)  enc_factor=%f  zero=%f\n", board, j, pos, setpoint_ptr->to.position.value, vel, setpoint_ptr->to.position.withvelocity,enc_factor,zero);
+    
+    return;
+}
+
 
 static void s_ethLowLevelPraser_configure(void)
 {
@@ -266,7 +341,7 @@ static void s_ethLowLevelPraser_configure(void)
         {
             EO_INIT(.seqNum)
             {
-                EO_INIT(.cbk_onErrSeqNum)           my_cbk_onErrorSeqNum,
+                EO_INIT(.cbk_onErrSeqNum)           NULL, //my_cbk_onErrorSeqNum,
             },
             
             EO_INIT(.nv)
@@ -277,15 +352,22 @@ static void s_ethLowLevelPraser_configure(void)
                     {
                         EO_INIT(.capacity)       eODeb_eoProtoParser_maxNV2find,
                         EO_INIT(.itemsize)       sizeof(eODeb_eoProtoParser_nvidEp_couple_t),
-                        EO_INIT(.size)           1,
+                        EO_INIT(.size)           8,
                     },
                     EO_INIT(.data)
                     {
-                        {0x14, 0x9c00}
+                        {0x18, 0xbc1a},
+                        {0x18, 0xbc3a},
+                        {0x18, 0xbc5a},
+                        {0x18, 0xbc7a},
+                        {0x16, 0xbc1a},
+                        {0x16, 0xbc3a},
+                        {0x16, 0xbc5a},
+                        {0x16, 0xbc7a}
                     }
                 
                 },
-                EO_INIT(.cbk_onNVfound)            my_cbk_onNVfound
+                EO_INIT(.cbk_onNVfound)            my_cbk_onNVsetpointFound, //my_cbk_onNVfound
             },
             
             EO_INIT(.invalidRopFrame)               {0}
