@@ -148,10 +148,10 @@ set(IPNET_HEADER		${IPNET_FOLDER}/EOpacket_hid.h)
 
 
 set(UTILS_SOURCE		${UTILS_FOLDER}/eODeb_eoProtoParser.c
-				${UTILS_FOLDER}/eOtheEThLowLevelParser.c)
+				${UTILS_FOLDER}/eOtheEthLowLevelParser.c)
 
 set(UTILS_HEADER		${UTILS_FOLDER}/eODeb_eoProtoParser_hid.h
-				${UTILS_FOLDER}/eOtheEThLowLevelParser_hid.h)
+				${UTILS_FOLDER}/eOtheEthLowLevelParser_hid.h)
 
 
 # Network Variable configuration

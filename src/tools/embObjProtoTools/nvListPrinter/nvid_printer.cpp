@@ -75,6 +75,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
+static void s_print_help(void);
 static uint16_t s_getEP_mc(uint8_t board );
 static uint16_t s_getEP_as(uint8_t board );
 static uint16_t s_getEP_sk(uint8_t board );
@@ -135,6 +136,12 @@ int main(int argc, char *argv[])
                 }
                 continue;
             }
+
+            if(strcmp("--help", argv[i]) == 0)
+            {
+                s_print_help();
+                continue;
+            }
                
         }
     
@@ -143,6 +150,7 @@ int main(int argc, char *argv[])
     if((board <1) || (board>9))
     {
         printf("ERROR: board has to belong to [1,9]\n");
+	    return -1;
     }
     
     printf("------The following NVID are of baord %d ", board);
@@ -179,6 +187,13 @@ int main(int argc, char *argv[])
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
+static void s_print_help(void)
+{
+    printf("--board <n>: num of board\n");
+    printf("--j <n>: num of joint. if not insert, nvid of all joint are printed\n");
+    printf("--ep <str>:endpoint. str can be <mc>, or <as>, or <sk> or <mn>\n");    
+}
+
 static uint16_t s_getEP(uint8_t board, char *eptype)
 {
     uint16_t ep = 0;
@@ -359,6 +374,7 @@ static void s_print_mc_nvid_alljoints(void)
 static void s_print_mc_nvid(eOmc_jointId_t j)
 {
 
+    printf("\n---- JOINT %d ----\n", j);
     printf("%s : 0x%x\n", "NVID_jxx_jconfig",                             EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jconfig(j) );
     printf("%s : 0x%x\n", "NVID_jxx_jconfig__pidposition",                EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jconfig__pidposition(j) );
     printf("%s : 0x%x\n", "NVID_jxx_jconfig__pidvelocity",                EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jconfig__pidvelocity(j) );
