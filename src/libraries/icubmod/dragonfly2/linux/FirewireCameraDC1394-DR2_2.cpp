@@ -229,14 +229,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     uint32_t channel_in_use=0;
     dc1394_video_get_iso_channel(m_pCamera,&channel_in_use);
-
-    printf("\n*** ISO_CHANNEL = %u ***\n\n",channel_in_use);
-
-    if (channel_in_use != 0)
-    {
-        dc1394_video_set_iso_channel(m_pCamera,idCamera);
-        dc1394_iso_release_channel(m_pCamera,channel_in_use); 
-    }  
+    dc1394_video_set_iso_channel(m_pCamera,idCamera);
 
     /*
     if (channel_in_use != 0)
