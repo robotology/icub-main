@@ -2201,9 +2201,9 @@ void iCubTorsoDyn::allocate(const string &_type)
 //  pushLink(new iDynLink(5.77e-1,    4.265e-2, +4.296e-5,  -1.360e-3,      5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,             0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,    -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
 //  pushLink(new iDynLink(4.81e+0,   -8.102e-5,  7.905e-3,  -1.183e-1,      7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,       2.31e-3, -193.3e-3,    -M_PI/2.0,  -M_PI/2.0,    -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
 //  ...but they have still to be verified. In the meanwhile use this for debug:
-    pushLink(new iDynLink(0,          3.120e-2,  6.300e-4,  -9.758e-7,      4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,       32.0e-3,         0,     M_PI/2.0,        0.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(0,          4.265e-2, +4.296e-5,  -1.360e-3,      5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,             0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
-    pushLink(new iDynLink(4.81e+0,   -8.102e-5, -1.183e-1,   7.905e-3,      7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,       2.31e-3, -193.3e-3,    -M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0,          3.120e-2,         0,  -9.758e-7,      4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,       32.0e-3,         0,     M_PI/2.0,        0.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0,                 0, +4.296e-5,  -1.360e-3,      5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,             0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(4.81e+0,   -8.102e-5, -1.183e-1,          0,      7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,       2.31e-3, -193.3e-3,    -M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
 #endif  
 
 }
@@ -2472,7 +2472,7 @@ void iCubNeckInertialDyn::allocate(const string &_type)
     H0.eye();
     setH0(H0);
 
-    pushLink(new iDynLink(0.27017604,     -30.535917e-3,  2.5211768e-3, -0.23571261e-3,          100.46346e-6,   -0.17765781e-6,       0.44914333e-6, 45.425961e-6, -0.12682862e-6,  0,       0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD,     30.0*CTRL_DEG2RAD));
+    pushLink(new iDynLink(0.27017604,     -30.535917e-3,             0, -0.23571261e-3,          100.46346e-6,   -0.17765781e-6,       0.44914333e-6, 45.425961e-6, -0.12682862e-6,  0,       0.033,       0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD,     30.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(0.27230552,               0.0,  4.3752947e-3,   5.4544215e-3,          142.82339e-6, -0.0059261471e-6,    -0.0022006663e-6, 82.884917e-6,  -9.1321119e-6,  87.620338e-6,          0.0,     0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD,     60.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(1.3368659,                  0,             0,              0,                     0,                0,                   0,            0,              0,             0,       0.0225,    0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
     // NOTE: VERIFY THE DYNAMIC PARAMETERS OF THE HEAD (WRITTEN ABOVE)
