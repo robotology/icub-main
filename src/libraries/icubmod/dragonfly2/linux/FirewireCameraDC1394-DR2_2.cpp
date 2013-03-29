@@ -226,7 +226,30 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
 	error=dc1394_camera_reset(m_pCamera);
     if (manage(error)) { fprintf(stderr,"LINE: %d\n",__LINE__); return false; }
-    
+
+    uint32_t channel_in_use=0;
+    dc1394_video_get_iso_channel(m_pCamera,&channel_in_use);
+
+    printf("\n*** ISO_CHANNEL = %u ***\n\n",channel_in_use);
+
+    if (channel_in_use != 0)
+    {
+        dc1394_video_set_iso_channel(m_pCamera,idCamera);
+        dc1394_iso_release_channel(m_pCamera,channel_in_use); 
+    }  
+
+    /*
+    if (channel_in_use != 0)
+    {                
+        dc1394_iso_release_channel(m_pCamera,idCamera);        
+        const uint64_t ISO_CHANNEL_MASK=idCamera;
+        int allocated_channel;        
+        dc1394_iso_allocate_channel(m_pCamera,ISO_CHANNEL_MASK,&allocated_channel);
+        dc1394_video_set_iso_channel(m_pCamera,idCamera);		 
+        dc1394_iso_release_channel(m_pCamera,channel_in_use);
+    }
+    */
+
     // if previous instance crashed we need to clean up 
     // allocated bandwidth -- Added Lorenzo Natale, 9/2/2010.
     const int BANDWIDTH_MAX=0x7FFFFFFF;
@@ -470,6 +493,7 @@ void CFWCamera_DR2_2::Close()
 	{
 		dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
 		dc1394_capture_stop(m_pCamera);
+        dc1394_iso_release_all(m_pCamera);
 		dc1394_camera_free(m_pCamera);
 	}
 	m_pCamera=NULL;
