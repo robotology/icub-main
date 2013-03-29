@@ -16,7 +16,6 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 
 
 #headers-----------
-message(INFO " ciao -${folder_source}")
 
 set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
 
@@ -48,7 +47,7 @@ set(ALL_INCLUDES		${embObj_includes}
 						${EXTRA_FOLDER})
 
 include_directories (${ALL_INCLUDES} )
-message(INFO "includes: ${ALL_INCLUDES}")
+#message(INFO "includes: ${ALL_INCLUDES}")
 
 #source code --------------
 
@@ -82,9 +81,15 @@ set(embobj_source
                         ${CORE_VEE_SOURCE})
 
 
+#insert here name of parser cfg file!!! 
+set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_getPid.cpp )
 
-set(EXTRA_SOURCE 		${EXTRA_FOLDER}/main.cpp
-						${EXTRA_FOLDER}/pcap_wrapper_linux.cpp)
+message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")
+
+set(EXTRA_SOURCE 	    ${PARSER_CFG_FILE}                
+                        ${EXTRA_FOLDER}/main.cpp
+						${EXTRA_FOLDER}/pcap_wrapper_linux.cpp
+                        )
 
 set(ALL_SOURCE_CODE				${embobj_source}
 						${EXTRA_SOURCE})
