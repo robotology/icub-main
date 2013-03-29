@@ -162,7 +162,7 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 
 		EO_INIT(.invalidRopFrame)
 		{
-			EO_INIT(.cbk)					   my_cbk_onInvalidRopFrame
+			EO_INIT(.cbk)					   NULL //my_cbk_onInvalidRopFrame
 
 		}
 	}
