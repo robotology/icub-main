@@ -395,7 +395,13 @@ bool inverseDynamics::threadInit()
     for(size_t i=0; i<status_queue_size; i++)
     {
         //read joints and ft sensor
-        readAndUpdate(true,true);
+        bool ret = readAndUpdate(true,true);
+        if (ret == false)
+        {
+            printf("A problem occured during the intial readAndUpdate(), stopping... \n");
+            thread_status = STATUS_DISCONNECTED;
+            return false;
+        }
     }
 
     // the queue previous_status now contains status_queue_size elements, and we can calibrate
@@ -608,7 +614,7 @@ void inverseDynamics::run()
 
     Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7), com_lb(7), com_ub(7);
     double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to, mass_lb, mass_ub;
-	Vector com_v; com_v.resize(3); com_v.zero();
+    Vector com_v; com_v.resize(3); com_v.zero();
     Vector dq; dq.resize(32,1); dq.zero();
 
     // For balancing purposes
@@ -661,12 +667,12 @@ void inverseDynamics::run()
         com_hd.push_back (mass_hd);
         com_to.push_back (mass_to);
 
-		if (com_vel_enabled)
-		{
+        if (com_vel_enabled)
+        {
             com_all.push_back(com_v[0]);
             com_all.push_back(com_v[1]);
             com_all.push_back(com_v[2]);
-		}
+        }
         else
         {
             com_all.push_back(0);
@@ -869,8 +875,8 @@ void inverseDynamics::run()
 
     if (com_vel_enabled)
     {
-        com_jac = M_PI/180.0*(com_jac);
-	dq      = 180.0/M_PI*dq; 
+        com_jac = M_PI/180.0 * (com_jac);
+        dq      = 180.0/M_PI * dq; 
         broadcastData<Vector> (com_v, port_COM_vel);
         broadcastData<Vector> (dq, port_all_velocities);
         broadcastData<Matrix> (com_jac, port_COM_Jacobian);
@@ -1174,6 +1180,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             tmp = port_ft_arm_left->read(waitMeasure);
             if (tmp != 0) current_status.ft_arm_left  = *tmp;
             //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK1 \n");
+            for (int i=0; i<6; i++) 
+                if (tmp->data()[i]==0.0) 
+                    {
+                        fprintf(stderr,"Error reading FT sensor left arm channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
         }
         else
         {
@@ -1191,6 +1203,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             tmp = port_ft_arm_right->read(waitMeasure);
             if (tmp != 0) current_status.ft_arm_right = *tmp;
             //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK2 \n");
+            for (int i=0; i<6; i++) 
+                if (tmp->data()[i]==0.0) 
+                    {
+                        fprintf(stderr,"Error reading FT sensor right arm channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
         }
         else
         {
@@ -1211,6 +1229,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             tmp = port_ft_leg_left->read(waitMeasure);
             if (tmp != 0) current_status.ft_leg_left  = *tmp;
             //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK3 \n");
+            for (int i=0; i<6; i++) 
+                if (tmp->data()[i]==0.0) 
+                    {
+                        fprintf(stderr,"Error reading FT sensor left leg channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
         }
         else
         {
@@ -1227,6 +1251,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             tmp = port_ft_leg_right->read(waitMeasure);
             if (tmp != 0) current_status.ft_leg_right = *tmp;
             //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK4 \n");
+            for (int i=0; i<6; i++) 
+                if (tmp->data()[i]==0.0) 
+                    {
+                        fprintf(stderr,"Error reading FT sensor right leg channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
         }
         else
         {
@@ -1245,6 +1275,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             tmp = port_ft_foot_left->read(false); //not all the robot versions have the FT sensors installed in the feet
             if (tmp != 0) current_status.ft_foot_left  = *tmp;
             //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK5 \n");
+            for (int i=0; i<6; i++) 
+                if (tmp->data()[i]==0.0) 
+                    {
+                        fprintf(stderr,"Error reading FT sensor left foot channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
         }
         else
         {
@@ -1261,6 +1297,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             tmp = port_ft_foot_right->read(false); //not all the robot versions have the FT sensors installed in the feet
             if (tmp != 0) current_status.ft_foot_right = *tmp;
             //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK6 \n");
+            for (int i=0; i<6; i++) 
+                if (tmp->data()[i]==0.0) 
+                    {
+                        fprintf(stderr,"Error reading FT sensor right foot, channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
         }
         else
         {
