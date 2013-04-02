@@ -60,8 +60,10 @@
 #include "Debug.h"
 
 // Risky place fot those defines!!
-#define EMPTY_PACKET_SIZE     28
-#define	RECV_BUFFER_SIZE      EOK_HOSTTRANSCEIVER_capacityofpacket
+#warning acemor-> removed EMPTY_PACKET_SIZE from here
+//#define EMPTY_PACKET_SIZE     EOK_HOSTTRANSCEIVER_emptyropframe_dimension
+#warning acemor-> RECV_BUFFER_SIZE must be higher or equal EOK_HOSTTRANSCEIVER_capacityofrxpacket. it can safely be 1500
+#define	RECV_BUFFER_SIZE      EOK_HOSTTRANSCEIVER_capacityofrxpacket
 #define	SIZE_INFO             126
 #define MAX_ICUB_EP           32
 
