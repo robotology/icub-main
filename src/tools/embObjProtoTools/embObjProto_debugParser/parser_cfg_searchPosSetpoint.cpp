@@ -104,14 +104,18 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 				},
 				EO_INIT(.data)
 				{
-					{0x18, 0xbc1a},
-					{0x18, 0xbc3a},
-					{0x18, 0xbc5a},
-					{0x18, 0xbc7a},
-					{0x16, 0xbc1a},
-					{0x16, 0xbc3a},
-					{0x16, 0xbc5a},
-					{0x16, 0xbc7a}
+//					{0x18, 0xbc1a},
+//					{0x18, 0xbc3a},
+//					{0x18, 0xbc5a},
+//					{0x18, 0xbc7a},
+//					{0x16, 0xbc1a},
+//					{0x16, 0xbc3a},
+//					{0x16, 0xbc5a},
+//					{0x16, 0xbc7a}
+					{0xffff, 0xdc12},
+					{0xffff, 0xdc32},
+					{0xffff, 0xbc52},
+					{0xffff, 0xbc72},
 				}
 
 			},
@@ -120,7 +124,7 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 
 		EO_INIT(.invalidRopFrame)
 		{
-			EO_INIT(.cbk)					   my_cbk_onInvalidRopFrame
+			EO_INIT(.cbk)					   NULL //my_cbk_onInvalidRopFrame
 
 		}
 	}
@@ -245,9 +249,11 @@ static void my_cbk_onNVsetpointFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr
     pos = (setpoint_ptr->to.position.value/enc_factor)-zero;
     vel = setpoint_ptr->to.position.withvelocity/(enc_factor);
 
-    printf("board %d  j %d   pos %f (%d)  vel %f (%d)  enc_factor=%f  zero=%f\n", board, j, pos, setpoint_ptr->to.position.value, vel, setpoint_ptr->to.position.withvelocity,enc_factor,zero);
+    printf("src_addr 0x%x dst_addr 0x%x board %d  j %d   pos %f (%d)  vel %f (%d)  enc_factor=%f  zero=%f\n", pktInfo_ptr->src_addr, pktInfo_ptr->dst_addr, board, j, pos, setpoint_ptr->to.position.value, vel, setpoint_ptr->to.position.withvelocity,enc_factor,zero);
 
     return;
+
+
 }
 
 
