@@ -875,8 +875,8 @@ void inverseDynamics::run()
 
     if (com_vel_enabled)
     {
-        com_jac = M_PI/180.0 * (com_jac);
-        dq      = 180.0/M_PI * dq; 
+      // com_jac = M_PI/180.0 * (com_jac);
+      // dq      = 180.0/M_PI * dq; 
         broadcastData<Vector> (com_v, port_COM_vel);
         broadcastData<Vector> (dq, port_all_velocities);
         broadcastData<Matrix> (com_jac, port_COM_Jacobian);
