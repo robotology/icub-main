@@ -82,7 +82,9 @@ set(embobj_source
 
 
 #insert here name of parser cfg file!!! 
-set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_getPid.cpp )
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_getPid.cpp )
+
+set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint.cpp )
 
 message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")
 
