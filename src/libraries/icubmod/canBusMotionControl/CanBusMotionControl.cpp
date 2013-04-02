@@ -2045,7 +2045,7 @@ bool CanBusMotionControl::readFullScaleAnalog(AnalogSensor* analogSensor, int ch
 {
     CanBusResources& res = RES (system_resources);
     int destId=0x0200|analogSensor->getId();
-    analogSensor->getScaleFactor()[ch]=1e-9;
+    analogSensor->getScaleFactor()[ch]=1e-20;
     unsigned int i=0;
     res.startPacket();
     res._writeBuffer[0].setId(destId);
