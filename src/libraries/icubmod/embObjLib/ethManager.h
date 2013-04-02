@@ -61,10 +61,19 @@
 #include "Debug.h"
 
 
-#define EMPTY_PACKET_SIZE         28
-#define BUFFER_SIZE               EOK_HOSTTRANSCEIVER_capacityofpacket
+#define EMPTY_PACKET_SIZE         EOK_HOSTTRANSCEIVER_emptyropframe_dimension
+//#define BUFFER_SIZE               EOK_HOSTTRANSCEIVER_capacityofpacket
 #define SIZE_INFO                 126
-#define MAX_ICUB_EP               32
+//#define MAX_ICUB_EP               32
+
+// sizes of rx and tx buffers. 
+// the rx buffer must be able to accepts udp packets of max size (1500), so that we are safe against changes 
+// of tx size done inside the ems boards. 
+// the tx buffer must be able to contain the maximum payload size managed in reception inside the ems board.
+// this value is EOK_HOSTTRANSCEIVER_capacityofpacket. however, 1500 is good enough.
+
+enum {rxBUFFERsize = EOK_HOSTTRANSCEIVER_capacityofrxpacket, txBUFFERsize = EOK_HOSTTRANSCEIVER_capacityoftxpacket};
+
 
 namespace yarp {
     namespace dev {
@@ -201,12 +210,12 @@ public:
      */
     void *getHandleFromEP(eOnvEP_t ep);
 
-    /*! @fn     FEAT_ID getFeatInfoFromEP(uint8_t ep);
+    /*! @fn     FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
      *  @brief  Get the struct of FEAT_ID type with useful information about the class handling the desired EndPoint.
      *  @param  ep  The desired EndPoint
      *  @return std::list<ethResources *>Struct with info
      */
-    FEAT_ID getFeatInfoFromEP(uint8_t ep);
+    FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
 
     // Methods for UDP socket handling
 private:
@@ -239,7 +248,7 @@ class EthSender : public yarp::os::RateThread
 {
 private:
     // buffer storing data to be transmetted
-    uint8_t                       sendBuffer[BUFFER_SIZE];
+    uint8_t                       sendBuffer[txBUFFERsize];
     uint8_t                       *p_sendData;
     TheEthManager                 *ethManager;
     ACE_SOCK_Dgram                *send_socket;
@@ -259,7 +268,7 @@ public:
 class EthReceiver : public yarp::os::Thread
 {
 private:
-    uint8_t                       recvBuffer[BUFFER_SIZE];
+    uint8_t                       recvBuffer[rxBUFFERsize];
     ACE_SOCK_Dgram                *recv_socket;
     TheEthManager                 *ethManager;
     std::list<ethResources *>     *ethResList;

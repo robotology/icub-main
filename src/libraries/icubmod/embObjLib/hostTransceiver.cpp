@@ -54,7 +54,7 @@ hostTransceiver::~hostTransceiver()
     yTrace();
 }
 
-bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsize, uint8_t _board_n)
+bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, uint8_t _board_n)
 {
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
@@ -126,11 +126,11 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     if(pc104nvscfg == NULL)
         return false;
 
-    p_TxPkt = eo_packet_New(_pktsize);
-    if(p_TxPkt == NULL)
-        return false;
+//    p_TxPkt = eo_packet_New(_pktsize);
+//    if(p_TxPkt == NULL)
+//        return false;
 
-    p_RxPkt = eo_packet_New(_pktsize);
+    p_RxPkt = eo_packet_New(_pktsizerx);
     if(p_RxPkt == NULL)
         return false;
 
@@ -214,13 +214,11 @@ eOnvID_t hostTransceiver::getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint
 
 bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
 {
-#if 0
-    bool ret;
-    uint16_t    nvSize;
+    //uint16_t    nvSize;
     eOresult_t    res;
     EOnv          nv;
 
-    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+    EOnv *nvRoot = getNVhandler(endPoint, nvid, &nv);
 
     if(NULL == nvRoot)
     {
@@ -230,72 +228,7 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
     transMutex.wait();
 
-    nvSize = eo_nv_Size(&nv, data);   //TODO calcolare dimesione corretta, tenendo conto di tempo e signature
-
-//     // Verify that the datasize is correct. Get size from caller
-//     if( (nvSize < size) || (0 == size) )
-//     {
-//         // Do something about this case?
-//         // sarebbe bene pero' emettere un warning
-//         yError() << "AddRop, wrong size, skip";
-//         transMutex.post();
-//         return false;
-//     }
-
-    bytesUsed += nvSize;
-    while(nvSize >= EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals)
-    {
-        yWarning() << "Ropframe occasional is full, splitting in another message. (actually just sleeping 1 ms)";
-        yarp::os::Time::delay(0.001);
-        bytesUsed = 0;
-    }
-
-    if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
-    {
-        // the nv is not writeable
-        yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
-        transMutex.post();
-        return false;
-    }
-
-
-    eOropdescriptor_t ropdesc;
-    ropdesc.configuration = eok_ropconfiguration_basic;
-    ropdesc.configuration.plustime = 1;
-    ropdesc.ropcode = eo_ropcode_set;
-    ropdesc.ep = endPoint;
-    ropdesc.id = nvid;
-    ropdesc.size = 0;
-    ropdesc.data = NULL;
-    ropdesc.signature = 0;
-
-    if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
-    {
-        yError() << "Error while loading ROP in ropframe\n";
-        transMutex.post();
-        return false;
-    }
-
-    transMutex.post();
-
-    // everything fine!
-    return true;
-#endif
-    uint16_t    nvSize;
-    eOresult_t    res;
-    EOnv          nv;
-
-    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
-
-    if(NULL == nvRoot)
-    {
-        yError() << "Unable to get pointer to desired NV with id" << nvid;
-        return false;
-    }
-
-    transMutex.wait();
-
-    nvSize = eo_nv_Size(&nv, data);   //TODO calcolare dimesione corretta, tenendo conto di tempo e signature
+    //nvSize = eo_nv_Size(&nv, data);   //TODO calcolare dimesione corretta, tenendo conto di tempo e signature
 
 
     if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
@@ -327,7 +260,7 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
         {
             yError() << "Error while loading ROP in ropframe\n";
             transMutex.post();
-             yarp::os::Time::delay(0.001);
+            yarp::os::Time::delay(0.001);
 
         }
         else
@@ -342,6 +275,7 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
 bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
 {
+
     bool ret;
     uint16_t    nvSize;
     eOresult_t    res;
@@ -351,27 +285,6 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
 
     if(NULL == nvRoot)
         yError() << "Unable to get pointer to desired NV with id" << nvid;
-
-    transMutex.wait();
-
-    nvSize = 8;  //TODO calcolare dimesione vera, tenendo conto di tempo e signature
-
-//     // Verify that the datasize is correct. Get size from caller
-//     if( (nvSize < size) || (0 == size) )
-//     {
-//         // Do something about this case?
-//         // sarebbe bene pero' emettere un warning
-//         yError() << "AddRop, wrong size, skip";
-//         transMutex.post();
-//         return false;
-//     }
-
-    bytesUsed += nvSize;
-    while(nvSize >= EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals)
-    {
-        yWarning() << "Ropframe occasional is full, splitting in another message. (actually just sleeping 1 ms)";
-        yarp::os::Time::delay(0.001);
-    }
 
 
     eOropdescriptor_t ropdesc;
@@ -383,16 +296,26 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
     ropdesc.size = 0;
     ropdesc.data = NULL;
     ropdesc.signature = 0;
+    
+    bool ret = false;
 
-    if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+    for(int i=0; ( (i<5) && (!ret) ); i++)
     {
-        yError() << "Error while loading ROP in ropframe\n";
-        transMutex.post();
-        return false;
-    }
+        transMutex.wait();
+        if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+        {
+            yError() << "Error while loading ROP in ropframe\n";
+            transMutex.post();
+            yarp::os::Time::delay(0.001);
 
-    transMutex.post();
-    return true;
+        }
+        else
+        {
+            transMutex.post();
+            ret = true;
+        }
+    }
+    return ret;    
 }
 
 bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
@@ -429,6 +352,14 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
 {
     uint16_t numofrops;
     uint64_t txtime;
+    uint16_t capacityrxpkt = 0;
+
+    eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
+    if(size > capacityrxpkt)
+    {
+        yError () << "received packet has size " << size << "which is higher than capacity of rx pkt = " << capacityrxpkt << "\n";
+        return;
+    } 
 
     eo_packet_Payload_Set(p_RxPkt, data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
@@ -546,8 +477,10 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 {
     uint16_t numofrops;
     bytesUsed = 0;
-    eo_transceiver_Transmit(pc104txrx, &p_TxPkt, &numofrops);
-    eo_packet_Payload_Get(p_TxPkt, data, size);
+    EOpacket* ptrpkt = NULL;
+    eo_transceiver_Transmit(pc104txrx, &ptrpkt, &numofrops);
+    // now ptrpkt points to internal tx packet of the transceiver.
+    eo_packet_Payload_Get(ptrpkt, data, size);
 }
 
 /*

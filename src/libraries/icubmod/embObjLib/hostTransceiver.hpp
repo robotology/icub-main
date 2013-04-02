@@ -67,7 +67,7 @@ protected:
     uint16_t              ipport;
 //     EOpacket              TxPkt;
 //     EOpacket              RxPkt;
-    EOpacket             *p_TxPkt;
+//    EOpacket             *p_TxPkt;
     EOpacket             *p_RxPkt;
 
     int                   bytesUsed;

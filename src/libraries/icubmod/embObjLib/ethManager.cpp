@@ -293,7 +293,7 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
     // it is unlikely to fail, so keep it or not?
     //std::pair<_Rb_tree_iterator <std::pair <const eOnvEP_t, FEAT_ID > >, bool > addLUT_result;
     //addLUT_result =
-    boards_map.insert(std::pair<uint8_t, FEAT_ID>(id->ep, *id)).second;
+    boards_map.insert(std::pair<eOnvEP_t, FEAT_ID>(id->ep, *id)).second;
     // Check result of insertion
     //addLUT_result.second ? yWarning() << "ok add lut element" : yError() << "NON ok add lut element";
 }
@@ -303,7 +303,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     yTrace() << element.boardNum;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     bool ret;
-    int n = (int) boards_map .erase(element.ep);
+    int n = (int) boards_map.erase(element.ep);
 
     switch(n)
     {
@@ -338,7 +338,7 @@ void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
     return ret;
 }
 
-FEAT_ID TheEthManager::getFeatInfoFromEP(uint8_t ep)
+FEAT_ID TheEthManager::getFeatInfoFromEP(eOnvEP_t ep)
 {
 //    yTrace();
     FEAT_ID ret_val;
