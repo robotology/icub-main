@@ -315,7 +315,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     p_tmpNV = res->getNVhandler( _fId.ep, nvid_fullscale, &tmpNV);
 
     // tmpNVsize is the actual dimension of the array expressed in bytes, it is NOT the number of elements the array contains
-    res->readValue( nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
+    res->readBufferedValue( nvid_fullscale, _fId.ep, (uint8_t *)&fullscale_values, &tmpNVsize);
 
     yDebug() << "using pointer size     is " << eo_array_Size((EOarray*)     p_tmpNV->rem) << "or" << tmpNVsize;
     yDebug() << "using pointer capacity is " << eo_array_Capacity((EOarray*) p_tmpNV->rem);
@@ -342,7 +342,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     {
         Time::delay(1);
         // read fullscale values
-        res->readValue(nvid_fullscale, _fId.ep, &fullscale_values, &tmpNVsize);
+        res->readBufferedValue(nvid_fullscale, _fId.ep, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
         NVsize = eo_array_Size((EOarray *) p_tmpNV->rem);
 

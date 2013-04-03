@@ -96,8 +96,9 @@ public:
     bool addGetMessage( eOnvID_t nvid, eOnvEP_t endPoint);
     bool readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
 
+#if 0
     bool readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t* size);
-
+#endif
     // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
     bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
 

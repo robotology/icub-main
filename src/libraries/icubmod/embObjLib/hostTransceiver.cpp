@@ -313,7 +313,7 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
             ret = true;
         }
     }
-    return ret;    
+    return ret;
 }
 
 bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
@@ -326,10 +326,14 @@ bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_
         yError() << "Unable to get pointer to desired NV with id" << nvid;
         return false;
     }
+    //protetion on reading data by yarp
+    transMutex.wait();
     getNVvalue(nvRoot, data, size);
+    transMutex.post();
     return true;
 }
 
+#if 0 // not used, e in ogni caso identica a quella sopra!! (a parte il mutex che cmq ho aggiunto ora ed il tipo del puntatore ai dati)
 bool hostTransceiver::readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t *size)
 {
     EOnv tmpNV;
@@ -343,7 +347,7 @@ bool hostTransceiver::readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue
 
     return getNVvalue(nvRoot, (uint8_t*) outValue, size);
 }
-
+#endif
 
 // somebody passes the received packet - this is used just as an interface
 void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
@@ -352,6 +356,9 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
     uint64_t txtime;
     uint16_t capacityrxpkt = 0;
 
+    // protezione per la scrittura dei dati all'interno della memoria del transceiver, su ricezione di un rop.
+    // il mutex è unico per tutto il transceiver (quindi più endpoint)
+    transMutex.wait();
     eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
     if(size > capacityrxpkt)
     {
@@ -362,6 +369,7 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
     eo_packet_Payload_Set(p_RxPkt, data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
+    transMutex.post();
 }
 
 // and Processes it

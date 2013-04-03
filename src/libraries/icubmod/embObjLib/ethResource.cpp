@@ -132,9 +132,10 @@ int  ethResources::getBufferSize()
 // at EMS level
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
-    transMutex.wait();
+    // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane più chiaro da leggere. Il mutex è lo stesso
+    // perchè questa classe (ethResource) deriva da hostTransceiver
     hostTransceiver::onMsgReception(data, size);
-    transMutex.post();
+//     transMutex.post();
 }
 
 ACE_INET_Addr   ethResources::getRemoteAddress()

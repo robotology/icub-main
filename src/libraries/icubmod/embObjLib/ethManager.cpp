@@ -342,7 +342,7 @@ FEAT_ID TheEthManager::getFeatInfoFromEP(eOnvEP_t ep)
 {
 //    yTrace();
     FEAT_ID ret_val;
-//     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run
+//     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run ... // nn più vero dopo le ultime ottimizzazioni
     ret_val = boards_map[ep];
 //     managerMutex.post();
     return ret_val;
@@ -702,7 +702,7 @@ void EthReceiver::run()
 
             riterator = _rBegin;
 
-            for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
+     //       for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
             while(riterator != _rEnd)
             //while(iteratoreLista != ethManager->EMS_list.end())
             {

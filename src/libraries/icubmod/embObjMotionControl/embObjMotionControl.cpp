@@ -1033,8 +1033,6 @@ bool embObjMotionControl::init()
     {
         for(int j=_firstJoint, index =0; j<_firstJoint+_njoints; j++, index++)
         {
-            // yDebug() << " j = " << j << "index = " << index;
-
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += mConfigSize)) )
             {
                 // 		yDebug() << "Too many stuff to be sent at once... splitting in more messages";

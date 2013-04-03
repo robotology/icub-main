@@ -51,7 +51,7 @@ using namespace std;
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/CanBusInterface.h>
+//#include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
