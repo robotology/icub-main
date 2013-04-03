@@ -275,8 +275,6 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
 bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
 {
-
-    bool ret;
     uint16_t    nvSize;
     eOresult_t    res;
     EOnv          nv;
