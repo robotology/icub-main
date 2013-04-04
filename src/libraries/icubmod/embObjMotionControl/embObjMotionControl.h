@@ -264,7 +264,6 @@ private:
 
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
-    int   _firstJoint;                          // in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
 
     // debug
     int     start;
@@ -286,7 +285,7 @@ private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool configure_mais(void);
     bool dealloc();
-    void getMStatus(int j);
+
 public:
     embObjMotionControl();
     ~embObjMotionControl();

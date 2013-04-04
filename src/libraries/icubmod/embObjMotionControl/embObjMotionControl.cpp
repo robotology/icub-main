@@ -62,7 +62,7 @@ static double convertA2I(double angle_in_degrees, double zero, double factor)
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    fprintf(stderr, "%s not yet implemented for embObjMotionControl\n", txt);
+    yError() << txt << "is not yet implemented for embObjMotionControl";
     return true;
 }
 
@@ -74,15 +74,6 @@ static bool nv_not_found(void)
     return false;
 }
 
-void embObjMotionControl::getMStatus(int j)
-{
-    EOnv *nvRoot;
-    EOnv nvtmp;
-    eOnvID_t nvid;
-
-    nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig);
-    res->load_occasional_rop(eo_ropcode_ask, (uint16_t)_fId.ep, nvid);
-}
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
@@ -229,7 +220,6 @@ embObjMotionControl::embObjMotionControl() :
     initted       = 0;
     _pids         = NULL;
     _tpids        = NULL;
-    _firstJoint   = 0;
     res           = NULL;
     requestQueue  = NULL;
     _tpidsEnabled = false;
@@ -467,12 +457,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
-
-    // extract info about the first joint controlled by this EMS.
-    _firstJoint = _axisMap[0];
-    for (i = 1; i < _njoints; i++)
-        if(_axisMap[i] <= _firstJoint)
-            _firstJoint = _axisMap[i];
 
     double tmp_A2E;
     // Encoder scales
@@ -804,7 +788,7 @@ bool embObjMotionControl::init()
     eoy_sys_Initialise(NULL, NULL, NULL);
     int j, i;
     //init mutex
-    for(j=_firstJoint, i =0; j<_firstJoint + _njoints; j++, i++)
+    for(j=0, i =0; j<  _njoints; j++, i++)
     {
         j_debug_data[i].mutex = Semaphore(1);
     }
@@ -830,7 +814,7 @@ bool embObjMotionControl::init()
     int mStatusSize = sizeof(eOmc_motor_status_basic_t);
     int totSigSize	= 0;
 
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         //  yDebug() << "configuring ropSig for joint " << j;
 
@@ -888,16 +872,7 @@ bool embObjMotionControl::init()
             {
                 yError() << "while setting rop sig cfg";
             }
-            /*
-            if( !res->nvSetData(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
-            {
-                yError () << "ERROR eo_nv_Set !!";
-                return false;
-            }
 
-            if(!res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
-                return false;
-            */
             Time::delay(0.01);        // Wait here, the ethManager thread will take care of sending the loaded message
             eo_array_Reset(array);
             array->head.capacity = NUMOFROPSIGCFG;
@@ -913,18 +888,6 @@ bool embObjMotionControl::init()
     {
         yError() << "while setting rop sig cfg";
     }
-
-//     if( !res->nvSetData(nvRoot_ropsigcfgassign, array, eobool_true, eo_nv_upd_dontdo))
-//     {
-//         yError () << "ERROR eo_nv_Set !!";
-//         return false;
-//     }
-// 
-//     if( !res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
-//     {
-//         yError () << "error load occasional rop, sig cfg\n";
-//         return false;
-//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
@@ -946,7 +909,7 @@ bool embObjMotionControl::init()
     }
     else
     {
-        for(int j=_firstJoint, index =0; j<_firstJoint + _njoints; j++, index++)
+        for(int j=0, index =0; j<  _njoints; j++, index++)
         {
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += jConfigSize)) )
             {
@@ -986,20 +949,6 @@ bool embObjMotionControl::init()
             jconfig.velocitysetpointtimeout = (eOmeas_time_t)_velocityTimeout[index];
             jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 
-
-            /*
-                    yDebug() << "\n>>>>Setting max and min pos for joint " << j;
-                    yDebug() << "From config file" ;
-                    yDebug() << "deg min = " << _limitsMin[index];
-                    yDebug() << "deg max = " << _limitsMax[index];
-                    yDebug() << "jConfig" ;
-                    yDebug() << "eomin = " << jconfig.minpositionofjoint;
-                    yDebug() << "eomax = " << jconfig.maxpositionofjoint;
-                    yDebug() << "zero deg = " <<_zeros[index];
-                    yDebug() << "_angleToEncoder = " <<_angleToEncoder[index];
-            */
-
-
             jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[index]);
             jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[index]);
 
@@ -1007,12 +956,6 @@ bool embObjMotionControl::init()
             {
                 yError() << "while setting joint config";
             }
-/*
-            if( !res->nvSetData(nvRoot, &jconfig, eobool_true, eo_nv_upd_dontdo))
-                continue;
-
-            if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid))
-                continue;*/
 
             // Debugging... to much information can overload can queue on EMS
             Time::delay(0.01);
@@ -1031,7 +974,7 @@ bool embObjMotionControl::init()
     }
     else
     {
-        for(int j=_firstJoint, index =0; j<_firstJoint+_njoints; j++, index++)
+        for(int j=0, index =0; j< _njoints; j++, index++)
         {
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += mConfigSize)) )
             {
@@ -1048,11 +991,6 @@ bool embObjMotionControl::init()
                 continue;
             }
 
-//             nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &nvtmp);
-//             if(NULL == nvRoot)
-//                 yError () << " NV pointer found\n";
-
-
             eOmc_motor_config_t mconfig;
             memset(&mconfig, 0x00, sizeof(eOmc_motor_config_t));
             // what to do here?
@@ -1062,24 +1000,10 @@ bool embObjMotionControl::init()
 
             eOmeas_current_t	current = (eOmeas_current_t) _currentLimits[index];
 
-            // 			yDebug() << "setting maxcurrent of motor " << index << " to " << _currentLimits[index] << "(" << current << ")";
-            //			if( !res->nvSetData(nvRoot, &mconfig, eobool_true, eo_nv_upd_dontdo))
-
             if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &mconfig))
             {
                 yError() << "while setting motor config";
             }
-
-//             if( !res->nvSetData(nvRoot, &current, eobool_true, eo_nv_upd_dontdo))
-//             {
-//                 yError () << "ERROR eo_nv_Set !!";
-//                 continue;
-//             }
-//             if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid))
-//             {
-//                 yError () << "ERROR eo_nv_Set !!";
-//                 continue;
-//             }
             // Debugging... to much information can overload can queue on EMS
             Time::delay(0.01);
         }
@@ -1120,16 +1044,6 @@ bool embObjMotionControl::configure_mais(void)
             return false;
         }
 
-//        nvRoot = res->getNVhandler(mais_ep, nvid, &tmp);
-//         if(NULL == nvRoot)
-//             yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
-// 
-//         if( !res->nvSetData(nvRoot, &datarate, eobool_true, eo_nv_upd_dontdo))
-//             return false;
-// 
-//         if(!res->load_occasional_rop(eo_ropcode_set, mais_ep, nvid) )
-//             return false;
-
         if(!res->addSetMessage(nvid, mais_ep, &datarate))
         {
             yError() << "while setting mais datarate";
@@ -1148,16 +1062,6 @@ bool embObjMotionControl::configure_mais(void)
         {
             yError() << "while setting mais maismode";
         }
-
-//         nvRoot = res->getNVhandler(mais_ep, nvid, &tmp);
-//         if(NULL == nvRoot)
-//             yError () << "[eomc] NV pointer not found\n" << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__;
-// 
-//         if( !res->nvSetData(nvRoot, &maismode, eobool_true, eo_nv_upd_dontdo))
-//             return false;
-// 
-//         if(!res->load_occasional_rop(eo_ropcode_set, mais_ep, nvid) )
-//             return false;
     }
     return true;
 }
@@ -1213,60 +1117,38 @@ void embObjMotionControl::refreshEncoderTimeStamp(int joint)
 
 bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 {
-    // yTrace();
     EOnv tmp;
-    // Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
-    // the EMS I'm referring to.
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__pidposition);
     EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
 
     if(NULL == nvRoot)
+    {
         yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
-
+        return false;
+    }
     eOmc_PID_t  outPid;
     copyPid_iCub2eo(&pid, &outPid);
 
     if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &outPid))
     {
         yError() << "while setting position PIDs for board" << _fId.boardNum << "joint " << j;
+        return false;
     }
-
-
-//     if( !res->nvSetData(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
-//     {
-//         yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
-//         return false;
-//     }
-//     if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-//         return false;
 
     // Now set the velocity pid too...
     nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__pidvelocity);
     if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &outPid))
     {
         yError() << "while setting velocity PIDs for board" << _fId.boardNum << "joint " << j;
+        return false;
     }
-
-//     nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-//
-//     if(NULL == nvRoot)
-//         yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
-//
-//     if( !res->nvSetData(nvRoot, &outPid, eobool_true, eo_nv_upd_dontdo))
-//     {
-//         yError () << "[embObj Motion Control] Set nv value failed at line " << __LINE__;
-//         return false;
-//     }
-//     if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-//         return false;
-
     return true;
 }
 
 bool embObjMotionControl::setPidsRaw(const Pid *pids)
 {
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= setPidRaw(j, pids[j]);
     }
@@ -1306,24 +1188,15 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
     getControlModeRaw(j, &mycontrolMode);
     if(VOCAB_CM_POSITION != mycontrolMode )
     {
-        yWarning() << "Asked for Torque PID Error while not in Torque control mode. Returning zeros";
+        yWarning() << "Asked for Position PID Error while not in Position control mode. Returning zeros";
         err = 0;
         return false;
     }
 
-    // Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
-    // the EMS I'm referring to.
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__ofpid);
-
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-
-    if(NULL == nvRoot)
-        NV_NOT_FOUND;
-
-
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
     uint16_t size;
-    res->getNVvalue(nvRoot, (uint8_t*) &tmpJointStatus, &size);
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&tmpJointStatus, &size);
     *err = (double) tmpJointStatus.error;
     return true;
 }
@@ -1331,7 +1204,7 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
 bool embObjMotionControl::getErrorsRaw(double *errs)
 {
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= getErrorRaw(j, &errs[j]);
     }
@@ -1341,25 +1214,28 @@ bool embObjMotionControl::getErrorsRaw(double *errs)
 bool embObjMotionControl::getOutputRaw(int j, double *out)
 {
     EOnv tmp;
+    bool ret = true;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__ofpid);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
 
-    if(NULL == nvRoot)
-        NV_NOT_FOUND
-
-        eOmc_joint_status_ofpid_t  tmpJointStatus;
     uint16_t size;
-    res->getNVvalue(nvRoot, (uint8_t*) &tmpJointStatus, &size);
-    *out = (double) tmpJointStatus.output;
-
-    return true;
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    if(res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&tmpJointStatus, &size) )
+    {
+        *out = (double) tmpJointStatus.output;
+    }
+    else
+    {
+        *out = 0;
+        ret = false;
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getOutputsRaw(double *outs)
 {
     bool ret = true;
 
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= getOutputRaw(j, &outs[j]);
     }
@@ -1383,17 +1259,6 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
         return false;
     }
 
-/*  old style
-    EOnv  *nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
-    if(NULL == nvRoot)
-        NV_NOT_FOUND
-
-    if(!res->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-    {
-        printf("Error load rop\n");
-        return  false;
-    }*/
-
     // wait here
     if(-1 == tt->synch() )
     {
@@ -1409,116 +1274,59 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     uint16_t size;
     eOmc_PID_t eoPID;
     res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&eoPID, &size);
-//    old style // res->getNVvalue(nvRoot, (uint8_t *)&eoPID, &size);
+
     copyPid_eo2iCub(&eoPID, pid);
 
-    //_mutex.post();
     return true;
 }
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)
 {
     yTrace();
-
     bool ret = true;
-    eoThreadEntry *tt = NULL;
-
-    //	EOnv tmp[_njoints];
-    eOnvID_t  nvid[_njoints];
-    EOnv	  nv[_njoints];
-    eoRequest req;
 
     // just one joint at time, wait answer before getting to the next.
     // This is because otherwise too many msg will be placed into can queue
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j<_njoints; j++, index++)
     {
         ret &=getPidRaw(j, &pids[j]);
     }
     return ret;
-
-#if 0
-    // OLD STYLE
-    // all joints toghether
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
-    {
-        nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
-        if(NULL == res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid[index], &nv[index]) )
-            NV_NOT_FOUND;
-
-        // Sign up for waiting the reply
-        tt = appendWaitRequest(j, nvid[index]);
-    }
-
-    printf("waiting for %d replies\n", _njoints);
-    if( NULL != tt)
-    {
-        tt->setPending(_njoints);
-
-        // wait just once for all data
-        // wait here
-        if(-1 == tt->synch() )
-        {
-            int threadId;
-            yError () << "getPids timed out";
-            if(requestQueue->threadPool->getId(&threadId))
-                requestQueue->cleanTimeouts(threadId);
-            return false;
-        }
-    }
-    else
-        return false;
-    // copy data received to the caller
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
-    {
-        eOmc_PID_t *tmpPid = (eOmc_PID16_t *) &nv[index];  //tmpPid doesn't need to be an array, because it's just a cast of an existing data.
-        copyPid_eo2iCub(&tmpPid[index], &pids[index]);
-    }
-
-    return ret;
-#endif
 }
 
 bool embObjMotionControl::getReferenceRaw(int j, double *ref)
 {
-    // print_debug(AC_trace_file, "embObjMotionControl::getReferenceRaw()");
     return NOT_YET_IMPLEMENTED("getReference");
 }
 
 bool embObjMotionControl::getReferencesRaw(double *refs)
 {
-    // print_debug(AC_trace_file, "embObjMotionControl::getReferencesRaw()");
     return NOT_YET_IMPLEMENTED("getReference");
 }
 
 bool embObjMotionControl::getErrorLimitRaw(int j, double *limit)
 {
-    // print_debug(AC_trace_file, "embObjMotionControl::getErrorLimitRaw()");
     return NOT_YET_IMPLEMENTED("getErrorLimit");
 }
 
 bool embObjMotionControl::getErrorLimitsRaw(double *limits)
 {
-    // print_debug(AC_trace_file, "embObjMotionControl::getErrorLimitsRaw()");
     return NOT_YET_IMPLEMENTED("getErrorLimit");
 }
 
 bool embObjMotionControl::resetPidRaw(int j)
 {
-    // yTrace();
-    // print_debug(AC_trace_file, "embObjMotionControl::resetPidRaw()");
-
     return NOT_YET_IMPLEMENTED("resetPid");
 }
 
 bool embObjMotionControl::disablePidRaw(int j)
 {
-    // yTrace();
     EOnv tmp;
     // Spegni tutto!! Setta anche Amp off
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__controlmode);
 
-    _enabledAmp[j-_firstJoint] = false;
-    _enabledPid[j-_firstJoint] = false;
+    _enabledAmp[j ] = false;
+    _enabledPid[j ] = false;
 
     eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
     if(! res->addSetMessage(nvid, _fId.ep, (uint8_t *) &val) )
@@ -1526,27 +1334,6 @@ bool embObjMotionControl::disablePidRaw(int j)
         yError() << "while disabling pid";
         return false;
     }
-
-
-    // old style
-/*
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-    {
-        // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-        return false;
-*/
     return true;
 }
 
@@ -1556,48 +1343,19 @@ bool embObjMotionControl::enablePidRaw(int j)
     EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__controlmode);
 
-    /*
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-
-    if(false == _enabledAmp[j-_firstJoint] )
-    {
-        yWarning() << "Please enable Amps before enabling Pid!!  (embObjCtrl)\n";
-        //		return false;
-    }
-    */
-
     // se giunto non è calibrato non fa nulla, se è calibrato manda il control mode position
-    _enabledPid[j-_firstJoint] = true;
+    _enabledPid[j ] = true;
     printf("nvid of enablePid 0x%04X\n", nvid);
 
-    if(_calibrated[j-_firstJoint])
+    if(_calibrated[j ])
     {
         eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
 
         if(! res->addSetMessage(nvid, _fId.ep, (uint8_t *) &val))
         {
-            yError() << "while disabling pid";
+            yError() << "while enabling pid";
             return false;
         }
-
-        // old style
-        /*
-            if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-            {
-                yError () <<  "\n>>> ERROR eo_nv_Set !!\n";
-                return false;
-            }
-
-            if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-                return false;
-            */
     }
     return true;
 }
@@ -1623,7 +1381,7 @@ bool embObjMotionControl::setVelocityModeRaw()
     eOnvID_t  nvid;
 
     eOmc_controlmode_command_t val = eomc_controlmode_cmd_velocity;
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
         if(! res->addSetMessage(nvid, _fId.ep, (uint8_t *) &val))
@@ -1631,28 +1389,7 @@ bool embObjMotionControl::setVelocityModeRaw()
             yError() << "while setting velocity mode";
             return false;
         }
-
-/* old style
-        nvids[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-        nvRoot[index] = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvids[index], &tmp);
-
-        if(NULL == nvRoot[index])
-        {
-            NV_NOT_FOUND;
-            ret = false;
-        }
-
-        if( !res->nvSetData(nvRoot[index], &val, eobool_true, eo_nv_upd_dontdo))
-        {
-            // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-            return false;
-        }
-
-        if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvids[index]) )
-            return false;
-        */
     }
-
     return ret;
 }
 
@@ -1660,7 +1397,7 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
     // yTrace();
     EOnv tmp;
-    int index = j- _firstJoint;
+    int index = j ;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
 
 
@@ -1677,26 +1414,6 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
         yError() << "while setting velocity mode";
         return false;
     }
-
-    /*
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-    int index = j- _firstJoint;
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
-    {
-        // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-        return false;
-    */
     return true;
 }
 
@@ -1711,32 +1428,9 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 
     setpoint.type = eomc_setpoint_velocity;
 
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         ret &= velocityMoveRaw(j, sp[index]);
-        /*
-        nvids[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__setpoint);
-        nvRoot[index] = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvids[index], &tmp);
-
-        if(NULL == nvRoot[index])
-        {
-            NV_NOT_FOUND;
-            ret = false;
-        }
-
-        _command_speeds[index] = sp[index] / 1000.0;   // save internally the new value of speed.
-        setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[index];
-        setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[index];
-
-        if( !res->nvSetData(nvRoot[index], &setpoint, eobool_true, eo_nv_upd_dontdo))
-        {
-            // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-            return false;
-        }
-
-        if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvids[index]) )
-            return false;
-        */
     }
 
     return ret;
@@ -1752,13 +1446,13 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
     yTrace() << "calibrate2Raw for BOARD " << _fId.boardNum << "joint" << j;
 
     // Tenere il check o forzare questi sottostati?
-    if(!_enabledAmp[j-_firstJoint] )
+    if(!_enabledAmp[j ] )
     {
         yWarning () << "Called calibrate for joint " << j << "with PWM(AMP) not enabled, forcing it!!";
         //		return false;
     }
 
-    if(!_enabledPid[j-_firstJoint])
+    if(!_enabledPid[j ])
     {
         yWarning () << "Called calibrate for joint " << j << "with PID not enabled, forcing it!!";
         //		return false;
@@ -1820,22 +1514,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
         return false;
     }
 
-    /*
-    EOnv *nvRoot_cmd_calib = res->getNVhandler((uint16_t)_fId.ep, nvid_cmd_calib, &tmp_calib);
-    if(NULL == nvRoot_cmd_calib)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot_cmd_calib, &calib, eobool_true, eo_nv_upd_dontdo))
-        return false;
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_cmd_calib) )
-        return false;
-    */
-
-    _calibrated[j-_firstJoint] = true;
+    _calibrated[j ] = true;
 
     return true;
 }
@@ -1853,17 +1532,6 @@ bool embObjMotionControl::doneRaw(int axis)
 
     Time::delay(0.1);
     res->readBufferedValue(nvid, _fId.ep, (uint8_t*) &type, &size);
-
-/* OLD style
-    EOnv tmp;
-    EOnv  *nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-    res->getNVvalue(nvRoot, (uint8_t*) &type, &size);
-*/
 
     // if the control mode is no longer a calibration type, it means calibration ended
     if( (eomc_controlmode_idle == type) || (eomc_controlmode_calib == type) )
@@ -1888,33 +1556,20 @@ bool embObjMotionControl::getAxes(int *ax)
 
 bool embObjMotionControl::setPositionModeRaw()
 {
-    yTrace();
-
     bool ret = true;
-    eOnvID_t  nvid[_njoints];
-    EOnv	  nv[_njoints];
+    eOnvID_t  nvid;
 
     eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0; j< _njoints; j++)
     {
-//        if(!_calibrated[j-_firstJoint])
-//        {
-//        	return false;
-//        }
-//
-        nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-        if(NULL == res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index], &nv[index]) )
-        {
-            NV_NOT_FOUND;
-            ret = false;
-        }
-
-        if( !res->nvSetData(&nv[index], &val, eobool_true, eo_nv_upd_dontdo))
+       if(!_calibrated[j])
+       {
+            yWarning() << "called position mode on a non calibrated axes... skipping";
             return false;
+       }
 
-        if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid[index]))
-            return false;
-
+        nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
+        ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
     }
 
     return ret;
@@ -1923,10 +1578,7 @@ bool embObjMotionControl::setPositionModeRaw()
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
     yTrace() << "board num " << _fId.boardNum << "joint" << j;
-    // mutex took here was used for test to insure will have both set and get in the same ropframe (debug purpose)
-    //	res->_mutex.wait();
 
-    //	static eOmeas_position_t pos = 0;
     EOnv tmp;
 #ifdef _SETPOINT_TEST_
     /*
@@ -1935,7 +1587,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     if((nvid_aux_6 == 0) && (_fId.ep == 22))
     {
         int j, i;
-        for(j=_firstJoint, i =0; j<_firstJoint + _njoints; j++, i++)
+        for(j=0, i =0; j<  _njoints; j++, i++)
     	{
         	eOnvID_t nvid_aux_6 = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) i, jointNVindex_jcmmnds__setpoint );
         	yError() << "++++++++++++++++++++++++ board num 6"<<  "joint" << i << "ep = " << _fId.ep << "nvid = " << nvid_aux_6;
@@ -1946,7 +1598,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     if((nvid_aux_8 == 0) && (_fId.ep == 24))
     {
         int j, i;
-        for(j=_firstJoint, i =0; j<_firstJoint + _njoints; j++, i++)
+        for(j=0, i =0; j<  _njoints; j++, i++)
     	{
 			eOnvID_t nvid_aux_8 = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) i, jointNVindex_jcmmnds__setpoint );
 			yError() << "++++++++++++++++++++++++ board num 8"<<  "joint" << i << "ep = " << _fId.ep << "nvid = " << nvid_aux_8;
@@ -1954,24 +1606,18 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     }
     */
 #endif
+
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-    int index = j-_firstJoint;
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
 
-    _ref_positions[index] = ref;   // save internally the new value of pos.
+    _ref_positions[j] = ref;   // save internally the new value of pos.
 
     eOmc_setpoint_t setpoint;
     uint16_t *prog = (uint16_t*) &setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
-    setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[index];
-    setpoint.to.position.withvelocity = (eOmeas_velocity_t) _ref_speeds[index];
+    setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[j];
+    setpoint.to.position.withvelocity = (eOmeas_velocity_t) _ref_speeds[j];
 #ifdef _SETPOINT_TEST_
     if( (_fId.boardNum == 6) || (_fId.boardNum==8 ) )
     {
@@ -1992,73 +1638,31 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     	j_debug_data[j].mutex.post();
     }
 #endif
-    if( !res->nvSetData(nvRoot, &setpoint, eobool_true, eo_nv_upd_dontdo))
-    {
-        yError() << "position move eo_nv_Set board" << _fId.boardNum << " joint" << j;
-        return false;
-    }
 
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-    {
-    	yError() << "position move load rop board" << _fId.boardNum << "joint " << j;
-    	return false;
-    }
+//    yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6);
 
-    yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6);
-
-
-    /*
-    // Debug - ask the setpoint to see it is stored correctly
-    //Time::delay(0.2);  // wait some time to be sure the setpoint has been sent
-
-    // Sign up for waiting the reply
-
-    if( (_fId.ep == (eOnvEP_t)endpoint_mc_leftupperleg) && (j == 3) )
-    {
-    	eoThreadEntry *tt = appendWaitRequest(j, nvid);
-    	tt->setPending(1);
-
-    	if(!res->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-    		return false;
-
-    	// wait here
-    	if(-1 == tt->synch() )
-    	{
-    		int threadId;
-    		printf("\n\n--------------------\n Get SetPoint TIMEOUT for joint %d\n-----------------------\n", j); //yError () << "ask request timed out, joint " << j;
-
-    		if(requestQueue->threadPool->getId(&threadId))
-    			requestQueue->cleanTimeouts(threadId);
-    		//		return false;
-    	}
-    }
-    //	res->_mutex.post();
-    */
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
 }
 
 bool embObjMotionControl::positionMoveRaw(const double *refs)
 {
 	yTrace() << "all joints";
     bool ret = true;
-    //res->theEthManager_h->_mutex.wait();
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         ret &= positionMoveRaw(j, refs[index]);
     }
-    //res->theEthManager_h->_mutex.post();
     return ret;
 }
 
 bool embObjMotionControl::relativeMoveRaw(int j, double delta)
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("positionRelative");
 }
 
 bool embObjMotionControl::relativeMoveRaw(const double *deltas)
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("positionRelative");
 }
 
@@ -2078,9 +1682,9 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     // monitor status until set point is reached, if it wasn't already set
     // this is because the function has to be in a non blocking fashion and I want to avoid resending the same message over and over again!!
 
-    if(!checking_motiondone[j-_firstJoint])
+    if(!checking_motiondone[j ])
     {
-        checking_motiondone[j-_firstJoint] = true;
+        checking_motiondone[j ] = true;
         eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_forever;
         if( !res->nvSetData(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
         {
@@ -2116,7 +1720,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
         //			}
         //			res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_config);
         //		}
-        //		checking_motiondone[j-_firstJoint]= false;
+        //		checking_motiondone[j ]= false;
     }
     else
         *flag = false;
@@ -2129,7 +1733,7 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
     bool ret = true;
     bool val, tot_res = true;
 
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         ret &= checkMotionDoneRaw(&val);
         tot_res &= val;
@@ -2143,7 +1747,7 @@ bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
     yTrace() << _fId.name << "joint" << j << "Value" << sp;
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
-    int index = j-_firstJoint;
+    int index = j ;
     _ref_speeds[index] = sp;
     return true;
 }
@@ -2153,7 +1757,7 @@ bool embObjMotionControl::setRefSpeedsRaw(const double *spds)
     yTrace();
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         _ref_speeds[index] = spds[index];
     }
@@ -2165,7 +1769,7 @@ bool embObjMotionControl::setRefAccelerationRaw(int j, double acc)
     // yTrace();
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
-    _ref_accs[j-_firstJoint] = acc;
+    _ref_accs[j ] = acc;
 
     return true;
 }
@@ -2175,7 +1779,7 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
     // yTrace();
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         _ref_accs[index] = accs[j];
     }
@@ -2185,7 +1789,7 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
 bool embObjMotionControl::getRefSpeedRaw(int j, double *spd)
 {
     // yTrace();
-    *spd = _ref_speeds[j-_firstJoint];
+    *spd = _ref_speeds[j ];
     return true;
 }
 
@@ -2199,7 +1803,7 @@ bool embObjMotionControl::getRefSpeedsRaw(double *spds)
 bool embObjMotionControl::getRefAccelerationRaw(int j, double *acc)
 {
     // yTrace();
-    *acc = _ref_accs[j-_firstJoint];
+    *acc = _ref_accs[j ];
     return true;
 }
 
@@ -2215,33 +1819,15 @@ bool embObjMotionControl::stopRaw(int j)
     // yTrace();
     EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__stoptrajectory);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
 
     eObool_t stop = eobool_true;
-
-    if( !res->nvSetData(nvRoot, &stop, eobool_true, eo_nv_upd_dontdo))
-    {
-        // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &stop);
 }
 
 bool embObjMotionControl::stopRaw()
 {
-    // yTrace();
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= stopRaw(j);
     }
@@ -2256,208 +1842,82 @@ bool embObjMotionControl::setPositionModeRaw(int j)
     EOnv              tmpnv;
     eOnvID_t          nvid;
     EOnv              *nvRoot;
-    eOmc_controlmode_command_t 	val = eomc_controlmode_cmd_position;
+    eOmc_controlmode_command_t  val = eomc_controlmode_cmd_position;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-    nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_always))
-    {
-        printf("\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::setVelocityModeRaw(int j)
 {
-    // yTrace();
-    eOnvID_t  						nvid;
-    EOnv 							tmpnv;
-    EOnv	  						*nvRoot;
-    eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_velocity;
+    eOnvID_t                      nvid;
+    EOnv                          tmpnv;
+    EOnv                          *nvRoot;
+    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_velocity;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-    nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_always))
-    {
-        yError () << "nv Set";
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::setTorqueModeRaw(int j)
 {
-    yTrace();
-    eOnvID_t  						nvid;
-    EOnv 							tmpnv;
-    EOnv	  						*nvRoot;
-    eOmc_controlmode_command_t 		val =  eomc_controlmode_cmd_torque;
+    eOnvID_t                      nvid;
+    EOnv                          tmpnv;
+    EOnv                          *nvRoot;
+    eOmc_controlmode_command_t    val =  eomc_controlmode_cmd_torque;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-    nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
-
-    if(NULL == nvRoot)
-    {
-        yError() << "Set Torque Mode: NV root not found!";
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-    {
-        yError() << "Set Torque mode: nv Set Data Failed";
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-    {
-    	yError() << "Set Torque mode: load rop failed";
-        return false;
-    }
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
-    // yTrace();
-    eOnvID_t  						nvid;
-    EOnv 							tmpnv;
-    EOnv	  						*nvRoot;
-    eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_impedance_pos;
+    eOnvID_t                      nvid;
+    EOnv                          tmpnv;
+    EOnv                          *nvRoot;
+    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_pos;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-    nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-    {
-        // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
     yTrace();
-    eOnvID_t  						nvid;
-    EOnv 							tmpnv;
-    EOnv	  						*nvRoot;
-    eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_impedance_vel;
+    eOnvID_t                      nvid;
+    EOnv                          tmpnv;
+    EOnv                          *nvRoot;
+    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_vel;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-    nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-        return false;
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid))
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::setOpenLoopModeRaw(int j)
 {
     // yTrace();
-    eOnvID_t  						nvid;
-    EOnv 							tmpnv;
-    EOnv	  						*nvRoot;
-    eOmc_controlmode_command_t 		val = eomc_controlmode_cmd_openloop;
+    eOnvID_t                      nvid;
+    EOnv                          tmpnv;
+    EOnv                          *nvRoot;
+    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_openloop;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
-    nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-        return false;
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
-    EOnv tmpnv;
+    EOnv                          tmpnv;
+    uint16_t                      size;
+    eOmc_joint_status_basic_t     status;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jstatus__basic);
-    EOnv	*nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmpnv);
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
+    bool ret = res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&status, &size);
 
-    //	res->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid);
-    //
-    //	// Sign up for waiting the reply
-    //	eoThreadEntry *tt = appendWaitRequest(j, nvid);
-    //	tt->setPending(1);
-    //
-    //	// wait here
-    //	if(-1 == tt->synch() )
-    //	{
-    //		int threadId;
-    //		yError () << "[ETH] getControlModeRaw timed out, joint " << j;
-    //		if(requestQueue->threadPool->getId(&threadId))
-    //			requestQueue->cleanTimeouts(threadId);
-    //		return false;
-    //	}
+    eOmc_controlmode_t type = (eOmc_controlmode_t) status.controlmodestatus;
 
-    uint16_t size;
-    eOmc_joint_status_basic_t	status;
-    eOmc_controlmode_t  type;
-    res->getNVvalue(nvRoot, (uint8_t*) &status, &size);
-
-    //type = (eOmc_joint_status_basic_t) status.controlmodestatus;
-
-    type = (eOmc_controlmode_t) status.controlmodestatus;
-    //	printf("\nCurrent status for joint %d is ",j);
     switch(type)
     {
     case eomc_controlmode_idle:
@@ -2510,9 +1970,8 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
 
 bool embObjMotionControl::getControlModesRaw(int* v)
 {
-    // yTrace();
     bool ret = true;
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+    for(int j=0, index=0; j< _njoints; j++, index++)
     {
         ret &= getControlModeRaw(j, &v[index]);
     }
@@ -2547,62 +2006,32 @@ bool embObjMotionControl::resetEncodersRaw()
 
 bool embObjMotionControl::getEncoderRaw(int j, double *value)
 {
-    // Check if j is valid for this specific instance of embObjMotionControl, i.e. if this joint is actually controlled by
-    // the EMS I'm referring to.
-    //	printf("EO getEncoderRaw\n");
+    EOnv          tmpnv;
+    eOnvID_t      nvid;
+    uint16_t      size;
+    eOmc_joint_status_basic_t     status;
+    nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jstatus__basic);
 
-    EOnv tmpnv;
-    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__basic);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
+    bool ret = res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&status, &size);
 
-    if(_fId.boardNum ==2)
+    if(ret)
     {
-        _fId.boardNum = _fId.boardNum;
+        eOmc_controlmode_t type = (eOmc_controlmode_t) status.controlmodestatus;
+        *value = (double) status.position;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading encoder";
+        *value = 0;
     }
 
-    if(NULL == nvRoot)
-    {
-        yError () << "Nv pointer not found\n";
-        return false;
-    }
-
-    eOmc_joint_status_basic_t  tmpJointStatus;
-    uint16_t size;
-    res->getNVvalue(nvRoot, (uint8_t*) &tmpJointStatus, &size);
-    *value = (double) tmpJointStatus.position;
-
-    // DEBUG
-    //	static int i = 0;
-    //	static bool print = true;
-    //
-    //#define PRINT_EVERY_X 500
-    //
-    //	if(_fId.ep == endpoint_mc_leftlowerarm)
-    //	{
-    //		if( (print) && (i>= PRINT_EVERY_X) && (j == 0) )
-    //		{
-    //			i = 0;
-    //			print = false;
-    //		}
-    //
-    //		if(j == 0)
-    //			i++;
-    //
-    //		if(i >= PRINT_EVERY_X)
-    //		{
-    //			print = true;
-    //		}
-    //
-    //		if(print)
-    //			printf("Pos joint %d = %d\n", j, tmpJointStatus.position);
-    //	}
-    return true;
+    return ret;
 }
 
 bool embObjMotionControl::getEncodersRaw(double *encs)
 {
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= getEncoderRaw(j, &encs[j]);
 
@@ -2614,26 +2043,19 @@ bool embObjMotionControl::getEncoderSpeedRaw(int j, double *sp)
 {
     EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__basic);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
+    uint16_t      size;
     eOmc_joint_status_basic_t  tmpJointStatus;
-    uint16_t size;
-    res->getNVvalue(nvRoot,  (uint8_t*) &tmpJointStatus, &size);
+    bool ret = res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&tmpJointStatus, &size);
+    // extract requested data from status
     *sp = (double) tmpJointStatus.velocity;
     return true;
 }
 
 bool embObjMotionControl::getEncoderSpeedsRaw(double *spds)
 {
-    // yTrace();
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= getEncoderSpeedRaw(j, &spds[j]);
     }
@@ -2644,17 +2066,10 @@ bool embObjMotionControl::getEncoderAccelerationRaw(int j, double *acc)
 {
     EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__basic);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
+    uint16_t      size;
     eOmc_joint_status_basic_t  tmpJointStatus;
-    uint16_t size;
-    res->getNVvalue(nvRoot,  (uint8_t*) &tmpJointStatus, &size);
+    bool ret = res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&tmpJointStatus, &size);
     *acc = (double) tmpJointStatus.acceleration;
     return true;
 }
@@ -2662,7 +2077,7 @@ bool embObjMotionControl::getEncoderAccelerationRaw(int j, double *acc)
 bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs)
 {
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= getEncoderSpeedRaw(j, &accs[j]);
     }
@@ -2681,14 +2096,6 @@ bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
     double tmp =  _encodersStamp[0];
     _mutex.post();
 
-//    // debug print
-//    static long int nn1 =0;
-//    nn1++;
-//    if(nn1 == 100)
-//    {
-//    	printf("_encodersStamp[0] = %f\n", tmp);
-//    	nn1 = 0;
-//    }
     return ret;
 }
 
@@ -2699,30 +2106,15 @@ bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
     *stamp = _encodersStamp[j];
     _mutex.post();
 
-    //	//_mutex.wait();
-    //	double stamp=0;
-    //	for (i = 0; i < r.getJoints(); i++) {
-    //		v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
-    //		t[i] = r._bcastRecvBuffer[i]._position_joint._stamp;
-    //
-    //		if (stamp<r._bcastRecvBuffer[i]._position_joint._stamp)
-    //			stamp=r._bcastRecvBuffer[i]._position_joint._stamp;
-    //	}
-    //
-    //	stampEncoders.update(stamp);
-    //	//_mutex.post();
     return ret;
 }
 
 ////// Amplifier interface
-//
+
 bool embObjMotionControl::enableAmpRaw(int j)
 {
-    // yTrace();
-
     // Just take note of this command. Does nothing here... wait for enable pid
-    _enabledAmp[j-_firstJoint] = true;
-    // yDebug() << "enableAmpRaw AMP status " << _enabledAmp[j-_firstJoint];
+    _enabledAmp[j ] = true;
     return true;
 }
 
@@ -2731,31 +2123,14 @@ bool embObjMotionControl::disableAmpRaw(int j)
     // yTrace();
     // Spegni tutto!! Setta anche pid off
     EOnv tmpnv;
+    _enabledAmp[j ] = false;      // da proteggere anche questa scrittura interna??
+    _enabledPid[j ] = false;
+
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__controlmode);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
 
-    _enabledAmp[j-_firstJoint] = false;
-    _enabledPid[j-_firstJoint] = false;
-
-    // yDebug() << "disableAmpRaw AMP status " << _enabledAmp[j-_firstJoint];
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
+    // yDebug() << "disableAmpRaw AMP status " << _enabledAmp[j ];
     eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-    {
-        // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::getCurrentRaw(int j, double *value)
@@ -2763,17 +2138,11 @@ bool embObjMotionControl::getCurrentRaw(int j, double *value)
     // yTrace();
     EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_motorNumber_t) j, motorNVindex_mstatus__basic);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
 
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    eOmc_motor_status_basic_t  tmpMotorStatus;
     uint16_t size;
-    res->getNVvalue(nvRoot, (uint8_t*) &tmpMotorStatus, &size);
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&tmpMotorStatus, &size);
+
     *value = (double) tmpMotorStatus.current;
     return true;
 }
@@ -2782,7 +2151,7 @@ bool embObjMotionControl::getCurrentsRaw(double *vals)
 {
     // yTrace();
     bool ret = true;
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= getCurrentRaw(j, &vals[j]);
     }
@@ -2793,32 +2162,15 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
 {
     EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_motorNumber_t) j, motorNVindex_mconfig__maxcurrentofmotor);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmpnv);
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
 
     eOmeas_current_t  maxCurrent = (eOmeas_current_t) val;
-
-    if( !res->nvSetData(nvRoot, &val, eobool_true, eo_nv_upd_dontdo))
-    {
-        // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-        return false;
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
     // yTrace();
-    (_enabledAmp[j-_firstJoint]) ? *st = 1 : *st = 0;
+    (_enabledAmp[j ]) ? *st = 1 : *st = 0;
     return true;
 }
 
@@ -2870,26 +2222,22 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     nvid_min = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__minpositionofjoint);
     nvid_max = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__maxpositionofjoint);
 
-    nvRoot_min = res->getNVhandler((uint16_t)_fId.ep, nvid_min, &NV_min);
-    nvRoot_max = res->getNVhandler((uint16_t)_fId.ep, nvid_max, &NV_max);
-
-    if( (NULL == nvRoot_min) || (NULL == nvRoot_max))
-    {
-        yError() << "nv root not found at line " << __LINE__;
-        return false;
-    }
-
     // Sign up for waiting the reply
     eoThreadEntry *tt = appendWaitRequest(j, nvid_min);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
     appendWaitRequest(j, nvid_max);
     tt->setPending(2);
 
-    if(!res->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_min) )
+    if(!res->addGetMessage(nvid_min, _fId.ep) )
+    {
+        yError() << "Can't send get min position limit request for board" << _fId.boardNum << "joint " << j;
         return false;
+    }
 
-    if(!res->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid_max) )
+    if(!res->addGetMessage(nvid_max, _fId.ep) )
+    {
+        yError() << "Can't send get max position limits request for board" << _fId.boardNum << "joint " << j;
         return false;
-
+    }
 
     // wait here
     if(-1 == tt->synch() )
@@ -2903,21 +2251,14 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     }
     // Get the value
     uint16_t size;
-
     int32_t	eomin, eomax;
-    res->getNVvalue(nvRoot_min, (uint8_t *)&eomin, &size);
-    res->getNVvalue(nvRoot_max, (uint8_t *)&eomax, &size);
+
+    bool ret = res->readBufferedValue(nvid_min, _fId.ep, (uint8_t *)&eomin, &size);
+    ret &= res->readBufferedValue(nvid_max, _fId.ep, (uint8_t *)&eomax, &size);
+
     *min = (double)eomin;
     *max = (double)eomax;
-//    printf("\n j %d\n",j);
-//    printf("min = %f\n", *min);
-//    printf("max = %f\n", *max);
-//    printf("size = %d\n", size);
-//    printf("eomin = %d\n", eomin);
-//    printf("eomax = %d\n", eomax);
-    // yDebug() << " GetPid returned values : kp = " << eoPID.kp << "kd = " <<  eoPID.kd << " ki = " << eoPID.ki;
-
-    return true;
+    return ret;
 }
 
 FEAT_ID embObjMotionControl::getFeat_id()
@@ -2930,7 +2271,7 @@ bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
 {
     bool ret = true;
 
-    for(int j=_firstJoint; j<_firstJoint+_njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         ret &= setTorque(j, fTorques[j]);
         _externalTorques[j] = fTorques[j];
@@ -2940,38 +2281,13 @@ bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
 
 bool embObjMotionControl::setTorque(int j, double fTorque)
 {
-	static const double NEWTON2SCALE=32768.0/12.0;
-
-//    yTrace() << _fId.name << "joint" << j;
+    static const double NEWTON2SCALE=32768.0/12.0;
 
     EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
 
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
-    int index = j-_firstJoint;
-
-    if(NULL == nvRoot)
-    {
-        NV_NOT_FOUND;
-        return false;
-    }
-
-    //_ref_positions[index] = ref;
-
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
-
-    if( !res->nvSetData(nvRoot, &meas_torque, eobool_true, eo_nv_upd_dontdo))
-    {
-        printf("\n>>> ERROR eo_nv_Set !!\n");
-        return false;
-    }
-
-    if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid) )
-        return false;
-
-  //  yDebug() << "Measured torque EP" << _fId.ep << "j" << j << meas_torque << " at time: " << (Time::now()/1e6);
-
-    return true;
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque);
 }
 
 // Torque control
@@ -2989,14 +2305,12 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-//	yTrace() << "joint " << j;
     *t = _externalTorques[j];
     return true;
 }
 
 bool embObjMotionControl::getTorquesRaw(double *t)
 {
-//	yTrace();
     for(int j=0; j<_njoints; j++)
         t[j] = _externalTorques[j];
     return true;
@@ -3046,6 +2360,7 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 
     bool ret;
     EOnv tmp;
+
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__setpoint);
     if(nvid == NULL)
     {
@@ -3136,7 +2451,7 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidtorque);
     if(NULL == nvid)
     {
-        yError() << "nvid not found for get ref torque command";
+        yError() << "nvid not found for get torque PID command";
         return false;
     }
 
@@ -3144,7 +2459,8 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
     tt->setPending(1);
 
-    res->addGetMessage(nvid, _fId.ep);
+    if(!res->addGetMessage(nvid, _fId.ep) )
+        return false;
 
     // wait here
     if(-1 == tt->synch() )
@@ -3160,59 +2476,21 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     // Get the value
     uint16_t size;
     eOmc_PID_t eoPID;
-    res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&eoPID, &size);
+    bool ret = res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&eoPID, &size);
     copyPid_eo2iCub(&eoPID, pid);
-
-    //_mutex.post();
-    return true;
+    return ret;
 }
 
 bool embObjMotionControl::getTorquePidsRaw(Pid *pids)
 {
     yTrace();
     bool ret = true;
-    eoThreadEntry *tt = NULL;
-
-    //  EOnv tmp[_njoints];
-    eOnvID_t  nvid[_njoints];
-    EOnv    nv[_njoints];
-    eoRequest req;
-
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
+       // just one joint at time, wait for the answer before getting to the next.
+    // This is because otherwise too many msg will be placed into EMS can queue
+    for(int j=0, index=0; j<_njoints; j++, index++)
     {
-        nvid[index]   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidtorque);
-        if(NULL == res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid[index], &nv[index]) )
-            NV_NOT_FOUND;
-
-        // Sign up for waiting the reply
-        tt = appendWaitRequest(j, nvid[index]);
+        ret &=getTorquePidRaw(j, &pids[j]);
     }
-
-    printf("waiting for %d replies\n", _njoints);
-    if( NULL != tt)
-    {
-        tt->setPending(_njoints);
-
-        // wait just once for all data
-        // wait here
-        if(-1 == tt->synch() )
-        {
-            int threadId;
-            yError () << "get Torque Pids timed out";
-            if(requestQueue->threadPool->getId(&threadId))
-                requestQueue->cleanTimeouts(threadId);
-            return false;
-        }
-    }
-    else
-        return false;
-    // copy data received to the caller
-    for(int j=_firstJoint, index=0; j<_firstJoint+_njoints; j++, index++)
-    {
-        eOmc_PID_t *tmpPid = (eOmc_PID16_t *) &nv[index];  //tmpPid doesn't need to be an array, because it's just a cast of an existing data.
-        copyPid_eo2iCub(&tmpPid[index], &pids[index]);
-    }
-
     return ret;
 }
 
@@ -3231,23 +2509,16 @@ bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damp
 
 bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
 {
-	yTrace();
+    yTrace();
     EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__impedance);
-    EOnv	*nvRoot = res->getNVhandler( (eOcfg_nvsEP_mc_endpoint_t)_fId.ep,  nvid, &tmp);
 
-    if(NULL == nvRoot)
-        NV_NOT_FOUND
-
-        // Sign up for waiting the reply
+    // Sign up for waiting the reply
     eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
     tt->setPending(1);
 
-    if(!res->load_occasional_rop(eo_ropcode_ask, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, nvid) )
-    {
-        yError() << "Error loading rop";
-        return  false;
-    }
+    if(!res->addGetMessage(nvid, _fId.ep) )
+        return false;
 
     // wait here
     if(-1 == tt->synch() )
@@ -3262,54 +2533,56 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
 
     // Get the value
     uint16_t size;
-    res->getNVvalue(nvRoot, (uint8_t *)&imped, &size);
+    res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&imped, &size);
     return true;
 }
 
 bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
 {
-	yTrace();
-	bool ret = true;
-	eOmc_impedance_t val;
-	// Need to
-	if(!getWholeImpedanceRaw(j, val))
-		return false;
+    yTrace();
+    bool ret = true;
+    eOmc_impedance_t val;
 
-	val.stiffness 	= (eOmeas_stiffness_t) stiffness * 1000;
-	val.damping 	= (eOmeas_damping_t) damping * 1000;
+    // Need to read the whole struct and modify just 2 of them
+    if(!getWholeImpedanceRaw(j, val))
+        return false;
 
-	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
-	ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
+    val.stiffness   = (eOmeas_stiffness_t) stiffness * 1000;
+    val.damping     = (eOmeas_damping_t) damping * 1000;
 
-	return ret;
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
+    ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
+
+    return ret;
 }
 
 bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
 {
-	yTrace();
-	bool ret = true;
-	eOmc_impedance_t val;
+    yTrace();
+    bool ret = true;
+    eOmc_impedance_t val;
 
-	if(!getWholeImpedanceRaw(j, val))
-		return false;
+    if(!getWholeImpedanceRaw(j, val))
+        return false;
 
-	val.offset 	= offset;
+    val.offset  = offset;
 
-	eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
-	ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
+    ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
 
-	return ret;
+    return ret;
 }
 
-bool embObjMotionControl::getImpedanceOffsetRaw(int j, double* offset)
+bool embObjMotionControl::getImpedanceOffsetRaw(int j, double *offset)
 {
-	yTrace();
-	eOmc_impedance_t val;
-	if(!getWholeImpedanceRaw(j, val))
-		return false;
+    yTrace();
+    eOmc_impedance_t val;
 
-	*offset = val.offset;
-	return true;
+    if(!getWholeImpedanceRaw(j, val))
+        return false;
+
+    *offset = val.offset;
+    return true;
 }
 
 bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
