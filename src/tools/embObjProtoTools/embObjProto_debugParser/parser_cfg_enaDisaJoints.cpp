@@ -30,6 +30,7 @@
 #include <stdio.h>
 
 
+
 // ACE stuff
 //#include <ace/ACE.h>
 //#include "ace/SOCK_Dgram.h"
@@ -190,9 +191,58 @@ static void my_cbk_onInvalidRopFrame(eOethLowLevParser_packetInfo_t *pktInfo_ptr
 static void my_cbk_onControlModeFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_eoProtoParser_ropAdditionalInfo_t *ropAddInfo_ptr)
 {
 	eOmc_controlmode_command_t *cmd_ptr =(eOmc_controlmode_command_t *)ropAddInfo_ptr->desc.data;
+    char modestr[50];
 
-	printf("set control mode: op:0x%x ep=0x%x id=0x%x cmd_val=%d\n", ropAddInfo_ptr->desc.ropcode, ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id, *cmd_ptr);
+//    switch(*cmd_ptr)
+//    {
+//		case eomc_controlmode_cmd_position:
+//		{
+//			sprintf(modestr, "_controlmode_cmd_position");
+//			break;
+//		}
+//
+//		case eomc_controlmode_cmd_velocity:
+//		{
+//			sprintf(modestr, "_controlmode_cmd_velocity");
+//			break;
+//		}
+//
+//		case eomc_controlmode_cmd_torque:
+//		{
+//			sprintf(modestr, "_controlmode_cmd_torque");
+//			break;
+//		}
+//
+//		case eomc_controlmode_cmd_current:
+//		{
+//			sprintf(modestr, "_controlmode_cmd_current");
+//			break;
+//		}
+//
+//		case eomc_controlmode_cmd_openloop:
+//		{
+//			sprintf(modestr, "_controlmode_cmd_openloop");
+//			break;
+//		}
+//
+//		case eomc_controlmode_cmd_switch_everything_off:
+//		{
+//			sprintf(modestr, "_controlmode_cmd_switch_everything_off");
+//			break;
+//		}
+//
+//		default:
+//		{
+//			sprintf(modestr, "no match!! %hhd", (*cmd_ptr));
+//			break;
+//
+//		}
+//    }
 
+
+	printf("set control mode: op:0x%x ep=0x%x id=0x%x cmd_val=%hhd\n", ropAddInfo_ptr->desc.ropcode, ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id, (*cmd_ptr));
+
+	fflush(stdout);
 }
 
 
