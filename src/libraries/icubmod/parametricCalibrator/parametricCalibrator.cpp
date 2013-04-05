@@ -443,8 +443,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         lit  = tmp.begin();
         while(lit != lend)    // per ogni giunto del set
         {
-            // abs sensors is BLL style
-            goneToZero &= checkGoneToZeroThreshold(*lit);
+#warning  "Tapullo: per il polso e dita uso il checkMotionDone, per le spalle e gambe uso la lettura encoder. \
+            Il discriminante è giunti da 0 a 5 con encoder, dal 6 in poi con motionDone. Migliorare in qualche modo, parametro di config al posto della soglia che indichi quale \
+            metodo usare oppure fare un calibratore apposta per la mano?"
+            if( (*lit) < 6)
+                goneToZero &= checkGoneToZero(*lit);            // 4dc style, use the checkMotionDone
+            else
+                goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
             lit++;
         }
 
