@@ -691,7 +691,7 @@ void ActionPrimitives::close()
     if (armWaver!=NULL)
     {
         printMessage("stopping balancer thread ...\n");
-        stop();
+        armWaver->stop();
 
         delete armWaver;
         armWaver=NULL;
