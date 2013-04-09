@@ -230,7 +230,7 @@ embObjMotionControl::embObjMotionControl() :
     _encoderconversionfactor = NULL;
     _encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
-    
+
     _impedance_params = NULL;
     _impedance_limits = NULL;
     _estim_params     = NULL;
@@ -991,16 +991,16 @@ bool embObjMotionControl::init()
                 continue;
             }
 
-            eOmc_motor_config_t mconfig;
-            memset(&mconfig, 0x00, sizeof(eOmc_motor_config_t));
-            // what to do here?
-            //mconfig.pidcurrent = unknown;
-            //mconfig.maxvelocityofmotor =  ????;
-            mconfig.maxcurrentofmotor = (eOmeas_current_t) _currentLimits[index];
+//             eOmc_motor_config_t mconfig;
+//             memset(&mconfig, 0x00, sizeof(eOmc_motor_config_t));
+//             //what to do here?
+//             mconfig.pidcurrent = unknown;
+//             mconfig.maxvelocityofmotor =  ????;
+//             mconfig.maxcurrentofmotor = (eOmeas_current_t) _currentLimits[index];
 
             eOmeas_current_t	current = (eOmeas_current_t) _currentLimits[index];
 
-            if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &mconfig))
+            if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &current))
             {
                 yError() << "while setting motor config";
             }
@@ -1119,13 +1119,7 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 {
     EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__pidposition);
-    EOnv *nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &tmp);
 
-    if(NULL == nvRoot)
-    {
-        yError () << "[embObj Motion Control] Get nv pointer failed at line " << __LINE__;
-        return false;
-    }
     eOmc_PID_t  outPid;
     copyPid_iCub2eo(&pid, &outPid);
 
@@ -1670,6 +1664,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
     EOnv tmpnv_config;
     eOnvID_t nvid_config = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__motionmonitormode);
+
     EOnv *nvRoot_config = res->getNVhandler((uint16_t)_fId.ep, nvid_config, &tmpnv_config);
 
     //	printf("nvid of check motion done 0x%04X\n", nvid_config);
@@ -1685,25 +1680,30 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     if(!checking_motiondone[j ])
     {
         checking_motiondone[j ] = true;
+
         eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_forever;
-        if( !res->nvSetData(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
-        {
-            // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-            return false;
-        }
-        if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_config) )
-            return false;
+
+        res->addSetMessage(nvid_config, _fId.ep,(uint8_t *) &tmp);
+//         if( !res->nvSetData(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
+//         {
+//             // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+//             return false;
+//         }
+//         if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.ep, nvid_config) )
+//             return false;
     }
 
 
     // Read the current value - it is signalled spontaneously every cycle, so we don't have to wait here
     EOnv tmpnv_status;
     eOnvID_t nvid_status = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__basic);
-    EOnv *nvRoot_status = res->getNVhandler((uint16_t)_fId.ep, nvid_status, &tmpnv_status);
+//     EOnv *nvRoot_status = res->getNVhandler((uint16_t)_fId.ep, nvid_status, &tmpnv_status);
 
     uint16_t size;
     eOmc_joint_status_basic_t status;
-    res->getNVvalue(nvRoot_status, (uint8_t *) &status, &size);
+//     res->getNVvalue(nvRoot_status, (uint8_t *) &status, &size);
+
+    res->readBufferedValue(nvid_status, _fId.ep,(uint8_t *) &status, &size);
     if(eomc_motionmonitorstatus_setpointisreached == status.motionmonitorstatus)
     {
         *flag = true;
@@ -1724,7 +1724,6 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     }
     else
         *flag = false;
-
     return true;
 }
 
@@ -2362,11 +2361,6 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
     EOnv tmp;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__setpoint);
-    if(nvid == NULL)
-    {
-        yError() << "nvid not found for get ref torque command";
-        return false;
-    }
 
     // Sign up for waiting the reply
     eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
@@ -2449,11 +2443,6 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     EOnv tmp;
     //_mutex.wait();
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidtorque);
-    if(NULL == nvid)
-    {
-        yError() << "nvid not found for get torque PID command";
-        return false;
-    }
 
     // Sign up for waiting the reply FIRST OF ALL!!
     eoThreadEntry *tt = appendWaitRequest(j, nvid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
