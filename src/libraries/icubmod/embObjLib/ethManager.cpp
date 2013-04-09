@@ -13,6 +13,10 @@
 #include <yarp/os/impl/PlatformTime.h>
 #include <errno.h>
 
+#include <eODeb_eoProtoParser.h>
+#include <eODeb_eoProtoParser_hid.h>
+#include <eOtheEthLowLevelParser.h>
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -645,9 +649,10 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     ethResList  = &(_ethManager->EMS_list);
 }
 
-
+extern eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr;
 bool EthReceiver::threadInit()
 {
+    eODeb_eoProtoParser_Initialise(deb_eoParserCfg_ptr);
     yTrace() << "Do some initialization here if needed";
     return true;
 }
@@ -673,6 +678,10 @@ void EthReceiver::run()
 
     static int NPR=0;
     //while(isRunning())
+
+    eODeb_eoProtoParser *PP =  eODeb_eoProtoParser_GetHandle();
+    eOethLowLevParser_packetInfo_t pckInfo;
+
     while(!isStopping())
     {
         // per ogni msg ricevuto  -1 visto come 65535!!
@@ -692,7 +701,15 @@ void EthReceiver::run()
         }
         if( (recv_size > 0) && (isRunning()) )
         {
+            pckInfo.payload_ptr = (uint8_t *) incoming_msg;
+            pckInfo.prototype = protoType_udp;
+            pckInfo.dst_port = sender_addr.get_port_number();
+            pckInfo.src_port = sender_addr.get_port_number();
+            pckInfo.src_addr = 1;
+            pckInfo.dst_addr = 2;
+
             ethManager->managerMutex.wait();
+            eODeb_eoProtoParser_RopFrameDissect(PP, &pckInfo);
             //iteratoreLista = ethManager->EMS_list.begin();
             // new, reverse iterator
             ethResRIt    riterator, _rBegin, _rEnd;

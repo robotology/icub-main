@@ -117,7 +117,12 @@ bool MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
     int threadId;
     eoThreadFifo *fuffy = handler->requestQueue->getFifo(nvindex);
 
-    if(fuffy->pop(threadId))
+    if( (threadId=fuffy->pop()) < 0)
+    {
+        yError() << "Received an answer message nobody is waiting for (MCmutex_post)";
+        return -1;
+    }
+    else
     {
         th = handler->requestQueue->threadPool->getThreadTable(threadId);
         if(NULL == th)

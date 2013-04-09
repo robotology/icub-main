@@ -27,7 +27,7 @@
 /* This class will handle the get(ask) requests from iCubInterface to the EMS boards.
  * It is based on a table [N_joints * N_messages] wide where each element is a fifo list of (pointer to) waiting threads
  *
- * The waiting thread is represented bu a structure called XXX and located HERE
+ * The waiting thread is represented by a structure called eoThreadEntry
  *
  * Since a thread can start more requests at time and then wait for all replies to arrive, it needs to store the number of
  * requests and will be waked up only when it gets all replies ot a timeout is reached.
@@ -53,7 +53,7 @@ class eoRequestsQueue;
 typedef struct
 {
     int joint;
-    int nvid;				// era msg
+    int nvid;
     int threadId;
 }eoRequest;
 
@@ -76,7 +76,7 @@ private:
 
     double _timeout;
 
-    // internal mutex, to avoid concurrent operationss
+    // internal mutex, to avoid concurrent operations
     yarp::os::Semaphore _mutex;
 
     inline void lock()
@@ -89,7 +89,7 @@ public:
     eoThreadEntry();
     ~eoThreadEntry();
 
-	eoThreadId id;
+    eoThreadId id;
 
     void clear();
 
@@ -107,7 +107,7 @@ public:
     };
 
     // wait on semaphore, usually thread sleeps here after
-    // has issued a list of requests to the can
+    // has issued a list of requests to the EMS
     int synch();
 
     // true if there are pending requests
@@ -160,17 +160,16 @@ class eoThreadArray
 private:
     inline bool getNew(const ACE_thread_t &s, int &i)
     {
-//         fprintf(stderr, "Registering new thread %d out of %d\n", index, EO_THREADARRAY_MAX_THREADS);
+        fprintf(stderr, "Registering new thread %d out of %d\n", index, EO_THREADARRAY_MAX_THREADS);
         if (index>=EO_THREADARRAY_MAX_THREADS)
-            {
-                fprintf(stderr, "ThreadPool: ERROR reached max number of threads\n");
-                i=-1;
-                return false;
-            }
+        {
+            fprintf(stderr, "ThreadPool: ERROR reached max number of threads\n");
+            i=-1;
+            return false;
+        }
 
         i=index;
-        pool[i].handle()= s; // ??
-//        pool[i]._handle = s;
+        pool[i].handle()= s;
         pool[i].id = index;
         index++;
         return true;
@@ -179,12 +178,11 @@ private:
     inline int checkExists(const ACE_thread_t &s)
     {
         for(int i=0; i<index; i++)
-            {
-                if (pool[i].handle()==s)
-                    return i;
-            }
+        {
+            if (pool[i].handle()==s)
+                return i;
+        }
         return -1;
-
     }
 
     eoThreadEntry *pool;
@@ -221,10 +219,10 @@ class eoThreadFifo: public std::list<eoThreadId>
 {
  public:
     yarp::os::Semaphore _mutex;
-    eoThreadFifo(){}
+    eoThreadFifo():_mutex(1) {}
 
-    // A pop function; get and destroy from front, just get thread id
-    bool pop(eoThreadId &ret);
+    // A pop function; read and destroy from front, just get thread id
+    eoThreadId pop();
 
     // Push a thread id from back. waitTime is initialized to zero
     bool push(eoThreadId id);
@@ -257,7 +255,7 @@ public:
     eoThreadArray *threadPool;
 
     // pop a request
-    int pop(int nv_index);
+//     int pop(int nv_index);
 
 
     // append requests

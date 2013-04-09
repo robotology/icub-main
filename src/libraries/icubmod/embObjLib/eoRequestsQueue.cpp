@@ -44,7 +44,7 @@ bool eoThreadArray::getId(int *i)
 
 /////////////////////  eoThreadEntry  ///////////////////
 eoThreadEntry::eoThreadEntry(): _synch(0),
-    _mutex(1)
+                                _mutex(1)
 {
     _timeout = 1.1f;
     clear();
@@ -114,23 +114,26 @@ bool eoThreadEntry::timeout()
 
 /////////////////////  eoThreadFifo  ///////////////////
 
-// A pop function; get and destroy from front, just get thread id
-bool eoThreadFifo::pop(eoThreadId &ret)
+// A pop function; read and destroy from front, just get thread id
+eoThreadId eoThreadFifo::pop( )
 {
     _mutex.wait();
-    ret = -1;
+    eoThreadId ret = -1;
 
-    if(empty())
-        return false;
+    if(!empty())
+    {
+        ret=front();            // se la lista è vuota cosa ritorna? non si sa, per cui c'è il check prima del front
+        pop_front();                  // erase the first element of the queue, it means the oldest
+    }
+    else
+        yError() << "Received an answer message nobody is waiting for (eoThreadFifo::pop)";
 
-    ret=front();
-    pop_front();
     _mutex.post();
-    return true;
+    return ret;
 }
 
 // Push a thread id from back. waitTime is initialized to zero
-bool eoThreadFifo::push(eoThreadId id)
+bool eoThreadFifo::push(eoThreadId id)      // add an element at the end of the queue
 {
     _mutex.wait();
     push_back(id);
@@ -165,27 +168,30 @@ eoThreadFifo *eoRequestsQueue::getFifo(int nv_index)
         return 0;
 }
 
-// pop a request
-int eoRequestsQueue::pop(int nv_index)
-{
-    if(whole_pendings<=0)
-    {
-        yError() << "Error, queue of requests empty";
-        return -1;
-    }
-
-    int ret;
-    eoThreadFifo *fifo=getFifo(nv_index);
-
-    if(!fifo)
-        return -1;
-
-    if(!fifo->pop(ret))
-        return -1;
-
-    whole_pendings--;
-    return ret;
-}
+// // pop a request
+// int eoRequestsQueue::pop(int nv_index)
+// {
+//     if(whole_pendings<=0)
+//     {
+//         yError() << "Error, queue of requests empty";
+//         return -1;
+//     }
+// 
+//     int ret;
+//     eoThreadFifo *fifo=getFifo(nv_index);
+// 
+//     if(!fifo)
+//         return -1;
+// 
+//     if( (ret=fifo->pop()) < 0)
+//     {
+//         yError() << "Received an answer message nobody is waiting for";
+//         return -1;
+//     }
+// 
+//     whole_pendings--;
+//     return ret;
+// }
 
 
 // append requests

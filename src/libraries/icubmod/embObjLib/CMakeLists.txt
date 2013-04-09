@@ -268,6 +268,10 @@ set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 #						${EXTRA_FOLDER}/tools/debugFunctions.cpp
 						${EXTRA_FOLDER}/eoRequestsQueue.cpp)
 
+set(DEBUG_SOURCE    ${DEBUG_FOLDER}/src/eODeb_eoProtoParser.c
+                    ${DEBUG_FOLDER}/src/eOtheEthLowLevelParser.c
+                    ${EXTRA_FOLDER}/tools/parser_cfg_getPid.cpp)
+
 set(embobj_source 		${BODY_COMMON_SOURCE} 
 						${CORE_FOLDER_SOURCE} 
 						${CORE_VEE_SOURCE}  
@@ -283,7 +287,8 @@ set(embobj_source 		${BODY_COMMON_SOURCE}
 						${NVS_SKIN_SOURCE} 
 						${NVS_USR_SOURCE} 
 						${NVS_CBK_SOURCE}
-						${ICUB_INTERFACE_SOURCE})
+						${ICUB_INTERFACE_SOURCE}
+            ${DEBUG_SOURCE})
 
 set(embobj_header 		${BODY_COMMON_SOURCE} 
 						${CORE_API_HEADER} 
