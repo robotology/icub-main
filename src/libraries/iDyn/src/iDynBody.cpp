@@ -2521,6 +2521,7 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
         case LOWER_BODY_PARTS:
             COM=this->lower_COM;
             mass=lower_mass;
+            COM.pop_back();
         break;
         case UPPER_BODY_PARTS:
             //T0 = lowerTorso->HUp;
@@ -2529,6 +2530,7 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
             //COM= T0 * T1 * this->upper_COM; //respect to root
             COM= this->upper_COM; //rotation is done aslread in computation?????
             mass=upper_mass;
+            COM.pop_back();
         break;
         case LEFT_LEG:
             COM=this->lowerTorso->total_COM_LF;
