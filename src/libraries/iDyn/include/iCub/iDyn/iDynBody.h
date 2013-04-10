@@ -1522,7 +1522,15 @@ public:
     * @return true if succeeds, false otherwise
     */
     bool getAllVelocities(yarp::sig::Vector &vel);
-
+    
+    /**
+    * Retrieves a vector containing the anglular position of all the iCub joints, ordered in this way:
+    * left leg (6), right leg (6), torso (3), left arm (7), right arm (7), head (3).
+    * @param pos the position vector (size = 32)
+    * @return true if succeeds, false otherwise
+    */
+    bool getAllPositions(yarp::sig::Vector &pos);
+    
     /**
     * Retrieves the result of the last COM jacobian computation
     * @param jac the jacobian matrix

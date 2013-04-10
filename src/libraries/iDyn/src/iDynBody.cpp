@@ -2583,6 +2583,28 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool iCubWholeBody::getAllPositions(Vector &pos)
+{
+    Vector ll = this->lowerTorso->left->getAng();
+    Vector rl = this->lowerTorso->right->getAng();
+    Vector to = this->lowerTorso->up->getAng();
+    Vector la = this->upperTorso->left->getAng();
+    Vector ra = this->upperTorso->right->getAng();
+    Vector hd = this->upperTorso->up->getAng();
+    pos.clear();
+    pos.resize(32,0.0);
+    int i=0; int j=0;
+    for (i=0; i<6; i++, j++) pos[j] = ll[i];
+    for (i=0; i<6; i++, j++) pos[j] = rl[i];
+    for (i=0; i<3; i++, j++) pos[j] = to[i];
+    for (i=0; i<7; i++, j++) pos[j] = la[i];
+    for (i=0; i<7; i++, j++) pos[j] = ra[i];
+    for (i=0; i<3; i++, j++) pos[j] = hd[i];
+
+    return true;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubWholeBody::getAllVelocities(Vector &vel)
 {
     Vector ll = this->lowerTorso->left->getDAng();
