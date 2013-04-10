@@ -257,6 +257,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_COM_vel = new BufferedPort<Vector>;
     port_COM_Jacobian = new BufferedPort<Matrix>;
     port_all_velocities = new BufferedPort<Vector>;
+    port_all_positions = new BufferedPort<Vector>;
     port_root_position_mat = new BufferedPort<Matrix>;
     port_root_position_vec = new BufferedPort<Vector>;
 
@@ -315,6 +316,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_COM_vel->open(string("/"+local_name+"/com_vel:o").c_str());
     port_COM_Jacobian->open(string("/"+local_name+"/com_jacobian:o").c_str());
     port_all_velocities->open(string("/"+local_name+"/all_velocities:o").c_str());
+    port_all_positions->open(string("/"+local_name+"/all_positions:o").c_str());
     port_root_position_mat->open(string("/"+local_name+"/root_position_mat:o").c_str());
     port_root_position_vec->open(string("/"+local_name+"/root_position_vec:o").c_str());
 
@@ -615,7 +617,8 @@ void inverseDynamics::run()
     Vector com_all(7), com_ll(7), com_rl(7), com_la(7),com_ra(7), com_hd(7), com_to(7), com_lb(7), com_ub(7);
     double mass_all  , mass_ll  , mass_rl  , mass_la  ,mass_ra  , mass_hd,   mass_to, mass_lb, mass_ub;
     Vector com_v; com_v.resize(3); com_v.zero();
-    Vector dq; dq.resize(32,1); dq.zero();
+    Vector all_dq; all_dq.resize(32,1); all_dq.zero();
+    Vector all_q;  all_q.resize(32,1);  all_q.zero();
 
     // For balancing purposes
     yarp::sig::Vector com_all_foot; com_all_foot.resize(3); com_all_foot.zero();
@@ -645,8 +648,9 @@ void inverseDynamics::run()
         {
             icub->EXPERIMENTAL_computeCOMjacobian();
             icub->EXPERIMENTAL_getCOMjacobian(BODY_PART_ALL,com_jac);
-            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v,dq);
-        }      
+            icub->EXPERIMENTAL_getCOMvelocity(BODY_PART_ALL,com_v,all_dq);
+            icub->getAllPositions(all_q);
+        }
 
         icub->getCOM(BODY_PART_ALL,     com_all, mass_all);
         icub->getCOM(LOWER_BODY_PARTS,  com_lb,  mass_lb);
@@ -875,10 +879,12 @@ void inverseDynamics::run()
 
     if (com_vel_enabled)
     {
-      // com_jac = M_PI/180.0 * (com_jac);
-      // dq      = 180.0/M_PI * dq; 
+        // com_jac = M_PI/180.0 * (com_jac);
+        // all_dq  = 180.0/M_PI * all_dq;
+        // all_q  = 180.0/M_PI * all_q;
         broadcastData<Vector> (com_v, port_COM_vel);
-        broadcastData<Vector> (dq, port_all_velocities);
+        broadcastData<Vector> (all_dq, port_all_velocities);
+        broadcastData<Vector> (all_q,  port_all_positions);
         broadcastData<Matrix> (com_jac, port_COM_Jacobian);
     }
     broadcastData<Vector> (com_all, port_com_all);
@@ -1048,6 +1054,8 @@ void inverseDynamics::threadRelease()
     closePort(port_COM_Jacobian);
     fprintf(stderr, "Closing All Velocities port\n");
     closePort(port_all_velocities);
+    fprintf(stderr, "Closing All Positions port\n");
+    closePort(port_all_positions);
     fprintf(stderr, "Closing Foot/Root port\n");
     closePort(port_root_position_mat);
     closePort(port_root_position_vec);
