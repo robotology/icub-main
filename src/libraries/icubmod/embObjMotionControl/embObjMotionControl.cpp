@@ -575,23 +575,23 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
     else
     {
-        yDebug() << "Torque Pids section found\n";
+    	yDebug( ) << "TORQUE PIDS group found for board" << _fId.boardNum;
         _tpidsEnabled=true;
         for(j=0; j<_njoints; j++)
         {
             char str1[80];
             sprintf(str1, "TPid%d", j);
-            //  Bottle &xtmp3 = config.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(str1);
 
-            _tpids[j].kp = TPidsGroup.get(1).asDouble();
-            _tpids[j].kd = TPidsGroup.get(2).asDouble();
-            _tpids[j].ki = TPidsGroup.get(3).asDouble();
+            Bottle &xtmp3 = TPidsGroup.findGroup(str1);
+            _tpids[j].kp = xtmp3.get(1).asDouble();
+            _tpids[j].kd = xtmp3.get(2).asDouble();
+            _tpids[j].ki = xtmp3.get(3).asDouble();
 
-            _tpids[j].max_int = TPidsGroup.get(4).asDouble();
-            _tpids[j].max_output = TPidsGroup.get(5).asDouble();
+            _tpids[j].max_int = xtmp3.get(4).asDouble();
+            _tpids[j].max_output = xtmp3.get(5).asDouble();
 
-            _tpids[j].scale = TPidsGroup.get(6).asDouble();
-            _tpids[j].offset = TPidsGroup.get(7).asDouble();
+            _tpids[j].scale = xtmp3.get(6).asDouble();
+            _tpids[j].offset = xtmp3.get(7).asDouble();
         }
     }
 
@@ -2491,8 +2491,8 @@ bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damp
     if(!getWholeImpedanceRaw(j, val))
         return false;
 
-    *stiffness = val.stiffness;
-    *damping = val.damping;
+    *stiffness = (double) (val.stiffness * 0.001);
+    *damping = (double) (val.damping * 0.001);
     return true;
 }
 
@@ -2536,8 +2536,8 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
     if(!getWholeImpedanceRaw(j, val))
         return false;
 
-    val.stiffness   = (eOmeas_stiffness_t) stiffness * 1000;
-    val.damping     = (eOmeas_damping_t) damping * 1000;
+	val.stiffness 	= (eOmeas_stiffness_t) (stiffness * 1000.0);
+	val.damping 	= (eOmeas_damping_t) (damping * 1000.0);
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
     ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
