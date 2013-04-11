@@ -104,20 +104,26 @@ bool stereoCalibThread::threadInit()
     optTorso.put("remote",("/"+robotName+"/torso").c_str());
     optTorso.put("local","/disparityClient/torso/position");
 
+    bool useTorso=true;
+
     if (polyTorso.open(optTorso))
     {
         polyTorso.view(posTorso);
         polyTorso.view(TctrlLim);
     }
     else {
-        cout<<"Devices not available"<<endl;
-        return false;
+        useTorso=false;
     }
+
 
     yarp::sig::Vector head_angles(6);
     posHead->getEncoders(head_angles.data());
-    yarp::sig::Vector torso_angles(3);
-    posTorso->getEncoders(torso_angles.data());
+
+    yarp::sig::Vector torso_angles(3,0.0);
+    if(useTorso)
+    {
+        posTorso->getEncoders(torso_angles.data());
+    }
 
     qL.resize(torso_angles.length()+head_angles.length()-1);
     for(size_t i=0; i<torso_angles.length(); i++)
