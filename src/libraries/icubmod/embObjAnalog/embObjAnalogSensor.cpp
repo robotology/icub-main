@@ -166,7 +166,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
-    Bottle parameter1( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
+    Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
     sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str(), port);
     _fId.PC104ipAddr.port = port;
@@ -365,14 +365,11 @@ bool embObjAnalogSensor::getFullscaleValues()
     if((NVsize != _channels))
     {
         yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for board" << _fId.boardNum << "Aborting";
-        return false;
+        //return false;
     }
 
     uint8_t *msg;
 
-    yError() << "capacity " << fullscale_values.head.capacity;
-    yError() << "itemsize " << fullscale_values.head.itemsize;
-    yError() << "size " << fullscale_values.head.size;
 
     if(gotFullScaleValues)
     {
@@ -390,7 +387,7 @@ bool embObjAnalogSensor::getFullscaleValues()
             // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback)
             scaleFactor[i]= 0;
             scaleFactor[i]= ((uint16_t)(msg[0]<<8) | msg[1]);
-            yError() << " scale factor[" << i << "] = " << scaleFactor[i];
+            //yError() << " scale factor[" << i << "] = " << scaleFactor[i];
         }
     }
 
