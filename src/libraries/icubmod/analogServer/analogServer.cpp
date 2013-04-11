@@ -187,8 +187,10 @@ AnalogServer::~AnalogServer()
 void AnalogServer::setHandlers()
 {
   yTrace();
-  for(unsigned int i=0;i<analogPorts.size(); i++){
-
+  for(unsigned int i=0;i<analogPorts.size(); i++)
+  {
+	std::string rpcPortName = analogPorts[i].port_name;
+	rpcPortName += "/rpc:i";
     AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
     handlers.push_back(ash);
   }
