@@ -10,6 +10,7 @@ file(GLOB folder_source *.cpp)
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
+find_package(YARP)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${iCubDev_INCLUDE_DIRS})
 include_directories(${YARP_INCLUDE_DIRS})
