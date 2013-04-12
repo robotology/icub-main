@@ -24,6 +24,7 @@
 #include "stdio.h" 
 #include "stdlib.h" 
 #include "string.h" 
+#include "EoCommon.h"
 #include "OPCprotocolManager.h"
 
 
@@ -45,6 +46,9 @@ extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map,
 extern void on_rec_transceiver_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 
 extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
+extern void on_rec_canFaultLog_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
@@ -100,6 +104,14 @@ typedef struct
 } EOemsControllerDEBUG_t;
 
 
+typedef struct
+{
+    int16_t currSetPointList[4];
+    eOcanframe_t overCurrentMsg;
+    eOcanframe_t nextCanMsgs[6];
+}EOcanFaultLogDEBUG_t; //size 2*4 + 16 +16*6 = 120
+
+
 EOMtheIPnetDEBUG_t eom_ipnet_hid_DEBUG =
 {
     .datagrams_failed_to_go_in_rxfifo               = 0,
@@ -140,12 +152,16 @@ EOemsControllerDEBUG_t eo_emsController_hid_DEBUG =
 		.velocity							= {0,0,0,0}
 };
 
+EOcanFaultLogDEBUG_t EOcanFaultLogDEBUG = {0};
+
 #define eom_ipnet_hid_DEBUG_id 				1
 #define eom_emsrunner_hid_DEBUG_id		 	2
 #define eom_emstransceiver_hid_DEBUG_id 	3
 #define eo_emsController_hid_DEBUG_id 		4
+#define eo_canFaultLogDEBUG_id 				5
 
-static opcprotman_var_map_t s_myarray[] = 
+
+static opcprotman_var_map_t s_myarray[] =
 {
     {
         .var        = eom_ipnet_hid_DEBUG_id,
@@ -170,15 +186,20 @@ static opcprotman_var_map_t s_myarray[] =
         .size       = sizeof(eo_emsController_hid_DEBUG),
         .ptr        = &eo_emsController_hid_DEBUG,
         .onrec      = on_rec_emscontroller_debug
+    },
+    {
+        .var        = eo_canFaultLogDEBUG_id,
+        .size       = sizeof(EOcanFaultLogDEBUG_t),
+        .ptr        = &EOcanFaultLogDEBUG,
+        .onrec      = on_rec_canFaultLog_debug
     }
     
 };
 
-
-opcprotman_cfg_t opcprotmanCFGv0x1234 =
+extern opcprotman_cfg_t opcprotmanCFGv0x1234 =
 {
     .databaseversion        = 0x1234,
-    .numberofvariables      = 4,
+    .numberofvariables      = 5,
     .arrayofvariablemap     = s_myarray
 };
 
@@ -191,7 +212,7 @@ opcprotman_cfg_t opcprotmanCFGv0x1234 =
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
-
+static void s_print_canmsg(eOcanframe_t *frame);
 
 extern void on_rec_ipnet_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {   // for the host
@@ -335,6 +356,45 @@ extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_
 }
 
 
+extern void on_rec_canFaultLog_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{   // for the host
+
+	EOcanFaultLogDEBUG_t* data = (EOcanFaultLogDEBUG_t*)recdata;
+	uint8_t i;
+
+    switch(opc)
+    {
+
+        default:
+        case opcprotman_opc_set:
+        {   // nobody can order that to us
+            // we just dont do it ...
+        } break;
+
+        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+        {
+
+			printf("\n\n OVER CURR FAULT INFO RECEIVED!!! \n");
+
+			printf("Last curr setpoint:\n");
+			for(i= 0; i<4; i++)
+			{
+				printf("\t j %d curr %d\n", i, data->currSetPointList[i]);
+			}
+			printf("Can msg with over current:\n");
+			s_print_canmsg(&data->overCurrentMsg);
+
+			printf("Next can msg:\n");
+			for(i=0; i<6; i++)
+			{
+				s_print_canmsg(&data->nextCanMsgs[i]);
+			}
+        } break;
+    }
+
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
@@ -361,6 +421,17 @@ extern opcprotman_cfg_t* get_OPCprotocolManager_cfg(void)
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
 
+static void s_print_canmsg(eOcanframe_t *frame)
+{
+	uint8_t i;
+
+	printf("id = 0x%x\t", frame->id);
+	for(i=0; i<frame->size; i++)
+	{
+		printf(" %x", frame->data[i]);
+	}
+	printf("\n");
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
