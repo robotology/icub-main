@@ -44,11 +44,16 @@ SET(ACE_INCLUDE_DIR "/usr/include")
 
 set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
 set(OPC_PROTO_FOLDER            ${BASE}any-arch/sys/embobj/icub-app/)
+set(COMMON_FOLDER		 ${BASE}any-arch/sys/embobj/core/)
+set(PORTING_FOLDER		 ${BASE}/porting/)
 
 set(ALL_INCLUDES				${EXTRA_FOLDER}
 						${ACE_INCLUDE_DIR}
 						${OPC_PROTO_FOLDER}/api
-						${OPC_PROTO_FOLDER}/src)
+						${OPC_PROTO_FOLDER}/src
+						${COMMON_FOLDER}/api
+						${PORTING_FOLDER}
+)
 
 include_directories (${ALL_INCLUDES} )
 message(INFO "includes: ${ALL_INCLUDES}")
