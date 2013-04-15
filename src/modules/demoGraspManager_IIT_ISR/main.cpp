@@ -144,9 +144,9 @@ impedance_damping 60.0 60.0 60.0 20.0 0.0
  
 [home_arm]
 // home position [deg] 
-poss    -30.0 30.0 0.0  45.0 0.0  0.0  0.0  0.0
+poss    -30.0 30.0 0.0  45.0 0.0  0.0  0.0
 // velocities to reach home positions [deg/s] 
-vels    10.0  10.0 10.0 10.0 10.0 10.0 10.0 10.0
+vels    10.0  10.0 10.0 10.0 10.0 10.0 10.0
 
 [arm_selection]
 // hysteresis range added around plane y=0 [m]
@@ -861,7 +861,7 @@ protected:
     void moveHand(const int action, const int sel=USEDARM)
     {
         IPositionControl *ipos=posArm;
-        Vector *poss=NULL;       
+        Vector *poss=NULL;
         string actionStr, type;
 
         switch (action)
