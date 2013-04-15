@@ -71,9 +71,14 @@ MACRO(icub_export_library target)
   icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${target})
   # Install/export rules
   install(TARGETS ${target} EXPORT icub-targets LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT Development)
+  if (MSVC) 
+	install (	FILES ${CMAKE_BINARY_DIR}/lib/Debug/${target}d.pdb 
+				DESTINATION lib 
+				CONFIGURATIONS Debug 
+				COMPONENT Development )
+  endif()
   export(TARGETS ${target} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
-
-  #important wrap ${dependencies} with "" to allows storing a list of dependencies
+    #important wrap ${dependencies} with "" to allows storing a list of dependencies
   set_target_properties(${target} PROPERTIES DEPENDS "${dependencies}")
 
   ##### Handle include directories
