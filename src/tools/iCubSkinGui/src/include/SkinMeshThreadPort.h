@@ -21,6 +21,8 @@
 #include <yarp/sig/Vector.h>
 
 #include "include/Quad16.h"
+#include "include/PalmRight.h"
+#include "include/PalmLeft.h"
 #include "include/Triangle.h"
 #include "include/Fingertip.h"
 #include "include/Triangle_10pad.h"
@@ -104,7 +106,7 @@ public:
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
-            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad" || type=="quad16")
+            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad" || type=="quad16" || type=="palmR" || type=="palmL")
             {
                 int id=sensorConfig.get(1).asInt();
                 double xc=sensorConfig.get(2).asDouble();
@@ -114,7 +116,7 @@ public:
 				int    lrMirror=sensorConfig.get(6).asInt();
 				int    layoutNum=sensorConfig.get(7).asInt();
 
-                printf("%d %f\n",id,gain);
+                printf("%s %d %f\n",type.c_str(),id,gain);
 
                 if (id>=0 && id<MAX_SENSOR_NUM)
                 {
@@ -141,9 +143,22 @@ public:
                         }
                         if (type=="quad16")
                         {
+							printf("Quad16");
                             sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
                             sensor[id]->setCalibrationFlag(useCalibration);
+					    }
+						if (type=="palmR")
+                        {
+                            sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
+                            sensor[id]->setCalibrationFlag(useCalibration);
+							
                         }
+						if (type=="palmL")
+                        {
+                            sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
+                            sensor[id]->setCalibrationFlag(useCalibration);
+                        }
+                      
                         ++sensorsNum;
                     }
                 }

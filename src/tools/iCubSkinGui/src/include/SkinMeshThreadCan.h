@@ -20,6 +20,8 @@
 #include <yarp/dev/CanBusInterface.h>
 
 #include "include/Quad16.h"
+#include "include/PalmLeft.h"
+#include "include/PalmRight.h"
 #include "include/Triangle.h"
 #include "include/Triangle_10pad.h"
 #include "include/Fingertip.h"
@@ -84,7 +86,7 @@ public:
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
-            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad" || type=="quad16")
+            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad" || type=="quad16" || type=="palmR" || type=="palmL")
             {
                 int id=sensorConfig.get(1).asInt();
                 double xc=sensorConfig.get(2).asDouble();
@@ -119,6 +121,14 @@ public:
                         if (type=="quad16")
                         {
                             sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
+						if (type=="plamR")
+                        {
+                            sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
+						if (type=="palmL")
+                        {
+                            sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
                         }
                         ++sensorsNum;
                     }
