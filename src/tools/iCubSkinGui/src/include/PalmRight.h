@@ -31,7 +31,7 @@ public:
         ilayoutNum=layoutNum;
         nVerts=4;
         nTaxels=48;
-        m_RadiusOrig=4.0;
+        m_RadiusOrig=1.8;
 
   
 		
@@ -100,8 +100,8 @@ public:
 
         for (int i=0; i<nTaxels; ++i)
         {
-            double x=4.0*dX[i]-2.0;
-            double y=4.0*dY[i]-2.0;
+            double x=1.2*dX[i]-0.0;
+            double y=1.2*dY[i]-0.0;
 
             if (lrMirror==1) x=-x;
             dX[i]=cx+CST*x-SNT*y;
@@ -109,10 +109,10 @@ public:
         }
 
         dXv[0]=-25;
-        dYv[0]=-150;
-        dXv[1]=+250;
-        dYv[1]=-150;
-        dXv[2]=+250;
+        dYv[0]=-50;
+        dXv[1]=+50;
+        dYv[1]=-50;
+        dXv[2]=+50;
         dYv[2]=+50;
         dXv[3]=-25;
         dYv[3]=+50;
