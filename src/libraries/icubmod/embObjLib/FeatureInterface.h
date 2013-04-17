@@ -8,13 +8,25 @@
 #ifndef FEATUREINTERFACE_H_
 #define FEATUREINTERFACE_H_
 
-#include <stdbool.h>
+
+
 #include <stdint.h>
+//#include <stdbool.h>
+typedef uint8_t fakestdbool_t;
+#define fakestdbool_true    1
+#define fakestdbool_false   0
 
 #include <string.h>
 
 #ifdef WIN32
-	#pragma warning(disable:4355)
+//	#pragma warning(disable:4355)
+#endif
+
+#define MSG010960 "WARNING-> on april 16 2013 some work is ongoing to clean SIZE_INFO etc."
+#if defined(_MSC_VER)
+    #pragma message(MSG010960)
+#else
+    #warning MSG010960
 #endif
 
 #include "EOnv_hid.h"
@@ -68,7 +80,7 @@ typedef struct
     // They may be removed very soon!
     FeatureType           type;
     char                  name[SIZE_INFO];
-}FEAT_ID;
+} FEAT_ID;
 
 
 #ifdef _SETPOINT_TEST_
@@ -91,14 +103,16 @@ typedef struct
 
 void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *test_data_ptr);
 #endif
-void initCallback(void *p);
-bool addEncoderTimeStamp(FEAT_ID *id, int jointNum);
-bool findAndFill(FEAT_ID *id, void *sk_array);
-bool handle_AS_data(FEAT_ID *id, void *as_array);
-void * get_MChandler_fromEP(eOnvEP_t ep);
-bool MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex);
 
-bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex);
+void initCallback(void *p);
+
+fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum);
+fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array);
+fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array);
+void * get_MChandler_fromEP(eOnvEP_t ep);
+fakestdbool_t MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex);
+
+fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex);
 
 void transceiver_wait(eOnvEP_t ep);
 void transceiver_post(eOnvEP_t ep);
@@ -108,4 +122,9 @@ void transceiver_post(eOnvEP_t ep);
 #endif
 
 #endif /* FEATUREINTERFACE_H_ */
+
+
+// eof
+
+
 

@@ -27,7 +27,7 @@ const double 	POSITION_THRESHOLD		= 2.0;
 int numberOfJoints =0;
 
 // TODO use it!!
-#warning "Use extractGroup to verify size of parameters matches with number of joints, this will avoid crashes"
+//#warning "Use extractGroup to verify size of parameters matches with number of joints, this will avoid crashes"
 static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
 {
     size++;  // size includes also the name of the parameter
@@ -443,9 +443,16 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         lit  = tmp.begin();
         while(lit != lend)    // per ogni giunto del set
         {
-#warning  "Tapullo: per il polso e dita uso il checkMotionDone, per le spalle e gambe uso la lettura encoder. \
-            Il discriminante è giunti da 0 a 5 con encoder, dal 6 in poi con motionDone. Migliorare in qualche modo, parametro di config al posto della soglia che indichi quale \
-            metodo usare oppure fare un calibratore apposta per la mano?"
+
+#define MSG0109 "WARNING-> Tapullo: per il polso e dita uso il checkMotionDone ... etc. (see comment in code)"
+#if defined(_MSC_VER)
+    #pragma message(MSG0109)
+#else
+    #warning MSG0109
+#endif
+//#warning  "Tapullo: per il polso e dita uso il checkMotionDone, per le spalle e gambe uso la lettura encoder. \
+//            Il discriminante è giunti da 0 a 5 con encoder, dal 6 in poi con motionDone. Migliorare in qualche modo, parametro di config al posto della soglia che indichi quale \
+//            metodo usare oppure fare un calibratore apposta per la mano?"
             if( (*lit) < 6)
                 goneToZero &= checkGoneToZero(*lit);            // 4dc style, use the checkMotionDone
             else
@@ -559,9 +566,9 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 {
     // wait.
     bool finished = false;
-    double ang[4];
+//    double ang[4];
     double angj = 0;
-    double pwm[4];
+//    double pwm[4];
     double delta=0;
 
     double start_time = yarp::os::Time::now();
@@ -674,3 +681,6 @@ bool parametricCalibrator::quitPark()
     abortParking=true;
     return true;
 }
+
+// eof
+

@@ -37,6 +37,10 @@
 #include <stdio.h>
 #include <map>
 
+// do we need it ???
+//#define WIN32_LEAN_AND_MEAN 
+
+
 // ACE includes
 #include <ace/ACE.h>
 #include <ace/config.h>
@@ -53,17 +57,23 @@
 
 // Emb Obj includes
 #include "hostTransceiver.hpp"
-#include "debugFunctions.h"
+//#include "debugFunctions.h"
 #include "FeatureInterface_hid.h"
 
 
 // iCub debug class include
 #include "Debug.h"
 
+#define MSG01098 "WARNING-> on april 16 2013 some work is ongoing to clean SIZE_INFO etc."
+#if defined(_MSC_VER)
+    #pragma message(MSG01098)
+#else
+    #warning MSG01098
+#endif
 
 #define EMPTY_PACKET_SIZE         EOK_HOSTTRANSCEIVER_emptyropframe_dimension
 //#define BUFFER_SIZE               EOK_HOSTTRANSCEIVER_capacityofpacket
-#define SIZE_INFO                 126
+#define SIZE_INFO                 128
 //#define MAX_ICUB_EP               32
 
 // sizes of rx and tx buffers. 
@@ -283,5 +293,10 @@ public:
 };
 
 #endif
+
+// eof
+
+
+
 
 

@@ -57,14 +57,22 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 // iCub Debug class
-#include "Debug.h"
+//#include "Debug.h"
+
+
+#define MSG010966 "WARNING-> on april 16 2013 some work is ongoing to clean SIZE_INFO etc."
+#if defined(_MSC_VER)
+    #pragma message(MSG010966)
+#else
+    #warning MSG010966
+#endif
 
 // Risky place fot those defines!!
-#warning acemor-> removed EMPTY_PACKET_SIZE from here
+//#warning acemor-> removed EMPTY_PACKET_SIZE from here
 //#define EMPTY_PACKET_SIZE     EOK_HOSTTRANSCEIVER_emptyropframe_dimension
-#warning acemor-> RECV_BUFFER_SIZE must be higher or equal EOK_HOSTTRANSCEIVER_capacityofrxpacket. it can safely be 1500
+//#warning acemor-> RECV_BUFFER_SIZE must be higher or equal EOK_HOSTTRANSCEIVER_capacityofrxpacket. it can safely be 1500
 #define	RECV_BUFFER_SIZE      EOK_HOSTTRANSCEIVER_capacityofrxpacket
-#define	SIZE_INFO             126
+#define	SIZE_INFO             128
 #define MAX_ICUB_EP           32
 
 namespace yarp{
@@ -158,3 +166,7 @@ public:
 
 
 #endif
+
+// eof
+
+

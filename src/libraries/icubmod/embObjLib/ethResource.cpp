@@ -34,8 +34,8 @@ bool ethResources::open(FEAT_ID request)
    // ACE_TCHAR remoteIp_string[64], localIp_string[64];
 
     //uint16_t loc_port, rem_port;
-    uint8_t   loc_ip1,loc_ip2,loc_ip3,loc_ip4;
-    uint8_t   rem_ip1,rem_ip2,rem_ip3,rem_ip4;
+//    uint8_t   loc_ip1,loc_ip2,loc_ip3,loc_ip4;
+//    uint8_t   rem_ip1,rem_ip2,rem_ip3,rem_ip4;
 
     // Get the pointer to the actual Singleton ethManager
     ethManager = TheEthManager::instance();
@@ -73,6 +73,7 @@ bool ethResources::open(FEAT_ID request)
 bool ethResources::close()
 {
     yTrace();
+    return false;
 }
 
 bool ethResources::registerFeature(FEAT_ID *request)
@@ -148,7 +149,7 @@ bool ethResources::goToConfig(void)
 {
     yTrace() << info;
     eOnvID_t nvid;
-    EOnv tmp;
+//    EOnv tmp;
 
     // attiva il loop di controllo
     eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
@@ -168,7 +169,7 @@ bool ethResources::goToRun(void)
 {
     yTrace() << info;
     eOnvID_t nvid;
-    EOnv tmp;
+//    EOnv tmp;
 
     // attiva il loop di controllo
     eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used, here for API compatibility
@@ -183,3 +184,7 @@ bool ethResources::goToRun(void)
 
     return true;
 }
+
+// eof
+
+

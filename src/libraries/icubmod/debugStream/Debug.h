@@ -179,7 +179,9 @@ private:
 #ifdef __GNUC__
 #define __YFUNCTION__ __PRETTY_FUNCTION__
 #else // __GNUC__
-#define __YFUNCTION__ __func__
+//#define __YFUNCTION__ __func__
+#define __YFUNCTION__ ""
+#pragma message("WARNING-> acemor redefined __YFUNCTION__ because compilation fails on visual studio 2012")
 #endif // __GNUC__
 
 #define yTrace()   DebugStream::Debug(DebugStream::TraceType, __FILE__, __LINE__, __YFUNCTION__)
@@ -203,3 +205,7 @@ inline std::ostringstream& operator<<(std::ostringstream &oss, const std::vector
 
 
 #endif // DebugStream_DEBUG_H
+
+// eof
+
+

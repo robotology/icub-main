@@ -25,6 +25,8 @@ TheEthManager* TheEthManager::handle = NULL;
 yarp::os::Semaphore TheEthManager::managerMutex = 1;
 
 
+
+
 #if 0
 ethResources* TheEthManager::getResource(yarp::os::Searchable &config)
 {
@@ -306,7 +308,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
 {
     yTrace() << element.boardNum;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
-    bool ret;
+    bool ret = false;
     int n = (int) boards_map.erase(element.ep);
 
     switch(n)
@@ -331,6 +333,8 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
             break;
         }
     }
+
+    return ret;
 }
 
 void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
@@ -464,6 +468,8 @@ bool TheEthManager::killYourself()
     yTrace();
     //TODO harakiri
     delete handle;
+
+    return true;
 }
 
 bool TheEthManager::stopThreads()
@@ -555,6 +561,8 @@ bool EthSender::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     send_socket = pSocket;
     ethManager  = _ethManager;
     ethResList  = &(_ethManager->EMS_list);
+
+    return true;
 }
 
 bool EthSender::threadInit()
@@ -566,7 +574,7 @@ bool EthSender::threadInit()
 void EthSender::run()
 {
     ethResources  *ethRes;
-    ACE_TCHAR     address_tmp[128];
+//    ACE_TCHAR     address_tmp[128];
     uint16_t      bytes_to_send = 0;
     ethResIt      iterator;
     ethResRIt    riterator, _rBegin, _rEnd;
@@ -647,11 +655,21 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     recv_socket = pSocket;
     ethManager  = _ethManager;
     ethResList  = &(_ethManager->EMS_list);
+
+    return true;
 }
 
-extern eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr;
+
 bool EthReceiver::threadInit()
 {
+#define MSG020979 "WARNING-> could not find extern eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr thus i removed it. thus FIX IT !!"
+#if defined(_MSC_VER)
+    #pragma message(MSG020979)
+#else
+    #warning MSG020979
+#endif
+    //extern eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr;
+    eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr = NULL;
     eODeb_eoProtoParser_Initialise(deb_eoParserCfg_ptr);
     yTrace() << "Do some initialization here if needed";
     return true;
@@ -761,3 +779,7 @@ void EthReceiver::run()
     yError() << "Exiting recv thread";
     return;
 }
+
+// eof
+
+

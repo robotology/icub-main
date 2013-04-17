@@ -133,7 +133,7 @@ bool VirtualAnalogServer::open(Searchable& config)
 
     int totalJ=0;
 
-    for (unsigned int k=0; k<networks->size(); ++k)
+    for (int k=0; k<networks->size(); ++k)
     {
         Bottle parameters=config.findGroup(networks->get(k).asString().c_str());
 
@@ -201,6 +201,8 @@ bool VirtualAnalogServer::close()
 
     mPortInputTorques.interrupt();
     mPortInputTorques.close();
+
+    return true;
 }
 
 bool VirtualAnalogServer::attachAll(const PolyDriverList &polylist)
@@ -313,3 +315,6 @@ void VirtualAnalogServer::run()
         }
     }
 }
+
+// eof
+

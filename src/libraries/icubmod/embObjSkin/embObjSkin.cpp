@@ -188,7 +188,8 @@ int EmbObjSkin::getChannels()
 
 int EmbObjSkin::calibrateSensor()
 {
-#warning "create a ROP to start/initialize the MTB, if needed"
+//#warning "create a ROP to start/initialize the MTB, if needed"
+
 //	int 							j=0;
 //	eOmc_joint_config_t				a;
 //	uint16_t						sizze;
@@ -218,7 +219,7 @@ int EmbObjSkin::calibrateChannel(int ch)
 
 bool EmbObjSkin::init()
 {
-    char str[128];
+//    char str[128];
     int j = 0;
 
     EOnv                        *cnv;
@@ -294,7 +295,8 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
     for(i=0; i<sk_array->head.size; i++)
     {
         eOutil_canframe_t *canframe;
-        uint8_t  j, mtbId =0;
+        //uint8_t  j; 
+        uint8_t mtbId =0;
         uint8_t  cardId, valid = 0;
 
         canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
@@ -369,4 +371,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
     }
     return true;
 }
+
+// eof
+
 

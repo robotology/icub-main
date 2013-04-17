@@ -26,7 +26,8 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <unistd.h>
+// acemor: ... dont need posix
+//#include <unistd.h>
 #include <stdio.h>
 
 

@@ -1107,7 +1107,7 @@ bool RobotInterfaceRemap::detachWrappers()
 bool RobotInterfaceRemap::closeNetworks()
 {
     // AC_YARP_INFO(Logger::get(),"RobotInterfaceRemap::closeNetworks()", Logger::get().log_files.f3);
-    RobotNetworkEntry *tmpNet;
+//    RobotNetworkEntry *tmpNet;
     int n=networks.size();
 
 //    while(n--)
@@ -1181,3 +1181,7 @@ void RobotInterfaceRemap::abort()
 
     abortF=true;
 }
+
+// eof
+
+

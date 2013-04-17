@@ -27,10 +27,23 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
+
+#define MSG010910 "WARNING-> linux api cannot be used... convert into ACE ones because on WIN it shant work"
+#if defined(_MSC_VER)
+    #pragma message(MSG010910)
+#else
+    #warning MSG010910
+#endif
+
 #include "stdlib.h"
 #include "string.h"
 #include "stdio.h"
+
+#if !defined(_MSC_VER)
 #include <bits/time.h>
+#endif
+
+
 
 #include  "errno.h"
 
@@ -38,8 +51,8 @@
 #include "FeatureInterface.h"
 #endif
 
-#define true 1
-#define false 0
+#define faketrue    1
+#define fakefalse   0
 
 #include "EoCommon.h"
 #include "EOarray.h"
@@ -76,10 +89,12 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void);
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
-//static uint32_t s_skin_matrix_histogram[SKIN_BOARD_MAXNUM][SKIN_TRIANGLE4BOARD_MAXNUM][SKIN_POINTS4TRIANGLE_MAXNUM];
+
 uint32_t s_skin_matrix_histogramRecCanFrame[SKIN_BOARD_MAXNUM][SKIN_TRIANGLE4BOARD_MAXNUM][SKIN_RECCANFRAME4TRIANGLE_MAXNUM];
+#if !defined(_MSC_VER)
 struct timeval s_skin_matrix_histogramTV[MAX_ACQUISITION][SKIN_BOARD_MAXNUM][SKIN_TRIANGLE4BOARD_MAXNUM][SKIN_RECCANFRAME4TRIANGLE_MAXNUM];
 struct timeval s_skin_matrix_histogramTV_zeros[SKIN_BOARD_MAXNUM][SKIN_TRIANGLE4BOARD_MAXNUM][SKIN_RECCANFRAME4TRIANGLE_MAXNUM];
+#endif
 uint32_t count = 0;
 uint8_t keepGoingOn = 1;
 uint8_t printed = 0;
@@ -93,16 +108,19 @@ FILE *outFile1, *outFile2;
 
 extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, const EOnv *nv, const eOabstime_t time, const uint32_t sign)
 {
-#warning "skin strong callback iCubInterface"
+//#warning "skin strong callback iCubInterface"
 //  printf("new callback\n");
-    s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
+
 
     EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->rem;
-    int i;
+//    int i;
+
+    s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
+
     /*  Vale stats
         if(nv->ep == endpoint_sk_emsboard_rightlowerarm)
         {
-            if(keepGoingOn)
+            if(1 == keepGoingOn)
             {
                 s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(sk_array);
 
@@ -136,14 +154,17 @@ extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, cons
     */
 
 #ifdef _ICUB_CALLBACK_
+    {    
+//    void *featList;
     FEAT_ID id;
     id.type = Skin;
     id.ep = nv->ep;
 
-    void *featList;
+
 //  printf("iCub Callback, looking for ep %d\n", id.ep);
 //   s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(sk_array);
     findAndFill(&id, (char *)sk_array);
+    }
 #endif
 }
 
@@ -152,6 +173,7 @@ extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, cons
 //      UTILITIES
 // --------------------------------------------------------------------------------------------------------------------
 
+#if !defined(_MSC_VER)
 static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)
 {
     /* Perform the carry for the later subtraction by updating y. */
@@ -181,24 +203,28 @@ static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct 
 
     return _x->tv_sec < _y->tv_sec;
 }
-
+#endif
 
 void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
 {
+#if !defined(_MSC_VER)
+
     static uint8_t dump[1024] = {0};
     static struct timeval tv[1024] = {0};
     static struct timeval zero = {0};
     static uint32_t t = 0;
+    int i, cardId, valid, mtbId, triangle, msgtype;
 
     EOarray_of_10canframes sk_array;
     memcpy(&sk_array, nv->rem, sizeof(EOarray_of_10canframes));
 
-    int i, cardId, valid, mtbId, triangle, msgtype;
+    
 
     for(i=0; i<sk_array.head.size; i++)
     {
         eOutil_canframe_t *canframe;
-        int  j, p = 0;
+        //int j = 0;
+        int p = 0;
 
         canframe = (eOutil_canframe_t *) &sk_array.data[i*sizeof(eOutil_canframe_t)];
         valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
@@ -252,12 +278,14 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
             }
             else //if(t==MAX_ACQUISITION)
             {
+                FILE *log = stdout;
+
                 for(p=0; p<MAX_ACQUISITION; p++)
                 {
                     fprintf(stdout, "%d\t\t%d%06d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
                 }
 
-                FILE *log = stdout;
+
 //              FILE *log = fopen("/tmp/iii/log.txt", "w");
 //              if(NULL == log)
 //                  printf(" Te piacerebbe!\n");
@@ -265,10 +293,10 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
                 {
                     fprintf(log, "valore  -  timestamp\n");
 
+                    #warning acemor-> loop is done on 10000 and array contains 1024 ... 
                     for(p=0; p<MAX_ACQUISITION; p++)
                     {
                         fprintf(log, "%d\t\t%d%d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
-                        //fprintf(stdout, " 0x%0x\t\t%d:%d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
                     }
 
 //                  fclose(log);
@@ -279,7 +307,9 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
             t++;
         }
     }
+#endif
 }
+
 
 void s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(EOarray_of_10canframes *sk_array)
 {
@@ -316,18 +346,22 @@ void s_eo_cfg_nvsEP_sk_hid_Histogram_Reset(void)
 void s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(EOarray_of_10canframes *sk_array)
 {
     eOutil_canframe_t *canframe;
-    int i, j;
+    int i;
+    //int j;
 
     uint8_t boardId = 0;
     uint8_t boardAddr = 0;
     uint8_t triangle = 0;
     uint8_t point = 0 ;
-    uint8_t point_offset;
+    //uint8_t point_offset;
     uint8_t msgtype = 0;
     uint8_t row = 0;
     uint8_t offset;
+    uint32_t idx;
 
+#if !defined(_MSC_VER)
     struct timeval tmp;
+#endif
 
     if(sk_array->head.size >= 9)
     {
@@ -363,27 +397,31 @@ void s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(EOarray_of_10canframes *sk_array)
         }
 
         s_skin_matrix_histogramRecCanFrame[boardId][triangle][row]++;
-        uint32_t idx = s_skin_matrix_histogramRecCanFrame[boardId][triangle][row];
+        idx = s_skin_matrix_histogramRecCanFrame[boardId][triangle][row];
 
         if(idx == 1)
         {
             //printf("s_eo_cfg__nvsEP_sk_hid_ParseCanFrame\n");
+#if !defined(_MSC_VER)
             gettimeofday(&s_skin_matrix_histogramTV_zeros[boardId][triangle][row], NULL);
+#endif        
         }
         else
         {
             if(idx < MAX_ACQUISITION)
             {
+#if !defined(_MSC_VER)
                 gettimeofday(&tmp, NULL);
                 timeval_subtract(&s_skin_matrix_histogramTV[idx][boardId][triangle][row], &tmp, &s_skin_matrix_histogramTV_zeros[boardId][triangle][row]);
                 s_skin_matrix_histogramTV_zeros[boardId][triangle][row].tv_sec = tmp.tv_sec;
                 s_skin_matrix_histogramTV_zeros[boardId][triangle][row].tv_usec = tmp.tv_usec;
+#endif
                 //          if( (s_skin_matrix_histogramTV[idx][boardId][triangle][row].tv_sec > 0) || (s_skin_matrix_histogramTV[idx][boardId][triangle][row].tv_usec > 70*1000) )
                 //              printf("Vai a vendere frittelle!!\n");
             }
             else
             {
-                keepGoingOn = false;
+                keepGoingOn = 0;
             }
         }
 
@@ -404,7 +442,7 @@ void s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(EOarray_of_10canframes *sk_array)
 
 void s_eo_cfg__nvsEP_sk_hid_Histogram_Print(void)
 {
-    uint32_t i,j,k;
+    uint32_t i, j;
 
     for(i=0; i<SKIN_BOARD_MAXNUM; i++)
     {
@@ -431,7 +469,9 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void)
             {
                 for(l=0; l<MAX_ACQUISITION; l++)
                 {
+#if !defined(_MSC_VER)
                     fprintf(outFile2,"%d:%d:%d:%d %06d.%06d\n", i,j,k,l, s_skin_matrix_histogramTV[l][i][j][k]);
+#endif
                 }
             }
 
@@ -441,4 +481,8 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void)
         fprintf(outFile2,"\n\n");
     }
 }
+
+// eof
+
+
 

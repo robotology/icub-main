@@ -259,7 +259,15 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
     // Tell EMS to go into config state, otherwise something doesn't work correctly.
-#warning "go to config message before getting strain fullscale... investigate more
+//#warning "go to config message before getting strain fullscale... investigate more
+
+#define MSG010979 "WARNING->go to config message before getting strain fullscale... investigate more"
+#if defined(_MSC_VER)
+    #pragma message(MSG010979)
+#else
+    #warning MSG010989
+#endif
+
 //     res->goToConfig();
 
     eOsnsr_strain_config_t strainConfig;
@@ -365,7 +373,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     if((NVsize != _channels))
     {
         yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for board" << _fId.boardNum << "Aborting";
-        //return false;
+        return false;
     }
 
     uint8_t *msg;
@@ -437,6 +445,8 @@ bool embObjAnalogSensor::init()
 
     if(!res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
         return false;
+
+    return true;
 }
 
 
@@ -580,3 +590,7 @@ bool embObjAnalogSensor::close()
     res = NULL;
     return true;
 }
+
+// eof
+
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
+ * Copyright (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
  * Author:  Marco Accame
  * email:   marco.accame@iit.it
  * website: www.robotcub.org
@@ -16,14 +16,21 @@
  * Public License for more details
 */
 
+
 // - include guard ----------------------------------------------------------------------------------------------------
 #ifndef _EOCFG_NVSEP_AS_OVERRIDDEN_H_
 #define _EOCFG_NVSEP_AS_OVERRIDDEN_H_
 
+
+// this file is to be used by the PC104, not by the EMS ...
 
 #define OVERRIDE_eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe
 
 
 
 #endif  // include-guard
+
+
+// eof
+
 

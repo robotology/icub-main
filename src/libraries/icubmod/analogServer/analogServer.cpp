@@ -224,6 +224,8 @@ bool AnalogServer::attachAll(const PolyDriverList &analog2attach)
     }
     attach(analogSensor_p);
     start();
+
+    return true;
 }
 
 bool AnalogServer::detachAll()
@@ -443,4 +445,8 @@ void AnalogServer::run()
         }
     }
 }
+
+// eof
+
+
 

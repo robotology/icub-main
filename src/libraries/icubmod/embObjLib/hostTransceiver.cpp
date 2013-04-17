@@ -215,7 +215,7 @@ eOnvID_t hostTransceiver::getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint
 bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
 {
     //uint16_t    nvSize;
-    eOresult_t    res;
+    //eOresult_t    res;
     EOnv          nv;
 
     EOnv *nvRoot = getNVhandler(endPoint, nvid, &nv);
@@ -275,8 +275,8 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
 bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
 {
-    uint16_t    nvSize;
-    eOresult_t    res;
+    //uint16_t    nvSize;
+    //eOresult_t    res;
     EOnv          nv;
 
     EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
@@ -379,7 +379,7 @@ void checkDataForDebug(uint8_t *data, uint16_t size)
 
     static uint32_t prevTime = 0;
     static uint32_t prevNum = 0;
-    uint32_t progNum;
+    //uint32_t progNum;
 
 /*
 //	 debug purpose
@@ -563,9 +563,13 @@ uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
 uint16_t hostTransceiver::translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid)
 {
     //  yTrace();
-    EOconstvector* pEPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
+    const EOconstvector* pEPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
     uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
     eOnvscfg_EP_t* EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(pEPvector,  epindex);
     return eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
 }
+
+
+// eof
+
 

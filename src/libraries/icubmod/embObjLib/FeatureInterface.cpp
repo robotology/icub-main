@@ -30,17 +30,20 @@ void initCallback(void *p)
     _interface2ethManager = (TheEthManager*) p;
 }
 
-bool addEncoderTimeStamp(FEAT_ID *id, int jointNum)
+fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
 {
     embObjMotionControl *tmp = (embObjMotionControl *)(_interface2ethManager->getHandleFromEP(id->ep));
 
     if(tmp != NULL)
     {
         tmp->refreshEncoderTimeStamp(jointNum);
+        return fakestdbool_true;
     }
+
+    return fakestdbool_false;
 }
 
-bool findAndFill(FEAT_ID *id, void *sk_array)
+fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
 {
     // new with table, data stored in eoSkin;
     // specie di view grezza, usare dynamic cast?
@@ -55,7 +58,7 @@ bool findAndFill(FEAT_ID *id, void *sk_array)
             yError() << "Got a SKIN message from EMS with EP " << id->ep << "board number " << id->boardNum << "but no class was instatiated for it";
 
         error++;
-        return false;
+        return fakestdbool_false;
     }
     else
     {
@@ -70,10 +73,10 @@ bool findAndFill(FEAT_ID *id, void *sk_array)
                 yWarning() << "Got a SKIN message with EP "<< id->ep << "board number " << id->boardNum << " not yet initialized";
 
             notYetInitted++;
-            return false;
+            return fakestdbool_false;
         }
     }
-    return true;
+    return fakestdbool_true;
 }
 
 void *get_MChandler_fromEP(eOnvEP_t ep)
@@ -85,7 +88,7 @@ void *get_MChandler_fromEP(eOnvEP_t ep)
     return h;
 }
 
-bool handle_AS_data(FEAT_ID *id, void *as_array)
+fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
 {
     IiCubFeature *iAnalog;
 
@@ -98,7 +101,7 @@ bool handle_AS_data(FEAT_ID *id, void *as_array)
 //        printf( "/************************************\\\n"
 //                "            Parte non trovata!!!\n       "
 //                "\\***********************************/\n ");
-        return false;
+        return fakestdbool_false;
     }
     else
     {
@@ -106,10 +109,10 @@ bool handle_AS_data(FEAT_ID *id, void *as_array)
         iAnalog->fillData(as_array);
     }
 
-    return true;
+    return fakestdbool_true;
 }
 
-bool MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
+fakestdbool_t MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
 {
     //epindex in realtà non serve.
     eoThreadEntry *th = NULL;
@@ -120,7 +123,7 @@ bool MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
     if( (threadId=fuffy->pop()) < 0)
     {
         yError() << "Received an answer message nobody is waiting for (MCmutex_post)";
-        return -1;
+        return fakestdbool_false;
     }
     else
     {
@@ -128,13 +131,13 @@ bool MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
         if(NULL == th)
             yError() << "MCmutex_post error at line " << __LINE__;
         th->push();
-        return true;
+        return fakestdbool_true;
     }
 
-    return false;
+    return fakestdbool_false;
 }
 
-bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)
+fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)
 {
     // prendo la struttura che mi descrive la classe eoXXX n base all'EndPoint.
     FEAT_ID _fId = _interface2ethManager->getFeatInfoFromEP(ep);
@@ -147,6 +150,7 @@ bool EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvin
     // Finalmente prendo l'indice della nv all'interno diu questo EndPoint
     *nvindex = eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
     // Ora ho gli indici che mi servono per accedere alla tabella dei thread
+    return fakestdbool_true; // acemor added
 }
 
 void transceiver_wait(eOnvEP_t ep)
@@ -335,3 +339,7 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
 
 }
 #endif
+
+// eof
+
+
