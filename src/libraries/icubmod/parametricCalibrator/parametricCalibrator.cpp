@@ -454,9 +454,15 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 //            Il discriminante è giunti da 0 a 5 con encoder, dal 6 in poi con motionDone. Migliorare in qualche modo, parametro di config al posto della soglia che indichi quale \
 //            metodo usare oppure fare un calibratore apposta per la mano?"
             if( (*lit) < 6)
-                goneToZero &= checkGoneToZero(*lit);            // 4dc style, use the checkMotionDone
-            else
+            {
+            	yWarning() << " joint" << (*lit) << " using encoder";
                 goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
+            }
+            else
+            {
+            	yWarning() << " joint" << (*lit) << " using checkMotionDone";
+            	goneToZero &= checkGoneToZero(*lit);            // 4dc style, use the checkMotionDone
+            }
             lit++;
         }
 
@@ -505,7 +511,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
         lit  = set.begin();
         while(lit != lend)    // per ogni giunto del set
         {
-            yDebug() << "check calib joint ended, j" << (*lit);
+
             if (abortCalib)
             {
                 yWarning() << "CALIB: aborted\n";
@@ -522,7 +528,9 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
     }
 
     if(timeout > CALIBRATE_JOINT_TIMEOUT)
-        yError() << "CALIB Timeout while calibrating!\n";
+        yError() << deviceName << ":Timeout while calibrating " << (*lit) << "\n";
+    else
+    	yDebug() << deviceName << "calib joint ended";
 
     return calibration_ok;
 }
@@ -663,6 +671,11 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     yDebug() << "Park was " << (abortParking ? "aborted" : "done");
 
+    for(int j=0; j < nj; j++)
+    {
+    	iAmps->disableAmp(j);
+    	iPids->disablePid(j);
+    }
 // iCubInterface is already shutting down here... so even if errors occour, what else can I do?
 
     return true;
