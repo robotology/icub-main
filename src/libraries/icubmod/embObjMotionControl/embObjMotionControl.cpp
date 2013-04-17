@@ -689,9 +689,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         xtmp.clear();
         if (!extractGroup(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", _njoints))
         {
-            fprintf(stderr, "Using default Timeout=1000, i.e 1s\n");
+            fprintf(stderr, "Using default Timeout=100, i.e 0.1s\n");
             for(i=1; i<_njoints+1; i++)
-                _velocityTimeout[i-1] = 1000;   //Default value
+                _velocityTimeout[i-1] = 100;   //Default value
         }
         else
         {
@@ -911,8 +911,9 @@ bool embObjMotionControl::init()
     }
     else
     {
-        for(int j=0, index =0; j<  _njoints; j++, index++)
+        for(int logico=0; logico< _njoints; logico++)
         {
+        	int fisico = _axisMap[logico];
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += jConfigSize)) )
             {
                 // yDebug() << "Too many stuff to be sent at once... splitting in more messages";
@@ -920,7 +921,7 @@ bool embObjMotionControl::init()
                 totConfigSize = 0;
             }
 
-            nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jconfig);
+            nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, fisico, jointNVindex_jconfig);
 
 //             if(EOK_uint16dummy == nvid)
 //             {
@@ -931,28 +932,28 @@ bool embObjMotionControl::init()
 // 
 //             if(NULL == nvRoot)
 //             {
-//                 yError () << " NV pointer not found\n" << _fId.name << "board number " <<_fId.boardNum << "joint " << j << "at line" << __LINE__;
+//                 yError () << " NV pointer not found\n" << _fId.name << "board number " <<_fId.boardNum << "joint " << fisico << "at line" << __LINE__;
 //                 continue;
 //             }
 
-
+            printf(" logico = %d, fisico= %d\n", logico, fisico);
             eOmc_joint_config_t	jconfig;
             memset(&jconfig, 0x00, sizeof(eOmc_joint_config_t));
-            copyPid_iCub2eo(&_pids[index],  &jconfig.pidposition);
-            copyPid_iCub2eo(&_pids[index],  &jconfig.pidvelocity);
-            copyPid_iCub2eo(&_tpids[index], &jconfig.pidtorque);
+            copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
+            copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
+            copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
-            jconfig.impedance.damping	= (eOmeas_stiffness_t) _impedance_params[j].damping * 1000;
-            jconfig.impedance.stiffness	= (eOmeas_damping_t) _impedance_params[j].stiffness * 1000;
+            jconfig.impedance.damping	= (eOmeas_stiffness_t) _impedance_params[logico].damping * 1000;
+            jconfig.impedance.stiffness	= (eOmeas_damping_t) _impedance_params[logico].stiffness * 1000;
             jconfig.impedance.offset	= 0; //impedance_params[j];
 
-            jconfig.maxpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMax[index], _zeros[index], _angleToEncoder[index]);
-            jconfig.minpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMin[index], _zeros[index], _angleToEncoder[index]);
-            jconfig.velocitysetpointtimeout = (eOmeas_time_t)_velocityTimeout[index];
+            jconfig.maxpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMax[logico], _zeros[logico], _angleToEncoder[logico]);
+            jconfig.minpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMin[logico], _zeros[logico], _angleToEncoder[logico]);
+            jconfig.velocitysetpointtimeout = (eOmeas_time_t)_velocityTimeout[logico];
             jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 
-            jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[index]);
-            jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[index]);
+            jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
+            jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
             if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &jconfig))
             {
@@ -976,8 +977,9 @@ bool embObjMotionControl::init()
     }
     else
     {
-        for(int j=0, index =0; j< _njoints; j++, index++)
+        for(int logico=0; logico< _njoints; logico++)
         {
+        	int fisico = _axisMap[logico];
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += mConfigSize)) )
             {
                 // 		yDebug() << "Too many stuff to be sent at once... splitting in more messages";
@@ -985,22 +987,14 @@ bool embObjMotionControl::init()
                 totConfigSize = 0;
             }
 
-            //			nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig);
-            nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, motorNVindex_mconfig__maxcurrentofmotor);
+            nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, fisico, motorNVindex_mconfig__maxcurrentofmotor);
             if(EOK_uint16dummy == nvid)
             {
                 yError () << " NVID not found\n";
                 continue;
             }
 
-//             eOmc_motor_config_t mconfig;
-//             memset(&mconfig, 0x00, sizeof(eOmc_motor_config_t));
-//             //what to do here?
-//             mconfig.pidcurrent = unknown;
-//             mconfig.maxvelocityofmotor =  ????;
-//             mconfig.maxcurrentofmotor = (eOmeas_current_t) _currentLimits[index];
-
-            eOmeas_current_t	current = (eOmeas_current_t) _currentLimits[index];
+            eOmeas_current_t	current = (eOmeas_current_t) _currentLimits[logico];
 
             if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &current))
             {
@@ -1010,7 +1004,7 @@ bool embObjMotionControl::init()
             Time::delay(0.01);
         }
     }
-    printf("EmbObj Motion Control for board %d intatiated correctly", _fId.boardNum);
+    printf("EmbObj Motion Control for board %d istantiated correctly", _fId.boardNum);
     return true;
 }
 
@@ -1788,7 +1782,19 @@ bool embObjMotionControl::setRefAccelerationRaw(int j, double acc)
     // yTrace();
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
-    _ref_accs[j ] = acc;
+
+    if (acc > 1e6)
+    {
+        _ref_accs[j ] =  1e6;
+    }
+    else if (acc < -1e6)
+    {
+        _ref_accs[j ] = -1e6;
+    }
+    else
+    {
+        _ref_accs[j ] = acc;
+    }
 
     return true;
 }
@@ -1800,7 +1806,18 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
     for(int j=0, index=0; j< _njoints; j++, index++)
     {
-        _ref_accs[index] = accs[j];
+        if (accs[j] > 1e6)
+        {
+            _ref_accs[index] =  1e6;
+        }
+        else if (accs[j] < -1e6)
+        {
+            _ref_accs[index] = -1e6;
+        }
+        else
+        {
+            _ref_accs[index] = accs[j];
+        }
     }
     return true;
 }
