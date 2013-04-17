@@ -170,6 +170,7 @@ bool skinWrapper::close()
         analog=0;
 
     driver.close();
+    std::cout<<"Done closing skin part " << id << "!" << endl;
     return true;
 }
 
@@ -222,3 +223,5 @@ bool skinWrapper::detachAll()
     analogServer->stop();
     return true;
 }
+
+
