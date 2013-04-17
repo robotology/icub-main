@@ -28,7 +28,7 @@ bool robotPart::configureJoint(int j, int _type, double _amplitude, double _time
     double max, min;
     limits->getLimits(control->joint, &min, &max);
 
-    control->home = (max + min) /2;
+    control->home = min + ( (max - min) *10/100) ;
     cout << "limits are : min " << min << " max " << max << " home " << control->home;
 
     homing();
@@ -134,7 +134,7 @@ double VelCtrl::sinusoidal(int index)
 VCModule::VCModule()
 {
     cout << "VCModule constructor" << endl;
-    updatePeriod = 0.1;
+    updatePeriod = 0.02;
 };
 
 VCModule::~VCModule()
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("iCubTest/vel_control");
+    rf.setDefaultContext("iCubTest/conf/vel_control");
     rf.setDefaultConfigFile("config.ini");
     rf.configure("ICUB_ROOT",argc,argv);
 
