@@ -104,18 +104,14 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 				},
 				EO_INIT(.data)
 				{
-//					{0x18, 0xbc1a},
-//					{0x18, 0xbc3a},
-//					{0x18, 0xbc5a},
-//					{0x18, 0xbc7a},
-//					{0x16, 0xbc1a},
-//					{0x16, 0xbc3a},
-//					{0x16, 0xbc5a},
-//					{0x16, 0xbc7a}
-					{0xffff, 0xdc12},
-					{0xffff, 0xdc32},
-					{0xffff, 0xbc52},
-					{0xffff, 0xbc72},
+					{0x18, 0xbc1a},
+					{0x18, 0xbc3a},
+					{0x18, 0xbc5a},
+					{0x18, 0xbc7a},
+					{0x16, 0xbc1a},
+					{0x16, 0xbc3a},
+					{0x16, 0xbc5a},
+					{0x16, 0xbc7a}
 				}
 
 			},
@@ -191,7 +187,10 @@ static void my_cbk_onNVsetpointFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr
     uint8_t board = 0, j;
     float enc_factor, zero, enc_factor_6=182.044 , enc_factor_8=182.044, zero_6=180, zero_8=-180;
 
-	//printf("NV found!!: ep=%x id=%x\n", ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
+//	printf("src_addr 0x%x dst_addr 0x%x   ", pktInfo_ptr->src_addr, pktInfo_ptr->dst_addr);
+//    printf("NV found!!: ep=%x id=%x\n", ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
+
+
 
     if(ropAddInfo_ptr->desc.ep == 0x18)
     {

@@ -226,7 +226,7 @@ static void my_cbk_onInvalidRopFrame(eOethLowLevParser_packetInfo_t *pktInfo_ptr
 static void my_cbk_onPidFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_eoProtoParser_ropAdditionalInfo_t *ropAddInfo_ptr)
 {
 
-	printf("Pid found: op:0x%x ep=0x%x id=0x%x\n", ropAddInfo_ptr->desc.ropcode, ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
+	printf("Pid found: src_addr:0x%x, dest_addr:0x%x \t op:0x%x ep=0x%x id=0x%x\n", pktInfo_ptr->src_addr, pktInfo_ptr->dst_addr, ropAddInfo_ptr->desc.ropcode, ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
 
 }
 
