@@ -49,6 +49,8 @@ extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_
 
 extern void on_rec_canFaultLog_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 
+extern void on_rec_encoderError_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
@@ -111,6 +113,12 @@ typedef struct
     eOcanframe_t nextCanMsgs[6];
 }EOcanFaultLogDEBUG_t; //size 2*4 + 16 +16*6 = 120
 
+typedef struct
+{
+    uint16_t parityCheck[6];
+    uint16_t status[6];
+} EOencoderErrorDEBUG_t;
+
 
 EOMtheIPnetDEBUG_t eom_ipnet_hid_DEBUG =
 {
@@ -154,14 +162,17 @@ EOemsControllerDEBUG_t eo_emsController_hid_DEBUG =
 
 EOcanFaultLogDEBUG_t EOcanFaultLogDEBUG = {0};
 
+EOencoderErrorDEBUG_t EOencoderErrorDEBUG = {0};
+
 #define eom_ipnet_hid_DEBUG_id 				1
 #define eom_emsrunner_hid_DEBUG_id		 	2
 #define eom_emstransceiver_hid_DEBUG_id 	3
 #define eo_emsController_hid_DEBUG_id 		4
 #define eo_canFaultLogDEBUG_id 				5
+#define eo_EncoderErrorDEBUG_id             6
 
 
-static opcprotman_var_map_t s_myarray[] =
+static opcprotman_var_map_t s_myarray[] = 
 {
     {
         .var        = eom_ipnet_hid_DEBUG_id,
@@ -186,20 +197,27 @@ static opcprotman_var_map_t s_myarray[] =
         .size       = sizeof(eo_emsController_hid_DEBUG),
         .ptr        = &eo_emsController_hid_DEBUG,
         .onrec      = on_rec_emscontroller_debug
-    },
+    },    
     {
         .var        = eo_canFaultLogDEBUG_id,
         .size       = sizeof(EOcanFaultLogDEBUG_t),
         .ptr        = &EOcanFaultLogDEBUG,
         .onrec      = on_rec_canFaultLog_debug
-    }
+    },
+
+     {
+        .var        = eo_EncoderErrorDEBUG_id,
+        .size       = sizeof(EOencoderErrorDEBUG_t),
+        .ptr        = &EOencoderErrorDEBUG,
+        .onrec      = on_rec_encoderError_debug
+    } 
     
 };
 
 extern opcprotman_cfg_t opcprotmanCFGv0x1234 =
 {
     .databaseversion        = 0x1234,
-    .numberofvariables      = 5,
+    .numberofvariables      = 6,
     .arrayofvariablemap     = s_myarray
 };
 
@@ -395,6 +413,40 @@ extern void on_rec_canFaultLog_debug(opcprotman_opc_t opc, opcprotman_var_map_t*
 
 }
 
+
+
+
+extern void on_rec_encoderError_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{   // for the host
+
+	EOencoderErrorDEBUG_t* data = (EOencoderErrorDEBUG_t*)recdata;
+	uint8_t i;
+
+    switch(opc)
+    {
+
+        default:
+        case opcprotman_opc_set:
+        {   // nobody can order that to us
+            // we just dont do it ...
+        } break;
+
+        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+        {
+
+		printf("\n\n encoder statistics!!! \n");
+
+
+		for(i= 0; i<6; i++)
+		{
+			printf("\t enc %d parity check err = %d    status err = %d \n", i, data->parityCheck[i], data->status[i]);
+		}
+			
+        } break;
+    }
+
+}
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
