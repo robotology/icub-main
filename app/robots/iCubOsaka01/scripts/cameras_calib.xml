@@ -26,13 +26,13 @@
     </module> 
    <module>
       <name>yarpview</name>
-      <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
+      <parameters>--name /icub/view/left --x 0 --y 0 --RefreshTime 50</parameters>
       <node>celsius</node>
 	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
-      <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
+      <parameters>--name /icub/view/right --x 320 --y 0 --RefreshTime 50</parameters>
       <node>celsius</node>
 	<tag>viewright</tag>
    </module>
@@ -61,12 +61,12 @@
 <connection>
   <output>/icub/camcalib/left/out</output>
   <input>/icub/view/left</input>
-  <protocol>mcast</protocol>
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <output>/icub/camcalib/right/out</output>
   <input>/icub/view/right</input>
-  <protocol>mcast</protocol>
+  <protocol>udp</protocol>
 </connection>
 </application>
 
