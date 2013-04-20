@@ -60,12 +60,12 @@
         <connection>
                 <from>/icub/camcalib/left/out</from>
                 <to>/icub/PF3DTracker_L/videoIn</to>
-                <protocol>mcast</protocol>
+                <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/camcalib/right/out</from>
                 <to>/icub/PF3DTracker_R/videoIn</to>
-                <protocol>mcast</protocol>
+                <protocol>udp</protocol>
         </connection>
 
         <connection>

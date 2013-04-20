@@ -47,7 +47,7 @@
         <connection>
                 <from>/icub/camcalib/left/out</from>
                 <to>/motionCUT/left/img:i</to>
-                <protocol>mcast</protocol>
+                <protocol>udp</protocol>
         </connection>
 
         <connection>
