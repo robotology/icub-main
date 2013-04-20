@@ -52,7 +52,6 @@ bool MotorThread::checkOptions(Bottle &options, const string &parameter)
 }
 
 
-
 //Dragger initializer
 void Dragger::init(Bottle &initializer, double thread_rate)
 {
@@ -840,6 +839,14 @@ void MotorThread::close()
     disparityPort.interrupt();
     disparityPort.close();
 
+    wbdPort.interrupt();
+    wbdPort.close();
+
+    wrenchPort[LEFT].interrupt();
+    wrenchPort[RIGHT].interrupt();
+    wrenchPort[LEFT].close();
+    wrenchPort[RIGHT].close();
+
     closed=true;
 }
 
@@ -879,9 +886,9 @@ bool MotorThread::threadInit()
     Bottle *neckPitchRange=bMotor.find("neck_pitch_range").asList();
     Bottle *neckRollRange=bMotor.find("neck_roll_range").asList();
 
-    //open ports
+    // open ports
     disparityPort.open(("/"+name+"/disparity:io").c_str());
-
+    wbdPort.open(("/"+name+"/wbd:rpc").c_str());
     wrenchPort[LEFT].open(("/"+name+"/left/wrench:o").c_str());
     wrenchPort[RIGHT].open(("/"+name+"/right/wrench:o").c_str());
 
@@ -1545,6 +1552,7 @@ bool MotorThread::reach(Bottle &options)
         tmpDisp=reachAboveDisp;
     }
 
+    wbdRecalibration();
     action[arm]->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;
@@ -1624,6 +1632,7 @@ bool MotorThread::push(Bottle &options)
         keepFixation(options);
     }
 
+    wbdRecalibration();
     action[arm]->enableContactDetection();
     
     action[arm]->pushAction(xd-3*push_direction*reachSideDisp[arm],reachSideOrient[arm]);
@@ -1815,6 +1824,7 @@ bool MotorThread::give(Bottle &options)
 
     action[arm]->pushAction("open_hand");
 
+    wbdRecalibration();
     action[arm]->enableContactDetection();
 
     bool contact_detected=false;
@@ -2035,8 +2045,8 @@ bool MotorThread::deploy(Bottle &options)
     bool f;
     action[arm]->checkActionsDone(f,true);
 
+    wbdRecalibration();
     action[arm]->enableContactDetection();
-
 
     action[arm]->pushAction(deployZone,tmpOrient);
     action[arm]->checkActionsDone(f,true);
@@ -2159,6 +2169,8 @@ bool MotorThread::calibTable(Bottle &options)
         action[arm]->pushAction("open_hand");
 
     action[arm]->enableTorsoDof();
+
+    wbdRecalibration();
     action[arm]->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;

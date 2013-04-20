@@ -208,6 +208,8 @@ private:
     bool                                closed;
     bool                                interrupted;
 
+    RpcClient                           wbdPort;
+
     //drag stuff
     Port                                wrenchPort[2];
 
@@ -256,6 +258,12 @@ public:
     virtual void threadRelease();
     virtual void onStop();
 
+    void wbdRecalibration()
+    {
+        Bottle cmd,reply;
+        cmd.addInt(0);
+        wbdPort.write(cmd,reply);
+    }
 
     void trackTemplate(Bottle &options)
     {

@@ -15,7 +15,7 @@
         <!--Core module-->  
         <module>
             <name>actionsRenderingEngine</name>
-	    <parameters>--actions OPC </parameters>           
+       <parameters>--actions OPC </parameters>           
             <node>mynode</node>
             <tag>actionsRenderingEngine</tag>
         </module>
@@ -23,7 +23,7 @@
        <!--Optional module-->  
         <module>
             <name>objectsPropertiesCollector</name>
-	    <parameters>--db actionsLearned</parameters>            
+       <parameters>--db actionsLearned</parameters>            
             <node>mynode</node>
             <tag>objPropCollector</tag>
         </module>
@@ -49,7 +49,7 @@
             <protocol>tcp</protocol>
         </connection>
 
-	<connection>
+   <connection>
             <from>/icub/camcalib/left/out</from>
             <to>/actionsRenderingEngine/left/img:i</to>
             <protocol>udp</protocol>
@@ -80,9 +80,11 @@
             <protocol>tcp</protocol>
         </connection>
 
-		
-		
-       
-
+        <connection>
+            <from>/actionsRenderingEngine/wbd:rpc</from>
+            <to>/wholeBodyDynamics/rpc:i</to>
+            <protocol>tcp</protocol>
+        </connection>       
+           
 
 </application>
