@@ -2615,6 +2615,8 @@ bool MotorThread::startLearningModeAction(Bottle &options)
     dragger.ctrl->getPose(x,o);
     dragger.x0=x;
 
+    wbdRecalibration();
+
     if(!setTorque(true,arm))
     {
         fprintf(stdout,"Error! Could not set torque control mode\n");
@@ -2775,6 +2777,8 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
         fprintf(stdout,"Error! Could not find the arm controller\n");
         return false;
     }
+
+    wbdRecalibration();
 
     //if the impedance control is available use it otherwise employ adimttance control
     dragger.using_impedance=setTorque(true,dragger.arm);
