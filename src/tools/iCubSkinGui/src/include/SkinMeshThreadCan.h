@@ -122,11 +122,11 @@ public:
                         {
                             sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-						if (type=="plamR")
+                        if (type=="palmR")
                         {
                             sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-						if (type=="palmL")
+                        if (type=="palmL")
                         {
                             sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
                         }

@@ -143,17 +143,16 @@ public:
                         }
                         if (type=="quad16")
                         {
-							printf("Quad16");
+                            printf("Quad16");
                             sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
                             sensor[id]->setCalibrationFlag(useCalibration);
-					    }
-						if (type=="palmR")
+                            }
+                        if (type=="palmR")
                         {
                             sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
                             sensor[id]->setCalibrationFlag(useCalibration);
-							
                         }
-						if (type=="palmL")
+                        if (type=="palmL")
                         {
                             sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
                             sensor[id]->setCalibrationFlag(useCalibration);
