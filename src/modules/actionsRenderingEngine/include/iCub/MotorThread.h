@@ -258,11 +258,17 @@ public:
     virtual void threadRelease();
     virtual void onStop();
 
-    void wbdRecalibration()
+    bool wbdRecalibration()
     {
-        Bottle cmd,reply;
-        cmd.addInt(0);
-        wbdPort.write(cmd,reply);
+        if (wbdPort.getOutputCount()>0)
+        {
+            Bottle cmd,reply;
+            cmd.addInt(0);
+            wbdPort.write(cmd,reply);
+            return true;
+        }
+        else
+            return false;
     }
 
     void trackTemplate(Bottle &options)
