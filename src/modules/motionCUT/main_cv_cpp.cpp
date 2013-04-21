@@ -252,7 +252,7 @@ public:
             calcOpticalFlowPyrLK(pyrPrev,pyrCurr,
                                  nodesPrev,nodesCurr,featuresFound,featuresErrors,
                                  Size(winSize,winSize),5,
-                                 TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),
+                                 TermCriteria(TermCriteria::COUNT+TermCriteria::EPS,20,0.3),
                                  OPTFLOW_USE_INITIAL_FLOW);
             dt0=Time::now()-latch_t;
 
