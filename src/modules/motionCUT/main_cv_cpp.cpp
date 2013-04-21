@@ -208,7 +208,7 @@ public:
 
                 // convert to gray-scale and prepare pyramid
                 cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
-                buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage(),imgPyrPrev,Size(winSize,winSize),5);
+                buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),imgPyrPrev,Size(winSize,winSize),5);
 
                 if (verbosity)
                 {
@@ -408,7 +408,7 @@ public:
             }
 
             // save data for next cycle
-            imgPyrPrev=imgPyrCur;
+            imgPyrPrev=imgPyrCurr;
             
             double t1=Time::now();
             if (verbosity)
