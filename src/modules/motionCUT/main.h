@@ -92,7 +92,10 @@ YARP libraries and OpenCV
   used. Indicatively, a value of 0.5% means that the two
   templates for the matching must have a similarity measure of
   99.5% to prevent the relative node from being recognized as
-  independent moving node.
+  independent moving node. Importantly, this parameter is also
+  significantly affected by how well the matching is performed;
+  as result, for increasing OpenCV versions, the threshold needs
+  to be reduced.
  
 --adjNodesThres \e min 
 - This parameter allows filtering out the \e salt-and-pepper 
