@@ -71,9 +71,9 @@ protected:
     int nodesX;
     int nodesY;    
 
-    ImageOf<PixelMono>  imgMonoIn;
-    vector<Mat>         imgPyrPrev;
-    vector<Mat>         imgPyrCurr;
+    ImageOf<PixelMono>   imgMonoIn;
+    vector<Mat>          pyrPrev;
+    vector<Mat>          pyrCurr;
 
     vector<Point2f>      nodesPrev;
     vector<Point2f>      nodesCurr;
@@ -208,7 +208,7 @@ public:
 
                 // convert to gray-scale and prepare pyramid
                 cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
-                buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),imgPyrPrev,Size(winSize,winSize),5);
+                buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),pyrPrev,Size(winSize,winSize),5);
 
                 if (verbosity)
                 {
@@ -247,9 +247,9 @@ public:
 
             // compute optical flow through pyramidal approach
             latch_t=Time::now();
-            buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),imgPyrCurr,Size(winSize,winSize),5);
+            buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),pyrCurr,Size(winSize,winSize),5);
 
-            calcOpticalFlowPyrLK(imgPyrPrev,imgPyrCurr,
+            calcOpticalFlowPyrLK(pyrPrev,pyrCurr,
                                  nodesPrev,nodesCurr,featuresFound,featuresErrors,
                                  Size(winSize,winSize),5,
                                  TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),
@@ -408,7 +408,7 @@ public:
             }
 
             // save data for next cycle
-            imgPyrPrev=imgPyrCurr;
+            pyrPrev=pyrCurr;
             
             double t1=Time::now();
             if (verbosity)
