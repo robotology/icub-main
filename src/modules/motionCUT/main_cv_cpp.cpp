@@ -72,7 +72,8 @@ protected:
     int nodesY;    
 
     ImageOf<PixelMono>  imgMonoIn;
-    ImageOf<PixelMono>  imgMonoPrev;
+    vector<Mat>         imgPyrPrev;
+    vector<Mat>         imgPyrCurr;
 
     vector<Point2f>      nodesPrev;
     vector<Point2f>      nodesCurr;
@@ -185,7 +186,6 @@ public:
                 firstConsistencyCheck=false;
 
                 imgMonoIn.resize(*pImgBgrIn);
-                imgMonoPrev.resize(*pImgBgrIn);
 
                 int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
                 int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
@@ -206,8 +206,9 @@ public:
                     for (int x=min_x; x<=(imgMonoIn.width()-min_x); x+=nodesStep)
                         nodesPrev[cnt++]=Point2f(x,y);
 
-                // convert to gray-scale
-                cvCvtColor(pImgBgrIn->getIplImage(),imgMonoPrev.getIplImage(),CV_BGR2GRAY);
+                // convert to gray-scale and prepare pyramid
+                cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
+                buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage(),imgPyrPrev,Size(winSize,winSize),5);
 
                 if (verbosity)
                 {
@@ -244,13 +245,14 @@ public:
             activeNodesIndexSet.clear();
             blobSortedList.clear();
 
-            // compute optical flow
+            // compute optical flow through pyramidal approach
             latch_t=Time::now();
-            calcOpticalFlowPyrLK(Mat((IplImage*)imgMonoPrev.getIplImage()),
-                                 Mat((IplImage*)imgMonoIn.getIplImage()),
+            buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),imgPyrCurr,Size(winSize,winSize),5);
+
+            calcOpticalFlowPyrLK(imgPyrPrev,imgPyrCurr,
                                  nodesPrev,nodesCurr,featuresFound,featuresErrors,
-                                 cvSize(winSize,winSize),5,
-                                 cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),
+                                 Size(winSize,winSize),5,
+                                 TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),
                                  OPTFLOW_USE_INITIAL_FLOW);
             dt0=Time::now()-latch_t;
 
@@ -406,7 +408,7 @@ public:
             }
 
             // save data for next cycle
-            imgMonoPrev=imgMonoIn;
+            imgPyrPrev=imgPyrCur;
             
             double t1=Time::now();
             if (verbosity)
