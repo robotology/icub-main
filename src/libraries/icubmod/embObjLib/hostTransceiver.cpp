@@ -218,6 +218,12 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
     //eOresult_t    res;
     EOnv          nv;
 
+    if(nvid == EOK_uint16dummy)
+    {
+        yError() << "eo HostTransceiver: called addSetMessage with invalid nvid";
+        return false;
+    }
+
     EOnv *nvRoot = getNVhandler(endPoint, nvid, &nv);
 
     if(NULL == nvRoot)
@@ -279,6 +285,12 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
     //eOresult_t    res;
     EOnv          nv;
 
+    if(nvid == EOK_uint16dummy)
+    {
+        yError() << "eo HostTransceiver: called addGetMessage with invalid nvid";
+        return false;
+    }
+
     EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
 
     if(NULL == nvRoot)
@@ -305,7 +317,6 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
             yError() << "Error while loading ROP in ropframe\n";
             transMutex.post();
             yarp::os::Time::delay(0.001);
-
         }
         else
         {
@@ -319,6 +330,12 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
 bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
 {
     EOnv nv;
+    if(nvid == EOK_uint16dummy)
+    {
+        yError() << "eo HostTransceiver: called readValue with invalid nvid";
+        return false;
+    }
+
     EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
 
     if(NULL == nvRoot)

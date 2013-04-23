@@ -93,16 +93,16 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 			EO_INIT(.cbk_onErrSeqNum)           NULL,
 		},
 
-		EO_INIT(.nv)
-		{
-			EO_INIT(.NVs2searchArray)
-			{
-				EO_INIT(.head)
-				{
-					EO_INIT(.capacity)       eODeb_eoProtoParser_maxNV2find,
-					EO_INIT(.itemsize)       sizeof(eODeb_eoProtoParser_nvidEp_couple_t),
-					EO_INIT(.size)           12,
-				},
+        EO_INIT(.nv)
+        {
+            EO_INIT(.NVs2searchArray)
+            {
+                EO_INIT(.head)
+                {
+                    EO_INIT(.capacity)       eODeb_eoProtoParser_maxNV2find,
+                            EO_INIT(.itemsize)       sizeof(eODeb_eoProtoParser_nvidEp_couple_t),
+                            EO_INIT(.size)           36,
+                },
 
 				EO_INIT(.data)
 				{
@@ -115,58 +115,58 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 					{0xffff, 0x9c23}, //NVID_jxx_jconfig__pidtorque
 					{0xffff, 0x9c24}, //NVID_jxx_jconfig__impedance
                     //j 2
-                                        {0xffff, 0x9c41}, //NVID_jxx_jconfig__pidposition
-					{0xffff, 0x9c43}, //NVID_jxx_jconfig__pidtorque
-					{0xffff, 0x9c44}, //NVID_jxx_jconfig__impedance
-                     //j 3
-                                        {0xffff, 0x9c61}, //NVID_jxx_jconfig__pidposition
-					{0xffff, 0x9c63}, //NVID_jxx_jconfig__pidtorque
-					{0xffff, 0x9c64}, //NVID_jxx_jconfig__impedance
-                     // //j 4
-                    // {0xffff, 0x9c81}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9c83}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9c84}, //NVID_jxx_jconfig__impedance
-                      // //j 5
-                    // {0xffff, 0x9ca1}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9ca3}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9ca4}, //NVID_jxx_jconfig__impedance
-                     // //j 6
-                    // {0xffff, 0x9cc1}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9cc3}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9cc4}, //NVID_jxx_jconfig__impedance
-                     // //j 7
-                    // {0xffff, 0x9ce1}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9ce3}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9ce4}, //NVID_jxx_jconfig__impedance
-                     // //j 8
-                    // {0xffff, 0x9d01}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9d03}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9d04}, //NVID_jxx_jconfig__impedance
-                     // //j 9
-                    // {0xffff, 0x9d21}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9d23}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9d24}, //NVID_jxx_jconfig__impedance
-                     // //j 10
-                    // {0xffff, 0x9d41}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9d43}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9d44}, //NVID_jxx_jconfig__impedance
-                     // //j 11
-                    // {0xffff, 0x9d61}, //NVID_jxx_jconfig__pidposition
-					// {0xffff, 0x9d63}, //NVID_jxx_jconfig__pidtorque
-					// {0xffff, 0x9d64}, //NVID_jxx_jconfig__impedance
-                   
-				}
+                    {0xffff, 0x9c41}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9c43}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9c44}, //NVID_jxx_jconfig__impedance
+                    //j 3
+                    {0xffff, 0x9c61}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9c63}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9c64}, //NVID_jxx_jconfig__impedance
+                    //j 4
+                    {0xffff, 0x9c81}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9c83}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9c84}, //NVID_jxx_jconfig__impedance
+                    //j 5
+                    {0xffff, 0x9ca1}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9ca3}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9ca4}, //NVID_jxx_jconfig__impedance
+                    //j 6
+                    {0xffff, 0x9cc1}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9cc3}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9cc4}, //NVID_jxx_jconfig__impedance
+                    //j 7
+                    {0xffff, 0x9ce1}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9ce3}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9ce4}, //NVID_jxx_jconfig__impedance
+                    //j 8
+                    {0xffff, 0x9d01}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9d03}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9d04}, //NVID_jxx_jconfig__impedance
+                    //j 9
+                    {0xffff, 0x9d21}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9d23}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9d24}, //NVID_jxx_jconfig__impedance
+                    //j 10
+                    {0xffff, 0x9d41}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9d43}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9d44}, //NVID_jxx_jconfig__impedance
+                    //j 11
+                    {0xffff, 0x9d61}, //NVID_jxx_jconfig__pidposition
+                    {0xffff, 0x9d63}, //NVID_jxx_jconfig__pidtorque
+                    {0xffff, 0x9d64}, //NVID_jxx_jconfig__impedance
 
-			},
-			EO_INIT(.cbk_onNVfound)            my_cbk_onPidFound
-		},
+                }
 
-		EO_INIT(.invalidRopFrame)
-		{
-			EO_INIT(.cbk)					   NULL //my_cbk_onInvalidRopFrame
+            },
+            EO_INIT(.cbk_onNVfound)            my_cbk_onPidFound
+        },
 
-		}
-	}
+        EO_INIT(.invalidRopFrame)
+        {
+            EO_INIT(.cbk)                      NULL //my_cbk_onInvalidRopFrame
+
+        }
+    }
 };
 
 
@@ -227,7 +227,7 @@ static void my_cbk_onInvalidRopFrame(eOethLowLevParser_packetInfo_t *pktInfo_ptr
 static void my_cbk_onPidFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_eoProtoParser_ropAdditionalInfo_t *ropAddInfo_ptr)
 {
 
-	printf("Pid found: op:0x%x ep=0x%x id=0x%x\n", ropAddInfo_ptr->desc.ropcode, ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
+	printf("Pid found: op:0x%x ep=0x%x id=0x%x from %d to %d\n", ropAddInfo_ptr->desc.ropcode, ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id, pktInfo_ptr->src_addr, pktInfo_ptr->dst_addr);
 
 }
 

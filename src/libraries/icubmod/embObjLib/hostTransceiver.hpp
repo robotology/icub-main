@@ -84,7 +84,7 @@ public:
     bool init( uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, uint8_t board_n);
 
 
-    /*! This method add a rop to be sent in the current ropframe.
+    /*! This method add a Set type rop in the next ropframe.
         Parameters are:
         nvid: unique network variable identifier got with the appropriate eo_cfg_nvsEP_XXX_NVID_Get
         endpoint: enum of the enpoint it has to operate into
@@ -93,7 +93,20 @@ public:
         Note: size is calculated internally by getting Network Variable associated metadata
         */
     bool addSetMessage( eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data);
+
+    /*! This method add a Get type rop in the next ropframe.
+        Parameters are:
+        nvid: unique network variable identifier got with the appropriate eo_cfg_nvsEP_XXX_NVID_Get
+        endpoint: enum of the enpoint it has to operate into
+        */
     bool addGetMessage( eOnvID_t nvid, eOnvEP_t endPoint);
+
+    /*! Read data from the transceiver internal memory.
+        Parameters are:
+        nvid: unique network variable identifier got with the appropriate eo_cfg_nvsEP_XXX_NVID_Get
+        endpoint: enum of the enpoint it has to operate into
+        data: pointer to 
+     */
     bool readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
 
 #if 0
@@ -113,10 +126,10 @@ public:
     // and Processes it
     virtual void onMsgReception(uint8_t *data, uint16_t size);
 
+protected:
     /* Ask the transceiver to get the ropframe to be sent
      * This pointer will be modified by the getPack function to point to the TX buffer.
      * No need to allocate memory here */
-protected:
     void getTransmit(uint8_t **data, uint16_t *size);
 
 public:
