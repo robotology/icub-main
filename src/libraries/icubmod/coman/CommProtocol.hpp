@@ -129,6 +129,10 @@ enum Commands
     GET_PROGRAMMED_FIRMWARE_VERSION,
     SET_EXTRA_BCAST_POLICY,
 
+    // Added by Alberto following the documentation
+    SET_START_OFFSET,
+    SET_BOARD_NUMBER,
+
     // TCP Replies
     REPLY_BOARD_TYPE,
     REPLY_FIRMWARE_VERSION,
@@ -313,6 +317,10 @@ const CmdInfo cmdsInfo[NUM_OF_COMMANDS] =
 
     { TCP_COMMAND, 0x59 }, // GET_PROGRAMMED_FIRMWARE_VERSION
     { TCP_COMMAND, 0x8F }, // SET_EXTRA_BCAST_POLICY
+
+    // Added by Alberto following the documentation
+    { TCP_COMMAND, 0x8B }, // SET_START_OFFSET,
+    { TCP_COMMAND, 0x88 }, //SET_BOARD_NUMBER
 
     { TCP_REPLY, 0x90 }, // REPLY_BOARD_TYPE
     { TCP_REPLY, 0x91 }, // REPLY_FIRMWARE_VERSION

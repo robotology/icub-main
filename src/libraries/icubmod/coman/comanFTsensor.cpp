@@ -151,6 +151,11 @@ comanFTsensor::~comanFTsensor()
         delete scaleFactor;
 }
 
+FtBoard * comanFTsensor::getFTpointer(int j)
+{
+    return _fts[j+1];
+}
+
 bool comanFTsensor::open(yarp::os::Searchable &config)
 {
     boards_ctrl = Boards_ctrl::instance();
@@ -233,7 +238,16 @@ int comanFTsensor::getState(int ch)
 
 int comanFTsensor::getChannels()
 {
-    return _channels;
+    yTrace();
+//     McBoard *joint_p = getFTpointer(j);  // TODO su quale sensore?
+//     int8_t channels;
+//     if( joint_p->getItem(GET_ANALOG_INPUTS,   NULL, 0, REPLY_ANALOG_INPUTS, &channels, sizeof(channels)) )
+//         yError() << "Error while getting number of channels";
+//     int ret = (int) channels;
+//     return ret;
+//    return 0;
+
+     return _channels;
 }
 
 int comanFTsensor::calibrateSensor()

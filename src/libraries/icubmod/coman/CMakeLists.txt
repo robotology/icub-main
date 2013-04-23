@@ -27,6 +27,7 @@ PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analo
   DSP_board.cpp
   comanMotionControl.cpp
   comanFTsensor.cpp
+  comanInterface.cpp
   )
 
   set(HEADERS_TO_INSTALL
@@ -36,6 +37,7 @@ PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analo
   DSP_board.h
   comanMotionControl.h
   comanFTsensor.h
+  comanInterface.h
   )
 
   #add_definitions("-std=c++0x")

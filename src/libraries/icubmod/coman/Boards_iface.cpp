@@ -369,7 +369,7 @@ void Boards_ctrl::factory_board(uint8_t * buff) {
     uint8_t bType   = buff[3];
 
     if ( (*this)[bId] != NULL ) {
-        //DPRINTF("Board %d already recorded\n", bId);
+        printf("Board %d already recorded\n", bId);
         return;
     }
 
@@ -439,7 +439,7 @@ void * Boards_ctrl::rx_udp(void *_)
         size = recvfrom(kls->udp_sock, &buff, sizeof(buff), 0, 0, 0);
 
         if (size < 0) {
-            //DPRINTF("udp recvfrom() %s\n", strerror(errno) );
+            printf("udp recvfrom() %s\n", strerror(errno) );
             continue;
         }
 #if 0
@@ -551,9 +551,11 @@ void Boards_ctrl::start_control_body(std::vector<int> body)
 
 void Boards_ctrl::body_homing(int pos[], short vel[], short tor[])
 {
-
-    for (int i=0; i<homePos.size(); i++) {
+    printf("home pos\n");
+    for (int i=0; i<homePos.size(); i++)
+    {
         pos[i] = DEG2mRAD(homePos[i]);
+        printf("j[%d]: homePos=%f, pos=%d\n", i, homePos[i], pos[i]);
     }
     for (int i=0; i<homePos.size(); i++) {
         vel[i] = DEG2RAD(20)*1000;
@@ -735,13 +737,23 @@ int Boards_ctrl::test(void) {
  * @retval -1 on fail;
  *
  */
-int Boards_ctrl::set_position(int *des_pos, int nbytes) {
-
+int Boards_ctrl::set_position(int *des_pos, int nbytes)
+{
     UDPCommPacket pkt(SET_DESIRED_POSITION);
-    pkt.appendData((char*)des_pos, nbytes);
 
-    return pkt.sendToUDPSocket(udp_sock, (sockaddr *)&dest_addr, sizeof(dest_addr));
+    printf("set_position command\n");
+    for (int i=0; i<homePos.size(); i++)
+    {
+        printf("j[%d]: des_pos=%d\n", i, des_pos[i]);
+    }
 
+    if(-1 == pkt.appendData((char*)des_pos, nbytes) )
+        printf("Error in appendData");
+
+    int ret = pkt.sendToUDPSocket(udp_sock, (sockaddr *)&dest_addr, sizeof(dest_addr));
+    if(-1 == ret)
+        printf("Error in send To UDP socket");
+    return ret;
 }
 
 /**

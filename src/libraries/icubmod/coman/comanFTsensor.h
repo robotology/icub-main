@@ -105,6 +105,8 @@ private:
 
     // Read useful data from config and check fir correctness
     bool fromConfig(yarp::os::Searchable &config);
+    FtBoard* getFTpointer(int j);
+
 public:
 
     comanFTsensor();

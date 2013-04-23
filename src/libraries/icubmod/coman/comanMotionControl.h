@@ -48,7 +48,7 @@ using namespace yarp::os;
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/CanBusInterface.h>
+
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
@@ -66,15 +66,27 @@ using namespace yarp::os;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-#include "comanFTsensor.h"
-
 #include "DSP_board.h"
 #include "Boards_iface.h"
 
 #define SIZE_INFO   128
+#define BC_POLICY_MOTOR_POSITION          (1 << 0)
+#define BC_POLICY_MOTOR_VELOCITY          (1 << 1)
+#define BC_POLICY_TORQUE_READING          (1 << 2)
+#define BC_POLICY_OUTOUT_VOLTAGE          (1 << 3)
+#define BC_POLICY_PID_ERROR               (1 << 4)
+#define BC_POLICY_AVERAGE_MOTOR_CURRENT   (1 << 5)
+#define BC_POLICY_TEMP_VOLTAGE_SUPPLY     (1 << 6)
+#define BC_POLICY_TIMESTAMP               (1 << 7)
 
-
-
+#define BC_POLICY_FAULT_FLAG              (1 << 8)
+#define BC_POLICY_ANALOG_INPUT1           (1 << 9)
+#define BC_POLICY_ANALOG_INPUT2           (1 << 10)
+#define BC_POLICY_ABSOLUTE_POSITION       (1 << 11)
+#define BC_POLICY_RAW_VELOCITY            (1 << 12)
+#define BC_POLICY_MOTOR_STATE             (1 << 13)
+#define BC_POLICY_RAW_MOTOR_CURRENT       (1 << 14)
+#define BC_POLICY_RELATIVE_POSITION       (1 << 15)
 
 #ifdef _OLD_STYLE_
 //
@@ -130,21 +142,6 @@ struct ImpedanceParameters
     }
 };
 
-struct SpeedEstimationParameters
-{
-    double jnt_Vel_estimator_shift;
-    double jnt_Acc_estimator_shift;
-    double mot_Vel_estimator_shift;
-    double mot_Acc_estimator_shift;
-
-    SpeedEstimationParameters()
-    {
-        jnt_Vel_estimator_shift=0;
-        jnt_Acc_estimator_shift=0;
-        mot_Vel_estimator_shift=0;
-        mot_Acc_estimator_shift=0;
-    }
-};
 #endif
 
 
@@ -176,29 +173,50 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public ImplementPidControl<comanMotionControl, IPidControl>,
     public ImplementVelocityControl<comanMotionControl, IVelocityControl>,
     public ImplementDebugInterface,
+    public ITorqueControlRaw,
     public IDebugInterfaceRaw
 {
 private:
 
      ///////////// coman specific  ///////////////
-    // TODO separate the FT sensor hanfling from MC!!
-    comanFTsensor         *FTsensor;
+    int32_t               *pos_array;
+    int32_t               *vel_array;
+    int32_t               *trq_array;
+    int32_t               *off_array;           // pid offset, used as a feedforward term in control
+    uint16_t              bc_policy;
+    uint16_t              extra_policy;
+    int                   bc_rate;
+
+    bool                  pos_changed;
+    bool                  vel_changed;
+    bool                  trq_changed;
+    bool                  off_changed;
+
+        ////////  CHECK FOR DUPLICATED!!  buffers array for multi-joints command
+    int32_t               *_ref_positions;                    // used for position control.
+    int16_t               *_ref_speeds;                       // used for position control.
+    double                *_command_speeds;                   // used for velocity control.
+    double                *_ref_accs;                         // for velocity control, in position min jerk eq is used.
+    double                *_ref_torques;                      // for torque control.
+    double                *_pid_offset;                       // for feedforward control.
+
+
+
     Boards_ctrl           *boards_ctrl;
     mcs_map_t             _mcs;
-    GainSet               controlMode;                        // memorize the type of control currently running
+    GainSet               controlMode;                        // memorize the type of control currently running... safe??
 
     ////////  canonical
     yarp::os::Semaphore   _mutex;
 
     int                   *_axisMap;                          /** axis remapping lookup-table */
     double                *_angleToEncoder;                   /** angle to iCubDegrees conversion factors */
-    float                 *_encoderconversionfactor;          /** iCubDegrees to encoder conversion factors */
-    float                 *_encoderconversionoffset;          /** iCubDegrees offset */
     double                *_rotToEncoder;                     /** angle to rotor conversion factors */
     double                *_zeros;                            /** encoder zeros */
     Pid                   *_pids;                             /** initial gains */
     Pid                   *_tpids;                            /** initial torque gains */
     bool                  _tpidsEnabled;                      /** abilitation for torque gains */
+
 
 
     double                *_limitsMin;                        /** joint limits, max*/
@@ -214,18 +232,12 @@ private:
 
 // basic knowledge of my joints
     int                   _njoints;                           // Number of joints handled by this EMS; this values will be extracted by the config file
-    int                   _firstJoint;                        // in case the EMS controls joints from x to y where x is not 0, functions like setpidS need to know how to run the for loop
-
 
     // internal stuff
     bool                  *_enabledAmp;             // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
     bool                  *_enabledPid;             // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
     bool                  *_calibrated;             // Flag to know if the calibrate function has been called for the joint
-    double                *_ref_positions;          // used for position control.
-    double                *_ref_speeds;             // used for position control.
-    double                *_command_speeds;         // used for velocity control.
-    double                *_ref_accs;               // for velocity control, in position min jerk eq is used.
-    double                *_ref_torques;            // for torque control.
+
 
 #if 0
     DebugParameters *_debug_params;             /** debug parameters */
@@ -236,12 +248,15 @@ private:
 
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-
+    McBoard *getMCpointer(int j);
+    double convertDoble2Int(double in[], int out[]);
+    double convertDoble2Short(double in[], short int out[]);
+    uint16_t strtouli(ConstString asString, int arg2, int arg3);
 public:
     comanMotionControl();
     ~comanMotionControl();
 
-    char                     info[SIZE_INFO];
+    char                        info[SIZE_INFO];
     yarp::os::Semaphore         semaphore;
 
     /*Device Driver*/
@@ -307,7 +322,7 @@ public:
     virtual bool doneRaw(int j);
 
 
-    /////////////////////////////// END Position Control INTERFACE
+    /////// END Position Control INTERFACE
 
     // ControlMode
     virtual bool setPositionModeRaw(int j);
@@ -319,8 +334,8 @@ public:
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
 
-    //////////////////////// BEGIN EncoderInterface
-    //
+    //////// BEGIN EncoderInterface
+    
     virtual bool resetEncoderRaw(int j);
     virtual bool resetEncodersRaw();
     virtual bool setEncoderRaw(int j, double val);
@@ -347,37 +362,14 @@ public:
     /////////////// END AMPLIFIER INTERFACE
 
     //----------------------------------------------\\
-    //	Debug interface
+    //  Debug interface
     //----------------------------------------------\\
 
-    /* Set a generic parameter (for debug)
-     * @param type is the CAN code representing the command message
-     * @return true/false on success/failure
-     */
     bool setParameterRaw(int j, unsigned int type, double value);
-
-    /* Get a generic parameter (for debug)
-     * @param type is the CAN code representing the command message
-     * @return true/false on success/failure
-     */
     bool getParameterRaw(int j, unsigned int type, double* value);
-
-    /* Set a generic parameter (for debug)
-     * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
     bool setDebugParameterRaw(int j, unsigned int index, double value);
 
-    /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
-     * @param index is the number of the debug parameter
-        * @return true/false on success/failure
-     */
     bool setDebugReferencePositionRaw(int j, double value);
-
-    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
-     * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
     bool getDebugParameterRaw(int j, unsigned int index, double* value);
     bool getDebugReferencePositionRaw(int j, double* value);
     bool getRotorPositionRaw         (int j, double* value);
@@ -390,9 +382,42 @@ public:
     bool getJointPositionsRaw        (double* value);
 
 
-    /////// Limits
+    //----------------------------------------------\\
+    //  Limits interface
+    //----------------------------------------------\\
+
     bool setLimitsRaw(int axis, double min, double max);
     bool getLimitsRaw(int axis, double *min, double *max);
+
+    //----------------------------------------------\\
+    //  Torque interface
+    //----------------------------------------------\\
+
+    bool setTorqueModeRaw();
+    bool getTorqueRaw(int j, double *t);
+    bool getTorquesRaw(double *t);
+    bool getTorqueRangeRaw(int j, double *min, double *max);
+    bool getTorqueRangesRaw(double *min, double *max);
+    bool setRefTorquesRaw(const double *t);
+    bool setRefTorqueRaw(int j, double t);
+    bool getRefTorquesRaw(double *t);
+    bool getRefTorqueRaw(int j, double *t);
+    bool setTorquePidRaw(int j, const Pid &pid);
+    bool setTorquePidsRaw(const Pid *pids);
+    bool setTorqueErrorLimitRaw(int j, double limit);
+    bool setTorqueErrorLimitsRaw(const double *limits);
+    bool getTorqueErrorRaw(int j, double *err);
+    bool getTorqueErrorsRaw(double *errs);
+    bool getTorquePidOutputRaw(int j, double *out);
+    bool getTorquePidOutputsRaw(double *outs);
+    bool getTorquePidRaw(int j, Pid *pid);
+    bool getTorquePidsRaw(Pid *pids);
+    bool getTorqueErrorLimitRaw(int j, double *limit);
+    bool getTorqueErrorLimitsRaw(double *limits);
+    bool resetTorquePidRaw(int j);
+    bool disableTorquePidRaw(int j);
+    bool enableTorquePidRaw(int j);
+    bool setTorqueOffsetRaw(int j, double v);
 };
 
 #endif // include guard

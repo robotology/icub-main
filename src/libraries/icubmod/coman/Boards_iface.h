@@ -113,7 +113,7 @@ class yarp::dev::Boards_ctrl// : public yarp::dev::DeviceDriver
 {
 private:
     // singleton stuff
-    Boards_ctrl();
+
     bool                          initted;
     static yarp::os::Semaphore    _mutex;
     static Boards_ctrl            *handle;
@@ -136,6 +136,7 @@ private:
 public:
     static Boards_ctrl *instance();
 //     Boards_ctrl(const char * config);
+    Boards_ctrl();
     ~Boards_ctrl();
 
     /* This function is called by the yarp Factory. The config is a container for all the
@@ -187,6 +188,9 @@ public:
     mcs_map_t get_mcs_map();
     fts_map_t get_fts_map();
 
+    int         udp_sock;
+    struct sockaddr_in  dest_addr;
+
 protected:
 
     void factory_board(uint8_t *);
@@ -198,14 +202,15 @@ protected:
     mcs_map_t _mcs;
     fts_map_t _fts;
 
+
 private:
 
-    int         udp_sock;
+
     pthread_t   rx_upd_thread;
     int         expected_num_boards;
 
     struct sockaddr_in local_addr;
-    struct sockaddr_in  dest_addr;
+
 
     YAML::Node doc;
 
