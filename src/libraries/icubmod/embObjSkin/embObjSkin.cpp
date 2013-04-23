@@ -237,20 +237,10 @@ bool EmbObjSkin::init()
 
     eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
     nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
-    nvRoot = res->getNVhandler(ep, nvid, &nvtmp);
-    if(NULL == nvRoot)
-    {
-        printf("\n>>> ERROR \ngetNVhandler returned NULL!!\n");
-        return false;
-    }
+
     uint8_t dat = 1;
-    if( eores_OK != eo_nv_Set(nvRoot, &dat, eobool_true, eo_nv_upd_dontdo))
-    {
-        printf("\n>>> ERROR \neo_nv_Set !!\n");
-        return false;
-    }
-    // tell agent to prepare a rop to send
-    res->load_occasional_rop(eo_ropcode_set, ep, nvid);
+
+   res->addSetMessage(nvid, ep, &dat);
 
     //
     //	config regulars
