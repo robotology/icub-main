@@ -1,11 +1,5 @@
 
-#if defined(_MSC_VER)
-    #define MSG020666 "WARNING->  on visual studio 2012 this project does not compile because the cmake file erroneusly include in solution also the iCubInteface project. to solve it ..."
-    #pragma message(MSG020666)
-    #define MSG020667 "WARNING->  until the bug is fixed in cmake file, simply:  1. delete the iCubInteface project from the solution, 2. comment out the #error in file analogServer.cpp"
-    #pragma message(MSG020667)
-    #error see WARNING-> above ...
-#endif
+
 
 #include "analogServer.h"
 
