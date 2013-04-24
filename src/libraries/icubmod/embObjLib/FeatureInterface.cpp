@@ -8,7 +8,7 @@
 
 #include "FeatureInterface.h"
 #include "FeatureInterface_hid.h"
-#include "IRobotInterface.h"
+
 #include <ethManager.h>
 #include "eOcfg_EPs_board.h"
 #include "embObjMotionControl.h"
