@@ -6,7 +6,7 @@ option(ICUB_ICUBINTERFACE_EXPERIMENTAL "Experimental: this option may break comp
 mark_as_advanced(ICUB_ICUBINTERFACE_EXPERIMENTAL)
 
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
-	add_subdirectory(iCubInterface-branch)
+	add_subdirectory(robotInterface)
 else()
 	add_subdirectory(iCubInterface)
 endif()
