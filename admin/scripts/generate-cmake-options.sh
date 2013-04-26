@@ -26,4 +26,8 @@ case $2 in
                         -DENABLE_icubmod_debugInterfaceClient:BOOL=TRUE\
                         -DICUB_DASHBOARD_SUBMIT:BOOL=TRUE"
 esac
-    
+
+case $3 in
+    experimental)
+        CMAKE_OPTIONS="$CMAKE_OPTIONS -DICUB_ICUBINTERFACE_EXPERIMENTAL:BOOL=TRUE"
+esac
