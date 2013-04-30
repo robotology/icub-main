@@ -43,16 +43,19 @@ ENDIF ("${BUTTON_FILE}" STREQUAL "")
 SET(ACE_INCLUDE_DIR "/usr/include")
 
 set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
-set(OPC_PROTO_FOLDER            ${BASE}any-arch/sys/embobj/icub-app/)
+set(OPC_PROTO_FOLDER             ${BASE}any-arch/sys/embobj/icub-app/)
 set(COMMON_FOLDER		 ${BASE}any-arch/sys/embobj/core/)
 set(PORTING_FOLDER		 ${BASE}/porting/)
+set(EMBOBJ_TYPE_FOLDER           ${BASE}any-arch/sys/embobj/icub/api/)
 
 set(ALL_INCLUDES				${EXTRA_FOLDER}
 						${ACE_INCLUDE_DIR}
 						${OPC_PROTO_FOLDER}/api
 						${OPC_PROTO_FOLDER}/src
+						${OPC_PROTO_FOLDER}/cfg
 						${COMMON_FOLDER}/api
 						${PORTING_FOLDER}
+						${EMBOBJ_TYPE_FOLDER}
 )
 
 include_directories (${ALL_INCLUDES} )
@@ -67,24 +70,28 @@ set(OPC_PROTO_HEADER		${OPC_PROTO_FOLDER}/api/OPCprotocolManager.h
 message(INFO "OPC_PROTO_HEADER: ${OPC_PROTO_HEADER}")
 
 
-
 set(OPC_PROTO_SOURCE
 					${OPC_PROTO_FOLDER}/src/OPCprotocolManager.c
 					${OPC_PROTO_FOLDER}/src/OPCprotocolManager_hid.h
 					)
 
-message(INFO "OPC_PROTO_HEADER: ${OPC_PROTO_HEADER}")
+# configuration ------------------------
+set(OPC_PROTO_CFG_HEADER		${OPC_PROTO_FOLDER}/cfg/OPCprotocolManager_Cfg.h
+					)
+set(OPC_PROTO_CFG_SOURCE		${OPC_PROTO_FOLDER}/cfg/OPCprotocolManager_Cfg.c
+					)
+
 
 set(embobj_source 
-#					${OPC_PROTO_HEADER}
 					${OPC_PROTO_SOURCE}
+					${OPC_PROTO_CFG_SOURCE}
 					)
 
 
 
 set(EXTRA_SOURCE 				${EXTRA_FOLDER}/main.cpp
 						${EXTRA_FOLDER}/template_buttons.cpp
-						${EXTRA_FOLDER}/opcManager_cfg.c
+						${EXTRA_FOLDER}/opcManager_cfg4pc104.c
 						)
 
 set(ALL_SOURCE_CODE				${embobj_source}

@@ -56,6 +56,7 @@ using namespace std;
 #include "template_buttons.hpp"
 
 #include "OPCprotocolManager.h"
+#include "OPCprotocolManager_Cfg.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -241,7 +242,12 @@ int main(int argc, char *argv[])
 
 
 	//init opc manager
-	opcMan_ptr = opcprotman_New(get_OPCprotocolManager_cfg());
+	opcMan_ptr = opcprotman_New(OPCprotocolManager_Cfg_getconfig());
+	if(NULL ==opcMan_ptr)
+	{
+		printf("Error in creating opcprotman\n!");
+		return(0);
+	}
 
 	while(keepGoingOn)
 	{
@@ -367,7 +373,7 @@ void *recvThread(void * arg)
 		memset(&rec_payload_buffer[0], 0, PAYLOAD_MAX_SIZE);
 		rec_payload_size = ACE_socket->recv(&rec_payload_buffer[0], PAYLOAD_MAX_SIZE, src_addr, 0/*flags*/);
 		src_addr.addr_to_string(address, 64);
-		printf("received pkt of size = %d from %s\n",  rec_payload_size, address);
+		printf("\n\nReceived pkt of size = %d from %s\n",  rec_payload_size, address);
 		/*chiama qui funzione parser*/
 /*		for(int i =0; i<rec_payload_size; i++)
 		{		
