@@ -142,6 +142,8 @@ bool embObjMotionControl::alloc(int nj)
 
     _externalTorques = allocAndCheck<double>(nj);
 
+    for (int j=0; j<nj; ++j) _externalTorques[j] = 0.0;
+
 #ifdef _SETPOINT_TEST_
     j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
 #endif
@@ -2311,6 +2313,7 @@ bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
 
     for(int j=0; j< _njoints; j++)
     {
+        if (fTorques[j] < -1000.0 || fTorques[j] > 1000.0) fTorques[j] = 0.0; 
         ret &= setTorque(j, fTorques[j]);
         _externalTorques[j] = fTorques[j];
     }
