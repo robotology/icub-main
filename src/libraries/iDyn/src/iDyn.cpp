@@ -35,6 +35,8 @@ using namespace iCub::iDyn;
 #define mla 1.0
 #define mhd 1.0
 
+#define NO_JOINT_COSTRAINTS
+
 //#define mra 1e-11
 //#define mla 1e-11
 //#define mhd 1.0
@@ -2027,6 +2029,9 @@ void iCubArmDyn::allocate(const string &_type)
     blockLink(1,0.0);
     blockLink(2,0.0);
 
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubArmDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -2124,6 +2129,10 @@ void iCubArmNoTorsoDyn::allocate(const string &_type)
         pushLink(new iDynLink(   0*mla,             0,          0,         0,               0,          0,          0,          0,          0,          0,          0.0,     0.0,       M_PI/2.0,            M_PI/2.0,  -90.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.213*mla,      7.73e-3,   -8.05e-3,   9.00e-3,          157.143e-6,  12.780e-6,   4.823e-6, 247.995e-6, -18.188e-6, 380.535e-6,       0.0625,  -0.016,            0.0,                 0.0,  -20.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD));
     }
+
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubArmNoTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -2206,6 +2215,9 @@ void iCubTorsoDyn::allocate(const string &_type)
     pushLink(new iDynLink(4.81e+0,   -8.102e-5, -1.183e-1,          0,      7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,       2.31e-3, -193.3e-3,    -M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
 #endif  
 
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -2317,6 +2329,9 @@ void iCubLegDyn::allocate(const string &_type)
     }
 #endif
 
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -2422,6 +2437,9 @@ void iCubLegDynV2::allocate(const string &_type)
     }
 #endif
 
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2483,6 +2501,9 @@ void iCubNeckInertialDyn::allocate(const string &_type)
 
     blockLink(3,0.0);
 
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
@@ -2544,8 +2565,11 @@ void iCubNeckInertialDynV2::allocate(const string &_type)
     // The link below must have no dynamic parameters.
     pushLink(new iDynLink(0*mhd,           0,0,0,  0,0,0,0,0,0,     0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
 
-        blockLink(3,0.0);
+    blockLink(3,0.0);
 
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubNeckInertialDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
