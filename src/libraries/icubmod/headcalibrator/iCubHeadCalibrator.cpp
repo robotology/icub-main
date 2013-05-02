@@ -185,19 +185,19 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
 
     PolyDriver * poly = dynamic_cast<PolyDriver *> (dd);
 
-    poly->view(iCalibrate);
-    poly->view(iAmps);
-    poly->view(iEncoders);
-    poly->view(iPosition);
-    poly->view(iPids);
-    poly->view(iControlMode);
+//    poly->view(iCalibrate);
+//    poly->view(iAmps);
+//    poly->view(iEncoders);
+//    poly->view(iPosition);
+//    poly->view(iPids);
+//    poly->view(iControlMode);
 
-//    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-//    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-//    iEncoders = dynamic_cast<IEncoders *>(dd);
-//    iPosition = dynamic_cast<IPositionControl *>(dd);
-//    iPids = dynamic_cast<IPidControl *>(dd);
-//    iControlMode = dynamic_cast<IControlMode *>(dd);
+    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
+    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
+    iEncoders = dynamic_cast<IEncoders *>(dd);
+    iPosition = dynamic_cast<IPositionControl *>(dd);
+    iPids = dynamic_cast<IPidControl *>(dd);
+    iControlMode = dynamic_cast<IControlMode *>(dd);
 
 
     if (!(iCalibrate&&iAmps&&iEncoders&&iPosition&&iPids&&iControlMode))
