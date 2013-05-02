@@ -1610,8 +1610,8 @@ bool MotorThread::push(Bottle &options)
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        look(options);
         keepFixation(options);
+        look(options);
     }
 
     ctrl_gaze->waitMotionDone(0.1,2.0);
@@ -1628,8 +1628,8 @@ bool MotorThread::push(Bottle &options)
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        lookAtHand(options);
         keepFixation(options);
+        lookAtHand(options);
     }
 
     wbdRecalibration();
