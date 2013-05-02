@@ -59,9 +59,10 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
     eOhosttransceiver_cfg_t hosttxrxcfg;
+    memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t)); // acemor on 02-may13: so that the newly introduced field sizes contains the EOK_HOSTTRANSCEIVER_* values
     hosttxrxcfg.remoteboardipv4addr   = _remoteipaddr;
     hosttxrxcfg.remoteboardipv4port   = _ipport;
-    hosttxrxcfg.tobedefined           =   0;
+ 
 
 
     switch(_board_n)
