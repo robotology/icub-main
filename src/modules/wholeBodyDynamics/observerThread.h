@@ -46,6 +46,7 @@ using namespace std;
 #define SKIN_EVENTS_TIMEOUT 0.2     // max time (in sec) a contact is kept without reading anything from the skin events port
 
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
+enum calib_enum {CALIB_ALL=0, CALIB_ARMS, CALIB_LEGS, CALIB_FEET};
 
 // struct version
 // {
@@ -81,7 +82,7 @@ class iCubStatus
         ft_arm_right=0;
         ft_leg_left=0;
         ft_leg_right=0;
-	    ft_foot_left=0;
+        ft_foot_left=0;
         ft_foot_right=0;
         inertial_w0.resize(3);     inertial_w0.zero();
         inertial_dw0.resize(3);    inertial_dw0.zero();
@@ -96,7 +97,7 @@ class iCubStatus
         ft_arm_right.resize(6);    ft_arm_right.zero();
         ft_leg_left.resize(6);     ft_leg_left.zero();
         ft_leg_right.resize(6);    ft_leg_right.zero();
-		ft_foot_left.resize(6);    ft_foot_left.zero();
+        ft_foot_left.resize(6);    ft_foot_left.zero();
         ft_foot_right.resize(6);   ft_foot_right.zero();
     }
 
@@ -258,13 +259,13 @@ private:
     Vector F_ext_left_arm, F_ext_right_arm, F_ext_torso;
     Vector F_ext_cartesian_left_arm, F_ext_cartesian_right_arm;
     Vector F_ext_left_leg, F_ext_right_leg;
-	Vector F_ext_left_foot, F_ext_right_foot;
+    Vector F_ext_left_foot, F_ext_right_foot;
     Vector F_sns_left_leg, F_sns_right_leg;
     Vector F_mdl_left_leg, F_mdl_right_leg;
     Vector F_ext_cartesian_left_leg, F_ext_cartesian_right_leg;
-	Vector F_ext_cartesian_left_foot, F_ext_cartesian_right_foot;
+    Vector F_ext_cartesian_left_foot, F_ext_cartesian_right_foot;
     Vector F_LLeg, F_RLeg; 
-	Vector F_LFoot, F_RFoot; 
+    Vector F_LFoot, F_RFoot; 
     Vector F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
     Vector F_iDyn_LFoot, F_iDyn_RFoot, Offset_LFoot, Offset_RFoot;
     Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
@@ -308,7 +309,7 @@ public:
     void closePort(Contactable *_port);
     void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port);
     template <class T> void broadcastData(T& _values, BufferedPort<T> *_port);
-    void calibrateOffset();
+    void calibrateOffset(calib_enum calib_code=CALIB_ALL);
     bool readAndUpdate(bool waitMeasure=false, bool _init=false);
     bool getLowerEncodersSpeedAndAcceleration();
     bool getUpperEncodersSpeedAndAcceleration();

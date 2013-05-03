@@ -281,19 +281,47 @@ public:
     bool respond(const Bottle& command, Bottle& reply) 
     {
         reply.clear(); 
-        if (command.get(0).asInt()==0)
+        
+        if (command.get(0).isInt())
         {
-            fprintf(stderr,"Asking recalibration...\n");
-            if (inv_dyn)
+            if (command.get(0).asInt()==0)
             {
-                inv_dyn->suspend();
-                inv_dyn->calibrateOffset(); 
-                inv_dyn->resume();
+                fprintf(stderr,"Asking recalibration...\n");
+                if (inv_dyn)
+                {
+                    inv_dyn->suspend();
+                    inv_dyn->calibrateOffset(); 
+                    inv_dyn->resume();
+                }
+                fprintf(stderr,"Recalibration complete.\n");
+                reply.addString("Recalibrated");
+                return true;
             }
-            fprintf(stderr,"Recalibration complete.\n");
-            reply.addString("Recalibrated");
-            return true;
         }
+
+        if (command.get(0).isString())
+        {
+            if (command.get(0).asString()=="calib")
+            {
+                fprintf(stderr,"Asking recalibration...\n");
+                if (inv_dyn)
+                {
+                    calib_enum calib_code=CALIB_ALL;
+                          if (command.get(1).asString()=="all")  calib_code=CALIB_ALL;
+                    else  if (command.get(1).asString()=="arms") calib_code=CALIB_ARMS;
+                    else  if (command.get(1).asString()=="legs") calib_code=CALIB_LEGS;
+                    else  if (command.get(1).asString()=="feet") calib_code=CALIB_FEET;
+
+                    inv_dyn->suspend();
+                    inv_dyn->calibrateOffset(calib_code);
+                    inv_dyn->resume();
+                }
+                fprintf(stderr,"Recalibration complete.\n");
+                reply.addString("Recalibrated");
+                return true;
+            }
+        }
+
         reply.addString("Unknown command");
         return true;
     }

@@ -1096,7 +1096,7 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
     _port->write();
 }
 
-void inverseDynamics::calibrateOffset()
+void inverseDynamics::calibrateOffset(calib_enum calib_code)
 {
     fprintf(stderr,"calibrateOffset: starting calibration... \n");
 
@@ -1130,14 +1130,14 @@ void inverseDynamics::calibrateOffset()
         F_iDyn_RArm = -1.0 * F_sensor_up.getCol(0);
         F_iDyn_LLeg  = -1.0 * F_sensor_low.getCol(1);
         F_iDyn_RLeg = -1.0 * F_sensor_low.getCol(0);
-		F_iDyn_LFoot = Vector(6,0.0); //@@@ TO BE COMPLETED
-		F_iDyn_RFoot = Vector(6,0.0); //@@@ TO BE COMPLETED
+        F_iDyn_LFoot = Vector(6,0.0); //@@@ TO BE COMPLETED
+        F_iDyn_RFoot = Vector(6,0.0); //@@@ TO BE COMPLETED
 
         Offset_LArm = Offset_LArm + (it->ft_arm_left-F_iDyn_LArm);
         Offset_RArm = Offset_RArm + (it->ft_arm_right-F_iDyn_RArm);
         Offset_LLeg = Offset_LLeg + (it->ft_leg_left-F_iDyn_LLeg);
         Offset_RLeg = Offset_RLeg + (it->ft_leg_right-F_iDyn_RLeg);
-	    Offset_LFoot = Offset_LFoot + (it->ft_foot_left-F_iDyn_LFoot);
+        Offset_LFoot = Offset_LFoot + (it->ft_foot_left-F_iDyn_LFoot);
         Offset_RFoot = Offset_RFoot + (it->ft_foot_right-F_iDyn_RFoot);
     }
 
