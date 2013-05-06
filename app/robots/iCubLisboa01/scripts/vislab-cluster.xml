@@ -10,16 +10,8 @@
 <node>pc104</node>
 <node>icubbrain1</node>>
 <node>icubbrain2</node>
-<node>chico2</node>
 <node>chico4</node>
-<!--
 <node>cortex1</node>
-<node>cortex2</node>
-<node>cortex3</node>
-<node>cortex4</node>
-<node>cortex5</node>
-<node>cortex6</node>
-<node>icubsrv</node>
--->
+
 </cluster>
 

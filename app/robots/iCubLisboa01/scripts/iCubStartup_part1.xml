@@ -10,13 +10,11 @@
                 <tag>icubInterface</tag>
         </module>
 
-	<!--		
 	<module>
                 <name>iCubInterfaceGuiClient</name>
                 <node>chico3</node>
                 <tag>iCubInterfaceGuiClient</tag>
         </module>
-	-->
    
         <module>
                 <name>iKinCartesianSolver</name>
@@ -55,12 +53,10 @@
                 <tag>gazeController</tag>
         </module>
 
-	<!--	
         <connection>
                 <from>/icubinterfacegui/client</from>
                 <to>/icubinterfacegui/server</to>
                 <protocol>tcp</protocol>
         </connection>
-	-->
 
 </application>
