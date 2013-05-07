@@ -315,7 +315,7 @@ Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
 /************************************************************************/
 Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
 {    
-    if ((H.rows()<4) || (H.cols()<4))
+    if ((H.rows()!=4) || (H.cols()!=4))
     {
         if (verbose)
             fprintf(stderr,"SE3inv() failed\n");
@@ -323,24 +323,19 @@ Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
         return Matrix(0,0);
     }
 
-    Matrix invH(4,4);
-    Vector p(3);
-
-    Matrix Rt=H.submatrix(0,2,0,2).transposed();
+    Vector p(4);
     p[0]=H(0,3);
     p[1]=H(1,3);
     p[2]=H(2,3);
+    p[3]=1.0;
 
-    p=Rt*p;
-
-    for (unsigned int i=0; i<3; i++)
-        for (unsigned int j=0; j<3; j++)
-            invH(i,j)=Rt(i,j);
-
+    Matrix invH=H.transposed();
+    p=invH*p;
+        
     invH(0,3)=-p[0];
     invH(1,3)=-p[1];
     invH(2,3)=-p[2];
-    invH(3,3)=1.0;
+    invH(3,0)=invH(3,1)=invH(3,2)=0.0;
 
     return invH;
 }
