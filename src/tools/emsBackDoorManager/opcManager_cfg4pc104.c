@@ -46,12 +46,6 @@ extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map,
 
 extern void on_rec_transceiver_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 
-extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
-
-extern void on_rec_canFaultLog_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
-
-extern void on_rec_encoderError_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
-
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
@@ -73,7 +67,6 @@ extern void on_rec_encoderError_debug(opcprotman_opc_t opc, opcprotman_var_map_t
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
-static void s_print_canmsg(eOcanframe_t *frame);
 
 extern void on_rec_ipnet_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {   // for the host
@@ -162,134 +155,8 @@ extern void on_rec_transceiver_debug(opcprotman_opc_t opc, opcprotman_var_map_t*
 }
 
 
-extern void on_rec_emscontroller_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
-{   // for the host
-
-	EOemsControllerDEBUG_t* data = (EOemsControllerDEBUG_t*)recdata;
-	uint8_t i;
-
-    switch(opc)
-    {
-
-        default:
-        case opcprotman_opc_set:
-        {   // nobody can order that to us
-            // we just dont do it ...
-        } break;
-
-        case opcprotman_opc_say:    // someboby has replied to a ask we sent
-        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {
-
-            float enc_factor , zero, enc_factor_6=182.044 , enc_factor_8=182.044, zero_6=180, zero_8=-180;
-            //note: encoder factor is equal on both boards
-            float vel, pos;
-
-            if(data->boardid == 8)
-            {
-                enc_factor = enc_factor_8;
-                zero = zero_8;
-            }
-            else if(data->boardid == 6)
-            {
-                enc_factor = enc_factor_6;
-                zero = zero_6;
-            }
-            else
-            {
-                printf("\n\n ERROR: un expected board!!! %d \n ", data->boardid);
-                return;
-            }
-
-            printf("\n\n-----received data emsController---\n");
-            printf("BOARD-ID %d\n", data->boardid);
-            for( i=0;i<4;i++)
-            {
-                pos = (data->position[i]/enc_factor)-zero;
-                vel = data->velocity[i]/enc_factor;//rimosso fabs percheè se no non compilava, tanto non serviva piuù percheè enco_factor è sempre positivo
-
-            	printf("\t\t j %d: count=%u  pos=%f (%d)  vel=%f (%d)\n", i, data->count[i], pos, data->position[i], vel, data->velocity[i]);
-            }
-
-        } break;
-    }
-
-}
 
 
-extern void on_rec_canFaultLog_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
-{   // for the host
-
-	EOcanFaultLogDEBUG_t* data = (EOcanFaultLogDEBUG_t*)recdata;
-	uint8_t i;
-
-    switch(opc)
-    {
-
-        default:
-        case opcprotman_opc_set:
-        {   // nobody can order that to us
-            // we just dont do it ...
-        } break;
-
-        case opcprotman_opc_say:    // someboby has replied to a ask we sent
-        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {
-
-			printf("\n\n OVER CURR FAULT INFO RECEIVED!!! \n");
-
-			printf("Last curr setpoint:\n");
-			for(i= 0; i<4; i++)
-			{
-				printf("\t j %d curr %d\n", i, data->currSetPointList[i]);
-			}
-			printf("Can msg with over current:\n");
-			s_print_canmsg(&data->overCurrentMsg);
-
-			printf("Next can msg:\n");
-			for(i=0; i<6; i++)
-			{
-				s_print_canmsg(&data->nextCanMsgs[i]);
-			}
-        } break;
-    }
-
-}
-
-
-
-
-extern void on_rec_encoderError_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
-{   // for the host
-
-	EOencoderErrorDEBUG_t* data = (EOencoderErrorDEBUG_t*)recdata;
-	uint8_t i;
-
-    switch(opc)
-    {
-
-        default:
-        case opcprotman_opc_set:
-        {   // nobody can order that to us
-            // we just dont do it ...
-        } break;
-
-        case opcprotman_opc_say:    // someboby has replied to a ask we sent
-        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {
-
-		printf("\n\n encoder statistics!!! \n");
-
-
-		for(i= 0; i<6; i++)
-		{
-			printf("\t enc %d parity check err = %d    status err = %d \n", i, data->parityCheck[i], data->status[i]);
-		}
-			
-        } break;
-    }
-
-}
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
@@ -341,42 +208,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 //    }
 
 
-/* personalize eo_emsController_hid_DEBUG_id var*/
-	res = opcprotman_personalize_var(   p,
-                                        eo_emsController_hid_DEBUG_id,
-                                        NULL,  //use NULL because i'd like print received data and not store them!!
-                                        	   //pay attention: see NOTE 1 at the end of this function!!!
-                                        on_rec_emscontroller_debug);
 
-    if(opcprotman_OK != res)
-    {
-        return(res);
-    }
-
-
-/* personalize eo_emsController_hid_DEBUG_id var*/
-	res = opcprotman_personalize_var(   p,
-                                        eo_canFaultLogDEBUG_id,
-                                        NULL,  //use NULL because i'd like print received data and not store them!!
-                                        	   //pay attention: see NOTE 1 at the end of this function!!!
-                                        on_rec_canFaultLog_debug);
-
-    if(opcprotman_OK != res)
-    {
-        return(res);
-    }
-
-    /* personalize eo_emsController_hid_DEBUG_id var*/
-	res = opcprotman_personalize_var(   p,
-                                         eo_EncoderErrorDEBUG_id ,
-                                         NULL,  //use NULL because i'd like print received data and not store them!!
-                                         	   //pay attention: see NOTE 1 at the end of this function!!!
-                                        on_rec_encoderError_debug);
-
-    if(opcprotman_OK != res)
-    {
-        return(res);
-    }
 
     return(res);
 
@@ -399,17 +231,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
 
-static void s_print_canmsg(eOcanframe_t *frame)
-{
-	uint8_t i;
 
-	printf("id = 0x%x\t", frame->id);
-	for(i=0; i<frame->size; i++)
-	{
-		printf(" %x", frame->data[i]);
-	}
-	printf("\n");
-}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
