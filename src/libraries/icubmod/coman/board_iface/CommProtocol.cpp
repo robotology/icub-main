@@ -48,7 +48,7 @@ int CommPacket::readData(char *data, int nBytes)
     else
     {
         yError() << ">>> Error while reading data";
-//        printf("\t values are: readOffset= %d, HEADER_SIZE= %d, nBytes=%d, payloadSize= %d\n", readOffset, HEADER_SIZE, nBytes, payloadSize);
+        printf("\t values are: readOffset= %d, HEADER_SIZE= %d, nBytes=%d, payloadSize= %d\n", readOffset, HEADER_SIZE, nBytes, payloadSize);
         return -1;
     }
 

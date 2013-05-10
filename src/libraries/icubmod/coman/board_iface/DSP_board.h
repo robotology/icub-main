@@ -23,7 +23,7 @@
 
 #include "yaml-cpp/yaml.h"
 
-#include <definitions.h>
+#include "definitions.h"
 
 //------------------------------------------------
 

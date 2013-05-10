@@ -39,8 +39,6 @@
 #ifndef __comanMotionControl_h__
 #define __comanMotionControl_h__
 
-//#undef __cplucplus
-
 using namespace std;
 using namespace yarp::os;
 
@@ -66,8 +64,8 @@ using namespace yarp::os;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-#include "DSP_board.h"
-#include "Boards_iface.h"
+#include <DSP_board.h>
+#include <Boards_iface.h>
 
 #define SIZE_INFO   128
 #define BC_POLICY_MOTOR_POSITION          (1 << 0)
@@ -151,10 +149,6 @@ namespace yarp {
         }
     }
 
-static void copyPid_iCub2Coman(const Pid *iCubPid_in, GainSet Coman_pidType, pid_gains_t *ComanPid_out);
-static void copyPid_Coman2iCub(pid_gains_t *ComanPid_in, Pid *iCubPid_out, GainSet *Coman_pidType);
-
-
 class yarp::dev::comanMotionControl:  public DeviceDriver,
     public IPidControlRaw,
     public IControlCalibration2Raw,
@@ -204,8 +198,7 @@ private:
 
     Boards_ctrl           *boards_ctrl;
     mcs_map_t             _mcs;
-    GainSet               controlMode;                        // memorize the type of control currently running... safe??
-
+    int                   *_controlMode;                        // memorize the type of control currently running... safe??
     ////////  canonical
     yarp::os::Semaphore   _mutex;
 
@@ -231,7 +224,7 @@ private:
     bool                  *checking_motiondone;               /* flag if I' m already waiting for motion done */
 
 // basic knowledge of my joints
-    int                   _njoints;                           // Number of joints handled by this EMS; this values will be extracted by the config file
+    int                   _njoints;                           // Number of joints handled by this class; this values will be extracted by the config file
 
     // internal stuff
     bool                  *_enabledAmp;             // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.

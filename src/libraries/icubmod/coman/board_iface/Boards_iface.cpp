@@ -5,7 +5,6 @@
 
     Developer:
         Alessio Margan (2012-, alessio.margan@iit.it)
-        Alberto Cardellino (2012, alberto.cardellino@iit.it)
 */
 
 
@@ -29,9 +28,9 @@
 #include <stdexcept>
 
 
-#include <Boards_iface.h>
-#include <CommProtocol.hpp>
-#include <utils.h>
+#include "Boards_iface.h"
+#include "CommProtocol.hpp"
+#include "utils.h"
 
 // _AC_
 #include "coman_HW_description.h"
@@ -162,9 +161,9 @@ bool Boards_ctrl::open(yarp::os::Searchable& config)
     yDebug() << "Found " <<  numActive << "boards";
     // second chance ... with xeno+rtnet I need it !?!
     // find out why wtih no rt patch I get all at the first time
-    yDebug() << "Scan for active boards ....";
-    numActive = scan4active();
-    yDebug() << "Found " <<  numActive << "boards";
+//     yDebug() << "Scan for active boards ....";
+//     numActive = scan4active();
+//     yDebug() << "Found " <<  numActive << "boards";
 
     configure_boards();
 
@@ -225,6 +224,7 @@ fts_map_t Boards_ctrl::get_fts_map()
     return _fts;
 }
 
+// vecchio costruttore
 bool Boards_ctrl::myOpen(const char *config)
 {
     yTrace() << "was the constructor... will get the YAML config file name and call the actual open (old constructor)";
@@ -555,7 +555,7 @@ void Boards_ctrl::body_homing(int pos[], short vel[], short tor[])
     for (int i=0; i<homePos.size(); i++)
     {
         pos[i] = DEG2mRAD(homePos[i]);
-        printf("j[%d]: homePos=%f, pos=%d\n", i, homePos[i], pos[i]);
+        //printf("j[%d]: homePos=%f, pos=%d\n", i, homePos[i], pos[i]);
     }
     for (int i=0; i<homePos.size(); i++) {
         vel[i] = DEG2RAD(20)*1000;
@@ -741,11 +741,11 @@ int Boards_ctrl::set_position(int *des_pos, int nbytes)
 {
     UDPCommPacket pkt(SET_DESIRED_POSITION);
 
-    printf("set_position command\n");
-    for (int i=0; i<homePos.size(); i++)
-    {
-        printf("j[%d]: des_pos=%d\n", i, des_pos[i]);
-    }
+//     printf("set_position command\n");
+//     for (int i=0; i<homePos.size(); i++)
+//     {
+//         printf("j[%d]: des_pos=%d\n", i, des_pos[i]);
+//     }
 
     if(-1 == pkt.appendData((char*)des_pos, nbytes) )
         printf("Error in appendData");

@@ -1,4 +1,4 @@
-# Copyright: (C) 2012 RobotCub Consortium
+# Copyright: (C) 2013 RobotCub Consortium
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -19,42 +19,36 @@ PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analo
     add_definitions(-DRT_ENV)
   endif (USE_REALTIME)
 
-  #set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
   set(ThisLib_SOURCES 
-  Boards_iface.cpp
-  CommProtocol.cpp
-  DSP_board.cpp
+  board_iface/Boards_iface.cpp
+  board_iface/CommProtocol.cpp
+  board_iface/DSP_board.cpp
   comanMotionControl.cpp
   comanFTsensor.cpp
-  comanInterface.cpp
   )
 
   set(HEADERS_TO_INSTALL
-  Boards_iface.h
-  CommProtocol.hpp
-  definitions.h
-  DSP_board.h
+  board_iface/Boards_iface.h
+  board_iface/CommProtocol.hpp
+  board_iface/definitions.h
+  board_iface/DSP_board.h
   comanMotionControl.h
   comanFTsensor.h
-  comanInterface.h
   )
 
   #add_definitions("-std=c++0x")
 
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ../debugStream/)
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/board_iface ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ../debugStream/)
 
 IF (NOT SKIP_${COMAN_MC} )
   add_library(${COMAN_MC} ${ThisLib_SOURCES})
-  target_link_libraries(${COMAN_MC} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
+  target_link_libraries(${COMAN_MC} yaml-cpp debugStream  iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
 
-#   install(TARGETS ${THIS_LIB} ARCHIVE DESTINATION lib)
-#   install(FILES ${HEADERS_TO_INSTALL} DESTINATION include)
   icub_export_library(${COMAN_MC} )
 ENDIF (NOT SKIP_${COMAN_MC} )
 
 IF (NOT SKIP_${COMAN_FT} )
-add_library(${COMAN_FT} ${ThisLib_SOURCES})
-target_link_libraries(${COMAN_FT} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
-icub_export_library(${COMAN_FT} )
+    add_library(${COMAN_FT} ${ThisLib_SOURCES})
+    target_link_libraries(${COMAN_FT} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
+    icub_export_library(${COMAN_FT} )
 ENDIF (NOT SKIP_${COMAN_FT} )

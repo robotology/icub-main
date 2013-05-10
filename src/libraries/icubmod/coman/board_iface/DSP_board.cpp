@@ -279,6 +279,10 @@ void McBoard::configure(const YAML::Node &doc) {
     (*mc_board_node)["policy"] >> policy;
     (*mc_board_node)["extra_policy"] >> extra_policy;
 
+    uint16_t firmVer = 0;
+    getItem(GET_FIRMWARE_VERSION,   NULL, 0, REPLY_FIRMWARE_VERSION, &firmVer, sizeof(firmVer));
+    printf("firmware version  %d (0x%02X)\n", firmVer, firmVer);
+
     setItem(SET_BCAST_POLICY, &policy, 2);
     setItem(SET_EXTRA_BCAST_POLICY, &extra_policy, 2);
     //

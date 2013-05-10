@@ -69,12 +69,12 @@
 #include <pthread.h>
 #include <map>
 
-#include <CommProtocol.hpp>
+#include "CommProtocol.hpp"
 
 #include "yaml-cpp/yaml.h"
 
-#include <definitions.h>
-#include <DSP_board.h>
+#include "definitions.h"
+#include "DSP_board.h"
 
 #include <Debug.h>
 #include <yarp/dev/Drivers.h>
