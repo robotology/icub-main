@@ -29,12 +29,12 @@
         <module>
                 <name>motionCUT</name>
                 <parameters>--recogThres 0.6</parameters>
-                <node>chico4</node>
+                <node>cortex1</node> <!-- <node>chico4</node> -->
                 <tag>motionDetector</tag>
         </module>
         <module>
                 <name>milClassifier</name>
-                <node>chico4</node>
+                <node>cortex1</node> <!-- <node>chico4</node> -->
                 <tag>learningModule</tag>
         </module>
         <module>
@@ -70,7 +70,7 @@
         </module>
         <module>
                 <name>iolRADHelper</name>
-                <node>chico4</node>
+                <node>cortex1</node> <!-- <node>chico4</node> -->
                 <tag>helperRADModule</tag>
         </module>
         <module>

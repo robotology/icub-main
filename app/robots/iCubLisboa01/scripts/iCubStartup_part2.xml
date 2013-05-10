@@ -13,14 +13,14 @@
         <module>
                 <name>wholeBodyDynamics</name>
                 <parameters>--headV2 --autoconnect</parameters>
-                <node>chico4</node>
+                <node>cortex1</node> <!-- <node>chico4</node> -->
                 <tag>wholeBodyDynamicsTag</tag>
         </module>
 
         <module>
                 <name>gravityCompensator</name>
                 <parameters>--headV2</parameters>
-                <node>chico4</node>
+                <node>cortex1</node> <!-- <node>chico4</node> -->
                 <tag>gravityCompensatorTag</tag>
         </module>
 
