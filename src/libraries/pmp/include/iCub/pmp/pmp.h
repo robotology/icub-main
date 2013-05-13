@@ -22,7 +22,7 @@
  *  
  * Abstract class for dealing with the Passive Motion Paradigm 
  * (PMP) control whose implementation resorts to the <a 
- * href="http://wiki.icub.org/viki/images/5/5a/DForC.pdf">DForC</a>
+ * href="http://wiki.icub.org/images/5/5a/DForC.pdf">DForC</a>
  * approach. 
  *  
  * For further details please refer to the <a 
