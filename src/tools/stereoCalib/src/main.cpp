@@ -32,7 +32,7 @@ Date: first release on 26/03/2011
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
-The module performs the stereo calibration (both intrinsic and extrinsic parameters). It also computes the rototranslation matrix used by \ref iKinGazeCtrl "Gaze Controller".
+The module performs the stereo calibration (both intrinsic and extrinsic parameters).
 A chessboard pattern is required, for convenience, a chessboard calibration image is provided in the 
 $ICUB_ROOT/main/app/cameraCalibration/data directory. In the config file calibrationConf.ini
 you should have the following group:
@@ -42,7 +42,7 @@ you should have the following group:
 boardWidth W
 boardHeight H
 boardSize S
-numberOfPairs N
+numberOfImages N
 MonoCalib value
 \endcode
 
@@ -63,20 +63,20 @@ YARP libraries and OpenCV
 --boardSize \e squareLength 
 - The parameter \e squareLength identifies the length (in meters) of the squares in the chess (usually 0.03m).
 
---numberOfPairs \e Num 
+--numberOfImages \e Num 
 - The parameter \e Num identifies the number of pairs with the pattern needed before the stereo calibration (default 30).
 
 --MonoCalib \e Val 
 - The parameter \e Val identifies if the module has to run the stereo calibration (Val=0) or the mono calibration (Val=1). For the mono calibration connect only the camera that you want to calibrate.
 
 \section portsc_sec Ports Created
-- <i> /<stemName>/cam/left:i </i> accepts the incoming images from the left eye. 
-- <i> /<stemName>/cam/right:i </i> accepts the incoming images from the right eye. 
+- <i> /stereoCalib/cam/left:i </i> accepts the incoming images from the left eye. 
+- <i> /stereoCalib/cam/right:i </i> accepts the incoming images from the right eye. 
 
-- <i> /<stemName>/cam/left:o </i> outputs the left eye image.
-- <i> /<stemName>/cam/right:o </i> outputs the right eye image.
+- <i> /stereoCalib/cam/left:o </i> outputs the left eye image.
+- <i> /stereoCalib/cam/right:o </i> outputs the right eye image.
 
-- <i> /<stemName>/cmd </i> for terminal commands comunication. 
+- <i> /stereoCalib/cmd </i> for terminal commands comunication. 
  Recognized remote commands:
     - [start]: Starts the calibration procedure, you have to show the chessboard image in different positions and orientations. After N times (N specified in the config file, see above). the module will run the stereo calibration
 
