@@ -631,7 +631,7 @@ bool comanMotionControl::setVelocityModeRaw()
 bool comanMotionControl::velocityMoveRaw(int j, double sp)
 {
 //     yTrace();
-    _ref_speeds[j] = (int16_t) sp;
+    _ref_speeds[j] = (int16_t) (sp/100.0f);  // differenza tra la unità di misura usata in velocità e posizione;;
 
     bool ret = (! boards_ctrl->set_velocity(_ref_speeds, _njoints * sizeof(int16_t)) );
 
@@ -644,6 +644,7 @@ bool comanMotionControl::velocityMoveRaw(int j, double sp)
 bool comanMotionControl::velocityMoveRaw(const double *sp)
 {
 //     yTrace();
+// (sp/100.0f);  // differenza tra la unità di misura usata in velocità e posizione;
     return NOT_YET_IMPLEMENTED("velocityMoveRaw");
 }
 
@@ -742,7 +743,7 @@ bool comanMotionControl::checkMotionDoneRaw(int j, bool *flag)
 bool comanMotionControl::setRefSpeedRaw(int j, double sp)
 {
     yTrace();
-    _ref_speeds[j] = (int16_t) sp;
+    _ref_speeds[j] = (int16_t) (sp/100.0f);  // differenza tra la unità di misura usata in velocità e posizione
 
     bool ret = (! boards_ctrl->set_velocity(_ref_speeds, _njoints * sizeof(int16_t)) );
 
@@ -757,7 +758,7 @@ bool comanMotionControl::setRefSpeedsRaw(const double *spds)
 {
     yTrace();
     for(int i=0; i<_njoints; i++)
-        _ref_speeds[i] = (int16_t )spds[i];
+        _ref_speeds[i] = (int16_t )spds[i] /100.0f;  // differenza tra la unità di misura usata in velocità e posizione;
 
     bool ret = (! boards_ctrl->set_velocity(_ref_speeds, _njoints * sizeof(int16_t)) );
 
