@@ -7,16 +7,20 @@ icub_app(${appname})
 
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template)
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
+file(GLOB data ${CMAKE_CURRENT_SOURCE_DIR}/data/*.pdf)
 
 icub_app_install(${appname} 
 				FILES ${scripts}
 				DESTINATION scripts)
 
 icub_app_install(${appname} 
-				FILES ${CMAKE_CURRENT_SOURCE_DIR}/README)
-
-icub_app_install(${appname} 
 				FILES ${conf}
 				DESTINATION conf)
+
+
+icub_app_install(${appname} 
+				FILES ${data}
+				DESTINATION data)
+
 
 
