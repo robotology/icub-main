@@ -1190,13 +1190,16 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
             {
                 current_status.ft_arm_left  = *tmp;
                 //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK1 \n");
-                for (int i=0; i<6; i++) 
-                    if (fabs(tmp->data()[i])<1e-18) 
-                        {
-                            fprintf(stderr,"Error reading FT sensor left arm channel %d, cannot continue. Restart iCubInterface\n",i);
-                            return false;
-                        }
+                for (int i=0; i<6; i++)
+                {
+                    double tmpval = fabs(tmp->data()[i]);
+                    if (tmpval<1e-18)
+                    {
+                        fprintf(stderr,"Error reading FT sensor left arm channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
                     }
+                }
+            }
         }
         else
         {
@@ -1217,11 +1220,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 current_status.ft_arm_right = *tmp;
                 //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK2 \n");
                 for (int i=0; i<6; i++) 
-                    if (fabs(tmp->data()[i])<1e-18) 
-                        {
-                            fprintf(stderr,"Error reading FT sensor right arm channel %d, cannot continue. Restart iCubInterface\n",i);
-                            return false;
-                        }
+                {
+                    double tmpval = fabs(tmp->data()[i]);
+                    if (tmpval<1e-18)
+                    {
+                        fprintf(stderr,"Error reading FT sensor right arm channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
+                }
             }
         }
         else
@@ -1246,11 +1252,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 current_status.ft_leg_left  = *tmp;
                 //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK3 \n");
                 for (int i=0; i<6; i++) 
-                    if (fabs(tmp->data()[i])<1e-18) 
-                        {
-                            fprintf(stderr,"Error reading FT sensor left leg channel %d, cannot continue. Restart iCubInterface\n",i);
-                            return false;
-                        }
+                {
+                    double tmpval = fabs(tmp->data()[i]);
+                    if (tmpval<1e-18)
+                    {
+                        fprintf(stderr,"Error reading FT sensor left leg channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
+                }
             }
         }
         else
@@ -1271,11 +1280,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 current_status.ft_leg_right = *tmp;
                 //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK4 \n");
                 for (int i=0; i<6; i++) 
-                    if (fabs(tmp->data()[i])<1e-18) 
-                        {
-                            fprintf(stderr,"Error reading FT sensor right leg channel %d, cannot continue. Restart iCubInterface\n",i);
-                            return false;
-                        }
+                {
+                    double tmpval = fabs(tmp->data()[i]);
+                    if (tmpval<1e-18)
+                    {
+                        fprintf(stderr,"Error reading FT sensor right leg channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
+                }
             }
         }
         else
@@ -1298,11 +1310,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 current_status.ft_foot_left  = *tmp;
                 //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK5 \n");
                 for (int i=0; i<6; i++) 
-                    if (fabs(tmp->data()[i])<1e-18) 
-                        {
-                            fprintf(stderr,"Error reading FT sensor left foot channel %d, cannot continue. Restart iCubInterface\n",i);
-                            return false;
-                        }
+                {
+                    double tmpval = fabs(tmp->data()[i]);
+                    if (tmpval<1e-18)
+                    {
+                        fprintf(stderr,"Error reading FT sensor left foot channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
+                }
             }
         }
         else
@@ -1323,11 +1338,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 current_status.ft_foot_right = *tmp;
                 //else printf ("&&&&&&&&&&&&&&&&&&&&&&&& SECURITY CHECK6 \n");
                 for (int i=0; i<6; i++) 
-                    if (fabs(tmp->data()[i])<1e-18) 
-                        {
-                            fprintf(stderr,"Error reading FT sensor right foot, channel %d, cannot continue. Restart iCubInterface\n",i);
-                            return false;
-                        }
+                {
+                    double tmpval = fabs(tmp->data()[i]);
+                    if (tmpval<1e-18)
+                    {
+                        fprintf(stderr,"Error reading FT sensor right foot, channel %d, cannot continue. Restart iCubInterface\n",i);
+                        return false;
+                    }
+                }
             }
         }
         else
