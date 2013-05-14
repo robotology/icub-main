@@ -90,7 +90,7 @@ set(embobj_source
 
 
 set(EXTRA_SOURCE 				${EXTRA_FOLDER}/main.cpp
-						${EXTRA_FOLDER}/template_buttons.cpp
+						${EXTRA_FOLDER}/diagnostics_buttons.cpp
 						${EXTRA_FOLDER}/opcManager_cfg4pc104.c
 						)
 
@@ -98,6 +98,6 @@ set(ALL_SOURCE_CODE				${embobj_source}
 						${EXTRA_SOURCE})
 
 add_executable(${PROJECTNAME} ${ALL_SOURCE_CODE})
-target_link_libraries(${PROJECTNAME} ${ACE_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ${ACE_LIBRARIES} pthread)
 #target_link_libraries(${PROJECTNAME} pcap)
 
