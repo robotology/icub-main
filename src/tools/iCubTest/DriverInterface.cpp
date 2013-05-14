@@ -34,13 +34,30 @@ iCubDriver::iCubDriver()
 
         m_apDriver[part]=openDriver(m_aiCubPartName[part]);
 
+        m_apEnc[part]=0;
+        m_apPid[part]=0;
+        m_apAmp[part]=0;
+        m_apPos[part]=0;
+        m_apVel[part]=0;
+        m_apTrq[part]=0;
+        m_apImp[part]=0;
+        m_apOpl[part]=0;
+        m_apCtl[part]=0;
+        m_apLim[part]=0;
+
         if (m_apDriver[part])
         {
-            m_apDriver[part]->view(m_apEnc[part]);
-            //m_apDriver[part]->view(m_apPid[part]);
-            //m_apDriver[part]->view(m_apAmp[part]);
-            m_apDriver[part]->view(m_apPos[part]);
-            m_apDriver[part]->view(m_apVel[part]);
+            bool b = true;
+            b &= m_apDriver[part]->view(m_apEnc[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apEnc) failed\n");
+            b &= m_apDriver[part]->view(m_apPid[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apPid) failed\n");
+            b &= m_apDriver[part]->view(m_apAmp[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apAmp) failed\n");
+            b &= m_apDriver[part]->view(m_apPos[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apPos) failed\n");
+            b &= m_apDriver[part]->view(m_apVel[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apPos) failed\n");
+            b &= m_apDriver[part]->view(m_apTrq[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apTrq) failed\n");
+            b &= m_apDriver[part]->view(m_apImp[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apImp) failed\n");
+            b &= m_apDriver[part]->view(m_apOpl[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apOpl) failed\n");
+            b &= m_apDriver[part]->view(m_apCtl[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apCtl) failed\n");
+            b &= m_apDriver[part]->view(m_apLim[part]); if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apLim) failed\n");
 
             if (m_apEnc[part])
             {
@@ -67,16 +84,21 @@ iCubDriver::iCubDriver()
 
 void iCubDriver::close()
 {
-    /*
     for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
     {
-        for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
+        /*for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
         {
             m_apPid[part]->disablePid(j);
             m_apAmp[part]->disableAmp(j);
+        }*/
+
+        if (m_apDriver[part] && m_apDriver[part]->isValid())
+        {
+            m_apDriver[part]->close();
+            delete m_apDriver[part];
+            m_apDriver[part]=NULL; 
         }
     }
-    */
 }
 
 yarp::dev::PolyDriver* iCubDriver::openDriver(std::string part)

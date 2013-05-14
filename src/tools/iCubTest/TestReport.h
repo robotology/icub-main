@@ -29,7 +29,6 @@
 #include <yarp/os/Value.h>
 
 #include "TestReportEntry.h"
-#include "TestMotorsReportEntry.h"
 
 class iCubTestReport
 {

@@ -20,7 +20,7 @@
 
 #include "TestMotorsReportEntry.h"
 
-void iCubTestPartReportEntry::print(XMLPrinter& printer)
+void iCubTestMotorsReportEntry::print(XMLPrinter& printer)
 {
     printer.xmlOpen("output");
     if (!m_Name.empty())
@@ -50,7 +50,7 @@ void iCubTestPartReportEntry::print(XMLPrinter& printer)
     printer.xmlClose(); 
 }
 
-void iCubTestPartReportEntry::printStdio()
+void iCubTestMotorsReportEntry::printStdio()
 {
     fprintf(stderr,"+\n");
 

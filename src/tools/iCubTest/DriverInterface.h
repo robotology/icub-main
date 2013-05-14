@@ -196,15 +196,25 @@ protected:
     int m_aiCubPartNumJoints[NUM_ICUB_PARTS];
 
     /// Interfaces to the iCub encoder devices.
-    yarp::dev::IEncoders         *m_apEnc[NUM_ICUB_PARTS];
+    yarp::dev::IEncoders          *m_apEnc[NUM_ICUB_PARTS];
     /// Interfaces to the iCub PID controllers.
-    yarp::dev::IPidControl       *m_apPid[NUM_ICUB_PARTS];
+    yarp::dev::IPidControl        *m_apPid[NUM_ICUB_PARTS];
     /// Interfaces to the iCub amplifier devices.
-    yarp::dev::IAmplifierControl *m_apAmp[NUM_ICUB_PARTS];
+    yarp::dev::IAmplifierControl  *m_apAmp[NUM_ICUB_PARTS];
     /// Interfaces to the iCub position control devices.
-    yarp::dev::IPositionControl  *m_apPos[NUM_ICUB_PARTS];
+    yarp::dev::IPositionControl   *m_apPos[NUM_ICUB_PARTS];
     /// Interfaces to the iCub velocity control devices.
-    yarp::dev::IVelocityControl  *m_apVel[NUM_ICUB_PARTS];
+    yarp::dev::IVelocityControl   *m_apVel[NUM_ICUB_PARTS];
+    /// Interfaces to the iCub torque control devices.
+    yarp::dev::ITorqueControl     *m_apTrq[NUM_ICUB_PARTS];
+    /// Interfaces to the iCub impedance control devices.
+    yarp::dev::IImpedanceControl  *m_apImp[NUM_ICUB_PARTS];
+    /// Interfaces to the iCub OpenLoop control devices.
+    yarp::dev::IOpenLoopControl   *m_apOpl[NUM_ICUB_PARTS];
+    /// Interfaces to the iCub OpenLoop control devices.
+    yarp::dev::IControlMode       *m_apCtl[NUM_ICUB_PARTS];
+    /// Interfaces to the iCub OpenLoop control devices.
+    yarp::dev::IControlLimits     *m_apLim[NUM_ICUB_PARTS];
 
     /// Target robot name.
     static std::string m_RobotName;
