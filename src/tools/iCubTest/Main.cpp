@@ -173,7 +173,7 @@ This file can be edited at src/iCubTest/main.cpp.
 
 #include "TestSet.h"
 #include "testMotors/TestMotors.h"
-#include "testMotorsStiction/testMotorsStiction.h"
+#include "testMotorsStiction/TestMotorsStiction.h"
 #include "DriverInterface.h"
 
 int main(int argc,char* argv[])
