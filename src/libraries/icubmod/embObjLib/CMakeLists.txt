@@ -13,66 +13,13 @@ add_definitions( -D_ICUB_CALLBACK_)
 
 PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h ethResource.h)
 
-set(EO_BASE_DIR         ${CMAKE_SOURCE_DIR}/../firmware/emBODY/)
-
-#set(BODY_COMMON_FOLDER  ${EO_BASE_DIR}any-arch/body/embenv/envcom/)
-#set(CORE_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/core/src/)
-#set(CORE_API        ${EO_BASE_DIR}any-arch/sys/embobj/core/api/)
-#set(CORE_YEE          ${EO_BASE_DIR}any-arch/sys/embobj/core-yee/)
-#set(CORE_VEE_FOLDER   ${EO_BASE_DIR}any-arch/sys/embobj/core-vee/src/)
-#set(IPNET_FOLDER      ${EO_BASE_DIR}any-arch/sys/embobj/ipnet/src/)
-#set(PROT_FOLDER     ${EO_BASE_DIR}any-arch/sys/embobj/prot/src/)
-#set(HAL_API_FOLDER    ${EO_BASE_DIR}any-arch/sys/abslayer/api/)
-#set(PORTING_FOLDER    ${EO_BASE_DIR}porting/)
-
-if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
-    set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface-branch/)
-else()
-    set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface/)
-endif()
-
-set(PATH_TO_EP_SRC any-arch/sys/embobj/)
-set(PATH_TO_CALLBACK ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/)
-
-# schede varie
-set(NVS_TYPES       ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub/api/)
-set(NVS_EB_SRC_FOLDER     ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/board-eps/)
-
-
-# set(NVS_MC_SRC_FOLDER     ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-motioncontrol/src/)
-# set(NVS_MC_API_FOLDER     ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-motioncontrol/api/)
-# set(NVS_MC_CBK_FOLDER     ${PATH_TO_CALLBACK}/embObjMotionControl/usrcbk/)
-#
-# set(NVS_MNGMNT_SRC_FOLDER ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-management/src/)
-# set(NVS_MNGMNT_API_FOLDER ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-management/api/)
-# set(NVS_MNGMNT_CBK_FOLDER ${PATH_TO_CALLBACK}/embObjLib/usrcbk/)
-#
-# set(NVS_SENSORS_SRC_FOLDER  ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-analogsensors/src/)
-# set(NVS_SENSORS_API_FOLDER  ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-analogsensors/api/)
-
-#
-# set(NVS_SKIN_SRC_FOLDER   ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-skin/src/)
-# set(NVS_SKIN_API_FOLDER   ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/ep-skin/api/)
-# set(NVS_SKIN_CBK_FOLDER   ${PATH_TO_CALLBACK}/embObjSkin/usrcbk/)
-
-# set(NVS_USR_SRC_FOLDER    ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/endpoints/usr-callbacks/src/)
-# set(NVS_USR_API_FOLDER    ${EO_BASE_DIR}/${PATH_TO_EP_SRC}/icub-nvscfg/endpoints/usr-callbacks/api/)
-# set(NVS_USR_CBK_FOLDER    ${EO_BASE_DIR}/${PATH_TO_CALLBACK}/icub-nvscfg/endpoints/usr-callbacks/usrcbk/)
-
+#--------------------------------------------------------#
+# using embObjLib.conf to define PATH VARIABLES
+include(embObjLib.conf)
 #--------------------------------------------------------#
 
-set(EXTRA_FOLDER  	    ${CMAKE_CURRENT_SOURCE_DIR}/)
-set(TRANSCEIVER_FOLDER	${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/ )
+include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
 
-#add_definitions( -DMYDEFINE=CIAO )
-
-
-
-# using embObjLib.conf...
- include(embObjLib.conf)
-
-  include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
-  
 # Debug messages
 #  message(INFO " lib_cmake - embObj_includes: ${embObj_includes}")
   	
