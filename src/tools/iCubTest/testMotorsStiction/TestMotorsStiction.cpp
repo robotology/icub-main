@@ -19,6 +19,7 @@
 
 #include "TestMotorsStiction.h"
 #include  <yarp/os/Time.h>
+#include  <gsl/gsl_math.h>
 
 iCubTestMotorsStiction::iCubTestMotorsStiction(yarp::os::Searchable& configuration) : iCubTest(configuration)
 {
