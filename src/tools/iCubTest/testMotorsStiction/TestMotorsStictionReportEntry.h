@@ -34,10 +34,13 @@ public:
 
     std::string m_Name;
     std::string m_Result;
-    std::string m_Target;
-    std::string m_Value;
-    std::string m_MinVal;
-    std::string m_MaxVal;
+    std::string m_PWM;
+    std::string m_MinLim;
+    std::string m_MinLimReached;
+    std::string m_MaxLim;
+    std::string m_MaxLimReached;
+    std::string m_Tolerance;
+    std::string m_Timeout;
 };
 
 #endif

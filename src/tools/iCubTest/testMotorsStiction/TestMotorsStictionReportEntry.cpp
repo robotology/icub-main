@@ -30,21 +30,33 @@ void iCubTestMotorsStictionReportEntry::print(XMLPrinter& printer)
     {
         printer.xml("result",m_Result.c_str());
     }
-    if (!m_Target.empty())
+    if (!m_PWM.empty())
     {
-        printer.xml("target",m_Target.c_str());
+        printer.xml("PWM",m_PWM.c_str());
     }
-    if (!m_Value.empty())
+    if (!m_MinLim.empty())
     {
-        printer.xml("value",m_Value.c_str());
+        printer.xml("MinLim",m_MinLim.c_str());
     }
-    if (!m_MinVal.empty())
+    if (!m_MinLimReached.empty())
     {
-        printer.xml("rangemin",m_MinVal.c_str());
+        printer.xml("MinLimReached",m_MinLimReached.c_str());
     }
-    if (!m_MaxVal.empty())
+    if (!m_MaxLim.empty())
     {
-        printer.xml("rangemax",m_MaxVal.c_str());
+        printer.xml("MaxLim",m_MaxLim.c_str());
+    }
+    if (!m_MaxLimReached.empty())
+    {
+        printer.xml("MaxLimReached",m_MaxLimReached.c_str());
+    }
+    if (!m_Tolerance.empty())
+    {
+        printer.xml("Tolerance",m_Tolerance.c_str());
+    }
+    if (!m_Timeout.empty())
+    {
+        printer.xml("Timeout",m_Timeout.c_str());
     }
     printer.xmlClose(); 
 }
@@ -61,20 +73,28 @@ void iCubTestMotorsStictionReportEntry::printStdio()
     {
         fprintf(stderr,"result %s\n",m_Result.c_str());
     }
-    if (!m_Target.empty())
+    if (!m_MinLim.empty())
     {
-        fprintf(stderr,"target %s\n",m_Target.c_str());
+        fprintf(stderr,"MinLim %s\n",m_MinLim.c_str());
     }
-    if (!m_Value.empty())
+    if (!m_MinLimReached.empty())
     {
-        fprintf(stderr,"value %s\n",m_Value.c_str());
+        fprintf(stderr,"MinLimReached %s\n",m_MinLimReached.c_str());
     }
-    if (!m_MinVal.empty())
+    if (!m_MaxLim.empty())
     {
-        fprintf(stderr,"rangemin %s\n",m_MinVal.c_str());
+        fprintf(stderr,"MaxLim %s\n",m_MaxLim.c_str());
     }
-    if (!m_MaxVal.empty())
+    if (!m_MaxLimReached.empty())
     {
-        fprintf(stderr,"rangemax %s\n",m_MaxVal.c_str());
+        fprintf(stderr,"MaxLimReached %s\n",m_MaxLimReached.c_str());
+    }
+    if (!m_Tolerance.empty())
+    {
+        fprintf(stderr,"Tolerance %s\n",m_Tolerance.c_str());
+    }
+    if (!m_Timeout.empty())
+    {
+        fprintf(stderr,"Timeout %s\n",m_Timeout.c_str());
     }
 }

@@ -46,7 +46,7 @@ iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(c
     }
 
     m_NumJoints=iCubDriver::instance()->getNumOfJoints(m_Part);
-
+    
     ///////////////////////////////////////////////////////////////
     /*
     if (m_nJoints<=0)

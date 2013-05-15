@@ -83,7 +83,7 @@ iCubTestMotorsStiction::iCubTestMotorsStiction(yarp::os::Searchable& configurati
         }
     }
 
-    if (configuration.check("Tolerance"))
+    if (configuration.check("tolerance"))
     {
         yarp::os::Bottle bot=configuration.findGroup("Tolerance").tail();
 
@@ -146,25 +146,18 @@ iCubTestReport* iCubTestMotorsStiction::run()
         iCubTestMotorsStictionReportEntry *pOutput=new iCubTestMotorsStictionReportEntry();
 
         char jointName[8];
-        char posString[64];
+        char tmpString[200];
 
         pOutput->m_Name="Joint ";
         sprintf(jointName,"%d",joint);
         pOutput->m_Name+=jointName;
         pOutput->m_Name+=" position";
- //@@@       sprintf(posString,"%f",m_aTargetVal[joint]);
-        pOutput->m_Target=std::string(posString);
-
-        pOutput->m_Value="N/A";
-
- //@@@      sprintf(posString,"%f",m_aMinErr[joint]);
-        pOutput->m_MinVal=posString;
-
- //@@@       sprintf(posString,"%f",m_aMaxErr[joint]);
-        pOutput->m_MaxVal=posString;
+        
+        sprintf(tmpString,"%f",m_aPWM[joint]);
+        pOutput->m_PWM=std::string(tmpString);
 
         iCubDriver::ResultCode result = iCubDriver::IPOS_POSMOVE_OK;
- //@@@       result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
+        //result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
 
         bool bSetPosSuccess=false;
 
@@ -235,8 +228,8 @@ iCubTestReport* iCubTestMotorsStiction::run()
             }
             break;
         case iCubDriver::IENC_GETPOS_OK:
-            sprintf(posString,"%f",pos);
-            pOutput->m_Value=posString;
+            //sprintf(posString,"%f",pos);
+            //pOutput->m_Value=posString;
             bGetEncPosSuccess=true;
         }
 

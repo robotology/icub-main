@@ -178,8 +178,14 @@ This file can be edited at src/iCubTest/main.cpp.
 
 int main(int argc,char* argv[])
 {
-    // do not forget to initialize yarp! --nat.
     yarp::os::Network yarp;
+    yarp.init();
+
+    if (!yarp.checkNetwork())
+    {
+        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
+        return -1;
+    }
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
@@ -197,10 +203,10 @@ int main(int argc,char* argv[])
 
     // create the test set
     iCubTestSet ts(references);
-
+    
     // add tests to the test set
     yarp::os::Bottle testSet=rf.findGroup("TESTS").tail();
-
+    
     for (int t=0; t<testSet.size(); ++t)
     {       
         yarp::os::Bottle test(testSet.get(t).toString());
@@ -234,7 +240,7 @@ int main(int argc,char* argv[])
         {
             //ts.AddTest(new iCubTestForceTorque(testRf));
             fprintf(stderr,"iCubTestForceTorque not yet implemented\n");
-        }
+    }
     }
 
     // execute tests
