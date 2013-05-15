@@ -216,13 +216,13 @@ int main(int argc,char* argv[])
         yarp::os::ResourceFinder testRf;
         testRf.setDefaultContext("iCubTest");
         testRf.setDefaultConfigFile(fileName.c_str());
-        testRf.configure("ICUB_ROOT",argc,argv);
+        testRf.configure("ICUB_ROOT",0,NULL);
 
         if (testType=="iCubTestMotors")
         {
             ts.addTest(new iCubTestMotors(testRf));
         }
-        if (testType=="iCubTestMotorsStiction")
+        else if (testType=="iCubTestMotorsStiction")
         {
             ts.addTest(new iCubTestMotorsStiction(testRf));
         }
