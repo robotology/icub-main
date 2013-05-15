@@ -64,7 +64,18 @@ public:
         IENC_GETSPEED_OK            =+15,
         IENC_GETSPEED_FAILED        =-16,
         IENC_GETACC_OK              =+17,
-        IENC_GETACC_FAILED          =-18
+        IENC_GETACC_FAILED          =-18,
+
+        IOPL_OPLSTART_OK             =+19,
+        IOPL_OPLSTART_FAILED         =-20,
+        IOPL_OPLSTOP_OK              =+21,
+        IOPL_OPLSTOP_FAILED          =-22,
+
+        ILIM_GETLIM_OK               =+23,
+        ILIM_GETLIM_FAILED           =-24,
+
+        IPID_GETPOSPID_OK            =+25,
+        IPID_GETPOSPID_FAILED        =-26
     };
 
     /**
@@ -99,6 +110,33 @@ public:
     ResultCode setPos(int part,int joint,double position,double speed=0.0,double acc=0.0);
 
     /**
+    * Set a joint in openloop control and move it with the desired pwm.
+    * @param part the robot part (head, torso, ...).
+    * @param joint joint number in the kinematic structure.
+    * @param pwm the pwm command.
+    * @return error code.
+    */
+    ResultCode startOpenloopCmd(int part,int joint,double pwm);
+
+    /**
+    * Set a joint in position mode after an openloop command.
+    * @param part the robot part (head, torso, ...).
+    * @param joint joint number in the kinematic structure.
+    * @return error code.
+    */
+    ResultCode stopOpenloopCmd(int part,int joint);
+
+    /**
+    * Returns the angular limits for the specified joint.
+    * @param part the robot part (head, torso, ...).
+    * @param joint joint number in the kinematic structure.
+    * @param min the returned lower limit.
+    * @param max the returned upper limit.
+    * @return error code.
+    */
+    ResultCode getJointLimits(int part,int joint, double& min, double& max);
+
+    /**
     * Wait for setPos completion (blocking).
     * @param part the robot part (head, torso, ...).
     * @param joint joint number in the kinematic structure.
@@ -124,6 +162,15 @@ public:
     * @return error code.
     */
     ResultCode getEncPos(int part,int joint,double &pos);
+
+    /**
+    * Gets the sign of the position PID.
+    * @param part the robot part (head, torso, ...).
+    * @param joint joint number in the kinematic structure.
+    * @param posPidSign returns 1 or -1 depending on the sign of Kp.
+    * @return error code.
+    */
+    ResultCode getPosPidSign(int part,int joint,double &posPidSign);
 
     /**
     * Encoder position.

@@ -18,6 +18,7 @@
 */
 
 #include "TestMotorsStiction.h"
+#include  <yarp/os/Time.h>
 
 iCubTestMotorsStiction::iCubTestMotorsStiction(yarp::os::Searchable& configuration) : iCubTest(configuration)
 {
@@ -155,7 +156,64 @@ iCubTestReport* iCubTestMotorsStiction::run()
         
         sprintf(tmpString,"%f",m_aPWM[joint]);
         pOutput->m_PWM=std::string(tmpString);
+        sprintf(tmpString,"%f",m_aTimeout[joint]);
+        pOutput->m_Timeout=std::string(tmpString);
+        sprintf(tmpString,"%f",m_aTolerance[joint]);
+        pOutput->m_Tolerance=std::string(tmpString);
 
+        double joint_min = 0.0;
+        double joint_max = 0.0;
+        iCubDriver::instance()->getJointLimits(m_Part,joint,joint_min, joint_max);
+        sprintf(tmpString,"%f",joint_min);
+        pOutput->m_MinLim=std::string(tmpString);
+        sprintf(tmpString,"%f",joint_max);
+        pOutput->m_MaxLim=std::string(tmpString);
+
+        double posPidSign = 1.0;
+        iCubDriver::instance()->getPosPidSign(m_Part,joint,posPidSign);
+        if (posPidSign<0) m_aPWM[joint] = -m_aPWM[joint];
+
+        iCubDriver::ResultCode result;
+        result=iCubDriver::instance()->setPos(m_Part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
+        yarp::os::Time::delay(m_aTimeout[joint]);
+
+        double joint_pos1 = 0.0;
+        result=iCubDriver::instance()->startOpenloopCmd(m_Part,joint,m_aPWM[joint]);
+        yarp::os::Time::delay(m_aTimeout[joint]);
+        result=iCubDriver::instance()->getEncPos(m_Part,joint,joint_pos1);
+        result=iCubDriver::instance()->stopOpenloopCmd(m_Part,joint);
+
+        result=iCubDriver::instance()->setPos(m_Part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
+        yarp::os::Time::delay(m_aTimeout[joint]);
+
+        double joint_pos2 = 0.0;
+        result=iCubDriver::instance()->startOpenloopCmd(m_Part,joint,-m_aPWM[joint]);
+        yarp::os::Time::delay(m_aTimeout[joint]);
+        result=iCubDriver::instance()->getEncPos(m_Part,joint,joint_pos2);
+        result=iCubDriver::instance()->stopOpenloopCmd(m_Part,joint);
+
+        result=iCubDriver::instance()->setPos(m_Part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
+        yarp::os::Time::delay(m_aTimeout[joint]);
+
+        if (fabs(joint_pos1-joint_max)>m_aTolerance[joint] ||
+            fabs(joint_pos2-joint_min)>m_aTolerance[joint])
+        { 
+            pOutput->m_Result="FAILED: unable to reach limits";
+            m_bSuccess=false;
+            pTestReport->incFailures();
+        }
+        else 
+        {
+            pOutput->m_Result="SUCCESS";
+        }
+
+        sprintf(tmpString,"%f",joint_pos1);
+        pOutput->m_MinLimReached=std::string(tmpString);
+
+        sprintf(tmpString,"%f",joint_pos2);
+        pOutput->m_MaxLimReached=std::string(tmpString);
+
+        /****
         iCubDriver::ResultCode result = iCubDriver::IPOS_POSMOVE_OK;
         //result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
 
@@ -240,8 +298,7 @@ iCubTestReport* iCubTestMotorsStiction::run()
             pTestReport->addEntry(pOutput);
             continue;
         }
-/*
-@@@
+
         if (pos>=m_aTargetVal[joint]+m_aMinErr[joint] && pos<=m_aTargetVal[joint]+m_aMaxErr[joint])
         {
             pOutput->m_Result="SUCCESS";
@@ -252,7 +309,7 @@ iCubTestReport* iCubTestMotorsStiction::run()
             pTestReport->incFailures();
             pOutput->m_Result="FAILED: value out of range";
         }
-*/
+*****/
 
         pTestReport->addEntry(pOutput);
     }

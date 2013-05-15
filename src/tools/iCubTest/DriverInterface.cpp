@@ -124,6 +124,101 @@ yarp::dev::PolyDriver* iCubDriver::openDriver(std::string part)
     return pDriver;
 }
 
+iCubDriver::ResultCode iCubDriver::startOpenloopCmd(int part,int joint,double pwm)
+{
+    if (!m_apDriver[part])        
+    {
+        return DRIVER_FAILED;
+    }
+
+    if (!m_apOpl[part] || !m_apCtl[part])
+    {
+        return IOPL_OPLSTART_FAILED;
+    }
+    
+    if (!m_apCtl[part]->setOpenLoopMode(joint))
+    {
+        return IOPL_OPLSTART_FAILED;
+    }
+
+    if (!m_apOpl[part]->setOutput(joint,pwm))
+    {
+        return IOPL_OPLSTART_FAILED;
+    }
+
+    return IOPL_OPLSTART_OK;
+}
+
+iCubDriver::ResultCode iCubDriver::stopOpenloopCmd(int part,int joint)
+{
+    if (!m_apDriver[part])
+    {
+        return DRIVER_FAILED;
+    }
+
+    if (!m_apOpl[part] || !m_apCtl[part])
+    {
+        return IOPL_OPLSTOP_FAILED;
+    }
+
+    if (!m_apOpl[part]->setOutput(joint,0.0))
+    {
+        return IOPL_OPLSTOP_FAILED;
+    }
+
+    if (!m_apCtl[part]->setPositionMode(joint))
+    {
+        return IOPL_OPLSTOP_FAILED;
+    }
+
+    return IOPL_OPLSTOP_OK;
+}
+
+iCubDriver::ResultCode iCubDriver::getPosPidSign(int part,int joint,double &posPidSign)
+{
+    posPidSign = 1.0;
+
+    if (!m_apDriver[part])
+    {
+        return DRIVER_FAILED;
+    }
+
+    if (!m_apPid[part])
+    {
+        return IPID_GETPOSPID_FAILED;
+    }
+
+    yarp::dev::Pid pid;
+    if (!m_apPid[part]->getPid(joint,&pid))
+    {
+        return IPID_GETPOSPID_FAILED;
+    }
+
+    if (pid.kp<0) posPidSign = -1.0;
+
+    return IPID_GETPOSPID_OK;
+}
+
+iCubDriver::ResultCode iCubDriver::getJointLimits(int part,int joint, double& min, double& max)
+{
+    if (!m_apDriver[part])
+    {
+        return DRIVER_FAILED;
+    }
+
+    if (!m_apLim[part])
+    {
+        return ILIM_GETLIM_FAILED;
+    }
+
+    if (!m_apLim[part]->getLimits(joint, &min, &max))
+    {
+         return ILIM_GETLIM_FAILED;
+    }
+
+    return ILIM_GETLIM_OK;
+}
+
 iCubDriver::ResultCode iCubDriver::setPos(int part,int joint,double position,double speed/*=0.0*/,double acc/*=0.0*/)
 {
     if (!m_apDriver[part])        
