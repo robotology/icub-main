@@ -72,6 +72,8 @@ static void s_print_emsapplcomm_transceiver(eOdgn_embObjtransceiver_t  *apptrans
 
 static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads);
+
+static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 /*
 extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {   // for the host
@@ -153,7 +155,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
     }
 
 
-/*personalize eodgn_nvidbdoor_emsperiph var*/
+/*personalize eodgn_nvidbdoor_emsapplcommon var*/
 	res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsapplcommon,
                                         NULL,  //use NULL because i'd like print received data and not store them!!
@@ -166,11 +168,12 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
     }
 
 
-/*personalize eodgn_nvidbdoor_emsperiph var*/
+/*personalize eodgn_nvidbdoor_emsapplmc var*/
 	res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsapplmc,
                                         NULL,  //use NULL because i'd like print received data and not store them!!
                                         	   //pay attention: see NOTE 1 at the end of this function!!!
+                                        //NULL);
                                         on_rec_emsapplmc);
 
     if(opcprotman_OK != res)
@@ -179,6 +182,17 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
     }
 
 
+/*personalize eodgn_nvidbdoor_motorstatus var*/
+	res = opcprotman_personalize_var(   p,
+                                        eodgn_nvidbdoor_motorstatus,
+                                        NULL,  //use NULL because i'd like print received data and not store them!!
+                                        	   //pay attention: see NOTE 1 at the end of this function!!!
+                                        on_rec_motorstflags);
+
+    if(opcprotman_OK != res)
+    {
+        return(res);
+    }
 
 
     return(res);
@@ -348,6 +362,41 @@ static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads)
         printf("err_onParityError=%d  ", encreads->encList[i].err_onParityError);  
         printf("err_onInvalidValue=%d\n", encreads->encList[i].err_onInvalidValue);  
     }
+}
+
+static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{
+    eOdgn_motorstatusflags_t* data = (eOdgn_motorstatusflags_t*)recdata;
+    uint8_t i;
+    
+    switch(opc)
+    {
+        
+        default:
+        case opcprotman_opc_set:
+        {   // nobody can order that to us           
+            // we just dont do it ...         
+        } break;
+        
+        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+        {   
+        
+            printf("\n\n-----motor status flag---\n");
+
+            for(i=0; i<12; i++)
+            {
+                if(data->motorlist[i] != 0)
+                {
+                    printf("\tmotor %d with err flags=0x%x\n", i, data->motorlist[i]);
+                }
+            }
+
+
+            fflush(stdout);    
+        } break;
+    }      
+
 }
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
