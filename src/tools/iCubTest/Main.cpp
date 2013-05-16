@@ -220,7 +220,7 @@ int main(int argc,char* argv[])
 
         if (testType=="iCubTestMotors")
         {
-            ts.addTest(new iCubTestMotors(testRf));
+            //ts.addTest(new iCubTestMotors(testRf));
         }
         else if (testType=="iCubTestMotorsStiction")
         {
@@ -248,7 +248,8 @@ int main(int argc,char* argv[])
     
     // save test reports in XML format
     ts.printReport();
-    
+
+    ts.cleanup();
     // return number of failed tests
     return numFailures;
 }

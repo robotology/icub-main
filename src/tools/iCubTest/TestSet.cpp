@@ -46,7 +46,12 @@ iCubTestSet::iCubTestSet(yarp::os::Searchable& configuration)
 
 iCubTestSet::~iCubTestSet()
 {
-    for (unsigned int t=0; t<m_apTest.size(); ++t)
+    cleanup();
+}
+
+void iCubTestSet::cleanup()
+{
+   for (unsigned int t=0; t<m_apTest.size(); ++t)
     {
         if (m_apTest[t])
         {

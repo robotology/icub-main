@@ -39,6 +39,8 @@ public:
         m_apTest.push_back(pTest);
     }
 
+    void cleanup();
+
     int run();
 
     void printReport();
