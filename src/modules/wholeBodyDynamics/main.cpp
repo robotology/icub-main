@@ -301,7 +301,17 @@ public:
 
         if (command.get(0).isString())
         {
-            if (command.get(0).asString()=="calib")
+            if (command.get(0).asString()=="help")
+            {
+                reply.addVocab(Vocab::encode("many"));
+                reply.addString("Available commands:");
+                reply.addString("calib all");
+                reply.addString("calib arms");
+                reply.addString("calib legs");
+                reply.addString("calib feet");
+                return true;
+            }
+            else if (command.get(0).asString()=="calib")
             {
                 fprintf(stderr,"Asking recalibration...\n");
                 if (inv_dyn)
