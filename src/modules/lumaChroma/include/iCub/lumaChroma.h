@@ -39,13 +39,15 @@ class PROCThread : public yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::P
 private:
     bool check;
     std::string moduleName;              //string containing module name
-    std::string whichPort;              //string containing the default output name
-    std::string inputPortName;           //string containing input port name 
+    std::string whichPort;               //string containing the default output name
+    std::string inputPortName;           //string containing input port name
+	std::string outputPortName;          //string containing output default port name for propagating same input image 
     std::string outputPortName1;         //string containing output port name, intensity or hue
     std::string outputPortName2;         //string containing output port name, UV or saturation 
     std::string outputPortName3;         //string containing output port name, value 
     std::string outputPortNameDefault;   //string containing output port name, default 
 
+	yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageOutPort;     //output port propagating input Image
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imageOutPort1;    //output port intensity or hue process
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imageOutPort2;    //output port colour(UV) or saturation process  
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imageOutPort3;    //output port value process

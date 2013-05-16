@@ -189,6 +189,9 @@ bool PROCThread::open()
     inputPortName = "/" + moduleName + "/image:i";
     BufferedPort<ImageOf<PixelRgb> >::open( inputPortName.c_str() );
 
+	outputPortName = "/" + moduleName + "/imageProp:o";
+    imageOutPort.open( outputPortName.c_str() );
+
     outputPortName1 = "/" + moduleName + "/" + temp[0] + "/image:o";
     imageOutPort1.open( outputPortName1.c_str() );
     
@@ -341,7 +344,9 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
         else 
             fprintf(stdout, "something went wrong\n");  
             
+		imageOutPort.prepare() = img;
         defaultPortOut.write();
+		imageOutPort.write();
     }
 
     mutex.post();
@@ -420,6 +425,7 @@ void PROCThread::close()
 {
     cout << "now closing ports..." << endl;
     mutex.wait();
+	imageOutPort.close();
     imageOutPort1.close();
     imageOutPort2.close();
     if ( !isYUV ) 
@@ -440,6 +446,7 @@ void PROCThread::interrupt()
     cout << "cleaning up..." << endl;
     cout << "attempting to interrupt ports" << endl;
     
+	imageOutPort.interrupt();
     imageOutPort1.interrupt();
     imageOutPort2.interrupt();
 
