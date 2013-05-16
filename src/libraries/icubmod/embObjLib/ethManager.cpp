@@ -235,6 +235,16 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     ethResources *tmpEthRes;
     ACE_INET_Addr  tmp_ace_addr;
 
+    ethResIt it = EMS_list.begin();
+    while(it != EMS_list.end())
+    {
+        tmpEthRes = (*it);
+        tmpEthRes->goToConfig();
+        it++;
+    }
+#warning remove sleep asap!!!!!!
+    //here sleep is essential in order to let sender thread send gotocongig command.
+    sleep(1);
     stopThreads();
     managerMutex.wait();
 
