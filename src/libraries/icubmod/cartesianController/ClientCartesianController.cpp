@@ -126,7 +126,7 @@ bool ClientCartesianController::open(Searchable &config)
             double server_version=info.find("server_version").asDouble();
             if (server_version!=CARTCTRL_CLIENT_VER)
             {
-                fprintf(stdout,"Error: version mismatch! server(%g) != client(%g); please update\n",
+                fprintf(stdout,"Error: version mismatch => server(%g) != client(%g); please update accordingly\n",
                                server_version,CARTCTRL_CLIENT_VER);
                 return false;
             }
