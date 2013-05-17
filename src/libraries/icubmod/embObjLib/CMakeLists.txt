@@ -26,8 +26,6 @@ include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
 # get all files needed, collected in different lists for better organization and handling
 
 # Common, architecture independent
-set(BODY_COMMON_SOURCE 		${BODY_COMMON_FOLDER}/eEcommon.c)
-set(BODY_COMMON_HEADER 		${BODY_COMMON_FOLDER}/eEcommon.h)
 
 set(ICUB_INTERFACE_SOURCE	${EXTRA_FOLDER}/FeatureInterface.cpp
 #							${ICUB_INTERFACE_CORE_FOLDER}RobotInterfaceRemap.cpp
@@ -206,9 +204,6 @@ set(PROT_HEADER  		${PROT_FOLDER}/EOhostTransceiver_hid.h
 set(IPNET_SOURCE		${IPNET_FOLDER}/EOpacket.c)
 set(IPNET_HEADER		${IPNET_FOLDER}/EOpacket_hid.h)
 
-
-set(HAL_FAKE_SOURCE		${PORTING_FOLDER}/hal_fake.c)
-
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/ethManager.cpp
 						${EXTRA_FOLDER}/ethResource.cpp
@@ -219,12 +214,11 @@ set(DEBUG_SOURCE    ${DEBUG_FOLDER}/src/eODeb_eoProtoParser.c
                     ${DEBUG_FOLDER}/src/eOtheEthLowLevelParser.c
                     ${EXTRA_FOLDER}/tools/parser_cfg_getPid.cpp)
 
-set(embobj_source 		${BODY_COMMON_SOURCE} 
+set(embobj_source 		
 						${CORE_FOLDER_SOURCE} 
 						${CORE_VEE_SOURCE}  
 						${PROT_SOURCE} 
 						${IPNET_SOURCE} 
-						${HAL_FAKE_SOURCE} 
 						${EXTRA_SOURCE}
 						${PROT_FOLDER}
 						${NVS_EB_SOURCE} 
@@ -235,7 +229,7 @@ set(embobj_source 		${BODY_COMMON_SOURCE}
 						${NVS_USR_SOURCE} 
 						${NVS_CBK_SOURCE}
 						${ICUB_INTERFACE_SOURCE}
-            ${DEBUG_SOURCE})
+						${DEBUG_SOURCE})
 
 set(embobj_header 		${BODY_COMMON_SOURCE} 
 						${CORE_API_HEADER} 

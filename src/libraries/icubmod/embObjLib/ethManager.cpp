@@ -242,9 +242,9 @@ int TheEthManager::releaseResource(FEAT_ID resource)
         tmpEthRes->goToConfig();
         it++;
     }
-#warning remove sleep asap!!!!!!
+// #warning remove sleep asap!!!!!!
     //here sleep is essential in order to let sender thread send gotocongig command.
-    sleep(1);
+    yarp::os::Time::delay(1); // EO_WARNING()
     stopThreads();
     managerMutex.wait();
 
