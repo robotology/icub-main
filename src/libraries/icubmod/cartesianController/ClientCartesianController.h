@@ -99,6 +99,7 @@ protected:
     void init();
     bool deleteContexts();
     void eventHandling(yarp::os::Bottle &event);
+    bool getInfoHelper(yarp::os::Bottle &info);
 
 public:
     ClientCartesianController();

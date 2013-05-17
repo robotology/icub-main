@@ -30,6 +30,7 @@
 
 #include "ClientGazeController.h"
 
+#define GAZECTRL_CLIENT_VER     1.0
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
 #define GAZECTRL_ACK            Vocab::encode("ack")
 #define GAZECTRL_NACK           Vocab::encode("nack")
@@ -109,7 +110,7 @@ bool ClientGazeController::open(Searchable &config)
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
-
+    
     portCmdFp.open((local+"/xd:o").c_str());
     portCmdAng.open((local+"/angles:o").c_str());
     portCmdMono.open((local+"/mono:o").c_str());
@@ -118,10 +119,34 @@ bool ClientGazeController::open(Searchable &config)
     portStateAng.open((local+"/angles:i").c_str());
     portStateHead.open((local+"/q:i").c_str());
     portEvents.open((local+"/events:i").c_str());
-    portRpc.open((local+"/rpc").c_str());
+    portRpc.open((local+"/rpc").c_str());   
 
     remote=remote+"/head";
     bool ok=true;
+
+    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
+    if (ok)
+    {
+        Bottle info;
+        getInfoHelper(info);
+        if (info.check("server_version"))
+        {
+            double server_version=info.find("server_version").asDouble();
+            if (server_version!=GAZECTRL_CLIENT_VER)
+            {
+                fprintf(stdout,"Error: version mismatch! server(%g) != client(%g); please update\n",
+                               server_version,GAZECTRL_CLIENT_VER);
+                return false;
+            }
+        }
+        else
+            fprintf(stdout,"Warning: unable to retrieve sever version; please update the server\n");
+    }
+    else
+    {
+        fprintf(stdout,"Error: unable to connect to the sever rpc port!\n");
+        return false;
+    }
 
     ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str(),carrier.c_str());
     ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str(),carrier.c_str());
@@ -131,7 +156,6 @@ bool ClientGazeController::open(Searchable &config)
     ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),carrier.c_str());
     ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),carrier.c_str());
     ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());
-    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
 
     return connected=ok;
 }
@@ -1625,11 +1649,8 @@ bool ClientGazeController::deleteContexts()
 
 
 /************************************************************************/
-bool ClientGazeController::getInfo(Bottle &info)
+bool ClientGazeController::getInfoHelper(Bottle &info)
 {
-    if (!connected)
-        return false;
-
     Bottle command, reply;
     command.addString("get");
     command.addString("info");
@@ -1652,6 +1673,16 @@ bool ClientGazeController::getInfo(Bottle &info)
     }
 
     return false;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getInfo(Bottle &info)
+{
+    if (connected)
+        return getInfoHelper(info);
+    else
+        return false;
 }
 
 

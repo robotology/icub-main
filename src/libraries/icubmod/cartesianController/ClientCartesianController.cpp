@@ -32,6 +32,7 @@
 #include "CommonCartesianController.h"
 #include "ClientCartesianController.h"
 
+#define CARTCTRL_CLIENT_VER     1.0
 #define CARTCTRL_DEFAULT_TMO    0.1 // [s]
 
 using namespace std;
@@ -115,10 +116,33 @@ bool ClientCartesianController::open(Searchable &config)
 
     bool ok=true;
 
+    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
+    if (ok)
+    {
+        Bottle info;
+        getInfoHelper(info);
+        if (info.check("server_version"))
+        {
+            double server_version=info.find("server_version").asDouble();
+            if (server_version!=CARTCTRL_CLIENT_VER)
+            {
+                fprintf(stdout,"Error: version mismatch! server(%g) != client(%g); please update\n",
+                               server_version,CARTCTRL_CLIENT_VER);
+                return false;
+            }
+        }
+        else
+            fprintf(stdout,"Warning: unable to retrieve sever version; please update the server\n");
+    }
+    else
+    {
+        fprintf(stdout,"Error: unable to connect to the sever rpc port!\n");
+        return false;
+    }
+
     ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),carrier.c_str());
     ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());
-    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
+    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());    
 
     // check whether the solver is alive and connected
     if (ok)
@@ -1234,11 +1258,8 @@ bool ClientCartesianController::deleteContexts()
 
 
 /************************************************************************/
-bool ClientCartesianController::getInfo(Bottle &info)
+bool ClientCartesianController::getInfoHelper(Bottle &info)
 {
-    if (!connected)
-        return false;
-
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_INFO);
@@ -1261,6 +1282,16 @@ bool ClientCartesianController::getInfo(Bottle &info)
     }
 
     return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getInfo(Bottle &info)
+{
+    if (connected)
+        return getInfoHelper(info);
+    else
+        return false;
 }
 
 

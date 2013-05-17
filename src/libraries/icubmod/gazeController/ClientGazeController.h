@@ -111,6 +111,7 @@ protected:
     bool getNeckJointRange(const std::string &joint, double *min, double *max);
     bool clearJoint(const std::string &joint);
     void eventHandling(yarp::os::Bottle &event);
+    bool getInfoHelper(yarp::os::Bottle &info);
 
 public:
     ClientGazeController();

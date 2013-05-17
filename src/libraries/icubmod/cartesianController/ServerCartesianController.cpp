@@ -32,6 +32,7 @@
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
 
+#define CARTCTRL_SERVER_VER                 1.0
 #define CARTCTRL_DEFAULT_PER                10      // [ms]
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
 #define CARTCTRL_DEFAULT_TASKVEL_BALLPOS    0.2     // [m]
@@ -2933,6 +2934,10 @@ bool ServerCartesianController::getInfo(Bottle &info)
     if (attached)
     {
         info.clear();
+
+        Bottle &serverVer=info.addList();
+        serverVer.addString("server_version");
+        serverVer.addDouble(CARTCTRL_SERVER_VER);
 
         Bottle &events=info.addList();
         events.addString("events");

@@ -494,6 +494,8 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
+#include <map>
+
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
@@ -502,7 +504,7 @@ Windows, Linux
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
-#include <map>
+#define GAZECTRL_SERVER_VER     1.0
 
 using namespace std;
 using namespace yarp::os;
@@ -677,6 +679,10 @@ protected:
     bool getInfo(Bottle &info)
     {
         info.clear();
+
+        Bottle &serverVer=info.addList();
+        serverVer.addString("server_version");
+        serverVer.addDouble(GAZECTRL_SERVER_VER);
 
         Bottle &headVer=info.addList();
         headVer.addString("head_version");

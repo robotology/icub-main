@@ -1,3 +1,7 @@
+2013-17-04 Ugo Pattacini <ugo.pattacini@iit.it>
+   * cart i/f + gaze i/f
+   added version checking between client and server parts
+
 2013-15-04 Matteo Brunettini <matteo.brunettini@iit.it>
    * main\conf\iCubHelpers.cmake
    Under MSVC, the INSTALL project now installs the MS Visual Program DataBase files (*.pdb)
