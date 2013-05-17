@@ -398,22 +398,22 @@ public:
 };
 inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 
-class CanBackDoor: public BufferedPort<Bottle>
+class TBR_CanBackDoor: public BufferedPort<Bottle>
 {
     CanBusResources *bus;
     Semaphore *semaphore;
-    AnalogSensor *ownerSensor;
+    TBR_AnalogSensor *ownerSensor;
     bool canEchoEnabled;
 
 public:
-    CanBackDoor()
+    TBR_CanBackDoor()
     {
         bus=0;
         ownerSensor=0;
         canEchoEnabled=false;
     }
 
-    void setUp(CanBusResources *p, Semaphore *sema, bool echo, AnalogSensor *owner)
+    void setUp(CanBusResources *p, Semaphore *sema, bool echo, TBR_AnalogSensor *owner)
     {
         semaphore=sema;
         bus=p;
@@ -426,7 +426,7 @@ public:
 };
 
 
-void CanBackDoor::onRead(Bottle &b)
+void TBR_CanBackDoor::onRead(Bottle &b)
 {
     if (!semaphore)
         return;
@@ -623,7 +623,7 @@ axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxT
 
 }
 
-AnalogSensor::AnalogSensor():
+TBR_AnalogSensor::TBR_AnalogSensor():
 data(0)
 {
     isVirtualSensor=false;
@@ -638,7 +638,7 @@ data(0)
     backDoor=0;
 }
 
-AnalogSensor::~AnalogSensor()
+TBR_AnalogSensor::~TBR_AnalogSensor()
 {
     if (!data)
         delete data;
@@ -646,19 +646,19 @@ AnalogSensor::~AnalogSensor()
         delete scaleFactor;
 }
 
-int AnalogSensor::getState(int ch)
+int TBR_AnalogSensor::getState(int ch)
 {
     return status;
 }
 
-bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualS)
+bool TBR_AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualS)
 {
     if (data)
         return false;
     if (scaleFactor)
         return false;
 
-    data=new AnalogData(channels, channels+1);
+    data=new TBR_AnalogData(channels, channels+1);
     scaleFactor=new double[channels];
     int i=0;
     for (i=0; i<channels; i++) scaleFactor[i]=1;
@@ -666,7 +666,7 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
     boardId=bId;
     useCalibration=useCalib;
     isVirtualSensor=isVirtualS;
-    if (useCalibration==1 && dataFormat==AnalogSensor::ANALOG_FORMAT_16)
+    if (useCalibration==1 && dataFormat==TBR_AnalogSensor::ANALOG_FORMAT_16)
     {
         scaleFactor[0]=1;
         scaleFactor[1]=1;
@@ -680,12 +680,12 @@ bool AnalogSensor::open(int channels, AnalogDataFormat f, short bId, short useCa
 }
 
 
-int AnalogSensor::getChannels()
+int TBR_AnalogSensor::getChannels()
 {
     return data->size();
 }
 
-int AnalogSensor::read(yarp::sig::Vector &out)
+int TBR_AnalogSensor::read(yarp::sig::Vector &out)
 {
     // print errors
     mutex.wait();
@@ -734,17 +734,17 @@ int AnalogSensor::read(yarp::sig::Vector &out)
     return status;
 }
  
-int AnalogSensor::calibrateChannel(int ch, double v)
+int TBR_AnalogSensor::calibrateChannel(int ch, double v)
 {
     return AS_OK;
 }
 
-int AnalogSensor::calibrateSensor()
+int TBR_AnalogSensor::calibrateSensor()
 {
     return AS_OK;
 }
 
-bool AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
+bool TBR_AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
 {
     
     const char groupId=(id&0x00f);
@@ -794,7 +794,7 @@ bool AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
     return true;
 }
 
-bool AnalogSensor::decode8(const unsigned char *msg, int id, double *data)
+bool TBR_AnalogSensor::decode8(const unsigned char *msg, int id, double *data)
 {
     const char groupId=(id&0x00f);
     int baseIndex=0;
@@ -829,7 +829,7 @@ bool AnalogSensor::decode8(const unsigned char *msg, int id, double *data)
 }
 
 
-bool AnalogSensor::handleAnalog(void *canbus)
+bool TBR_AnalogSensor::handleAnalog(void *canbus)
 {
     CanBusResources& r = RES (canbus);
 
@@ -1993,7 +1993,7 @@ bool CanBusMotionControl::open (Searchable &config)
             {
                 std::string analogId=analogList.get(k).asString().c_str();;
 
-                AnalogSensor *as=instantiateAnalog(config, analogId);
+                TBR_AnalogSensor *as=instantiateAnalog(config, analogId);
                 if (as!=0)
                     {
                         analogSensors.push_back(as);
@@ -2041,7 +2041,7 @@ bool CanBusMotionControl::open (Searchable &config)
     return true;
 }
 
-bool CanBusMotionControl::readFullScaleAnalog(AnalogSensor* analogSensor, int ch)
+bool CanBusMotionControl::readFullScaleAnalog(TBR_AnalogSensor* analogSensor, int ch)
 {
     CanBusResources& res = RES (system_resources);
     int destId=0x0200|analogSensor->getId();
@@ -2088,10 +2088,10 @@ bool CanBusMotionControl::readFullScaleAnalog(AnalogSensor* analogSensor, int ch
     return true;
 }
 
-AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& config, std::string deviceid)
+TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& config, std::string deviceid)
 {
     CanBusResources& res = RES (system_resources);
-    AnalogSensor *analogSensor=0;
+    TBR_AnalogSensor *analogSensor=0;
 
     //std::string groupName=std::string("ANALOG-");
     //groupName+=deviceid;
@@ -2101,7 +2101,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
     {
         fprintf(stderr, "--> Initializing analog device %s\n", deviceid.c_str());
         
-        analogSensor=new AnalogSensor;
+        analogSensor=new TBR_AnalogSensor;
         analogSensor->setDeviceId(deviceid);
 
         bool isVirtualSensor=false;
@@ -2116,7 +2116,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
             isVirtualSensor = true;
             ConstString virtualPortName = analogConfig.find("PortName").asString();
             bool   canEchoEnabled = analogConfig.find("CanEcho").asInt();
-            analogSensor->backDoor = new CanBackDoor();
+            analogSensor->backDoor = new TBR_CanBackDoor();
             analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
             std::string rn("/");
             rn += config.find("robotName").asString().c_str();
@@ -2129,10 +2129,10 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
         switch (analogFormat)
         {
             case 8:
-                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration, isVirtualSensor);
+                analogSensor->open(analogChannels, TBR_AnalogSensor::ANALOG_FORMAT_8, analogId, analogCalibration, isVirtualSensor);
                 break;
             case 16:
-                analogSensor->open(analogChannels, AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration, isVirtualSensor);
+                analogSensor->open(analogChannels, TBR_AnalogSensor::ANALOG_FORMAT_16, analogId, analogCalibration, isVirtualSensor);
                 break;
         }
 
@@ -2262,7 +2262,7 @@ AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& confi
     return analogSensor;
 }
 
-void CanBusMotionControl::finiAnalog(AnalogSensor *analogSensor)
+void CanBusMotionControl::finiAnalog(TBR_AnalogSensor *analogSensor)
 {
     CanBusResources& res = RES (system_resources);
 
@@ -2334,7 +2334,7 @@ bool CanBusMotionControl::close (void)
 
         
         //stop analog sensors
-        std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+        std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
         while(it!=analogSensors.end())
         {
             if ((*it))
@@ -2946,10 +2946,10 @@ void CanBusMotionControl:: run()
                 }
 
             ///////////////////check analog
-            std::list<AnalogSensor *>::iterator analogIt=analogSensors.begin();
+            std::list<TBR_AnalogSensor *>::iterator analogIt=analogSensors.begin();
             while(analogIt!=analogSensors.end())
             {
-                AnalogSensor *pAnalog=(*analogIt);
+                TBR_AnalogSensor *pAnalog=(*analogIt);
                 if (pAnalog)
                 {
                     unsigned int sat;
@@ -2997,10 +2997,10 @@ void CanBusMotionControl:: run()
 
     handleBroadcasts();
 
-    std::list<AnalogSensor *>::iterator analogIt=analogSensors.begin();
+    std::list<TBR_AnalogSensor *>::iterator analogIt=analogSensors.begin();
     while(analogIt!=analogSensors.end())
     {
-        AnalogSensor *pAnalog=(*analogIt);
+        TBR_AnalogSensor *pAnalog=(*analogIt);
         if (pAnalog)
         {
             //fprintf(stderr, "Passing messages to analog device %s\n", pAnalog->getDeviceId().c_str());
@@ -3750,7 +3750,7 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
     *trq=0; //set output to zero (default value)
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
 
-    std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+    std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
     while(it!=analogSensors.end())
     {
         if (*it)
@@ -3820,7 +3820,7 @@ bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
     *max=0; //set output to zero (default value)
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
 
-    std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+    std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
     while(it!=analogSensors.end())
     {
         if (*it)
@@ -5727,7 +5727,7 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
 
     if (deviceType=="analog")
     {
-        std::list<AnalogSensor *>::iterator it=analogSensors.begin();
+        std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
         while(it!=analogSensors.end())
         {
             std::cout<<"CanBusMotionControl::createDevice() inspecting "<< (*it)->getDeviceId() << std::endl; 

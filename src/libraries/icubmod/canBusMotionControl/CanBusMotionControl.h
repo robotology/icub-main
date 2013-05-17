@@ -190,20 +190,20 @@ public:
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
 };
 
-class AnalogData
+class TBR_AnalogData
 {
 private:
     double *_data;
     int _size;
     int _bufferSize;
 public:
-    AnalogData(int ch, int buffsize): _data(0), _size(ch), _bufferSize(buffsize)
+    TBR_AnalogData(int ch, int buffsize): _data(0), _size(ch), _bufferSize(buffsize)
     {
         _data=new double[_bufferSize];
         for(int k=0;k<_bufferSize;k++)
             _data[k]=0;
     }
-    ~AnalogData()
+    ~TBR_AnalogData()
     {
         delete [] _data;
     }
@@ -218,13 +218,12 @@ public:
     {return _data;}
 };
 
-
 #include <yarp/os/Semaphore.h>
 typedef int AnalogDataFormat;
 
-class CanBackDoor;
+class TBR_CanBackDoor;
 
-class AnalogSensor: public yarp::dev::IAnalogSensor,
+class TBR_AnalogSensor: public yarp::dev::IAnalogSensor,
                     public yarp::dev::DeviceDriver
 {
 public:
@@ -251,7 +250,7 @@ private:
     int rate;
 
     ////////////////////
-    AnalogData *data;
+    TBR_AnalogData *data;
     short status;
     double timeStamp;
     double* scaleFactor;
@@ -269,10 +268,10 @@ private:
     bool decode16(const unsigned char *msg, int id, double *data);
 
 public:
-    CanBackDoor* backDoor; //RANDAZ
+    TBR_CanBackDoor* backDoor; //RANDAZ
 
-    AnalogSensor();
-    ~AnalogSensor();
+    TBR_AnalogSensor();
+    ~TBR_AnalogSensor();
     bool handleAnalog(void *);
 
     void resetCounters()
@@ -655,15 +654,15 @@ private:
 
     char _buff[256];
 
-    std::list<AnalogSensor *> analogSensors;
+    std::list<TBR_AnalogSensor *> analogSensors;
 
     yarp::os::ConstString canDevName;
 
     IServerLogger *mServerLogger;
 
-    bool readFullScaleAnalog(AnalogSensor* analogSensor, int ch);
-    AnalogSensor *instantiateAnalog(yarp::os::Searchable& config, std::string id);
-    void finiAnalog(AnalogSensor *s);
+    bool readFullScaleAnalog(TBR_AnalogSensor* analogSensor, int ch);
+    TBR_AnalogSensor *instantiateAnalog(yarp::os::Searchable& config, std::string id);
+    void finiAnalog(TBR_AnalogSensor *s);
 
 public:
     /**

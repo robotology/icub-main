@@ -163,7 +163,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     root_name+=robotName;
     root_name+="/skin/";
 
-	std::vector<AnalogPortEntry> skinPorts;
+	std::vector<TBR_AnalogPortEntry> skinPorts;
 	if(!partP.check("ports")){	
 		// if there is no "ports" section take the name of the "skin" group as the only port name
 		skinPorts.resize(1);

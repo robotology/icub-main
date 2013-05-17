@@ -49,18 +49,18 @@ using namespace std;
   * Handler of the rpc port related to an analog sensor.
   * Manage the calibration command received on the rpc port.
  **/
-class AnalogServerHandler: public yarp::os::PortReader
+class TBR_AnalogServerHandler: public yarp::os::PortReader
 {
 	yarp::dev::IAnalogSensor* is;	// analog sensor to calibrate, when required
 	yarp::os::Port rpcPort;			// rpc port related to the analog sensor
 
 public:
-	AnalogServerHandler(const char* n){
+	TBR_AnalogServerHandler(const char* n){
 		rpcPort.open(n);
 		rpcPort.setReader(*this);
 	}
 
-	~AnalogServerHandler(){
+	~TBR_AnalogServerHandler(){
 		rpcPort.close();
 		is = 0;
 	}
@@ -143,19 +143,19 @@ public:
   * It contains information about which data of the analog sensor are sent
   * on the port, i.e. an offset and a length.
   */
-struct AnalogPortEntry
+struct TBR_AnalogPortEntry
 {
 	yarp::os::BufferedPort<yarp::sig::Vector> port;
 	std::string port_name;		// the complete name of the port
     int offset;					// an offset, the port is mapped starting from this taxel
     int length;					// length of the output vector of the port (-1 for max length)
-	AnalogPortEntry(){}
-	AnalogPortEntry(const AnalogPortEntry &alt){
+	TBR_AnalogPortEntry(){}
+	TBR_AnalogPortEntry(const TBR_AnalogPortEntry &alt){
 		this->length = alt.length;
 		this->offset = alt.offset;
 		this->port_name = alt.port_name;
 	}	
-	AnalogPortEntry &operator =(const AnalogPortEntry &alt){ 
+	TBR_AnalogPortEntry &operator =(const TBR_AnalogPortEntry &alt){ 
 		this->length = alt.length;
 		this->offset = alt.offset;
 		this->port_name = alt.port_name;
@@ -170,15 +170,15 @@ struct AnalogPortEntry
 class AnalogServer: public yarp::os::RateThread
 {
     yarp::dev::IAnalogSensor *is;				// the analog sensor to read from
-    std::vector<AnalogPortEntry> analogPorts;	// the list of output ports
-	std::vector<AnalogServerHandler*> handlers;	// the list of rpc port handlers
+    std::vector<TBR_AnalogPortEntry> analogPorts;	// the list of output ports
+	std::vector<TBR_AnalogServerHandler*> handlers;	// the list of rpc port handlers
 	yarp::os::Stamp lastStateStamp;				// the last reading time stamp
 
 	void setHandlers(){
 		for(unsigned int i=0;i<analogPorts.size(); i++){
 			std::string rpcPortName = analogPorts[i].port_name;
 			rpcPortName += "/rpc:i";
-			AnalogServerHandler* ash = new AnalogServerHandler(rpcPortName.c_str());
+			TBR_AnalogServerHandler* ash = new TBR_AnalogServerHandler(rpcPortName.c_str());
 			handlers.push_back(ash);
 		}
 	}
@@ -196,7 +196,7 @@ public:
     }
 
 	// Contructor used when one or more output ports are specified
-	AnalogServer(const std::vector<AnalogPortEntry>& _analogPorts, int rate=20): RateThread(rate)
+	AnalogServer(const std::vector<TBR_AnalogPortEntry>& _analogPorts, int rate=20): RateThread(rate)
     {
         is=0;
         this->analogPorts=_analogPorts;
