@@ -189,7 +189,7 @@ bool PROCThread::open()
     inputPortName = "/" + moduleName + "/image:i";
     BufferedPort<ImageOf<PixelRgb> >::open( inputPortName.c_str() );
 
-	outputPortName = "/" + moduleName + "/imageProp:o";
+	outputPortName = "/" + moduleName + "/propImg:o";
     imageOutPort.open( outputPortName.c_str() );
 
     outputPortName1 = "/" + moduleName + "/" + temp[0] + "/image:o";
