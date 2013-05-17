@@ -97,6 +97,7 @@ private:
     yarp::os::Stamp lastStateStamp;             // the last reading time stamp
     int _rate;
     void setHandlers();
+    void removeHandlers();
 
 public:
 
@@ -112,6 +113,7 @@ public:
     ~AnalogServer();
 
     bool open(yarp::os::Searchable &params);
+    bool close();
 
     void setId(const std::string &i);
     std::string getId();

@@ -198,6 +198,17 @@ void AnalogServer::setHandlers()
   }
 }
 
+void AnalogServer::removeHandlers()
+{
+    for(unsigned int i=0; i<handlers.size(); i++)
+    {
+        if (handlers[i]!=NULL)
+            delete handlers[i];
+    }
+   
+    handlers.clear();
+}
+
 
 /**
   * Specify which analog sensor this thread has to read from.
@@ -446,6 +457,15 @@ void AnalogServer::run()
             //todo release
         }
     }
+}
+
+bool AnalogServer::close()
+{
+    fprintf(stderr, "AnalogServer::Close\n");
+    RateThread::stop();
+    detachAll();
+    removeHandlers();
+    return true;
 }
 
 // eof
