@@ -33,6 +33,23 @@ public:
     }
 };
 
+class OdeParams
+{
+public:
+    double fudgeFactor;
+    double stopCFM;
+    double jointCFM;
+    double worldCFM; 
+    int    worldTimestep;
+    double stopERP;   
+    double worldERP;
+    double maxContactCorrectingVel;
+    double contactSurfaceLayer;
+    double motorMaxTorque;
+    double motorDryFriction;
+    double jointStopBouncyness;
+};
+
 class RobotConfig {
 public:
     virtual yarp::os::ConstString getModuleName() = 0;
@@ -58,6 +75,8 @@ public:
     virtual double getMotorMaxTorque() = 0;
     virtual double getMotorDryFriction() = 0;
     virtual double getJointStopBouncyness() = 0;
+
+    virtual OdeParams getOdeParameters() = 0;
 };
 
 #endif

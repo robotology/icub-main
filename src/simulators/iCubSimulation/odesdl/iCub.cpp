@@ -29,6 +29,7 @@
 #include <string.h>
 #include <yarp/os/ConstString.h>
 #include <yarp/os/Bottle.h>
+//#include <iCub/iKin/iKinFwd.h>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -43,6 +44,13 @@
 using std::string;
 using std::cout;
 using std::endl;
+
+#ifndef CTRL_DEG2RAD 
+#define CTRL_DEG2RAD M_PI/180.0
+#endif
+#ifndef CTRL_RAD2DEG
+#define CTRL_RAD2DEG 180.0/M_PI
+#endif
 
 Model *iCubHeadModel;
 Model *topEyeLidModel;
@@ -1319,908 +1327,1079 @@ void ICubSim::activateiCubParts(RobotConfig& config) {
     modelTextureIndex = 59;
 }
 
-void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
-                    RobotConfig& config) {
+void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z, RobotConfig& config) 
+{
     ResourceFinder& finder = config.getFinder();
     activateiCubParts(config);
 
     for (int x =0; x<100; x++)
         torqueData[x] = 0.0;
 
-    if (actHeadCover)
-    {
-        iCubHeadModel =  new Model();
-        topEyeLidModel =      new Model();
-        bottomEyeLidModel =   new Model();
-        iCubHeadModel->loadModelData(finder.findFile("data/model/iCub_Head.ms3d").c_str());
-        topEyeLidModel->loadModelData(finder.findFile("data/model/topEyeLid.ms3d").c_str());
-        bottomEyeLidModel->loadModelData(finder.findFile("data/model/bottomEyeLid.ms3d").c_str());
-    }
-
     //load joint positions from file
     loadJointPosition(finder.findFile(finder.find("joints").asString().c_str()).c_str());
 
     // --- READ ODE CONFIGURATION PARAMETERS FROM CONFIG FILE ---
-    double CTRL_DEG2RAD = M_PI/180.0;
-    double CTRL_RAD2DEG = 180.0/M_PI;
-    // *** Joint Stop Fudge Factor
-    // Reducing this should decrease the jump effect when moving away from a joint limit
-    double fudgeFactor = config.getFudgeFactor();
-    // *** Constraint Force Mixing
-    // If CFM=0 the constraint is hard, if CFM>0 then it is possible to violate the constraint by pushing on it.
-    // Increasing CFM can reduce the numerical errors in the simulation, hence increasing stability.
-    // Default value is 1e-5 for single precision, 1e-10 for double precision.
-    double stopCFM  = config.getStopCFM();
-    double jointCFM = config.getJointCFM();
-    // *** Error Reduction Parameter: 
-    // value in [0, 1], default is 0.2, reccomended range is [0.1, 0.8], regulates what portion of the joint error 
-    // will be fixed during the next simulation step.
-    double stopERP = config.getStopERP();
-    // Motor Max Torque used for position and velocity control mode
-    double motorMaxTorque = config.getMotorMaxTorque();
-    // Joint Stop Bouncyness: 0 means rigid, 1 means maximum bouncyness
-    double jointStopBouncyness = config.getJointStopBouncyness();
-    // margin added to the joint limits
-    double safetyMargin = 0.1 * CTRL_DEG2RAD;
+    OdeParams odeParameters = config.getOdeParameters();
 
-    //mass
-    dMass m, m2;
-    dMatrix3 Rtx;
-    //rotation matrises
-    dQuaternion q, q1, q2,q3,q4;
-    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
-    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
-    dQFromAxisAndAngle(q2,0,0,1,M_PI * 0.25);  //45 Degrees
-    dQFromAxisAndAngle(q3,0,1,0,M_PI * 0.0833);
-    dQFromAxisAndAngle(q4,1,0,0,M_PI * -0.25);  //45 Degrees
     //init
     iCub = dSimpleSpaceCreate(space);
     dSpaceSetCleanup(iCub,0);
-    dMassSetZero(&m);
 
-    numCovers = 10;
-
-    if (actLegsCovers == "on")
-    {
-        model["lowerLeg"] = finder.findFile("lowerLegCover");//also used for left
-        model["upperRightLeg"] = finder.findFile("upperRightLegCover");
-        model["upperLeftLeg"] = finder.findFile("upperLeftLegCover");
-        model["rightFoot"] = finder.findFile("rightFootCover");
-        model["leftFoot"] = finder.findFile("leftFootCover");
-    }
-    if(actLeftArmCovers == "on" || actRightArmCovers == "on")
-        model["lowerArm"] = finder.findFile("lowerArmCover");//used for both arms
-
-    if (actLeftArmCovers == "on")
-    {
-        model["upperLeftArm"] = finder.findFile("leftUpperArmCover");
-        model["leftPalm"] = finder.findFile("leftPalm");
-    }
-
-    if (actRightArmCovers == "on")
-    {
-        model["upperRightArm"] = finder.findFile("rightUpperArmCover");
-        model["rightPalm"] = finder.findFile("rightPalm");
-    }
-
-    if (actTorsoCovers == "on")
-    {
-        model["torso"] = finder.findFile("torsoCover");
-        model["waist"] = finder.findFile("waistCover");
-    }
-
-    textureName[0] = finder.findFile("lowerArmTexture");//texture used for all covers
-
-    cout << "\nCreating 3D Model of the icub.......\n" << endl;
-    for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++)
-    {
-        model_TriData[(*itr).first] = dGeomTriMeshDataCreate();
-        model_trimesh[(*itr).first] = dLoadMeshFromX(model[(*itr).first].c_str());
-        if (!model_trimesh[(*itr).first])
-        {
-            cout << "Check spelling/location of file" << endl;
-        }else
-        {
-            dGeomTriMeshDataBuildSingle(model_TriData[(*itr).first], model_trimesh[(*itr).first]->Vertices, 3 * sizeof(float), model_trimesh[(*itr).first]->VertexCount, model_trimesh[(*itr).first]->Indices, model_trimesh[(*itr).first]->IndexCount, 3 * sizeof(int));
-            model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCub, model_TriData[(*itr).first], 0, 0, 0);
-            dGeomSetData(model_ThreeD_obj[(*itr).first].geom,model_TriData[(*itr).first]);
-            //dGeomSetPosition(model_ThreeD_obj[(*itr).first].geom,0.0,0.5,0.5);
-        }
-    }
-    modelTextureIndex++;
-    modelTexture[0] = modelTextureIndex;
-    //the reference object
-    //body_cube[0] = dBodyCreate(world); dMassSetZero(&m); dMassSetBoxTotal (&m,0.1,0.1,0.005,0.1);dBodySetMass(body_cube[0],&m);
-    //geom_cube[0] = dCreateBox(space,0.1,0.005,0.1); //dGeomSetBody(geom_cube[0],body_cube[0]); 
+    initCovers(finder);
 
     if (actScreen == "on")
         screenGeom = dCreateBox(space,1.0,1.0,0.01); //this will create a thin screen of width 1m height 1m and depth 0.01m
 
-    if (actLegs == "off"){//here we create legs as one body
-
-        legs = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        l_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
-        dGeomSetBody (l_leg0_geom,legs);
-        dGeomSetOffsetPosition(l_leg0_geom,-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_leg1_geom = dCreateCylinder (iCub,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
-        dGeomSetBody (l_leg1_geom,legs);
-        dGeomSetOffsetPosition(l_leg1_geom,-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_leg2_geom = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (l_leg2_geom,legs);
-        dGeomSetOffsetRotation(l_leg2_geom,Rtx);
-        dGeomSetOffsetPosition(l_leg2_geom,-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_leg3_geom = dCreateCylinder (iCub,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (l_leg3_geom,legs);
-        dGeomSetOffsetRotation(l_leg3_geom,Rtx);
-        dGeomSetOffsetPosition(l_leg3_geom,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]+jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_leg4_geom = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (l_leg4_geom,legs);
-        dGeomSetOffsetRotation(l_leg4_geom,Rtx);
-        dGeomSetOffsetPosition(l_leg4_geom,-m2.c[0], jP_leftLeg[2][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_leg5_geom = dCreateCylinder (iCub,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (l_leg5_geom,legs);
-        dGeomSetOffsetRotation(l_leg5_geom,Rtx);
-        dGeomSetOffsetPosition(l_leg5_geom,-m2.c[0], 0.5*fabs(jP_leftLeg[3][2]+jP_leftLeg[2][2])-m2.c[0],-m2.c[0]);
-
-        l_leg6_geom = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
-        dGeomSetBody (l_leg6_geom,legs);
-        dGeomSetOffsetPosition(l_leg6_geom,-m2.c[0], jP_leftLeg[4][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_leg7_geom = dCreateCylinder (iCub,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (l_leg7_geom,legs);
-        dGeomSetOffsetRotation(l_leg7_geom,Rtx);
-        dGeomSetOffsetPosition(l_leg7_geom,-fabs(jP_leftLeg[0][1]-0.0295)-m2.c[0], jP_leftLeg[4][2]-m2.c[0],-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        double r_foot_y=fabs(jP_leftLeg[0][1]-jP_rightLeg[0][1]);
-
-        r_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
-        dGeomSetBody (r_leg0_geom,legs);
-        dGeomSetOffsetPosition(r_leg0_geom,-r_foot_y-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_leg1_geom = dCreateCylinder (iCub,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
-        dGeomSetBody (r_leg1_geom,legs);
-        dGeomSetOffsetPosition(r_leg1_geom,-r_foot_y-m2.c[0],jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_leg2_geom = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (r_leg2_geom,legs);
-        dGeomSetOffsetRotation(r_leg2_geom,Rtx);
-        dGeomSetOffsetPosition(r_leg2_geom,-r_foot_y-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_leg3_geom = dCreateCylinder (iCub,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (r_leg3_geom,legs);
-        dGeomSetOffsetRotation(r_leg3_geom,Rtx);
-        dGeomSetOffsetPosition(r_leg3_geom,-r_foot_y-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]+jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_leg4_geom = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (r_leg4_geom,legs);
-        dGeomSetOffsetRotation(r_leg4_geom,Rtx);
-        dGeomSetOffsetPosition(r_leg4_geom,-r_foot_y-m2.c[0], jP_rightLeg[2][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_leg5_geom = dCreateCylinder (iCub,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (r_leg5_geom,legs);
-        dGeomSetOffsetRotation(r_leg5_geom,Rtx);
-        dGeomSetOffsetPosition(r_leg5_geom,-r_foot_y-m2.c[0],0.5*fabs(jP_leftLeg[3][2]+jP_leftLeg[2][2])-m2.c[0], -m2.c[0]);
-
-        r_leg6_geom = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
-        dGeomSetBody (r_leg6_geom,legs);
-        dGeomSetOffsetPosition(r_leg6_geom,-r_foot_y-m2.c[0], jP_rightLeg[4][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_leg7_geom = dCreateCylinder (iCub,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (r_leg7_geom,legs);
-        dGeomSetOffsetRotation(r_leg7_geom,Rtx);
-        dGeomSetOffsetPosition(r_leg7_geom,fabs(jP_rightLeg[0][1]+0.0295)-r_foot_y-m2.c[0], jP_rightLeg[4][2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        dBodySetMass(legs,&m);
-
+    if (actLegs == "off"){
+        initLegsOff(world); //here we create legs as one body
     }else{
-        //left lower parts
-        leftLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
-        dBodySetMass(leftLeg[0],&m);
-        leftLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (leftLegGeom[0],leftLeg[0]);
-
-        leftLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
-        dBodySetMass(leftLeg[1],&m);
-        leftLegGeom[1] = dCreateCylinder (iCub,0.027,0.095);dGeomSetBody(leftLegGeom[1],leftLeg[1]);
-
-        //----------------------------------------------------------ankle encapsulated objects
-        leftLeg[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        leftLeg_2_1 = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (leftLeg_2_1,leftLeg[2]);
-        dGeomSetOffsetRotation(leftLeg_2_1,Rtx);//dGeomSetPosition (leftLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(leftLeg_2_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        leftLeg_2_2 = dCreateCylinder (iCub,0.0315,fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (leftLeg_2_2,leftLeg[2]);
-        dGeomSetOffsetRotation(leftLeg_2_2,Rtx);
-        dGeomSetOffsetPosition(leftLeg_2_2,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(leftLeg[2],&m);
-        //----------------------------------
-        leftLeg[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        leftLeg_3_1 = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (leftLeg_3_1,leftLeg[3]);
-        dGeomSetOffsetRotation(leftLeg_3_1,Rtx);//dGeomSetPosition (leftLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(leftLeg_3_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        leftLeg_3_2 = dCreateCylinder (iCub,0.034,fabs(jP_leftLeg[3][2]-jP_leftLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (leftLeg_3_2,Rtx);
-        dGeomSetBody (leftLeg_3_2,leftLeg[3]);
-        dGeomSetOffsetRotation(leftLeg_3_2,Rtx);
-        dGeomSetOffsetPosition(leftLeg_3_2,-m2.c[0], 0.5*fabs(jP_leftLeg[3][2]-jP_leftLeg[2][2])/*0.1065*/-m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(leftLeg[3],&m);
-        //---------------------------------------------------
-        leftLeg[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        leftLeg_4_1 = dCreateSphere(iCub,0.017);dMassSetSphereTotal(&m,0.01,0.017);
-        dGeomSetBody (leftLeg_4_1,leftLeg[4]);
-        dGeomSetOffsetPosition(leftLeg_4_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        leftLeg_4_2 = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
-        dGeomSetBody (leftLeg_4_2,leftLeg[4]);
-        dGeomSetOffsetPosition(leftLeg_4_2,-m2.c[0], -m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(leftLeg[4],&m);
-        //------------------------------------------------
-        leftLeg[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.32708,3,0.038,0.013);
-        dBodySetMass(leftLeg[5],&m);
-        dBodySetQuaternion(leftLeg[5],q1);
-        leftLegGeom[5] = dCreateCylinder (iCub,0.038,0.013);dGeomSetBody(leftLegGeom[5],leftLeg[5]);
-        //--------------------------------------------------------
-        //RIGHT LEG
-        //--------------------------------------------------------
-        //right lower parts
-        rightLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
-        dBodySetMass(rightLeg[0],&m);
-        rightLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (rightLegGeom[0],rightLeg[0]);
-
-        rightLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
-        dBodySetMass(rightLeg[1],&m);
-        rightLegGeom[1] = dCreateCylinder (iCub,0.027,0.095);dGeomSetBody(rightLegGeom[1],rightLeg[1]);
-        //----------------------------------------------------------ankle encapsulated objects
-        rightLeg[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        rightLeg_2_1 = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (rightLeg_2_1,rightLeg[2]);
-        dGeomSetOffsetRotation(rightLeg_2_1,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(rightLeg_2_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        rightLeg_2_2 = dCreateCylinder (iCub,0.0315,fabs(jP_rightLeg[2][2]-jP_rightLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (rightLeg_2_2,Rtx);
-        dGeomSetBody (rightLeg_2_2,rightLeg[2]);
-        dGeomSetOffsetRotation(rightLeg_2_2,Rtx);
-        dGeomSetOffsetPosition(rightLeg_2_2,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(rightLeg[2],&m);
-        //----------------------------------
-        rightLeg[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        rightLeg_3_1 = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (rightLeg_3_1,rightLeg[3]);
-        dGeomSetOffsetRotation(rightLeg_3_1,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(rightLeg_3_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        rightLeg_3_2 = dCreateCylinder (iCub,0.034,fabs(jP_rightLeg[3][2]-jP_rightLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (rightLeg_3_2,Rtx);
-        dGeomSetBody (rightLeg_3_2,rightLeg[3]);
-        dGeomSetOffsetRotation(rightLeg_3_2,Rtx);
-        dGeomSetOffsetPosition(rightLeg_3_2,-m2.c[0],0.5*fabs(jP_rightLeg[3][2]-jP_rightLeg[2][2])-m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(rightLeg[3],&m);
-        //---------------------------------------------------
-        rightLeg[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        rightLeg_4_1 = dCreateSphere(iCub,0.017);dMassSetSphereTotal(&m,0.01,0.017);
-        dGeomSetBody (rightLeg_4_1,rightLeg[4]);
-        dGeomSetOffsetPosition(rightLeg_4_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        rightLeg_4_2 = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
-        dGeomSetBody (rightLeg_4_2,rightLeg[4]);
-        dGeomSetOffsetPosition(rightLeg_4_2,-m2.c[0], -m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(rightLeg[4],&m);
-        //------------------------------------------------
-        rightLeg[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.32708,3,0.038,0.013);
-        dBodySetMass(rightLeg[5],&m);
-        dBodySetQuaternion(rightLeg[5],q1);
-        rightLegGeom[5] = dCreateCylinder (iCub,0.038,0.013);dGeomSetBody(rightLegGeom[5],rightLeg[5]);
+        initLegsOn(world);
     }
     if (actTorso == "off"){
-
-        body_torso = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        torso0_geom = dCreateBox (iCub,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dMassSetBoxTotal(&m2,0.20297,0.004,0.13,0.054);
-        dGeomSetBody (torso0_geom,body_torso);
-        dGeomSetOffsetPosition(torso0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        double z_offset=0.5*fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)+(jP_leftLeg[5][2]-0.031/*leg cyl rad*/));
-
-        //torso1_geom = dCreateBox (iCub,0.176,0.063,0.127);dMassSetBoxTotal(&m2,3.623,0.176,0.063,0.127);
-        torso1_geom = dCreateCylinder (iCub,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dMassSetCylinderTotal(&m2,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));
-        //dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (torso1_geom,body_torso);
-        //dGeomSetOffsetRotation(torso3_geom,Rtx);
-        dGeomSetOffsetPosition(torso1_geom,-m2.c[0], jP_torso[0][2]-z_offset-m2.c[0], -0.006-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        torso2_geom = dCreateCylinder (iCub,0.031,0.097);dMassSetCylinderTotal(&m2,0.91179,3,0.031,0.097);
-        //dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (torso2_geom,body_torso);
-        //dGeomSetOffsetRotation(torso2_geom,Rtx);
-        dGeomSetOffsetPosition(torso2_geom,jP_torso[1][1]-jP_torso[0][1]-m2.c[0], jP_torso[1][2]-z_offset-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        /*torso3_geom = dCreateCylinder (iCub,0.04,0.0274);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (torso3_geom,body_torso);
-        dGeomSetOffsetRotation(torso3_geom,Rtx);
-        dGeomSetOffsetPosition(torso3_geom,-m2.c[0], 0.029-m2.c[0], -0.034-m2.c[0]);
-        dMassAdd (&m, &m2);*/
-
-        torso3_geom = dCreateCylinder (iCub,0.04,0.0274);dMassSetCylinderTotal(&m2,0.45165,3,0.04,0.0274);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (torso3_geom,body_torso);
-        dGeomSetOffsetRotation(torso3_geom,Rtx);
-        dGeomSetOffsetPosition(torso3_geom,jP_torso[2][1]-jP_torso[1][1]-m2.c[0], jP_torso[2][2]-z_offset-m2.c[0], jP_torso[1][0]-jP_torso[0][0]-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        dBodySetMass(body_torso,&m);
-
-        torso[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,0.076,0.118,0.109);
-        dBodySetMass(torso[4],&m);
-        torsoGeom[4] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[4],torso[4]);
-
-        torso[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,0.076,0.118,0.109);
-        dBodySetMass(torso[5],&m);
-        torsoGeom[5] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[5],torso[5]);
-
+        initTorsoOff(world);
     }else{
-        //TORSO CREATION
-        torso[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.20297,0.004,0.13,0.054); //Y, Z, X
-        dBodySetMass(torso[0],&m);
-        torsoGeom[0] = dCreateBox (iCub,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dGeomSetBody (torsoGeom[0],torso[0]);
-
-        torso[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));//dMassSetBoxTotal(&m,3.623,0.176,0.063,0.127); //Y, Z, X
-        dBodySetMass(torso[1],&m);
-        dBodySetQuaternion(torso[1],q1);
-        torsoGeom[1] = dCreateCylinder (iCub,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dGeomSetBody (torsoGeom[1],torso[1]);//dCreateBox (iCub,0.176,0.063,0.127);
-
-        torso[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.91179,3,0.031,0.097);
-        dBodySetMass(torso[2],&m);
-        torsoGeom[2] = dCreateCylinder (iCub,0.031,0.097);dGeomSetBody(torsoGeom[2],torso[2]);
-
-        torso[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
-        dBodySetMass(torso[3],&m);
-        dBodySetQuaternion(torso[3],q);
-        torsoGeom[3] = dCreateCylinder (iCub,0.04,0.0274);dGeomSetBody(torsoGeom[3],torso[3]);
-
-        torso[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);
-        dBodySetMass(torso[4],&m);
-        torsoGeom[4] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[4],torso[4]);
-
-        torso[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);
-        dBodySetMass(torso[5],&m);
-        torsoGeom[5] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+        initTorsoOn(world);
     }
     if (actLArm == "off"){
-
-        double offset[3];
-        offset[0]=jP_leftArm[1][0];
-        offset[1]=jP_leftArm[1][1]-0.5*(0.011+0.059) /*half clavicule height + half shoulder height*/;
-        offset[2]=jP_leftArm[1][2];
-
-        larm = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        larm0_geom = dCreateCylinder (iCub,0.031,0.011);dMassSetCylinderTotal(&m2,0.48278,3,0.031,0.011);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (larm0_geom,larm);
-        dGeomSetOffsetRotation(larm0_geom,Rtx);
-        dGeomSetOffsetPosition(larm0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        larm1_geom = dCreateCylinder (iCub,0.03,0.059);dMassSetCylinderTotal(&m2,0.20779,3,0.03,0.059);
-        dGeomSetBody (larm1_geom,larm);
-        dGeomSetOffsetPosition(larm1_geom,jP_leftArm[2][1]-offset[1]-m2.c[0], jP_leftArm[2][2]-offset[2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        larm2_geom = dCreateCylinder (iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m2,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (larm2_geom,larm);
-        dGeomSetOffsetRotation(larm2_geom,Rtx);
-        dGeomSetOffsetPosition(larm2_geom,jP_leftArm[4][1]-offset[1]-m2.c[0], 0.5*(jP_leftArm[4][2]+jP_leftArm[2][2])-offset[2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        larm3_geom = dCreateCylinder (iCub, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dMassSetCylinderTotal(&m2,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (larm3_geom,larm);
-        dGeomSetOffsetRotation(larm3_geom,Rtx);
-        dGeomSetOffsetPosition(larm3_geom,jP_leftArm[5][1]-offset[1]-m2.c[0], 0.5*(jP_leftArm[5][2]+jP_leftArm[3][2])-offset[2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        dBodySetMass(larm,&m);
-
+        initLeftArmOff(world);
     }else{
-        ///LEFT ARM
-        body[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
-        dBodySetMass(body[0],&m);
-        dBodySetQuaternion(body[0],q1);
-        geom[0] = dCreateCylinder (iCub,0.031,0.011);dGeomSetBody(geom[0],body[0]);
-
-        body[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
-        dBodySetMass(body[2],&m);
-        geom[2] = dCreateCylinder (iCub,0.03,0.059);dGeomSetBody(geom[2],body[2]);
-
-        body[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
-        dBodySetMass(body[4],&m);
-        dBodySetQuaternion(body[4],q);
-        geom[4] = dCreateCylinder(iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dGeomSetBody(geom[4],body[4]);
-
-        body[6] = dBodyCreate (world);dMassSetZero(&m);dMassSetSphereTotal(&m,0.050798,0.01);
-        dBodySetMass(body[6],&m);
-        geom[6] = dCreateSphere(iCub,0.01) ;dGeomSetBody(geom[6],body[6]);
-        //left lower arm
-        body[8] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
-        dBodySetMass(body[8],&m);
-        dBodySetQuaternion(body[8],q);
-        geom[8] = dCreateCylinder(iCub, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dGeomSetBody(geom[8],body[8]);
+        initLeftArmOn(world);
     }
     if (actRArm == "off"){
-
-        double offset[3];
-        offset[0]=jP_rightArm[1][0];
-        offset[1]=jP_rightArm[1][1]+0.5*(0.011+0.059) /*half clavicule height + half shoulder height*/;
-        offset[2]=jP_rightArm[1][2];
-
-        rarm = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        rarm0_geom = dCreateCylinder (iCub,0.031,0.011);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
-        dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
-        dGeomSetBody (rarm0_geom,rarm);
-        dGeomSetOffsetRotation(rarm0_geom,Rtx);
-        dGeomSetOffsetPosition(rarm0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        rarm1_geom = dCreateCylinder (iCub,0.03,0.059);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
-        dGeomSetBody (rarm1_geom,rarm);
-        dGeomSetOffsetPosition(rarm1_geom,jP_rightArm[2][1]-offset[1]-m2.c[0], jP_rightArm[2][2]-offset[2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        rarm2_geom = dCreateCylinder (iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (rarm2_geom,rarm);
-        dGeomSetOffsetRotation(rarm2_geom,Rtx);
-        dGeomSetOffsetPosition(rarm2_geom,jP_rightArm[4][1]-offset[1]-m2.c[0], 0.5*(jP_rightArm[4][2]+jP_rightArm[2][2])-offset[2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        rarm3_geom = dCreateCylinder (iCub, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (rarm3_geom,rarm);
-        dGeomSetOffsetRotation(rarm3_geom,Rtx);
-        dGeomSetOffsetPosition(rarm3_geom,jP_rightArm[5][1]-offset[1]-m2.c[0], 0.5*(jP_rightArm[5][2]+jP_rightArm[3][2])-offset[2]-m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        dBodySetMass(rarm,&m);
+        initRightArmOff(world);
     }else{
-        ///RIGHT ARM
-        body[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
-        dBodySetMass(body[1],&m);
-        dBodySetQuaternion(body[1],q1);
-        geom[1] = dCreateCylinder (iCub,0.031,0.011);dGeomSetBody(geom[1],body[1]);
-
-        body[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
-        dBodySetMass(body[3],&m);
-        geom[3] = dCreateCylinder (iCub,0.03,0.059);dGeomSetBody(geom[3],body[3]);
-
-        body[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
-        dBodySetMass(body[5],&m);
-        dBodySetQuaternion(body[5],q);
-        geom[5] = dCreateCylinder(iCub, 0.026 ,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));dGeomSetBody(geom[5],body[5]);
-
-        body[7] = dBodyCreate (world);dMassSetZero(&m);dMassSetSphereTotal(&m,0.050798,0.01);
-        dBodySetMass(body[7],&m);
-        geom[7] = dCreateSphere(iCub,0.01) ;dGeomSetBody(geom[7],body[7]);
-        //left lower arm
-        body[9] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
-        dBodySetMass(body[9],&m);
-        dBodySetQuaternion(body[9],q);
-        geom[9] = dCreateCylinder(iCub, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dGeomSetBody(geom[9],body[9]);
+        initRightArmOn(world);
     }
     if (actLHand == "off"){
-        l_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        l_hand0_geom = dCreateBox (iCub,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
-        dGeomSetBody (l_hand0_geom,l_hand);
-        dGeomSetOffsetPosition(l_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_hand1_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(l_hand1_geom,l_hand);
-        dGeomSetOffsetRotation(l_hand1_geom,Rtx);
-        dGeomSetOffsetPosition(l_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_hand2_geom = dCreateCylinder (iCub,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(l_hand2_geom,l_hand);
-        dGeomSetOffsetRotation(l_hand2_geom,Rtx);
-        dGeomSetOffsetPosition(l_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_hand3_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(l_hand3_geom,l_hand);
-        dGeomSetOffsetRotation(l_hand3_geom,Rtx);
-        dGeomSetOffsetPosition(l_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_hand4_geom = dCreateCylinder (iCub,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(l_hand4_geom,l_hand);
-        dGeomSetOffsetRotation(l_hand4_geom,Rtx);
-        dGeomSetOffsetPosition(l_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        l_hand5_geom = dCreateCylinder (iCub,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
-        dGeomSetBody(l_hand5_geom,l_hand);
-        dGeomSetOffsetPosition(l_hand5_geom,-m2.c[0], 0.016-m2.c[0], 0.0645-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        dBodySetMass(l_hand,&m);
-
+        initLeftHandOff(world);
     }else{
-        //Create all left fingers
-        body[10] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
-        dBodySetMass(body[10],&m);
-        geom[10] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[10],body[10]);
-
-        body[12] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
-        dBodySetMass(body[12],&m);
-        dBodySetQuaternion(body[12],q);
-        geom[12] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[12],body[12]);
-
-        body[13] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
-        dBodySetMass(body[13],&m);
-        dBodySetQuaternion(body[13],q);
-        geom[13] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[13],body[13]);
-
-        lhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        lhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (lhandfings0_geom,lhandfingers0);
-        dGeomSetOffsetRotation(lhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(lhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        lhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (lhandfings1_geom,Rtx);
-        dGeomSetBody (lhandfings1_geom,lhandfingers0);
-        dGeomSetOffsetRotation(lhandfings1_geom,Rtx);
-        dGeomSetOffsetPosition(lhandfings1_geom,-m2.c[0], -m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(lhandfingers0,&m);
-
-        body[16] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
-        dBodySetMass(body[16],&m);
-        dBodySetQuaternion(body[16],q);
-        geom[16] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[16],body[16]);
-
-        body[17] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.028);
-        dBodySetMass(body[17],&m);
-        dBodySetQuaternion(body[17],q);
-        geom[17] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[17],body[17]);
-
-        lhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        lhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.026);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (lhandfings2_geom,lhandfingers1);
-        dGeomSetOffsetRotation(lhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(lhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        lhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (lhandfings3_geom,Rtx);
-        dGeomSetBody (lhandfings3_geom,lhandfingers1);
-        dGeomSetOffsetRotation(lhandfings3_geom,Rtx);
-        dGeomSetOffsetPosition(lhandfings3_geom,-m2.c[0], 0.002-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        dMassAdd (&m, &m2);
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers1,&m);
-
-        body[20] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);dBodySetMass(body[20],&m);
-        dBodySetQuaternion(body[20],q);geom[20] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[20],body[20]);
-        body[21] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.024);dBodySetMass(body[21],&m);
-        dBodySetQuaternion(body[21],q);geom[21] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[21],body[21]);
-
-        lhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        lhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (lhandfings4_geom,lhandfingers2);
-        dGeomSetOffsetRotation(lhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(lhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
-        dMassAdd (&m, &m2);
-        //second object
-        lhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.019);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (lhandfings5_geom,Rtx);
-        dGeomSetBody (lhandfings5_geom,lhandfingers2);
-        dGeomSetOffsetRotation(lhandfings5_geom,Rtx);
-        dGeomSetOffsetPosition(lhandfings5_geom,-m2.c[0], 0.0055-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        dMassAdd (&m, &m2);
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers2,&m);
-
-        body[24] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[24],&m);
-        dBodySetQuaternion(body[24],q);geom[24] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[24],body[24]);
-        body[25] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[25],&m);
-        dBodySetQuaternion(body[25],q);geom[25] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[25],body[25]);
-
-        lhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        lhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (lhandfings6_geom,lhandfingers3);
-        dGeomSetOffsetRotation(lhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(lhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
-        dMassAdd (&m, &m2);
-        //second object
-        lhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (lhandfings7_geom,Rtx);
-        dGeomSetBody (lhandfings7_geom,lhandfingers3);
-        dGeomSetOffsetRotation(lhandfings7_geom,Rtx);
-        dGeomSetOffsetPosition(lhandfings7_geom,-m2.c[0], 0.007-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        dMassAdd (&m, &m2);
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers3,&m);
-
-        body[28] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
-        dBodySetMass(body[28],&m);//dBodySetQuaternion(body[28],q1);
-        geom[28] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[28],body[28]);
-
-        body[29] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);
-        dBodySetMass(body[29],&m);//dBodySetQuaternion(body[29],q1);
-        geom[29] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[29],body[29]);
-
-        body[30] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.016);
-        dBodySetMass(body[30],&m);//dBodySetQuaternion(body[30],q1);
-        geom[30] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[30],body[30]);
+        initLeftHandOn(world);
     }
 
     if (actRHand == "off"){
-        r_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-        r_hand0_geom = dCreateBox (iCub,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
-        dGeomSetBody (r_hand0_geom,r_hand);
-        dGeomSetOffsetPosition(r_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_hand1_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(r_hand1_geom,r_hand);
-        dGeomSetOffsetRotation(r_hand1_geom,Rtx);
-        dGeomSetOffsetPosition(r_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_hand2_geom = dCreateCylinder (iCub,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(r_hand2_geom,r_hand);
-        dGeomSetOffsetRotation(r_hand2_geom,Rtx);
-        dGeomSetOffsetPosition(r_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_hand3_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(r_hand3_geom,r_hand);
-        dGeomSetOffsetRotation(r_hand3_geom,Rtx);
-        dGeomSetOffsetPosition(r_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_hand4_geom = dCreateCylinder (iCub,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody(r_hand4_geom,r_hand);
-        dGeomSetOffsetRotation(r_hand4_geom,Rtx);
-        dGeomSetOffsetPosition(r_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        r_hand5_geom = dCreateCylinder (iCub,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
-        dGeomSetBody(r_hand5_geom,r_hand);
-        dGeomSetOffsetPosition(r_hand5_geom,-m2.c[0], 0.016-m2.c[0], 0.0645-m2.c[0]);
-        dMassAdd (&m, &m2);
-
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        dBodySetMass(r_hand,&m);
-
+        initRightHandOff(world);
     }else{
-        //Create all right fingers
-        body[11] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
-        dBodySetMass(body[11],&m);
-        geom[11] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[11],body[11]);
-
-        body[31] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
-        dBodySetMass(body[31],&m);
-        dBodySetQuaternion(body[31],q);
-        geom[31] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[31],body[31]);
-
-        body[32] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
-        dBodySetMass(body[32],&m);
-        dBodySetQuaternion(body[32],q);
-        geom[32] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[32],body[32]);
-
-        rhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        rhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (rhandfings0_geom,rhandfingers0);
-        dGeomSetOffsetRotation(rhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(rhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        rhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (rhandfings1_geom,Rtx);
-        dGeomSetBody (rhandfings1_geom,rhandfingers0);
-        dGeomSetOffsetRotation(rhandfings1_geom,Rtx);
-        dGeomSetOffsetPosition(rhandfings1_geom,-m2.c[0], -m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        //add mass accumulated
-        dMassAdd (&m, &m2);
-        //translate
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
-        //Set mass to the actual body
-        dBodySetMass(rhandfingers0,&m);
-
-        body[35] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
-        dBodySetMass(body[35],&m);
-        dBodySetQuaternion(body[35],q);
-        geom[35] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[35],body[35]);
-
-        body[36] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.028);
-        dBodySetMass(body[36],&m);
-        dBodySetQuaternion(body[36],q);
-        geom[36] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[36],body[36]);
-
-        rhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        rhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.026);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (rhandfings2_geom,rhandfingers1);
-        dGeomSetOffsetRotation(rhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(rhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
-        dMassAdd (&m, &m2);
-        //second object
-        rhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (rhandfings3_geom,Rtx);
-        dGeomSetBody (rhandfings3_geom,rhandfingers1);
-        dGeomSetOffsetRotation(rhandfings3_geom,Rtx);
-        dGeomSetOffsetPosition(rhandfings3_geom,-m2.c[0], 0.002-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        dMassAdd (&m, &m2);
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers1,&m);
-
-        body[39] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);dBodySetMass(body[39],&m);
-        dBodySetQuaternion(body[39],q);geom[39] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[39],body[39]);
-        body[40] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.024);dBodySetMass(body[40],&m);
-        dBodySetQuaternion(body[40],q);geom[40] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[40],body[40]);
-
-        rhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        rhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (rhandfings4_geom,rhandfingers2);
-        dGeomSetOffsetRotation(rhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(rhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
-        dMassAdd (&m, &m2);
-        //second object
-        rhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.019);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (rhandfings5_geom,Rtx);
-        dGeomSetBody (rhandfings5_geom,rhandfingers2);
-        dGeomSetOffsetRotation(rhandfings5_geom,Rtx);
-        dGeomSetOffsetPosition(rhandfings5_geom,-m2.c[0], 0.0055-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        dMassAdd (&m, &m2);
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers2,&m);
-
-        body[43] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[43],&m);
-        dBodySetQuaternion(body[43],q);geom[43] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[43],body[43]);
-        body[44] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[44],&m);
-        dBodySetQuaternion(body[44],q);geom[44] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[44],body[44]);
-
-        rhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-        rhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetBody (rhandfings6_geom,rhandfingers3);
-        dGeomSetOffsetRotation(rhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
-        dGeomSetOffsetPosition(rhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
-        dMassAdd (&m, &m2);
-        //second object
-        rhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
-        dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
-        dGeomSetRotation (rhandfings7_geom,Rtx);
-        dGeomSetBody (rhandfings7_geom,rhandfingers3);
-        dGeomSetOffsetRotation(rhandfings7_geom,Rtx);
-        dGeomSetOffsetPosition(rhandfings7_geom,-m2.c[0], 0.007-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
-        dMassAdd (&m, &m2);
-        dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers3,&m);
-
-        body[47] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
-        dBodySetMass(body[47],&m);//dBodySetQuaternion(body[28],q1);
-        geom[47] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[47],body[47]);
-
-        body[48] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);
-        dBodySetMass(body[48],&m);//dBodySetQuaternion(body[29],q1);
-        geom[48] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[48],body[48]);
-
-        body[49] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.016);
-        dBodySetMass(body[49],&m);//dBodySetQuaternion(body[30],q1);
-        geom[49] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[49],body[49]);
+        initRightHandOn(world);
     }
 
-    head = dBodyCreate (world);
-    if (actHead == "off"){
+    initHead(world);
 
+    initEyes(world);
+
+    dMass m;
+    inertialBody = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.0001,0.03,0.02,0.05);
+    dBodySetMass(inertialBody,&m);
+    inertialGeom = dCreateBox (iCub,0.03,0.02,0.05);dGeomSetBody (inertialGeom,inertialBody);
+
+    setPosition( X, Y, Z);
+
+    if (actElevation == "on")
+    {
+        elevJoint = dJointCreateFixed(world, 0);
+        if (actTorso == "off"){
+            dJointAttach (elevJoint,body_torso,0 );dJointSetFixed(elevJoint);
+        }else{
+            //dJointAttach (elevJoint,torso[0],0 );dJointSetFixed(elevJoint);
+        }
+    }
+    //joints initialization
+    for (int x=0; x<6; x++){
+        LLegjoints[x] = dJointCreateHinge(world, 0);
+        RLegjoints[x] = dJointCreateHinge(world, 0);
+    }
+    for (int x=0; x<5; x++){
+        Torsojoints[x] = dJointCreateHinge(world,0);
+    }
+    for (int x=0; x<5; x++){
+        LAjoints[x] = dJointCreateHinge(world,0);
+        RAjoints[x] = dJointCreateHinge(world,0);
+    }
+    for(int x = 5; x < 6; x++) {
+        LAjoints[x] = dJointCreateUniversal(world, 0);
+        RAjoints[x] = dJointCreateUniversal(world, 0);
+    }
+    for(int x = 6; x < 22; x++) {
+        LAjoints[x] = dJointCreateHinge(world, 0);
+        RAjoints[x] = dJointCreateHinge(world, 0);
+    }
+    for(int x = 22; x < 23; x++) {
+        LAjoints[x] = dJointCreateUniversal(world, 0);
+        RAjoints[x] = dJointCreateUniversal(world, 0);
+    }
+    for(int x = 23; x < 25; x++) {
+        LAjoints[x] = dJointCreateHinge(world, 0);
+        RAjoints[x] = dJointCreateHinge(world, 0);
+    }
+    for(int x = 0; x <6; x++) {Hjoints[x] = dJointCreateHinge(world, 0);}
+
+    initLegJoints();
+    initTorsoJoints(odeParameters);
+
+    initLeftArmJoints(odeParameters);
+    initLeftHandJoints();
+
+    initRightArmJoints(odeParameters);
+    initRightHandJoints();
+    
+    initHeadJoints();
+    
+    //joint parameters
+    for (int x=0; x<6; x++){
+        //dJointSetHingeParam(LLegjoints[x], dParamVel, LLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
+        dJointSetHingeParam(LLegjoints[x], dParamFMax, odeParameters.motorMaxTorque);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
+
+        dJointSetHingeParam(RLegjoints[x], dParamVel, RLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
+        dJointSetHingeParam(RLegjoints[x], dParamFMax,odeParameters.motorMaxTorque);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
+    }
+    for (int x=0; x<5; x++){
+        dJointSetHingeParam(Torsojoints[x], dParamVel, Torso_speed[x]);
+        dJointSetHingeParam(Torsojoints[x], dParamFMax,odeParameters.motorMaxTorque);
+    }
+    for (int x=0; x<5; x++){
+        dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
+        dJointSetHingeParam(LAjoints[x], dParamFMax,odeParameters.motorMaxTorque);
+        dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
+        dJointSetHingeParam(RAjoints[x], dParamFMax,odeParameters.motorMaxTorque);
+    }
+    for (int x=5; x<6;x++){//for the hands
+        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax,odeParameters.motorMaxTorque);
+        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax2,odeParameters.motorMaxTorque);
+
+        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax,odeParameters.motorMaxTorque);
+        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax2,odeParameters.motorMaxTorque);
+    }
+    for (int x=6; x<25; x++){//22
+        if (x!=9 && x!=13 && x!=17 && x!=21 && x!=22){
+            dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
+            dJointSetHingeParam(LAjoints[x], dParamFMax,odeParameters.motorMaxTorque);
+            dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
+            dJointSetHingeParam(RAjoints[x], dParamFMax,odeParameters.motorMaxTorque);
+        }
+    }
+    for (int x=22; x<23;x++){//for the hands
+        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax, odeParameters.motorMaxTorque);
+        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
+        dJointSetUniversalParam(LAjoints[x], dParamFMax2, odeParameters.motorMaxTorque);
+
+        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax, odeParameters.motorMaxTorque);
+        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
+        dJointSetUniversalParam(RAjoints[x], dParamFMax2, odeParameters.motorMaxTorque);
+    }
+
+    dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
+    dJointSetHingeParam(Hjoints[0], dParamFMax, odeParameters.motorMaxTorque);
+    if (actHead ){
+        /*-------------head parameters--------------*/
+        for (int x=1; x<6; x++){//Joint parameters
+            dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
+            dJointSetHingeParam(Hjoints[x], dParamFMax, odeParameters.motorMaxTorque);
+        }
+    }
+
+    //----------------------------MOVE SHOULDERS 15 DEG------------------//
+    dQuaternion qShould,qShould1;
+    dQFromAxisAndAngle(qShould,0,1,0,0.2618);
+    dQFromAxisAndAngle(qShould1,0,1,0,-0.2618);
+    dBodySetQuaternion (torso[5], qShould);
+    dBodySetQuaternion (torso[4], qShould1);
+    dBodySetLinearVel(torso[5], 0.0, 0.0, 0.0);
+    dBodySetAngularVel(torso[5], 0.0, 0.0, 0.0);
+    dBodySetLinearVel(torso[4], 0.0, 0.0, 0.0);
+    dBodySetAngularVel(torso[4], 0.0, 0.0, 0.0);
+
+    /* Create a fixed hip joint */
+    if (actfixedHip == "on"){// && actElevation == "off") {
+        fixedHipJoint = dJointCreateFixed(world, 0);
+        if (actTorso == "off") {
+            // attach to the lower torso
+            dJointAttach (fixedHipJoint,body_torso,0);
+            // move the torso up slightly (0.03 units)???
+            //dBodySetPosition (body_torso,   0.0, 0.4912, -0.034);
+        } else {
+            // attach to the lower torso
+            dJointAttach (fixedHipJoint,torso[0],0);
+            // move the torso up slightly (0.03 units)???
+            //dBodySetPosition (torso[0],   0.0, 0.4912, -0.034);
+        }
+        // this call fixes the joint to its current position in 3D space
+        dJointSetFixed (fixedHipJoint);
+    }
+    inertialJoint = dJointCreateFixed(world, 0);
+    dJointAttach (inertialJoint,inertialBody,head);
+    dJointSetFixed (inertialJoint);
+}
+
+void ICubSim::initLegsOff(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+
+    legs = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    l_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
+    dGeomSetBody (l_leg0_geom,legs);
+    dGeomSetOffsetPosition(l_leg0_geom,-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_leg1_geom = dCreateCylinder (iCub,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
+    dGeomSetBody (l_leg1_geom,legs);
+    dGeomSetOffsetPosition(l_leg1_geom,-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_leg2_geom = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (l_leg2_geom,legs);
+    dGeomSetOffsetRotation(l_leg2_geom,Rtx);
+    dGeomSetOffsetPosition(l_leg2_geom,-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_leg3_geom = dCreateCylinder (iCub,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (l_leg3_geom,legs);
+    dGeomSetOffsetRotation(l_leg3_geom,Rtx);
+    dGeomSetOffsetPosition(l_leg3_geom,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]+jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_leg4_geom = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (l_leg4_geom,legs);
+    dGeomSetOffsetRotation(l_leg4_geom,Rtx);
+    dGeomSetOffsetPosition(l_leg4_geom,-m2.c[0], jP_leftLeg[2][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_leg5_geom = dCreateCylinder (iCub,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (l_leg5_geom,legs);
+    dGeomSetOffsetRotation(l_leg5_geom,Rtx);
+    dGeomSetOffsetPosition(l_leg5_geom,-m2.c[0], 0.5*fabs(jP_leftLeg[3][2]+jP_leftLeg[2][2])-m2.c[0],-m2.c[0]);
+
+    l_leg6_geom = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomSetBody (l_leg6_geom,legs);
+    dGeomSetOffsetPosition(l_leg6_geom,-m2.c[0], jP_leftLeg[4][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_leg7_geom = dCreateCylinder (iCub,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (l_leg7_geom,legs);
+    dGeomSetOffsetRotation(l_leg7_geom,Rtx);
+    dGeomSetOffsetPosition(l_leg7_geom,-fabs(jP_leftLeg[0][1]-0.0295)-m2.c[0], jP_leftLeg[4][2]-m2.c[0],-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    double r_foot_y=fabs(jP_leftLeg[0][1]-jP_rightLeg[0][1]);
+
+    r_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
+    dGeomSetBody (r_leg0_geom,legs);
+    dGeomSetOffsetPosition(r_leg0_geom,-r_foot_y-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_leg1_geom = dCreateCylinder (iCub,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
+    dGeomSetBody (r_leg1_geom,legs);
+    dGeomSetOffsetPosition(r_leg1_geom,-r_foot_y-m2.c[0],jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_leg2_geom = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (r_leg2_geom,legs);
+    dGeomSetOffsetRotation(r_leg2_geom,Rtx);
+    dGeomSetOffsetPosition(r_leg2_geom,-r_foot_y-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_leg3_geom = dCreateCylinder (iCub,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (r_leg3_geom,legs);
+    dGeomSetOffsetRotation(r_leg3_geom,Rtx);
+    dGeomSetOffsetPosition(r_leg3_geom,-r_foot_y-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]+jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_leg4_geom = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (r_leg4_geom,legs);
+    dGeomSetOffsetRotation(r_leg4_geom,Rtx);
+    dGeomSetOffsetPosition(r_leg4_geom,-r_foot_y-m2.c[0], jP_rightLeg[2][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_leg5_geom = dCreateCylinder (iCub,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (r_leg5_geom,legs);
+    dGeomSetOffsetRotation(r_leg5_geom,Rtx);
+    dGeomSetOffsetPosition(r_leg5_geom,-r_foot_y-m2.c[0],0.5*fabs(jP_leftLeg[3][2]+jP_leftLeg[2][2])-m2.c[0], -m2.c[0]);
+
+    r_leg6_geom = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomSetBody (r_leg6_geom,legs);
+    dGeomSetOffsetPosition(r_leg6_geom,-r_foot_y-m2.c[0], jP_rightLeg[4][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_leg7_geom = dCreateCylinder (iCub,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (r_leg7_geom,legs);
+    dGeomSetOffsetRotation(r_leg7_geom,Rtx);
+    dGeomSetOffsetPosition(r_leg7_geom,fabs(jP_rightLeg[0][1]+0.0295)-r_foot_y-m2.c[0], jP_rightLeg[4][2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    dBodySetMass(legs,&m);
+}
+
+void ICubSim::initLegsOn(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+    //rotation matrises
+    dQuaternion q1;
+    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
+    
+    //left lower parts
+    leftLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
+    dBodySetMass(leftLeg[0],&m);
+    leftLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (leftLegGeom[0],leftLeg[0]);
+
+    leftLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
+    dBodySetMass(leftLeg[1],&m);
+    leftLegGeom[1] = dCreateCylinder (iCub,0.027,0.095);dGeomSetBody(leftLegGeom[1],leftLeg[1]);
+
+    //----------------------------------------------------------ankle encapsulated objects
+    leftLeg[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    leftLeg_2_1 = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (leftLeg_2_1,leftLeg[2]);
+    dGeomSetOffsetRotation(leftLeg_2_1,Rtx);//dGeomSetPosition (leftLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(leftLeg_2_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    leftLeg_2_2 = dCreateCylinder (iCub,0.0315,fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (leftLeg_2_2,leftLeg[2]);
+    dGeomSetOffsetRotation(leftLeg_2_2,Rtx);
+    dGeomSetOffsetPosition(leftLeg_2_2,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(leftLeg[2],&m);
+    //----------------------------------
+    leftLeg[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    leftLeg_3_1 = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (leftLeg_3_1,leftLeg[3]);
+    dGeomSetOffsetRotation(leftLeg_3_1,Rtx);//dGeomSetPosition (leftLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(leftLeg_3_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    leftLeg_3_2 = dCreateCylinder (iCub,0.034,fabs(jP_leftLeg[3][2]-jP_leftLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (leftLeg_3_2,Rtx);
+    dGeomSetBody (leftLeg_3_2,leftLeg[3]);
+    dGeomSetOffsetRotation(leftLeg_3_2,Rtx);
+    dGeomSetOffsetPosition(leftLeg_3_2,-m2.c[0], 0.5*fabs(jP_leftLeg[3][2]-jP_leftLeg[2][2])/*0.1065*/-m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(leftLeg[3],&m);
+    //---------------------------------------------------
+    leftLeg[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    leftLeg_4_1 = dCreateSphere(iCub,0.017);dMassSetSphereTotal(&m,0.01,0.017);
+    dGeomSetBody (leftLeg_4_1,leftLeg[4]);
+    dGeomSetOffsetPosition(leftLeg_4_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    leftLeg_4_2 = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomSetBody (leftLeg_4_2,leftLeg[4]);
+    dGeomSetOffsetPosition(leftLeg_4_2,-m2.c[0], -m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(leftLeg[4],&m);
+    //------------------------------------------------
+    leftLeg[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.32708,3,0.038,0.013);
+    dBodySetMass(leftLeg[5],&m);
+    dBodySetQuaternion(leftLeg[5],q1);
+    leftLegGeom[5] = dCreateCylinder (iCub,0.038,0.013);dGeomSetBody(leftLegGeom[5],leftLeg[5]);
+    //--------------------------------------------------------
+    //RIGHT LEG
+    //--------------------------------------------------------
+    //right lower parts
+    rightLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
+    dBodySetMass(rightLeg[0],&m);
+    rightLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (rightLegGeom[0],rightLeg[0]);
+
+    rightLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
+    dBodySetMass(rightLeg[1],&m);
+    rightLegGeom[1] = dCreateCylinder (iCub,0.027,0.095);dGeomSetBody(rightLegGeom[1],rightLeg[1]);
+    //----------------------------------------------------------ankle encapsulated objects
+    rightLeg[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    rightLeg_2_1 = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (rightLeg_2_1,rightLeg[2]);
+    dGeomSetOffsetRotation(rightLeg_2_1,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(rightLeg_2_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    rightLeg_2_2 = dCreateCylinder (iCub,0.0315,fabs(jP_rightLeg[2][2]-jP_rightLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (rightLeg_2_2,Rtx);
+    dGeomSetBody (rightLeg_2_2,rightLeg[2]);
+    dGeomSetOffsetRotation(rightLeg_2_2,Rtx);
+    dGeomSetOffsetPosition(rightLeg_2_2,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(rightLeg[2],&m);
+    //----------------------------------
+    rightLeg[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    rightLeg_3_1 = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (rightLeg_3_1,rightLeg[3]);
+    dGeomSetOffsetRotation(rightLeg_3_1,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(rightLeg_3_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    rightLeg_3_2 = dCreateCylinder (iCub,0.034,fabs(jP_rightLeg[3][2]-jP_rightLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (rightLeg_3_2,Rtx);
+    dGeomSetBody (rightLeg_3_2,rightLeg[3]);
+    dGeomSetOffsetRotation(rightLeg_3_2,Rtx);
+    dGeomSetOffsetPosition(rightLeg_3_2,-m2.c[0],0.5*fabs(jP_rightLeg[3][2]-jP_rightLeg[2][2])-m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(rightLeg[3],&m);
+    //---------------------------------------------------
+    rightLeg[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    rightLeg_4_1 = dCreateSphere(iCub,0.017);dMassSetSphereTotal(&m,0.01,0.017);
+    dGeomSetBody (rightLeg_4_1,rightLeg[4]);
+    dGeomSetOffsetPosition(rightLeg_4_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    rightLeg_4_2 = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomSetBody (rightLeg_4_2,rightLeg[4]);
+    dGeomSetOffsetPosition(rightLeg_4_2,-m2.c[0], -m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(rightLeg[4],&m);
+    //------------------------------------------------
+    rightLeg[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.32708,3,0.038,0.013);
+    dBodySetMass(rightLeg[5],&m);
+    dBodySetQuaternion(rightLeg[5],q1);
+    rightLegGeom[5] = dCreateCylinder (iCub,0.038,0.013);dGeomSetBody(rightLegGeom[5],rightLeg[5]);
+}
+
+void ICubSim::initTorsoOff(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+
+    body_torso = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    torso0_geom = dCreateBox (iCub,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dMassSetBoxTotal(&m2,0.20297,0.004,0.13,0.054);
+    dGeomSetBody (torso0_geom,body_torso);
+    dGeomSetOffsetPosition(torso0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    double z_offset=0.5*fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)+(jP_leftLeg[5][2]-0.031/*leg cyl rad*/));
+
+    //torso1_geom = dCreateBox (iCub,0.176,0.063,0.127);dMassSetBoxTotal(&m2,3.623,0.176,0.063,0.127);
+    torso1_geom = dCreateCylinder (iCub,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dMassSetCylinderTotal(&m2,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));
+    //dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (torso1_geom,body_torso);
+    //dGeomSetOffsetRotation(torso3_geom,Rtx);
+    dGeomSetOffsetPosition(torso1_geom,-m2.c[0], jP_torso[0][2]-z_offset-m2.c[0], -0.006-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    torso2_geom = dCreateCylinder (iCub,0.031,0.097);dMassSetCylinderTotal(&m2,0.91179,3,0.031,0.097);
+    //dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (torso2_geom,body_torso);
+    //dGeomSetOffsetRotation(torso2_geom,Rtx);
+    dGeomSetOffsetPosition(torso2_geom,jP_torso[1][1]-jP_torso[0][1]-m2.c[0], jP_torso[1][2]-z_offset-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    /*torso3_geom = dCreateCylinder (iCub,0.04,0.0274);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (torso3_geom,body_torso);
+    dGeomSetOffsetRotation(torso3_geom,Rtx);
+    dGeomSetOffsetPosition(torso3_geom,-m2.c[0], 0.029-m2.c[0], -0.034-m2.c[0]);
+    dMassAdd (&m, &m2);*/
+
+    torso3_geom = dCreateCylinder (iCub,0.04,0.0274);dMassSetCylinderTotal(&m2,0.45165,3,0.04,0.0274);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (torso3_geom,body_torso);
+    dGeomSetOffsetRotation(torso3_geom,Rtx);
+    dGeomSetOffsetPosition(torso3_geom,jP_torso[2][1]-jP_torso[1][1]-m2.c[0], jP_torso[2][2]-z_offset-m2.c[0], jP_torso[1][0]-jP_torso[0][0]-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    dBodySetMass(body_torso,&m);
+
+    torso[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,0.076,0.118,0.109);
+    dBodySetMass(torso[4],&m);
+    torsoGeom[4] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[4],torso[4]);
+
+    torso[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,0.076,0.118,0.109);
+    dBodySetMass(torso[5],&m);
+    torsoGeom[5] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+}
+
+void ICubSim::initTorsoOn(dWorldID world)
+{
+    dMass m;
+    dQuaternion q, q1;
+    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
+    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
+
+    //TORSO CREATION
+    torso[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.20297,0.004,0.13,0.054); //Y, Z, X
+    dBodySetMass(torso[0],&m);
+    torsoGeom[0] = dCreateBox (iCub,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dGeomSetBody (torsoGeom[0],torso[0]);
+
+    torso[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));//dMassSetBoxTotal(&m,3.623,0.176,0.063,0.127); //Y, Z, X
+    dBodySetMass(torso[1],&m);
+    dBodySetQuaternion(torso[1],q1);
+    torsoGeom[1] = dCreateCylinder (iCub,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dGeomSetBody (torsoGeom[1],torso[1]);//dCreateBox (iCub,0.176,0.063,0.127);
+
+    torso[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.91179,3,0.031,0.097);
+    dBodySetMass(torso[2],&m);
+    torsoGeom[2] = dCreateCylinder (iCub,0.031,0.097);dGeomSetBody(torsoGeom[2],torso[2]);
+
+    torso[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
+    dBodySetMass(torso[3],&m);
+    dBodySetQuaternion(torso[3],q);
+    torsoGeom[3] = dCreateCylinder (iCub,0.04,0.0274);dGeomSetBody(torsoGeom[3],torso[3]);
+
+    torso[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);
+    dBodySetMass(torso[4],&m);
+    torsoGeom[4] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[4],torso[4]);
+
+    torso[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);
+    dBodySetMass(torso[5],&m);
+    torsoGeom[5] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+}
+
+void ICubSim::initLeftArmOff(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+
+    double offset[3];
+    offset[0]=jP_leftArm[1][0];
+    offset[1]=jP_leftArm[1][1]-0.5*(0.011+0.059) /*half clavicule height + half shoulder height*/;
+    offset[2]=jP_leftArm[1][2];
+
+    larm = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    larm0_geom = dCreateCylinder (iCub,0.031,0.011);dMassSetCylinderTotal(&m2,0.48278,3,0.031,0.011);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (larm0_geom,larm);
+    dGeomSetOffsetRotation(larm0_geom,Rtx);
+    dGeomSetOffsetPosition(larm0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    larm1_geom = dCreateCylinder (iCub,0.03,0.059);dMassSetCylinderTotal(&m2,0.20779,3,0.03,0.059);
+    dGeomSetBody (larm1_geom,larm);
+    dGeomSetOffsetPosition(larm1_geom,jP_leftArm[2][1]-offset[1]-m2.c[0], jP_leftArm[2][2]-offset[2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    larm2_geom = dCreateCylinder (iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m2,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (larm2_geom,larm);
+    dGeomSetOffsetRotation(larm2_geom,Rtx);
+    dGeomSetOffsetPosition(larm2_geom,jP_leftArm[4][1]-offset[1]-m2.c[0], 0.5*(jP_leftArm[4][2]+jP_leftArm[2][2])-offset[2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    larm3_geom = dCreateCylinder (iCub, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dMassSetCylinderTotal(&m2,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (larm3_geom,larm);
+    dGeomSetOffsetRotation(larm3_geom,Rtx);
+    dGeomSetOffsetPosition(larm3_geom,jP_leftArm[5][1]-offset[1]-m2.c[0], 0.5*(jP_leftArm[5][2]+jP_leftArm[3][2])-offset[2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    dBodySetMass(larm,&m);
+}
+
+void ICubSim::initLeftArmOn(dWorldID world)
+{
+    dMass m, m2;
+    //rotation matrises
+    dQuaternion q, q1;
+    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
+    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
+
+    ///LEFT ARM
+    body[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
+    dBodySetMass(body[0],&m);
+    dBodySetQuaternion(body[0],q1);
+    geom[0] = dCreateCylinder (iCub,0.031,0.011);dGeomSetBody(geom[0],body[0]);
+
+    body[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
+    dBodySetMass(body[2],&m);
+    geom[2] = dCreateCylinder (iCub,0.03,0.059);dGeomSetBody(geom[2],body[2]);
+
+    body[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
+    dBodySetMass(body[4],&m);
+    dBodySetQuaternion(body[4],q);
+    geom[4] = dCreateCylinder(iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dGeomSetBody(geom[4],body[4]);
+
+    body[6] = dBodyCreate (world);dMassSetZero(&m);dMassSetSphereTotal(&m,0.050798,0.01);
+    dBodySetMass(body[6],&m);
+    geom[6] = dCreateSphere(iCub,0.01) ;dGeomSetBody(geom[6],body[6]);
+    //left lower arm
+    body[8] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
+    dBodySetMass(body[8],&m);
+    dBodySetQuaternion(body[8],q);
+    geom[8] = dCreateCylinder(iCub, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dGeomSetBody(geom[8],body[8]);
+}
+
+void ICubSim::initRightArmOff(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+
+    double offset[3];
+    offset[0]=jP_rightArm[1][0];
+    offset[1]=jP_rightArm[1][1]+0.5*(0.011+0.059) /*half clavicule height + half shoulder height*/;
+    offset[2]=jP_rightArm[1][2];
+
+    rarm = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    rarm0_geom = dCreateCylinder (iCub,0.031,0.011);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
+    dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
+    dGeomSetBody (rarm0_geom,rarm);
+    dGeomSetOffsetRotation(rarm0_geom,Rtx);
+    dGeomSetOffsetPosition(rarm0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    rarm1_geom = dCreateCylinder (iCub,0.03,0.059);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
+    dGeomSetBody (rarm1_geom,rarm);
+    dGeomSetOffsetPosition(rarm1_geom,jP_rightArm[2][1]-offset[1]-m2.c[0], jP_rightArm[2][2]-offset[2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    rarm2_geom = dCreateCylinder (iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (rarm2_geom,rarm);
+    dGeomSetOffsetRotation(rarm2_geom,Rtx);
+    dGeomSetOffsetPosition(rarm2_geom,jP_rightArm[4][1]-offset[1]-m2.c[0], 0.5*(jP_rightArm[4][2]+jP_rightArm[2][2])-offset[2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    rarm3_geom = dCreateCylinder (iCub, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (rarm3_geom,rarm);
+    dGeomSetOffsetRotation(rarm3_geom,Rtx);
+    dGeomSetOffsetPosition(rarm3_geom,jP_rightArm[5][1]-offset[1]-m2.c[0], 0.5*(jP_rightArm[5][2]+jP_rightArm[3][2])-offset[2]-m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    dBodySetMass(rarm,&m);
+}
+
+void ICubSim::initRightArmOn(dWorldID world)
+{
+    dMass m, m2;
+    //rotation matrises
+    dQuaternion q, q1;
+    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
+    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
+
+    ///RIGHT ARM
+    body[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
+    dBodySetMass(body[1],&m);
+    dBodySetQuaternion(body[1],q1);
+    geom[1] = dCreateCylinder (iCub,0.031,0.011);dGeomSetBody(geom[1],body[1]);
+
+    body[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
+    dBodySetMass(body[3],&m);
+    geom[3] = dCreateCylinder (iCub,0.03,0.059);dGeomSetBody(geom[3],body[3]);
+
+    body[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
+    dBodySetMass(body[5],&m);
+    dBodySetQuaternion(body[5],q);
+    geom[5] = dCreateCylinder(iCub, 0.026 ,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));dGeomSetBody(geom[5],body[5]);
+
+    body[7] = dBodyCreate (world);dMassSetZero(&m);dMassSetSphereTotal(&m,0.050798,0.01);
+    dBodySetMass(body[7],&m);
+    geom[7] = dCreateSphere(iCub,0.01) ;dGeomSetBody(geom[7],body[7]);
+    //left lower arm
+    body[9] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
+    dBodySetMass(body[9],&m);
+    dBodySetQuaternion(body[9],q);
+    geom[9] = dCreateCylinder(iCub, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dGeomSetBody(geom[9],body[9]);
+}
+
+void ICubSim::initLeftHandOff(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+
+    l_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    l_hand0_geom = dCreateBox (iCub,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    dGeomSetBody (l_hand0_geom,l_hand);
+    dGeomSetOffsetPosition(l_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_hand1_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(l_hand1_geom,l_hand);
+    dGeomSetOffsetRotation(l_hand1_geom,Rtx);
+    dGeomSetOffsetPosition(l_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_hand2_geom = dCreateCylinder (iCub,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(l_hand2_geom,l_hand);
+    dGeomSetOffsetRotation(l_hand2_geom,Rtx);
+    dGeomSetOffsetPosition(l_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_hand3_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(l_hand3_geom,l_hand);
+    dGeomSetOffsetRotation(l_hand3_geom,Rtx);
+    dGeomSetOffsetPosition(l_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_hand4_geom = dCreateCylinder (iCub,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(l_hand4_geom,l_hand);
+    dGeomSetOffsetRotation(l_hand4_geom,Rtx);
+    dGeomSetOffsetPosition(l_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    l_hand5_geom = dCreateCylinder (iCub,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
+    dGeomSetBody(l_hand5_geom,l_hand);
+    dGeomSetOffsetPosition(l_hand5_geom,-m2.c[0], 0.016-m2.c[0], 0.0645-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    dBodySetMass(l_hand,&m);
+}
+
+void ICubSim::initLeftHandOn(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+    //rotation matrises
+    dQuaternion q;
+    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
+
+    //Create all left fingers
+    body[10] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    dBodySetMass(body[10],&m);
+    geom[10] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[10],body[10]);
+
+    body[12] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    dBodySetMass(body[12],&m);
+    dBodySetQuaternion(body[12],q);
+    geom[12] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[12],body[12]);
+
+    body[13] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    dBodySetMass(body[13],&m);
+    dBodySetQuaternion(body[13],q);
+    geom[13] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[13],body[13]);
+
+    lhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    lhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (lhandfings0_geom,lhandfingers0);
+    dGeomSetOffsetRotation(lhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(lhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    lhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (lhandfings1_geom,Rtx);
+    dGeomSetBody (lhandfings1_geom,lhandfingers0);
+    dGeomSetOffsetRotation(lhandfings1_geom,Rtx);
+    dGeomSetOffsetPosition(lhandfings1_geom,-m2.c[0], -m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(lhandfingers0,&m);
+
+    body[16] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    dBodySetMass(body[16],&m);
+    dBodySetQuaternion(body[16],q);
+    geom[16] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[16],body[16]);
+
+    body[17] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.028);
+    dBodySetMass(body[17],&m);
+    dBodySetQuaternion(body[17],q);
+    geom[17] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[17],body[17]);
+
+    lhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    lhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.026);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (lhandfings2_geom,lhandfingers1);
+    dGeomSetOffsetRotation(lhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(lhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    lhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (lhandfings3_geom,Rtx);
+    dGeomSetBody (lhandfings3_geom,lhandfingers1);
+    dGeomSetOffsetRotation(lhandfings3_geom,Rtx);
+    dGeomSetOffsetPosition(lhandfings3_geom,-m2.c[0], 0.002-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    dMassAdd (&m, &m2);
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers1,&m);
+
+    body[20] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);dBodySetMass(body[20],&m);
+    dBodySetQuaternion(body[20],q);geom[20] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[20],body[20]);
+    body[21] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.024);dBodySetMass(body[21],&m);
+    dBodySetQuaternion(body[21],q);geom[21] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[21],body[21]);
+
+    lhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    lhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (lhandfings4_geom,lhandfingers2);
+    dGeomSetOffsetRotation(lhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(lhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
+    dMassAdd (&m, &m2);
+    //second object
+    lhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.019);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (lhandfings5_geom,Rtx);
+    dGeomSetBody (lhandfings5_geom,lhandfingers2);
+    dGeomSetOffsetRotation(lhandfings5_geom,Rtx);
+    dGeomSetOffsetPosition(lhandfings5_geom,-m2.c[0], 0.0055-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    dMassAdd (&m, &m2);
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers2,&m);
+
+    body[24] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[24],&m);
+    dBodySetQuaternion(body[24],q);geom[24] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[24],body[24]);
+    body[25] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[25],&m);
+    dBodySetQuaternion(body[25],q);geom[25] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[25],body[25]);
+
+    lhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    lhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (lhandfings6_geom,lhandfingers3);
+    dGeomSetOffsetRotation(lhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(lhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
+    dMassAdd (&m, &m2);
+    //second object
+    lhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (lhandfings7_geom,Rtx);
+    dGeomSetBody (lhandfings7_geom,lhandfingers3);
+    dGeomSetOffsetRotation(lhandfings7_geom,Rtx);
+    dGeomSetOffsetPosition(lhandfings7_geom,-m2.c[0], 0.007-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    dMassAdd (&m, &m2);
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers3,&m);
+
+    body[28] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    dBodySetMass(body[28],&m);//dBodySetQuaternion(body[28],q1);
+    geom[28] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[28],body[28]);
+
+    body[29] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);
+    dBodySetMass(body[29],&m);//dBodySetQuaternion(body[29],q1);
+    geom[29] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[29],body[29]);
+
+    body[30] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.016);
+    dBodySetMass(body[30],&m);//dBodySetQuaternion(body[30],q1);
+    geom[30] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[30],body[30]);
+}
+
+void ICubSim::initRightHandOff(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+
+    r_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
+    r_hand0_geom = dCreateBox (iCub,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    dGeomSetBody (r_hand0_geom,r_hand);
+    dGeomSetOffsetPosition(r_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_hand1_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(r_hand1_geom,r_hand);
+    dGeomSetOffsetRotation(r_hand1_geom,Rtx);
+    dGeomSetOffsetPosition(r_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_hand2_geom = dCreateCylinder (iCub,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(r_hand2_geom,r_hand);
+    dGeomSetOffsetRotation(r_hand2_geom,Rtx);
+    dGeomSetOffsetPosition(r_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_hand3_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(r_hand3_geom,r_hand);
+    dGeomSetOffsetRotation(r_hand3_geom,Rtx);
+    dGeomSetOffsetPosition(r_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_hand4_geom = dCreateCylinder (iCub,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody(r_hand4_geom,r_hand);
+    dGeomSetOffsetRotation(r_hand4_geom,Rtx);
+    dGeomSetOffsetPosition(r_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    r_hand5_geom = dCreateCylinder (iCub,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
+    dGeomSetBody(r_hand5_geom,r_hand);
+    dGeomSetOffsetPosition(r_hand5_geom,-m2.c[0], 0.016-m2.c[0], 0.0645-m2.c[0]);
+    dMassAdd (&m, &m2);
+
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    dBodySetMass(r_hand,&m);
+}
+
+void ICubSim::initRightHandOn(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+    //rotation matrises
+    dQuaternion q;
+    dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
+
+    //Create all right fingers
+    body[11] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    dBodySetMass(body[11],&m);
+    geom[11] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[11],body[11]);
+
+    body[31] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    dBodySetMass(body[31],&m);
+    dBodySetQuaternion(body[31],q);
+    geom[31] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[31],body[31]);
+
+    body[32] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    dBodySetMass(body[32],&m);
+    dBodySetQuaternion(body[32],q);
+    geom[32] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[32],body[32]);
+
+    rhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    rhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (rhandfings0_geom,rhandfingers0);
+    dGeomSetOffsetRotation(rhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(rhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    rhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (rhandfings1_geom,Rtx);
+    dGeomSetBody (rhandfings1_geom,rhandfingers0);
+    dGeomSetOffsetRotation(rhandfings1_geom,Rtx);
+    dGeomSetOffsetPosition(rhandfings1_geom,-m2.c[0], -m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    //add mass accumulated
+    dMassAdd (&m, &m2);
+    //translate
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
+    //Set mass to the actual body
+    dBodySetMass(rhandfingers0,&m);
+
+    body[35] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    dBodySetMass(body[35],&m);
+    dBodySetQuaternion(body[35],q);
+    geom[35] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[35],body[35]);
+
+    body[36] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.028);
+    dBodySetMass(body[36],&m);
+    dBodySetQuaternion(body[36],q);
+    geom[36] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[36],body[36]);
+
+    rhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    rhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.026);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (rhandfings2_geom,rhandfingers1);
+    dGeomSetOffsetRotation(rhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(rhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
+    dMassAdd (&m, &m2);
+    //second object
+    rhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (rhandfings3_geom,Rtx);
+    dGeomSetBody (rhandfings3_geom,rhandfingers1);
+    dGeomSetOffsetRotation(rhandfings3_geom,Rtx);
+    dGeomSetOffsetPosition(rhandfings3_geom,-m2.c[0], 0.002-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    dMassAdd (&m, &m2);
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers1,&m);
+
+    body[39] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);dBodySetMass(body[39],&m);
+    dBodySetQuaternion(body[39],q);geom[39] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[39],body[39]);
+    body[40] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.024);dBodySetMass(body[40],&m);
+    dBodySetQuaternion(body[40],q);geom[40] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[40],body[40]);
+
+    rhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    rhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (rhandfings4_geom,rhandfingers2);
+    dGeomSetOffsetRotation(rhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(rhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
+    dMassAdd (&m, &m2);
+    //second object
+    rhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.019);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (rhandfings5_geom,Rtx);
+    dGeomSetBody (rhandfings5_geom,rhandfingers2);
+    dGeomSetOffsetRotation(rhandfings5_geom,Rtx);
+    dGeomSetOffsetPosition(rhandfings5_geom,-m2.c[0], 0.0055-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    dMassAdd (&m, &m2);
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers2,&m);
+
+    body[43] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[43],&m);
+    dBodySetQuaternion(body[43],q);geom[43] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[43],body[43]);
+    body[44] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[44],&m);
+    dBodySetQuaternion(body[44],q);geom[44] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[44],body[44]);
+
+    rhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    rhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetBody (rhandfings6_geom,rhandfingers3);
+    dGeomSetOffsetRotation(rhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
+    dGeomSetOffsetPosition(rhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
+    dMassAdd (&m, &m2);
+    //second object
+    rhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
+    dGeomSetRotation (rhandfings7_geom,Rtx);
+    dGeomSetBody (rhandfings7_geom,rhandfingers3);
+    dGeomSetOffsetRotation(rhandfings7_geom,Rtx);
+    dGeomSetOffsetPosition(rhandfings7_geom,-m2.c[0], 0.007-m2.c[0], -0.008125-m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
+    dMassAdd (&m, &m2);
+    dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers3,&m);
+
+    body[47] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    dBodySetMass(body[47],&m);//dBodySetQuaternion(body[28],q1);
+    geom[47] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[47],body[47]);
+
+    body[48] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);
+    dBodySetMass(body[48],&m);//dBodySetQuaternion(body[29],q1);
+    geom[48] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[48],body[48]);
+
+    body[49] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.016);
+    dBodySetMass(body[49],&m);//dBodySetQuaternion(body[30],q1);
+    geom[49] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[49],body[49]);
+}
+
+void ICubSim::initHead(dWorldID world)
+{
+    dMass m, m2;
+    dMatrix3 Rtx;
+    //rotation matrises
+    dQuaternion q1;
+    dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
+
+    head = dBodyCreate (world);
+    if (actHead == "off")
+    {
         dMassSetZero(&m);dMassSetZero(&m2);
         neck0_geom = dCreateCylinder (iCub,0.015,0.077);dMassSetCylinderTotal(&m2,0.28252,3,0.015,0.077);
         dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
@@ -2312,34 +2491,29 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     dMassAdd (&m, &m2);
 
     //dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(head,&m);
+}
 
+void ICubSim::initEyes(dWorldID world)
+{
     dBodyID select[3];
-    if (actHead == "off"){
-        select[0] = head;
-        select[1] = head;
-        select[2] = head;
-    }else{
-        select[0] = eye;
-        select[1] = leye;
-        select[2] = reye;
-    }
-
-
-
     double offset[3];
-
     if (actHead == "off")
     {
+        select[0] = select[1] = select[2] = head;
         offset[0]=jP_head[3][0]-jP_head[2][0];
         offset[1]=jP_head[3][1]-jP_head[2][1];
         offset[2]=jP_head[3][2]-jP_head[2][2]-0.03;
     }
     else
     {
-        offset[0]=0.0;
-        offset[1]=0.0;
-        offset[2]=0.0;
-    }
+        select[0] = eye;
+        select[1] = leye;
+        select[2] = reye;
+        offset[0]=offset[1]=offset[2]=0.0;
+    }    
+
+    dMass m, m2;
+    dMatrix3 Rtx;
 
     //eyes pitch cylinder
     dMassSetZero(&m);dMassSetZero(&m2);
@@ -2398,7 +2572,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         offset[0]=jP_leftEye[1][0]-jP_head[2][0];
         offset[1]=jP_leftEye[1][1]-jP_head[2][1];
         offset[2]=jP_leftEye[1][2]-jP_head[2][2]-0.03;
-        }
+    }
     else
     {
         offset[0]=0.0;
@@ -2444,53 +2618,80 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     }else {
         dBodySetMass(head,&m);
     }
+}
 
-    inertialBody = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.0001,0.03,0.02,0.05);
-    dBodySetMass(inertialBody,&m);
-    inertialGeom = dCreateBox (iCub,0.03,0.02,0.05);dGeomSetBody (inertialGeom,inertialBody);
-
-    setPosition( X, Y, Z);
-
-    if (actElevation == "on")
+void ICubSim::initCovers(ResourceFinder& finder)
+{
+    if (actHeadCover)
     {
-        elevJoint = dJointCreateFixed(world, 0);
-        if (actTorso == "off"){
-            dJointAttach (elevJoint,body_torso,0 );dJointSetFixed(elevJoint);
-        }else{
-            //dJointAttach (elevJoint,torso[0],0 );dJointSetFixed(elevJoint);
+        iCubHeadModel =  new Model();
+        topEyeLidModel =      new Model();
+        bottomEyeLidModel =   new Model();
+        iCubHeadModel->loadModelData(finder.findFile("data/model/iCub_Head.ms3d").c_str());
+        topEyeLidModel->loadModelData(finder.findFile("data/model/topEyeLid.ms3d").c_str());
+        bottomEyeLidModel->loadModelData(finder.findFile("data/model/bottomEyeLid.ms3d").c_str());
+    }
+
+    numCovers = 10;
+
+    if (actLegsCovers == "on")
+    {
+        model["lowerLeg"] = finder.findFile("lowerLegCover");//also used for left
+        model["upperRightLeg"] = finder.findFile("upperRightLegCover");
+        model["upperLeftLeg"] = finder.findFile("upperLeftLegCover");
+        model["rightFoot"] = finder.findFile("rightFootCover");
+        model["leftFoot"] = finder.findFile("leftFootCover");
+    }
+    if(actLeftArmCovers == "on" || actRightArmCovers == "on")
+        model["lowerArm"] = finder.findFile("lowerArmCover");//used for both arms
+
+    if (actLeftArmCovers == "on")
+    {
+        model["upperLeftArm"] = finder.findFile("leftUpperArmCover");
+        model["leftPalm"] = finder.findFile("leftPalm");
+    }
+
+    if (actRightArmCovers == "on")
+    {
+        model["upperRightArm"] = finder.findFile("rightUpperArmCover");
+        model["rightPalm"] = finder.findFile("rightPalm");
+    }
+
+    if (actTorsoCovers == "on")
+    {
+        model["torso"] = finder.findFile("torsoCover");
+        model["waist"] = finder.findFile("waistCover");
+    }
+
+    textureName[0] = finder.findFile("lowerArmTexture");//texture used for all covers
+
+    cout << "\nCreating 3D Model of the icub.......\n" << endl;
+    for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++)
+    {
+        model_TriData[(*itr).first] = dGeomTriMeshDataCreate();
+        model_trimesh[(*itr).first] = dLoadMeshFromX(model[(*itr).first].c_str());
+        if (!model_trimesh[(*itr).first])
+        {
+            cout << "Check spelling/location of file" << endl;
+        }else
+        {
+            dGeomTriMeshDataBuildSingle(model_TriData[(*itr).first], model_trimesh[(*itr).first]->Vertices, 3 * sizeof(float), model_trimesh[(*itr).first]->VertexCount, model_trimesh[(*itr).first]->Indices, model_trimesh[(*itr).first]->IndexCount, 3 * sizeof(int));
+            model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCub, model_TriData[(*itr).first], 0, 0, 0);
+            dGeomSetData(model_ThreeD_obj[(*itr).first].geom,model_TriData[(*itr).first]);
+            //dGeomSetPosition(model_ThreeD_obj[(*itr).first].geom,0.0,0.5,0.5);
         }
     }
-    //joints initialization
-    for (int x=0; x<6; x++){
-        LLegjoints[x] = dJointCreateHinge(world, 0);
-        RLegjoints[x] = dJointCreateHinge(world, 0);
-    }
-    for (int x=0; x<5; x++){
-        Torsojoints[x] = dJointCreateHinge(world,0);
-    }
-    for (int x=0; x<5; x++){
-        LAjoints[x] = dJointCreateHinge(world,0);
-        RAjoints[x] = dJointCreateHinge(world,0);
-    }
-    for(int x = 5; x < 6; x++) {
-        LAjoints[x] = dJointCreateUniversal(world, 0);
-        RAjoints[x] = dJointCreateUniversal(world, 0);
-    }
-    for(int x = 6; x < 22; x++) {
-        LAjoints[x] = dJointCreateHinge(world, 0);
-        RAjoints[x] = dJointCreateHinge(world, 0);
-    }
-    for(int x = 22; x < 23; x++) {
-        LAjoints[x] = dJointCreateUniversal(world, 0);
-        RAjoints[x] = dJointCreateUniversal(world, 0);
-    }
-    for(int x = 23; x < 25; x++) {
-        LAjoints[x] = dJointCreateHinge(world, 0);
-        RAjoints[x] = dJointCreateHinge(world, 0);
-    }
-    for(int x = 0; x <6; x++) {Hjoints[x] = dJointCreateHinge(world, 0);}
-    if (actLegs == "off" && actTorso == "on"){
+    modelTextureIndex++;
+    modelTexture[0] = modelTextureIndex;
+    //the reference object
+    //body_cube[0] = dBodyCreate(world); dMassSetZero(&m); dMassSetBoxTotal (&m,0.1,0.1,0.005,0.1);dBodySetMass(body_cube[0],&m);
+    //geom_cube[0] = dCreateBox(space,0.1,0.005,0.1); //dGeomSetBody(geom_cube[0],body_cube[0]); 
+}
 
+void ICubSim::initLegJoints()
+{
+    if (actLegs == "off" && actTorso == "on")
+    {
         dJointAttach (LLegjoints[0], legs, torso[0]);
         dJointSetHingeAnchor (LLegjoints[0], jP_leftLeg[5][1], elev + jP_leftLeg[5][2], jP_leftLeg[5][0]);//dJointSetHingeAnchor (LLegjoints[0], 0.0255, elev +0.468, -0.034);
         dJointSetHingeAxis (LLegjoints[0], 1.0, 0.0, 0.0);
@@ -2500,14 +2701,16 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAnchor (RLegjoints[0], jP_rightLeg[5][1], elev + jP_rightLeg[5][2], jP_rightLeg[5][0]);//dJointSetHingeAnchor (RLegjoints[0], -0.0255, elev +0.468, -0.034);
         dJointSetHingeAxis (RLegjoints[0], 1.0, 0.0, 0.0);
         dJointSetHingeParam(RLegjoints[0],dParamLoStop, -0.0);dJointSetHingeParam(RLegjoints[0],dParamHiStop, 0.0);
-
-    }else if (actLegs == "off" && actTorso == "off"){
+    }
+    else if (actLegs == "off" && actTorso == "off")
+    {
         dJointAttach (Torsojoints[0], legs, body_torso);
         dJointSetHingeAnchor (Torsojoints[0], jP_rightLeg[5][1], elev + jP_rightLeg[5][2], 0.0);//dJointSetHingeAnchor (Torsojoints[0], -0.0255, elev +0.468, 0.0);
         dJointSetHingeAxis (Torsojoints[0], 0.0, 0.0, 1.0);
         dJointSetHingeParam(Torsojoints[0],dParamLoStop, -2.7925);dJointSetHingeParam(LLegjoints[0],dParamHiStop, 2.7925);
-
-    }else{
+    }
+    else
+    {
         dJointAttach (LLegjoints[0], leftLeg[0], leftLeg[1]);
         dJointSetHingeAnchor (LLegjoints[0], jP_leftLeg[0][1], elev + jP_leftLeg[0][2], jP_leftLeg[0][0]);//dJointSetHingeAnchor (LLegjoints[0], 0.068, elev +0.031, -0.0235);
         dJointSetHingeAxis (LLegjoints[0], 0.0, 0.0, 1.0);
@@ -2533,12 +2736,15 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAxis (LLegjoints[4], 0.0, 0.0, 1.0);
         dJointSetHingeParam(LLegjoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(LLegjoints[4],dParamHiStop, 2.7925);
 
-        if (actTorso == "off"){
+        if (actTorso == "off")
+        {
             dJointAttach (LLegjoints[5], leftLeg[5], body_torso);
             dJointSetHingeAnchor (LLegjoints[5], jP_leftLeg[5][1], elev + jP_leftLeg[5][2], jP_leftLeg[5][0]);//dJointSetHingeAnchor (LLegjoints[5], 0.0255, elev +0.468, -0.034);
             dJointSetHingeAxis (LLegjoints[5], 1.0, 0.0, 0.0);
             dJointSetHingeParam(LLegjoints[5],dParamLoStop, -2.7925);dJointSetHingeParam(LLegjoints[5],dParamHiStop, 2.7925);
-        }else{
+        }
+        else
+        {
             dJointAttach (LLegjoints[5], leftLeg[5], torso[0]);
             dJointSetHingeAnchor (LLegjoints[5], jP_leftLeg[5][1], elev + jP_leftLeg[5][2], jP_leftLeg[5][0]);//dJointSetHingeAnchor (LLegjoints[5], 0.0255, elev +0.468, -0.034);
             dJointSetHingeAxis (LLegjoints[5], 1.0, 0.0, 0.0);
@@ -2570,20 +2776,30 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAxis (RLegjoints[4], 0.0, 0.0, 1.0);
         dJointSetHingeParam(RLegjoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(RLegjoints[4],dParamHiStop, 2.7925);
 
-        if (actTorso == "off"){
+        if (actTorso == "off")
+        {
             dJointAttach (RLegjoints[5], rightLeg[5], body_torso);
             dJointSetHingeAnchor (RLegjoints[5], jP_rightLeg[5][1], elev + jP_rightLeg[5][2], jP_rightLeg[5][0]);//dJointSetHingeAnchor (RLegjoints[5], -0.0255, elev +0.468, -0.034);
             dJointSetHingeAxis (RLegjoints[5], 1.0, 0.0, 0.0);
             dJointSetHingeParam(RLegjoints[5],dParamLoStop, -2.7925);dJointSetHingeParam(RLegjoints[5],dParamHiStop, 2.7925);
-        }else{
+        }
+        else
+        {
             dJointAttach (RLegjoints[5], rightLeg[5], torso[0]);
             dJointSetHingeAnchor (RLegjoints[5], jP_rightLeg[5][1], elev + jP_rightLeg[5][2], jP_rightLeg[5][0]);//dJointSetHingeAnchor (RLegjoints[5], -0.0255, elev +0.468, -0.034);
             dJointSetHingeAxis (RLegjoints[5], 1.0, 0.0, 0.0);
             dJointSetHingeParam(RLegjoints[5],dParamLoStop, -2.7925);dJointSetHingeParam(RLegjoints[5],dParamHiStop, 2.7925);
         }
     }
+}
+
+void ICubSim::initTorsoJoints(OdeParams &p)
+{
+    double safetyMargin = 0.1 * CTRL_DEG2RAD;   // margin added to the joint limits
+
     //TORSO JOINTS
-    if (actTorso == "off"){
+    if (actTorso == "off")
+    {
         dJointAttach (Torsojoints[3], body_torso, torso[4]);
         dJointSetHingeAnchor (Torsojoints[3], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[3], 0.038, elev +0.6824, -0.026);
         dJointSetHingeAxis (Torsojoints[3], 0.0, 1.0, 0.0);
@@ -2593,119 +2809,140 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeAnchor (Torsojoints[4],  jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[4], -0.038, elev +0.6824, -0.026);
         dJointSetHingeAxis (Torsojoints[4], 0.0, 1.0, 0.0);
         dJointSetHingeParam(Torsojoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[4],dParamHiStop, 2.7925);
-
-    }else{
-        /* Torso joints are in reserved order with respect to robotMotorGui
-          Max  50  30  70
-          Min -50 -30 -10
-        */
-        dJointAttach (Torsojoints[0], torso[0], torso[1]);
-        dJointSetHingeAnchor (Torsojoints[0],  jP_torso[0][1], elev + jP_torso[0][2], jP_torso[0][0]);//dJointSetHingeAnchor (Torsojoints[0],  0.0, elev +0.5484, -0.04);
-        dJointSetHingeAxis (Torsojoints[0], 1.0, 0.0, 0.0);
-        // this joint angle is the opposite of the real iCub joint angle so I had to invert the lower and upper bounds
-        dJointSetHingeParam(Torsojoints[0],dParamLoStop, -70*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[0],dParamHiStop, 10*CTRL_DEG2RAD+safetyMargin);
-
-        dJointAttach (Torsojoints[1], torso[1], torso[2]);
-        dJointSetHingeAnchor (Torsojoints[1], jP_torso[1][1], elev + jP_torso[1][2], jP_torso[1][0]);//dJointSetHingeAnchor (Torsojoints[1], 0.0, elev +0.624, -0.034);
-        dJointSetHingeAxis (Torsojoints[1], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(Torsojoints[1],dParamLoStop, -30*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[1],dParamHiStop, 30*CTRL_DEG2RAD+safetyMargin);
-
-        dJointAttach (Torsojoints[2], torso[2], torso[3]);
-        dJointSetHingeAnchor (Torsojoints[2], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[2], 0.0, elev +0.6687, -0.026);
-        dJointSetHingeAxis (Torsojoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(Torsojoints[2],dParamLoStop, -50*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[2],dParamHiStop, 50*CTRL_DEG2RAD+safetyMargin);
-
-        dJointAttach (Torsojoints[3], torso[3], torso[4]);
-        dJointSetHingeAnchor (Torsojoints[3], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[3], 0.038, elev +0.6824, -0.026);
-        dJointSetHingeAxis (Torsojoints[3], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(Torsojoints[3],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[3],dParamHiStop, 2.7925);
-
-        dJointAttach (Torsojoints[4], torso[3], torso[5]);
-        dJointSetHingeAnchor (Torsojoints[4], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[4], -0.038, elev +0.6824, -0.026);
-        dJointSetHingeAxis (Torsojoints[4], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(Torsojoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[4],dParamHiStop, 2.7925);
-
-        for(int i=0;i<5;i++){
-            //printf("Joint %d angle: %f\n", i, CTRL_RAD2DEG*dJointGetHingeAngle(Torsojoints[i]));
-            dJointSetHingeParam(Torsojoints[i], dParamFudgeFactor, fudgeFactor);
-            dJointSetHingeParam(Torsojoints[i], dParamStopCFM, stopCFM);
-            dJointSetHingeParam(Torsojoints[i], dParamStopERP, stopERP);
-            dJointSetHingeParam(Torsojoints[i], dParamCFM, jointCFM);
-            dJointSetHingeParam(Torsojoints[i], dParamBounce, jointStopBouncyness);
-        }
+        return;
     }
-    if (actLArm == "off"){
-        dJointAttach (LAjoints[0], torso[4], larm);
-        dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);//dJointSetHingeAnchor (LAjoints[0],   0.117/*0.0815*/, elev +0.77, -0.026);
-        dJointSetHingeAxis (LAjoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(LAjoints[0],dParamLoStop, -0.0);dJointSetHingeParam(LAjoints[0],dParamHiStop, 0.0);//the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
 
-    }else{
-        //LEFT ARM JOINTS...vadim
-        dJointAttach (LAjoints[0], torso[4], body[0]);//joint left clavicule and left shoulder1
-        dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);//
+    /* Torso joints are in reserved order with respect to robotMotorGui
+        Max  50  30  70
+        Min -50 -30 -10
+    */
+    dJointAttach (Torsojoints[0], torso[0], torso[1]);
+    dJointSetHingeAnchor (Torsojoints[0],  jP_torso[0][1], elev + jP_torso[0][2], jP_torso[0][0]);//dJointSetHingeAnchor (Torsojoints[0],  0.0, elev +0.5484, -0.04);
+    dJointSetHingeAxis (Torsojoints[0], 1.0, 0.0, 0.0);
+    // this joint angle is the opposite of the real iCub joint angle so I had to invert the lower and upper bounds
+    dJointSetHingeParam(Torsojoints[0],dParamLoStop, -70*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[0],dParamHiStop, 10*CTRL_DEG2RAD+safetyMargin);
+
+    dJointAttach (Torsojoints[1], torso[1], torso[2]);
+    dJointSetHingeAnchor (Torsojoints[1], jP_torso[1][1], elev + jP_torso[1][2], jP_torso[1][0]);//dJointSetHingeAnchor (Torsojoints[1], 0.0, elev +0.624, -0.034);
+    dJointSetHingeAxis (Torsojoints[1], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(Torsojoints[1],dParamLoStop, -30*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[1],dParamHiStop, 30*CTRL_DEG2RAD+safetyMargin);
+
+    dJointAttach (Torsojoints[2], torso[2], torso[3]);
+    dJointSetHingeAnchor (Torsojoints[2], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[2], 0.0, elev +0.6687, -0.026);
+    dJointSetHingeAxis (Torsojoints[2], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(Torsojoints[2],dParamLoStop, -50*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(Torsojoints[2],dParamHiStop, 50*CTRL_DEG2RAD+safetyMargin);
+
+    dJointAttach (Torsojoints[3], torso[3], torso[4]);
+    dJointSetHingeAnchor (Torsojoints[3], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[3], 0.038, elev +0.6824, -0.026);
+    dJointSetHingeAxis (Torsojoints[3], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(Torsojoints[3],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[3],dParamHiStop, 2.7925);
+
+    dJointAttach (Torsojoints[4], torso[3], torso[5]);
+    dJointSetHingeAnchor (Torsojoints[4], jP_torso[2][1], elev + jP_torso[2][2], jP_torso[2][0]);//dJointSetHingeAnchor (Torsojoints[4], -0.038, elev +0.6824, -0.026);
+    dJointSetHingeAxis (Torsojoints[4], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(Torsojoints[4],dParamLoStop, -2.7925);dJointSetHingeParam(Torsojoints[4],dParamHiStop, 2.7925);
+
+    for(int i=0;i<5;i++){
+        //printf("Joint %d angle: %f\n", i, CTRL_RAD2DEG*dJointGetHingeAngle(Torsojoints[i]));
+        dJointSetHingeParam(Torsojoints[i], dParamFudgeFactor, p.fudgeFactor);
+        dJointSetHingeParam(Torsojoints[i], dParamStopCFM, p.stopCFM);
+        dJointSetHingeParam(Torsojoints[i], dParamStopERP, p.stopERP);
+        dJointSetHingeParam(Torsojoints[i], dParamCFM, p.jointCFM);
+        dJointSetHingeParam(Torsojoints[i], dParamBounce, p.jointStopBouncyness);
+    }
+}
+
+void ICubSim::initLeftArmJoints(OdeParams &p)
+{
+    double safetyMargin = 0.1 * CTRL_DEG2RAD;   // margin added to the joint limits
+
+    if (actLArm == "off")
+    {
+        dJointAttach (LAjoints[0], torso[4], larm);
+        dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);
         //dJointSetHingeAnchor (LAjoints[0],   0.117/*0.0815*/, elev +0.77, -0.026);
         dJointSetHingeAxis (LAjoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(LAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD - safetyMargin);dJointSetHingeParam(LAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD + safetyMargin);
-
-        dJointAttach (LAjoints[1],  body[0], body[2]);//joint left shoulder1 and left shoulder2
-        dJointSetHingeAnchor (LAjoints[1],   jP_leftArm[1][1], elev + jP_leftArm[1][2], jP_leftArm[1][0]);
-        //dJointSetHingeAnchor (LAjoints[1],   0.117, elev +0.77, -0.026);
-        dJointSetHingeAxis (LAjoints[1], 0.0, 0.0, 1.0);
-        // higher bound should be 0, but it gives problem
-        dJointSetHingeParam(LAjoints[1],dParamLoStop, -160.8*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[1],dParamHiStop, 1.0+safetyMargin);
-
-        dJointAttach (LAjoints[2], body[2], body[4]); //joint left shoulder1 and left upper arm
-        dJointSetHingeAnchor (LAjoints[2],   jP_leftArm[2][1], elev + jP_leftArm[2][2], jP_leftArm[2][0]);
-        //dJointSetHingeAnchor (LAjoints[2],   0.117, elev +0.692, -0.026);
-        dJointSetHingeAxis (LAjoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(LAjoints[2],dParamLoStop,  -52.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[2],dParamHiStop, 80.0*CTRL_DEG2RAD+safetyMargin);
-
-        dJointAttach (LAjoints[3], body[4], body[6]); //joint left upper arm and left elbow mechanism
-        dJointSetHingeAnchor (LAjoints[3],   jP_leftArm[3][1], elev + jP_leftArm[3][2], jP_leftArm[3][0]);
-        //dJointSetHingeAnchor (LAjoints[3],   0.117, elev +0.614, -0.026);
-        dJointSetHingeAxis (LAjoints[3], 1.0, 0.0, 0.0);
-        // lower limit should be 15 but it gives problems
-        dJointSetHingeParam(LAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
-
-        dJointAttach (LAjoints[4], body[6], body[8]); //joint left elbow mechanism and left lower arm
-        dJointSetHingeAnchor (LAjoints[4],   jP_leftArm[4][1], elev + jP_leftArm[4][2], jP_leftArm[4][0]);
-        //dJointSetHingeAnchor (LAjoints[4],   0.117, elev +0.544, -0.026);
-        dJointSetHingeAxis (LAjoints[4], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(LAjoints[4],dParamLoStop, -90.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(LAjoints[4],dParamHiStop, 90.5*CTRL_DEG2RAD+safetyMargin);
-   
-        for(int i=0;i<5;i++){
-            //printf("Joint %d angle: %f\n", i, CTRL_RAD2DEG*dJointGetHingeAngle(LAjoints[i]));
-            dJointSetHingeParam(LAjoints[i], dParamFudgeFactor, fudgeFactor);
-            dJointSetHingeParam(LAjoints[i], dParamStopCFM, stopCFM);
-            dJointSetHingeParam(LAjoints[i], dParamStopERP, stopERP);
-            dJointSetHingeParam(LAjoints[i], dParamCFM, jointCFM);
-            dJointSetHingeParam(LAjoints[i], dParamBounce, jointStopBouncyness);
-        }
+        //the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        dJointSetHingeParam(LAjoints[0],dParamLoStop, -0.0);
+        dJointSetHingeParam(LAjoints[0],dParamHiStop, 0.0);
+        return;
     }
-    if (actLArm == "off" && actLHand == "off"){
+    //LEFT ARM JOINTS...vadim
+    dJointAttach (LAjoints[0], torso[4], body[0]);//joint left clavicule and left shoulder1
+    dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);//
+    //dJointSetHingeAnchor (LAjoints[0],   0.117/*0.0815*/, elev +0.77, -0.026);
+    dJointSetHingeAxis (LAjoints[0], 1.0, 0.0, 0.0);
+    dJointSetHingeParam(LAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD - safetyMargin);
+    dJointSetHingeParam(LAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD + safetyMargin);
 
+    dJointAttach (LAjoints[1],  body[0], body[2]);//joint left shoulder1 and left shoulder2
+    dJointSetHingeAnchor (LAjoints[1],   jP_leftArm[1][1], elev + jP_leftArm[1][2], jP_leftArm[1][0]);
+    //dJointSetHingeAnchor (LAjoints[1],   0.117, elev +0.77, -0.026);
+    dJointSetHingeAxis (LAjoints[1], 0.0, 0.0, 1.0);
+    // higher bound should be 0, but it gives problem
+    dJointSetHingeParam(LAjoints[1],dParamLoStop, -160.8*CTRL_DEG2RAD-safetyMargin);
+    dJointSetHingeParam(LAjoints[1],dParamHiStop, 1.0+safetyMargin);
+
+    dJointAttach (LAjoints[2], body[2], body[4]); //joint left shoulder1 and left upper arm
+    dJointSetHingeAnchor (LAjoints[2],   jP_leftArm[2][1], elev + jP_leftArm[2][2], jP_leftArm[2][0]);
+    //dJointSetHingeAnchor (LAjoints[2],   0.117, elev +0.692, -0.026);
+    dJointSetHingeAxis (LAjoints[2], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(LAjoints[2],dParamLoStop,  -52.0*CTRL_DEG2RAD-safetyMargin);
+    dJointSetHingeParam(LAjoints[2],dParamHiStop, 80.0*CTRL_DEG2RAD+safetyMargin);
+
+    dJointAttach (LAjoints[3], body[4], body[6]); //joint left upper arm and left elbow mechanism
+    dJointSetHingeAnchor (LAjoints[3],   jP_leftArm[3][1], elev + jP_leftArm[3][2], jP_leftArm[3][0]);
+    //dJointSetHingeAnchor (LAjoints[3],   0.117, elev +0.614, -0.026);
+    dJointSetHingeAxis (LAjoints[3], 1.0, 0.0, 0.0);
+    // lower limit should be 15 but it gives problems
+    dJointSetHingeParam(LAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);
+    dJointSetHingeParam(LAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
+
+    dJointAttach (LAjoints[4], body[6], body[8]); //joint left elbow mechanism and left lower arm
+    dJointSetHingeAnchor (LAjoints[4],   jP_leftArm[4][1], elev + jP_leftArm[4][2], jP_leftArm[4][0]);
+    //dJointSetHingeAnchor (LAjoints[4],   0.117, elev +0.544, -0.026);
+    dJointSetHingeAxis (LAjoints[4], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(LAjoints[4],dParamLoStop, -90.0*CTRL_DEG2RAD-safetyMargin);
+    dJointSetHingeParam(LAjoints[4],dParamHiStop, 90.5*CTRL_DEG2RAD+safetyMargin);
+   
+    for(int i=0;i<5;i++)
+    {
+        //printf("Joint %d angle: %f\n", i, CTRL_RAD2DEG*dJointGetHingeAngle(LAjoints[i]));
+        dJointSetHingeParam(LAjoints[i], dParamFudgeFactor, p.fudgeFactor);
+        dJointSetHingeParam(LAjoints[i], dParamStopCFM, p.stopCFM);
+        dJointSetHingeParam(LAjoints[i], dParamStopERP, p.stopERP);
+        dJointSetHingeParam(LAjoints[i], dParamCFM, p.jointCFM);
+        dJointSetHingeParam(LAjoints[i], dParamBounce, p.jointStopBouncyness);
+    }
+}
+
+void ICubSim::initLeftHandJoints()
+{
+    if (actLArm == "off" && actLHand == "off")
+    {
         dJointAttach (LAjoints[5],larm,l_hand); //joint Universal left lower arm and left hand
         dJointSetUniversalAnchor (LAjoints[5],   jP_leftArm[5][1], elev + jP_leftArm[5][2], jP_leftArm[5][0]);//dJointSetUniversalAnchor (LAjoints[5],   0.117, elev +0.4735, -0.026);
         dJointSetUniversalAxis1 (LAjoints[5],0, 0, 1);dJointSetUniversalAxis2 (LAjoints[5], 1,0,0);
         dJointSetUniversalParam(LAjoints[5], dParamLoStop, -2.7925);dJointSetUniversalParam(LAjoints[5], dParamHiStop, 2.7925);
         dJointSetUniversalParam(LAjoints[5], dParamLoStop2, -2.7925);dJointSetUniversalParam(LAjoints[5], dParamHiStop2, 2.7925);
-
-    }else if(actLArm == "on" && actLHand == "off"){
-
+        return;
+    }
+    
+    if(actLArm == "on" && actLHand == "off")
+    {
         dJointAttach (LAjoints[5],body[8],l_hand); //joint Universal left lower arm and left hand
         dJointSetUniversalAnchor (LAjoints[5],   jP_leftArm[5][1], elev + jP_leftArm[5][2], jP_leftArm[5][0]);//dJointSetUniversalAnchor (LAjoints[5],   0.117, elev +0.4735, -0.026);
         dJointSetUniversalAxis1 (LAjoints[5],0,0, 1);dJointSetUniversalAxis2 (LAjoints[5], 1,0,0);
         dJointSetUniversalParam(LAjoints[5], dParamLoStop, -2.7925);dJointSetUniversalParam(LAjoints[5], dParamHiStop, 2.7925);
         dJointSetUniversalParam(LAjoints[5], dParamLoStop2, -2.7925);dJointSetUniversalParam(LAjoints[5], dParamHiStop2, 2.7925);
+        return;
+    }
 
-    }else{
-        dBodyID temp;
-        if (actLArm == "off"){
-            temp = larm;
-        }else{
-            temp = body[8];
-        }
+    dBodyID temp;
+    if (actLArm == "off")
+        temp = larm;
+    else
+        temp = body[8];
     //LEFT HAND AND FINGER JOINTS
     dJointAttach (LAjoints[5],temp,body[10]); //joint Universal left lower arm and left hand
     dJointSetUniversalAnchor (LAjoints[5],   jP_leftArm[5][1], elev + jP_leftArm[5][2], jP_leftArm[5][0]);//0.117, elev +0.4735, -0.026);//dJointSetUniversalAnchor (LAjoints[5],   0.117, elev +0.4735, -0.026);
@@ -2795,166 +3032,184 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     dJointSetHingeAnchor(LAjoints[24],jP_leftArm[7][1], elev +jP_leftArm[6][2]-0.045/*fabs(jP_leftArm[7][2]-jP_leftArm[6][2])+0.016*/,jP_leftArm[7][0]+0.088 - 0.008);
     dJointSetHingeAxis(LAjoints[24],0.0,0.5,0); 
     dJointSetHingeParam(LAjoints[24],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(LAjoints[24],  dParamHiStop, (dReal) 2.7925);
-    }
+}
 
-    if (actRArm == "off"){
+void ICubSim::initRightArmJoints(OdeParams &p)
+{
+    double safetyMargin = 0.1 * CTRL_DEG2RAD;   // margin added to the joint limits
+
+    if (actRArm == "off")
+    {
         dJointAttach (RAjoints[0], torso[5], rarm);
-        dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);//dJointSetHingeAnchor (RAjoints[0],   -0.117/*-0.0815*/,elev + 0.77, -0.026);
+        dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);
+        //dJointSetHingeAnchor (RAjoints[0],   -0.117/*-0.0815*/,elev + 0.77, -0.026);
         dJointSetHingeAxis (RAjoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[0],dParamLoStop, -0.0);dJointSetHingeParam(RAjoints[0],dParamHiStop, 0.0);//the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        //the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        dJointSetHingeParam(RAjoints[0],dParamLoStop, -0.0);
+        dJointSetHingeParam(RAjoints[0],dParamHiStop, 0.0);
+        return;
     }
-    else{
-        //Max     10   160.8  80     106      90       0     40      60    90      90      90       90       90     90      90   115
-        //Min    -95   0     -37    15.5     -90     -90    -20      0     0       0       0        0        0      0       0     0
-        //RIGHT ARM JOINTS        
-        dJointAttach (RAjoints[0], torso[5], body[1]);//joint right clavicule and right shoulder1
-        dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);//dJointSetHingeAnchor (RAjoints[0],   -0.117/*-0.0815*/, elev +0.77, -0.026);
-        dJointSetHingeAxis (RAjoints[0], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD+safetyMargin);
 
-        dJointAttach (RAjoints[1],  body[1], body[3]);//joint right shoulder1 and left shoulder2
-        dJointSetHingeAnchor (RAjoints[1],  jP_rightArm[1][1], elev + jP_rightArm[1][2], jP_rightArm[1][0]);//dJointSetHingeAnchor (RAjoints[1],   -0.117,elev + 0.77, -0.026);
-        dJointSetHingeAxis (RAjoints[1], 0.0, 0.0 , 1.0);
-        // the lower limit should be 0 but it gives problem
-        dJointSetHingeParam(RAjoints[1],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180° cannot be fully reached have to make with 179.4°
+    //Max     10   160.8  80     106      90       0     40      60    90      90      90       90       90     90      90   115
+    //Min    -95   0     -37    15.5     -90     -90    -20      0     0       0       0        0        0      0       0     0
+    //RIGHT ARM JOINTS        
+    dJointAttach (RAjoints[0], torso[5], body[1]);//joint right clavicule and right shoulder1
+    dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);//dJointSetHingeAnchor (RAjoints[0],   -0.117/*-0.0815*/, elev +0.77, -0.026);
+    dJointSetHingeAxis (RAjoints[0], 1.0, 0.0, 0.0);
+    dJointSetHingeParam(RAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD+safetyMargin);
 
-        dJointAttach (RAjoints[2], body[3], body[5]); //joint right shoulder1 and right upper arm
-        dJointSetHingeAnchor (RAjoints[2],   jP_rightArm[2][1], elev + jP_rightArm[2][2], jP_rightArm[2][0]);//dJointSetHingeAnchor (RAjoints[2],   -0.117,elev + 0.692, -0.026);
-        dJointSetHingeAxis (RAjoints[2], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(RAjoints[2],dParamLoStop,  -80.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
+    dJointAttach (RAjoints[1],  body[1], body[3]);//joint right shoulder1 and left shoulder2
+    dJointSetHingeAnchor (RAjoints[1],  jP_rightArm[1][1], elev + jP_rightArm[1][2], jP_rightArm[1][0]);//dJointSetHingeAnchor (RAjoints[1],   -0.117,elev + 0.77, -0.026);
+    dJointSetHingeAxis (RAjoints[1], 0.0, 0.0 , 1.0);
+    // the lower limit should be 0 but it gives problem
+    dJointSetHingeParam(RAjoints[1],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180° cannot be fully reached have to make with 179.4°
 
-        dJointAttach (RAjoints[3], body[5], body[7]); //joint right upper arm and right elbow mechanism
-        dJointSetHingeAnchor (RAjoints[3],   jP_rightArm[3][1], elev + jP_rightArm[3][2], jP_rightArm[3][0]);//dJointSetHingeAnchor (RAjoints[3],   -0.117,elev + 0.614, -0.026);
-        dJointSetHingeAxis (RAjoints[3], 1.0, 0.0, 0.0);
-        // lower limit should be 15° but it gives problem
-        dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
+    dJointAttach (RAjoints[2], body[3], body[5]); //joint right shoulder1 and right upper arm
+    dJointSetHingeAnchor (RAjoints[2],   jP_rightArm[2][1], elev + jP_rightArm[2][2], jP_rightArm[2][0]);//dJointSetHingeAnchor (RAjoints[2],   -0.117,elev + 0.692, -0.026);
+    dJointSetHingeAxis (RAjoints[2], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(RAjoints[2],dParamLoStop,  -80.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
 
-        dJointAttach (RAjoints[4], body[7], body[9]); //joint right elbow mechanism and right lower arm
-        dJointSetHingeAnchor (RAjoints[4],   jP_rightArm[4][1], elev + jP_rightArm[4][2], jP_rightArm[4][0]);//dJointSetHingeAnchor (RAjoints[4],   -0.117,elev + 0.544, -0.026);
-        dJointSetHingeAxis (RAjoints[4], 0.0, 1.0, 0.0);
-        dJointSetHingeParam(RAjoints[4],dParamLoStop, -90.5*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[4],dParamHiStop, 90.0*CTRL_DEG2RAD+safetyMargin);
+    dJointAttach (RAjoints[3], body[5], body[7]); //joint right upper arm and right elbow mechanism
+    dJointSetHingeAnchor (RAjoints[3],   jP_rightArm[3][1], elev + jP_rightArm[3][2], jP_rightArm[3][0]);//dJointSetHingeAnchor (RAjoints[3],   -0.117,elev + 0.614, -0.026);
+    dJointSetHingeAxis (RAjoints[3], 1.0, 0.0, 0.0);
+    // lower limit should be 15° but it gives problem
+    dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
 
-        for(int i=0;i<5;i++){
-            dJointSetHingeParam(RAjoints[i], dParamFudgeFactor, fudgeFactor);
-            dJointSetHingeParam(RAjoints[i], dParamStopCFM, stopCFM);
-            dJointSetHingeParam(RAjoints[i], dParamStopERP, stopERP);
-            dJointSetHingeParam(RAjoints[i], dParamCFM, jointCFM);
-            dJointSetHingeParam(RAjoints[i], dParamBounce, jointStopBouncyness);
-        }
+    dJointAttach (RAjoints[4], body[7], body[9]); //joint right elbow mechanism and right lower arm
+    dJointSetHingeAnchor (RAjoints[4],   jP_rightArm[4][1], elev + jP_rightArm[4][2], jP_rightArm[4][0]);//dJointSetHingeAnchor (RAjoints[4],   -0.117,elev + 0.544, -0.026);
+    dJointSetHingeAxis (RAjoints[4], 0.0, 1.0, 0.0);
+    dJointSetHingeParam(RAjoints[4],dParamLoStop, -90.5*CTRL_DEG2RAD-safetyMargin);dJointSetHingeParam(RAjoints[4],dParamHiStop, 90.0*CTRL_DEG2RAD+safetyMargin);
+
+    for(int i=0;i<5;i++)
+    {
+        dJointSetHingeParam(RAjoints[i], dParamFudgeFactor, p.fudgeFactor);
+        dJointSetHingeParam(RAjoints[i], dParamStopCFM, p.stopCFM);
+        dJointSetHingeParam(RAjoints[i], dParamStopERP, p.stopERP);
+        dJointSetHingeParam(RAjoints[i], dParamCFM, p.jointCFM);
+        dJointSetHingeParam(RAjoints[i], dParamBounce, p.jointStopBouncyness);
     }
-    if (actRArm == "off" && actRHand == "off"){
+}
 
+void ICubSim::initRightHandJoints()
+{
+    if (actRArm == "off" && actRHand == "off")
+    {
         dJointAttach (RAjoints[5],rarm,r_hand); //joint Universal left lower arm and left hand
         dJointSetUniversalAnchor (RAjoints[5],   jP_rightArm[5][1], elev + jP_rightArm[5][2], jP_rightArm[5][0]);//dJointSetUniversalAnchor (RAjoints[5],   -0.117,elev + 0.4735, -0.026);
         dJointSetUniversalAxis1 (RAjoints[5],0,0, 1);dJointSetUniversalAxis2 (RAjoints[5], 1,0,0);
         dJointSetUniversalParam(RAjoints[5], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop, 2.7925);
         dJointSetUniversalParam(RAjoints[5], dParamLoStop2, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop2, 2.7925);
-
-    }else if(actRArm == "on" && actRHand =="off"){
-
+        return;
+    }
+    if(actRArm == "on" && actRHand =="off")
+    {
         dJointAttach (RAjoints[5],body[9],r_hand); //joint Universal left lower arm and left hand
         dJointSetUniversalAnchor (RAjoints[5],   jP_rightArm[5][1], elev + jP_rightArm[5][2], jP_rightArm[5][0]);//dJointSetUniversalAnchor (RAjoints[5],   -0.117,elev + 0.4735, -0.026);
         dJointSetUniversalAxis1 (RAjoints[5],0,0, 1);dJointSetUniversalAxis2 (RAjoints[5], 1,0,0);
         dJointSetUniversalParam(RAjoints[5], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop, 2.7925);
         dJointSetUniversalParam(RAjoints[5], dParamLoStop2, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop2, 2.7925);
-
-    }else{
-        dBodyID temp1;
-        if (actRArm =="off"){
-            temp1 = rarm;
-        }else{
-            temp1 = body[9];
-        }
-        //CREATE ALL RIGHT HAND + FINGER JOINTS
-        dJointAttach (RAjoints[5],temp1,body[11]); //joint Universal left lower arm and left hand
-        dJointSetUniversalAnchor (RAjoints[5],   jP_rightArm[5][1], elev + jP_rightArm[5][2], jP_rightArm[5][0]);//-0.117, elev +0.4735, -0.026);
-        dJointSetUniversalAxis1 (RAjoints[5],0,0, 1);dJointSetUniversalAxis2 (RAjoints[5], 1,0,0);
-        dJointSetUniversalParam(RAjoints[5], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop, 2.7925);
-        dJointSetUniversalParam(RAjoints[5], dParamLoStop2, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop2, 2.7925);
-
-        dJointAttach (RAjoints[6], body[11],body[31]); //joint hand index finger1 
-        dJointSetHingeAnchor (RAjoints[6], jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.034, jP_rightArm[7][0]+0.025);
-        dJointSetHingeAxis (RAjoints[6], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[6],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[6],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[7], body[11], body[32]); //joint hand middle finger1
-        dJointSetHingeAnchor (RAjoints[7],  jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.034, jP_rightArm[7][0]+0.01);
-        dJointSetHingeAxis (RAjoints[7], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[7],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[7],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[8], body[11],rhandfingers0); //joint hand ring finger1 lhandfingers0
-        dJointSetHingeAnchor (RAjoints[8],  jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.034, jP_rightArm[7][0]-0.016125);
-        dJointSetHingeAxis (RAjoints[8], 1.0, 0.0, 0.0);
-        dJointSetHingeParam(RAjoints[8],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[8],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[10], body[31],body[35]); //index finger1 index finger2   
-        dJointSetHingeAnchor (RAjoints[10],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.046, jP_rightArm[7][0]+0.025);
-        dJointSetHingeAxis (RAjoints[10], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[10],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[10],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[11], body[32], body[36]); //middle finger1 middle finger2 
-        dJointSetHingeAnchor (RAjoints[11],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.046, jP_rightArm[7][0]+0.01);
-        dJointSetHingeAxis (RAjoints[11], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[11],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[11],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[12], rhandfingers0,rhandfingers1); //ring finger1 ring finger2
-        dJointSetHingeAnchor (RAjoints[12],   jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.046, jP_rightArm[7][0]-0.016125);
-        dJointSetHingeAxis (RAjoints[12], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[12],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[12],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[14], body[35],body[39]); //index finger2 index finger3   
-        dJointSetHingeAnchor (RAjoints[14],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.072, jP_rightArm[7][0]+0.025);
-        dJointSetHingeAxis (RAjoints[14], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[14],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[14],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[15], body[36], body[40]); //middle finger2 middle finger3 
-        dJointSetHingeAnchor (RAjoints[15],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.074, jP_rightArm[7][0]+0.01);
-        dJointSetHingeAxis (RAjoints[15], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[15],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[15],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[16], rhandfingers1,rhandfingers2); //ring finger2 ring finger3
-        dJointSetHingeAnchor (RAjoints[16],   jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.070, jP_rightArm[7][0]-0.016125);
-        dJointSetHingeAxis (RAjoints[16], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[16],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[16],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[18], body[39],body[43]); //index finger3 index finger4   
-        dJointSetHingeAnchor (RAjoints[18],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.094, jP_rightArm[7][0]+0.025);
-        dJointSetHingeAxis (RAjoints[18], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[18],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[18],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[19], body[40],body[44]); //middle finger3 middle finger4 
-        dJointSetHingeAnchor (RAjoints[19],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.098, jP_rightArm[7][0]+0.01);
-        dJointSetHingeAxis (RAjoints[19], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[19],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[19],dParamHiStop, 2.7925);
-
-        dJointAttach (RAjoints[20], rhandfingers2,rhandfingers3); //ring finger3 ring finger4
-        dJointSetHingeAnchor (RAjoints[20],   jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.0905, jP_rightArm[7][0]-0.016125);
-        dJointSetHingeAxis (RAjoints[20], 0.0, 0.0, 1.0);
-        dJointSetHingeParam(RAjoints[20],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[20],dParamHiStop, 2.7925);
-
-        //thumb
-        /*	dJointAttach (RAjoints[22],body[11],body[47]);//left hand thumb1 
-        dJointSetHingeAnchor(RAjoints[22], -0.117,elev + 0.455,0.006);
-        dJointSetHingeAxis(RAjoints[22],0,1,-0.5); 
-        dJointSetHingeParam(RAjoints[22],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[22],  dParamHiStop, (dReal) 2.7925);
-        */
-
-        dJointAttach (RAjoints[22],body[11],body[47]); //joint Universal left lower arm and left hand
-        dJointSetUniversalAnchor (RAjoints[22],  jP_rightArm[7][1],elev + jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_rightArm[7][0]+0.045 -0.013);
-        dJointSetUniversalAxis1 (RAjoints[22],0,1.5,-0.5);dJointSetUniversalAxis2 (RAjoints[22], 1,0,0);
-        dJointSetUniversalParam(RAjoints[22], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[22], dParamHiStop, 2.7925);
-        dJointSetUniversalParam(RAjoints[22], dParamLoStop2, -2.7925);dJointSetUniversalParam(RAjoints[22], dParamHiStop2, 2.7925);
-
-        dJointAttach (RAjoints[23],body[47],body[48]);//left thumb1 and thumb2
-        dJointSetHingeAnchor(RAjoints[23], jP_rightArm[7][1], elev + jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_rightArm[7][0]+0.069 -0.011);
-        dJointSetHingeAxis(RAjoints[23],0,0.5,0); 
-        dJointSetHingeParam(RAjoints[23],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[23],  dParamHiStop, (dReal) 2.7925);
-
-        dJointAttach (RAjoints[24],body[48],body[49]);//left thumb2 and thumb3
-        dJointSetHingeAnchor(RAjoints[24], jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_leftArm[7][0]+0.088 -0.008);
-        dJointSetHingeAxis(RAjoints[24],0,0.5,0); 
-        dJointSetHingeParam(RAjoints[24],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[24],  dParamHiStop, (dReal) 2.7925);
+        return;
     }
+
+    dBodyID temp1;
+    if (actRArm =="off"){
+        temp1 = rarm;
+    }else{
+        temp1 = body[9];
+    }
+    //CREATE ALL RIGHT HAND + FINGER JOINTS
+    dJointAttach (RAjoints[5],temp1,body[11]); //joint Universal left lower arm and left hand
+    dJointSetUniversalAnchor (RAjoints[5],   jP_rightArm[5][1], elev + jP_rightArm[5][2], jP_rightArm[5][0]);//-0.117, elev +0.4735, -0.026);
+    dJointSetUniversalAxis1 (RAjoints[5],0,0, 1);dJointSetUniversalAxis2 (RAjoints[5], 1,0,0);
+    dJointSetUniversalParam(RAjoints[5], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop, 2.7925);
+    dJointSetUniversalParam(RAjoints[5], dParamLoStop2, -2.7925);dJointSetUniversalParam(RAjoints[5], dParamHiStop2, 2.7925);
+
+    dJointAttach (RAjoints[6], body[11],body[31]); //joint hand index finger1 
+    dJointSetHingeAnchor (RAjoints[6], jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.034, jP_rightArm[7][0]+0.025);
+    dJointSetHingeAxis (RAjoints[6], 1.0, 0.0, 0.0);
+    dJointSetHingeParam(RAjoints[6],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[6],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[7], body[11], body[32]); //joint hand middle finger1
+    dJointSetHingeAnchor (RAjoints[7],  jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.034, jP_rightArm[7][0]+0.01);
+    dJointSetHingeAxis (RAjoints[7], 1.0, 0.0, 0.0);
+    dJointSetHingeParam(RAjoints[7],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[7],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[8], body[11],rhandfingers0); //joint hand ring finger1 lhandfingers0
+    dJointSetHingeAnchor (RAjoints[8],  jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.034, jP_rightArm[7][0]-0.016125);
+    dJointSetHingeAxis (RAjoints[8], 1.0, 0.0, 0.0);
+    dJointSetHingeParam(RAjoints[8],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[8],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[10], body[31],body[35]); //index finger1 index finger2   
+    dJointSetHingeAnchor (RAjoints[10],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.046, jP_rightArm[7][0]+0.025);
+    dJointSetHingeAxis (RAjoints[10], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[10],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[10],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[11], body[32], body[36]); //middle finger1 middle finger2 
+    dJointSetHingeAnchor (RAjoints[11],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.046, jP_rightArm[7][0]+0.01);
+    dJointSetHingeAxis (RAjoints[11], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[11],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[11],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[12], rhandfingers0,rhandfingers1); //ring finger1 ring finger2
+    dJointSetHingeAnchor (RAjoints[12],   jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.046, jP_rightArm[7][0]-0.016125);
+    dJointSetHingeAxis (RAjoints[12], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[12],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[12],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[14], body[35],body[39]); //index finger2 index finger3   
+    dJointSetHingeAnchor (RAjoints[14],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.072, jP_rightArm[7][0]+0.025);
+    dJointSetHingeAxis (RAjoints[14], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[14],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[14],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[15], body[36], body[40]); //middle finger2 middle finger3 
+    dJointSetHingeAnchor (RAjoints[15],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.074, jP_rightArm[7][0]+0.01);
+    dJointSetHingeAxis (RAjoints[15], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[15],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[15],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[16], rhandfingers1,rhandfingers2); //ring finger2 ring finger3
+    dJointSetHingeAnchor (RAjoints[16],   jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.070, jP_rightArm[7][0]-0.016125);
+    dJointSetHingeAxis (RAjoints[16], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[16],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[16],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[18], body[39],body[43]); //index finger3 index finger4   
+    dJointSetHingeAnchor (RAjoints[18],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.094, jP_rightArm[7][0]+0.025);
+    dJointSetHingeAxis (RAjoints[18], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[18],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[18],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[19], body[40],body[44]); //middle finger3 middle finger4 
+    dJointSetHingeAnchor (RAjoints[19],   jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.098, jP_rightArm[7][0]+0.01);
+    dJointSetHingeAxis (RAjoints[19], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[19],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[19],dParamHiStop, 2.7925);
+
+    dJointAttach (RAjoints[20], rhandfingers2,rhandfingers3); //ring finger3 ring finger4
+    dJointSetHingeAnchor (RAjoints[20],   jP_rightArm[7][1],elev +jP_rightArm[6][2]-0.5*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])-0.0905, jP_rightArm[7][0]-0.016125);
+    dJointSetHingeAxis (RAjoints[20], 0.0, 0.0, 1.0);
+    dJointSetHingeParam(RAjoints[20],dParamLoStop, -2.7925);dJointSetHingeParam(RAjoints[20],dParamHiStop, 2.7925);
+
+    //thumb
+    /*	dJointAttach (RAjoints[22],body[11],body[47]);//left hand thumb1 
+    dJointSetHingeAnchor(RAjoints[22], -0.117,elev + 0.455,0.006);
+    dJointSetHingeAxis(RAjoints[22],0,1,-0.5); 
+    dJointSetHingeParam(RAjoints[22],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[22],  dParamHiStop, (dReal) 2.7925);
+    */
+
+    dJointAttach (RAjoints[22],body[11],body[47]); //joint Universal left lower arm and left hand
+    dJointSetUniversalAnchor (RAjoints[22],  jP_rightArm[7][1],elev + jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_rightArm[7][0]+0.045 -0.013);
+    dJointSetUniversalAxis1 (RAjoints[22],0,1.5,-0.5);dJointSetUniversalAxis2 (RAjoints[22], 1,0,0);
+    dJointSetUniversalParam(RAjoints[22], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[22], dParamHiStop, 2.7925);
+    dJointSetUniversalParam(RAjoints[22], dParamLoStop2, -2.7925);dJointSetUniversalParam(RAjoints[22], dParamHiStop2, 2.7925);
+
+    dJointAttach (RAjoints[23],body[47],body[48]);//left thumb1 and thumb2
+    dJointSetHingeAnchor(RAjoints[23], jP_rightArm[7][1], elev + jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_rightArm[7][0]+0.069 -0.011);
+    dJointSetHingeAxis(RAjoints[23],0,0.5,0); 
+    dJointSetHingeParam(RAjoints[23],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[23],  dParamHiStop, (dReal) 2.7925);
+
+    dJointAttach (RAjoints[24],body[48],body[49]);//left thumb2 and thumb3
+    dJointSetHingeAnchor(RAjoints[24], jP_rightArm[7][1], elev +jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_leftArm[7][0]+0.088 -0.008);
+    dJointSetHingeAxis(RAjoints[24],0,0.5,0); 
+    dJointSetHingeParam(RAjoints[24],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[24],  dParamHiStop, (dReal) 2.7925);
+}
+
+void ICubSim::initHeadJoints()
+{
     //HEAD JOINTS
     if (actTorso == "off" && actHead == "off"){
         dJointAttach (Hjoints[0], body_torso, head);
@@ -3014,96 +3269,6 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
         dJointSetHingeParam(Hjoints[7],  dParamLoStop,-2.7925); dJointSetHingeParam(Hjoints[7],  dParamHiStop,2.7925);*/
 
     }
-    //joint parameters
-    for (int x=0; x<6; x++){
-        //dJointSetHingeParam(LLegjoints[x], dParamVel, LLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
-        dJointSetHingeParam(LLegjoints[x], dParamFMax, motorMaxTorque);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
-
-        dJointSetHingeParam(RLegjoints[x], dParamVel, RLeg_speed[x]);// Desired motor velocity (this will be an angular or linear velocity).
-        dJointSetHingeParam(RLegjoints[x], dParamFMax,motorMaxTorque);     //The maximum force or torque that the motor will use to achieve//the desired velocity.
-    }
-    for (int x=0; x<5; x++){
-        dJointSetHingeParam(Torsojoints[x], dParamVel, Torso_speed[x]);
-        dJointSetHingeParam(Torsojoints[x], dParamFMax,motorMaxTorque);
-    }
-    for (int x=0; x<5; x++){
-        dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetHingeParam(LAjoints[x], dParamFMax,motorMaxTorque);
-        dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetHingeParam(RAjoints[x], dParamFMax,motorMaxTorque);
-    }
-    for (int x=5; x<6;x++){//for the hands
-        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax,motorMaxTorque);
-        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax2,motorMaxTorque);
-
-        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax,motorMaxTorque);
-        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax2,motorMaxTorque);
-    }
-    for (int x=6; x<25; x++){//22
-        if (x!=9 && x!=13 && x!=17 && x!=21 && x!=22){
-            dJointSetHingeParam(LAjoints[x], dParamVel, la_speed[x]);
-            dJointSetHingeParam(LAjoints[x], dParamFMax,motorMaxTorque);
-            dJointSetHingeParam(RAjoints[x], dParamVel, ra_speed[x]);
-            dJointSetHingeParam(RAjoints[x], dParamFMax,motorMaxTorque);
-        }
-    }
-    for (int x=22; x<23;x++){//for the hands
-        dJointSetUniversalParam(LAjoints[x], dParamVel, la_speed[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax,motorMaxTorque);
-        dJointSetUniversalParam(LAjoints[x], dParamVel2, la_speed1[x]);
-        dJointSetUniversalParam(LAjoints[x], dParamFMax2,motorMaxTorque);
-
-        dJointSetUniversalParam(RAjoints[x], dParamVel, ra_speed[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax,motorMaxTorque);
-        dJointSetUniversalParam(RAjoints[x], dParamVel2, ra_speed1[x]);
-        dJointSetUniversalParam(RAjoints[x], dParamFMax2,motorMaxTorque);
-    }
-
-    dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
-    dJointSetHingeParam(Hjoints[0], dParamFMax,motorMaxTorque);
-    if (actHead ){
-        /*-------------head parameters--------------*/
-        for (int x=1; x<6; x++){//Joint parameters
-            dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
-            dJointSetHingeParam(Hjoints[x], dParamFMax,motorMaxTorque);
-        }
-    }
-
-    //----------------------------MOVE SHOULDERS 15 DEG------------------//
-    dQuaternion qShould,qShould1;
-    dQFromAxisAndAngle(qShould,0,1,0,0.2618);
-    dQFromAxisAndAngle(qShould1,0,1,0,-0.2618);
-    dBodySetQuaternion (torso[5], qShould);
-    dBodySetQuaternion (torso[4], qShould1);
-    dBodySetLinearVel(torso[5], 0.0, 0.0, 0.0);
-    dBodySetAngularVel(torso[5], 0.0, 0.0, 0.0);
-    dBodySetLinearVel(torso[4], 0.0, 0.0, 0.0);
-    dBodySetAngularVel(torso[4], 0.0, 0.0, 0.0);
-
-    /* Create a fixed hip joint */
-    if (actfixedHip == "on"){// && actElevation == "off") {
-        fixedHipJoint = dJointCreateFixed(world, 0);
-        if (actTorso == "off") {
-            // attach to the lower torso
-            dJointAttach (fixedHipJoint,body_torso,0);
-            // move the torso up slightly (0.03 units)???
-            //dBodySetPosition (body_torso,   0.0, 0.4912, -0.034);
-        } else {
-            // attach to the lower torso
-            dJointAttach (fixedHipJoint,torso[0],0);
-            // move the torso up slightly (0.03 units)???
-            //dBodySetPosition (torso[0],   0.0, 0.4912, -0.034);
-        }
-        // this call fixes the joint to its current position in 3D space
-        dJointSetFixed (fixedHipJoint);
-    }
-    inertialJoint = dJointCreateFixed(world, 0);
-    dJointAttach (inertialJoint,inertialBody,head);
-    dJointSetFixed (inertialJoint);
 }
 
 ICubSim::~ICubSim() {

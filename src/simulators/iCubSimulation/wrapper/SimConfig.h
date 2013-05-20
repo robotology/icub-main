@@ -76,51 +76,55 @@ public:
 
     virtual double getWorldCFM() {
         readOdeParams();
-        return worldCFM;
+        return p.worldCFM;
     }
     virtual double getWorldERP() {
         readOdeParams();
-        return worldERP;
+        return p.worldERP;
     }
     virtual double getFudgeFactor(){
         readOdeParams();
-        return fudgeFactor;
+        return p.fudgeFactor;
     }
     virtual double getStopCFM(){
         readOdeParams();
-        return stopCFM;
+        return p.stopCFM;
     }
     virtual double getJointCFM(){
         readOdeParams();
-        return jointCFM;
+        return p.jointCFM;
     }
     virtual double getStopERP(){
         readOdeParams();
-        return stopERP;
+        return p.stopERP;
     }
     virtual double getMaxContactCorrectingVel(){
         readOdeParams();
-        return maxContactCorrectingVel;
+        return p.maxContactCorrectingVel;
     }
     virtual double getContactSurfaceLayer(){
         readOdeParams();
-        return contactSurfaceLayer;
+        return p.contactSurfaceLayer;
     }
     virtual double getMotorMaxTorque(){
         readOdeParams();
-        return motorMaxTorque;
+        return p.motorMaxTorque;
     }
     virtual double getMotorDryFriction(){
         readOdeParams();
-        return motorDryFriction;
+        return p.motorDryFriction;
     }
     virtual double getJointStopBouncyness(){
         readOdeParams();
-        return jointStopBouncyness;
+        return p.jointStopBouncyness;
     }
     virtual int getWorldTimestep(){
         readOdeParams();
-        return worldTimestep;
+        return p.worldTimestep;
+    }
+    virtual OdeParams getOdeParameters(){
+        readOdeParams();
+        return p;
     }
    
 
@@ -129,18 +133,7 @@ private:
     RobotFlags flags;
 
     bool odeParamRead;
-    double fudgeFactor;
-    double stopCFM;
-    double jointCFM;
-    double worldCFM; 
-    int    worldTimestep;
-    double stopERP;   
-    double worldERP;
-    double maxContactCorrectingVel;
-    double contactSurfaceLayer;
-    double motorMaxTorque;
-    double motorDryFriction;
-    double jointStopBouncyness;
+    OdeParams p;
 
     
     void readOdeParams(){
@@ -153,20 +146,20 @@ private:
         Bottle &bParamContacts  = bParams.findGroup("CONTACTS");
         Bottle &bParamJoints    = bParams.findGroup("JOINTS");
 
-        worldTimestep   = bParamWorld.check("timestep", Value(10)).asInt();
-        worldCFM        = bParamWorld.check("worldCFM", Value(0.00001)).asDouble();
-        worldERP        = bParamWorld.check("worldERP", Value(0.2)).asDouble();
+        p.worldTimestep   = bParamWorld.check("timestep", Value(10)).asInt();
+        p.worldCFM        = bParamWorld.check("worldCFM", Value(0.00001)).asDouble();
+        p.worldERP        = bParamWorld.check("worldERP", Value(0.2)).asDouble();
         
-        maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asDouble();
-        contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asDouble();
+        p.maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asDouble();
+        p.contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asDouble();
 
-        fudgeFactor         = bParamJoints.check("fudgeFactor", Value(0.02)).asDouble();
-        jointCFM            = bParamJoints.check("jointCFM", Value(1e-5)).asDouble();
-        stopCFM             = bParamJoints.check("stopCFM", Value(1e-5)).asDouble();
-        stopERP             = bParamJoints.check("stopERP", Value(0.2)).asDouble();
-        motorMaxTorque      = bParamJoints.check("motorMaxTorque", Value(1e3)).asDouble();
-        motorDryFriction    = bParamJoints.check("motorDryFriction", Value(0.1)).asDouble();
-        jointStopBouncyness = bParamJoints.check("jointStopBouncyness", Value(0.1)).asDouble();
+        p.fudgeFactor         = bParamJoints.check("fudgeFactor", Value(0.02)).asDouble();
+        p.jointCFM            = bParamJoints.check("jointCFM", Value(1e-5)).asDouble();
+        p.stopCFM             = bParamJoints.check("stopCFM", Value(1e-5)).asDouble();
+        p.stopERP             = bParamJoints.check("stopERP", Value(0.2)).asDouble();
+        p.motorMaxTorque      = bParamJoints.check("motorMaxTorque", Value(1e3)).asDouble();
+        p.motorDryFriction    = bParamJoints.check("motorDryFriction", Value(0.1)).asDouble();
+        p.jointStopBouncyness = bParamJoints.check("jointStopBouncyness", Value(0.1)).asDouble();
 
         odeParamRead = true;
     }

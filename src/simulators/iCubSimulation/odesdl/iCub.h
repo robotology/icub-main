@@ -275,6 +275,30 @@ public:
     void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
                RobotConfig& config);
     void activateiCubParts(RobotConfig& config);
+
+    void initLegsOff(dWorldID world);
+    void initLegsOn(dWorldID world);
+    void initTorsoOff(dWorldID world);
+    void initTorsoOn(dWorldID world);
+    void initLeftArmOff(dWorldID world);
+    void initLeftArmOn(dWorldID world);
+    void initRightArmOff(dWorldID world);
+    void initRightArmOn(dWorldID world);
+    void initLeftHandOff(dWorldID world);
+    void initLeftHandOn(dWorldID world);
+    void initRightHandOff(dWorldID world);
+    void initRightHandOn(dWorldID world);
+    void initHead(dWorldID world);
+    void initEyes(dWorldID world);
+    void initCovers(ResourceFinder& finder);
+
+    void initLegJoints();
+    void initTorsoJoints(OdeParams &p);
+    void initLeftArmJoints(OdeParams &p);
+    void initRightArmJoints(OdeParams &p);
+    void initLeftHandJoints();
+    void initRightHandJoints();
+    void initHeadJoints();
 };
 
 
