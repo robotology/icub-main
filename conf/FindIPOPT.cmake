@@ -17,6 +17,11 @@ IF(APPLE)
      PKG_CHECK_MODULES(IPOPT ipopt)
      LINK_DIRECTORIES(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
                                              # ipopt-using programs do this
+
+     foreach(arg ${IPOPT_LDFLAGS})
+       set(IPOPT_LINK_FLAGS "${IPOPT_LINK_FLAGS} ${arg}")
+     endforeach(arg ${IPOPT_LDFLAGS})
+
    ENDIF()
  
 ELSEIF(UNIX)
@@ -114,5 +119,3 @@ ELSE()
    SET(IPOPT_LIBRARIES "")
    SET(IPOPT_LINK_FLAGS "")
 ENDIF()
-
-
