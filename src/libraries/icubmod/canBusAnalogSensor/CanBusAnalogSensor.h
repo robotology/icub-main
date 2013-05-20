@@ -25,8 +25,9 @@ class CanBusAnalogSensor : public RateThread, public yarp::dev::IAnalogSensor, p
 {
     enum AnalogDataFormat
     {
-        ANALOG_FORMAT_8,
-        ANALOG_FORMAT_16,
+        ANALOG_FORMAT_ERR    = 0,
+        ANALOG_FORMAT_8_BIT  = 8,
+        ANALOG_FORMAT_16_BIT = 16,
     };
 
     enum SensorStatus

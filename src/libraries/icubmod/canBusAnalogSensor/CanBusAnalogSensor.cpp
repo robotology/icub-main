@@ -74,16 +74,24 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     //set the internal configuration
     //this->isVirtualSensor   = false;
     this->boardId           = config.find("CanAddress").asInt();
-    this->dataFormat        = (AnalogDataFormat)(config.find("Format").asInt());
     this->analogChannels    = config.find("Channels").asInt();
     this->useCalibration    = (config.find("UseCalibration").asInt()==1);
     //this->SensorFullScale = config.find("FullScale").asInt();
+    unsigned int tmpFormat  = config.find("Format").asInt();
+    if      (tmpFormat == 8)
+        this->dataFormat = ANALOG_FORMAT_8_BIT;
+    else if (tmpFormat == 16)
+        this->dataFormat = ANALOG_FORMAT_16_BIT;
+    else    
+        this->dataFormat = ANALOG_FORMAT_ERR;
 
     //open the can mask for the specific canDeviceId
     for (int id=0; id<16; ++id)
     {
         pCanBus->canIdAdd(0x300+(boardId<<4)+id);
     }
+    pCanBus->canIdAdd(0x200+boardId);
+    pCanBus->canIdAdd(0x200+(boardId<<4));
 
     //create the data vector:
     int chan=config.find("Channels").asInt();
@@ -116,13 +124,15 @@ bool CanBusAnalogSensor::readFullScaleAnalog(int ch)
     bool full_scale_read=false;
     do 
     {
-        //pCanBus->canRead();
-        unsigned int num_messages = 0;
-        for (unsigned int i=0; i<num_messages; i++)
+        unsigned int max_messages=CAN_DRIVER_BUFFER_SIZE;
+        unsigned int read_messages = 0;
+        bool b = pCanBus->canRead(inBuffer,max_messages,&read_messages,false);
+
+        for (unsigned int i=0; i<read_messages; i++)
         {
-            /*// CanMessage& m= res._readBuffer[i];
+            CanMessage& m= inBuffer[i];
             unsigned int currId=m.getId();
-            if (currId==(0x0200|sensor_id<<4))
+            if (currId==(0x0200 | boardId << 4))
                 if (m.getLen()==4 &&
                     m.getData()[0]==0x18 &&
                     m.getData()[1]==ch)
@@ -130,7 +140,7 @@ bool CanBusAnalogSensor::readFullScaleAnalog(int ch)
                         scaleFactor[ch]=m.getData()[2]<<8 | m.getData()[3];
                         full_scale_read=true;
                         break;
-                    }*/
+                    }
         }
         yarp::os::Time::delay(0.002);
         timeout++;
@@ -166,7 +176,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
     }
 
     //init message for mais board
-    if (analogChannels==16 && dataFormat==8)
+    if (analogChannels==16 && dataFormat==ANALOG_FORMAT_8_BIT)
     {
         CanMessage &msg=outBuffer[0];
         msg.setId(id);
@@ -178,7 +188,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
     }
 
     //init message for strain board
-    else if (analogChannels==6 && dataFormat==16)
+    else if (analogChannels==6 && dataFormat==ANALOG_FORMAT_16_BIT)
     {
         //calibrated astrain board
         if (useCalibration)
@@ -446,8 +456,6 @@ void CanBusAnalogSensor::run()
         unsigned char *buff   = msg.getData();
         unsigned int len      = msg.getLen();
         unsigned int id       = (msgid & 0x00f0)>>4;
-        unsigned int sensorId = msgid&0x000f;
-        //unsigned int type   = buff[0]&0x80;
         const char   type     = ((msgid&0x700)>>8);
 
         //parse data here
@@ -460,11 +468,11 @@ void CanBusAnalogSensor::run()
                 timeStamp=Time::now();
                 switch (dataFormat)
                 {
-                    case ANALOG_FORMAT_8:
+                    case ANALOG_FORMAT_8_BIT:
                         ret=decode8(buff, msgid, data.data());
                         status=IAnalogSensor::AS_OK;
                         break;
-                    case ANALOG_FORMAT_16:
+                    case ANALOG_FORMAT_16_BIT:
                         if (len==6) 
                         {
                             ret=decode16(buff, msgid, data.data());
