@@ -42,7 +42,8 @@ ENDIF ("${BUTTON_FILE}" STREQUAL "")
 
 SET(ACE_INCLUDE_DIR "/usr/include")
 
-set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
+#set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
+set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
 set(OPC_PROTO_FOLDER             ${BASE}any-arch/sys/embobj/icub-app/)
 set(COMMON_FOLDER		 ${BASE}any-arch/sys/embobj/core/)
 set(PORTING_FOLDER		 ${BASE}/porting/)
