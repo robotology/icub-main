@@ -239,7 +239,7 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
         {   
         
-            printf("\n\n-----EMS periph data---\n");
+            printf("-----EMS periph data---\n");
             printf("\t CAN 1:\n");
             s_print_emsperiph_candata(&data->can_dev[0]);
             printf("\t CAN 2:\n");
@@ -269,7 +269,7 @@ static void on_rec_emsapplcommon(opcprotman_opc_t opc, opcprotman_var_map_t* map
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
         {   
         
-            printf("\n\n-----EMS appl common---\n");
+            printf("-----EMS appl common---\n");
 
             s_print_emsapplcomm_core(&data->core);
             s_print_emsapplcomm_ipnet(&data->ipnet);
@@ -342,7 +342,7 @@ static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
         {   
         
-            printf("\n\n-----EMS appl mc---\n");
+            printf("-----EMS appl mc---\n");
 
             s_print_emsapplmc_encoderserror(&(data->encreads));
 
