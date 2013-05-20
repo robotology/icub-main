@@ -18,7 +18,8 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 #headers-----------
 message(INFO " ciao -${folder_source}")
 
-set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
+#set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
+set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
 set(MIDDLE_PATH_TO_NVS 		any-arch/sys/embobj/)
 
 
