@@ -1,6 +1,4 @@
 <devices>
-	<devices> 
- 
 	<device name="left_leg_as_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
 		<param name="deviceId">     left_leg				</param>
