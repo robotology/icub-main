@@ -17,8 +17,8 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 
 #headers-----------
 
-set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
-
+#set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
+set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
 
 
 set(CORE_FOLDER  		${BASE}any-arch/sys/embobj/core/src/)
