@@ -71,7 +71,7 @@ public:
         {
             for (int id=0; id<0x800; ++id)
             {
-                if (dap->hasId(id)) canIdDelete(id);
+                if (dap->hasId(id)) canIdDeleteUnsafe(id);
             }
 
             delete dap;
@@ -147,21 +147,7 @@ public:
     {
         configMutex.wait();
 
-        if (reqIdsUnion[id]==REQST)
-        {
-            for (int i=0; i<(int)accessPoints.size(); ++i)
-            {
-                if (accessPoints[i]->hasId(id))
-                {
-                    configMutex.post();
-                    return;
-                }
-            }
-
-            reqIdsUnion[id]=UNREQ;
-
-            theCanBus->canIdDelete(id);
-        }
+        canIdDeleteUnsafe(id);
 
         configMutex.post();
     }
@@ -254,6 +240,24 @@ public:
     }
 
 private:
+    void canIdDeleteUnsafe(unsigned int id)
+    {
+        if (reqIdsUnion[id]==REQST)
+        {
+            for (int i=0; i<(int)accessPoints.size(); ++i)
+            {
+                if (accessPoints[i]->hasId(id))
+                {
+                    return;
+                }
+            }
+
+            reqIdsUnion[id]=UNREQ;
+
+            theCanBus->canIdDelete(id);
+        }
+    }
+
     yarp::os::Semaphore writeMutex;
     yarp::os::Semaphore configMutex;
 

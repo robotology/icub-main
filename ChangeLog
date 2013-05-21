@@ -1,3 +1,7 @@
+2013-21-05 Alessandro Scalzo <alessandro.scalzo@iit.it>
+	* /main/src/libraries/icubmod/sharedCan/SharedCanBus.cpp
+	semaphore deadlock on exit resolved
+
 2013-17-04 Ugo Pattacini <ugo.pattacini@iit.it>
    * cart i/f + gaze i/f
    added version checking between client and server parts
