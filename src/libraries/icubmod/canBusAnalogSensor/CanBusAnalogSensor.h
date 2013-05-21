@@ -48,9 +48,8 @@ protected:
    
     yarp::os::Semaphore mutex;
 
-    unsigned int       analogChannels;
+    unsigned int       channelsNum;
     unsigned short     boardId;
-    int                sensorsNum;
     short              status;
     double             timeStamp;
     AnalogDataFormat   dataFormat;

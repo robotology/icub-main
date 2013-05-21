@@ -74,7 +74,6 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     //set the internal configuration
     //this->isVirtualSensor   = false;
     this->boardId           = config.find("CanAddress").asInt();
-    this->analogChannels    = config.find("Channels").asInt();
     this->useCalibration    = (config.find("UseCalibration").asInt()==1);
     //this->SensorFullScale = config.find("FullScale").asInt();
     unsigned int tmpFormat  = config.find("Format").asInt();
@@ -94,10 +93,9 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     pCanBus->canIdAdd(0x200+(boardId<<4));
 
     //create the data vector:
-    int chan=config.find("Channels").asInt();
-    sensorsNum = chan>=1?chan:1;
-    data.resize(sensorsNum);
-    scaleFactor.resize(sensorsNum);
+    this->channelsNum    = config.find("Channels").asInt();
+    data.resize(channelsNum);
+    scaleFactor.resize(channelsNum);
 
     //start the sensor broadcast
     sensor_start(config);
@@ -176,7 +174,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
     }
 
     //init message for mais board
-    if (analogChannels==16 && dataFormat==ANALOG_FORMAT_8_BIT)
+    if (channelsNum==16 && dataFormat==ANALOG_FORMAT_8_BIT)
     {
         CanMessage &msg=outBuffer[0];
         msg.setId(id);
@@ -188,7 +186,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
     }
 
     //init message for strain board
-    else if (analogChannels==6 && dataFormat==ANALOG_FORMAT_16_BIT)
+    else if (channelsNum==6 && dataFormat==ANALOG_FORMAT_16_BIT)
     {
         //calibrated astrain board
         if (useCalibration)
@@ -300,19 +298,19 @@ int CanBusAnalogSensor::getState(int ch)
 
 int CanBusAnalogSensor::getChannels()
 {
-    return sensorsNum;
+    return channelsNum;
 }
 
 int CanBusAnalogSensor::calibrateSensor()
 {
     //NOT YET IMPLEMENTED
-    return calibrateSensor();
+    return 0;
 }
 
 int CanBusAnalogSensor::calibrateChannel(int ch, double v)
 {
     //NOT YET IMPLEMENTED
-    return calibrateChannel(ch, 0);
+    return 0;
 }
 
 int CanBusAnalogSensor::calibrateSensor(const yarp::sig::Vector& v)
