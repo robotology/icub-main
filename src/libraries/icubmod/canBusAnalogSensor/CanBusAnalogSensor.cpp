@@ -329,23 +329,6 @@ int CanBusAnalogSensor::calibrateChannel(int ch)
 
 bool CanBusAnalogSensor::threadInit()
 {
-    unsigned int canMessages=0;
-    unsigned id = 0x200 + boardId;
-       
-    CanMessage &msg=outBuffer[0];
-    msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0x22;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
-    canMessages=0;
-    pCanBus->canWrite(outBuffer, 1, &canMessages);
-
     return true;
 }
 
