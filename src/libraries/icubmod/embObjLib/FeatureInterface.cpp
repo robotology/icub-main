@@ -26,8 +26,10 @@ static TheEthManager *_interface2ethManager = NULL;
 void initCallback(void *p)
 {
     if(_interface2ethManager == NULL )
+    {
         printf("\n\nInitting _interface2ethManager\n\n");
-    _interface2ethManager = (TheEthManager*) p;
+        _interface2ethManager = (TheEthManager*) p;
+    }
 }
 
 fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
