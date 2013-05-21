@@ -203,6 +203,7 @@ bool PF3DTracker::open(Searchable& config)
 
     //create and initialize the resource finder
     ResourceFinder rf;
+    rf.setVerbose(true);
     rf.setDefaultContext(context.c_str());
     rf.setDefaultConfigFile(initializationFile.c_str());
     rf.configure("ICUB_ROOT", 0, NULL);
