@@ -1,5 +1,5 @@
-// Copyright: (C) 2013 iCub Facility
-// Authors: Marco Randazzo <marco.randazzo@iit.it>
+# Copyright: (C) 2013 iCub Facility
+# Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 PREPARE_DEVICE(canBusVirtualAnalogSensor TYPE CanBusVirtualAnalogSensor INCLUDE CanBusVirtualAnalogSensor.h WRAPPER grabber)

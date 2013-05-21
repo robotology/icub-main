@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-// Copyright: (C) 2010 RobotCub Consortium
-// Authors: Lorenzo Natale
+// Copyright: (C) 2013 iCub Facility
+// Authors: Marco Randazzo <marco.randazzo@iit.it>
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #include <CanBusAnalogSensor.h>
