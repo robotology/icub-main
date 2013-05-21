@@ -247,6 +247,10 @@ public:
     Vector          jP_leftLeg[6];
     Vector          jP_rightLeg[6];
     Vector          jP_inertial;
+    /*------- Joint Axes ----------*/
+    Vector          jA_torso[3];
+    Vector          jA_leftArm[8];
+    Vector          jA_rightArm[8];
 
     ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
             RobotConfig& config);
