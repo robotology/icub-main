@@ -844,8 +844,10 @@ Vector Solver::computeTargetUserTolerance(const Vector &xd)
 
     rot=rot/r;
     rot.push_back(neckAngleUserTolerance*CTRL_DEG2RAD);
+    rot=H*(axis2dcm(rot)*xdh);
+    rot.pop_back();
 
-    return ((H*(axis2dcm(rot)*xdh)).subVector(0,2));
+    return rot;
 }
 
 

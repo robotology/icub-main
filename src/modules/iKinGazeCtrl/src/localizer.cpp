@@ -244,7 +244,8 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
         xd=eyeCAbsFrame*(R*fph);    // apply rotation and retrieve fp wrt root frame
     }
 
-    return xd.subVector(0,2);
+    xd.pop_back();
+    return xd;
 }
 
 
@@ -293,7 +294,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
         // find the 2D projection
         px=*Prj*xe;
         px=px/px[2];
-        px=px.subVector(0,1);
+        px.pop_back();
 
         return true;
     }
@@ -345,9 +346,10 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 
         // find position wrt the root frame
         mutex.wait();
-        x=(eye->getH(q)*xe).subVector(0,2);
+        x=eye->getH(q)*xe;
         mutex.post();
 
+        x.pop_back();
         return true;
     }
     else
