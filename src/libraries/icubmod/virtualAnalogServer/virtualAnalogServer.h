@@ -69,7 +69,7 @@ public:
 
     void flushTorques()
     {
-        if (mpSensor) mpSensor->setTorque(mTorques);
+        if (mpSensor) mpSensor->updateMeasure(mTorques);
     }
 
     const std::string& getKey(){ return mKey; }
