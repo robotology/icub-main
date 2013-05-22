@@ -354,7 +354,8 @@ Matrix exchangeData::get_fpFrame()
 
 
 /************************************************************************/
-bool getCamPrj(const ResourceFinder &rf_cameras, const string &type, Matrix **Prj)
+bool getCamPrj(const ResourceFinder &rf_cameras, const string &type,
+               Matrix **Prj, const bool verbose)
 {
     *Prj=NULL;
 
@@ -371,11 +372,14 @@ bool getCamPrj(const ResourceFinder &rf_cameras, const string &type, Matrix **Pr
             double fx=parType.find("fx").asDouble();
             double fy=parType.find("fy").asDouble();
 
-            fprintf(stdout,"%s found:\n",message.c_str());
-            fprintf(stdout,"cx = %g\n",cx);
-            fprintf(stdout,"cy = %g\n",cy);
-            fprintf(stdout,"fx = %g\n",fx);
-            fprintf(stdout,"fy = %g\n",fy);
+            if (verbose)
+            {
+                fprintf(stdout,"%s found:\n",message.c_str());
+                fprintf(stdout,"cx = %g\n",cx);
+                fprintf(stdout,"cy = %g\n",cy);
+                fprintf(stdout,"fx = %g\n",fx);
+                fprintf(stdout,"fy = %g\n",fy);
+            }
 
             Matrix K=eye(3,3);
             Matrix Pi=zeros(3,4);
@@ -399,7 +403,8 @@ bool getCamPrj(const ResourceFinder &rf_cameras, const string &type, Matrix **Pr
 
 
 /************************************************************************/
-bool getAlignHN(const ResourceFinder &rf_cameras, const string &type, iKinChain *chain)
+bool getAlignHN(const ResourceFinder &rf_cameras, const string &type,
+                iKinChain *chain, const bool verbose)
 {
     if (chain!=NULL)
     {
@@ -415,7 +420,7 @@ bool getAlignHN(const ResourceFinder &rf_cameras, const string &type, iKinChain 
 
                 Matrix HN(4,4); HN=0.0;
                 for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
-                {    
+                {
                     HN(i,j)=bH->get(cnt).asDouble();
                     if (++j>=HN.cols())
                     {
@@ -430,8 +435,11 @@ bool getAlignHN(const ResourceFinder &rf_cameras, const string &type, iKinChain 
 
                 chain->setHN(HN);
 
-                fprintf(stdout,"%s found:\n",message.c_str());
-                fprintf(stdout,"%s\n",HN.toString(3,3).c_str());
+                if (verbose)
+                {
+                    fprintf(stdout,"%s found:\n",message.c_str());
+                    fprintf(stdout,"%s\n",HN.toString(3,3).c_str());
+                }
 
                 return true;
             }

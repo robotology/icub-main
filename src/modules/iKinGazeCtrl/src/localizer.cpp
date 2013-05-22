@@ -48,8 +48,8 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->releaseLink(2); eyeC.releaseLink(2); eyeR->releaseLink(2);
 
     // add aligning matrices read from configuration file
-    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain(),true);
+    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain(),true);
 
     // get the absolute reference frame of the head
     Vector q(eyeC.getDOF(),0.0);
@@ -61,7 +61,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
 
     // get camera projection matrix
-    if (getCamPrj(rf_cameras,"CAMERA_CALIBRATION_LEFT",&PrjL))
+    if (getCamPrj(rf_cameras,"CAMERA_CALIBRATION_LEFT",&PrjL,true))
     {
         Matrix &Prj=*PrjL;
         cxl=Prj(0,2);
@@ -73,7 +73,7 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
         PrjL=invPrjL=NULL;
 
     // get camera projection matrix
-    if (getCamPrj(rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR))
+    if (getCamPrj(rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR,true))
     {
         Matrix &Prj=*PrjR;
         cxr=Prj(0,2);
