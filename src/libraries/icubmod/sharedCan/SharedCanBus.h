@@ -21,6 +21,7 @@
 #ifndef __SHARED_CAN_BUS_H__
 #define __SHARED_CAN_BUS_H__
 
+#include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -44,9 +45,9 @@ class yarp::dev::CanBusAccessPoint :
 public:
     CanBusAccessPoint() : waitReadMutex(0),synchroMutex(1)
     {
-        for (int i=0; i<0x800; ++i) reqIds[i]=UNREQ;
+        reqIds=new char[0x800];
 
-        //readBuffer=createBuffer(BUF_SIZE);
+        for (int i=0; i<0x800; ++i) reqIds[i]=UNREQ;
 
         waitingOnRead=false;
 
@@ -56,6 +57,8 @@ public:
     ~CanBusAccessPoint()
     {
         destroyBuffer(readBuffer);
+
+        delete [] reqIds;
     }
 
     bool hasId(unsigned int id)
@@ -157,7 +160,7 @@ protected:
     unsigned int nRecv;
     CanBuffer readBuffer;
     
-    char reqIds[0x800];
+    char *reqIds; //[0x800];
 };
 
 #endif

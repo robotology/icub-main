@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include <yarp/os/Time.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/dev/PolyDriver.h>
@@ -22,6 +23,8 @@ private:
     {
         initialized=false;
 
+        reqIdsUnion=new char[0x800];
+
         for (int i=0; i<0x800; ++i) reqIdsUnion[i]=UNREQ;
     }
 
@@ -31,6 +34,8 @@ public:
         stop();
 
         polyDriver.close();
+
+        delete [] reqIdsUnion;
     }
 
     static SharedCanBus& getInstance()
@@ -49,32 +54,27 @@ public:
 
     void detachAccessPoint(yarp::dev::CanBusAccessPoint* ap)
     {
+        if (!ap) return;
+
         configMutex.wait();
 
-        int n=accessPoints.size()-1;
+        int n=accessPoints.size();
 
-        yarp::dev::CanBusAccessPoint* dap=NULL;
-
-        for (int i=0; i<=n; ++i)
+        for (int i=0; i<n; ++i)
         {
             if (ap==accessPoints[i])
             {
-                dap=accessPoints[i];
-                accessPoints[i]=accessPoints[n];
+                for (int id=0; id<0x800; ++id)
+                {
+                    if (ap->hasId(id)) canIdDeleteUnsafe(id);
+                }
+                
+                accessPoints[i]=accessPoints[n-1];
+                
                 accessPoints.pop_back();
 
                 break;
             }
-        }
-
-        if (dap)
-        {
-            for (int id=0; id<0x800; ++id)
-            {
-                if (dap->hasId(id)) canIdDeleteUnsafe(id);
-            }
-
-            delete dap;
         }
 
         if (accessPoints.size()==0)
@@ -272,7 +272,7 @@ private:
 
     yarp::dev::CanBuffer readBufferUnion;
 
-    char reqIdsUnion[0x800];
+    char *reqIdsUnion; //[0x800];
 };
 
 
