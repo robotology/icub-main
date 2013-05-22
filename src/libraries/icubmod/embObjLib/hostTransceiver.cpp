@@ -351,6 +351,30 @@ bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_
     return true;
 }
 
+bool hostTransceiver::readSentValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
+{
+    EOnv nv;
+    bool ret;
+    if(nvid == EOK_uint16dummy)
+    {
+        yError() << "eo HostTransceiver: called readValue with invalid nvid";
+        return false;
+    }
+
+    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+
+    if(NULL == nvRoot)
+    {
+        yError() << "Unable to get pointer to desired NV with id" << nvid;
+        return false;
+    }
+    //protetion on reading data by yarp
+    transMutex.wait();
+    (eores_OK == eo_nv_Get(nvRoot, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
+    transMutex.post();
+    return true;
+}
+
 #if 0 // not used, e in ogni caso identica a quella sopra!! (a parte il mutex che cmq ho aggiunto ora ed il tipo del puntatore ai dati)
 bool hostTransceiver::readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t *size)
 {

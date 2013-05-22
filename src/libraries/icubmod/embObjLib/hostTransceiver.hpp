@@ -109,17 +109,13 @@ public:
      */
     bool readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
 
-#if 0
-    bool readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t* size);
-#endif
+    /* ! This method echoes back a value that has just been sent from the hostTransceiver to someone else */
+    bool readSentValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
+
     // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
     bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
 
     bool load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
-
-    // create a get nv rop
-//	void s_hostTransceiver_AddGetROP(uint16_t ep, uint16_t id);
-//	void s_hostTransceiver_AddSetROP_with_data_already_set(uint16_t ep, uint16_t id);
 
     // somebody passes the received packet
     void SetReceived(uint8_t *data, uint16_t size);
@@ -133,10 +129,9 @@ protected:
     void getTransmit(uint8_t **data, uint16_t *size);
 
 public:
-//     eOnvID_t getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint, FeatureType type);
     bool getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
     EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);
-//	void askNV(uint16_t endpoint, uint16_t id, uint8_t* data, uint16_t* size);
+
 
     void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
 
