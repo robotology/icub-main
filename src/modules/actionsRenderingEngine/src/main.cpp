@@ -62,7 +62,9 @@ the action required. In these cases the parameter [target] can be expressed as f
 
 --(<camera> u v) when the target is a 2D couple of camera plane coordinates. If not specified, the camera used is assumed to be the left one.
 
---("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.
+--("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.    
+    
+--("cartesian" x y z ax ay az theta) or (x y z ax ay az theta): occasionally also the orientation can be provided.
 
 --"object_name" when using a visual classifier to localize objects. This option represents a label to access online information stored in the
   databased provided by \ref objectsPropertiesCollector module. The label itself is used to access the corresponding object through the "name"
@@ -82,12 +84,12 @@ The majority of commands can usually be provided with general optional parameter
 The commands:
 
 <b>IDLE</b> 
-format: [idle]
+format: [idle] \n
 action: the gaze controller is reset to the original context stored at
 start and head/eye control is interrupted.
  
 <b>HOME</b> 
-format: [home] "param1" "param2"
+format: [home] "param1" "param2" \n
 action: the arms are sent to home position. the optional parameters
 "param1" and "param2" can be independently set to "gaze" or
 "head" in order to bring the gaze controller in home position
@@ -95,12 +97,12 @@ and "fingers" or "hands" to open the robot hands. Alternatively
 the parameter "all" can be supplied to perform both optional actions.
  
 <b>OBSERVE</b> 
-format: [observe]
+format: [observe] \n
 action: if the robot is holding an object it brings it in the FoV of
 its cameras with the final purpose of visually explore it.
 
 <b>DROP</b> 
-format: [drop] "param1" "param2" or [drop] "over" [target] "param1" "param2"
+format: [drop] "param1" "param2" or [drop] "over" [target] "param1" "param2" \n
 action: if the robot is holding an object it brings it over the table and drops it
 on a random position approximatively in front of it.
 Optional parameter "side" or "above" can be provided in order to select the 
@@ -114,13 +116,18 @@ parameters "gently" can be specified in order for the robot to gently deploy the
 object over the target.
 
 <b>TAKE</b> 
-format: [take] [target] "param1"
+format: [take] [target] "param1" \n
 action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
 
+<b>GRASP</b> 
+format: [grasp] [target] \n
+action: the robot tries to reach the specified [target] and performs a power grasp.
+The target must be specified both in cartesian position and orientation.
+
 <b>TOUCH</b> 
-format: [touch] [target] "param1" "param2"
+format: [touch] [target] "param1" "param2" \n
 action: the robot tries to reach the specified [target] and then brings the arm back to home position.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
@@ -128,40 +135,40 @@ Optional parameter "still" can be provided to avoid the robot bring its arm back
 reaching has been achieved.
 
 <b>PUSH</b> 
-format: [push] [target] "param1"
+format: [push] [target] "param1" \n
 action: the robot tries to reach the specified [target] from one side and then push it laterally.
 Optional parameter "away" can be supplied in order to have the robot push the object away from its
 root reference frame.
 
 <b>POINT</b> 
-format: [point] [target]
+format: [point] [target] \n
 action: the robot tries to point the specified [target] with its index finger.
 
 <b>LOOK</b> 
-format: [look] [target] "param1"
+format: [look] [target] "param1" \n
 action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
 keep the gaze fixating the requested target also when other commands are issued to the torso.
 Note: the special target [hand] (with optional parameter 'left'/'right') can be provided to have the robot look
 at its own hand. The robot will keep looking at its own hand until an idle command.
 
 <b>EXPECT</b> 
-format: [expect]
+format: [expect] \n
 action: the robot puts one arm forward with the palm of the hand facing up and waiting for an object
 to be put on it.
 
 <b>GIVE</b> 
-format: [give]
+format: [give] \n
 action: the robot puts one arm forward with the palm of the hand facing up and opens the fingers so that
 the object held in the hand is free to be taken.
 
 <b>TRACK</b> 
-format: [track] [target] "param1"
+format: [track] [target] "param1" \n
 action: the specified [target] visual position is supplied to the tracker module and the gaze controller is 
 updated in order to keep the object constantly inside the robot fovea. The optional "param1" can be put equal to
 "no_sacc" in order to disable the saccadic movements of the gaze controller during the tracking process.
 
 <b>TEACH ACTION</b> 
-format: [teach] "action_name" [start/stop] "param1"
+format: [teach] "action_name" [start/stop] "param1" \n
 action: If parameter [start] is specified and the action "action_name" has not been registered yet, the
 robot arm is set to torque  control mode. The cartesian position (wrt the starting point) and orientation
 of the robot arm is stored until the command [teach] "action_name" [stop] is received. The learned action
@@ -169,7 +176,7 @@ is recorded to the file "actions/<arm>/<action_name>.txt" and can be repeated au
 using the command <b>IMITATE ACTION</b> ([imitate] "action_name").
 
 <b>IMITATE ACTION</b> 
-format: [imitate] "action_name"
+format: [imitate] "action_name" \n
 action:  the system loads the file "actions/<arm>/<action_name>.txt" and controls the arm in order to 
 repeat the trajectory previously registered.
 
@@ -336,6 +343,7 @@ Windows, Linux
 
 #define CMD_GET                     VOCAB3('g','e','t')
 #define CMD_TAKE                    VOCAB4('t','a','k','e')
+#define CMD_GRASP                   VOCAB4('g','r','a','s')
 #define CMD_TOUCH                   VOCAB4('t','o','u','c')
 #define CMD_PICK                    VOCAB4('p','i','c','k')
 #define CMD_PUSH                    VOCAB4('p','u','s','h')
@@ -1125,6 +1133,19 @@ public:
                            reply.addVocab(NACK);
                         }
 
+                        break;
+                    }
+
+                    case CMD_GRASP:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        visuoThr->getTarget(command.get(1),command);
+                        motorThr->powerGrasp(command)?reply.addVocab(ACK):reply.addVocab(NACK);
                         break;
                     }
 

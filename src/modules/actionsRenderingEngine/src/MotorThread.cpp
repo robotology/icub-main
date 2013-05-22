@@ -89,7 +89,9 @@ int MotorThread::checkArm(int arm, Vector &xd)
     if(arm!=ARM_IN_USE && arm!=ARM_MOST_SUITED && action[arm]!=NULL)
         armInUse=arm;
 
-    xd=xd+currentKinematicOffset[armInUse];
+    xd[0]+=currentKinematicOffset[armInUse][0];
+    xd[1]+=currentKinematicOffset[armInUse][1];
+    xd[2]+=currentKinematicOffset[armInUse][2];
 
     return checkArm(arm);
 }
@@ -773,6 +775,16 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
 
     if (b.check("external_forces_thresh"))
         extForceThresh[arm]=b.find("external_forces_thresh").asDouble();
+
+    pwrGraspApproachAngle[arm]=b.check("powergrasp_approach_angle",Value(50.0)).asDouble();
+
+    pwrGraspApproachDisplacement[arm].resize(3,0.0);
+    if (Bottle *pB=b.find("powergrasp_approach_displacement").asList())
+    {
+        pwrGraspApproachDisplacement[arm].resize(pB->size());
+        for (int i=0; i<pB->size(); i++)
+            pwrGraspApproachDisplacement[arm][i]=pB->get(i).asDouble();
+    }
 
     if(b.check("grasp_model_file"))
     {
@@ -1481,15 +1493,15 @@ void MotorThread::run()
                         Vector head_x,head_o;
                         ctrl_gaze->getHeadPose(head_x,head_o);
                         
-                    	if(fabs(x[1]-head_x[1])<0.2)
-                    		x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
+                        if(fabs(x[1]-head_x[1])<0.2)
+                            x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
 
                         //action[arm]->pushAction(x,o);
-						ICartesianControl           *tmp_ctrl;
-						action[arm]->getCartesianIF(tmp_ctrl);
-						x[2]=avoid_table_height[arm];
-						
-						tmp_ctrl->goToPosition(x);
+                        ICartesianControl           *tmp_ctrl;
+                        action[arm]->getCartesianIF(tmp_ctrl);
+                        x[2]=avoid_table_height[arm];
+                        
+                        tmp_ctrl->goToPosition(x);
                     }
                 }
             }
@@ -1539,8 +1551,8 @@ bool MotorThread::reach(Bottle &options)
     }
 
     bool side=checkOptions(options,"side");
-
     Vector tmpOrient,tmpDisp;
+
     if(side)
     {
         tmpOrient=reachSideOrient[arm];
@@ -1551,7 +1563,7 @@ bool MotorThread::reach(Bottle &options)
         tmpOrient=reachAboveCata[arm];
         tmpDisp=reachAboveDisp;
     }
-
+    
     wbdRecalibration();
     action[arm]->enableContactDetection();
 
@@ -1566,7 +1578,7 @@ bool MotorThread::reach(Bottle &options)
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-    action[arm]->checkContact(f); 
+    action[arm]->checkContact(f);
     action[arm]->disableContactDetection();
 
     action[arm]->enableReachingTimeout(reachingTimeout);
@@ -1588,6 +1600,71 @@ bool MotorThread::reach(Bottle &options)
         setGazeIdle();
 
     return true;
+}
+
+
+bool MotorThread::powerGrasp(Bottle &options)
+{
+    int arm=ARM_MOST_SUITED;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    Bottle *bTarget=options.find("target").asList();
+
+    Vector xd;
+    if(!targetToCartesian(bTarget,xd))
+        return false;
+    if (xd.length()<7)
+        return false;
+
+    arm=checkArm(arm,xd);
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    {
+        setGazeIdle();
+        keepFixation(options);
+        look(options);
+    }
+    
+    Vector x=xd.subVector(0,2);
+    Vector o=xd.subVector(3,6);
+
+    Matrix R=axis2dcm(o);
+    Vector y=R.getCol(1);
+    y[3]=CTRL_DEG2RAD*((arm==RIGHT)?-pwrGraspApproachAngle[arm]:pwrGraspApproachAngle[arm]);
+
+    Vector approach_x=x+pwrGraspApproachDisplacement[arm];
+    Vector approach_o=dcm2axis(axis2dcm(y)*R);
+
+    wbdRecalibration();
+    action[arm]->enableContactDetection();
+    action[arm]->pushAction(approach_x,approach_o,"open_hand");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+    action[arm]->disableContactDetection();
+
+    action[arm]->pushAction(x,o);
+    action[arm]->checkActionsDone(f,true);
+
+    if(grasp(options))
+    {
+        setGazeIdle();
+        Bottle b;
+        b.addString("head");
+        b.addString("arms");
+        goHome(b);
+
+        return true;
+    }
+    else
+    {
+       setGazeIdle();
+       release(options);
+       goHome(options);
+
+       return false;
+    }    
 }
 
 
@@ -1745,13 +1822,13 @@ bool MotorThread::look(Bottle &options)
 
     if(checkOptions(options,"fixate"))
     {
-    	gaze_fix_point=xd;
-    	//head_mode=HEAD_MODE_TRACK_FIX;
+        gaze_fix_point=xd;
+        //head_mode=HEAD_MODE_TRACK_FIX;
         //ctrl_gaze->setTrackingMode(true);
         keepFixation(options);
-	}
-	
-	
+    }
+    
+    
     ctrl_gaze->lookAtFixationPoint(xd);
 
     return true;
@@ -2381,7 +2458,7 @@ bool MotorThread::exploreTorso(Bottle &options)
         //get the desired angle
         double random_alpha=0.0;
         double tmp_y=fabs(random_pos[0]-fixed_target[0]);
-       	if(tmp_y>0.01)
+        if(tmp_y>0.01)
         {   
             double tmp_x=sqrt((random_pos[0]-fixed_target[0])*(random_pos[0]-fixed_target[0])+(random_pos[1]-fixed_target[1])*(random_pos[1]-fixed_target[1]));
             random_alpha=90.0-CTRL_RAD2DEG*asin(tmp_y/tmp_x);

@@ -159,6 +159,8 @@ private:
     Vector                              pushAboveRelief;
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
+    double                              pwrGraspApproachAngle[2];
+    Vector                              pwrGraspApproachDisplacement[2];
     double                              reachingTimeout;
 
     Vector                              homePos[2];
@@ -359,6 +361,7 @@ public:
     // basic commands
     bool goHome(Bottle &options);
     bool reach(Bottle &options);
+    bool powerGrasp(Bottle &options);
     bool push(Bottle &options);
     bool point(Bottle &options);
     bool look(Bottle &options);
