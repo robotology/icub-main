@@ -1530,11 +1530,13 @@ bool embObjMotionControl::doneRaw(int axis)
     bool result = false;
     uint16_t size;
     eOmc_controlmode_t type;
+    eOmc_joint_status_basic_t status;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)axis, jointNVindex_jstatus__basic);
 
     Time::delay(0.1);
-    res->readBufferedValue(nvid, _fId.ep, (uint8_t*) &type, &size);
+    res->readBufferedValue(nvid, _fId.ep, (uint8_t*) &status, &size);
+    type = (eOmc_controlmode_t) status.controlmodestatus;
 
     // if the control mode is no longer a calibration type, it means calibration ended
     if( (eomc_controlmode_idle == type) || (eomc_controlmode_calib == type) )
@@ -2357,11 +2359,12 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
+	static const double NEWTON2SCALE=32768.0/12.0;
     eOmeas_torque_t meas_torque;
     uint16_t size;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
     bool ret = res->readSentValue(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque, &size);
-    *t = (double) meas_torque;
+    *t = ( (double) meas_torque / NEWTON2SCALE);
     return ret;
 }
 
