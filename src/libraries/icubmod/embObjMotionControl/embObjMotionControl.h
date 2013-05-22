@@ -158,7 +158,7 @@ struct SpeedEstimationParameters
     }
 };
 
-#define IMPLEMENT_DEBUG_INTERFACE
+#undef IMPLEMENT_DEBUG_INTERFACE
 
 #ifdef _SETPOINT_TEST_
 typedef struct
