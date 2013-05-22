@@ -1533,8 +1533,17 @@ bool embObjMotionControl::doneRaw(int axis)
     eOmc_joint_status_basic_t status;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)axis, jointNVindex_jstatus__basic);
+ 
+    //EO_WARNING("acemor-> see wait of 100 msec in embObjMotionControl::doneRaw(int axis)")
+    // acemor on 21 may 2013: the delay is not necessary in normal cases when the joint cleanly starts in eomc_controlmode_idle and the calibrator sets it to eomc_controlmode_calib.
+    // however we keep it because: ... sometimes the boards are not started cleanly (see later note1) and the controlmodestatus can contain an invalid value.
+    //                                 the value becomes eomc_controlmode_calib only after the calibration command has arrived to the ems (and if relevant then to the can board and it status
+    //                                 is signalled back). 
+    // thus: al least for the first call after a calibration command on that joint we should keep the delay. Moreover: a delay of 1 sec is 
+    // in parametricCalibrator::checkCalibrateJointEnded() just before calling doneRaw().
 
-    Time::delay(0.1);
+    Time::delay(0.1);   // EO_WARNING()
+
     res->readBufferedValue(nvid, _fId.ep, (uint8_t*) &status, &size);
     type = (eOmc_controlmode_t) status.controlmodestatus;
 
@@ -1835,15 +1844,13 @@ bool embObjMotionControl::getRefSpeedsRaw(double *spds)
 
 bool embObjMotionControl::getRefAccelerationRaw(int j, double *acc)
 {
-    // yTrace();
     *acc = _ref_accs[j ];
     return true;
 }
 
 bool embObjMotionControl::getRefAccelerationsRaw(double *accs)
 {
-    // yTrace();
-    memcpy(accs, _ref_speeds, sizeof(double) * _njoints);
+    memcpy(accs, _ref_accs, sizeof(double) * _njoints);
     return true;
 }
 
