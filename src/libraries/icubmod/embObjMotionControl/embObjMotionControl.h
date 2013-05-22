@@ -56,7 +56,7 @@ using namespace std;
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include "yarp/dev/ControlBoardInterfacesImpl.inl" //ControlBoardHelper
+#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 ///////////////////
@@ -158,6 +158,8 @@ struct SpeedEstimationParameters
     }
 };
 
+#define IMPLEMENT_DEBUG_INTERFACE
+
 #ifdef _SETPOINT_TEST_
 typedef struct
 {
@@ -204,12 +206,12 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ITorqueControlRaw,
     public ImplementTorqueControl,
     public IVirtualAnalogSensor
-/*
+
 #ifdef IMPLEMENT_DEBUG_INTERFACE
 , public ImplementDebugInterface,
 public IDebugInterfaceRaw
 #endif
-*/
+
 {
 private:
     int           isVanilla;
@@ -278,7 +280,6 @@ private:
     double  *_command_speeds;   // used for velocity control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
     double  *_ref_torques;      // for torque control.
-    double  *_externalTorques;    //!< Save the torque computed from the wholeBodyTorqueObserver for echo.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 private:
@@ -405,9 +406,12 @@ public:
     virtual bool getAmpStatusRaw(int j, int *st);
     /////////////// END AMPLIFIER INTERFACE
     FEAT_ID getFeat_id();
-    //////  Virtual analog sensor
-    virtual bool setTorque(yarp::sig::Vector &vals);
-    bool setTorque(int j, double fTorque);
+
+    // virtual analog sensor
+    virtual int getState(int ch);
+    virtual int getChannels();
+    virtual bool updateMeasure(yarp::sig::Vector &fTorques);
+    virtual bool updateMeasure(int j, double &fTorque);
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     //----------------------------------------------\\

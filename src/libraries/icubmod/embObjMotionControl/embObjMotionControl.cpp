@@ -22,7 +22,6 @@
 #endif
 #include "Debug.h"
 
-
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -140,9 +139,6 @@ bool embObjMotionControl::alloc(int nj)
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
 
-    _externalTorques = allocAndCheck<double>(nj);
-
-    for (int j=0; j<nj; ++j) _externalTorques[j] = 0.0;
 
 #ifdef _SETPOINT_TEST_
     j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
@@ -193,8 +189,6 @@ bool embObjMotionControl::dealloc()
     delete _enabledAmp;
     delete _enabledPid;
     delete _calibrated;
-
-    delete _externalTorques;
 
 #ifdef _SETPOINT_TEST_
     delete j_debug_data;
@@ -266,7 +260,6 @@ embObjMotionControl::embObjMotionControl() :
     _enabledPid       = NULL;
     _enabledAmp       = NULL;
     _calibrated       = NULL;
-    _externalTorques  = NULL;
     // NV stuff
     NVnumber          = 0;
 }
@@ -2306,21 +2299,36 @@ FEAT_ID embObjMotionControl::getFeat_id()
 	return(this->_fId);
 }
 
+/*
+ * IVirtualAnalogSensor Interface
+ *
+ *  DEPRECATED!! WILL BE REMOVED IN THE NEAR FUTURE!!
+ *
+ */
 
-bool embObjMotionControl::setTorque(yarp::sig::Vector &fTorques)
+int embObjMotionControl::getState(int ch)
+{
+    return VAS_OK;
+};
+
+int embObjMotionControl::getChannels()
+{
+    return _njoints;
+};
+
+bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 {
     bool ret = true;
 
     for(int j=0; j< _njoints; j++)
     {
-        if (fTorques[j] < -1000.0 || fTorques[j] > 1000.0) fTorques[j] = 0.0; 
-        ret &= setTorque(j, fTorques[j]);
-        _externalTorques[j] = fTorques[j];
+        if (fTorques[j] < -1000.0 || fTorques[j] > 1000.0) fTorques[j] = 0.0;
+        ret = ret && updateMeasure(j, fTorques[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::setTorque(int j, double fTorque)
+bool embObjMotionControl::updateMeasure(int j, double &fTorque)
 {
     static const double NEWTON2SCALE=32768.0/12.0;
 
@@ -2330,6 +2338,9 @@ bool embObjMotionControl::setTorque(int j, double fTorque)
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque);
 }
+
+// end  IVirtualAnalogSensor //
+
 
 // Torque control
 bool embObjMotionControl::setTorqueModeRaw()
@@ -2346,14 +2357,19 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-    *t = _externalTorques[j];
-    return true;
+    eOmeas_torque_t meas_torque;
+    uint16_t size;
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
+    bool ret = res->readSentValue(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque, &size);
+    *t = (double) meas_torque;
+    return ret;
 }
 
 bool embObjMotionControl::getTorquesRaw(double *t)
 {
+    bool ret = true;
     for(int j=0; j<_njoints; j++)
-        t[j] = _externalTorques[j];
+        ret = ret && getTorqueRaw(j, &t[j]);
     return true;
 }
 
