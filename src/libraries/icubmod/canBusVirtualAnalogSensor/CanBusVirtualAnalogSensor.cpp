@@ -98,7 +98,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     data.resize(channelsNum);
     Bottle fullScaleTmp = config.findGroup("FullScale");
     this->scaleFactor.resize(channelsNum);
-    for (int i=0; i<channelsNum; i++) this->scaleFactor[i]=fullScaleTmp.get(i).asDouble();
+    for (unsigned int i=0; i<channelsNum; i++) this->scaleFactor[i]=fullScaleTmp.get(i).asDouble();
     
     //start the sensor broadcast
     sensor_start(config);
@@ -107,7 +107,13 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     return true;
 }
 
-bool CanBusVirtualAnalogSensor::setTorque(yarp::sig::Vector &dval)
+bool CanBusVirtualAnalogSensor::updateMeasure(int ch, double &measure)
+{
+    //NOT YET IMPLEMENTED
+    return false;
+}
+
+bool CanBusVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &dval)
 {
     int fakeId = 0;
     short int val[6] = {0,0,0,0,0,0};

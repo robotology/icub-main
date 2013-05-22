@@ -82,7 +82,9 @@ public:
 
     virtual int calibrateSensor(const yarp::sig::Vector& v);
     virtual int calibrateChannel(int ch);
-    virtual bool setTorque(yarp::sig::Vector &torques);
+
+    virtual bool updateMeasure(int ch, double &measure);
+    virtual bool updateMeasure(yarp::sig::Vector &data);
 
     virtual bool threadInit();
     virtual void threadRelease();
