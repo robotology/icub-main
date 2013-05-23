@@ -582,8 +582,6 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
 
 bool embObjAnalogSensor::close()
 {
-    data=new AnalogData(_channels, _channels+1);
-    scaleFactor=new double[_channels];
     int ret = ethManager->releaseResource(_fId);
     if(ret == -1)
         ethManager->killYourself();
