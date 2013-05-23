@@ -21,8 +21,7 @@
 
 #include <string>
 
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+#include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinInv.h>

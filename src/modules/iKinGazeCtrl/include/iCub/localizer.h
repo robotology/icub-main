@@ -40,7 +40,7 @@ using namespace iCub::iKin;
 // The thread launched by the application which is
 // in charge of localizing target 3D position from
 // image coordinates.
-class Localizer : public RateThread
+class Localizer : public GazeComponent, public RateThread
 {
 protected:
     Semaphore             mutex;
@@ -52,13 +52,9 @@ protected:
     BufferedPort<Vector>  port_anglesOut;
     Stamp txInfo_ang;
 
-    string localName;
     unsigned int period;
     bool headV2;
-    
-    iCubEye  *eyeL;
-    iCubEye  *eyeR;
-    
+        
     Matrix eyeCAbsFrame;
     Matrix invEyeCAbsFrame;
     double eyesHalfBaseline;
@@ -77,9 +73,7 @@ protected:
     void handleAnglesOutput();
 
 public:
-    Localizer(exchangeData *_commData, const string &_localName,
-              const ResourceFinder &rf_cameras, const bool _headV2,
-              const unsigned int _period);
+    Localizer(exchangeData *_commData, const unsigned int _period);
 
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   getPidOptions(Bottle &options);
@@ -93,7 +87,7 @@ public:
     Vector getAbsAngles(const Vector &x);
     Vector get3DPoint(const string &type, const Vector &ang);
     bool   getIntrinsicsMatrix(const string &type, Matrix &M);
-    bool   getExtrinsicsMatrix(const string &type, Matrix &M);
+    bool   setIntrinsicsMatrix(const string &type, const Matrix &M);
     bool   threadInit();
     void   afterStart(bool s);
     void   run();

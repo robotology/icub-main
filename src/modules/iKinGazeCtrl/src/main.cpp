@@ -185,6 +185,16 @@ Factors</a>.
 - When this options is specified then the kinematic structure of
   the hardware v2 of the head is referred.
  
+--tweakFile \e file 
+- The parameter \e file specifies the file name (located in 
+  module context) used to read/write options that are tweakable
+  by the user; if not provided, \e tweak.ini is assumed.
+ 
+--tweakOverwrite \e switch 
+- If "on", at startup default values and cameras values 
+  retrieved from file will be overwritten by those values
+  contained in the tweak file. The \e switch is "on" by default.
+ 
 \section portsa_sec Ports Accessed
  
 The ports the module is connected to: e.g. 
@@ -494,6 +504,8 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
+#include <fstream>
+#include <iomanip>
 #include <map>
 
 #include <yarp/os/all.h>
@@ -524,7 +536,8 @@ protected:
     exchangeData   commData;
     Port           rpcPort;
     bool           interrupting;
-    bool           headV2;
+    bool           doSaveTweakFile;
+    Semaphore      savingTweakFile;
 
     struct Context
     {
@@ -574,7 +587,7 @@ protected:
 
             if (ok)
             {
-                fprintf(stdout,"ok\n");
+                fprintf(stdout,"yes\n");
                 return pDrv;
             }
             else
@@ -686,7 +699,7 @@ protected:
 
         Bottle &headVer=info.addList();
         headVer.addString("head_version");
-        headVer.addInt(headV2?2:1);
+        headVer.addInt(commData.headV2?2:1);
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
@@ -748,6 +761,118 @@ protected:
     /************************************************************************/
     bool tweakSet(const Bottle &options)
     {
+        Bottle &opt=const_cast<Bottle&>(options);
+        savingTweakFile.wait();
+
+        if (Bottle *pB=opt.find("camera_intrinsics_left").asList())
+        {
+            Matrix Prj(3,4); Prj=0.0;
+            loc->getIntrinsicsMatrix("left",Prj);
+
+            int r=0; int c=0;
+            for (int i=0; i<pB->size(); i++)
+            {
+                Prj(r,c)=pB->get(i).asDouble();
+                if (++c>=Prj.cols())
+                {
+                    c=0;
+                    if (++r>=Prj.rows())
+                        break;
+                }
+            }
+
+            loc->setIntrinsicsMatrix("left",Prj);
+            doSaveTweakFile=commData.tweakOverwrite;
+        }
+
+        if (Bottle *pB=opt.find("camera_intrinsics_right").asList())
+        {
+            Matrix Prj(3,4); Prj=0.0;
+            loc->getIntrinsicsMatrix("right",Prj);
+
+            int r=0; int c=0;
+            for (int i=0; i<pB->size(); i++)
+            {
+                Prj(r,c)=pB->get(i).asDouble();
+                if (++c>=Prj.cols())
+                {
+                    c=0;
+                    if (++r>=Prj.rows())
+                        break;
+                }
+            }
+
+            loc->setIntrinsicsMatrix("right",Prj);
+            doSaveTweakFile=commData.tweakOverwrite;
+        }
+
+        bool doMinAllowedVer=false;
+        if (Bottle *pB=opt.find("camera_extrinsics_left").asList())
+        {
+            Matrix HN=eye(4,4);
+            loc->getExtrinsicsMatrix("left",HN);
+
+            int r=0; int c=0;
+            for (int i=0; i<pB->size(); i++)
+            {
+                HN(r,c)=pB->get(i).asDouble();
+                if (++c>=HN.cols())
+                {
+                    c=0;
+                    if (++r>=HN.rows())
+                        break;
+                }
+            }
+
+            // enforce the homogeneous property
+            HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+            HN(3,3)=1.0;
+
+            loc->setExtrinsicsMatrix("left",HN);
+            ctrl->setExtrinsicsMatrix("left",HN);
+            slv->setExtrinsicsMatrix("left",HN);
+            eyesRefGen->setExtrinsicsMatrix("left",HN);
+            doSaveTweakFile=commData.tweakOverwrite;
+            doMinAllowedVer=true;
+        }
+
+        if (Bottle *pB=opt.find("camera_extrinsics_right").asList())
+        {
+            Matrix HN=eye(4,4);
+            loc->getExtrinsicsMatrix("right",HN);
+
+            int r=0; int c=0;
+            for (int i=0; i<pB->size(); i++)
+            {
+                HN(r,c)=pB->get(i).asDouble();
+                if (++c>=HN.cols())
+                {
+                    c=0;
+                    if (++r>=HN.rows())
+                        break;
+                }
+            }
+
+            // enforce the homogeneous property
+            HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+            HN(3,3)=1.0;
+
+            loc->setExtrinsicsMatrix("right",HN);
+            ctrl->setExtrinsicsMatrix("right",HN);
+            slv->setExtrinsicsMatrix("right",HN);
+            eyesRefGen->setExtrinsicsMatrix("right",HN);
+            doSaveTweakFile=commData.tweakOverwrite;
+            doMinAllowedVer=true;
+        }
+
+        if (doMinAllowedVer)
+        {
+            ctrl->findMinimumAllowedVergence();
+            ctrl->minAllowedVergenceChanged();
+            eyesRefGen->minAllowedVergenceChanged();
+        }
+
+        savingTweakFile.post();
         return true;
     }
 
@@ -758,47 +883,103 @@ protected:
         return true;
     }
 
+    /************************************************************************/
+    void saveTweakFile()
+    {
+        Matrix PrjL;
+        bool validIntrinsicsL=loc->getIntrinsicsMatrix("left",PrjL);
+
+        Matrix PrjR;
+        bool validIntrinsicsR=loc->getIntrinsicsMatrix("right",PrjR);
+
+        Matrix HNL;
+        loc->getExtrinsicsMatrix("left",HNL);
+
+        Matrix HNR;
+        loc->getExtrinsicsMatrix("right",HNR);
+
+        ofstream fout;
+        fout.open(commData.tweakFile.c_str());
+        if (fout.is_open())
+        {
+            if (validIntrinsicsL)
+            {                
+                fout<<"[CAMERA_CALIBRATION_LEFT]"<<endl;
+                fout<<"cx "<<PrjL(0,2)<<endl;
+                fout<<"cy "<<PrjL(1,2)<<endl;
+                fout<<"fx "<<PrjL(0,0)<<endl;
+                fout<<"fy "<<PrjL(1,1)<<endl;
+                fout<<endl;
+            }
+
+            if (validIntrinsicsR)
+            {                
+                fout<<"[CAMERA_CALIBRATION_RIGHT]"<<endl;
+                fout<<"cx "<<PrjR(0,2)<<endl;
+                fout<<"cy "<<PrjR(1,2)<<endl;
+                fout<<"fx "<<PrjR(0,0)<<endl;
+                fout<<"fy "<<PrjR(1,1)<<endl;
+                fout<<endl;
+            }
+            
+            fout<<"[ALIGN_KIN_LEFT]"<<endl;
+            fout<<"HN (";
+            for (int r=0; r<HNL.rows(); r++)
+                for (int c=0; c<HNL.cols(); c++)
+                    fout<<HNL(r,c)<<((r==HNL.rows()-1)&&(c==HNL.cols()-1)?"":" ");
+            fout<<")"<<endl;
+            fout<<endl;
+            
+            fout<<"[ALIGN_KIN_RIGHT]"<<endl;
+            fout<<"HN (";
+            for (int r=0; r<HNR.rows(); r++)
+                for (int c=0; c<HNR.cols(); c++)
+                    fout<<HNR(r,c)<<((r==HNR.rows()-1)&&(c==HNR.cols()-1)?"":" ");
+            fout<<")"<<endl;
+            fout<<endl;
+
+            fout.close();
+        }
+    }
+
 public:
     /************************************************************************/
-    CtrlModule() : interrupting(false) { }
+    CtrlModule() : interrupting(false), doSaveTweakFile(false) { }
 
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
         string ctrlName;
-        string robotName;
         string partName;
         string torsoName;
         double neckTime;
         double eyesTime;
-        double eyeTiltMin;
-        double eyeTiltMax;
         double minAbsVel;
         bool   saccadesOn;
-        bool   Robotable;
+        bool   Robotable;        
         double ping_robot_tmo;
-        Vector counterRotGain(2);
-
-        ResourceFinder rf_cameras;
+        Vector counterRotGain(2);        
 
         Time::turboBoost();
 
         // get params from the command-line
-        ctrlName=rf.check("ctrlName",Value("iKinGazeCtrl")).asString().c_str();
-        robotName=rf.check("robot",Value("icub")).asString().c_str();
+        ctrlName=rf.check("ctrlName",Value("iKinGazeCtrl")).asString().c_str();        
         partName=rf.check("part",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
         neckTime=rf.check("Tneck",Value(0.75)).asDouble();
         eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
-        eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
-        eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
         saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
-        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();        
-        headV2=rf.check("headV2");
+        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
         Robotable=!rf.check("simulation");
+
+        commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
+        commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
+        commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
+        commData.headV2=rf.check("headV2");
+        commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
 
         // minAbsVel is given in absolute form
         // hence it must be positive
@@ -807,39 +988,68 @@ public:
 
         if (rf.check("camerasFile"))
         {
-            rf_cameras.setVerbose(true);
+            commData.rf_cameras.setQuiet();
+            string checkPath;
             if (rf.check("camerasContext"))
-                rf_cameras.setDefaultContext(rf.find("camerasContext").asString().c_str());
-            else
-                rf_cameras.setDefaultContext(rf.getContext().c_str());
+            {
+                string camerasContext=rf.find("camerasContext").asString().c_str();
+                commData.rf_cameras.setDefaultContext(camerasContext.c_str());
 
-            rf_cameras.setDefaultConfigFile(rf.find("camerasFile").asString().c_str());
-            rf_cameras.configure("ICUB_ROOT",0,NULL);
+                checkPath=rf.getContextPath().c_str();
+                string defaultContext=rf.getContext().c_str();
+                size_t found=checkPath.rfind(defaultContext.c_str());
+                checkPath.replace(found,defaultContext.length(),camerasContext);
+            }
+            else
+            {
+                commData.rf_cameras.setDefaultContext(rf.getContext().c_str());
+                checkPath=rf.getContextPath().c_str();
+            }
+
+            string camerasFile=rf.find("camerasFile").asString().c_str();
+            commData.rf_cameras.setDefaultConfigFile(camerasFile.c_str());
+                        
+            string checkFile=checkPath+"/"+camerasFile;
+            bool exist=yarp::os::stat(checkFile.c_str())>=0;
+            printf("Checking if %s exists: %s\n",checkFile.c_str(),exist?"yes":"no");
+            if (exist)
+                commData.rf_cameras.configure("ICUB_ROOT",0,NULL);
         }
 
-        if (headV2)
+        commData.rf_tweak.setQuiet();
+        commData.rf_tweak.setDefaultContext(rf.getContext().c_str());
+
+        commData.tweakFile=rf.check("tweakFile",Value("tweak.ini")).asString().c_str();
+        commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
+
+        commData.tweakFile="/"+commData.tweakFile;
+        commData.tweakFile=rf.getContextPath().c_str()+commData.tweakFile;
+        bool exist=yarp::os::stat(commData.tweakFile.c_str())>=0;
+        printf("Checking if %s exists: %s\n",commData.tweakFile.c_str(),exist?"yes":"no");
+        if (exist)
+            commData.rf_tweak.configure("ICUB_ROOT",0,NULL);
+
+        if (commData.headV2)
             fprintf(stdout,"Controller configured for head 2.0\n");
 
-        if (!Robotable)
-            fprintf(stdout,"Controller running in simulation mode\n");
-
-        Property optHead("(device remote_controlboard)");
-        Property optTorso("(device remote_controlboard)");
-
-        string remoteHeadName="/"+robotName+"/"+partName;
+        string remoteHeadName="/"+commData.robotName+"/"+partName;
         string localHeadName="/"+ctrlName+"/"+partName;
-        optHead.put("remote",remoteHeadName.c_str());
-        optHead.put("local",localHeadName.c_str());
-        optHead.put("part",partName.c_str());
-
-        string remoteTorsoName="/"+robotName+"/"+torsoName;
+        string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
         string localTorsoName=localHeadName+"/"+torsoName;
-        optTorso.put("remote",remoteTorsoName.c_str());
-        optTorso.put("local",localTorsoName.c_str());
-        optTorso.put("part",torsoName.c_str());
+        commData.localStemName=localHeadName;
 
         if (Robotable)
         {
+            Property optHead("(device remote_controlboard)");
+            optHead.put("remote",remoteHeadName.c_str());
+            optHead.put("local",localHeadName.c_str());
+            optHead.put("part",partName.c_str());
+
+            Property optTorso("(device remote_controlboard)");
+            optTorso.put("remote",remoteTorsoName.c_str());
+            optTorso.put("local",localTorsoName.c_str());
+            optTorso.put("part",torsoName.c_str());
+
             if (ping_robot_tmo>0.0)
                 drvTorso=waitPart(optTorso,ping_robot_tmo);
             else
@@ -871,22 +1081,17 @@ public:
             }
         }
         else
+        {
+            fprintf(stdout,"Controller running in simulation mode\n");
             drvTorso=drvHead=NULL;
+        }
 
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!
-        ctrl=new Controller(drvTorso,drvHead,&commData,robotName,
-                            localHeadName,rf_cameras,neckTime,eyesTime,
-                            eyeTiltMin,eyeTiltMax,minAbsVel,headV2,10);
-
-        loc=new Localizer(&commData,localHeadName,rf_cameras,headV2,10);
-
-        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,robotName,ctrl,
-                                     localHeadName,rf_cameras,eyeTiltMin,eyeTiltMax,
-                                     saccadesOn,counterRotGain,headV2,20);
-
-        slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,
-                       localHeadName,rf_cameras,eyeTiltMin,eyeTiltMax,headV2,20);
+        ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,minAbsVel,10);
+        loc=new Localizer(&commData,10);
+        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,saccadesOn,counterRotGain,20);
+        slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -894,8 +1099,7 @@ public:
         ctrl->start();
         loc->start();
 
-        string rpcPortName=localHeadName+"/rpc";
-        rpcPort.open(rpcPortName.c_str());
+        rpcPort.open((localHeadName+"/rpc").c_str());
         attach(rpcPort);
 
         contextIdCnt=0;
@@ -1621,6 +1825,14 @@ public:
     /************************************************************************/
     bool updateModule()
     {
+        if (doSaveTweakFile)
+        {
+            savingTweakFile.wait();
+            saveTweakFile();
+            doSaveTweakFile=false;
+            savingTweakFile.post();
+        }
+
         return true;
     }
 };
@@ -1630,7 +1842,7 @@ public:
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
-    rf.setVerbose(true);
+    rf.setVerbose();
     rf.setDefaultContext("iKinGazeCtrl/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.configure("ICUB_ROOT",argc,argv);

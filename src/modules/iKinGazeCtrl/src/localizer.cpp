@@ -26,16 +26,12 @@
 
 
 /************************************************************************/
-Localizer::Localizer(exchangeData *_commData, const string &_localName,
-                     const ResourceFinder &rf_cameras, const bool _headV2,
-                     const unsigned int _period) :
-                     RateThread(_period), localName(_localName),
-                     commData(_commData), headV2(_headV2),
-                     period(_period)
+Localizer::Localizer(exchangeData *_commData, const unsigned int _period) :
+                     RateThread(_period), commData(_commData), period(_period)
 {
-    iCubHeadCenter eyeC(headV2?"right_v2":"right");
-    eyeL=new iCubEye(headV2?"left_v2":"left");
-    eyeR=new iCubEye(headV2?"right_v2":"right");
+    iCubHeadCenter eyeC(commData->headV2?"right_v2":"right");
+    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
+    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
 
     // remove constraints on the links
     // we use the chains for logging purpose
@@ -48,8 +44,15 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     eyeL->releaseLink(2); eyeC.releaseLink(2); eyeR->releaseLink(2);
 
     // add aligning matrices read from configuration file
-    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain(),true);
-    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain(),true);
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain(),true);
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain(),true);
+
+    // overwrite aligning matrices iff specified through tweak values
+    if (commData->tweakOverwrite)
+    {
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_LEFT",eyeL->asChain(),true);
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_RIGHT",eyeR->asChain(),true);
+    }
 
     // get the absolute reference frame of the head
     Vector q(eyeC.getDOF(),0.0);
@@ -60,26 +63,46 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
     // get the length of the half of the eyes baseline
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
 
-    // get camera projection matrix
-    if (getCamPrj(rf_cameras,"CAMERA_CALIBRATION_LEFT",&PrjL,true))
-    {
-        Matrix &Prj=*PrjL;
-        cxl=Prj(0,2);
-        cyl=Prj(1,2);
+    bool ret;
 
-        invPrjL=new Matrix(pinv(Prj.transposed()).transposed());
+    // get camera projection matrix
+    ret=getCamPrj(commData->rf_cameras,"CAMERA_CALIBRATION_LEFT",&PrjL,true);
+    if (commData->tweakOverwrite)
+    {
+        Matrix *Prj;
+        if (getCamPrj(commData->rf_tweak,"CAMERA_CALIBRATION_LEFT",&Prj,true))
+        {
+            delete PrjL;
+            PrjL=Prj;
+        }
+    }
+
+    if (ret)
+    {
+        cxl=(*PrjL)(0,2);
+        cyl=(*PrjL)(1,2);
+        invPrjL=new Matrix(pinv(PrjL->transposed()).transposed());
     }
     else
         PrjL=invPrjL=NULL;
 
     // get camera projection matrix
-    if (getCamPrj(rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR,true))
+    ret=getCamPrj(commData->rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR,true);
+    if (commData->tweakOverwrite)
     {
-        Matrix &Prj=*PrjR;
-        cxr=Prj(0,2);
-        cyr=Prj(1,2);
+        Matrix *Prj;
+        if (getCamPrj(commData->rf_tweak,"CAMERA_CALIBRATION_RIGHT",&Prj,true))
+        {
+            delete PrjR;
+            PrjR=Prj;
+        }
+    }
 
-        invPrjR=new Matrix(pinv(Prj.transposed()).transposed());
+    if (ret)
+    {
+        cxr=(*PrjR)(0,2);
+        cyr=(*PrjR)(1,2);
+        invPrjR=new Matrix(pinv(PrjR->transposed()).transposed());
     }
     else
         PrjR=invPrjR=NULL;
@@ -105,10 +128,10 @@ Localizer::Localizer(exchangeData *_commData, const string &_localName,
 /************************************************************************/
 bool Localizer::threadInit()
 { 
-    port_mono.open((localName+"/mono:i").c_str());
-    port_stereo.open((localName+"/stereo:i").c_str());
-    port_anglesIn.open((localName+"/angles:i").c_str());
-    port_anglesOut.open((localName+"/angles:o").c_str());
+    port_mono.open((commData->localStemName+"/mono:i").c_str());
+    port_stereo.open((commData->localStemName+"/stereo:i").c_str());
+    port_anglesIn.open((commData->localStemName+"/angles:i").c_str());
+    port_anglesOut.open((commData->localStemName+"/angles:o").c_str());
 
     fprintf(stdout,"Starting Localizer at %d ms\n",period);
 
@@ -643,16 +666,36 @@ bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M)
 
 
 /************************************************************************/
-bool Localizer::getExtrinsicsMatrix(const string &type, Matrix &M)
+bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M)
 {
     if (type=="left")
     {
-        M=eyeL->asChain()->getHN();
+        if (PrjL!=NULL)
+        {
+            *PrjL=M;
+            *invPrjL=pinv(M.transposed()).transposed();
+        }
+        else
+        {
+            PrjL=new Matrix(M);
+            invPrjL=new Matrix(pinv(M.transposed()).transposed());
+        }
+
         return true;
     }
     else if (type=="right")
     {
-        M=eyeR->asChain()->getHN();
+        if (PrjR!=NULL)
+        {
+            *PrjR=M;
+            *invPrjR=pinv(M.transposed()).transposed();
+        }
+        else
+        {
+            PrjR=new Matrix(M);
+            invPrjR=new Matrix(pinv(M.transposed()).transposed());
+        }
+
         return true;
     }
     else

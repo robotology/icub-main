@@ -81,8 +81,7 @@ public:
 };
 
 
-// This class handles the data exchange
-// between Solvers and Controller objects.
+// This class handles the data exchange among components
 class exchangeData
 {
 protected:
@@ -129,6 +128,32 @@ public:
     bool   &get_canCtrlBeDisabled()  { return canCtrlBeDisabled;  }
     bool   &get_isSaccadeUnderway()  { return saccadeUnderway;    }
     double &get_minAllowedVergence() { return minAllowedVergence; }
+
+    // data members that do not need protection
+    string         robotName;
+    string         localStemName;
+    double         eyeTiltMin;
+    double         eyeTiltMax;
+    bool           headV2;
+    bool           tweakOverwrite;
+    ResourceFinder rf_cameras;
+    ResourceFinder rf_tweak;
+    string         tweakFile;
+};
+
+
+// this class defines gaze components such as
+// controller, localizer, solver ...
+class GazeComponent
+{
+protected:
+    iCubEye *eyeL;
+    iCubEye *eyeR;
+
+public:
+    virtual bool getExtrinsicsMatrix(const string &type, Matrix &M);
+    virtual bool setExtrinsicsMatrix(const string &type, const Matrix &M);
+    virtual void minAllowedVergenceChanged() { }
 };
 
 
@@ -142,13 +167,13 @@ inline double sat(const double val, const double min, const double max)
 // Allocates Projection Matrix Prj for the camera read from camerasFile
 // type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}
 // Returns true if correctly configured
-bool getCamPrj(const ResourceFinder &rf_cameras, const string &type, Matrix **Prj, const bool verbose=false);
+bool getCamPrj(const ResourceFinder &rf, const string &type, Matrix **Prj, const bool verbose=false);
 
 
 // Allocates the two aligning matrices read from camerasFile
 // type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}
 // Returns true if correctly configured
-bool getAlignHN(const ResourceFinder &rf_cameras, const string &type, iKinChain *chain, const bool verbose=false);
+bool getAlignHN(const ResourceFinder &rf, const string &type, iKinChain *chain, const bool verbose=false);
 
 
 // Aligns head joints bounds with current onboard bounds.

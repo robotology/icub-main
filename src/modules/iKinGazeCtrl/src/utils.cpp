@@ -141,6 +141,14 @@ exchangeData::exchangeData()
     canCtrlBeDisabled=true;
     saccadeUnderway=false;
     minAllowedVergence=0.0;
+
+    robotName="";
+    localStemName="";
+    eyeTiltMin=-1e9;
+    eyeTiltMax=1e9;
+    headV2=false;
+    tweakOverwrite=true;
+    tweakFile="";
 }
 
 
@@ -354,13 +362,54 @@ Matrix exchangeData::get_fpFrame()
 
 
 /************************************************************************/
-bool getCamPrj(const ResourceFinder &rf_cameras, const string &type,
+bool GazeComponent::getExtrinsicsMatrix(const string &type, Matrix &M)
+{
+    if (type=="left")
+    {
+        M=eyeL->asChain()->getHN();
+        return true;
+    }
+    else if (type=="right")
+    {
+        M=eyeR->asChain()->getHN();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool GazeComponent::setExtrinsicsMatrix(const string &type, const Matrix &M)
+{
+    if (type=="left")
+    {
+        eyeL->asChain()->setHN(M);
+        return true;
+    }
+    else if (type=="right")
+    {
+        eyeR->asChain()->setHN(M);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool getCamPrj(const ResourceFinder &rf, const string &type,
                Matrix **Prj, const bool verbose)
 {
+    ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
     *Prj=NULL;
 
-    string message="Intrinsic parameters for "+type+" group";
-    Bottle &parType=const_cast<ResourceFinder&>(rf_cameras).findGroup(type.c_str());
+    if (!_rf.isConfigured())
+        return false;
+    
+    string message=_rf.findFile("from").c_str();
+    message+=": intrinsic parameters for "+type;
+    Bottle &parType=_rf.findGroup(type.c_str());
 
     if (parType.size())
     {
@@ -396,20 +445,23 @@ bool getCamPrj(const ResourceFinder &rf_cameras, const string &type,
         }
     }
 
-    fprintf(stdout,"%s not found!\n",message.c_str());
+    if (verbose)
+        fprintf(stdout,"%s not found!\n",message.c_str());
 
     return false;
 }
 
 
 /************************************************************************/
-bool getAlignHN(const ResourceFinder &rf_cameras, const string &type,
+bool getAlignHN(const ResourceFinder &rf, const string &type,
                 iKinChain *chain, const bool verbose)
 {
-    if (chain!=NULL)
-    {
-        string message="Aligning matrix for "+type+" group";
-        Bottle &parType=const_cast<ResourceFinder&>(rf_cameras).findGroup(type.c_str());
+    ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
+    if ((chain!=NULL) && _rf.isConfigured())
+    {        
+        string message=_rf.findFile("from").c_str();
+        message+=": aligning matrix for "+type;
+        Bottle &parType=_rf.findGroup(type.c_str());
 
         if (parType.size()>0)
         {
@@ -445,7 +497,8 @@ bool getAlignHN(const ResourceFinder &rf_cameras, const string &type,
             }
         }
 
-        fprintf(stdout,"%s not found!\n",message.c_str());
+        if (verbose)
+            fprintf(stdout,"%s not found!\n",message.c_str());
     }
 
     return false;

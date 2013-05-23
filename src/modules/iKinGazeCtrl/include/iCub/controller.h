@@ -47,11 +47,10 @@ using namespace iCub::iKin;
 
 // The thread launched by the application which is
 // in charge of computing the velocities profile.
-class Controller : public RateThread
+class Controller : public GazeComponent, public RateThread
 {
 protected:
     iCubHeadCenter   *neck;
-    iCubEye          *eyeL,      *eyeR;
     iKinChain        *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver       *drvTorso,  *drvHead;
     IPositionControl *posHead;
@@ -73,8 +72,6 @@ protected:
     Semaphore mutexChain;
     Semaphore mutexCtrl;
     Semaphore mutexData;
-    string robotName;
-    string localName;
     unsigned int period;
     bool tiltDone;
     bool panDone;
@@ -89,8 +86,6 @@ protected:
     double printAccTime;
     double neckTime;
     double eyesTime;
-    double eyeTiltMin;
-    double eyeTiltMax;
     double minAbsVel;
     double q_stamp;
     double Ts;
@@ -104,18 +99,17 @@ protected:
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
 
-    void findMinimumAllowedVergence();
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
     void motionOngoingEventsFlush();
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               const string &_robotName, const string &_localName, const ResourceFinder &rf_cameras,
-               const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
-               const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
+               const double _neckTime, const double _eyesTime, const double _minAbsVel,
                const unsigned int _period);
 
+    void   findMinimumAllowedVergence();
+    void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
     void   doSaccade(Vector &ang, Vector &vel);
     void   stopLimbsVel();

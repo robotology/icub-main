@@ -24,22 +24,19 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const string &_robotName, const string &_localName, const ResourceFinder &rf_cameras,
-                       const double _neckTime, const double _eyesTime, const double _eyeTiltMin,
-                       const double _eyeTiltMax, const double _minAbsVel, const bool _headV2,
+                       const double _neckTime, const double _eyesTime, const double _minAbsVel,
                        const unsigned int _period) :
-                       RateThread(_period),     drvTorso(_drvTorso),   drvHead(_drvHead),
-                       commData(_commData),     robotName(_robotName), localName(_localName),
-                       neckTime(_neckTime),     eyesTime(_eyesTime),   eyeTiltMin(_eyeTiltMin),
-                       eyeTiltMax(_eyeTiltMax), minAbsVel(_minAbsVel), headV2(_headV2),
-                       period(_period),         Ts(_period/1000.0),    printAccTime(0.0)
+                       RateThread(_period),   drvTorso(_drvTorso), drvHead(_drvHead),
+                       commData(_commData),   neckTime(_neckTime), eyesTime(_eyesTime),
+                       minAbsVel(_minAbsVel), period(_period),     Ts(_period/1000.0),
+                       printAccTime(0.0)
 {
     Robotable=(drvHead!=NULL);
 
     // Instantiate objects
-    neck=new iCubHeadCenter(headV2?"right_v2":"right");
-    eyeL=new iCubEye(headV2?"left_v2":"left");
-    eyeR=new iCubEye(headV2?"right_v2":"right");
+    neck=new iCubHeadCenter(commData->headV2?"right_v2":"right");
+    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
+    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
 
     // release links
     neck->releaseLink(0); eyeL->releaseLink(0); eyeR->releaseLink(0);
@@ -52,8 +49,15 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     chainEyeR=eyeR->asChain();
 
     // add aligning matrices read from configuration file
-    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+
+    // overwrite aligning matrices iff specified through tweak values
+    if (commData->tweakOverwrite)
+    {
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_LEFT",eyeL->asChain());
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    }
 
     if (Robotable)
     {
@@ -73,7 +77,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         drvHead->view(velHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
+        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
 
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
@@ -90,8 +94,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         nJointsHead =6;
 
         // apply tilt bounds to eyes
-        double min=std::max(CTRL_DEG2RAD*eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
-        double max=std::min(CTRL_DEG2RAD*eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
+        double min=std::max(CTRL_DEG2RAD*commData->eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
+        double max=std::min(CTRL_DEG2RAD*commData->eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
         (*chainNeck)[nJointsTorso+3].setMin(min);
         (*chainNeck)[nJointsTorso+3].setMax(max);
         
@@ -188,6 +192,14 @@ void Controller::findMinimumAllowedVergence()
 
 
 /************************************************************************/
+void Controller::minAllowedVergenceChanged()
+{
+    lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
+    Int->setLim(lim);
+}
+
+
+/************************************************************************/
 void Controller::notifyEvent(const string &event, const double checkPoint)
 {
     if (port_event.getOutputCount()>0)
@@ -270,9 +282,9 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
-    port_x.open((localName+"/x:o").c_str());
-    port_q.open((localName+"/q:o").c_str());
-    port_event.open((localName+"/events:o").c_str());
+    port_x.open((commData->localStemName+"/x:o").c_str());
+    port_q.open((commData->localStemName+"/q:o").c_str());
+    port_event.open((commData->localStemName+"/events:o").c_str());
 
     fprintf(stdout,"Starting Controller at %d ms\n",period);
     q_stamp=Time::now();

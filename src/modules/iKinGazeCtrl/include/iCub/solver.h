@@ -54,11 +54,10 @@ using namespace iCub::iKin;
 // The thread launched by the application which computes
 // the eyes target position relying on the pseudoinverse
 // method.
-class EyePinvRefGen : public RateThread
+class EyePinvRefGen : public GazeComponent, public RateThread
 {
 protected:
     iCubHeadCenter       *neck;
-    iCubEye              *eyeL,      *eyeR;
     iKinChain            *chainNeck, *chainEyeL, *chainEyeR;
     iCubInertialSensor    inertialSensor;
     PolyDriver           *drvTorso,  *drvHead;
@@ -76,8 +75,6 @@ protected:
     Semaphore mutex;
 
     unsigned int period;
-    string robotName;
-    string localName;
     bool Robotable;
     bool headV2;
     bool saccadesOn;
@@ -85,8 +82,6 @@ protected:
     bool genOn;
     int nJointsTorso;
     int nJointsHead;
-    double eyeTiltMin;
-    double eyeTiltMax;
     double eyesBoundVer;
     int    saccadesRxTargets;
     double saccadesClock;
@@ -107,9 +102,7 @@ protected:
 
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                  const string &_robotName, Controller *_ctrl, const string &_localName,
-                  const ResourceFinder &rf_cameras, const double _eyeTiltMin, const double _eyeTiltMax,
-                  const bool _saccadesOn, const Vector &_counterRotGain, const bool _headV2,
+                  Controller *_ctrl, const bool _saccadesOn, const Vector &_counterRotGain,
                   const unsigned int _period);
 
     void   set_xdport(xdPort *_port_xd)                     { port_xd=_port_xd;                }
@@ -124,6 +117,7 @@ public:
     double getSaccadesActivationAngle() const               { return saccadesActivationAngle;  }
     double getEyesBoundVer() const                          { return eyesBoundVer;             }
     void   setCounterRotGain(const Vector &gain);
+    void   minAllowedVergenceChanged();
     bool   getGyro(Vector &data);
     bool   bindEyes(const double ver);
     bool   clearEyes();
@@ -141,11 +135,10 @@ public:
 // The thread launched by the application which is
 // in charge of inverting the head kinematic relying
 // on IPOPT computation.
-class Solver : public RateThread
+class Solver : public GazeComponent, public RateThread
 {
 protected:    
     iCubHeadCenter     *neck;    
-    iCubEye            *eyeL,      *eyeR;
     iKinChain          *chainNeck, *chainEyeL, *chainEyeR;
     iCubInertialSensor  inertialSensor;
     GazeIpOptMin       *invNeck;
@@ -157,7 +150,6 @@ protected:
     xdPort             *port_xd;
     Semaphore           mutex;
 
-    string localName;
     unsigned int period;
     bool Robotable;
     bool headV2;
@@ -165,8 +157,6 @@ protected:
     int nJointsTorso;
     int nJointsHead;
     double neckAngleUserTolerance;
-    double eyeTiltMin;
-    double eyeTiltMax;
     double Ts;
 
     Vector fbTorso;
@@ -191,8 +181,7 @@ protected:
 public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-           const string &_localName, const ResourceFinder &rf_cameras, const double _eyeTiltMin,
-           const double _eyeTiltMax, const bool _headV2, const unsigned int _period);
+           const unsigned int _period);
 
     // Returns a measure of neck angle required to reach the target
     double neckTargetRotAngle(const Vector &xd);
@@ -206,7 +195,7 @@ public:
     void   clearNeckRoll();
     void   clearNeckYaw();
     double getNeckAngleUserTolerance();
-    void   setNeckAngleUserTolerance(const double angle);
+    void   setNeckAngleUserTolerance(const double angle);    
     bool   threadInit();
     void   afterStart(bool s);
     void   run();

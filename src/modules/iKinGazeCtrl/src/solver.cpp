@@ -26,25 +26,20 @@
 
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
-                             exchangeData *_commData, const string &_robotName,
-                             Controller *_ctrl, const string &_localName,
-                             const ResourceFinder &rf_cameras, const double _eyeTiltMin,
-                             const double _eyeTiltMax, const bool _saccadesOn,
-                             const Vector &_counterRotGain, const bool _headV2,
+                             exchangeData *_commData, Controller *_ctrl,
+                             const bool _saccadesOn, const Vector &_counterRotGain,
                              const unsigned int _period) :
-                             RateThread(_period),   drvTorso(_drvTorso),     drvHead(_drvHead),
-                             commData(_commData),   robotName(_robotName),   ctrl(_ctrl),
-                             localName(_localName), eyeTiltMin(_eyeTiltMin), eyeTiltMax(_eyeTiltMax),
-                             eyesBoundVer(-1.0),    saccadesOn(_saccadesOn), headV2(_headV2),
-                             period(_period),       Ts(_period/1000.0)
+                             RateThread(_period),     drvTorso(_drvTorso), drvHead(_drvHead),
+                             commData(_commData),     ctrl(_ctrl),         eyesBoundVer(-1.0),
+                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
     counterRotGain=_counterRotGain;
 
     // Instantiate objects
-    neck=new iCubHeadCenter(headV2?"right_v2":"right");
-    eyeL=new iCubEye(headV2?"left_v2":"left");
-    eyeR=new iCubEye(headV2?"right_v2":"right");
+    neck=new iCubHeadCenter(commData->headV2?"right_v2":"right");
+    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
+    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
 
     // remove constraints on the links: logging purpose
     inertialSensor.setAllConstraints(false);
@@ -60,8 +55,21 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     chainEyeR=eyeR->asChain();
 
     // add aligning matrices read from configuration file
-    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+
+    // overwrite aligning matrices iff specified through tweak values
+    if (commData->tweakOverwrite)
+    {
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_LEFT",eyeL->asChain());
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    }
+
+    if (commData->tweakOverwrite)
+    {
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_LEFT",eyeL->asChain());
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    }
 
     // get the length of the half of the eyes baseline
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
@@ -81,15 +89,15 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
+        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
         copyJointsBounds(chainNeck,chainEyeL);
         copyJointsBounds(chainEyeL,chainEyeR);
 
-        // reinforce vergence min bound
-        lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
-
         // just eye part is required
         lim=lim.submatrix(3,5,0,1);
+
+        // reinforce vergence min bound
+        lim(2,0)=commData->get_minAllowedVergence();
 
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
@@ -102,8 +110,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
         nJointsHead =6;
 
         // apply tilt bounds to eyes
-        double min=std::max(CTRL_DEG2RAD*eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
-        double max=std::min(CTRL_DEG2RAD*eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
+        double min=std::max(CTRL_DEG2RAD*commData->eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
+        double max=std::min(CTRL_DEG2RAD*commData->eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
         (*chainNeck)[nJointsTorso+3].setMin(min);
         (*chainNeck)[nJointsTorso+3].setMax(max);
 
@@ -157,6 +165,15 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
     saccadesActivationAngle=SACCADES_ACTIVATION_ANGLE;
     port_xd=NULL;
+}
+
+
+/************************************************************************/
+void EyePinvRefGen::minAllowedVergenceChanged()
+{
+    lim(2,0)=commData->get_minAllowedVergence();    
+    I->setLim(lim);
+    orig_lim=lim;
 }
 
 
@@ -302,8 +319,8 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
 /************************************************************************/
 bool EyePinvRefGen::threadInit()
 {
-    string robotPortInertial=("/"+robotName+"/inertial");
-    port_inertial.open((localName+"/inertial:i").c_str());
+    string robotPortInertial=("/"+commData->robotName+"/inertial");
+    port_inertial.open((commData->localStemName+"/inertial:i").c_str());
     if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
         fprintf(stdout,"Unable to connect to %s\n",robotPortInertial.c_str());
 
@@ -522,20 +539,17 @@ void EyePinvRefGen::stopControl()
 /************************************************************************/
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
-               const string &_localName, const ResourceFinder &rf_cameras, const double _eyeTiltMin,
-               const double _eyeTiltMax, const bool _headV2, const unsigned int _period) :
-               RateThread(_period),     drvTorso(_drvTorso),     drvHead(_drvHead),
-               commData(_commData),     eyesRefGen(_eyesRefGen), loc(_loc),
-               ctrl(_ctrl),             localName(_localName),   eyeTiltMin(_eyeTiltMin),
-               eyeTiltMax(_eyeTiltMax), headV2(_headV2),         period(_period),
-               Ts(_period/1000.0)
+               const unsigned int _period) :
+               RateThread(_period), drvTorso(_drvTorso),     drvHead(_drvHead),
+               commData(_commData), eyesRefGen(_eyesRefGen), loc(_loc),
+               ctrl(_ctrl),         period(_period),         Ts(_period/1000.0)
 {
     Robotable=(drvHead!=NULL);
 
     // Instantiate objects
-    neck=new iCubHeadCenter(headV2?"right_v2":"right");
-    eyeL=new iCubEye(headV2?"left_v2":"left");
-    eyeR=new iCubEye(headV2?"right_v2":"right");
+    neck=new iCubHeadCenter(commData->headV2?"right_v2":"right");
+    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
+    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
 
     // remove constraints on the links: logging purpose
     inertialSensor.setAllConstraints(false);
@@ -551,8 +565,15 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     chainEyeR=eyeR->asChain();    
 
     // add aligning matrices read from configuration file
-    getAlignHN(rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
-    getAlignHN(rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
+    getAlignHN(commData->rf_cameras,"ALIGN_KIN_RIGHT",eyeR->asChain());
+
+    // overwrite aligning matrices iff specified through tweak values
+    if (commData->tweakOverwrite)
+    {
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_LEFT",eyeL->asChain());
+        getAlignHN(commData->rf_tweak,"ALIGN_KIN_RIGHT",eyeR->asChain());
+    }
 
     if (Robotable)
     {
@@ -569,7 +590,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         encHead->getAxes(&nJointsHead);
 
         // joints bounds alignment
-        alignJointsBounds(chainNeck,drvTorso,drvHead,eyeTiltMin,eyeTiltMax);
+        alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
 
         // read starting position
         fbTorso.resize(nJointsTorso,0.0);
@@ -582,8 +603,8 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
         nJointsHead =6;
 
         // apply tilt bounds to eyes
-        double min=std::max(CTRL_DEG2RAD*eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
-        double max=std::min(CTRL_DEG2RAD*eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
+        double min=std::max(CTRL_DEG2RAD*commData->eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
+        double max=std::min(CTRL_DEG2RAD*commData->eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
         (*chainNeck)[nJointsTorso+3].setMin(min);
         (*chainNeck)[nJointsTorso+3].setMax(max);
 
@@ -874,7 +895,7 @@ bool Solver::threadInit()
 
     port_xd=new xdPort(fp,this);
     port_xd->useCallback();
-    port_xd->open((localName+"/xd:i").c_str());
+    port_xd->open((commData->localStemName+"/xd:i").c_str());
 
     loc->set_xdport(port_xd);
     eyesRefGen->set_xdport(port_xd);
