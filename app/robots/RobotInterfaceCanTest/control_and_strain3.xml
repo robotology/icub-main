@@ -23,6 +23,34 @@
 		<action phase="shutdown" level="5" type="detach" />
 	</device>
 	 
+ 	<device type="canBusVirtualAnalogSensor" name="virtual_joint_leg_strain">
+		<param name="CanbusDevice"> "sharedCan" </param>
+        <param name="physdevice"> "ecan" </param>
+        <param name="CanDeviceNum"> 0 </param>
+		<param name="CanAddress"> 0x0E </param>
+		<param name="Format"> 16 </param>
+		<param name="Channels"> 6 </param>
+		<param name="Period"> 1 </param>
+		<param name="UseCalibration"> 1 </param>
+		<param name="FullScale"> 8 8 8 8 8 8 </param>
+	</device>
+	
+	<device name="right_leg_as_wrapper" type="virtualAnalogServer">
+		<param name="period">       10				</param>
+		<param name="deviceId">     joint_right_leg				</param>
+		 <paramlist name="networks">
+			<elem name="FirstSetOfJoints">  0  5  0  5 </elem> 
+		</paramlist>
+		<param name="channels">       6  				</param>
+		<param name="name"> 	     /joint_right_leg				</param>		
+		<action phase="startup" level="5" type="attach">
+		    <paramlist name="networks">
+		        <elem name="FirstSetOfJoints">  virtual_joint_leg_strain </elem>
+		    </paramlist>
+		</action>
+		<action phase="shutdown" level="5" type="detach" />
+	</device>
+
 	
 	<device name="right_leg_mc" type="canmotioncontrol">
 	<param name="canbusdevice"> "sharedCan" </param>
@@ -50,7 +78,7 @@
 		<param name="AxisMap">     0         1       </param>
 		<param name="Encoder">     11.375    11.375  </param>
 		<param name="Zeros">       96        0       </param>
-		<param name="TorqueId">    0x0C      0x0D    </param>              
+		<param name="TorqueId">    0x0E      0x0E    </param>              
         <param name="TorqueChan">  0         1       </param>              
         <param name="TorqueMax">   8         8       </param>    
 	</group>
