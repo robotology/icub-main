@@ -2119,7 +2119,7 @@ bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs)
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
-        ret &= getEncoderSpeedRaw(j, &accs[j]);
+        ret &= getEncoderAccelerationRaw(j, &accs[j]);
     }
     return ret;
 }
