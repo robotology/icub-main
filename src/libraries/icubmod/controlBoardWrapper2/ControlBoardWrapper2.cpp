@@ -1906,49 +1906,51 @@ bool ControlBoardWrapper2::open(Searchable& prop)
     device.lut.resize(controlledJoints);
     device.subdevices.resize(nsubdevices);
 
+    // check on the format of the configuration file
     for(int k=0;k<nets->size();k++)
-        {
-            Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
-
-            if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
-                {
-                    cerr<<"Error: check network parameters in part description"<<endl;
-                    cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
-                    return false;
-                }
-
-            int wBase=parameters.get(1).asInt();
-            int wTop=parameters.get(2).asInt();
-            base=parameters.get(3).asInt();
-            top=parameters.get(4).asInt();
-
-            //cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
-
-            //TODO check consistenty
-            int axes=top-base+1;
-
-            SubDevice *tmpDevice=device.getSubdevice(k);
-
-            if (!tmpDevice->configure(base, top, axes, nets->get(k).asString().c_str()))
-                {
-                    cerr<<"configure of subdevice ret false"<<endl;
-                    return false;
-                }
-
-            for(int j=wBase;j<=wTop;j++)
-                {
-                    device.lut[j].deviceEntry=k;
-                    device.lut[j].offset=j-wBase;
-                }
-
-            totalJ+=axes;
-        }
-
+    {
+        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
+        if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
+            {
+                cerr<<"Error: check network parameters in part description"<<endl;
+                cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
+                return false;
+            }
+        int axes = parameters.get(4).asInt() - parameters.get(3).asInt() + 1;
+        totalJ+=axes;
+    }
     if (totalJ!=controlledJoints)
+    {
+        cerr<<"Error total number of mapped joints ("<< totalJ <<") does not correspond to part joints (" << controlledJoints << ")" << endl;
+        return false;
+    }
+
+    // configure the devices
+    for(int k=0;k<nets->size();k++)
+    {
+        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
+        int wBase=parameters.get(1).asInt();
+        int wTop=parameters.get(2).asInt();
+        base=parameters.get(3).asInt();
+        top=parameters.get(4).asInt();
+
+        //cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
+
+        SubDevice *tmpDevice=device.getSubdevice(k);
+
+        int axes=top-base+1;
+        if (!tmpDevice->configure(base, top, axes, nets->get(k).asString().c_str()))
         {
-            cerr<<"Error total number of mapped joints does not correspond to part joints"<<endl;
+            cerr<<"configure of subdevice ret false"<<endl;
             return false;
         }
+
+        for(int j=wBase;j<=wTop;j++)
+        {
+            device.lut[j].deviceEntry=k;
+            device.lut[j].offset=j-wBase;
+        }
+    }
 
     // initialize callback
     if (!callback_impl.initialize())
@@ -1963,7 +1965,7 @@ bool ControlBoardWrapper2::open(Searchable& prop)
     rootName+=(partName);
 
     // attach readers.
-    //rpc_p.setReader(command_reader);
+    // rpc_p.setReader(command_reader);
     // changed so that streaming input accepted if offered
     command_buffer.attach(rpc_p);
     command_reader.attach(command_buffer);
