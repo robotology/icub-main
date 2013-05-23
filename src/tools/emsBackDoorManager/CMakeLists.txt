@@ -44,10 +44,10 @@ SET(ACE_INCLUDE_DIR "/usr/include")
 
 #set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
 set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
-set(OPC_PROTO_FOLDER             ${BASE}any-arch/sys/embobj/icub-app/)
-set(COMMON_FOLDER		 ${BASE}any-arch/sys/embobj/core/)
+set(OPC_PROTO_FOLDER             ${BASE}embobj/icub-app/)
+set(COMMON_FOLDER		 ${BASE}embobj/core/)
 set(PORTING_FOLDER		 ${BASE}/porting/)
-set(EMBOBJ_TYPE_FOLDER           ${BASE}any-arch/sys/embobj/icub/api/)
+set(EMBOBJ_TYPE_FOLDER           ${BASE}embobj/icub/api/)
 
 set(ALL_INCLUDES				${EXTRA_FOLDER}
 						${ACE_INCLUDE_DIR}

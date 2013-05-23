@@ -74,6 +74,8 @@ static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
 static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads);
 
 static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+static void on_rec_errorLog(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
 /*
 extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {   // for the host
@@ -141,7 +143,17 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
     {
         return(res);
     }
+/* personalize eodgn_nvidbdoor_errorlog */
+	res = opcprotman_personalize_var(   p,
+										eodgn_nvidbdoor_errorlog,
+										NULL,//use NULL because i'd like print received data and not store them!!
+                                 	   //pay attention: see NOTE 1 at the end of this function!!!
+										on_rec_errorLog);
 
+	if(opcprotman_OK != res)
+	{
+		return(res);
+	}
 /*personalize eodgn_nvidbdoor_emsperiph var*/
 	res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsperiph,
@@ -382,7 +394,7 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
         {   
         
-            printf("\n\n-----motor status flag---\n");
+            printf("-----motor status flag---\n");
 
             for(i=0; i<12; i++)
             {
@@ -397,6 +409,15 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
         } break;
     }      
 
+}
+
+
+static void on_rec_errorLog(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{
+	eOdgn_errorlog_t *data = (eOdgn_errorlog_t *)recdata;
+
+	printf("----- switch to error state because... \n");
+	printf("\t%s\n", data->errorstate_str);
 }
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
