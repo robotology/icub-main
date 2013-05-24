@@ -27,7 +27,6 @@
 #include <iCub/iKin/iKinVocabs.h>
 #include <iCub/iKin/iKinSlv.h>
 
-#define CARTSLV_SHOULDER_MAXABDUCTION       (100.0*CTRL_DEG2RAD)
 #define CARTSLV_DEFAULT_PER                 20      // [ms]
 #define CARTSLV_DEFAULT_TOL                 1e-3
 #define CARTSLV_WEIGHT_2ND_TASK             0.01
@@ -41,200 +40,6 @@ using namespace yarp::dev;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
-
-
-namespace iCub
-{
-
-namespace iKin
-{
-
-class iCubShoulderConstr : public iKinLinIneqConstr
-{
-protected:    
-    double shou_m, shou_n;
-    double elb_m,  elb_n;
-
-    iKinChain *chain;
-
-    virtual void clone(const iKinLinIneqConstr *obj)
-    {
-        iKinLinIneqConstr::clone(obj);
-
-        const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
-
-        shou_m=ptr->shou_m;
-        shou_n=ptr->shou_n;
-        elb_m=ptr->elb_m;
-        elb_n=ptr->elb_n;
-        
-        chain=ptr->chain;
-    }
-
-    void appendMatrixRow(Matrix &dest, const Vector &row)
-    {
-        Matrix tmp;
-
-        // if dest is already filled with something
-        if (dest.rows())
-        {   
-            // exit if lengths do not match     
-            if (row.length()!=dest.cols())
-                return;
-
-            tmp.resize(dest.rows()+1,dest.cols());
-
-            // copy the content of dest in temp
-            for (int i=0; i<dest.rows(); i++)
-                for (int j=0; j<dest.cols(); j++)
-                    tmp(i,j)=dest(i,j);
-
-            // reassign dest
-            dest=tmp;
-        }
-        else
-            dest.resize(1,row.length());
-
-        // append the last row
-        for (int i=0; i<dest.cols(); i++)
-            dest(dest.rows()-1,i)=row[i];
-    }
-
-    void appendVectorValue(Vector &dest, double val)
-    {
-        Vector tmp(dest.length()+1);
-        for (size_t i=0; i<dest.length(); i++)
-            tmp[i]=dest[i];
-
-        dest=tmp;
-        dest[dest.length()-1]=val;
-    }
-
-public:
-    iCubShoulderConstr(iKinChain *_chain) : iKinLinIneqConstr()
-    {      
-        chain=_chain;
-
-        double joint1_0, joint1_1;
-        double joint2_0, joint2_1;
-        joint1_0= 28.0*CTRL_DEG2RAD;
-        joint1_1= 23.0*CTRL_DEG2RAD;
-        joint2_0=-37.0*CTRL_DEG2RAD;
-        joint2_1= 80.0*CTRL_DEG2RAD;
-        shou_m=(joint1_1-joint1_0)/(joint2_1-joint2_0);
-        shou_n=joint1_0-shou_m*joint2_0;
-
-        double joint3_0, joint3_1;
-        double joint4_0, joint4_1;
-        joint3_0= 85.0*CTRL_DEG2RAD;
-        joint3_1=105.0*CTRL_DEG2RAD;
-        joint4_0= 90.0*CTRL_DEG2RAD;
-        joint4_1= 40.0*CTRL_DEG2RAD;
-        elb_m=(joint4_1-joint4_0)/(joint3_1-joint3_0);
-        elb_n=joint4_0-elb_m*joint3_0;
-
-        update(NULL);
-    }
-
-    virtual void update(void*)
-    {
-        // optimization won't use LinIneqConstr by default
-        setActive(false);
-
-        Matrix _C;
-        Vector _lB;
-        Vector _uB;
-
-        Vector row(chain->getDOF());
-
-        // if shoulder's axes are controlled, constraint them
-        if (!(*chain)[3].isBlocked() && !(*chain)[3+1].isBlocked() &&
-            !(*chain)[3+2].isBlocked())
-        {
-            // compute offset to shoulder's axes
-            // given the blocked/release status of
-            // previous link
-            int offs=0;
-            for (int i=0; i<3; i++)
-                if (!(*chain)[i].isBlocked())
-                    offs++;
-
-            // constraints on the cables length
-            row.zero();
-            row[offs]=1.71; row[offs+1]=-1.71;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,-347.00*CTRL_DEG2RAD);
-            appendVectorValue(_uB,upperBoundInf);
-
-            row.zero();
-            row[offs]=1.71; row[offs+1]=-1.71; row[offs+2]=-1.71;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,-366.57*CTRL_DEG2RAD);
-            appendVectorValue(_uB,112.42*CTRL_DEG2RAD);
-
-            row.zero();
-            row[offs+1]=1.0; row[offs+2]=1.0;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,-66.600*CTRL_DEG2RAD);
-            appendVectorValue(_uB,213.30*CTRL_DEG2RAD);
-
-            // constraints to prevent arm from touching torso
-            row.zero();
-            row[offs+1]=1.0; row[offs+2]=-shou_m;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,shou_n);
-            appendVectorValue(_uB,upperBoundInf);
-
-            // constraints to limit shoulder abduction
-            row.zero();
-            row[offs+1]=1.0;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,lowerBoundInf);
-            appendVectorValue(_uB,CARTSLV_SHOULDER_MAXABDUCTION);
-
-            // optimization will use LinIneqConstr
-            getC()=_C;
-            getlB()=_lB;
-            getuB()=_uB;
-            setActive(true);
-        }
-
-        // if elbow and pronosupination axes are controlled, constraint them
-        if (!(*chain)[3+3].isBlocked() && !(*chain)[3+3+1].isBlocked())
-        {
-            // compute offset to elbow's axis
-            // given the blocked/release status of
-            // previous link
-            int offs=0;
-            for (int i=0; i<(3+3); i++)
-                if (!(*chain)[i].isBlocked())
-                    offs++;
-
-            // constraints to prevent the forearm from hitting the arm
-            row.zero();
-            row[offs]=-elb_m; row[offs+1]=1.0;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,lowerBoundInf);
-            appendVectorValue(_uB,elb_n);
-
-            row.zero();
-            row[offs]=elb_m; row[offs+1]=1.0;
-            appendMatrixRow(_C,row);
-            appendVectorValue(_lB,-elb_n);
-            appendVectorValue(_uB,upperBoundInf);
-
-            // optimization will use LinIneqConstr
-            getC()=_C;
-            getlB()=_lB;
-            getuB()=_uB;
-            setActive(true);
-        }
-    }
-};
-
-}
-
-}
 
 
 /************************************************************************/
@@ -1799,7 +1604,7 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     PartDescriptor *p=new PartDescriptor;
     p->lmb=new iCubArm(type);
     p->chn=p->lmb->asChain();
-    p->cns=new iCubShoulderConstr(p->chn);
+    p->cns=new iCubShoulderConstr(*static_cast<iCubArm*>(p->lmb));
     p->prp.push_back(optTorso);
     p->prp.push_back(optArm);
     p->rvs.push_back(true);     // torso

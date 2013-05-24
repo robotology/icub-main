@@ -179,6 +179,34 @@ public:
 /**
 * \ingroup iKinIpOpt
 *
+* Class for dealing with iCub shoulder's constraints due to the 
+* cables lenght.
+*/
+class iCubShoulderConstr : public iKinLinIneqConstr
+{
+protected:    
+    double     shou_m, shou_n;
+    double     elb_m,  elb_n;
+    iKinChain *chain;
+
+    void clone(const iKinLinIneqConstr *obj);
+    void appendMatrixRow(yarp::sig::Matrix &dest, const yarp::sig::Vector &row);
+    void appendVectorValue(yarp::sig::Vector &dest, double val);
+
+public:
+    /**
+    * Constructor. 
+    * @param arm the iCubArm object.
+    */
+    iCubShoulderConstr(iCubArm &arm);
+
+    void update(void*);
+};
+
+
+/**
+* \ingroup iKinIpOpt
+*
 * Class for inverting chain's kinematics based on IpOpt lib
 */
 class iKinIpOptMin
