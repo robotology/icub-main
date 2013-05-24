@@ -2041,11 +2041,11 @@ bool CanBusMotionControl::open (Searchable &config)
     return true;
 }
 
-bool CanBusMotionControl::readFullScaleAnalog(TBR_AnalogSensor* analogSensor, int ch)
+bool CanBusMotionControl::readFullScaleAnalog(int analog_address, int ch, double* fullScale)
 {
     CanBusResources& res = RES (system_resources);
-    int destId=0x0200|analogSensor->getId();
-    analogSensor->getScaleFactor()[ch]=1e-20;
+    int destId=0x0200|analog_address;
+    *fullScale=1e-20;
     unsigned int i=0;
     res.startPacket();
     res._writeBuffer[0].setId(destId);
@@ -2064,12 +2064,12 @@ bool CanBusMotionControl::readFullScaleAnalog(TBR_AnalogSensor* analogSensor, in
         {
             CanMessage& m = res._readBuffer[i];
             unsigned int currId=m.getId();
-            if (currId==(0x0200|(analogSensor->getId()<<4)))
+            if (currId==(0x0200|(analog_address<<4)))
                 if (m.getLen()==4 &&
                     m.getData()[0]==0x18 &&
                     m.getData()[1]==ch)
                     {
-                        analogSensor->getScaleFactor()[ch]=m.getData()[2]<<8 | m.getData()[3];
+                        *fullScale=m.getData()[2]<<8 | m.getData()[3];
                         full_scale_read=true;
                         break;
                     }
@@ -2177,7 +2177,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
                         int attempts = 0;
                         while(attempts<15) 
                         {
-                            b = readFullScaleAnalog(analogSensor, ch);
+                            b = readFullScaleAnalog(analogSensor->getId(), ch, &analogSensor->getScaleFactor()[ch]);
                             if (b==true) 
                                 {
                                     if (attempts>0)    fprintf(stderr, "*** WARNING: Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
