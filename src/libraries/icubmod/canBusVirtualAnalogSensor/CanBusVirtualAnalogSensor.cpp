@@ -98,7 +98,11 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     data.resize(channelsNum);
     Bottle fullScaleTmp = config.findGroup("FullScale");
     this->scaleFactor.resize(channelsNum);
-    for (unsigned int i=0; i<channelsNum; i++) this->scaleFactor[i]=fullScaleTmp.get(i).asDouble();
+    for (unsigned int i=0; i<channelsNum; i++)
+        {
+            double tmp = fullScaleTmp.get(i+1).asDouble();
+            this->scaleFactor[i] = tmp;
+        }
     
     //start the sensor broadcast
     sensor_start(config);
@@ -510,14 +514,42 @@ void CanBusVirtualAnalogSensor::run()
         unsigned int msgid    = msg.getId();
         unsigned char *buff   = msg.getData();
         unsigned int len      = msg.getLen();
-        unsigned int id       = (msgid & 0x00f0)>>4;
         const char   type     = ((msgid&0x700)>>8);
 
         //parse data here
         status=IAnalogSensor::AS_OK;
-        
-        if (type==0x03) //analog data
+
+        if (type==0x02) //configuration command
         {
+            unsigned int id       = (msgid & 0x00f);
+            if (id==boardId)
+            {
+                switch (buff[0])
+                {
+                    case 0x18:
+                        unsigned int channel = buff[1];
+                        //send the fullscale data
+                        unsigned int canMessages=0;
+                        unsigned id = 0x200 + (boardId << 4);
+                        CanMessage &msg=outBuffer[0];
+                        msg.setId(id);
+                        int tmp_fullscale = scaleFactor[channel];
+                        unsigned char h_scale = (tmp_fullscale >> 8) & 0xff;
+                        unsigned char l_scale = tmp_fullscale & 0xff;
+                        msg.getData()[0]=0x18;
+                        msg.getData()[1]=channel;
+                        msg.getData()[2]=h_scale;
+                        msg.getData()[3]=l_scale;
+                        msg.setLen(4);
+                        canMessages=0;
+                        pCanBus->canWrite(outBuffer, 1, &canMessages);
+                    break;
+                }
+            }
+        }
+        else if (type==0x03) //analog data
+        {
+            unsigned int id       = (msgid & 0x00f0)>>4;
             if (id==boardId)
             {
                 timeStamp=Time::now();
