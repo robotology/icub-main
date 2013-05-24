@@ -121,10 +121,28 @@ public:
         configMutex.post();
     }
 
-    bool canWrite(const yarp::dev::CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait)
+    bool canWrite(const yarp::dev::CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait,yarp::dev::CanBusAccessPoint* pFrom)
     {
         writeMutex.wait();
         bool ret=theCanBus->canWrite(msgs,size,sent,wait);
+
+        //this allows other istances to read back the sent message (echo)
+        yarp::dev::CanBuffer buff=msgs;
+        for (unsigned int m=0; m<size; ++m)
+        {
+            unsigned int id=buff[m].getId();
+            if (reqIdsUnion[id])
+            {
+                for (unsigned int p=0; p<accessPoints.size(); ++p)
+                {
+                    if (accessPoints[p]!=pFrom && accessPoints[p]->hasId(id))
+                    {
+                        accessPoints[p]->pushReadMsg(buff[m]);
+                    }
+                }
+            }
+        }
+
         writeMutex.post();
 
         return ret;
@@ -301,7 +319,7 @@ bool yarp::dev::CanBusAccessPoint::close()
 
 bool yarp::dev::CanBusAccessPoint::canWrite(const CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait)
 {
-    return SharedCanBus::getInstance().canWrite(msgs,size,sent,wait);
+    return SharedCanBus::getInstance().canWrite(msgs,size,sent,wait,this);
 }
 
 bool yarp::dev::CanBusAccessPoint::canGetBaudRate(unsigned int *rate)
@@ -350,5 +368,9 @@ yarp::dev::CanBuffer yarp::dev::CanBusAccessPoint::createBuffer(int nmessage)
 
 void yarp::dev::CanBusAccessPoint::destroyBuffer(CanBuffer &msgs)
 {
-    SharedCanBus::getInstance().getCanBufferFactory()->destroyBuffer(msgs);
+    yarp::dev::ICanBufferFactory* tmp = SharedCanBus::getInstance().getCanBufferFactory();
+    if (tmp)
+    {
+        tmp->destroyBuffer(msgs);
+    }
 }
