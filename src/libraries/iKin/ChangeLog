@@ -1,3 +1,6 @@
+2013-05-24 Ugo Pattacini <ugo.pattacini@iit.it>
+      * iCubShoulderConstr class exposed under iKinIpopt module
+
 2013-02-07 Ugo Pattacini <ugo.pattacini@iit.it>
       * iKinFwd.cpp/h: iKinChain::AnaJacobian(i,col) fixed
 
