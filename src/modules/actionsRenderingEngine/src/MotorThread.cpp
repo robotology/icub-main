@@ -1638,7 +1638,7 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     wbdRecalibration();
     action[arm]->enableContactDetection();
-    action[arm]->pushAction(approach_x,approach_o,"open_hand");
+    action[arm]->pushAction(approach_x,approach_o,"pregrasp_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);
@@ -1934,13 +1934,6 @@ bool MotorThread::grasp(Bottle &options)
 
     arm=checkArm(arm);
 
-    /*if(grasp_state==GRASP_STATE_ABOVE)
-    {
-        Vector x,o;
-        action[arm]->getPose(x,o);
-        action[arm]->pushAction(x,reachAboveOrient[arm],"pregrasp_hand");
-    }*/
-
     action[arm]->pushAction("close_hand");
 
     bool f;
@@ -2168,7 +2161,7 @@ bool MotorThread::shift(Bottle &options)
     action[arm]->getPose(x,o);
     x=x+shiftPos[arm];
 
-    action[arm]->pushAction(x,reachAboveOrient[arm]);//,"pregrasp_hand");
+    action[arm]->pushAction(x,reachAboveOrient[arm]);
 
     bool f;
     action[arm]->checkActionsDone(f,true);
