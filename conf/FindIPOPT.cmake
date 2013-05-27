@@ -115,11 +115,5 @@ else()
 
 endif()
 
-if(IPOPT_LIBRARIES)
-   set(IPOPT_FOUND TRUE)
-else()
-   set(IPOPT_FOUND FALSE)
-   set(IPOPT_INCLUDE_DIRS "")
-   set(IPOPT_LIBRARIES "")
-   set(IPOPT_LINK_FLAGS "")
-endif()
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(IPOPT DEFAULT_MSG IPOPT_LIBRARIES)
