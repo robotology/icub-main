@@ -1,122 +1,125 @@
-# Copyright: 2008-2010 RobotCub Consortium
-# Author: Ugo Pattacini
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
-
-# Created:
+# Try to locate the IPOPT library
+#
+# If the IPOPT_DIR is set, try to locate the package in the given
+# directory, otherwise use pkg-config to locate it
+#
+# Create the following variables:
 # IPOPT_INCLUDE_DIRS - Directories to include to use IPOPT
 # IPOPT_LIBRARIES    - Default library to link against to use IPOPT
-# IPOPT_LINK_FLAGS   - Flags to be added to linker's options
+# IPOPT_DEFINITIONS  - Flags to be added to linker's options
 # IPOPT_FOUND        - If false, don't try to use IPOPT
+#
+# Deprecated variables:
+# IPOPT_LINK_FLAGS   - = IPOPT_DEFINITIONS, for compatibility
 
-IF(APPLE)
- 
-   SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
- 
-   FIND_PACKAGE(PkgConfig)
-   IF(PKG_CONFIG_FOUND)
-     PKG_CHECK_MODULES(IPOPT ipopt)
-     LINK_DIRECTORIES(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
+# Copyright (C) 2008-2010  RobotCub Consortium
+# Authors: Ugo Pattacini
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+
+if(APPLE)
+
+    set(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
+
+    find_package(PkgConfig)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(IPOPT ipopt)
+        link_directories(${IPOPT_LIBRARY_DIRS}) # vital on Macs, but not many
                                              # ipopt-using programs do this
 
-     FOREACH(arg ${IPOPT_LDFLAGS})
-       SET(IPOPT_LINK_FLAGS "${IPOPT_LINK_FLAGS} ${arg}")
-     ENDFOREACH(arg ${IPOPT_LDFLAGS})
-   ENDIF()
- 
-ELSEIF(UNIX)
+        foreach(arg ${IPOPT_LDFLAGS})
+            set(IPOPT_LINK_FLAGS "${IPOPT_LINK_FLAGS} ${arg}")
+        endforeach(arg ${IPOPT_LDFLAGS})
+    endif()
 
-   # in linux if the env var IPOPT_DIR is not set
-   # we know we are dealing with an installed iCub package
-   SET(IPOPT_DIR_TEST $ENV{IPOPT_DIR})
-   IF(IPOPT_DIR_TEST)
-      SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
-   ELSE()
-      SET(IPOPT_DIR /usr            CACHE PATH "Path to IPOPT build directory")
-   ENDIF()
+elseif(UNIX)
 
-   SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
-   FIND_LIBRARY(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
-                                      ${IPOPT_DIR}/lib/coin
-                                      NO_DEFAULT_PATH)
-   
-   IF(IPOPT_LIBRARIES)
-      FIND_FILE(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
-                                                     ${IPOPT_DIR}/share/coin/doc/Ipopt
-                                                     NO_DEFAULT_PATH)
-      MARK_AS_ADVANCED(IPOPT_DEP_FILE)
+    # in linux if the env var IPOPT_DIR is not set
+    # we know we are dealing with an installed iCub package
+    set(IPOPT_DIR_TEST $ENV{IPOPT_DIR})
+    if(IPOPT_DIR_TEST)
+        set(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
+    else()
+        set(IPOPT_DIR /usr            CACHE PATH "Path to IPOPT build directory")
+    endif()
 
-      IF(IPOPT_DEP_FILE)
-         # parse the file and acquire the dependencies
-         FILE(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
-         STRING(REGEX REPLACE "-[^l][^ ]* " "" IPOPT_DEP ${IPOPT_DEP})
-         STRING(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
-         STRING(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
-         STRING(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependency
-         SEPARATE_ARGUMENTS(IPOPT_DEP)
-   
-         # use the find_library command in order to prepare rpath correctly 
-         FOREACH(LIB ${IPOPT_DEP})
-            FIND_LIBRARY(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
-                                                        ${IPOPT_DIR}/lib/coin
-                                                        ${IPOPT_DIR}/lib/coin/ThirdParty
-                                                        NO_DEFAULT_PATH)
-            IF(SEARCH_FOR_IPOPT_${LIB})
-               # handle non-system libraries (e.g. coinblas)
-               SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${SEARCH_FOR_IPOPT_${LIB}})
-            ELSE(SEARCH_FOR_IPOPT_${LIB})
-               # handle system libraries (e.g. gfortran)
-               SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-            ENDIF(SEARCH_FOR_IPOPT_${LIB})
-            MARK_AS_ADVANCED(SEARCH_FOR_IPOPT_${LIB})
-         ENDFOREACH(LIB)
-      ENDIF()
-   ENDIF()
-   
-   SET(IPOPT_LINK_FLAGS "")
+    set(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
+    find_library(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
+                                       ${IPOPT_DIR}/lib/coin
+                                       NO_DEFAULT_PATH)
+
+    if(IPOPT_LIBRARIES)
+        find_file(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
+                                                       ${IPOPT_DIR}/share/coin/doc/Ipopt
+                                                       NO_DEFAULT_PATH)
+        mark_as_advanced(IPOPT_DEP_FILE)
+
+        if(IPOPT_DEP_FILE)
+            # parse the file and acquire the dependencies
+            file(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
+            string(REGEX REPLACE "-[^l][^ ]* " "" IPOPT_DEP ${IPOPT_DEP})
+            string(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
+            string(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
+            string(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependency
+            separate_arguments(IPOPT_DEP)
+
+            # use the find_library command in order to prepare rpath correctly
+            foreach(LIB ${IPOPT_DEP})
+                find_library(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
+                                                            ${IPOPT_DIR}/lib/coin
+                                                            ${IPOPT_DIR}/lib/coin/ThirdParty
+                                                            NO_DEFAULT_PATH)
+                if(SEARCH_FOR_IPOPT_${LIB})
+                    # handle non-system libraries (e.g. coinblas)
+                    set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${SEARCH_FOR_IPOPT_${LIB}})
+                else(SEARCH_FOR_IPOPT_${LIB})
+                    # handle system libraries (e.g. gfortran)
+                    set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
+                endif(SEARCH_FOR_IPOPT_${LIB})
+                mark_as_advanced(SEARCH_FOR_IPOPT_${LIB})
+            endforeach(LIB)
+        endif()
+    endif()
+
+    set(IPOPT_LINK_FLAGS "")
 
 # Windows platforms
-ELSE()
+else()
 
-   SET(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
+    set(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
 
-   SET(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
-   FIND_LIBRARY(IPOPT_LIBRARIES_RELEASE libipopt  ${IPOPT_DIR}/lib 
-                                                  ${IPOPT_DIR}/lib/coin
-                                                  NO_DEFAULT_PATH)
-   FIND_LIBRARY(IPOPT_LIBRARIES_DEBUG   libipoptD ${IPOPT_DIR}/lib
-                                                  ${IPOPT_DIR}/lib/coin
-                                                  NO_DEFAULT_PATH)
+    set(IPOPT_INCLUDE_DIRS ${IPOPT_DIR}/include/coin)
+    find_library(IPOPT_LIBRARIES_RELEASE libipopt  ${IPOPT_DIR}/lib
+                                                   ${IPOPT_DIR}/lib/coin
+                                                   NO_DEFAULT_PATH)
+    find_library(IPOPT_LIBRARIES_DEBUG   libipoptD ${IPOPT_DIR}/lib
+                                                   ${IPOPT_DIR}/lib/coin
+                                                   NO_DEFAULT_PATH)
 
-   IF(IPOPT_LIBRARIES_RELEASE AND IPOPT_LIBRARIES_DEBUG)
-      SET(IPOPT_LIBRARIES optimized ${IPOPT_LIBRARIES_RELEASE} debug ${IPOPT_LIBRARIES_DEBUG})
-   ELSE()
-      IF(IPOPT_LIBRARIES_RELEASE)
-         SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES_RELEASE})
-      ELSE()
-         IF(IPOPT_LIBRARIES_DEBUG)
-            SET(IPOPT_LIBRARIES ${IPOPT_LIBRARIES_DEBUG})
-         ENDIF()
-      ENDIF()
-   ENDIF()
+    if(IPOPT_LIBRARIES_RELEASE AND IPOPT_LIBRARIES_DEBUG)
+        set(IPOPT_LIBRARIES optimized ${IPOPT_LIBRARIES_RELEASE} debug ${IPOPT_LIBRARIES_DEBUG})
+    elseif(IPOPT_LIBRARIES_RELEASE)
+        set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES_RELEASE})
+    elseif(IPOPT_LIBRARIES_DEBUG)
+        set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES_DEBUG})
+    endif()
 
-   SET(IPOPT_LIBRARIES_RELEASE "")
-   SET(IPOPT_LIBRARIES_DEBUG "")
+    set(IPOPT_LIBRARIES_RELEASE "")
+    set(IPOPT_LIBRARIES_DEBUG "")
 
-   IF(MSVC)
-       SET(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
-   ELSE()
-       SET(IPOPT_LINK_FLAGS "")
-   ENDIF()
+    if(MSVC)
+        set(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+    else()
+        set(IPOPT_LINK_FLAGS "")
+    endif()
 
-ENDIF()
+endif()
 
-IF(IPOPT_LIBRARIES)
-   SET(IPOPT_FOUND TRUE)
-ELSE()
-   SET(IPOPT_FOUND FALSE)
-   SET(IPOPT_INCLUDE_DIRS "")
-   SET(IPOPT_LIBRARIES "")
-   SET(IPOPT_LINK_FLAGS "")
-ENDIF()
-
-
+if(IPOPT_LIBRARIES)
+   set(IPOPT_FOUND TRUE)
+else()
+   set(IPOPT_FOUND FALSE)
+   set(IPOPT_INCLUDE_DIRS "")
+   set(IPOPT_LIBRARIES "")
+   set(IPOPT_LINK_FLAGS "")
+endif()
