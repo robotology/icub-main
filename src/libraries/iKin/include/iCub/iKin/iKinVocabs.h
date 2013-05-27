@@ -40,6 +40,7 @@
 #define IKINSLV_VOCAB_OPT_VERB          VOCAB4('v','e','r','b')
 #define IKINSLV_VOCAB_OPT_REST_POS      VOCAB4('r','e','s','p')
 #define IKINSLV_VOCAB_OPT_REST_WEIGHTS  VOCAB4('r','e','s','w')
+#define IKINSLV_VOCAB_OPT_TIP_FRAME     VOCAB3('t','i','p')
 #define IKINSLV_VOCAB_VAL_POSE_FULL     VOCAB4('f','u','l','l')
 #define IKINSLV_VOCAB_VAL_POSE_XYZ      VOCAB3('x','y','z')
 #define IKINSLV_VOCAB_VAL_MODE_TRACK    VOCAB4('c','o','n','t')

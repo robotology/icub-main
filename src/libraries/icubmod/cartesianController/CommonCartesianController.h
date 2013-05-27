@@ -48,6 +48,7 @@
 #define IKINCARTCTRL_VOCAB_OPT_Q                VOCAB1('q')
 #define IKINCARTCTRL_VOCAB_OPT_XDOT             VOCAB4('x','d','o','t')
 #define IKINCARTCTRL_VOCAB_OPT_QDOT             VOCAB4('q','d','o','t')
+#define IKINCARTCTRL_VOCAB_OPT_TIP_FRAME        VOCAB3('t','i','p')
 #define IKINCARTCTRL_VOCAB_OPT_MOTIONDONE       VOCAB4('d','o','n','e')
 #define IKINCARTCTRL_VOCAB_OPT_ISSOLVERON       VOCAB4('i','s','o','n')
 #define IKINCARTCTRL_VOCAB_OPT_POSE             VOCAB4('p','o','s','e')

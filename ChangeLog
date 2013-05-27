@@ -1,3 +1,7 @@
+2013-27-05 Ugo Pattacini <ugo.pattacini@iit.it>
+   * Cartesian I/F
+   added methods to deal with tip frame.
+
 2013-24-05 Ugo Pattacini <ugo.pattacini@iit.it>
    * iKinGazeCtrl
    some tweaking added for intrinsics/extrinsics parameters.

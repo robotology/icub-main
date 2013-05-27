@@ -187,6 +187,8 @@ protected:
         yarp::sig::Vector dof;
         yarp::sig::Vector restPos;
         yarp::sig::Vector restWeights;
+        yarp::sig::Vector tip_x;
+        yarp::sig::Vector tip_o;
         yarp::sig::Matrix limits;
         double            trajTime;
         double            tol;
@@ -280,6 +282,9 @@ public:
     bool getJointsVelocities(yarp::sig::Vector &qdot);
     bool getTaskVelocities(yarp::sig::Vector &xdot, yarp::sig::Vector &odot);
     bool setTaskVelocities(const yarp::sig::Vector &xdot, const yarp::sig::Vector &odot);
+    bool attachTipFrame(const yarp::sig::Vector &x, const yarp::sig::Vector &o);
+    bool getTipFrame(yarp::sig::Vector &x, yarp::sig::Vector &o);
+    bool removeTipFrame();
     bool checkMotionDone(bool *f);
     bool waitMotionDone(const double period=0.1, const double timeout=0.0);
     bool stopControl();

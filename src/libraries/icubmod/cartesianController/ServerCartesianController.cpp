@@ -643,6 +643,27 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         }
 
                         //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_TIP_FRAME:
+                        {
+                            Vector x,o;
+                            if (getTipFrame(x,o))
+                            {
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                Bottle &tipPart=reply.addList();
+
+                                for (size_t i=0; i<x.length(); i++)
+                                    tipPart.addDouble(x[i]);
+
+                                for (size_t i=0; i<o.length(); i++)
+                                    tipPart.addDouble(o[i]);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_INFO:
                         {
                             Bottle info;
@@ -859,6 +880,36 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             else
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
     
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_TIP_FRAME:
+                        {
+                            if (Bottle *b=command.get(2).asList())
+                            {
+                                if (b->size()>=7)
+                                {
+                                    Vector x(3);
+                                    Vector o(b->size()-x.length());
+
+                                    for (size_t i=0; i<x.length(); i++)
+                                        x[i]=b->get(i).asDouble();
+
+                                    for (size_t i=0; i<o.length(); i++)
+                                        o[i]=b->get(i+x.length()).asDouble();
+
+                                    if (attachTipFrame(x,o))
+                                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    else
+                                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                }
+                                else
+                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
+
                             break;
                         }
 
@@ -2733,6 +2784,77 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
 
 
 /************************************************************************/
+bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
+{
+    if (connected && (x.length()>=3) || (o.length()>=4))
+    {
+        mutex.wait();
+
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_TIP_FRAME);
+        Bottle &txTipPart=command.addList();
+
+        for (int i=0; i<3; i++)
+            txTipPart.addDouble(x[i]);
+
+        for (int i=0; i<4; i++)
+            txTipPart.addDouble(o[i]);
+
+        // send command to solver and wait for reply
+        bool ret=false;
+        if (portSlvRpc.write(command,reply))
+        {
+            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+            {
+                Matrix HN=axis2dcm(o);
+                HN(0,3)=x[0];
+                HN(1,3)=x[1];
+                HN(2,3)=x[2];
+                chain->setHN(HN);
+            }
+        }
+        else
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+
+        mutex.post();
+        return ret;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getTipFrame(Vector &x, Vector &o)
+{
+    if (connected)
+    {
+        mutex.wait();
+
+        Matrix HN=chain->getHN();
+
+        x=HN.getCol(3);
+        x.pop_back();
+
+        o=dcm2axis(HN);
+
+        mutex.post();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::removeTipFrame()
+{
+    return attachTipFrame(Vector(3,0.0),Vector(4,0.0));
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::checkMotionDone(bool *f)
 {
     if (attached && (f!=NULL))
@@ -2810,9 +2932,12 @@ bool ServerCartesianController::storeContext(int *id)
         mutex.post();
 
         Vector _dof,_restPos,_restWeights;
+        Vector _tip_x,_tip_o;
+
         getDOF(_dof);
         getRestPos(_restPos);
         getRestWeights(_restWeights);
+        getTipFrame(_tip_x,_tip_o);
 
         Matrix _limits(N,2);
         for (unsigned int axis=0; axis<N; axis++)
@@ -2838,6 +2963,8 @@ bool ServerCartesianController::storeContext(int *id)
         context.restPos=_restPos;
         context.restWeights=_restWeights;
         context.limits=_limits;
+        context.tip_x=_tip_x;
+        context.tip_o=_tip_o;
         context.trajTime=_trajTime;
         context.tol=_tol;
         context.mode=_mode;
@@ -2874,6 +3001,7 @@ bool ServerCartesianController::restoreContext(const int id)
             setDOF(context.dof,context.dof);
             setRestPos(context.restPos,context.restPos);
             setRestWeights(context.restWeights,context.restWeights);
+            attachTipFrame(context.tip_x,context.tip_o);
 
             for (unsigned int axis=0; axis<chain->getN(); axis++)
                 setLimits(axis,context.limits(axis,0),context.limits(axis,1));

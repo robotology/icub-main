@@ -1078,12 +1078,83 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         xdotPart.addDouble(xdot[i]);
 
     for (int i=0; i<4; i++)
-        xdotPart.addDouble(odot[i]);    
+        xdotPart.addDouble(odot[i]);
 
     // send command
     portCmd.write(command);
 
     return true;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::attachTipFrame(const Vector &x, const Vector &o)
+{
+    if (!connected || (x.length()<3) || (o.length()<4))
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIP_FRAME);
+    Bottle &tipPart=command.addList();
+
+    for (int i=0; i<3; i++)
+        tipPart.addDouble(x[i]);
+
+    for (int i=0; i<4; i++)
+        tipPart.addDouble(o[i]);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getTipFrame(Vector &x, Vector &o)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIP_FRAME);
+
+    if (!portRpc.write(command,reply))
+    {
+        fprintf(stdout,"Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        if (Bottle *tipPart=reply.get(1).asList())
+        {
+            x.resize(3);
+            o.resize(tipPart->size()-x.length());
+
+            for (size_t i=0; i<x.length(); i++)
+                x[i]=tipPart->get(i).asDouble();
+
+            for (size_t i=0; i<o.length(); i++)
+                o[i]=tipPart->get(x.length()+i).asDouble();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::removeTipFrame()
+{
+    return attachTipFrame(Vector(3,0.0),Vector(4,0.0));
 }
 
 
