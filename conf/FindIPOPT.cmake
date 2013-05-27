@@ -81,7 +81,7 @@ elseif(UNIX)
         endif()
     endif()
 
-    set(IPOPT_LINK_FLAGS "")
+    set(IPOPT_DEFINITIONS "")
 
 # Windows platforms
 else()
@@ -108,12 +108,15 @@ else()
     set(IPOPT_LIBRARIES_DEBUG "")
 
     if(MSVC)
-        set(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+        set(IPOPT_DEFINITIONS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
     else()
-        set(IPOPT_LINK_FLAGS "")
+        set(IPOPT_DEFINITIONS "")
     endif()
 
 endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(IPOPT DEFAULT_MSG IPOPT_LIBRARIES)
+
+# Compatibility with previous versions
+set(IPOPT_LINK_FLAGS ${IPOPT_DEFINITIONS})
