@@ -13,7 +13,7 @@ PREPARE_DEVICE(embObjMotionControl TYPE embObjMotionControl
 
 #    ADD_LIBRARY(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h usrcbk/eOcfg_nvsEP_mc_usrcbk_pippo.c )
 	ADD_LIBRARY(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h)
-	TARGET_LINK_LIBRARIES(embObjMotionControl debugStream ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+	TARGET_LINK_LIBRARIES(embObjMotionControl debugStream ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
 	icub_export_library(embObjMotionControl)
 ENDIF (NOT SKIP_embObjMotionControl)
 

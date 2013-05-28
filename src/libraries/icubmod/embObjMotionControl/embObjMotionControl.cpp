@@ -2339,7 +2339,7 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 
 bool embObjMotionControl::updateMeasure(int j, double &fTorque)
 {
-    static const double NEWTON2SCALE=32768.0/12.0;
+    double NEWTON2SCALE=32768.0/_maxTorque[j];
 
 //    EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
@@ -2366,7 +2366,7 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-	static const double NEWTON2SCALE=32768.0/12.0;
+    double NEWTON2SCALE=32768.0/_maxTorque[j];
     eOmeas_torque_t meas_torque;
     uint16_t size;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
@@ -2404,10 +2404,10 @@ bool embObjMotionControl::setRefTorquesRaw(const double *t)
 bool embObjMotionControl::setRefTorqueRaw(int j, double t)
 {
     yTrace() << _fId.name << "joint" << j;
-
+   static const double NEWTON2SCALE=32768.0/_maxTorque[j];
     eOmc_setpoint_t setpoint;
     setpoint.type = (eOenum08_t) eomc_setpoint_torque;
-    setpoint.to.torque.value =  (eOmeas_torque_t) t;
+    setpoint.to.torque.value =  (eOmeas_torque_t) (t * NEWTON2SCALE);
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
