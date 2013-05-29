@@ -2,7 +2,7 @@
 <devices>
 	<device type="canBusVirtualAnalogSensor" name="right_arm_virtual_strain">
 		<param name="CanbusDevice"> "sharedcan" </param>
-        <param name="physdevice"> "cfw" </param>
+        <param name="physdevice"> "cfw2can" </param>
         <param name="CanDeviceNum"> 2 </param>
 		<param name="CanAddress"> 0x0C </param>
 		<param name="Format"> 16 </param>
