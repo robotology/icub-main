@@ -37,6 +37,8 @@ namespace yarp{
     }
 }
 
+class SharedCanBus;
+
 class yarp::dev::CanBusAccessPoint : 
     public ICanBus, 
     public ICanBufferFactory,
@@ -45,6 +47,8 @@ class yarp::dev::CanBusAccessPoint :
 public:
     CanBusAccessPoint() : waitReadMutex(0),synchroMutex(1)
     {
+        mSharedPhysDevice=NULL;
+
         reqIds=new char[0x800];
 
         for (int i=0; i<0x800; ++i) reqIds[i]=UNREQ;
@@ -161,6 +165,8 @@ protected:
     CanBuffer readBuffer;
     
     char *reqIds; //[0x800];
+
+    SharedCanBus* mSharedPhysDevice;
 };
 
 #endif

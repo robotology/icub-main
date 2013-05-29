@@ -18,17 +18,17 @@
 
 class SharedCanBus : public yarp::os::RateThread
 {
-private:
+public:
     SharedCanBus() : RateThread(10), writeMutex(1), configMutex(1)
     {
-        initialized=false;
+        mCanDeviceNum=-1;
+        mDevice="";
 
         reqIdsUnion=new char[0x800];
 
         for (int i=0; i<0x800; ++i) reqIdsUnion[i]=UNREQ;
     }
 
-public:
     ~SharedCanBus()
     {
         stop();
@@ -38,11 +38,19 @@ public:
         delete [] reqIdsUnion;
     }
 
-    static SharedCanBus& getInstance()
+    bool IloveUmom(yarp::os::Searchable &config)
     {
-        static SharedCanBus instance;
+        if (!config.check("physdevice"))
+        {
+            fprintf(stderr, "Error: could not find low level can driver specification\n");         
+            return false;
+        }
 
-        return instance;
+        if (mDevice!=config.find("physdevice").asString()) return false;
+
+        if (!config.check("CanDeviceNum")) return true;
+
+        return mCanDeviceNum==config.find("CanDeviceNum").asInt();
     }
 
     void attachAccessPoint(yarp::dev::CanBusAccessPoint* ap)
@@ -92,13 +100,6 @@ public:
         unsigned int msgsNum=0;
 
         configMutex.wait();
-
-        if (!initialized)
-        {
-            fprintf(stderr, "Error: can bus driver not initilized, could not read from bus\n");
-            configMutex.post();
-            return;
-        }
 
         bool ret=theCanBus->canRead(readBufferUnion,MAX_MSGS,&msgsNum,NOWAIT);
 
@@ -194,12 +195,6 @@ public:
     {
         configMutex.wait();
 
-        if (initialized)
-        {
-            configMutex.post();
-            return true;
-        }
-
         if (!config.check("physdevice"))
         {
             fprintf(stderr, "Error: could not find low level can driver specification\n");
@@ -250,11 +245,18 @@ public:
 
         readBufferUnion=theBufferFactory->createBuffer(BUF_SIZE);
 
-        initialized=start();
+        bool started=start();
+
+        mDevice=device;
+
+        if (config.check("CanDeviceNum"))
+        {
+            mCanDeviceNum=config.find("CanDeviceNum").asInt();
+        }
 
         configMutex.post();
 
-        return initialized;
+        return started;
     }
 
 private:
@@ -279,7 +281,9 @@ private:
     yarp::os::Semaphore writeMutex;
     yarp::os::Semaphore configMutex;
 
-    bool initialized;
+    yarp::os::ConstString mDevice;
+    int mCanDeviceNum;
+
     yarp::dev::PolyDriver polyDriver;
 
     yarp::dev::ICanBus           *theCanBus;
@@ -293,7 +297,57 @@ private:
     char *reqIdsUnion; //[0x800];
 };
 
+class SharedCanBusManager // singleton
+{
+public:
+    ~SharedCanBusManager()
+    {
+        for (unsigned int i=0; i<mDevices.size(); ++i)
+        {
+            if (mDevices[i]) delete mDevices[i];
+        }
 
+        mDevices.clear();
+    }
+
+    static SharedCanBusManager& getInstance()
+    {
+        static SharedCanBusManager instance;
+
+        return instance;
+    }
+
+    SharedCanBus* open(yarp::os::Searchable &config)
+    {
+        for (unsigned int i=0; i<mDevices.size(); ++i)
+        {
+            if (mDevices[i]->IloveUmom(config))
+            {
+                return mDevices[i];
+            }
+        }
+
+        SharedCanBus *scb=new SharedCanBus();
+
+        if (!scb->open(config))
+        {
+            delete scb;
+            return NULL;
+        }
+
+        mDevices.push_back(scb);
+
+        return scb;
+    }
+
+private:
+    SharedCanBusManager()
+    {
+        mDevices.clear();
+    }
+
+    std::vector<SharedCanBus*> mDevices;
+};
 
 //////////////////////////////
 // CanBusAccessPoint methods
@@ -301,34 +355,44 @@ private:
 
 bool yarp::dev::CanBusAccessPoint::open(yarp::os::Searchable& config)
 {
-    if (!SharedCanBus::getInstance().open(config)) return false;
+    mSharedPhysDevice=SharedCanBusManager::getInstance().open(config);
+    
+    if (!mSharedPhysDevice) return false;
 
     readBuffer=createBuffer(BUF_SIZE);
 
-    SharedCanBus::getInstance().attachAccessPoint(this);
+    mSharedPhysDevice->attachAccessPoint(this);
 
     return true;
 }
 
 bool yarp::dev::CanBusAccessPoint::close()
 {
-    SharedCanBus::getInstance().detachAccessPoint(this);
+    if (!mSharedPhysDevice) return false;
+
+    mSharedPhysDevice->detachAccessPoint(this);
 
     return true;
 }
 
 bool yarp::dev::CanBusAccessPoint::canWrite(const CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait)
 {
-    return SharedCanBus::getInstance().canWrite(msgs,size,sent,wait,this);
+    if (!mSharedPhysDevice) return false;
+
+    return mSharedPhysDevice->canWrite(msgs,size,sent,wait,this);
 }
 
 bool yarp::dev::CanBusAccessPoint::canGetBaudRate(unsigned int *rate)
 {
-    return SharedCanBus::getInstance().getCanBus()->canGetBaudRate(rate);
+    if (!mSharedPhysDevice) return false;
+
+    return mSharedPhysDevice->getCanBus()->canGetBaudRate(rate);
 }
 
 bool yarp::dev::CanBusAccessPoint::canIdAdd(unsigned int id)
 {
+    if (!mSharedPhysDevice) return false;
+
     if (id>=0x800)
     {
         fprintf(stderr, "Error: Id=%d is out of 11 bit address range\n",id);
@@ -338,13 +402,15 @@ bool yarp::dev::CanBusAccessPoint::canIdAdd(unsigned int id)
 
     reqIds[id]=REQST;
 
-    SharedCanBus::getInstance().canIdAdd(id);
+    mSharedPhysDevice->canIdAdd(id);
 
     return true;
 }
 
 bool yarp::dev::CanBusAccessPoint::canIdDelete(unsigned int id)
 {
+    if (!mSharedPhysDevice) return false;
+
     if (id>=0x800)
     {
         fprintf(stderr, "Error: Id=%d is out of 11 bit address range\n",id);
@@ -354,23 +420,25 @@ bool yarp::dev::CanBusAccessPoint::canIdDelete(unsigned int id)
 
     reqIds[id]=UNREQ;
 
-    SharedCanBus::getInstance().canIdDelete(id);
+    mSharedPhysDevice->canIdDelete(id);
 
     return true;
 }
 
 yarp::dev::CanBuffer yarp::dev::CanBusAccessPoint::createBuffer(int nmessage)
 {
-    yarp::dev::CanBuffer cb=SharedCanBus::getInstance().getCanBufferFactory()->createBuffer(nmessage);
+    yarp::dev::CanBuffer cb;
+    
+    if (mSharedPhysDevice) mSharedPhysDevice->getCanBufferFactory()->createBuffer(nmessage);
 
     return cb;
 }
 
 void yarp::dev::CanBusAccessPoint::destroyBuffer(CanBuffer &msgs)
 {
-    yarp::dev::ICanBufferFactory* tmp = SharedCanBus::getInstance().getCanBufferFactory();
-    if (tmp)
-    {
-        tmp->destroyBuffer(msgs);
-    }
+    if (!mSharedPhysDevice) return;
+
+    yarp::dev::ICanBufferFactory* tmp = mSharedPhysDevice->getCanBufferFactory();
+    
+    if (tmp) tmp->destroyBuffer(msgs);
 }
