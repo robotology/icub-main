@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="icub">
+    <params file="hardware/electronics/pc104.xml" />
+
+    <!-- cartesiani --> 
+    <devices file="cartesians.xml" />
+    
+    <!-- motor controllers wrappers -->
+    <devices file="wrappers/left_arm-mcWrapper.xml" /> 
+    <devices file="wrappers/right_arm-mcWrapper.xml" />
+    <devices file="wrappers/left_leg-mcWrapper.xml" /> 
+    <devices file="wrappers/right_leg-asWrapper.xml" /> 
+    <devices file="wrappers/head-mcWrapper.xml" />
+    <devices file="wrappers/torso-mcWrapper.xml" />
+
+    <!-- VIRTUAL ANALOG SERVERs -->
+    <devices file="wrappers/left_arm-VFTserver.xml" /> 
+    <devices file="wrappers/left_leg-VFTserver.xml" /> 
+    <devices file="wrappers/right_arm-VFTserver.xml" /> 
+    <devices file="wrappers/right_leg-VFTserver.xml" /> 
+
+	<!-- REAL ANALOG SENSORS -->
+    <devices file="wrappers/left_arm_FTserver.xml" /> 
+    <devices file="wrappers/left_leg_FTserver.xml" /> 
+    <devices file="wrappers/left_foot_FTserver.xml" /> 
+    <devices file="wrappers/right_arm_FTserver.xml" /> 
+    <devices file="wrappers/right_leg_FTserver.xml" /> 
+    <devices file="wrappers/right_foot_FTserver.xml" /> 
+    <devices file="hardware/FT/left_arm_strain.xml" /> 
+    <devices file="hardware/FT/left_leg_strain.xml" /> 
+    <devices file="hardware/FT/left_foot_strainxml" />
+    <devices file="hardware/FT/right_arm_strain.xml" /> 
+    <devices file="hardware/FT/right_leg_strain.xml" /> 
+    <devices file="hardware/FT/right_foot_strain.xml" /> 
+   
+    <!-- INERTIAL SENSOR -->
+    <devices file="hardware/inertial.xml" />
+
+    <!-- SKIN -->
+    <devices file="wrappers/left_arm-skinWrapper.xml" />
+    <devices file="wrappers/right_arm-skinWrapper.xml" />  
+    <devices file="wrappers/torso-skinWrapper.xml" />  
+    <devices file="hardware/skin/left_arm.xml" />
+    <devices file="hardware/skin/right_arm.xml" />  
+    <devices file="hardware/skin/torso.xml" />  
+	
+    <!-- CALIBRATORS -->
+    <devices file="calibrators/head-calib.xml" /> 
+    <devices file="calibrators/torso-calib.xml" />
+    <devices file="calibrators/right_leg-calib.xml" />
+    <devices file="calibrators/left_leg-calib.xml" /> 
+    <devices file="calibrators/left_arm-calib.xml" /> 
+    <devices file="calibrators/right_arm-calib.xml" />
+
+
+</robot> 
+
