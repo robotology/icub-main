@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device type="canBusVirtualAnalogSensor" name="right_arm_virtual_strain">
+		<param name="CanbusDevice"> "sharedCan" </param>
+        <param name="physdevice"> "cfw" </param>
+        <param name="CanDeviceNum"> 2 </param>
+		<param name="CanAddress"> 0x0C </param>
+		<param name="Format"> 16 </param>
+		<param name="Channels"> 6 </param>
+		<param name="Period"> 1 </param>
+		<param name="UseCalibration"> 1 </param>
+		<param name="FullScale"> 8 8 8 8 8 8 </param>
+	</device>
+</devices>
