@@ -429,7 +429,7 @@ yarp::dev::CanBuffer yarp::dev::CanBusAccessPoint::createBuffer(int nmessage)
 {
     yarp::dev::CanBuffer cb;
     
-    if (mSharedPhysDevice) mSharedPhysDevice->getCanBufferFactory()->createBuffer(nmessage);
+    if (mSharedPhysDevice) cb = mSharedPhysDevice->getCanBufferFactory()->createBuffer(nmessage);
 
     return cb;
 }
