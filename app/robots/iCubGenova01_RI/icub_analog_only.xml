@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <robot name="icub">
     
-    <!-- cartesiani --> 
+    <!-- cartesian --> 
 	<!--
     <devices file="cartesians.xml" />
     />
@@ -17,11 +17,17 @@
     -->
 	 
     <!-- VIRTUAL ANALOG SERVERs -->
-    <devices file="wrappers/VFT/left_arm-VFTserver.xml" /> 
-    <devices file="wrappers/VFT/left_leg-VFTserver.xml" /> 
-    <devices file="wrappers/VFT/right_arm-VFTserver.xml" /> 
-    <devices file="wrappers/VFT/right_leg-VFTserver.xml" /> 
-
+    <devices file="wrappers/VFT/left_arm_VFTserver.xml" /> 
+    <devices file="wrappers/VFT/left_leg_VFTserver.xml" /> 
+    <devices file="wrappers/VFT/right_arm_VFTserver.xml" /> 
+    <devices file="wrappers/VFT/right_leg_VFTserver.xml" /> 
+    
+	<devices file="hardware/VFT/left_arm_virtual_strain.xml" /> 
+    <devices file="hardware/VFT/left_leg_virtual_strain.xml" /> 
+    <devices file="hardware/VFT/right_arm_virtual_strain.xml" /> 
+    <devices file="hardware/VFT/right_leg_virtual_strain.xml" /> 
+    <devices file="hardware/VFT/torso_virtual_strain.xml" /> 
+   
 	<!-- REAL ANALOG SENSORS -->
     <devices file="wrappers/FT/left_arm_FTserver.xml" /> 
     <devices file="wrappers/FT/left_leg_FTserver.xml" /> 
@@ -29,7 +35,8 @@
     <devices file="wrappers/FT/right_arm_FTserver.xml" /> 
     <devices file="wrappers/FT/right_leg_FTserver.xml" /> 
     <devices file="wrappers/FT/right_foot_FTserver.xml" /> 
-    <devices file="hardware/FT/left_arm_strain.xml" /> 
+    
+	<devices file="hardware/FT/left_arm_strain.xml" /> 
     <devices file="hardware/FT/left_leg_strain.xml" /> 
     <devices file="hardware/FT/left_foot_strain.xml" />
     <devices file="hardware/FT/right_arm_strain.xml" /> 
