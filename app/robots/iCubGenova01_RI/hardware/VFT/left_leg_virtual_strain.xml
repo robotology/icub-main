@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
 	<device type="canBusVirtualAnalogSensor" name="left_leg_virtual_strain">
-		<param name="CanbusDevice"> "sharedCan" </param>
+		<param name="CanbusDevice"> "sharedcan" </param>
         <param name="physdevice"> "cfw" </param>
         <param name="CanDeviceNum"> 3 </param>
 		<param name="CanAddress"> 0x0C </param>
