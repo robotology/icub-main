@@ -4,6 +4,6 @@
 		<param name="physdevice"> "cfw2can" </param>
 		<param name="CanDeviceNum"> 9 </param>
 		<param name="SkinCanIds"> 7 8 9 10 </param>
-		<param name="Period" /> 10 </param>
+		<param name="Period"> 10 </param>
 	</device>  
 </devices>
