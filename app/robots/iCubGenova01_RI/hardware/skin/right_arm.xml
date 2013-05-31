@@ -1,0 +1,9 @@
+<devices>
+	<device name="right_arm_skin" type="canBusSkin">
+		<param name="CanbusDevice"> "sharedcan" </param>
+		<param name="physdevice"> "cfw2can" </param>
+		<param name="CanDeviceNum"> 8 </param>
+		<param name="SkinCanIds"> 14 13 12 11 10 9 8 </param>
+		<param name="Period" /> 10 </param>
+	</device>  
+</devices>
