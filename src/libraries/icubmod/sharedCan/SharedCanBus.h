@@ -55,6 +55,8 @@ public:
 
         waitingOnRead=false;
 
+        mBufferSize=0;
+
         nRecv=0;
     }
 
@@ -74,7 +76,7 @@ public:
     {
         synchroMutex.wait();
 
-        if (nRecv>=BUF_SIZE)
+        if (nRecv>=mBufferSize)
         {
             synchroMutex.post();
             fprintf(stderr, "Warning: recv buffer overrun\n");
@@ -165,6 +167,8 @@ protected:
     CanBuffer readBuffer;
     
     char *reqIds; //[0x800];
+
+    unsigned int mBufferSize;
 
     SharedCanBus* mSharedPhysDevice;
 };

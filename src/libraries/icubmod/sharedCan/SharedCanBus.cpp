@@ -21,6 +21,7 @@ class SharedCanBus : public yarp::os::RateThread
 public:
     SharedCanBus() : RateThread(10), writeMutex(1), configMutex(1)
     {
+        mBufferSize=0;
         mCanDeviceNum=-1;
         mDevice="";
 
@@ -36,6 +37,11 @@ public:
         polyDriver.close();
 
         delete [] reqIdsUnion;
+    }
+
+    int getBufferSize()
+    {
+        return mBufferSize;
     }
 
     bool IloveUmom(yarp::os::Searchable &config)
@@ -95,13 +101,12 @@ public:
 
     void run()
     {
-        static const unsigned int MAX_MSGS=BUF_SIZE;
         static const bool NOWAIT=false;
         unsigned int msgsNum=0;
 
         configMutex.wait();
 
-        bool ret=theCanBus->canRead(readBufferUnion,MAX_MSGS,&msgsNum,NOWAIT);
+        bool ret=theCanBus->canRead(readBufferUnion,mBufferSize,&msgsNum,NOWAIT);
 
         if (ret)
         {
@@ -243,7 +248,14 @@ public:
 
         polyDriver.view(theCanBusErrors);
 
-        readBufferUnion=theBufferFactory->createBuffer(BUF_SIZE);
+        mBufferSize=BUF_SIZE;
+
+        if (config.check("CanRxQueueSize"))
+        {
+            mBufferSize=config.find("CanRxQueueSize").asInt();
+        }
+
+        readBufferUnion=theBufferFactory->createBuffer(mBufferSize);
 
         bool started=start();
 
@@ -277,6 +289,8 @@ private:
             theCanBus->canIdDelete(id);
         }
     }
+
+    int mBufferSize;
 
     yarp::os::Semaphore writeMutex;
     yarp::os::Semaphore configMutex;
@@ -359,7 +373,9 @@ bool yarp::dev::CanBusAccessPoint::open(yarp::os::Searchable& config)
     
     if (!mSharedPhysDevice) return false;
 
-    readBuffer=createBuffer(BUF_SIZE);
+    mBufferSize=(unsigned int)(mSharedPhysDevice->getBufferSize());
+
+    readBuffer=createBuffer(mBufferSize);
 
     mSharedPhysDevice->attachAccessPoint(this);
 
