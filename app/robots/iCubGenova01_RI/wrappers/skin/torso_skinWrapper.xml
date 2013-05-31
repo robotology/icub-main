@@ -7,7 +7,7 @@
 		<param name="device">       skinWrapper				</param>
 		
 		<paramlist name="ports">
-		  <elem name="torso"> 	0   768  0 768	</elem>
+		  <elem name="torso"> 	0   767  0 767	</elem>
 		</paramlist>
 		
 		<action phase="startup" level="5" type="attach">
