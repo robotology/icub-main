@@ -40,9 +40,9 @@
 
     <!-- SKIN -->
     <!--
-    <devices file="wrappers/left_arm-skinWrapper.xml" />
-    <devices file="wrappers/right_arm-skinWrapper.xml" />  
-    <devices file="wrappers/torso-skinWrapper.xml" />  
+    <devices file="wrappers/left_arm_skinWrapper.xml" />
+    <devices file="wrappers/right_arm_skinWrapper.xml" />  
+    <devices file="wrappers/torso_skinWrapper.xml" />  
     <devices file="hardware/skin/left_arm.xml" />
     <devices file="hardware/skin/right_arm.xml" />  
     <devices file="hardware/skin/torso.xml" />  
