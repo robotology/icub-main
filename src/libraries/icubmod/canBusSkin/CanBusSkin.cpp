@@ -41,20 +41,21 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     if (ids.size()>1)
     {
-		cerr<<"Warning: CanBusSkin id list contains more than one entry -> devices will be merged. "<<endl;
+        cerr<<"Warning: CanBusSkin id list contains more than one entry -> devices will be merged. "<<endl;
     }
-	for (int i=0; i<ids.size(); i++)
-	{
-		int id = ids.get(i).asInt();
-		cardId.push_back (id);
-		#if SKIN_DEBUG
-			fprintf(stderr, "Id reading from %d\n", id);
-		#endif
-	}
+    for (int i=0; i<ids.size(); i++)
+    {
+        int id = ids.get(i).asInt();
+        cardId.push_back (id);
+        #if SKIN_DEBUG
+            fprintf(stderr, "Id reading from %d\n", id);
+        #endif
+    }
 
     Property prop;
 
     prop.put("device", config.find("CanbusDevice").asString().c_str());
+    prop.put("physdevice", config.find("physdevice").asString().c_str());
     prop.put("CanTxTimeout", 500);
     prop.put("CanRxTimeout", 500);
     prop.put("CanDeviceNum", config.find("CanDeviceNum").asInt());
@@ -83,11 +84,11 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-	for (int i=0; i<cardId.size(); i++)
-		for (int id=0; id<16; ++id)
-		{
-			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
-		}
+    for (unsigned int i=0; i<cardId.size(); i++)
+        for (unsigned int id=0; id<16; ++id)
+        {
+            pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
+        }
 
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
@@ -133,37 +134,37 @@ int CanBusSkin::getChannels()
 
 int CanBusSkin::calibrateSensor()
 {
-	for (int i=0; i<cardId.size(); i++)
-	{
-		#if SKIN_DEBUG
-			printf("CanBusSkin:: calibrating boardId: %d\n",cardId[i]);
-		#endif 
+    for (unsigned int i=0; i<cardId.size(); i++)
+    {
+        #if SKIN_DEBUG
+            printf("CanBusSkin:: calibrating boardId: %d\n",cardId[i]);
+        #endif 
 
-   		unsigned int canMessages=0;
-		unsigned id = 0x200 + cardId[i];
-	   
-		CanMessage &msg=outBuffer[0];
-		msg.setId(id);
-		msg.getData()[0]=0x4C; // message type
-		msg.getData()[1]=0x01; 
-		msg.getData()[2]=0x01; 
-		msg.getData()[3]=0x01;
-		msg.getData()[4]=0;
-		msg.getData()[5]=0x22;
-		msg.getData()[6]=0;
-		msg.getData()[7]=0;
-		msg.setLen(8);
-		canMessages=0;
-		pCanBus->canWrite(outBuffer, 1, &canMessages);
-	}
+         unsigned int canMessages=0;
+        unsigned id = 0x200 + cardId[i];
+       
+        CanMessage &msg=outBuffer[0];
+        msg.setId(id);
+        msg.getData()[0]=0x4C; // message type
+        msg.getData()[1]=0x01; 
+        msg.getData()[2]=0x01; 
+        msg.getData()[3]=0x01;
+        msg.getData()[4]=0;
+        msg.getData()[5]=0x22;
+        msg.getData()[6]=0;
+        msg.getData()[7]=0;
+        msg.setLen(8);
+        canMessages=0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
+    }
 
     return AS_OK;
 }
 
 int CanBusSkin::calibrateChannel(int ch, double v)
 {
-	//NOT YET IMPLEMENTED
-	return calibrateSensor();
+    //NOT YET IMPLEMENTED
+    return calibrateSensor();
 }
 
 int CanBusSkin::calibrateSensor(const yarp::sig::Vector& v)
@@ -179,35 +180,35 @@ int CanBusSkin::calibrateChannel(int ch)
 
 bool CanBusSkin::threadInit()
 {
-	for (int i=0; i<cardId.size(); i++)
-	{
-		#if SKIN_DEBUG
-			printf("CanBusSkin:: thread initialising boardId:%d\n",cardId[i]);
-		#endif 
+    for (int i=0; i<cardId.size(); i++)
+    {
+        #if SKIN_DEBUG
+            printf("CanBusSkin:: thread initialising boardId:%d\n",cardId[i]);
+        #endif 
 
-   		unsigned int canMessages=0;
-		unsigned id = 0x200 + cardId[i];
-	   
-		CanMessage &msg=outBuffer[0];
-		msg.setId(id);
-		msg.getData()[0]=0x4C; // message type
-		msg.getData()[1]=0x01; 
-		msg.getData()[2]=0x01; 
-		msg.getData()[3]=0x01;
-		msg.getData()[4]=0;
-		msg.getData()[5]=0x22;
-		msg.getData()[6]=0;
-		msg.getData()[7]=0;
-		msg.setLen(8);
-		canMessages=0;
-		pCanBus->canWrite(outBuffer, 1, &canMessages);
-	}
+           unsigned int canMessages=0;
+        unsigned id = 0x200 + cardId[i];
+       
+        CanMessage &msg=outBuffer[0];
+        msg.setId(id);
+        msg.getData()[0]=0x4C; // message type
+        msg.getData()[1]=0x01; 
+        msg.getData()[2]=0x01; 
+        msg.getData()[3]=0x01;
+        msg.getData()[4]=0;
+        msg.getData()[5]=0x22;
+        msg.getData()[6]=0;
+        msg.getData()[7]=0;
+        msg.setLen(8);
+        canMessages=0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
+    }
 
     return true;
 }
 
 void CanBusSkin::run()
-{	
+{    
     mutex.wait();
 
     unsigned int canMessages=0;
@@ -231,9 +232,9 @@ void CanBusSkin::run()
         unsigned int type=msg.getData()[0]&0x80;
         int len=msg.getLen();
 
-		for (int i=0; i<cardId.size(); i++)
-		{
-			if (id==cardId[i])
+        for (int i=0; i<cardId.size(); i++)
+        {
+            if (id==cardId[i])
             {
                 int index=16*12*i + sensorId*12;
                 
@@ -252,7 +253,7 @@ void CanBusSkin::run()
           //            std::cerr<<"Error: skin received malformed message\n";
           //        }
             }
-		}
+        }
     }
 
     mutex.post();
@@ -261,7 +262,7 @@ void CanBusSkin::run()
 void CanBusSkin::threadRelease()
 {
 #if SKIN_DEBUG
-	printf("CanBusSkin Thread releasing...\n");	
+    printf("CanBusSkin Thread releasing...\n");    
     printf("... done.\n");
 #endif
 }
