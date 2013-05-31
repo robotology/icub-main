@@ -54,7 +54,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     Property prop;
 
-    prop.put("device", config.find("canbusdevice").asString().c_str());
+    prop.put("device", config.find("CanbusDevice").asString().c_str());
     prop.put("CanTxTimeout", 500);
     prop.put("CanRxTimeout", 500);
     prop.put("CanDeviceNum", config.find("CanDeviceNum").asInt());
