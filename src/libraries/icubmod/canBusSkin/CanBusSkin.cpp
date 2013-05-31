@@ -23,7 +23,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     fprintf(stderr, "%s\n", config.toString().c_str());
 #endif
 
-    correct &= config.check("canbusdevice");
+    correct &= config.check("CanbusDevice");
     correct &= config.check("CanDeviceNum");
     correct &= config.check("SkinCanIds");
     correct &= config.check("Period");
