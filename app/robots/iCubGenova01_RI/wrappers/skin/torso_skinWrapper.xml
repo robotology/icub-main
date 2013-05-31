@@ -3,11 +3,11 @@
 <devices>
 	<device name="torso_skin_wrapper" type="skinWrapper">
 		<param name="period">       20  				</param>
-		<param name="total_taxels"> 1344				</param>
+		<param name="total_taxels"> 768				</param>
 		<param name="device">       skinWrapper				</param>
 		
 		<paramlist name="ports">
-		  <elem name="torso"> 	0   191  0 191	</elem>
+		  <elem name="torso"> 	0   768  0 768	</elem>
 		</paramlist>
 		
 		<action phase="startup" level="5" type="attach">
