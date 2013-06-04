@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <algorithm>
 #include <gsl/gsl_math.h>
 
 #include <yarp/math/Math.h>
@@ -32,7 +33,7 @@ using namespace iCub::ctrl;
 AWPolyEstimator::AWPolyEstimator(unsigned int _order, unsigned int _N, const double _D) : 
                                  order(_order), N(_N), D(_D)
 {
-    order=order<1 ? 1 : order;
+    order=std::max(order,1U);
     coeff.resize(order+1);
     N=N<=order ? N+1 : N;
     t.resize(N);
@@ -46,7 +47,6 @@ AWPolyEstimator::AWPolyEstimator(unsigned int _order, unsigned int _N, const dou
 double AWPolyEstimator::eval(double x)
 {
     double y=coeff[0];
-
     for (unsigned int i=1; i<=order; i++)
     {
         y+=coeff[i]*x;
@@ -60,14 +60,12 @@ double AWPolyEstimator::eval(double x)
 /***************************************************************************/
 Vector AWPolyEstimator::fit(const Vector &x, const Vector &y, const unsigned int n)
 {
-    size_t nx=x.length();
-    size_t ny=y.length();
-    size_t i2=(nx>ny)?ny:nx;
+    size_t i2=std::min(x.length(),y.length());
 
     unsigned int i1=0;
-    unsigned int M =i2;
+    unsigned int M=i2;
 
-    if (n)
+    if (n>0)
     {
         i1=i2-n;
         M=n;
@@ -117,6 +115,7 @@ Vector AWPolyEstimator::estimate()
     if (firstRun)
     {    
         winLen.resize(dim,N);
+        mse.resize(dim,0.0);
         firstRun=false;
     }    
 
@@ -147,19 +146,18 @@ Vector AWPolyEstimator::estimate()
         {
             // find the regressor's coefficients
             coeff=fit(t,x,n);
-            bool _stop=false;
+            bool _stop=false;            
 
             // test the regressor upon all the elements
             // belonging to the actual window
+            mse[i]=0.0;
             for (unsigned int k=N-n; k<N; k++)
             {
-                if (fabs(x[k]-eval(t[k]))>D)
-                {
-                    // exit if the max deviation is not verified
-                    _stop=true;
-                    break;
-                }
+                double e=x[k]-eval(t[k]);                
+                _stop|=(fabs(e)>D);
+                mse[i]+=e*e;
             }
+            mse[i]/=n;
 
             // set the new window's length in case of
             // crossing of max deviation threshold
@@ -203,14 +201,12 @@ void AWPolyEstimator::reset()
 /***************************************************************************/
 Vector AWLinEstimator::fit(const Vector &x, const Vector &y, const unsigned int n)
 {
-    size_t nx=x.length();
-    size_t ny=y.length();
-    size_t i2=(nx>ny)?ny:nx;
+    size_t i2=std::min(x.length(),y.length());
 
     unsigned int i1=0;
-    unsigned int M =i2;
+    unsigned int M=i2;
 
-    if (n)
+    if (n>0)
     {
         i1=i2-n;
         M=n;
