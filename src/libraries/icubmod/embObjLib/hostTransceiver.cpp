@@ -19,6 +19,7 @@ using namespace std;
 
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
+#include "EOYtheSystem.h"
 
 #include "EoCommon.h"
 #include "EOnv_hid.h"
@@ -63,7 +64,7 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     hosttxrxcfg.remoteboardipv4addr   = _remoteipaddr;
     hosttxrxcfg.remoteboardipv4port   = _ipport;
  
-
+    eoy_sys_Initialise(NULL, NULL, NULL);
 
     switch(_board_n)
     {
