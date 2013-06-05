@@ -159,7 +159,7 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     {
         cmdena=1;
     }
-    dgnCommands.enable = 1;
+    dgnCommands.enable = cmdena;
 
 	
 //	addr->set(4444, (10<<24)|(255<<16)|(72<<8)|19 );
