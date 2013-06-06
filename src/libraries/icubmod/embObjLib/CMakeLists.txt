@@ -185,7 +185,8 @@ set(PROT_SOURCE
 						${PROT_FOLDER}/EOtheBOARDtransceiver.c
 						${PROT_FOLDER}/EOhostTransceiver.c
 						${PROT_FOLDER}/EOVstorage.c
-						${PROT_FOLDER}EOmatrix3d.c)
+						${PROT_FOLDER}EOmatrix3d.c
+						${NVS_MNGMNT_CBK_FOLDER}/protocol_callback.c)
 
 set(PROT_HEADER  		${PROT_FOLDER}/EOhostTransceiver_hid.h
 						${PROT_FOLDER}/EOnv_hid.h
