@@ -90,6 +90,7 @@
 
 #define CAN_SET_BOARD_ID			50
 #define CAN_GET_BOARD_ID			51
+#define CAN_SET_TORQUE_SOURCE       52
 
 #define CAN_GET_ERROR_STATUS		60
 
@@ -139,7 +140,10 @@
 #define CAN_SET_TORQUE_STICTION_PARAMS  95
 #define CAN_GET_TORQUE_STICTION_PARAMS  96
 
-#define NUM_OF_MESSAGES				97
+#define CAN_SET_BACKEMF_PARAMS      97
+#define CAN_GET_BACKEMF_PARAMS      98
+
+#define NUM_OF_MESSAGES				99
 
 /* error status values */
 #define ERROR_NONE					0			/* no error, all ok */
