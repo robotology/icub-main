@@ -85,6 +85,7 @@
 enum {rxBUFFERsize = EOK_HOSTTRANSCEIVER_capacityofrxpacket, txBUFFERsize = EOK_HOSTTRANSCEIVER_capacityoftxpacket};
 
 
+// Actually there sould be no need to include this class into yarp::dev namespace.
 namespace yarp {
     namespace dev {
         class TheEthManager;
@@ -193,7 +194,7 @@ public:
     /*! @fn     bool releaseResource(FEAT_ID resouce);
      *  @brief  Tells the manager the specified resource is not used anymore by the caller,
      *          therefore the manager could decide to delete it if no used by any other one.
-     *  @param  config  Description and parameter for the identifying the releasing class
+     *  @param  config  Description and parameter identifying the releasing class
      *  @return True if ok, false in case of errors.
      */
     int releaseResource(FEAT_ID resource);
@@ -240,7 +241,7 @@ public:
     /*! @fn     int send(void *data, size_t len, ACE_INET_Addr remote_addr);
      *  @brief  Send a message to the EMSs
      *  @param  data  pointer to the data to be sent
-     *  @param  len   number of butes to be sent
+     *  @param  len   number of bytes to be sent
      *  @param  remote_addr  destination address in ACE format
      *  @return Number of bytes actually sent
      */

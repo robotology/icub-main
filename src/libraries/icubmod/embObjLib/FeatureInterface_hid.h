@@ -15,6 +15,7 @@
 
 using namespace yarp::sig;
 
+#define OVERRIDE_eo_receiver_callback_incaseoferror_in_sequencenumberReceived
 
 class IiCubFeature
 {

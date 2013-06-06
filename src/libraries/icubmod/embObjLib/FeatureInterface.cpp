@@ -21,6 +21,14 @@
 #include "EOYtheSystem.h"
 #endif
 
+extern void eo_receiver_callback_incaseoferror_in_sequencenumberReceived(uint64_t rec_seqnum, uint64_t expected_seqnum)
+{
+#warning "Check of sequence number active"
+    yError() << "Error in sequecnce number!!!! \n Expected %d expected_seqnum, received %d rec_seqnum\n ";
+}
+
+
+
 static TheEthManager *_interface2ethManager = NULL;
 
 void initCallback(void *p)
