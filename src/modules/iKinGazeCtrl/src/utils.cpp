@@ -413,21 +413,21 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
 
     if (parType.size())
     {
-        if (parType.check("cx") && parType.check("cy") &&
-            parType.check("fx") && parType.check("fy"))
+        if (parType.check("fx") && parType.check("fy") &&
+            parType.check("cx") && parType.check("cy"))
         {
-            double cx=parType.find("cx").asDouble();
-            double cy=parType.find("cy").asDouble();
             double fx=parType.find("fx").asDouble();
             double fy=parType.find("fy").asDouble();
+            double cx=parType.find("cx").asDouble();
+            double cy=parType.find("cy").asDouble();
 
             if (verbose)
             {
                 fprintf(stdout,"%s found:\n",message.c_str());
-                fprintf(stdout,"cx = %g\n",cx);
-                fprintf(stdout,"cy = %g\n",cy);
                 fprintf(stdout,"fx = %g\n",fx);
                 fprintf(stdout,"fy = %g\n",fy);
+                fprintf(stdout,"cx = %g\n",cx);
+                fprintf(stdout,"cy = %g\n",cy);
             }
 
             Matrix K=eye(3,3);

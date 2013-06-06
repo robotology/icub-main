@@ -905,23 +905,24 @@ protected:
             if (validIntrinsicsL)
             {                
                 fout<<"[CAMERA_CALIBRATION_LEFT]"<<endl;
-                fout<<"cx "<<PrjL(0,2)<<endl;
-                fout<<"cy "<<PrjL(1,2)<<endl;
                 fout<<"fx "<<PrjL(0,0)<<endl;
                 fout<<"fy "<<PrjL(1,1)<<endl;
+                fout<<"cx "<<PrjL(0,2)<<endl;
+                fout<<"cy "<<PrjL(1,2)<<endl;
                 fout<<endl;
             }
 
             if (validIntrinsicsR)
             {                
                 fout<<"[CAMERA_CALIBRATION_RIGHT]"<<endl;
-                fout<<"cx "<<PrjR(0,2)<<endl;
-                fout<<"cy "<<PrjR(1,2)<<endl;
                 fout<<"fx "<<PrjR(0,0)<<endl;
                 fout<<"fy "<<PrjR(1,1)<<endl;
+                fout<<"cx "<<PrjR(0,2)<<endl;
+                fout<<"cy "<<PrjR(1,2)<<endl;
                 fout<<endl;
             }
             
+            fout.precision(16);
             fout<<"[ALIGN_KIN_LEFT]"<<endl;
             fout<<"HN (";
             for (int r=0; r<HNL.rows(); r++)
