@@ -1940,6 +1940,14 @@ bool CanBusMotionControl::open (Searchable &config)
     setPids(p._pids);
     if (p._tpidsEnabled==true) setTorquePids(p._tpids);
     
+    //set the source of the torque measurments to the boards
+    #if 0
+    for (int j=0; j<p._njoints; j++)
+    {
+        this->setTorqueSource(j,p._torqueSensorId[j],p._torqueSensorChan[j]);
+    }
+    #endif
+
     // debug parameters
     for (int j=0; j<p._njoints; j++)
         if (p._debug_params[j].enabled==true)
@@ -3407,6 +3415,35 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
         *((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
         *((short *)(r._writeBuffer[0].getData()+5)) = S_16(0);
         *((char  *)(r._writeBuffer[0].getData()+7)) = 0;
+        r._writeBuffer[0].setLen(8);
+        r.writePacket();
+    _mutex.post();
+
+    return true;
+}
+
+bool CanBusMotionControl::setTorqueSource (int axis, char board_id, char board_chan )
+{
+    //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG_FUNC("setTorqueSource\n");
+
+    if (!ENABLED(axis))
+        return true;
+
+    CanBusResources& r = RES(system_resources);
+    _mutex.wait();
+        r.startPacket();
+        r.addMessage (CAN_SET_TORQUE_SOURCE, axis);
+        *((char *)(r._writeBuffer[0].getData()+1)) = board_id;
+        *((char *)(r._writeBuffer[0].getData()+2)) = board_chan;
+        *((char *)(r._writeBuffer[0].getData()+3)) = 0;
+        *((char *)(r._writeBuffer[0].getData()+4)) = 0;
+        *((char *)(r._writeBuffer[0].getData()+5)) = 0;
+        *((char *)(r._writeBuffer[0].getData()+6)) = 0;
+        *((char *)(r._writeBuffer[0].getData()+7)) = 0;
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();

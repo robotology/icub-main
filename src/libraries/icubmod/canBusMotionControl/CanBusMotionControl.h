@@ -937,6 +937,8 @@ public:
 
     // Firmware version
     bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
+    // Torque measurement selection
+    bool setTorqueSource (int axis, char board_id, char board_chan );
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
