@@ -16,6 +16,7 @@ MACRO(icub_install_with_rpath)
         # at install, so in-tree binaries have correct rpath
         SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
+        SET(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
         SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
         SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     endif (ICUB_INSTALL_WITH_RPATH )
