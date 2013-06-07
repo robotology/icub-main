@@ -211,9 +211,9 @@ public:
     short _accel_joint;
     double _update_s;
 
-    // msg 4d
-    //short _torque;
-    //double _update_t;
+    // msg 4d (special message)
+    double _torque;
+    double _update_t;
     
     // msg 6
     unsigned int _canTxError;
@@ -292,7 +292,8 @@ public:
         _speed_joint = 0;
         _accel_joint = 0;
 
-        //_torque=0;
+        _torque=0;
+        _update_t = .0;
 
         _update_v = .0;
         _update_e = .0;
@@ -375,10 +376,12 @@ public:
 
     unsigned int _readMessages;/// size of the last read buffer.
     unsigned int _writeMessages;/// size of the write packet.
+    unsigned int _echoMessages;/// size of the last read buffer.
 
     CanBuffer _readBuffer;/// read buffer.
     CanBuffer _writeBuffer;/// write buffer.
     CanBuffer _replyBuffer;/// reply buffer.
+    CanBuffer _echoBuffer;/// echo buffer.
 
     BCastBufferElement *_bcastRecvBuffer;/// local storage for bcast messages.
 
@@ -540,11 +543,11 @@ void TBR_CanBackDoor::onRead(Bottle &b)
 
        if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
        {
-           bus->_readBuffer[bus->_readMessages].setId(fakeId);
-           bus->_readBuffer[bus->_readMessages].setLen(6);
+           bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
+           bus->_echoBuffer[bus->_echoMessages].setLen(6);
            for (i=0; i<6; i++)
-                bus->_readBuffer[bus->_readMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
-           bus->_readMessages++;
+                bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
+           bus->_echoMessages++;
        }
 
        bus->startPacket();
@@ -562,17 +565,13 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        
        if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
        {
-           bus->_readBuffer[bus->_readMessages].setId(fakeId);
-           bus->_readBuffer[bus->_readMessages].setLen(6);
+           bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
+           bus->_echoBuffer[bus->_echoMessages].setLen(6);
            for (i=0; i<6; i++)
-                bus->_readBuffer[bus->_readMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
-           bus->_readMessages++;
+                bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
+           bus->_echoMessages++;
        }
 
-       if (canEchoEnabled)
-       {
-           ownerSensor->handleAnalog(bus);
-       }
     }
     semaphore->post();
 }
@@ -841,55 +840,71 @@ bool TBR_AnalogSensor::handleAnalog(void *canbus)
     mutex.wait();
 
     double timeNow=Time::now();
-    for (i = 0; i < r._readMessages; i++)
+    for (unsigned int buff_num=0; buff_num<2; buff_num++)
     {
-        unsigned int len=0;
-        unsigned int msgid=0;
-        unsigned char *buff=0;
-        CanMessage& m = r._readBuffer[i];
-        buff=m.getData();
-        msgid=m.getId();
-        len=m.getLen();
-        
-        status=IAnalogSensor::AS_OK;
-        const char type=((msgid&0x700)>>8);
-        const char id=((msgid&0x0f0)>>4);
+        unsigned int size = 0;
+        CanBuffer* buffer_pointer=0;
+        if (buff_num==0)
+        {
+            size = r._readMessages;
+            buffer_pointer = &r._readBuffer;
+        }
+        else
+        {
+            size = r._echoMessages;
+            buffer_pointer = &r._echoBuffer;
+        }
 
-        if (type==0x03) //analog data
-            {
-                if (id==boardId)
+        for (i = 0; i < size; i++)
+        {
+            unsigned int len=0;
+            unsigned int msgid=0;
+            unsigned char *buff=0;
+            CanMessage& m = (*buffer_pointer)[i];
+            buff=m.getData();
+            msgid=m.getId();
+            len=m.getLen();
+        
+            status=IAnalogSensor::AS_OK;
+            const char type=((msgid&0x700)>>8);
+            const char id=((msgid&0x0f0)>>4);
+
+            if (type==0x03) //analog data
                 {
-                    timeStamp=Time::now();
-                    switch (dataFormat)
+                    if (id==boardId)
                     {
-                        case ANALOG_FORMAT_8:
-                            ret=decode8(buff, msgid, data->getBuffer());
-                            status=IAnalogSensor::AS_OK;
-                            break;
-                        case ANALOG_FORMAT_16:
-                            if (len==6) 
-                            {
-                                ret=decode16(buff, msgid, data->getBuffer());
+                        timeStamp=Time::now();
+                        switch (dataFormat)
+                        {
+                            case ANALOG_FORMAT_8:
+                                ret=decode8(buff, msgid, data->getBuffer());
                                 status=IAnalogSensor::AS_OK;
-                            }
-                            else
-                            {
-                                if (len==7 && buff[6] == 1)
+                                break;
+                            case ANALOG_FORMAT_16:
+                                if (len==6) 
                                 {
-                                    status=IAnalogSensor::AS_OVF;
+                                    ret=decode16(buff, msgid, data->getBuffer());
+                                    status=IAnalogSensor::AS_OK;
                                 }
                                 else
                                 {
-                                    status=IAnalogSensor::AS_ERROR;
+                                    if (len==7 && buff[6] == 1)
+                                    {
+                                        status=IAnalogSensor::AS_OVF;
+                                    }
+                                    else
+                                    {
+                                        status=IAnalogSensor::AS_ERROR;
+                                    }
+                                    ret=decode16(buff, msgid, data->getBuffer());
                                 }
-                                ret=decode16(buff, msgid, data->getBuffer());
-                            }
-                            break;
-                        default:
-                            ret=false;
+                                break;
+                            default:
+                                ret=false;
+                        }
                     }
                 }
-            }
+        }
     }
 
     //if 100ms have passed since the last received message
@@ -938,6 +953,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
 
+    std::string dbg_string = p.toString().c_str();
     int i;
     int nj = p.findGroup("GENERAL").check("Joints",Value(1),
         "Number of degrees of freedom").asInt();
@@ -1529,6 +1545,7 @@ CanBusResources::CanBusResources ()
 
     _readMessages = 0;
     _writeMessages = 0;
+    _echoMessages = 0;
     _bcastRecvBuffer = NULL;
 
     _error_status = true;
@@ -1641,6 +1658,7 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     _readBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _writeBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _replyBuffer=iBufferFactory->createBuffer(BUF_SIZE);
+    _echoBuffer=iBufferFactory->createBuffer(BUF_SIZE);
 
     requestsQueue = new RequestsQueue(_njoints, NUM_OF_MESSAGES);
 
@@ -1666,6 +1684,7 @@ bool CanBusResources::uninitialize ()
         iBufferFactory->destroyBuffer(_readBuffer);
         iBufferFactory->destroyBuffer(_writeBuffer);
         iBufferFactory->destroyBuffer(_replyBuffer);
+        iBufferFactory->destroyBuffer(_echoBuffer);
         _initialized=false;
     }
 
@@ -1810,6 +1829,10 @@ bool CanBusResources::dumpBuffers (void)
     for (j = 0; j < _writeMessages; j++)
         printMessage (_replyBuffer[j]);
 
+    printf("CAN: echo buffer\n");
+    for (j = 0; j < _echoMessages; j++)
+        printMessage (_echoBuffer[j]);
+
     printf("CAN: read buffer\n");
     for (j = 0; j < _readMessages; j++)
         printMessage (_readBuffer[j]);
@@ -1858,6 +1881,8 @@ CanBusMotionControl::~CanBusMotionControl ()
 bool CanBusMotionControl::open (Searchable &config)
 {
     printf("Opening CanBusMotionControl Control\n");
+    std::string dbg_string = config.toString().c_str();
+    
     CanBusResources& res = RES (system_resources);
     CanBusMotionControlParameters p;
     bool ret=false;
@@ -2383,321 +2408,366 @@ void CanBusMotionControl::handleBroadcasts()
     unsigned int i=0;
     const int _networkN=r._networkN;
 
-    for (i = 0; i < r._readMessages; i++)
+    for (unsigned int buff_num=0; buff_num<2; buff_num++)
     {
-        unsigned int len=0;
-        unsigned int id=0;
-        unsigned char *data=0;
-        CanMessage& m = r._readBuffer[i];
-        data=m.getData();
-        id=m.getId();
-        len=m.getLen();
-
-        if ((id & 0x700) == 0x100) // class = 1.
+        unsigned int size = 0;
+        CanBuffer* buffer_pointer=0;
+        if (buff_num==0)
         {
-            // 4 next bits = source address, next 4 bits = msg type
-            // this allows sending two 32-bit numbers is a single CAN message.
-            //
-            // need an array here for storing the messages on a per-joint basis.
-            const int addr = ((id & 0x0f0) >> 4);
-            int j;
-            bool found=false;
-            for (j = 0; j < CAN_MAX_CARDS; j++)
+            size = r._readMessages;
+            buffer_pointer = &r._readBuffer;
+        }
+        else
+        {
+            size = r._echoMessages;
+            buffer_pointer = &r._echoBuffer;
+        }
+
+        for (i = 0; i < size; i++)
+        {
+            unsigned int len=0;
+            unsigned int id=0;
+            unsigned char *data=0;
+            CanMessage& m = (*buffer_pointer)[i];
+            data=m.getData();
+            id=m.getId();
+            len=m.getLen();
+
+            if ((id & 0x700) == 0x300) // class = 3 These messages come from analog sensors
             {
-                if (r._destinations[j] == addr)
+                // 4 next bits = source address, next 4 bits = msg type
+                const unsigned int addr = ((id & 0x0f0) >> 4);
+                const unsigned int type =   id & 0x00f;
+                if  (type == 0x0A || type == 0x0B) //strain messages
                 {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                static int count=0;
-                if (count%5000==0)
-                    fprintf(stderr, "%s [%d] Warning, got unexpected broadcast msg(s), last one from address %d, (original) id  0x%x, len %d\n", canDevName.c_str(), _networkN, addr, id, len);
-                count++;
-                j=-1; //error
-            }
-            else
-            {
-                j *= 2;
-
-                /* less sign nibble specifies msg type */
-                switch (id & 0x00f)
-                {
-                case CAN_BCAST_OVERFLOW:
-
-                    printf ("ERROR: CAN PACKET LOSS, board %d buffer full\r\n", (((id & 0x0f0) >> 4)-1));
-
-                    break;
-
-                case CAN_BCAST_PRINT:
-
-                    if (data[0] == CAN_BCAST_PRINT    ||
-                        data[0] == CAN_BCAST_PRINT + 128)
-                    {    
-                        int addr = (((id & 0x0f0) >> 4)-1);
-
-                        int string_id = cstring[addr].add_string(&r._readBuffer[i]);
-                        if (string_id != -1) 
+                    int off = (type-0x0A)*3;
+                    for (int axis=0; axis<r.getJoints(); axis++)
+                    {
+                        int attached_board = _axisTorqueHelper->getTorqueSensorId(axis);
+                        if ( attached_board == addr)
                         {
-                            cstring[addr].print(string_id, canDevName.c_str(), r._networkN);
-                            cstring[addr].clear_string(string_id);
+                            for(int chan=0;chan<3;chan++)
+                            {
+                                int attached_channel = _axisTorqueHelper->getTorqueSensorChan(axis);
+                                if ( attached_channel == chan+off)
+                                {
+                                    double scaleFactor = 1/_axisTorqueHelper->getNewtonsToSensor(axis);
+                                    r._bcastRecvBuffer[axis]._torque=(((unsigned short)(data[2*chan+1]))<<8)+data[2*chan]-0x8000;
+                                    r._bcastRecvBuffer[axis]._torque=r._bcastRecvBuffer[axis]._torque*scaleFactor;
+                                    //r._bcastRecvBuffer[axis]._torque=0;
+                                    r._bcastRecvBuffer[axis]._update_t = before;
+                                }
+                            }
                         }
                     }
-                    break;
-
-                case CAN_BCAST_POSITION:
-                    {
-                        // r._bcastRecvBuffer[j]._position = *((int *)(data));
-                        // r._bcastRecvBuffer[j]._update_p = before;
-                        int tmp=*((int *)(data));
-                        r._bcastRecvBuffer[j]._position_joint.update(tmp, before);
-
-                        j++;
-                        if (j < r.getJoints())
-                            {
-                                tmp =*((int *)(data+4));
-                                //r._bcastRecvBuffer[j]._position = *((int *)(data+4));
-                                //r._bcastRecvBuffer[j]._update_p = before;
-                                r._bcastRecvBuffer[j]._position_joint.update(tmp, before);
-                            }
-                    }
-                    break;
-
-                case CAN_BCAST_MOTOR_POSITION:
-                    {
-                        // r._bcastRecvBuffer[j]._position = *((int *)(data));
-                        // r._bcastRecvBuffer[j]._update_p = before;
-                        int tmp=*((int *)(data));
-                        r._bcastRecvBuffer[j]._position_rotor.update(tmp, before);
-
-                        j++;
-                        if (j < r.getJoints())
-                            {
-                                tmp =*((int *)(data+4));
-                                //r._bcastRecvBuffer[j]._position = *((int *)(data+4));
-                                //r._bcastRecvBuffer[j]._update_p = before;
-                                r._bcastRecvBuffer[j]._position_rotor.update(tmp, before);
-                            }
-                    }
-                    break;
-
-                case CAN_BCAST_MOTOR_SPEED:
+                }
+            }
+            else if ((id & 0x700) == 0x100) // class = 1 These messages come from the control boards.
+            {
+                // 4 next bits = source address, next 4 bits = msg type
+                // this allows sending two 32-bit numbers is a single CAN message.
+                //
+                // need an array here for storing the messages on a per-joint basis.
+                const int addr = ((id & 0x0f0) >> 4);
+                int j;
+                bool found=false;
+                for (j = 0; j < CAN_MAX_CARDS; j++)
                 {
-                    int tmp;
-                    tmp =*((short *)(data));
-                    r._bcastRecvBuffer[j]._speed_rotor.update(tmp, before);
-                    tmp =*((short *)(data+4));
-                    r._bcastRecvBuffer[j]._accel_rotor.update(tmp, before);
-                    r._bcastRecvBuffer[j]._update_s = before;
-                    j++;
-                    if (j < r.getJoints())
+                    if (r._destinations[j] == addr)
                     {
-                        tmp =*((short *)(data+2));
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    static int count=0;
+                    if (count%5000==0)
+                        fprintf(stderr, "%s [%d] Warning, got unexpected broadcast msg(s), last one from address %d, (original) id  0x%x, len %d\n", canDevName.c_str(), _networkN, addr, id, len);
+                    count++;
+                    j=-1; //error
+                }
+                else
+                {
+                    j *= 2;
+
+                    /* less sign nibble specifies msg type */
+                    switch (id & 0x00f)
+                    {
+                    case CAN_BCAST_OVERFLOW:
+
+                        printf ("ERROR: CAN PACKET LOSS, board %d buffer full\r\n", (((id & 0x0f0) >> 4)-1));
+
+                        break;
+
+                    case CAN_BCAST_PRINT:
+
+                        if (data[0] == CAN_BCAST_PRINT    ||
+                            data[0] == CAN_BCAST_PRINT + 128)
+                        {    
+                            int addr = (((id & 0x0f0) >> 4)-1);
+
+                            int string_id = cstring[addr].add_string(&r._readBuffer[i]);
+                            if (string_id != -1) 
+                            {
+                                cstring[addr].print(string_id, canDevName.c_str(), r._networkN);
+                                cstring[addr].clear_string(string_id);
+                            }
+                        }
+                        break;
+
+                    case CAN_BCAST_POSITION:
+                        {
+                            // r._bcastRecvBuffer[j]._position = *((int *)(data));
+                            // r._bcastRecvBuffer[j]._update_p = before;
+                            int tmp=*((int *)(data));
+                            r._bcastRecvBuffer[j]._position_joint.update(tmp, before);
+
+                            j++;
+                            if (j < r.getJoints())
+                                {
+                                    tmp =*((int *)(data+4));
+                                    //r._bcastRecvBuffer[j]._position = *((int *)(data+4));
+                                    //r._bcastRecvBuffer[j]._update_p = before;
+                                    r._bcastRecvBuffer[j]._position_joint.update(tmp, before);
+                                }
+                        }
+                        break;
+
+                    case CAN_BCAST_MOTOR_POSITION:
+                        {
+                            // r._bcastRecvBuffer[j]._position = *((int *)(data));
+                            // r._bcastRecvBuffer[j]._update_p = before;
+                            int tmp=*((int *)(data));
+                            r._bcastRecvBuffer[j]._position_rotor.update(tmp, before);
+
+                            j++;
+                            if (j < r.getJoints())
+                                {
+                                    tmp =*((int *)(data+4));
+                                    //r._bcastRecvBuffer[j]._position = *((int *)(data+4));
+                                    //r._bcastRecvBuffer[j]._update_p = before;
+                                    r._bcastRecvBuffer[j]._position_rotor.update(tmp, before);
+                                }
+                        }
+                        break;
+
+                    case CAN_BCAST_MOTOR_SPEED:
+                    {
+                        int tmp;
+                        tmp =*((short *)(data));
                         r._bcastRecvBuffer[j]._speed_rotor.update(tmp, before);
-                        tmp =*((short *)(data+6));
+                        tmp =*((short *)(data+4));
                         r._bcastRecvBuffer[j]._accel_rotor.update(tmp, before);
                         r._bcastRecvBuffer[j]._update_s = before;
+                        j++;
+                        if (j < r.getJoints())
+                        {
+                            tmp =*((short *)(data+2));
+                            r._bcastRecvBuffer[j]._speed_rotor.update(tmp, before);
+                            tmp =*((short *)(data+6));
+                            r._bcastRecvBuffer[j]._accel_rotor.update(tmp, before);
+                            r._bcastRecvBuffer[j]._update_s = before;
+                        }
+                        break;
                     }
                     break;
-                }
-                break;
-#if 0
-                case CAN_BCAST_TORQUE:
-                    {
-                        int tmp=0; //*((int *)(data));
-                        r._bcastRecvBuffer[j]._torque=tmp;
-                        r._bcastRecvBuffer[j]._update_t=before;
+    #if 0
+                    case CAN_BCAST_TORQUE:
+                        {
+                            int tmp=0; //*((int *)(data));
+                            r._bcastRecvBuffer[j]._torque=tmp;
+                            r._bcastRecvBuffer[j]._update_t=before;
+
+                            j++;
+                            if (j < r.getJoints())
+                                {
+                                    tmp = 0;//*((int *)(data+4));
+                                    r._bcastRecvBuffer[j]._torque=tmp;
+                                    r._bcastRecvBuffer[j]._update_t=before;
+                                }
+                        }
+    #endif
+
+                    case CAN_BCAST_PID_VAL:
+                        r._bcastRecvBuffer[j]._pid_value = *((short *)(data));
+                        r._bcastRecvBuffer[j]._update_v = before;
 
                         j++;
                         if (j < r.getJoints())
-                            {
-                                tmp = 0;//*((int *)(data+4));
-                                r._bcastRecvBuffer[j]._torque=tmp;
-                                r._bcastRecvBuffer[j]._update_t=before;
-                            }
-                    }
-#endif
-
-                case CAN_BCAST_PID_VAL:
-                    r._bcastRecvBuffer[j]._pid_value = *((short *)(data));
-                    r._bcastRecvBuffer[j]._update_v = before;
-
-                    j++;
-                    if (j < r.getJoints())
-                    {
-                        r._bcastRecvBuffer[j]._pid_value = *((short *)(data+2));
-                        r._bcastRecvBuffer[j]._update_v = before;
-                    }
-                    break;
-
-                case CAN_BCAST_STATUS:
-                    // fault signals.
-                    r._bcastRecvBuffer[j]._axisStatus= *((short *)(data));
-                    r._bcastRecvBuffer[j]._canStatus= *((char *)(data+4));
-                    r._bcastRecvBuffer[j]._boardStatus= *((char *)(data+5));
-                    r._bcastRecvBuffer[j]._update_e = before;
-                    r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+1));
-                    r._bcastRecvBuffer[j]._address=addr;
-                    r._bcastRecvBuffer[j]._canTxError+=*((char *) (data+6));
-                    r._bcastRecvBuffer[j]._canRxError+=*((char *) (data+7));                                    
-#if 0                    
-                    if (_networkN==1)
                         {
-                            for(int m=0;m<8;m++)
-                                fprintf(stderr, "%.2x ", data[m]);
-                            fprintf(stderr, "\n");
+                            r._bcastRecvBuffer[j]._pid_value = *((short *)(data+2));
+                            r._bcastRecvBuffer[j]._update_v = before;
                         }
-#endif
+                        break;
 
-                    bool bFlag;
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) printf ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
-
-                    //r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
-                    //if (r._bcastRecvBuffer[j].isFaultOk()) ACE_OS::printf ("Board %d OK\n", addr);
-                    
-                    logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
-                    
-                    if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) printf ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,8,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
-                    logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) printf ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
-                    logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverflow())) printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,16,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isCanBusOff())) printf ("%s [%d] board %d CAN BUS_OFF \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,13,yarp::os::Value((int)bFlag));
-
-                    if (r._bcastRecvBuffer[j].isCanTxError()) printf ("%s [%d] board %d CAN TX ERROR \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
-
-                    if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverrun())) printf ("%s [%d] board %d CAN TX OVERRUN \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
-
-                    if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isCanRxOverrun())) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isMainLoopOverflow())) 
-                    {
-                        r._bcastRecvBuffer[j]._mainLoopOverflowCounter++;
-                        //printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
-                    }
-                    logJointData(canDevName.c_str(),_networkN,j,18,yarp::os::Value((int)bFlag));
-
-                    if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh1())) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,19,yarp::os::Value((int)bFlag));
-                    
-                    if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh2())) printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j+1,19,yarp::os::Value((int)bFlag));
-                    
-                    if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh1())) printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j,20,yarp::os::Value((int)bFlag));
-                    
-                    if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh2())) printf ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
-                    logJointData(canDevName.c_str(),_networkN,j+1,20,yarp::os::Value((int)bFlag));
-
-                    j++;
-
-                    if (j < r.getJoints())
-                    {
+                    case CAN_BCAST_STATUS:
+                        // fault signals.
+                        r._bcastRecvBuffer[j]._axisStatus= *((short *)(data));
+                        r._bcastRecvBuffer[j]._canStatus= *((char *)(data+4));
+                        r._bcastRecvBuffer[j]._boardStatus= *((char *)(data+5));
+                        r._bcastRecvBuffer[j]._update_e = before;
+                        r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+1));
                         r._bcastRecvBuffer[j]._address=addr;
-                        r._bcastRecvBuffer[j]._axisStatus= *((short *)(data+2));
-                        r._bcastRecvBuffer[j]._update_e = before;    
-                        r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+3));
-                        // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
-                        
+                        r._bcastRecvBuffer[j]._canTxError+=*((char *) (data+6));
+                        r._bcastRecvBuffer[j]._canRxError+=*((char *) (data+7));                                    
+    #if 0                    
+                        if (_networkN==1)
+                            {
+                                for(int m=0;m<8;m++)
+                                    fprintf(stderr, "%.2x ", data[m]);
+                                fprintf(stderr, "\n");
+                            }
+    #endif
+
+                        bool bFlag;
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) printf ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
+
+                        //r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
+                        //if (r._bcastRecvBuffer[j].isFaultOk()) ACE_OS::printf ("Board %d OK\n", addr);
+                    
                         logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
 
-                        if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
-                        logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
-                        
-                        if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                        if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
-                        
-                        if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) printf ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                    
+                        if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) printf ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
-                        
-                        if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,8,yarp::os::Value((int)bFlag));
-                        
-                        if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
-                        
-                        if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
                         logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
 
                         if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) printf ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
                         logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
-                    }    
 
-                    break;
+                        if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverflow())) printf ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,16,yarp::os::Value((int)bFlag));
 
-                case CAN_BCAST_CURRENT:
-                    // also receives the control values.
-                    r._bcastRecvBuffer[j]._current = *((short *)(data));
-                    r._bcastRecvBuffer[j]._update_c = before;
-                    j++;
-                    if (j < r.getJoints())
-                    {
-                        r._bcastRecvBuffer[j]._current = *((short *)(data+2));
+                        if ((bFlag=r._bcastRecvBuffer[j].isCanBusOff())) printf ("%s [%d] board %d CAN BUS_OFF \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,13,yarp::os::Value((int)bFlag));
+
+                        if (r._bcastRecvBuffer[j].isCanTxError()) printf ("%s [%d] board %d CAN TX ERROR \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
+
+                        if (r._bcastRecvBuffer[j].isCanRxError()) printf ("%s [%d] board %d CAN RX ERROR \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverrun())) printf ("%s [%d] board %d CAN TX OVERRUN \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
+
+                        if (r._bcastRecvBuffer[j].isCanRxWarning()) printf ("%s [%d] board %d CAN RX WARNING \n", canDevName.c_str(), _networkN, addr);
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isCanRxOverrun())) printf ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isMainLoopOverflow())) 
+                        {
+                            r._bcastRecvBuffer[j]._mainLoopOverflowCounter++;
+                            //printf ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
+                        }
+                        logJointData(canDevName.c_str(),_networkN,j,18,yarp::os::Value((int)bFlag));
+
+                        if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh1())) printf ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,19,yarp::os::Value((int)bFlag));
+                    
+                        if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh2())) printf ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j+1,19,yarp::os::Value((int)bFlag));
+                    
+                        if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh1())) printf ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j,20,yarp::os::Value((int)bFlag));
+                    
+                        if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh2())) printf ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
+                        logJointData(canDevName.c_str(),_networkN,j+1,20,yarp::os::Value((int)bFlag));
+
+                        j++;
+
+                        if (j < r.getJoints())
+                        {
+                            r._bcastRecvBuffer[j]._address=addr;
+                            r._bcastRecvBuffer[j]._axisStatus= *((short *)(data+2));
+                            r._bcastRecvBuffer[j]._update_e = before;    
+                            r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+3));
+                            // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
+                        
+                            logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
+
+                            if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) printf ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                            logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
+                        
+                            if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) printf ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                            logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
+                        
+                            if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) printf ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                            logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
+                        
+                            if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) printf ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                            logJointData(canDevName.c_str(),_networkN,j,8,yarp::os::Value((int)bFlag));
+                        
+                            if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) printf ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                            logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
+                        
+                            if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) printf ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
+                            logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
+
+                            if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) printf ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
+                            logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
+                        }    
+
+                        break;
+
+                    case CAN_BCAST_CURRENT:
+                        // also receives the control values.
+                        r._bcastRecvBuffer[j]._current = *((short *)(data));
                         r._bcastRecvBuffer[j]._update_c = before;
-                    }
-                    break;
+                        j++;
+                        if (j < r.getJoints())
+                        {
+                            r._bcastRecvBuffer[j]._current = *((short *)(data+2));
+                            r._bcastRecvBuffer[j]._update_c = before;
+                        }
+                        break;
 
-                case CAN_BCAST_PID_ERROR:
-                    // also receives the control values.
-                    r._bcastRecvBuffer[j]._position_error = *((short *)(data));
-                    r._bcastRecvBuffer[j]._torque_error =   *((short *)(data+4));
-                    r._bcastRecvBuffer[j]._update_r = before;
-                    j++;
-                    if (j < r.getJoints())
-                    {
-                        r._bcastRecvBuffer[j]._position_error = *((short *)(data+2));
-                        r._bcastRecvBuffer[j]._torque_error = *((short *)(data+6));
+                    case CAN_BCAST_PID_ERROR:
+                        // also receives the control values.
+                        r._bcastRecvBuffer[j]._position_error = *((short *)(data));
+                        r._bcastRecvBuffer[j]._torque_error =   *((short *)(data+4));
                         r._bcastRecvBuffer[j]._update_r = before;
-                    }
-                    break;
+                        j++;
+                        if (j < r.getJoints())
+                        {
+                            r._bcastRecvBuffer[j]._position_error = *((short *)(data+2));
+                            r._bcastRecvBuffer[j]._torque_error = *((short *)(data+6));
+                            r._bcastRecvBuffer[j]._update_r = before;
+                        }
+                        break;
 
-                case CAN_BCAST_VELOCITY:
-                    // also receives the acceleration values.
+                    case CAN_BCAST_VELOCITY:
+                        // also receives the acceleration values.
 
-                    r._bcastRecvBuffer[j]._speed_joint = *((short *)(data));
-                    r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+4));
-                    r._bcastRecvBuffer[j]._update_s = before;
-                    j++;
-                    if (j < r.getJoints())
-                    {
-                        r._bcastRecvBuffer[j]._speed_joint = *((short *)(data+2));
-                        r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+6));
+                        r._bcastRecvBuffer[j]._speed_joint = *((short *)(data));
+                        r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+4));
                         r._bcastRecvBuffer[j]._update_s = before;
-                    }
-                    break;
+                        j++;
+                        if (j < r.getJoints())
+                        {
+                            r._bcastRecvBuffer[j]._speed_joint = *((short *)(data+2));
+                            r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+6));
+                            r._bcastRecvBuffer[j]._update_s = before;
+                        }
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                    }
                 }
             }
         }
@@ -3075,6 +3145,8 @@ void CanBusMotionControl:: run()
       r.printMessage("CAN: timeout - still %d messages unacknowledged\n", remainingMsgs);
       r._error_status = false;
       }*/
+
+    r._echoMessages = 0; //echo buffer cleanup
 
     _mutex.post ();
 
@@ -3781,42 +3853,9 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    _mutex.wait();
-    // *** This method is implementented reading data directly from an IAnalogSensor and
-    // not sending/receiving data from the Canbus ***
-    *trq=0; //set output to zero (default value)
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
-
-    std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
-    while(it!=analogSensors.end())
-    {
-        if (*it)
-        {
-            int id = (*it)->getId();
-            int cfgId   = _axisTorqueHelper->getTorqueSensorId(k);
-            if (cfgId == 0) 
-            {
-                *trq=0;
-                break;
-            }
-            else if (cfgId==id)
-            {
-                int cfgChan = _axisTorqueHelper->getTorqueSensorChan(k);
-                yarp::sig::Vector data;
-                int ret=(*it)->read(data);
-                if (ret==yarp::dev::IAnalogSensor::AS_OK)
-                {
-                    *trq=data[cfgChan];
-                }
-                else
-                {
-                    *trq=0;
-                }
-                break;
-            }
-        }
-        it++;
-    }
+    _mutex.wait();
+    *trq = double(r._bcastRecvBuffer[k]._torque);
     _mutex.post();
 
     return true;
