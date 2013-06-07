@@ -685,6 +685,50 @@ bool EthReceiver::threadInit()
     return true;
 }
 
+
+
+typedef struct  // 24 bytes
+{
+    uint32_t            startofframe;
+    uint16_t            ropssizeof;
+    uint16_t            ropsnumberof;
+    uint64_t            ageofframe;
+    uint64_t            sequencenumber;
+} EOropframeHeader_TEST_t;
+
+uint64_t getRopFrameAge(char *pck)
+{
+    EOropframeHeader_TEST_t *test = (EOropframeHeader_TEST_t *) pck;
+    return test->ageofframe;
+}
+
+class times_test_delay
+{
+public:
+    times_test_delay();
+
+    bool          initted;
+    double        prevRecvMsg_PC104;
+    double        newRecvMsg_PC104;
+    double        gap_EMS;
+    uint64_t      ageofframe_EMS;
+    double        gap_PC104;
+    bool          error_PC104;
+    bool          error_EMS;
+};
+
+times_test_delay::times_test_delay()
+{
+    initted = false;
+    prevRecvMsg_PC104 = 0;
+    newRecvMsg_PC104 = 0;
+    gap_EMS = 0;
+    ageofframe_EMS =0;
+    gap_PC104 = 0;
+    error_PC104 = false;
+    error_EMS = false;
+}
+
 void EthReceiver::run()
 {
     yTrace();
@@ -695,17 +739,13 @@ void EthReceiver::run()
     char          incoming_msg[RECV_BUFFER_SIZE];
 
     // TODO aggiunto per debugging. tenere tempo trascorso dall'ultima ricezione di un msg da parte della ems i-esima.
-    double        notHeardFrom[10];  // 10 max num of boards
-    for( int i=0; i<10; i++)
-        notHeardFrom[i] = yarp::os::Time::now();      
+    std::map<int, times_test_delay> lastHeard;
 
     yError() << "Starting udp RECV thread\n";
 
     ACE_Time_Value recvTimeOut;
-    fromDouble(recvTimeOut, 1.0);
-
-    static int NPR=0;
-    //while(isRunning())
+    fromDouble(recvTimeOut, 0.01);
+    double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
 
     eODeb_eoProtoParser *PP =  eODeb_eoProtoParser_GetHandle();
     eOethLowLevParser_packetInfo_t pckInfo;
@@ -721,12 +761,7 @@ void EthReceiver::run()
         }
 
         sender_addr.addr_to_string(address, 64);
-        NPR++;
-        if(NPR >= 99997)
-        {
-        	yWarning() << "Received new packet from address" << address << " and size " << recv_size;
-        	NPR=0;
-        }
+
         if( (recv_size > 0) && (isRunning()) )
         {
             pckInfo.payload_ptr = (uint8_t *) incoming_msg;
@@ -757,29 +792,78 @@ void EthReceiver::run()
 //                     riterator++;
 //                     break;  //
 //                 }
-                if( (*riterator)->getRemoteAddress() == sender_addr)
+                ethRes = (*riterator);
+                if(ethRes->getRemoteAddress() == sender_addr)
                 {
-                    ethRes = (*riterator);
 
-                    if(recv_size > ethRes->getBufferSize() )
+
+                    if(recv_size > ethRes->getBufferSize())
                     {
                         yError() << "EthReceiver got a message of wrong size ( received" << recv_size << " bytes while buffer is" << ethRes->getBufferSize() << " bytes long)";
                     }
                     else
                     {
+//                         lastHeard[ethRes->boardNum].prevRecvMsg_PC104 = ethRes->getLastRecvMsgTimestamp();
                         memcpy(ethRes->recv_msg, incoming_msg, recv_size);
                         ethRes->onMsgReception(ethRes->recv_msg, recv_size);
-                    }
-                    break;  // devo uscire da questo while e rimanere in quello più esterno.
-                }
 
+                        if(lastHeard[ethRes->boardNum].initted)
+                        {
+                            //check recvTime on the PC104 side
+                            lastHeard[ethRes->boardNum].gap_PC104 = ethRes->getLastRecvMsgTimestamp() - lastHeard[ethRes->boardNum].prevRecvMsg_PC104;
+
+                            if(lastHeard[ethRes->boardNum].gap_PC104 > myTestTimeout)
+                            {
+                                yError() << "Gap of " << lastHeard[ethRes->boardNum].gap_PC104 << "between two consecutive messages from board" << ethRes->boardNum << "!!!";
+                            }
+
+                            // check time written into packet
+                            if( (getRopFrameAge(incoming_msg ) - lastHeard[ethRes->boardNum].ageofframe_EMS) > (uint64_t) myTestTimeout)
+                            {
+                                if(!lastHeard[ethRes->boardNum].error_EMS)
+                                {
+                                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
+                                    lastHeard[ethRes->boardNum].error_EMS = true;
+                                }
+                            }
+
+                            //reset errors
+                            lastHeard[ethRes->boardNum].error_PC104 = false;
+
+                        }
+                        else
+                        {
+                            lastHeard[ethRes->boardNum].initted = true;
+                        }
+
+                        lastHeard[ethRes->boardNum].ageofframe_EMS = getRopFrameAge(incoming_msg);
+                        lastHeard[ethRes->boardNum].prevRecvMsg_PC104 = ethRes->getLastRecvMsgTimestamp();
+                    }
+
+                    //break;  // devo uscire da questo while e rimanere in quello più esterno. // per avere i tempi per ciascuna scheda vado avanti cmq
+                }
+                else
+                {
+                    // check for dead boards
+                    if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
+                    {
+                        if(!lastHeard[ethRes->boardNum].error_PC104)
+                        {
+                            yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
+                            lastHeard[ethRes->boardNum].error_PC104 = true;
+                        }
+                    }
+                            
+
+                    
+                }
                 riterator++;
             }
             //ethManager->managerMutex.post();
         }
         else if(errno == ETIME)
         {
-            yWarning() << "No message received from the EMS boards for " << recvTimeOut.sec() << "sec";
+           yWarning() << "No message received from the EMS boards for " << myTestTimeout << "sec";
         }
         else
         {

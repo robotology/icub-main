@@ -95,14 +95,14 @@ private:
 //     static yarp::os::Semaphore  ethResMutex;
 
     char              info[SIZE_INFO];
-    int               how_many_features;    //!< Keep track of how many high level class registered. onto this EMS
-    ACE_INET_Addr     remote_dev;           //!< IP address of the EMS this class is talking to.
-//     ACE_INET_Addr     remote_broadcast;
-//     bool                isRunning;
+    int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
+    ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
+    double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
 
 public:
 //     hostTransceiver   *transceiver;         //!< Pointer to the protocol handler   non più usato. ora c'è derivazione diretta.
     yarp::dev::TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
+    int               boardNum;
 
     ethResources();
     ~ethResources();
@@ -159,6 +159,12 @@ public:
      *    @brief    Tells the EMS to stop the 1ms loop and go into configuration mode.
      */
     bool            goToConfig(void);
+
+    /*!   @fn       getLastRecvMsgTimestamp(void);
+     *    @brief    return the system time of the last received message from the corresponding EMS board.
+     *    @return   seconds passed from the very first message received.
+     */
+    double          getLastRecvMsgTimestamp(void);
 
 //     //! Send a sporadic message. Do not use now.
 //     int             send(void *data, size_t len);

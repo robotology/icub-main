@@ -9,6 +9,7 @@
 
 #include "ethResource.h"
 #include <ethManager.h>
+#include <yarp/os/Time.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -17,8 +18,9 @@ using namespace yarp::os::impl;
 ethResources::ethResources()
 {
     yTrace();
-    how_many_features   = 0;
-    ethManager          = NULL;
+    how_many_features     = 0;
+    ethManager            = NULL;
+    lastRecvMsgTimestamp  = -1;
 }
 
 ethResources::~ethResources()
@@ -63,6 +65,7 @@ bool ethResources::open(FEAT_ID request)
         yDebug() << "Transceiver succesfully initted.";
     }
 
+    boardNum = request.boardNum;
     ACE_UINT32 hostip = (request.EMSipAddr.ip1 << 24) | (request.EMSipAddr.ip2 << 16) | (request.EMSipAddr.ip3 << 8) | (request.EMSipAddr.ip4);
     ACE_INET_Addr myIP((u_short)request.EMSipAddr.port, hostip);
     remote_dev = myIP;
@@ -135,6 +138,7 @@ void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
     // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane più chiaro da leggere. Il mutex è lo stesso
     // perchè questa classe (ethResource) deriva da hostTransceiver
+    lastRecvMsgTimestamp = yarp::os::Time::now();
     hostTransceiver::onMsgReception(data, size);
 //     transMutex.post();
 }
@@ -161,7 +165,7 @@ bool ethResources::goToConfig(void)
         yError() << "for var goToConfig";
         return false;
     }
-
+    double          getLastRecvMsgTimestamp(void);
     return true;
 }
 
@@ -185,6 +189,10 @@ bool ethResources::goToRun(void)
     return true;
 }
 
+double  ethResources::getLastRecvMsgTimestamp(void)
+{
+    return lastRecvMsgTimestamp;
+}
 // eof
 
 
