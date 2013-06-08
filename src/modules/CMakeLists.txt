@@ -16,7 +16,7 @@ add_subdirectory(wholeBodyDynamics)
 add_subdirectory(gravityCompensator)
 add_subdirectory(skinManager)
 add_subdirectory(objectsPropertiesCollector)
-add_subdirectory(pmpServer)
+add_subdirectory(d4cServer)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(camCalib)

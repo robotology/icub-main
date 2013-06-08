@@ -28,7 +28,7 @@ add_subdirectory(learningMachine)
 add_subdirectory(perceptiveModels)
 add_subdirectory(actionPrimitives)
 add_subdirectory(icubmod)
-add_subdirectory(pmp)
+add_subdirectory(d4c)
 
 if(ICUB_USE_IPOPT)
     add_subdirectory(optimization)
