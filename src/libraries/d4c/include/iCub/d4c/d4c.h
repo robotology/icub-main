@@ -16,7 +16,7 @@
 */
 
 /**
- * \defgroup d4c Dynamic Force Controller
+ * \defgroup d4c Dynamic Force Field Controller
  *  
  * @ingroup icub_libraries 
  *  
