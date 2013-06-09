@@ -20,13 +20,11 @@
  *  
  * @ingroup icub_libraries 
  *  
- * Abstract class for dealing with the Dynamic Force Field 
- * Controller as detailed in the <a 
- * href="http://wiki.icub.org/images/5/5a/DForC.pdf">D4C</a> 
- * paper. 
+ * Abstract class to deal with Dynamic Force Field Control (<a
+ * href="http://wiki.icub.org/images/5/5a/DForC.pdf">D4C</a>). 
  *  
  * For further details please refer to the <a 
- * href="http://wiki.icub.org/wiki/Pmp_Library">wiki</a>.
+ * href="http://wiki.icub.org/wiki/D4C Framework">wiki</a>.
  *  
  * \author Ilaria Gori, Ugo Pattacini 
  *  
