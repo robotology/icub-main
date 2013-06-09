@@ -20,7 +20,8 @@
  *  
  * @ingroup icub_libraries 
  *  
- * Abstract class to deal with Dynamic Force Field Control (<a
+ * Abstract class to deal with <b>Dynamic Force Field 
+ * Control</b> (<a 
  * href="http://wiki.icub.org/images/5/5a/DForC.pdf">D4C</a>). 
  *  
  * For further details please refer to the <a 
