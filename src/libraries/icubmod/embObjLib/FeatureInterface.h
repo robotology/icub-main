@@ -18,6 +18,8 @@ typedef uint8_t fakestdbool_t;
 
 #include <string.h>
 
+extern void eo_receiver_callback_incaseoferror_in_sequencenumberReceived(uint64_t rec_seqnum, uint64_t expected_seqnum);
+
 #ifdef WIN32
 //	#pragma warning(disable:4355)
 #endif

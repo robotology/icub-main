@@ -1449,17 +1449,17 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
     yTrace() << "calibrate2Raw for BOARD " << _fId.boardNum << "joint" << j;
 
     // Tenere il check o forzare questi sottostati?
-    if(!_enabledAmp[j ] )
-    {
-        yWarning () << "Called calibrate for joint " << j << "with PWM(AMP) not enabled, forcing it!!";
-        //		return false;
-    }
+//    if(!_enabledAmp[j ] )
+//    {
+//        yWarning () << "Called calibrate for joint " << j << "with PWM(AMP) not enabled, forcing it!!";
+//        //		return false;
+//    }
 
-    if(!_enabledPid[j ])
-    {
-        yWarning () << "Called calibrate for joint " << j << "with PID not enabled, forcing it!!";
-        //		return false;
-    }
+//    if(!_enabledPid[j ])
+//    {
+//        yWarning () << "Called calibrate for joint " << j << "with PID not enabled, forcing it!!";
+//        //		return false;
+//    }
 
     //   There is no explicit command "go to calibration mode" but it is implicit in the calibration command
 
@@ -1552,7 +1552,7 @@ bool embObjMotionControl::doneRaw(int axis)
         result = false;
     else
         result = true;
-    yWarning() << _fId.name << "joint " << axis << "Calibration done is " << result;
+//    yWarning() << _fId.name << "joint " << axis << "Calibration done is " << result;
     return result;
 }
 

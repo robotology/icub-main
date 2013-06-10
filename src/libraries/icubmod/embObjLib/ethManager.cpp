@@ -752,8 +752,31 @@ void EthReceiver::run()
 
     while(!isStopping())
     {
+        ethManager->managerMutex.wait();
+        // new, reverse iterator
+        ethResRIt    riterator, _rBegin, _rEnd;
+        _rBegin = ethResList->rbegin();
+        _rEnd = ethResList->rend();
+        ethManager->managerMutex.post();
+
         // per ogni msg ricevuto  -1 visto come 65535!!
         recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
+
+        riterator = _rBegin;
+        while(riterator != _rEnd)
+        {
+            ethRes = (*riterator);
+
+            if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
+            {
+                if(!lastHeard[ethRes->boardNum].error_PC104)
+                {
+                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
+                    lastHeard[ethRes->boardNum].error_PC104 = true;
+                }
+            }
+            riterator++;
+        }
 
         if( recv_size > 60000)
         {
@@ -773,25 +796,12 @@ void EthReceiver::run()
 
             ethManager->managerMutex.wait();
             eODeb_eoProtoParser_RopFrameDissect(PP, &pckInfo);
-            //iteratoreLista = ethManager->EMS_list.begin();
-            // new, reverse iterator
-            ethResRIt    riterator, _rBegin, _rEnd;
-            _rBegin = ethResList->rbegin();
-            _rEnd = ethResList->rend();
             ethManager->managerMutex.post();
 
             riterator = _rBegin;
 
-     //       for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
             while(riterator != _rEnd)
-            //while(iteratoreLista != ethManager->EMS_list.end())
             {
-//                 if( riterator == NULL)      // possibile questo caso?? TODO verificare
-//                 {
-//                     yError() << "trying to access a non initted ethres";
-//                     riterator++;
-//                     break;  //
-//                 }
                 ethRes = (*riterator);
                 if(ethRes->getRemoteAddress() == sender_addr)
                 {
@@ -814,17 +824,15 @@ void EthReceiver::run()
 
                             if(lastHeard[ethRes->boardNum].gap_PC104 > myTestTimeout)
                             {
-                                yError() << "Gap of " << lastHeard[ethRes->boardNum].gap_PC104 << "between two consecutive messages from board" << ethRes->boardNum << "!!!";
+                                yError() << "Board " << ethRes->boardNum << ": Gap of " << lastHeard[ethRes->boardNum].gap_PC104*1000 << "ms between two consecutive messages !!!";
                             }
 
                             // check time written into packet
-                            if( (getRopFrameAge(incoming_msg ) - lastHeard[ethRes->boardNum].ageofframe_EMS) > (uint64_t) myTestTimeout)
+                            if( (getRopFrameAge(incoming_msg) - lastHeard[ethRes->boardNum].ageofframe_EMS) > (uint64_t) (myTestTimeout * 1000*1000))
                             {
-                                if(!lastHeard[ethRes->boardNum].error_EMS)
-                                {
-                                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
-                                    lastHeard[ethRes->boardNum].error_EMS = true;
-                                }
+
+                                yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << (getRopFrameAge(incoming_msg) - lastHeard[ethRes->boardNum].ageofframe_EMS) / (1000) << "ms.";
+                                lastHeard[ethRes->boardNum].error_EMS = true;
                             }
 
                             //reset errors
@@ -840,34 +848,12 @@ void EthReceiver::run()
                         lastHeard[ethRes->boardNum].prevRecvMsg_PC104 = ethRes->getLastRecvMsgTimestamp();
                     }
 
-                    //break;  // devo uscire da questo while e rimanere in quello più esterno. // per avere i tempi per ciascuna scheda vado avanti cmq
-                }
-                else
-                {
-                    // check for dead boards
-                    if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
-                    {
-                        if(!lastHeard[ethRes->boardNum].error_PC104)
-                        {
-                            yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
-                            lastHeard[ethRes->boardNum].error_PC104 = true;
-                        }
-                    }
-                            
-
-                    
+                    //break;  // devo uscire da questo while e rimanere in quello più esterno.
                 }
                 riterator++;
             }
+
             //ethManager->managerMutex.post();
-        }
-        else if(errno == ETIME)
-        {
-           yWarning() << "No message received from the EMS boards for " << myTestTimeout << "sec";
-        }
-        else
-        {
-            yWarning() << "Received weird msg of size" << recv_size;
         }
     }
     yError() << "Exiting recv thread";
