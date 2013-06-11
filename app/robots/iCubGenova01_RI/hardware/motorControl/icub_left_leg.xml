@@ -9,7 +9,7 @@
 <param name="NetworkId">                  LEFT_LEG      </param>       
 <param name="CanMyAddress"> 0             </param>       
 <param name="CanPollingInterval">         10            </param>       
-<param name="CanTimeout">   2000          </param>       
+<param name="CanTimeout">   300           </param>       
 <param name="CanTxTimeout"> 500           </param>       
 <param name="CanRxTimeout"> 500           </param>       
 <param name="broadcast_pos">              1             1             1             1             1             1             </param>       

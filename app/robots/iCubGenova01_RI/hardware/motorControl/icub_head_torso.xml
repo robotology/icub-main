@@ -7,19 +7,20 @@
 <param name="CanAddresses"> 1 2 3 5 6     </param>       
 <param name="CanDeviceNum"> 0             </param>       
 <param name="NetworkId">                  HEAD          </param>       
-<param name="CanMyAddress"> 10            </param>       
-<param name="CanPollingInterval">         300           </param>       
-<param name="CanTimeout">   500           </param>       
+<param name="CanMyAddress"> 0             </param>       
+<param name="CanPollingInterval">         10            </param>       
+<param name="CanTimeout">   300           </param>       
 <param name="CanTxTimeout"> 500           </param>       
-<param name="CanRxTimeout"> 1             1             1             1             1             1             1             1             1             1             </param>       
-<param name="broadcast_pos">              0             0             0             0             0             0             0             0             0             0             </param>       
-<param name="broadcast_pid">              1             1             1             1             1             1             1             1             1             1             </param>       
-<param name="broadcast_fault">            0             0             0             0             0             0             0             0             0             0             </param>       
-<param name="broadcast_current">          1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="CanRxTimeout"> 500           </param>       
+<param name="broadcast_pos">              1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_pid">              0             0             0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_fault">            1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_current">          0             0             0             0             0             0             0             0             0             0             </param>       
 <param name="broadcast_overflow">         1             1             1             1             1             1             1             1             1             1             </param>       
-<param name="broadcast_canprint">         0             0             0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_canprint">         1             1             1             1             1             1             1             1             1             1             </param>       
 <param name="broadcast_vel_acc">          0             0             0             0             0             0             0             0             0             0             </param>       
 </group>       
+ 
  
  
  
@@ -88,7 +89,6 @@
  
   </device>    
 </devices>     
- 
  
  
  
