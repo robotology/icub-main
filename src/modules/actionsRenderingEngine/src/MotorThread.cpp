@@ -2025,7 +2025,8 @@ bool MotorThread::goHome(Bottle &options)
             action[LEFT]->setTrackingMode(false);
         }
     }
-    else if(hand_home)
+
+    if(hand_home)
     {
         if(left_arm)
         {
