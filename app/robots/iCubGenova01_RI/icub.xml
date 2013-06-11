@@ -14,7 +14,9 @@
     <devices file="wrappers/motorControl/head_mcWrapper.xml" />
     <devices file="wrappers/motorControl/torso_mcWrapper.xml" />
 	<devices file="hardware/motorControl/icub_left_arm.xml" /> 
+	<devices file="hardware/motorControl/icub_left_hand.xml" /> 
     <devices file="hardware/motorControl/icub_right_arm.xml" />
+    <devices file="hardware/motorControl/icub_right_hand.xml" />
     <devices file="hardware/motorControl/icub_left_leg.xml" /> 
     <devices file="hardware/motorControl/icub_right_leg.xml" /> 
     <devices file="hardware/motorControl/icub_head_torso.xml" />
