@@ -2,16 +2,23 @@
 <robot name="icub">
 
     <!-- cartesian --> 
+	<!--
     <devices file="cartesians.xml" />
+    />
     
     <!-- motor controllers wrappers -->
-    <devices file="wrappers/left_arm-mcWrapper.xml" /> 
-    <devices file="wrappers/right_arm-mcWrapper.xml" />
-    <devices file="wrappers/left_leg-mcWrapper.xml" /> 
-    <devices file="wrappers/right_leg-asWrapper.xml" /> 
-    <devices file="wrappers/head-mcWrapper.xml" />
-    <devices file="wrappers/torso-mcWrapper.xml" />
-
+	<devices file="wrappers/motorControl/left_arm_mcWrapper.xml" /> 
+    <devices file="wrappers/motorControl/right_arm_mcWrapper.xml" />
+    <devices file="wrappers/motorControl/left_leg_mcWrapper.xml" /> 
+    <devices file="wrappers/motorControl/right_leg_asWrapper.xml" /> 
+    <devices file="wrappers/motorControl/head_mcWrapper.xml" />
+    <devices file="wrappers/motorControl/torso_mcWrapper.xml" />
+	<devices file="hardware/motorControl/icub_left_arm.xml" /> 
+    <devices file="hardware/motorControl/icub_right_arm.xml" />
+    <devices file="hardware/motorControl/icub_left_leg.xml" /> 
+    <devices file="hardware/motorControl/icub_right_leg.xml" /> 
+    <devices file="hardware/motorControl/icub_head_torso.xml" />
+	
     <!-- VIRTUAL ANALOG SERVERs -->
     <devices file="wrappers/VFT/left_arm_VFTserver.xml" /> 
     <devices file="wrappers/VFT/left_leg_VFTserver.xml" /> 

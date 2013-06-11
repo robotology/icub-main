@@ -2,8 +2,9 @@
  
  
  
- 
- 
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="right_arm_mc" type="canmotioncontrol">   
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physdevice">   cfw2can       </param>       
@@ -104,9 +105,8 @@
 <param name="VelocityHome"> 10            10            10            10            30            30            30            100           </param>       
 </group>       
  
- 
- 
- 
+  </device>    
+</devices>     
  
  
  

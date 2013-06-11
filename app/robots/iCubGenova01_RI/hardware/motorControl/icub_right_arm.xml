@@ -1,6 +1,6 @@
- 
- 
- 
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="head_torso_mc" type="canmotioncontrol">  
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physdevice">   cfw2can       </param>       
@@ -86,8 +86,8 @@
 <param name="VelocityHome"> 10            10            10            10            10            10            10            10            10            0             </param>       
 </group>       
  
- 
- 
+  </device>    
+</devices>     
  
  
  
