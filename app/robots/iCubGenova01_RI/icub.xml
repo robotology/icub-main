@@ -10,7 +10,7 @@
 	<devices file="wrappers/motorControl/left_arm_mcWrapper.xml" /> 
     <devices file="wrappers/motorControl/right_arm_mcWrapper.xml" />
     <devices file="wrappers/motorControl/left_leg_mcWrapper.xml" /> 
-    <devices file="wrappers/motorControl/right_leg_asWrapper.xml" /> 
+    <devices file="wrappers/motorControl/right_leg_mcWrapper.xml" /> 
     <devices file="wrappers/motorControl/head_mcWrapper.xml" />
     <devices file="wrappers/motorControl/torso_mcWrapper.xml" />
 	<devices file="hardware/motorControl/icub_left_arm.xml" /> 
@@ -50,9 +50,9 @@
     <devices file="hardware/inertial.xml" />
 
     <!-- SKIN -->
-    <devices file="wrappers/left_arm-skinWrapper.xml" />
-    <devices file="wrappers/right_arm-skinWrapper.xml" />  
-    <devices file="wrappers/torso-skinWrapper.xml" />  
+    <devices file="wrappers/skin/left_arm_skinWrapper.xml" />
+    <devices file="wrappers/skin/right_arm_skinWrapper.xml" />  
+    <devices file="wrappers/skin/torso_skinWrapper.xml" />  
     <devices file="hardware/skin/left_arm.xml" />
     <devices file="hardware/skin/right_arm.xml" />  
     <devices file="hardware/skin/torso.xml" />  
