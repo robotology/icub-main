@@ -100,7 +100,7 @@ public:
     virtual bool canGetBaudRate(unsigned int *rate);
     virtual bool canSetBaudRate(unsigned int rate)
     {
-        fprintf(stderr, "Error: set baud rate not allowed from CanBusAccessPoint implementation\n");
+        fprintf(stderr, "Warning: set baud rate not allowed from CanBusAccessPoint implementation\n");
         return false;
     }
 
