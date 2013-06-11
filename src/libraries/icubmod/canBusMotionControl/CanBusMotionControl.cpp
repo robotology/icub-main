@@ -1897,11 +1897,13 @@ bool CanBusMotionControl::open (Searchable &config)
     std::string str=config.toString().c_str();
     Property prop;
     prop.fromString(str.c_str());
-    canDevName=config.find("canbusdevice").asString();
+    canDevName=config.find("canbusdevice").asString(); //for backward compatibility
+    if (canDevName="") canDevName=config.findGroup("CAN").find("canbusdevice").asString();
     prop.unput("device");
     prop.unput("subdevice");
     prop.put("device", canDevName.c_str());
-    yarp::os::ConstString canPhysDevName = config.find("physdevice").asString();
+    yarp::os::ConstString canPhysDevName = config.find("physdevice").asString(); //for backward compatibility
+    if (canPhysDevName="") canPhysDevName = config.findGroup("CAN").find("physdevice").asString();
     prop.put("physdevice",canPhysDevName.c_str());
     prop.put("CanDeviceNum", p._networkN);
     prop.put("CanTxTimeout", p._txTimeout);
