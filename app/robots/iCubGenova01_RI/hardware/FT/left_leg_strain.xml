@@ -4,7 +4,7 @@
 	<param name="CanbusDevice"> "sharedcan" </param>
 	<param name="physdevice"> "cfw2can" </param>
 	<param name="CanDeviceNum"> 3 </param>
-	<param name="CanAddress"> 0x0C </param>
+	<param name="CanAddress"> 0x0D </param>
 	<param name="Format"> 16 </param>
 	<param name="Channels"> 6 </param>
 	<param name="Period"> 1 </param>
