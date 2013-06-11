@@ -1,0 +1,141 @@
+ 
+ 
+ 
+<group name="CAN">           
+<param name="canbusdevice"> sharedcan     </param>       
+<param name="physdevice">   cfw2can       </param>       
+<param name="CanAddresses"> 1 2 3 5 6     </param>       
+<param name="CanDeviceNum"> 0             </param>       
+<param name="NetworkId">                  HEAD          </param>       
+<param name="CanMyAddress"> 10            </param>       
+<param name="CanPollingInterval">         300           </param>       
+<param name="CanTimeout">   500           </param>       
+<param name="CanTxTimeout"> 500           </param>       
+<param name="CanRxTimeout"> 1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_pos">              0             0             0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_pid">              1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_fault">            0             0             0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_current">          1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_overflow">         1             1             1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_canprint">         0             0             0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_vel_acc">          0             0             0             0             0             0             0             0             0             0             </param>       
+</group>       
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+<group name="GENERAL">       
+<param name="Joints">       10            </param>       
+<param name="MaxDAC">                     100           100           100           100           100           100           100           100           100           100           </param>       
+<param name="AxisMap">                    0             1             2             3             4             5             6             8             9             7             </param>       
+<param name="Encoder">                    11.375        -11.375       11.375        11.375        568.88        284.44        11.375        11.375        11.375        0             </param>       
+<param name="Zeros">                      180           -180          180           185           -48           -5            180           180           180           0             </param>       
+<param name="TorqueId">     0             0             0             0             0             0             0x0C          0x0C          0x0C          0             </param>       
+<param name="TorqueChan">   0             0             0             0             0             0             0             1             2             0             </param>       
+<param name="TorqueMax">                  0             0             0             0             0             0             12            12            12            0             </param>       
+<param name="Verbose">      0             </param>       
+</group>       
+ 
+<group name="VELOCITY">      
+<param name="Shifts">       8             8             8             8             8             8             8             8             8             8             </param>       
+<param name="Timeout">      100           100           100           100           100           100           100           100           100           100           </param>       
+</group>       
+ 
+<group name="LIMITS">        
+<param name="Max">          22            20            50            30            30            50            50            30            70            0             </param>       
+<param name="Min">                        -30           -20           -50           -30           -30           0             -50           -30           -22           0             </param>       
+<param name="Currents">     2000          2000          1200          620           600           600           7000          7000          7000          7000          </param>       
+</group>       
+ 
+<group name="PIDS">          
+<param name="Pid0">         6000          500           5             1333          1333          8             0             </param>       
+<param name="Pid1">         -6000         -500          -5            1333          1333          8             0             </param>       
+<param name="Pid2">         3200          3200          10            800           1333          6             0             </param>       
+<param name="Pid3">         -400          -400          -4            1333          1333          4             0             </param>       
+<param name="Pid4">         100           1000          10            1333          1333          5             0             </param>       
+<param name="Pid5">         100           1000          10            1333          1333          5             0             </param>       
+<param name="Pid6">         32000         6000          60            1333          1333          13            0             </param>       
+<param name="Pid7">         32000         6000          60            1333          1333          13            0             </param>       
+<param name="Pid8">         32000         6000          60            1333          1333          13            0             </param>       
+<param name="Pid9">         0             0             0             1333          1333          0             0             </param>       
+</group>       
+ 
+<group name="TORQUE_PIDS">   
+<param name="TPid6">        6             0             0             1333          1333          11            0             </param>       
+<param name="TPid7">        6             0             0             1333          1333          11            0             </param>       
+<param name="TPid8">        6             0             0             1333          1333          11            0             </param>       
+</group>       
+ 
+<group name="CALIBRATION">   
+ 
+<param name="CalibrationType">            3             3             3             3             0             0             3             3             3             3             </param>       
+<param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           2047.5        2047.5        2047.5        0             </param>       
+<param name="Calibration2"> 10            10            10            10            20            20            10            10            10            0             </param>       
+<param name="Calibration3">               1410.5        1535.625      2770.95       3139.5        0             0             508.4625      2646.963      3420.463      0             </param>       
+<param name="PositionZero">               0             0             0             0             0             0             0             0             0             0             </param>       
+<param name="VelocityZero">               10            10            10            10            10            10            10            10            10            0             </param>       
+</group>       
+ 
+<group name="HOME">          
+<param name="PositionHome"> -30           0             0             0             0             0             0             0             -20           0             </param>       
+<param name="VelocityHome"> 10            10            10            10            10            10            10            10            10            0             </param>       
+</group>       
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
