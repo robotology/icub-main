@@ -2,6 +2,8 @@
 <devices>      
   <device name="left_arm_mc" type="controlboardwrapper2">              
 <group name="CAN">           
+<param name="canbusdevice"> sharedcan     </param>       
+<param name="physdevice">   cfw2can       </param>       
 <param name="CanAddresses"> 1 2 3 4       </param>       
 <param name="CanDeviceNum"> 1             </param>       
 <param name="NetworkId">                  LEFT_ARM      </param>       
@@ -102,8 +104,6 @@
  
   </device>    
 </devices>     
- 
- 
  
  
  
