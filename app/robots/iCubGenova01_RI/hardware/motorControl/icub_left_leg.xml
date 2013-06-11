@@ -104,6 +104,7 @@
 <param name="PositionZero">               0             8             0             0             0             -8            </param>       
 <param name="VelocityZero">               10            10            10            10            10            10            </param>       
 <param name="MaxPWM">       60            60            60            60            60            60            </param>       
+</group>       
  
 <group name="HOME">          
 <param name="PositionHome"> 0             8             0             0             0             -8            </param>       
@@ -112,7 +113,6 @@
  
   </device>    
 </devices>     
- 
  
  
  
