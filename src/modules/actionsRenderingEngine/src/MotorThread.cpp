@@ -1958,6 +1958,8 @@ bool MotorThread::release(Bottle &options)
 
     return true;
 }
+
+
 bool MotorThread::goHome(Bottle &options)
 {
     bool head_home=(checkOptions(options,"head") || checkOptions(options,"gaze"));
@@ -1977,7 +1979,6 @@ bool MotorThread::goHome(Bottle &options)
     //if none is specified the assume both arms (or hands) are going home
     if(!left_arm && !right_arm)
         left_arm=right_arm=true;
-
 
     bool head_fixing=false;
     ctrl_gaze->getTrackingMode(&head_fixing);
