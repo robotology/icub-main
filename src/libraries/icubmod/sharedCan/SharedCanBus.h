@@ -79,7 +79,7 @@ public:
         if (nRecv>=mBufferSize)
         {
             synchroMutex.post();
-            fprintf(stderr, "Warning: recv buffer overrun\n");
+            fprintf(stderr, "Error: recv buffer overrun (%4d > %4d) \n", nRecv, mBufferSize);
             return false;
         }
 
