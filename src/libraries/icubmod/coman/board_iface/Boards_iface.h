@@ -69,36 +69,12 @@
 #include <pthread.h>
 #include <map>
 
-#include "CommProtocol.hpp"
+#include <CommProtocol.hpp>
 
 #include "yaml-cpp/yaml.h"
 
-#include "definitions.h"
-#include "DSP_board.h"
-
-#include <Debug.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/Bottle.h>
-
-namespace yarp{
-  namespace dev {
-    class Boards_ctrl;
-  }
-}
-
-#define DEG2mRAD(X) (X*M_PI*1e5)/180
-#define DEG2RAD(X)  (X*M_PI)/180
-
-/** @ingroup Boards_controller
-    *  @brief maps of boards <bId, instance ref>
-    *  @{
-    */
-typedef std::map<int, Dsp_Board*>   dsp_map_t;
-typedef std::map<int, McBoard*>     mcs_map_t;
-typedef std::map<int, FtBoard*>     fts_map_t;
-/** @}
-    */
+#include <definitions.h>
+#include <DSP_board.h>
 
 
 /**
@@ -108,55 +84,30 @@ typedef std::map<int, FtBoard*>     fts_map_t;
  * @brief Boards_ctrl class
  */
 
+class Boards_ctrl {
 
-class yarp::dev::Boards_ctrl// : public yarp::dev::DeviceDriver
-{
-private:
-    // singleton stuff
-
-    bool                          initted;
-    static yarp::os::Semaphore    _mutex;
-    static Boards_ctrl            *handle;
-
-    int     r_pos[MAX_DSP_BOARDS];
-    short   r_vel[MAX_DSP_BOARDS];
-    short   r_tor[MAX_DSP_BOARDS];
-    unsigned long long  g_tStart;
-
-    // initialization values
-    std::vector<float> homePos;
-    // vector conteining boards IDs (?)
-    std::vector<int> r_leg;
-    std::vector<int> l_leg;
-    std::vector<int> waist;
-    std::vector<int> r_arm;
-    std::vector<int> l_arm;
-    std::vector<int> neck;
+    /** @ingroup Boards_controller
+     *  @brief maps of boards <bId, instance ref>
+     *  @{
+     */
+public:
+    typedef std::map<int, Dsp_Board*>   dsp_map_t;
+    typedef std::map<int, McBoard*>     mcs_map_t;
+    typedef std::map<int, FtBoard*>     fts_map_t;
+    /** @}
+     */
 
 public:
-    static Boards_ctrl *instance();
-//     Boards_ctrl(const char * config);
-    Boards_ctrl();
+    Boards_ctrl(const char * config);
     ~Boards_ctrl();
-
-    /* This function is called by the yarp Factory. The config is a container for all the
-     * needed configuration parameters. Now it just is the name of the file YAML has to read.
-     * Here all the initialization are done, regarding both socket and init of the remote boards */
-    virtual bool open(yarp::os::Searchable& config);
-
-
-    bool myOpen(const char *config);
 
     Dsp_Board * get_board(uint8_t bId) { return(_boards.find(bId) != _boards.end()) ? _boards[bId] : NULL;}
     Dsp_Board * operator[](int bId) { return(_boards.find(bId) != _boards.end()) ? _boards[bId] : NULL;} 
 
     void stop_rx_udp();
 
-    virtual bool close();
-    void start_control_body(std::vector<int> body);
-    void body_homing(int pos[], short vel[], short tor[]);
     void get_sync_data(void *);
-    void get_bc_data(bc_data_t *);
+    void get_bc_data(ts_bc_data_t *);
 
     int init(void);
     int test(void);
@@ -165,6 +116,7 @@ public:
 
     void configure_boards(void);
     void start_stop_bc_boards(uint8_t);
+    void clear_mcs_faults(void);
 
     /** @defgroup UDP_cmd udp commands
      *  @ingroup Boards_controller
@@ -175,6 +127,7 @@ public:
     int scan4active(void);
     int start_stop_control(uint8_t start, uint8_t ctrl_type = POSITION_MOVE);
     int start_stop_single_control(uint8_t bId, uint8_t start, uint8_t ctrl_type = POSITION_MOVE);
+    int start_stop_set_control(std::vector<int> boards_set, uint8_t start, uint8_t ctrl_type = POSITION_MOVE);
 
     int set_position(int *, int);
     int set_velocity(short *, int);
@@ -182,46 +135,53 @@ public:
     int set_position_velocity(int *, short *, int);
     int set_gravity_compensation(int *des_gc, int nbytes);
     int set_stiffness_damping(int *des_stiff, int *des_damp, int nElem);
+    int set_pid_offset(short *, int);
+
+    int set_position_group(const uint8_t *, const int *, const int nElem);
+    int set_velocity_group(const uint8_t *, const short *, const int nElem);
+    int set_torque_group(const uint8_t *, const short *, const int nElem);
+    int set_position_velocity_group(const uint8_t *, const int *, const short *, const int nElem);
+    int set_stiffness_damping_group(const uint8_t *, const int *, const int *, const int nElem);
+
+    int set_position_group(const group_ref_t &);
+    int set_velocity_group(const group_ref_t &);
+    int set_torque_group(const group_ref_t &);
+    int set_position_velocity_group(const group_ref_comp_t &);
+    int set_stiffness_damping_group(const group_ref_comp_t &);
 
     /** @} */ // end of UDP_cmd
 
+
+    // _AC_  added to get a reference to the internal maps of boards.
     mcs_map_t get_mcs_map();
     fts_map_t get_fts_map();
 
-    int         udp_sock;
-    struct sockaddr_in  dest_addr;
-
 protected:
+
+    dsp_map_t _boards;
+    mcs_map_t _mcs;
+    fts_map_t _fts;
 
     void factory_board(uint8_t *);
     // thread
     static void * rx_udp(void *);
     void on_bc_data(uint8_t *);
 
-    dsp_map_t _boards;
-    mcs_map_t _mcs;
-    fts_map_t _fts;
-
-
 private:
 
-
+    int         udp_sock;
     pthread_t   rx_upd_thread;
     int         expected_num_boards;
 
     struct sockaddr_in local_addr;
-
+    struct sockaddr_in  dest_addr;
 
     YAML::Node doc;
 
     pthread_mutex_t data_sync_mutex;
     pthread_cond_t  data_sync_cond;
 
-    std::bitset<32>   bcMask, bcScanMask;   // Does this means max 32 boards??
-
-
+    std::bitset<32>   bcMask, bcScanMask;
 };
-
-
 
 #endif

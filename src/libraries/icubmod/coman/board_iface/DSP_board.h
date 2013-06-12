@@ -5,7 +5,7 @@
 
 	Developer:
         Alessio Margan (2012-, alessio.margan@iit.it)
-    
+
 */
 
 #ifndef __DSP_BOARDS_H__
@@ -23,40 +23,21 @@
 
 #include "yaml-cpp/yaml.h"
 
-#include "definitions.h"
+#include <definitions.h>
 
 //------------------------------------------------
 
 //------------------------------------------------
 using namespace boost::accumulators;
-
-
-#warning "was under #ifndef C_WRAPPER... what does it means??"
-#define C_WRAPPER
-#ifdef C_WRAPPER
-    typedef char GainSet;
-    #define VELOCITY_GAINS 0
-    #define POSITION_GAINS 1
-    #define TORQUE_GAINS   2
-#else
-    enum GainSet
-    {
-      VELOCITY_GAINS = 0,
-      POSITION_GAINS = 1,
-      TORQUE_GAINS   = 2
-    };
-#endif
-
 #define VERIFYsizeof(sname, ssize)    typedef uint8_t sname##ssize[ ( ssize == sizeof(sname) ) ? (1) : (-1)];
 
 
 struct __pid_gains_t {
-    GainSet    gain_set;
+    char    gain_set;
     int     p;
     int     i;
     int     d;
-}__attribute__ ((gcc_struct, __packed__));
-
+}  __attribute__((__packed__));
 typedef __pid_gains_t pid_gains_t;
 
 VERIFYsizeof(__pid_gains_t, 13);
@@ -65,7 +46,7 @@ VERIFYsizeof(__pid_gains_t, 13);
  * @class Dsp_Board
  * @defgroup Dsp_Board Dsp board
  * @ingroup RoboLLI
- * @brief Dsp_Board base class to interface with DSP boards, 
+ * @brief Dsp_Board base class to interface with DSP boards,
  *        each single instance handle TCP/IP communication with
  *        the relative board and process its broadcast data
  *        dispatched by Boards_ctrl class
@@ -81,15 +62,12 @@ public:
     int getItem(int reqCmd, void *src, int nSrcBytes, int resCmd, void *dst, int nDstBytes);
 
     virtual void configure(const YAML::Node&) = 0;
-    virtual void get_bc_data(void *) = 0;
+    virtual void on_bc_data(uint8_t *);
+    virtual void get_bc_data(ts_bc_data_t &);
+    virtual uint32_t get_bc_data_size() { return 0; }
     virtual void print_me(void);
 
     void start_stop_bc(uint8_t);
-
-    virtual void on_bc_data(uint8_t *);
-
-    void measure_bc_freq(void);
-    void print_stat(void);
 
     uint8_t     stopped;
     uint8_t     bId;
@@ -106,8 +84,14 @@ protected:
     uint16_t    extra_policy;
     uint8_t     bc_rate;
     //
+    ts_bc_data_t    ts_bc_data;
+
+private:
+
+    //
+    uint64_t _bc_tStart;
     uint64_t _rx_bc_prec;
-    accumulator_set<uint64_t, 
+    accumulator_set<uint64_t,
         features<
             tag::count
             ,tag::mean
@@ -120,17 +104,20 @@ protected:
 
     pthread_mutex_t dsp_mutex;
 
-    boost::circular_buffer<log_t> dsp_log;
+    boost::circular_buffer<ts_bc_data_t> dsp_log;
     void dump_log(void);
 
+    void measure_bc_freq(void);
+    void print_stat(void);
+
 };
-     
+
 
 /**
  * @class McBoard
  * @defgroup McBoard Motor controller board
  * @ingroup Dsp_Board
- * @brief McBoard class derived from Dsp_Board, implement 
+ * @brief McBoard class derived from Dsp_Board, implement
  *        derived virtual method to carry out motor controller
  *        protocol
  */
@@ -138,28 +125,33 @@ class McBoard : public Dsp_Board{
 
 public:
     McBoard(uint8_t *_):Dsp_Board(_) { }
-    virtual ~McBoard() { dump_log(); }
+    virtual ~McBoard() { }
 
     virtual void configure(const YAML::Node&);
     virtual void print_me(void);
-    virtual void on_bc_data(uint8_t *);
-    virtual void get_bc_data(void *);
+    virtual uint32_t get_bc_data_size() { return sizeof(mc_bc_data_t); }
 
     void test_setting(void);
+    //void test_position(void);
 
-private:
+    void set_PID(int gain_set, int, int, int);
+    void set_PID_increment(int gain_set, int, int, int);
+    void get_PID(int gain_set, int &, int &, int &);
 
-    mc_bc_data_t bc_data;
-    void do_log(uint8_t *);
-
+public:
+    
+    // dsp parameter read during configure() method
+    // do not write on this variables ....
     int         _min_pos, _max_pos;
     short int   _min_vel, _max_vel;
     short int   _max_tor;
     short int   _des_pos, _des_vel, _des_tor;
-    pid_gains_t V_pid, P_pid, T_pid;
-
-    torque_factor_t _torque_factor;
+    short int   _current_lim;
     short int   _motor_config, _motor_config2;
+    pid_gains_t     V_pid, P_pid, T_pid;
+    torque_factor_t _torque_factor;
+    unsigned char   _filter_setup[3];
+
 };
 
 
@@ -168,25 +160,20 @@ private:
  * @defgroup FtBoard Force torque sensor board
  * @ingroup Dsp_Board
  * @ingroup Dsp_Board
- * @brief FtBoard class derived from Dsp_Board, implement 
+ * @brief FtBoard class derived from Dsp_Board, implement
  *        derived virtual method to carry out force torque
  *        sensor protocol
  */
 class FtBoard : public Dsp_Board {
 public:
     FtBoard(uint8_t *_):Dsp_Board(_) { }
-    virtual ~FtBoard() { dump_log(); }
+    virtual ~FtBoard() { }
 
     virtual void configure(const YAML::Node&);
     virtual void print_me(void);
-    virtual void on_bc_data(uint8_t *);
-    virtual void get_bc_data(void *);
+    virtual uint32_t get_bc_data_size() { return sizeof(ft_bc_data_t); }
 
 private:
-
-    ft_bc_data_t bc_data;
-
-    void do_log(uint8_t *);
 
 
 };

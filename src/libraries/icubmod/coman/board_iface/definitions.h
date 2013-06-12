@@ -13,6 +13,20 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
+#ifdef __XENO__
+    #include <rtdk.h>
+    #define DPRINTF rt_printf
+#else
+    #include <fcntl.h>
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #define DPRINTF printf
+#endif
+
+#include <broadcast_data.h>
 
 #define MAX_DSP_BOARDS  30
 #define MAX_MC_BOARDS  25
@@ -25,17 +39,20 @@
 #define _1_SEC          1000
 // 10 mins at 1Khz loop
 //#define LOG_SIZE    _1_SEC * 60 * 10
-// 60 secs at 1Khz loop
-#define LOG_SIZE    _1_SEC * 60
+// 10 secs at 1Khz loop
+#define LOG_SIZE    _1_SEC * 60 * 10
 
+#define VELOCITY_GAINS 0
+#define POSITION_GAINS 1
+#define TORQUE_GAINS   2
 
 /**
  * @defgroup DataStructures Data Structures
  * @ingroup RoboLLI
- * @brief Here are the data structures with brief descriptions: 
- *  
- * @{ 
- */ 
+ * @brief Here are the data structures with brief descriptions:
+ *
+ * @{
+ */
 
 /**
  * log tx references
@@ -46,70 +63,6 @@ typedef struct {
 } log_ctrl_t;
 
 
-/**
- * McBoard motor controller broadcast data 
- *  
- * WARNING struct is generated with c_gen.py script 
- * - policy value       0x28FF  0b10100011111111 
- * - extra policy value 0x0004  0b100 
- *  
- */
-typedef struct {
-	unsigned char _header;
-	unsigned char _n_bytes;
-	unsigned char _command;
-	unsigned char _board_id;
-	int	 Position;
-	short	 Velocity;
-	short	 Torque;
-	short	 PID_out;
-	int	 PID_err;
-	int	 Current;
-	int	 Temp_DC;
-	int	 Timestamp;
-	short	 Abs_pos;
-	short	 Motor_state;
-	int	 Req_Target_Pos;
-	unsigned char _chk;
-	void fprint(FILE *fp) {
-		fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", Position,Velocity,Torque,PID_out,PID_err,Current,Temp_DC,Timestamp,Abs_pos,Motor_state,Req_Target_Pos);
-	}
-    void sprint(char *buff) {
-        sprintf(buff, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", Position,Velocity,Torque,PID_out,PID_err,Current,Temp_DC,Timestamp,Abs_pos,Motor_state,Req_Target_Pos);
-    }
-    void sprint_(char *buff) {
-        sprintf(buff, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d", Position,Velocity,Torque,PID_out,PID_err,Current,Temp_DC,Timestamp,Abs_pos,Motor_state,Req_Target_Pos);
-    }
-} __attribute__((__packed__)) mc_bc_data_t;
-
-
-/**
- * FtBoard force torque sensor broadcast data
- *  
- * WARNING struct is generated with c_gen.py script
- * - policy value       0x0002  0b01
- * - extra policy value 0x0000  0b0 
- *  
- */ 
-typedef struct {
-	unsigned char _header;
-	unsigned char _n_bytes;
-	unsigned char _command;
-	unsigned char _board_id;
-	int	 fx;
-	int	 fy;
-	int	 fz;
-	int	 tx;
-	int	 ty;
-	int	 tz;
-	unsigned char _chk;
-	void fprint(FILE *fp) {
-		fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", fx,fy,fz,tx,ty,tz);
-	}
-    void sprint(char *buff) {
-        sprintf(buff, "%d\t%d\t%d\t%d\t%d\t%d\n", fx,fy,fz,tx,ty,tz);
-    }
-} __attribute__((__packed__)) ft_bc_data_t;
 
 /**
  * common udp header tx by DSP boards
@@ -134,9 +87,9 @@ typedef	union {
  * logging DSP boards broadcast data
  */
 typedef struct {
-    uint64_t        ts;
-    bc_data_t    bc_data;
-} log_t;
+    uint64_t    ts_rx;
+    bc_data_t   raw_bc_data;
+} ts_bc_data_t;
 
 /**
  * ...
@@ -146,8 +99,17 @@ typedef struct {
     short   offset;
 } __attribute__((__packed__)) torque_factor_t;
 
+
+typedef std::map<uint8_t, int>      group_ref_t;   
+typedef std::map<uint8_t, std::pair<int,int> >   group_ref_comp_t;
+
 /** @}
  */
 
+#if __XENO__
+    static const std::string pipe_prefix("/proc/xenomai/registry/rtipc/xddp/");
+#else
+    static const std::string pipe_prefix("/tmp/");
+#endif
 
 #endif
