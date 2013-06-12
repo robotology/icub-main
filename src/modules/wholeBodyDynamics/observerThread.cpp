@@ -174,7 +174,7 @@ void inverseDynamics::init_lower()
     FM_sens_low.resize(6,2); FM_sens_low.zero();
 }
 
-inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag _icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), icub_type(_icub_type), local_name(_local_name) 
+inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag _icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), icub_type(_icub_type), local_name(_local_name), zero_sens_tolerance (1e-12)
 {
     status_queue_size = 10;
     autoconnect = _autoconnect;
@@ -1193,8 +1193,9 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 for (int i=0; i<6; i++)
                 {
                     double tmpval = fabs(tmp->data()[i]);
-                    if (tmpval<1e-18)
+                    if (tmpval<zero_sens_tolerance)
                     {
+                        fprintf(stderr,"%.13L < %.13L\n",tmpval, zero_sens_tolerance);
                         fprintf(stderr,"Error reading FT sensor left arm channel %d, cannot continue. Restart iCubInterface\n",i);
                         return false;
                     }
@@ -1222,8 +1223,9 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 for (int i=0; i<6; i++) 
                 {
                     double tmpval = fabs(tmp->data()[i]);
-                    if (tmpval<1e-18)
+                    if (tmpval<zero_sens_tolerance)
                     {
+                        fprintf(stderr,"%.13L < %.13L\n",tmpval, zero_sens_tolerance);
                         fprintf(stderr,"Error reading FT sensor right arm channel %d, cannot continue. Restart iCubInterface\n",i);
                         return false;
                     }
@@ -1254,8 +1256,9 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 for (int i=0; i<6; i++) 
                 {
                     double tmpval = fabs(tmp->data()[i]);
-                    if (tmpval<1e-18)
+                    if (tmpval<zero_sens_tolerance)
                     {
+                        fprintf(stderr,"%.13L < %.13L\n",tmpval, zero_sens_tolerance);
                         fprintf(stderr,"Error reading FT sensor left leg channel %d, cannot continue. Restart iCubInterface\n",i);
                         return false;
                     }
@@ -1282,8 +1285,9 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 for (int i=0; i<6; i++) 
                 {
                     double tmpval = fabs(tmp->data()[i]);
-                    if (tmpval<1e-18)
+                    if (tmpval<zero_sens_tolerance)
                     {
+                        fprintf(stderr,"%.13L < %.13L\n",tmpval, zero_sens_tolerance);
                         fprintf(stderr,"Error reading FT sensor right leg channel %d, cannot continue. Restart iCubInterface\n",i);
                         return false;
                     }
@@ -1312,8 +1316,9 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 for (int i=0; i<6; i++) 
                 {
                     double tmpval = fabs(tmp->data()[i]);
-                    if (tmpval<1e-18)
+                    if (tmpval<zero_sens_tolerance)
                     {
+                        fprintf(stderr,"%.13L < %.13L\n",tmpval, zero_sens_tolerance);
                         fprintf(stderr,"Error reading FT sensor left foot channel %d, cannot continue. Restart iCubInterface\n",i);
                         return false;
                     }
@@ -1340,8 +1345,9 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
                 for (int i=0; i<6; i++) 
                 {
                     double tmpval = fabs(tmp->data()[i]);
-                    if (tmpval<1e-18)
+                    if (tmpval<zero_sens_tolerance)
                     {
+                        fprintf(stderr,"%.13L < %.13L\n",tmpval, zero_sens_tolerance);
                         fprintf(stderr,"Error reading FT sensor right foot, channel %d, cannot continue. Restart iCubInterface\n",i);
                         return false;
                     }

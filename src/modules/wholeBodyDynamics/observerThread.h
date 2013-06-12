@@ -160,7 +160,7 @@ private:
 
     string part;
 
-
+    const  long double zero_sens_tolerance;
     double skinContactsTimestamp;
     
     //input ports
