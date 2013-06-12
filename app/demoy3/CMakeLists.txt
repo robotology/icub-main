@@ -22,6 +22,12 @@ icub_app_install(${appname}
 icub_app_install(${appname}
   FILES ${positions})
 
+#yarp_install(FILES ${crf_files} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/crf )
+#yarp_install(FILES ${hannover_files} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/hannover )
+#yarp_install(FILES ${positions} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/positions )
+yarp_install(FILES ${scripts}
+                DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
+
 
 
 

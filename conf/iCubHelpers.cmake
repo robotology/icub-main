@@ -43,7 +43,7 @@
 
 MACRO(icub_export_library target)
   PARSE_ARGUMENTS(${target}
-    "INTERNAL_INCLUDE_DIRS;EXTERNAL_INCLUDE_DIRS;DEPENDS;DESTINATION;FILES"
+    "INTERNAL_INCLUDE_DIRS;EXTERNAL_INCLUDE_DIRS;DEPENDS;DESTINATION;FILES;FILES_WITH_PATH"
     "VERBOSE"
     ${ARGN}
     )
@@ -56,6 +56,7 @@ MACRO(icub_export_library target)
     MESSAGE(STATUS "Dependencies: ${${target}_DEPENDS}")
     MESSAGE(STATUS "Destination: ${${target}_DESTINATION}")
     MESSAGE(STATUS "Header files: ${${target}_FILES}")
+    MESSAGE(STATUS "Header files for which we keep the relative path: ${${target}_FILES_WITH_PATH}")
     MESSAGE(STATUS "Option verbosity: ${${target}_VERBOSE}")
   endif()
 
@@ -63,6 +64,7 @@ MACRO(icub_export_library target)
   set(external_includes ${${target}_EXTERNAL_INCLUDE_DIRS})
   set(dependencies ${${target}_DEPENDS})
   set(files ${${target}_FILES})
+  set(files_with_path ${${target}_FILES_WITH_PATH})
   set(destination ${${target}_DESTINATION})
 
   set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
@@ -163,6 +165,26 @@ MACRO(icub_export_library target)
                         HEADERFILES
                         "${files}")
 
+    set_target_properties(${target} PROPERTIES
+                        HEADERS_DESTINATION
+                        ${destination})
+  endif()
+
+  #### Export rules for files_with_path case
+  if (files_with_path AND destination)
+    if (VERBOSE)
+        message(STATUS "Target ${target} installing ${files_with_path} to ${destination}")
+    endif()
+   
+
+    foreach(cur_file  ${files_with_path})
+        get_filename_component(file_rel_dir ${cur_file} PATH)
+        install(FILES ${cur_file} DESTINATION ${destination}/${file_rel_dir} COMPONENT Development)
+    endforeach()
+    set_target_properties(${target} PROPERTIES 
+                        HEADERFILES
+                        "${files_with_path}")
+                        
     set_target_properties(${target} PROPERTIES
                         HEADERS_DESTINATION
                         ${destination})

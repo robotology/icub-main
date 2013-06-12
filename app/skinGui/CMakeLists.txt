@@ -24,3 +24,9 @@ icub_app_install(${appname}
 				DESTINATION conf/skinGui)
 				
 #icub_add_target(${appname})
+
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf )
+yarp_install(FILES ${confpos} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf/positions )
+yarp_install(FILES ${confgui} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf/skinGui )
+yarp_install(FILES ${scripts}
+                DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})

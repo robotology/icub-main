@@ -12,3 +12,5 @@ icub_app_install(${appname}
                  FILES ${conf}
                  DESTINATION conf)
 
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf )
+
