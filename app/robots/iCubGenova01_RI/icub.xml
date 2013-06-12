@@ -63,12 +63,13 @@
     <devices file="hardware/skin/torso.xml" />  
 	
     <!-- CALIBRATORS -->
-    <devices file="calibrators/head-calib.xml" /> 
-    <devices file="calibrators/torso-calib.xml" />
-    <devices file="calibrators/right_leg-calib.xml" />
-    <devices file="calibrators/left_leg-calib.xml" /> 
-    <devices file="calibrators/left_arm-calib.xml" /> 
-    <devices file="calibrators/right_arm-calib.xml" />
+    <devices file="calibrators/head_torso_calib.xml" /> 
+    <devices file="calibrators/right_leg_calib.xml" />
+    <devices file="calibrators/left_leg_calib.xml" /> 
+    <devices file="calibrators/left_arm_calib.xml" /> 
+    <devices file="calibrators/right_arm_calib.xml" />
+    <devices file="calibrators/left_hand_calib.xml" /> 
+    <devices file="calibrators/right_hand_calib.xml" />
 
 
 </robot> 
