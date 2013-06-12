@@ -19,13 +19,46 @@
 #ifndef __comanDevicesHandler_h__
 #define __comanDevicesHandler_h__
 
+#include <Debug.h>
+#include <yarp/dev/Drivers.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/os/Bottle.h>
 
 #include "Boards_iface.h"
 
-
 // No need to include this class into yarp::dev namespace.
-
-class comanDevicesHandler
+class comanDevicesHandler: public yarp::dev::DeviceDriver
 {
-    
-}
+public:
+    static yarp::os::Semaphore    comanDevicesHandler_mutex;
+
+private:
+    // Data for Singleton handling
+    bool                          _initted;
+    static comanDevicesHandler    *_handle;
+    Boards_ctrl                   *_board_crtl;
+
+
+private:
+    comanDevicesHandler();                      // Singletons have private constructor
+    ~comanDevicesHandler();
+
+
+public:
+    /*! @fn     static  comanDevicesHandler* instance();
+     *  @brief  Create the Singleton if it doesn't exists yet and return the pointer.
+     *  @return Pointer to comanDevicesHandler singleton
+     */
+    static  comanDevicesHandler* instance();
+
+    /*! @fn     open(yarp::os::Searchable& config);
+     *  @brief  Open and configure the singleton, verifies internally if already initted
+     *  @param  config a searcheable object with path to Yaml file
+     *  @return True if succesfully intitialized, false if errors occurred
+     */
+    bool open(yarp::os::Searchable& config);
+    bool close();
+    Boards_ctrl *getBoard_ctrl_p();
+};
+
+#endif

@@ -67,6 +67,8 @@ using namespace yarp::os;
 #include <DSP_board.h>
 #include <Boards_iface.h>
 
+#include <comanDevicesHandler.hpp>
+
 #define SIZE_INFO   128
 #define BC_POLICY_MOTOR_POSITION          (1 << 0)
 #define BC_POLICY_MOTOR_VELOCITY          (1 << 1)
@@ -86,62 +88,8 @@ using namespace yarp::os;
 #define BC_POLICY_RAW_MOTOR_CURRENT       (1 << 14)
 #define BC_POLICY_RELATIVE_POSITION       (1 << 15)
 
-#ifdef _OLD_STYLE_
-//
-//   Help structure
-//
-
-struct ImpedanceLimits
-{
-    double min_stiff;
-    double max_stiff;
-    double min_damp;
-    double max_damp;
-    double param_a;
-    double param_b;
-    double param_c;
-
-public:
-    ImpedanceLimits()
-    {
-        min_stiff=0;
-        max_stiff=0;
-        min_damp=0;
-        max_damp=0;
-        param_a=0;
-        param_b=0;
-        param_c=0;
-    }
-
-    double get_min_stiff() {
-        return min_stiff;
-    }
-    double get_max_stiff() {
-        return max_stiff;
-    }
-    double get_min_damp()  {
-        return min_damp;
-    }
-    double get_max_damp()  {
-        return max_damp;
-    }
-};
-
-struct ImpedanceParameters
-{
-    double stiffness;
-    double damping;
-    bool   enabled;
-    ImpedanceLimits limits;
-    ImpedanceParameters() {
-        stiffness=0;
-        damping=0;
-        enabled=false;
-    }
-};
-
-#endif
-
+static const double COMAN_POS_THRESHOLD     = 0.1f;
+static const double COMAN_POS_TO_VEL_GAIN   = 100.0f;
 
 namespace yarp {
     namespace dev {
@@ -155,17 +103,18 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public IAmplifierControlRaw,
     public IEncodersTimedRaw,
     public ImplementEncodersTimed,
-    public IPositionControlRaw,
-    public IVelocityControlRaw,
+    public IPositionControl2Raw,
+    public ImplementPositionControl2,
+    public IVelocityControl2Raw,
+    public ImplementVelocityControl2,
     public IControlModeRaw,
     public IControlLimitsRaw,
     public ImplementControlLimits<comanMotionControl, IControlLimits>,
     public ImplementControlMode,
     public ImplementAmplifierControl<comanMotionControl, IAmplifierControl>,
-    public ImplementPositionControl<comanMotionControl, IPositionControl>,
     public ImplementControlCalibration2<comanMotionControl, IControlCalibration2>,
     public ImplementPidControl<comanMotionControl, IPidControl>,
-    public ImplementVelocityControl<comanMotionControl, IVelocityControl>,
+//    public ImplementVelocityControl<comanMotionControl, IVelocityControl>,
     public ImplementDebugInterface,
     public ITorqueControlRaw,
     public IDebugInterfaceRaw
@@ -189,16 +138,19 @@ private:
         ////////  CHECK FOR DUPLICATED!!  buffers array for multi-joints command
     int32_t               *_ref_positions;                    // used for position control.
     int16_t               *_ref_speeds;                       // used for position control.
+    int16_t               *_ref_torques;                      // for torque control.
     double                *_command_speeds;                   // used for velocity control.
     double                *_ref_accs;                         // for velocity control, in position min jerk eq is used.
-    double                *_ref_torques;                      // for torque control.
-    double                *_pid_offset;                       // for feedforward control.
+    int16_t               *_pid_offset;                       // for feedforward control.
+
+    double                *_homePos;                          // initial position (usually it's stored in the calibrator)
 
 
-
-    Boards_ctrl           *boards_ctrl;
-    mcs_map_t             _mcs;
-    int                   *_controlMode;                        // memorize the type of control currently running... safe??
+    // handling classes
+    comanDevicesHandler     *_comanHandler;
+    Boards_ctrl             *_boards_ctrl;
+    Boards_ctrl::mcs_map_t  _mcs;
+    int                     *_controlMode;                        // memorize the type of control currently running... safe??
     ////////  canonical
     yarp::os::Semaphore   _mutex;
 
@@ -235,13 +187,14 @@ private:
 #if 0
     DebugParameters *_debug_params;             /** debug parameters */
     ImpedanceParameters *_impedance_params;   /** impedance parameters */
-    ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+    ImpedanceLimits     *_impedance_limits;     /** impedance limits */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 #endif
 
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     McBoard *getMCpointer(int j);
+    int bId2Idx(int j);
     double convertDoble2Int(double in[], int out[]);
     double convertDoble2Short(double in[], short int out[]);
     uint16_t strtouli(ConstString asString, int arg2, int arg3);
@@ -284,7 +237,7 @@ public:
     virtual bool enablePidRaw(int j);
     virtual bool setOffsetRaw(int j, double v);
 
-    /// POSITION CONTROL INTERFACE RAW
+    //// POSITION CONTROL INTERFACE RAW
     virtual bool getAxes(int *ax);
     virtual bool setPositionModeRaw();
     virtual bool positionMoveRaw(int j, double ref);
@@ -304,18 +257,40 @@ public:
     virtual bool stopRaw(int j);
     virtual bool stopRaw();
 
-    ///////// 	Velocity control interface raw	/////////
+    ////    Position Control 2 interface
+    virtual bool setPositionModeRaw(const int n_joint, const int *joints);
+    virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
+    virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas);
+    virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags);
+    virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds);
+    virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
+    virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+    virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+    virtual bool stopRaw(const int n_joint, const int *joints);
+
+    ////    Velocity control interface  /////////
     virtual bool setVelocityModeRaw();
     virtual bool velocityMoveRaw(int j, double sp);
     virtual bool velocityMoveRaw(const double *sp);
 
+    ////    Velocity Control 2 interface
+    virtual bool setVelocityModeRaw(const int n_joint, const int *joints);
+    virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+    virtual bool setVelPidRaw(int j, const Pid &pid);
+    virtual bool setVelPidsRaw(const Pid *pids);
+    virtual bool setVelPidsRaw(const int n_joint, const int *joints, const Pid *pids);
+    virtual bool getVelPidRaw(int j, Pid *pid);
+    virtual bool getVelPidsRaw(const int n_joint, const int *joints, Pid *pids);
+    virtual bool getVelPidsRaw(Pid *pids);
+    virtual bool getVelErrorRaw(int j, double *err);
+    virtual bool getVelErrorsRaw(const int n_joint, const int *joints, double *errs);
+    virtual bool getVelErrorsRaw(double *errs);
+    //virtual bool stopRaw(const int n_joint, const int *joints);  // already present in pos2
 
     // calibration2raw
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
     virtual bool doneRaw(int j);
 
-
-    /////// END Position Control INTERFACE
 
     // ControlMode
     virtual bool setPositionModeRaw(int j);

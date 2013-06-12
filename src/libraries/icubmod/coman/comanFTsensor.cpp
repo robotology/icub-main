@@ -135,7 +135,7 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
 comanFTsensor::comanFTsensor()
 {
     yTrace();
-    boards_ctrl = NULL;
+    _boards_ctrl = NULL;
     _useCalibration=0;
     _channels=0;
     scaleFactor=0;
@@ -158,7 +158,23 @@ FtBoard * comanFTsensor::getFTpointer(int j)
 
 bool comanFTsensor::open(yarp::os::Searchable &config)
 {
-    boards_ctrl = Boards_ctrl::instance();
+    _comanHandler = comanDevicesHandler::instance();
+
+    if(_comanHandler == NULL)
+    {
+        yError() << "unable to create a new Coman Handler class!";
+        return false;
+    }
+
+    _comanHandler->open(config);
+    _boards_ctrl = _comanHandler->getBoard_ctrl_p();
+
+    if(_boards_ctrl == NULL)
+    {
+        yError() << "unable to create a new Boards_ctrl class!";
+        return false;
+    }
+
     Property prop;
     std::string str=config.toString().c_str();
     yTrace() << str;
@@ -168,16 +184,10 @@ bool comanFTsensor::open(yarp::os::Searchable &config)
 
     prop.fromString(str.c_str());
 
-    boards_ctrl = Boards_ctrl::instance();
-    if(boards_ctrl == NULL)
-    {
-        yError() << "unable to open Boards_ctrl class!";
-        return false;
-    }
-    boards_ctrl->open(config);
+
     // TODO fix this!
 #warning "<><> TODO: This is a copy of the mcs map. Verify that things will never change after this copy or use a pointer (better) <><>"
-    _fts = boards_ctrl->get_fts_map();
+    _fts = _boards_ctrl->get_fts_map();
     return true;
 }
 
@@ -212,10 +222,10 @@ int comanFTsensor::read(yarp::sig::Vector &out)
             //return AS_ERROR;
         }
 
-        ft_bc_data_t data;
+        ts_bc_data_t bc_data;
+        ft_bc_data_t &data = bc_data.raw_bc_data.ft_bc_data;
 
-        ftSensor->get_bc_data(&data);
-
+        ftSensor->get_bc_data(bc_data);
 
         // ci sono 6 valori da leggere per ogni FT, per ora!!
         out[idx*_channels + 0] = data.fx;

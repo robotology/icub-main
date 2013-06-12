@@ -8,7 +8,7 @@
 SET(COMAN_MC comanMotionControl)
 SET(COMAN_FT comanFTsensor)
 
-PROJECT(COMAN)
+PROJECT(coman)
 
 PREPARE_DEVICE(${COMAN_MC} TYPE ${COMAN_MC} INCLUDE ${COMAN_MC}.h  WRAPPER controlboard)
 PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analogServer)
@@ -25,6 +25,7 @@ PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analo
   board_iface/DSP_board.cpp
   comanMotionControl.cpp
   comanFTsensor.cpp
+  comanDevicesHandler.cpp
   )
 
   set(HEADERS_TO_INSTALL
@@ -34,7 +35,8 @@ PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analo
   board_iface/DSP_board.h
   comanMotionControl.h
   comanFTsensor.h
-  )
+  comanDevicesHandler.hpp
+)
 
   #add_definitions("-std=c++0x")
 
@@ -49,6 +51,6 @@ ENDIF (NOT SKIP_${COMAN_MC} )
 
 IF (NOT SKIP_${COMAN_FT} )
     add_library(${COMAN_FT} ${ThisLib_SOURCES})
-    target_link_libraries(${COMAN_FT} yaml-cpp debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
+    target_link_libraries(${COMAN_FT} yaml-cpp debugStream iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
     icub_export_library(${COMAN_FT} )
 ENDIF (NOT SKIP_${COMAN_FT} )

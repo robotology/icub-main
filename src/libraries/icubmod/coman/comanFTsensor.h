@@ -25,12 +25,12 @@
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
 
-#include "DSP_board.h"
-#include "Boards_iface.h"
+#include <DSP_board.h>
+#include <Boards_iface.h>
 
-#include "Debug.h"
+#include <comanDevicesHandler.hpp>
+#include <Debug.h>
 
-#define SIZE_INFO 128
 namespace yarp{
     namespace dev{
         class comanFTsensor;
@@ -76,20 +76,19 @@ class yarp::dev::comanFTsensor:     public yarp::dev::DeviceDriver,
 {
 private:
 
-    char            info[SIZE_INFO];   // debug per comodità
-    //short           boardId;           //
-    Boards_ctrl     *boards_ctrl;
-    fts_map_t       _fts;
+    // handling classes
+    comanDevicesHandler         *_comanHandler;
+    Boards_ctrl                 *_boards_ctrl;
+    Boards_ctrl::fts_map_t       _fts;
+
     // remapping of FT sensors
-    int             numberOfBoards;
-    int             *FTmap;
+    int                     numberOfBoards;
+    int                     *FTmap;
 
 ////////////////////
     // parameters
     int             _channels;
     short           _useCalibration;
-
-    bool            isVirtualSensor;    //RANDAZ ... a new class for virtual sensor will be create
 
 //     AnalogData *data;
     short status;
