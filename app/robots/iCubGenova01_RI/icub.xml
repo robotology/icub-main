@@ -40,13 +40,16 @@
     <devices file="wrappers/FT/right_arm_FTserver.xml" /> 
     <devices file="wrappers/FT/right_leg_FTserver.xml" /> 
     <devices file="wrappers/FT/right_foot_FTserver.xml" /> 
-    
+    <devices file="wrappers/MAIS/left_hand_mais_server.xml" /> 
+    <devices file="wrappers/MAIS/right_hand_mais_server.xml" /> 
     <devices file="hardware/FT/left_arm_strain.xml" /> 
     <devices file="hardware/FT/left_leg_strain.xml" /> 
     <devices file="hardware/FT/left_foot_strain.xml" />
     <devices file="hardware/FT/right_arm_strain.xml" /> 
     <devices file="hardware/FT/right_leg_strain.xml" /> 
     <devices file="hardware/FT/right_foot_strain.xml" /> 
+    <devices file="hardware/MAIS/left_hand_mais.xml" /> 
+    <devices file="hardware/MAIS/right_hand_mais.xml" /> 
    
     <!-- INERTIAL SENSOR -->
     <devices file="hardware/inertial.xml" />
