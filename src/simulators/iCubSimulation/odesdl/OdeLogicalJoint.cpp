@@ -175,7 +175,7 @@ double OdeLogicalJoint::getTorque() {
     // odeinit._iCub->torqueData[0]
     if(!hinged || !feedback) 
         return 0.0;
-    return (feedback->t1[0]*axis[0]+feedback->t1[1]*axis[1]+feedback->t1[2]*axis[2]);
+    return *torque; //(feedback->t1[0]*axis[0]+feedback->t1[1]*axis[1]+feedback->t1[2]*axis[2]);
 }
 
 void OdeLogicalJoint::setTorque(double target){

@@ -315,8 +315,7 @@ void iCubSimulationControl::jointStep() {
             current_pos[axis] = ctrl.getAngle();
 
             current_vel[axis] = ctrl.getVelocity();
-            current_torques[axis] = ctrl.getTorque();
-            //fprintf(stdout,"torques %lf \n",current_torques[axis]);
+            current_torques[axis] = (controlMode[axis]==MODE_TORQUE) ? ctrl.getTorque() : 0.0;  // if not torque ctrl, set torque feedback to 0
         
             motor_on[axis] = true; // no reason to turn motors off, for now
 
