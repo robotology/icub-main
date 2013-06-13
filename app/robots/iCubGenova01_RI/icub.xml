@@ -61,8 +61,9 @@
     <devices file="hardware/skin/left_arm.xml" />
     <devices file="hardware/skin/right_arm.xml" />  
     <devices file="hardware/skin/torso.xml" />  
-	
+    
     <!-- CALIBRATORS -->
+    <!-- 
     <devices file="calibrators/head_torso_calib.xml" /> 
     <devices file="calibrators/right_leg_calib.xml" />
     <devices file="calibrators/left_leg_calib.xml" /> 
@@ -70,7 +71,15 @@
     <devices file="calibrators/right_arm_calib.xml" />
     <devices file="calibrators/left_hand_calib.xml" /> 
     <devices file="calibrators/right_hand_calib.xml" />
+    -->
 
-
+    <devices file="calibrators2/head_calib.xml" /> 
+    <devices file="calibrators2/torso_calib.xml" /> 
+    <devices file="calibrators2/right_leg_calib.xml" />
+    <devices file="calibrators2/left_leg_calib.xml" /> 
+    <devices file="calibrators2/left_arm_calib.xml" /> 
+    <devices file="calibrators2/right_arm_calib.xml" />
+    <devices file="calibrators2/left_hand_calib.xml" /> 
+    <devices file="calibrators2/right_hand_calib.xml" />
 </robot> 
 

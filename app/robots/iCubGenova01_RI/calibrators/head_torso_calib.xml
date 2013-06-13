@@ -23,11 +23,11 @@
         </group>       
 
 		<action phase="startup" level="10" type="calibrate">
-		    <param name="target">head_torso_calibrator</param>
+		    <param name="target">head_torso_mc_wrapper</param>
 		</action>
 
 		<action phase="interrupt1" level="1" type="park">
-		    <param name="target">head_torso_calibrator</param>
+		    <param name="target">head_torso_mc_wrapper</param>
 		</action>
 
 		<action phase="interrupt3" level="1" type="abort" />
