@@ -15,7 +15,6 @@
 		</group>
 
 		<group name="CALIBRATION">
-		    <param name="Joints">  6  </param> <!-- the number of joints of the robot part -->
 		    <!-- Joint                          0               1               2               3               4               5       -->
 		    <param name="CalibrationType">      3               3               3               3               3               3       </param>
 		    <param name="Calibration1">         0               0               0               0               0               0       </param>
