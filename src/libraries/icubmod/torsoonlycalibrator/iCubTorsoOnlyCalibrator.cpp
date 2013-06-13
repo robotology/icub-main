@@ -183,12 +183,12 @@ bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
     fprintf(stderr, "HEAD::CALIB Calling iCubTorsoOnlyCalibrator::calibrate\n");
     abortCalib=false;
 
-    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-    iEncoders = dynamic_cast<IEncoders *>(dd);
-    iPosition = dynamic_cast<IPositionControl *>(dd);
-    iPids = dynamic_cast<IPidControl *>(dd);
-	iControlMode = dynamic_cast<IControlMode *>(dd);
+    dd->view(iCalibrate);
+    dd->view(iAmps);
+    dd->view(iEncoders);
+    dd->view(iPosition);
+    dd->view(iPids);
+    dd->view(iControlMode);
 
     if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
         return false;

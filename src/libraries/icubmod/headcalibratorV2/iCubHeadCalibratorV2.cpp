@@ -183,12 +183,12 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     fprintf(logfile, "Calling iCubHeadCalibratorV2::calibrate\n");
     abortCalib=false;
 
-    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-    iEncoders = dynamic_cast<IEncoders *>(dd);
-    iPosition = dynamic_cast<IPositionControl *>(dd);
-    iPids = dynamic_cast<IPidControl *>(dd);
-    iControlMode = dynamic_cast<IControlMode *>(dd);
+    dd->view(iCalibrate);
+    dd->view(iAmps);
+    dd->view(iEncoders);
+    dd->view(iPosition);
+    dd->view(iPids);
+    dd->view(iControlMode);
 
     if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
         fprintf(logfile, "HEADCALIB[%d]: Error. This device cannot be calibrated\n", canID);
