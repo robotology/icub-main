@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
-	<device name="left_leg_VFTserver" type="virtualAnalogServer">
+	<device name="left_arm_VFTserver" type="virtualAnalogServer">
 		<param name="period">       10  				</param>
 		<param name="deviceId">     left_arm				</param>
 		
-		 <paramlist name="networks">
+		<paramlist name="networks">
 			<elem name="net1">  1  6  1  6 </elem> 
 		</paramlist>
 
