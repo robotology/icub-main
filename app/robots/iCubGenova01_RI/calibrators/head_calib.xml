@@ -18,8 +18,8 @@
         </group>       
          
         <group name="HOME">          
-        <param name="PositionHome"> -30           0             0             0             0             0             0             </param>       
-        <param name="VelocityHome"> 10            10            10            10            10            10            10            </param>       
+        <param name="PositionHome">               0             0             0             0             0             0             </param>       
+        <param name="VelocityHome">              10            10            10            10            10            10            </param>       
         </group>       
 
 		<action phase="startup" level="10" type="calibrate">
