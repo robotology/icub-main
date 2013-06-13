@@ -127,6 +127,13 @@ public:
     bool addPoints(const yarp::sig::Vector &p0, const yarp::sig::Vector &p1);
 
     /**
+    * Return the number of 3D-points pairs currently contained into 
+    * the internal database. 
+    * @return the number of pairs. 
+    */
+    size_t getNumPoints() const { return p0.size(); }
+
+    /**
     * Clear the internal database of 3D points.
     */
     void clearPoints();
