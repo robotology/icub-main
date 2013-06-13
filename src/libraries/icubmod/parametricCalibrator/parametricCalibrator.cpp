@@ -102,7 +102,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     isVanilla = !!isVanilla;
     yWarning() << "embObjMotionControl: Vanilla " << isVanilla;
 
-    int nj = p.findGroup("CALIBRATION").find("Joints").asInt();
+    int nj = p.findGroup("GENERAL").find("Joints").asInt();
     if (nj == 0)
     {
         yDebug() << deviceName.c_str() <<  ": Calibrator is for %d joints but device has " << numberOfJoints;
