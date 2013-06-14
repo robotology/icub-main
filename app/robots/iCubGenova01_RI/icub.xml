@@ -2,38 +2,38 @@
 <robot name="icub">
 
     <!-- cartesian --> 
-	<!--
-    <devices file="cartesians.xml" />
-    />
+    <devices file="cartesian_left.xml" />
+    <devices file="cartesian_right.xml" />
     
     <!-- motor controllers wrappers -->
-	<devices file="wrappers/motorControl/left_arm_mcWrapper.xml" /> 
+    <devices file="wrappers/motorControl/left_arm_mcWrapper.xml" /> 
     <devices file="wrappers/motorControl/right_arm_mcWrapper.xml" />
     <devices file="wrappers/motorControl/left_leg_mcWrapper.xml" /> 
     <devices file="wrappers/motorControl/right_leg_mcWrapper.xml" /> 
     <devices file="wrappers/motorControl/head_mcWrapper.xml" />
     <devices file="wrappers/motorControl/torso_mcWrapper.xml" />
-	<devices file="hardware/motorControl/icub_left_arm.xml" /> 
-	<devices file="hardware/motorControl/icub_left_hand.xml" /> 
+    <devices file="hardware/motorControl/icub_left_arm.xml" /> 
+    <devices file="hardware/motorControl/icub_left_hand.xml" /> 
     <devices file="hardware/motorControl/icub_right_arm.xml" />
     <devices file="hardware/motorControl/icub_right_hand.xml" />
     <devices file="hardware/motorControl/icub_left_leg.xml" /> 
     <devices file="hardware/motorControl/icub_right_leg.xml" /> 
     <devices file="hardware/motorControl/icub_head_torso.xml" />
-	
+    
     <!-- VIRTUAL ANALOG SERVERs -->
     <devices file="wrappers/VFT/left_arm_VFTserver.xml" /> 
     <devices file="wrappers/VFT/left_leg_VFTserver.xml" /> 
     <devices file="wrappers/VFT/right_arm_VFTserver.xml" /> 
     <devices file="wrappers/VFT/right_leg_VFTserver.xml" /> 
+    <devices file="wrappers/VFT/torso_VFTserver.xml" /> 
     
-	<devices file="hardware/VFT/left_arm_virtual_strain.xml" /> 
+    <devices file="hardware/VFT/left_arm_virtual_strain.xml" /> 
     <devices file="hardware/VFT/left_leg_virtual_strain.xml" /> 
     <devices file="hardware/VFT/right_arm_virtual_strain.xml" /> 
     <devices file="hardware/VFT/right_leg_virtual_strain.xml" /> 
     <devices file="hardware/VFT/torso_virtual_strain.xml" /> 
 
-	<!-- REAL ANALOG SENSORS -->
+    <!-- REAL ANALOG SENSORS -->
     <devices file="wrappers/FT/left_arm_FTserver.xml" /> 
     <devices file="wrappers/FT/left_leg_FTserver.xml" /> 
     <devices file="wrappers/FT/left_foot_FTserver.xml" /> 
@@ -81,6 +81,6 @@
     <devices file="calibrators2/right_arm_calib.xml" />
     <devices file="calibrators2/left_hand_calib.xml" /> 
     <devices file="calibrators2/right_hand_calib.xml" />
-	    -->
+    -->
 </robot> 
 
