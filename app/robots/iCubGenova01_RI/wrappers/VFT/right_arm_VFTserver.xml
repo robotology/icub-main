@@ -5,7 +5,7 @@
 		<param name="deviceId">     right_arm				</param>
 		
 		<paramlist name="networks">
-			<elem name="net1">  1  6  1  6 </elem> 
+			<elem name="net_VFT_RA">  0  5  0  5 </elem> 
 		</paramlist>
 
 		<param name="channels">       6  				</param>
@@ -13,7 +13,7 @@
 
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">
-			    <elem name="net1">  right_arm_virtual_strain </elem>	
+			<elem name="net_VFT_RA">  right_arm_virtual_strain </elem>	
 		    </paramlist>
 		</action>
 
