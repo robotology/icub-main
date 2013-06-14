@@ -39,48 +39,49 @@ iCubTorsoOnlyCalibrator::~iCubTorsoOnlyCalibrator()
 
 bool iCubTorsoOnlyCalibrator::park(DeviceDriver *dd, bool wait)
 {
-	int nj=0;
+    int nj=0;
     bool ret=false;
     abortParking=false;
     ret=iEncoders->getAxes(&nj);
     if (!ret)
-        {
-            fprintf(stderr, "TORSOCALIB: error getting number of encoders\n");
-            return false;
-        }
+    {
+        fprintf(stderr, "TORSOCALIB: error getting number of encoders\n");
+        return false;
+    }
 
-	int timeout = 0;
+    int timeout = 0;
     fprintf(stderr, "TORSOCALIB::Calling iCubTorsoOnlyCalibrator::park() \n");
-	iPosition->setPositionMode();
+    iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
 
     if (wait)
+    {
+        bool done=false;
+        while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
         {
-            bool done=false;
-            while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
-            {
-                iPosition->checkMotionDone(1, &done);
-                iPosition->checkMotionDone(2, &done);
-                fprintf(stderr, "."); 
-                Time::delay(1);
-				timeout++;
-            }
-			if(!done)
-			{
-				for(int j=1; j < nj; j++)                      //joint 0 is not enabled during calibration and parking
-				{
-					iPosition->checkMotionDone(j, &done);
-					if (iPosition->checkMotionDone(j, &done))
-					{
-						if (!done)
-							fprintf(stderr, "iCubTorsoOnlyCalibrator::park() : joint %d not in position ", j);
-					}
-					else
-						fprintf(stderr, "iCubTorsoOnlyCalibrator::park() : joint %d did not answer ", j);
-				}
-			}
+            //iPosition->checkMotionDone(0, &done);          //joint 0 is not enabled during calibration and parking
+            iPosition->checkMotionDone(1, &done);
+            iPosition->checkMotionDone(2, &done);
+            fprintf(stderr, "."); 
+            Time::delay(1);
+            timeout++;
         }
+        if(!done)
+        {
+            for(int j=1; j < nj; j++)                      //joint 0 is not enabled during calibration and parking
+            {
+                iPosition->checkMotionDone(j, &done);
+                if (iPosition->checkMotionDone(j, &done))
+                {
+                    if (!done)
+                        fprintf(stderr, "iCubTorsoOnlyCalibrator::park() : joint %d not in position ", j);
+                }
+                else
+                    fprintf(stderr, "iCubTorsoOnlyCalibrator::park() : joint %d did not answer ", j);
+            }
+        }
+    }
 
     if (abortParking)
         fprintf(stderr, "Torso parking was aborted!\n");
@@ -95,7 +96,8 @@ bool iCubTorsoOnlyCalibrator::open (yarp::os::Searchable& config)
     Property p;
     p.fromString(config.toString());
 
-    if (!p.check("GENERAL")) {
+    if (!p.check("GENERAL"))
+    {
         fprintf(stderr, "TORSOCALIB::Cannot understand configuration parameters\n");
         return false;
     }
@@ -180,7 +182,7 @@ bool iCubTorsoOnlyCalibrator::close ()
 
 bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
 {
-    fprintf(stderr, "HEAD::CALIB Calling iCubTorsoOnlyCalibrator::calibrate\n");
+    fprintf(stderr, "TORSOCALIB:: Calling iCubTorsoOnlyCalibrator::calibrate\n");
     abortCalib=false;
 
     dd->view(iCalibrate);
@@ -201,17 +203,18 @@ bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
         return false;
 
     int k;
-    for(k=0;k<nj;k++)
+    for(k = 0; k<nj; k++)
     {
         iEncoders->resetEncoder(k);
     }
 
-	bool x;
+    bool x;
     /////////////////////////////////////
-	//calibrate the joint 1 and 2      //
+    //calibrate the joint 1 and 2      //
     /////////////////////////////////////
-	int firstSetOfJoints[] = {1,2};       //joint 0 is not enabled during calibration and parking
-    for (k = 0; k < 2; k++) 
+    int firstSetOfJointsSize = 2;
+    int firstSetOfJoints[] = {1,2};       //joint 0 is not enabled during calibration and parking
+    for (k = 0; k < firstSetOfJointsSize; k++) 
     {
         if (firstSetOfJoints[k]<nj)
             {
@@ -219,17 +222,17 @@ bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
                 iPids->enablePid(firstSetOfJoints[k]);
             }
     }
-	for (k =0; k < 6; k++)
+    for (k =0; k < firstSetOfJointsSize; k++)
         if (firstSetOfJoints[k]<nj)
             calibrateJoint(firstSetOfJoints[k]);
-	for (k =0; k < 6; k++)
+    for (k =0; k < firstSetOfJointsSize; k++)
     {
         if (firstSetOfJoints[k]<nj)
-            {
-                x = checkCalibrateJointEnded(firstSetOfJoints[k]);
-                ret = ret && x;
-            }
-	}
+        {
+            x = checkCalibrateJointEnded(firstSetOfJoints[k]);
+            ret = ret && x;
+        }
+    }
     return ret;
 }
 
@@ -269,14 +272,13 @@ bool iCubTorsoOnlyCalibrator::checkCalibrateJointEnded(int joint)
 
 void iCubTorsoOnlyCalibrator::goToZero(int j)
 {
-	iControlMode->setPositionMode(j);
+    iControlMode->setPositionMode(j);
     iPosition->setRefSpeed(j, vel[j]);
     iPosition->positionMove(j, pos[j]);
 }
 
 void iCubTorsoOnlyCalibrator::checkGoneToZero(int j)
 {
-    // wait.
     bool finished = false;
     int timeout = 0;
     while ( (!finished) && (!abortCalib))
