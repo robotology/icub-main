@@ -560,6 +560,15 @@ bool CalibReferenceWithMatchedPoints::addPoints(const Vector &p0,
 
 
 /****************************************************************/
+void CalibReferenceWithMatchedPoints::getPoints(deque<Vector> &p0,
+                                                deque<Vector> &p1) const
+{
+    p0=this->p0;
+    p1=this->p1;
+}
+
+
+/****************************************************************/
 void CalibReferenceWithMatchedPoints::clearPoints()
 {
     p0.clear();

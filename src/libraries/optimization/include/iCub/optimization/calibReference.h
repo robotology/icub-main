@@ -134,6 +134,14 @@ public:
     size_t getNumPoints() const { return p0.size(); }
 
     /**
+    * Retrieve copies of the database of 3D-points pairs.
+    * @param p0 the list of free 3D-points.
+    * @param p1 the list of 3D-points which correspond either to
+    *           H*p0 or to S*H*p0.
+    */
+    void getPoints(std::deque<yarp::sig::Vector> &p0, std::deque<yarp::sig::Vector> &p1) const;
+
+    /**
     * Clear the internal database of 3D points.
     */
     void clearPoints();
