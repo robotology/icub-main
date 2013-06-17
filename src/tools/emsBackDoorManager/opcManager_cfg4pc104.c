@@ -256,6 +256,7 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             s_print_emsperiph_candata(&data->can_dev[0]);
             printf("\t CAN 2:\n");
             s_print_emsperiph_candata(&data->can_dev[1]);
+            printf("\t ETH MASK: 0x%x\n", data->eth_dev.linksmask);
                     
         } break;
     }       
