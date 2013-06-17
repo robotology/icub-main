@@ -27,17 +27,6 @@ int main(int argc, char *argv[])
 
     YARP_REGISTER_DEVICES(icubmod)
 
-    std::string  outputFileName("/usr/local/src/robot/RIdebug");
-    std::string   debugFileName("/usr/local/src/robot/RItrace");
-    std::string   errorFileName("/usr/local/src/robot/RIerror");
-
-    DebugStream::Debug::setOutputFile(outputFileName);
-    DebugStream::Debug::setTraceFile(debugFileName);
-    DebugStream::Debug::setErrorFile(errorFileName);
-
-
-
-
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultConfigFile("robot-interface.ini");
