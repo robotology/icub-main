@@ -138,6 +138,8 @@ public:
     * @param p0 the list of free 3D-points.
     * @param p1 the list of 3D-points which correspond either to
     *           H*p0 or to S*H*p0.
+    *  
+    * @note points are retrived in 4x1 homogeneous format. 
     */
     void getPoints(std::deque<yarp::sig::Vector> &p0, std::deque<yarp::sig::Vector> &p1) const;
 
