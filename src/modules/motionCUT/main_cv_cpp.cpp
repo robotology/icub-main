@@ -208,7 +208,7 @@ public:
 
                 // convert to gray-scale and prepare pyramid
                 cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
-                buildOpticalFlowPyramid(*(Mat*)(IplImage*)imgMonoIn.getIplImage(),pyrPrev,Size(winSize,winSize),5);
+                buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),pyrPrev,Size(winSize,winSize),5);
 
                 if (verbosity)
                 {
@@ -247,7 +247,7 @@ public:
 
             // compute optical flow through pyramidal approach
             latch_t=Time::now();
-            buildOpticalFlowPyramid(*(Mat*)(IplImage*)imgMonoIn.getIplImage(),pyrCurr,Size(winSize,winSize),5);
+            buildOpticalFlowPyramid(Mat((IplImage*)imgMonoIn.getIplImage()),pyrCurr,Size(winSize,winSize),5);
 
             calcOpticalFlowPyrLK(pyrPrev,pyrCurr,
                                  nodesPrev,nodesCurr,featuresFound,featuresErrors,
