@@ -2225,7 +2225,9 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
                         }
                         if (attempts>=15)
                         {
-                            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
+                            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor %s: all attempts failed (ch:%d)\n", deviceid.c_str(), ch);
+                            fprintf(stderr, "*** ERROR: Device %s cannot be opened.\n", deviceid.c_str());
+                            return 0; //@@@delete missing, but TBR_AnalogSensor will be deprecated soon
                         }
                     }
 
