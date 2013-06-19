@@ -197,11 +197,9 @@ bool VirtualAnalogServer::open(Searchable& config)
 
 bool VirtualAnalogServer::close()
 {
-    Thread::stop();
-
-    mPortInputTorques.interrupt();
+	mPortInputTorques.interrupt();
     mPortInputTorques.close();
-
+    Thread::stop();
     return true;
 }
 
@@ -263,7 +261,7 @@ void VirtualAnalogServer::run()
 {
     yarp::os::Bottle *pTorques;
 
-    while (Thread::isRunning())
+    while (!Thread::isStopping())
     {
         pTorques=mPortInputTorques.read();
 
