@@ -2853,10 +2853,10 @@ void ICubSim::initTorsoJoints(OdeParams &p)
     dJointSetHingeParam(Torsojoints[1],dParamLoStop, -30*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(Torsojoints[2],dParamLoStop, -50*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(Torsojoints[2],dParamHiStop, 50*CTRL_DEG2RAD+safetyMargin);
-    dJointSetHingeParam(Torsojoints[3],dParamLoStop, -2.7925);
-    dJointSetHingeParam(Torsojoints[3],dParamHiStop, 2.7925);
-    dJointSetHingeParam(Torsojoints[4],dParamLoStop, -2.7925);
-    dJointSetHingeParam(Torsojoints[4],dParamHiStop, 2.7925);
+    dJointSetHingeParam(Torsojoints[3],dParamLoStop, -safetyMargin);
+    dJointSetHingeParam(Torsojoints[3],dParamHiStop, safetyMargin);
+    dJointSetHingeParam(Torsojoints[4],dParamLoStop, -safetyMargin);
+    dJointSetHingeParam(Torsojoints[4],dParamHiStop, safetyMargin);
 
     for(int i=0;i<5;i++)
     {
