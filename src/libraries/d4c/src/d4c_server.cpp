@@ -449,6 +449,14 @@ void D4CServer::close()
 
         mutex.post();
 
+        class emptyReader : public PortReader
+        {
+        public:
+            bool read(ConnectionReader&) { return true; }
+        } dummy;
+
+        // workaround
+        rpc.setReader(dummy);
         rpc.interrupt();
         rpc.close();
 
