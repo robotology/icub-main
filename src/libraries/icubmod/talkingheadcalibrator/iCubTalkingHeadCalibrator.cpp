@@ -131,7 +131,7 @@ bool iCubTalkingHeadCalibrator::open (yarp::os::Searchable& config)
        fprintf(logfile, "TALKINGHEADCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
        for (i = 0; i < 3; i++) maxPWM[i] = 250;    //head
        for (i = 3; i < 7; i++) maxPWM[i] = 1333;   //eyes do not use maxPWM
-	   for (i = 8; i < 12; i++) maxPWM[i] = 600;   //lips joints 
+	   for (i = 8; i < 12; i++) maxPWM[i] = 1333;   //lips joints 
 	   maxPWM[7] = 250;   //eyebrows
 	   
        if (TORSO_IS_AVAILABLE)
@@ -233,6 +233,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
 	//eyebrows
 	
 	    //MC4 board joint 7
+		
         calibrateJoint(7);
         iPids->getPid(7,&original_pid[7]);
         limited_pid[7]=original_pid[7];
@@ -242,7 +243,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
 		
 	//lips	
 	
-	for (k = 8; k < 12; k++)    
+	/*for (k = 8; k < 12; k++)    
         {
             //bll boards are joint 12 13 14 (15)
             calibrateJoint(k);
@@ -252,6 +253,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
             limited_pid[k].max_output=maxPWM[k];
             iPids->setPid(k,limited_pid[k]);
         }
+	*/
     //BLL boards must receive calibration message before enabling PWM
     if (TORSO_IS_AVAILABLE)
     {
@@ -282,7 +284,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     //create three set of joints       //
     /////////////////////////////////////
     int headSetOfJoints[] =  {0, 1, 2}; // these are BLL motors
-    int torsoSetOfJoints[] = {8, 9, 10}; // these are BLL motors
+    int torsoSetOfJoints[] = {12, 13, 14}; // these are BLL motors
     int eyeSetOfJoints[] =   {3, 4, 5, 6, 7}; // these are NOT BLL motors
 	int lipsSetOfJoints[] =   {8,9,10,11}; // these are NOT BLL motors
     /////////////////////////////////////
