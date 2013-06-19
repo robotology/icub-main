@@ -120,6 +120,7 @@ private:
 
     static TheEthManager          *handle;
     bool                          keepGoingOn;
+    bool 						  emsAlreadyClosed;
 
     // Data for EMS handling
 public:

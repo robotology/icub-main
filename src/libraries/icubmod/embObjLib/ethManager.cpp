@@ -232,20 +232,24 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     ethResources  *res2release  = NULL;
     char tmp_addr[64];
 
+
     ethResources *tmpEthRes;
     ACE_INET_Addr  tmp_ace_addr;
 
-    ethResIt it = EMS_list.begin();
-    while(it != EMS_list.end())
+    if(false == emsAlreadyClosed)
     {
-        tmpEthRes = (*it);
-        tmpEthRes->goToConfig();
-        tmpEthRes->clearPerSigMsg();
-        it++;
+		ethResIt it = EMS_list.begin();
+		while(it != EMS_list.end())
+		{
+			tmpEthRes = (*it);
+			tmpEthRes->goToConfig();
+			tmpEthRes->clearPerSigMsg();
+			it++;
+		}
+		//before stopping threads, flush all pkts not yet sent.
+		flush();
+		emsAlreadyClosed = true;
     }
-    //before stopping threads, flush all pkts not yet sent.
-    flush();
-
     stopThreads();
     managerMutex.wait();
 
@@ -376,6 +380,7 @@ TheEthManager::TheEthManager()
 
     UDP_initted = false;
     UDP_socket  = NULL;
+    emsAlreadyClosed = false;
 }
 
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
