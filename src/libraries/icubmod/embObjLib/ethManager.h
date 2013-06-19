@@ -144,6 +144,12 @@ private:
 
     // Methods for Singleton handling#include <yarp/os/Bottle.h>
 private:
+
+    /*! @fn     flush();
+     *  @brief  flush all packets not yet sent
+     *  @warning currently is developed like a wait of 1 second. TODO. make it better!!
+     */
+    void flush();
     TheEthManager();                      // Singletons have private constructor
     ~TheEthManager();
 public:

@@ -240,11 +240,12 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     {
         tmpEthRes = (*it);
         tmpEthRes->goToConfig();
+        tmpEthRes->clearPerSigMsg();
         it++;
     }
-// #warning remove sleep asap!!!!!!
-    //here sleep is essential in order to let sender thread send gotocongig command.
-    yarp::os::Time::delay(1); // EO_WARNING()
+    //before stopping threads, flush all pkts not yet sent.
+    flush();
+
     stopThreads();
     managerMutex.wait();
 
@@ -560,6 +561,15 @@ bool TheEthManager::close()
     return true;
 }
 
+
+void TheEthManager::flush()
+{
+    // #warning remove sleep asap!!!!!!
+        //here sleep is essential in order to let sender thread send gotocongig command.
+        yarp::os::Time::delay(1); // EO_WARNING()
+
+}
+
 EthSender::EthSender() : RateThread(1)
 {
     yTrace();
@@ -859,6 +869,7 @@ void EthReceiver::run()
     yError() << "Exiting recv thread";
     return;
 }
+
 
 // eof
 

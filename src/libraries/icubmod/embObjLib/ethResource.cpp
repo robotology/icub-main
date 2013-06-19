@@ -193,6 +193,34 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 {
     return lastRecvMsgTimestamp;
 }
+
+bool ethResources::clearPerSigMsg(void)
+{
+    yTrace() << info;
+
+    // Configure values to be sent regularly
+    eOnvID_t                  nvid_ropsigcfgassign;       // nvID
+    eOmn_ropsigcfg_command_t  ropsigcfgassign;
+    EOarray                   *array;                     // array containing nvids to be signalled
+
+    //get nvid
+    nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, 0, commNVindex__ropsigcfgcommand);
+    //prepare data
+    ropsigcfgassign.array.head.capacity = NUMOFROPSIGCFG;
+    ropsigcfgassign.array.head.itemsize = sizeof(eOropSIGcfg_t);
+    ropsigcfgassign.array.head.size = 0;
+    ropsigcfgassign.cmmnd = ropsigcfg_cmd_clear;
+
+    //send set command
+    if(!addSetMessage( nvid_ropsigcfgassign, endpoint_mn_comm, (uint8_t*) &ropsigcfgassign))
+    {
+        yError() << "in clearing periodic signal msg";
+        return false;
+    }
+
+    return true;
+
+}
 // eof
 
 
