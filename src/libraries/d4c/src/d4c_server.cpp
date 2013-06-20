@@ -410,6 +410,10 @@ void D4CServer::close()
 {
     if (isOpen)
     {
+        // close prior before any other stuff
+        rpc.interrupt();
+        rpc.close();
+
         if (isRunning())
             stop();
         if (!offlineMode)
@@ -448,17 +452,6 @@ void D4CServer::close()
         isOpen=false;
 
         mutex.post();
-
-        class emptyReader : public PortReader
-        {
-        public:
-            bool read(ConnectionReader&) { return true; }
-        } dummy;
-
-        // workaround
-        rpc.setReader(dummy);
-        rpc.interrupt();
-        rpc.close();
 
         printMessage(1,"server closed\n");
     }
