@@ -278,9 +278,6 @@ bool Compensator::readInputData(Vector& skin_values){
     Vector *tmp=0;
     if((tmp=inputPort.read(false))==0){
         readErrorCounter++;
-        stringstream msg;
-        msg<< "Generic error reading tactile sensor.";
-        sendInfoMsg(msg.str());
         if(readErrorCounter>MAX_READ_ERROR){
             _isWorking = false;
             sendInfoMsg("Too many errors in a row. Stopping the compensator.");
