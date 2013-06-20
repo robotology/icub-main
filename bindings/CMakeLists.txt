@@ -26,7 +26,7 @@ include_directories(${CMAKE_SOURCE_DIR}/..)
 include_directories(${CMAKE_SOURCE_DIR}/../src/libraries/icubmod)
 
 # for yarp.i
-include_directories(${YARP_MODULE_PATH}/../example/swig)
+include_directories(${YARP_MODULE_DIR}/../example/swig)
 
 set(CREATE_PYTHON FALSE CACHE BOOL "Create Python interface")
 set(CREATE_RUBY FALSE CACHE BOOL "Create Ruby interface")

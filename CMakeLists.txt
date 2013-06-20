@@ -17,7 +17,7 @@ project(iCub)
 SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
 SET(ICUB_REQYARP_VERSION_PATCH "20")
-set(ICUB_REQYARP_VERSION_TWEAK "4")
+set(ICUB_REQYARP_VERSION_TWEAK "5")
 
 find_package(YARP REQUIRED)
 
@@ -55,7 +55,7 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
 
 # pick up yarp's cmake scripts
-set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 
 # Pick up our scripts - they are all in the conf subdirectory
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
