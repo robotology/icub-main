@@ -71,21 +71,37 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     localPortName<< "/"<< name<< "/input";
     options.put("robot",  robotName.c_str());
     options.put("local",  localPortName.str().c_str());
-    options.put("remote",  inputPortName.c_str());	
+    options.put("remote",  inputPortName.c_str());
     options.put("device", "analogsensorclient");
      
     // create a new device driver
     tactileSensorDevice = new PolyDriver(options);
     if (!tactileSensorDevice->isValid()){
-	    printf("Device not available.\n");
+	    sendInfoMsg("Device not available.\n");
 	    //printf("%s", Drivers::factory().toString().c_str());
 	    return false;
     }
     // open the sensor interface	
     bool ok = tactileSensorDevice->view(tactileSensor);
     if (!ok) {
-	    printf("Problems acquiring interfaces\n");
+	    sendInfoMsg("Problems acquiring interfaces");
 	    return false;
+    }
+
+    // (temp) open port to read skin data with timestamp (because device driver doesn't provide timestamps)
+    localPortName<< "_temp";
+    if(!inputPort.open(localPortName.str().c_str()))
+    {
+        stringstream msg; msg<< "Unable to open input data port "<< localPortName.str();
+        sendInfoMsg(msg.str());
+	    return false;
+    }
+    if( !Network::connect(inputPortName.c_str(), localPortName.str().c_str()))
+    {
+        stringstream msg;
+        msg<< "Problems trying to connect ports %s and %s."<< inputPortName.c_str()<< localPortName.str().c_str();
+        sendInfoMsg(msg.str());
+        return false;
     }
     
     int getChannelsCounter = 0;
@@ -94,7 +110,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
         // getChannels() returns 0 if it hasn't performed the first reading yet
         // so wait for 1/50 sec, then try again        
         if(++getChannelsCounter==50){
-            // after 50 failed tries give up and use the default value
+            // after 50 failed trials give up and use the default value
             skinDim = 192;
             sendInfoMsg("Error reading the number of channels of the port. Using 192 as default value.");
             break;
@@ -259,6 +275,35 @@ void Compensator::calibrationFinish(){
 }
 
 bool Compensator::readInputData(Vector& skin_values){
+    Vector *tmp=0;
+    if((tmp=inputPort.read(false))==0){
+        readErrorCounter++;
+        stringstream msg;
+        msg<< "Generic error reading tactile sensor.";
+        sendInfoMsg(msg.str());
+        if(readErrorCounter>MAX_READ_ERROR){
+            _isWorking = false;
+            sendInfoMsg("Too many errors in a row. Stopping the compensator.");
+        }
+	    return false;
+    }
+    if(!inputPort.getEnvelope(timestamp))
+        sendInfoMsg("Error while trying to read envelope of input data port.");
+    skin_values = *tmp; // copy data
+
+    if(skin_values.size() != skinDim){
+        readErrorCounter++;
+        sendInfoMsg("Unexpected size of the input array (raw tactile data): "+toString(skin_values.size()));
+        if(readErrorCounter>MAX_READ_ERROR){
+            _isWorking = false;
+            sendInfoMsg("Too many errors in a row. Stopping the compensator.");
+        }
+        return false;
+    }
+
+    readErrorCounter = 0;
+    return true;
+/*
     int err;
     if((err=tactileSensor->read(skin_values))!=IAnalogSensor::AS_OK){
         readErrorCounter++;
@@ -290,7 +335,7 @@ bool Compensator::readInputData(Vector& skin_values){
     }
 
     readErrorCounter = 0;
-    return true;
+    return true;*/
 }
 
 bool Compensator::readRawAndWriteCompensatedData(){    
