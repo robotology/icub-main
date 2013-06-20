@@ -332,13 +332,13 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     }
     if (calibration_ok)
     {
-        fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: headSetOfJoints Calibration done!\n", canID);
     for (k = 0; k < 3; k++)
         iPids->setPid(headSetOfJoints[k],original_pid[headSetOfJoints[k]]);
     }
     else
     {
-        fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: headSetOfJoints Calibration failed!\n", canID);
         for (k = 0; k < 3; k++)
             iAmps->disableAmp(headSetOfJoints[k]);
     }
@@ -346,7 +346,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     //////////////////////////////////////
     //calibrate the eye set of joints   //
     //////////////////////////////////////
-
+    calibration_ok = true;
     for (k =0; k < 5; k++)
     {
         calibrateJoint(eyeSetOfJoints[k]); 
@@ -360,20 +360,20 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         
         if (calibration_ok)
         {
-            fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
+            fprintf(logfile, "HEADCALIB[%d]: eyeSetOfJoints Calibration done!\n", canID);
  
             iPids->setPid(eyeSetOfJoints[4],original_pid[eyeSetOfJoints[4]]);
         }
         else
         {
-            fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
+            fprintf(logfile, "HEADCALIB[%d]: eyeSetOfJoints Calibration failed!\n", canID);
                 iAmps->disableAmp(eyeSetOfJoints[4]);
         }
 		
 	//////////////////////////////////////
     //calibrate the lips set of joints   //
     //////////////////////////////////////
-
+    calibration_ok = true;
     for (k =0; k < 4; k++)
     {
         calibrateJoint(lipsSetOfJoints[k]); 
@@ -382,20 +382,24 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         checkGoneToZero(lipsSetOfJoints[k]);
         Time::delay(0.010);
     }
+
+/*
+JOINT 4 is bugged, maybe JOINT3 ???
             fprintf(logfile, "HEADCALIB::Waiting for joint %d movement\n", k);
             calibration_ok &= checkGoneToZeroThreshold(lipsSetOfJoints[4]);
         
         if (calibration_ok)
         {
-            fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
+            fprintf(logfile, "HEADCALIB[%d]: lipsSetOfJoints Calibration done!\n", canID);
  
             iPids->setPid(lipsSetOfJoints[4],original_pid[lipsSetOfJoints[4]]);
         }
         else
         {
-            fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
+            fprintf(logfile, "HEADCALIB[%d]: lipsSetOfJoints Calibration failed!\n", canID);
                 iAmps->disableAmp(lipsSetOfJoints[4]);
         }
+*/
 
     /////////////////////////////////////
     //finished!                        //
