@@ -370,11 +370,12 @@ static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads)
     uint32_t i;
     for(i=0; i<6; i++)
     {
-        printf("Encoder num %d\n", i);
+        printf("Encoder num %d\t", i);
         printf("\t err_onReadFromSpi=%d   ", encreads->encList[i].err_onReadFromSpi);  
         printf("err_onParityError=%d  ", encreads->encList[i].err_onParityError);  
-        printf("err_onInvalidValue=%d\n", encreads->encList[i].err_onInvalidValue);  
+        printf("err_onInvalidValue=%d  \n", encreads->encList[i].err_onInvalidValue);
     }
+    printf("\tcount=%d\n", encreads->count);
 }
 
 static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
