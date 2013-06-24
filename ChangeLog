@@ -1,3 +1,6 @@
+2013-24-06 Ugo Pattacini <ugo.pattacini@iit.it>
+   * optimization: added computation of affine transformations
+
 2013-08-06 Ugo Pattacini <ugo.pattacini@iit.it>
    * pmp library changed into d4c
 

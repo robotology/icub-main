@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
+ * Copyright (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
@@ -27,12 +27,12 @@
  * @ingroup optimization
  *
  * Given two sets of 3D points, the aim is to find out the 
- * transformation matrix between them. 
+ * roto-translation transformation matrix between them. 
  */ 
 
 
-#ifndef __CALIBREFERENCE_H__
-#define __CALIBREFERENCE_H__
+#ifndef __ICUB_OPT_CALIBREFERENCE_H__
+#define __ICUB_OPT_CALIBREFERENCE_H__
 
 #include <deque>
 #include <yarp/sig/all.h>

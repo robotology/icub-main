@@ -5,8 +5,10 @@
 set(PROJECTNAME optimization)
 project(${PROJECTNAME})
 
-set(folder_source src/calibReference.cpp)
-set(folder_header include/iCub/optimization/calibReference.h)
+set(folder_source src/calibReference.cpp
+                  src/affine.cpp)
+set(folder_header include/iCub/optimization/calibReference.h
+                  include/iCub/optimization/affine.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
