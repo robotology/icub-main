@@ -342,7 +342,7 @@ bool AffineWithMatchedPoints::calibrate(Matrix &A, double &error)
         nlp->set_A0(A0);
         Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
 
-        Matrix A=nlp->get_result();
+        A=nlp->get_result();
         error=evalError(A);
 
         return (status==Ipopt::Solve_Succeeded);
