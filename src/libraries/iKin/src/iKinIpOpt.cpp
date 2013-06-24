@@ -183,7 +183,7 @@ void iCubShoulderConstr::update(void*)
         !(*chain)[3+2].isBlocked())
     {
         // compute offset to shoulder's axes
-        // given the blocked/release status of
+        // given the blocked/released status of
         // previous link
         int offs=0;
         for (int i=0; i<3; i++)
@@ -234,7 +234,7 @@ void iCubShoulderConstr::update(void*)
     if (!(*chain)[3+3].isBlocked() && !(*chain)[3+3+1].isBlocked())
     {
         // compute offset to elbow's axis
-        // given the blocked/release status of
+        // given the blocked/released status of
         // previous link
         int offs=0;
         for (int i=0; i<(3+3); i++)
