@@ -51,8 +51,8 @@
  * Central to the \ref PerceptiveModels platform are the 
  * following concepts: 
  *  
- * - <b>Sensor</b>: a sensor is an object that simply allows to 
- *   retrieve raw data from a source, e.g. a port, a motor
+ * - <b>Sensor</b>: a sensor is an object that simply allows 
+ *   retrieving raw data from a source, e.g. a port, a motor
  *   interface (example: the patches of a finger tip are
  *   considered to be sensors).
  *  
@@ -86,7 +86,7 @@
  *
  * @section sensors_intro_sec Description
  *
- * A Sensor is an object that allows to retrieve data from 
+ * A Sensor is an object that allows retrieving data from 
  * different kinds of sources such as yarp ports and yarp motor 
  * interfaces. A Sensor is normally attached to a Node.
  */ 
