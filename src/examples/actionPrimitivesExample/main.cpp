@@ -69,10 +69,6 @@ reach(x2+lift_displacement,o)).
 - specify the module name, which is \e ActionPrimitivesMod by
   default.
  
---part \e type 
-- specify which arm has to be used: type can be \e left_arm, \e 
-  right_arm.
- 
 \section portsa_sec Ports Accessed
 Assumes that \ref icub_iCubInterface (with ICartesianControl 
 interface implemented) is running. 
@@ -290,13 +286,6 @@ public:
         string name=rf.find("name").asString().c_str();
         setName(name.c_str());
 
-        string partUsed=rf.find("part").asString().c_str();
-        if ((partUsed!="left_arm") && (partUsed!="right_arm"))
-        {
-            cout<<"Invalid part requested!"<<endl;
-            return false;
-        }        
-
         Property config; config.fromConfigFile(rf.findFile("from").c_str());
         Bottle &bGeneral=config.findGroup("general");
         if (bGeneral.isNull())
@@ -308,7 +297,7 @@ public:
         // parsing general config options
         Property option(bGeneral.toString().c_str());
         option.put("local",name.c_str());
-        option.put("part",rf.find("part").asString().c_str());
+        option.put("part","left_arm");
         option.put("grasp_model_type",rf.find("grasp_model_type").asString().c_str());
         option.put("grasp_model_file",rf.findFile("grasp_model_file").c_str());
         option.put("hand_sequences_file",rf.findFile("hand_sequences_file").c_str());        
@@ -317,7 +306,7 @@ public:
         Bottle &bArm=config.findGroup("arm_dependent");
         getArmDependentOptions(bArm,graspOrien,graspDisp,dOffs,dLift,home_x);
 
-        cout<<"***** Instantiating primitives for "<<partUsed<<endl;
+        cout<<"***** Instantiating primitives for left arm"<<endl;
         action=new AFFACTIONPRIMITIVESLAYER(option);
         if (!action->isValid())
         {
@@ -484,8 +473,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("actionPrimitivesExample/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.setDefault("part","left_arm");
-    rf.setDefault("grasp_model_type","springy");
+    rf.setDefault("grasp_model_type","tactile");
     rf.setDefault("grasp_model_file","grasp_model.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
     rf.setDefault("name","actionPrimitivesMod");
