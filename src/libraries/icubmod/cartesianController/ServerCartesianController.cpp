@@ -1045,40 +1045,20 @@ void ServerCartesianController::stopLimbVel()
 /************************************************************************/
 void ServerCartesianController::alignJointsBounds()
 {
-    if (connected)
-    {           
-        fprintf(stdout,"Getting joints bounds from cartesian solver %s ...\n",slvName.c_str());
-    
-        for (unsigned int i=0; i<chain->getN(); i++)
+    double min, max; 
+    int cnt=0;
+
+    fprintf(stdout,"%s: aligning joints bounds ...\n",ctrlName.c_str());
+    for (size_t i=0; i<lDsc.size(); i++)
+    {
+        fprintf(stdout,"part #%d: %s\n",i,lDsc[i].key.c_str());
+        for (int j=0; j<lJnt[i]; j++)
         {
-            double min, max;
-            fprintf(stdout,"joint #%d: ... ",i);
-
-            Bottle command, reply;
-            command.addVocab(IKINSLV_VOCAB_CMD_GET);
-            command.addVocab(IKINSLV_VOCAB_OPT_LIM);
-            command.addInt(i);
-
-            // send command to solver and wait for reply
-            if (!portSlvRpc.write(command,reply))
-            {
-                fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
-                return;
-            }
-
-            if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
-            {
-                min=reply.get(1).asDouble();
-                max=reply.get(2).asDouble();                        
-        
-                // align local joint's bounds
-                (*chain)[i].setMin(CTRL_DEG2RAD*min);
-                (*chain)[i].setMax(CTRL_DEG2RAD*max);
-
-                fprintf(stdout,"[%.1f, %.1f] deg\n",min,max);
-            }
-            else
-                fprintf(stdout,"failed\n");
+            lLim[i]->getLimits(lRmp[i][j],&min,&max);
+            fprintf(stdout,"joint #%d: [%g, %g] deg\n",cnt,min,max);
+            (*chain)[cnt].setMin(CTRL_DEG2RAD*min);
+            (*chain)[cnt].setMax(CTRL_DEG2RAD*max);
+            cnt++;
         }
     }
 }
@@ -1720,6 +1700,7 @@ bool ServerCartesianController::close()
     lEnc.clear();
     lEnt.clear();
     lPid.clear();
+    lLim.clear();
     lVel.clear();
     lJnt.clear();
     lRmp.clear();
@@ -1783,10 +1764,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IEncoders        *enc;
             IEncodersTimed   *ent;
             IPidControl      *pid;
+            IControlLimits   *lim;
             IVelocityControl *vel;
             int               joints;
 
             drivers[j]->poly->view(enc);
+            drivers[j]->poly->view(lim);
             drivers[j]->poly->view(vel);
             encTimedEnabled&=drivers[j]->poly->view(ent);
             pidAvailable&=drivers[j]->poly->view(pid);
@@ -1823,6 +1806,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             lEnc.push_back(enc);
             lEnt.push_back(ent);
             lPid.push_back(pid);
+            lLim.push_back(lim);
             lVel.push_back(vel);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
@@ -1839,6 +1823,8 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     fprintf(stdout,"pid interface %s for getting references\n",
             pidAvailable?"available":"not available");
+
+    alignJointsBounds();
 
     // exclude acceleration constraints by fixing
     // thresholds at high values
@@ -1951,8 +1937,6 @@ bool ServerCartesianController::connectToSolver()
         }
 
         setTrackingMode(trackingMode);
-        alignJointsBounds();
-        
         return true;
     }
     else
@@ -2563,23 +2547,31 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
 /************************************************************************/
 bool ServerCartesianController::getLimits(const int axis, double *min, double *max)
 {
+    bool ret=false;
     if (connected && (min!=NULL) && (max!=NULL))
     {
         mutex.wait();
-
-        bool ret=false;
         if (axis<(int)chain->getN())
         {
-            *min=CTRL_RAD2DEG*(*chain)[axis].getMin();
-            *max=CTRL_RAD2DEG*(*chain)[axis].getMax();
-            ret=true;
-        }
+            Bottle command, reply;
+            command.addVocab(IKINSLV_VOCAB_CMD_GET);
+            command.addVocab(IKINSLV_VOCAB_OPT_LIM);
+            command.addInt(axis);
 
+            // send command to solver and wait for reply
+            if (!portSlvRpc.write(command,reply))
+                fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
+            {
+                *min=reply.get(1).asDouble();
+                *max=reply.get(2).asDouble();                        
+                ret=true;
+            }
+        }
         mutex.post();
-        return ret;
     }
-    else
-        return false;
+
+    return ret;
 }
 
 
@@ -2587,6 +2579,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min, double *m
 bool ServerCartesianController::setLimits(const int axis, const double min,
                                           const double max)
 {
+    bool ret=false;
     if (connected)
     {
         mutex.wait();
@@ -2598,23 +2591,16 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
         command.addDouble(min);
         command.addDouble(max);
 
-        // send command to solver and wait for reply
-        bool ret=false;
+        // send command to solver and wait for reply        
         if (!portSlvRpc.write(command,reply))
             fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
-        else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
-        {
-            // align local joint's limits
-            (*chain)[axis].setMin(CTRL_DEG2RAD*min);
-            (*chain)[axis].setMax(CTRL_DEG2RAD*max);
-            ret=true;
-        }
+        else
+            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
 
         mutex.post();
-        return ret;
     }
-    else
-        return false;
+
+    return ret;
 }
 
 

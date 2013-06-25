@@ -140,6 +140,7 @@ protected:
     std::deque<yarp::dev::IEncoders*>        lEnc;
     std::deque<yarp::dev::IEncodersTimed*>   lEnt;
     std::deque<yarp::dev::IPidControl*>      lPid;
+    std::deque<yarp::dev::IControlLimits*>   lLim;
     std::deque<yarp::dev::IVelocityControl*> lVel;    
     std::deque<int>                          lJnt;
     std::deque<int*>                         lRmp;
