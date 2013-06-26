@@ -51,45 +51,48 @@ void iCubInterfaceGuiServer::config(std::string& PATH,yarp::os::Property &robot)
     yarp::os::Bottle general=robot.findGroup("GENERAL");
     yarp::os::Bottle *parts=general.find("parts").asList();
 
-    for (int t=0; t<parts->size(); ++t)
+    if (parts!=NULL)
     {
-        yarp::os::ConstString partName=parts->get(t).asString();
-        yarp::os::Bottle part=robot.findGroup(partName.c_str());
-
-        yarp::os::Bottle *networks=part.find("networks").asList();
-
-        for (int n=0; n<networks->size(); ++n)
+        for (int t=0; t<parts->size(); ++t)
         {
-            std::string netName(networks->get(n).asString().c_str());
+            yarp::os::ConstString partName=parts->get(t).asString();
+            yarp::os::Bottle part=robot.findGroup(partName.c_str());
 
-            yarp::os::Bottle jMap=part.findGroup(netName.c_str());
+            yarp::os::Bottle *networks=part.find("networks").asList();
 
-            int j0=jMap.get(1).asInt();
-            int d0=jMap.get(3).asInt();
-            int d1=jMap.get(4).asInt();
-
-            yarp::os::Bottle net=robot.findGroup(netName.c_str());
-
-            bool bExists=false;
-
-            for (unsigned int i=0; i<mNetworks.size(); ++i)
+            for (int n=0; n<networks->size(); ++n)
             {
-                if (mNetworks[i]->mName==netName)
+                std::string netName(networks->get(n).asString().c_str());
+
+                yarp::os::Bottle jMap=part.findGroup(netName.c_str());
+
+                int j0=jMap.get(1).asInt();
+                int d0=jMap.get(3).asInt();
+                int d1=jMap.get(4).asInt();
+
+                yarp::os::Bottle net=robot.findGroup(netName.c_str());
+
+                bool bExists=false;
+
+                for (unsigned int i=0; i<mNetworks.size(); ++i)
                 {
-                    jointRmp[i].push(d0,d1,j0);
-                    bExists=true;
-                    break;
+                    if (mNetworks[i]->mName==netName)
+                    {
+                        jointRmp[i].push(d0,d1,j0);
+                        bExists=true;
+                        break;
+                    }
                 }
-            }
 
-            if (!bExists)
-            {
-                std::string file(net.find("file").asString().c_str());
-                std::string device(net.find("canbusdevice").asString().c_str());
-                mNetworks.push_back(new iCubNetwork(netName,file,device));
+                if (!bExists)
+                {
+                    std::string file(net.find("file").asString().c_str());
+                    std::string device(net.find("canbusdevice").asString().c_str());
+                    mNetworks.push_back(new iCubNetwork(netName,file,device));
 
-                jointRmp.push_back(JointRemapper());
-                jointRmp.back().push(d0,d1,j0);
+                    jointRmp.push_back(JointRemapper());
+                    jointRmp.back().push(d0,d1,j0);
+                }
             }
         }
     }
