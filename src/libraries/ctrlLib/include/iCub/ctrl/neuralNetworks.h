@@ -30,6 +30,7 @@
 #ifndef __NEURALNETWORKS_H__
 #define __NEURALNETWORKS_H__
 
+#include <iostream>
 #include <string>
 #include <deque>
 
@@ -86,7 +87,8 @@ protected:
 
     bool configured;
 
-    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item);
+    void setItem(yarp::os::Property &options, const std::string &tag, const yarp::sig::Vector &item);
+    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item);    
 
     virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x)=0;
     virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;
@@ -103,7 +105,7 @@ public:
     *               network.
     * @see configure() 
     */ 
-    ff2LayNN(yarp::os::Property &options);
+    ff2LayNN(const yarp::os::Property &options);
 
     /**
     * Configure/reconfigure the network.
@@ -148,7 +150,7 @@ public:
     *  
     * @note all indexes are 0-based. 
     */ 
-    virtual bool configure(yarp::os::Property &options);
+    virtual bool configure(const yarp::os::Property &options);    
 
     /**
     * Return the internal status after a configuration.
@@ -164,9 +166,20 @@ public:
     virtual yarp::sig::Vector predict(const yarp::sig::Vector &x);
 
     /**
-    * Dump the network structure on the screen.
+    * Retrieve the network structure as a Property object.
+    * @param options is the output stream. 
+    * @return true/false on success/fail. 
+    *  
+    * @see configure for the options format.
     */ 
-    virtual void printStructure();
+    virtual bool getStructure(yarp::os::Property &options);
+
+    /**
+    * Dump tadily the network structure on the stream.
+    * @param stream is the output stream. 
+    * @return true/false on success/fail.  
+    */ 
+    virtual bool printStructure(std::ostream &stream=std::cout);
 };
 
 
@@ -196,7 +209,7 @@ public:
     *               network.
     * @see configure() 
     */ 
-    ff2LayNN_tansig_purelin(yarp::os::Property &options);
+    ff2LayNN_tansig_purelin(const yarp::os::Property &options);
 };
 
 }

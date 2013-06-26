@@ -16,8 +16,8 @@
  * Public License for more details
 */
 
-#include <stdio.h>
 #include <sstream>
+#include <iomanip>
 
 #include <gsl/gsl_math.h>
 
@@ -39,7 +39,7 @@ ff2LayNN::ff2LayNN()
 
 
 /***************************************************************************/
-ff2LayNN::ff2LayNN(Property &options)
+ff2LayNN::ff2LayNN(const Property &options)
 {
     configure(options);
 }
@@ -53,14 +53,22 @@ bool ff2LayNN::isValid()
 
 
 /***************************************************************************/
+void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
+{
+    Bottle b; Bottle &v=b.addList();
+    for (size_t i=0; i<item.length(); i++)
+        v.addDouble(item[i]);
+
+    options.put(tag.c_str(),b.get(0));
+}
+
+
+/***************************************************************************/
 bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item)
 {
-    Bottle *b=options.find(tag.c_str()).asList();
-
-    if (b!=NULL)
+    if (Bottle *b=options.find(tag.c_str()).asList())
     {
         item.resize(b->size());
-
         for (size_t i=0; i<item.length(); i++)
             item[i]=b->get(i).asDouble();
 
@@ -72,7 +80,7 @@ bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item)
 
 
 /***************************************************************************/
-bool ff2LayNN::configure(Property &options)
+bool ff2LayNN::configure(const Property &options)
 {
     IW.clear();
     LW.clear();
@@ -85,48 +93,46 @@ bool ff2LayNN::configure(Property &options)
 
     configured=false;
 
+    Property &opt=const_cast<Property&>(options);
+
     // acquire options
-    if (!options.check("numInputNodes")  ||
-        !options.check("numHiddenNodes") || 
-        !options.check("numOutputNodes"))
+    if (!opt.check("numInputNodes") || !opt.check("numHiddenNodes") || 
+        !opt.check("numOutputNodes"))
         return false;
 
-    int numHiddenNodes=options.find("numHiddenNodes").asInt();    
-
+    int numHiddenNodes=opt.find("numHiddenNodes").asInt();
     for (int i=0; i<numHiddenNodes; i++)
     {
         ostringstream tag;
         Vector item;
 
         tag<<"IW_"<<i;
-        if (getItem(options,tag.str(),item))
+        if (getItem(opt,tag.str(),item))
             IW.push_back(item);
         else
             return false;
     }
     
-    if (!getItem(options,"b1",b1))
+    if (!getItem(opt,"b1",b1))
         return false;
 
-    int numOutputNodes=options.find("numOutputNodes").asInt();    
-
+    int numOutputNodes=opt.find("numOutputNodes").asInt();
     for (int i=0; i<numOutputNodes; i++)
     {
         ostringstream tag;
         Vector item;
 
         tag<<"LW_"<<i;
-        if (getItem(options,tag.str(),item))
+        if (getItem(opt,tag.str(),item))
             LW.push_back(item);
         else
             return false;
     }
 
-    if (!getItem(options,"b2",b2))
+    if (!getItem(opt,"b2",b2))
         return false;
 
-    int numInputNodes=options.find("numInputNodes").asInt();    
-
+    int numInputNodes=opt.find("numInputNodes").asInt();
     for (int i=0; i<numInputNodes; i++)
     {
         ostringstream tagX, tagY;
@@ -134,7 +140,7 @@ bool ff2LayNN::configure(Property &options)
 
         tagX<<"inMinMaxX_"<<i;
         tagY<<"inMinMaxY_"<<i;
-        if (!getItem(options,tagX.str(),itemX) || !getItem(options,tagY.str(),itemY))
+        if (!getItem(opt,tagX.str(),itemX) || !getItem(opt,tagY.str(),itemY))
             return false;
         else
         {
@@ -157,7 +163,7 @@ bool ff2LayNN::configure(Property &options)
 
         tagX<<"outMinMaxX_"<<i;
         tagY<<"outMinMaxY_"<<i;
-        if (!getItem(options,tagX.str(),itemX) || !getItem(options,tagY.str(),itemY))
+        if (!getItem(opt,tagX.str(),itemX) || !getItem(opt,tagY.str(),itemY))
             return false;
         else
         {
@@ -231,33 +237,102 @@ Vector ff2LayNN::predict(const Vector &x)
 
 
 /***************************************************************************/
-void ff2LayNN::printStructure()
+bool ff2LayNN::getStructure(Property &options)
 {
-    fprintf(stdout,"***** Input Layer Range *****\n");
-    for (unsigned int i=0; i<inMinMaxX.size(); i++)
-        fprintf(stdout,"%d: X [%g %g]; Y [%g %g]\n",i,
-                inMinMaxX[i].min,inMinMaxX[i].max,
-                inMinMaxY[i].min,inMinMaxY[i].max);
+    options.clear();
 
-    fprintf(stdout,"***** Hidden Layer Weights *****\n");
-    for (unsigned int i=0; i<IW.size(); i++)
-        fprintf(stdout,"IW_%d: [%s]\n",i,IW[i].toString().c_str());
+    options.put("numHiddenNodes",(int)IW.size());
+    options.put("numOutputNodes",(int)LW.size());
+    options.put("numInputNodes",(int)inMinMaxX.size());
 
-    fprintf(stdout,"***** Hidden Layer Bias *****\n");
-    fprintf(stdout,"b1: [%s]\n",b1.toString().c_str());
+    for (size_t i=0; i<IW.size(); i++)
+    {
+        ostringstream tag;
+        tag<<"IW_"<<i;
 
-    fprintf(stdout,"***** Output Layer Weights *****\n");
-    for (unsigned int i=0; i<LW.size(); i++)
-        fprintf(stdout,"LW_%d: [%s]\n",i,LW[i].toString().c_str());
+        setItem(options,tag.str(),IW[i]);
+    }
 
-    fprintf(stdout,"***** Output Layer Bias *****\n");
-    fprintf(stdout,"b2: [%s]\n",b2.toString().c_str());
+    setItem(options,"b1",b1);
 
-    fprintf(stdout,"***** Output Layer Range *****\n");
-    for (unsigned int i=0; i<outMinMaxX.size(); i++)
-        fprintf(stdout,"%d: Y [%g %g]; X [%g %g]\n",i,
-                outMinMaxY[i].min,outMinMaxY[i].max,
-                outMinMaxX[i].min,outMinMaxX[i].max);
+    for (size_t i=0; i<LW.size(); i++)
+    {
+        ostringstream tag;
+        tag<<"LW_"<<i;
+
+        setItem(options,tag.str(),LW[i]);
+    }
+
+    setItem(options,"b2",b2);
+
+    for (size_t i=0; i<inMinMaxX.size(); i++)
+    {
+        ostringstream tagX, tagY;
+        tagX<<"inMinMaxX_"<<i;
+        tagY<<"inMinMaxY_"<<i;
+
+        Vector X(2);
+        X[0]=inMinMaxX[i].min;
+        X[1]=inMinMaxX[i].max;
+
+        Vector Y(2);
+        Y[0]=inMinMaxY[i].min;
+        Y[1]=inMinMaxY[i].max;
+
+        setItem(options,tagX.str(),X);
+        setItem(options,tagY.str(),Y);
+    }
+
+    for (size_t i=0; i<outMinMaxX.size(); i++)
+    {
+        ostringstream tagX, tagY;
+        tagX<<"outMinMaxX_"<<i;
+        tagY<<"outMinMaxY_"<<i;
+
+        Vector X(2);
+        X[0]=outMinMaxX[i].min;
+        X[1]=outMinMaxX[i].max;
+
+        Vector Y(2);
+        Y[0]=outMinMaxY[i].min;
+        Y[1]=outMinMaxY[i].max;
+
+        setItem(options,tagX.str(),X);
+        setItem(options,tagY.str(),Y);
+    }
+
+    return true;
+}
+
+
+/***************************************************************************/
+bool ff2LayNN::printStructure(ostream &stream)
+{
+    stream<<"***** Input Layer Range *****"<<endl;
+    for (size_t i=0; i<inMinMaxX.size(); i++)
+        stream<<i<<": X ["<<inMinMaxX[i].min<<" "<<inMinMaxX[i].max
+              <<"]; Y ["<<inMinMaxY[i].min<<" "<<inMinMaxY[i].max<<"]"<<endl;
+
+    stream<<"***** Hidden Layer Weights *****"<<endl;
+    for (size_t i=0; i<IW.size(); i++)
+        stream<<"IW_"<<i<<": ["<<IW[i].toString().c_str()<<"]"<<endl;
+
+    stream<<"***** Hidden Layer Bias *****"<<endl;
+    stream<<"b1: ["<<b1.toString().c_str()<<"]"<<endl;
+
+    stream<<"***** Output Layer Weights *****"<<endl;
+    for (size_t i=0; i<LW.size(); i++)
+        stream<<"LW_"<<i<<": ["<<LW[i].toString().c_str()<<"]"<<endl;
+
+    stream<<"***** Output Layer Bias *****"<<endl;
+    stream<<"b2: ["<<b2.toString().c_str()<<"]"<<endl;
+
+    stream<<"***** Output Layer Range *****"<<endl;
+    for (size_t i=0; i<outMinMaxX.size(); i++)
+        stream<<i<<": Y ["<<outMinMaxY[i].min<<" "<<outMinMaxY[i].max
+              <<"]; X ["<<outMinMaxX[i].min<<" "<<outMinMaxX[i].max<<"]"<<endl;
+
+    return stream.good();
 }
 
 
@@ -269,7 +344,7 @@ ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin() :
 
 
 /***************************************************************************/
-ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin(Property &options) :
+ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin(const Property &options) :
                          ff2LayNN(options)
 {
 }
