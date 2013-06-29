@@ -80,6 +80,33 @@ bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item)
 
 
 /***************************************************************************/
+void ff2LayNN::prepare()
+{
+    inMinX.resize(inMinMaxX.size());
+    inMinY.resize(inMinMaxX.size());
+    inRatio.resize(inMinMaxX.size());
+
+    for (size_t i=0; i<inMinX.length(); i++)
+    {
+        inMinX[i]=inMinMaxX[i].min;
+        inMinY[i]=inMinMaxY[i].min;
+        inRatio[i]=(inMinMaxY[i].max-inMinMaxY[i].min)/(inMinMaxX[i].max-inMinMaxX[i].min);
+    }
+
+    outMinX.resize(outMinMaxX.size());
+    outMinY.resize(outMinMaxX.size());
+    outRatio.resize(outMinMaxX.size());
+
+    for (size_t i=0; i<outMinX.length(); i++)
+    {
+        outMinX[i]=outMinMaxX[i].min;
+        outMinY[i]=outMinMaxY[i].min;
+        outRatio[i]=(outMinMaxX[i].max-outMinMaxX[i].min)/(outMinMaxY[i].max-outMinMaxY[i].min);
+    }
+}
+
+
+/***************************************************************************/
 bool ff2LayNN::configure(const Property &options)
 {
     IW.clear();
@@ -180,27 +207,7 @@ bool ff2LayNN::configure(const Property &options)
     }
 
     // prepare some internal variables
-    inMinX.resize(inMinMaxX.size());
-    inMinY.resize(inMinMaxX.size());
-    inRatio.resize(inMinMaxX.size());
-
-    for (size_t i=0; i<inMinX.length(); i++)
-    {
-        inMinX[i]=inMinMaxX[i].min;
-        inMinY[i]=inMinMaxY[i].min;
-        inRatio[i]=(inMinMaxY[i].max-inMinMaxY[i].min)/(inMinMaxX[i].max-inMinMaxX[i].min);
-    }
-
-    outMinX.resize(outMinMaxX.size());
-    outMinY.resize(outMinMaxX.size());
-    outRatio.resize(outMinMaxX.size());
-
-    for (size_t i=0; i<outMinX.length(); i++)
-    {
-        outMinX[i]=outMinMaxX[i].min;
-        outMinY[i]=outMinMaxY[i].min;
-        outRatio[i]=(outMinMaxX[i].max-outMinMaxX[i].min)/(outMinMaxY[i].max-outMinMaxY[i].min);
-    }
+    prepare();
 
     return configured=true;
 }

@@ -48,7 +48,7 @@ namespace ctrl
 /**
 * \ingroup neuralNetworks
 *
-* Feed-forward 2 layers Neural Network. 
+* Feed-Forward 2 layers Neural Network. 
 * Useful to implement the networks trained via MATLAB (e.g. 
 * through nftool). 
 */
@@ -87,11 +87,9 @@ protected:
 
     bool configured;
 
+    void prepare();
     void setItem(yarp::os::Property &options, const std::string &tag, const yarp::sig::Vector &item);
     bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item);    
-
-    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x)=0;
-    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;
 
 public:
     /**
@@ -180,23 +178,31 @@ public:
     * @return true/false on success/fail.  
     */ 
     virtual bool printStructure(std::ostream &stream=std::cout);
+
+    /**
+    * Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x)=0;
+
+    /**
+    * Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;
 };
 
 
 /**
 * \ingroup neuralNetworks
 *
-* Feed-forward 2 layers Neural Network with a tansig function 
+* Feed-Forward 2 layers Neural Network with a tansig function 
 * for the hidden nodes and a purelin for the output nodes. 
 */
 class ff2LayNN_tansig_purelin : public ff2LayNN
 {
-protected:
-    // implement the tansig
-    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x);
-    // implement the purelin
-    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x);
-
 public:
     /**
     * Create an empty network.
@@ -210,6 +216,20 @@ public:
     * @see configure() 
     */ 
     ff2LayNN_tansig_purelin(const yarp::os::Property &options);
+
+    /**
+    * Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x);
+
+    /**
+    * Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x);
 };
 
 }

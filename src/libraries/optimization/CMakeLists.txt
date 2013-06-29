@@ -6,9 +6,11 @@ set(PROJECTNAME optimization)
 project(${PROJECTNAME})
 
 set(folder_source src/calibReference.cpp
-                  src/affine.cpp)
+                  src/affine.cpp
+                  src/neuralNetworks.cpp)
 set(folder_header include/iCub/optimization/calibReference.h
-                  include/iCub/optimization/affine.h)
+                  include/iCub/optimization/affine.h
+                  include/iCub/optimization/neuralNetworks.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
