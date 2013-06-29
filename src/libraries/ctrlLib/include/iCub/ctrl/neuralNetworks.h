@@ -180,6 +180,30 @@ public:
     virtual bool printStructure(std::ostream &stream=std::cout);
 
     /**
+    * Retrieve first layer weights.
+    * @return the list of first layer weights.
+    */ 
+    std::deque<yarp::sig::Vector> &get_IW() { return IW; }
+
+    /**
+    * Retrieve second layer weights.
+    * @return the list of second layer weights.
+    */ 
+    std::deque<yarp::sig::Vector> &get_LW() { return LW; }
+
+    /**
+    * Retrieve first layer bias.
+    * @return the list of first layer bias.
+    */ 
+    yarp::sig::Vector &get_b1() { return b1; }
+
+    /**
+    * Retrieve second layer bias.
+    * @return the list of second layer bias.
+    */ 
+    yarp::sig::Vector &get_b2() { return b2; }
+
+    /**
     * Hidden Layer Function.
     * @param x is the input vector.
     * @return the output vector.
