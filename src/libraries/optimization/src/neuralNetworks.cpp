@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include <yarp/math/Math.h>
+#include <yarp/math/Rand.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/optimization/neuralNetworks.h>
 
@@ -217,8 +218,17 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
                           const deque<Vector> &in, const deque<Vector> &out,
                           deque<Vector> &pred, double &error)
 {
-    if ((in.size()==0) || (out.size()==0) || (pred.size()==0))
+    if ((in.size()==0) || (in.size()!=out.size()) || (in.size()!=pred.size()))
         return false;
+
+    IW.clear();
+    LW.clear();
+
+    inMinMaxX.clear();
+    inMinMaxY.clear();
+
+    outMinMaxX.clear();
+    outMinMaxY.clear();
 
     const Vector &in_front=in.front();
     for (size_t i=0; i<in_front.length(); i++)
@@ -258,6 +268,21 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     prepare();
 
+    Rand::init();
+    Vector weights_min, weights_max;
+
+    weights_min.resize(in_front.length(),-1.0);
+    weights_max.resize(in_front.length(),+1.0);
+    IW.assign(numHiddenNodes,Rand::vector(weights_min,weights_max));
+    b1=Rand::vector(weights_min,weights_max);
+
+    LW.assign(out_front.length(),Rand::vector(weights_min,weights_max));
+    weights_min.resize(out_front.length(),-1.0);
+    weights_max.resize(out_front.length(),+1.0);
+    b2=Rand::vector(weights_min,weights_max);
+
+    configured=true;
+
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
     app->Options()->SetNumericValue("tol",1e-8);
     app->Options()->SetNumericValue("acceptable_tol",1e-8);
@@ -270,10 +295,10 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     app->Options()->SetStringValue("derivative_test","none");
     app->Initialize();
 
-    //Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(p0,p1,min,max);
+    //Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,in,out);
     //Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
     //A=nlp->get_result();
-    //return (status==Ipopt::Solve_Succeeded);
+    //return (status==Ipopt::Solve_Succeeded);    
 
     return true; // debug
 }
