@@ -217,6 +217,47 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
                           const deque<Vector> &in, const deque<Vector> &out,
                           deque<Vector> &pred, double &error)
 {
+    if ((in.size()==0) || (out.size()==0) || (pred.size()==0))
+        return false;
+
+    const Vector &in_front=in.front();
+    for (size_t i=0; i<in_front.length(); i++)
+    {
+        minmax range;
+        range.min=range.max=in_front[i];
+        inMinMaxX.push_back(range);
+        range.min=-1.0; range.max=1.0;
+        inMinMaxY.push_back(range);
+    }
+    for (size_t i=1; i<in.size(); i++)
+    {
+        for (size_t j=0; j<in_front.length(); j++)
+        {
+            inMinMaxX[j].min=std::min(inMinMaxX[j].min,in[i][j]);
+            inMinMaxX[j].max=std::max(inMinMaxX[j].max,in[i][j]);
+        }
+    }
+
+    const Vector &out_front=out.front();
+    for (size_t i=0; i<out_front.length(); i++)
+    {
+        minmax range;
+        range.min=range.max=out_front[i];
+        outMinMaxY.push_back(range);
+        range.min=-1.0; range.max=1.0;
+        outMinMaxX.push_back(range);
+    }
+    for (size_t i=1; i<out.size(); i++)
+    {
+        for (size_t j=0; j<out_front.length(); j++)
+        {
+            outMinMaxX[j].min=std::min(outMinMaxX[j].min,out[i][j]);
+            outMinMaxX[j].max=std::max(outMinMaxX[j].max,out[i][j]);
+        }
+    }
+
+    prepare();
+
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
     app->Options()->SetNumericValue("tol",1e-8);
     app->Options()->SetNumericValue("acceptable_tol",1e-8);

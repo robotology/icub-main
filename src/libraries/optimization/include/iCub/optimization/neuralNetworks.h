@@ -53,7 +53,7 @@ public:
     * @param numHiddenNodes is the number of hidden nodes. 
     * @param in the list of input vector. 
     * @param out the list of output vector. 
-    * @param outn the returned list of predicted output. 
+    * @param pred the returned list of predicted output. 
     * @param error returns the prediction error.
     * @return true/false on success/fail. 
     */
