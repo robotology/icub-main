@@ -45,7 +45,7 @@ namespace optimization
 * Class to deal with training of Feed-Forward 2 layers Neural 
 * Network using IpOpt. 
 */
-class ff2LayNNTrain: public iCub::ctrl::ff2LayNN
+class ff2LayNNTrain: virtual public iCub::ctrl::ff2LayNN
 {
 public:
     /**
@@ -57,9 +57,22 @@ public:
     * @param error returns the prediction error.
     * @return true/false on success/fail. 
     */
-    bool train(const unsigned int numHiddenNodes, const std::deque<yarp::sig::Vector> &in,
-               const std::deque<yarp::sig::Vector> &out, std::deque<yarp::sig::Vector> &pred,
-               double &error);
+    virtual bool train(const unsigned int numHiddenNodes, const std::deque<yarp::sig::Vector> &in,
+                       const std::deque<yarp::sig::Vector> &out, std::deque<yarp::sig::Vector> &pred,
+                       double &error);
+};
+
+
+/**
+* @ingroup nnTraining
+*
+* Class to deal with training of Feed-Forward 2 layers Neural 
+* Network a tansig function for the hidden nodes and a purelin 
+* for the output nodes. 
+*/
+class ff2LayNNTrain_tansig_purelin: public ff2LayNNTrain,
+                                    virtual public iCub::ctrl::ff2LayNN_tansig_purelin                                    
+{
 };
 
 }

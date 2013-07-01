@@ -32,185 +32,161 @@ using namespace iCub::ctrl;
 using namespace iCub::optimization;
 
 
-//namespace iCub
-//{
+namespace iCub
+{
+
+namespace optimization
+{
+
+/****************************************************************/
+class ff2LayNNTrainNLP : public Ipopt::TNLP
+{
+protected:
+    deque<Vector> &IW;
+    deque<Vector> &LW;
+    Vector        &b1;
+    Vector        &b2;
+
+public:
+    /****************************************************************/
+    ff2LayNNTrainNLP(ff2LayNNTrain *net, const deque<Vector> &in,
+                     const deque<Vector> &out) :
+                     IW(net->get_IW()), LW(net->get_LW()),
+                     b1(net->get_b1()), b2(net->get_b2())
+    {
+    }
+
+    /****************************************************************/
+    virtual double get_prediction(deque<Vector> &pred) const
+    {
+        return 0.0;
+    }
+
+    /****************************************************************/
+    bool get_nlp_info(Ipopt::Index &n, Ipopt::Index &m, Ipopt::Index &nnz_jac_g,
+                      Ipopt::Index &nnz_h_lag, IndexStyleEnum &index_style)
+    {
+        n=12;
+        m=nnz_jac_g=nnz_h_lag=0;
+        index_style=TNLP::C_STYLE;
+
+        return true;
+    }
+
+    /****************************************************************/
+    bool get_bounds_info(Ipopt::Index n, Ipopt::Number *x_l, Ipopt::Number *x_u,
+                         Ipopt::Index m, Ipopt::Number *g_l, Ipopt::Number *g_u)
+    {
+//      Ipopt::Index i=0;
+//      for (int c=0; c<A0.cols(); c++)
+//      {
+//          for (int r=0; r<A0.rows()-1; r++)
+//          {
+//              x_l[i]=min(r,c);
+//              x_u[i]=max(r,c);
+//              i++;
+//          }
+//      }
+
+        return true;
+    }
+
+    /****************************************************************/
+    bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
+                            bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
+                            Ipopt::Index m, bool init_lambda, Ipopt::Number *lambda)
+    {
+//      Ipopt::Index i=0;
+//      for (int c=0; c<A0.cols(); c++)
+//      {
+//          for (int r=0; r<A0.rows()-1; r++)
+//              x[i++]=A0(r,c);
+//      }
+
+        return true;
+    }
+
+    /****************************************************************/
+    bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
+                Ipopt::Number &obj_value)
+    {
+//      Matrix A=computeA(x);
 //
-//namespace optimization
-//{
+//      obj_value=0.0;
+//      if (p0.size()>0)
+//      {
+//          for (size_t i=0; i<p0.size(); i++)
+//              obj_value+=0.5*norm2(p1[i]-A*p0[i]);
 //
-///****************************************************************/
-//class ff2LayNNTrainNLP : public Ipopt::TNLP
-//{
-//protected:
-//    const deque<Vector> &p0;
-//    const deque<Vector> &p1;
+//          obj_value/=p0.size();
+//      }
+
+        return true;
+    }
+
+    /****************************************************************/
+    bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
+                     Ipopt::Number *grad_f)
+    {
+//      Matrix A=computeA(x);
+//      for (Ipopt::Index i=0; i<n; i++)
+//          grad_f[i]=0.0;
 //
-//    deque<Matrix> dA;
-//    Matrix min;
-//    Matrix max;
-//    Matrix A0;
-//    Matrix A;
+//      if (p0.size()>0)
+//      {
+//          for (size_t i=0; i<p0.size(); i++)
+//          {
+//              Vector d=p1[i]-A*p0[i];
+//              for (Ipopt::Index j=0; j<n; j++)
+//                  grad_f[j]-=dot(d,(dA[j]*p0[i]));
+//          }
 //
-//public:
-//    /****************************************************************/
-//    ff2LayNNTrainNLP(const deque<Vector> &_p0,
-//                    const deque<Vector> &_p1,
-//                    const Matrix &_min, const Matrix &_max) :
-//                    p0(_p0), p1(_p1)
-//    {
-//        min=_min;
-//        max=_max;
-//        A0=0.5*(min+max);
-//
-//        for (int c=0; c<A0.cols(); c++)
-//        {
-//            for (int r=0; r<A0.rows()-1; r++)
-//            {
-//                Matrix dA=zeros(4,4); dA(r,c)=1.0;
-//                this->dA.push_back(dA);
-//            }
-//        }
-//    }
-//
-//    /****************************************************************/
-//    virtual void set_A0(const Matrix &A0)
-//    {
-//        int row_max=std::min(this->A0.rows()-1,A0.rows()-1);
-//        int col_max=std::min(this->A0.cols(),A0.cols());
-//        this->A0.setSubmatrix(A0.submatrix(0,row_max,0,col_max),0,0);
-//    }
-//
-//    /****************************************************************/
-//    virtual Matrix get_result() const
-//    {
-//        return A;
-//    }
-//
-//    /****************************************************************/
-//    bool get_nlp_info(Ipopt::Index &n, Ipopt::Index &m, Ipopt::Index &nnz_jac_g,
-//                      Ipopt::Index &nnz_h_lag, IndexStyleEnum &index_style)
-//    {
-//        n=12;
-//        m=nnz_jac_g=nnz_h_lag=0;
-//        index_style=TNLP::C_STYLE;
-//
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool get_bounds_info(Ipopt::Index n, Ipopt::Number *x_l, Ipopt::Number *x_u,
-//                         Ipopt::Index m, Ipopt::Number *g_l, Ipopt::Number *g_u)
-//    {
-//        Ipopt::Index i=0;
-//        for (int c=0; c<A0.cols(); c++)
-//        {
-//            for (int r=0; r<A0.rows()-1; r++)
-//            {
-//                x_l[i]=min(r,c);
-//                x_u[i]=max(r,c);
-//                i++;
-//            }
-//        }
-//
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
-//                            bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
-//                            Ipopt::Index m, bool init_lambda, Ipopt::Number *lambda)
-//    {
-//        Ipopt::Index i=0;
-//        for (int c=0; c<A0.cols(); c++)
-//        {
-//            for (int r=0; r<A0.rows()-1; r++)
-//                x[i++]=A0(r,c);
-//        }
-//
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
-//                Ipopt::Number &obj_value)
-//    {
-//        Matrix A=computeA(x);
-//
-//        obj_value=0.0;
-//        if (p0.size()>0)
-//        {
-//            for (size_t i=0; i<p0.size(); i++)
-//                obj_value+=0.5*norm2(p1[i]-A*p0[i]);
-//
-//            obj_value/=p0.size();
-//        }
-//
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-//                     Ipopt::Number *grad_f)
-//    {
-//        Matrix A=computeA(x);
-//        for (Ipopt::Index i=0; i<n; i++)
-//            grad_f[i]=0.0;
-//
-//        if (p0.size()>0)
-//        {
-//            for (size_t i=0; i<p0.size(); i++)
-//            {
-//                Vector d=p1[i]-A*p0[i];
-//                for (Ipopt::Index j=0; j<n; j++)
-//                    grad_f[j]-=dot(d,(dA[j]*p0[i]));
-//            }
-//
-//            for (Ipopt::Index i=0; i<n; i++)
-//                grad_f[i]/=p0.size();
-//        }
-//
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool eval_g(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
-//                Ipopt::Index m, Ipopt::Number *g)
-//    {
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool eval_jac_g(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
-//                    Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index *iRow,
-//                    Ipopt::Index *jCol, Ipopt::Number *values)
-//    {
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    bool eval_h(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
-//                Ipopt::Number obj_factor, Ipopt::Index m, const Ipopt::Number *lambda,
-//                bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index *iRow,
-//                Ipopt::Index *jCol, Ipopt::Number *values)
-//    {
-//        return true;
-//    }
-//
-//    /****************************************************************/
-//    void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
-//                           const Ipopt::Number *x, const Ipopt::Number *z_L,
-//                           const Ipopt::Number *z_U, Ipopt::Index m,
-//                           const Ipopt::Number *g, const Ipopt::Number *lambda,
-//                           Ipopt::Number obj_value, const Ipopt::IpoptData *ip_data,
-//                           Ipopt::IpoptCalculatedQuantities *ip_cq)
-//    {
-//        A=computeA(x);
-//    }
-//};
-//
-//}
-//
-//}
+//          for (Ipopt::Index i=0; i<n; i++)
+//              grad_f[i]/=p0.size();
+//      }
+
+        return true;
+    }
+
+    /****************************************************************/
+    bool eval_g(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
+                Ipopt::Index m, Ipopt::Number *g)
+    {
+        return true;
+    }
+
+    /****************************************************************/
+    bool eval_jac_g(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
+                    Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index *iRow,
+                    Ipopt::Index *jCol, Ipopt::Number *values)
+    {
+        return true;
+    }
+
+    /****************************************************************/
+    bool eval_h(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
+                Ipopt::Number obj_factor, Ipopt::Index m, const Ipopt::Number *lambda,
+                bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index *iRow,
+                Ipopt::Index *jCol, Ipopt::Number *values)
+    {
+        return true;
+    }
+
+    /****************************************************************/
+    void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
+                           const Ipopt::Number *x, const Ipopt::Number *z_L,
+                           const Ipopt::Number *z_U, Ipopt::Index m,
+                           const Ipopt::Number *g, const Ipopt::Number *lambda,
+                           Ipopt::Number obj_value, const Ipopt::IpoptData *ip_data,
+                           Ipopt::IpoptCalculatedQuantities *ip_cq)
+    {
+        //A=computeA(x);
+    }
+};
+
+}
+
+}
 
 
 /****************************************************************/
@@ -230,6 +206,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     outMinMaxX.clear();
     outMinMaxY.clear();
 
+    // seek for min-max of input
     const Vector &in_front=in.front();
     for (size_t i=0; i<in_front.length(); i++)
     {
@@ -248,6 +225,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
         }
     }
 
+    // seek for min-max of output
     const Vector &out_front=out.front();
     for (size_t i=0; i<out_front.length(); i++)
     {
@@ -268,6 +246,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     prepare();
 
+    // randomly init weights and bias
     Rand::init();
     Vector weights_min, weights_max;
 
@@ -295,12 +274,12 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     app->Options()->SetStringValue("derivative_test","none");
     app->Initialize();
 
-    //Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,in,out);
-    //Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
-    //A=nlp->get_result();
-    //return (status==Ipopt::Solve_Succeeded);    
+    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,in,out);
+    Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));    
 
-    return true; // debug
+    error=nlp->get_prediction(pred);
+
+    return (status==Ipopt::Solve_Succeeded);    
 }
 
 
