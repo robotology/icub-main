@@ -253,14 +253,12 @@ Vector ff2LayNN::predict(const Vector &x)
         Vector n1(IW.size());
         for (size_t i=0; i<n1.length(); i++)
             n1[i]=yarp::math::dot(IW[i],x1)+b1[i];
-    
         Vector a1=hiddenLayerFcn(n1);
 
         // compute the output a2 of the network
         Vector n2(LW.size());
         for (size_t i=0; i<n2.length(); i++)
             n2[i]=yarp::math::dot(LW[i],a1)+b2[i];
-    
         Vector a2=outputLayerFcn(n2);
     
         // output postprocessing

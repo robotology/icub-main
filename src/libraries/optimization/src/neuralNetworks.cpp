@@ -232,20 +232,21 @@ public:
         for (Ipopt::Index i=0; i<n; i++)
             grad_f[i]=0.0;
 
+        Vector n1(IW.size());
+        Vector n2(LW.size());
         for (size_t i=0; i<inScaled.size(); i++)
         {
             Vector d=outScaled[i]-net.scaleOutputToNetFormat(net.predict(in[i]));
 
-            Vector n1(IW.size());
             for (size_t j=0; j<n1.length(); j++)
-                n1[i]=dot(IW[i],inScaled[1])+b1[i];
-
+                n1[j]=dot(IW[j],inScaled[j])+b1[i];
             Vector a1=net.hiddenLayerFcn(n1);
-            Vector n2(LW.size());
-            for (size_t i=0; i<n2.length(); i++)
-                n2[i]=dot(LW[i],a1)+b2[i];
 
-            Vector a2=net.outputLayerFcn(n2);
+            for (size_t j=0; j<n2.length(); j++)
+                n2[j]=dot(LW[j],a1)+b2[j];
+
+            Vector a2=net.outputLayerGrad(n2);
+            a2=a2*dot(net.hiddenLayerGrad(n1),);
         }
 
         for (Ipopt::Index i=0; i<n; i++)
