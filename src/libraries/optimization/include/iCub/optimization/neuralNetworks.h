@@ -28,6 +28,7 @@
 #define __ICUB_OPT_NNTRAINING_H__
 
 #include <deque>
+#include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
 #include <iCub/ctrl/neuralNetworks.h>
@@ -47,7 +48,25 @@ namespace optimization
 */
 class ff2LayNNTrain: virtual public iCub::ctrl::ff2LayNN
 {
+protected:
+    yarp::os::Property bounds;
+    void* App;
+
 public:
+    /**
+    * Default constructor.
+    */
+    ff2LayNNTrain();
+
+    /**
+    * Allow specifying the bounds for training network's parameters.
+    * @param bounds a property-like object containing bounds in the 
+    *               form: ("tag" (<min> <max>)), where tag is a
+    *               string referring to network parameters: e.g. IW,
+    *               LW, b1, b2 ...
+    */
+    void setBounds(const yarp::os::Property &bounds);
+
     /**
     * Train the network through optimization. 
     * @param numHiddenNodes is the number of hidden nodes. 
@@ -60,6 +79,23 @@ public:
     virtual bool train(const unsigned int numHiddenNodes, const std::deque<yarp::sig::Vector> &in,
                        const std::deque<yarp::sig::Vector> &out, std::deque<yarp::sig::Vector> &pred,
                        double &error);
+
+    /**
+    * Retrain the network through optimization. 
+    * @param numHiddenNodes is the number of hidden nodes. 
+    * @param in the list of input vector. 
+    * @param out the list of output vector. 
+    * @param pred the returned list of predicted output. 
+    * @param error returns the prediction error.
+    * @return true/false on success/fail. 
+    */
+    virtual bool retrain(const std::deque<yarp::sig::Vector> &in, const std::deque<yarp::sig::Vector> &out,
+                         std::deque<yarp::sig::Vector> &pred, double &error);
+
+    /**
+    * Default destructor.
+    */
+    virtual ~ff2LayNNTrain();
 };
 
 

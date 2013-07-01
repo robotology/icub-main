@@ -25,7 +25,10 @@
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 
+#define CAST_IPOPTAPP(x)        (static_cast<Ipopt::IpoptApplication*>(x))
+
 using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -42,6 +45,9 @@ namespace optimization
 class ff2LayNNTrainNLP : public Ipopt::TNLP
 {
 protected:
+    Property bounds;
+    bool randomInit;
+
     deque<Vector> &IW;
     deque<Vector> &LW;
     Vector        &b1;
@@ -49,11 +55,13 @@ protected:
 
 public:
     /****************************************************************/
-    ff2LayNNTrainNLP(ff2LayNNTrain *net, const deque<Vector> &in,
-                     const deque<Vector> &out) :
+    ff2LayNNTrainNLP(ff2LayNNTrain *net, const Property &bounds,
+                     const bool _randomInit, const deque<Vector> &in,
+                     const deque<Vector> &out) : randomInit(_randomInit),
                      IW(net->get_IW()), LW(net->get_LW()),
                      b1(net->get_b1()), b2(net->get_b2())
     {
+        this->bounds=bounds;
     }
 
     /****************************************************************/
@@ -190,6 +198,30 @@ public:
 
 
 /****************************************************************/
+ff2LayNNTrain::ff2LayNNTrain()
+{
+    App=new Ipopt::IpoptApplication();
+    CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",1e-8);
+    CAST_IPOPTAPP(App)->Options()->SetNumericValue("acceptable_tol",1e-8);
+    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("acceptable_iter",10);
+    CAST_IPOPTAPP(App)->Options()->SetStringValue("mu_strategy","adaptive");
+    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",300);
+    CAST_IPOPTAPP(App)->Options()->SetStringValue("nlp_scaling_method","gradient-based");
+    CAST_IPOPTAPP(App)->Options()->SetStringValue("hessian_approximation","limited-memory");
+    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("print_level",0);
+    CAST_IPOPTAPP(App)->Options()->SetStringValue("derivative_test","none");
+    CAST_IPOPTAPP(App)->Initialize();
+}
+
+
+/****************************************************************/
+void ff2LayNNTrain::setBounds(const Property &bounds)
+{
+    this->bounds=bounds;
+}
+
+
+/****************************************************************/
 bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
                           const deque<Vector> &in, const deque<Vector> &out,
                           deque<Vector> &pred, double &error)
@@ -206,7 +238,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     outMinMaxX.clear();
     outMinMaxY.clear();
 
-    // seek for min-max of input
+    // seek for min-max of input and scale it in [-1,1]
     const Vector &in_front=in.front();
     for (size_t i=0; i<in_front.length(); i++)
     {
@@ -225,7 +257,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
         }
     }
 
-    // seek for min-max of output
+    // seek for min-max of output and scale it in [-1,1]
     const Vector &out_front=out.front();
     for (size_t i=0; i<out_front.length(); i++)
     {
@@ -245,41 +277,34 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     }
 
     prepare();
-
-    // randomly init weights and bias
-    Rand::init();
-    Vector weights_min, weights_max;
-
-    weights_min.resize(in_front.length(),-1.0);
-    weights_max.resize(in_front.length(),+1.0);
-    IW.assign(numHiddenNodes,Rand::vector(weights_min,weights_max));
-    b1=Rand::vector(weights_min,weights_max);
-
-    LW.assign(out_front.length(),Rand::vector(weights_min,weights_max));
-    weights_min.resize(out_front.length(),-1.0);
-    weights_max.resize(out_front.length(),+1.0);
-    b2=Rand::vector(weights_min,weights_max);
-
     configured=true;
 
-    Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
-    app->Options()->SetNumericValue("tol",1e-8);
-    app->Options()->SetNumericValue("acceptable_tol",1e-8);
-    app->Options()->SetIntegerValue("acceptable_iter",10);
-    app->Options()->SetStringValue("mu_strategy","adaptive");
-    app->Options()->SetIntegerValue("max_iter",300);
-    app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
-    app->Options()->SetStringValue("hessian_approximation","limited-memory");
-    app->Options()->SetIntegerValue("print_level",0);
-    app->Options()->SetStringValue("derivative_test","none");
-    app->Initialize();
-
-    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,in,out);
-    Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));    
+    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,bounds,true,in,out);
+    Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));    
 
     error=nlp->get_prediction(pred);
-
     return (status==Ipopt::Solve_Succeeded);    
 }
 
+
+/****************************************************************/
+bool ff2LayNNTrain::retrain(const deque<Vector> &in, const deque<Vector> &out,
+                            deque<Vector> &pred, double &error)
+{
+    if ((in.size()==0) || (in.size()!=out.size()) || (in.size()!=pred.size()) || !configured)
+        return false;
+
+    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,bounds,false,in,out);
+    Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));    
+
+    error=nlp->get_prediction(pred);
+    return (status==Ipopt::Solve_Succeeded);    
+}
+
+
+/****************************************************************/
+ff2LayNNTrain::~ff2LayNNTrain()
+{
+    delete CAST_IPOPTAPP(App);
+}
 
