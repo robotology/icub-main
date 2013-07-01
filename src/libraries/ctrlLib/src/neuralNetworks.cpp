@@ -214,14 +214,28 @@ bool ff2LayNN::configure(const Property &options)
 
 
 /***************************************************************************/
-Vector ff2LayNN::preprocessingInput(const Vector &x)
+Vector ff2LayNN::scaleInputToNetFormat(const Vector &x)
 {
     return (inRatio*(x-inMinX)+inMinY);
 }
 
 
 /***************************************************************************/
-Vector ff2LayNN::postprocessingOutput(const Vector &x)
+Vector ff2LayNN::scaleInputFromNetFormat(const Vector &x)
+{
+    return ((x-inMinY)/inRatio+inMinX);
+}
+
+
+/***************************************************************************/
+Vector ff2LayNN::scaleOutputToNetFormat(const Vector &x)
+{
+    return ((x-outMinX)/outRatio+outMinY);
+}
+
+
+/***************************************************************************/
+Vector ff2LayNN::scaleOutputFromNetFormat(const Vector &x)
 {
     return (outRatio*(x-outMinY)+outMinX);
 }
@@ -233,7 +247,7 @@ Vector ff2LayNN::predict(const Vector &x)
     if (configured)
     {
         // input preprocessing
-        Vector x1=preprocessingInput(x);
+        Vector x1=scaleInputToNetFormat(x);
 
         // compute the output a1 of hidden layer
         Vector n1(IW.size());
@@ -250,7 +264,7 @@ Vector ff2LayNN::predict(const Vector &x)
         Vector a2=outputLayerFcn(n2);
     
         // output postprocessing
-        return postprocessingOutput(a2);
+        return scaleOutputFromNetFormat(a2);
     }
     else
         return Vector(1);

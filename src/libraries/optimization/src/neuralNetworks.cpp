@@ -58,6 +58,9 @@ protected:
     const deque<Vector> &in;
     const deque<Vector> &out;
     deque<Vector> &pred;
+
+    deque<Vector> inScaled;
+    deque<Vector> outScaled;
     double error;
 
     /****************************************************************/
@@ -107,6 +110,12 @@ public:
                      b1(_net.get_b1()), b2(_net.get_b2())
     {
         this->bounds=bounds;
+
+        for (size_t i=0; i<in.size(); i++)
+            inScaled.push_back(net.scaleInputToNetFormat(in[i]));
+
+        for (size_t i=0; i<out.size(); i++)
+            outScaled.push_back(net.scaleOutputToNetFormat(out[i]));
     }
 
     /****************************************************************/
@@ -200,16 +209,18 @@ public:
         fillNet(x);
 
         pred.clear();
-        obj_value=0.0;
+        obj_value=0.0; error=0.0;
         for (size_t i=0; i<in.size(); i++)
         {
             Vector pred=net.predict(in[i]);
             this->pred.push_back(pred);
 
-            obj_value+=0.5*norm2(out[i]-pred);
+            obj_value+=0.5*norm2(outScaled[i]-net.scaleOutputToNetFormat(pred));
+            error+=0.5*norm2(out[i]-pred);
         }
 
         obj_value/=in.size();
+        error/=in.size();
         return true;
     }
 
@@ -221,17 +232,24 @@ public:
         for (Ipopt::Index i=0; i<n; i++)
             grad_f[i]=0.0;
 
-        for (size_t i=0; i<in.size(); i++)
+        for (size_t i=0; i<inScaled.size(); i++)
         {
-            Vector pred=net.predict(in[i]);
-            Vector d=out[i]-pred;
+            Vector d=outScaled[i]-net.scaleOutputToNetFormat(net.predict(in[i]));
 
-            Vector x1=net.preprocessingInput(in[i]);
+            Vector n1(IW.size());
+            for (size_t j=0; j<n1.length(); j++)
+                n1[i]=dot(IW[i],inScaled[1])+b1[i];
 
-            for (size_t j=0; j<IW.size(); j++)
-            {
-            }
+            Vector a1=net.hiddenLayerFcn(n1);
+            Vector n2(LW.size());
+            for (size_t i=0; i<n2.length(); i++)
+                n2[i]=dot(LW[i],a1)+b2[i];
+
+            Vector a2=net.outputLayerFcn(n2);
         }
+
+        for (Ipopt::Index i=0; i<n; i++)
+            grad_f[i]/=inScaled.size();
 
         return true;
     }
@@ -268,8 +286,7 @@ public:
                            Ipopt::Number obj_value, const Ipopt::IpoptData *ip_data,
                            Ipopt::IpoptCalculatedQuantities *ip_cq)
     {
-        eval_f(n,x,true,obj_value); // => to fill the prediction as well
-        error=obj_value;
+        eval_f(n,x,true,obj_value);
     }
 };
 

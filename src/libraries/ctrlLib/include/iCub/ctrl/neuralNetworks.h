@@ -204,18 +204,32 @@ public:
     yarp::sig::Vector &get_b2() { return b2; }
 
     /**
-    * Prepocessing function.
+    * Scale input to be used with the network.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector preprocessingInput(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector scaleInputToNetFormat(const yarp::sig::Vector &x);
 
     /**
-    * Postpocessing function.
+    * Scale back input from the network's format.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector postprocessingOutput(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector scaleInputFromNetFormat(const yarp::sig::Vector &x);
+
+    /**
+    * Scale output to be used with the network.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector scaleOutputToNetFormat(const yarp::sig::Vector &x);
+
+    /**
+    * Scale back output from the network's format.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector scaleOutputFromNetFormat(const yarp::sig::Vector &x);
 
     /**
     * Hidden Layer Function.
