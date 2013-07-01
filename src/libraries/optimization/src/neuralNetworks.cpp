@@ -217,22 +217,21 @@ public:
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
     {
-//      Matrix A=computeA(x);
-//      for (Ipopt::Index i=0; i<n; i++)
-//          grad_f[i]=0.0;
-//
-//      if (p0.size()>0)
-//      {
-//          for (size_t i=0; i<p0.size(); i++)
-//          {
-//              Vector d=p1[i]-A*p0[i];
-//              for (Ipopt::Index j=0; j<n; j++)
-//                  grad_f[j]-=dot(d,(dA[j]*p0[i]));
-//          }
-//
-//          for (Ipopt::Index i=0; i<n; i++)
-//              grad_f[i]/=p0.size();
-//      }
+        fillNet(x);
+        for (Ipopt::Index i=0; i<n; i++)
+            grad_f[i]=0.0;
+
+        for (size_t i=0; i<in.size(); i++)
+        {
+            Vector pred=net.predict(in[i]);
+            Vector d=out[i]-pred;
+
+            Vector x1=net.preprocessingInput(in[i]);
+
+            for (size_t j=0; j<IW.size(); j++)
+            {
+            }
+        }
 
         return true;
     }

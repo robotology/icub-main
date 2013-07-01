@@ -214,20 +214,34 @@ bool ff2LayNN::configure(const Property &options)
 
 
 /***************************************************************************/
+Vector ff2LayNN::preprocessingInput(const Vector &x)
+{
+    return (inRatio*(x-inMinX)+inMinY);
+}
+
+
+/***************************************************************************/
+Vector ff2LayNN::postprocessingOutput(const Vector &x)
+{
+    return (outRatio*(x-outMinY)+outMinX);
+}
+
+
+/***************************************************************************/
 Vector ff2LayNN::predict(const Vector &x)
 {
     if (configured)
     {
         // input preprocessing
-        Vector x1=inRatio*(x-inMinX)+inMinY;
-    
+        Vector x1=preprocessingInput(x);
+
         // compute the output a1 of hidden layer
         Vector n1(IW.size());
         for (size_t i=0; i<n1.length(); i++)
             n1[i]=yarp::math::dot(IW[i],x1)+b1[i];
     
         Vector a1=hiddenLayerFcn(n1);
-    
+
         // compute the output a2 of the network
         Vector n2(LW.size());
         for (size_t i=0; i<n2.length(); i++)
@@ -236,7 +250,7 @@ Vector ff2LayNN::predict(const Vector &x)
         Vector a2=outputLayerFcn(n2);
     
         // output postprocessing
-        return outRatio*(a2-outMinY)+outMinX;
+        return postprocessingOutput(a2);
     }
     else
         return Vector(1);
@@ -374,5 +388,26 @@ Vector ff2LayNN_tansig_purelin::outputLayerFcn(const Vector &x)
     return x;
 }
 
+
+/***************************************************************************/
+Vector ff2LayNN_tansig_purelin::hiddenLayerGrad(const Vector &x)
+{
+    Vector y(x.length());
+    for (size_t i=0; i<x.length(); i++)
+    {
+        double tmp1=exp(-2.0*x[i]);
+        double tmp2=1.0+tmp1;
+        y[i]=(4.0*tmp1)/(tmp2*tmp2);
+    }
+
+    return y;
+}
+
+
+/***************************************************************************/
+Vector ff2LayNN_tansig_purelin::outputLayerGrad(const Vector &x)
+{
+    return Vector(x.length(),1.0);
+}
 
 

@@ -204,6 +204,20 @@ public:
     yarp::sig::Vector &get_b2() { return b2; }
 
     /**
+    * Prepocessing function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector preprocessingInput(const yarp::sig::Vector &x);
+
+    /**
+    * Postpocessing function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector postprocessingOutput(const yarp::sig::Vector &x);
+
+    /**
     * Hidden Layer Function.
     * @param x is the input vector.
     * @return the output vector.
@@ -216,6 +230,20 @@ public:
     * @return the output vector.
     */ 
     virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;
+
+    /**
+    * Gradient of the Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x)=0;
+
+    /**
+    * Gradient of the Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x)=0;
 };
 
 
@@ -254,6 +282,20 @@ public:
     * @return the output vector.
     */ 
     virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x);
+
+    /**
+    * Gradient of the Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x);
+
+    /**
+    * Gradient of the Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x);
 };
 
 }
