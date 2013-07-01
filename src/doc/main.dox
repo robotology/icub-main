@@ -31,7 +31,7 @@ Topics:
  - Reference material:
   - The <a href="http://wiki.icub.org/wiki/Manual">The iCub manual</a>
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
-  - Our software architecture, <a href="http://yarp0.sourceforge.net/">YARP</a>.
+  - Our software architecture, <a href="http://www.yarp.it/">YARP</a>.
 
 This documentation is developed by scanning all source code 
 in $ICUB_DIR/src. If your comments or classes are not showing up, try 
