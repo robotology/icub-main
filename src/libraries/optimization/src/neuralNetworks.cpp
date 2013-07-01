@@ -246,7 +246,7 @@ public:
                 n2[j]=dot(LW[j],a1)+b2[j];
 
             Vector a2=net.outputLayerGrad(n2);
-            a2=a2*dot(net.hiddenLayerGrad(n1),);
+            //a2=a2*dot(net.hiddenLayerGrad(n1),);
         }
 
         for (Ipopt::Index i=0; i<n; i++)
