@@ -16,6 +16,7 @@
 */
 
 #include <algorithm>
+#include <string>
 
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
@@ -48,33 +49,77 @@ protected:
     Property bounds;
     bool randomInit;
 
+    ff2LayNNTrain &net;
     deque<Vector> &IW;
     deque<Vector> &LW;
     Vector        &b1;
     Vector        &b2;
 
+    const deque<Vector> &in;
+    const deque<Vector> &out;
+    deque<Vector> &pred;
+    double error;
+
+    /****************************************************************/
+    bool getBounds(const string &tag, double &min, double &max)
+    {
+        min=-1.0; max=1.0;
+        if (Bottle *b=bounds.find(tag.c_str()).asList())
+        {
+            if (b->size()>=2)
+            {
+                min=b->get(0).asDouble();
+                max=b->get(1).asDouble();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /****************************************************************/
+    void fillNet(const Ipopt::Number *x)
+    {
+        Ipopt::Index k=0;
+        for (size_t i=0; i<IW.size(); i++)
+            for (size_t j=0; j<IW.front().length(); j++)
+                IW[i][j]=x[k++];
+
+        for (size_t i=0; i<LW.size(); i++)
+            for (size_t j=0; j<LW.front().length(); j++)
+                LW[i][j]=x[k++];
+
+        for (size_t i=0; i<b1.length(); i++)
+            b1[i]=x[k++];
+
+        for (size_t i=0; i<b2.length(); i++)
+            b2[i]=x[k++];
+    }
+
 public:
     /****************************************************************/
-    ff2LayNNTrainNLP(ff2LayNNTrain *net, const Property &bounds,
-                     const bool _randomInit, const deque<Vector> &in,
-                     const deque<Vector> &out) : randomInit(_randomInit),
-                     IW(net->get_IW()), LW(net->get_LW()),
-                     b1(net->get_b1()), b2(net->get_b2())
+    ff2LayNNTrainNLP(ff2LayNNTrain &_net, const Property &bounds,
+                     const bool _randomInit, const deque<Vector> &_in,
+                     const deque<Vector> &_out, deque<Vector> &_pred) :
+                     net(_net),randomInit(_randomInit),
+                     in(_in), out(_out), pred(_pred),
+                     IW(_net.get_IW()), LW(_net.get_LW()),
+                     b1(_net.get_b1()), b2(_net.get_b2())
     {
         this->bounds=bounds;
     }
 
     /****************************************************************/
-    virtual double get_prediction(deque<Vector> &pred) const
+    virtual double get_error() const
     {
-        return 0.0;
+        return error;
     }
 
     /****************************************************************/
     bool get_nlp_info(Ipopt::Index &n, Ipopt::Index &m, Ipopt::Index &nnz_jac_g,
                       Ipopt::Index &nnz_h_lag, IndexStyleEnum &index_style)
     {
-        n=12;
+        n=IW.size()*IW.front().length()+LW.size()*LW.front().length()+b1.length()+b2.length();
         m=nnz_jac_g=nnz_h_lag=0;
         index_style=TNLP::C_STYLE;
 
@@ -85,16 +130,45 @@ public:
     bool get_bounds_info(Ipopt::Index n, Ipopt::Number *x_l, Ipopt::Number *x_u,
                          Ipopt::Index m, Ipopt::Number *g_l, Ipopt::Number *g_u)
     {
-//      Ipopt::Index i=0;
-//      for (int c=0; c<A0.cols(); c++)
-//      {
-//          for (int r=0; r<A0.rows()-1; r++)
-//          {
-//              x_l[i]=min(r,c);
-//              x_u[i]=max(r,c);
-//              i++;
-//          }
-//      }
+        double min_IW,max_IW; getBounds("IW",min_IW,max_IW);
+        double min_LW,max_LW; getBounds("LW",min_LW,max_LW);
+        double min_b1,max_b1; getBounds("b1",min_b1,max_b1);
+        double min_b2,max_b2; getBounds("b2",min_b2,max_b2);
+
+        Ipopt::Index k=0;
+        for (size_t i=0; i<IW.size(); i++)
+        {
+            for (size_t j=0; j<IW.front().length(); j++)
+            {
+                x_l[k]=min_IW;
+                x_u[k]=max_IW;
+                k++;
+            }
+        }
+            
+        for (size_t i=0; i<LW.size(); i++)
+        {
+            for (size_t j=0; j<LW.front().length(); j++)
+            {
+                x_l[k]=min_LW;
+                x_u[k]=max_LW;
+                k++;
+            }
+        }
+
+        for (size_t i=0; i<b1.size(); i++)
+        {
+            x_l[k]=min_b1;
+            x_u[k]=max_b1;
+            k++;
+        }
+
+        for (size_t i=0; i<b2.size(); i++)
+        {
+            x_l[k]=min_b2;
+            x_u[k]=max_b2;
+            k++;
+        }
 
         return true;
     }
@@ -104,12 +178,17 @@ public:
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
                             Ipopt::Index m, bool init_lambda, Ipopt::Number *lambda)
     {
-//      Ipopt::Index i=0;
-//      for (int c=0; c<A0.cols(); c++)
-//      {
-//          for (int r=0; r<A0.rows()-1; r++)
-//              x[i++]=A0(r,c);
-//      }
+        Ipopt::Number x_l(n),x_u(n),g_l(n),g_u(n);
+        get_bounds_info(n,&x_l,&x_u,m,&g_l,&g_u);
+
+        if (randomInit)
+        {
+            Rand::init();
+            for (Ipopt::Index i=0; i<n; i++)
+                x[i]=Rand::scalar((&x_l)[i],(&x_u)[i]);
+        }
+        else for (Ipopt::Index i=0; i<n; i++)
+            x[i]=0.5*((&x_l)[i]+(&x_u)[i]);
 
         return true;
     }
@@ -117,18 +196,20 @@ public:
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
-    {
-//      Matrix A=computeA(x);
-//
-//      obj_value=0.0;
-//      if (p0.size()>0)
-//      {
-//          for (size_t i=0; i<p0.size(); i++)
-//              obj_value+=0.5*norm2(p1[i]-A*p0[i]);
-//
-//          obj_value/=p0.size();
-//      }
+    {        
+        fillNet(x);
 
+        pred.clear();
+        obj_value=0.0;
+        for (size_t i=0; i<in.size(); i++)
+        {
+            Vector pred=net.predict(in[i]);
+            this->pred.push_back(pred);
+
+            obj_value+=0.5*norm2(out[i]-pred);
+        }
+
+        obj_value/=in.size();
         return true;
     }
 
@@ -188,7 +269,8 @@ public:
                            Ipopt::Number obj_value, const Ipopt::IpoptData *ip_data,
                            Ipopt::IpoptCalculatedQuantities *ip_cq)
     {
-        //A=computeA(x);
+        eval_f(n,x,true,obj_value); // => to fill the prediction as well
+        error=obj_value;
     }
 };
 
@@ -279,11 +361,11 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     prepare();
     configured=true;
 
-    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,bounds,true,in,out);
+    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(*this,bounds,true,in,out,pred);
     Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));    
 
-    error=nlp->get_prediction(pred);
-    return (status==Ipopt::Solve_Succeeded);    
+    error=nlp->get_error();
+    return (status==Ipopt::Solve_Succeeded);
 }
 
 
@@ -294,10 +376,10 @@ bool ff2LayNNTrain::retrain(const deque<Vector> &in, const deque<Vector> &out,
     if ((in.size()==0) || (in.size()!=out.size()) || (in.size()!=pred.size()) || !configured)
         return false;
 
-    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(this,bounds,false,in,out);
+    Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(*this,bounds,false,in,out,pred);
     Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));    
 
-    error=nlp->get_prediction(pred);
+    error=nlp->get_error();
     return (status==Ipopt::Solve_Succeeded);    
 }
 
