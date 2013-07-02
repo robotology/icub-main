@@ -78,7 +78,7 @@ bool stereoCalibThread::threadInit()
 
     Bottle p;
     igaze->getInfo(p);
-    vergence=ceil(p.check(("min_allowed_vergence"),Value(1.0)).asDouble());
+    vergence=p.check(("min_allowed_vergence"),Value(1.0)).asDouble();
     version=0.0;
     yarp::sig::Vector ang(3);
     ang=0.0;
