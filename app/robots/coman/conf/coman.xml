@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="coman">
+
+    
+   <!-- devices -->
+  
+  <device name="coman_mc" type="comanMotionControl">
+    <params file="general.xml" />
+    <params file="hardware/motionControl.xml" />
+  </device>
+  
+  <device name="coman_ft" type="comanFTsensor">
+    <params file="general.xml" />
+    <params file="hardware/FTsensor.xml" />
+  </device>
+
+                                                
+  <!-- wrappers -->  
+ 
+  <devices file="wrappers/coman_mc_left_leg_wrapper.xml" /> 
+  <devices file="wrappers/coman_mc_left_arm_wrapper.xml" />
+  <devices file="wrappers/coman_mc_right_arm_wrapper.xml" /> 
+  <devices file="wrappers/coman_mc_right_leg_wrapper.xml" /> 
+  <devices file="wrappers/coman_mc_torso_wrapper.xml" /> 
+  <devices file="wrappers/coman_mc_neck_wrapper.xml" />
+
+  <devices file="wrappers/coman_ft_wrappers.xml" />
+
+  
+   <!-- calibrator -->
+  <!-- coming soon...   -->
+    
+</robot>
+
+
+
