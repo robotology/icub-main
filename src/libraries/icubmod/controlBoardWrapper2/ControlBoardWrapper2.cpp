@@ -1213,7 +1213,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 Bottle *jlut = cmd.get(3).asList();
                                 Bottle *pos = cmd.get(4).asList();
 
-                                int i;
                                 if (jlut==NULL || pos==NULL)
                                     break;
                                 if (nj!=jlut->size() || nj!=pos->size())
