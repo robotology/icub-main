@@ -207,6 +207,8 @@ class yarp::dev::iCubSimulationControl :
     virtual bool setRefTorqueRaw(int,double);
     virtual bool getRefTorquesRaw(double *);
     virtual bool getRefTorqueRaw(int,double *);
+    virtual bool getBemfParamRaw(int,double *);
+    virtual bool setBemfParamRaw(int,double );
     virtual bool setTorquePidRaw(int,const yarp::dev::Pid &);
     virtual bool setTorquePidsRaw(const yarp::dev::Pid *);
     virtual bool setTorqueErrorLimitRaw(int,double);

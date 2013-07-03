@@ -799,6 +799,8 @@ public:
     virtual bool getTorquesRaw(double *trqs);
     virtual bool getTorqueRangeRaw(int j, double *min, double *max);
     virtual bool getTorqueRangesRaw(double *min, double *max);
+    virtual bool getBemfParamRaw(int j, double *trq);
+    virtual bool setBemfParamRaw(int j, double trq);
 
     virtual bool setTorquePidRaw(int j, const Pid &pid);
     virtual bool setTorquePidsRaw( const Pid *pid);

@@ -401,7 +401,6 @@ void iCubHeadCalibratorV2::goToZero(int j)
 
 void iCubHeadCalibratorV2::checkGoneToZero(int j)
 {
-    // wait.
     bool finished = false;
     int timeout = 0;
     while ( (!finished) && (!abortCalib))
@@ -489,10 +488,10 @@ bool iCubHeadCalibratorV2::park(DeviceDriver *dd, bool wait)
                 if (iPosition->checkMotionDone(j, &done))
                 {
                     if (!done)
-                        fprintf(logfile, "iCubHeadCalibratorV2::park() : joint %d not in position ", j);
+                        fprintf(logfile, "HEADCALIB[%d]: iCubHeadCalibratorV2::park() : joint %d not in position ", canID, j);
                 }
                 else
-                    fprintf(logfile, "iCubHeadCalibratorV2::park() : joint %d did not answer ", j);
+                    fprintf(logfile, "HEADCALIB[%d]: iCubHeadCalibratorV2::park() : joint %d did not answer ", canID, j);
             }
         }
     }

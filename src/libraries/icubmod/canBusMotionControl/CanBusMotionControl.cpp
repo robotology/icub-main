@@ -3651,7 +3651,16 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         r.writePacket();
     _mutex.post();
     _writeWord16Ex (CAN_SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_up_val), S_16(pid.stiction_down_val), false);
-    
+    _mutex.wait();
+        r.startPacket();
+        r.addMessage (CAN_SET_MODEL_PARAMS, axis);
+        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(pid.kff);
+        *((short *)(r._writeBuffer[0].getData()+3)) = S_16(0);
+        *((short *)(r._writeBuffer[0].getData()+5)) = S_16(0);
+        *((short *)(r._writeBuffer[0].getData()+7)) = S_16(0);
+        r._writeBuffer[0].setLen(8);
+        r.writePacket();
+    _mutex.post();
     return true;
 }
 
@@ -3770,6 +3779,40 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
     out->max_output= *((short *)(data));
     data+=2;
     out->max_int= *((short *)(data));
+
+    t->clear();
+
+    _mutex.wait();
+    
+    DEBUG_FUNC("Calling CAN_GET_MODEL_PARAMS\n");
+   
+    r.startPacket();
+    r.addMessage (id, axis, CAN_GET_MODEL_PARAMS);
+    r.writePacket();
+
+    // ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+    if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        DEBUG_FUNC("CAN_GET_MODEL_PARAMS: message timed out\n");
+        //@@@ TODO: check here
+        // value=0;
+        return false;
+    }
+
+    m=t->get(0);
+    if (m==0)
+    {
+        //@@@ TODO: check here
+        // value=0;
+        return false;
+    }
+
+    data=m->getData()+1;
+    out->kff= *((short *)(data));
 
     t->clear();
 
@@ -4835,6 +4878,50 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
     }
     else
         return false;
+
+    return true;
+}
+
+bool CanBusMotionControl::getBemfParamRaw (int axis, double *bemf)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    short value = 0;
+
+    if (_readWord16 (CAN_GET_BACKEMF_PARAMS, axis, value))
+    {
+        *bemf = double (value);
+    }
+    else
+        return false;
+
+    return true;
+}
+
+/// cmd is a SingleAxis poitner with 1 double arg
+bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
+{
+    const int axis = j;
+
+     /// prepare Can message.
+    CanBusResources& r = RES(system_resources);
+
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    _mutex.wait();
+        r.startPacket();
+        r.addMessage (CAN_SET_BACKEMF_PARAMS, axis);
+        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(bemf);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = unsigned char (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+4)) = unsigned char (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+5)) = unsigned char (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = unsigned char (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = unsigned char (0);
+        r._writeBuffer[0].setLen(8);
+        r.writePacket();
+    _mutex.post();
 
     return true;
 }
