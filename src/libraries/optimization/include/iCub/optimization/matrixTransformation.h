@@ -23,7 +23,7 @@
  *  
  * @author Ugo Pattacini
  *  
- * @defgroup MatrixTransformations Matrix Transformations
+ * @defgroup MatrixTransformations Finding Matrix Transformations
  * @ingroup optimization
  *
  * Given two sets of 3D points, the aim is to find out the 
