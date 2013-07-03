@@ -4914,11 +4914,11 @@ bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
         r.startPacket();
         r.addMessage (CAN_SET_BACKEMF_PARAMS, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(bemf);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = unsigned char (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+4)) = unsigned char (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+5)) = unsigned char (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = unsigned char (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = unsigned char (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+4)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+5)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
