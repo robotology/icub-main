@@ -1229,6 +1229,9 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                                 //if (pos!=NULL)
                                     // ok = pos->positionMove(nj, lut_tmp, pos_tmp);
+
+                                delete [] lut_tmp;
+                                delete [] pos_tmp;
                             
                             }
                             break;
