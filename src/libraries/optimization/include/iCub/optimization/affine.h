@@ -17,7 +17,7 @@
 
 /**
  * @defgroup Affine Affine Transformations
- * @ingroup optimization
+ * @ingroup MatrixTransformations
  *
  * Given two sets of 3D points, the aim is to find out the 
  * affine transformation matrix between them. 
@@ -31,6 +31,7 @@
 
 #include <deque>
 #include <yarp/sig/all.h>
+#include <iCub/optimization/matrixTransformation.h>
 
 namespace iCub
 {
@@ -45,7 +46,7 @@ namespace optimization
 * transformation matrix A between two sets of matching 3D points
 * employing IpOpt. 
 */
-class AffineWithMatchedPoints
+class AffineWithMatchedPoints : public MatrixTransformationWithMatchedPoints
 {
 protected:
     yarp::sig::Matrix min, max;    
@@ -70,7 +71,7 @@ public:
     *  
     * @note the last row is always expected to be (0 0 0 1).
     */
-    void setBounds(const yarp::sig::Matrix &min, const yarp::sig::Matrix &max);
+    virtual void setBounds(const yarp::sig::Matrix &min, const yarp::sig::Matrix &max);
 
     /**
     * Add to the internal database the 3D-point p0 and the 3D-point 
@@ -80,14 +81,14 @@ public:
     * @param p1 the 3D-point which corresponds to A*p0.
     * @return true/false on success/fail. 
     */
-    bool addPoints(const yarp::sig::Vector &p0, const yarp::sig::Vector &p1);
+    virtual bool addPoints(const yarp::sig::Vector &p0, const yarp::sig::Vector &p1);
 
     /**
     * Return the number of 3D-points pairs currently contained into 
     * the internal database. 
     * @return the number of pairs. 
     */
-    size_t getNumPoints() const { return p0.size(); }
+    virtual size_t getNumPoints() const { return p0.size(); }
 
     /**
     * Retrieve copies of the database of 3D-points pairs.
@@ -96,12 +97,12 @@ public:
     *  
     * @note points are retrived in 4x1 homogeneous format. 
     */
-    void getPoints(std::deque<yarp::sig::Vector> &p0, std::deque<yarp::sig::Vector> &p1) const;
+    virtual void getPoints(std::deque<yarp::sig::Vector> &p0, std::deque<yarp::sig::Vector> &p1) const;
 
     /**
     * Clear the internal database of 3D points.
     */
-    void clearPoints();
+    virtual void clearPoints();
 
     /**
     * Allow specifiying the initial guess for the affine 
@@ -109,7 +110,7 @@ public:
     * @param A the 4x4 homogeneous matrix used as initial guess.
     * @return true/false on success/fail. 
     */
-    bool setInitialGuess(const yarp::sig::Matrix &A);
+    virtual bool setInitialGuess(const yarp::sig::Matrix &A);
 
     /**
     * Perform optimization to determine the affine matrix A. 
@@ -120,7 +121,7 @@ public:
     *              pairs.
     * @return true/false on success/fail. 
     */
-    bool calibrate(yarp::sig::Matrix &A, double &error);
+    virtual bool calibrate(yarp::sig::Matrix &A, double &error);
 };
 
 }

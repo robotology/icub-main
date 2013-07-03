@@ -486,6 +486,24 @@ CalibReferenceWithMatchedPoints::CalibReferenceWithMatchedPoints()
 
 
 /****************************************************************/
+void CalibReferenceWithMatchedPoints::setBounds(const Matrix &min,
+                                                const Matrix &max)
+{
+    if ((min.rows()<3) || (min.cols()<3) ||
+        (max.rows()<3) || (max.cols()<3))
+        return;
+
+    this->min[0]=min(0,3); this->max[0]=max(0,3); 
+    this->min[1]=min(1,3); this->max[1]=max(1,3);
+    this->min[2]=min(2,3); this->max[2]=max(2,3);
+
+    this->min[3]=min(0,0); this->max[3]=max(0,0);
+    this->min[4]=min(0,1); this->max[4]=max(0,1);
+    this->min[5]=min(0,2); this->max[5]=max(0,2);
+}
+
+
+/****************************************************************/
 void CalibReferenceWithMatchedPoints::setBounds(const Vector &min,
                                                 const Vector &max)
 {
