@@ -2652,6 +2652,16 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
     return true;
 }
 
+bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
+{
+    return NOT_YET_IMPLEMENTED("getBemfParam");
+}
+
+bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
+{
+    return NOT_YET_IMPLEMENTED("getBemfParam");
+}
+
 bool embObjMotionControl::setTorqueErrorLimitRaw(int j, double limit)
 {
     return NOT_YET_IMPLEMENTED("setTorqueErrorLimitRaw");

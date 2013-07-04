@@ -466,6 +466,8 @@ public:
     bool setTorqueModeRaw();
     bool getTorqueRaw(int j, double *t);
     bool getTorquesRaw(double *t);
+    bool getBemfParamRaw(int j, double *bemf);
+    bool setBemfParamRaw(int j, double bemf);
     bool getTorqueRangeRaw(int j, double *min, double *max);
     bool getTorqueRangesRaw(double *min, double *max);
     bool setRefTorquesRaw(const double *t);
