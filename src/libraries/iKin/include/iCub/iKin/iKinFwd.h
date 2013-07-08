@@ -1034,7 +1034,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 7-DOF iCub Arm.
+* A class for defining the iCub Arm.
 */
 class iCubArm : public iKinLimb
 {
@@ -1155,7 +1155,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 6-DOF iCub Leg.
+* A class for defining the iCub Leg.
 */
 class iCubLeg : public iKinLimb
 {
@@ -1195,7 +1195,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 5-DOF iCub Eye.
+* A class for defining the iCub Eye.
 */
 class iCubEye : public iKinLimb
 {
@@ -1236,8 +1236,8 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 5-DOF iCub Eye with the root 
-* reference frame attached to the neck. 
+* A class for defining the iCub Eye with the root reference 
+* frame attached to the neck. 
 */
 class iCubEyeNeckRef : public iCubEye
 {
@@ -1269,8 +1269,8 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the 6-DOF Inertia Sensor Kinematics of 
-* the iCub. 
+* A class for defining the Inertia Sensor Kinematics of the
+* iCub. 
 */
 class iCubInertialSensor : public iKinLimb
 {
