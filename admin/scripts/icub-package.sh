@@ -12,9 +12,9 @@ export ARCHFILE_WINDOWS=iCub-$MODULE-src-$REL.zip
 export DEPFILE=iCub-$MODULE-dep-$REL.txt
 
 if [ "k$1" =  "k" ]; then
- export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub
+ export SVN_URL="https://svn.code.sf.net/p/robotcub/code/trunk/iCub"
 else
- export SVN_URL=https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub$REL
+ export SVN_URL="https://svn.code.sf.net/p/robotcub/code/tags/iCub$REL"
 fi
 
 export ROOT_PATH=iCub
@@ -87,5 +87,3 @@ echo "Done"
 
 cd ..
 #rm $SOURCE_TMP_DIR -rf
-
-

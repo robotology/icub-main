@@ -26,7 +26,7 @@
 * Make tag
   Commit new version, write down revision svn revision number (REVISION)
   
-  svn copy -r REVISION https://robotcub.svn.sourceforge.net/svnroot/robotcub/trunk/iCub https://robotcub.svn.sourceforge.net/svnroot/robotcub/tags/iCub1.1.8
+  svn copy -r REVISION https://svn.code.sf.net/p/robotcub/code/trunk/iCub https://svn.code.sf.net/p/robotcub/code/tags/iCub1.1.12
 
 * Make packages
 
