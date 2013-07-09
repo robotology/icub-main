@@ -76,7 +76,7 @@ equivalent to the following list of institutions:
 
 EOF
 
-) > $prefix_dir/COPYING_new
+) > main/COPYING_new
 
 (
  echo "This is the list of authors who contributed code to the iCub main package:"
@@ -84,6 +84,6 @@ EOF
  cat licenses-authors-compact.txt
  echo
 
-) > $prefix_dir/AUTHORS_new
+) > main/AUTHORS_new
 
 
