@@ -446,6 +446,9 @@ bool minJerkTrajGen::setTs(const double _Ts)
 /*******************************************************************************************/
 void minJerkTrajGen::init(const Vector &y0)
 {
+    // save initial state y0, so that if setT() or setTs() are called afterwards
+    // the vel and acc filters are initialized with the right value (i.e. y0) 
+    lastRef = pos = y0; 
     if (posFilter!=NULL)
         posFilter->init(y0);
 
@@ -620,6 +623,8 @@ bool minJerkRefGen::setTs(const double _Ts)
 /*******************************************************************************************/
 void minJerkRefGen::init(const Vector &y0)
 {
+    lastRef = pos = y0;
+
     if (posFilter!=NULL)
         posFilter->init(y0);
 
