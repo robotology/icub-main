@@ -5,7 +5,7 @@
 # New build system. Exploit new cmake 2.6 features (export).
 
 #reduce warning level with cmake 2.6
-cmake_minimum_required(VERSION 2.6.4)
+cmake_minimum_required(VERSION 2.8.7)
 #cmake policies
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -16,8 +16,8 @@ project(iCub)
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
-SET(ICUB_REQYARP_VERSION_PATCH "20")
-set(ICUB_REQYARP_VERSION_TWEAK "6")
+SET(ICUB_REQYARP_VERSION_PATCH "21")
+set(ICUB_REQYARP_VERSION_TWEAK "0")
 
 find_package(YARP REQUIRED)
 
