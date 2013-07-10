@@ -205,7 +205,7 @@ public:
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
-    {        
+    {
         fillNet(x);
 
         pred.clear();
@@ -325,7 +325,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
                           const deque<Vector> &in, const deque<Vector> &out,
                           deque<Vector> &pred, double &error)
 {
-    if ((in.size()==0) || (in.size()!=out.size()) || (in.size()!=pred.size()))
+    if ((in.size()==0) || (in.size()!=out.size()))
         return false;
 
     IW.clear();
@@ -379,7 +379,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
     configured=true;
 
     Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(*this,bounds,true,in,out,pred);
-    Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));    
+    Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));
 
     error=nlp->get_error();
     return (status==Ipopt::Solve_Succeeded);
@@ -390,7 +390,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 bool ff2LayNNTrain::retrain(const deque<Vector> &in, const deque<Vector> &out,
                             deque<Vector> &pred, double &error)
 {
-    if ((in.size()==0) || (in.size()!=out.size()) || (in.size()!=pred.size()) || !configured)
+    if ((in.size()==0) || (in.size()!=out.size()) || !configured)
         return false;
 
     Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(*this,bounds,false,in,out,pred);
