@@ -6,8 +6,8 @@ set(PROJECTNAME iCubTest)
 
 file(GLOB folder_main_header *.h )
 file(GLOB folder_main_source *.cpp )
-file(GLOB folder_tests_header testMotors/*.h testMotorsStiction/*.h)
-file(GLOB folder_tests_source testMotors/*.cpp testMotorsStiction/*.cpp)
+file(GLOB folder_tests_header testMotors/*.h testMotorsStiction/*.h testRoie/*.h)
+file(GLOB folder_tests_source testMotors/*.cpp testMotorsStiction/*.cpp testRoie/*.cpp)
 
 source_group("Source Files (main)" FILES ${folder_main_source})
 source_group("Header Files (main)" FILES ${folder_main_header})

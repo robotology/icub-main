@@ -18,27 +18,37 @@
  * Public License for more details
 */
 
+#ifndef __ICUB_TEST_MOTORS_01122009__
+#define __ICUB_TEST_MOTORS_01122009__
+
+#include <vector>
+#include <string>
+
+#include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
+#include <yarp/os/Time.h>
 
+#include "DriverInterface.h"
 #include "Test.h"
+#include "TestRoieReportEntry.h"
 
-iCubTest::iCubTest(yarp::os::Searchable& configuration)
+class iCubTestRoie : public iCubTest
 {
-    printf("using this configuration: %s\n",configuration.toString().c_str());
-    if (configuration.check("name"))
-    {
-        m_Name=configuration.find("name").asString();
-    }
-    if (configuration.check("part"))
-    {
-        m_PartCode=configuration.find("part").asString();
-    }
-    if (configuration.check("description"))
-    {
-        m_Description=configuration.find("description").asString();
-    }
+public:
+    iCubTestRoie(yarp::os::Searchable& configuration);
 
-    m_bIsCritical=configuration.check("critical");
+    virtual ~iCubTestRoie();
 
-    m_bSuccess=false;
-}
+    iCubTestReport* run();
+
+protected:
+    iCubDriver::iCubPart m_Part;
+    int     m_NumJoints;
+    int    *m_aCycles;
+    double *m_aMaxPos;
+    double *m_aMinPos;
+    double *m_aRefVel;
+    double *m_aTolerance;
+};
+
+#endif

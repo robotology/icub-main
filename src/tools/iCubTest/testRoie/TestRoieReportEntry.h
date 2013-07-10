@@ -18,27 +18,30 @@
  * Public License for more details
 */
 
-#include <yarp/os/Value.h>
+#ifndef __ICUB_TEST_MOTORS_REPORT_ENTRY_01122009__
+#define __ICUB_TEST_MOTORS_REPORT_ENTRY_01122009__
 
-#include "Test.h"
+#include "TestReportEntry.h"
 
-iCubTest::iCubTest(yarp::os::Searchable& configuration)
+class iCubTestRoieReportEntry : public iCubTestReportEntry
 {
-    printf("using this configuration: %s\n",configuration.toString().c_str());
-    if (configuration.check("name"))
-    {
-        m_Name=configuration.find("name").asString();
-    }
-    if (configuration.check("part"))
-    {
-        m_PartCode=configuration.find("part").asString();
-    }
-    if (configuration.check("description"))
-    {
-        m_Description=configuration.find("description").asString();
-    }
+public:
+    iCubTestRoieReportEntry(){}
+    virtual ~iCubTestRoieReportEntry(){}
 
-    m_bIsCritical=configuration.check("critical");
+    virtual void print(XMLPrinter& printer);
+    
+    virtual void printStdio();
 
-    m_bSuccess=false;
-}
+    std::string m_Name;
+    std::string m_Result;
+
+    std::string m_Cycles;
+    std::string m_Variation;
+    std::string m_Tolerance;
+    std::string m_RefVel;
+    std::string m_MinVal;
+    std::string m_MaxVal;
+};
+
+#endif

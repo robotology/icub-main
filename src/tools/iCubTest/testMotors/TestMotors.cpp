@@ -213,42 +213,20 @@ iCubTestReport* iCubTestMotors::run()
             continue;
         }
 
-        // only if success
+        // wait some time
+        yarp::os::Time::delay(m_aTimeout[joint]);
 
-        result=iCubDriver::instance()->waitPos(m_Part,joint,m_aTimeout[joint]);
-        bool bWaitPosSuccess=false;
-        switch (result)
-        {
-        case iCubDriver::IPOS_FAILED:
-            pOutput->m_Result="FAILED: !IPositionControl";
-            break;
-        case iCubDriver::IPOS_CHECKMOTIONDONE_FAILED:
-            pOutput->m_Result="FAILED: IPositionControl->checkMotionDone";
-            break;
-        case iCubDriver::IPOS_CHECKMOTIONDONE_TIMEOUT:
-            pOutput->m_Result="FAILED: Timeout in IPositionControl->positionMove";
-            break;
-        case iCubDriver::IPOS_CHECKMOTIONDONE_OK:
-            bWaitPosSuccess=true;
-        }
-
-        // { encoders 
+        // read encoders 
         double pos;
         result=iCubDriver::instance()->getEncPos(m_Part,joint,pos);
         bool bGetEncPosSuccess=false;
         switch (result)
         {
         case iCubDriver::IENC_FAILED:
-            if (bWaitPosSuccess)
-            {
                 pOutput->m_Result="FAILED: !IEncoders";
-            }
             break;
         case iCubDriver::IENC_GETPOS_FAILED:
-            if (bWaitPosSuccess)
-            {
                 pOutput->m_Result="FAILED: IEncoders->getEncoder";
-            }
             break;
         case iCubDriver::IENC_GETPOS_OK:
             sprintf(posString,"%f",pos);
@@ -256,7 +234,7 @@ iCubTestReport* iCubTestMotors::run()
             bGetEncPosSuccess=true;
         }
 
-        if (!bWaitPosSuccess || !bGetEncPosSuccess)
+        if (!bGetEncPosSuccess)
         {
             m_bSuccess=false;
             pTestReport->incFailures();

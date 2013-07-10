@@ -26,6 +26,7 @@
 
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
+#include <yarp/os/Time.h>
 
 #include "DriverInterface.h"
 #include "Test.h"

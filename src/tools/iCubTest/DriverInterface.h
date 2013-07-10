@@ -27,6 +27,7 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <iCub/DebugInterfaces.h>
 
 /**
 * This class (implemented as a singleton) provide easy access to iCub devices.
@@ -51,6 +52,7 @@ public:
         IPOS_SETREFSPEED_FAILED     = -4,
         IPOS_POSMOVE_OK             = +5,
         IPOS_POSMOVE_FAILED         = -6,
+        IPOS_POSMOVE_NOT_REACHED    = -61,
         IPOS_CHECKMOTIONDONE_FAILED = -7,
         IPOS_CHECKMOTIONDONE_OK     = +8,
         IPOS_CHECKMOTIONDONE_TIMEOUT= -9,
@@ -75,7 +77,11 @@ public:
         ILIM_GETLIM_FAILED           =-24,
 
         IPID_GETPOSPID_OK            =+25,
-        IPID_GETPOSPID_FAILED        =-26
+        IPID_GETPOSPID_FAILED        =-26,
+
+        IDBG_FAILED                  =-27,
+        IDBG_GETROTPOS_OK            = 28,
+        IDBG_GETROTPOS_FAILED        = -29
     };
 
     /**
@@ -110,6 +116,17 @@ public:
     ResultCode setPos(int part,int joint,double position,double speed=0.0,double acc=0.0);
 
     /**
+    * Set joint position.
+    * @param part the robot part (head, torso, ...).
+    * @param joint joint number in the kinematic structure.
+    * @param position joint angular position [deg].
+    * @param speed reference angular speed [deg/s].
+    * @param acc reference angular acceleration [deg/s^2].
+    * @return error code.
+    */
+    ResultCode  setPosAndWait(int part,int joint,double position,double speed=0.0 ,double acc=0.0, double tolerance=0.5, double timeout=20.0);
+
+    /**
     * Set a joint in openloop control and move it with the desired pwm.
     * @param part the robot part (head, torso, ...).
     * @param joint joint number in the kinematic structure.
@@ -137,13 +154,13 @@ public:
     ResultCode getJointLimits(int part,int joint, double& min, double& max);
 
     /**
-    * Wait for setPos completion (blocking).
+    * Wait for trajectory generation completion (blocking).
     * @param part the robot part (head, torso, ...).
     * @param joint joint number in the kinematic structure.
     * @param timeout function returns failure after this time period [s].
     * @return error code.
     */
-    ResultCode waitPos(int part,int joint,double timeout);
+    ResultCode checkMotionDone(int part,int joint,double timeout);
     
     /**
     * Pid error.
@@ -162,6 +179,15 @@ public:
     * @return error code.
     */
     ResultCode getEncPos(int part,int joint,double &pos);
+
+    /**
+    * Encoder position.
+    * @param part the robot part (head, torso, ...).
+    * @param joint joint number in the kinematic structure.
+    * @param pos returns position [deg] measured by encoder.
+    * @return error code.
+    */
+    ResultCode getRotorPos(int part,int joint,double &pos);
 
     /**
     * Gets the sign of the position PID.
@@ -232,12 +258,14 @@ protected:
     * return a pointer to the iCub part driver interface.
     */
     yarp::dev::PolyDriver* openDriver(std::string part);
+    yarp::dev::PolyDriver* openDebugDriver(std::string part);
 
     iCubDriver(const iCubDriver&);
     iCubDriver& operator=(const iCubDriver&);
 
     /// Array of iCub part drivers.
     yarp::dev::PolyDriver *m_apDriver[NUM_ICUB_PARTS];
+    yarp::dev::PolyDriver *m_apDbgDriver[NUM_ICUB_PARTS];
     
     /// Array of iCub part joint numbers.
     int m_aiCubPartNumJoints[NUM_ICUB_PARTS];
@@ -262,6 +290,8 @@ protected:
     yarp::dev::IControlMode       *m_apCtl[NUM_ICUB_PARTS];
     /// Interfaces to the iCub OpenLoop control devices.
     yarp::dev::IControlLimits     *m_apLim[NUM_ICUB_PARTS];
+    /// Interfaces to the iCub encoder devices.
+    yarp::dev::IDebugInterface    *m_apDbg[NUM_ICUB_PARTS];
 
     /// Target robot name.
     static std::string m_RobotName;
