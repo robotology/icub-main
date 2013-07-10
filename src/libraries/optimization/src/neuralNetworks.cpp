@@ -85,18 +85,37 @@ protected:
     {
         Ipopt::Index k=0;
         for (size_t i=0; i<IW.size(); i++)
-            for (size_t j=0; j<IW.front().length(); j++)
-                IW[i][j]=x[k++];
+            for (size_t j=0; j<IW.front().length(); j++, k++)
+                IW[i][j]=x[k];
 
         for (size_t i=0; i<LW.size(); i++)
-            for (size_t j=0; j<LW.front().length(); j++)
-                LW[i][j]=x[k++];
+            for (size_t j=0; j<LW.front().length(); j++, k++)
+                LW[i][j]=x[k];
 
-        for (size_t i=0; i<b1.length(); i++)
-            b1[i]=x[k++];
+        for (size_t i=0; i<b1.length(); i++, k++)
+            b1[i]=x[k];
 
-        for (size_t i=0; i<b2.length(); i++)
-            b2[i]=x[k++];
+        for (size_t i=0; i<b2.length(); i++, k++)
+            b2[i]=x[k];
+    }
+
+    /****************************************************************/
+    void fillVar(Ipopt::Number *x, const Ipopt::Number *x_l, const Ipopt::Number *x_u)
+    {
+        Ipopt::Index k=0;
+        for (size_t i=0; i<IW.size(); i++)
+            for (size_t j=0; j<IW.front().length(); j++, k++)
+                x[k]=std::min(x_u[k],std::max(IW[i][j],x_l[k]));
+
+        for (size_t i=0; i<LW.size(); i++)
+            for (size_t j=0; j<LW.front().length(); j++, k++)
+                x[k]=std::min(x_u[k],std::max(LW[i][j],x_l[k]));
+
+        for (size_t i=0; i<b1.length(); i++, k++)
+            x[k]=std::min(x_u[k],std::max(b1[i],x_l[k]));
+
+        for (size_t i=0; i<b2.length(); i++, k++)
+            x[k]=std::min(x_u[k],std::max(b2[i],x_l[k]));
     }
 
 public:
@@ -147,36 +166,32 @@ public:
         Ipopt::Index k=0;
         for (size_t i=0; i<IW.size(); i++)
         {
-            for (size_t j=0; j<IW.front().length(); j++)
+            for (size_t j=0; j<IW.front().length(); j++, k++)
             {
                 x_l[k]=min_IW;
                 x_u[k]=max_IW;
-                k++;
             }
         }
             
         for (size_t i=0; i<LW.size(); i++)
         {
-            for (size_t j=0; j<LW.front().length(); j++)
+            for (size_t j=0; j<LW.front().length(); j++, k++)
             {
                 x_l[k]=min_LW;
                 x_u[k]=max_LW;
-                k++;
             }
         }
 
-        for (size_t i=0; i<b1.size(); i++)
+        for (size_t i=0; i<b1.size(); i++, k++)
         {
             x_l[k]=min_b1;
             x_u[k]=max_b1;
-            k++;
         }
 
-        for (size_t i=0; i<b2.size(); i++)
+        for (size_t i=0; i<b2.size(); i++, k++)
         {
             x_l[k]=min_b2;
             x_u[k]=max_b2;
-            k++;
         }
 
         return true;
@@ -187,17 +202,25 @@ public:
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
                             Ipopt::Index m, bool init_lambda, Ipopt::Number *lambda)
     {
-        Ipopt::Number x_l(n),x_u(n),g_l(n),g_u(n);
-        get_bounds_info(n,&x_l,&x_u,m,&g_l,&g_u);
+        Ipopt::Number *x_l=new Ipopt::Number[n];
+        Ipopt::Number *x_u=new Ipopt::Number[n];
+        Ipopt::Number *g_l=new Ipopt::Number[n];
+        Ipopt::Number *g_u=new Ipopt::Number[n];
 
+        get_bounds_info(n,x_l,x_u,m,g_l,g_u);
         if (randomInit)
         {
             Rand::init();
             for (Ipopt::Index i=0; i<n; i++)
-                x[i]=Rand::scalar((&x_l)[i],(&x_u)[i]);
+                x[i]=Rand::scalar(x_l[i],x_u[i]);
         }
-        else for (Ipopt::Index i=0; i<n; i++)
-            x[i]=0.5*((&x_l)[i]+(&x_u)[i]);
+        else
+            fillVar(x,x_l,x_u);
+
+        delete[] x_l;
+        delete[] x_u;
+        delete[] g_l;
+        delete[] g_u;
 
         return true;
     }
@@ -329,7 +352,12 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
         return false;
 
     IW.clear();
+    IW.assign(numHiddenNodes,Vector(in.front().length(),0.0));
+    b1.resize(numHiddenNodes,0.0);
+
     LW.clear();
+    LW.assign(out.front().length(),Vector(numHiddenNodes,0.0));
+    b2.resize(out.front().length(),0.0);
 
     inMinMaxX.clear();
     inMinMaxY.clear();
@@ -394,7 +422,7 @@ bool ff2LayNNTrain::retrain(const deque<Vector> &in, const deque<Vector> &out,
         return false;
 
     Ipopt::SmartPtr<ff2LayNNTrainNLP> nlp=new ff2LayNNTrainNLP(*this,bounds,false,in,out,pred);
-    Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));    
+    Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));
 
     error=nlp->get_error();
     return (status==Ipopt::Solve_Succeeded);    
