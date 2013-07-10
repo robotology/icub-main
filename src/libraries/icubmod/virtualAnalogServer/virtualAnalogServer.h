@@ -67,6 +67,11 @@ public:
         mTorques[joint-mMap0]=torque;
     }
 
+    void resetTorque()
+    {
+        mTorques.zero();
+    }
+
     void flushTorques()
     {
         if (mpSensor) mpSensor->updateMeasure(mTorques);
@@ -83,7 +88,7 @@ protected:
 
     bool mIsConfigured;
     bool mIsAttached;
-    
+    double lastRecvMsg;
     PolyDriver            *mpDevice;
     IVirtualAnalogSensor  *mpSensor;
 };
@@ -91,7 +96,7 @@ protected:
 
 
 ///////////////////////////////////////////////////
-
+// TODO add IVirtualAnalogSensor interface to have Channels number and status??
 class VirtualAnalogServer : public DeviceDriver, public Thread, public IMultipleWrapper
 {
 public:
@@ -132,6 +137,7 @@ protected:
 
     std::vector<int> mChan2Board;
     std::vector<int> mChan2BAddr;
+    double lastRecv;
 
     std::vector<AnalogSubDevice> mSubdevices;
     yarp::os::BufferedPort<yarp::os::Bottle> mPortInputTorques;
