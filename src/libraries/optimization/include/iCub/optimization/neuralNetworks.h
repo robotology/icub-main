@@ -33,6 +33,11 @@
 
 #include <iCub/ctrl/neuralNetworks.h>
 
+#ifdef WIN32
+    #pragma warning(disable:4250)
+#else
+    //#pragma GCC diagnostic ignored "-W"
+#endif
 
 namespace iCub
 {
@@ -107,7 +112,7 @@ public:
 * for the output nodes. 
 */
 class ff2LayNNTrain_tansig_purelin: public ff2LayNNTrain,
-                                    virtual public iCub::ctrl::ff2LayNN_tansig_purelin                                    
+                                    public iCub::ctrl::ff2LayNN_tansig_purelin                                    
 {
 };
 

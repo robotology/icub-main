@@ -267,7 +267,7 @@ public:
 * Feed-Forward 2 layers Neural Network with a tansig function 
 * for the hidden nodes and a purelin for the output nodes. 
 */
-class ff2LayNN_tansig_purelin : public ff2LayNN
+class ff2LayNN_tansig_purelin : virtual public ff2LayNN
 {
 public:
     /**

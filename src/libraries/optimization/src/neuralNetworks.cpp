@@ -228,29 +228,28 @@ public:
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
     {
-        fillNet(x);
-        for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]=0.0;
-
-        Vector n1(IW.size());
-        Vector n2(LW.size());
-        for (size_t i=0; i<inScaled.size(); i++)
-        {
-            Vector d=outScaled[i]-net.scaleOutputToNetFormat(net.predict(in[i]));
-
-            for (size_t j=0; j<n1.length(); j++)
-                n1[j]=dot(IW[j],inScaled[j])+b1[i];
-            Vector a1=net.hiddenLayerFcn(n1);
-
-            for (size_t j=0; j<n2.length(); j++)
-                n2[j]=dot(LW[j],a1)+b2[j];
-
-            Vector a2=net.outputLayerGrad(n2);
-            //a2=a2*dot(net.hiddenLayerGrad(n1),);
-        }
-
-        for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]/=inScaled.size();
+//      fillNet(x);
+//      for (Ipopt::Index i=0; i<n; i++)
+//          grad_f[i]=0.0;
+//
+//      Vector n1(IW.size());
+//      Vector n2(LW.size());
+//      for (size_t i=0; i<inScaled.size(); i++)
+//      {
+//          Vector d=outScaled[i]-net.scaleOutputToNetFormat(net.predict(in[i]));
+//
+//          for (size_t j=0; j<n1.length(); j++)
+//              n1[j]=dot(IW[j],inScaled[j])+b1[i];
+//          Vector a1=net.hiddenLayerFcn(n1);
+//
+//          for (size_t j=0; j<n2.length(); j++)
+//              n2[j]=dot(LW[j],a1)+b2[j];
+//
+//          Vector a2=net.outputLayerGrad(n2);
+//      }
+//
+//      for (Ipopt::Index i=0; i<n; i++)
+//          grad_f[i]/=inScaled.size();
 
         return true;
     }
@@ -307,6 +306,7 @@ ff2LayNNTrain::ff2LayNNTrain()
     CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",300);
     CAST_IPOPTAPP(App)->Options()->SetStringValue("nlp_scaling_method","gradient-based");
     CAST_IPOPTAPP(App)->Options()->SetStringValue("hessian_approximation","limited-memory");
+    CAST_IPOPTAPP(App)->Options()->SetStringValue("jacobian_approximation","finite-difference-values");
     CAST_IPOPTAPP(App)->Options()->SetIntegerValue("print_level",0);
     CAST_IPOPTAPP(App)->Options()->SetStringValue("derivative_test","none");
     CAST_IPOPTAPP(App)->Initialize();
