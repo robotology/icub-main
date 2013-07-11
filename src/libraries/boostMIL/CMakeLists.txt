@@ -13,7 +13,9 @@ set(folder_source src/MILClassifier.cpp
                   src/SelectorClassifier.cpp
                   src/StrongClassifier.cpp
                   src/OnlineBoost.cpp
-                  src/AdaBoost.cpp)
+                  src/OnlineSupport.cpp
+                  src/AdaBoost.cpp
+                  src/AvgClassifier.cpp)
 
 set(folder_header include/iCub/boostMIL/WeakClassifier.h
                   include/iCub/boostMIL/ClassifierInput.h
@@ -22,7 +24,10 @@ set(folder_header include/iCub/boostMIL/WeakClassifier.h
                   include/iCub/boostMIL/SelectorClassifier.h
                   include/iCub/boostMIL/StrongClassifier.h
                   include/iCub/boostMIL/OnlineBoost.h
-                  include/iCub/boostMIL/AdaBoost.h)
+                  include/iCub/boostMIL/OnlineSupport.h
+                  include/iCub/boostMIL/AdaBoost.h
+                  include/iCub/boostMIL/OnlineSupport.h
+                  include/iCub/boostMIL/AvgClassifier.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
