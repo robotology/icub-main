@@ -46,14 +46,14 @@ ff2LayNN::ff2LayNN(const Property &options)
 
 
 /***************************************************************************/
-bool ff2LayNN::isValid()
+bool ff2LayNN::isValid() const
 {
     return configured;
 }
 
 
 /***************************************************************************/
-void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
+void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item) const
 {
     Bottle b; Bottle &v=b.addList();
     for (size_t i=0; i<item.length(); i++)
@@ -64,7 +64,7 @@ void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
 
 
 /***************************************************************************/
-bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item)
+bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item) const
 {
     if (Bottle *b=options.find(tag.c_str()).asList())
     {
@@ -172,7 +172,6 @@ bool ff2LayNN::configure(const Property &options)
         else
         {
             minmax X, Y;
-
             X.min=itemX[0];
             X.max=itemX[1];
             Y.min=itemY[0];
@@ -195,7 +194,6 @@ bool ff2LayNN::configure(const Property &options)
         else
         {
             minmax X, Y;
-
             X.min=itemX[0];
             X.max=itemX[1];
             Y.min=itemY[0];
@@ -214,35 +212,35 @@ bool ff2LayNN::configure(const Property &options)
 
 
 /***************************************************************************/
-Vector ff2LayNN::scaleInputToNetFormat(const Vector &x)
+Vector ff2LayNN::scaleInputToNetFormat(const Vector &x) const
 {
     return (inRatio*(x-inMinX)+inMinY);
 }
 
 
 /***************************************************************************/
-Vector ff2LayNN::scaleInputFromNetFormat(const Vector &x)
+Vector ff2LayNN::scaleInputFromNetFormat(const Vector &x) const
 {
     return ((x-inMinY)/inRatio+inMinX);
 }
 
 
 /***************************************************************************/
-Vector ff2LayNN::scaleOutputToNetFormat(const Vector &x)
+Vector ff2LayNN::scaleOutputToNetFormat(const Vector &x) const
 {
     return ((x-outMinX)/outRatio+outMinY);
 }
 
 
 /***************************************************************************/
-Vector ff2LayNN::scaleOutputFromNetFormat(const Vector &x)
+Vector ff2LayNN::scaleOutputFromNetFormat(const Vector &x) const
 {
     return (outRatio*(x-outMinY)+outMinX);
 }
 
 
 /***************************************************************************/
-Vector ff2LayNN::predict(const Vector &x)
+Vector ff2LayNN::predict(const Vector &x) const
 {
     if (configured)
     {
@@ -270,7 +268,7 @@ Vector ff2LayNN::predict(const Vector &x)
 
 
 /***************************************************************************/
-bool ff2LayNN::getStructure(Property &options)
+bool ff2LayNN::getStructure(Property &options) const
 {
     options.clear();
 
@@ -339,7 +337,7 @@ bool ff2LayNN::getStructure(Property &options)
 
 
 /***************************************************************************/
-bool ff2LayNN::printStructure(ostream &stream)
+bool ff2LayNN::printStructure(ostream &stream) const
 {
     stream<<"***** Input Layer Range *****"<<endl;
     for (size_t i=0; i<inMinMaxX.size(); i++)
@@ -348,17 +346,17 @@ bool ff2LayNN::printStructure(ostream &stream)
 
     stream<<"***** Hidden Layer Weights *****"<<endl;
     for (size_t i=0; i<IW.size(); i++)
-        stream<<"IW_"<<i<<": ["<<IW[i].toString().c_str()<<"]"<<endl;
+        stream<<"IW_"<<i<<": ["<<IW[i].toString(16,1).c_str()<<"]"<<endl;
 
     stream<<"***** Hidden Layer Bias *****"<<endl;
-    stream<<"b1: ["<<b1.toString().c_str()<<"]"<<endl;
+    stream<<"b1: ["<<b1.toString(16,1).c_str()<<"]"<<endl;
 
     stream<<"***** Output Layer Weights *****"<<endl;
     for (size_t i=0; i<LW.size(); i++)
-        stream<<"LW_"<<i<<": ["<<LW[i].toString().c_str()<<"]"<<endl;
+        stream<<"LW_"<<i<<": ["<<LW[i].toString(16,1).c_str()<<"]"<<endl;
 
     stream<<"***** Output Layer Bias *****"<<endl;
-    stream<<"b2: ["<<b2.toString().c_str()<<"]"<<endl;
+    stream<<"b2: ["<<b2.toString(16,1).c_str()<<"]"<<endl;
 
     stream<<"***** Output Layer Range *****"<<endl;
     for (size_t i=0; i<outMinMaxX.size(); i++)
@@ -384,7 +382,7 @@ ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin(const Property &options) :
 
 
 /***************************************************************************/
-Vector ff2LayNN_tansig_purelin::hiddenLayerFcn(const Vector &x)
+Vector ff2LayNN_tansig_purelin::hiddenLayerFcn(const Vector &x) const
 {
     Vector y(x.length());
     for (size_t i=0; i<x.length(); i++)
@@ -395,14 +393,14 @@ Vector ff2LayNN_tansig_purelin::hiddenLayerFcn(const Vector &x)
 
 
 /***************************************************************************/
-Vector ff2LayNN_tansig_purelin::outputLayerFcn(const Vector &x)
+Vector ff2LayNN_tansig_purelin::outputLayerFcn(const Vector &x) const
 {
     return x;
 }
 
 
 /***************************************************************************/
-Vector ff2LayNN_tansig_purelin::hiddenLayerGrad(const Vector &x)
+Vector ff2LayNN_tansig_purelin::hiddenLayerGrad(const Vector &x) const
 {
     Vector y(x.length());
     for (size_t i=0; i<x.length(); i++)
@@ -417,7 +415,7 @@ Vector ff2LayNN_tansig_purelin::hiddenLayerGrad(const Vector &x)
 
 
 /***************************************************************************/
-Vector ff2LayNN_tansig_purelin::outputLayerGrad(const Vector &x)
+Vector ff2LayNN_tansig_purelin::outputLayerGrad(const Vector &x) const
 {
     return Vector(x.length(),1.0);
 }

@@ -58,9 +58,6 @@ protected:
     const deque<Vector> &in;
     const deque<Vector> &out;
     deque<Vector> &pred;
-
-    deque<Vector> inScaled;
-    deque<Vector> outScaled;
     double error;
 
     /****************************************************************/
@@ -120,21 +117,14 @@ protected:
 
 public:
     /****************************************************************/
-    ff2LayNNTrainNLP(ff2LayNNTrain &_net, const Property &bounds,
+    ff2LayNNTrainNLP(ff2LayNNTrain &_net, const Property &_bounds,
                      const bool _randomInit, const deque<Vector> &_in,
                      const deque<Vector> &_out, deque<Vector> &_pred) :
-                     net(_net),randomInit(_randomInit),
+                     net(_net), bounds(_bounds), randomInit(_randomInit),
                      in(_in), out(_out), pred(_pred),
                      IW(_net.get_IW()), LW(_net.get_LW()),
                      b1(_net.get_b1()), b2(_net.get_b2())
     {
-        this->bounds=bounds;
-
-        for (size_t i=0; i<in.size(); i++)
-            inScaled.push_back(net.scaleInputToNetFormat(in[i]));
-
-        for (size_t i=0; i<out.size(); i++)
-            outScaled.push_back(net.scaleOutputToNetFormat(out[i]));
     }
 
     /****************************************************************/
@@ -232,18 +222,16 @@ public:
         fillNet(x);
 
         pred.clear();
-        obj_value=0.0; error=0.0;
+        obj_value=0.0;
         for (size_t i=0; i<in.size(); i++)
         {
             Vector pred=net.predict(in[i]);
             this->pred.push_back(pred);
-
-            obj_value+=0.5*norm2(outScaled[i]-net.scaleOutputToNetFormat(pred));
-            error+=0.5*norm2(out[i]-pred);
+            obj_value+=0.5*norm2(out[i]-pred);
         }
 
         obj_value/=in.size();
-        error/=in.size();
+        error=obj_value;
         return true;
     }
 
@@ -251,29 +239,6 @@ public:
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
     {
-//      fillNet(x);
-//      for (Ipopt::Index i=0; i<n; i++)
-//          grad_f[i]=0.0;
-//
-//      Vector n1(IW.size());
-//      Vector n2(LW.size());
-//      for (size_t i=0; i<inScaled.size(); i++)
-//      {
-//          Vector d=outScaled[i]-net.scaleOutputToNetFormat(net.predict(in[i]));
-//
-//          for (size_t j=0; j<n1.length(); j++)
-//              n1[j]=dot(IW[j],inScaled[j])+b1[i];
-//          Vector a1=net.hiddenLayerFcn(n1);
-//
-//          for (size_t j=0; j<n2.length(); j++)
-//              n2[j]=dot(LW[j],a1)+b2[j];
-//
-//          Vector a2=net.outputLayerGrad(n2);
-//      }
-//
-//      for (Ipopt::Index i=0; i<n; i++)
-//          grad_f[i]/=inScaled.size();
-
         return true;
     }
 
@@ -384,15 +349,22 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
         }
     }
 
+    // enlarge of 10%
+    for (size_t i=0; i<inMinMaxX.size(); i++)
+    {   
+        inMinMaxX[i].min-=0.1*fabs(inMinMaxX[i].min);
+        inMinMaxX[i].max+=0.1*fabs(inMinMaxX[i].max);
+    }
+
     // seek for min-max of output and scale it in [-1,1]
     const Vector &out_front=out.front();
     for (size_t i=0; i<out_front.length(); i++)
     {
         minmax range;
         range.min=range.max=out_front[i];
-        outMinMaxY.push_back(range);
-        range.min=-1.0; range.max=1.0;
         outMinMaxX.push_back(range);
+        range.min=-1.0; range.max=1.0;
+        outMinMaxY.push_back(range);
     }
     for (size_t i=1; i<out.size(); i++)
     {
@@ -401,6 +373,13 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
             outMinMaxX[j].min=std::min(outMinMaxX[j].min,out[i][j]);
             outMinMaxX[j].max=std::max(outMinMaxX[j].max,out[i][j]);
         }
+    }
+
+    // enlarge of 10%
+    for (size_t i=0; i<outMinMaxX.size(); i++)
+    {   
+        outMinMaxX[i].min-=0.1*fabs(outMinMaxX[i].min);
+        outMinMaxX[i].max+=0.1*fabs(outMinMaxX[i].max);
     }
 
     prepare();
@@ -434,4 +413,5 @@ ff2LayNNTrain::~ff2LayNNTrain()
 {
     delete CAST_IPOPTAPP(App);
 }
+
 

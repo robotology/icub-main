@@ -88,8 +88,8 @@ protected:
     bool configured;
 
     void prepare();
-    void setItem(yarp::os::Property &options, const std::string &tag, const yarp::sig::Vector &item);
-    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item);    
+    void setItem(yarp::os::Property &options, const std::string &tag, const yarp::sig::Vector &item) const;
+    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item) const;
 
 public:
     /**
@@ -154,14 +154,14 @@ public:
     * Return the internal status after a configuration.
     * @return true/false on success/fail.
     */ 
-    virtual bool isValid();
+    virtual bool isValid() const;
 
     /**
     * Predict the output given a certain input to the network.
     * @param x is the actual input to the network.
     * @return the predicted output.
     */ 
-    virtual yarp::sig::Vector predict(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector predict(const yarp::sig::Vector &x) const;
 
     /**
     * Retrieve the network structure as a Property object.
@@ -170,14 +170,14 @@ public:
     *  
     * @see configure for the options format.
     */ 
-    virtual bool getStructure(yarp::os::Property &options);
+    virtual bool getStructure(yarp::os::Property &options) const;
 
     /**
     * Dump tadily the network structure on the stream.
     * @param stream is the output stream. 
     * @return true/false on success/fail.  
     */ 
-    virtual bool printStructure(std::ostream &stream=std::cout);
+    virtual bool printStructure(std::ostream &stream=std::cout) const;
 
     /**
     * Retrieve first layer weights.
@@ -208,56 +208,56 @@ public:
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector scaleInputToNetFormat(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector scaleInputToNetFormat(const yarp::sig::Vector &x) const;
 
     /**
     * Scale back input from the network's format.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector scaleInputFromNetFormat(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector scaleInputFromNetFormat(const yarp::sig::Vector &x) const;
 
     /**
     * Scale output to be used with the network.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector scaleOutputToNetFormat(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector scaleOutputToNetFormat(const yarp::sig::Vector &x) const;
 
     /**
     * Scale back output from the network's format.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector scaleOutputFromNetFormat(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector scaleOutputFromNetFormat(const yarp::sig::Vector &x) const;
 
     /**
     * Hidden Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x)=0;
+    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x) const=0;
 
     /**
     * Output Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;
+    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x) const=0;
 
     /**
     * Gradient of the Hidden Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x)=0;
+    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x) const=0;
 
     /**
     * Gradient of the Output Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x)=0;
+    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x) const=0;
 };
 
 
@@ -288,28 +288,28 @@ public:
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x) const;
 
     /**
     * Output Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x) const;
 
     /**
     * Gradient of the Hidden Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x) const;
 
     /**
     * Gradient of the Output Layer Function.
     * @param x is the input vector.
     * @return the output vector.
     */ 
-    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x) const;
 };
 
 }
