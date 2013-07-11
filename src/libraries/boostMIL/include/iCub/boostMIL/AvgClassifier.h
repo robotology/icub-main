@@ -51,16 +51,16 @@ namespace boostMIL
 {
 
 
-struct Bag
+struct AvgBag
 {
     double      dist;
     double      weight;
     int         label;
 
-    Bag()
+    AvgBag()
     {}
 
-    Bag(const double &_dist, const int &_label, const double &_weight)
+    AvgBag(const double &_dist, const int &_label, const double &_weight)
         :dist(_dist),weight(_weight),label(_label)
     {}
 
@@ -103,7 +103,7 @@ private:
 
     double                              threshold;
     bool                                threshold_fixed;
-    std::deque<Bag>                     cache;
+    std::deque<AvgBag>                     cache;
     double                              posweight;
     double                              negweight;
 
@@ -120,7 +120,7 @@ private:
 
     //private methods
     virtual void                        initResource();
-    virtual bool                        substitute(const double &e) const;
+    //virtual bool                        substitute(const double &e) const;
     virtual WeakClassifier              *randomSample();
 
     //private and unimplemented on purpose (for now)

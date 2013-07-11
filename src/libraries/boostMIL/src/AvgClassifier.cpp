@@ -382,7 +382,7 @@ void   AvgClassifier::fromString(const std::string &str)
 
 void                            AvgClassifier::insertBag            (const double &dist, const int &label, const double &weight)
 {
-    Bag bag(dist,label,weight);
+    AvgBag bag(dist,label,weight);
 
     //find the right position in the cache deque
     double  min_weight = -1.0;
@@ -439,7 +439,7 @@ double                          AvgClassifier::bestRadius           ()
     double minerr=fr+fa;
     double newthreshold=0.0;
     
-    std::deque<Bag>::iterator itr = cache.begin();
+    std::deque<AvgBag>::iterator itr = cache.begin();
     while(itr != cache.end())
     {
         newthreshold = itr->dist;
