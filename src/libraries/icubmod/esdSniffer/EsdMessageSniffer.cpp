@@ -29,7 +29,7 @@
 #endif
 #endif
 
-#include <../src/ControlBoardInterfacesImpl.inl>
+#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 // get the message types from the DSP code.
 #include "messages.h"
