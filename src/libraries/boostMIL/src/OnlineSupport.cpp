@@ -195,7 +195,7 @@ void   OnlineSupport::fromString(const std::string &str)
     for(int i=0; i<bLoader.size(); i++)
     {
         alphas.push_back(bLoader.get(i).asList()->find("alpha").asDouble());
-        correct.push_back(bLoader.get(i).asList()->find("correct").asDouble());
+        correct.push_back((int)bLoader.get(i).asList()->find("correct").asDouble());
 
         yarp::os::Bottle *bSelector=bLoader.get(i).asList()->find("weak_classifier").asList();
 
@@ -311,7 +311,7 @@ double OnlineSupport::margin(const Inputs *input, Output *output) const
     double sum=0.0;
     if(ready)
     {
-        for(int i=0; i<weak_classifiers.size(); i++)
+        for(size_t i=0; i<weak_classifiers.size(); i++)
         {
             double w=alphas[i]>0.0?alphas[i]:0.0;
             sum+=w*(2*weak_classifiers[i]->classify(input,output)-1); //0 1 instead of -1 1
