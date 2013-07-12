@@ -1641,13 +1641,13 @@ bool MotorThread::powerGrasp(Bottle &options)
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
 
-    // go up straightaway
-    action[arm]->getPose(x,o);
-    action[arm]->pushAction(x+graspAboveRelief,o);
-    action[arm]->checkActionsDone(f,true);
-
     if(grasp(options))
     {
+        // go up straightaway
+        action[arm]->getPose(x,o);
+        action[arm]->pushAction(x+graspAboveRelief,o);
+        action[arm]->checkActionsDone(f,true);
+
         setGazeIdle();
         Bottle b;
         b.addString("head");
