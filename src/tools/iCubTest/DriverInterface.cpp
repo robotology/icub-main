@@ -322,9 +322,9 @@ iCubDriver::ResultCode iCubDriver::setPosAndWait(int part,int joint,double posit
         }
     }
 
-    if (m_apPos[part]->positionMove(joint,position))
+    if (!m_apPos[part]->positionMove(joint,position))
     {
-        return IPOS_POSMOVE_OK;
+        return IPOS_POSMOVE_FAILED;
     }
 
     int count=0;
@@ -335,7 +335,7 @@ iCubDriver::ResultCode iCubDriver::setPosAndWait(int part,int joint,double posit
         if (r<0) return IPOS_POSMOVE_NOT_REACHED;
         yarp::os::Time::delay(0.020);
     }
-    while (fabs(current_pos-position)>tolerance && count<(timeout/0.020));
+    while (fabs(current_pos-position)>tolerance && (count++)<(timeout/0.020));
 
     if (fabs(current_pos-position)>tolerance)
         return IPOS_POSMOVE_NOT_REACHED;
@@ -395,6 +395,7 @@ iCubDriver::ResultCode iCubDriver::getEncPos(int part,int joint,double &pos)
         return IENC_GETPOS_OK;
     }
 
+    //return IENC_GETPOS_OK;
     return IENC_GETPOS_FAILED;
 }
 

@@ -1,10 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Alessandro Scalzo
- * email: alessandro.scalzo@iit.it
- * website: www.robotcub.org
+ * Copyright (C) 2013 iCub Facility, Istituto Italiano di Tecnologia
+ * Author: Marco Randazzo
+ * email: marco.randazzo@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -18,8 +17,8 @@
  * Public License for more details
 */
 
-#ifndef __ICUB_TEST_MOTORS_REPORT_ENTRY_01122009__
-#define __ICUB_TEST_MOTORS_REPORT_ENTRY_01122009__
+#ifndef __ICUB_TEST_ROIE_REPORT_ENTRY__
+#define __ICUB_TEST_ROIE_REPORT_ENTRY__
 
 #include "TestReportEntry.h"
 

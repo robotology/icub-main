@@ -143,7 +143,7 @@ iCubTestReport* iCubTestRoie::run()
     {
         iCubTestRoieReportEntry *pOutput=new iCubTestRoieReportEntry();
 
-        char jointName[8];
+        char jointName[64];
         char tmpString[64];
         double current_pos = 0;
         double current_rotor = 0;
@@ -202,7 +202,7 @@ iCubTestReport* iCubTestRoie::run()
             // encoders 
             {
                 result=m_icubDriver.getEncPos(m_part,joint,current_pos);
-                if (result!=iCubDriver::IPOS_POSMOVE_OK)
+                if (result!=iCubDriver::IENC_GETPOS_OK)
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->getEncPos";
                     bSuccess=false; pTestReport->incFailures(); pTestReport->addEntry(pOutput);
@@ -217,7 +217,7 @@ iCubTestReport* iCubTestRoie::run()
             // rotor 
             {
                 result=m_icubDriver.getRotorPos(m_part,joint,current_rotor);
-                if (result!=iCubDriver::IPOS_POSMOVE_OK)
+                if (result!=iCubDriver::IDBG_GETROTPOS_OK)
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->getRotorPos";
                     bSuccess=false; pTestReport->incFailures(); pTestReport->addEntry(pOutput);

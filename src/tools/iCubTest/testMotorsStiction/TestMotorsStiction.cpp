@@ -144,7 +144,7 @@ iCubTestReport* iCubTestMotorsStiction::run()
     {
         iCubTestMotorsStictionReportEntry *pOutput=new iCubTestMotorsStictionReportEntry();
 
-        char jointName[8];
+        char jointName[64];
         char tmpString[200];
 
         pOutput->m_Name="Joint ";

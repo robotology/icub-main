@@ -172,6 +172,7 @@ This file can be edited at src/iCubTest/main.cpp.
 #include <yarp/os/Network.h>
 
 #include "TestSet.h"
+#include "testRoie/TestRoie.h"
 #include "testMotors/TestMotors.h"
 #include "testMotorsStiction/TestMotorsStiction.h"
 #include "DriverInterface.h"
@@ -222,6 +223,10 @@ int main(int argc,char* argv[])
         else if (testType=="iCubTestMotorsStiction")
         {
             ts.addTest(new iCubTestMotorsStiction(testRf));
+        }
+        else if (testType=="iCubTestRoie")
+        {
+            ts.addTest(new iCubTestRoie(testRf));
         }
         else if (testType=="iCubTestCamera")
         {

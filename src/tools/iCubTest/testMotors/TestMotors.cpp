@@ -160,7 +160,7 @@ iCubTestReport* iCubTestMotors::run()
     {
         iCubTestMotorsReportEntry *pOutput=new iCubTestMotorsReportEntry();
 
-        char jointName[8];
+        char jointName[64];
         char posString[64];
 
         pOutput->m_Name="Joint ";
