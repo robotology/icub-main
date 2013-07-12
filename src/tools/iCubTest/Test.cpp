@@ -31,7 +31,7 @@ iCubTest::iCubTest(yarp::os::Searchable& configuration)
     }
     if (configuration.check("part"))
     {
-        m_PartCode=configuration.find("part").asString();
+        m_partCode=configuration.find("part").asString();
     }
     if (configuration.check("description"))
     {

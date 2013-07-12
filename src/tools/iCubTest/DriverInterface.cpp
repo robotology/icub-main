@@ -22,34 +22,24 @@
 
 #include "DriverInterface.h"
 
-const char* iCubDriver::m_aiCubPartName[NUM_ICUB_PARTS]={"torso","head","left_arm","right_arm","left_leg","right_leg"};
+YARP_DECLARE_DEVICES(icubmod)
 
-std::string iCubDriver::m_RobotName;
-
-iCubDriver::iCubDriver()
+void iCubDriver::open (std::string robotName)
 {
-    for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
+    m_RobotName = robotName;
+    for (int part=0; part<NUM_ICUB_PARTS; ++part)
     {
-        m_aiCubPartNumJoints[part]=0;
+        m_apDriver[part]=openDriver(iCubPart(part));
+        m_apDbgDriver[part]=openDebugDriver(iCubPart(part));
 
-        m_apDriver[part]=openDriver(m_aiCubPartName[part]);
-        m_apDbgDriver[part]=openDebugDriver(m_aiCubPartName[part]);
-
-        m_apEnc[part]=0;
-        m_apPid[part]=0;
-        m_apAmp[part]=0;
-        m_apPos[part]=0;
-        m_apVel[part]=0;
-        m_apTrq[part]=0;
-        m_apImp[part]=0;
-        m_apOpl[part]=0;
-        m_apCtl[part]=0;
-        m_apLim[part]=0;
-        m_apDbg[part]=0;
-
+        bool b = true;
+        
+        if (m_apDbgDriver[part])
+        {
+            b &= m_apDbgDriver[part]->view(m_apDbg[part]); if (b==false)  fprintf(stderr,"m_apDbgDriver[part]->view(m_apDbg) failed\n");
+        }
         if (m_apDriver[part])
         {
-            bool b = true;
             b &= m_apDriver[part]->view(m_apEnc[part]);    if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apEnc) failed\n");
             b &= m_apDriver[part]->view(m_apPid[part]);    if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apPid) failed\n");
             b &= m_apDriver[part]->view(m_apAmp[part]);    if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apAmp) failed\n");
@@ -60,8 +50,7 @@ iCubDriver::iCubDriver()
             b &= m_apDriver[part]->view(m_apOpl[part]);    if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apOpl) failed\n");
             b &= m_apDriver[part]->view(m_apCtl[part]);    if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apCtl) failed\n");
             b &= m_apDriver[part]->view(m_apLim[part]);    if (b==false)  fprintf(stderr,"m_apDriver[part]->view(m_apLim) failed\n");
-            b &= m_apDbgDriver[part]->view(m_apDbg[part]); if (b==false)  fprintf(stderr,"m_apDbgDriver[part]->view(m_apDbg) failed\n");
-
+            
             if (m_apEnc[part])
             {
                 m_apEnc[part]->getAxes(&m_aiCubPartNumJoints[part]);
@@ -85,16 +74,35 @@ iCubDriver::iCubDriver()
     }
 }
 
+iCubDriver::iCubDriver()
+{
+    for (int part=0; part<NUM_ICUB_PARTS; ++part)
+    {
+        m_aiCubPartNumJoints[part]=0;
+        m_apEnc[part]=0;
+        m_apPid[part]=0;
+        m_apAmp[part]=0;
+        m_apPos[part]=0;
+        m_apVel[part]=0;
+        m_apTrq[part]=0;
+        m_apImp[part]=0;
+        m_apOpl[part]=0;
+        m_apCtl[part]=0;
+        m_apLim[part]=0;
+        m_apDbg[part]=0;
+    }
+}
+
 void iCubDriver::close()
 {
-    for (int part=TORSO; part<NUM_ICUB_PARTS; ++part)
+    for (int part=0; part<NUM_ICUB_PARTS; ++part)
     {
         /*for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
         {
             m_apPid[part]->disablePid(j);
             m_apAmp[part]->disableAmp(j);
         }*/
-
+        
         if (m_apDriver[part] && m_apDriver[part]->isValid())
         {
             m_apDriver[part]->close();
@@ -112,7 +120,6 @@ void iCubDriver::close()
 
 yarp::dev::PolyDriver* iCubDriver::openDebugDriver(std::string part)
 {
-    std::string robot("/icubSim");
     yarp::dev::PolyDriver *pDriver=NULL;
 
     yarp::os::Property options;

@@ -41,8 +41,10 @@ public:
     iCubTestReport* run();
 
 protected:
-    iCubDriver::iCubPart m_Part;
-    int m_NumJoints;
+    iCubDriver  m_icubDriver;
+    iCubPart    m_part;
+    std::string m_robot;
+    int     m_NumJoints;
     double *m_aHomePos;
     double *m_aHomeVel;
     double *m_aTolerance;

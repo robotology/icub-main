@@ -29,7 +29,7 @@ iCubTestReport::iCubTestReport(std::string name,std::string part,std::string des
 
     m_DateTime=std::string(asctime(timeInfo));
     m_Name=name;
-    m_PartCode=part;
+    m_partCode=part;
     m_Description=description;
 
     m_bSuccess=false;
@@ -39,7 +39,7 @@ iCubTestReport::iCubTestReport(std::string name,std::string part,std::string des
 
     fprintf(stderr,"*************************\n");
     fprintf(stderr,"test name: %s\n",m_Name.c_str());
-    fprintf(stderr,"part code: %s\n",m_PartCode.c_str());
+    fprintf(stderr,"part code: %s\n",m_partCode.c_str());
     fprintf(stderr,"description: %s\n",m_Description.c_str());
 }
 
@@ -65,7 +65,7 @@ void iCubTestReport::printReport(XMLPrinter& printer)
     printer.xml("description",m_Description);
     printer.xmlOpen("references");
     printer.xml("datetime",m_DateTime);
-    printer.xml("part",m_PartCode);
+    printer.xml("part",m_partCode);
     printer.xmlClose();
     printer.xml("outcome",std::string(m_bSuccess?"SUCCESS":"FAILURE"));
     sprintf(failuresStr,"%d",m_Failures);

@@ -68,7 +68,7 @@ protected:
     std::string m_Name;
     std::string m_DateTime;
     std::string m_Description;
-    std::string m_PartCode;
+    std::string m_partCode;
 
     std::vector<iCubTestReportEntry*> m_apEntries;
 };

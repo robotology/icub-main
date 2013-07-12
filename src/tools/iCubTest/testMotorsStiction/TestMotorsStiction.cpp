@@ -28,24 +28,21 @@ iCubTestMotorsStiction::iCubTestMotorsStiction(yarp::os::Searchable& configurati
     m_aTolerance=NULL;
     m_aPWM=NULL;
     m_aTimeout=NULL;
+    m_part=(iCubPart)0;
 
-    m_Part=(iCubDriver::iCubPart)0;
+    if (configuration.check("robot"))
+    {
+        m_robot = std::string (configuration.find("robot").asString());
+    }
+    m_icubDriver.open(m_robot);
 
     if (configuration.check("device"))
     {
         std::string device(configuration.find("device").asString());
-
-        for (int p=0; p<iCubDriver::NUM_ICUB_PARTS; ++p)
-        {
-            if (device==iCubDriver::m_aiCubPartName[p])
-            {
-                m_Part=(iCubDriver::iCubPart)p;
-                break;
-            }
-        }
+        m_part = iCubPart(device);
     }
 
-    m_NumJoints=iCubDriver::instance()->getNumOfJoints(m_Part);
+    m_NumJoints=m_icubDriver.getNumOfJoints(m_part);
 
     ///////////////////////////////////////////////////////////////
     /*
@@ -87,7 +84,7 @@ iCubTestMotorsStiction::iCubTestMotorsStiction(yarp::os::Searchable& configurati
 
     if (configuration.check("tolerance"))
     {
-        yarp::os::Bottle bot=configuration.findGroup("Tolerance").tail();
+        yarp::os::Bottle bot=configuration.findGroup("tolerance").tail();
 
         int n=m_NumJoints<bot.size()?m_NumJoints:bot.size();
 
@@ -130,16 +127,16 @@ iCubTestMotorsStiction::iCubTestMotorsStiction(yarp::os::Searchable& configurati
 
 iCubTestMotorsStiction::~iCubTestMotorsStiction()
 {
-    if (m_aHomePos)   delete [] m_aHomePos;
-    if (m_aHomeVel)   delete [] m_aHomeVel;
-    if (m_aTolerance) delete [] m_aTolerance;
-    if (m_aPWM)       delete [] m_aPWM;
-    if (m_aTimeout)   delete [] m_aTimeout;
+    if (m_aHomePos)   {delete [] m_aHomePos; m_aHomePos=0;}
+    if (m_aHomeVel)   {delete [] m_aHomeVel; m_aHomeVel=0;}
+    if (m_aTolerance) {delete [] m_aTolerance; m_aTolerance=0;}
+    if (m_aPWM)       {delete [] m_aPWM; m_aPWM=0;}
+    if (m_aTimeout)   {delete [] m_aTimeout; m_aTimeout=0;}
 }
 
 iCubTestReport* iCubTestMotorsStiction::run()
 {
-    iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_PartCode,m_Description);
+    iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_partCode,m_Description);
 
     m_bSuccess=true;
 
@@ -164,36 +161,36 @@ iCubTestReport* iCubTestMotorsStiction::run()
 
         double joint_min = 0.0;
         double joint_max = 0.0;
-        iCubDriver::instance()->getJointLimits(m_Part,joint,joint_min, joint_max);
+        m_icubDriver.getJointLimits(m_part,joint,joint_min, joint_max);
         sprintf(tmpString,"%f",joint_min);
         pOutput->m_MinLim=std::string(tmpString);
         sprintf(tmpString,"%f",joint_max);
         pOutput->m_MaxLim=std::string(tmpString);
 
         double posPidSign = 1.0;
-        iCubDriver::instance()->getPosPidSign(m_Part,joint,posPidSign);
+        m_icubDriver.getPosPidSign(m_part,joint,posPidSign);
         if (posPidSign<0) m_aPWM[joint] = -m_aPWM[joint];
 
         iCubDriver::ResultCode result;
-        result=iCubDriver::instance()->setPos(m_Part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
+        result=m_icubDriver.setPos(m_part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
         yarp::os::Time::delay(m_aTimeout[joint]);
 
         double joint_pos1 = 0.0;
-        result=iCubDriver::instance()->startOpenloopCmd(m_Part,joint,m_aPWM[joint]);
+        result=m_icubDriver.startOpenloopCmd(m_part,joint,m_aPWM[joint]);
         yarp::os::Time::delay(m_aTimeout[joint]);
-        result=iCubDriver::instance()->getEncPos(m_Part,joint,joint_pos1);
-        result=iCubDriver::instance()->stopOpenloopCmd(m_Part,joint);
+        result=m_icubDriver.getEncPos(m_part,joint,joint_pos1);
+        result=m_icubDriver.stopOpenloopCmd(m_part,joint);
 
-        result=iCubDriver::instance()->setPos(m_Part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
+        result=m_icubDriver.setPos(m_part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
         yarp::os::Time::delay(m_aTimeout[joint]);
 
         double joint_pos2 = 0.0;
-        result=iCubDriver::instance()->startOpenloopCmd(m_Part,joint,-m_aPWM[joint]);
+        result=m_icubDriver.startOpenloopCmd(m_part,joint,-m_aPWM[joint]);
         yarp::os::Time::delay(m_aTimeout[joint]);
-        result=iCubDriver::instance()->getEncPos(m_Part,joint,joint_pos2);
-        result=iCubDriver::instance()->stopOpenloopCmd(m_Part,joint);
+        result=m_icubDriver.getEncPos(m_part,joint,joint_pos2);
+        result=m_icubDriver.stopOpenloopCmd(m_part,joint);
 
-        result=iCubDriver::instance()->setPos(m_Part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
+        result=m_icubDriver.setPos(m_part,joint,m_aHomePos[joint],m_aHomeVel[joint],0.0);
         yarp::os::Time::delay(m_aTimeout[joint]);
 
         if (fabs(joint_pos1-joint_max)>m_aTolerance[joint] ||
@@ -216,7 +213,7 @@ iCubTestReport* iCubTestMotorsStiction::run()
 
         /****
         iCubDriver::ResultCode result = iCubDriver::IPOS_POSMOVE_OK;
-        //result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
+        //result=iCubDriver::instance()->setPos(m_part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
 
         bool bSetPosSuccess=false;
 
@@ -251,7 +248,7 @@ iCubTestReport* iCubTestMotorsStiction::run()
 
         // only if success
 
-        result=iCubDriver::instance()->waitPos(m_Part,joint,m_aTimeout[joint]);
+        result=iCubDriver::instance()->waitPos(m_part,joint,m_aTimeout[joint]);
         bool bWaitPosSuccess=false;
         switch (result)
         {
@@ -270,7 +267,7 @@ iCubTestReport* iCubTestMotorsStiction::run()
 
         // { encoders 
         double pos;
-        result=iCubDriver::instance()->getEncPos(m_Part,joint,pos);
+        result=iCubDriver::instance()->getEncPos(m_part,joint,pos);
         bool bGetEncPosSuccess=false;
         switch (result)
         {

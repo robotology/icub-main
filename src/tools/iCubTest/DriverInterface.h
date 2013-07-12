@@ -30,16 +30,47 @@
 #include <iCub/DebugInterfaces.h>
 
 /**
+* iCub parts class.
+*/
+const int NUM_ICUB_PARTS = 6;
+class iCubPart
+{
+private:
+    int num_part;
+public:
+    iCubPart ()
+    {
+        num_part = 0; //by default the part is torso
+    }
+    iCubPart (std::string part)
+    {
+        char* part_names[NUM_ICUB_PARTS] =  {"torso","head","left_arm","right_arm","left_leg","right_leg"};
+        for (int i=0; i< 6; i++)
+            if (part==part_names[i]) num_part=i;
+    }
+    iCubPart (int p)
+    {
+        num_part = p;
+    }
+    operator int()
+    {
+        return num_part;
+    }
+    operator std::string ()
+    {
+        char* part_names[NUM_ICUB_PARTS] =  {"torso","head","left_arm","right_arm","left_leg","right_leg"};
+        return std::string(part_names[num_part]);
+    }
+};
+
+//enum iCubPart {TORSO,HEAD,LEFT_ARM,RIGHT_ARM,LEFT_LEG,RIGHT_LEG,NUM_ICUB_PARTS};
+
+/**
 * This class (implemented as a singleton) provide easy access to iCub devices.
 */
 class iCubDriver
 {
 public:
-    /**
-    * iCub parts enumerator.
-    */
-    enum iCubPart {TORSO,HEAD,LEFT_ARM,RIGHT_ARM,LEFT_LEG,RIGHT_LEG,NUM_ICUB_PARTS};
-
     /**
     * iCubDriver functions result codes enumerator.
     */
@@ -83,26 +114,6 @@ public:
         IDBG_GETROTPOS_OK            = 28,
         IDBG_GETROTPOS_FAILED        = -29
     };
-
-    /**
-    * Returns the unique instance of the iCubDriver class.
-    * @return a pointer to the singleton.
-    */
-    static iCubDriver* instance()
-    {
-        static iCubDriver singleton;
-        return &singleton;
-    }
-
-    /**
-    * Set the name of the target robot.
-    * @param robotName the robot yarp name.
-    * @return void.
-    */
-    static void setRobot(yarp::os::ConstString robotName)
-    {
-        m_RobotName=robotName;
-    }
 
     /**
     * Set joint position.
@@ -229,18 +240,7 @@ public:
     }
 
     /**
-    * iCub part names.
-    */
-    static const char *m_aiCubPartName[NUM_ICUB_PARTS];
-
-protected:
-    /**
-    * Protected default constructor (singleton implementation).
-    */
-    iCubDriver();
-    
-    /**
-    * Deafault destructor.
+    * Default destructor.
     */
     ~iCubDriver()
     { 
@@ -248,10 +248,15 @@ protected:
     }
 
     /**
-    * Disable motor amplifiers.
+    *  default constructor.
     */
+    iCubDriver();
+
+    //start stop the driver
+    void open (std::string robotName);
     void close();
 
+protected:
     /**
     * Open device drivers and enable motors.
     * @param part the iCub part (head, torso, ...).
@@ -294,7 +299,7 @@ protected:
     yarp::dev::IDebugInterface    *m_apDbg[NUM_ICUB_PARTS];
 
     /// Target robot name.
-    static std::string m_RobotName;
+    std::string m_RobotName;
 };
 
 #endif

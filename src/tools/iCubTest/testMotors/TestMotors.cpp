@@ -29,23 +29,21 @@ iCubTestMotors::iCubTestMotors(yarp::os::Searchable& configuration) : iCubTest(c
     m_aRefAcc=NULL;
     m_aTimeout=NULL;
 
-    m_Part=(iCubDriver::iCubPart)0;
+    m_part=(iCubPart)0;
+
+    if (configuration.check("robot"))
+    {
+        m_robot = std::string (configuration.find("robot").asString());
+    }
+    m_icubDriver.open(m_robot);
 
     if (configuration.check("device"))
     {
         std::string device(configuration.find("device").asString());
-
-        for (int p=0; p<iCubDriver::NUM_ICUB_PARTS; ++p)
-        {
-            if (device==iCubDriver::m_aiCubPartName[p])
-            {
-                m_Part=(iCubDriver::iCubPart)p;
-                break;
-            }
-        }
+        m_part = iCubPart(device);
     }
 
-    m_NumJoints=iCubDriver::instance()->getNumOfJoints(m_Part);
+    m_NumJoints=m_icubDriver.getNumOfJoints(m_part);
     
     ///////////////////////////////////////////////////////////////
     /*
@@ -154,7 +152,7 @@ iCubTestMotors::~iCubTestMotors()
 
 iCubTestReport* iCubTestMotors::run()
 {
-    iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_PartCode,m_Description);
+    iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_partCode,m_Description);
 
     m_bSuccess=true;
 
@@ -180,7 +178,7 @@ iCubTestReport* iCubTestMotors::run()
         sprintf(posString,"%f",m_aMaxErr[joint]);
         pOutput->m_MaxVal=posString;
 
-        iCubDriver::ResultCode result=iCubDriver::instance()->setPos(m_Part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
+        iCubDriver::ResultCode result=m_icubDriver.setPos(m_part,joint,m_aTargetVal[joint],m_aRefVel?m_aRefVel[joint]:0.0,m_aRefAcc?m_aRefAcc[joint]:0.0);
 
         bool bSetPosSuccess=false;
 
@@ -218,7 +216,7 @@ iCubTestReport* iCubTestMotors::run()
 
         // read encoders 
         double pos;
-        result=iCubDriver::instance()->getEncPos(m_Part,joint,pos);
+        result=m_icubDriver.getEncPos(m_part,joint,pos);
         bool bGetEncPosSuccess=false;
         switch (result)
         {

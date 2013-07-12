@@ -27,24 +27,21 @@ iCubTestRoie::iCubTestRoie(yarp::os::Searchable& configuration) : iCubTest(confi
     m_aMinPos=NULL;
     m_aRefVel=NULL;
     m_aTolerance=NULL;
+    m_part=(iCubPart)0;
 
-    m_Part=(iCubDriver::iCubPart)0;
+    if (configuration.check("robot"))
+    {
+        m_robot = std::string (configuration.find("robot").asString());
+    }
+    m_icubDriver.open(m_robot);
 
     if (configuration.check("device"))
     {
         std::string device(configuration.find("device").asString());
-
-        for (int p=0; p<iCubDriver::NUM_ICUB_PARTS; ++p)
-        {
-            if (device==iCubDriver::m_aiCubPartName[p])
-            {
-                m_Part=(iCubDriver::iCubPart)p;
-                break;
-            }
-        }
+        m_part = iCubPart(device);
     }
 
-    m_NumJoints=iCubDriver::instance()->getNumOfJoints(m_Part);
+    m_NumJoints=m_icubDriver.getNumOfJoints(m_part);
     
     ///////////////////////////////////////////////////////////////
     /*
@@ -138,7 +135,7 @@ iCubTestRoie::~iCubTestRoie()
 
 iCubTestReport* iCubTestRoie::run()
 {
-    iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_PartCode,m_Description);
+    iCubTestReport* pTestReport=new iCubTestReport(m_Name,m_partCode,m_Description);
 
     m_bSuccess=true;
 
@@ -176,7 +173,7 @@ iCubTestReport* iCubTestRoie::run()
             
             //goto to min position
             {
-                result=iCubDriver::instance()->setPosAndWait(m_Part,joint,m_aMinPos[joint],m_aRefVel[joint]);
+                result=m_icubDriver.setPosAndWait(m_part,joint,m_aMinPos[joint],m_aRefVel[joint]);
                 if (result!=iCubDriver::IPOS_POSMOVE_OK)
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->setPosAndWait";
@@ -190,7 +187,7 @@ iCubTestReport* iCubTestRoie::run()
 
             //goto to max position
             {
-                result=iCubDriver::instance()->setPosAndWait(m_Part,joint,m_aMaxPos[joint],m_aRefVel[joint]);
+                result=m_icubDriver.setPosAndWait(m_part,joint,m_aMaxPos[joint],m_aRefVel[joint]);
                 if (result!=iCubDriver::IPOS_POSMOVE_OK)
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->setPosAndWait";
@@ -204,7 +201,7 @@ iCubTestReport* iCubTestRoie::run()
 
             // encoders 
             {
-                result=iCubDriver::instance()->getEncPos(m_Part,joint,current_pos);
+                result=m_icubDriver.getEncPos(m_part,joint,current_pos);
                 if (result!=iCubDriver::IPOS_POSMOVE_OK)
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->getEncPos";
@@ -219,7 +216,7 @@ iCubTestReport* iCubTestRoie::run()
 
             // rotor 
             {
-                result=iCubDriver::instance()->getRotorPos(m_Part,joint,current_rotor);
+                result=m_icubDriver.getRotorPos(m_part,joint,current_rotor);
                 if (result!=iCubDriver::IPOS_POSMOVE_OK)
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->getRotorPos";
