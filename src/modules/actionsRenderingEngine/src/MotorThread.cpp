@@ -773,18 +773,10 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
-    if (b.check("external_forces_thresh"))
-        extForceThresh[arm]=b.find("external_forces_thresh").asDouble();
+    extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
     pwrGraspApproachAngle[arm]=b.check("powergrasp_approach_angle",Value(50.0)).asDouble();
-
-    pwrGraspApproachDisplacement[arm].resize(3,0.0);
-    if (Bottle *pB=b.find("powergrasp_approach_displacement").asList())
-    {
-        pwrGraspApproachDisplacement[arm].resize(pB->size());
-        for (int i=0; i<pB->size(); i++)
-            pwrGraspApproachDisplacement[arm][i]=pB->get(i).asDouble();
-    }
+    pwrGraspApproachDisplacement[arm]=b.check("powergrasp_approach_displacement",Value(0.02)).asDouble();
 
     if(b.check("grasp_model_file"))
     {
@@ -1630,10 +1622,12 @@ bool MotorThread::powerGrasp(Bottle &options)
     Vector o=xd.subVector(3,6);
 
     Matrix R=axis2dcm(o);
-    Vector y=R.getCol(1);
+    Vector y=R.getCol(1);    
     y[3]=CTRL_DEG2RAD*((arm==RIGHT)?-pwrGraspApproachAngle[arm]:pwrGraspApproachAngle[arm]);
 
-    Vector approach_x=x+pwrGraspApproachDisplacement[arm];
+    Vector z=R.getCol(2).subVector(0,2);
+    Vector n=((arm==RIGHT)?-1.0:1.0)*z;
+    Vector approach_x=x+pwrGraspApproachDisplacement[arm]*n;
     Vector approach_o=dcm2axis(axis2dcm(y)*R);
 
     wbdRecalibration();

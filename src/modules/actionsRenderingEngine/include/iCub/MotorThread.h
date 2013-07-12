@@ -160,7 +160,7 @@ private:
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
     double                              pwrGraspApproachAngle[2];
-    Vector                              pwrGraspApproachDisplacement[2];
+    double                              pwrGraspApproachDisplacement[2];
     double                              reachingTimeout;
 
     Vector                              homePos[2];
