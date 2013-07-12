@@ -178,6 +178,7 @@ iCubTestReport* iCubTestRoie::run()
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->setPosAndWait";
                     bSuccess=false; pTestReport->incFailures(); pTestReport->addEntry(pOutput);
+                    break;
                 }
                 else
                 {
@@ -192,6 +193,7 @@ iCubTestReport* iCubTestRoie::run()
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->setPosAndWait";
                     bSuccess=false; pTestReport->incFailures(); pTestReport->addEntry(pOutput);
+                    break;
                 }
                 else
                 {
@@ -221,6 +223,7 @@ iCubTestReport* iCubTestRoie::run()
                 {
                     pOutput->m_Result="FAILED: iCubDriver::instance()->getRotorPos";
                     bSuccess=false; pTestReport->incFailures(); pTestReport->addEntry(pOutput);
+                    break;
                 }
                 else
                 {
@@ -231,11 +234,13 @@ iCubTestReport* iCubTestRoie::run()
             variation = (current_pos-current_rotor);
 
             // this condition stop the test if something is going terribly wrong (*10)
-            if (fabs(variation) > m_aTolerance[joint]*10) break;
+            if (fabs(variation) > m_aTolerance[joint]*10) 
+                break;
 
         } //end of cycles
 
-        if (bSuccess==false) continue;
+        if (bSuccess==false)
+            continue;
         sprintf(tmpString,"%f",variation);
         pOutput->m_Variation=tmpString;
 
