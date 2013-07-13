@@ -19,7 +19,8 @@
  * @defgroup nnTraining Training of Neural Networks
  * @ingroup optimization
  *
- * Training of neural networks using optimization methods.
+ * Training of neural networks using optimization methods. 
+ * (<b>in progress</b>) 
  *  
  * @author Ugo Pattacini 
  */ 
@@ -106,8 +107,8 @@ public:
 * @ingroup nnTraining
 *
 * Class to deal with training of Feed-Forward 2 layers Neural 
-* Network a tansig function for the hidden nodes and a purelin 
-* for the output nodes. 
+* Network with a tansig function for the hidden nodes and a 
+* purelin for the output nodes. 
 */
 class ff2LayNNTrain_tansig_purelin: public ff2LayNNTrain,
                                     public iCub::ctrl::ff2LayNN_tansig_purelin                                    
