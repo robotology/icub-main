@@ -125,6 +125,8 @@ public:
                      IW(_net.get_IW()), LW(_net.get_LW()),
                      b1(_net.get_b1()), b2(_net.get_b2())
     {
+        pred.clear();
+        error=0.0;        
     }
 
     /****************************************************************/
@@ -221,17 +223,14 @@ public:
     {
         fillNet(x);
 
-        pred.clear();
         obj_value=0.0;
         for (size_t i=0; i<in.size(); i++)
         {
             Vector pred=net.predict(in[i]);
-            this->pred.push_back(pred);
             obj_value+=0.5*norm2(out[i]-pred);
         }
 
         obj_value/=in.size();
-        error=obj_value;
         return true;
     }
 
@@ -274,7 +273,15 @@ public:
                            Ipopt::Number obj_value, const Ipopt::IpoptData *ip_data,
                            Ipopt::IpoptCalculatedQuantities *ip_cq)
     {
-        eval_f(n,x,true,obj_value);
+        error=0.0;
+        pred.clear();
+        for (size_t i=0; i<in.size(); i++)
+        {
+            Vector pred=net.predict(in[i]);            
+            error+=0.5*norm2(out[i]-pred);
+            this->pred.push_back(pred);
+        }
+        error/=in.size();
     }
 };
 
