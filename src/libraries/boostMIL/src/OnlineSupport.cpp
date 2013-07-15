@@ -132,6 +132,8 @@ void   OnlineSupport::fromStream(std::ifstream &fin)
     int wc_size;
     fin.read((char*)&wc_size,sizeof(int));
 
+    weak_classifiers_size=wc_size;
+
     alphas.resize(wc_size);
     correct.resize(wc_size);
     weak_classifiers.resize(wc_size);
@@ -314,7 +316,7 @@ double OnlineSupport::margin(const Inputs *input, Output *output) const
         for(size_t i=0; i<weak_classifiers.size(); i++)
         {
             double w=alphas[i]>0.0?alphas[i]:0.0;
-            sum+=w*(2*weak_classifiers[i]->classify(input,output)-1); //0 1 instead of -1 1
+            sum+=w*(0.5*(weak_classifiers[i]->classify(input,output)+1) ); //0 1 instead of -1 1
         }
     }
 

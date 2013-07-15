@@ -130,7 +130,7 @@ double AvgClassifier::margin(const Inputs *input, Output *output) const
         for(int i=0; i<pool_size; i++)
         {
             double w=alpha[i]>0.0?alpha[i]:0.0;
-            sum+=w*(2*pool[i]->classify(input,output)-1); //0 1 instead of -1 1
+            sum+=w*(0.5*(pool[i]->classify(input,output)+1) ); //0 1 instead of -1 1
         }
     }
 
@@ -143,7 +143,7 @@ int AvgClassifier::classify(const Inputs *input, Output *output) const
     if(this->margin(input,output)>threshold)
         return 1;
     else
-        return 0;
+        return -1;
 }
 
 
@@ -152,8 +152,10 @@ bool AvgClassifier::isReady()
 {
     ready = true;
     //if the selector is not empty
+
     if(pool_size)
     {
+        
         //fill the pool with new WeakClassifiers with the elements in the function_space list
         while(pool.size() < (unsigned) pool_size && function_space->size())
         {
@@ -165,8 +167,10 @@ bool AvgClassifier::isReady()
         if(pool.size() != pool_size)
             ready = false;
 
+        
         for(unsigned int i = 0; i < pool.size(); i++)
             if(!pool[i]->isReady()) ready = false;
+
     }
     else
         ready = false;
@@ -282,7 +286,6 @@ void   AvgClassifier::fromStream(std::ifstream &fin)
 
     fin.read((char*)&threshold,sizeof(double));
     fin.read((char*)&pool_size,sizeof(int));
-
 
 
     correct.resize(pool_size);
