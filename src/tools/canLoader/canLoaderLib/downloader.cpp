@@ -1072,6 +1072,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
 		case BOARD_TYPE_4DC:
 		case BOARD_TYPE_BLL:
 		case BOARD_TYPE_2FOC:
+		case BOARD_TYPE_JOG:
 			txBuffer[0].setId((ID_MASTER << 4) + target_id);
 			txBuffer[0].setLen(2);
 			txBuffer[0].getData()[0]= CAN_SET_BOARD_ID;
@@ -1267,6 +1268,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
 	case BOARD_TYPE_MAIS:
 	case BOARD_TYPE_2FOC:
 	case BOARD_TYPE_6SG:
+	case BOARD_TYPE_JOG:
 	case BOARD_UNKNOWN:
 		{
 		// Send command
@@ -1927,8 +1929,10 @@ int cDownloader::download_file(int board_pid, int download_type, bool board_eepr
 						case BOARD_TYPE_STRAIN:
 						case BOARD_TYPE_MAIS:
 						case BOARD_TYPE_2FOC:
+						case BOARD_TYPE_JOG:
 						case BOARD_TYPE_6SG:
 							 ret = download_hexintel_line(buffer, strlen(buffer), board_pid, board_eeprom, download_type);
+
 						break;
 						case BOARD_UNKNOWN:
 						default:
