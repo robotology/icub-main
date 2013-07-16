@@ -838,7 +838,7 @@ void iKinIpOptMin::set_ctrlPose(const unsigned int _ctrlPose)
 
 
 /************************************************************************/
-iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
+void iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
 {
     unsigned int _n=n;
     if (_n>chain.getN())
@@ -851,15 +851,13 @@ iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
     chain2ndTask.setH0(chain.getH0());
     if (_n==chain.getN())
         chain2ndTask.setHN(chain.getHN()); 
-
-    return chain2ndTask;
 }
 
 
 /************************************************************************/
-void iKinIpOptMin::clear2ndTaskEndEff()
+iKinChain &iKinIpOptMin::get2ndTaskChain()
 {
-    chain2ndTask.clear();
+    return chain2ndTask;
 }
 
 

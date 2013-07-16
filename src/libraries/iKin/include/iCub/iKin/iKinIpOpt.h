@@ -298,14 +298,14 @@ public:
     * of last joint pointing at it.
     * @param n is the ordinal number of last joint pointing at the 
     *          2nd End-Effector.
-    * @return a reference to the secondary chain. 
     */
-    iKinChain &specify2ndTaskEndEff(const unsigned int n);
+    void specify2ndTaskEndEff(const unsigned int n);
 
     /**
-    * Clears the 2nd Task End-Effector.
+    * Retrieves the secondary chain. 
+    * @return a reference to the secondary chain.  
     */
-    void clear2ndTaskEndEff();
+    iKinChain &get2ndTaskChain();
 
     /**
     * Sets Tolerance.
