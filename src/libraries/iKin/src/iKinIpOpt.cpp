@@ -615,9 +615,9 @@ public:
     bool eval_jac_g(Index n, const Number* x, bool new_x, Index m, Index nele_jac,
                     Index* iRow, Index *jCol, Number* values)
     {
-        if (m)
+        if (m!=0)
         {
-            if (!values)
+            if (values!=NULL)
             {
                 Index idx=0;
         
@@ -666,7 +666,7 @@ public:
                 Index m, const Number* lambda, bool new_lambda,
                 Index nele_hess, Index* iRow, Index* jCol, Number* values)
     {
-        if (!values)
+        if (values!=NULL)
         {
             Index idx=0;
         
@@ -840,12 +840,17 @@ void iKinIpOptMin::set_ctrlPose(const unsigned int _ctrlPose)
 /************************************************************************/
 iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
 {
-    chain2ndTask.clear();
-    chain2ndTask.setH0(chain.getH0());
-    chain2ndTask.setHN(chain.getHN());
+    unsigned int _n=n;
+    if (_n>chain.getN())
+        _n=chain.getN();
 
-    for (unsigned int i=0; i<n; i++)
+    chain2ndTask.clear();
+    for (unsigned int i=0; i<_n; i++)
         chain2ndTask<<chain[i];
+
+    chain2ndTask.setH0(chain.getH0());
+    if (_n==chain.getN())
+        chain2ndTask.setHN(chain.getHN()); 
 
     return chain2ndTask;
 }
