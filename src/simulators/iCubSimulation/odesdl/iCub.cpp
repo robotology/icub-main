@@ -2117,25 +2117,25 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dBodySetMass(body[10],&m);
     geom[10] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[10],body[10]);
 
-    body[12] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    body[12] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[12],&m);
     dBodySetQuaternion(body[12],q);
     geom[12] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[12],body[12]);
 
-    body[13] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    body[13] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[13],&m);
     dBodySetQuaternion(body[13],q);
     geom[13] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[13],body[13]);
 
     lhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    lhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings0_geom,lhandfingers0);
     dGeomSetOffsetRotation(lhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    lhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings1_geom,Rtx);
     dGeomSetBody (lhandfings1_geom,lhandfingers0);
@@ -2148,25 +2148,25 @@ void ICubSim::initLeftHandOn(dWorldID world)
     //Set mass to the actual body
     dBodySetMass(lhandfingers0,&m);
 
-    body[16] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    body[16] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[16],&m);
     dBodySetQuaternion(body[16],q);
     geom[16] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[16],body[16]);
 
-    body[17] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.028);
+    body[17] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.028);
     dBodySetMass(body[17],&m);
     dBodySetQuaternion(body[17],q);
     geom[17] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[17],body[17]);
 
     lhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.026);
+    lhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings2_geom,lhandfingers1);
     dGeomSetOffsetRotation(lhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    lhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings3_geom,Rtx);
     dGeomSetBody (lhandfings3_geom,lhandfingers1);
@@ -2175,20 +2175,20 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers1,&m);
 
-    body[20] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);dBodySetMass(body[20],&m);
+    body[20] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);dBodySetMass(body[20],&m);
     dBodySetQuaternion(body[20],q);geom[20] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[20],body[20]);
-    body[21] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.024);dBodySetMass(body[21],&m);
+    body[21] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.024);dBodySetMass(body[21],&m);
     dBodySetQuaternion(body[21],q);geom[21] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[21],body[21]);
 
     lhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    lhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings4_geom,lhandfingers2);
     dGeomSetOffsetRotation(lhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.019);
+    lhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.019);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings5_geom,Rtx);
     dGeomSetBody (lhandfings5_geom,lhandfingers2);
@@ -2197,20 +2197,20 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers2,&m);
 
-    body[24] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[24],&m);
+    body[24] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[24],&m);
     dBodySetQuaternion(body[24],q);geom[24] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[24],body[24]);
-    body[25] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[25],&m);
+    body[25] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[25],&m);
     dBodySetQuaternion(body[25],q);geom[25] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[25],body[25]);
 
     lhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    lhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings6_geom,lhandfingers3);
     dGeomSetOffsetRotation(lhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    lhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings7_geom,Rtx);
     dGeomSetBody (lhandfings7_geom,lhandfingers3);
@@ -2219,15 +2219,15 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers3,&m);
 
-    body[28] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    body[28] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[28],&m);//dBodySetQuaternion(body[28],q1);
     geom[28] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[28],body[28]);
 
-    body[29] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);
+    body[29] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);
     dBodySetMass(body[29],&m);//dBodySetQuaternion(body[29],q1);
     geom[29] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[29],body[29]);
 
-    body[30] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.016);
+    body[30] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.016);
     dBodySetMass(body[30],&m);//dBodySetQuaternion(body[30],q1);
     geom[30] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[30],body[30]);
 }
@@ -2293,25 +2293,25 @@ void ICubSim::initRightHandOn(dWorldID world)
     dBodySetMass(body[11],&m);
     geom[11] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[11],body[11]);
 
-    body[31] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    body[31] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[31],&m);
     dBodySetQuaternion(body[31],q);
     geom[31] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[31],body[31]);
 
-    body[32] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.012);
+    body[32] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[32],&m);
     dBodySetQuaternion(body[32],q);
     geom[32] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[32],body[32]);
 
     rhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    rhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings0_geom,rhandfingers0);
     dGeomSetOffsetRotation(rhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.012);
+    rhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings1_geom,Rtx);
     dGeomSetBody (rhandfings1_geom,rhandfingers0);
@@ -2324,25 +2324,25 @@ void ICubSim::initRightHandOn(dWorldID world)
     //Set mass to the actual body
     dBodySetMass(rhandfingers0,&m);
 
-    body[35] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    body[35] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[35],&m);
     dBodySetQuaternion(body[35],q);
     geom[35] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[35],body[35]);
 
-    body[36] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.028);
+    body[36] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.028);
     dBodySetMass(body[36],&m);
     dBodySetQuaternion(body[36],q);
     geom[36] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[36],body[36]);
 
     rhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.026);
+    rhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings2_geom,rhandfingers1);
     dGeomSetOffsetRotation(rhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    rhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings3_geom,Rtx);
     dGeomSetBody (rhandfings3_geom,rhandfingers1);
@@ -2351,20 +2351,20 @@ void ICubSim::initRightHandOn(dWorldID world)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers1,&m);
 
-    body[39] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);dBodySetMass(body[39],&m);
+    body[39] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);dBodySetMass(body[39],&m);
     dBodySetQuaternion(body[39],q);geom[39] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[39],body[39]);
-    body[40] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.024);dBodySetMass(body[40],&m);
+    body[40] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.024);dBodySetMass(body[40],&m);
     dBodySetQuaternion(body[40],q);geom[40] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[40],body[40]);
 
     rhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.022);
+    rhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings4_geom,rhandfingers2);
     dGeomSetOffsetRotation(rhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.019);
+    rhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.019);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings5_geom,Rtx);
     dGeomSetBody (rhandfings5_geom,rhandfingers2);
@@ -2373,20 +2373,20 @@ void ICubSim::initRightHandOn(dWorldID world)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers2,&m);
 
-    body[43] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[43],&m);
+    body[43] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[43],&m);
     dBodySetQuaternion(body[43],q);geom[43] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[43],body[43]);
-    body[44] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.02);dBodySetMass(body[44],&m);
+    body[44] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[44],&m);
     dBodySetQuaternion(body[44],q);geom[44] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[44],body[44]);
 
     rhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    rhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings6_geom,rhandfingers3);
     dGeomSetOffsetRotation(rhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.2,3,0.0065,0.02);
+    rhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings7_geom,Rtx);
     dGeomSetBody (rhandfings7_geom,rhandfingers3);
@@ -2395,15 +2395,15 @@ void ICubSim::initRightHandOn(dWorldID world)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers3,&m);
 
-    body[47] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.026);
+    body[47] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[47],&m);//dBodySetQuaternion(body[28],q1);
     geom[47] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[47],body[47]);
 
-    body[48] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.022);
+    body[48] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);
     dBodySetMass(body[48],&m);//dBodySetQuaternion(body[29],q1);
     geom[48] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[48],body[48]);
 
-    body[49] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.2,3,0.0065,0.016);
+    body[49] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.016);
     dBodySetMass(body[49],&m);//dBodySetQuaternion(body[30],q1);
     geom[49] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[49],body[49]);
 }
