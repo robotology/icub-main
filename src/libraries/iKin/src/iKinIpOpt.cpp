@@ -857,6 +857,13 @@ iKinChain &iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
 
 
 /************************************************************************/
+void iKinIpOptMin::clear2ndTaskEndEff()
+{
+    chain2ndTask.clear();
+}
+
+
+/************************************************************************/
 void iKinIpOptMin::setTol(const double tol)
 {
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);

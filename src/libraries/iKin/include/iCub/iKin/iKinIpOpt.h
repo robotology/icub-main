@@ -303,6 +303,11 @@ public:
     iKinChain &specify2ndTaskEndEff(const unsigned int n);
 
     /**
+    * Clears the 2nd Task End-Effector.
+    */
+    void clear2ndTaskEndEff();
+
+    /**
     * Sets Tolerance.
     * @param tol exits if norm(xd-x)<tol.
     */
