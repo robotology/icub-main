@@ -165,6 +165,19 @@ public:
 
 
 
+    /**
+    * For strong classifiers it does nothing (must be implemented in children)
+    *
+    * @param initializer the Input containing the weak classifiers.
+    */
+    virtual void                        initialize  (const Inputs *initializer){return;}
+
+    /**
+    * For strong classifiers it does nothing (must be implemented in children)lassifiers
+    *
+    * @param initializer the Input list containing the weak classifiers.
+    */
+    virtual void                        initialize  (const std::list<Inputs*> &initializer){return;}
 
 
 
