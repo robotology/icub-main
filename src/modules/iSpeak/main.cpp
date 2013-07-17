@@ -27,15 +27,10 @@ utter them, also controlling the facial expressions.
 
 The behavior is pretty intuitive and does not need any further
 detail.\n 
-This module can make use of the following speech synthesis 
-packages: \n
--# <b>festival</b>;
--# <b>espeak</b>.
  
 \section lib_sec Libraries 
 - YARP libraries. 
-- Festival package for speech synthesis (under linux). 
-- eSpeak package for speech synthesis (under linux and windows).
+- Packages for speech synthesis (e.g. festival, espeak, ...).
 
 \section parameters_sec Parameters
 --name \e name 
@@ -50,7 +45,7 @@ packages: \n
  
 --package \e pck 
 - The parameter \e pck specifies the package used for utterance; 
-  it could be "festival" (default) or "espeak".
+  e.g. "festival", "espeak", ...
  
 --package_options \e opt 
 - The parameter \e opt is a string specifying further 
@@ -243,11 +238,11 @@ class iSpeak : protected BufferedPort<Bottle>,
         string command("echo \"");
         command+=phrase;
         command+="\" | ";
+        command+=package;
+        command+=" ";
 
-        if (package=="espeak")
-            command+="espeak ";
-        else
-            command+="festival --tts ";
+        if (package=="festival")
+            command+="--tts ";
 
         command+=package_options;
 
@@ -338,8 +333,6 @@ public:
         name=rf.find("name").asString().c_str();
         package=rf.find("package").asString().c_str();
         package_options=rf.find("package_options").asString().c_str();
-        if ((package!="festival") && (package!="espeak"))
-            package="festival";
 
         mouth.configure(rf);
 
