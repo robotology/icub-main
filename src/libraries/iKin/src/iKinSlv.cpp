@@ -1318,6 +1318,10 @@ bool CartesianSolver::open(Searchable &options)
         slv->getLIC().update(NULL);
     }
 
+    // set up 2nd task
+    xd_2ndTask.resize(3,0.0);
+    w_2ndTask.resize(3,0.0);
+
     // define input port
     inPort=new InputPort(this);
     inPort->useCallback();
@@ -1408,11 +1412,8 @@ void CartesianSolver::prepareJointsRestTask()
 /************************************************************************/
 Vector CartesianSolver::solve(Vector &xd)
 {
-    Vector dummy(1);
-
-    // call the solver and start the convergence from the current point
     return slv->solve(prt->chn->getAng(),xd,
-                      0.0,dummy,dummy,
+                      slv->get2ndTaskChain().getDOF()>0?CARTSLV_WEIGHT_2ND_TASK:0.0,xd_2ndTask,w_2ndTask,
                       CARTSLV_WEIGHT_3RD_TASK,qd_3rdTask,w_3rdTask,
                       NULL,NULL,clb);
 }
@@ -1663,6 +1664,10 @@ bool iCubArmCartesianSolver::open(Searchable &options)
     {
         // Identify the elbow xyz position to be used as 2nd task
         slv->specify2ndTaskEndEff(6);
+
+        // try to keep elbow as low as possible
+        xd_2ndTask[2]=-1.0;
+        w_2ndTask[2]=1.0;
     }
 
     return configured;
@@ -1693,21 +1698,6 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
     }
 
     return CartesianSolver::decodeDOF(newDOF);
-}
-
-
-/************************************************************************/
-Vector iCubArmCartesianSolver::solve(Vector &xd)
-{
-    // try to keep elbow height as low as possible
-    Vector w_2nd(3,0.0); w_2nd[2]=1.0;
-    Vector xdElb(3,0.0); xdElb[2]=-1.0;
-
-    // call the solver and start the convergence from the current point
-    return slv->solve(prt->chn->getAng(),xd,
-                      CARTSLV_WEIGHT_2ND_TASK,xdElb,w_2nd,
-                      CARTSLV_WEIGHT_3RD_TASK,qd_3rdTask,w_3rdTask,
-                      NULL,NULL,clb);
 }
 
 

@@ -348,6 +348,9 @@ protected:
     yarp::sig::Vector restJntPos;
     yarp::sig::Vector restWeights;
 
+    yarp::sig::Vector xd_2ndTask;
+    yarp::sig::Vector w_2ndTask;
+
     yarp::sig::Vector qd_3rdTask;
     yarp::sig::Vector w_3rdTask;
     yarp::sig::Vector idx_3rdTask;
@@ -533,7 +536,6 @@ class iCubArmCartesianSolver : public CartesianSolver
 protected:
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
     virtual bool decodeDOF(const yarp::sig::Vector &_dof);
-    virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);
 
 public:
     /**
