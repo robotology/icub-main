@@ -19,7 +19,7 @@
 
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
-#include <iCub/optimization/affine.h>
+#include <iCub/optimization/affinity.h>
 
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -50,7 +50,7 @@ inline Matrix computeA(const Ipopt::Number *x)
 
 
 /****************************************************************/
-class AffineWithMatchedPointsNLP : public Ipopt::TNLP
+class AffinityWithMatchedPointsNLP : public Ipopt::TNLP
 {
 protected:    
     const deque<Vector> &p0;
@@ -64,10 +64,10 @@ protected:
 
 public:
     /****************************************************************/
-    AffineWithMatchedPointsNLP(const deque<Vector> &_p0,
-                               const deque<Vector> &_p1,
-                               const Matrix &_min, const Matrix &_max) :
-                               p0(_p0), p1(_p1)
+    AffinityWithMatchedPointsNLP(const deque<Vector> &_p0,
+                                 const deque<Vector> &_p1,
+                                 const Matrix &_min, const Matrix &_max) :
+                                 p0(_p0), p1(_p1)
     {
         min=_min;
         max=_max;
@@ -225,7 +225,7 @@ public:
 
 
 /****************************************************************/
-AffineWithMatchedPoints::AffineWithMatchedPoints()
+AffinityWithMatchedPoints::AffinityWithMatchedPoints()
 {
     min=max=eye(4,4);
     for (int c=0; c<min.cols(); c++)
@@ -242,8 +242,8 @@ AffineWithMatchedPoints::AffineWithMatchedPoints()
 
 
 /****************************************************************/
-void AffineWithMatchedPoints::setBounds(const Matrix &min,
-                                        const Matrix &max)
+void AffinityWithMatchedPoints::setBounds(const Matrix &min,
+                                          const Matrix &max)
 {
     int row_max,col_max;
 
@@ -258,7 +258,7 @@ void AffineWithMatchedPoints::setBounds(const Matrix &min,
 
 
 /****************************************************************/
-double AffineWithMatchedPoints::evalError(const Matrix &A)
+double AffinityWithMatchedPoints::evalError(const Matrix &A)
 {
     double error=0.0;
     if (p0.size()>0)
@@ -274,8 +274,8 @@ double AffineWithMatchedPoints::evalError(const Matrix &A)
 
 
 /****************************************************************/
-bool AffineWithMatchedPoints::addPoints(const Vector &p0,
-                                        const Vector &p1)
+bool AffinityWithMatchedPoints::addPoints(const Vector &p0,
+                                          const Vector &p1)
 {
     if ((p0.length()>=3) && (p1.length()>=3))
     {
@@ -293,8 +293,8 @@ bool AffineWithMatchedPoints::addPoints(const Vector &p0,
 
 
 /****************************************************************/
-void AffineWithMatchedPoints::getPoints(deque<Vector> &p0,
-                                        deque<Vector> &p1) const
+void AffinityWithMatchedPoints::getPoints(deque<Vector> &p0,
+                                          deque<Vector> &p1) const
 {
     p0=this->p0;
     p1=this->p1;
@@ -302,7 +302,7 @@ void AffineWithMatchedPoints::getPoints(deque<Vector> &p0,
 
 
 /****************************************************************/
-void AffineWithMatchedPoints::clearPoints()
+void AffinityWithMatchedPoints::clearPoints()
 {
     p0.clear();
     p1.clear();
@@ -310,7 +310,7 @@ void AffineWithMatchedPoints::clearPoints()
 
 
 /****************************************************************/
-bool AffineWithMatchedPoints::setInitialGuess(const Matrix &A)
+bool AffinityWithMatchedPoints::setInitialGuess(const Matrix &A)
 {
     int row_max=std::min(A0.rows()-1,A.rows()-1);
     int col_max=std::min(A0.cols(),A.cols());
@@ -321,7 +321,7 @@ bool AffineWithMatchedPoints::setInitialGuess(const Matrix &A)
 
 
 /****************************************************************/
-bool AffineWithMatchedPoints::calibrate(Matrix &A, double &error)
+bool AffinityWithMatchedPoints::calibrate(Matrix &A, double &error)
 {
     if (p0.size()>0)
     {
@@ -337,7 +337,7 @@ bool AffineWithMatchedPoints::calibrate(Matrix &A, double &error)
         app->Options()->SetStringValue("derivative_test","none");
         app->Initialize();
 
-        Ipopt::SmartPtr<AffineWithMatchedPointsNLP> nlp=new AffineWithMatchedPointsNLP(p0,p1,min,max);
+        Ipopt::SmartPtr<AffinityWithMatchedPointsNLP> nlp=new AffinityWithMatchedPointsNLP(p0,p1,min,max);
 
         nlp->set_A0(A0);
         Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));

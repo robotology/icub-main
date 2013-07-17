@@ -16,7 +16,7 @@
 */
 
 /**
- * @defgroup Affine Affine Transformations
+ * @defgroup Affinity Affine Transformations
  * @ingroup MatrixTransformations
  *
  * Given two sets of 3D points, the aim is to find out the 
@@ -26,8 +26,8 @@
  */ 
 
 
-#ifndef __ICUB_OPT_AFFINE_H__
-#define __ICUB_OPT_AFFINE_H__
+#ifndef __ICUB_OPT_AFFINITY_H__
+#define __ICUB_OPT_AFFINITY_H__
 
 #include <deque>
 #include <yarp/sig/all.h>
@@ -40,13 +40,13 @@ namespace optimization
 {
 
 /**
-* @ingroup Affine
+* @ingroup Affinity
 *
 * A class that deals with the problem of determining the affine 
 * transformation matrix A between two sets of matching 3D points
 * employing IpOpt. 
 */
-class AffineWithMatchedPoints : public MatrixTransformationWithMatchedPoints
+class AffinityWithMatchedPoints : public MatrixTransformationWithMatchedPoints
 {
 protected:
     yarp::sig::Matrix min, max;    
@@ -61,7 +61,7 @@ public:
     /**
     * Default Constructor. 
     */
-    AffineWithMatchedPoints();
+    AffinityWithMatchedPoints();
 
     /**
     * Allow specifying the minimum and maximum bounds of the 
