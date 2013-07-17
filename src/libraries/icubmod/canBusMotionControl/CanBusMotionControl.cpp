@@ -1966,13 +1966,20 @@ bool CanBusMotionControl::open (Searchable &config)
     _mutex.post ();
 
     // default initialization for this device driver.
+    yarp::os::Time::delay(0.005);
     setPids(p._pids);
-    if (p._tpidsEnabled==true) setTorquePids(p._tpids);
+    
+    if (p._tpidsEnabled==true)
+    {
+        yarp::os::Time::delay(0.005);
+        setTorquePids(p._tpids);
+    }
     
     //set the source of the torque measurments to the boards
     #if 0
     for (int j=0; j<p._njoints; j++)
-    {
+    {   
+        yarp::os::Time::delay(0.001);
         this->setTorqueSource(j,p._torqueSensorId[j],p._torqueSensorChan[j]);
     }
     #endif
@@ -1981,6 +1988,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for (int j=0; j<p._njoints; j++)
         if (p._debug_params[j].enabled==true)
         {
+            yarp::os::Time::delay(0.001);
             for (int param_num=0; param_num<8; param_num++)
                 setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
         }
@@ -1989,27 +1997,37 @@ bool CanBusMotionControl::open (Searchable &config)
     for (int j=0; j<p._njoints; j++)
         if (p._impedance_params[j].enabled==true)
         {
+            yarp::os::Time::delay(0.001);
             setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping);
         }
 
     int i;
     for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setBCastMessages(i, p._broadcast_mask[i]);
+    }
 
     // set limits, on encoders and max current
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setLimits(i, p._limitsMin[i], p._limitsMax[i]);
         setMaxCurrent(i, p._currentLimits[i]);
     }
 
     // set limits, on encoders and max current
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {   
+        yarp::os::Time::delay(0.001);
         setVelocityShiftRaw(i, p._velocityShifts[i]);
         setVelocityTimeoutRaw(i, p._velocityTimeout[i]);
     }
 
     // set parameters for speed/acceleration estimation
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setSpeedEstimatorShiftRaw(i,p._estim_params[i].jnt_Vel_estimator_shift,
                                     p._estim_params[i].jnt_Acc_estimator_shift,
                                     p._estim_params[i].mot_Vel_estimator_shift,
@@ -2018,7 +2036,9 @@ bool CanBusMotionControl::open (Searchable &config)
     _speedEstimationHelper = new speedEstimationHelper(p._njoints, p._estim_params);
     
     // disable the controller, cards will start with the pid controller & pwm off
-    for (i = 0; i < p._njoints; i++) {
+    for (i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         disablePid(i);
         disableAmp(i);
     }
@@ -2051,6 +2071,7 @@ bool CanBusMotionControl::open (Searchable &config)
     icub_interface_protocol.minor=CAN_PROTOCOL_MINOR;
     for (int j=0; j<p._njoints; j++) 
     {
+        yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
         if (b==false) fprintf(stderr,"Error reading firmware version\n");
     }
