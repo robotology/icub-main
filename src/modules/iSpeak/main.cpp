@@ -235,17 +235,16 @@ class iSpeak : protected BufferedPort<Bottle>,
     /************************************************************************/
     void speak(const string &phrase)
     {
-        string command=package;
-        command+=" ";
-        command+=package_options;
+        string command("echo \"");
+        command+=phrase;
+        command+="\" | ";
+        command+=package;
         command+=" ";
 
         if (package=="festival")
             command+="--tts ";
 
-        command+="\"";
-        command+=phrase;
-        command+="\"";
+        command+=package_options;
 
         system(command.c_str());
     }
