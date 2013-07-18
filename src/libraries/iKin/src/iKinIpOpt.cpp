@@ -617,7 +617,7 @@ public:
     {
         if (m!=0)
         {
-            if (values!=NULL)
+            if (values==NULL)
             {
                 Index idx=0;
         
@@ -666,7 +666,7 @@ public:
                 Index m, const Number* lambda, bool new_lambda,
                 Index nele_hess, Index* iRow, Index* jCol, Number* values)
     {
-        if (values!=NULL)
+        if (values==NULL)
         {
             Index idx=0;
         
