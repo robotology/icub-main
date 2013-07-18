@@ -284,8 +284,9 @@ bool Compensator::readInputData(Vector& skin_values){
         }
 	    return false;
     }
-    if(!inputPort.getEnvelope(timestamp))
-        sendInfoMsg("Error while trying to read envelope of input data port.");
+    //try to read envelope of input data port
+    inputPort.getEnvelope(timestamp)
+
     skin_values = *tmp; // copy data
 
     if(skin_values.size() != skinDim){
@@ -406,7 +407,6 @@ void Compensator::updateBaseline(){
                 mean_change     += change;
 			}
 		}*/
-
     
         d = compensatedData(j);
         if(touchDetected[j]){
@@ -419,10 +419,8 @@ void Compensator::updateBaseline(){
 		baselines[j]    += change;
         mean_change     += change;
 
-        if(j<5)
-        {
-            printf("%d touch detected %s, change %.6f, gain: %.3f\n", j, touchDetected[j]?"yes":"no", change, touchDetected[j]?contactCompensationGain:compensationGain);
-        }
+//        if(j<5)
+//            printf("%d touch detected %s, change %.6f, gain: %.3f\n", j, touchDetected[j]?"yes":"no", change, touchDetected[j]?contactCompensationGain:compensationGain);
 
         if(baselines[j]<0){
             char* temp = new char[300];
