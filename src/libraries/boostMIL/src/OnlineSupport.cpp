@@ -66,6 +66,7 @@ void OnlineSupport::initResource()
             weak_classifiers_size = data.find("weak_classifiers_size").asInt();
             alphas.resize(weak_classifiers_size,0.0);
             correct.resize(weak_classifiers_size,0);
+            wrong.resize(weak_classifiers_size,0);
 
             std::string avg_type = data.check("avg_type",yarp::os::Value("avg")).asString().c_str();
 
@@ -136,12 +137,14 @@ void   OnlineSupport::fromStream(std::ifstream &fin)
 
     alphas.resize(wc_size);
     correct.resize(wc_size);
+    wrong.resize(wc_size);
     weak_classifiers.resize(wc_size);
 
     for(int i=0; i<wc_size; i++)
     {
         fin.read((char*)&alphas[i],sizeof(double));
         fin.read((char*)&correct[i],sizeof(int));
+        fin.read((char*)&wrong[i],sizeof(int));
 
         int size_of_type;
         fin.read((char*)&size_of_type,sizeof(int));
@@ -169,6 +172,7 @@ void   OnlineSupport::toStream(std::ofstream &fout) const
     {
         fout.write((char*)&alphas[i],sizeof(double));
         fout.write((char*)&correct[i],sizeof(int));
+        fout.write((char*)&wrong[i],sizeof(int));
 
         int size_of_type=weak_classifiers[i]->getType().size();
         fout.write((char*)&size_of_type,sizeof(int));
@@ -198,6 +202,7 @@ void   OnlineSupport::fromString(const std::string &str)
     {
         alphas.push_back(bLoader.get(i).asList()->find("alpha").asDouble());
         correct.push_back((int)bLoader.get(i).asList()->find("correct").asDouble());
+        wrong.push_back((int)bLoader.get(i).asList()->find("wrong").asDouble());
 
         yarp::os::Bottle *bSelector=bLoader.get(i).asList()->find("weak_classifier").asList();
 
@@ -219,6 +224,11 @@ void OnlineSupport::clearFunctionSpace()
         function_space.pop_front();
     }
 }
+
+
+
+/*
+
 
 void OnlineSupport::update(const Inputs *input, double &weight)
 {
@@ -284,6 +294,47 @@ void OnlineSupport::update(const Inputs *input, double &weight)
             
             //update alpha
             //alphas[i] = 0.5*log((1-weak_classifiers[i]->getError())/weak_classifiers[i]->getError());
+
+        }
+    }
+}
+
+*/
+
+void OnlineSupport::update(const Inputs *input, double &weight)
+{
+    //if the algorithm uses a function space, extract new weak learners from the input (if it is a positive sample).
+    if(function_space.size()<max_function_space_size && input->getLabel() == +1)
+    {
+        ClassifierFactory::instance().pack(input,function_space);
+
+        //avoid getting a function space too large
+        while(function_space.size() > max_function_space_size)
+        {
+            delete function_space.front();
+            function_space.pop_front();
+        }
+    }
+
+    if(isReady())
+    {
+        //propagate the sample through the list of weak classifiers
+        for(unsigned int i = 0; i < weak_classifiers.size(); i++)
+        {
+            weak_classifiers[i]->update(input,weight);
+
+            if(weak_classifiers[i]->classify(input)>0)
+                if(input->getLabel()>0)
+                    correct[i]++;
+                else
+                    wrong[i]++;
+
+            alphas[i]=0.5*log((double)correct[i]/(wrong[i]+0.00001));
+            if(alphas[i]<=0.0)
+                alphas[i]=0.0;
+
+            weight*=sqrt((double)correct[i]/(wrong[i]+0.00001));
+
 
         }
     }

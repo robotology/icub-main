@@ -68,6 +68,7 @@ private:
     virtual void            initResource();
 
     std::vector<int>          correct;
+    std::vector<int>          wrong;
 
 public:
 

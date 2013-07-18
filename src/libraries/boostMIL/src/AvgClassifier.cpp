@@ -179,7 +179,7 @@ bool AvgClassifier::isReady()
 }
 
 
-
+/*
 
 void AvgClassifier::update(const Inputs *input, double &weight)
 {
@@ -202,6 +202,52 @@ void AvgClassifier::update(const Inputs *input, double &weight)
                     wrong[i]++;
 
             alpha[i] = 1/(1+exp(-(correct[i]-wrong[i])) );
+
+            if(pool[i]->classify(input)>0)
+                response+=alpha[i];
+        }
+
+        this->insertBag(response,input->getLabel(),weight);
+        if(!threshold_fixed)
+            threshold=this->bestRadius();
+
+        //get the value 
+        //update the sample error
+        //if(pool[i]->classify(input)==1)
+    }
+
+
+    //update the threshold of the classifier
+
+}
+
+*/
+
+void AvgClassifier::update(const Inputs *input, double &weight)
+{
+    if(isReady())
+    {
+        error = 1.0;
+        std::vector<double> errors(pool.size());
+
+        double response=0.0;
+        for(unsigned int i = 0; i < pool.size(); i++)
+        {
+            //first update the single WL with the new sample
+            pool[i]->update(input,weight);
+
+            //update the alpha
+            if(pool[i]->classify(input)>0)
+                if(input->getLabel()>0)
+                    correct[i]++;
+                else
+                    wrong[i]++;
+
+            //alpha[i] = 1/(1+exp(-(correct[i]-wrong[i])) );
+            alpha[i]=log(sqrt((double)correct[i]/(wrong[i]+0.000001)));
+            if(alpha[i]<0.0)
+                alpha[i]=0.0;
+
 
             if(pool[i]->classify(input)>0)
                 response+=alpha[i];
