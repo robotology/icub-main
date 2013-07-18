@@ -164,7 +164,7 @@ void                            MILClassifier::insertBag            (const doubl
 }
 
 
-/*
+//*
 
 double                          MILClassifier::bestRadius           ()
 {
@@ -221,7 +221,7 @@ double                          MILClassifier::bestRadius           ()
 }
 
 
-*/
+/*/
 
 
 double                          MILClassifier::bestRadius           ()
@@ -267,7 +267,7 @@ double                          MILClassifier::bestRadius           ()
 }
 
 
-
+*/
 
 //Public  Methods
 void                            MILClassifier::clear                ()

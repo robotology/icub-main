@@ -227,7 +227,7 @@ void OnlineSupport::clearFunctionSpace()
 
 
 
-/*
+//*
 
 
 void OnlineSupport::update(const Inputs *input, double &weight)
@@ -258,12 +258,12 @@ void OnlineSupport::update(const Inputs *input, double &weight)
                 if(input->getLabel()>0)
                 {
                     correct[i]++;
-                    double alpha = 1/(1+exp((double)-correct[i]) );
+                    double alpha = 1/(1+exp((double)-correct[i]+wrong[i]) );
                     weight *= 1.0-alpha;
                 }
                 else
                 {
-                    correct[i]--;
+                    wrong[i]++;
                     weight *= 1.0;
                 }
             }
@@ -275,7 +275,7 @@ void OnlineSupport::update(const Inputs *input, double &weight)
                     weight *= 1.0;
             }
 
-            alphas[i]=1/(1+exp((double)-correct[i]) );
+            alphas[i]=1/(1+exp((double)-correct[i]+wrong[i]) );
 
 
             ////if the WeakClassifiers abstains from classifing, do not update the weight
@@ -299,7 +299,9 @@ void OnlineSupport::update(const Inputs *input, double &weight)
     }
 }
 
-*/
+
+/*/
+
 
 void OnlineSupport::update(const Inputs *input, double &weight)
 {
@@ -340,7 +342,7 @@ void OnlineSupport::update(const Inputs *input, double &weight)
     }
 }
 
-
+//*/
 
 void OnlineSupport::clear()
 {
