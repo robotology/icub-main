@@ -227,7 +227,7 @@ public:
         for (size_t i=0; i<in.size(); i++)
         {
             Vector pred=net.predict(in[i]);
-            obj_value+=0.5*norm2(out[i]-pred);
+            obj_value+=norm2(out[i]-pred);
         }
 
         obj_value/=in.size();
@@ -278,7 +278,7 @@ public:
         for (size_t i=0; i<in.size(); i++)
         {
             Vector pred=net.predict(in[i]);            
-            error+=0.5*norm2(out[i]-pred);
+            error+=norm2(out[i]-pred);
             this->pred.push_back(pred);
         }
         error/=in.size();

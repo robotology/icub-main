@@ -151,7 +151,7 @@ public:
         if (p0.size()>0)
         {
             for (size_t i=0; i<p0.size(); i++)
-                obj_value+=0.5*norm2(p1[i]-A*p0[i]);
+                obj_value+=norm2(p1[i]-A*p0[i]);
 
             obj_value/=p0.size();
         }
@@ -173,7 +173,7 @@ public:
             {
                 Vector d=p1[i]-A*p0[i];
                 for (Ipopt::Index j=0; j<n; j++)
-                    grad_f[j]-=dot(d,(dA[j]*p0[i]));
+                    grad_f[j]-=2.0*dot(d,(dA[j]*p0[i]));
             }
 
             for (Ipopt::Index i=0; i<n; i++)

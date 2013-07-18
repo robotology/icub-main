@@ -560,13 +560,13 @@ public:
     {
         computeQuantities(x);
 
-        obj_value=0.5*norm2(*e_1st);
+        obj_value=norm2(*e_1st);
 
         if (weight2ndTask!=0.0)
-            obj_value+=weight2ndTask*0.5*norm2(e_2nd);
+            obj_value+=weight2ndTask*norm2(e_2nd);
 
         if (weight3rdTask!=0.0)
-            obj_value+=weight3rdTask*0.5*norm2(e_3rd);
+            obj_value+=weight3rdTask*norm2(e_3rd);
 
         return true;
     }
@@ -576,13 +576,13 @@ public:
     {
         computeQuantities(x);
 
-        yarp::sig::Vector grad=-1.0*(J_1st->transposed() * *e_1st);
+        yarp::sig::Vector grad=-2.0*(J_1st->transposed() * *e_1st);
 
         if (weight2ndTask!=0.0)
-            grad=grad-weight2ndTask*(J_2nd.transposed()*e_2nd);
+            grad=grad-2.0*weight2ndTask*(J_2nd.transposed()*e_2nd);
 
         if (weight3rdTask!=0.0)
-            grad=grad-weight3rdTask*(w_3rd*e_3rd);
+            grad=grad-2.0*weight3rdTask*(w_3rd*e_3rd);
 
         for (Index i=0; i<n; i++)
             grad_f[i]=grad[i];
@@ -601,7 +601,7 @@ public:
         {
             if (i==0)
             {
-                g[0]=0.5*norm2(e_xyz);        
+                g[0]=norm2(e_xyz);
                 offs=1;
             }
             else
@@ -635,7 +635,7 @@ public:
             {
                 computeQuantities(x);
             
-                yarp::sig::Vector grad=-1.0*(J_xyz.transposed()*e_xyz);
+                yarp::sig::Vector grad=-2.0*(J_xyz.transposed()*e_xyz);
 
                 Index idx =0;
                 Index offs=0;
@@ -682,18 +682,15 @@ public:
         }
         else
         {
-            // Given the task: min f(q)=1/2*||xd-F(q)||^2
-            // the Hessian Hij is: <dF/dqi,dF/dqj> - <d2F/dqidqj,e>
-
+            // Given the task: min f(q)=||xd-F(q)||^2
+            // the Hessian Hij is: 2 * (<dF/dqi,dF/dqj> - <d2F/dqidqj,e>)
             computeQuantities(x);
-
             chain.prepareForHessian();
 
             if (weight2ndTask!=0.0)
                 chain2ndTask.prepareForHessian();
 
             Index idx=0;
-
             for (Index row=0; row<n; row++)
             {
                 for (Index col=0; col<=row; col++)
@@ -715,8 +712,8 @@ public:
                     else
                         h_1st=&h_zero;
                 
-                    values[idx]=obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st));            
-                    values[idx]+=lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz));
+                    values[idx]=2.0*(obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st))+
+                                     lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz)));
                 
                     if ((weight2ndTask!=0.0) && (row<(int)dim_2nd) && (col<(int)dim_2nd))
                     {    
@@ -728,7 +725,7 @@ public:
                         h_2nd[1]=(w_2nd[1]*w_2nd[1])*h2[1];
                         h_2nd[2]=(w_2nd[2]*w_2nd[2])*h2[2];
                 
-                        values[idx]+=obj_factor*weight2ndTask*(dot(J_2nd,row,J_2nd,col)-dot(h_2nd,e_2nd));
+                        values[idx]+=2.0*obj_factor*weight2ndTask*(dot(J_2nd,row,J_2nd,col)-dot(h_2nd,e_2nd));
                     }
                 
                     idx++;
