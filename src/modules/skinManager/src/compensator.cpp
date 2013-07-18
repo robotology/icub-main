@@ -285,7 +285,7 @@ bool Compensator::readInputData(Vector& skin_values){
 	    return false;
     }
     //try to read envelope of input data port
-    inputPort.getEnvelope(timestamp)
+    inputPort.getEnvelope(timestamp);
 
     skin_values = *tmp; // copy data
 
