@@ -239,12 +239,6 @@ the projection of the end-effector of the active arm in both the robot cameras t
 - YARP libraries. 
 - \ref ActionPrimitives library. 
  
-\section lib_dep Dependencies    
-- \ref simCartesianControl .    
-- \ref iKinCartesianSolver . 
-- \ref iKinGazeCtrl .    
-- \ref wholeBodyDynamics .
-    
 \section portsa_sec Ports Accessed
 Assumes that \ref icub_iCubInterface (with ICartesianControl interface implemented) is running together with the
 cartesian controllers \ref icub_cartesianController.
