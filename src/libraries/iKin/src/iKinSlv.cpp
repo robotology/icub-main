@@ -589,6 +589,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 ack+=Vocab::decode(IKINSLV_VOCAB_OPT_REST_POS);    ack+=", ";
                 ack+=Vocab::decode(IKINSLV_VOCAB_OPT_REST_WEIGHTS);ack+=", ";
                 ack+=Vocab::decode(IKINSLV_VOCAB_OPT_TIP_FRAME);   ack+=", ";
+                ack+=Vocab::decode(IKINSLV_VOCAB_OPT_TASK2);       ack+=", ";
                 ack+=Vocab::decode(IKINSLV_VOCAB_OPT_XD);          ack+=", ";
                 ack+=Vocab::decode(IKINSLV_VOCAB_OPT_X);           ack+=", ";
                 ack+=Vocab::decode(IKINSLV_VOCAB_OPT_Q);           ack+="};";
@@ -734,6 +735,24 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
                     
+                        //-----------------
+                        case IKINSLV_VOCAB_OPT_TASK2:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            Bottle &payLoad=reply.addList();
+                            payLoad.addInt(slv->get2ndTaskChain().getN());
+
+                            Bottle &posPart=payLoad.addList();
+                            for (size_t i=0; i<xd_2ndTask.length(); i++)
+                                posPart.addDouble(xd_2ndTask[i]);
+
+                            Bottle &weightsPart=payLoad.addList();
+                            for (size_t i=0; i<w_2ndTask.length(); i++)
+                                weightsPart.addDouble(w_2ndTask[i]);
+
+                            break; 
+                        }
+
                         //-----------------
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -898,16 +917,47 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                     unlock();
 
                                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                    break;
                                 }
-                                else
-                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             }
-                            else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                                                
+
+                            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             break;
                         }
-                    
+
+                        //-----------------
+                        case IKINSLV_VOCAB_OPT_TASK2:
+                        {
+                            if (Bottle *payLoad=command.get(2).asList())
+                            {
+                                if (payLoad->size()>=3)
+                                {
+                                    int n=payLoad->get(0).asInt();
+                                    Bottle *posPart=payLoad->get(1).asList();
+                                    Bottle *weightsPart=payLoad->get(2).asList();
+
+                                    if ((posPart!=NULL) && (weightsPart!=NULL))
+                                    {
+                                        if ((posPart->size()>=3) && (weightsPart->size()>=3))
+                                        {
+                                            for (size_t i=0; i<xd_2ndTask.length(); i++)
+                                                xd_2ndTask[i]=posPart->get(i).asDouble();
+
+                                            for (size_t i=0; i<w_2ndTask.length(); i++)
+                                                w_2ndTask[i]=weightsPart->get(i).asDouble();
+
+                                            slv->specify2ndTaskEndEff(n);
+                                            reply.addVocab(IKINSLV_VOCAB_REP_ACK); 
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            break;
+                        }
+
                         //-----------------
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
