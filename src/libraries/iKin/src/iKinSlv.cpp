@@ -740,7 +740,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             Bottle &payLoad=reply.addList();
-                            payLoad.addInt(slv->get2ndTaskChain().getN());
+                            payLoad.addInt(slv->get2ndTaskChain().getN()-1);
 
                             Bottle &posPart=payLoad.addList();
                             for (size_t i=0; i<xd_2ndTask.length(); i++)
@@ -946,7 +946,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                             for (size_t i=0; i<w_2ndTask.length(); i++)
                                                 w_2ndTask[i]=weightsPart->get(i).asDouble();
 
-                                            slv->specify2ndTaskEndEff(n);
+                                            (n>=0)?slv->specify2ndTaskEndEff(n):slv->get2ndTaskChain().clear();
                                             reply.addVocab(IKINSLV_VOCAB_REP_ACK); 
                                             break;
                                         }
@@ -1463,7 +1463,7 @@ void CartesianSolver::prepareJointsRestTask()
 Vector CartesianSolver::solve(Vector &xd)
 {
     return slv->solve(prt->chn->getAng(),xd,
-                      slv->get2ndTaskChain().getDOF()>0?CARTSLV_WEIGHT_2ND_TASK:0.0,xd_2ndTask,w_2ndTask,
+                      slv->get2ndTaskChain().getN()>0?CARTSLV_WEIGHT_2ND_TASK:0.0,xd_2ndTask,w_2ndTask,
                       CARTSLV_WEIGHT_3RD_TASK,qd_3rdTask,w_3rdTask,
                       NULL,NULL,clb);
 }
