@@ -235,17 +235,31 @@ class iSpeak : protected BufferedPort<Bottle>,
     /************************************************************************/
     void speak(const string &phrase)
     {
-        string command("echo \"");
-        command+=phrase;
-        command+="\" | ";
-        command+=package;
-        command+=" ";
+        string command;
+        if (package=="acapelacmd")
+        {
+            command=package;        
+            command+=" ";
+		  command+="\"";
+            command+=phrase;
+            command+="\"";
+            command+=" ";
+            command+=package_options;
+            command+=" ";
+        }
+        else
+        {
+            string command("echo \"");
+            command+=phrase;
+            command+="\" | ";
+            command+=package;
+            command+=" ";
 
-        if (package=="festival")
-            command+="--tts ";
+            if (package=="festival")
+                command+="--tts ";
 
-        command+=package_options;
-
+            command+=package_options;
+        }
         system(command.c_str());
     }
 
