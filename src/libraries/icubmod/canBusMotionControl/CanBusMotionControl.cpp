@@ -1844,22 +1844,19 @@ bool CanBusResources::dumpBuffers (void)
 
 CanBusMotionControl::CanBusMotionControl() : 
 RateThread(10),
-//ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
-ImplementPositionControl2(this),
-//ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
-ImplementVelocityControl2(this),
+ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
+ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
 ImplementPidControl<CanBusMotionControl, IPidControl>(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
 ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
-ImplementControlLimits2(this),
+ImplementControlLimits<CanBusMotionControl, IControlLimits>(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
 ImplementControlMode(this),
 ImplementDebugInterface(this),
-ImplementPositionDirect(this),
 _mutex(1),
 _done(0)
 {
@@ -1929,14 +1926,11 @@ bool CanBusMotionControl::open (Searchable &config)
     _writerequested = false;
     _noreply = false;
 
-    ImplementPositionControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-    ImplementVelocityControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementPositionControl<CanBusMotionControl, IPositionControl>::
+        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-//    ImplementPositionControl<CanBusMotionControl, IPositionControl>::
-//        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-//
-//    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
-//        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
+        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementPidControl<CanBusMotionControl, IPidControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -1952,7 +1946,8 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementControlLimits<CanBusMotionControl, IControlLimits>::
+        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
@@ -1961,8 +1956,6 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
-
-    ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -1973,13 +1966,20 @@ bool CanBusMotionControl::open (Searchable &config)
     _mutex.post ();
 
     // default initialization for this device driver.
+    yarp::os::Time::delay(0.005);
     setPids(p._pids);
-    if (p._tpidsEnabled==true) setTorquePids(p._tpids);
+    
+    if (p._tpidsEnabled==true)
+    {
+        yarp::os::Time::delay(0.005);
+        setTorquePids(p._tpids);
+    }
     
     //set the source of the torque measurments to the boards
     #if 0
     for (int j=0; j<p._njoints; j++)
-    {
+    {   
+        yarp::os::Time::delay(0.001);
         this->setTorqueSource(j,p._torqueSensorId[j],p._torqueSensorChan[j]);
     }
     #endif
@@ -1988,6 +1988,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for (int j=0; j<p._njoints; j++)
         if (p._debug_params[j].enabled==true)
         {
+            yarp::os::Time::delay(0.001);
             for (int param_num=0; param_num<8; param_num++)
                 setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
         }
@@ -1996,27 +1997,37 @@ bool CanBusMotionControl::open (Searchable &config)
     for (int j=0; j<p._njoints; j++)
         if (p._impedance_params[j].enabled==true)
         {
+            yarp::os::Time::delay(0.001);
             setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping);
         }
 
     int i;
     for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setBCastMessages(i, p._broadcast_mask[i]);
+    }
 
     // set limits, on encoders and max current
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setLimits(i, p._limitsMin[i], p._limitsMax[i]);
         setMaxCurrent(i, p._currentLimits[i]);
     }
 
     // set limits, on encoders and max current
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {   
+        yarp::os::Time::delay(0.001);
         setVelocityShiftRaw(i, p._velocityShifts[i]);
         setVelocityTimeoutRaw(i, p._velocityTimeout[i]);
     }
 
     // set parameters for speed/acceleration estimation
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setSpeedEstimatorShiftRaw(i,p._estim_params[i].jnt_Vel_estimator_shift,
                                     p._estim_params[i].jnt_Acc_estimator_shift,
                                     p._estim_params[i].mot_Vel_estimator_shift,
@@ -2025,7 +2036,9 @@ bool CanBusMotionControl::open (Searchable &config)
     _speedEstimationHelper = new speedEstimationHelper(p._njoints, p._estim_params);
     
     // disable the controller, cards will start with the pid controller & pwm off
-    for (i = 0; i < p._njoints; i++) {
+    for (i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         disablePid(i);
         disableAmp(i);
     }
@@ -2058,6 +2071,7 @@ bool CanBusMotionControl::open (Searchable &config)
     icub_interface_protocol.minor=CAN_PROTOCOL_MINOR;
     for (int j=0; j<p._njoints; j++) 
     {
+        yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
         if (b==false) fprintf(stderr,"Error reading firmware version\n");
     }
@@ -2363,26 +2377,22 @@ bool CanBusMotionControl::close (void)
         }
 
         RateThread::stop ();/// stops the thread first (joins too).
+        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
 
-        ImplementPositionControl2::uninitialize();
-        ImplementVelocityControl2::uninitialize();
-
-//        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
-//        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
-
+        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
         ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
         ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
-        ImplementControlLimits2::uninitialize();
+        ImplementControlLimits<CanBusMotionControl, IControlLimits>::uninitialize();
 
         ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
-        ImplementPositionDirect::uninitialize();
 
+        
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
         while(it!=analogSensors.end())
@@ -5361,166 +5371,6 @@ bool CanBusMotionControl::getLimitsRaw(int axis, double *min, double *max)
 
     return ret;
 }
-
-
-////////////////////////////////////////
-//     Position control2 interface    //
-////////////////////////////////////////
-
-bool CanBusMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && positionMoveRaw(joints[j], refs[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *joints, const double *deltas)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && relativeMoveRaw(joints[j], deltas[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && checkMotionDoneRaw(joints[j], flag[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && setRefSpeedRaw(joints[j], spds[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && setRefAccelerationRaw(joints[j], accs[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getRefSpeedsRaw(const int n_joint, const int *joints, double *spds)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && getRefSpeedRaw(joints[j], &spds[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && getRefAccelerationRaw(joints[j], &accs[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::stopRaw(const int n_joint, const int *joints)
-{
-    bool ret = true;
-    for(int j=0; j<n_joint; j++)
-    {
-        ret = ret && stopRaw(joints[j]);
-    }
-    return ret;
-}
-
-///////////// END Position Control 2 INTERFACE  //////////////////
-
-////////////////////////////////////////
-//     Velocity control2 interface    //
-////////////////////////////////////////
-
-bool CanBusMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
-{
-    bool ret = true;
-    for(int j=0; j< n_joint; j++)
-    {
-        ret = ret && velocityMoveRaw(joints[j], spds[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::setVelPidRaw(int j, const Pid &pid)
-{
-    // Our boards do not have a Velocity Pid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
-
-bool CanBusMotionControl::setVelPidsRaw(const Pid *pids)
-{
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
-
-bool CanBusMotionControl::getVelPidRaw(int j, Pid *pid)
-{
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
-
-bool CanBusMotionControl::getVelPidsRaw(Pid *pids)
-{
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
-///////////// END Velocity Control 2 INTERFACE  //////////////////
-
-// IControlLimits2
-bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
-{
-    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
-}
-
-bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
-{
-    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
-}
-
-
-// PositionDirect Interface
-bool CanBusMotionControl::setPositionRaw(int j, double ref)
-{
-    // needs to send both position and velocity as well as positionMove
-    return positionMove(j, ref);
-}
-
-bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
-{
-    // needs to send both position and velocity as well as positionMove
-    return positionMove(n_joint, joints, refs);
-}
-
-bool CanBusMotionControl::setPositionsRaw(const double *refs)
-{
-    // needs to send both position and velocit as well as positionMove
-    return positionMove(refs);
-}
-
-
-
 
 bool CanBusMotionControl::loadBootMemory()
 {
