@@ -4,6 +4,10 @@
 
 SET(PROJECTNAME iCub_SIM)
 
+IF (MSVC)
+set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} " /STACK:3145728")
+ENDIF ()
+
 PROJECT(${PROJECTNAME})
 
 FILE(GLOB folder_source EyeLidsController.cpp main.cpp)

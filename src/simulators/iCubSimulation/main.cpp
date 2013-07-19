@@ -137,6 +137,7 @@
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
+#include <yarp/os/Thread.h>
 
 #include "SimulationRun.h"
 #ifdef ICUB_SIM_ENABLE_ODESDL
@@ -151,14 +152,29 @@
 #include "SDL.h" 
 #endif
 
+class MainThread : public yarp::os::Thread {
+ public:
+   SimulationBundle *bundle;
+   int argc;
+   char **argv;
+   bool result;
+
+   void run() {
+       SimulationRun main;
+       result = main.run(bundle,argc,argv);
+   }
+ };
+
+
 int main(int argc, char** argv) {
+	//yarp::os::Thread::setDefaultStackSize(3145728);
     yarp::os::Network yarp;
     if (!yarp.checkNetwork())
     {
         fprintf (stderr, "Error: could not initialize YARP network (is the nameserver running?)\n");
         return 1;
     }
-
+	
     yarp::os::Property options;
     options.fromCommand(argc,argv);
 
@@ -188,7 +204,17 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    SimulationRun main;
-    if (!main.run(bundle,argc,argv)) return 1;
+    //SimulationRun main;
+    //if (!main.run(bundle,argc,argv)) return 1;
+	MainThread thread;
+   thread.bundle = bundle;
+   thread.argc = argc;
+   thread.argv = argv;
+#ifdef _WIN32
+   //thread.setOptions(3145728);
+#endif
+   thread.start();
+   thread.join();
+   return thread.result?0:1;
     return 0;
 }
