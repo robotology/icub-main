@@ -163,6 +163,10 @@ private:
     double                              pwrGraspApproachDisplacement[2];
     double                              reachingTimeout;
 
+    //tool
+    Vector                              takeToolPos[2];
+    Vector                              takeToolOrient[2];
+
     Vector                              homePos[2];
     Vector                              homeOrient[2];
     Vector                              reachSideDisp[2];
@@ -378,6 +382,9 @@ public:
     // explore
     bool exploreTorso(Bottle &options);
     bool exploreHand(Bottle &options);
+
+    //tool functions
+    bool takeTool(Bottle &options);
 
 
     bool getHandImagePosition(Bottle &hand_image_pos);

@@ -773,6 +773,27 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
+    if (Bottle *pB=b.find("tool_take_position").asList())
+    {
+        takeToolPos[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            takeToolPos[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        return false;
+
+    if (Bottle *pB=b.find("tool_take_orientation").asList())
+    {
+        takeToolOrient[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            takeToolOrient[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        return false;
+    
+
     extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
     pwrGraspApproachAngle[arm]=b.check("powergrasp_approach_angle",Value(50.0)).asDouble();
@@ -1833,6 +1854,48 @@ bool MotorThread::look(Bottle &options)
     return true;
 }
 
+bool MotorThread::takeTool(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    {
+        setGazeIdle();
+        lookAtHand(options);
+    }
+
+    action[arm]->pushAction(takeToolPos[arm],takeToolOrient[arm],"open_hand");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    double force_thresh;
+    action[arm]->getExtForceThres(force_thresh);
+
+    bool contact_detected=false;
+    Vector wrench(6);
+    double t=Time::now();
+    
+    while(!contact_detected && Time::now()-t<5.0)
+    {
+        action[arm]->getExtWrench(wrench);
+        if(norm(wrench)>force_thresh)
+            contact_detected=true;
+        Time::delay(0.1);
+    }
+
+    if(!contact_detected)
+        fprintf(stdout,"damn!\n");
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+        setGazeIdle();
+
+    return true;
+}
 
 
 

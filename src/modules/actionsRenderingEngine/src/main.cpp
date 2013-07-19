@@ -359,6 +359,9 @@ Windows, Linux
 #define CMD_CLOSE                   VOCAB4('c','l','o','s')
 #define CMD_GAZE                    VOCAB4('r','e','l','e')
 
+//commands for tool
+#define CMD_TAKE_TOOL               VOCAB4('t','a','t','o')
+
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
 #define CMD_ACTION_IMITATE          VOCAB4('i','m','i','t')
@@ -1263,7 +1266,17 @@ public:
 
                         break;
                     }
-
+                    case CMD_TAKE_TOOL:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+                        motorThr->takeTool(command);
+                        reply.addVocab(ACK);
+                        break;
+                    }
                     default:
                     {
                         reply.addVocab(NACK);
