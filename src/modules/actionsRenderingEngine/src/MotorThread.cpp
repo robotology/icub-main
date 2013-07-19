@@ -2004,6 +2004,22 @@ bool MotorThread::grasp(Bottle &options)
     return isHolding(options);
 }
 
+bool MotorThread::grasp_tool(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    action[arm]->pushAction("close_hand_tool");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    return isHolding(options);
+}
+
 
 bool MotorThread::release(Bottle &options)
 {

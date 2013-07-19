@@ -370,6 +370,7 @@ public:
     bool point(Bottle &options);
     bool look(Bottle &options);
     bool grasp(Bottle &options);
+    bool grasp_tool(Bottle &options);
     bool release(Bottle &options);
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);

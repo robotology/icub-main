@@ -360,7 +360,7 @@ Windows, Linux
 
 //commands for tool
 #define CMD_TAKE_TOOL               VOCAB4('t','a','t','o')
-
+#define CMD_CLOSE_TOOL              VOCAB4('c','l','t','o')
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
 #define CMD_ACTION_IMITATE          VOCAB4('i','m','i','t')
@@ -741,6 +741,13 @@ public:
                     case CMD_CLOSE:
                     {
                         motorThr->grasp(command);
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+                     case CMD_CLOSE_TOOL:
+                    {
+                        motorThr->grasp_tool(command);
                         reply.addVocab(ACK);
 
                         break;
