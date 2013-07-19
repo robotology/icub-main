@@ -1,4 +1,4 @@
-# Copyright: (C) 2010 RobotCub Consortium
+# Copyright: (C) 2010-2013 RobotCub Consortium and iCub Facility Istituto Italiano di Tecnologia
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -37,13 +37,14 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(xsensmtx)
   add_subdirectory(debugInterfaceClient)
   add_subdirectory(skinprototype)
-  add_subdirectory(canBusSkin)
   add_subdirectory(controlBoardWrapper2)
   add_subdirectory(virtualAnalogServer)
   add_subdirectory(analogServer)
   add_subdirectory(skinWrapper)
   add_subdirectory(canBusAnalogSensor)
   add_subdirectory(canBusVirtualAnalogSensor)
+  add_subdirectory(canBusInertialMTB)
+  add_subdirectory(canBusSkin)
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(embObjLib)
   add_subdirectory(embObjMotionControl)
