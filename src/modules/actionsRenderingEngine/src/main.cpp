@@ -121,6 +121,11 @@ action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
 
+<b>TAKE_TOOL</b> \n
+format: [take_tool] "param1" \n
+action: the robot will reach a specified position to take the tool from a user.
+Optional parameter "left" or "right" can be supplied to choose the orientation the robot
+
 <b>GRASP</b> \n
 format: [grasp] [target] \n
 action: the robot tries to reach the specified [target] and performs a power grasp.
