@@ -238,14 +238,11 @@ class iSpeak : protected BufferedPort<Bottle>,
         string command;
         if (package=="acapelacmd")
         {
-            command=package;        
-            command+=" ";
-		  command+="\"";
+            command=package;
+            command+=" \"";
             command+=phrase;
-            command+="\"";
-            command+=" ";
+            command+="\" ";
             command+=package_options;
-            command+=" ";
         }
         else
         {
@@ -260,6 +257,7 @@ class iSpeak : protected BufferedPort<Bottle>,
 
             command+=package_options;
         }
+
         system(command.c_str());
     }
 
