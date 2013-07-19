@@ -2956,6 +2956,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.mode=_mode;
         context.useReferences=_useReference;
         context.straightness=ctrl->get_gamma();
+        getTask2ndOptions(context.task_2);
 
         *id=contextIdCnt++;
 
@@ -2997,6 +2998,7 @@ bool ServerCartesianController::restoreContext(const int id)
             setTrajTime(context.trajTime);
             setInTargetTol(context.tol);
             ctrl->set_gamma(context.straightness);
+            setTask2ndOptions(context.task_2);
 
             return true;
         }
@@ -3258,17 +3260,69 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
 
 
 /************************************************************************/
+bool ServerCartesianController::getTask2ndOptions(Value &v)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab(IKINSLV_VOCAB_OPT_TASK2);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+        {
+            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+                v=reply.get(1);
+        }
+        else
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setTask2ndOptions(const Value &v)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_TASK2);
+        command.add(v);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+        else
+            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
     Bottle &opt=const_cast<Bottle&>(options);
     mutex.wait();
 
+    bool ret=true;
+
     // straightness
     if (opt.check("straightness"))
         ctrl->set_gamma(opt.find("straightness").asDouble());
 
+    // secondary task
+    if (opt.check("task_2"))
+        ret&=setTask2ndOptions(opt.find("task_2"));
+
     mutex.post();
-    return true;
+    return ret;
 }
 
 
@@ -3280,13 +3334,25 @@ bool ServerCartesianController::tweakGet(Bottle &options)
         mutex.wait();
         options.clear();
 
+        bool ret=true;
+
         // straightness
         Bottle &straightness=options.addList();
         straightness.addString("straightness");
         straightness.addDouble(ctrl->get_gamma());
 
+        // secondary task
+        Value v;
+        ret&=getTask2ndOptions(v);
+        if (ret)
+        {
+            Bottle &task2=options.addList(); 
+            task2.addString("task_2");
+            task2.add(v);
+        }
+
         mutex.post();
-        return true;
+        return ret;
     }
     else
         return false;

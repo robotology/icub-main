@@ -196,6 +196,7 @@ protected:
         bool              mode;
         bool              useReferences;
         double            straightness;
+        yarp::os::Value   task_2;
     };
 
     int contextIdCnt;
@@ -235,6 +236,9 @@ protected:
     bool stopControlNoMutex();
     bool setTrajTimeNoMutex(const double t);
     bool setInTargetTolNoMutex(const double tol);
+
+    bool getTask2ndOptions(yarp::os::Value &v);
+    bool setTask2ndOptions(const yarp::os::Value &v);
 
 public:
     ServerCartesianController();
