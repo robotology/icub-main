@@ -1,0 +1,42 @@
+
+<application>
+<name>Dependencies of SIM for ARE</name>
+
+        <dependencies>
+            <port>/icubSim/torso/state:o</port>
+        </dependencies>
+
+        <module>
+            <name>simCartesianControl</name>
+            <node>console</node>
+            <tag>cartesian_controllers</tag>
+        </module>
+       
+        <module>
+            <name>iKinCartesianSolver</name>
+            <parameters>--context simCartesianControl/conf --part left_arm</parameters>
+            <node>console</node>
+            <tag>solver_left</tag>
+        </module>
+
+        <module>
+            <name>iKinCartesianSolver</name>
+            <parameters>--context simCartesianControl/conf --part right_arm</parameters>
+            <node>console</node>
+            <tag>solver_right</tag>
+        </module>
+
+        <module>
+            <name>iKinGazeCtrl</name>
+            <parameters>--from configSim.ini</parameters>
+            <node>console</node>
+            <tag>gaze_controller</tag>
+        </module>
+
+        <module>
+            <name>wholeBodyDynamics</name>
+            <parameters>--robot icubSim --dummy_ft --autoconnect</parameters>
+            <node>console</node>
+            <tag>wbd</tag>
+        </module>
+</application>
