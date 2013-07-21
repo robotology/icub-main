@@ -138,11 +138,9 @@ bool InputPort::handleTarget(Bottle *b)
 {
     if (b!=NULL)
     {
-        int len=b->size();
-        int l=maxLen<len ? maxLen : len;
-
         mutex.wait();
-        for (int i=0; i<l; i++)
+        int len=std::min(b->size(),maxLen);
+        for (int i=0; i<len; i++)
             xd[i]=b->get(i).asDouble();
         mutex.post();
 
@@ -158,13 +156,11 @@ bool InputPort::handleDOF(Bottle *b)
 {
     if (b!=NULL)
     {
-        int len=b->size();        
-        
         slv->lock();
 
         mutex.wait();
-        dof.resize(len);
-        for (int i=0; i<len; i++)
+        dof.resize(b->size());
+        for (int i=0; i<b->size(); i++)
             dof[i]=b->get(i).asInt();
         mutex.post();
 
@@ -786,10 +782,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             if (inPort->handleMode(command.get(2).asVocab()))
-                            {
-                                initPos();
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                            }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     
