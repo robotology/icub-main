@@ -35,8 +35,8 @@
 
 
 
-#ifndef __ONLINE_BOOST__
-#define __ONLINE_BOOST__
+#ifndef __ONLINE_SUPPORT__
+#define __ONLINE_SUPPORT__
 
 
 #include "StrongClassifier.h"

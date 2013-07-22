@@ -245,10 +245,10 @@ void AvgClassifier::update(const Inputs *input, double &weight)
                 else
                     wrong[i]++;
 
-            //alpha[i] = 1/(1+exp(-(correct[i]-wrong[i])) );
-            alpha[i]=log(sqrt((double)correct[i]/(wrong[i]+0.000001)));
-            if(alpha[i]<0.0)
-                alpha[i]=0.0;
+            alpha[i] = 1/(1+exp(-(correct[i]-wrong[i])) );
+            //alpha[i]=log(sqrt((double)correct[i]/(wrong[i]+0.000001)));
+            //if(alpha[i]<0.0)
+                //alpha[i]=0.0;
 
 
             if(pool[i]->classify(input)>0)
@@ -347,8 +347,8 @@ void   AvgClassifier::fromStream(std::ifstream &fin)
     {
         fin.read((char*)&correct[i],sizeof(double));
         fin.read((char*)&wrong[i],sizeof(double));
-        //alpha[i]=1.0/(1+exp((double)-(correct[i]-wrong[i]) ) );
-        alpha[i]=log(sqrt((double)correct[i]/(wrong[i]+0.000001)));
+        alpha[i]=1.0/(1+exp((double)-(correct[i]-wrong[i]) ) );
+        //alpha[i]=log(sqrt((double)correct[i]/(wrong[i]+0.000001)));
 
         int size_of_type;
         fin.read((char*)&size_of_type,sizeof(int));
