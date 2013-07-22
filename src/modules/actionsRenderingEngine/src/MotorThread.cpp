@@ -2038,6 +2038,30 @@ bool MotorThread::release(Bottle &options)
 }
 
 
+void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin)
+{
+    ICartesianControl *ctrl;
+    action->getCartesianIF(ctrl);
+
+    int context;
+    ctrl->storeContext(&context);
+
+    Vector dof;
+    ctrl->getDOF(dof); dof=1.0;
+    ctrl->setDOF(dof,dof);
+
+    ctrl->setLimits(0,0.0,0.0);
+    ctrl->setLimits(1,0.0,0.0);
+    ctrl->setLimits(2,0.0,0.0);
+
+    ctrl->goToPoseSync(xin,oin);
+    ctrl->waitMotionDone();
+
+    ctrl->restoreContext(context);
+    ctrl->deleteContext(context);
+}
+
+
 bool MotorThread::goHome(Bottle &options)
 {
     bool head_home=(checkOptions(options,"head") || checkOptions(options,"gaze"));
@@ -2068,40 +2092,33 @@ bool MotorThread::goHome(Bottle &options)
     if(arms_home)
     {
         if(left_arm && action[LEFT]!=NULL)
-        {
-            bool f;
-            action[LEFT]->setTrackingMode(true);
+        {          
             if(hand_home)
-                action[LEFT]->pushAction(homePos[LEFT],homeOrient[LEFT],"open_hand");
-            else
-                action[LEFT]->pushAction(homePos[LEFT],homeOrient[LEFT]);
-            action[LEFT]->checkActionsDone(f,true);
+                action[LEFT]->pushAction("open_hand");
+
+            goHomeHelper(action[LEFT],homePos[LEFT],homeOrient[LEFT]);
+            bool f; action[LEFT]->checkActionsDone(f,true);
         }
 
         if(right_arm && action[RIGHT]!=NULL)
         {
-            bool f;
-            action[RIGHT]->setTrackingMode(true);
             if(hand_home)
-                action[RIGHT]->pushAction(homePos[RIGHT],homeOrient[RIGHT],"open_hand");
-            else
-                action[RIGHT]->pushAction(homePos[RIGHT],homeOrient[RIGHT]);
-            action[RIGHT]->checkActionsDone(f,true);
-        }
+                action[RIGHT]->pushAction("open_hand");
 
+            goHomeHelper(action[RIGHT],homePos[RIGHT],homeOrient[RIGHT]);
+            bool f; action[RIGHT]->checkActionsDone(f,true);
+        }
 
         if(right_arm && action[RIGHT]!=NULL)
         {
             if(waveing)
                 action[RIGHT]->enableArmWaving(homePos[RIGHT]);
-            action[RIGHT]->setTrackingMode(false);
         }
 
         if(left_arm && action[LEFT]!=NULL)
         {
             if(waveing)
                 action[LEFT]->enableArmWaving(homePos[LEFT]);
-            action[LEFT]->setTrackingMode(false);
         }
     }
 

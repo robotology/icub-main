@@ -241,6 +241,7 @@ private:
     bool loadKinematicOffsets(string _kinematics_path);
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
+    void goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin);
     void close();
     
     bool avoidTable(bool avoid);
