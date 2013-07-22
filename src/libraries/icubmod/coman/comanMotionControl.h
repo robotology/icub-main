@@ -108,16 +108,19 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public IVelocityControl2Raw,
     public ImplementVelocityControl2,
     public IControlModeRaw,
-    public IControlLimitsRaw,
-    public ImplementControlLimits<comanMotionControl, IControlLimits>,
+//    public IControlLimitsRaw,
+//    public ImplementControlLimits<comanMotionControl, IControlLimits>,
+    public IControlLimits2Raw,
+    public ImplementControlLimits2,
     public ImplementControlMode,
     public ImplementAmplifierControl<comanMotionControl, IAmplifierControl>,
     public ImplementControlCalibration2<comanMotionControl, IControlCalibration2>,
     public ImplementPidControl<comanMotionControl, IPidControl>,
-//    public ImplementVelocityControl<comanMotionControl, IVelocityControl>,
     public ImplementDebugInterface,
     public ITorqueControlRaw,
-    public IDebugInterfaceRaw
+    public IDebugInterfaceRaw,
+    public IPositionDirectRaw,
+    public ImplementPositionDirect
 {
 private:
 
@@ -155,6 +158,8 @@ private:
     yarp::os::Semaphore   _mutex;
 
     int                   *_axisMap;                          /** axis remapping lookup-table */
+    int                   *_bIdMap;                           /* conversion from joint number to bId */
+    int                   *_inv_bIdMap;                       /* conversion back from bId to joint number */
     double                *_angleToEncoder;                   /** angle to iCubDegrees conversion factors */
     double                *_rotToEncoder;                     /** angle to rotor conversion factors */
     double                *_zeros;                            /** encoder zeros */
@@ -194,9 +199,11 @@ private:
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     McBoard *getMCpointer(int j);
-    int bId2Idx(int j);
-    double convertDoble2Int(double in[], int out[]);
-    double convertDoble2Short(double in[], short int out[]);
+    int bId2Joint(int j);
+    uint8_t jointTobId(int j);
+
+//     double convertDoble2Int(double in[], int out[]);
+//     double convertDoble2Short(double in[], short int out[]);
     uint16_t strtouli(ConstString asString, int arg2, int arg3);
 public:
     comanMotionControl();
@@ -282,10 +289,6 @@ public:
     virtual bool getVelPidRaw(int j, Pid *pid);
     virtual bool getVelPidsRaw(const int n_joint, const int *joints, Pid *pids);
     virtual bool getVelPidsRaw(Pid *pids);
-    virtual bool getVelErrorRaw(int j, double *err);
-    virtual bool getVelErrorsRaw(const int n_joint, const int *joints, double *errs);
-    virtual bool getVelErrorsRaw(double *errs);
-    //virtual bool stopRaw(const int n_joint, const int *joints);  // already present in pos2
 
     // calibration2raw
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
@@ -303,7 +306,6 @@ public:
     virtual bool getControlModesRaw(int* v);
 
     //////// BEGIN EncoderInterface
-    
     virtual bool resetEncoderRaw(int j);
     virtual bool resetEncodersRaw();
     virtual bool setEncoderRaw(int j, double val);
@@ -356,6 +358,8 @@ public:
 
     bool setLimitsRaw(int axis, double min, double max);
     bool getLimitsRaw(int axis, double *min, double *max);
+    bool setVelLimitsRaw(int axis, double min, double max);
+    bool getVelLimitsRaw(int axis, double *min, double *max);
 
     //----------------------------------------------\\
     //  Torque interface
@@ -364,6 +368,8 @@ public:
     bool setTorqueModeRaw();
     bool getTorqueRaw(int j, double *t);
     bool getTorquesRaw(double *t);
+    bool getBemfParamRaw(int j, double *bemf);
+    bool setBemfParamRaw(int j, double bemf);
     bool getTorqueRangeRaw(int j, double *min, double *max);
     bool getTorqueRangesRaw(double *min, double *max);
     bool setRefTorquesRaw(const double *t);
@@ -386,6 +392,11 @@ public:
     bool disableTorquePidRaw(int j);
     bool enableTorquePidRaw(int j);
     bool setTorqueOffsetRaw(int j, double v);
+
+
+    bool setPositionRaw(int j, double ref);
+    bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+    bool setPositionsRaw(const double *refs);
 };
 
 #endif // include guard

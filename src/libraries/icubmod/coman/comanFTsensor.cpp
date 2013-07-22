@@ -162,11 +162,15 @@ bool comanFTsensor::open(yarp::os::Searchable &config)
 
     if(_comanHandler == NULL)
     {
-        yError() << "unable to create a new Coman Handler class!";
+        yError() << "unable to create a new Coman Device Handler class!";
         return false;
     }
 
-    _comanHandler->open(config);
+    if(!_comanHandler->open(config))
+    {
+        yError() << "Unable to initialize Coman Device Handler class... probably np boards were found. Check log.";
+        return false;
+    }
     _boards_ctrl = _comanHandler->getBoard_ctrl_p();
 
     if(_boards_ctrl == NULL)
