@@ -252,6 +252,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {
                 stopControl();
+                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                 break;
             }
 
