@@ -35,8 +35,6 @@
 #define CARTCTRL_SERVER_VER                 1.0
 #define CARTCTRL_DEFAULT_PER                10      // [ms]
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
-#define CARTCTRL_DEFAULT_TASKVEL_BALLPOS    0.2     // [m]
-#define CARTCTRL_DEFAULT_TASKVEL_BALLORIEN  45.0    // [deg]
 #define CARTCTRL_DEFAULT_TOL                1e-2
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
 #define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
@@ -1322,25 +1320,6 @@ void ServerCartesianController::run()
         if (taskVelModeOn && (++taskRefVelPeriodCnt>=taskRefVelPeriodFactor))
         {
             Vector xdot_set_int=taskRefVelTargetGen->integrate(xdot_set);
-
-            Vector xdes_x(3), xdot_set_int_x(3);
-            xdes_x[0]=xdes[0]; xdot_set_int_x[0]=xdot_set_int[0];
-            xdes_x[1]=xdes[1]; xdot_set_int_x[1]=xdot_set_int[1];
-            xdes_x[2]=xdes[2]; xdot_set_int_x[2]=xdot_set_int[2];
-
-            Vector xdes_o(3), xdot_set_int_o(3);
-            xdes_o[0]=xdes[6]*xdes[3]; xdot_set_int_o[0]=xdot_set_int[6]*xdot_set_int[3];
-            xdes_o[1]=xdes[6]*xdes[4]; xdot_set_int_o[1]=xdot_set_int[6]*xdot_set_int[4];
-            xdes_o[2]=xdes[6]*xdes[5]; xdot_set_int_o[2]=xdot_set_int[6]*xdot_set_int[5];
-
-            // prevent the virtual target from getting too far
-            if ((norm(xdot_set_int_x-xdes_x)>CARTCTRL_DEFAULT_TASKVEL_BALLPOS) ||
-                (norm(xdot_set_int_o-xdes_o)>CTRL_DEG2RAD*CARTCTRL_DEFAULT_TASKVEL_BALLORIEN))
-            {
-                taskRefVelTargetGen->reset(xdes);
-                xdot_set_int=taskRefVelTargetGen->integrate(xdot_set);
-            }
-
             goTo(IKINCTRL_POSE_FULL,xdot_set_int,0.0);
             taskRefVelPeriodCnt=0;
         }
@@ -1380,7 +1359,7 @@ void ServerCartesianController::run()
                 ctrl->iterate(xdes,qdes);
 
             // handle the end-trajectory event
-            if (ctrl->isInTarget())
+            if (ctrl->isInTarget() && !taskVelModeOn)
             {
                 executingTraj=false;
                 motionDone   =true;
@@ -2748,7 +2727,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
         for (size_t i=3; i<xdot_set.length(); i++)
             xdot_set[i]=odot[i-3];
 
-        if (norm(xdot_set)!=0.0)
+        if (norm(xdot_set)>0.0)
         {
             if (!taskVelModeOn)
             {
