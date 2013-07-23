@@ -233,9 +233,10 @@ protected:
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
 
-    bool stopControlNoMutex();
-    bool setTrajTimeNoMutex(const double t);
-    bool setInTargetTolNoMutex(const double tol);
+    bool stopControlHelper();
+    bool setTrackingModeHelper(const bool f);
+    bool setTrajTimeHelper(const double t);
+    bool setInTargetTolHelper(const double tol);
 
     bool getTask2ndOptions(yarp::os::Value &v);
     bool setTask2ndOptions(const yarp::os::Value &v);

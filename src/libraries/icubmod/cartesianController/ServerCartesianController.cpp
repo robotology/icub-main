@@ -1108,7 +1108,7 @@ void ServerCartesianController::newController()
     if (chain==NULL)
         return;
 
-    stopControlNoMutex();
+    stopControlHelper();
 
     // if it already exists, destroy old controller
     if (ctrl!=NULL)
@@ -1358,23 +1358,17 @@ void ServerCartesianController::run()
                 stopLimbVel();
                 event="motion-done";
 
-                mutex.post();
-
                 // switch the solver status to one shot mode
-                // if it is the case
+                // if that's the case
                 if (!trackingMode && (rxToken==txToken))
-                    setTrackingMode(false);
+                    setTrackingModeHelper(false);
             }
             else
-            {
                 // send joints velocities to the robot
                 sendVelocity(ctrl->get_qdot());
-
-                mutex.post();
-            }
         }
-        else
-            mutex.post();
+
+        mutex.post();
 
         // streams out the end-effector pose
         if (portState.getOutputCount()>0)
@@ -1926,7 +1920,7 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
 
         // update trajectory execution time just if required
         if (t>0.0)
-            setTrajTimeNoMutex(t);
+            setTrajTimeHelper(t);
 
         Bottle &b=portSlvOut.prepare();
         b.clear();
@@ -1960,12 +1954,10 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
 
 
 /************************************************************************/
-bool ServerCartesianController::setTrackingMode(const bool f)
+bool ServerCartesianController::setTrackingModeHelper(const bool f)
 {
     if (connected)
     {
-        mutex.wait();
-
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_MODE);
@@ -1984,11 +1976,20 @@ bool ServerCartesianController::setTrackingMode(const bool f)
             ret=true;
         }
 
-        mutex.post();
         return ret;
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setTrackingMode(const bool f)
+{
+    mutex.wait();
+    bool ret=setTrackingModeHelper(f);
+    mutex.post();
+    return ret;
 }
 
 
@@ -2588,7 +2589,7 @@ bool ServerCartesianController::getTrajTime(double *t)
 
 
 /************************************************************************/
-bool ServerCartesianController::setTrajTimeNoMutex(const double t)
+bool ServerCartesianController::setTrajTimeHelper(const double t)
 {
     if (attached)
     {
@@ -2604,7 +2605,7 @@ bool ServerCartesianController::setTrajTimeNoMutex(const double t)
 bool ServerCartesianController::setTrajTime(const double t)
 {
     mutex.wait();
-    bool ret=setTrajTimeNoMutex(t);
+    bool ret=setTrajTimeHelper(t);
     mutex.post();
     return ret;
 }
@@ -2624,7 +2625,7 @@ bool ServerCartesianController::getInTargetTol(double *tol)
 
 
 /************************************************************************/
-bool ServerCartesianController::setInTargetTolNoMutex(const double tol)
+bool ServerCartesianController::setInTargetTolHelper(const double tol)
 {
     if (attached)
     {
@@ -2641,7 +2642,7 @@ bool ServerCartesianController::setInTargetTolNoMutex(const double tol)
 bool ServerCartesianController::setInTargetTol(const double tol)
 {
     mutex.wait();
-    bool ret=setInTargetTolNoMutex(tol);
+    bool ret=setInTargetTolHelper(tol);
     mutex.post();
     return ret;
 }
@@ -2729,7 +2730,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
             taskVelModeOn=true;
         }
         else
-            stopControlNoMutex();
+            stopControlHelper();
         
         mutex.post();
         return true;
@@ -2843,7 +2844,7 @@ bool ServerCartesianController::waitMotionDone(const double period,
 
 
 /************************************************************************/
-bool ServerCartesianController::stopControlNoMutex()
+bool ServerCartesianController::stopControlHelper()
 {
     if (connected)
     {
@@ -2861,6 +2862,11 @@ bool ServerCartesianController::stopControlNoMutex()
         if (notify)
             notifyEvent("motion-done");
 
+        // switch the solver status to one shot mode
+        // if that's the case
+        if (!trackingMode)
+            setTrackingModeHelper(false);
+
         return true;
     }
     else
@@ -2872,7 +2878,7 @@ bool ServerCartesianController::stopControlNoMutex()
 bool ServerCartesianController::stopControl()
 {
     mutex.wait();
-    bool ret=stopControlNoMutex();
+    bool ret=stopControlHelper();
     mutex.post();
     return ret;
 }
