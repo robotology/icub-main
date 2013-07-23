@@ -710,22 +710,17 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                     {
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
-                        {
+                        {                            
                             int mode=command.get(2).asVocab();
+                            bool ret=false;
+
                             if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_TRACK)
-                            {    
-                                if (setTrackingMode(true))
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                                else
-                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                            }
+                                ret=setTrackingMode(true);
                             else if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE)
-                            {    
-                                if (setTrackingMode(false))
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                                else
-                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                            }
+                                ret=setTrackingMode(false);
+
+                            if (ret)
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
     
@@ -736,20 +731,15 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         case IKINCARTCTRL_VOCAB_OPT_REFERENCE:
                         {
                             int mode=command.get(2).asVocab();
+                            bool ret=false;
+
                             if (mode==IKINCARTCTRL_VOCAB_VAL_TRUE)
-                            {    
-                                if (setReferenceMode(true))
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                                else
-                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                            }
+                                ret=setReferenceMode(true);
                             else if (mode==IKINCARTCTRL_VOCAB_VAL_FALSE)
-                            {    
-                                if (setReferenceMode(false))
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                                else
-                                    reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                            }
+                                ret=setReferenceMode(false);
+
+                            if (ret)
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
 
