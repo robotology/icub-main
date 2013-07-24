@@ -633,9 +633,12 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     int timeout = 0;
 
     iPosition->setPositionMode();
-    Time::delay(0.01);
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);     // all joints together????
+	//TODO fix checkMotionDone in such a way that does not depend on timing!
+    Time::delay(0.01);
+
+
 
     if(isVanilla)
     {
@@ -670,7 +673,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     }
 
     yDebug() << "Park was " << (abortParking ? "aborted" : "done");
-
+    yError() << "PARKING-timeout "<< deviceName.c_str() << " : "<< timeout;
     for(int j=0; j < nj; j++)
     {
     	iAmps->disableAmp(j);
