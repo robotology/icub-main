@@ -786,7 +786,7 @@ void EthReceiver::run()
             {
                 if(!lastHeard[ethRes->boardNum].error_PC104)
                 {
-                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
+                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout *1000 << "ms are passed without any news";
                     lastHeard[ethRes->boardNum].error_PC104 = true;
                 }
             }
@@ -820,8 +820,6 @@ void EthReceiver::run()
                 ethRes = (*riterator);
                 if(ethRes->getRemoteAddress() == sender_addr)
                 {
-
-
                     if(recv_size > ethRes->getBufferSize())
                     {
                         yError() << "EthReceiver got a message of wrong size ( received" << recv_size << " bytes while buffer is" << ethRes->getBufferSize() << " bytes long)";
@@ -843,11 +841,10 @@ void EthReceiver::run()
                             }
 
                             // check time written into packet
-                            if( (getRopFrameAge(incoming_msg) - lastHeard[ethRes->boardNum].ageofframe_EMS) > (uint64_t) (myTestTimeout * 1000*1000))
+                            int diff = (int)(getRopFrameAge(incoming_msg)/1000 - lastHeard[ethRes->boardNum].ageofframe_EMS/1000);
+                            if( diff > (int)(myTestTimeout * 1000))
                             {
-
-                                yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << (getRopFrameAge(incoming_msg) - lastHeard[ethRes->boardNum].ageofframe_EMS) / (1000) << "ms.";
-                                lastHeard[ethRes->boardNum].error_EMS = true;
+                                yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << diff << "ms.";
                             }
 
                             //reset errors
