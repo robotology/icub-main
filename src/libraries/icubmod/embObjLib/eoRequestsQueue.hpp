@@ -71,8 +71,6 @@ private:
     ACE_thread_t _handle;
 
     int _pending;
-    int _timedOut;
-    int _replied;   // needed?
 
     double _timeout;
 
@@ -91,23 +89,19 @@ public:
 
     eoThreadId id;
 
-    void clear();
-
-    // initialize (?)
-    void init(double to);
+    void setTimeout(double to);
 
     // set number of pending requests, reset
     inline void setPending(int pend)
     {
-    	lock();
-    	_pending+=pend;
-    	_replied=0;
-    	_timedOut=0;
-    	unlock();
+        lock();
+        _pending+=pend;
+        unlock();
     };
 
     // wait on semaphore, usually thread sleeps here after
     // has issued a list of requests to the EMS
+    // returns 0 if correctly waked by received messages, -1 if quit for timeout
     int synch();
 
     // true if there are pending requests
@@ -119,18 +113,7 @@ public:
         return ret;
     }
 
-    // true if at least one time out occurred
-    inline bool timedOut()
-    {
-    	lock();
-    	bool ret=(_timedOut!=0)?true:false;
-    	unlock();
-    	return ret;
-    }
-
     // notify that one of the requests timed out
-    // if no other requests are pending the waiting thread
-    // is released
     bool timeout();
 
     // push a reply, thread safe
@@ -140,13 +123,6 @@ public:
     ACE_thread_t &handle()
     { return _handle; }
 
-
-/*    //get can message from joint number
-    inline yarp::dev::CanMessage *getByJoint(int j, const unsigned char *destInv);
-
-    //get n-nth message in the list of replies
-    inline yarp::dev::CanMessage *get(int n);
-*/
 };
 
 

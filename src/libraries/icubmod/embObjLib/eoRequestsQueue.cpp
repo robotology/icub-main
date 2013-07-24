@@ -15,10 +15,7 @@
 eoThreadArray::eoThreadArray()
 {
     index=0;
-    //pool=new eoThreadEntry;
     pool=new eoThreadEntry[EO_THREADARRAY_MAX_THREADS];
-    //    for(int k=0;k<EO_THREADLIST_MAX_THREADS;k++)
-    //        pool[k].init(ic);
 }
 
 eoThreadArray::~eoThreadArray()
@@ -46,44 +43,30 @@ bool eoThreadArray::getId(int *i)
 eoThreadEntry::eoThreadEntry(): _synch(0),
                                 _mutex(1)
 {
-    _timeout = 1.1f;
-    clear();
+    id = -1;
+    _pending = 0;
+    _timeout = 0.3f;
 }
 
-eoThreadEntry::~eoThreadEntry()
-{
-    clear();
-}
+eoThreadEntry::~eoThreadEntry() { }
 
-void eoThreadEntry::clear()
-{
-    lock();
-    _pending=0;
-    _replied=0;
-    unlock();
-}
 
-void eoThreadEntry::init(double to)
+void eoThreadEntry::setTimeout(double to)
 {
-    double _timeout = to;
+    _timeout = to;
 }
 
 int eoThreadEntry::synch()
 {
-    if(false == _synch.waitWithTimeout(_timeout))
-    {
-        // printf("Semaphore timed out!!\n");
-        return -1;
-    }
-
-    return 0;
+    int ret;
+    _synch.waitWithTimeout(_timeout) ? ret = 0 : ret = -1;
+    return ret;
 }
 
 bool eoThreadEntry::push(void)
 {
     lock();
 
-//  _replied++;
     _pending--;
 
     if(_pending==0)
@@ -93,23 +76,17 @@ bool eoThreadEntry::push(void)
     return true;
 }
 
+// DO NOT post mutex here!! If timeout occour, at this time the thread is already wake!!
 bool eoThreadEntry::timeout()
 {
     lock();
-    _replied++;
-    _pending--;
-    _timedOut++;
-
-    if(_pending==0)
-    {
-        _synch.post();
-    }
+    // no need to keep counting
+    _pending=0;
 
     unlock();
     return true;
 }
 
-//inline void eoThreadEntry::setPending(int pend)
 
 
 /////////////////////  eoThreadFifo  ///////////////////
@@ -147,16 +124,15 @@ bool eoThreadFifo::push(eoThreadId id)      // add an element at the end of the 
 
 eoRequestsQueue::eoRequestsQueue(int num_msgs)
 {
-//  elements = num_msgs;
-//  njoints  = joints;
-    threadPool = new eoThreadArray;//[EO_THREADARRAY_MAX_THREADS];
     num_of_messages = num_msgs;
+    threadPool = new eoThreadArray;
     requests   = new eoThreadFifo[num_of_messages];
     whole_pendings = 0;
 }
 
 eoRequestsQueue::~eoRequestsQueue()
 {
+    delete threadPool;
     delete [] requests;
 }
 
@@ -167,31 +143,6 @@ eoThreadFifo *eoRequestsQueue::getFifo(int nv_index)
     else
         return 0;
 }
-
-// // pop a request
-// int eoRequestsQueue::pop(int nv_index)
-// {
-//     if(whole_pendings<=0)
-//     {
-//         yError() << "Error, queue of requests empty";
-//         return -1;
-//     }
-// 
-//     int ret;
-//     eoThreadFifo *fifo=getFifo(nv_index);
-// 
-//     if(!fifo)
-//         return -1;
-// 
-//     if( (ret=fifo->pop()) < 0)
-//     {
-//         yError() << "Received an answer message nobody is waiting for";
-//         return -1;
-//     }
-// 
-//     whole_pendings--;
-//     return ret;
-// }
 
 
 // append requests
@@ -219,9 +170,9 @@ bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
             if((*it) == id)
             {
                 printf("Cleaning timeouts for thread Id %d, req %d\n", id, i);
-                // to wake threads sleeping here ... is it correct this way??
+
                 eoThreadEntry *th = threadPool->getThreadTable(id);
-                th->push();
+                th->timeout();
                 it=fifo->erase(it);  //it now points to the next element
             }
             else
