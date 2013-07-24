@@ -519,6 +519,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
     }
 
+
     if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
     {
         fprintf(stderr, "Using default value = 0\n");
@@ -2581,7 +2582,7 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
     if(-1 == tt->synch() )
     {
         int threadId;
-        yError () << "getImpedance timed out, joint " << j;
+        yError () << "getImpedance timed out, joint " << j << "for board " << _fId.boardNum;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
