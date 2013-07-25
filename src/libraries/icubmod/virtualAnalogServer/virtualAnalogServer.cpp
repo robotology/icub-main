@@ -320,8 +320,6 @@ void VirtualAnalogServer::run()
             //if 100ms have passed since the last received message
             for (int d=0; d<mNSubdevs; ++d)
             {
-                printf("VAS timedout");
-
                 mSubdevices[d].resetTorque();
                 mSubdevices[d].flushTorques();
 
