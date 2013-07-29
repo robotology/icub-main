@@ -44,18 +44,9 @@
 #include <deque>
 #include <map>
 
-#include <yarp/os/Property.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/Event.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/Wrapper.h>
-#include <yarp/dev/CartesianControl.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 
 #include <iCub/ctrl/pids.h>
 #include <iCub/iKin/iKinHlp.h>
@@ -119,6 +110,8 @@ protected:
     bool taskVelModeOn;
     bool motionDone;
     bool encTimedEnabled;
+    bool posDirectEnabled;
+    bool posDirectAvailable;
     bool pidAvailable;
     bool useReferences;
 
@@ -141,7 +134,8 @@ protected:
     std::deque<yarp::dev::IEncodersTimed*>   lEnt;
     std::deque<yarp::dev::IPidControl*>      lPid;
     std::deque<yarp::dev::IControlLimits*>   lLim;
-    std::deque<yarp::dev::IVelocityControl*> lVel;    
+    std::deque<yarp::dev::IVelocityControl*> lVel;
+    std::deque<yarp::dev::IPositionDirect*>  lPos;
     std::deque<int>                          lJnt;
     std::deque<int*>                         lRmp;
 
@@ -209,13 +203,13 @@ protected:
     void   init();
     void   openPorts();
     void   closePorts();
-    bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
-    void   stopLimbVel();
+    bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);    
     void   alignJointsBounds();
     double getFeedback(yarp::sig::Vector &_fb);
     void   newController();
     bool   getNewTarget();
-    void   sendVelocity(const yarp::sig::Vector &v);
+    void   sendControlCommands();
+    void   stopLimb();
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
     void   notifyEvent(const std::string &event, const double checkPoint=-1.0);
