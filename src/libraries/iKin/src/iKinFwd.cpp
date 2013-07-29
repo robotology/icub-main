@@ -364,6 +364,7 @@ void iKinChain::clear()
     hash_dof.clear();
 
     N=DOF=0;
+    H0=HN=eye(4,4);
 }
 
 

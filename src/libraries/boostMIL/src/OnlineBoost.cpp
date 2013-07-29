@@ -131,6 +131,8 @@ void   OnlineBoost::fromStream(std::ifstream &fin)
     int wc_size;
     fin.read((char*)&wc_size,sizeof(int));
 
+    weak_classifiers_size=wc_size;
+
     alphas.resize(wc_size);
     weak_classifiers.resize(wc_size);
 

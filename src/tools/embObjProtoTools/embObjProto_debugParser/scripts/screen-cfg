@@ -1,0 +1,116 @@
+# $Id: screenrc,v 1.15 2003/10/08 11:39:03 zal Exp $
+#
+# /etc/screenrc
+#
+#   This is the system wide screenrc.
+#
+#   You can use this file to change the default behavior of screen system wide
+#   or copy it to ~/.screenrc and use it as a starting point for your own
+#   settings.
+#
+#   Commands in this file are used to set options, bind screen functions to
+#   keys, redefine terminal capabilities, and to automatically establish one or
+#   more windows at the beginning of your screen session.
+#
+#   This is not a comprehensive list of options, look at the screen manual for
+#   details on everything that you can put in this file.
+#
+
+# ------------------------------------------------------------------------------
+# SCREEN SETTINGS
+# ------------------------------------------------------------------------------
+
+#startup_message off
+#nethack on
+
+#defflow on # will force screen to process ^S/^Q
+deflogin on
+#autodetach off
+
+# turn visual bell on
+vbell on
+vbell_msg "   Wuff  ----  Wuff!!  "
+
+# define a bigger scrollback, default is 100 lines
+defscrollback 1024
+
+# ------------------------------------------------------------------------------
+# SCREEN KEYBINDINGS
+# ------------------------------------------------------------------------------
+
+# Remove some stupid / dangerous key bindings
+bind ^k
+#bind L
+bind ^\
+# Make them better
+bind \\ quit
+bind K kill
+bind I login on
+bind O login off
+bind } history
+
+# An example of a "screen scraper" which will launch urlview on the current
+# screen window
+#
+#bind ^B eval "hardcopy_append off" "hardcopy -h $HOME/.screen-urlview" "screen urlview $HOME/.screen-urlview"
+
+# ------------------------------------------------------------------------------
+# TERMINAL SETTINGS
+# ------------------------------------------------------------------------------
+
+# The vt100 description does not mention "dl". *sigh*
+termcapinfo vt100 dl=5\E[M
+
+# turn sending of screen messages to hardstatus off
+hardstatus off
+# Set the hardstatus prop on gui terms to set the titlebar/icon title
+termcapinfo xterm*|rxvt*|kterm*|Eterm* hs:ts=\E]0;:fs=\007:ds=\E]0;\007
+# use this for the hard status string
+hardstatus string "%h%? users: %u%?"
+
+# An alternative hardstatus to display a bar at the bottom listing the
+# windownames and highlighting the current windowname in blue. (This is only
+# enabled if there is no hardstatus setting for your terminal)
+#
+#hardstatus lastline "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+
+# set these terminals up to be 'optimal' instead of vt100
+termcapinfo xterm*|linux*|rxvt*|Eterm* OP
+
+# Change the xterm initialization string from is2=\E[!p\E[?3;4l\E[4l\E>
+# (This fixes the "Aborted because of window size change" konsole symptoms found
+#  in bug #134198)
+termcapinfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+
+# To get screen to add lines to xterm's scrollback buffer, uncomment the
+# following termcapinfo line which tells xterm to use the normal screen buffer
+# (which has scrollback), not the alternate screen buffer.
+#
+#termcapinfo xterm|xterms|xs|rxvt ti@:te@
+
+# Enable non-blocking mode to better cope with flaky ssh connections.
+defnonblock 5
+
+# ------------------------------------------------------------------------------
+# STARTUP SCREENS
+# ------------------------------------------------------------------------------
+
+# Example of automatically running some programs in windows on screen startup.
+#
+#   The following will open top in the first window, an ssh session to monkey
+#   in the next window, and then open mutt and tail in windows 8 and 9
+#   respectively.
+#
+# screen top
+# screen -t monkey ssh monkey
+# screen -t mail 8 mutt
+# screen -t daemon 9 tail -f /var/log/daemon.log
+screen -t ems1 ./eb1.sh
+screen -t ems2 ./eb2.sh
+screen -t ems3 ./eb3.sh
+screen -t ems4 ./eb4.sh
+screen -t ems5 ./eb5.sh
+screen -t ems6 ./eb6.sh
+screen -t ems7 ./eb7.sh
+screen -t ems8 ./eb8.sh
+screen -t ems9 ./eb9.sh

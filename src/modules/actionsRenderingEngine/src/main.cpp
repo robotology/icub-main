@@ -121,6 +121,11 @@ action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
 
+<b>TAKE_TOOL</b> \n
+format: [take_tool] "param1" \n
+action: the robot will reach a specified position to take the tool from a user.
+Optional parameter "left" or "right" can be supplied to choose the orientation the robot
+
 <b>GRASP</b> \n
 format: [grasp] [target] \n
 action: the robot tries to reach the specified [target] and performs a power grasp.
@@ -353,6 +358,9 @@ Windows, Linux
 #define CMD_CLOSE                   VOCAB4('c','l','o','s')
 #define CMD_GAZE                    VOCAB4('r','e','l','e')
 
+//commands for tool
+#define CMD_TAKE_TOOL               VOCAB4('t','a','t','o')
+#define CMD_CLOSE_TOOL              VOCAB4('c','l','t','o')
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
 #define CMD_ACTION_IMITATE          VOCAB4('i','m','i','t')
@@ -733,6 +741,13 @@ public:
                     case CMD_CLOSE:
                     {
                         motorThr->grasp(command);
+                        reply.addVocab(ACK);
+
+                        break;
+                    }
+                     case CMD_CLOSE_TOOL:
+                    {
+                        motorThr->grasp_tool(command);
                         reply.addVocab(ACK);
 
                         break;
@@ -1257,7 +1272,17 @@ public:
 
                         break;
                     }
-
+                    case CMD_TAKE_TOOL:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+                        motorThr->takeTool(command);
+                        reply.addVocab(ACK);
+                        break;
+                    }
                     default:
                     {
                         reply.addVocab(NACK);

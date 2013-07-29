@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<portscope rows="2" columns="1" carrier="mcast">
+    <plot gridx="0"
+          gridy="0"
+          title="FT left_leg"
+          minval="-100"
+          maxval="100"
+          bgcolor="LightSlateGrey">
+        <graph remote="/coman/trial/analog/left_leg:o"
+               index="0"
+               color="Red"
+               title="Value 0"
+               type="lines"
+               size="1" />
+        <graph remote="/coman/trial/analog/left_leg:o"
+               index="1"
+               color="Green"
+               title="Value 1"
+               size="1"
+               type="lines" />
+        <graph remote="/coman/trial/analog/left_leg:o"
+               index="2"
+               color="Blue"
+               title="Value 2"
+               size="1"
+               type="lines" />
+       <graph remote="/coman/trial/analog/left_leg:o"
+               index="3"
+               color="Orange"
+               title="Value 3"
+               type="lines"
+               size="1" />
+        <graph remote="/coman/trial/analog/left_leg:o"
+               index="4"
+               color="Yellow"
+               title="Value 4"
+               size="1"
+               type="lines" />
+        <graph remote="/coman/trial/analog/left_leg:o"
+               index="5"
+               color="Pink"
+               title="Value 5"
+               size="1"
+               type="lines" />
+    </plot>
+
+    <plot gridx="0"
+          gridy="1"
+          title="FT right_leg"
+          minval="-100"
+          maxval="100"
+          bgcolor="LightSlateGrey">
+        <graph remote="/coman/trial/analog/right_leg:o"
+               index="0"
+               color="Red"
+               title="Value 0"
+               type="lines"
+               size="1" />
+        <graph remote="/coman/trial/analog/right_leg:o"
+               index="1"
+               color="Green"
+               title="Value 1"
+               size="1"
+               type="lines" />
+        <graph remote="/coman/trial/analog/right_leg:o"
+               index="2"
+               color="Blue"
+               title="Value 2"
+               size="1"
+               type="lines" />
+       <graph remote="/coman/trial/analog/right_leg:o"
+               index="3"
+               color="Orange"
+               title="Value 3"
+               type="lines"
+               size="1" />
+        <graph remote="/coman/trial/analog/right_leg:o"
+               index="4"
+               color="Yellow"
+               title="Value 4"
+               size="1"
+               type="lines" />
+        <graph remote="/coman/trial/analog/right_leg:o"
+               index="5"
+               color="Pink"
+               title="Value 5"
+               size="1"
+               type="lines" />
+    </plot>
+
+</portscope>
+

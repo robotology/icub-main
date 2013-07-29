@@ -99,7 +99,7 @@ bool Model::loadModelData( const char *filename )
     strncpy( pathTemp, filename, pathLength );
 
     inputFile.seekg( 0, ios::end );
-    long fileSize = inputFile.tellg();
+    long fileSize = (long)inputFile.tellg();
     inputFile.seekg( 0, ios::beg );
 
     char *pBuffer = new char[fileSize];

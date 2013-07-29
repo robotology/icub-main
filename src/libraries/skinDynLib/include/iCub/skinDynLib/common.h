@@ -45,12 +45,12 @@ enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 // List of the parts of the iCub body
 enum BodyPart {
     BODY_PART_UNKNOWN=0, 
-    HEAD, TORSO, LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, 
+    TORSO, HEAD, LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, 
     BODY_PART_ALL, LOWER_BODY_PARTS, UPPER_BODY_PARTS, BODY_PART_SIZE
 };
 const std::string BodyPart_s[] = {
     "unknown_body_part", 
-    "head", "torso", "left_arm", "right_arm", "left_leg", "right_leg", 
+    "torso", "head", "left_arm", "right_arm", "left_leg", "right_leg", 
     "all_body_parts", "lower_body_parts", "upper_body_parts", "body_part_size"
 };
 

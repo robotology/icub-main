@@ -30,6 +30,7 @@
 #ifndef __NEURALNETWORKS_H__
 #define __NEURALNETWORKS_H__
 
+#include <iostream>
 #include <string>
 #include <deque>
 
@@ -47,7 +48,7 @@ namespace ctrl
 /**
 * \ingroup neuralNetworks
 *
-* Feed-forward 2 layers Neural Network. 
+* Feed-Forward 2 layers Neural Network. 
 * Useful to implement the networks trained via MATLAB (e.g. 
 * through nftool). 
 */
@@ -86,10 +87,9 @@ protected:
 
     bool configured;
 
-    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item);
-
-    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x)=0;
-    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x)=0;
+    void prepare();
+    void setItem(yarp::os::Property &options, const std::string &tag, const yarp::sig::Vector &item) const;
+    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item) const;
 
 public:
     /**
@@ -103,7 +103,7 @@ public:
     *               network.
     * @see configure() 
     */ 
-    ff2LayNN(yarp::os::Property &options);
+    ff2LayNN(const yarp::os::Property &options);
 
     /**
     * Configure/reconfigure the network.
@@ -148,42 +148,127 @@ public:
     *  
     * @note all indexes are 0-based. 
     */ 
-    virtual bool configure(yarp::os::Property &options);
+    virtual bool configure(const yarp::os::Property &options);    
 
     /**
     * Return the internal status after a configuration.
     * @return true/false on success/fail.
     */ 
-    virtual bool isValid();
+    virtual bool isValid() const;
 
     /**
     * Predict the output given a certain input to the network.
     * @param x is the actual input to the network.
     * @return the predicted output.
     */ 
-    virtual yarp::sig::Vector predict(const yarp::sig::Vector &x);
+    virtual yarp::sig::Vector predict(const yarp::sig::Vector &x) const;
 
     /**
-    * Dump the network structure on the screen.
+    * Retrieve the network structure as a Property object.
+    * @param options is the output stream. 
+    * @return true/false on success/fail. 
+    *  
+    * @see configure for the options format.
     */ 
-    virtual void printStructure();
+    virtual bool getStructure(yarp::os::Property &options) const;
+
+    /**
+    * Dump tadily the network structure on the stream.
+    * @param stream is the output stream. 
+    * @return true/false on success/fail.  
+    */ 
+    virtual bool printStructure(std::ostream &stream=std::cout) const;
+
+    /**
+    * Retrieve first layer weights.
+    * @return the list of first layer weights.
+    */ 
+    std::deque<yarp::sig::Vector> &get_IW() { return IW; }
+
+    /**
+    * Retrieve second layer weights.
+    * @return the list of second layer weights.
+    */ 
+    std::deque<yarp::sig::Vector> &get_LW() { return LW; }
+
+    /**
+    * Retrieve first layer bias.
+    * @return the list of first layer bias.
+    */ 
+    yarp::sig::Vector &get_b1() { return b1; }
+
+    /**
+    * Retrieve second layer bias.
+    * @return the list of second layer bias.
+    */ 
+    yarp::sig::Vector &get_b2() { return b2; }
+
+    /**
+    * Scale input to be used with the network.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector scaleInputToNetFormat(const yarp::sig::Vector &x) const;
+
+    /**
+    * Scale back input from the network's format.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector scaleInputFromNetFormat(const yarp::sig::Vector &x) const;
+
+    /**
+    * Scale output to be used with the network.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector scaleOutputToNetFormat(const yarp::sig::Vector &x) const;
+
+    /**
+    * Scale back output from the network's format.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector scaleOutputFromNetFormat(const yarp::sig::Vector &x) const;
+
+    /**
+    * Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x) const=0;
+
+    /**
+    * Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x) const=0;
+
+    /**
+    * Gradient of the Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x) const=0;
+
+    /**
+    * Gradient of the Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x) const=0;
 };
 
 
 /**
 * \ingroup neuralNetworks
 *
-* Feed-forward 2 layers Neural Network with a tansig function 
+* Feed-Forward 2 layers Neural Network with a tansig function 
 * for the hidden nodes and a purelin for the output nodes. 
 */
-class ff2LayNN_tansig_purelin : public ff2LayNN
+class ff2LayNN_tansig_purelin : virtual public ff2LayNN
 {
-protected:
-    // implement the tansig
-    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x);
-    // implement the purelin
-    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x);
-
 public:
     /**
     * Create an empty network.
@@ -196,7 +281,35 @@ public:
     *               network.
     * @see configure() 
     */ 
-    ff2LayNN_tansig_purelin(yarp::os::Property &options);
+    ff2LayNN_tansig_purelin(const yarp::os::Property &options);
+
+    /**
+    * Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerFcn(const yarp::sig::Vector &x) const;
+
+    /**
+    * Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerFcn(const yarp::sig::Vector &x) const;
+
+    /**
+    * Gradient of the Hidden Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector hiddenLayerGrad(const yarp::sig::Vector &x) const;
+
+    /**
+    * Gradient of the Output Layer Function.
+    * @param x is the input vector.
+    * @return the output vector.
+    */ 
+    virtual yarp::sig::Vector outputLayerGrad(const yarp::sig::Vector &x) const;
 };
 
 }

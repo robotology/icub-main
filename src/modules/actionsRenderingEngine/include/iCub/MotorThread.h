@@ -160,8 +160,12 @@ private:
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
     double                              pwrGraspApproachAngle[2];
-    Vector                              pwrGraspApproachDisplacement[2];
+    double                              pwrGraspApproachDisplacement[2];
     double                              reachingTimeout;
+
+    //tool
+    Vector                              takeToolPos[2];
+    Vector                              takeToolOrient[2];
 
     Vector                              homePos[2];
     Vector                              homeOrient[2];
@@ -237,6 +241,7 @@ private:
     bool loadKinematicOffsets(string _kinematics_path);
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
+    void goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin);
     void close();
     
     bool avoidTable(bool avoid);
@@ -366,6 +371,7 @@ public:
     bool point(Bottle &options);
     bool look(Bottle &options);
     bool grasp(Bottle &options);
+    bool grasp_tool(Bottle &options);
     bool release(Bottle &options);
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
@@ -378,6 +384,9 @@ public:
     // explore
     bool exploreTorso(Bottle &options);
     bool exploreHand(Bottle &options);
+
+    //tool functions
+    bool takeTool(Bottle &options);
 
 
     bool getHandImagePosition(Bottle &hand_image_pos);

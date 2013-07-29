@@ -9,6 +9,6 @@
 		<param name="Channels"> 6 </param>
 		<param name="Period"> 1 </param>
 		<param name="UseCalibration"> 1 </param>
-		<param name="FullScale"> 8 8 8 8 8 8 </param>
+		<param name="FullScale"> 12 12 12 12 12 12 </param>
 	</device>
 </devices>

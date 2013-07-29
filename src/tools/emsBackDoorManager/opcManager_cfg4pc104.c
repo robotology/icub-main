@@ -256,6 +256,7 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             s_print_emsperiph_candata(&data->can_dev[0]);
             printf("\t CAN 2:\n");
             s_print_emsperiph_candata(&data->can_dev[1]);
+            printf("\t ETH MASK: 0x%x\n", data->eth_dev.linksmask);
                     
         } break;
     }       
@@ -369,11 +370,12 @@ static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads)
     uint32_t i;
     for(i=0; i<6; i++)
     {
-        printf("Encoder num %d\n", i);
+        printf("Encoder num %d\t", i);
         printf("\t err_onReadFromSpi=%d   ", encreads->encList[i].err_onReadFromSpi);  
         printf("err_onParityError=%d  ", encreads->encList[i].err_onParityError);  
-        printf("err_onInvalidValue=%d\n", encreads->encList[i].err_onInvalidValue);  
+        printf("err_onInvalidValue=%d  \n", encreads->encList[i].err_onInvalidValue);
     }
+    printf("\tcount=%d\n", encreads->count);
 }
 
 static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)

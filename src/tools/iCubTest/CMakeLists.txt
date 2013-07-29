@@ -6,8 +6,8 @@ set(PROJECTNAME iCubTest)
 
 file(GLOB folder_main_header *.h )
 file(GLOB folder_main_source *.cpp )
-file(GLOB folder_tests_header testMotors/*.h testMotorsStiction/*.h)
-file(GLOB folder_tests_source testMotors/*.cpp testMotorsStiction/*.cpp)
+file(GLOB folder_tests_header testMotors/*.h testMotorsStiction/*.h testRoie/*.h)
+file(GLOB folder_tests_source testMotors/*.cpp testMotorsStiction/*.cpp testRoie/*.cpp)
 
 source_group("Source Files (main)" FILES ${folder_main_source})
 source_group("Header Files (main)" FILES ${folder_main_header})
@@ -22,7 +22,7 @@ include_directories(${YARP_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${folder_main_source} ${folder_main_header} ${folder_tests_source} ${folder_tests_header})
 add_library(${PROJECTNAME}Lib ${folder_tests_source} ${folder_tests_header})
 
-target_link_libraries(${PROJECTNAME} ${iCubDev_LIBRARIES} ${GSL_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ${iCubDev_LIBRARIES} ${GSL_LIBRARIES} icubmod ${YARP_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME}Lib DESTINATION lib)
 install(TARGETS ${PROJECTNAME} DESTINATION bin)

@@ -1031,6 +1031,14 @@ bool iCubSimulationControl::getRefTorqueRaw(int axis,double *ref)
 {
     return NOT_YET_IMPLEMENTED("getRefTorqueRaw");
 }
+bool iCubSimulationControl::getBemfParamRaw(int axis,double *bemf)
+{
+    return NOT_YET_IMPLEMENTED("getBemfParamRaw");
+}
+bool iCubSimulationControl::setBemfParamRaw(int axis,double bemf)
+{
+    return NOT_YET_IMPLEMENTED("setBemfParamRaw");
+}
 bool iCubSimulationControl::setTorquePidRaw(int axis, const yarp::dev::Pid &pid)
 {
     return NOT_YET_IMPLEMENTED("setTorquePidRaw");

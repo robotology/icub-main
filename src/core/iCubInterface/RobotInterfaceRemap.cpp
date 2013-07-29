@@ -17,8 +17,6 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Os.h>
 
-#include "ControlBoardWrapper.h"
-
 #include <iCub/FactoryInterface.h>
 
 using namespace yarp::dev;

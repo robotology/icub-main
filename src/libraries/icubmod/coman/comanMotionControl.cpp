@@ -20,14 +20,14 @@
 #include "comanMotionControl.h"
 #include "Debug.h"
 
-#undef yDebug()
-#define yDebug() cout
-
-#undef yWarning()
-#define yWarning() cout
-
-#undef yError()
-#define yError() cout
+//#undef yDebug()
+//#define yDebug() cout
+//
+//#undef yWarning()
+//#define yWarning() cout
+//
+//#undef yError()
+//#define yError() cout
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -52,26 +52,31 @@ Prendere l'indice corretto dell'array per il giunto j
 
 
 // This will be moved in the ImplXXXInterface
-double comanMotionControl::convertDoble2Int(double in[], int out[])
-{
-    for(int idx=0; idx<_njoints; idx++)
-        out[idx] = (int) in[idx];
-}
+// void comanMotionControl::convertDoble2Int(double in[], int out[])
+// {
+//     for(int idx=0; idx<_njoints; idx++)
+//         out[idx] = (int) in[idx];
+// }
 
-double comanMotionControl::convertDoble2Short(double in[], short int out[])
-{
-    for(int idx=0; idx<_njoints; idx++)
-        out[idx] = (short int) in[idx];
-}
+// void comanMotionControl::convertDoble2Short(double in[], short int out[])
+// {
+//     for(int idx=0; idx<_njoints; idx++)
+//         out[idx] = (short int) in[idx];
+// }
 
 inline McBoard * comanMotionControl::getMCpointer(int j)
 {
-    return _mcs[j];
+    return _mcs[++j];
 }
 
-inline int comanMotionControl::bId2Idx(int j)
+inline int comanMotionControl::bId2Joint(int j)
 {
-    return (j-1);
+    return _inv_bIdMap[j];
+}
+
+inline uint8_t comanMotionControl::jointTobId(int j)
+{
+    return (uint8_t) _bIdMap[j];
 }
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
@@ -105,9 +110,9 @@ bool comanMotionControl::extractGroup(Bottle &input, Bottle &out, const std::str
 bool comanMotionControl::alloc(int nj)
 {
     _axisMap = allocAndCheck<int>(nj);
+    _bIdMap = allocAndCheck<int>(nj);
+//     _inv_bIdMap = allocAndCheck<int>(nj);      // this will be allocated after!!
     _angleToEncoder = allocAndCheck<double>(nj);
-//     _encoderconversionoffset = <float>(nj);
-//     _encoderconversionfactor = allocAndCheck<float>(nj);
 
     _rotToEncoder = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
@@ -153,7 +158,9 @@ comanMotionControl::comanMotionControl() :
     ImplementVelocityControl2(this),
     ImplementControlMode(this),
     ImplementDebugInterface(this),
-    ImplementControlLimits<comanMotionControl, IControlLimits>(this),
+//    ImplementControlLimits<comanMotionControl, IControlLimits>(this),
+    ImplementControlLimits2(this),
+    ImplementPositionDirect(this),
     _mutex(1)
 {
     yTrace();
@@ -167,6 +174,9 @@ comanMotionControl::comanMotionControl() :
     _njoints 		= 0;
 
     _axisMap		= NULL;
+    _bIdMap     = NULL;
+    _inv_bIdMap = NULL;
+
     _angleToEncoder = NULL;
     _zeros			= NULL;
     _limitsMin = NULL;
@@ -255,7 +265,9 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
 //    ImplementVelocityControl<comanMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
-    ImplementControlLimits<comanMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+//    ImplementControlLimits<comanMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
     _comanHandler = comanDevicesHandler::instance();
 
@@ -265,7 +277,11 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    _comanHandler->open(config);
+    if(!_comanHandler->open(config) )
+    {
+        yError() << "unable to initialize Coman Devices Handler class... probably no boards were found. Check log.";
+        return false;
+    }
     _boards_ctrl = _comanHandler->getBoard_ctrl_p();
 
     if(_boards_ctrl == NULL)
@@ -281,10 +297,6 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     // set initial velocity, torque ansd position, start controls
     init();
 
-    for(int i=0; i< _njoints; i++)
-    {
-        _controlMode[i] = VOCAB_CM_POSITION;
-    }
     return true;
 }
 
@@ -301,9 +313,32 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
     // leggere i valori da file
     if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints+1))
         return false;
-
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
+
+    // leggere i valori da file
+    if (!extractGroup(general, xtmp, "bIdMap", "a list of ordered bIds", _njoints+1))
+        return false;
+
+    int max = -1;
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        _bIdMap[i-1] = xtmp.get(i).asInt();
+        if(_bIdMap[i-1] > max)
+            max = _bIdMap[i-1];
+    }
+
+    _inv_bIdMap = allocAndCheck<int>(max);
+    for(int bId_idx=0; bId_idx<max; bId_idx++)
+    {
+        // reset array to an invaslid value
+        _inv_bIdMap[bId_idx] = -1;
+    }
+
+    for(int bId_idx=0; bId_idx<_njoints; bId_idx++)
+    {
+        _inv_bIdMap[_bIdMap[bId_idx]] = bId_idx;
+    }
 
     // Encoder scales
     if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints+1))
@@ -361,10 +396,17 @@ bool comanMotionControl::init()
     // ... WAIT  to let dsp thinking .... LEAVE HERE
     sleep(1);
 
-    uint8_t start = 1;
-    _boards_ctrl->start_stop_control(start);
+    // let the calibrator or user application start the controller through the setPositionMode command
+    uint8_t stop = 0;
+    _boards_ctrl->start_stop_control(stop);
+
+    for(int i=0; i< _njoints; i++)
+    {
+        _controlMode[i] = VOCAB_CM_IDLE;
+    }
 
    // tell to ALL dps to start broadcast data
+    uint8_t start = 1;
     _boards_ctrl->start_stop_bc_boards(start);
     return true;
 }
@@ -386,7 +428,9 @@ bool comanMotionControl::close()
 //    ImplementVelocityControl<comanMotionControl, IVelocityControl>::uninitialize();
     ImplementVelocityControl2::uninitialize();
     ImplementDebugInterface::uninitialize();
-    ImplementControlLimits<comanMotionControl, IControlLimits>::uninitialize();
+//    ImplementControlLimits<comanMotionControl, IControlLimits>::uninitialize();
+    ImplementControlLimits2::uninitialize();
+    ImplementPositionDirect::uninitialize();
     return true;
 }
 
@@ -394,14 +438,14 @@ bool comanMotionControl::close()
 
 bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 {
-    yTrace() << "joint " << j << "KP" << pid.kp;
+//     yTrace() << "joint " << j << "(bId" << jointTobId(j) << ")" << endl;
     pid_gains_t p_i_d;
     McBoard *joint_p = getMCpointer(j);
     bool ret = true;
 
     if( NULL == joint_p)
     {
-        yError() << "Calling SetPid on a non-existing joint j" << j;
+        yError() << "Calling SetPid on a non-existing joint j" << endl; // << j << "(bId" << jointTobId(j) << ")" << endl;
         return false;
     }
     else
@@ -420,9 +464,9 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
         scales[2] = (int32_t) pid.scale;
 
         ret &= (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
-        ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(int32_t) ) );  // setItem returns 0 if ok, 2 if error
-        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(pid.scale)) );  // setItem returns 0 if ok, 2 if error
-        ret &= setOffsetRaw(j, (int16_t) pid_off);
+        ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(int32_t) ) );
+        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(pid.scale)) );
+        ret &= comanMotionControl::setOffsetRaw(j, (int16_t) pid_off);  // j is the yarp joint
     }
     return ret;
 }
@@ -432,8 +476,8 @@ bool comanMotionControl::setPidsRaw(const Pid *pids)
     yTrace();
     bool ret = true;
 
-    for(int bId=1; bId<=_njoints; bId++)
-        ret = ret && setPidRaw(bId, pids[bId]);
+    for(int j=0; j<_njoints; j++)
+        ret = ret && setPidRaw(j, pids[j]);
     return ret;
 }
 
@@ -507,9 +551,9 @@ bool comanMotionControl::getOutputsRaw(double *outs)
 {
     yTrace();
     bool ret = true;
-    for(int bId=1; bId <= _njoints; bId++)
+    for(int j=0; j <_njoints; j++)
     {
-        ret = ret && getOutputRaw(bId, &outs[bId]);
+        ret = ret && getOutputRaw(j, &outs[j]);
     }
     return ret;
 }
@@ -534,6 +578,7 @@ bool comanMotionControl::getPidRaw(int j, Pid *pid)
         pid->scale = 0;
         pid->stiction_down_val = 0;
         pid->stiction_up_val = 0;
+        pid->max_int = 0;
         yError() << "Calling GetPid on a non-existing joint j" << j;
         return false;
     }
@@ -550,15 +595,19 @@ bool comanMotionControl::getPidRaw(int j, Pid *pid)
     ret &= (!joint_p->getItem(GET_PID_OFFSET,     NULL,     0, REPLY_PID_OFFSET,      &pid_offset,      sizeof(pid_offset)) );
 //     ret &= (!joint_p->getItem(GET_START_OFFSET,   NULL,     1, REPLY_START_OFFSET,    &pid_offset,      sizeof(ComanPid)) );
 
-    pid->kp = (double) ComanPid.p;
-    pid->ki = (double) ComanPid.i;
-    pid->kd = (double) ComanPid.d;
-    pid->scale = (double) scales[0];  // using just one of them
-    pid->max_int = (double) integral_limit;
-    pid->offset = ((double) pid_offset);// * mV2V;  ?
-
-    yDebug() << "Coman POS pid kp " << ComanPid.p << "ki "<< ComanPid.i << "kd " << ComanPid.d;
-    yDebug() << "Coman integral limit " << integral_limit << ", pid offset " << pid_offset;
+	if(ret)
+	{
+	    pid->kp = (double) ComanPid.p;
+	    pid->ki = (double) ComanPid.i;
+	    pid->kd = (double) ComanPid.d;
+	    pid->scale = (double) scales[0];  // using just one of them
+	    pid->max_int = (double) integral_limit;
+	    pid->offset = ((double) pid_offset);// * mV2V;  ?
+	}
+	else
+	{
+		yError() << "get pid failed somehow";
+	}
     return ret;
 }
 
@@ -566,8 +615,8 @@ bool comanMotionControl::getPidsRaw(Pid *pids)
 {
     yTrace();
     bool ret = true;
-    for(int bId=1; bId <= _njoints; bId++)
-        ret = ret && getPidRaw(bId, &pids[bId]);
+    for(int j=0; j < _njoints; j++)
+        ret = ret && getPidRaw(j, &pids[j]);
     return ret;
 }
 
@@ -591,8 +640,8 @@ bool comanMotionControl::getReferencesRaw(double *refs)
 {
     yTrace();
     bool ret = true;
-    for(int bId=1; bId<=_njoints; bId++)
-        ret = ret && getReferenceRaw(bId, &refs[bId]);
+    for(int j=0; j<_njoints; j++)
+        ret = ret && getReferenceRaw(j, &refs[j]);
     return ret;
 }
 
@@ -628,9 +677,10 @@ bool comanMotionControl::disablePidRaw(int j)
     }
 
     // j is the bId, stop = 0 -> off
-    ret = ret && (!_boards_ctrl->start_stop_single_control(j, stop, POSITION_MOVE));
-    ret = ret && (!_boards_ctrl->start_stop_single_control(j, stop, VELOCITY_MOVE));
-    ret = ret && (!_boards_ctrl->start_stop_single_control(j, stop, TORQUE_MOVE));
+    uint8_t bId = jointTobId(j);
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, TORQUE_MOVE));
 
     if(ret)
         _controlMode[j] = VOCAB_CM_IDLE;
@@ -646,9 +696,8 @@ bool comanMotionControl::enablePidRaw(int j)
 bool comanMotionControl::setOffsetRaw(int j, double v)
 {
     yTrace();
-    int idx = bId2Idx(j);
 
-    _pid_offset[idx] = (uint16_t) v;
+    _pid_offset[j] = (uint16_t) v;
     return !_boards_ctrl->set_pid_offset(_pid_offset, sizeof(uint16_t) * _njoints);
 }
 
@@ -660,14 +709,14 @@ bool comanMotionControl::setOffsetRaw(int j, double v)
 bool comanMotionControl::setVelPidRaw(int j, const Pid &pid)
 {
 
-    yTrace() << "board " << j << "vel KP" << pid.kp;
+    yTrace() << "joint " << j << "vel KP" << pid.kp;
     pid_gains_t p_i_d;
     McBoard *joint_p = getMCpointer(j);
     bool ret = true;
 
     if( NULL == joint_p)
     {
-        yError() << "Calling SetPid on a non-existing board" << j;
+        yError() << "Calling SetVelPid on a non-existing joint" << j;
         return false;
     }
     else
@@ -707,8 +756,8 @@ bool comanMotionControl::setVelPidsRaw(const Pid *pids)
 {
     yTrace();
     bool ret = true;
-    for(int bId=1; bId <= _njoints; bId++)
-        ret = ret && setVelPidRaw(bId, pids[bId]);
+    for(int j=0; j < _njoints; j++)
+        ret = ret && setVelPidRaw(j, pids[j]);
     return ret;
 }
 
@@ -755,8 +804,6 @@ bool comanMotionControl::getVelPidRaw(int j, Pid *pid)
     pid->max_int = (double) integral_limit;
     pid->offset = ((double) pid_offset);// * mV2V;  ?
 
-    yDebug() << "Coman VEL pid kp " << ComanPid.p << "ki "<< ComanPid.i << "kd " << ComanPid.d;
-    yDebug() << "Coman integral limit " << integral_limit << ", pid offset " << pid_offset;
     return ret;
 }
 
@@ -776,36 +823,12 @@ bool comanMotionControl::getVelPidsRaw(Pid *pids)
 {
     yTrace();
     bool ret = true;
-    for(int j=1; j<= _njoints; j++)
+    for(int j=0; j< _njoints; j++)
     {
         // TCP ONLY
         ret &= getVelPidRaw(j, &pids[j]);
     }
     return ret;
-}
-
-bool comanMotionControl::getVelErrorRaw(int j, double *err)
-{
-    yTrace();
-    return getErrorRaw(j, err);
-}
-
-bool comanMotionControl::getVelErrorsRaw(const int n_joint, const int *joints, double *errs)
-{
-    yTrace();
-    bool ret = true;
-    for(int j=0; j< n_joint; j++)
-    {
-        // TCP ONLY
-        ret &= getVelErrorRaw(joints[j], &errs[j]);
-    }
-    return ret;
-}
-
-bool comanMotionControl::getVelErrorsRaw(double *errs)
-{
-    yTrace();
-    return getErrorsRaw(errs);
 }
 
 
@@ -817,7 +840,7 @@ bool comanMotionControl::setVelocityModeRaw(int j)
 {
     yTrace();
     bool ret = true;
-    int idx = bId2Idx(j);
+    uint8_t bId = jointTobId(j);
     McBoard *joint_p = getMCpointer(j);
 
     if( NULL == joint_p)
@@ -826,7 +849,7 @@ bool comanMotionControl::setVelocityModeRaw(int j)
         return false;
     }
 
-    if(_controlMode[idx] == VOCAB_CM_VELOCITY)
+    if(_controlMode[j] == VOCAB_CM_VELOCITY)
     {
         // nothing to do here
         {yDebug() << "joint "<< j << "already in velocity mode" << endl;}
@@ -838,7 +861,7 @@ bool comanMotionControl::setVelocityModeRaw(int j)
     }
 
     if(ret)
-        _controlMode[idx] = VOCAB_CM_VELOCITY;
+        _controlMode[j] = VOCAB_CM_VELOCITY;
     else
         yError() << "in setVelocityModeRaw for joint " << j;
     return ret;
@@ -848,13 +871,13 @@ bool comanMotionControl::setVelocityModeRaw(const int n_joint, const int *joints
 {
     yTrace();
     int start = 0x03;
-    std::vector<int> board_set;
-    board_set.resize(n_joint);
-    for(int idx=0; idx < n_joint; idx++)
+    std::vector<int> bId_set;
+    bId_set.resize(n_joint);
+    for(int j=0; j < n_joint; j++)
     {
-        board_set[idx] = joints[idx];
+        bId_set[j] = (int) jointTobId( joints[j] );
     }
-    return (!_boards_ctrl->start_stop_set_control(board_set, start, VELOCITY_MOVE));
+    return (!_boards_ctrl->start_stop_set_control(bId_set, start, VELOCITY_MOVE));
 }
 
 bool comanMotionControl::setVelocityModeRaw()
@@ -864,16 +887,14 @@ bool comanMotionControl::setVelocityModeRaw()
 
 bool comanMotionControl::velocityMoveRaw(int j, double sp)
 {
-    // Here I count on j be a reasonable number, i.e. between 1 and _njoints. j=0 is NOT correct!!!
-    int idx = bId2Idx(j);
-    uint8_t bId = (uint8_t) j;
+    uint8_t bId = jointTobId(j);
     int16_t des_vel = (int16_t)(sp/COMAN_POS_TO_VEL_GAIN);   // differenza tra la unità di misura usata in velocità e posizione;
 
     bool ret = (!_boards_ctrl->set_velocity_group(&bId, &des_vel, 1));
 
     if(ret)
     {
-        _ref_speeds[idx] = des_vel;   // differenza tra la unità di misura usata in velocità e posizione;;
+        _ref_speeds[j] = des_vel;   // differenza tra la unità di misura usata in velocità e posizione;;
     }
     else
     {
@@ -891,7 +912,7 @@ bool comanMotionControl::velocityMoveRaw(const int n_joint, const int *joints, c
     for(int i=0; i<n_joint; i++)
     {
         des_vel[i] = (int16_t)(spds[i]/COMAN_POS_TO_VEL_GAIN);
-        bIds[i] = (uint8_t) joints[i];
+        bIds[i] = (uint8_t) jointTobId( joints[i]);
     }
 
     bool ret = (!_boards_ctrl->set_velocity_group(bIds, des_vel, n_joint));
@@ -901,6 +922,7 @@ bool comanMotionControl::velocityMoveRaw(const int n_joint, const int *joints, c
         // cache value for future use
         for(int i=0; i<n_joint; i++)
         {
+            // here is an index, therefore DO NOT convert with jointTobId()
             _ref_speeds[joints[i]] = des_vel[i];
         }
     }
@@ -916,20 +938,18 @@ bool comanMotionControl::velocityMoveRaw(const double *spds)
     bool ret = true;
     int16_t tmp_spds[_njoints];
 
-    for(int bId=1; bId <= _njoints; bId++)
+    for(int j=1; j <= _njoints; j++)
     {
-        int idx = bId2Idx(bId);
-        tmp_spds[idx] = (int16_t)(spds[idx]/COMAN_POS_TO_VEL_GAIN);   // differenza tra la unità di misura usata in velocità e posizione;
+        tmp_spds[j] = (int16_t)(spds[j]/COMAN_POS_TO_VEL_GAIN);   // differenza tra la unità di misura usata in velocità e posizione;
     }
 
     ret = ret && (!_boards_ctrl->set_velocity(tmp_spds, _njoints * sizeof(int16_t)));
 
     if(ret)
     {
-        for(int bId=1; bId <= _njoints; bId++)
+        for(int j=1; j <= _njoints; j++)
         {
-            int idx = bId2Idx(bId);
-            _ref_speeds[idx] = tmp_spds[idx];
+            _ref_speeds[j] = tmp_spds[j];
         }
     }
     else
@@ -988,15 +1008,11 @@ bool comanMotionControl::setPositionModeRaw()
 bool comanMotionControl::positionMoveRaw(int j, double ref)
 {
     yTrace();
-    int idx = bId2Idx(j);
-    uint8_t bId = (uint8_t) j;
+    uint8_t bId = jointTobId(j);
 
-    _ref_positions[idx] = (int32_t) ref;
+    _ref_positions[j] = (int32_t) ref;
 
-
-    return (!_boards_ctrl->set_position_velocity_group(&bId, &_ref_positions[idx], &_ref_speeds[idx], 1) );
-    // here the function wants the num of elements, contiene internamente un loop su tutte le schede
-    //return (!_boards_ctrl->set_position_velocity(_ref_positions, _ref_speeds, _njoints) );
+    return (!_boards_ctrl->set_position_velocity_group(&bId, &_ref_positions[j], &_ref_speeds[j], 1) );
 }
 
 bool comanMotionControl::positionMoveRaw(const double *refs)
@@ -1035,11 +1051,14 @@ bool comanMotionControl::checkMotionDoneRaw(bool *flag)
 bool comanMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
     double actual_pos, delta;
+    return true;
+
     bool ret = getEncoderRaw(j, &actual_pos);
 
-    delta = ((double) _ref_positions[j]) - actual_pos;
+    delta = fabs(( ((double) _ref_positions[j]) - actual_pos) /_angleToEncoder[j]);
+//    cout << "check motion done : j " << j << " delta" << delta << endl;
 
-    if(fabs(delta <= COMAN_POS_THRESHOLD))
+    if( delta <= COMAN_POS_THRESHOLD )
         *flag = true;
     else
         *flag = false;
@@ -1050,14 +1069,14 @@ bool comanMotionControl::checkMotionDoneRaw(int j, bool *flag)
 bool comanMotionControl::setRefSpeedRaw(int j, double sp)
 {
     yTrace();
-    int idx = bId2Idx(j);
-    _ref_speeds[idx] = (int16_t) (sp/COMAN_POS_TO_VEL_GAIN);  // differenza tra la unità di misura usata in velocità e posizione
+    _ref_speeds[j] = (int16_t) (sp/COMAN_POS_TO_VEL_GAIN);  // differenza tra la unità di misura usata in velocità e posizione
 
+    // TODO convertire nella funzione a gruppi di giunti
     bool ret = (!_boards_ctrl->set_velocity(_ref_speeds, _njoints * sizeof(int16_t)) );
 
     if(!ret)
     {
-       cout << "ERROR in setRefSpeedRaw for joint " << j << endl;
+       yError() << "ERROR in setRefSpeedRaw for joint " << j;
     }
     return ret;
 }
@@ -1072,8 +1091,7 @@ bool comanMotionControl::setRefSpeedsRaw(const double *spds)
 
     if(!ret)
     {
-//         yError() non funziona??!?!?!?
-        cout << "ERROR in setRefSpeedsRaw for all joint " << endl;
+        yError() << "ERROR in setRefSpeedsRaw for all joint ";
     }
 
     return ret;
@@ -1104,16 +1122,16 @@ bool comanMotionControl::setRefAccelerationsRaw(const int n_joint, const int *jo
     McBoard *joint_p = NULL;
 
     // TCP ONLY
-    for(int idx=0; idx<n_joint; idx++)
+    for(int j=0; j<n_joint; j++)
     {
-        joint_p = getMCpointer(idx);
-        int16_t tmp_acc = (int16_t) accs[idx];
+        joint_p = getMCpointer(joints[j]);
+        int16_t tmp_acc = (int16_t) accs[j];
 
         if(NULL != joint_p)
             ret = ret && (!joint_p->setItem(SET_ACCELERATION, &tmp_acc, sizeof(int16_t)));   // setItem returns 0 if ok, 2 if error
         else
         {
-            yError() << "Trying to use setRefAccelerationsRaw on a non existing joint" << idx;
+            yError() << "Trying to use setRefAccelerationsRaw on a non existing joint" << joints[j];
             ret = false;
         }
     }
@@ -1127,16 +1145,16 @@ bool comanMotionControl::setRefAccelerationsRaw(const double *accs)
     McBoard *joint_p = NULL;
 
     // TCP ONLY
-    for(int idx=1; idx <= _njoints; idx++)
+    for(int j=0; j < _njoints; j++)
     {
-        joint_p = getMCpointer(idx);
-        int16_t tmp_acc = (int16_t) accs[idx];
+        joint_p = getMCpointer(j);
+        int16_t tmp_acc = (int16_t) accs[j];
 
         if(NULL != joint_p)
             ret = ret && (!joint_p->setItem(SET_ACCELERATION, &tmp_acc, sizeof(int16_t)));   // setItem returns 0 if ok, 2 if error
         else
         {
-            yError() << "Trying to use setRefAccelerationsRaw on a non existing joint" << idx;
+            yError() << "Trying to use setRefAccelerationsRaw on a non existing joint" << j;
             ret = false;
         }
     }
@@ -1146,22 +1164,8 @@ bool comanMotionControl::setRefAccelerationsRaw(const double *accs)
 bool comanMotionControl::getRefSpeedRaw(int j, double *spd)
 {
     yTrace();
-    int idx = bId2Idx(j);
-    *spd = (double) _ref_speeds[idx] * COMAN_POS_TO_VEL_GAIN;
+    *spd = (double) _ref_speeds[j] * COMAN_POS_TO_VEL_GAIN;
     return true;
-
-/*    McBoard *joint_p = getMCpointer(j);
-    int16_t ref_speed;
-    if( NULL == joint_p)
-    {
-        *spd = 0;
-        yError() << "Calling getRefSpeedRaw on a non-existing joint j" << j;
-        return false;
-    }
-    bool ret = (!joint_p->getItem(GET_DESIRED_VELOCITY,   NULL, 0, REPLY_DESIRED_VELOCITY, &ref_speed, sizeof(ref_speed)) );
-    *spd = (double) ref_speed;
-    return ret;
-*/
 }
 
 bool comanMotionControl::getRefSpeedsRaw(double *spds)
@@ -1208,11 +1212,11 @@ bool comanMotionControl::getRefAccelerationsRaw(const int n_joint, const int *jo
 
     for(int idx=0; idx<n_joint; idx++)
     {
-        joint_p = getMCpointer(idx);
+        joint_p = getMCpointer(joints[idx]);
 
         if(NULL == joint_p)
         {
-            yError() << "Trying to use getRefAccelerationsRaw on a non existing joint" << idx;
+            yError() << "Trying to use getRefAccelerationsRaw on a non existing joint" << joints[idx];
             ret = false;
         }
         else
@@ -1233,21 +1237,20 @@ bool comanMotionControl::getRefAccelerationsRaw(double *accs)
     bool ret = true;
     McBoard *joint_p = NULL;
 
-    for(int bId=1; bId <= _njoints; bId++)
+    for(int j=0; j < _njoints; j++)
     {
-        joint_p = getMCpointer(bId);
-        idx = bId2Idx(bId);
+        joint_p = getMCpointer(j);
 
         if(NULL == joint_p)
         {
-            yError() << "Trying to use getRefAccelerationsRaw on a non existing board" << bId;
+            yError() << "Trying to use getRefAccelerationsRaw on a non existing board" << j;
             ret = false;
         }
         else
         {
             // TCP ONLY
             ret = ret && (!joint_p->getItem(GET_ACCELERATION, NULL, 0, REPLY_ACCELERATION, &tmp_acc, sizeof(int16_t)));   // setItem returns 0 if ok, 2 if error
-            accs[idx] = (double) tmp_acc;
+            accs[j] = (double) tmp_acc;
         }
     }
     return ret;
@@ -1259,29 +1262,31 @@ bool comanMotionControl::stopRaw(int j)
     bool ret = true;
     uint8_t stop = 0;
     McBoard *joint_p = NULL;
+    uint8_t bId = jointTobId(j);
 
     switch(_controlMode[j])
     {
         case VOCAB_CM_POSITION:
-            ret = !_boards_ctrl->start_stop_single_control((uint8_t) j, stop, POSITION_MOVE);
+            ret = !_boards_ctrl->start_stop_single_control((uint8_t) bId, stop, POSITION_MOVE);
             break;
 
         case VOCAB_CM_VELOCITY:
-            ret = !_boards_ctrl->start_stop_single_control((uint8_t) j, stop, VELOCITY_MOVE);
+            ret = !_boards_ctrl->start_stop_single_control((uint8_t) bId, stop, VELOCITY_MOVE);
             break;
 
         case VOCAB_CM_TORQUE:
-            ret = !_boards_ctrl->start_stop_single_control((uint8_t) j, stop, TORQUE_MOVE);
+            ret = !_boards_ctrl->start_stop_single_control((uint8_t) bId, stop, TORQUE_MOVE);
             break;
 
         default:
             yError() << "Calling stop from an unknown control mode (joint" << j << ")... stopping everything!";
-            ret = ret && (!_boards_ctrl->start_stop_single_control((uint8_t) j, stop, POSITION_MOVE));
-            ret = ret && (!_boards_ctrl->start_stop_single_control((uint8_t) j, stop, VELOCITY_MOVE));
-            ret = ret && (!_boards_ctrl->start_stop_single_control((uint8_t) j, stop, TORQUE_MOVE));
+            ret = ret && (!_boards_ctrl->start_stop_single_control((uint8_t) bId, stop, POSITION_MOVE));
+            ret = ret && (!_boards_ctrl->start_stop_single_control((uint8_t) bId, stop, VELOCITY_MOVE));
+            ret = ret && (!_boards_ctrl->start_stop_single_control((uint8_t) bId, stop, TORQUE_MOVE));
             ret = false;
             break;
     }
+    _controlMode[j] = VOCAB_CM_IDLE;
     return ret;
 }
 
@@ -1295,13 +1300,20 @@ bool comanMotionControl::stopRaw(const int n_joint, const int *joints)
 
     for(int idx=0; idx < n_joint; idx++)
     {
-        board_set[idx] = joints[idx];
+        board_set[idx] = jointTobId(joints[idx]);
     }
 
     ret = ret && (!_boards_ctrl->start_stop_set_control(board_set, stop, POSITION_MOVE));
     ret = ret && (!_boards_ctrl->start_stop_set_control(board_set, stop, VELOCITY_MOVE));
     ret = ret && (!_boards_ctrl->start_stop_set_control(board_set, stop, TORQUE_MOVE));
 
+	if(ret)
+	{
+		for(int idx=0; idx < n_joint; idx++)
+		{
+		    _controlMode[joints[idx]] = VOCAB_CM_IDLE;
+		}
+	}
     return ret;
 }
 
@@ -1315,6 +1327,10 @@ bool comanMotionControl::stopRaw()
     ret = ret && (!_boards_ctrl->start_stop_control( stop, VELOCITY_MOVE));
     ret = ret && (!_boards_ctrl->start_stop_control( stop, TORQUE_MOVE));
 
+	if(ret)
+	for(int i=0; 0<_njoints; i++)
+    	_controlMode[i] = VOCAB_CM_IDLE;
+    	
     return ret;
 }
 ///////////// END Position Control INTERFACE  //////////////////
@@ -1332,25 +1348,26 @@ bool comanMotionControl::setPositionModeRaw(const int n_joint, const int *joints
 
     for(int idx=0; idx < n_joint; idx++)
     {
-        board_set[idx] = joints[idx];
+        board_set[idx] = jointTobId(joints[idx]);
     }
     return (!_boards_ctrl->start_stop_set_control(board_set, start, POSITION_MOVE));
 }
 
 bool comanMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
 {
+    yTrace();
     int16_t *tmp_sp   = new int16_t [n_joint];
     int32_t *tmp_pos  = new int32_t [n_joint];
     uint8_t *tmp_bIds = new uint8_t [n_joint];
 
     for(int i=0; i<n_joint; i++)
     {
-        tmp_bIds[i] = joints[i];
+        tmp_bIds[i] = jointTobId(joints[i]);
         _ref_positions[joints[i]] = (int32_t) refs[i];
         tmp_sp[i]  = _ref_speeds[joints[i]];
         tmp_pos[i] = _ref_positions[joints[i]];
     }
-    int ret = (!_boards_ctrl->set_position_velocity_group(tmp_bIds, tmp_pos, tmp_sp, n_joint) );
+    bool ret = (!_boards_ctrl->set_position_velocity_group(tmp_bIds, tmp_pos, tmp_sp, n_joint) );
     delete [] tmp_sp;
     delete [] tmp_pos;
     delete [] tmp_bIds;
@@ -1380,7 +1397,7 @@ bool comanMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, c
 
     for(int idx=0; idx<n_joint; idx++)
     {
-        tmp_bId[idx] = (uint8_t) joints[idx];
+        tmp_bId[idx] = jointTobId(joints[idx]);
         // differenza tra la unità di misura usata in velocità e posizione;
         tmp_sp[idx] = (int16_t) (spds[idx] /COMAN_POS_TO_VEL_GAIN); 
         _ref_speeds[joints[idx]] = tmp_sp[idx];
@@ -1409,8 +1426,8 @@ bool comanMotionControl::getRefSpeedsRaw(const int n_joint, const int *joints, d
 bool comanMotionControl::setPositionModeRaw(int j)
 {
     yTrace();
-    int idx = bId2Idx(j);
     McBoard *joint_p = getMCpointer(j);
+    uint8_t bId = jointTobId(j);
     uint8_t stop = 0;
     bool ret = true;
     int vel2pos_cycle = 0;
@@ -1443,13 +1460,12 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
         default:
             yDebug() << "joint "<< j << "setvelocity mode coming from unknown controlmode... stop everything and then enable position\n" << endl;
-            stopRaw();
             break;
     }
-    ret = ret && (!_boards_ctrl->start_stop_single_control(j, 1, POSITION_MOVE));      // j+1 per solita differenza di corrispondenze tra bId e n' giunto, 1 = ON
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, 1, POSITION_MOVE));      // j+1 per solita differenza di corrispondenze tra bId e n' giunto, 1 = ON
 
     if(ret)
-        _controlMode[idx] = VOCAB_CM_POSITION;
+        _controlMode[j] = VOCAB_CM_POSITION;
     else
         yError() << "while setting position mode for joint " << j;
     return ret;
@@ -1461,8 +1477,8 @@ bool comanMotionControl::setTorqueModeRaw(int j)
 {
     yTrace();
     uint8_t stop = 0;
-    int idx = bId2Idx(j);
     McBoard *joint_p = getMCpointer(j);
+    uint8_t bId = jointTobId(j);
 
     if( NULL == joint_p)
     {
@@ -1472,8 +1488,8 @@ bool comanMotionControl::setTorqueModeRaw(int j)
     uint8_t trq_on = 4;  //1 for torque control    0 for position control
     bool ret = true;
 
-    ret = ret && (!_boards_ctrl->start_stop_single_control(j, stop, POSITION_MOVE));
-    ret = ret && (!_boards_ctrl->start_stop_single_control(j, stop, VELOCITY_MOVE));
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
 
 /*  // stop what is running
     if(0)
@@ -1519,7 +1535,7 @@ bool comanMotionControl::setTorqueModeRaw(int j)
     ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &trq_on, sizeof(trq_on)) );
 
     if(ret)
-        _controlMode[idx] = VOCAB_CM_TORQUE;
+        _controlMode[j] = VOCAB_CM_TORQUE;
     return (ret);
 }
 
@@ -1533,7 +1549,7 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
 {
     // Chiedere info
     McBoard *joint_p = getMCpointer(j);
-
+    uint8_t bId = jointTobId(j);
     if( NULL == joint_p)
     {
         yError() << "Calling setImpedancePositionModeRaw on a non-existing joint j" << j;
@@ -1541,21 +1557,27 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
     }
 
     bool ret = true;
+    uint8_t start = 1;  //1 for torque control    0 for position control
+    uint8_t stop = 0;
     uint16_t motor_config_mask = 0;
-    //
-    uint8_t trq_on = 1;  //1 for torque control    0 for position control
-//     ret &= (!joint_p->setItem(SET_TORQUE_ON_OFF, &trq_on, sizeof(trq_on)) );
-    ret &= (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
+
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
+    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
+    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
     printf("joint %d got motor config 0x%0X", j, motor_config_mask);
 
-    motor_config_mask |= 0x4000;   // add bit about impedance control.
+    motor_config_mask |= 0x4803;   // add bit about impedance control.
 
-    ret &= (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
+    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
     printf("joint %d got motor config 0x%0X", j, motor_config_mask);
 
-    uint16_t motor_config_mask2 = 0x1;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
+    uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
 
-    ret &= (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
+    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
+
+//    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//    ret &= (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
     return ret;
 }
 
@@ -1573,10 +1595,8 @@ bool comanMotionControl::setOpenLoopModeRaw(int j)
 
 bool comanMotionControl::getControlModeRaw(int j, int *v)
 {
-    int idx = bId2Idx(j);
-
     // cached value must be correct!!
-    *v = _controlMode[idx];
+    *v = _controlMode[j];
     return true;
 }
 
@@ -1907,7 +1927,7 @@ bool comanMotionControl::getJointPositionsRaw        (double* value)
     yTrace();
     bool ret = true;
     for(int j=0; j<_njoints; j++)
-        ret &= getJointPositionRaw(j, &value[j]);
+        ret = ret && getJointPositionRaw(j, &value[j]);
     return ret;
 }
 
@@ -1930,6 +1950,7 @@ bool comanMotionControl::setLimitsRaw(int j, double min, double max)
 
     ret &= (!joint_p->setItem(SET_MIN_POSITION, &_min_pos, sizeof(_min_pos)) );  // setItem returns 0 if ok, 2 if error
     ret &= (!joint_p->setItem(SET_MAX_POSITION, &_max_pos, sizeof(_max_pos)) );
+    return ret;
 }
 
 bool comanMotionControl::getLimitsRaw(int j, double *min, double *max)
@@ -1959,7 +1980,7 @@ bool comanMotionControl::getLimitsRaw(int j, double *min, double *max)
 }
 
 //
-// Toque interface
+// Torque interface
 //
 
 bool comanMotionControl::getTorqueRaw(int j, double *t)
@@ -1991,12 +2012,21 @@ bool comanMotionControl::getTorquesRaw(double *t)
     return ret;
 };
 
+bool comanMotionControl::getBemfParamRaw(int j, double *bemf)
+{
+    return NOT_YET_IMPLEMENTED("getBemfParam");
+}
+
+bool comanMotionControl::setBemfParamRaw(int j, double bemf)
+{
+    return NOT_YET_IMPLEMENTED("getBemfParam");
+}
+
 bool comanMotionControl::getTorqueRangeRaw(int j, double *min, double *max)
 {
     yTrace();
     return NOT_YET_IMPLEMENTED("getTorqueRangeRaw");
 };
-
 
 bool comanMotionControl::getTorqueRangesRaw(double *min, double *max)
 {
@@ -2049,7 +2079,7 @@ bool comanMotionControl::getRefTorquesRaw(double *t)
     yTrace();
     bool ret = true;
     for(int j=0; j<_njoints; j++)
-        ret &=getRefTorqueRaw(j, &t[j]);
+        ret = ret && getRefTorqueRaw(j, &t[j]);
     return ret;
 };
 
@@ -2062,7 +2092,7 @@ bool comanMotionControl::setTorquePidRaw(int j, const Pid &pid)
 
     if( NULL == joint_p)
     {
-        yError() << "Calling SetPid on a non-existing joint j" << j;
+        yError() << "Calling Set torque Pid on a non-existing joint j" << j;
         return false;
     }
     else
@@ -2091,9 +2121,9 @@ bool comanMotionControl::setTorquePidRaw(int j, const Pid &pid)
 bool comanMotionControl::setTorquePidsRaw(const Pid *pids)
 {
     bool ret = true;
-    for(int bId=1; bId<=_njoints; bId++)
+    for(int j=0; j<_njoints; j++)
     {
-        ret = ret && setTorquePidRaw(bId, pids[bId]);
+        ret = ret && setTorquePidRaw(j, pids[j]);
     }
     return ret;
 };
@@ -2181,3 +2211,71 @@ bool comanMotionControl::setTorqueOffsetRaw(int j, double v)
     yTrace();
     return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
 };
+
+bool comanMotionControl::setVelLimitsRaw(int j, double min, double max)
+{
+    McBoard *joint_p = getMCpointer(j);
+    int16_t velMax = (int16_t) max;
+    int16_t velMin = (int16_t) min;
+    bool ret = true;
+    ret = (!joint_p->setItem(SET_MAX_VELOCITY, &velMax, sizeof(velMax)) ) && ret;
+    ret = (!joint_p->setItem(SET_MIN_VELOCITY, &velMax, sizeof(velMin)) ) && ret;
+    return true;
+}
+
+bool comanMotionControl::getVelLimitsRaw(int j, double *min, double *max)
+{
+    McBoard *joint_p = getMCpointer(j);
+    int16_t velMax;
+    int16_t velMin;
+    bool ret = (!joint_p->setItem(GET_MAX_VELOCITY, &velMax, sizeof(velMax)) );
+    ret = (!joint_p->setItem(GET_MIN_VELOCITY, &velMax, sizeof(velMin)) ) && ret;
+    *min = (double) velMin;
+    *max = (double) velMax;
+    return true;
+}
+
+
+// PositionDirect Interface
+bool comanMotionControl::setPositionRaw(int j, double ref)
+{
+    // needs to send both position and velocity as well as positionMove
+    yTrace();
+    uint8_t bId = jointTobId(j);
+    _ref_positions[j] = (int32_t) ref;
+
+    return (!_boards_ctrl->set_position_velocity_group(&bId, &_ref_positions[j], &_ref_speeds[j], 1) );  // 1 is the number of joints
+}
+
+// needs to send both position and velocity as well as positionMove
+bool comanMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+{
+    int16_t *tmp_sp   = new int16_t [n_joint];
+    int32_t *tmp_pos  = new int32_t [n_joint];
+    uint8_t *tmp_bIds = new uint8_t [n_joint];
+
+    for(int i=0; i<n_joint; i++)
+    {
+        tmp_bIds[i] = jointTobId(joints[i]);
+        _ref_positions[joints[i]] = (int32_t) refs[i];
+        tmp_sp[i]  = _ref_speeds[joints[i]];
+        tmp_pos[i] = _ref_positions[joints[i]];
+    }
+    int ret = (!_boards_ctrl->set_position_velocity_group(tmp_bIds, tmp_pos, tmp_sp, n_joint) );
+    delete [] tmp_sp;
+    delete [] tmp_pos;
+    delete [] tmp_bIds;
+    return ret;
+}
+
+// needs to send both position and velocity as well as positionMove
+bool comanMotionControl::setPositionsRaw(const double *refs)
+{
+    for(int i=0; i<_njoints; i++)
+        _ref_positions[i] = (int32_t) refs[i];
+
+    // here the function wants the num of elements (joints), contiene internamente un loop su tutte le schede
+    return (!_boards_ctrl->set_position_velocity(_ref_positions, _ref_speeds, _njoints) );
+}
+
+

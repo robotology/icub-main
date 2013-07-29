@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device name="right_arm_calibrator" type="parametricCalibrator">
+
+		<group name="GENERAL">
+		    <param name="Joints"> 8 </param> 
+		    <param name="DeviceName"> Right Arm Calibrator </param>
+		</group>
+
+        <group name="CALIBRATION">   
+        <param name="CalibrationType">            3             3             3             3             0             2             2             3             </param>       
+        <param name="Calibration1">               1706.25       853.125       2795.317      2558          600           750           750           1829          </param>       
+        <param name="Calibration2"> 10            10            10            10            -20           10            10            100           </param>       
+        <param name="Calibration3">               195.65        436.8         1728.858      2512.738      0             0             0             0             </param>       
+        <param name="PositionZero">               -30           30            0             45            0             0             0             15            </param>       
+        <param name="VelocityZero">               10            10            10            10            30            30            30            100           </param>       
+        <param name="MaxPWM">       120           120           120           120           0             0             0             0             </param>       
+        </group>       
+         
+        <group name="HOME">          
+        <param name="PositionHome"> -30           30            0             45            0             0             40            15            </param>       
+        <param name="VelocityHome"> 10            10            10            10            30            30            30            100           </param>       
+        </group>       
+
+		<param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5)</param>
+		
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">right_arm_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">right_arm_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

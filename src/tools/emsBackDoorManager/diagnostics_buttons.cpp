@@ -57,6 +57,7 @@
 // - definition (and initialisation) of extern variables, but better using _get(), _set()
 // --------------------------------------------------------------------------------------------------------------------
 extern OPCprotocolManager *opcMan_ptr;
+extern ACE_SOCK_Dgram	*ACE_socket;
 
 eOdgn_commands_t dgnCommands={0};
 
@@ -84,7 +85,7 @@ void commands(void)
 {
 	printf("\nq: quit\n");
 	printf("0: ena/disa diagnostics on a ems\n");
-	printf("1: ........\n");
+	printf("1: ena/disa diagnostics on a group of ems\n");
 	printf("2: ........\n");
 	printf("3: ........\n");
 	printf("4: ........\n");
@@ -194,7 +195,58 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 }*/
 uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
-	return(callback_button_x(payload_ptr, payload_size, addr, 1));
+	uint16_t size = 0;
+    uint32_t cmdena=0;
+    uint32_t min, max, j;
+    opcprotman_res_t res;
+    uint32_t address=0;
+
+
+    if(opcMan_ptr ==  NULL)
+	{
+		printf("opcMan_ptr is NULL\n");
+		return(0);
+	}
+
+
+    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
+    scanf("%d", &cmdena);
+    dgnCommands.enable = cmdena;
+
+    printf("insert renge of board[1,9]: min max\n");
+    scanf("%d %d", &min, &max);
+    if(min>max)
+    {
+        printf("error: min > max!\n");
+        return(0);
+    }
+    if(min<1)
+    {
+        min = 1;
+    }
+    if(max>9)
+    {
+        max = 9;
+    }
+
+    for(j=min; j<=max; j++)
+    {
+    	address = (10<<24)|(0<<16)|(1<<8)|j ;
+    	addr->set(4444, address);
+    	res = opcprotman_Form(opcMan_ptr, opcprotman_opc_set, eodgn_nvidbdoor_cmds,  &dgnCommands, (opcprotman_message_t*)payload_ptr, &size);
+		if(opcprotman_OK  != res)
+		{
+
+			printf("erron in former\n");
+			return(0);
+		}
+    		ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
+			ACE_TCHAR     address[64];
+			addr->addr_to_string(address, 64);
+			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
+	}
+    return(0); //no data to send in main loop
+
 }
 
 uint32_t callback_button_2(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)

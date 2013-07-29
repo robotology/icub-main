@@ -819,6 +819,10 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     switch (b.get(0).asVocab())
         {
         case VOCAB_POSITION_MODE:
+            {
+                fprintf(stderr, "Warning: received VOCAB_POSITION_MODE this is an send invalid message on streaming port\n");
+                break;
+            }
         case VOCAB_POSITION_MOVES:
             {
                 //printf("Received a position command\n");
@@ -837,6 +841,10 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             break;
 
         case VOCAB_VELOCITY_MODE:
+             {
+                fprintf(stderr, "Warning: received VOCAB_VELOCITY_MODE this is an send invalid message on streaming port\n");
+                break;
+            }
         case VOCAB_VELOCITY_MOVES:
             {
                 //            printf("Received a velocity command\n");
@@ -868,15 +876,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
             }
             break;
         }
-
-
-    //    printf("v: ");
-    //    int i <;
-    //    for (i = 0; i < (int)v.size(); i++)
-    //        printf("%.3f ", v[i]);
-    //    printf("\n");
 }
-
 
 bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                               yarp::os::Bottle& response)
@@ -1204,6 +1204,35 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                                 if (pos!=NULL)
                                     ok = pos->positionMove(&vect[0]);
+                            }
+                            break;
+                        #define VOCAB_POSITION_MOVE_GROUP VOCAB4('p','o','s','g')
+                        case VOCAB_POSITION_MOVE_GROUP:
+                            {
+                                int nj = cmd.get(2).asInt();
+                                Bottle *jlut = cmd.get(3).asList();
+                                Bottle *pos = cmd.get(4).asList();
+
+                                if (jlut==NULL || pos==NULL)
+                                    break;
+                                if (nj!=jlut->size() || nj!=pos->size())
+                                    break;
+                                
+                                int *lut_tmp=new int [nj];
+                                double *pos_tmp=new double [nj];
+                               
+                                for (int i = 0; i < nj; i++)
+                                    lut_tmp[i] = jlut->get(i).asInt();
+
+                                for (int i = 0; i < nj; i++)
+                                    pos_tmp[i] = pos->get(i).asDouble();
+
+                                //if (pos!=NULL)
+                                    // ok = pos->positionMove(nj, lut_tmp, pos_tmp);
+
+                                delete [] lut_tmp;
+                                delete [] pos_tmp;
+                            
                             }
                             break;
 

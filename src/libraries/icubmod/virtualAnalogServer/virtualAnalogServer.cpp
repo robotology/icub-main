@@ -125,10 +125,10 @@ bool VirtualAnalogServer::open(Searchable& config)
 
     Bottle *networks=config.find("networks").asList();
     mNSubdevs=networks->size();
-    
+
     mChan2Board.resize(mNChannels);
     mChan2BAddr.resize(mNChannels);
-    
+
     mSubdevices.resize(mNSubdevs);
 
     int totalJ=0;
@@ -146,7 +146,7 @@ bool VirtualAnalogServer::open(Searchable& config)
 
         int map0=parameters.get(1).asInt();
         int map1=parameters.get(2).asInt();
-        
+
         int map2=parameters.get(3).asInt();
         int map3=parameters.get(4).asInt();
 
@@ -197,11 +197,9 @@ bool VirtualAnalogServer::open(Searchable& config)
 
 bool VirtualAnalogServer::close()
 {
-    Thread::stop();
-
-    mPortInputTorques.interrupt();
+	mPortInputTorques.interrupt();
     mPortInputTorques.close();
-
+    Thread::stop();
     return true;
 }
 
@@ -259,18 +257,21 @@ bool VirtualAnalogServer::detachAll()
 
     return true;
 }
+
 void VirtualAnalogServer::run()
 {
     yarp::os::Bottle *pTorques;
 
-    while (Thread::isRunning())
+    while (!Thread::isStopping())
     {
-        pTorques=mPortInputTorques.read();
+        pTorques=mPortInputTorques.read(false);
+        double timeNow=Time::now();
 
         if (pTorques)
         {
             mMutex.wait();
 
+            lastRecv=Time::now();
             switch (pTorques->get(0).asInt())
             {
             case 1: //arm torque message
@@ -282,7 +283,7 @@ void VirtualAnalogServer::run()
                 mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //wrist yaw
                 mSubdevices[mChan2Board[6]].setTorque(mChan2BAddr[6],pTorques->get(7).asDouble()); //wrist pitch
             break;
-        
+
             case 2: //legs torque message
                 mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //hip pitch
                 mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //hip roll
@@ -297,7 +298,7 @@ void VirtualAnalogServer::run()
                 mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //torso roll (lateral movement)
                 mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //torso pitch (front-back movement)
             break;
-            
+
             default:
                 yError() << "Warning: got unexpected " << pTorques->get(0).asInt() << " message on virtualAnalogServer.";
             }
@@ -311,7 +312,20 @@ void VirtualAnalogServer::run()
         }
         else
         {
-            yarp::os::Time::delay(0.5);
+            yarp::os::Time::delay(0.01);
+        }
+
+        if (lastRecv+0.1 < timeNow)
+        {
+            //if 100ms have passed since the last received message
+            for (int d=0; d<mNSubdevs; ++d)
+            {
+                mSubdevices[d].resetTorque();
+                mSubdevices[d].flushTorques();
+
+//                Virtual Sensor status is not handled now because server DO NOT implement IVirtual AnalogSensor Interface.
+//                status=IAnalogSensor::AS_TIMEOUT;
+            }
         }
     }
 }

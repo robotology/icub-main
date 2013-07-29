@@ -164,6 +164,7 @@ void                            MILClassifier::insertBag            (const doubl
 }
 
 
+//*
 
 double                          MILClassifier::bestRadius           ()
 {
@@ -220,7 +221,53 @@ double                          MILClassifier::bestRadius           ()
 }
 
 
+/*/
 
+
+double                          MILClassifier::bestRadius           ()
+{
+    double best_radius = 0.0;
+
+    // Error is not normalized in this case
+    double tp=0.0, fp=0.0;
+    double maxrate=tp/(fp+EPSILON);
+    double newthreshold=0.0;
+    
+    std::deque<Bag>::iterator itr = cache.begin();
+    while(itr != cache.end())
+    {
+        newthreshold = itr->dist;
+        if(tp/(fp+EPSILON)>maxrate+EPSILON)
+        {
+            best_radius = newthreshold;
+            maxrate=tp/(fp+EPSILON);
+        }
+
+        do
+        {
+            if(itr->label == +1)
+                tp += itr->weight;
+            else
+                fp += itr->weight;
+        }
+        while(++itr != cache.end() && fabs(itr->dist - newthreshold)<EPSILON);
+    }
+
+    // Check if everything should be accepted
+    if (maxrate<EPSILON)
+    {
+        best_radius=-1.0;
+        maxrate=0.0;
+    }
+
+    // Minerr is the weight of the misclassified examples. The denominator is total weight.
+    error = maxrate;
+
+    return best_radius;
+}
+
+
+*/
 
 //Public  Methods
 void                            MILClassifier::clear                ()

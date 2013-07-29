@@ -232,19 +232,24 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     ethResources  *res2release  = NULL;
     char tmp_addr[64];
 
+
     ethResources *tmpEthRes;
     ACE_INET_Addr  tmp_ace_addr;
 
-    ethResIt it = EMS_list.begin();
-    while(it != EMS_list.end())
+    if(false == emsAlreadyClosed)
     {
-        tmpEthRes = (*it);
-        tmpEthRes->goToConfig();
-        it++;
+		ethResIt it = EMS_list.begin();
+		while(it != EMS_list.end())
+		{
+			tmpEthRes = (*it);
+			tmpEthRes->goToConfig();
+			tmpEthRes->clearPerSigMsg();
+			it++;
+		}
+		//before stopping threads, flush all pkts not yet sent.
+		flush();
+		emsAlreadyClosed = true;
     }
-// #warning remove sleep asap!!!!!!
-    //here sleep is essential in order to let sender thread send gotocongig command.
-    yarp::os::Time::delay(1); // EO_WARNING()
     stopThreads();
     managerMutex.wait();
 
@@ -375,6 +380,7 @@ TheEthManager::TheEthManager()
 
     UDP_initted = false;
     UDP_socket  = NULL;
+    emsAlreadyClosed = false;
 }
 
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
@@ -558,6 +564,15 @@ bool TheEthManager::close()
 //     }
 
     return true;
+}
+
+
+void TheEthManager::flush()
+{
+    // #warning remove sleep asap!!!!!!
+        //here sleep is essential in order to let sender thread send gotocongig command.
+        yarp::os::Time::delay(1); // EO_WARNING()
+
 }
 
 EthSender::EthSender() : RateThread(1)
@@ -771,7 +786,7 @@ void EthReceiver::run()
             {
                 if(!lastHeard[ethRes->boardNum].error_PC104)
                 {
-                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout << "ms are passed without any news";
+                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout *1000 << "ms are passed without any news";
                     lastHeard[ethRes->boardNum].error_PC104 = true;
                 }
             }
@@ -805,8 +820,6 @@ void EthReceiver::run()
                 ethRes = (*riterator);
                 if(ethRes->getRemoteAddress() == sender_addr)
                 {
-
-
                     if(recv_size > ethRes->getBufferSize())
                     {
                         yError() << "EthReceiver got a message of wrong size ( received" << recv_size << " bytes while buffer is" << ethRes->getBufferSize() << " bytes long)";
@@ -828,11 +841,10 @@ void EthReceiver::run()
                             }
 
                             // check time written into packet
-                            if( (getRopFrameAge(incoming_msg) - lastHeard[ethRes->boardNum].ageofframe_EMS) > (uint64_t) (myTestTimeout * 1000*1000))
+                            int diff = (int)(getRopFrameAge(incoming_msg)/1000 - lastHeard[ethRes->boardNum].ageofframe_EMS/1000);
+                            if( diff > (int)(myTestTimeout * 1000))
                             {
-
-                                yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << (getRopFrameAge(incoming_msg) - lastHeard[ethRes->boardNum].ageofframe_EMS) / (1000) << "ms.";
-                                lastHeard[ethRes->boardNum].error_EMS = true;
+                                yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << diff << "ms.";
                             }
 
                             //reset errors
@@ -859,6 +871,7 @@ void EthReceiver::run()
     yError() << "Exiting recv thread";
     return;
 }
+
 
 // eof
 

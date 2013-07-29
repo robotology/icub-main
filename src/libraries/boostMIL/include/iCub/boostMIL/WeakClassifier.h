@@ -242,6 +242,20 @@ public:
     */
     virtual int                         classify    (const Inputs *input, Output *output=NULL)      const   = 0;
 
+    
+    /**
+    * Margin, in general it is the same as classify.
+    *
+    * @param input the input to classify.
+    * @return 1,-1 or 0 if the classifier classifies the input (respectively): 
+    *         positive, negative or undetermined (e.g. the classifier is not ready to classify yet).
+    */
+    virtual double                         margin    (const Inputs *input, Output *output=NULL)      const
+    {
+        return classify(input,output);
+    }
+
+
     /**
     * Virtual Constructor.
     */

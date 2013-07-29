@@ -294,13 +294,18 @@ public:
     iKinLinIneqConstr &getLIC() { return *pLIC; }
 
     /**
-    * Selects 2nd Task End-Effector by giving the ordinal number n 
-    * of last joint pointing at it.
+    * Selects the End-Effector of the 2nd task by giving the ordinal
+    * number n of last joint pointing at it. 
     * @param n is the ordinal number of last joint pointing at the 
     *          2nd End-Effector.
-    * @return a reference to the secondary chain. 
     */
-    iKinChain &specify2ndTaskEndEff(const unsigned int n);
+    void specify2ndTaskEndEff(const unsigned int n);
+
+    /**
+    * Retrieves the 2nd task's chain. 
+    * @return a reference to the 2nd task's chain.  
+    */
+    iKinChain &get2ndTaskChain();
 
     /**
     * Sets Tolerance.

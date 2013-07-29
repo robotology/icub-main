@@ -773,18 +773,31 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
-    if (b.check("external_forces_thresh"))
-        extForceThresh[arm]=b.find("external_forces_thresh").asDouble();
+    if (Bottle *pB=b.find("tool_take_position").asList())
+    {
+        takeToolPos[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            takeToolPos[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        return false;
+
+    if (Bottle *pB=b.find("tool_take_orientation").asList())
+    {
+        takeToolOrient[arm].resize(pB->size());
+
+        for (int i=0; i<pB->size(); i++)
+            takeToolOrient[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        return false;
+    
+
+    extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
     pwrGraspApproachAngle[arm]=b.check("powergrasp_approach_angle",Value(50.0)).asDouble();
-
-    pwrGraspApproachDisplacement[arm].resize(3,0.0);
-    if (Bottle *pB=b.find("powergrasp_approach_displacement").asList())
-    {
-        pwrGraspApproachDisplacement[arm].resize(pB->size());
-        for (int i=0; i<pB->size(); i++)
-            pwrGraspApproachDisplacement[arm][i]=pB->get(i).asDouble();
-    }
+    pwrGraspApproachDisplacement[arm]=b.check("powergrasp_approach_displacement",Value(0.02)).asDouble();
 
     if(b.check("grasp_model_file"))
     {
@@ -1630,10 +1643,12 @@ bool MotorThread::powerGrasp(Bottle &options)
     Vector o=xd.subVector(3,6);
 
     Matrix R=axis2dcm(o);
-    Vector y=R.getCol(1);
+    Vector y=R.getCol(1);    
     y[3]=CTRL_DEG2RAD*((arm==RIGHT)?-pwrGraspApproachAngle[arm]:pwrGraspApproachAngle[arm]);
 
-    Vector approach_x=x+pwrGraspApproachDisplacement[arm];
+    Vector z=R.getCol(2).subVector(0,2);
+    Vector n=((arm==RIGHT)?-1.0:1.0)*z;
+    Vector approach_x=x+pwrGraspApproachDisplacement[arm]*n;
     Vector approach_o=dcm2axis(axis2dcm(y)*R);
 
     wbdRecalibration();
@@ -1649,6 +1664,11 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     if(grasp(options))
     {
+        // go up straightaway
+        action[arm]->getPose(x,o);
+        action[arm]->pushAction(x+graspAboveRelief,o);
+        action[arm]->checkActionsDone(f,true);
+
         setGazeIdle();
         Bottle b;
         b.addString("head");
@@ -1834,6 +1854,48 @@ bool MotorThread::look(Bottle &options)
     return true;
 }
 
+bool MotorThread::takeTool(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    {
+        setGazeIdle();
+        lookAtHand(options);
+    }
+
+    action[arm]->pushAction(takeToolPos[arm],takeToolOrient[arm],"open_hand");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    double force_thresh;
+    action[arm]->getExtForceThres(force_thresh);
+
+    bool contact_detected=false;
+    Vector wrench(6);
+    double t=Time::now();
+    
+    while(!contact_detected && Time::now()-t<5.0)
+    {
+        action[arm]->getExtWrench(wrench);
+        if(norm(wrench)>force_thresh)
+            contact_detected=true;
+        Time::delay(0.1);
+    }
+
+    if(!contact_detected)
+        fprintf(stdout,"damn!\n");
+
+    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+        setGazeIdle();
+
+    return true;
+}
 
 
 
@@ -1942,6 +2004,22 @@ bool MotorThread::grasp(Bottle &options)
     return isHolding(options);
 }
 
+bool MotorThread::grasp_tool(Bottle &options)
+{
+    int arm=ARM_IN_USE;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+    arm=checkArm(arm);
+
+    action[arm]->pushAction("close_hand_tool");
+
+    bool f;
+    action[arm]->checkActionsDone(f,true);
+
+    return isHolding(options);
+}
+
 
 bool MotorThread::release(Bottle &options)
 {
@@ -1958,6 +2036,32 @@ bool MotorThread::release(Bottle &options)
 
     return true;
 }
+
+
+void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin)
+{
+    ICartesianControl *ctrl;
+    action->getCartesianIF(ctrl);
+
+    int context;
+    ctrl->storeContext(&context);
+
+    Vector dof;
+    ctrl->getDOF(dof); dof=1.0;
+    ctrl->setDOF(dof,dof);
+
+    ctrl->setLimits(0,0.0,0.0);
+    ctrl->setLimits(1,0.0,0.0);
+    ctrl->setLimits(2,0.0,0.0);
+
+    ctrl->goToPoseSync(xin,oin);
+    ctrl->waitMotionDone();
+
+    ctrl->restoreContext(context);
+    ctrl->deleteContext(context);
+}
+
+
 bool MotorThread::goHome(Bottle &options)
 {
     bool head_home=(checkOptions(options,"head") || checkOptions(options,"gaze"));
@@ -1978,7 +2082,6 @@ bool MotorThread::goHome(Bottle &options)
     if(!left_arm && !right_arm)
         left_arm=right_arm=true;
 
-
     bool head_fixing=false;
     ctrl_gaze->getTrackingMode(&head_fixing);
 
@@ -1989,40 +2092,33 @@ bool MotorThread::goHome(Bottle &options)
     if(arms_home)
     {
         if(left_arm && action[LEFT]!=NULL)
-        {
-            bool f;
-            action[LEFT]->setTrackingMode(true);
+        {          
             if(hand_home)
-                action[LEFT]->pushAction(homePos[LEFT],homeOrient[LEFT],"open_hand");
-            else
-                action[LEFT]->pushAction(homePos[LEFT],homeOrient[LEFT]);
-            action[LEFT]->checkActionsDone(f,true);
+                action[LEFT]->pushAction("open_hand");
+
+            goHomeHelper(action[LEFT],homePos[LEFT],homeOrient[LEFT]);
+            bool f; action[LEFT]->checkActionsDone(f,true);
         }
 
         if(right_arm && action[RIGHT]!=NULL)
         {
-            bool f;
-            action[RIGHT]->setTrackingMode(true);
             if(hand_home)
-                action[RIGHT]->pushAction(homePos[RIGHT],homeOrient[RIGHT],"open_hand");
-            else
-                action[RIGHT]->pushAction(homePos[RIGHT],homeOrient[RIGHT]);
-            action[RIGHT]->checkActionsDone(f,true);
-        }
+                action[RIGHT]->pushAction("open_hand");
 
+            goHomeHelper(action[RIGHT],homePos[RIGHT],homeOrient[RIGHT]);
+            bool f; action[RIGHT]->checkActionsDone(f,true);
+        }
 
         if(right_arm && action[RIGHT]!=NULL)
         {
             if(waveing)
                 action[RIGHT]->enableArmWaving(homePos[RIGHT]);
-            action[RIGHT]->setTrackingMode(false);
         }
 
         if(left_arm && action[LEFT]!=NULL)
         {
             if(waveing)
                 action[LEFT]->enableArmWaving(homePos[LEFT]);
-            action[LEFT]->setTrackingMode(false);
         }
     }
 

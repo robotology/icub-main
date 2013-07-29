@@ -281,6 +281,9 @@ static GtkTreeModel * refresh_board_list_model (void)
 		case BOARD_TYPE_6SG:
             strcpy(board_type, "6SG (DSPIC)");
 	        break;
+		case BOARD_TYPE_JOG:
+            strcpy(board_type, "JOG (DSPIC)");
+	        break;
 		case BOARD_UNKNOWN:
 
         default:

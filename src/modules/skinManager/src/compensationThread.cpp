@@ -250,9 +250,11 @@ void CompensationThread::sendSkinEvents(){
     skinEvents.clear();
 
     skinContactList temp;
+    Stamp timestamp;
     FOR_ALL_PORTS(i){
         if(compWorking[i] && compEnable[i]){
             temp = compensators[i]->getContacts();
+            timestamp = compensators[i]->getTimestamp();
             skinEvents.insert(skinEvents.end(), temp.begin(), temp.end());
         }
     }
@@ -261,6 +263,8 @@ void CompensationThread::sendSkinEvents(){
         printf("SkinContacts size: %d\n", skinEvents.size());
         /*printf("SkinContacts:\n%s\n", skinEvents.toString().c_str());*/
 #endif
+    
+    skinEventsPort.setEnvelope(timestamp);
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
 

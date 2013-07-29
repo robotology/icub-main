@@ -1387,7 +1387,7 @@ bool ActionPrimitives::handCheckMotionDone(const int jnt)
 void ActionPrimitives::enableTorsoDof()
 {
     // enable torso joints, if any
-    if (!torsoActive && norm(enableTorsoSw))
+    if (!torsoActive && (norm(enableTorsoSw)>0.0))
     {
         Vector dummyRet;
         cartCtrl->setDOF(enableTorsoSw,dummyRet);
@@ -1400,7 +1400,7 @@ void ActionPrimitives::enableTorsoDof()
 void ActionPrimitives::disableTorsoDof()
 {
     // disable torso joints, if any
-    if (torsoActive && norm(enableTorsoSw))
+    if (torsoActive && (norm(enableTorsoSw)>0.0))
     {
         Vector dummyRet;
         cartCtrl->setDOF(disableTorsoSw,dummyRet);
@@ -1812,7 +1812,7 @@ bool ActionPrimitives::getCartesianIF(ICartesianControl *&ctrl) const
 
 
 /************************************************************************/
-bool ActionPrimitives::getTorsoJoints(yarp::sig::Vector &torso)
+bool ActionPrimitives::getTorsoJoints(Vector &torso)
 {
     if (configured)
     {
@@ -1825,12 +1825,12 @@ bool ActionPrimitives::getTorsoJoints(yarp::sig::Vector &torso)
 
 
 /************************************************************************/
-bool ActionPrimitives::setTorsoJoints(const yarp::sig::Vector &torso)
+bool ActionPrimitives::setTorsoJoints(const Vector &torso)
 {
     if (configured)
     {
-        int len=torso.length()>3?3:torso.length();
-        for (int i=0; i<len; i++)
+        size_t len=std::min(torso.length(),size_t(3));
+        for (size_t i=0; i<len; i++)
             enableTorsoSw[i]=torso[i];
 
         return true;
@@ -2178,9 +2178,7 @@ void ActionPrimitivesLayer2::run()
     // get the input from WBDYN
     if (Vector *wbdynWrench=wbdynPortIn.read(false))
     {
-        size_t len=wbdynWrench->length()>wrenchExternal.length()?
-                   wrenchExternal.length():wbdynWrench->length();
-
+        size_t len=std::min(wbdynWrench->length(),wrenchExternal.length());
         for (size_t i=0; i<len; i++)
             wrenchExternal[i]=(*wbdynWrench)[i];
     }

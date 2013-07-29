@@ -32,6 +32,7 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 
@@ -116,6 +117,8 @@ private:
 	/* ports */
 	BufferedPort<Vector> compensatedTactileDataPort;	// output port
     BufferedPort<Bottle>* infoPort;					    // info output port
+    BufferedPort<Vector> inputPort;
+    Stamp timestamp;    // timestamp of last data read from inputPort
 
 	
 	/* class private methods */	    
@@ -177,6 +180,7 @@ public:
     Vector getBaselines(){      return baselines; }
     Vector getRawData(){        return rawData; }
     Vector getCompData(){       return compensatedData; }
+    Stamp getTimestamp(){       return timestamp; }
     
     string getName(){           return name; }
     string getInputPortName(){  return tactileSensorDevice->getValue("remote").asString().c_str(); }

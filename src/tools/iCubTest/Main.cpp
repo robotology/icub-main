@@ -172,14 +172,17 @@ This file can be edited at src/iCubTest/main.cpp.
 #include <yarp/os/Network.h>
 
 #include "TestSet.h"
+#include "testRoie/TestRoie.h"
 #include "testMotors/TestMotors.h"
 #include "testMotorsStiction/TestMotorsStiction.h"
 #include "DriverInterface.h"
 
+YARP_DECLARE_DEVICES(icubmod)
+
 int main(int argc,char* argv[])
 {
+    YARP_REGISTER_DEVICES(icubmod)
     yarp::os::Network yarp;
-    yarp.init();
 
     if (!yarp.checkNetwork())
     {
@@ -195,15 +198,10 @@ int main(int argc,char* argv[])
     rf.configure("ICUB_ROOT",argc,argv);
 
     yarp::os::Bottle references=rf.findGroup("REFERENCES");
-
-    if (references.check("robot"))
-    {
-        iCubDriver::setRobot(references.find("robot").asString());
-    }
-
+    
     // create the test set
     iCubTestSet ts(references);
-    
+  
     // add tests to the test set
     yarp::os::Bottle testSet=rf.findGroup("TESTS").tail();
     
@@ -220,11 +218,15 @@ int main(int argc,char* argv[])
 
         if (testType=="iCubTestMotors")
         {
-            //ts.addTest(new iCubTestMotors(testRf));
+            ts.addTest(new iCubTestMotors(testRf));
         }
         else if (testType=="iCubTestMotorsStiction")
         {
             ts.addTest(new iCubTestMotorsStiction(testRf));
+        }
+        else if (testType=="iCubTestRoie")
+        {
+            ts.addTest(new iCubTestRoie(testRf));
         }
         else if (testType=="iCubTestCamera")
         {
@@ -240,9 +242,9 @@ int main(int argc,char* argv[])
         {
             //ts.AddTest(new iCubTestForceTorque(testRf));
             fprintf(stderr,"iCubTestForceTorque not yet implemented\n");
+        }
     }
-    }
-
+    
     // execute tests
     int numFailures=ts.run();
     

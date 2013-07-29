@@ -67,6 +67,7 @@ public:
 #define BOARD_TYPE_MAIS   0x07
 #define BOARD_TYPE_2FOC   0x08
 #define BOARD_TYPE_6SG    0x09
+#define BOARD_TYPE_JOG    0x0A
 #define BOARD_UNKNOWN     0xFF
 
 

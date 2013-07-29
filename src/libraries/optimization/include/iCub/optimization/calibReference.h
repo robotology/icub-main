@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
+ * Copyright (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
@@ -16,26 +16,20 @@
 */
 
 /**
- * @defgroup optimization optimization
- * @ingroup icub_libraries 
- *  
- * Tools designed to deal with optimization tasks.
- *  
- * @author Ugo Pattacini
- *  
  * @defgroup References References Calibration 
- * @ingroup optimization
+ * @ingroup MatrixTransformations
  *
  * Given two sets of 3D points, the aim is to find out the 
- * transformation matrix between them. 
+ * roto-translation transformation matrix between them. 
  */ 
 
 
-#ifndef __CALIBREFERENCE_H__
-#define __CALIBREFERENCE_H__
+#ifndef __ICUB_OPT_CALIBREFERENCE_H__
+#define __ICUB_OPT_CALIBREFERENCE_H__
 
 #include <deque>
 #include <yarp/sig/all.h>
+#include <iCub/optimization/matrixTransformation.h>
 
 namespace iCub
 {
@@ -53,10 +47,10 @@ namespace optimization
 * The problem solved is of the form: 
 *  
 * \f[ 
-* (H,S)=\arg\min_{H\in SE\left(3\right),S\in diag\left(s_1,s_2,s_3,1\right)}\left(\frac{1}{2N}\sum_{i=1}^{N} \left \| p_i^{O_1}-S \cdot H \cdot p_i^{O_2} \right \|^2 \right)
+* (H,S)=\arg\min_{H\in SE\left(3\right),S\in diag\left(s_1,s_2,s_3,1\right)}\left(\frac{1}{N}\sum_{i=1}^{N} \left \| p_i^{O_1}-S \cdot H \cdot p_i^{O_2} \right \|^2 \right)
 * \f] 
 */
-class CalibReferenceWithMatchedPoints
+class CalibReferenceWithMatchedPoints : public MatrixTransformationWithMatchedPoints
 {
 protected:
     yarp::sig::Vector min, min_s;
@@ -79,6 +73,18 @@ public:
     CalibReferenceWithMatchedPoints();
 
     /**
+    * Allow specifying the minimum and maximum bounds of the 
+    * elements belonging to the transformation.
+    * @param min the 4x4 Matrix containining the minimum bounds. The 
+    *            translation bounds are given in min(0:2,3), whereas
+    *            the rotation bounds are given in min(0,0:2).
+    * @param max the 4x4 Matrix containining the maximum bounds. The 
+    *            translation bounds are given in max(0:2,3), whereas
+    *            the rotation bounds are given in max(0,0:2).
+    */
+    virtual void setBounds(const yarp::sig::Matrix &min, const yarp::sig::Matrix &max);
+
+    /**
     * Allow specifying the bounding box for both the translation 
     * part (given in meters) and the rotation part (given in 
     * radians) within which solution is seeked. 
@@ -94,7 +100,7 @@ public:
     * @note by default min=(-1.0,-1.0,-1.0,-M_PI,-M_PI,-M_PI) and 
     *       max=(1.0,1.0,1.0,M_PI,M_PI,M_PI).
     */
-    void setBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
+    virtual void setBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
 
     /**
     * Allow specifying the bounds for the 3D scaling factors.
@@ -103,7 +109,7 @@ public:
     *  
     * @note by default min=(0.1,0.1,0.1) and max=(10.0,10.0,10.0). 
     */
-    void setScalingBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
+    virtual void setScalingBounds(const yarp::sig::Vector &min, const yarp::sig::Vector &max);
 
     /**
     * Allow specifying the bounds for the 3D scaling factors with 
@@ -113,7 +119,7 @@ public:
     *  
     * @note by default min=0.1 and max=10.0. 
     */
-    void setScalingBounds(const double min, const double max);
+    virtual void setScalingBounds(const double min, const double max);
 
     /**
     * Add to the internal database the 3D-point p0 and the 3D-point 
@@ -124,12 +130,29 @@ public:
     *           S*H*p0.
     * @return true/false on success/fail. 
     */
-    bool addPoints(const yarp::sig::Vector &p0, const yarp::sig::Vector &p1);
+    virtual bool addPoints(const yarp::sig::Vector &p0, const yarp::sig::Vector &p1);
+
+    /**
+    * Return the number of 3D-points pairs currently contained into 
+    * the internal database. 
+    * @return the number of pairs. 
+    */
+    virtual size_t getNumPoints() const { return p0.size(); }
+
+    /**
+    * Retrieve copies of the database of 3D-points pairs.
+    * @param p0 the list of free 3D-points.
+    * @param p1 the list of 3D-points which correspond either to
+    *           H*p0 or to S*H*p0.
+    *  
+    * @note points are retrived in 4x1 homogeneous format. 
+    */
+    virtual void getPoints(std::deque<yarp::sig::Vector> &p0, std::deque<yarp::sig::Vector> &p1) const;
 
     /**
     * Clear the internal database of 3D points.
     */
-    void clearPoints();
+    virtual void clearPoints();
 
     /**
     * Allow specifiying the initial guess for the roto-translation 
@@ -137,14 +160,14 @@ public:
     * @param H the 4x4 homogeneous matrix used as initial guess.
     * @return true/false on success/fail. 
     */
-    bool setInitialGuess(const yarp::sig::Matrix &H);
+    virtual bool setInitialGuess(const yarp::sig::Matrix &H);
 
     /**
     * Allow specifiying the initial guess for the scaling factors.
     * @param s the 3x1 vector of scaling factors.
     * @return true/false on success/fail. 
     */
-    bool setScalingInitialGuess(const yarp::sig::Vector &s);
+    virtual bool setScalingInitialGuess(const yarp::sig::Vector &s);
 
     /**
     * Allow specifiying the initial guess for the scalar scaling 
@@ -152,7 +175,7 @@ public:
     * @param s the scaling factor.
     * @return true/false on success/fail. 
     */
-    bool setScalingInitialGuess(const double s);
+    virtual bool setScalingInitialGuess(const double s);
 
     /**
     * Perform reference calibration to determine the matrix H. 
@@ -163,7 +186,7 @@ public:
     *              pairs.
     * @return true/false on success/fail. 
     */
-    bool calibrate(yarp::sig::Matrix &H, double &error);
+    virtual bool calibrate(yarp::sig::Matrix &H, double &error);
 
     /**
     * Perform reference calibration to determine the matrix H and 
@@ -177,7 +200,7 @@ public:
     *              containing the scaling factors.
     * @return true/false on success/fail. 
     */
-    bool calibrate(yarp::sig::Matrix &H, yarp::sig::Vector &s, double &error);
+    virtual bool calibrate(yarp::sig::Matrix &H, yarp::sig::Vector &s, double &error);
 
     /**
     * Perform reference calibration to determine the matrix H and 
@@ -190,7 +213,7 @@ public:
     *              points pairs.
     * @return true/false on success/fail. 
     */
-    bool calibrate(yarp::sig::Matrix &H, double &s, double &error);
+    virtual bool calibrate(yarp::sig::Matrix &H, double &s, double &error);
 };
 
 }

@@ -26,6 +26,7 @@
 
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Value.h>
+#include <yarp/os/Time.h>
 
 #include "DriverInterface.h"
 #include "Test.h"
@@ -41,7 +42,9 @@ public:
     iCubTestReport* run();
 
 protected:
-    iCubDriver::iCubPart m_Part;
+    iCubDriver  m_icubDriver;
+    iCubPart    m_part;
+    std::string m_robot;
     int m_NumJoints;
     double *m_aTargetVal;
     double *m_aMaxErr;

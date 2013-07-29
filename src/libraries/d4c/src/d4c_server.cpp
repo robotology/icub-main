@@ -410,6 +410,10 @@ void D4CServer::close()
 {
     if (isOpen)
     {
+        // close prior before any other stuff
+        rpc.interrupt();
+        rpc.close();
+
         if (isRunning())
             stop();
         if (!offlineMode)
@@ -448,9 +452,6 @@ void D4CServer::close()
         isOpen=false;
 
         mutex.post();
-
-        rpc.interrupt();
-        rpc.close();
 
         printMessage(1,"server closed\n");
     }

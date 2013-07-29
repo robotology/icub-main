@@ -124,6 +124,8 @@ int keepGoingOn   = 1;
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
 // --------------------------------------------------------------------------------------------------------------------
+static void s_check_seqNum(ACE_INET_Addr src_addr, uint32_t recseqnum);
+
 static void sighandler(int _signum)
 {
   printf("\n Received signal to quit %d\n", _signum);
@@ -374,6 +376,7 @@ void *recvThread(void * arg)
 		rec_payload_size = ACE_socket->recv(&rec_payload_buffer[0], PAYLOAD_MAX_SIZE, src_addr, 0/*flags*/);
 		src_addr.addr_to_string(address, 64);
 		printf("\n\nReceived pkt of size = %d from %s\n",  rec_payload_size, address);
+		s_check_seqNum(src_addr, opcprotman_getSeqNum(opcMan_ptr, (opcprotman_message_t*)&rec_payload_buffer[0]));
 		/*chiama qui funzione parser*/
 /*		for(int i =0; i<rec_payload_size; i++)
 		{		
@@ -386,6 +389,7 @@ void *recvThread(void * arg)
 		{
 			printf("erron in parser\n");
 		}
+
 	}
 
 	printf("recThraed: exit from while\n");
@@ -405,6 +409,40 @@ void usage(void)
 }
 
 
+static uint32_t seqnumList[10] = {0};
+static uint8_t isfirstList[10] = {0};
+static void s_check_seqNum(ACE_INET_Addr src_addr, uint32_t recseqnum)
+{
+	uint32_t addr = src_addr.get_ip_address();
+
+	uint8_t board = addr- 0xa000100;
+	if(board >=10)
+	{
+		printf("error in get board: num=%d, addr=%d\n", board, addr );
+	}
+
+	if(isfirstList[board] == 0)
+	{
+		seqnumList[board] = recseqnum;
+		printf("seqnum first board %d num %d\n", board, recseqnum);
+		isfirstList[board] = 1;
+		return;
+	}
+
+	if((seqnumList[board] +1) != recseqnum)
+	{
+		printf("error in SEQ NUM form board %d: rec %d expected = %d\n",board, recseqnum, seqnumList[board] +1);
+		seqnumList[board] = recseqnum;
+	}
+	else
+	{
+		printf("received SEQ NUM from board %d:  %d\n",board, recseqnum);
+		seqnumList[board]++;
+	}
+
+
+
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)

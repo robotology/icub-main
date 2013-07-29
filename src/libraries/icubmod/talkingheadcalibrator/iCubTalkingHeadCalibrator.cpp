@@ -20,7 +20,7 @@ const int GO_TO_ZERO_TIMEOUT=20;
 const int CALIBRATE_JOINT_TIMEOUT=25;
 const double POSITION_THRESHOLD=2.0;
 
-#define TORSO_IS_AVAILABLE (nj > 8)
+#define TORSO_IS_AVAILABLE (nj > 12)
 
 iCubTalkingHeadCalibrator::iCubTalkingHeadCalibrator()
 {
@@ -131,12 +131,14 @@ bool iCubTalkingHeadCalibrator::open (yarp::os::Searchable& config)
        fprintf(logfile, "TALKINGHEADCALIB[%d] :MaxPWM parameter not found, using default values\n", canID);
        for (i = 0; i < 3; i++) maxPWM[i] = 250;    //head
        for (i = 3; i < 7; i++) maxPWM[i] = 1333;   //eyes do not use maxPWM
+	   for (i = 8; i < 12; i++) maxPWM[i] = 1333;   //lips joints 
 	   maxPWM[7] = 250;   //eyebrows
 	   
        if (TORSO_IS_AVAILABLE)
         {
-            for (i = 8; i < 11; i++) maxPWM[i] = 200;    //torso
+            for (i = 12; i < 15; i++) maxPWM[i] = 200;    //torso
         }
+	
    }
 
     return true;
@@ -185,12 +187,12 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     fprintf(logfile, "Calling iCubTalkingHeadCalibrator::calibrate\n");
     abortCalib=false;
 
-    iCalibrate = dynamic_cast<IControlCalibration2 *>(dd);
-    iAmps =  dynamic_cast<IAmplifierControl *>(dd);
-    iEncoders = dynamic_cast<IEncoders *>(dd);
-    iPosition = dynamic_cast<IPositionControl *>(dd);
-    iPids = dynamic_cast<IPidControl *>(dd);
-    iControlMode = dynamic_cast<IControlMode *>(dd);
+    dd->view(iCalibrate);
+    dd->view(iAmps);
+    dd->view(iEncoders);
+    dd->view(iPosition);
+    dd->view(iPids);
+    dd->view(iControlMode);
 
     if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
         return false;
@@ -231,19 +233,33 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
 	//eyebrows
 	
 	    //MC4 board joint 7
+		
         calibrateJoint(7);
         iPids->getPid(7,&original_pid[7]);
         limited_pid[7]=original_pid[7];
         limited_pid[7].max_int=maxPWM[7];
         limited_pid[7].max_output=maxPWM[7];
         iPids->setPid(7,limited_pid[7]);
+		
+	//lips	
 	
+	/*for (k = 8; k < 12; k++)    
+        {
+            //bll boards are joint 12 13 14 (15)
+            calibrateJoint(k);
+            iPids->getPid(k,&original_pid[k]);
+            limited_pid[k]=original_pid[k];
+            limited_pid[k].max_int=maxPWM[k];
+            limited_pid[k].max_output=maxPWM[k];
+            iPids->setPid(k,limited_pid[k]);
+        }
+	*/
     //BLL boards must receive calibration message before enabling PWM
     if (TORSO_IS_AVAILABLE)
     {
-        for (k = 8; k < nj; k++) 
+        for (k = 12; k < nj; k++) 
         {
-            //bll boards are joint 8 7 10 (11)
+            //bll boards are joint 12 13 14 (15)
             calibrateJoint(k);
             iPids->getPid(k,&original_pid[k]);
             limited_pid[k]=original_pid[k];
@@ -268,9 +284,9 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     //create three set of joints       //
     /////////////////////////////////////
     int headSetOfJoints[] =  {0, 1, 2}; // these are BLL motors
-    int torsoSetOfJoints[] = {8, 9, 10}; // these are BLL motors
+    int torsoSetOfJoints[] = {12, 13, 14}; // these are BLL motors
     int eyeSetOfJoints[] =   {3, 4, 5, 6, 7}; // these are NOT BLL motors
-
+	int lipsSetOfJoints[] =   {8,9,10,11}; // these are NOT BLL motors
     /////////////////////////////////////
     //calibrate the torso set of joints//
     /////////////////////////////////////
@@ -316,13 +332,13 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     }
     if (calibration_ok)
     {
-        fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: headSetOfJoints Calibration done!\n", canID);
     for (k = 0; k < 3; k++)
         iPids->setPid(headSetOfJoints[k],original_pid[headSetOfJoints[k]]);
     }
     else
     {
-        fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
+        fprintf(logfile, "HEADCALIB[%d]: headSetOfJoints Calibration failed!\n", canID);
         for (k = 0; k < 3; k++)
             iAmps->disableAmp(headSetOfJoints[k]);
     }
@@ -330,7 +346,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     //////////////////////////////////////
     //calibrate the eye set of joints   //
     //////////////////////////////////////
-
+    calibration_ok = true;
     for (k =0; k < 5; k++)
     {
         calibrateJoint(eyeSetOfJoints[k]); 
@@ -344,16 +360,46 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         
         if (calibration_ok)
         {
-            fprintf(logfile, "HEADCALIB[%d]: Calibration done!\n", canID);
+            fprintf(logfile, "HEADCALIB[%d]: eyeSetOfJoints Calibration done!\n", canID);
  
             iPids->setPid(eyeSetOfJoints[4],original_pid[eyeSetOfJoints[4]]);
         }
         else
         {
-            fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
+            fprintf(logfile, "HEADCALIB[%d]: eyeSetOfJoints Calibration failed!\n", canID);
                 iAmps->disableAmp(eyeSetOfJoints[4]);
         }
+		
+	//////////////////////////////////////
+    //calibrate the lips set of joints   //
+    //////////////////////////////////////
+    calibration_ok = true;
+    for (k =0; k < 4; k++)
+    {
+        calibrateJoint(lipsSetOfJoints[k]); 
+        checkCalibrateJointEnded(lipsSetOfJoints[k]);
+        goToZero(lipsSetOfJoints[k]);
+        checkGoneToZero(lipsSetOfJoints[k]);
+        Time::delay(0.010);
+    }
 
+/*
+JOINT 4 is bugged, maybe JOINT3 ???
+            fprintf(logfile, "HEADCALIB::Waiting for joint %d movement\n", k);
+            calibration_ok &= checkGoneToZeroThreshold(lipsSetOfJoints[4]);
+        
+        if (calibration_ok)
+        {
+            fprintf(logfile, "HEADCALIB[%d]: lipsSetOfJoints Calibration done!\n", canID);
+ 
+            iPids->setPid(lipsSetOfJoints[4],original_pid[lipsSetOfJoints[4]]);
+        }
+        else
+        {
+            fprintf(logfile, "HEADCALIB[%d]: lipsSetOfJoints Calibration failed!\n", canID);
+                iAmps->disableAmp(lipsSetOfJoints[4]);
+        }
+*/
 
     /////////////////////////////////////
     //finished!                        //

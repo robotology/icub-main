@@ -23,14 +23,12 @@
 #include <algorithm>
 #include <sstream>
 
-#include <yarp/os/Network.h>
-#include <yarp/os/Time.h>
+#include "CommonCartesianController.h"
+#include "ClientCartesianController.h"
+
 #include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinInv.h>
-
-#include "CommonCartesianController.h"
-#include "ClientCartesianController.h"
 
 #define CARTCTRL_CLIENT_VER     1.0
 #define CARTCTRL_DEFAULT_TMO    0.1 // [s]

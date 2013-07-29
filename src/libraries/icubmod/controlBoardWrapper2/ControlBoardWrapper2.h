@@ -2057,6 +2057,39 @@ public:
         return false;
     }
 
+    virtual bool getBemfParam(int j, double *t)
+    {
+
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->getBemfParam(off+base, t);
+        }
+        return false;
+    }
+
+    virtual bool setBemfParam(int j, double t)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->iTorque)
+        {
+            return p->iTorque->setBemfParam(off+base, t);
+        }
+        return false;
+    }
+
     virtual bool setTorquePid(int j, const Pid &pid)
     {
         int off=device.lut[j].offset;

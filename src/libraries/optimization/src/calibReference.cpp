@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
+ * Copyright (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
@@ -141,7 +141,7 @@ public:
         if (p0.size()>0)
         {
             for (size_t i=0; i<p0.size(); i++)
-                obj_value+=0.5*norm2(p1[i]-H*p0[i]);
+                obj_value+=norm2(p1[i]-H*p0[i]);
 
             obj_value/=p0.size();
         }
@@ -187,12 +187,12 @@ public:
             for (size_t i=0; i<p0.size(); i++)
             {
                 Vector d=p1[i]-H*p0[i];
-                grad_f[0]-=dot(d,(dHdx0*p0[i]));
-                grad_f[1]-=dot(d,(dHdx1*p0[i]));
-                grad_f[2]-=dot(d,(dHdx2*p0[i]));
-                grad_f[3]-=dot(d,(dHdx3*p0[i]));
-                grad_f[4]-=dot(d,(dHdx4*p0[i]));
-                grad_f[5]-=dot(d,(dHdx5*p0[i]));
+                grad_f[0]-=2.0*dot(d,(dHdx0*p0[i]));
+                grad_f[1]-=2.0*dot(d,(dHdx1*p0[i]));
+                grad_f[2]-=2.0*dot(d,(dHdx2*p0[i]));
+                grad_f[3]-=2.0*dot(d,(dHdx3*p0[i]));
+                grad_f[4]-=2.0*dot(d,(dHdx4*p0[i]));
+                grad_f[5]-=2.0*dot(d,(dHdx5*p0[i]));
             }
 
             for (Ipopt::Index i=0; i<n; i++)
@@ -276,7 +276,7 @@ public:
         if (p0.size()>0)
         {
             for (size_t i=0; i<p0.size(); i++)
-                obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
+                obj_value+=norm2(p1[i]-s*(H*p0[i]));
 
             obj_value/=p0.size();
         }
@@ -333,15 +333,15 @@ public:
             for (size_t i=0; i<p0.size(); i++)
             {
                 Vector d=p1[i]-s*(H*p0[i]);
-                grad_f[0]-=dot(d,(dHdx0*p0[i]));
-                grad_f[1]-=dot(d,(dHdx1*p0[i]));
-                grad_f[2]-=dot(d,(dHdx2*p0[i]));
-                grad_f[3]-=dot(d,(dHdx3*p0[i]));
-                grad_f[4]-=dot(d,(dHdx4*p0[i]));
-                grad_f[5]-=dot(d,(dHdx5*p0[i]));
-                grad_f[6]-=dot(d,(dHdx6*p0[i]));
-                grad_f[7]-=dot(d,(dHdx7*p0[i]));
-                grad_f[8]-=dot(d,(dHdx8*p0[i]));
+                grad_f[0]-=2.0*dot(d,(dHdx0*p0[i]));
+                grad_f[1]-=2.0*dot(d,(dHdx1*p0[i]));
+                grad_f[2]-=2.0*dot(d,(dHdx2*p0[i]));
+                grad_f[3]-=2.0*dot(d,(dHdx3*p0[i]));
+                grad_f[4]-=2.0*dot(d,(dHdx4*p0[i]));
+                grad_f[5]-=2.0*dot(d,(dHdx5*p0[i]));
+                grad_f[6]-=2.0*dot(d,(dHdx6*p0[i]));
+                grad_f[7]-=2.0*dot(d,(dHdx7*p0[i]));
+                grad_f[8]-=2.0*dot(d,(dHdx8*p0[i]));
             }
 
             for (Ipopt::Index i=0; i<n; i++)
@@ -386,7 +386,7 @@ public:
         if (p0.size()>0)
         {
             for (size_t i=0; i<p0.size(); i++)
-                obj_value+=0.5*norm2(p1[i]-s*(H*p0[i]));
+                obj_value+=norm2(p1[i]-s*(H*p0[i]));
 
             obj_value/=p0.size();
         }
@@ -439,13 +439,13 @@ public:
             for (size_t i=0; i<p0.size(); i++)
             {
                 Vector d=p1[i]-s*(H*p0[i]);
-                grad_f[0]-=dot(d,(dHdx0*p0[i]));
-                grad_f[1]-=dot(d,(dHdx1*p0[i]));
-                grad_f[2]-=dot(d,(dHdx2*p0[i]));
-                grad_f[3]-=dot(d,(dHdx3*p0[i]));
-                grad_f[4]-=dot(d,(dHdx4*p0[i]));
-                grad_f[5]-=dot(d,(dHdx5*p0[i]));
-                grad_f[6]-=dot(d,(dHdx6*p0[i]));
+                grad_f[0]-=2.0*dot(d,(dHdx0*p0[i]));
+                grad_f[1]-=2.0*dot(d,(dHdx1*p0[i]));
+                grad_f[2]-=2.0*dot(d,(dHdx2*p0[i]));
+                grad_f[3]-=2.0*dot(d,(dHdx3*p0[i]));
+                grad_f[4]-=2.0*dot(d,(dHdx4*p0[i]));
+                grad_f[5]-=2.0*dot(d,(dHdx5*p0[i]));
+                grad_f[6]-=2.0*dot(d,(dHdx6*p0[i]));
             }
 
             for (Ipopt::Index i=0; i<n; i++)
@@ -482,6 +482,24 @@ CalibReferenceWithMatchedPoints::CalibReferenceWithMatchedPoints()
     x0=0.5*(min+max);
     s0.resize(3,1.0);
     s0_scalar=1.0;
+}
+
+
+/****************************************************************/
+void CalibReferenceWithMatchedPoints::setBounds(const Matrix &min,
+                                                const Matrix &max)
+{
+    if ((min.rows()<3) || (min.cols()<3) ||
+        (max.rows()<3) || (max.cols()<3))
+        return;
+
+    this->min[0]=min(0,3); this->max[0]=max(0,3); 
+    this->min[1]=min(1,3); this->max[1]=max(1,3);
+    this->min[2]=min(2,3); this->max[2]=max(2,3);
+
+    this->min[3]=min(0,0); this->max[3]=max(0,0);
+    this->min[4]=min(0,1); this->max[4]=max(0,1);
+    this->min[5]=min(0,2); this->max[5]=max(0,2);
 }
 
 
@@ -556,6 +574,15 @@ bool CalibReferenceWithMatchedPoints::addPoints(const Vector &p0,
     }
     else
         return false;
+}
+
+
+/****************************************************************/
+void CalibReferenceWithMatchedPoints::getPoints(deque<Vector> &p0,
+                                                deque<Vector> &p1) const
+{
+    p0=this->p0;
+    p1=this->p1;
 }
 
 

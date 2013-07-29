@@ -166,6 +166,13 @@ public:
      */
     double          getLastRecvMsgTimestamp(void);
 
+    /*!   @fn       clearPerSigMsg(void);
+     *    @brief    clears periodic signal message of EMS
+     *    @return   true on success else false
+     */
+    bool            clearPerSigMsg(void);
+
+
 //     //! Send a sporadic message. Do not use now.
 //     int             send(void *data, size_t len);
 };

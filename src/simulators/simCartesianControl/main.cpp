@@ -46,7 +46,8 @@ Follow this steps:
 -# Launch the \ref simCartesianControl module.
 -# Launch the \ref iKinCartesianSolver "Cartesian Solvers" for 
    the required limbs: have a look to the template located in
-   the directory <i> $ICUB_ROOT/app/simCartesianControl/scripts
+   the directory <i>
+   $ICUB_ROOT/main/app/simCartesianControl/scripts
    </i>.
 
 \section parameters_sec Parameters

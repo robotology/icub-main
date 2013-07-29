@@ -140,10 +140,13 @@
 #define CAN_SET_TORQUE_STICTION_PARAMS  95
 #define CAN_GET_TORQUE_STICTION_PARAMS  96
 
-#define CAN_SET_BACKEMF_PARAMS      97
-#define CAN_GET_BACKEMF_PARAMS      98
+#define CAN_SET_BACKEMF_PARAMS          97
+#define CAN_GET_BACKEMF_PARAMS          98
 
-#define NUM_OF_MESSAGES				99
+#define CAN_SET_MODEL_PARAMS         99
+#define CAN_GET_MODEL_PARAMS        100
+
+#define NUM_OF_MESSAGES             101
 
 /* error status values */
 #define ERROR_NONE					0			/* no error, all ok */

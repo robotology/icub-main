@@ -19,7 +19,7 @@ if(NOT SKIP_cartesiancontrollerserver)
    target_link_libraries(cartesiancontrollerserver iKin ${YARP_LIBRARIES})
    icub_export_library(cartesiancontrollerserver)
 
-endif(NOT SKIP_cartesiancontrollerserver)
+endif()
 
 prepare_device(cartesiancontrollerclient TYPE    ClientCartesianController 
                                          INCLUDE ClientCartesianController.h
@@ -35,6 +35,6 @@ if(NOT SKIP_cartesiancontrollerclient)
    target_link_libraries(cartesiancontrollerclient iKin ${YARP_LIBRARIES})
 
    icub_export_library(cartesiancontrollerclient)
-endif(NOT SKIP_cartesiancontrollerclient)
+endif()
 
 

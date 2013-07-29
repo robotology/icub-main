@@ -5,7 +5,7 @@
 # New build system. Exploit new cmake 2.6 features (export).
 
 #reduce warning level with cmake 2.6
-cmake_minimum_required(VERSION 2.6.4)
+cmake_minimum_required(VERSION 2.8.7)
 #cmake policies
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -16,8 +16,8 @@ project(iCub)
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
-SET(ICUB_REQYARP_VERSION_PATCH "20")
-set(ICUB_REQYARP_VERSION_TWEAK "4")
+SET(ICUB_REQYARP_VERSION_PATCH "21")
+set(ICUB_REQYARP_VERSION_TWEAK "0")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -54,7 +54,7 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
 
 # pick up yarp's cmake scripts
-set(CMAKE_MODULE_PATH ${YARP_MODULE_PATH} ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 
 # Pick up our scripts - they are all in the conf subdirectory
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)

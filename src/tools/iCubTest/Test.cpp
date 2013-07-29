@@ -24,13 +24,14 @@
 
 iCubTest::iCubTest(yarp::os::Searchable& configuration)
 {
+    printf("using this configuration: %s\n",configuration.toString().c_str());
     if (configuration.check("name"))
     {
         m_Name=configuration.find("name").asString();
     }
     if (configuration.check("part"))
     {
-        m_PartCode=configuration.find("part").asString();
+        m_partCode=configuration.find("part").asString();
     }
     if (configuration.check("description"))
     {

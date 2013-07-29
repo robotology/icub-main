@@ -147,6 +147,13 @@
  *    will contain the weights as result of a saturation over
  *    zero.
  *  
+ * \b tsk2 request: example [set] [tsk2] (6 (0.0 0.0 -1.0) (0.0 
+ *    0.0 1.0), [get] [tsk2]. Set/get the options for the
+ *    secondary task, where the first integer accounts for the
+ *    joints to control, then come the desired x-y-z coordinates
+ *    of the secondary end-effector and finally the
+ *    corresponding three weights.
+ *  
  * Commands issued through the [ask] vocab: 
  *  
  * \b xd request: example [ask] ([xd] (x y z ax ay az theta))
@@ -348,6 +355,9 @@ protected:
     yarp::sig::Vector restJntPos;
     yarp::sig::Vector restWeights;
 
+    yarp::sig::Vector xd_2ndTask;
+    yarp::sig::Vector w_2ndTask;
+
     yarp::sig::Vector qd_3rdTask;
     yarp::sig::Vector w_3rdTask;
     yarp::sig::Vector idx_3rdTask;
@@ -533,7 +543,6 @@ class iCubArmCartesianSolver : public CartesianSolver
 protected:
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options);
     virtual bool decodeDOF(const yarp::sig::Vector &_dof);
-    virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);
 
 public:
     /**
