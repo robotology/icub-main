@@ -44,13 +44,9 @@
 #include <set>
 #include <map>
 
-#include <yarp/os/Bottle.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CartesianControl.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 
 #include <iCub/iKin/iKinHlp.h>
 
