@@ -16,7 +16,10 @@ icub_app_install(${appname}
 
 icub_app_install(${appname} 
 				FILES ${crawling_conf}
-				DESTINATION conf/crawling)	
-				
+				DESTINATION conf/crawling)
+
+yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/scripts)	
+yarp_install(FILES ${conf} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
+yarp_install(FILES ${crawling_conf} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/crawling)				
 
 

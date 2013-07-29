@@ -14,7 +14,10 @@ icub_app_install(${appname}
 				DESTINATION scripts)
 icub_app_install(${appname} 
 				FILES ${conf}
-				DESTINATION conf)			
+				DESTINATION conf)
+
+yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/scripts)	
+yarp_install(FILES ${conf} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})				
 				
 
 
