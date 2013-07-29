@@ -2,7 +2,7 @@
   <name>Skin Gui Forearms</name>
   <module>
     <name>skinManager</name>
-    <parameters>--from skinManForeArms.ini --context skinGui/conf</parameters>
+    <parameters>--from skinManForearms.ini --context skinGui/conf</parameters>
     <node>console</node>
     <tag>skinCompA</tag>
   </module>
