@@ -42,14 +42,14 @@ if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
 endif(MSVC)
 
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-        "Choose the type of build, recommanded options are: Debug or Release")
-endif(NOT CMAKE_BUILD_TYPE)
-# Hide variable to MSVC users, since it is not needed
-if (MSVC)
-    mark_as_advanced(CMAKE_BUILD_TYPE)
-endif(MSVC)
+        "Choose the type of build, recommanded options are: Debug or Release" FORCE)
+    endif()
+    set(ICUB_BUILD_TYPES "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${ICUB_BUILD_TYPES})
+endif()
 
 ########################################################################
 # settings for rpath
