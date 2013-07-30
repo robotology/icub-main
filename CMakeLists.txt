@@ -16,18 +16,17 @@ project(iCub)
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 SET(ICUB_REQYARP_VERSION_MAJOR "2")
 SET(ICUB_REQYARP_VERSION_MINOR "3")
-SET(ICUB_REQYARP_VERSION_PATCH "21")
+SET(ICUB_REQYARP_VERSION_PATCH "60")
 set(ICUB_REQYARP_VERSION_TWEAK "0")
-
-find_package(YARP REQUIRED)
-
-message(STATUS "YARP is version: ${YARP_VERSION}")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
 else()
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH})
 endif()
+
+find_package(YARP ${ICUB_REQYARP_VERSION} REQUIRED)
+message(STATUS "YARP is version: ${YARP_VERSION}")
 
 if(YARP_VERSION VERSION_LESS ICUB_REQYARP_VERSION)
     message(FATAL_ERROR "YARP version is not compatible, please update YARP (using VERSION_LESS)")
@@ -115,7 +114,7 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
 
 # Some options: mostly cache variables
-set(ICUB_INSTALL_APPLICATIONS TRUE CACHE BOOL "Turn on/off install for applications")
+set(ICUB_INSTALL_APPLICATIONS FALSE CACHE BOOL "Turn on/off install for applications")
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
 
 set(__ICUB_INSTALL_APPLICATIONS__ TRUE)
@@ -128,6 +127,11 @@ if (ICUB_INSTALL_APPLICATIONS)
 endif()
 
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
+mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
+
+# new "data" installation - available with yarp2.4
+include(YarpInstallationHelpers)
+yarp_configure_external_installation(iCub)
 
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")

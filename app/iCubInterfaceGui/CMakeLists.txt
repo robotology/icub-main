@@ -9,6 +9,7 @@ icub_app_install(${appname}
   FILES ${icon_files}
   DESTINATION icons)
 
+yarp_install(FILES ${icon_files} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/icons )
 
 
 

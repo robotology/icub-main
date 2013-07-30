@@ -21,6 +21,10 @@ icub_app_install(${appname}
 				FILES ${CMAKE_CURRENT_SOURCE_DIR}/scripts/manager.py
 				DESTINATION scripts
                 FORCE_UPDATE)
+
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf )
+yarp_install(FILES ${scripts}
+                DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
                 
 				
 				
