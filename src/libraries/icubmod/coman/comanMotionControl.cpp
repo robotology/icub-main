@@ -438,14 +438,14 @@ bool comanMotionControl::close()
 
 bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 {
-//     yTrace() << "joint " << j << "(bId" << jointTobId(j) << ")" << endl;
+//     yTrace() << "joint " << j << "(bId" << jointTobId(j) << ")";
     pid_gains_t p_i_d;
     McBoard *joint_p = getMCpointer(j);
     bool ret = true;
 
     if( NULL == joint_p)
     {
-        yError() << "Calling SetPid on a non-existing joint j" << endl; // << j << "(bId" << jointTobId(j) << ")" << endl;
+        yError() << "Calling SetPid on a non-existing joint j"; // << j << "(bId" << jointTobId(j) << ")";
         return false;
     }
     else
@@ -852,7 +852,7 @@ bool comanMotionControl::setVelocityModeRaw(int j)
     if(_controlMode[j] == VOCAB_CM_VELOCITY)
     {
         // nothing to do here
-        {yDebug() << "joint "<< j << "already in velocity mode" << endl;}
+        yDebug() << "joint "<< j << "already in velocity mode";
         ret = true;
     }
     else
@@ -898,7 +898,7 @@ bool comanMotionControl::velocityMoveRaw(int j, double sp)
     }
     else
     {
-        cout << "ERROR in velocityMoveRaw for joint " << j << endl;
+        cout << "ERROR in velocityMoveRaw for joint " << j;
     }
 
     return ret;
@@ -928,7 +928,7 @@ bool comanMotionControl::velocityMoveRaw(const int n_joint, const int *joints, c
     }
     else
     {
-        cout << "ERROR in velocityMoveRaw for set of joints " << endl;
+        cout << "ERROR in velocityMoveRaw for set of joints ";
     }
     return ret;
 }
@@ -954,7 +954,7 @@ bool comanMotionControl::velocityMoveRaw(const double *spds)
     }
     else
     {
-        cout << "ERROR in velocityMoveRaw for all joint " << endl;
+        cout << "ERROR in velocityMoveRaw for all joint ";
     }
     return ret;
 }
@@ -1442,7 +1442,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
     switch(_controlMode[j])
     {
         case VOCAB_CM_POSITION:
-            yDebug() << "joint "<< j << "already in position mode" << endl;
+            yDebug() << "joint "<< j << "already in position mode";
             return true;
             break;
 
@@ -1455,11 +1455,11 @@ bool comanMotionControl::setPositionModeRaw(int j)
             ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)));   // setItem returns 0 if ok, 2 if error
 
             if(!ret)
-                yError() << "error while stopping torque mode" << endl;
+                yError() << "error while stopping torque mode";
             break;
 
         default:
-            yDebug() << "joint "<< j << "setvelocity mode coming from unknown controlmode... stop everything and then enable position\n" << endl;
+            yDebug() << "joint "<< j << "setvelocity mode coming from unknown controlmode... stop everything and then enable position\n";
             break;
     }
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, 1, POSITION_MOVE));      // j+1 per solita differenza di corrispondenze tra bId e n' giunto, 1 = ON

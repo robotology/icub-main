@@ -23,6 +23,7 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
 
 #include "Boards_iface.h"
 
