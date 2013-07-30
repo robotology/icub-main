@@ -11,45 +11,21 @@ file(GLOB data/texture ${CMAKE_CURRENT_SOURCE_DIR}/data/texture/*.raw)
 file(GLOB data/texture/skybox ${CMAKE_CURRENT_SOURCE_DIR}/data/texture/skybox/*.raw)
 file(GLOB models ${CMAKE_CURRENT_SOURCE_DIR}/models/*.x ${CMAKE_CURRENT_SOURCE_DIR}/models/*.bmp)
 
+icub_app_install(${appname} FILES ${init})
+icub_app_install(${appname} FILES ${scripts} DESTINATION scripts)
+icub_app_install(${appname} FILES ${conf} DESTINATION conf)
+icub_app_install(${appname} FILES ${data} DESTINATION data)
+icub_app_install(${appname} FILES ${data/model} DESTINATION data/model)
+icub_app_install(${appname} FILES ${data/texture} DESTINATION data/texture)
+icub_app_install(${appname} FILES ${data/texture/skybox} DESTINATION data/texture/skybox)
+icub_app_install(${appname} FILES ${models} DESTINATION models)
 
-icub_app_install(${appname} 
-				FILES ${init})
-
-icub_app_install(${appname} 
-				FILES ${scripts}
-				DESTINATION scripts)
-
-icub_app_install(${appname} 
-				FILES ${conf}
-				DESTINATION conf)
-
-icub_app_install(${appname} 
-				FILES ${data}
-				DESTINATION data)
-
-icub_app_install(${appname} 
-				FILES ${data/model}
-				DESTINATION data/model)
-
-icub_app_install(${appname} 
-				FILES ${data/texture}
-				DESTINATION data/texture)
-
-icub_app_install(${appname} 
-				FILES ${data/texture/skybox}
-				DESTINATION data/texture/skybox)
-
-icub_app_install(${appname} 
-				FILES ${models}
-				DESTINATION models)
-
-yarp_install(FILES ${init} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname} )
-yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf )
-yarp_install(FILES ${data} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data )
-yarp_install(FILES ${data/model} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/model )
-yarp_install(FILES ${data/texture} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/texture )
-yarp_install(FILES ${data/texture/skybox} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/texture/skybox )
-yarp_install(FILES ${models} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/models )
-yarp_install(FILES ${scripts}
-                DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
+yarp_install(FILES ${init} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf)
+yarp_install(FILES ${data} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data)
+yarp_install(FILES ${data/model} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/model)
+yarp_install(FILES ${data/texture} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/texture)
+yarp_install(FILES ${data/texture/skybox} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/texture/skybox)
+yarp_install(FILES ${models} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/models)
+yarp_install(FILES ${scripts} DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
 
