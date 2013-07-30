@@ -101,7 +101,7 @@ protected:
     yarp::dev::IControlCalibration2 *ical2;
     yarp::dev::IOpenLoopControl     *iOpenLoop;
     yarp::dev::IImpedanceControl    *iImpedance;
-    yarp::dev::IPositionDirect      *iDirPos;
+    //yarp::dev::IPositionDirect      *iPosDir; //unused, it's streaming
     int controlledJoints;
     Vector vect;
 
