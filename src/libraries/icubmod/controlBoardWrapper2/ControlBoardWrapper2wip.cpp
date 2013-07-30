@@ -825,7 +825,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     Bottle& b = v.head;
     Vector& cmdVector = v.body;
 
-    fprintf(stderr, "Received command %s, %s\n", b.toString(), cmdVector.toString());
+    fprintf(stderr, "Received command %s, %s\n", b.toString().c_str(), cmdVector.toString().c_str());
 
     // some consistency checks
     if (controlledAxes!=cmdVector.size())
