@@ -7,7 +7,7 @@ PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
 		INCLUDE CanBusMotionControl.h 
 		WRAPPER controlboard)
 
-PREPARE_DEVICE(canmotioncontrolwip TYPE CanBusMotionControl
+PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
 		INCLUDE CanBusMotionControlwip.h 
 		WRAPPER controlboard)
 
