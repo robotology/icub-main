@@ -6,7 +6,7 @@
 prepare_device(controlboardwrapper2 TYPE ControlBoardWrapper2
                INCLUDE ControlBoardWrapper2.h)
 
-prepare_device(controlboardwrapper2wip TYPE ControlBoardWrapper2
+prepare_device(controlboardwrapper2 TYPE ControlBoardWrapper2
                INCLUDE ControlBoardWrapper2wip.h)
 	
 if (ENABLE_icubmod_controlboardwrapper2 AND ENABLE_icubmod_controlboardwrapper2wip)
