@@ -9,6 +9,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
 	add_subdirectory(robotInterface)
         add_subdirectory(iCubInterface)
 else()
+	add_subdirectory(robotInterface)
 	add_subdirectory(iCubInterface)
 endif()
 
