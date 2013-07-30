@@ -5503,20 +5503,35 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 // PositionDirect Interface
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
-    // needs to send both position and velocity as well as positionMove
-    return positionMove(j, ref);
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(ref));
 }
 
 bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
 {
-    // needs to send both position and velocity as well as positionMove
-    return positionMove(n_joint, joints, refs);
+    bool ret = true;
+
+    for(int j=0; j< n_joint; j++)
+    {
+        ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
+    }
+    return ret;
 }
 
 bool CanBusMotionControl::setPositionsRaw(const double *refs)
 {
-    // needs to send both position and velocit as well as positionMove
-    return positionMove(refs);
+    CanBusResources& r = RES(system_resources);
+    bool ret = true;
+
+    int i;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, i, S_32(refs[i]));
+    }
+    return ret;
 }
 
 
