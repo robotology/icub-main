@@ -227,7 +227,7 @@ bool FaceEyeDetector::init(CvSize currImgSize){
 			currentGrayFloatImage=cvCreateImage(currImgSize,  IPL_DEPTH_32F, 1);
 			//myFloatPointImage=(float *)malloc(sizeof(float)*currImgSize.width*currImgSize.height);
 		}
-		openCvDetectObject->init(currImgSize.width, currImgSize.height, xmlFileLocation);
+		openCvDetectObject->init(currImgSize.width, currImgSize.height, xmlFileLocation.c_str());
 	}
 	currentColorImage = cvCreateImage( currImgSize, 8, 3 );
 	_needInit = false;
