@@ -1,4 +1,7 @@
-2012-07-09 Matteo Brunettini <matteo.brunettini@iit.it>
+2013-07-31 Daniele E. Domenichelli <daniele.domenichelli@iit.it>
+    * Tagging version 1.1.13
+
+2013-07-09 Matteo Brunettini <matteo.brunettini@iit.it>
      * tagging version 1.1.12
      * now CMAKE required min version is 2.8.7
 
