@@ -54,6 +54,8 @@ public:
 
     WorldOpName() {}
 
+    WorldOpName(const std::string& name) : name(name) { valid = true; }
+
     WorldOpName(const char *name) : name(name) { valid = true; }
 
     std::string get() const { return name; }

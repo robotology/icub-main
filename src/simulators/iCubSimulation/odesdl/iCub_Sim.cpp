@@ -941,7 +941,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     dAllocateODEDataForThread(dAllocateMaskAll);
     ConstString logo = robot_config->getFinder().findFile("logo");
 
-    image = SDL_LoadBMP(robot_config->getFinder().findFile(logo.c_str()));
+    image = SDL_LoadBMP(robot_config->getFinder().findFile(logo.c_str()).c_str());
     SDL_WM_SetIcon(image,0);
     SDL_FreeSurface(image);
     SDL_WM_SetCaption("iCub Simulator", "image");

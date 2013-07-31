@@ -133,12 +133,12 @@ public:
         }
         else if (get(offset).isString())
         {
-            if ( strcmp ( get(offset).asString(), "true" ) == 0 || strcmp ( get(offset).asString(), "TRUE" ) == 0 )
+            if ( get(offset).asString() == "true" || get(offset).asString() == "TRUE" )
             {
                 ok  = true;
                 getBool = 1;
             }
-            else if ( strcmp ( get(offset).asString(), "false" ) == 0 || strcmp ( get(offset).asString(), "FALSE" ) == 0 )
+            else if ( get(offset).asString() == "false" || get(offset).asString() == "FALSE" )
             {
                 ok  = true;
                 getBool = 0;
