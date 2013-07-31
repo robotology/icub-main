@@ -10,7 +10,7 @@ project(${PROJECTNAME})
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${YARP_INCLUDE_DIRS} 	
+    ${YARP_INCLUDE_DIRS}   
 )
 
 # Search for source code.
@@ -20,8 +20,8 @@ source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
 add_executable(${PROJECTNAME} 
-	${folder_source} 
-	${folder_header}
+   ${folder_source} 
+   ${folder_header}
 )
 
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}) 
@@ -35,6 +35,7 @@ icub_app(${appname})
 
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 
-icub_app_install(${appname}
-				FILES ${conf}
-				DESTINATION conf)			
+icub_app_install(${appname} FILES ${conf} DESTINATION conf)
+
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf)
+

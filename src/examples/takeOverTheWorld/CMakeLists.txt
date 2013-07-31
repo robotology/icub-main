@@ -39,17 +39,11 @@ set(appname takeOverTheWorld)
 icub_app(${appname})
 
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/*.ini)
-
-icub_app_install(${appname} 
-				FILES ${conf}
-				DESTINATION conf/example1)
-				
 file(GLOB res ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/resources/*.jpg)
 
-icub_app_install(${appname} 
-				FILES ${res}
-				DESTINATION conf/example1/resources)
-				
+icub_app_install(${appname} FILES ${conf} DESTINATION conf/example1)
+icub_app_install(${appname} FILES ${res} DESTINATION conf/example1/resources)
+                           
 icub_add_target(${appname})
 
 
