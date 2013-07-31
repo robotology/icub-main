@@ -130,7 +130,7 @@ bool BVH::expect_token(const QString& name)
 
 BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
 {
-    QString fileName(config.findPath("geometry"));
+    QString fileName(config.findPath("geometry").c_str());
     QFile geometryFile(fileName);
     if(!geometryFile.open(IO_ReadOnly))
     {
@@ -239,7 +239,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
         double d=token().toDouble();
         double e=token().toDouble();
         double f=token().toDouble();
-        QString file(config.findPath(QString("covers/")+name).c_str());
+        QString file(config.findPath((const char *)(QString("covers/")+name)).c_str());
         if (file.isEmpty()) file=name;
         printf("\n%s\n\n",file.latin1());
         pMesh=new iCubMesh(file,a,b,c,d,e,f);
