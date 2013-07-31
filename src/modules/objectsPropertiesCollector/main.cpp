@@ -1706,7 +1706,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("objectsPropertiesCollector/conf");
     rf.setDefault("db","dataBase.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     if (rf.check("help"))
     {

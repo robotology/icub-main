@@ -509,7 +509,7 @@ int main(int argc, char *argv[])
     // standardized forms not anticipated in this program.
     ResourceFinder finder;
     finder.setDefaultContext("demoy3");
-    finder.configure("ICUB_ROOT",argc,argv);
+    finder.configure(argc,argv);
     finder.setVerbose(true);
     finder.setDefault("positions", "fullBody.txt");
     finder.setDefault("robot", "icub");

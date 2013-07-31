@@ -206,7 +206,7 @@ bool PF3DTracker::open(Searchable& config)
     rf.setVerbose(true);
     rf.setDefaultContext(context.c_str());
     rf.setDefaultConfigFile(initializationFile.c_str());
-    rf.configure("ICUB_ROOT", 0, NULL);
+    rf.configure(0, NULL);
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());

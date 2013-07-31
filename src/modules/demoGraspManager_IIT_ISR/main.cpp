@@ -1753,7 +1753,7 @@ int main(int argc, char *argv[])
     rf.setMonitor(&rep);
     rf.setDefaultContext("demoGrasp_IIT_ISR/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     managerModule mod;
     mod.setName("/demoGraspManager_IIT_ISR");

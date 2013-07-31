@@ -108,7 +108,7 @@ int main(int argc, char * argv[])
    rf.setVerbose(true);
    rf.setDefaultConfigFile("icubEyes.ini"); 
    rf.setDefaultContext("cameraCalibration/conf");
-   rf.configure("ICUB_ROOT", argc, argv);
+   rf.configure(argc, argv);
 
    stereoModule.runModule(rf);
     return 1;

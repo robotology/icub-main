@@ -132,7 +132,7 @@ static int TheadType = TYPE_PORT;
 
 static int timer_handler(gpointer dummy)
 {
-	gtk_widget_queue_draw(gpDrawingArea);
+    gtk_widget_queue_draw(gpDrawingArea);
 
     return 1;
 }
@@ -170,10 +170,10 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
         gpActivationMap=new double[gImageArea];
         gpImageBuff=new guchar[gImageSize];
 
-        if		(TheadType == TYPE_CAN && gpSkinMeshThreadCan  && gWidth>=180 && gHeight>=180)
-				 gpSkinMeshThreadCan->resize(gWidth,gHeight);
-		else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort && gWidth>=180 && gHeight>=180)
-				 gpSkinMeshThreadPort->resize(gWidth,gHeight);
+        if      (TheadType == TYPE_CAN && gpSkinMeshThreadCan  && gWidth>=180 && gHeight>=180)
+                 gpSkinMeshThreadCan->resize(gWidth,gHeight);
+        else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort && gWidth>=180 && gHeight>=180)
+                 gpSkinMeshThreadPort->resize(gWidth,gHeight);
     }
     
     if (TheadType == TYPE_CAN && gpSkinMeshThreadCan)
@@ -198,14 +198,14 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
         
         gdk_draw_rgb_image(pWidget->window,
                            pWidget->style->black_gc,
-					       pEvent->area.x,pEvent->area.y,
-						   pEvent->area.width,pEvent->area.height,
-						   GDK_RGB_DITHER_NONE,
-						   gpImageBuff,
-						   gRowStride);
+                           pEvent->area.x,pEvent->area.y,
+                           pEvent->area.width,pEvent->area.height,
+                           GDK_RGB_DITHER_NONE,
+                           gpImageBuff,
+                           gRowStride);
     }
-	else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort)
-	{
+    else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort)
+    {
         //memset(gpActivationMap,0,gMapSize);
         memset(gpImageBuff,0,gImageSize);
         
@@ -226,12 +226,12 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
         
         gdk_draw_rgb_image(pWidget->window,
                            pWidget->style->black_gc,
-					       pEvent->area.x,pEvent->area.y,
-						   pEvent->area.width,pEvent->area.height,
-						   GDK_RGB_DITHER_NONE,
-						   gpImageBuff,
-						   gRowStride);
-	}
+                           pEvent->area.x,pEvent->area.y,
+                           pEvent->area.width,pEvent->area.height,
+                           GDK_RGB_DITHER_NONE,
+                           gpImageBuff,
+                           gRowStride);
+    }
  
     gMutex.post();
 
@@ -259,24 +259,24 @@ int main(int argc, char *argv[])
     rf.setVerbose();
     rf.setDefaultContext("skinGui/conf/skinGui");
     rf.setDefaultConfigFile("left_hand.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     gWidth =rf.find("width" ).asInt();
     gHeight=rf.find("height").asInt();
     if (rf.check("xpos")) gXpos=rf.find("xpos").asInt();
     if (rf.check("ypos")) gYpos=rf.find("ypos").asInt();
 
-	bool useCan = rf.check("useCan");
-	if (useCan==true) 
-	{
-		printf("CAN version: Reading data directly from CAN\n");
-		TheadType=TYPE_CAN;
-	}
-	else
-	{
-		printf("YARP version: reading data from a Yarp port\n");		
-		TheadType=TYPE_PORT;
-	}
+    bool useCan = rf.check("useCan");
+    if (useCan==true) 
+    {
+        printf("CAN version: Reading data directly from CAN\n");
+        TheadType=TYPE_CAN;
+    }
+    else
+    {
+        printf("YARP version: reading data from a Yarp port\n");        
+        TheadType=TYPE_PORT;
+    }
 
     gRowStride=3*gWidth;
     gImageSize=gRowStride*gHeight;
@@ -286,60 +286,60 @@ int main(int argc, char *argv[])
     gpActivationMap=new double[gImageArea];
     gpImageBuff=new guchar[gImageSize];
 
-	g_thread_init (NULL);
+    g_thread_init (NULL);
     gdk_threads_init ();
     gdk_threads_enter ();
-	gtk_init(&argc,&argv);
-	
+    gtk_init(&argc,&argv);
+    
     GtkWidget *pMainWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	std::string window_title="SkinGui (part: ";
-	window_title.append(rf.find("robotPart").asString());
-	window_title.append(")");
-	gtk_window_set_title(GTK_WINDOW(pMainWindow),window_title.c_str());
+    std::string window_title="SkinGui (part: ";
+    window_title.append(rf.find("robotPart").asString());
+    window_title.append(")");
+    gtk_window_set_title(GTK_WINDOW(pMainWindow),window_title.c_str());
     gtk_window_set_resizable(GTK_WINDOW(pMainWindow),TRUE);
-	gtk_window_set_default_size(GTK_WINDOW(pMainWindow),gWidth,gHeight);
+    gtk_window_set_default_size(GTK_WINDOW(pMainWindow),gWidth,gHeight);
     gtk_window_resize(GTK_WINDOW(pMainWindow),gWidth,gHeight);
 
-	GtkWidget *pBox=gtk_vbox_new(FALSE,0); // parameters (gboolean homogeneous_space, gint spacing);
+    GtkWidget *pBox=gtk_vbox_new(FALSE,0); // parameters (gboolean homogeneous_space, gint spacing);
     gtk_container_add(GTK_CONTAINER(pMainWindow),pBox);
 
-	gpDrawingArea=gtk_drawing_area_new();
-	gtk_box_pack_start(GTK_BOX(pBox),gpDrawingArea,TRUE,TRUE,0);
+    gpDrawingArea=gtk_drawing_area_new();
+    gtk_box_pack_start(GTK_BOX(pBox),gpDrawingArea,TRUE,TRUE,0);
 
-	gtk_signal_connect(GTK_OBJECT(pMainWindow),"destroy",GTK_SIGNAL_FUNC(clean_exit),NULL);
+    gtk_signal_connect(GTK_OBJECT(pMainWindow),"destroy",GTK_SIGNAL_FUNC(clean_exit),NULL);
     g_signal_connect(gpDrawingArea,"expose_event",G_CALLBACK(paint),NULL);
 
     gTimer=g_timeout_add(50,timer_handler,NULL);
 
-	gtk_widget_show_all(pMainWindow);
-	gtk_window_move(GTK_WINDOW(pMainWindow),gXpos,gYpos);
+    gtk_widget_show_all(pMainWindow);
+    gtk_window_move(GTK_WINDOW(pMainWindow),gXpos,gYpos);
 
-	if (TheadType==TYPE_CAN)
-	{
-		gpSkinMeshThreadCan=new SkinMeshThreadCan(rf,50);
-		gpSkinMeshThreadCan->start();
+    if (TheadType==TYPE_CAN)
+    {
+        gpSkinMeshThreadCan=new SkinMeshThreadCan(rf,50);
+        gpSkinMeshThreadCan->start();
 
-		gtk_main();
-		gdk_threads_leave();
+        gtk_main();
+        gdk_threads_leave();
 
-		//gtk_widget_destroy(mainWindow);
-	
-		gpSkinMeshThreadCan->stop();
-		delete gpSkinMeshThreadCan;
-	}
-	else if (TheadType==TYPE_PORT)
-	{
-		gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,50);
-		gpSkinMeshThreadPort->start();
+        //gtk_widget_destroy(mainWindow);
+    
+        gpSkinMeshThreadCan->stop();
+        delete gpSkinMeshThreadCan;
+    }
+    else if (TheadType==TYPE_PORT)
+    {
+        gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,50);
+        gpSkinMeshThreadPort->start();
 
-		gtk_main();
-		gdk_threads_leave();
+        gtk_main();
+        gdk_threads_leave();
 
-		//gtk_widget_destroy(mainWindow);
-	
-		gpSkinMeshThreadPort->stop();
-		delete gpSkinMeshThreadPort;
-	}
+        //gtk_widget_destroy(mainWindow);
+    
+        gpSkinMeshThreadPort->stop();
+        delete gpSkinMeshThreadPort;
+    }
 
     if (gpActivationMap) delete [] gpActivationMap;
     if (gpImageBuff) delete [] gpImageBuff;

@@ -730,7 +730,7 @@ int main(int argc, char *argv[])
 
     rf.setDefault("part", "head");
     rf.setDefault("robot", "icub");
-    rf.configure("ICUB_ROOT", argc, argv);
+    rf.configure(argc, argv);
 
     Property p;
     DumpModule mod;

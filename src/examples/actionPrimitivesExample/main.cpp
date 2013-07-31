@@ -477,7 +477,7 @@ int main(int argc, char *argv[])
     rf.setDefault("grasp_model_file","grasp_model.ini");
     rf.setDefault("hand_sequences_file","hand_sequences.ini");
     rf.setDefault("name","actionPrimitivesMod");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     ExampleModule mod;
     return mod.runModule(rf);

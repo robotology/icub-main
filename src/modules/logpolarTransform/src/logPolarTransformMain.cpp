@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
     rf.setVerbose(true);
     rf.setDefaultConfigFile("logpolarTransform.ini"); //overridden by --from parameter
     rf.setDefaultContext("logpolarTransform/conf");   //overridden by --context parameter
-    rf.configure("ICUB_ROOT", argc, argv);
+    rf.configure(argc, argv);
  
     logPolarTransform.runModule(rf);
     return 0;

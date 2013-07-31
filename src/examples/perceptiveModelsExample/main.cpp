@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
     rf.setDefault("hand","right");
     rf.setDefault("modelType","springy");
     rf.setDefault("finger","index");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     ExampleModule mod;
     return mod.runModule(rf);

@@ -34,16 +34,16 @@ int main(int argc, char *argv[]) {
 
     Network yarp;
 
-	//resource finder initialization. 
-	ResourceFinder rf;
+    //resource finder initialization. 
+    ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultConfigFile("emotions.ini");
     rf.setDefaultContext("faceExpressions/conf");
     rf.setDefault("name", "/emotion");
-    rf.configure("ICUB_ROOT", argc, argv);
-   	EmotionInterfaceModule eiModule;
+    rf.configure(argc, argv);
+    EmotionInterfaceModule eiModule;
 
-	eiModule.configure(rf);
+    eiModule.configure(rf);
 
-	return eiModule.runModule();
+    return eiModule.runModule();
 }

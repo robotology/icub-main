@@ -99,10 +99,10 @@ using namespace std;
 class gravityModuleCompensator: public RFModule
 {
 private:
-	int rate;
-	gravityCompensatorThread *g_comp;
+    int rate;
+    gravityCompensatorThread *g_comp;
 
-	Property OptionsLeftArm;
+    Property OptionsLeftArm;
     Property OptionsRightArm;
     Property OptionsHead;
     Property OptionsLeftLeg;
@@ -118,26 +118,26 @@ private:
     PolyDriver *dd_right_leg;
     PolyDriver *dd_torso;
 
-	bool legs_enabled;
-	bool right_arm_enabled;
-	bool left_arm_enabled;
-	string m_side;
-	string m_part;
+    bool legs_enabled;
+    bool right_arm_enabled;
+    bool left_arm_enabled;
+    string m_side;
+    string m_part;
 
 public:
     gravityModuleCompensator()
     {
-		legs_enabled  = true;
-		left_arm_enabled  = true;
-		right_arm_enabled  = true;
-		dd_left_arm   = 0;
-		dd_right_arm  = 0;
-		dd_head       = 0;
-		dd_left_leg   = 0;
-		dd_right_leg  = 0;
-		dd_torso      = 0;
-		m_side = "right";
-		m_part = "arm";
+        legs_enabled  = true;
+        left_arm_enabled  = true;
+        right_arm_enabled  = true;
+        dd_left_arm   = 0;
+        dd_right_arm  = 0;
+        dd_head       = 0;
+        dd_left_leg   = 0;
+        dd_right_leg  = 0;
+        dd_torso      = 0;
+        m_side = "right";
+        m_part = "arm";
     }
 
    virtual bool createDriver(PolyDriver *&_dd, Property options)
@@ -176,10 +176,10 @@ public:
         }
         while (true);
 
-		IEncoders         *encs     = 0;
-		IControlMode      *ctrlMode = 0;
-		IImpedanceControl *imp      = 0;
-		ITorqueControl    *tqs      = 0;
+        IEncoders         *encs     = 0;
+        IControlMode      *ctrlMode = 0;
+        IImpedanceControl *imp      = 0;
+        ITorqueControl    *tqs      = 0;
 
         bool ok = true;
         ok = ok & _dd->view(encs);
@@ -196,119 +196,119 @@ public:
     }
 
     bool configure(ResourceFinder &rf)
-    {		
-		string fwdSlash = "/";
+    {       
+        string fwdSlash = "/";
 
         string name;
-        name = "gravityCompensator";	
+        name = "gravityCompensator";    
         
         int rate;
         if (rf.check("rate"))
             rate = rf.find("rate").asInt();
         else rate = 20;
 
-		//-----------------GET THE ROBOT NAME-------------------//
-		string robot_name;
-		if (rf.check("robot"))
-			 robot_name = rf.find("robot").asString();
-		else robot_name = "icub";
+        //-----------------GET THE ROBOT NAME-------------------//
+        string robot_name;
+        if (rf.check("robot"))
+             robot_name = rf.find("robot").asString();
+        else robot_name = "icub";
 
-		//------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
-		version_tag icub_type;
-		if (rf.check("headV2"))
-		{
-			fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
-			icub_type.head_version = 2;
-		}
+        //------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
+        version_tag icub_type;
+        if (rf.check("headV2"))
+        {
+            fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
+            icub_type.head_version = 2;
+        }
 
-		//------------------CHECK IF LEGS ARE ENABLED-----------//
-		if (rf.check("no_legs"))
-		{
-			legs_enabled= false;
-			fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
-		}
-		//------------------CHECK IF ARMS ARE ENABLED-----------//
-		if (rf.check("no_left_arm"))
-		{
-			left_arm_enabled= false;
-			fprintf(stderr,"'no_left_arm' option found. Left arm will be disabled.\n");
-		}
-		//------------------CHECK IF ARMS ARE ENABLED-----------//
-		if (rf.check("no_right_arm"))
-		{
-			right_arm_enabled= false;
-			fprintf(stderr,"'no_right_arm' option found. Right arm will be disabled.\n");
-		}
+        //------------------CHECK IF LEGS ARE ENABLED-----------//
+        if (rf.check("no_legs"))
+        {
+            legs_enabled= false;
+            fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
+        }
+        //------------------CHECK IF ARMS ARE ENABLED-----------//
+        if (rf.check("no_left_arm"))
+        {
+            left_arm_enabled= false;
+            fprintf(stderr,"'no_left_arm' option found. Left arm will be disabled.\n");
+        }
+        //------------------CHECK IF ARMS ARE ENABLED-----------//
+        if (rf.check("no_right_arm"))
+        {
+            right_arm_enabled= false;
+            fprintf(stderr,"'no_right_arm' option found. Right arm will be disabled.\n");
+        }
         //---------------------DEVICES--------------------------//
         
-		OptionsHead.put("device","remote_controlboard");
-		OptionsHead.put("local","/gravityCompensator/head/client");
-		OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+        OptionsHead.put("device","remote_controlboard");
+        OptionsHead.put("local","/gravityCompensator/head/client");
+        OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
 
-		if (!createDriver(dd_head, OptionsHead))
-		{
-			fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
-			return false;
-		}
-		else
-			fprintf(stderr,"device driver created\n");
+        if (!createDriver(dd_head, OptionsHead))
+        {
+            fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+            return false;
+        }
+        else
+            fprintf(stderr,"device driver created\n");
         
-		if (left_arm_enabled)
-		{
-			OptionsLeftArm.put("device","remote_controlboard");
-			OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
-			OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
-			if (!createDriver(dd_left_arm,OptionsLeftArm))
-			{
-				fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
-				return false;
-			}
-		}
+        if (left_arm_enabled)
+        {
+            OptionsLeftArm.put("device","remote_controlboard");
+            OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
+            OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
+            if (!createDriver(dd_left_arm,OptionsLeftArm))
+            {
+                fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
+                return false;
+            }
+        }
 
-		if (right_arm_enabled)
-		{
-			OptionsRightArm.put("device","remote_controlboard");
-			OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
-			OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
-			if (!createDriver(dd_right_arm,OptionsRightArm))
-			{
-				fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
-				return false;
-			}
-		}
+        if (right_arm_enabled)
+        {
+            OptionsRightArm.put("device","remote_controlboard");
+            OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
+            OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
+            if (!createDriver(dd_right_arm,OptionsRightArm))
+            {
+                fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
+                return false;
+            }
+        }
 
-		if (legs_enabled)
-		{
-			OptionsLeftLeg.put("device","remote_controlboard");
-			OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
-			OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
-			if (!createDriver(dd_left_leg,OptionsLeftLeg))
-			{
-				fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
-				return false;
-			}
+        if (legs_enabled)
+        {
+            OptionsLeftLeg.put("device","remote_controlboard");
+            OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
+            OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
+            if (!createDriver(dd_left_leg,OptionsLeftLeg))
+            {
+                fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
+                return false;
+            }
 
-			OptionsRightLeg.put("device","remote_controlboard");
-			OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
-			OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
-			if (!createDriver(dd_right_leg,OptionsRightLeg))
-			{
-				fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
-				return false;
-			}
-		}
-		
-		OptionsTorso.put("device","remote_controlboard");
-		OptionsTorso.put("local","/gravityCompensator/torso/client");
-		OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+            OptionsRightLeg.put("device","remote_controlboard");
+            OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
+            OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
+            if (!createDriver(dd_right_leg,OptionsRightLeg))
+            {
+                fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
+                return false;
+            }
+        }
+        
+        OptionsTorso.put("device","remote_controlboard");
+        OptionsTorso.put("local","/gravityCompensator/torso/client");
+        OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
 
-		if (!createDriver(dd_torso,OptionsTorso))
-		{
-			fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
-			return false;
-		}
-		else
-			fprintf(stderr,"device driver created\n");
+        if (!createDriver(dd_torso,OptionsTorso))
+        {
+            fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+            return false;
+        }
+        else
+            fprintf(stderr,"device driver created\n");
 
         rpcPort.open(("/"+name+"/rpc").c_str());
         attach(rpcPort);        
@@ -323,76 +323,76 @@ public:
         return true;
     }
 
-	bool respond(const Bottle& command, Bottle& reply) 
-	{
-		Bottle position_bot;
-		string helpMessage =  string(getName().c_str()) + 
-							" commands are: \n" +  
-							"help       to display this message\n" + 
-							"on         to set the gravity compensation term \n" + 
-							"off        to set the zero torque reference \n";
+    bool respond(const Bottle& command, Bottle& reply) 
+    {
+        Bottle position_bot;
+        string helpMessage =  string(getName().c_str()) + 
+                            " commands are: \n" +  
+                            "help       to display this message\n" + 
+                            "on         to set the gravity compensation term \n" + 
+                            "off        to set the zero torque reference \n";
 
-		  reply.clear(); 
-		if (command.get(0).asString()=="help")
-		{
-			cout << helpMessage;
-			reply.addString(helpMessage.c_str());
-		}
-		else if (command.get(0).asString()=="on" ||
-			     command.get(0).asString()=="ON" )
-		{
-			if (g_comp) 
-			{
-				g_comp->gravity_mode = GRAVITY_COMPENSATION_ON;
-				reply.addString("assigned gravity compensation feed-forward term");
-			}
-	    }
-		else if (command.get(0).asString()=="off" ||
-			     command.get(0).asString()=="OFF" )
-	    {
-			if (g_comp)
-			{
-				g_comp->gravity_mode = GRAVITY_COMPENSATION_OFF;
-				reply.addString("gravity compensation off");
-			}
-	    }
-	    else
-		{
-			reply.addString("unknown command. type help.");
-		}
-		
-		return true;
-	}
+          reply.clear(); 
+        if (command.get(0).asString()=="help")
+        {
+            cout << helpMessage;
+            reply.addString(helpMessage.c_str());
+        }
+        else if (command.get(0).asString()=="on" ||
+                 command.get(0).asString()=="ON" )
+        {
+            if (g_comp) 
+            {
+                g_comp->gravity_mode = GRAVITY_COMPENSATION_ON;
+                reply.addString("assigned gravity compensation feed-forward term");
+            }
+        }
+        else if (command.get(0).asString()=="off" ||
+                 command.get(0).asString()=="OFF" )
+        {
+            if (g_comp)
+            {
+                g_comp->gravity_mode = GRAVITY_COMPENSATION_OFF;
+                reply.addString("gravity compensation off");
+            }
+        }
+        else
+        {
+            reply.addString("unknown command. type help.");
+        }
+        
+        return true;
+    }
 
 
     bool close()
     {
-		//stop thread 
-		if(g_comp)
+        //stop thread 
+        if(g_comp)
         {
             g_comp->stop();
             delete g_comp; g_comp = 0;
         }
-		
-		//closing interfaces
-		if (dd_left_arm)	{delete dd_left_arm;  dd_left_arm=0;  }
-		if (dd_right_arm)	{delete dd_right_arm; dd_right_arm=0; }
-		if (dd_left_leg)	{delete dd_left_leg;  dd_left_leg=0;  }
-		if (dd_right_leg)	{delete dd_right_leg; dd_right_leg=0; }
-		if (dd_head)	    {delete dd_head;      dd_head=0;      }
-		if (dd_torso)	    {delete dd_torso;     dd_torso=0;     }
+        
+        //closing interfaces
+        if (dd_left_arm)    {delete dd_left_arm;  dd_left_arm=0;  }
+        if (dd_right_arm)   {delete dd_right_arm; dd_right_arm=0; }
+        if (dd_left_leg)    {delete dd_left_leg;  dd_left_leg=0;  }
+        if (dd_right_leg)   {delete dd_right_leg; dd_right_leg=0; }
+        if (dd_head)        {delete dd_head;      dd_head=0;      }
+        if (dd_torso)       {delete dd_torso;     dd_torso=0;     }
 
-		//closing ports
+        //closing ports
         rpcPort.interrupt();
-		rpcPort.close();
+        rpcPort.close();
 
         return true;
     }
 
     double getPeriod()  { return 1.0;  }
     bool updateModule()
-	{
-	    static unsigned long int alive_counter = 0;
+    {
+        static unsigned long int alive_counter = 0;
         static double curr_time = Time::now();
         if (Time::now() - curr_time > 60)
         {
@@ -400,23 +400,23 @@ public:
             curr_time = Time::now();
         }
 
-		if (g_comp==0) return false;
+        if (g_comp==0) return false;
 
-		thread_status_enum thread_status = g_comp->getThreadStatus();
+        thread_status_enum thread_status = g_comp->getThreadStatus();
 
-		if (thread_status==STATUS_OK)
-			return true;
-		else if (thread_status==STATUS_DISCONNECTED)
-		{
-			printf ("gravityCompensator module lost connection with iCubInterface, now closing...\n");
-			return false;
-		}
-		else
-		{
-			fprintf(stderr,"gravityCompensator module was closed successfully! \n");    
-			return true;
-		}
-	}
+        if (thread_status==STATUS_OK)
+            return true;
+        else if (thread_status==STATUS_DISCONNECTED)
+        {
+            printf ("gravityCompensator module lost connection with iCubInterface, now closing...\n");
+            return false;
+        }
+        else
+        {
+            fprintf(stderr,"gravityCompensator module was closed successfully! \n");    
+            return true;
+        }
+    }
 };
 
 
@@ -424,18 +424,18 @@ int main(int argc, char * argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     if (rf.check("help"))
     {
         cout << "Options:" << endl << endl;
         cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app:)"                            << endl;
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
-        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"						  << endl;
-        cout << "\t--no_legs    this option disables the gravity compensation for the legs joints"								  << endl;
-		cout << "\t--headV2     use the model of the headV2" << endl;  
-		cout << "\t--no_left_arm    disables the left arm" << endl;
-		cout << "\t--no_right_arm   disabled the right arm" << endl;
+        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"                          << endl;
+        cout << "\t--no_legs    this option disables the gravity compensation for the legs joints"                                << endl;
+        cout << "\t--headV2     use the model of the headV2" << endl;  
+        cout << "\t--no_left_arm    disables the left arm" << endl;
+        cout << "\t--no_right_arm   disabled the right arm" << endl;
         return 0;
     }
 

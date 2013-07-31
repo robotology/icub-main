@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("boostMILExample/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     //register classifiers
     register_classifiers(rf);

@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
     rf.setDefault("left_arm_file","cartesianLeftArm.ini");
     rf.setDefault("right_leg_file","cartesianRightLeg.ini");
     rf.setDefault("left_leg_file","cartesianLeftLeg.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     Network yarp;
     if (!yarp.checkNetwork())

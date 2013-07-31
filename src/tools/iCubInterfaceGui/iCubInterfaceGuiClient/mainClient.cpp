@@ -66,12 +66,12 @@ int main( int argc, char ** argv )
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultContext("iCubInterfaceGui");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     Glib::thread_init();
     Gtk::Main kit(argc,argv);
 
-	yarp::os::Network yarp;
+    yarp::os::Network yarp;
 
     iCubInterfaceGuiWindow client(rf);
 

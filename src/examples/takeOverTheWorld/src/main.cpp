@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     rf.setDefaultContext("takeOverWithSharks");
     rf.setDefaultConfigFile("takeOver.ini");
 
-    rf.configure("ICUB_ROOT", argc, argv);
+    rf.configure(argc, argv);
 
     yarp::os::Value &v=rf.find("robot");
     rf.setVerbose();

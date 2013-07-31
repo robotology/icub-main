@@ -155,7 +155,7 @@ int main( int argc, char ** argv )
     rf.setVerbose();
     rf.setDefaultContext("iCubGui");
     rf.setDefaultConfigFile("iCubGui.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     QApplication a(argc,argv);
 

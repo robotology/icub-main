@@ -1448,7 +1448,7 @@ int main(int argc, char *argv[])
     rf.setDefaultContext("actionsRenderingEngine/conf");
     rf.setDefaultConfigFile("config.ini");
     rf.setDefault("name","actionsRenderingEngine");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     ActionsRenderingEngineModule mod;
 

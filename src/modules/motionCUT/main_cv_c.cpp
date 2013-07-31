@@ -776,7 +776,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     if (rf.check("help"))
     {

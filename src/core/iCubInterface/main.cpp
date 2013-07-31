@@ -150,189 +150,189 @@ static bool askAbort=false;
 IRobotInterface *ri=0;
 
 static void sighandler (int) {
-	static int ct = 0;
-	ct++;    
+    static int ct = 0;
+    ct++;    
 
-	fprintf(stderr, "Asking to shut down \n");
-	terminated = true;
-	if (ct==3)
-	{
-		fprintf(stderr, "Aborting parking...\n");
-		if(ri!=0)
-		{
-			ri->abort();
-		}
-	}
+    fprintf(stderr, "Asking to shut down \n");
+    terminated = true;
+    if (ct==3)
+    {
+        fprintf(stderr, "Aborting parking...\n");
+        if(ri!=0)
+        {
+            ri->abort();
+        }
+    }
 
-	if (ct>3)
-		fprintf(stderr, "iCubInterface is already shutting down, this might take a while\n");
-	if (ct>5)
-	{
-		fprintf(stderr, "Seriously killing the application\n");
-		yarp::os::exit(-1);
-	}
+    if (ct>3)
+        fprintf(stderr, "iCubInterface is already shutting down, this might take a while\n");
+    if (ct>5)
+    {
+        fprintf(stderr, "Seriously killing the application\n");
+        yarp::os::exit(-1);
+    }
 }
 
 int main(int argc, char *argv[]) 
 {
-	Network yarp; //initialize network, this goes before everything
+    Network yarp; //initialize network, this goes before everything
 
-	if (!yarp.checkNetwork())
-	{
-		fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
-		return -1;
-	}
+    if (!yarp.checkNetwork())
+    {
+        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
+        return -1;
+    }
 
     YARP_REGISTER_DEVICES(icubmod)
 
-	yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
-	yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
+    yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
+    yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
 
-	Time::turboBoost();  
+    Time::turboBoost();  
 
-	//for compatibility with old usage of iCubInterface, the use of the ResourceFinder
-	//here is merely functional and should NOT be taken as an example
-	ResourceFinder rf;
-	rf.setVerbose();
-	rf.setDefaultConfigFile("iCubInterface.ini");
-	rf.configure("ICUB_ROOT", argc, argv);
-	ConstString configFile=rf.findFile("config");
-	ConstString cartRightArm=rf.findFile("cartRightArm");
-	ConstString cartLeftArm=rf.findFile("cartLeftArm");
+    //for compatibility with old usage of iCubInterface, the use of the ResourceFinder
+    //here is merely functional and should NOT be taken as an example
+    ResourceFinder rf;
+    rf.setVerbose();
+    rf.setDefaultConfigFile("iCubInterface.ini");
+    rf.configure(argc, argv);
+    ConstString configFile=rf.findFile("config");
+    ConstString cartRightArm=rf.findFile("cartRightArm");
+    ConstString cartLeftArm=rf.findFile("cartLeftArm");
 
-	std::string filename;
-	bool remap=false;
-	if (configFile!="")
-	{
-		configFile=rf.findFile("config");
-		filename=configFile.c_str();
-		remap=true;
-	}
-	else
-	{
-		configFile=rf.find("file").asString();
-		if (configFile!="")
-		{
-			const char *conf = yarp::os::getenv("ICUB_ROOT");
-			filename+=conf;
-			filename+="/conf/";
-			filename+=configFile.c_str();
-			printf("Read robot description from %s\n", filename.c_str());
-		}
-		else
-		{
-			printf("\n");
-			printf("Error: iCubInterface was not able to find a valid configuration file ");
-			printf("(since September 2009 we changed a bit how iCubInterface locates configuratrion files).\n");
-			printf("== Old possibilities:\n");
-			printf("--config <CONFIG_FILE> read config file CONFIG_FILE.\n iCubInterface now ");
-			printf("uses the ResourceFinder class to search for CONFIG_FILE. ");
-			printf("Make sure you understand how the ResourceFinder works. In particular ");
-			printf("you most likely need to set the ICUB_ROBOTNAME environment variable ");
-			printf("to tell the RF to add app/$ICUB_ROBOTNAME/conf to the search path.\n");
-			printf("--file <CONFIG_FILE> read config file from $ICUB_ROOT/conf: old style ");
-			printf("initialization method, obsolete. Still here for compatibility reasons.\n");
-			printf("== New possibilities:\n");
-			printf("Place a file called iCubInterface.ini in app/$ICUB_ROBOTNAME/conf that contains ");
-			printf("the line \"config icubSafe.ini\" (or anything of your choice), and run iCubInterface ");
-			printf("without parameters\n.");
-			printf("== Preventing default behaviors:\n");
-			printf("Use full path in <CONFIG_FILE> (e.g. --config ./icubSafe.ini).\n");
-			printf("Use --from: change config file (e.g. --from iCubInterfaceCustom.ini).\n");
-			return -1;
-		}
-	}
-	//      printf("--file <CONFIG_FILE>  read robot config file CONFIG_FILE\n");
-	//     printf("Note: this files are searched in $ICUB_ROOT/conf (obsolete)\n");
-	//     printf("--config <CONFIG_FILE> full path to robot config file\n");
-	//    printf("-Examples:\n");
-	//    printf("%s --file icub.ini (obsolete, not standard)\n", argv[0]);
-	//     printf("%s --config $ICUB_ROOT/app/default/conf/icub.ini\n)", argv[0]);
-	//    return -1;
+    std::string filename;
+    bool remap=false;
+    if (configFile!="")
+    {
+        configFile=rf.findFile("config");
+        filename=configFile.c_str();
+        remap=true;
+    }
+    else
+    {
+        configFile=rf.find("file").asString();
+        if (configFile!="")
+        {
+            const char *conf = yarp::os::getenv("ICUB_ROOT");
+            filename+=conf;
+            filename+="/conf/";
+            filename+=configFile.c_str();
+            printf("Read robot description from %s\n", filename.c_str());
+        }
+        else
+        {
+            printf("\n");
+            printf("Error: iCubInterface was not able to find a valid configuration file ");
+            printf("(since September 2009 we changed a bit how iCubInterface locates configuratrion files).\n");
+            printf("== Old possibilities:\n");
+            printf("--config <CONFIG_FILE> read config file CONFIG_FILE.\n iCubInterface now ");
+            printf("uses the ResourceFinder class to search for CONFIG_FILE. ");
+            printf("Make sure you understand how the ResourceFinder works. In particular ");
+            printf("you most likely need to set the ICUB_ROBOTNAME environment variable ");
+            printf("to tell the RF to add app/$ICUB_ROBOTNAME/conf to the search path.\n");
+            printf("--file <CONFIG_FILE> read config file from $ICUB_ROOT/conf: old style ");
+            printf("initialization method, obsolete. Still here for compatibility reasons.\n");
+            printf("== New possibilities:\n");
+            printf("Place a file called iCubInterface.ini in app/$ICUB_ROBOTNAME/conf that contains ");
+            printf("the line \"config icubSafe.ini\" (or anything of your choice), and run iCubInterface ");
+            printf("without parameters\n.");
+            printf("== Preventing default behaviors:\n");
+            printf("Use full path in <CONFIG_FILE> (e.g. --config ./icubSafe.ini).\n");
+            printf("Use --from: change config file (e.g. --from iCubInterfaceCustom.ini).\n");
+            return -1;
+        }
+    }
+    //      printf("--file <CONFIG_FILE>  read robot config file CONFIG_FILE\n");
+    //     printf("Note: this files are searched in $ICUB_ROOT/conf (obsolete)\n");
+    //     printf("--config <CONFIG_FILE> full path to robot config file\n");
+    //    printf("-Examples:\n");
+    //    printf("%s --file icub.ini (obsolete, not standard)\n", argv[0]);
+    //     printf("%s --config $ICUB_ROOT/app/default/conf/icub.ini\n)", argv[0]);
+    //    return -1;
 
 
-	Property robotOptions;
-	bool ok=robotOptions.fromConfigFile(filename.c_str());
-	if (!ok) 
-	{
-		fprintf(stderr, "Sorry could not open %s\n", filename.c_str());
-		return -1;
-	}
+    Property robotOptions;
+    bool ok=robotOptions.fromConfigFile(filename.c_str());
+    if (!ok) 
+    {
+        fprintf(stderr, "Sorry could not open %s\n", filename.c_str());
+        return -1;
+    }
 
-	printf("Config file loaded successfully\n");
+    printf("Config file loaded successfully\n");
 
-	std::string quitPortName;
-	if (robotOptions.check("TERMINATEPORT"))
-	{
-		Value &v=robotOptions.findGroup("TERMINATEPORT").find("Name");
-		quitPortName=std::string(v.toString().c_str());
-	}
-	else
-		quitPortName=std::string("/iCubInterface/quit");
+    std::string quitPortName;
+    if (robotOptions.check("TERMINATEPORT"))
+    {
+        Value &v=robotOptions.findGroup("TERMINATEPORT").find("Name");
+        quitPortName=std::string(v.toString().c_str());
+    }
+    else
+        quitPortName=std::string("/iCubInterface/quit");
 
-	fprintf(stderr, "Quit will listen on %s\n", quitPortName.c_str());
+    fprintf(stderr, "Quit will listen on %s\n", quitPortName.c_str());
 
-	// LATER: must use a specific robot name to make the port unique.
-	Terminee terminee(quitPortName.c_str());
+    // LATER: must use a specific robot name to make the port unique.
+    Terminee terminee(quitPortName.c_str());
 
-	//    Terminee terminee("/iCubInterface/quit");
-	if (!terminee.isOk()) { 
-		printf("Failed to create proper quit socket\n"); 
-		return 1;
-	}   
+    //    Terminee terminee("/iCubInterface/quit");
+    if (!terminee.isOk()) { 
+        printf("Failed to create proper quit socket\n"); 
+        return 1;
+    }   
 
-	IRobotInterface *i;
-	if (remap)
-	{
+    IRobotInterface *i;
+    if (remap)
+    {
         i=new RobotInterfaceRemap;
-	}
-	else
-	{
-		i=new RobotInterface;
-	}
-	ri=i; //set pointer to RobotInterface object (used in the handlers above)
+    }
+    else
+    {
+        i=new RobotInterface;
+    }
+    ri=i; //set pointer to RobotInterface object (used in the handlers above)
 
-	ok = i->initialize(filename); 
-	if (!ok)
-		return 0;
+    ok = i->initialize(filename); 
+    if (!ok)
+        return 0;
 
-	char c = 0;    
-	printf("Driver instantiated and running (silently)\n");
+    char c = 0;    
+    printf("Driver instantiated and running (silently)\n");
 
-	printf("Checking if you have requested instantiation of cartesian controller\n");
-	bool someCartesian=false;
-	if (cartRightArm!="")
-	{
-		i->initCart(cartRightArm.c_str());
-		someCartesian=true;
-	}
-	if (cartLeftArm!="")
-	{
-		i->initCart(cartLeftArm.c_str());
-		someCartesian=true;
-	}
-	if (!someCartesian)
-	{
-		printf("Nothing found\n");
-	}
+    printf("Checking if you have requested instantiation of cartesian controller\n");
+    bool someCartesian=false;
+    if (cartRightArm!="")
+    {
+        i->initCart(cartRightArm.c_str());
+        someCartesian=true;
+    }
+    if (cartLeftArm!="")
+    {
+        i->initCart(cartLeftArm.c_str());
+        someCartesian=true;
+    }
+    if (!someCartesian)
+    {
+        printf("Nothing found\n");
+    }
 
-	while (!terminee.mustQuit()&&!terminated) 
-	{
-		Time::delay(2); 
-	}
+    while (!terminee.mustQuit()&&!terminated) 
+    {
+        Time::delay(2); 
+    }
 
-	printf("Received a quit message\n");
+    printf("Received a quit message\n");
 
-	if (someCartesian)
-	{
-		i->finiCart();
-	}
+    if (someCartesian)
+    {
+        i->finiCart();
+    }
 
     i->detachWrappers();
     i->park(); //default behavior is blocking (safer)
     i->closeNetworks();
-	ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
-	delete i; 
-	i=0;
-	return 0;  
+    ri=0;  //tell signal handler interface is not longer valid (do this before you destroy i ;)
+    delete i; 
+    i=0;
+    return 0;  
 }

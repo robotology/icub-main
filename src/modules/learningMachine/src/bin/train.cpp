@@ -34,7 +34,7 @@ int main (int argc, char* argv[]) {
 
     yarp::os::ResourceFinder rf;
     rf.setDefaultContext("learningMachine");
-    rf.configure("ICUB_ROOT", argc, argv);
+    rf.configure(argc, argv);
 
     TrainModule module;
     try {

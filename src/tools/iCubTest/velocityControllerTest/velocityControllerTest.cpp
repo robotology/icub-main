@@ -260,7 +260,7 @@ int main(int argc, char **argv)
     rf.setVerbose(true);
     rf.setDefaultContext("iCubTest/conf/vel_control");
     rf.setDefaultConfigFile("config.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
 ////////////////////////////////////////////////////////
     // configure module

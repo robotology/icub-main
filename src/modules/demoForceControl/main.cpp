@@ -403,7 +403,7 @@ int main(int argc, char * argv[])
     Network yarp;
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
     
     robot = new robot_interfaces();
     std::string robot_name = "icub";

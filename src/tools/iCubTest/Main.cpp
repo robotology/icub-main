@@ -195,7 +195,7 @@ int main(int argc,char* argv[])
     rf.setDefaultContext("iCubTest");
     rf.setDefaultConfigFile("test.ini");
     //rf.setDefault("robot","/icub");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     yarp::os::Bottle references=rf.findGroup("REFERENCES");
     
@@ -214,7 +214,7 @@ int main(int argc,char* argv[])
         yarp::os::ResourceFinder testRf;
         testRf.setDefaultContext("iCubTest");
         testRf.setDefaultConfigFile(fileName.c_str());
-        testRf.configure("ICUB_ROOT",0,NULL);
+        testRf.configure(0,NULL);
 
         if (testType=="iCubTestMotors")
         {

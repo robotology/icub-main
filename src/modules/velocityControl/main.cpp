@@ -60,9 +60,9 @@ where robot is the name of the robot as specified with --robot and
 part is the required part as specified with --part (see below).
 
 - /robot/vc/part/input: input port of the module
-    -	[susp]: suspend the controller (command zero velocity)
-    -	[run]: start (and resume after being suspended) the controller
-    -	[quit]: quit the module (exit)
+    -   [susp]: suspend the controller (command zero velocity)
+    -   [run]: start (and resume after being suspended) the controller
+    -   [quit]: quit the module (exit)
     -   [set] j p: move joint j to p (degrees)
     -   [svel] j v: set maximum speed for joint j to v (deg/sec)
     -   [gain] j k: set gain for joint j to k
@@ -235,7 +235,7 @@ public:
     virtual bool configure(yarp::os::ResourceFinder &rf)
     {
         Property options;
-		options.fromString(rf.toString());
+        options.fromString(rf.toString());
         char robotName[255];
         Time::turboBoost();    
         options.put("device", "remote_controlboard");
@@ -243,7 +243,7 @@ public:
             strncpy(robotName, options.find("robot").asString().c_str(),sizeof(robotName));
         else
             strncpy(robotName, "icub", sizeof(robotName));
-	
+    
         if(options.check("part"))
             {
                 char tmp[255];
@@ -251,12 +251,12 @@ public:
                         robotName,
                         options.find("part").asString().c_str());
                 options.put("local",tmp);
-	    
+        
                 sprintf(tmp, "/%s/%s", 
                         robotName,
                         options.find("part").asString().c_str());
                 options.put("remote", tmp);
-	    
+        
                 sprintf(tmp,"/%s/vc/%s/input",
                         robotName,
                         options.find("part").asString().c_str());
@@ -314,7 +314,7 @@ public:
         return true;
     }
 
-	bool updateModule()
+    bool updateModule()
     {
         return true;
     }
@@ -325,13 +325,13 @@ int main(int argc, char *argv[])
 {
     Network yarp;
     VelControlModule mod;
-	ResourceFinder rf;
+    ResourceFinder rf;
     
-	rf.configure("ICUB_ROOT", argc, argv);
-	rf.setVerbose(true);
-	mod.configure(rf);
+    rf.configure(argc, argv);
+    rf.setVerbose(true);
+    mod.configure(rf);
     mod.runModule();
-	fprintf(stderr, "Main returning\n");
-	return 0;
+    fprintf(stderr, "Main returning\n");
+    return 0;
 
 }

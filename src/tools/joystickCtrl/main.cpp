@@ -746,7 +746,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultConfigFile("joystickControl.ini");           //overridden by --from parameter
     rf.setDefaultContext("../../app/joystickControl/conf");   //overridden by --context parameter
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     if (rf.check("help"))
     {

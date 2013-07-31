@@ -386,7 +386,7 @@ int main (int argc, char *argv[]) {
     ResourceFinder rf;
     rf.setDefaultConfigFile("logpolarRemapper.ini");
     rf.setDefaultContext("logpolarRemapper/conf");
-    rf.configure("ICUB_ROOT", argc, argv);
+    rf.configure(argc, argv);
     rf.setVerbose(true);
  
     fprintf(stdout, "Configuring module\n");

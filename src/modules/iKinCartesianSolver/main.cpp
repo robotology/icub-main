@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     rf.setDefaultContext("cartesianSolver/conf");
     rf.setDefaultConfigFile("cartesianSolver.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     SolverModule mod;
     return mod.runModule(rf);

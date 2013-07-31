@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     rf.setVerbose( true );
     rf.setDefaultConfigFile( "general.ini" ); //overridden by --from parameter
     rf.setDefaultContext( "simFaceExpressions" );   //overridden by --context parameter
-    rf.configure( "ICUB_ROOT", argc, argv );
+    rf.configure( argc, argv );
  
     /* run the module: runModule() calls configure first and, if successful, it then runs */
     module.runModule(rf);

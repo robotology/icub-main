@@ -960,7 +960,7 @@ int main(int argc, char *argv[]) {
 
     ResourceFinder rf;
     rf.setDefaultContext("learningMachine");
-    rf.configure("ICUB_ROOT", argc, argv);
+    rf.configure(argc, argv);
     MergeModule module;
     try {
         ret = module.runModule(rf);

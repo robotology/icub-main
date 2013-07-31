@@ -32,9 +32,9 @@ int main(int argc, char * argv[])
    /* prepare and configure the resource finder */
    ResourceFinder rf;
    rf.setVerbose(false);
-   rf.setDefaultConfigFile("skinManager.ini");		    //overridden by --from parameter
-   rf.setDefaultContext("skinGui/conf");				//overridden by --context parameter
-   rf.configure("ICUB_ROOT", argc, argv);
+   rf.setDefaultConfigFile("skinManager.ini");          //overridden by --from parameter
+   rf.setDefaultContext("skinGui/conf");                //overridden by --context parameter
+   rf.configure(argc, argv);
  
    /* run the module: runModule() calls configure first and, if successful, it then runs */
    module.runModule(rf);

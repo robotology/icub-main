@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
     rf.setVerbose(true);
     rf.setDefaultConfigFile("camCalib.ini"); //overridden by --from parameter
     rf.setDefaultContext("camCalib"); //overridden by --context parameter
-    rf.configure("ICUB_ROOT", argc, argv);    
+    rf.configure(argc, argv);
     CamCalibModule module;      
     return module.runModule(rf);
 }

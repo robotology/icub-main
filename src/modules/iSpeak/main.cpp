@@ -458,7 +458,7 @@ int main(int argc, char *argv[])
     rf.setDefault("robot","icub");
     rf.setDefault("package","festival");
     rf.setDefault("package_options","");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     Launcher launcher;
     return launcher.runModule(rf);

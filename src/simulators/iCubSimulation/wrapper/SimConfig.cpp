@@ -50,7 +50,7 @@ static string configureFinder(int argc, char *argv[],
     finder.setVerbose();
     finder.setDefaultConfigFile("simulator.ini");
     finder.setDefaultContext("simConfig");
-    finder.configure("ICUB_ROOT", argc, argv); 
+    finder.configure(argc, argv); 
 
 
     if ( finder.check( "name" ) ) {

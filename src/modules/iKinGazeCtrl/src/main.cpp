@@ -1014,7 +1014,7 @@ public:
             bool exist=yarp::os::stat(checkFile.c_str())>=0;
             printf("Checking if %s exists: %s\n",checkFile.c_str(),exist?"yes":"no");
             if (exist)
-                commData.rf_cameras.configure("ICUB_ROOT",0,NULL);
+                commData.rf_cameras.configure(0,NULL);
         }
 
         commData.rf_tweak.setQuiet();
@@ -1028,7 +1028,7 @@ public:
         bool exist=yarp::os::stat(commData.tweakFile.c_str())>=0;
         printf("Checking if %s exists: %s\n",commData.tweakFile.c_str(),exist?"yes":"no");
         if (exist)
-            commData.rf_tweak.configure("ICUB_ROOT",0,NULL);
+            commData.rf_tweak.configure(0,NULL);
 
         if (commData.headV2)
             fprintf(stdout,"Controller configured for head 2.0\n");
@@ -1846,7 +1846,7 @@ int main(int argc, char *argv[])
     rf.setVerbose();
     rf.setDefaultContext("iKinGazeCtrl/conf");
     rf.setDefaultConfigFile("config.ini");
-    rf.configure("ICUB_ROOT",argc,argv);
+    rf.configure(argc,argv);
 
     if (rf.check("help"))
     {
