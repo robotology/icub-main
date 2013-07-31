@@ -36,7 +36,7 @@ bool GroupSalience::open(yarp::os::Searchable& config) {
             // we have a sub-entry for configuration
             Bottle& subConfig = config.findGroup(name);
             name = subConfig.check("filter",Value(name)).toString();
-            filter = SalienceFactories::getPool().get(name);
+            filter = SalienceFactories::getPool().get(name.c_str());
             if (filter!=NULL) {
                 bool ok = filter->open(subConfig);
                 if (!ok) {
@@ -48,7 +48,7 @@ bool GroupSalience::open(yarp::os::Searchable& config) {
             }         
         } else {
             // no sub-entry for configuration
-            filter = SalienceFactories::getPool().get(name);
+            filter = SalienceFactories::getPool().get(name.c_str());
             if (filter!=NULL) {
                 bool ok = filter->open(config);
                 if (!ok) {
