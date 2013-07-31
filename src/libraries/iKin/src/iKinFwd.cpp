@@ -269,14 +269,14 @@ iKinChain::iKinChain()
 /************************************************************************/
 void iKinChain::clone(const iKinChain &c)
 {
-    N         =c.N;
-    DOF       =c.DOF;
-    H0        =c.H0;
-    HN        =c.HN;
-    curr_q    =c.curr_q;    
-    verbose   =c.verbose;
-    hess_J    =c.hess_J;
-    hess_Jlnk =c.hess_Jlnk;
+    N        =c.N;
+    DOF      =c.DOF;
+    H0       =c.H0;
+    HN       =c.HN;
+    curr_q   =c.curr_q;    
+    verbose  =c.verbose;
+    hess_J   =c.hess_J;
+    hess_Jlnk=c.hess_Jlnk;
 
     allList.assign(c.allList.begin(),c.allList.end());
     quickList.assign(c.quickList.begin(),c.quickList.end());
