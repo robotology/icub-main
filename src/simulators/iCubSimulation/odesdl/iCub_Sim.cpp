@@ -1113,12 +1113,19 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     Property options;
 
     //get the camera calibration parameters
-    ConstString camcalibConf = robot_config->getFinder().findFile("camcalib");
-    Property camcalibOptions;
-    camcalibOptions.fromConfigFile(camcalibConf.c_str());
+    string camcalib_context=robot_config->getFinder().check("camcalib_context",
+                                                            Value("cameraCalibration")).asString().c_str();
+    string camcalib_file=robot_config->getFinder().check("camcalib_file",
+                                                         Value("icubSimEyes.ini")).asString().c_str();
+
+    ResourceFinder rf_camcalib;
+    rf_camcalib.setVerbose();
+    rf_camcalib.setDefaultContext(camcalib_context.c_str());
+    rf_camcalib.setDefaultConfigFile(camcalib_file.c_str());
+    rf_camcalib.configure(0,NULL);
 
     //left
-    Bottle &bCalibLeft=camcalibOptions.findGroup("CAMERA_CALIBRATION_LEFT");
+    Bottle &bCalibLeft=rf_camcalib.findGroup("CAMERA_CALIBRATION_LEFT");
     width_left=bCalibLeft.check("w",Value(320)).asInt();
     height_left=bCalibLeft.check("h",Value(240)).asInt();
 
@@ -1126,7 +1133,7 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     fov_left=2*atan2((double)height_left,2*focal_length_left)*180.0/M_PI;
 
     //right
-    Bottle &bCalibRight=camcalibOptions.findGroup("CAMERA_CALIBRATION_RIGHT");
+    Bottle &bCalibRight=rf_camcalib.findGroup("CAMERA_CALIBRATION_RIGHT");
     width_right=bCalibRight.check("w",Value(320)).asInt();
     height_right=bCalibRight.check("h",Value(240)).asInt();
 
