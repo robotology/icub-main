@@ -49,9 +49,9 @@ using namespace iCub::iKin;
 
 
 /************************************************************************/
-CartesianCtrlRpcProcessor::CartesianCtrlRpcProcessor(ServerCartesianController *_ctrl)
+CartesianCtrlRpcProcessor::CartesianCtrlRpcProcessor(ServerCartesianController *server)
 {
-    ctrl=_ctrl;
+    this->server=server;
 }
 
 
@@ -63,7 +63,7 @@ bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
     if (!cmd.read(connection))
         return false;
 
-    if (ctrl->respond(cmd,reply))
+    if (server->respond(cmd,reply))
         if (ConnectionWriter *writer=connection.getWriter())
             reply.write(*writer);
 
@@ -72,9 +72,9 @@ bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
 
 
 /************************************************************************/
-CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *_ctrl)
+CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *server)
 {
-    ctrl=_ctrl;
+    this->server=server;
 }
 
 
@@ -100,7 +100,7 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
                 for (size_t i=0; i<od.length(); i++)
                     od[i]=v->get(xd.length()+i).asDouble();
 
-                ctrl->goToPose(xd,od,t);
+                server->goToPose(xd,od,t);
             }
             else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
             {
@@ -109,7 +109,7 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
                 for (int i=0; i<v->size(); i++)
                     xd[i]=v->get(i).asDouble();
 
-                ctrl->goToPosition(xd,t);
+                server->goToPosition(xd,t);
             }
         }
         else if ((command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_TASKVEL) && (command.size()>1))
@@ -125,7 +125,7 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
             for (size_t i=0; i<odot.length(); i++)
                 odot[i]=v->get(xdot.length()+i).asDouble();
 
-            ctrl->setTaskVelocities(xdot,odot);
+            server->setTaskVelocities(xdot,odot);
         }
     }
 }

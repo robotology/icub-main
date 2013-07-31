@@ -72,24 +72,22 @@ struct DriverDescriptor
 class CartesianCtrlRpcProcessor : public yarp::os::PortReader
 {
 protected:
-    ServerCartesianController *ctrl;
-
+    ServerCartesianController *server;
     bool read(yarp::os::ConnectionReader &connection);
 
 public:
-    CartesianCtrlRpcProcessor(ServerCartesianController *_ctrl);
+    CartesianCtrlRpcProcessor(ServerCartesianController *server);
 };
 
 
 class CartesianCtrlCommandPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 {
 protected:
-    ServerCartesianController *ctrl;
-
+    ServerCartesianController *server;
     void onRead(yarp::os::Bottle &command);
 
 public:
-    CartesianCtrlCommandPort(ServerCartesianController *_ctrl);
+    CartesianCtrlCommandPort(ServerCartesianController *server);
 };
 
 
