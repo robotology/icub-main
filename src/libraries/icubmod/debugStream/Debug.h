@@ -124,11 +124,13 @@ public:
         return *this;
     }
 
+#ifndef YARP_CONSTSTRING_IS_STD_STRING
     inline Debug& operator<<(const std::string &t) {
         stream->oss << t;
         stream->oss << ' ';
         return *this;
     }
+#endif
 
     inline Debug& operator<<(yarp::os::ConstString t) {
         stream->oss << t.c_str();
