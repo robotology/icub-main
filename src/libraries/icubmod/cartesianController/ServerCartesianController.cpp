@@ -152,9 +152,9 @@ ServerCartesianController::ServerCartesianController(Searchable &config) :
 void ServerCartesianController::init()
 {
     // initialization
-    limb =NULL;
-    chain=NULL;
-    ctrl =NULL;
+    limbState=limbPlan=NULL;
+    chainState=chainPlan=NULL;
+    ctrl=NULL;
 
     portCmd     =NULL;
     rpcProcessor=NULL;
@@ -234,9 +234,7 @@ void ServerCartesianController::closePorts()
         delete portCmd;
     }
 
-    if (rpcProcessor!=NULL)
-        delete rpcProcessor;
-
+    delete rpcProcessor;
     connected=false;
 }
 
@@ -551,13 +549,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         {
                             reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
 
-                            Vector q(chain->getN());
+                            Vector q(chainState->getN());
                             int cnt=0;
 
-                            for (unsigned int i=0; i<chain->getN(); i++)
+                            for (unsigned int i=0; i<chainState->getN(); i++)
                             {
-                                if ((*chain)[i].isBlocked())
-                                    q[i]=CTRL_RAD2DEG*chain->getAng(i);
+                                if ((*chainState)[i].isBlocked())
+                                    q[i]=CTRL_RAD2DEG*chainState->getAng(i);
                                 else
                                     q[i]=CTRL_RAD2DEG*qdes[cnt++];
                             }
@@ -1021,8 +1019,10 @@ void ServerCartesianController::alignJointsBounds()
         {
             lLim[i]->getLimits(lRmp[i][j],&min,&max);
             fprintf(stdout,"joint #%d: [%g, %g] deg\n",cnt,min,max);
-            (*chain)[cnt].setMin(CTRL_DEG2RAD*min);
-            (*chain)[cnt].setMax(CTRL_DEG2RAD*max);
+            (*chainState)[cnt].setMin(CTRL_DEG2RAD*min);
+            (*chainState)[cnt].setMax(CTRL_DEG2RAD*max);
+            (*chainPlan)[cnt].setMin(CTRL_DEG2RAD*min);
+            (*chainPlan)[cnt].setMax(CTRL_DEG2RAD*max);
             cnt++;
         }
     }
@@ -1058,8 +1058,11 @@ double ServerCartesianController::getFeedback(Vector &_fb)
             {
                 double tmp=CTRL_DEG2RAD*fbTmp[lRmp[i][j]];
             
-                if ((*chain)[chainCnt].isBlocked())
-                    chain->setBlockingValue(chainCnt,tmp);
+                if ((*chainState)[chainCnt].isBlocked())
+                {
+                    chainState->setBlockingValue(chainCnt,tmp);
+                    chainPlan->setBlockingValue(chainCnt,tmp);
+                }
                 else
                     _fb[_fbCnt++]=tmp;
             
@@ -1068,7 +1071,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
         }
         else for (int j=0; j<lJnt[i]; j++)
         {
-            if (!(*chain)[chainCnt++].isBlocked())
+            if (!(*chainState)[chainCnt++].isBlocked())
                 _fbCnt++;
         }
     }
@@ -1081,32 +1084,34 @@ double ServerCartesianController::getFeedback(Vector &_fb)
 void ServerCartesianController::newController()
 {
     // guard
-    if (chain==NULL)
+    if (chainState==NULL)
         return;
 
     stopControlHelper();
 
-    // if it already exists, destroy old controller
-    if (ctrl!=NULL)
-        delete ctrl;
+    // destroy old controller
+    delete ctrl;
 
     // update quantities
-    fb.resize(chain->getDOF());
+    fb.resize(chainState->getDOF());
     getFeedback(fb);
-    chain->setAng(fb);
-    velCmd.resize(chain->getDOF(),0.0);
-    xdes=chain->EndEffPose();
-    qdes=chain->getAng();
+    chainState->setAng(fb);
+    chainPlan->setAng(fb);
+    velCmd.resize(chainState->getDOF(),0.0);
+    xdes=chainState->EndEffPose();
+    qdes=chainState->getAng();
     q0=qdes;
 
     // instantiate new controller
-    if (!posDirectEnabled && (plantModelProperties.check("plant_compensator",Value("off")).asString()=="on"))
+    if (posDirectEnabled)
+        ctrl=new MultiRefMinJerkCtrl(*chainPlan,ctrlPose,getRate()/1000.0);
+    else if (plantModelProperties.check("plant_compensator",Value("off")).asString()=="on")
     {
-        ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0,true);
+        ctrl=new MultiRefMinJerkCtrl(*chainState,ctrlPose,getRate()/1000.0,true);
         ctrl->setPlantParameters(plantModelProperties,"joint");
     }
     else
-        ctrl=new MultiRefMinJerkCtrl(*chain,ctrlPose,getRate()/1000.0);
+        ctrl=new MultiRefMinJerkCtrl(*chainState,ctrlPose,getRate()/1000.0);
 
     // set tolerance
     ctrl->setInTargetTol(targetTol);
@@ -1116,7 +1121,7 @@ void ServerCartesianController::newController()
 
     // configure the Smith Predictor
     if (!posDirectEnabled)
-        smithPredictor.configure(plantModelProperties,*chain); 
+        smithPredictor.configure(plantModelProperties,*chainState); 
 }
 
 
@@ -1173,7 +1178,7 @@ bool ServerCartesianController::getNewTarget()
         {
             Bottle *b2=getJointsOption(*b1);
             int l1=b2->size();
-            int l2=chain->getDOF();
+            int l2=chainState->getDOF();
             int len=l1<l2 ? l1 : l2;
             _qdes.resize(len);
 
@@ -1225,9 +1230,9 @@ void ServerCartesianController::sendControlCommands()
         Vector refs;
 
         Vector q=ctrl->get_q();
-        for (unsigned int i=0; i<chain->getN(); i++)
+        for (unsigned int i=0; i<chainState->getN(); i++)
         {
-            if (!(*chain)[i].isBlocked())
+            if (!(*chainState)[i].isBlocked())
             {
                 joints.push_back(lRmp[j][k]);
                 refs.push_back(CTRL_RAD2DEG*q[cnt]);
@@ -1247,9 +1252,9 @@ void ServerCartesianController::sendControlCommands()
     else
     {
         Vector v=ctrl->get_qdot();
-        for (unsigned int i=0; i<chain->getN(); i++) 
+        for (unsigned int i=0; i<chainState->getN(); i++) 
         {
-            if (!(*chain)[i].isBlocked())
+            if (!(*chainState)[i].isBlocked())
             {
                 double v_cnt=CTRL_RAD2DEG*v[cnt];
 
@@ -1286,9 +1291,9 @@ void ServerCartesianController::stopLimb()
         int j=0;
         int k=0;
 
-        for (unsigned int i=0; i<chain->getN(); i++)
+        for (unsigned int i=0; i<chainState->getN(); i++)
         {
-            if (!(*chain)[i].isBlocked())
+            if (!(*chainState)[i].isBlocked())
                 lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
 
             if (++k>=lJnt[j])
@@ -1336,7 +1341,14 @@ void ServerCartesianController::run()
 
         // read the feedback
         double stamp=getFeedback(fb);
-        ctrl->set_q(fb);
+
+        // iff in position then update just chainState
+        // and make the chainPlan evolve freely without
+        // constraining it to the feedback values
+        if (posDirectEnabled)
+            chainState->setAng(fb);
+        else
+            ctrl->set_q(fb);
 
         // manage the virtual target yielded by a
         // request for a task-space reference velocity
@@ -1405,7 +1417,7 @@ void ServerCartesianController::run()
         // streams out the end-effector pose
         if (portState.getOutputCount()>0)
         {
-            portState.prepare()=chain->EndEffPose();
+            portState.prepare()=chainState->EndEffPose();
             portState.setEnvelope(txInfo);
             portState.write();
         }
@@ -1651,16 +1663,16 @@ bool ServerCartesianController::open(Searchable &config)
 
     // instantiate kinematic object
     if (kinPart=="arm")
-        limb=new iCubArm(kinType.c_str());
+        limbState=new iCubArm(kinType.c_str());
     else if (kinPart=="leg")
-        limb=new iCubLeg(kinType.c_str());
+        limbState=new iCubLeg(kinType.c_str());
     else if (optGeneral.check("customKinFile"))     // custom kinematics case
     {
         Property linksOptions;
         linksOptions.fromConfigFile(optGeneral.find("customKinFile").asString().c_str());
 
-        limb=new iKinLimb(linksOptions);
-        if (!limb->isValid())
+        limbState=new iKinLimb(linksOptions);
+        if (!limbState->isValid())
         {
             fprintf(stdout,"Invalid links parameters\n");
             close();
@@ -1676,7 +1688,11 @@ bool ServerCartesianController::open(Searchable &config)
         return false;
     }
 
-    chain=limb->asChain();
+    // duplicate the limb for planning purpose
+    limbPlan=new iKinLimb(*limbState);
+
+    chainState=limbState->asChain();
+    chainPlan=limbPlan->asChain();
 
     openPorts();
 
@@ -1705,11 +1721,9 @@ bool ServerCartesianController::close()
     lJnt.clear();
     lRmp.clear();
 
-    if (limb!=NULL)
-        delete limb;
-
-    if (ctrl!=NULL)
-        delete ctrl;
+    delete limbState;
+    delete limbPlan;
+    delete ctrl;
 
     while (eventsMap.size()>0)
         unregisterEvent(*eventsMap.begin()->second);
@@ -1737,7 +1751,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         return false;
     }
 
-    int remainingJoints=chain->getN();
+    int remainingJoints=chainState->getN();
 
     for (int i=0; i<numDrv; i++)
     {
@@ -1941,9 +1955,15 @@ bool ServerCartesianController::connectToSolver()
         for (int i=0; i<rxDofPart->size(); i++)
         {
             if (rxDofPart->get(i).asInt()!=0)
-                chain->releaseLink(i);
+            {
+                chainState->releaseLink(i);
+                chainPlan->releaseLink(i);
+            }
             else
-                chain->blockLink(i);
+            {
+                chainState->blockLink(i);
+                chainPlan->blockLink(i);
+            }
         }
 
         setTrackingMode(trackingMode);
@@ -2084,7 +2104,7 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
     if (attached)
     {
         mutex.wait();
-        Vector pose=chain->EndEffPose();
+        Vector pose=chainState->EndEffPose();
     
         x.resize(3);
         o.resize(pose.length()-x.length());
@@ -2115,9 +2135,9 @@ bool ServerCartesianController::getPose(const int axis, Vector &x,
         mutex.wait();
 
         bool ret=false;
-        if (axis<(int)chain->getN())
+        if (axis<(int)chainState->getN())
         {
-            Matrix H=chain->getH(axis,true);
+            Matrix H=chainState->getH(axis,true);
     
             x.resize(3);
             for (size_t i=0; i<x.length(); i++)
@@ -2216,13 +2236,13 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat,
         for (size_t i=0; i<odhat.length(); i++)
             odhat[i]=xdes[xdhat.length()+i];
 
-        qdhat.resize(chain->getN());
+        qdhat.resize(chainState->getN());
         int cnt=0;
 
-        for (unsigned int i=0; i<chain->getN(); i++)
+        for (unsigned int i=0; i<chainState->getN(); i++)
         {
-            if ((*chain)[i].isBlocked())
-                qdhat[i]=CTRL_RAD2DEG*chain->getAng(i);
+            if ((*chainState)[i].isBlocked())
+                qdhat[i]=CTRL_RAD2DEG*chainState->getAng(i);
             else
                 qdhat[i]=CTRL_RAD2DEG*qdes[cnt++];
         }
@@ -2364,9 +2384,9 @@ bool ServerCartesianController::getDOF(Vector &curDof)
     {
         mutex.wait();
 
-        curDof.resize(chain->getN());
-        for (unsigned int i=0; i<chain->getN(); i++)
-            curDof[i]=!(*chain)[i].isBlocked();
+        curDof.resize(chainState->getN());
+        for (unsigned int i=0; i<chainState->getN(); i++)
+            curDof[i]=!(*chainState)[i].isBlocked();
     
         mutex.post();
         return true;
@@ -2402,9 +2422,15 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             {
                 curDof[i]=rxDofPart->get(i).asInt();
                 if (curDof[i]!=0.0)
-                    chain->releaseLink(i);
+                {
+                    chainState->releaseLink(i);
+                    chainPlan->releaseLink(i);
+                }
                 else
-                    chain->blockLink(i);
+                {
+                    chainState->blockLink(i);
+                    chainPlan->blockLink(i);
+                }
             }
 
             // update controller
@@ -2568,7 +2594,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min, double *m
     if (connected && (min!=NULL) && (max!=NULL))
     {
         mutex.wait();
-        if (axis<(int)chain->getN())
+        if (axis<(int)chainState->getN())
         {
             Bottle command, reply;
             command.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -2769,7 +2795,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
         {
             if (!taskVelModeOn)
             {
-                taskRefVelTargetGen->reset(chain->EndEffPose());
+                taskRefVelTargetGen->reset(chainState->EndEffPose());
                 taskRefVelPeriodCnt=0;
             }
 
@@ -2814,7 +2840,8 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
                 HN(0,3)=x[0];
                 HN(1,3)=x[1];
                 HN(2,3)=x[2];
-                chain->setHN(HN);
+                chainState->setHN(HN);
+                chainPlan->setHN(HN);
             }
         }
         else
@@ -2835,7 +2862,7 @@ bool ServerCartesianController::getTipFrame(Vector &x, Vector &o)
     {
         mutex.wait();
 
-        Matrix HN=chain->getHN();
+        Matrix HN=chainState->getHN();
 
         x=HN.getCol(3);
         x.pop_back();
@@ -2936,7 +2963,7 @@ bool ServerCartesianController::storeContext(int *id)
     if (connected && (id!=NULL))
     {
         mutex.wait();
-        unsigned int N=chain->getN();
+        unsigned int N=chainState->getN();
         mutex.post();
 
         Vector _dof,_restPos,_restWeights;
@@ -3012,7 +3039,7 @@ bool ServerCartesianController::restoreContext(const int id)
             setRestWeights(context.restWeights,context.restWeights);
             attachTipFrame(context.tip_x,context.tip_o);
 
-            for (unsigned int axis=0; axis<chain->getN(); axis++)
+            for (unsigned int axis=0; axis<chainState->getN(); axis++)
                 setLimits(axis,context.limits(axis,0),context.limits(axis,1));
 
             setTrackingMode(context.mode);

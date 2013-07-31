@@ -119,8 +119,8 @@ protected:
     yarp::os::ConstString kinType;
     int numDrv;
 
-    iCub::iKin::iKinLimb            *limb;
-    iCub::iKin::iKinChain           *chain;
+    iCub::iKin::iKinLimb            *limbState,*limbPlan;
+    iCub::iKin::iKinChain           *chainState,*chainPlan;
     iCub::iKin::MultiRefMinJerkCtrl *ctrl;
     iCub::ctrl::Integrator          *taskRefVelTargetGen;
 
