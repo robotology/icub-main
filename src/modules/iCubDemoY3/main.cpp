@@ -173,7 +173,7 @@ public:
                 for(int ii=0;ii<length;ii++)
                     {
                         char tmp[80];
-                        if (seqFile.findGroup("REORDER")==0)
+                        if (seqFile.findGroup("REORDER").isNull())
                             sprintf(tmp, "POSITION%d", ii);
                         else
                             sprintf(tmp, "POSITION%d", seqFile.findGroup("REORDER").findGroup("order").get(ii+1).asInt());
