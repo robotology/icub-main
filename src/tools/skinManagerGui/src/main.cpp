@@ -52,7 +52,7 @@
  * \endcode
  * Example:
  * \code
- * skinManagerGui --name skinManGuiLeft --from skinManGuiLeft.ini --context skinGui/conf
+ * skinManagerGui --name skinManGuiLeft --from skinManGuiLeft.ini --context skinGui
  * \endcode
  *
  * \section portsa_sec Ports Accessed
@@ -199,7 +199,7 @@ bool initGuiStatus(){
 bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], string &guiName, unsigned int& gXpos, unsigned int& gYpos){    
     rf.setVerbose(true);
     rf.setDefaultConfigFile("skinManagerGui.ini");      //overridden by --from parameter
-    rf.setDefaultContext("skinGui/conf");                           //overridden by --context parameter
+    rf.setDefaultContext("skinGui");                    //overridden by --context parameter
     rf.configure(argc, argv);
 
     gXpos=10; 

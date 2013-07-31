@@ -59,7 +59,9 @@ None.
 None. 
  
 \section conf_file_sec Configuration Files
-A description of the available configuration options can be found in the example files located under /app/joystickControl/conf
+A description of the available configuration options can be 
+found in the example files located under joystickControl 
+context. 
  
 \section tested_os_sec Tested OS
 Windows, Linux
@@ -744,8 +746,8 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultConfigFile("joystickControl.ini");           //overridden by --from parameter
-    rf.setDefaultContext("../../app/joystickControl/conf");   //overridden by --context parameter
+    rf.setDefaultConfigFile("joystickControl.ini");     //overridden by --from parameter
+    rf.setDefaultContext("joystickControl");            //overridden by --context parameter
     rf.configure(argc,argv);
 
     if (rf.check("help"))

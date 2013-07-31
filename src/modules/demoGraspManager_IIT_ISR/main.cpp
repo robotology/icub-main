@@ -1751,7 +1751,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setMonitor(&rep);
-    rf.setDefaultContext("demoGrasp_IIT_ISR/conf");
+    rf.setDefaultContext("demoGrasp_IIT_ISR");
     rf.setDefaultConfigFile("config.ini");
     rf.configure(argc,argv);
 

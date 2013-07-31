@@ -31,7 +31,7 @@
 
   <module>
       <name>eye2world</name>
-      <parameters>--name eye2worldGrasp --context armCartesianController/conf
+      <parameters>--name eye2worldGrasp --context armCartesianController
                   --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
       <node>pwrNode3</node>
       <tag>eye2worldGrasp</tag>
@@ -39,7 +39,7 @@
 
   <module>
       <name>eye2world</name>
-      <parameters>--name eye2worldGaze --context armCartesianController/conf
+      <parameters>--name eye2worldGaze --context armCartesianController
                   --robot icub --eyeCalibration icubEyes.ini --tableConfiguration table.ini</parameters>
       <node>pwrNode3</node>
       <tag>eye2worldGaze</tag>

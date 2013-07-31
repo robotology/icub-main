@@ -2,13 +2,13 @@
   <name>Skin Gui Torso</name>
   <module>
     <name>skinManager</name>
-    <parameters>--from skinManTorso.ini --context skinGui/conf</parameters>
+    <parameters>--from skinManTorso.ini --context skinGui</parameters>
     <node>console</node>
     <tag>skinCompT</tag>
   </module>
   <module>
     <name>skinManagerGui</name>
-    <parameters>--from skinManGui.ini --context skinGui/conf</parameters>
+    <parameters>--from skinManGui.ini --context skinGui</parameters>
     <node>console</node>
     <tag>skinCompGuiT</tag>
   </module>

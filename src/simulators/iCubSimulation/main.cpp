@@ -30,10 +30,10 @@
  * 
  * \section intro_sec Description
  * 
- *	The module does:
- * -	Has been designed to reproduce, as accurately as possible, the physics and the dynamics of the robot and its environment
+ *  The module does:
+ * -    Has been designed to reproduce, as accurately as possible, the physics and the dynamics of the robot and its environment
  * -   It has been constructed collecting data directly from the robot design specifications in order to achieve an exact replication 
- * -	The software infrastructure and inter-process communication are as those used to control the physical robot
+ * -    The software infrastructure and inter-process communication are as those used to control the physical robot
  *
  * \section lib_sec Libraries
  * YARP
@@ -41,27 +41,27 @@
  * SDL 
  *
  * \section parameters_sec Parameters
- * All the parameters are located in the conf/iCub_parts_activation.ini
+ * All the parameters are located in the iCub_parts_activation.ini
  *
- *	[SETUP]
+ *  [SETUP]
  * elevation on
  *
- *	[PARTS]
- *	legs on
- *	torso on 
- *	left_arm on
- *	left_hand on
- *	right_arm on 
- *	right_hand on
- *	head on
- *	fixed_hip on 
+ *  [PARTS]
+ *  legs on
+ *  torso on 
+ *  left_arm on
+ *  left_hand on
+ *  right_arm on 
+ *  right_hand on
+ *  head on
+ *  fixed_hip on 
  *
- *	[VISION]
- *	cam off
+ *  [VISION]
+ *  cam off
  *
- *	[RENDER]
- *	objects off
- *	cover on
+ *  [RENDER]
+ *  objects off
+ *  cover on
  * 
  * \section portsa_sec Ports Accessed
  * No ports are accessed nor needed by the iCub simulator
@@ -167,14 +167,14 @@ class MainThread : public yarp::os::Thread {
 
 
 int main(int argc, char** argv) {
-	//yarp::os::Thread::setDefaultStackSize(3145728);
+    //yarp::os::Thread::setDefaultStackSize(3145728);
     yarp::os::Network yarp;
     if (!yarp.checkNetwork())
     {
         fprintf (stderr, "Error: could not initialize YARP network (is the nameserver running?)\n");
         return 1;
     }
-	
+    
     yarp::os::Property options;
     options.fromCommand(argc,argv);
 
@@ -195,10 +195,10 @@ int main(int argc, char** argv) {
 #endif
     }
     if (options.check("verbose"))
-	{
+    {
         bundle->verbose = true;
         fprintf(stdout, "Starting the simulator with verbose flag on\n");
-	}
+    }
     if (bundle==NULL) {
         fprintf(stderr,"Failed to allocate simulator\n");
         return 1;
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
 
     //SimulationRun main;
     //if (!main.run(bundle,argc,argv)) return 1;
-	MainThread thread;
+    MainThread thread;
    thread.bundle = bundle;
    thread.argc = argc;
    thread.argv = argv;

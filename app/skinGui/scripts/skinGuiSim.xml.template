@@ -2,13 +2,13 @@
   <name>Skin Gui Simulator</name>
   <module>
     <name>skinManager</name>
-    <parameters>--from skinManSim.ini --context skinGui/conf</parameters>
+    <parameters>--from skinManSim.ini --context skinGui</parameters>
     <node>console</node>
     <tag>skinCompA</tag>
   </module>
   <module>
     <name>skinManagerGui</name>
-    <parameters>--from skinManGui.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
+    <parameters>--from skinManGui.ini --context skinGui --xpos 1020 --ypos 350</parameters>
     <node>console</node>
     <tag>skinCompGuiA</tag>
   </module>

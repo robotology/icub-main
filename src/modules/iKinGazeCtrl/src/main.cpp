@@ -130,8 +130,8 @@ Factors</a>.
   cameras parameters.
  
 --context \e dir
-- Resource finder default searching dir for configuration file; 
-  if not specified, \e iKinGazeCtrl/conf is assumed.
+- Resource finder default searching directory for configuration 
+  files; if not specified, \e iKinGazeCtrl is assumed.
  
 --from \e file
 - Resource finder default configuration file; if not specified, 
@@ -1844,7 +1844,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose();
-    rf.setDefaultContext("iKinGazeCtrl/conf");
+    rf.setDefaultContext("iKinGazeCtrl");
     rf.setDefaultConfigFile("config.ini");
     rf.configure(argc,argv);
 

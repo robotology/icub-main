@@ -36,7 +36,7 @@ The following key-value pairs can be specified as command-line parameters by pre
 - \c from \c templatePFTracker.ini \n 
   specifies the configuration file
 
-- \c context \c particleFiltering/conf \n
+- \c context \c particleFiltering \n
   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
 
 - \c name \c templatePFTracker \n   
@@ -132,7 +132,7 @@ Linux: Ubuntu 9.10 and Debian Stable
 
 \section example_sec Example Instantiation of the Module
 
-<tt>templatePFTracker --name tracker --context templatePFTracker/conf --from templatePFTracker.ini </tt>
+<tt>templatePFTracker --name tracker --context templatePFTracker --from templatePFTracker.ini </tt>
 
 \author Vadim Tikhanoff 
 
@@ -158,7 +158,7 @@ int main(int argc, char * argv[])
     ResourceFinder rf;
     rf.setVerbose( true );
     rf.setDefaultConfigFile( "templatePFTracker.ini" ); //overridden by --from parameter
-    rf.setDefaultContext( "templatePFTracker/conf" );   //overridden by --context parameter
+    rf.setDefaultContext( "templatePFTracker" );        //overridden by --context parameter
     rf.configure( argc, argv );
  
     /* run the module: runModule() calls configure first and, if successful, it then runs */

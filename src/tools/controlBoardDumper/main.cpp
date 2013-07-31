@@ -725,7 +725,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
 
     rf.setVerbose(true);
-    rf.setDefaultContext("controlBoardDumper/conf");
+    rf.setDefaultContext("controlBoardDumper");
     rf.setDefaultConfigFile("controlBoardDumper.ini");
 
     rf.setDefault("part", "head");

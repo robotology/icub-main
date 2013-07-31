@@ -43,8 +43,8 @@ int main(int argc, char * argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultConfigFile("logpolarTransform.ini"); //overridden by --from parameter
-    rf.setDefaultContext("logpolarTransform/conf");   //overridden by --context parameter
+    rf.setDefaultConfigFile("logpolarTransform.ini");   //overridden by --from parameter
+    rf.setDefaultContext("logpolarTransform");          //overridden by --context parameter
     rf.configure(argc, argv);
  
     logPolarTransform.runModule(rf);

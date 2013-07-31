@@ -114,7 +114,7 @@ bool pf3dBottomup::open(Searchable& config)
     Bottle initialBottle(config.toString().c_str());
 
     ConstString context = initialBottle.check("context",
-                    Value("pf3dBottomup/conf"),
+                    Value("pf3dBottomup"),
                     "Context (string)").asString();
     ConstString initializationFile = initialBottle.check("from",
                     Value("pf3dBottomup.ini"),

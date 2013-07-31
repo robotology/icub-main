@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     /* prepare and configure the resource finder */
     ResourceFinder rf;
     rf.setVerbose( true );
-    rf.setDefaultConfigFile( "general.ini" ); //overridden by --from parameter
+    rf.setDefaultConfigFile( "general.ini" );       //overridden by --from parameter
     rf.setDefaultContext( "simFaceExpressions" );   //overridden by --context parameter
     rf.configure( argc, argv );
  

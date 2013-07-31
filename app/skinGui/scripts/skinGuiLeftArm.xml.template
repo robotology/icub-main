@@ -2,13 +2,13 @@
   <name>Skin Gui Left Arm</name>
   <module>
     <name>skinManager</name>
-    <parameters>--from skinManLeft.ini --context skinGui/conf</parameters>
+    <parameters>--from skinManLeft.ini --context skinGui</parameters>
     <node>console</node>
     <tag>skinCompLA</tag>
   </module>
   <module>
     <name>skinManagerGui</name>
-    <parameters>--from skinManGui.ini --context skinGui/conf --xpos 1020 --ypos 350</parameters>
+    <parameters>--from skinManGui.ini --context skinGui --xpos 1020 --ypos 350</parameters>
     <node>console</node>
     <tag>skinCompGuiLA</tag>
   </module>

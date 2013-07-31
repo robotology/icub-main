@@ -1445,7 +1445,7 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("actionsRenderingEngine/conf");
+    rf.setDefaultContext("actionsRenderingEngine");
     rf.setDefaultConfigFile("config.ini");
     rf.setDefault("name","actionsRenderingEngine");
     rf.configure(argc,argv);

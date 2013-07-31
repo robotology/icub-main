@@ -13,7 +13,7 @@ file(GLOB models ${CMAKE_CURRENT_SOURCE_DIR}/models/*.x ${CMAKE_CURRENT_SOURCE_D
 
 icub_app_install(${appname} FILES ${init})
 icub_app_install(${appname} FILES ${scripts} DESTINATION scripts)
-icub_app_install(${appname} FILES ${conf} DESTINATION conf)
+icub_app_install(${appname} FILES ${conf})
 icub_app_install(${appname} FILES ${data} DESTINATION data)
 icub_app_install(${appname} FILES ${data/model} DESTINATION data/model)
 icub_app_install(${appname} FILES ${data/texture} DESTINATION data/texture)
@@ -21,7 +21,7 @@ icub_app_install(${appname} FILES ${data/texture/skybox} DESTINATION data/textur
 icub_app_install(${appname} FILES ${models} DESTINATION models)
 
 yarp_install(FILES ${init} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
-yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf)
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${data} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data)
 yarp_install(FILES ${data/model} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/model)
 yarp_install(FILES ${data/texture} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/data/texture)

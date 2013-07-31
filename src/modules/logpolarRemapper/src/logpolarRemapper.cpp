@@ -385,7 +385,7 @@ int main (int argc, char *argv[]) {
     // prepare and configure the resource finder.
     ResourceFinder rf;
     rf.setDefaultConfigFile("logpolarRemapper.ini");
-    rf.setDefaultContext("logpolarRemapper/conf");
+    rf.setDefaultContext("logpolarRemapper");
     rf.configure(argc, argv);
     rf.setVerbose(true);
  

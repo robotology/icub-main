@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("boostMILExample/conf");
+    rf.setDefaultContext("boostMILExample");
     rf.setDefaultConfigFile("config.ini");
     rf.configure(argc,argv);
 

@@ -14,7 +14,7 @@ icub_app_install(${appname} FILES ${conf})
 icub_app_install(${appname} FILES ${scripts} DESTINATION scripts)
 icub_app_install(${appname} FILES ${velTest} DESTINATION conf/vel_control)
 
-yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/conf)
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${velTest} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/vel_control)
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
 

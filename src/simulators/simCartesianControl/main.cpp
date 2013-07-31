@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("simCartesianControl/conf");
+    rf.setDefaultContext("simCartesianControl");
     rf.setDefault("robot","icubSim");
     rf.setDefault("local","simCartesianControl");
     rf.setDefault("right_arm_file","cartesianRightArm.ini");

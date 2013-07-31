@@ -8,12 +8,11 @@ file(GLOB conf_hw ${CMAKE_CURRENT_SOURCE_DIR}/conf/hardware/*.xml)
 file(GLOB conf_wr ${CMAKE_CURRENT_SOURCE_DIR}/conf/wrappers/*.xml)
 
 icub_app_install(${appname} 
-				FILES ${scripts}
-				DESTINATION scripts)
+                           FILES ${scripts}
+                           DESTINATION scripts)
 
 icub_app_install(${appname} 
-				FILES ${conf}
-				DESTINATION conf)			
+                           FILES ${conf})                       
     
 icub_app_install(${appname} yarp_install(FILES ${files} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname} )
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})

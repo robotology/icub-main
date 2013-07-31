@@ -60,7 +60,7 @@
  * - \c from \c demo.ini \n 
  *   specifies the configuration file
  *
- * - \c context \c demo/conf \n
+ * - \c context \c demo \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
  * - \c name \c demo \n   
@@ -150,7 +150,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>demo --name demo --context demo/conf --from demo.ini --robot icub</tt>
+ * <tt>demo --name demo --context demo --from demo.ini --robot icub</tt>
  *
  * \author your name
  * 

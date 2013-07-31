@@ -72,7 +72,7 @@ The following key-value pairs can be specified as command-line parameters by pre
 (e.g. --from file.ini). The value part can be changed to suit your needs; the default values are shown below.
  - \c from \c [driftCompLeft.ini] \n 
    specifies the configuration file
- - \c context \c [skinGui/conf] \n
+ - \c context \c [skinGui] \n
     specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
  - \c name \c [skinManager] \n   
     specifies the name of the module (used to form the stem of module port names)  
@@ -194,7 +194,7 @@ Linux and Windows.
 
 
 \section example_sec Example Instantiation of the Module
-skinManager --context skinGui/conf --from driftCompRight.ini
+skinManager --context skinGui --from driftCompRight.ini
 
 
 \author Andrea Del Prete (andrea.delprete@iit.it), Alexander Schmitz

@@ -26,8 +26,8 @@ icub_app(${PROJECTNAME})
 
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 
-icub_app_install(${PROJECTNAME} FILES ${conf} DESTINATION conf)
+icub_app_install(${PROJECTNAME} FILES ${conf})
 
-yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${PROJECTNAME}/conf)
+yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${PROJECTNAME})
 
 

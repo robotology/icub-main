@@ -46,9 +46,7 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
 
 --context \e directory [optional]
 - allow specifying a different path where to search the 
-  configuration file in the form of
-  <i> $ICUB_ROOT/app/<directory></i>. Directory default value is
-  \e cartesianSolver/conf.
+  configuration file.
  
 --from \e file [optional]
 - allow specifying a different configuration file from the 
@@ -272,7 +270,7 @@ int main(int argc, char *argv[])
 
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("cartesianSolver/conf");
+    rf.setDefaultContext("cartesianSolver");
     rf.setDefaultConfigFile("cartesianSolver.ini");
     rf.configure(argc,argv);
 

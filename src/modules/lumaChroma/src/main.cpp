@@ -38,7 +38,7 @@
  * - \c from \c lumaChroma.ini \n 
  *   specifies the configuration file
  *
- * - \c context \c lumaChroma/conf \n
+ * - \c context \c lumaChroma \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
  * - \c --name \c lumaChroma \n   
@@ -153,7 +153,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>lumaChroma --name lumaChroma --image yuv (or hsv) --out Y --context lumaChroma/conf --from config.ini </tt>
+ * <tt>lumaChroma --name lumaChroma --image yuv (or hsv) --out Y --context lumaChroma --from config.ini </tt>
  *
  * \author 
  * 
@@ -179,8 +179,8 @@ int main(int argc, char * argv[])
     /* prepare and configure the resource finder */
     ResourceFinder rf;
     rf.setVerbose( true );
-    rf.setDefaultConfigFile( "config.ini" ); //overridden by --from parameter
-    rf.setDefaultContext( "lumaChroma/conf" );   //overridden by --context parameter
+    rf.setDefaultConfigFile( "config.ini" );    //overridden by --from parameter
+    rf.setDefaultContext( "lumaChroma" );       //overridden by --context parameter
     rf.configure( argc, argv );
  
     /* run the module: runModule() calls configure first and, if successful, it then runs */

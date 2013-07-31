@@ -43,7 +43,7 @@
  * - \c from \c logpolarTransform.ini   \n    
  *   specifies the configuration file
  *
- * - \c context \c LogPolarTransform/conf  \n
+ * - \c context \c LogPolarTransform  \n
  *   specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
  *
  * - \c name \c LogPolarTransform  \n        
@@ -141,8 +141,8 @@
  *
  * \section example_sec Example Instantiation of the Module
  * 
- * <tt>logpolarTransform --name logPolarTransform --context logpolarTransform/conf --from lp2cart.ini  </tt>
- * <tt>logpolarTransform --name logpolarTransform --context logpolarTransform/conf --from cart2lp.ini  </tt>
+ * <tt>logpolarTransform --name logPolarTransform --context logpolarTransform --from lp2cart.ini  </tt>
+ * <tt>logpolarTransform --name logpolarTransform --context logpolarTransform --from cart2lp.ini  </tt>
  *
  * \author 
  *

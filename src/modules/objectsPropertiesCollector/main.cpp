@@ -1704,7 +1704,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("objectsPropertiesCollector/conf");
+    rf.setDefaultContext("objectsPropertiesCollector");
     rf.setDefault("db","dataBase.ini");
     rf.configure(argc,argv);
 
@@ -1713,7 +1713,7 @@ int main(int argc, char *argv[])
         fprintf(stdout,"Options\n\n");
         fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
         fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
-        fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector/conf)\n");
+        fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector)\n");
         fprintf(stdout,"\t--empty             : start an empty database\n");
         fprintf(stdout,"\t--nosave            : prevent from saving the content of database at shutdown\n");
         fprintf(stdout,"\t--verbose           : enable some verbosity\n");

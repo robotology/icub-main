@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultConfigFile("emotions.ini");
-    rf.setDefaultContext("faceExpressions/conf");
+    rf.setDefaultContext("faceExpressions");
     rf.setDefault("name", "/emotion");
     rf.configure(argc, argv);
     EmotionInterfaceModule eiModule;

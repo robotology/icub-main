@@ -910,7 +910,7 @@ int main(int argc, char *argv[])
 {
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultContext("ctpService/conf");
+    rf.setDefaultContext("ctpService");
     rf.configure(argc,argv);
 
     if (rf.check("help"))

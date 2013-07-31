@@ -54,7 +54,7 @@
  * - \c --from \c camcalib.ini \n 
  *   specifies the configuration file
  *
- * - \c --context \c cameraCalibration/conf \n
+ * - \c --context \c cameraCalibration \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
  * - \c --name \c camcalib \n 
@@ -102,7 +102,7 @@
  *
  * \section conf_file_sec Configuration Files
  *
- * \c camcalib.ini  in \c $ICUB_ROOT/app/cameraCalibration/conf \n
+ * \c camcalib.ini  in \c $ICUB_ROOT/app/cameraCalibration \n
  * 
  * \section tested_os_sec Tested OS
  *
@@ -110,7 +110,7 @@
  *
  * \section example_sec Example Instantiation of the Module
  *
- * <tt>camCalib --name /icub/camcalib/left --context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT</tt>
+ * <tt>camCalib --name /icub/camcalib/left --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT</tt>
  *
  * More information on camera calibration:\n
  * OpenCV: http://opencvlibrary.sourceforge.net/CvReference#cv_3d\n
@@ -150,8 +150,8 @@ int main(int argc, char *argv[]) {
     Network yarp;
     ResourceFinder rf;
     rf.setVerbose(true);
-    rf.setDefaultConfigFile("camCalib.ini"); //overridden by --from parameter
-    rf.setDefaultContext("camCalib"); //overridden by --context parameter
+    rf.setDefaultConfigFile("camCalib.ini");    //overridden by --from parameter
+    rf.setDefaultContext("camCalib");           //overridden by --context parameter
     rf.configure(argc, argv);
     CamCalibModule module;      
     return module.runModule(rf);
