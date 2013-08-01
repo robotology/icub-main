@@ -246,11 +246,25 @@ bool XSensMTx::open(const XSensMTxParameters &par)
     unsigned long tmpOutputMode, tmpOutputSettings;
     unsigned short tmpDataLength;
 		
-    // Put MTi/MTx in Config State
-    if(d.mtcomm.writeMessage (MID_GOTOCONFIG) != MTRV_OK){
-        printf ("No device connected\n");
+    // Put MTi/MTx in Config State. Here sometimes there are problems if the device was not properly closed.
+    int count = 0;
+    for (count = 0; count <10; count++ )
+    {
+        if(d.mtcomm.writeMessage (MID_GOTOCONFIG) != MTRV_OK)
+        {
+            printf ("MRCHECK Unable to connect to XSensMtX device, attempt %d.\n", count);
+            yarp::os::Time::delay(0.010);
+        }
+        else 
+            break;
+    }
+    if (count >= 10)
+    {
+        printf ("XSensMtX init check: no device connected.\n");
         return false;
     }
+    else
+        printf ("XSensMtX init check: device ok.\n");
 
     unsigned short numDevices;
     // Get current settings and check if Xbus Master is connected
