@@ -1524,7 +1524,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z, R
 
     dJointSetHingeParam(Hjoints[0], dParamVel, h_speed[0]);
     dJointSetHingeParam(Hjoints[0], dParamFMax, odeParameters.motorMaxTorque);
-    if (actHead ){
+    if (actHead == "on" ){
         /*-------------head parameters--------------*/
         for (int x=1; x<6; x++){//Joint parameters
             dJointSetHingeParam(Hjoints[x], dParamVel, h_speed[x]);
@@ -2641,7 +2641,7 @@ void ICubSim::initEyes(dWorldID world)
 
 void ICubSim::initCovers(ResourceFinder& finder)
 {
-    if (actHeadCover)
+    if (actHeadCover == "on")
     {
         iCubHeadModel =  new Model();
         topEyeLidModel =      new Model();
