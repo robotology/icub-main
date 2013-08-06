@@ -527,7 +527,29 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
     uint16_t numofrops;
     bytesUsed = 0;
     EOpacket* ptrpkt = NULL;
-    eo_transceiver_Transmit(pc104txrx, &ptrpkt, &numofrops);
+    eOresult_t res;
+    //is important set size to 0 because if size is 0 pc104 no trasmit data
+    *size = 0;
+    *data = NULL;
+
+
+
+    //RMEOVE
+    //eo_transceiver_Transmit(pc104txrx, &ptrpkt, &numofrops);
+
+    //ADD
+    res = eo_transceiver_outpacket_Prepare(pc104txrx, &numofrops);
+    if((eores_OK != res) || (0 == numofrops))
+    {
+    	//if I have no rop to send don't send any pkt
+    	return;
+    }
+    res = eo_transceiver_outpacket_Get(pc104txrx, &ptrpkt);
+    if(eores_OK != res)
+    {
+    	return;
+    }
+
     // now ptrpkt points to internal tx packet of the transceiver.
     eo_packet_Payload_Get(ptrpkt, data, size);
 }
