@@ -781,14 +781,20 @@ void EthReceiver::run()
         while(riterator != _rEnd)
         {
             ethRes = (*riterator);
-
-            if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
+            if(ethRes->isRunning() /*&& (ethRes->getLastRecvMsgTimestamp()>0)*/ && (lastHeard[ethRes->boardNum].initted))
             {
-                if(!lastHeard[ethRes->boardNum].error_PC104)
-                {
-                    yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout *1000 << "ms are passed without any news";
-                    lastHeard[ethRes->boardNum].error_PC104 = true;
-                }
+				if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
+				{
+					if(!lastHeard[ethRes->boardNum].error_PC104)
+					{
+						yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout *1000 << "ms are passed without any news LAST=" << ethRes->getLastRecvMsgTimestamp() ;
+						lastHeard[ethRes->boardNum].error_PC104 = true;
+					}
+				}
+            }
+            else
+            {
+            	lastHeard[ethRes->boardNum].initted = false;
             }
             riterator++;
         }
@@ -853,7 +859,14 @@ void EthReceiver::run()
                         }
                         else
                         {
-                            lastHeard[ethRes->boardNum].initted = true;
+                        	if(ethRes->isRunning())
+                        	{
+                        		lastHeard[ethRes->boardNum].initted = true;
+                        	}
+                        	else
+                        	{
+                        		lastHeard[ethRes->boardNum].initted = false;
+                        	}
                         }
 
                         lastHeard[ethRes->boardNum].ageofframe_EMS = getRopFrameAge(incoming_msg);

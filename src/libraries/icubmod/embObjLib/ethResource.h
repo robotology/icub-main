@@ -98,6 +98,7 @@ private:
     int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
+    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
 
 public:
 //     hostTransceiver   *transceiver;         //!< Pointer to the protocol handler   non più usato. ora c'è derivazione diretta.
@@ -171,6 +172,16 @@ public:
      *    @return   true on success else false
      */
     bool            clearPerSigMsg(void);
+
+
+    /*!   @fn       isRunning(void);
+     *    @brief    says if goToRun command has been sent to EMS
+     *    @return   true if goToRun command has been sent to EMS else false
+     */
+    bool            isRunning(void);
+
+
+
 
 
 //     //! Send a sporadic message. Do not use now.

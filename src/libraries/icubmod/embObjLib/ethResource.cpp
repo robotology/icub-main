@@ -20,7 +20,8 @@ ethResources::ethResources()
     yTrace();
     how_many_features     = 0;
     ethManager            = NULL;
-    lastRecvMsgTimestamp  = -1;
+    lastRecvMsgTimestamp  = -1.0;
+    isInRunningMode             = false;
 }
 
 ethResources::~ethResources()
@@ -166,6 +167,8 @@ bool ethResources::goToConfig(void)
         return false;
     }
     double          getLastRecvMsgTimestamp(void);
+
+    isInRunningMode = false;
     return true;
 }
 
@@ -186,6 +189,7 @@ bool ethResources::goToRun(void)
         return false;
     }
 
+    isInRunningMode = true;
     return true;
 }
 
@@ -220,6 +224,11 @@ bool ethResources::clearPerSigMsg(void)
 
     return true;
 
+}
+
+bool ethResources::isRunning(void)
+{
+	return(isInRunningMode);
 }
 // eof
 
