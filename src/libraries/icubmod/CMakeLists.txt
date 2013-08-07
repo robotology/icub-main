@@ -53,6 +53,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(embObjAnalog)
   add_subdirectory(embObjVirtualAnalogSensor)
   add_subdirectory(coman)
+  add_subdirectory(imu3DM_GX3)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 
