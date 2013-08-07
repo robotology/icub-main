@@ -3,8 +3,8 @@
     
     <!-- cartesian --> 
     <!--
-    <devices file="cartesian_left.xml" />
-    <devices file="cartesian_right.xml" />
+    <devices file="cartesian/left_arm_cartesian.xml" />
+    <devices file="cartesian/right_arm_cartesian.xml" />
     -->
     
     <!-- motor controllers wrappers -->
