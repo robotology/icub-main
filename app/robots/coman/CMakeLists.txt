@@ -14,8 +14,7 @@ icub_app_install(${appname}
 icub_app_install(${appname} 
                            FILES ${conf})                       
     
-icub_app_install(${appname} yarp_install(FILES ${files} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname} )
-yarp_install(FILES ${scripts} DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
+icub_app_install(${appname}
                                 FILES ${conf_hw}
                                 DESTINATION conf/hardware)                       
     

@@ -114,16 +114,18 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
 
 # Some options: mostly cache variables
-set(ICUB_INSTALL_APPLICATIONS FALSE CACHE BOOL "Turn on/off install for applications")
+option(ICUB_INSTALL_APPLICATIONS "Turn on/off install for applications" OFF)
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
-
-set(__ICUB_INSTALL_APPLICATIONS__ TRUE)
 
 if (ICUB_INSTALL_APPLICATIONS)
    if (NOT env_icub_root)
        message("No ICUB_ROOT environment variable set, disabling application install rules.")
        set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
+   else()
+       set(__ICUB_INSTALL_APPLICATIONS__ TRUE)
    endif()
+else()
+   set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
 endif()
 
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
@@ -141,9 +143,9 @@ set(ENABLE_icubmod_controlboardwrapper2 TRUE CACHE BOOL "enable controlboardWrap
 ###################### End options and definitions
 
 ########### populate applications
-if (__ICUB_INSTALL_APPLICATIONS__)
+#if (__ICUB_INSTALL_APPLICATIONS__)
     add_subdirectory(app)
-endif(__ICUB_INSTALL_APPLICATIONS__)
+#endif(__ICUB_INSTALL_APPLICATIONS__)
 
 # Create everything needed to build our executables.
 add_subdirectory(src)
