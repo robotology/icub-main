@@ -11,6 +11,9 @@ project(icubmod)
 
 add_subdirectory(debugStream)
   
+option (ICUB_CONTROLWRAPPER_WIP "use canbusMotionControlwip and controlBoardWrapper2wip")
+mark_as_advanced (ICUB_CONTROLWRAPPER_WIP)
+
 BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
   add_subdirectory(canBusMotionControl)
