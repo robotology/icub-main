@@ -23,10 +23,10 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     fprintf(stderr, "%s\n", config.toString().c_str());
 #endif
 
-    correct &= config.check("CanbusDevice");
-    correct &= config.check("CanDeviceNum");
-    correct &= config.check("SkinCanIds");
-    correct &= config.check("Period");
+    correct &= config.check("canbusDevice");
+    correct &= config.check("canDeviceNum");
+    correct &= config.check("skinCanIds");
+    correct &= config.check("period");
 
     if (!correct)
     {
@@ -34,10 +34,10 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int period=config.find("Period").asInt();
+    int period=config.find("period").asInt();
     setRate(period);
 
-    Bottle ids=config.findGroup("SkinCanIds").tail();
+    Bottle ids=config.findGroup("skinCanIds").tail();
 
     if (ids.size()>1)
     {
@@ -54,14 +54,14 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     Property prop;
 
-    prop.put("device", config.find("CanbusDevice").asString().c_str());
-    prop.put("physdevice", config.find("physdevice").asString().c_str());
-    prop.put("CanTxTimeout", 500);
-    prop.put("CanRxTimeout", 500);
-    prop.put("CanDeviceNum", config.find("CanDeviceNum").asInt());
-    prop.put("CanMyAddress", 0);
-    prop.put("CanTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
-    prop.put("CanRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
+    prop.put("device", config.find("canbusDevice").asString().c_str());
+    prop.put("physdevice", config.find("physDevice").asString().c_str());
+    prop.put("canTxTimeout", 500);
+    prop.put("canRxTimeout", 500);
+    prop.put("canDeviceNum", config.find("canDeviceNum").asInt());
+    prop.put("canMyAddress", 0);
+    prop.put("canTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
+    prop.put("canRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
 
     pCanBus=0;
     pCanBufferFactory=0;
