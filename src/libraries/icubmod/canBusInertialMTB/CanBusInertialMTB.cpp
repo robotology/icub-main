@@ -10,12 +10,10 @@
 #include <iostream>
 #include <string.h>
 
-const int CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE=2047;
-const int CANBUS_INERTIAL_MTB_CHANNELS=6;
+const int    CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE=2047;
+const int    CANBUS_INERTIAL_MTB_CHANNELS=6;
 const double CANBUS_INERTIAL_MTB_TIMEOUT=0.1; //100ms
-const int CAN_MSG_CLASS_ACCELEROMETER=0x5;
-const int CAN_MSG_CLASS_GYRO=0x6;
-
+const int    CAN_MSG_CLASS_ACCELEROMETER=0x5;
 
 using namespace std;
 
@@ -23,30 +21,33 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
 {
     bool correct=true;
 
-    correct &= config.check("CanbusDevice");
-    correct &= config.check("CanDeviceNum");
-    correct &= config.check("CanAddress");
-    correct &= config.check("Period");
+    correct &= config.check("canbusDevice");
+    correct &= config.check("canDeviceNum");
+    correct &= config.check("canAddress");
     
     if (!correct)
     {
-        fprintf(stderr, "Error: insufficient parameters to CanBusAnalogSensor\n"); 
+        fprintf(stderr, "Error: insufficient parameters to CanBusInertialMTB\n"); 
         return false;
     }
 
-    int period=config.find("Period").asInt();
-    setRate(period);
+    if (config.check("period")==true)
+    {
+        int period=10;
+        period=config.find("period").asInt();
+        setRate(period);
+    }
 
     Property prop;
 
-    prop.put("device", config.find("CanbusDevice").asString().c_str());
+    prop.put("device", config.find("canbusDevice").asString().c_str());
     prop.put("physdevice", config.find("physdevice").asString().c_str());
-    prop.put("CanTxTimeout", 500);
-    prop.put("CanRxTimeout", 500);
-    prop.put("CanDeviceNum", config.find("CanDeviceNum").asInt());
-    prop.put("CanMyAddress", 0);
-    prop.put("CanTxQueueSize", CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE);
-    prop.put("CanRxQueueSize", CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE);
+    prop.put("canTxTimeout", 500);
+    prop.put("canRxTimeout", 500);
+    prop.put("canDeviceNum", config.find("canDeviceNum").asInt());
+    prop.put("canMyAddress", 0);
+    prop.put("canTxQueueSize", CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE);
+    prop.put("canRxQueueSize", CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE);
     pCanBus=0;
     pCanBufferFactory=0;
 
@@ -72,12 +73,13 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
 
 
     //set the internal configuration
-    this->boardId           = config.find("CanAddress").asInt();
+    this->boardId           = config.find("canAddress").asInt();
    
     // open the can mask for the specific canDeviceId
     // messages class is 0x500
-    pCanBus->canIdAdd((CAN_MSG_CLASS_ACCELEROMETER<<8)+(boardId<<4));
-    pCanBus->canIdAdd((CAN_MSG_CLASS_GYRO<<8)+(boardId<<4));
+    pCanBus->canIdAdd((CAN_MSG_CLASS_ACCELEROMETER<<8)+(boardId<<4)+0);
+    pCanBus->canIdAdd((CAN_MSG_CLASS_ACCELEROMETER<<8)+(boardId<<4)+1);
+    pCanBus->canIdAdd((CAN_MSG_CLASS_ACCELEROMETER<<8)+(boardId<<4)+2);
 
     channelsNum=CANBUS_INERTIAL_MTB_CHANNELS;
     data.resize(channelsNum);
@@ -105,6 +107,32 @@ bool CanBusInertialMTB::close()
 
 int CanBusInertialMTB::read(yarp::sig::Vector &out) 
 {
+    /*static int initialized=-10;
+
+    if (initialized<0)
+    {
+        unsigned int canMessages=0;
+        unsigned id = 0x200 + boardId;
+
+        CanMessage &msg=outBuffer[0];
+        msg.setId(id);
+        msg.getData()[0]=0x4E; // message type
+        msg.getData()[1]=0x02; 
+        msg.getData()[2]=0x22; 
+        msg.getData()[3]=0xF0;
+        msg.getData()[4]=0x0E;    //accelerometer, gyros etc
+        msg.getData()[5]=0xFF;
+        msg.getData()[6]=0xFF;
+        msg.getData()[7]=0x0A;
+        msg.setLen(8);
+        canMessages=0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
+
+        initialized++;
+
+        fprintf(stderr, "CanBusInertialMTB::read1\n");
+    }*/
+
     int tmp=0;
     mutex.wait();
     out=data;
@@ -159,18 +187,19 @@ bool CanBusInertialMTB::threadInit()
 
     CanMessage &msg=outBuffer[0];
     msg.setId(id);
-    msg.getData()[0]=0x4C; // message type
-    msg.getData()[1]=0x01; 
-    msg.getData()[2]=0x01; 
-    msg.getData()[3]=0x01;
-    msg.getData()[4]=0x07;    //accelerometer, gyros etc
-    msg.getData()[5]=0x22;
+    msg.getData()[0]=0x4F; // message type
+    msg.getData()[1]=0x07; // = 0b111 enable mask
+    msg.getData()[2]=0x01; // period (ms)
+    msg.getData()[3]=0;
+    msg.getData()[4]=0;
+    msg.getData()[5]=0;
     msg.getData()[6]=0;
     msg.getData()[7]=0;
     msg.setLen(8);
     canMessages=0;
     pCanBus->canWrite(outBuffer, 1, &canMessages);
 
+    //this->setRate(10);
     return true;
 }
 
@@ -188,6 +217,9 @@ void CanBusInertialMTB::run()
     double stampAcc=0.0;
 
     int st=IAnalogSensor::AS_ERROR;
+    static double prev = yarp::os::Time::now();
+    fprintf(stderr, "period %f delta %f canMessages %d\n",this->getRate(), yarp::os::Time::now()-prev, canMessages );
+    prev = yarp::os::Time::now();
     for (unsigned int i=0; i<canMessages; i++)
     {
         CanMessage &msg=inBuffer[i];
@@ -195,11 +227,12 @@ void CanBusInertialMTB::run()
         unsigned int msgid    = msg.getId();
         unsigned char *buff   = msg.getData();
         unsigned int len      = msg.getLen();
-        unsigned int id       = (msgid & 0x00f0)>>4;
-        const char   type     = ((msgid&0x700)>>8);
+        unsigned char   id      = ((msgid & 0x00f0)>>4);
+        unsigned char   mclass  = ((msgid & 0x0700)>>8);
+        unsigned char   mtype   = ((msgid & 0x000f));
 
         //parse data here
-        if (type==(CAN_MSG_CLASS_ACCELEROMETER) && id==boardId)
+        if (mclass==CAN_MSG_CLASS_ACCELEROMETER && id==boardId && (mtype == 1 || mtype == 0))
         {
             stampAcc=Time::now();
             privateData[0]=(buff[1]<<8)+buff[0];
@@ -207,7 +240,7 @@ void CanBusInertialMTB::run()
             privateData[2]=(buff[5]<<8)+buff[4];
         }
         
-        if (type==CAN_MSG_CLASS_GYRO && id==boardId)
+        if (mclass==CAN_MSG_CLASS_ACCELEROMETER && id==boardId && mtype == 2)
         {
             stampGyro=Time::now();
             privateData[3]=(buff[1]<<8)+buff[0];
@@ -219,10 +252,10 @@ void CanBusInertialMTB::run()
     }
 
     //if 100ms have passed since the last received message
-    if (timeNow-timeStamp>CANBUS_INERTIAL_MTB_TIMEOUT)
+    /*if (timeNow-timeStamp>CANBUS_INERTIAL_MTB_TIMEOUT)
     {
         st=IAnalogSensor::AS_TIMEOUT;
-    }
+    }*/
 
     mutex.wait();
     memcpy(data.data(), privateData.data(), sizeof(double)*privateData.size());
