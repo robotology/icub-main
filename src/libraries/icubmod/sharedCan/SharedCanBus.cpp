@@ -46,17 +46,17 @@ public:
 
     bool IloveUmom(yarp::os::Searchable &config)
     {
-        if (!config.check("physdevice"))
+        if (!config.check("physDevice"))
         {
             fprintf(stderr, "Error: could not find low level can driver specification\n");         
             return false;
         }
 
-        if (mDevice!=config.find("physdevice").asString()) return false;
+        if (mDevice!=config.find("physDevice").asString()) return false;
 
-        if (!config.check("CanDeviceNum")) return true;
+        if (!config.check("canDeviceNum")) return true;
 
-        return mCanDeviceNum==config.find("CanDeviceNum").asInt();
+        return mCanDeviceNum==config.find("canDeviceNum").asInt();
     }
 
     void attachAccessPoint(yarp::dev::CanBusAccessPoint* ap)
@@ -250,9 +250,9 @@ public:
 
         mBufferSize=BUF_SIZE;
 
-        if (config.check("CanRxQueueSize"))
+        if (config.check("canRxQueueSize"))
         {
-            mBufferSize=config.find("CanRxQueueSize").asInt();
+            mBufferSize=config.find("canRxQueueSize").asInt();
         }
 
         readBufferUnion=theBufferFactory->createBuffer(mBufferSize);
@@ -261,9 +261,9 @@ public:
 
         mDevice=device;
 
-        if (config.check("CanDeviceNum"))
+        if (config.check("canDeviceNum"))
         {
-            mCanDeviceNum=config.find("CanDeviceNum").asInt();
+            mCanDeviceNum=config.find("canDeviceNum").asInt();
         }
 
         configMutex.post();
