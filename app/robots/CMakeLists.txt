@@ -63,7 +63,7 @@ else ("${ROBOT_NAME}" STREQUAL "")
       message(STATUS "Setting up symbolic link for ${ROBOT_NAME}")
       install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${ICUB_ROBOTS_INSTALL_DIR}/${ROBOT_NAME})\n
 execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/${ICUB_ROBOTS_INSTALL_DIR}/${ROBOT_NAME} ${CMAKE_INSTALL_PREFIX}/${ICUB_ROBOTS_INSTALL_DIR}/default)")
-      add_custom_target(robotSymLink ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/${ICUB_ROBOTS_INSTALL_DIR}/${ROBOT_NAME} ${CMAKE_BINARY_DIR}/${ICUB_ROBOTS_INSTALL_DIR}/default DEPENDS ${ROBOT_NAME})      
+      add_custom_target(robotSymLink ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/${ICUB_ROBOTS_INSTALL_DIR}/${ROBOT_NAME} ${CMAKE_BINARY_DIR}/${ICUB_ROBOTS_INSTALL_DIR}/default DEPENDS ${CMAKE_BINARY_DIR}/${ICUB_ROBOTS_INSTALL_DIR}/${ROBOT_NAME})      
     else()
       message(STATUS "Cannot set up symbolic link for ${ROBOT_NAME} on this OS, please set the YARP_ROBOT_NAME environment variable to ${ROBOT_NAME}")
     endif()

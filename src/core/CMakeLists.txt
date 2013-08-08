@@ -5,14 +5,11 @@
 option(ICUB_ICUBINTERFACE_EXPERIMENTAL "Experimental: this option may break compilation")
 mark_as_advanced(ICUB_ICUBINTERFACE_EXPERIMENTAL)
 
-if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
-	add_subdirectory(robotInterface)
-        add_subdirectory(iCubInterface)
-else()
-	add_subdirectory(robotInterface)
-	add_subdirectory(iCubInterface)
+if((NOT APPLE) OR ICUB_ICUBINTERFACE_EXPERIMENTAL) #compilation enabled by default on windows and linux, experimental on mac
+    add_subdirectory(robotInterface)
 endif()
 
+add_subdirectory(iCubInterface)
 add_subdirectory(emotionInterface)
 
 
