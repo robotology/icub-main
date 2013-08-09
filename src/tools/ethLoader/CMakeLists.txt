@@ -4,11 +4,11 @@
 
 PROJECT(ethLoader)
 
-if(ICUB_USE_GtkPlus)
+if(ICUB_USE_GTK2)
 	ADD_SUBDIRECTORY(ethLoader)
-else(ICUB_USE_GtkPlus)
-	message(STATUS "GtkPlus not selected, skipping ethLoader")
-endif(ICUB_USE_GtkPlus)
+else(ICUB_USE_GTK2)
+	message(STATUS "GTK2 not selected, skipping ethLoader")
+endif(ICUB_USE_GTK2)
 
 ADD_SUBDIRECTORY(ethLoaderLib)
 

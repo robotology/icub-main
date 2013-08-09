@@ -8,9 +8,9 @@ PROJECT(${PROJECTNAME})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${YARP_INCLUDE_DIRS})
 include_directories(${ICUB_INCLUDE_DIRS})
-include_directories(${GtkPlus_INCLUDE_DIRS})
+include_directories(${GTK2_INCLUDE_DIRS})
 
-add_definitions(${GTKPLUS_C_FLAGS})
+add_definitions(${GTK2_DEFINITIONS})
 
 # Search for source code.
 FILE(GLOB folder_source src/*.cpp)
@@ -24,9 +24,8 @@ ADD_EXECUTABLE(${PROJECTNAME}  ${folder_source} ${folder_header})
 
 target_link_libraries(${PROJECTNAME} 
 	${YARP_LIBRARIES} 
-	${GTKPLUS_LINK_FLAGS} 
-	${GtkPlus_LIBRARIES}
-    ${Gthread_LIBRARIES}
+#	${GTKPLUS_LINK_FLAGS} 
+	${GTK2_LIBRARIES}
 	skinDynLib )
 
 if(WIN32)

@@ -7,11 +7,11 @@
 cmake_minimum_required(VERSION 2.6.4)
 project(iCubInterfaceGui)
 
-if(ICUB_USE_GtkMM)
+if(ICUB_USE_GTK2)
     add_subdirectory(iCubInterfaceGuiClient)
-else(ICUB_USE_GtkMM)
-    message(STATUS "GtkMM not selected, skipping iCubInterfaceGuiClient")
-endif(ICUB_USE_GtkMM)
+else(ICUB_USE_GTK2)
+    message(STATUS "GTK2 not selected, skipping iCubInterfaceGuiClient")
+endif(ICUB_USE_GTK2)
 
 #add_subdirectory(iCubInterfaceGuiLib)
 #add_subdirectory(iCubInterfaceGuiServer)
