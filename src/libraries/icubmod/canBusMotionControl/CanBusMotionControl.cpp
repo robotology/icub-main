@@ -1902,9 +1902,9 @@ bool CanBusMotionControl::open (Searchable &config)
     prop.unput("device");
     prop.unput("subdevice");
     prop.put("device", canDevName.c_str());
-    yarp::os::ConstString canPhysDevName = config.find("physdevice").asString(); //for backward compatibility
-    if (canPhysDevName=="") canPhysDevName = config.findGroup("CAN").find("physdevice").asString();
-    prop.put("physdevice",canPhysDevName.c_str());
+    yarp::os::ConstString canPhysDevName = config.find("physDevice").asString(); //for backward compatibility
+    if (canPhysDevName=="") canPhysDevName = config.findGroup("CAN").find("physDevice").asString();
+    prop.put("physDevice",canPhysDevName.c_str());
     prop.put("CanDeviceNum", p._networkN);
     prop.put("CanTxTimeout", p._txTimeout);
     prop.put("CanRxTimeout", p._rxTimeout);
