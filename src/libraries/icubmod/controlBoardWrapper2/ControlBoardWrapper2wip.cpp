@@ -2292,11 +2292,13 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)
 
 
 
-bool ControlBoardWrapper2::open(Searchable& prop)
+bool ControlBoardWrapper2::open(Searchable& config)
 {
-    string str=prop.toString().c_str();
+    string str=config.toString().c_str();
 
-    cout << str << endl << endl;
+    Property prop;
+    prop.fromString(config.toString().c_str());
+    cout << "CBW2 Rulez!!" << str << endl << endl;
 
     verb = (prop.check("verbose","if present, give detailed output"));
     if (verb)
@@ -2304,30 +2306,29 @@ bool ControlBoardWrapper2::open(Searchable& prop)
 
     thread_period = prop.check("threadrate", 20, "thread rate in ms. for streaming encoder data").asInt();
 
-    int totalJ=0;
-
     std::cout<<"Using ControlBoardWrapper2\n";
-
-    if (!prop.check("networks", "list of networks merged by this wrapper"))
+    if (prop.check("subdevice", "Do I need one?"))
     {
-        cerr<<"Error: missing networks parameter\n";
-        return false;
+        std::cout << "\nFound " << prop.find("subdevice").asString() << " subdevice, opening it\n";
+        if(! openAndAttachSubDevice(prop))
+        {
+            printf("Error while opening subdevice\n");
+            return false;
+        }
+    }
+    else
+    {
+        if(!openDeferredAttach(prop))
+            return false;
     }
 
-    Bottle *nets=prop.find("networks").asList();
 
-    if (!prop.check("joints", "number of joints of the part"))
-     {
-        cerr<<"Error: missing number of joints\n";
-        return false;
-    }
-
-    controlledJoints=prop.find("joints").asInt();
     /* const values MAX_JOINTS_ON_DEVICE and MAX_DEVICES are used while parsing group joints commands like
         virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
-        into ControlBoardWrapper2.h file to build a table
+        into ControlBoardWrapper2.h file to build a static table to prevent cocurrencu problem.
+        It will suffice to build a table for the rpc port and another one the for streaming port and use the
+        correct one because it is the only source of concurrency inside the object. To be done?
     */
-
     if(controlledJoints > MAX_JOINTS_ON_DEVICE)
     {
         cerr << " ERROR: number of subdevices for this wrapper (" << controlledJoints << ") is bigger than maximum currently handled ("  << MAX_JOINTS_ON_DEVICE << ").";
@@ -2335,6 +2336,61 @@ bool ControlBoardWrapper2::open(Searchable& prop)
         return false;
     }
 
+    // initialize callback
+    if (!callback_impl.initialize())
+    {
+        cerr<<"Error could not initialize callback object"<<endl;
+        return false;
+    }
+
+    std::string rootName = prop.check("rootName",Value("/"), "starting '/' if needed.").asString().c_str();
+    partName=prop.check("name",Value("controlboard"), "prefix for port names").asString().c_str();
+
+    cout << " rootName " << rootName << " partName " << partName;
+
+    rootName+=(partName);
+
+    // attach readers.
+    // rpc_p.setReader(command_reader);
+    // changed so that streaming input accepted if offered
+    command_buffer.attach(rpc_p);
+    command_reader.attach(command_buffer);
+
+    // attach buffers.
+    state_buffer.attach(state_p);
+    control_buffer.attach(control_p);
+    // attach callback.
+    control_buffer.useCallback(callback_impl);
+
+    rpc_p.open((rootName+"/rpc:i").c_str());
+    control_p.open((rootName+"/command:i").c_str());
+    state_p.open((rootName+"/state:o").c_str());
+
+    return true;
+}
+
+
+// Default usage
+// Open the wrapper only, the attach method needs to be called before using it
+bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
+{
+    if (!prop.check("networks", "list of networks merged by this wrapper"))
+        return false;
+
+    Bottle *nets=prop.find("networks").asList();
+
+    if (!prop.check("joints", "number of joints of the part"))
+        return false;
+
+    controlledJoints=prop.find("joints").asInt();
+
+
+    /*  const values MAX_JOINTS_ON_DEVICE and MAX_DEVICES are used while parsing group joints commands like
+        virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
+        into ControlBoardWrapper2.h file to build a static table to prevent cocurrencu problem.
+        It will suffice to build a table for the rpc port and another one the for streaming port and use the
+        correct one because it is the only source of concurrency inside the object. To be done?
+     */
     int nsubdevices=nets->size();
 
     if(nsubdevices > MAX_DEVICES)
@@ -2343,27 +2399,9 @@ bool ControlBoardWrapper2::open(Searchable& prop)
         cerr << " To help fixing this error, please send an email to robotcub-hackers@lists.sourceforge.net with this error message (ControlBoardWrapper2.cpp @ line " << __LINE__ << endl;
         return false;
     }
+
     device.lut.resize(controlledJoints);
     device.subdevices.resize(nsubdevices);
-
-    // check on the format of the configuration file
-    for(int k=0;k<nets->size();k++)
-    {
-        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
-        if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
-            {
-                cerr<<"Error: check network parameters in part description"<<endl;
-                cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
-                return false;
-            }
-        int axes = parameters.get(4).asInt() - parameters.get(3).asInt() + 1;
-        totalJ+=axes;
-    }
-    if (totalJ!=controlledJoints)
-    {
-        cerr<<"Error total number of mapped joints ("<< totalJ <<") does not correspond to part joints (" << controlledJoints << ")" << endl;
-        return false;
-    }
 
     // configure the devices
     for(int k=0;k<nets->size();k++)
@@ -2392,36 +2430,104 @@ bool ControlBoardWrapper2::open(Searchable& prop)
         }
     }
 
-    // initialize callback
-    if (!callback_impl.initialize())
+    int totalJ=0;
+    // check on the format of the configuration file
+    for(int k=0;k<nets->size();k++)
     {
-        cerr<<"Error could not initialize callback object"<<endl;
+        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
+        if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
+            {
+                cerr<<"Error: check network parameters in part description"<<endl;
+                cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
+                return false;
+            }
+        int axes = parameters.get(4).asInt() - parameters.get(3).asInt() + 1;
+        totalJ+=axes;
+    }
+    if (totalJ!=controlledJoints)
+    {
+        cerr<<"Error total number of mapped joints ("<< totalJ <<") does not correspond to part joints (" << controlledJoints << ")" << endl;
         return false;
     }
 
-    partName=prop.check("name",Value("controlboard"),
-                        "prefix for port names").asString().c_str();
-    std::string rootName="/";
-    rootName+=(partName);
-
-    // attach readers.
-    // rpc_p.setReader(command_reader);
-    // changed so that streaming input accepted if offered
-    command_buffer.attach(rpc_p);
-    command_reader.attach(command_buffer);
-
-    // attach buffers.
-    state_buffer.attach(state_p);
-    control_buffer.attach(control_p);
-    // attach callback.
-    control_buffer.useCallback(callback_impl);
-
-    rpc_p.open((rootName+"/rpc:i").c_str());
-    control_p.open((rootName+"/command:i").c_str());
-    state_p.open((rootName+"/state:o").c_str());
-
+    prop.put("rootName", "/");
     return true;
 }
+
+// For the simulator, if a subdevice parameter is given to the wrapper, it will
+// open it and and attach to immediatly.
+bool ControlBoardWrapper2::openAndAttachSubDevice(Property& prop)
+{
+    Property p;
+    subDeviceOwned = new PolyDriver;
+    p.fromString(prop.toString().c_str());
+
+    p.setMonitor(prop.getMonitor(), "subdevice"); // pass on any monitoring
+
+
+    p.unput("device");
+    p.put("device",prop.find("subdevice").asString());
+
+    // if error occour during open, quit here.
+    printf("opening controlBoardWrapper2 subdevice\n");
+    subDeviceOwned->open(p);
+
+    if (!subDeviceOwned->isValid())
+    {
+        printf("opening controlBoardWrapper2 subdevice... FAILED\n");
+        return false;
+    }
+
+    printf("opening controlBoardWrapper2 subdevice... done\n");
+
+    // getting parameters in simStyle
+    if (!p.check("GENERAL","section for general motor control parameters"))
+    {
+        fprintf(stderr, "Cannot understand configuration parameters\n");
+        return false;
+    }
+
+    controlledJoints = p.findGroup("GENERAL").check("TotalJoints",Value(1), "Number of total joints").asInt();
+    device.lut.resize(controlledJoints);
+    device.subdevices.resize(1);
+
+    printf("Attaching controlBoardWrapper2 to subdevice\n");
+
+    // configure the device
+    base = 0;
+    top  = controlledJoints-1;
+
+    SubDevice *tmpDevice=device.getSubdevice(0);
+
+    std::string subDevName ((partName + "_" + prop.find("subdevice").asString()));
+    if (!tmpDevice->configure(base, top, controlledJoints, subDevName) )
+    {
+        cerr<<"configure of subdevice ret false"<<endl;
+        return false;
+    }
+
+    for(int j=0; j<controlledJoints; j++)
+    {
+        device.lut[j].deviceEntry = 0;
+        device.lut[j].offset = j;
+    }
+
+
+    if (!device.subdevices[0].attach(subDeviceOwned, subDevName))
+        return false;
+
+    encoders.resize(device.lut.size());
+
+    // initialization.
+    command_reader.initialize();
+
+    RateThread::setRate(thread_period);
+    RateThread::start();
+
+    prop.put("rootName", "");
+    return true;
+}
+
 
 bool ControlBoardWrapper2::attachAll(const PolyDriverList &polylist)
 {

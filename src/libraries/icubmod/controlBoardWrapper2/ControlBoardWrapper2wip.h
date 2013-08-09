@@ -317,6 +317,14 @@ private:
         return true;
     }
 
+    // Default usage
+    // Open the wrapper only, the attach method needs to be called before using it
+    bool openDeferredAttach(Property& prop);
+
+    // For the simulator, if a subdevice parameter is given to the wrapper, it will
+    // open it and and attach to it immediatly.
+    PolyDriver *subDeviceOwned;
+    bool openAndAttachSubDevice(Property& prop);
 
 public:
     /**
@@ -363,11 +371,11 @@ public:
     * Open the device driver.
     * @param prop is a Searchable object which contains the parameters.
     * Allowed parameters are:
-    * - verbose or v to print diagnostic information while running.
-    * - subdevice to specify the name of the wrapped device.
-    * - name to specify the predix of the port names.
-    * - calibrator to specify the name of the calibrator object (created through a PolyDriver).
-    * and all parameters required by the wrapped device driver.
+    * - verbose or v to print diagnostic information while running..
+    * - name to specify the prefix of the port names.
+    * - subdevice [optional] if specified, the openAndAttachSubDevice will be
+    *             called, otherwise openDeferredAttach is called.
+    * and all parameters required by the wrapper.
     */
     virtual bool open(Searchable& prop);
 
