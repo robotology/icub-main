@@ -237,16 +237,26 @@ bool SocketCan::canWrite(const CanBuffer &msgs,
 
 bool SocketCan::open(yarp::os::Searchable &par)
 {
-    int netId=par.check("CanDeviceNum", Value(-1), 
-        "numeric identifier of the can device").asInt();
-    int txQueueSize=par.check("CanTxQueue", Value(TX_QUEUE_SIZE),
-        "length of tx buffer").asInt();
-    int rxQueueSize=par.check("CanRxQueue", Value(RX_QUEUE_SIZE),
-        "length of rx buffer").asInt();
-    int txTimeout=par.check("CanTxTimeout", Value(500),
-        "timeout on transmission [ms]").asInt();
-    int rxTimeout=par.check("CanRxTimeout", Value(500),
-        "timeout on receive when calling blocking read [ms]").asInt() ;
+    int canTxQueue=TX_QUEUE_SIZE;
+    int canRxQueue=RX_QUEUE_SIZE;
+    int netId =-1;
+    int txTimeout=500;
+    int rxTimeout=500;
+
+                         netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
+    if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
+    
+                           txTimeout=par.check("CanTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
+    if  (txTimeout == 500) txTimeout=par.check("canTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
+    
+                           rxTimeout=par.check("CanRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
+    if  (rxTimeout == 500) rxTimeout=par.check("canRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
+
+                                      canTxQueue=par.check("CanTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
+    if  (canTxQueue == TX_QUEUE_SIZE) canTxQueue=par.check("canTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
+    
+                                      canRxQueue=par.check("CanRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
+    if  (canRxQueue == RX_QUEUE_SIZE) canRxQueue=par.check("canRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
 
    int so_timestamping_flags = 0;
    /* Create the socket */
