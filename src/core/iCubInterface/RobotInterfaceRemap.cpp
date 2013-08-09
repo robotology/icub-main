@@ -414,16 +414,18 @@ bool RobotInterfaceRemap::initialize(const std::string &inifile)
     {
         float format=static_cast<float>(robotOptions.find("fileformat").asDouble());
         if (format==2.0)
+        {
             return initialize20(inifile);
+        }
         else
         {
             std::cerr<<"Configuration file unrecognized format\n";
             return false;
         }
     }
-    else
-        return initialize10(inifile);
 
+    std::cerr<<"Configuration file missing fileformat specifier\n";
+    return false;
 }
 
 bool RobotInterfaceRemap::initCart(const::string &file)
@@ -494,143 +496,6 @@ bool RobotInterfaceRemap::finiCart()
         (*it)->close();
         it++;
     }
-    return true;
-}
-
-bool RobotInterfaceRemap::initialize10(const std::string &inifile)
-{
-    fprintf(stderr, "Going to initialize the robot with a file\n");
-
-    std::string PATH;
-    PATH=extractPath(inifile.c_str());
-
-    Property robotOptions;
-    fprintf(stderr, "Read robot description from %s\n", inifile.c_str());
-    robotOptions.fromConfigFile(inifile.c_str());
-
-    robotName=robotOptions.findGroup("GENERAL").find("name").asString().c_str();
-    Bottle *pNets=robotOptions.findGroup("GENERAL").find("networks").asList();
-    Bottle nets;
-    if (pNets==0)
-    {
-        // This is to maintain compatibility with old ini files
-        fprintf(stderr, "Warning parsing %s could not find a valid network description\n",inifile.c_str());
-        fprintf(stderr, "Assuming old style ini file\n");
-        nets.fromString("HEAD RIGHT_ARM LEFT_ARM LEGS");
-    }
-    else
-    {
-        nets=*pNets;
-    }
-
-    int nnets=nets.size();
-    std::cout<<"Using " <<nnets <<" networks"<<endl;
-
-    //std::cout<<robotOptions.toString()<<endl;
-
-    int n=0;
-    for(n=0;n<nnets;n++)
-    {
-        std::string netid=nets.get(n).asString().c_str();
-        RobotNetworkEntry *netEntry;
-        if (robotOptions.check(netid.c_str()))
-        {
-            netEntry=new RobotNetworkEntry;
-
-            Property tmpProp;
-            tmpProp.fromString(robotOptions.findGroup(netid.c_str()).toString());
-
-            if (!instantiateNetwork(PATH, tmpProp, *netEntry))
-            {
-                std::cerr<< "Troubles instantiating "<< netid.c_str() << endl;
-                delete netEntry;   
-            }
-            else
-            {
-                netEntry->id=netid;
-                networks.push_back(netEntry);
-
-                Bottle *partsList=robotOptions.findGroup(netid.c_str()).find("parts").asList();
-                if (partsList!=0)
-                {
-                    for(int p=0;p<partsList->size();p++)
-                    {
-                        Property tmpProp;
-                        tmpProp.fromString(robotOptions.findGroup(partsList->get(p).asString()).toString());
-                        tmpProp.put("device", "controlboardwrapper");
-                        std::string prefix=robotName;
-                        prefix+="/";
-                        prefix+=partsList->get(p).asString();
-                        tmpProp.put("name", prefix.c_str());
-                        std::cout<<"-->"<<tmpProp.toString()<<endl;
-
-                        RobotPartEntry *partEntry=new RobotPartEntry;
-                        partEntry->id=partsList->get(p).asString().c_str();
-
-                        if (partEntry->open(tmpProp))
-                        {
-                            PolyDriverList p;
-                            p.push(&netEntry->driver, "");
-                            partEntry->iwrapper->attachAll(p);
-                            parts.push_back(partEntry);
-                        }
-                    }
-                }
-                else
-                {
-                    cout<<"No part list specified exporting whole device"<<endl;
-                    Property tmpProp;
-                    std::string prefix=robotName;
-                    prefix+="/";
-                    prefix+=netid.c_str();
-
-                    //this is to maintain compatibility with old ini file/code
-                    for(unsigned int k=0;k<prefix.length();k++)
-                    {
-                        prefix[k]=tolower(prefix[k]);
-                    }
-                    ///
-
-                    tmpProp.put("name", prefix.c_str());
-                    tmpProp.put("device", "controlboardwrapper");
-                    std::cout<<"--> " << tmpProp.toString()<<endl;
-                    RobotPartEntry *partEntry=new RobotPartEntry;
-                    partEntry->id=netid;
- 
-                    if (partEntry->open(tmpProp))
-                        {
-                            PolyDriverList p;
-                            p.push(&netEntry->driver, netEntry->id.c_str());
-                            partEntry->iwrapper->attachAll(p);
-                            parts.push_back(partEntry);
-                        }
-                }
-            }
-        }
-        else
-        {
-            std::cout<<"not found, skipping"<<endl;
-            netEntry=0;
-        }
-    }
-
-    fprintf(stderr, "RobotInterface::now opening inertial\n");
-    if (robotOptions.check("INERTIAL")) 
-    {
-        Property tmpProp;
-        //copy parameters verbatim from relative section
-        tmpProp.fromString(robotOptions.findGroup("INERTIAL").toString());
-        fprintf(stderr, "RobotInterface:: inertial sensor is in the conf file\n");
-        if (!instantiateInertial(PATH, tmpProp))
-            fprintf(stderr, "RobotInterface::warning troubles instantiating inertial sensor\n");
-    }
-    else
-        fprintf(stderr, "RobotInterface::no inertial sensor defined in the config file\n");
-
-    std::cout<<"Starting robot calibration!"<<endl;
-    calibrate();
-    std::cout<<"Finished robot calibration!"<<endl;
-
     return true;
 }
 
