@@ -105,14 +105,20 @@ bool Cfw2Can::canWrite(const CanBuffer &msgs,
 
 bool Cfw2Can::open(yarp::os::Searchable &par)
 {
-    int netId=par.check("CanDeviceNum", Value(-1), 
-        "numeric identifier of the can device").asInt();
     int txQueueSize=0;
     int rxQueueSize=0;
-    int txTimeout=par.check("CanTxTimeout", Value(0),
-        "timeout on transmission [ms]").asInt();
-    int rxTimeout=par.check("CanRxTimeout", Value(0),
-        "timeout on receive when calling blocking read [ms]").asInt() ;
+    int netId =-1;
+    int txTimeout=0;
+    int rxTimeout=0;
+
+                         netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
+    if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
+    
+                         txTimeout=par.check("CanTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
+    if  (txTimeout == 0) txTimeout=par.check("canTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
+    
+                         rxTimeout=par.check("CanRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
+    if  (rxTimeout == 0) rxTimeout=par.check("canRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
 
     int res = cfwCanOpen (netId, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
     if (res != 0)
