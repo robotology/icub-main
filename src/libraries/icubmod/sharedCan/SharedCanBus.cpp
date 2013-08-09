@@ -200,21 +200,21 @@ public:
     {
         configMutex.wait();
 
-        if (!config.check("physdevice"))
+        if (!config.check("physDevice"))
         {
             fprintf(stderr, "Error: could not find low level can driver specification\n");
             configMutex.post();         
             return false;
         }
 
-        yarp::os::ConstString device=config.find("physdevice").asString();
+        yarp::os::ConstString device=config.find("physDevice").asString();
 
         yarp::os::Property prop;
         prop.fromString(config.toString().c_str());
 
         prop.unput("device");
         prop.unput("subdevice");
-        prop.unput("physdevice");
+        prop.unput("physDevice");
 
         prop.put("device",device.c_str());
 
