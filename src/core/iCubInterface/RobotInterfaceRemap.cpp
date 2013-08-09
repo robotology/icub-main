@@ -138,8 +138,8 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
     std::string canbusdevice=partP.find("canbusdevice").asString().c_str();
     deviceP.put("canbusdevice", canbusdevice.c_str());
 
-    std::string physdevice=partP.find("physdevice").asString().c_str();
-    deviceP.put("physdevice", physdevice.c_str());
+    std::string physdevice=partP.find("physDevice").asString().c_str();
+    deviceP.put("physDevice", physdevice.c_str());
 
     driver.open(deviceP);
     if (!driver.isValid())
@@ -961,13 +961,13 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
     Value &device=robotOptions.find("device");
     Value &subdevice=robotOptions.find("subdevice");
     Value &candevice=robotOptions.find("canbusdevice");
-    Value &physdevice=robotOptions.find("physdevice");
+    Value &physdevice=robotOptions.find("physDevice");
 
     deviceParameters.put("robotName",robotName.c_str());
     deviceParameters.put("device", device);
     deviceParameters.put("subdevice", subdevice);
     deviceParameters.put("canbusdevice",candevice);
-    deviceParameters.put("physdevice",physdevice);
+    deviceParameters.put("physDevice",physdevice);
 
     ICUB_CAN_IDS *ids=can_ids.find(candevice.asString().c_str());
 
