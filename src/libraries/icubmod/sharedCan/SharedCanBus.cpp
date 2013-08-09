@@ -48,7 +48,7 @@ public:
     {
         if (!config.check("physDevice"))
         {
-            fprintf(stderr, "Error: could not find low level can driver specification\n");         
+            fprintf(stderr, "Error: SharedCanBus::???() could not find low level can driver specification\n");         
             return false;
         }
 
@@ -200,9 +200,10 @@ public:
     {
         configMutex.wait();
 
+        //fprintf(stderr, "sharedCanBus::open() using the following configuration parameters: \n%s\n",config.toString().c_str());
         if (!config.check("physDevice"))
         {
-            fprintf(stderr, "Error: could not find low level can driver specification\n");
+            fprintf(stderr, "Error: SharedCanBus::open() could not find low level can driver specification\n");
             configMutex.post();         
             return false;
         }
