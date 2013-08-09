@@ -24,11 +24,11 @@
         <param name="CALIB_ORDER">(8 9 11 13) (10 12 14 15) </param>
 		
 		<action phase="startup" level="10" type="calibrate">
-		    <param name="target">left_arm_mc_wrapper</param>
+		    <param name="target">left_hand_mc_wrapper</param>
 		</action>
 
 		<action phase="interrupt1" level="1" type="park">
-		    <param name="target">left_arm_mc_wrapper</param>
+		    <param name="target">left_hand_mc_wrapper</param>
 		</action>
 
 		<action phase="interrupt3" level="1" type="abort" />
