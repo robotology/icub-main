@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
-	<device name="right_hand_calibrator" type="parametricCalibrator">
+    <device name="right_hand_calibrator" type="parametricCalibrator">
 
-		<group name="GENERAL">
-			<param name="Joints"> 8 </param> 
-		    <param name="DeviceName"> Right Hand Calibrator </param>
-		</group>
+        <group name="GENERAL">
+            <param name="Joints"> 8 </param> 
+            <param name="DeviceName"> Right Hand Calibrator </param>
+        </group>
 
         <group name="CALIBRATION">   
          
@@ -22,17 +22,17 @@
         <param name="VelocityHome"> 10            10            10            10            10            10            10            10            </param>       
         </group>       
 
-		<param name="CALIB_ORDER">(8 9 11 13) (10 12 14 15) </param>
-		
-		<action phase="startup" level="10" type="calibrate">
-		    <param name="target">right_hand_mc_wrapper</param>
-		</action>
+        <param name="CALIB_ORDER">(8 9 11 13) (10 12 14 15) </param>
+        
+        <action phase="startup" level="10" type="calibrate">
+            <param name="target">right_hand_mc</param>
+        </action>
 
-	<action phase="interrupt1" level="1" type="park">
-		    <param name="target">right_hand_mc_wrapper</param>
-		</action>
+        <action phase="interrupt1" level="1" type="park">
+            <param name="target">right_hand_mc</param>
+        </action>
 
-		<action phase="interrupt3" level="1" type="abort" />
+        <action phase="interrupt3" level="1" type="abort" />
 
-	</device>
+    </device>
 </devices>

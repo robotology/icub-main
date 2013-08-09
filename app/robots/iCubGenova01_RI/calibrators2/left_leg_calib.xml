@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
-	<device name="left_leg_calibrator" type="parametricCalibrator">
+    <device name="left_leg_calibrator" type="parametricCalibrator">
 
-		<group name="GENERAL">
-		    <param name="Joints">  6  </param> 
-		    <param name="DeviceName"> Left Leg Calibrator </param>
-		</group>
+        <group name="GENERAL">
+            <param name="Joints">  6  </param> 
+            <param name="DeviceName"> Left Leg Calibrator </param>
+        </group>
 
         <group name="CALIBRATION">   
          
@@ -23,17 +23,17 @@
         <param name="VelocityHome"> 10            10            10            10            10            10            </param>       
         </group>       
 
-		<param name="CALIB_ORDER">(0 1 2 3 4 5) </param>
-		
-		<action phase="startup" level="10" type="calibrate">
-		    <param name="target">left_leg_mc_wrapper</param>
-		</action>
+        <param name="CALIB_ORDER">(0 1 2 3 4 5) </param>
+        
+        <action phase="startup" level="10" type="calibrate">
+            <param name="target">left_leg_mc_wrapper</param>
+        </action>
 
-		<action phase="interrupt1" level="1" type="park">
-		    <param name="target">left_leg_mc_wrapper</param>
-		</action>
+        <action phase="interrupt1" level="1" type="park">
+            <param name="target">left_leg_mc_wrapper</param>
+        </action>
 
-		<action phase="interrupt3" level="1" type="abort" />
+        <action phase="interrupt3" level="1" type="abort" />
 
-	</device>
+    </device>
 </devices>
