@@ -72,6 +72,7 @@ eOdgn_commands_t dgnCommands={0};
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
 static uint32_t s_getAddressFromUser(void);
+static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr, bool enableCheckExtFault);
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialization) of static variables
@@ -85,8 +86,8 @@ void commands(void)
 {
 	printf("\nq: quit\n");
 	printf("0: ena/disa diagnostics on a ems\n");
-	printf("1: ena/disa diagnostics on a group of ems\n");
-	printf("2: ........\n");
+	printf("1: ena/disa diagnostics on a group of ems (exteranl fault is NOT checked)\n");
+	printf("1: ena/disa diagnostics on a group of ems and exteranl fault is checked \n");
 	printf("3: ........\n");
 	printf("4: ........\n");
 	printf("5: ........\n");
@@ -141,6 +142,7 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 	uint32_t dest_addr;
 	uint16_t size = 0;
     uint32_t cmdena=0;
+    uint32_t extFaultEna=0;
     opcprotman_res_t res;
 
     if(opcMan_ptr ==  NULL)
@@ -153,6 +155,10 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     printf("enable/disable diagnostics. Press 1 to enable 0 otherwise\n");
     scanf("%d", &cmdena);
 
+    printf("enable/disable Check external fault. Press 1 to enable 0 otherwise\n");
+    scanf("%d", &extFaultEna);
+
+
     dest_addr = s_getAddressFromUser();
     printf("address is 0x %x \n", dest_addr);
     
@@ -160,8 +166,14 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     {
         cmdena=1;
     }
-    dgnCommands.enable = cmdena;
 
+    if(extFaultEna>1)
+    {
+    	extFaultEna=1;
+    }
+
+    dgnCommands.enable = cmdena;
+    dgnCommands.signalExtFault = extFaultEna;
 	
 //	addr->set(4444, (10<<24)|(255<<16)|(72<<8)|19 );
 	addr->set(4444, dest_addr);
@@ -195,11 +207,7 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 }*/
 uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
-	uint16_t size = 0;
-    uint32_t cmdena=0;
-    uint32_t min, max, j;
-    opcprotman_res_t res;
-    uint32_t address=0;
+
 
 
     if(opcMan_ptr ==  NULL)
@@ -209,49 +217,58 @@ uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 	}
 
 
-    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &cmdena);
-    dgnCommands.enable = cmdena;
+    enaDisaDiagnostic(payload_ptr, payload_size, addr, false);
 
-    printf("insert renge of board[1,9]: min max\n");
-    scanf("%d %d", &min, &max);
-    if(min>max)
-    {
-        printf("error: min > max!\n");
-        return(0);
-    }
-    if(min<1)
-    {
-        min = 1;
-    }
-    if(max>9)
-    {
-        max = 9;
-    }
-
-    for(j=min; j<=max; j++)
-    {
-    	address = (10<<24)|(0<<16)|(1<<8)|j ;
-    	addr->set(4444, address);
-    	res = opcprotman_Form(opcMan_ptr, opcprotman_opc_set, eodgn_nvidbdoor_cmds,  &dgnCommands, (opcprotman_message_t*)payload_ptr, &size);
-		if(opcprotman_OK  != res)
-		{
-
-			printf("erron in former\n");
-			return(0);
-		}
-    		ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
-			ACE_TCHAR     address[64];
-			addr->addr_to_string(address, 64);
-			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
-	}
+//    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
+//    scanf("%d", &cmdena);
+//    dgnCommands.enable = cmdena;
+//
+//    printf("insert renge of board[1,9]: min max\n");
+//    scanf("%d %d", &min, &max);
+//    if(min>max)
+//    {
+//        printf("error: min > max!\n");
+//        return(0);
+//    }
+//    if(min<1)
+//    {
+//        min = 1;
+//    }
+//    if(max>9)
+//    {
+//        max = 9;
+//    }
+//
+//    for(j=min; j<=max; j++)
+//    {
+//    	address = (10<<24)|(0<<16)|(1<<8)|j ;
+//    	addr->set(4444, address);
+//    	res = opcprotman_Form(opcMan_ptr, opcprotman_opc_set, eodgn_nvidbdoor_cmds,  &dgnCommands, (opcprotman_message_t*)payload_ptr, &size);
+//		if(opcprotman_OK  != res)
+//		{
+//
+//			printf("erron in former\n");
+//			return(0);
+//		}
+//    		ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
+//			ACE_TCHAR     address[64];
+//			addr->addr_to_string(address, 64);
+//			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
+//	}
     return(0); //no data to send in main loop
 
 }
 
 uint32_t callback_button_2(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
-	return(callback_button_x(payload_ptr, payload_size, addr, 2));
+    if(opcMan_ptr ==  NULL)
+	{
+		printf("opcMan_ptr is NULL\n");
+		return(0);
+	}
+
+
+    enaDisaDiagnostic(payload_ptr, payload_size, addr, true);
 }
 
 
@@ -296,3 +313,54 @@ uint32_t callback_button_10(uint8_t *payload_ptr, uint32_t payload_size, ACE_INE
 	return(0);
 }
 
+
+
+static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr, bool enableCheckExtFault)
+{
+
+	uint16_t size = 0;
+    uint32_t cmdena=0;
+    uint32_t min, max, j;
+    opcprotman_res_t res;
+    uint32_t address=0;
+
+
+    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
+    scanf("%d", &cmdena);
+    dgnCommands.enable = cmdena;
+    dgnCommands.signalExtFault = enableCheckExtFault;
+
+    printf("insert renge of board[1,9]: min max\n");
+    scanf("%d %d", &min, &max);
+    if(min>max)
+    {
+        printf("error: min > max!\n");
+        return;
+    }
+    if(min<1)
+    {
+        min = 1;
+    }
+    if(max>9)
+    {
+        max = 9;
+    }
+
+    for(j=min; j<=max; j++)
+    {
+    	address = (10<<24)|(0<<16)|(1<<8)|j ;
+    	addr->set(4444, address);
+    	res = opcprotman_Form(opcMan_ptr, opcprotman_opc_set, eodgn_nvidbdoor_cmds,  &dgnCommands, (opcprotman_message_t*)payload_ptr, &size);
+		if(opcprotman_OK  != res)
+		{
+
+			printf("erron in former\n");
+			return;
+		}
+    		ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
+			ACE_TCHAR     address[64];
+			addr->addr_to_string(address, 64);
+			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
+	}
+
+}
