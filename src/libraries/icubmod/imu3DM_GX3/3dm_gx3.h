@@ -101,8 +101,6 @@ private:
     bool threadInit();
     void run();
     void threadRelease();
-    bool start();
-    bool stop();
 
 private:      // Device specific
 
