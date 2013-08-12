@@ -90,6 +90,7 @@ public:
     virtual bool open(yarp::os::Searchable &config);
     virtual bool calibrate(int ch, double v);
     virtual bool close();
+    void sample_setting(void);
 
     virtual yarp::os::Stamp getLastInputStamp();
 
@@ -100,9 +101,8 @@ private:
     bool threadInit();
     void run();
     void threadRelease();
-
-    bool start();  // ?
-    bool stop();   // ?
+    bool start();
+    bool stop();
 
 private:      // Device specific
 

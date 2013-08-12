@@ -10,6 +10,8 @@
 #include <iostream>
 #include <3dm_gx3.h>
 
+
+
 #include <fcntl.h>   // File control definitions
 #include <errno.h>   // Error number definitions
 
@@ -31,12 +33,42 @@ imu3DM_GX3::imu3DM_GX3() : RateThread(6)
 
     // does nchannels has to be a parameter? I don't think so since ServerInertial has this fixed interface
     nchannels = 12;
+
+    // only CB and CE are used, but keep here some more definition in case of future use
+
+    CB_cmd.cmd = CMD_ACCEL_ANGRATE_MAG;
+    CB_cmd.expSize = 43;
+    CB_cmd.process = process_CB;
+
+    CE_cmd.cmd = CMD_EULER;
+    CE_cmd.expSize = 19;
+    CE_cmd.process = process_CE;
+/*
+    C2_cmd.cmd = CMD_ACCEL_ANGRATE;
+    C2_cmd.expSize = 31;
+    C2_cmd.process = process_C2;
+
+    C8_cmd.cmd = CMD_ACCEL_ANGRATE_ORIENT;
+    C8_cmd.expSize = 67;
+    C8_cmd.process = process_C8;
+
+    CC_cmd.cmd = CMD_ACCEL_ANGRATE_MAG_ORIENT;
+    CC_cmd.expSize = 79;
+    CC_cmd.process = process_CC;
+*/
+
+
+    // if no continuous_mode is set ... imu worker thread cycle over these ....
+
+    cmd_ptr_map[CMD_ACCEL_ANGRATE_MAG]            = &CB_cmd;
+    cmd_ptr_map[CMD_EULER]                        = &CE_cmd;
 };
 
 imu3DM_GX3::~imu3DM_GX3()
 {
     close();
 };
+
 
 // IGenericSensor interface.
 bool imu3DM_GX3::open(yarp::os::Searchable &config)
@@ -51,15 +83,7 @@ bool imu3DM_GX3::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(!config.check("baudrate", baudrate))
-    {
-        std::cout << "Can't find 'baudrate' value in config file";
-        return false;
-    }
-
-
     comPortName = serial->toString();
-
 
     int errNum = 0;
     /* open serial */
@@ -109,13 +133,47 @@ bool imu3DM_GX3::open(yarp::os::Searchable &config)
         printf("Configuring comport failed\n");
         return false;
     }
+    this->start();
     return true;
 }
 
+
+void imu3DM_GX3::sample_setting(void)
+{
+    int nbytes;
+    uint8_t reply[20];
+    uint8_t buff[20] =
+    {
+        CMD_SAMPLING_SETTING,
+        0xA8, 0xB9, // confirm user intent
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    nbytes = ::write(fd_ser, (void*)buff, 20);
+    nbytes = ::read(fd_ser, (void*)reply, 19);
+
+    memcpy(buff+4, reply+1, 10);
+
+    // Function selector : change parameter but do not send a treply
+    buff[3]  = 3;
+    // Data conditioning function selector byte 7-8 : bit 12 enable quaternion ... remember big endian
+    buff[6] |= 16;
+
+    //printHex(buff, 20);
+
+    nbytes = write(fd_ser, (void*)buff, 20);
+
+    usleep(100000);
+}
+
+
 bool imu3DM_GX3::close()
 {
-    ::close(fd_ser);
-    printf("Close %s\n", comPortName.c_str());
+	this->stop();
+	if(fd_ser != 0)
+		::close(fd_ser);
+	fd_ser = 0;
+    printf("Closed %s\n", comPortName.c_str());
 
     return true;
 }
@@ -178,8 +236,9 @@ bool imu3DM_GX3::threadInit()
 {
     // if board was configured to automatically send data on wakeup, this will make it silent
     stop_continuous();
-    printf("Start imu worker ....\n");
-    printf("dimensione lista di comandi %lu\n", cmd_ptr_map.size());
+    sample_setting();
+    printf("Started imu-3DM-GX3-25 thread\n");
+    return true;
 }
 
 void imu3DM_GX3::run()
@@ -195,20 +254,19 @@ void imu3DM_GX3::run()
         tmp_cmd = it->second;
         // transmit command
         nbytes = ::write(fd_ser, (void*)&tmp_cmd->cmd, sizeof(uint8_t));
+
         // receive response
         nbytes = ::read(fd_ser, (void*)&th_data.buffer, (size_t)tmp_cmd->expSize);
 
-
-
         if ( nbytes < 0 )
         {
-            printf("Error while reading imu response to commad XXX\n");
-            // skip parsing and try with the next commad
+            printf("Error while reading imu response to command XXX\n");
+            // skip parsing and try with the next command
         }
         else if ( nbytes != tmp_cmd->expSize )
         {
             printf("read %d instead of %d\n", nbytes, tmp_cmd->expSize);
-            // skip parsing and try with the next commad
+            // skip parsing and try with the next command
         }
         else
         {
@@ -289,11 +347,10 @@ void imu3DM_GX3::get_Acc_Ang_Orient(float acc[3], float angRate[3], float orient
 }
 
 void imu3DM_GX3::get_Acc_Ang_Mag(float acc[3], float angRate[3], float mag[3], uint64_t *time) {
-
     acc_ang_mag_t * aam;
 
     data_mutex.wait();
-    aam = &CC_cmd.data.aam;
+    aam = &CB_cmd.data.aam;
     if (acc) {
         memcpy((void*)acc, aam->acc._bytes, sizeof(float)*3);
     }
