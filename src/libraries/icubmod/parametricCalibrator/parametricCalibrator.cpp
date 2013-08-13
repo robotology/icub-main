@@ -19,12 +19,10 @@ using namespace yarp::dev;
 
 // calibrator for the arm of the Arm iCub
 
-const int 		PARK_TIMEOUT=30;
-const double 	GO_TO_ZERO_TIMEOUT		= 10; //seconds how many? // was 10
-const int 		CALIBRATE_JOINT_TIMEOUT	= 20;
-const double 	POSITION_THRESHOLD		= 2.0;
-
-int numberOfJoints =0;
+const int       PARK_TIMEOUT            = 30;
+const double    GO_TO_ZERO_TIMEOUT      = 10; //seconds how many? // was 10
+const int       CALIBRATE_JOINT_TIMEOUT = 20;
+const double    POSITION_THRESHOLD      = 2.0;
 
 // TODO use it!!
 //#warning "Use extractGroup to verify size of parameters matches with number of joints, this will avoid crashes"
@@ -111,13 +109,13 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     yWarning() << "embObjMotionControl: vanilla " << isVanilla;
 
     int nj = 0;
-    if(p.findGroup("GENERAL").check("Joints"))
+    if(p.findGroup("GENERAL").check("joints"))
     {
         nj = p.findGroup("GENERAL").find("joints").asInt();
     }
     else
     {
-        yDebug() << deviceName.c_str() <<  ": Calibrator is for %d joints but device has " << numberOfJoints;
+        yError() << deviceName.c_str() <<  ": missing joints parameter" ;
         return false;
     }
 
