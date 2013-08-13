@@ -22,7 +22,7 @@
 		    
                     <param name="Calibration2">         0               0               0               0             -20            10           10             100           10            10            30            10            10            10            10            10     </param>
 		    
-                    <param name="Calibration3">       32513           61749           53800            13143           0             0             0             0             0             6000          6600          6000          -7000          6000          7000         14000  </param>
+                    <param name="Calibration3">       32513           61749           53800            13143           0             0             0             0             0             6000          6600          6000          -7000          6000          7000         24000  </param>
 		    
                     <param name="PositionZero">        -10             30             -35               20             0            -10             0             15            30            0             0             0             0             0             0             0      </param>
 		    
