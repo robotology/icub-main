@@ -334,7 +334,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     if(isVanilla)
         yWarning() << deviceName << "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
     else
-    	yWarning() << deviceName << "\n\nGoing to calibrate!!!!\n\n";
+        yWarning() << deviceName << "\n\nGoing to calibrate!!!!\n\n";
 
     Bit=joints.begin();
     while( (Bit != Bend) && (!abortCalib) )   // per ogni set di giunti
@@ -359,9 +359,18 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 return false;
             }
             limited_pid[(*lit)]=original_pid[(*lit)];
-            limited_pid[(*lit)].max_int=maxPWM[(*lit)];
-            limited_pid[(*lit)].max_output=maxPWM[(*lit)];
-            iPids->setPid((*lit),limited_pid[(*lit)]);      // per i giunti delle 4dc, il valore da usare è quello normale
+
+            if (maxPWM[(*lit)]==0)
+            {
+                yDebug() << deviceName << "skipping maxPwm=0 of joint " << (*lit);
+            }
+            else
+            {
+                limited_pid[(*lit)].max_int=maxPWM[(*lit)];
+                limited_pid[(*lit)].max_output=maxPWM[(*lit)];
+                iPids->setPid((*lit),limited_pid[(*lit)]);
+            }
+            
             lit++;
         }
 
