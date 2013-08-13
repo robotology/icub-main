@@ -451,19 +451,8 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 #else
     #warning MSG0109
 #endif
-//#warning  "Tapullo: per il polso e dita uso il checkMotionDone, per le spalle e gambe uso la lettura encoder. \
-//            Il discriminante è giunti da 0 a 5 con encoder, dal 6 in poi con motionDone. Migliorare in qualche modo, parametro di config al posto della soglia che indichi quale \
-//            metodo usare oppure fare un calibratore apposta per la mano?"
-            if( (*lit) < 6)
-            {
-            	yWarning() << " joint" << (*lit) << " using encoder";
-                goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
-            }
-            else
-            {
-            	yWarning() << " joint" << (*lit) << " using checkMotionDone";
-            	goneToZero &= checkGoneToZero(*lit);            // 4dc style, use the checkMotionDone
-            }
+            yWarning() << " joint" << (*lit) << " using encoder";
+            goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
             lit++;
         }
 
@@ -531,7 +520,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
     if(timeout > CALIBRATE_JOINT_TIMEOUT)
         yError() << deviceName << ":Timeout while calibrating " << (*lit) << "\n";
     else
-    	yDebug() << deviceName << "calib joint ended";
+        yDebug() << deviceName << "calib joint ended";
 
     return calibration_ok;
 }
@@ -545,29 +534,6 @@ void parametricCalibrator::goToZero(int j)
 
     iPosition->setRefSpeed(j, zeroVel[j]);
     iPosition->positionMove(j, zeroPos[j]);
-}
-
-bool parametricCalibrator::checkGoneToZero(int j)
-{
-// wait.
-    bool ok = false;
-    double start_time = yarp::os::Time::now();
-
-    while ( (!ok) && (!abortCalib))
-    {
-        iPosition->checkMotionDone(j, &ok);
-
-        if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
-        {
-            yError() << deviceName << ", joint " << j << ": Timeout while going to zero!\n";
-            ok = false;
-            break;
-        }
-    }
-    if (abortCalib)
-        yWarning() << deviceName << ", joint " << j << ": abort wait for joint %d going to zero!\n";   // quale parte del corpo?
-
-    return ok;
 }
 
 // Not used anymore... EMS knows wath to do. Just ask if motion is done!! ^_^
@@ -590,13 +556,13 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 
         if (delta < zeroPosThreshold[j])
         {
-        	yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
+            yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;
         }
 
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
-        	yError() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
+            yError() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
             return false;
         }
         if (abortCalib)
@@ -636,11 +602,9 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     iPosition->setPositionMode();
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);     // all joints together????
-	//TODO fix checkMotionDone in such a way that does not depend on timing!
+    //TODO fix checkMotionDone in such a way that does not depend on timing!
     Time::delay(0.01);
-
-
-
+    
     if(isVanilla)
     {
         yWarning() << deviceName << "Vanilla flag is on!! Faking park!!";
