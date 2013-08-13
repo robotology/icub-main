@@ -51,7 +51,6 @@ using namespace std;
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
-//#include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
@@ -80,8 +79,6 @@ using namespace std;
 // #include "IRobotInterface.h"
 
 #include "eoRequestsQueue.hpp"
-
-// Move to a different file?
 
 //
 //   Help structure
@@ -190,22 +187,25 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IAmplifierControlRaw,
     public IEncodersTimedRaw,
     public ImplementEncodersTimed,
-    public IPositionControlRaw,
-    public IVelocityControlRaw,
+    public IPositionControl2Raw,
+    public IVelocityControl2Raw,
     public IControlModeRaw,
-    public IControlLimitsRaw,
+    public IControlLimits2Raw,
     public IImpedanceControlRaw,
     public ImplementImpedanceControl,
-    public ImplementControlLimits<embObjMotionControl, IControlLimits>,
+    public ImplementControlLimits2,
     public ImplementControlMode,
     public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
-    public ImplementPositionControl<embObjMotionControl, IPositionControl>,
+    public ImplementPositionControl2,
     public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
     public ImplementPidControl<embObjMotionControl, IPidControl>,
     public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
+    public ImplementVelocityControl2,
     public ITorqueControlRaw,
     public ImplementTorqueControl,
-    public IVirtualAnalogSensor
+    public IVirtualAnalogSensor,
+    public IPositionDirectRaw,
+    public ImplementPositionDirect
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
 , public ImplementDebugInterface,
@@ -216,28 +216,11 @@ public IDebugInterfaceRaw
 private:
     int           isVanilla;
     int           tot_packet_recv, errors;
-#ifdef _oblsolete_
-    //    tm                        *hr_time1, *hr_time2;
-    char                    send_time_string[40];
-    char                    recv_time_string[40];
-    timeval                 th_time;
-
-    uint8_t                 *udppkt_data;
-    uint16_t                udppkt_size;
-#endif
 
     bool initted;
     // embObj stuff
     yarp::os::Semaphore     _mutex;
     FEAT_ID                 _fId;
-
-    // Joint/Mechanical data
-
-    //    int _networkN;                                /** network number */
-    //    unsigned char *_destinations;             /** destination addresses */
-    //    unsigned char _my_address;                    /** my address */
-    //    int _polling_interval;                        /** thread polling interval [ms] */
-    //    int _timeout;                             /** number of cycles before timing out */
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
@@ -296,14 +279,9 @@ public:
     eoRequestsQueue     *requestQueue;  // tabella che contiene la lista delle attese
 
     // embObj stuff -- this is better if private... do a get method!!
-    ethResources      *res;
-    yarp::dev::TheEthManager     *ethManager;
+    ethResources                *res;
+    yarp::dev::TheEthManager    *ethManager;
 
-    //debug
-    yarp::os::ConstString   ethDevName;
-#ifdef _SETPOINT_TEST_
-    debug_data_of_joint_t *j_debug_data;
-#endif
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
@@ -356,6 +334,16 @@ public:
     virtual bool getRefAccelerationsRaw(double *accs);
     virtual bool stopRaw(int j);
     virtual bool stopRaw();
+
+    // Position Control2 Interface
+    virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
+    virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas);
+    virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags);
+    virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds);
+    virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+    virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
+    virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+    virtual bool stopRaw(const int n_joint, const int *joints);
 
     //  Velocity control interface raw
     virtual bool setVelocityModeRaw();
@@ -458,9 +446,12 @@ public:
     bool getJointPositionsRaw(double *value);
 #endif
 
-    /////// Limits
+    // Limits
     bool setLimitsRaw(int axis, double min, double max);
     bool getLimitsRaw(int axis, double *min, double *max);
+    // Limits 2
+    bool setVelLimitsRaw(int axis, double min, double max);
+    bool getVelLimitsRaw(int axis, double *min, double *max);
 
     // Torque control
     bool setTorqueModeRaw();
@@ -492,32 +483,41 @@ public:
     bool setTorqueOffsetRaw(int j, double v);
     int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
 
+    // IVelocityControl2
+    bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+    bool setVelPidRaw(int j, const Pid &pid);
+    bool setVelPidsRaw(const Pid *pids);
+    bool getVelPidRaw(int j, Pid *pid);
+    bool getVelPidsRaw(Pid *pids);
 
-#if 1   // deriva dalla classe, serve rimetterle anche qui nell'header o si fa solo per chiarezza??
-    virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
+    bool getImpedanceRaw(int j, double *stiffness, double *damping);
 
     /** Set current impedance parameters (stiffness,damping) for a specific joint.
      * @return success/failure
      */
-    virtual bool setImpedanceRaw(int j, double stiffness, double damping);
+    bool setImpedanceRaw(int j, double stiffness, double damping);
 
     /** Set current force Offset for a specific joint.
      * @return success/failure
      */
-    virtual bool setImpedanceOffsetRaw(int j, double offset);
+    bool setImpedanceOffsetRaw(int j, double offset);
 
     /** Get current force Offset for a specific joint.
      * @return success/failure
      */
-    virtual bool getImpedanceOffsetRaw(int j, double *offset);
+    bool getImpedanceOffsetRaw(int j, double *offset);
 
     /** Get the current impedandance limits for a specific joint.
      * @return success/failure
      */
-    virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
-#endif
+    bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
     // helper function for reading/writing impedance parameters
     bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
+
+    // PositionDirect Interface
+    bool setPositionRaw(int j, double ref);
+    bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+    bool setPositionsRaw(const double *refs);
 };
 
 #endif // include guard

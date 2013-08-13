@@ -204,15 +204,17 @@ embObjMotionControl::embObjMotionControl() :
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
     ImplementPidControl<embObjMotionControl, IPidControl>(this),
     ImplementEncodersTimed(this),
-    ImplementPositionControl<embObjMotionControl, IPositionControl>(this),
+    ImplementPositionControl2(this),
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
+    ImplementVelocityControl2(this),
     ImplementControlMode(this),
     ImplementImpedanceControl(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
 #endif
     ImplementTorqueControl(this),
-    ImplementControlLimits<embObjMotionControl, IControlLimits>(this),
+    ImplementControlLimits2(this),
+    ImplementPositionDirect(this),
     _mutex(1)
 {
     initted       = 0;
@@ -279,20 +281,29 @@ embObjMotionControl::~embObjMotionControl()
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
     std::string str;
-//    if(config.findGroup("GENERAL").find("Verbose").asInt())
+    if(config.findGroup("GENERAL").find("Verbose").asInt())
         str=config.toString().c_str();
-//    else
-//        str="\n";
+    else
+        str="\n";
     yTrace() << str;
 
     // Tmp variables
     Bottle          groupEth;
     ACE_UINT16      port;
 
-//    char            tmp_srt[64];
-
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
+    if(groupEth.isNull())
+    {
+        yError() << "Can't find ETH group in config files";
+        return false;
+    }
+    Value *PC104IpAddress_p;
+    if(!groupEth.check("PC104IpAddress", PC104IpAddress_p))
+    {
+        yError() << "missing PC104IpAddress";
+        return false;
+    }
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
     strcpy(_fId.PC104ipAddr.string, parameter1.toString().c_str());
@@ -389,16 +400,18 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-    ImplementPositionControl<embObjMotionControl, IPositionControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
 #endif
-    ImplementControlLimits<embObjMotionControl, IControlLimits>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
+    ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -932,15 +945,14 @@ bool embObjMotionControl::init()
 //                 continue;
 //             }
 
-            printf(" logico = %d, fisico= %d\n", logico, fisico);
-            eOmc_joint_config_t	jconfig;
+            eOmc_joint_config_t     jconfig;
             memset(&jconfig, 0x00, sizeof(eOmc_joint_config_t));
             copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
             copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
             copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
-            jconfig.impedance.damping	= (eOmeas_stiffness_t) _impedance_params[logico].damping * 1000;
-            jconfig.impedance.stiffness	= (eOmeas_damping_t) _impedance_params[logico].stiffness * 1000;
+            jconfig.impedance.damping	= (eOmeas_damping_t) _impedance_params[logico].damping * 1000;
+            jconfig.impedance.stiffness	= (eOmeas_stiffness_t) _impedance_params[logico].stiffness * 1000;
             jconfig.impedance.offset	= 0; //impedance_params[j];
 
             jconfig.maxpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMax[logico], _zeros[logico], _angleToEncoder[logico]);
@@ -1000,18 +1012,14 @@ bool embObjMotionControl::init()
             Time::delay(0.01);
         }
     }
-    printf("EmbObj Motion Control for board %d istantiated correctly", _fId.boardNum);
+    printf("EmbObj Motion Control for board %d istantiated correctly\n", _fId.boardNum);
     return true;
 }
 
 
 bool embObjMotionControl::configure_mais(void)
 {
-    // invia configurazioni a caso
-    // yTrace();
     eOnvID_t nvid;
-//    EOnv *nvRoot;
-//    EOnv tmp;
 
     // Mais per lettura posizioni dita, c'e' solo sulle mani per ora
     eOcfg_nvsEP_as_endpoint_t mais_ep = (eOcfg_nvsEP_as_endpoint_t)0;
@@ -1061,15 +1069,17 @@ bool embObjMotionControl::configure_mais(void)
 bool embObjMotionControl::close()
 {
     yTrace();
-//     res->goToConfig();
     ImplementControlMode::uninitialize();
     ImplementEncodersTimed::uninitialize();
-    ImplementPositionControl<embObjMotionControl, IPositionControl>::uninitialize();
+    ImplementPositionControl2::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
+    ImplementVelocityControl2::uninitialize();
     ImplementPidControl<embObjMotionControl, IPidControl>::uninitialize();
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::uninitialize();
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
     ImplementImpedanceControl::uninitialize();
+    ImplementControlLimits2::uninitialize();
+    ImplementPositionDirect::uninitialize();
     int ret = ethManager->releaseResource(_fId);
     res = NULL;
     if(ret == -1)
@@ -1077,7 +1087,12 @@ bool embObjMotionControl::close()
     return true;
 }
 
+FEAT_ID embObjMotionControl::getFeat_id()
+{
+    return(this->_fId);
+}
 
+// TODO da eliminare?
 eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint16_t nvid)
 {
     // yTrace();
@@ -1356,26 +1371,10 @@ bool embObjMotionControl::setOffsetRaw(int j, double v)
 //    Velocity control interface raw  //
 ////////////////////////////////////////
 
-#define MSG020955 "WARNING-> in embObjMotionControl::setVelocityModeRaw() acemor changed automatic variables. verify correct behaviour.... however the array is not needed: remove it"
-#if defined(_MSC_VER)
-    #pragma message(MSG020955)
-#else
-    #warning MSG020955
-#endif
-
 bool embObjMotionControl::setVelocityModeRaw()
 {
     yTrace();
-//    EOnv tmp;
     bool ret = true;
-//    eOnvID_t  nvids[_njoints]; acemor: error C2057: expected constant expression + error C2466: cannot allocate an array of constant size 0
-//    EOnv	  *nvRoot[_njoints];
-
-//    eOnvID_t  nvids[MAXNUMOFJOINTS]; 
-//    EOnv	  *nvRoot[MAXNUMOFJOINTS];
-////    eOnvID_t  *nvids = new eOnvID_t [embObjMotionControl::_njoints];
-////    EOnv	  **nvRoot = new EOnv* [embObjMotionControl::_njoints];
-
 
     eOnvID_t  nvid;
 
@@ -1385,22 +1384,15 @@ bool embObjMotionControl::setVelocityModeRaw()
         nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
         if(! res->addSetMessage(nvid, _fId.ep, (uint8_t *) &val))
         {
-////            delete[] nvids;
-////            delete[] nvRoot;
             yError() << "while setting velocity mode";
             return false;
         }
     }
-
-////    delete[] nvids;
-////    delete[] nvRoot;
     return ret;
 }
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    // yTrace();
-//    EOnv tmp;
     int index = j ;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
 
@@ -1423,18 +1415,14 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 
 bool embObjMotionControl::velocityMoveRaw(const double *sp)
 {
-    // yTrace();
-//    EOnv tmp;
     bool ret = true;
-//    eOnvID_t  nvids[_njoints];
-//    EOnv	  *nvRoot[_njoints];
     eOmc_setpoint_t setpoint;
 
     setpoint.type = eomc_setpoint_velocity;
 
-    for(int j=0, index=0; j< _njoints; j++, index++)
+    for(int j=0; j< _njoints; j++)
     {
-        ret &= velocityMoveRaw(j, sp[index]);
+        ret = velocityMoveRaw(j, sp[j]) && ret;
     }
 
     return ret;
@@ -1832,7 +1820,7 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
 bool embObjMotionControl::getRefSpeedRaw(int j, double *spd)
 {
     // yTrace();
-    *spd = _ref_speeds[j ];
+    *spd = _ref_speeds[j];
     return true;
 }
 
@@ -1845,7 +1833,7 @@ bool embObjMotionControl::getRefSpeedsRaw(double *spds)
 
 bool embObjMotionControl::getRefAccelerationRaw(int j, double *acc)
 {
-    *acc = _ref_accs[j ];
+    *acc = _ref_accs[j];
     return true;
 }
 
@@ -1874,6 +1862,92 @@ bool embObjMotionControl::stopRaw()
     }
     return ret;
 }
+///////////// END Position Control INTERFACE  //////////////////
+
+////////////////////////////////////////
+//     Position control2 interface    //
+////////////////////////////////////////
+
+bool embObjMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret &&positionMoveRaw(joints[j], refs[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, const double *deltas)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret &&relativeMoveRaw(joints[j], deltas[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && checkMotionDoneRaw(joints[j], flag);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret &&setRefSpeedRaw(joints[j], spds[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret &&setRefAccelerationRaw(joints[j], accs[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefSpeedsRaw(const int n_joint, const int *joints, double *spds)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && getRefSpeedRaw(joints[j], &spds[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && getRefAccelerationRaw(joints[j], &accs[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::stopRaw(const int n_joint, const int *joints)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret &&stopRaw(joints[j]);
+    }
+    return ret;
+}
+
 ///////////// END Position Control INTERFACE  //////////////////
 
 // ControlMode
@@ -2251,16 +2325,28 @@ bool embObjMotionControl::getJointPositionsRaw        (double* value)           
 // Limit interface
 bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
 {
-    // yTrace();
+    yTrace();
+    bool ret = true;
+    eOnvID_t nvid_max, nvid_min;
+    nvid_max = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jconfig__maxpositionofjoint);
+    nvid_min = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jconfig__minpositionofjoint);
 
-    return true;
+    eOmeas_position_t maxpositionofjoint = (eOmeas_position_t) convertA2I(max, _zeros[j], _angleToEncoder[j]);
+    eOmeas_position_t minpositionofjoint = (eOmeas_position_t) convertA2I(min, _zeros[j], _angleToEncoder[j]);
+
+    ret = res->addSetMessage(nvid_max, _fId.ep, (uint8_t *) &maxpositionofjoint);
+    ret = res->addSetMessage(nvid_min, _fId.ep, (uint8_t *) &minpositionofjoint);
+
+    if(!ret)
+    {
+        yError() << "while setting position limits for joint" << j << " \n";
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 {
-//    EOnv NV_min, NV_max;
     eOnvID_t nvid_min, nvid_max;
-//    EOnv *nvRoot_min, *nvRoot_max;
 
     nvid_min = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__minpositionofjoint);
     nvid_max = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__maxpositionofjoint);
@@ -2286,7 +2372,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     if(-1 == tt->synch() )
     {
         int threadId;
-        printf("\n\n--------------------\nTIMEOUT for joint %d\n-----------------------\n", j); //yError () << "ask request timed out, joint " << j;
+        printf("\n\n-----------------------\nTIMEOUT for joint %d\n-----------------------\n", j); //yError () << "ask request timed out, joint " << j;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -2294,7 +2380,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     }
     // Get the value
     uint16_t size;
-    int32_t	eomin, eomax;
+    int32_t eomin, eomax;
 
     bool ret = res->readBufferedValue(nvid_min, _fId.ep, (uint8_t *)&eomin, &size);
     ret &= res->readBufferedValue(nvid_max, _fId.ep, (uint8_t *)&eomax, &size);
@@ -2304,10 +2390,17 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return ret;
 }
 
-FEAT_ID embObjMotionControl::getFeat_id()
+// IControlLimits2
+bool embObjMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
-	return(this->_fId);
+    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
 }
+
+bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+}
+
 
 /*
  * IVirtualAnalogSensor Interface
@@ -2332,7 +2425,6 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 
     for(int j=0; j< _njoints; j++)
     {
-        if (fTorques[j] < -1000.0 || fTorques[j] > 1000.0) fTorques[j] = 0.0;
         ret = ret && updateMeasure(j, fTorques[j]);
     }
     return ret;
@@ -2343,6 +2435,17 @@ bool embObjMotionControl::updateMeasure(int j, double &fTorque)
     double NEWTON2SCALE=32768.0/_maxTorque[j];
 
 //    EOnv tmp;
+//    if (fTorque < -1000.0 || fTorque > 1000.0) fTorque = 0.0;
+
+    if(fTorque < (- _maxTorque[j] ))
+    {
+    	fTorque = (- _maxTorque[j]);
+    }
+    if(fTorque > _maxTorque[j])
+    {
+    	fTorque = _maxTorque[j];
+    }
+
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
 
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
@@ -2605,6 +2708,7 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
     if(!getWholeImpedanceRaw(j, val))
         return false;
 
+    // EMS will divide stiffness value by 1000 because the cycle is 1KHz. It is done on the EMS since it manage the cycle and knows the real Rate.
 	val.stiffness 	= (eOmeas_stiffness_t) (stiffness * 1000.0);
 	val.damping 	= (eOmeas_damping_t) (damping * 1000.0);
 
@@ -2712,6 +2816,66 @@ bool embObjMotionControl::setTorqueOffsetRaw(int j, double v)
 {
     return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
 }
+
+// IVelocityControl2
+bool embObjMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
+{
+    bool ret = true;
+
+    for(int j=0; j< n_joint; j++)
+    {
+        ret &= velocityMoveRaw(joints[j], spds[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::setVelPidRaw(int j, const Pid &pid)
+{
+    // Our boards do not have a Velocity Pid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+bool embObjMotionControl::setVelPidsRaw(const Pid *pids)
+{
+    // Our boards do not have a VelocityPid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+bool embObjMotionControl::getVelPidRaw(int j, Pid *pid)
+{
+    // Our boards do not have a VelocityPid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+bool embObjMotionControl::getVelPidsRaw(Pid *pids)
+{
+    // Our boards do not have a VelocityPid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+
+// PositionDirect Interface
+bool embObjMotionControl::setPositionRaw(int j, double ref)
+{
+    // needs to send both position and velocit as well as positionMove
+	return positionMoveRaw(j, ref);
+    return NOT_YET_IMPLEMENTED("setPositionRaw Single joint");
+}
+
+bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+{
+    // needs to send both position and velocit as well as positionMove
+	return positionMoveRaw(n_joint, joints, refs);
+    return NOT_YET_IMPLEMENTED("setPositionsRaw Group");
+}
+
+bool embObjMotionControl::setPositionsRaw(const double *refs)
+{
+    // needs to send both position and velocit as well as positionMove
+	return positionMoveRaw(refs);
+    return NOT_YET_IMPLEMENTED("setPositionsRaw All joints");
+}
+
 
 // eof
 
