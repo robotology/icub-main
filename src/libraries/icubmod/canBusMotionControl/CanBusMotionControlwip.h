@@ -432,6 +432,7 @@ class firmwareVersionHelper
     }
     bool checkFirmwareVersions()
     {
+        bool printed = false;
         for (int j=0; j<jointsNum; j++)
         {
             if (infos[j].board_type==0)
@@ -451,13 +452,13 @@ class firmwareVersionHelper
                 // Note: Also BLL2DC firmware is identified BLL. This is intentional.
                 if (infos[j].fw_build<LAST_BLL_BUILD) 
                 {
-                    printMessagePleaseUpgradeFirmware();
-                    return true;
+                    if (!printed) printMessagePleaseUpgradeFirmware();
+                    printed = true;
                 }
                 if (infos[j].fw_build>LAST_BLL_BUILD)
                 {
-                    printMessagePleaseUpgradeiCub();
-                    return true;
+                    if (!printed) printMessagePleaseUpgradeiCub();
+                    printed = true;
                 }
             }
 
@@ -465,13 +466,13 @@ class firmwareVersionHelper
             {
                 if (infos[j].fw_build<LAST_MC4_BUILD) 
                 {
-                    printMessagePleaseUpgradeFirmware();
-                    return true;
+                    if (!printed) printMessagePleaseUpgradeFirmware();
+                    printed = true;
                 }
                 if (infos[j].fw_build>LAST_MC4_BUILD) 
                 {
-                    printMessagePleaseUpgradeiCub();
-                    return true;
+                    if (!printed) printMessagePleaseUpgradeiCub();
+                    printed = true;
                 }
             }
         }
