@@ -8,13 +8,14 @@
         </group>
 
         <group name="CALIBRATION">   
-            <param name="calibrationType">             3             3             3            3             </param>       
-            <param name="calibration1">             2047.5        2047.5        2047.5          0             </param>       
-            <param name="calibration2">               10            10            10            0             </param>       
-            <param name="calibration3">              508.4625     2646.963      3420.463        0             </param>       
-            <param name="positionZero">                0             0             0            0             </param>       
-            <param name="velocityZero">               10            10            10            0             </param>       
-            <param name="maxPwm">                    120           120           120            0             </param>       
+            <param name="calibrationType">            3             3             3             3             0             0             </param>       
+            <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
+            <param name="calibration2">               10            10            10            10            20            20            </param>       
+            <param name="calibration3">               1410.5        1535.625      2770.95       3139.5        0             0             </param>       
+            <param name="positionZero">               0             0             0             0             0             0             </param>       
+            <param name="velocityZero">               10            10            10            10            10            10            </param>       
+            <param name="maxPwm">                     120           120           120           0             0             0             </param>       
+            <param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
         </group>       
          
         <group name="HOME">          
