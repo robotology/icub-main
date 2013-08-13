@@ -84,7 +84,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 
     if (p.check("GENERAL")==false)
     {
-      Error() << "missing [GENERAL] section"; 
+      yError() << "missing [GENERAL] section"; 
       return false;
     } 
 
@@ -94,7 +94,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     } 
     else
     {
-      Error() << "missing deviceName parameter"; 
+      yError() << "missing deviceName parameter"; 
       return false;
     } 
 
