@@ -77,33 +77,45 @@ parametricCalibrator::~parametricCalibrator()
 
 bool parametricCalibrator::open(yarp::os::Searchable& config)
 {
+    yDebug() << "Entering parametricCalibrator::open()";
     yTrace();
     Property p;
     p.fromString(config.toString());
 
-    if (p.check("GENERAL")) 
+    if (p.check("GENERAL")==false)
     {
-      if(p.findGroup("GENERAL").check("DeviceName"))
-      {
-        deviceName = p.findGroup("GENERAL").find("DeviceName").asString();
-      }
-    }
+      Error() << "missing [GENERAL] section"; 
+      return false;
+    } 
 
-   std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
-        str=config.toString().c_str();
+    if(p.findGroup("GENERAL").check("deviceName"))
+    {
+      deviceName = p.findGroup("GENERAL").find("deviceName").asString();
+    } 
     else
-        str="\n";
+    {
+      Error() << "missing deviceName parameter"; 
+      return false;
+    } 
 
-    yTrace() << deviceName.c_str() << str;
+    std::string str;
+    if(config.findGroup("GENERAL").find("verbose").asInt())
+    {
+        str=config.toString().c_str();
+        yTrace() << deviceName.c_str() << str;
+    }  
 
     // Check Vanilla = do not use calibration!
-    isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
+    isVanilla =config.findGroup("GENERAL").find("vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
     isVanilla = !!isVanilla;
-    yWarning() << "embObjMotionControl: Vanilla " << isVanilla;
+    yWarning() << "embObjMotionControl: vanilla " << isVanilla;
 
-    int nj = p.findGroup("GENERAL").find("Joints").asInt();
-    if (nj == 0)
+    int nj = 0;
+    if(p.findGroup("GENERAL").check("Joints"))
+    {
+        nj = p.findGroup("GENERAL").find("joints").asInt();
+    }
+    else
     {
         yDebug() << deviceName.c_str() <<  ": Calibrator is for %d joints but device has " << numberOfJoints;
         return false;
@@ -123,73 +135,51 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     homeVel = new double[nj];
     zeroPosThreshold = new double[nj];
 
-    Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("Calibration1");
+    int i=0;
 
-    int i;
-    for (i = 1; i < xtmp.size(); i++)
-        param1[i-1] = xtmp.get(i).asDouble();
-    xtmp = p.findGroup("CALIBRATION").findGroup("Calibration2");
+    Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("calibration1");
+    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size()<< " " << nj; return false;}
+    for (i = 1; i < xtmp.size(); i++) param1[i-1] = xtmp.get(i).asDouble();
 
-    for (i = 1; i < xtmp.size(); i++)
-        param2[i-1] = xtmp.get(i).asDouble();
-    xtmp = p.findGroup("CALIBRATION").findGroup("Calibration3");
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibration2");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of Calibration2 params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) param2[i-1] = xtmp.get(i).asDouble();
 
-    for (i = 1; i < xtmp.size(); i++)
-        param3[i-1] = xtmp.get(i).asDouble();
-    xtmp = p.findGroup("CALIBRATION").findGroup("CalibrationType");
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibration3");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of Calibration3 params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) param3[i-1] = xtmp.get(i).asDouble();
 
-    for (i = 1; i < xtmp.size(); i++)
-        type[i-1] = (unsigned char) xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of Calibration3 params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) type[i-1] = (unsigned char) xtmp.get(i).asDouble();
 
+    xtmp = p.findGroup("CALIBRATION").findGroup("positionZero");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of PositionZero params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) zeroPos[i-1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("PositionZero");
+    xtmp = p.findGroup("CALIBRATION").findGroup("velocityZero");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of VelocityZero params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) zeroVel[i-1] = xtmp.get(i).asDouble();
 
-    for (i = 1; i < xtmp.size(); i++)
-        zeroPos[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("HOME").findGroup("positionHome");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of PositionHome params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) homePos[i-1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("VelocityZero");
+    xtmp = p.findGroup("HOME").findGroup("velocityHome");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of VelocityHome params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) homeVel[i-1] = xtmp.get(i).asDouble();
 
-    for (i = 1; i < xtmp.size(); i++)
-        zeroVel[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("maxPwm");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of MaxPwm params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
 
-    xtmp = p.findGroup("HOME").findGroup("PositionHome");
-
-    for (i = 1; i < xtmp.size(); i++)
-        homePos[i-1] = xtmp.get(i).asDouble();
-
-    xtmp = p.findGroup("HOME").findGroup("VelocityHome");
-
-    for (i = 1; i < xtmp.size(); i++)
-        homeVel[i-1] = xtmp.get(i).asDouble();
-
-    if (p.findGroup("CALIBRATION").check("MaxPWM"))
-    {
-        xtmp = p.findGroup("CALIBRATION").findGroup("MaxPWM");
-        for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
-    }
-    else
-    {
-        yWarning() << deviceName.c_str()<< ": MaxPWM parameter not found, assuming 60";
-        for (i = 1; i < nj+1; i++) maxPWM[i-1] = 60;
-    }
-
-    if (p.findGroup("CALIBRATION").check("PosZeroThreshold"))
-    {
-        xtmp = p.findGroup("CALIBRATION").findGroup("PosZeroThreshold");
-        for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
-    }
-    else
-    {
-        yWarning() << deviceName.c_str()<< ": zero position threshold not found, assuming 2 degrees, this may be too strict for fingers...";
-        for (i = 1; i < nj+1; i++) zeroPosThreshold[i-1] = POSITION_THRESHOLD;
-    }
-
+    xtmp = p.findGroup("CALIBRATION").findGroup("posZeroThreshold");
+    if (xtmp.size()-1!=nj) {yError() << "invalid number of PosZeroThreshold params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
+ 
     xtmp = p.findGroup("CALIB_ORDER");
-
-    yDebug() << "Group size " << xtmp.size() << "\nValues: " << xtmp.toString().c_str();
-
+    yDebug() << "Group size " << xtmp.size() << "\nvalues: " << xtmp.toString().c_str();
     std::list<int>  tmp;
-
     for(int i=1; i<xtmp.size(); i++)
     {
         tmp.clear();
@@ -202,6 +192,8 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
         }
         joints.push_back(tmp);
     }
+
+    yDebug() << "parametricCalibrator::open() complete ";
     return true;
 }
 
@@ -270,6 +262,7 @@ bool parametricCalibrator::close ()
 
 bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il wrapper, non mc
 {
+    yDebug() << deviceName << "Entering parametricCalibrator::calibrate()";
     yTrace();
     abortCalib  = false;
     bool goHome_ok = true;
@@ -286,7 +279,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     p->view(iPids);
     p->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iPosition && iPids && iControlMode)) {
+    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
         yError() << deviceName << ": interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
         return false;
     }
@@ -424,7 +417,8 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         while(lit != lend)    // per ogni giunto del set
         {
             // Abilita il giunto
-            iControlMode->setPositionMode((*lit));
+            //iAmps->enableAmp((*lit));
+            iControlMode->setPositionMode((*lit)); 
             lit++;
         }
 
