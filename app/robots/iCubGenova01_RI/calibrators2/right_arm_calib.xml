@@ -8,14 +8,14 @@
         </group>
 
         <group name="CALIBRATION">   
-            <param name="calibrationType">            3             3             3             3             0             0             </param>       
-            <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
-            <param name="calibration2">               10            10            10            10            20            20            </param>       
-            <param name="calibration3">               1410.5        1535.625      2770.95       3139.5        0             0             </param>       
-            <param name="positionZero">               0             0             0             0             0             0             </param>       
-            <param name="velocityZero">               10            10            10            10            10            10            </param>       
-            <param name="maxPwm">                     120           120           120           0             0             0             </param>       
-            <param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
+            <param name="calibrationType">            3             3             3             3             0             2             2             3             </param>       
+            <param name="calibration1">               1706.25       853.125       2795.317      2558          600           750           750           1829          </param>       
+            <param name="calibration2">               10            10            10            10            -20           10            10            100           </param>       
+            <param name="calibration3">               195.65        436.8         1728.858      2512.738      0             0             0             0             </param>       
+            <param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
+            <param name="velocityZero">               10            10            10            10            30            30            30            100           </param>       
+            <param name="maxPwm">                     120           120           120           120           0             0             0             0             </param>       
+            <param name="posZeroThreshold">           2             2             2             2             2             2             90            90            </param>       
         </group>       
          
         <group name="HOME">          
