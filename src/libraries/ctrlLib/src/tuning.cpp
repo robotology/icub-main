@@ -314,9 +314,7 @@ void OnlineStictionEstimator::run()
 
     ienc->getEncoder(joint,&x_pos);
 
-    AWPolyElement el;
-    el.data.resize(1,x_pos);
-    el.time=Time::now();
+    AWPolyElement el(Vector(1,x_pos),Time::now());
     Vector vel=velEst.estimate(el); x_vel=vel[0];
     Vector acc=accEst.estimate(el); x_acc=acc[0];
 

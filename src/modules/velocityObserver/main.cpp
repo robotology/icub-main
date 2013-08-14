@@ -196,18 +196,11 @@ private:
         for (unsigned int i=0; i<sz; i++)
             x[i]=b.get(i).asDouble();
 
-        AWPolyElement el;
-        el.data=x;
-
-        // for the esteem the time stamp
+        // for the estimation the time stamp
         // is required. If not present within the
         // packet, the actual machine time is 
         // attached to it.
-        if (info.isValid())
-            el.time=info.getTime();
-        else
-            el.time=Time::now();
-
+        AWPolyElement el(x,info.isValid()?info.getTime():Time::now());
         port_vel.prepare()=linEst->estimate(el);
         port_acc.prepare()=quadEst->estimate(el);
 
