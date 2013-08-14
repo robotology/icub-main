@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
-    <device name="head_torso_calibrator" type="parametricCalibrator">
+    <device name="head_calibrator" type="parametricCalibrator">
                 
         <group name="GENERAL">
             <param name="joints"> 6 </param> 
