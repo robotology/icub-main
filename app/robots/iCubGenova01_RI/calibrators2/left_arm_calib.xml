@@ -14,7 +14,7 @@
             <param name="calibration3">               1136.3625     1460.55       3561.37       2055.4625     0             0             0             0             </param>       
             <param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
             <param name="velocityZero">               10            10            10            10            30            30            30            100           </param>       
-            <param name="maxPwm">                     120           120           120           0             0             0             0             0             </param>       
+            <param name="maxPwm">                     120           120           120           120           0             0             0             0             </param>       
             <param name="posZeroThreshold">           2             2             2             2             2             2             90            90            </param>       
         </group>       
          
