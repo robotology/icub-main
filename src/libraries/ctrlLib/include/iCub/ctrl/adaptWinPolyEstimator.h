@@ -45,11 +45,14 @@ namespace iCub
 namespace ctrl
 {
 
-typedef struct
+class AWPolyElement
 {
+public:
     double time;
     yarp::sig::Vector data;
-} AWPolyElement;
+    AWPolyElement(){}
+    AWPolyElement(const yarp::sig::Vector &d, double t): data(d), time(t) {}
+};
 
 
 typedef std::deque<AWPolyElement> AWPolyList;
