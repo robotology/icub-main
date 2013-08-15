@@ -45,13 +45,28 @@ namespace iCub
 namespace ctrl
 {
 
+/**
+* \ingroup adaptWinPolyEstimator
+*
+* Basic element for adaptive polynomial fitting.
+*/
 class AWPolyElement
 {
 public:
     double time;
     yarp::sig::Vector data;
-    AWPolyElement(){}
-    AWPolyElement(const yarp::sig::Vector &d, double t): data(d), time(t) {}
+
+    /**
+    * Default constructor.
+    */ 
+    AWPolyElement() {}
+
+    /**
+    * Create an element for adaptive polynomial fitting.
+    * @param d is the element data vector.
+    * @param t is time instant of sampled data.
+    */ 
+    AWPolyElement(const yarp::sig::Vector &d, const double t): data(d), time(t) {}
 };
 
 
