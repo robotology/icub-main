@@ -363,6 +363,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             if (maxPWM[(*lit)]==0)
             {
                 yDebug() << deviceName << "skipping maxPwm=0 of joint " << (*lit);
+                iPids->setPid((*lit),original_pid[(*lit)]);
             }
             else
             {
@@ -384,6 +385,23 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             continue;
         }
 
+        //------------------------------------------------
+        //enable only the motors which have to test the hardware limit
+        for(lit  = tmp.begin(); lit != lend; lit++)  
+        {
+            if (type[*lit]==0 ||
+                type[*lit]==4 ) 
+            {
+                yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
+                iAmps->enableAmp(*lit); 
+                iPids->enablePid(*lit);
+            }
+        }
+        //------------------------------------------------
+
+        Time::delay(0.1f);
+
+        //------------------------------------------------
         for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
         {
             // Enable amp moved into EMS class;
@@ -391,13 +409,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             calibrateJoint((*lit));
         }
 
+        Time::delay(0.1f);
+
         for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
         {
             iEncoders->getEncoders(currPos);
             yDebug() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
         }
-
-        Time::delay(4.0f);
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
@@ -419,25 +437,34 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 lit++;
             }
         }
+        //------------------------------------------------
 
+        //------------------------------------------------
+        yDebug() <<  deviceName  << "Enabling PWM";
         lit  = tmp.begin();
-        while(lit != lend)    // per ogni giunto del set
+        while(lit != lend)
         {
-            // Abilita il giunto
-            //iAmps->enableAmp((*lit));
+            iAmps->enableAmp((*lit));
+            iPids->enablePid((*lit));
             iControlMode->setPositionMode((*lit)); 
             lit++;
         }
+        yDebug() <<  deviceName  <<  "Enabling PWM complete";
+        //------------------------------------------------
 
         Time::delay(0.5f);    // needed?
 
+        //------------------------------------------------
+        yDebug() <<  deviceName  << "Sending goToZero commands";
         lit  = tmp.begin();
-        while(lit != lend)    // per ogni giunto del set
+        while(lit != lend) 
         {
-            // Manda in Home
             goToZero((*lit));
             lit++;
         }
+        yDebug() <<  deviceName  << "Sending goToZero commands complete";
+        //------------------------------------------------
+
         Time::delay(1.0);     // needed?
 
         bool goneToZero = true;
@@ -504,7 +531,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 
             if (abortCalib)
             {
-                yWarning() << "CALIB: aborted\n";
+                yWarning() << deviceName  << "CALIB: aborted\n";
             }
 
             // Joint with absolute sensor doesn't need to move, so they are ok with just the calibration message,
@@ -528,10 +555,8 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 
 void parametricCalibrator::goToZero(int j)
 {
-    yTrace();
-    if (abortCalib)
-        return;
-
+    if (abortCalib) return;
+    yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << zeroPos[j] << "desired speed: " << zeroVel[j] <<" )";
     iPosition->setRefSpeed(j, zeroVel[j]);
     iPosition->positionMove(j, zeroPos[j]);
 }
@@ -558,17 +583,18 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
         {
             yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;
+            break;
         }
 
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
             yError() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
-            return false;
+            break;
         }
         if (abortCalib)
         {
-               yWarning() <<  deviceName.c_str() << " joint " << j << " Abort wait while going to zero!\n";
-               break;
+            yWarning() <<  deviceName.c_str() << " joint " << j << " Abort wait while going to zero!\n";
+            break;
         }
         Time::delay(0.5);
     }
