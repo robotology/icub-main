@@ -2924,7 +2924,7 @@ void CanBusMotionControl:: run()
                 }
             else
                 {
-                    fprintf(stderr, "     Device has no error interface\n");
+                    fprintf(stderr, "     Device has no ICanBusErr interface\n");
                 }
                 
 
@@ -2932,7 +2932,7 @@ void CanBusMotionControl:: run()
             /// reports board errors
             char tmp[255];
             char message[255];
-            sprintf(message, "%s [%d] printing boards errors:\n", canDevName.c_str(), r._networkN);
+            sprintf(message, "%s [%d] printing boards infos:\n", canDevName.c_str(), r._networkN);
 
             bool errorF=false;
             for (j=0; j<r._njoints ;j++)
