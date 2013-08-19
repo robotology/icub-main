@@ -51,12 +51,12 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
     ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
-    ImplementEncoders<iCubSimulationControl, IEncoders>(this),
+    ImplementEncodersTimed(this),
     ImplementTorqueControl(this),
     ImplementControlMode(this),
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>(this),
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
-    ImplementControlLimits<iCubSimulationControl, IControlLimits>(this),/* */
+    ImplementControlLimits2(this),
     _done(0),
     _mutex(1)
 {
@@ -212,14 +212,12 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl<iCubSimulationControl, IPidControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementEncoders<iCubSimulationControl, IEncoders>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementControlLimits<iCubSimulationControl, IControlLimits>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
     ImplementControlMode::initialize(njoints, axisMap);
 
@@ -264,10 +262,10 @@ bool iCubSimulationControl::close (void)
         ImplementPositionControl<iCubSimulationControl, IPositionControl>::uninitialize ();
         ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::uninitialize();
         ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
-        ImplementEncoders<iCubSimulationControl, IEncoders>::uninitialize();
+        ImplementEncodersTimed::uninitialize();
         ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::uninitialize();
         ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::uninitialize();
-        ImplementControlLimits<iCubSimulationControl, IControlLimits>::uninitialize(); /**/
+        ImplementControlLimits2::uninitialize();
     }
 
     checkAndDestroy<double>(current_pos);
@@ -826,6 +824,23 @@ bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
     return false;
 }
 
+bool iCubSimulationControl::getEncodersTimedRaw(double *encs, double *stamps)
+{
+    double timeNow = Time::now();
+    for(int axis = 0;axis<njoints;axis++)
+    {
+        stamps[axis] = timeNow;
+    }
+    return getEncodersRaw(encs);
+}
+
+bool iCubSimulationControl::getEncoderTimedRaw(int axis, double *enc, double *stamp)
+{
+    *stamp = Time::now();
+    return getEncoderRaw(axis, enc);
+}
+
+
 bool iCubSimulationControl::getEncoderSpeedsRaw(double *v)
 {
    _mutex.wait();
@@ -966,6 +981,19 @@ bool iCubSimulationControl::getLimitsRaw(int axis, double *min, double *max)
      //else
      return false;
 }
+
+
+// IControlLimits2
+bool iCubSimulationControl::setVelLimitsRaw(int axis, double min, double max)
+{
+    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
+}
+
+bool iCubSimulationControl::getVelLimitsRaw(int axis, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+}
+
 
 bool iCubSimulationControl::setTorqueModeRaw( )
 {

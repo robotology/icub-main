@@ -65,20 +65,23 @@ class yarp::dev::iCubSimulationControl :
     public IPositionControlRaw, 
     public IVelocityControlRaw, 
     public ITorqueControlRaw,
-    public IEncodersRaw, 
+//    public IEncodersRaw,
     public IAmplifierControlRaw,
     public IControlCalibrationRaw,
-    public IControlLimitsRaw,
+    public IControlLimits2Raw,
     public IControlModeRaw,
     public ImplementTorqueControl,
     public ImplementControlMode,
     public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
     public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
     public ImplementPidControl<iCubSimulationControl, IPidControl>,
-    public ImplementEncoders<iCubSimulationControl, IEncoders>,
+//    public ImplementEncoders<iCubSimulationControl, IEncoders>,
     public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
     public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
-    public ImplementControlLimits<iCubSimulationControl, IControlLimits>
+//    public ImplementControlLimits<iCubSimulationControl, IControlLimits>,
+    public ImplementControlLimits2,
+    public IEncodersTimedRaw,
+    public ImplementEncodersTimed
 
 {
  private:
@@ -105,6 +108,12 @@ class yarp::dev::iCubSimulationControl :
   virtual bool open(yarp::os::Searchable& config);
 
   virtual bool close(void);
+
+  // IEncoderTimedRaw
+
+  virtual bool getEncodersTimedRaw(double *encs, double *stamps);
+  virtual bool getEncoderTimedRaw(int j, double *encs, double *stamp);
+
 
   ///////////// PID INTERFACE
   //
@@ -196,6 +205,8 @@ class yarp::dev::iCubSimulationControl :
   /////// Limits
   virtual bool setLimitsRaw(int axis, double min, double max);
   virtual bool getLimitsRaw(int axis, double *min, double *max);
+  virtual bool setVelLimitsRaw(int axis, double min, double max);
+  virtual bool getVelLimitsRaw(int axis, double *min, double *max);
 
     /////// Torque Control
     virtual bool setTorqueModeRaw(void);

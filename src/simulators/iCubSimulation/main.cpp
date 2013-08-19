@@ -138,6 +138,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Thread.h>
+#include <yarp/dev/Drivers.h>
 
 #include "SimulationRun.h"
 #ifdef ICUB_SIM_ENABLE_ODESDL
@@ -151,6 +152,9 @@
 #ifdef ICUB_SIM_ENABLE_ODESDL
 #include "SDL.h" 
 #endif
+
+YARP_DECLARE_DEVICES(icubmod)
+
 
 class MainThread : public yarp::os::Thread {
  public:
@@ -175,6 +179,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     
+    YARP_REGISTER_DEVICES(icubmod)
     yarp::os::Property options;
     options.fromCommand(argc,argv);
 
