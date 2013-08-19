@@ -3,7 +3,7 @@
   <device name="torso_mc_wrapper" type="controlboardwrapper2">
       <param name="threadrate">  10  </param>
       <paramlist name="networks">
-	  <elem name="torso_joints">  0 2 6 8 </elem>
+      <elem name="torso_joints">  0 2 0 8 </elem>
       </paramlist>
 
       <param name="period"> 10 			</param>
@@ -13,9 +13,9 @@
 
 
       <action phase="startup" level="5" type="attach">
-	  <paramlist name="networks">
-	      <elem name="torso_joints">  head_torso_mc </elem>
-	  </paramlist>
+      <paramlist name="networks">
+         <elem name="torso_joints">  torso_mc </elem>
+      </paramlist>
       </action>
 
       <action phase="shutdown" level="5" type="detach" />
