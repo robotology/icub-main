@@ -21,7 +21,8 @@
     <devices file="hardware/motorControl/icub_right_hand.xml" />
     <devices file="hardware/motorControl/icub_left_leg.xml" /> 
     <devices file="hardware/motorControl/icub_right_leg.xml" /> 
-    <devices file="hardware/motorControl/icub_head_torso.xml" />
+    <devices file="hardware/motorControl/icub_head.xml" />
+    <devices file="hardware/motorControl/icub_torso.xml" />
     -->
      
     <!-- VIRTUAL ANALOG SERVERs -->
@@ -71,12 +72,14 @@
 
     <!-- CALIBRATORS -->
 	<!--
-    <devices file="calibrators/head_calib.xml" /> 
-    <devices file="calibrators/torso_calib.xml" />
-    <devices file="calibrators/right_leg_calib.xml" />
-    <devices file="calibrators/left_leg_calib.xml" /> 
-    <devices file="calibrators/left_arm_calib.xml" /> 
-    <devices file="calibrators/right_arm_calib.xml" />
+    <devices file="calibrators2/head_calib.xml" /> 
+    <devices file="calibrators2/torso_calib.xml" />
+    <devices file="calibrators2/right_leg_calib.xml" />
+    <devices file="calibrators2/left_leg_calib.xml" /> 
+    <devices file="calibrators2/left_arm_calib.xml" /> 
+    <devices file="calibrators2/right_arm_calib.xml" />
+    <devices file="calibrators2/left_hand_calib.xml" /> 
+    <devices file="calibrators2/right_hand_calib.xml" />
     -->
 
 </robot> 
