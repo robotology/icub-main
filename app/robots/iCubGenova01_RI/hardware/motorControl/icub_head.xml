@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="head_mc" type="canmotioncontrol">  
+<group name="CAN">           
+    <param name="canbusdevice">               sharedcan     </param>       
+    <param name="physDevice">                 cfw2can       </param>       
+    <param name="CanAddresses">               1 2 3         </param>       
+    <param name="CanDeviceNum">               0             </param>       
+    <param name="NetworkId">                  HEAD          </param>       
+    <param name="CanMyAddress">               0             </param>       
+    <param name="CanPollingInterval">        10             </param>       
+    <param name="CanTimeout">               300             </param>       
+    <param name="CanTxTimeout">             500             </param>       
+    <param name="CanRxTimeout">             500             </param>       
+    <param name="broadcast_pos">              1             1             1             1             1             1             </param>       
+    <param name="broadcast_pid">              0             0             0             0             0             0             </param>       
+    <param name="broadcast_fault">            1             1             1             1             1             1             </param>       
+    <param name="broadcast_current">          0             0             0             0             0             0             </param>       
+    <param name="broadcast_overflow">         1             1             1             1             1             1             </param>       
+    <param name="broadcast_canprint">         1             1             1             1             1             1             </param>       
+    <param name="broadcast_vel_acc">          0             0             0             0             0             0             </param>       
+</group>       
+ 
+<group name="GENERAL">       
+    <param name="Joints">       6            </param>       
+    <param name="MaxDAC">       100           100           100           100           100           100           </param>       
+    <param name="AxisMap">      0             1             2             3             4             5             </param>       
+    <param name="Encoder">      11.375        -11.375       11.375        11.375        568.88        284.44        </param>       
+    <param name="Zeros">        180           -180          180           185           -48           -5            </param>       
+    <param name="TorqueId">     0             0             0             0             0             0             </param>       
+    <param name="TorqueChan">   0             0             0             0             0             0             </param>       
+    <param name="TorqueMax">    0             0             0             0             0             0             </param>       
+    <param name="Verbose">      0             </param>       
+</group>       
+ 
+<group name="VELOCITY">      
+    <param name="Shifts">       8             8             8             8             8             8             </param>       
+    <param name="Timeout">      100           100           100           100           100           100           </param>       
+</group>       
+ 
+<group name="LIMITS">        
+    <param name="Max">          22            20            50            30            30            50            </param>       
+    <param name="Min">          -30           -20           -50           -30           -30           0             </param>       
+    <param name="Currents">     2000          2000          1200          620           600           600           </param>       
+</group>       
+ 
+<group name="PIDS">          
+    <param name="Pid0">         6000          500           5             1333          1333          8             0            </param>       
+    <param name="Pid1">         -6000         -500          -5            1333          1333          8             0            </param>       
+    <param name="Pid2">         3200          3200          10            800           1333          6             0            </param>       
+    <param name="Pid3">         -400          -400          -4            1333          1333          4             0            </param>       
+    <param name="Pid4">         100           1000          10            1333          1333          5             0            </param>       
+    <param name="Pid5">         100           1000          10            1333          1333          5             0            </param>          
+</group>       
+ 
+<group name="CALIBRATION">   
+    <param name="CalibrationType">            3             3             3             3             0             0            </param>       
+    <param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        900           900          </param>       
+    <param name="Calibration2">               10            10            10            10            20            20           </param>       
+    <param name="Calibration3">               1410.5        1535.625      2770.95       3139.5        0             0            </param>       
+    <param name="PositionZero">               0             0             0             0             0             0            </param>       
+    <param name="VelocityZero">               10            10            10            10            10            10           </param>       
+</group>       
+ 
+<group name="HOME">          
+    <param name="PositionHome">              -30           0             0             0             0             0             </param>       
+    <param name="VelocityHome">               10           10            10            10            10            10            </param>       
+</group>       
+ 
+  </device>    
+</devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
