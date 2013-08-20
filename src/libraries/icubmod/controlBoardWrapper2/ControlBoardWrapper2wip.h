@@ -210,7 +210,8 @@ public:
     {
         int encSize=encoders.size();
         int timedSize = encodersTimes.size();
-        enc->getEncodersTimed(encoders.data(), encodersTimes.data());
+        for(int j=0; j<encSize; j++)
+            enc->getEncoderTimed(j, &encoders[j], &encodersTimes[j]);
     }
 
     bool isAttached()
