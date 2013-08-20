@@ -94,7 +94,8 @@ class cDownloader
     cDriver* m_candriver;
     yarp::dev::CanBuffer txBuffer;
     yarp::dev::CanBuffer rxBuffer;
-	
+    int canbus_id;
+
 private:
 int download_motorola_line(char* line, int len, int board_pid);
 int download_hexintel_line(char* line, int len, int board_pid, bool eeprom, int board_type);
@@ -126,6 +127,7 @@ int change_card_address	(int target_id, int new_id, int board_type);
 int change_board_info	(int target_id, char* board_info);
 int get_board_info		(int target_id, char* board_info);
 int get_serial_no		(int target_id, char* board_info);
+int get_canbus_id       ();
 
 int strain_start_sampling    (int target_id);
 int strain_stop_sampling     (int target_id);

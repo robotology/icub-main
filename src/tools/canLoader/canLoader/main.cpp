@@ -645,11 +645,11 @@ static void start_end_click (GtkButton *button,	gpointer   user_data)
     {
         yarp::os::Property params;
 		params.put("device", networkType.c_str()); 
-        params.put("CanDeviceNum", networkId);
-        params.put("CanTxQueue", 64);
-        params.put("CanRxQueue", 64);
-        params.put("CanTxTimeout", 2000);
-        params.put("CanRxTimeout", 2000);
+        params.put("canDeviceNum", networkId);
+        params.put("canTxQueue", 64);
+        params.put("canRxQueue", 64);
+        params.put("canTxTimeout", 2000);
+        params.put("canRxTimeout", 2000);
 
         //try to connect to the driver
         ret = downloader.initdriver(params);

@@ -86,7 +86,8 @@ cDownloader::cDownloader()
     board_list_size = 0;
     connected = false;
     m_candriver=NULL;
-	sprsPage=0;
+    sprsPage=0;
+    canbus_id=-1;
 }
 
 
@@ -132,6 +133,8 @@ int cDownloader::initdriver(Searchable &config)
     txBuffer=m_candriver->createBuffer(1);
     rxBuffer=m_candriver->createBuffer(MAX_READ_MSG);
     connected = true;
+
+    canbus_id = config.check("canDeviceNum");
     return 0;
 }
 
@@ -1230,8 +1233,15 @@ int cDownloader::initschede()
             drv_sleep(10);	
         }
 
-	printf ("CONNECTED: %d Boards found\n", board_list_size);
+    printf ("CONNECTED: %d Boards found on bus %d\n", board_list_size, this->canbus_id);
     return 0;
+}
+
+
+//*****************************************************************/
+int cDownloader::get_canbus_id()
+{
+    return canbus_id;
 }
 
 //*****************************************************************/
