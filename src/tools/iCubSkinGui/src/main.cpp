@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
-    rf.setDefaultContext("skinGui/conf/skinGui");
+    rf.setDefaultContext("skinGui/skinGui");
     rf.setDefaultConfigFile("left_hand.ini");
     rf.configure(argc,argv);
 
