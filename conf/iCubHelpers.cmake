@@ -233,7 +233,6 @@ ENDMACRO(PARSE_ARGUMENTS)
 # - target: target name this name, prefixed with app will be the target for
 # make or the vs gui.
 macro(icub_app target)
-if (__ICUB_INSTALL_APPLICATIONS__)
     set(dummy ${CMAKE_BINARY_DIR}/f-${target})
 	file(TO_CMAKE_PATH "${ICUB_APPLICATIONS_PREFIX}" app_prefix)
 
@@ -259,7 +258,6 @@ if (__ICUB_INSTALL_APPLICATIONS__)
 #    add_custom_command(OUTPUT ${dummy}
 #                    COMMAND ${CMAKE_COMMAND} -E make_directory ${dapp}
 #                    COMMENT "Creating directory ${target}")
-endif()
 endmacro(icub_app)
 
 # Add install rule for applications.
@@ -284,7 +282,6 @@ endmacro(icub_app)
 # April 2011: added FORCE_UPDATE flag to force update of files
 
 function(icub_app_install target)
-if (__ICUB_INSTALL_APPLICATIONS__)
   PARSE_ARGUMENTS(${target}
 	"FILES;DESTINATION"
     "VERBOSE;ROOT;FORCE_UPDATE"
@@ -351,7 +348,6 @@ if (__ICUB_INSTALL_APPLICATIONS__)
   set(BUFFER "${BUFFER}endforeach(f \"\${files}\")\n\n")
   
   file(APPEND ${cmakefile} "${BUFFER}")
-endif()
 endfunction(icub_app_install)
 
 ##

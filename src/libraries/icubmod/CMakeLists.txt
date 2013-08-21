@@ -63,7 +63,7 @@ END_PLUGIN_LIBRARY(icubmod)
 icub_export_library(icubmod)
 
 ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)
-
+target_link_libraries(icubmoddev YARP_OS YARP_dev YARP_init)
 INSTALL(TARGETS icubmoddev DESTINATION bin)
 #INSTALL(TARGETS icubmod DESTINATION lib)
 

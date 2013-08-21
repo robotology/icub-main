@@ -1,8 +1,5 @@
 set(appname demoy3)
 
-icub_app(${appname})
-
-
 file(GLOB full_body      ${CMAKE_CURRENT_SOURCE_DIR}/fullBody.txt
                          ${CMAKE_CURRENT_SOURCE_DIR}/armRight1
                          ${CMAKE_CURRENT_SOURCE_DIR}/armLeft1
@@ -29,12 +26,15 @@ file(GLOB crf_files      ${CMAKE_CURRENT_SOURCE_DIR}/crf/armRight
 
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml.template)
 
+if (__ICUB_INSTALL_APPLICATIONS__)
+icub_app(${appname})
 icub_app_install(${appname} FILES ${full_body})
 icub_app_install(${appname} FILES ${hannover_txt})
 icub_app_install(${appname} FILES ${hannover_files} DESTINATION hannover)
 icub_app_install(${appname} FILES ${crf_txt})
 icub_app_install(${appname} FILES ${crf_files} DESTINATION crf)
 icub_app_install(${appname} FILES ${scripts} DESTINATION scripts)
+endif()
 
 yarp_install(FILES ${full_body} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${hannover_txt} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
