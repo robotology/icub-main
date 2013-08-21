@@ -1750,11 +1750,6 @@ void iCubFinger::allocate(const string &_type)
             H0(3,0)=0.0;       H0(3,1)=0.0;      H0(3,2)=0.0;       H0(3,3)=1.0;
         }
 
-        if (hand=="left")
-            H0.setRow(2,-1.0*H0.getRow(2));
-
-        setH0(H0);
-
         pushLink(new iKinLink(   0.0,    0.0, -M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0210, 0.0056,       0.0, 0.0,  0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0260,    0.0,       0.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
@@ -1771,11 +1766,6 @@ void iCubFinger::allocate(const string &_type)
         H0(2,0)=0.038324; H0(2,1)=-0.078278; H0(2,2)=0.996195; H0(2,3)=-0.010973325;
         H0(3,0)=0.0;      H0(3,1)=0.0;       H0(3,2)=0.0;      H0(3,3)=1.0;
 
-        if (hand=="left")
-            H0.setRow(2,-1.0*H0.getRow(2));
-
-        setH0(H0);
-
         pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0259, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
@@ -1788,15 +1778,19 @@ void iCubFinger::allocate(const string &_type)
         H0(2,0)=0.0; H0(2,1)=1.0; H0(2,2)=0.0;  H0(2,3)=-0.0118;
         H0(3,0)=0.0; H0(3,1)=0.0; H0(3,2)=0.0;  H0(3,3)=1.0;
 
-        if (hand=="left")
-            H0.setRow(2,-1.0*H0.getRow(2));
-
-        setH0(H0);
-
         pushLink(new iKinLink(0.0285, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0240, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
+
+    if (hand=="left")
+    {
+        H0.setRow(2,-1.0*H0.getRow(2));
+        H0(0,2)=-H0(0,2);
+        H0(1,2)=-H0(1,2);
+    }
+
+    setH0(H0);
 }
 
 
