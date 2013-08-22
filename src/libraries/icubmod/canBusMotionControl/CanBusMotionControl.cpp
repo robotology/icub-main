@@ -1639,13 +1639,35 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
 
     //previously initialized
     iCanBus->canSetBaudRate(_speed);
-    // sets all message ID's for class 0 and 1.
-    unsigned int i;
-    for (i = 0; i < 0xff; i++)
+    unsigned int i=0;
+    
+#if ICUB_CANMASKS_STRICT_FILTER
+    // sets all message ID's for class 0
+    for (int j=0; j<CAN_MAX_CARDS; j++)
+    {
+        unsigned int sent_addr = 0x000 + (           0x000<<4) + _destinations[j];
+        unsigned int recv_addr = 0x000 + (_destinations[j]<<4) + 0x000;
+        iCanBus->canIdAdd(sent_addr);
+        iCanBus->canIdAdd(recv_addr);
+    }
+
+    // set all message ID's for class 1
+    for (int j=0; j<CAN_MAX_CARDS; j++)
+    {
+        unsigned int start_addr = 0x100 + (_destinations[j]<<4) + 0x000;
+        unsigned int end_addr   = 0x100 + (_destinations[j]<<4) + 0x00F;
+        for (i = start_addr; i < end_addr; i++)
+            iCanBus->canIdAdd(i);
+    }
+#else
+    // sets all message ID's for class 0
+    for (i = 0x000; i < 0x0ff; i++)
         iCanBus->canIdAdd(i);
 
+    // set all message ID's for class 1
     for (i = 0x100; i < 0x1ff; i++)
         iCanBus->canIdAdd(i);
+#endif
 
     // set all message ID's for class 2
     for (i = 0x200; i < 0x2ff; i++)
