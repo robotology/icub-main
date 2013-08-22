@@ -270,9 +270,9 @@ bool XSensMTx::open(const XSensMTxParameters &par)
     // Get current settings and check if Xbus Master is connected
     if (d.mtcomm.getDeviceMode(&numDevices) != MTRV_OK) {
         if (numDevices == 1)
-            printf ("MTi / MTx has not been detected\nCould not get device mode\n");
+            printf ("MTi / MTx has not been detected\nCould not get device mode.\n");
         else
-            printf ("Not just MTi / MTx connected to Xbus\nCould not get all device modes\n");
+            printf ("Not just MTi / MTx connected to Xbus, %d devices found.\nCould not get all device modes.\n", numDevices);
         return false;
     }
 
