@@ -1733,6 +1733,7 @@ void iCubFinger::allocate(const string &_type)
     }
 
     Matrix H0(4,4);
+    // the z-column will be filled in via cross product later on
     if (finger=="thumb")
     {
         if (version=="a")
