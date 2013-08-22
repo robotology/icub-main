@@ -138,6 +138,7 @@ yarp_configure_external_installation(iCub)
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
+set(ICUB_CANMASKS_STRICT_FILTER FALSE CACHE BOOL "Enable strict filtering on can address. Needed with sharedcan.")
 set(ENABLE_icubmod_controlboardwrapper2 TRUE CACHE BOOL "enable controlboardWrapper2")
 
 ###################### End options and definitions
