@@ -1734,6 +1734,7 @@ void iCubFinger::allocate(const string &_type)
 
     Matrix H0(4,4);
     // the z-column will be filled in via cross product later on
+
     if (finger=="thumb")
     {
         if (version=="a")
@@ -1783,9 +1784,6 @@ void iCubFinger::allocate(const string &_type)
         pushLink(new iKinLink(0.0240, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
-
-    if (hand=="left")
-        H0.setRow(2,-1.0*H0.getRow(2));
 
     Vector x=H0.getCol(0).subVector(0,2);
     Vector y=H0.getCol(1).subVector(0,2);
