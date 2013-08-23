@@ -12,7 +12,8 @@ icub_app_install(${appname}
                            DESTINATION scripts)
 
 icub_app_install(${appname} 
-                           FILES ${conf})                       
+                           FILES ${conf}
+		           DESTINATION conf)                       
     
 icub_app_install(${appname}
                                 FILES ${conf_hw}
