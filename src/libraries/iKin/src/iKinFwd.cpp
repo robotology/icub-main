@@ -1756,13 +1756,19 @@ void iCubFinger::allocate(const string &_type)
             H0(0,2)=-H0(0,2);
             H0(1,2)=-H0(1,2);            
             H0(2,3)=-H0(2,3);
+
+            pushLink(new iKinLink(   0.0,     0.0,  M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(0.0210, -0.0056,       0.0, 0.0,  0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
+        }
+        else
+        {
+            pushLink(new iKinLink(   0.0,     0.0, -M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(0.0210,  0.0056,       0.0, 0.0,  0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
         }
 
-        pushLink(new iKinLink(   0.0,    0.0, -M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0210, 0.0056,       0.0, 0.0,  0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0260,    0.0,       0.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0220,    0.0,       0.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(0.0168,    0.0, -M_PI/2.0, 0.0,  0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0260, 0.0,       0.0, 0.0, 0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
 
         // this is a dummy link
         blockLink(1,0.0);
@@ -1777,13 +1783,17 @@ void iCubFinger::allocate(const string &_type)
         if (hand=="left")
         {
             H0(2,0)=-H0(2,0);
-            H0(0,1)=-H0(0,1);
-            H0(1,1)=-H0(1,1);
+            H0(2,1)=-H0(2,1);
+            H0(1,2)=-H0(1,2);
             H0(2,2)=-H0(2,2);
             H0(2,3)=-H0(2,3);
         }
 
-        pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
+        if (hand=="right")
+            pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
+        else
+            pushLink(new iKinLink(0.0148, 0.0, -M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
+
         pushLink(new iKinLink(0.0259, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
