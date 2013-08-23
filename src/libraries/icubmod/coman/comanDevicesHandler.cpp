@@ -41,8 +41,6 @@ comanDevicesHandler *comanDevicesHandler::instance()
     return _handle;
 }
 
-
-
 bool comanDevicesHandler::open(yarp::os::Searchable& config)
 {
     comanDevicesHandler_mutex.wait();
@@ -74,7 +72,7 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
     }
     else
     {
-        _board_crtl = new Boards_ctrl(yamlFile.asString());
+        _board_crtl = new Boards_ctrl(yamlFile.asString().c_str());
     }
 
 
