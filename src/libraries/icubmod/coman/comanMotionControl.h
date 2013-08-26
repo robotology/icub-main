@@ -118,6 +118,7 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public ImplementPidControl<comanMotionControl, IPidControl>,
     public ImplementDebugInterface,
     public ITorqueControlRaw,
+    public ImplementTorqueControl,
     public IDebugInterfaceRaw,
     public IPositionDirectRaw,
     public ImplementPositionDirect
@@ -132,6 +133,11 @@ private:
     uint16_t              bc_policy;
     uint16_t              extra_policy;
     int                   bc_rate;
+
+    uint16_t              motor_config_mask_j1;     // motor configuration for joint 1 (as test on this joint)
+    uint16_t              motor_config_mask2_j1;    // motor configuration for joint 1 (as test on this joint)
+    Pid                   pid_j1;
+    Pid                   pidTorque_j1;
 
     bool                  pos_changed;
     bool                  vel_changed;
@@ -174,11 +180,8 @@ private:
     double                *_currentLimits;                    /** current limits */
     int                   *_velocityShifts;                   /** velocity shifts */
     int                   *_velocityTimeout;                  /** velocity shifts */
-    int                   *_torqueSensorId;                   /** Id of associated Joint Torque Sensor */
-    int                   *_torqueSensorChan;                 /** Channel of associated Joint Torque Sensor */
     double                *_maxTorque;                        /** Max torque of a joint */
     double                *_newtonsToSensor;                  /** Newtons to force sensor units conversion factors */
-    bool                  *checking_motiondone;               /* flag if I' m already waiting for motion done */
 
 // basic knowledge of my joints
     int                   _njoints;                           // Number of joints handled by this class; this values will be extracted by the config file

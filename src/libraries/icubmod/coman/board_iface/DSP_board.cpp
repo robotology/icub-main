@@ -355,14 +355,14 @@ void McBoard::configure(const YAML::Node &doc) {
     getItem(GET_MIN_POSITION,   NULL, 0, REPLY_MIN_POSITION, &_min_pos, sizeof(_min_pos));
     getItem(GET_MAX_POSITION,   NULL, 0, REPLY_MAX_POSITION, &_max_pos, sizeof(_max_pos));
 
-    printf("Max position %d\n", _max_pos);
-    printf("Min position %d\n", _min_pos);
+//    printf("Max position %d\n", _max_pos);
+//    printf("Min position %d\n", _min_pos);
 
     getItem(GET_MIN_VELOCITY,   NULL, 0, REPLY_MIN_VELOCITY, &_min_vel, sizeof(_min_vel));
     getItem(GET_MAX_VELOCITY,   NULL, 0, REPLY_MAX_VELOCITY, &_max_vel, sizeof(_max_vel));
 
-    printf("Max velocity %d\n", _max_vel);
-    printf("Min velocity %d\n", _min_vel);
+//    printf("Max velocity %d\n", _max_vel);
+//    printf("Min velocity %d\n", _min_vel);
 
     getItem(GET_MAX_TORQUE,     NULL, 0, REPLY_MAX_TORQUE,   &_max_tor, sizeof(_max_tor));
 
@@ -372,9 +372,9 @@ void McBoard::configure(const YAML::Node &doc) {
     getItem(GET_DESIRED_VELOCITY,   NULL, 0, REPLY_DESIRED_VELOCITY, &_des_vel, sizeof(_des_vel));
     getItem(GET_DESIRED_TORQUE,     NULL, 0, REPLY_DESIRED_TORQUE,   &_des_tor, sizeof(_des_tor));
 
-    printf("Des position %d\n", _des_pos);
-    printf("Des velocity %d\n", _des_vel);
-    printf("Des Torque   %d\n", _des_tor);
+//    printf("Des position %d\n", _des_pos);
+//    printf("Des velocity %d\n", _des_vel);
+//    printf("Des Torque   %d\n", _des_tor);
 
     // set specific board attribute
     if ( board_node ) {
@@ -494,19 +494,19 @@ void McBoard::configure(const YAML::Node &doc) {
     // read back PIDs anyway
     V_pid.gain_set = VELOCITY_GAINS;
     getItem(GET_PID_GAINS,      &V_pid.gain_set, 1, REPLY_PID_GAINS, &V_pid, sizeof(V_pid));
-    printf("Vel PID Kp %d Ki %d Kd %d (ret %d)\n", V_pid.p, V_pid.i, V_pid.d, ret);
+//    printf("Vel PID Kp %d Ki %d Kd %d (ret %d)\n", V_pid.p, V_pid.i, V_pid.d, ret);
 
-    printf("\ngoing to ask os pid!!\n");
+//    printf("\ngoing to ask os pid!!\n");
 //    sleep(10);
     P_pid.gain_set = POSITION_GAINS;
     getItem(GET_PID_GAINS,      &P_pid.gain_set, 1, REPLY_PID_GAINS, &P_pid, sizeof(P_pid));
-    printf("Pos PID Kp %d Ki %d Kd %d (ret %d)\n", P_pid.p, P_pid.i, P_pid.d, ret);
+//    printf("Pos PID Kp %d Ki %d Kd %d (ret %d)\n", P_pid.p, P_pid.i, P_pid.d, ret);
 
 //    sleep(10);
 
     T_pid.gain_set = TORQUE_GAINS;
     getItem(GET_PID_GAINS,      &T_pid.gain_set, 1, REPLY_PID_GAINS, &T_pid, sizeof(T_pid));
-    printf("Tor PID Kp %d Ki %d Kd %d (ret %d)\n", T_pid.p, T_pid.i, T_pid.d, ret);
+//    printf("Tor PID Kp %d Ki %d Kd %d (ret %d)\n", T_pid.p, T_pid.i, T_pid.d, ret);
 
     getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &_motor_config, sizeof(_motor_config));
     getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &_motor_config2, sizeof(_motor_config2));
@@ -625,20 +625,20 @@ void McBoard::test_setting(void) {
 void McBoard::print_me(void) {
 
     Dsp_Board::print_me();
-    DPRINTF("\tbc_policy 0x%04X\n",policy);
-    DPRINTF("\tbc_extra_policy 0x%04X\n",extra_policy);
-    DPRINTF("\tbc_freq %.1f ms\n", (float)bc_rate/2);
-    DPRINTF("\t%s [%d:%d] mRAD\n","Position",_min_pos,_max_pos);
-    DPRINTF("\t%s [%d:%d] mRAD/s\n","Velocity",_min_vel,_max_vel);
-    DPRINTF("\tTorque %d Nm\n",_max_tor);
+//    DPRINTF("\tbc_policy 0x%04X\n",policy);
+//    DPRINTF("\tbc_extra_policy 0x%04X\n",extra_policy);
+//    DPRINTF("\tbc_freq %.1f ms\n", (float)bc_rate/2);
+//    DPRINTF("\t%s [%d:%d] mRAD\n","Position",_min_pos,_max_pos);
+//    DPRINTF("\t%s [%d:%d] mRAD/s\n","Velocity",_min_vel,_max_vel);
+//    DPRINTF("\tTorque %d Nm\n",_max_tor);
     DPRINTF("\tPID gains %d : %d %d %d\n",V_pid.gain_set, V_pid.p, V_pid.i, V_pid.d);
     DPRINTF("\tPID gains %d : %d %d %d\n",P_pid.gain_set, P_pid.p, P_pid.i, P_pid.d);
     DPRINTF("\tPID gains %d : %d %d %d\n",T_pid.gain_set, T_pid.p, T_pid.i, T_pid.d);
-    DPRINTF("\ttorque factors %d %d\n",_torque_factor.multiplier, _torque_factor.offset);
-    DPRINTF("\tcurrent limit  %d mA\n",_current_lim);
-    DPRINTF("\tmotor config  0x%04X\n",_motor_config);
-    DPRINTF("\tmotor config2 0x%04X\n",_motor_config2);
-    DPRINTF("\tDes {pos:%d vel:%d tor:%d} \n",_des_pos,_des_vel,_des_tor);
+//    DPRINTF("\ttorque factors %d %d\n",_torque_factor.multiplier, _torque_factor.offset);
+//    DPRINTF("\tcurrent limit  %d mA\n",_current_lim);
+//    DPRINTF("\tmotor config  0x%04X\n",_motor_config);
+//    DPRINTF("\tmotor config2 0x%04X\n",_motor_config2);
+//    DPRINTF("\tDes {pos:%d vel:%d tor:%d} \n",_des_pos,_des_vel,_des_tor);
 
 }
 
