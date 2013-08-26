@@ -5,6 +5,7 @@
  *
  */
 
+#include <yarp/os/Time.h>
 #include "comanDevicesHandler.hpp"
 #include "Boards_iface.h"
 

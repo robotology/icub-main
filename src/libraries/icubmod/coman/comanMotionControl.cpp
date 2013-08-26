@@ -98,7 +98,7 @@ bool comanMotionControl::extractGroup(Bottle &input, Bottle &out, const std::str
 
     if(tmp.size()!=size)
     {
-        yError () << key1.c_str() << " incorrect number of entries in board " << _fId.name << '[' << _fId.boardNum << ']';
+        yError () << key1.c_str() << " incorrect number of entries";
         return false;
     }
 
