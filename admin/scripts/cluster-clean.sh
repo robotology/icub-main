@@ -47,6 +47,12 @@ function askForYarp(){
     askForListFunc $1 '${YARP_DIR}'
 }
 
+function askForContrib(){
+    count=2
+    echo "WARNING!!! Should I go ahead run this script for ICUBcontrib?"
+    askForListFunc $1 '${ICUBcontrib_DIR}'
+}
+
 function askForKillFunc(){
 
     echo ""
@@ -70,6 +76,10 @@ function askForListFunc(){
                     if [ $count -eq 0 ] 
                     then 
                         askForYarp $1 
+                    fi; 
+                    if [ $count -eq 1 ] 
+                    then 
+                        askForContrib $1 
                     fi; 
                     break;;
             No ) exit;;
