@@ -270,6 +270,7 @@ bool VirtualAnalogServer::perform_first_check(int elems)
         }
     }
 
+    yDebug() << "VirtualAnalogServer::perform_first_check() successfully completed";
     checked = true;
     return true;
 }
