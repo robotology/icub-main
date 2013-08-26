@@ -114,11 +114,7 @@ bool VirtualAnalogServer::open(Searchable& config)
 
     if (!config.check("networks", "list of networks merged by this wrapper"))
     {
-        return false;
-    }
-
-    if (!config.check("channels", "number of channels "))
-    {
+        cerr << "Error: missing networks parameters" << endl;
         return false;
     }
 
