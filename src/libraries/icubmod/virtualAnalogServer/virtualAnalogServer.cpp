@@ -12,6 +12,7 @@
 #include <iostream>
 
 using namespace std;
+#define MAX_ENTRIES 255
 
 AnalogSubDevice::AnalogSubDevice()
 {
@@ -121,15 +122,17 @@ bool VirtualAnalogServer::open(Searchable& config)
         return false;
     }
 
-    mNChannels=config.find("channels").asInt();
-
     Bottle *networks=config.find("networks").asList();
     mNSubdevs=networks->size();
-
-    mChan2Board.resize(mNChannels);
-    mChan2BAddr.resize(mNChannels);
-
     mSubdevices.resize(mNSubdevs);
+    
+    mChan2Board.resize(MAX_ENTRIES);
+    mChan2BAddr.resize(MAX_ENTRIES);
+    for (int i=0; i< MAX_ENTRIES; i++)
+    {
+        mChan2Board[i]=-1;
+        mChan2BAddr[i]=-1;
+    }
 
     int totalJ=0;
 
@@ -146,9 +149,14 @@ bool VirtualAnalogServer::open(Searchable& config)
 
         int map0=parameters.get(1).asInt();
         int map1=parameters.get(2).asInt();
-
         int map2=parameters.get(3).asInt();
         int map3=parameters.get(4).asInt();
+        if (map0 >= MAX_ENTRIES || map1 >= MAX_ENTRIES || map2>= MAX_ENTRIES || map3>= MAX_ENTRIES ||
+            map0 <0             || map1 <0             || map2<0             || map3<0)
+        {
+            cerr << "Error: invalid map entries in networks section, failed initial check" << endl;
+            return false;
+        }
 
         for (int j=map0; j<=map1; ++j)
         {
@@ -163,12 +171,6 @@ bool VirtualAnalogServer::open(Searchable& config)
         }
 
         totalJ+=map1-map0+1;
-    }
-
-    if (totalJ!=mNChannels)
-    {
-        cerr << "Error total number of mapped channels does not correspond to part channels" << endl;
-        return false;
     }
 
     // Verify minimum set of parameters required
@@ -258,6 +260,24 @@ bool VirtualAnalogServer::detachAll()
     return true;
 }
 
+bool VirtualAnalogServer::perform_first_check(int elems)
+{
+    static bool checked= false;
+    if (checked) return true;
+
+    for (int i=0; i<elems; i++)
+    {
+        if (mChan2Board[i]==-1 || mChan2BAddr[i]==-1)
+        {
+            cerr << "Error: invalid map entries in networks section, failed runtime check" << endl;
+            return false;
+        }
+    }
+
+    checked = true;
+    return true;
+}
+
 void VirtualAnalogServer::run()
 {
     yarp::os::Bottle *pTorques;
@@ -274,75 +294,39 @@ void VirtualAnalogServer::run()
             lastRecv=Time::now();
             switch (pTorques->get(0).asInt())
             {
-            case 1: //arm torque message
-                if( (pTorques->size() -1) > mNChannels) 
-                {
-                    printf("Virt Analog Server ERROR case1: pTorques->size() is %d, mNChannels is %d\n", pTorques->size(), mNChannels); fflush(stdout);
-                    break;
-                }
-/*                else
-                {
-                    printf(" ok!!\n");
-                    for (int i=0; i<mNChannels; i++)
-                    {
-                        printf(" conversion ch %d: C2B %d, C2A %d\n", i, mChan2Board[i], mChan2BAddr[i]);
-                    }
-                }
-*/
-                mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //shoulder 1 pitch
-                mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //shoulder 2 roll
-                mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //shoulder 3 yaw
-                mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //elbow
-                mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //wrist pronosupination
-                mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //wrist yaw
-                mSubdevices[mChan2Board[6]].setTorque(mChan2BAddr[6],pTorques->get(7).asDouble()); //wrist pitch
-            break;
+                case 1: //arm torque message
+                    if (perform_first_check(7)==false) break;
+                    mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //shoulder 1 pitch
+                    mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //shoulder 2 roll
+                    mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //shoulder 3 yaw
+                    mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //elbow
+                    mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //wrist pronosupination
+                    mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //wrist yaw
+                    mSubdevices[mChan2Board[6]].setTorque(mChan2BAddr[6],pTorques->get(7).asDouble()); //wrist pitch
+                break;
 
-            case 2: //legs torque message              
-                if( (pTorques->size() -1) > mNChannels) 
-                {
-                    printf("Virt Analog Server ERROR  case2: pTorques->size() is %d, mNChannels is %d\n", pTorques->size(), mNChannels); fflush(stdout);
-                    break;
-                }
-/*                else
-                {
-                    printf(" ok!!\n");
-                    for (int i=0; i<mNChannels; i++)
-                    {
-                        printf(" conversion ch %d: C2B %d, C2A %d\n", i, mChan2Board[i], mChan2BAddr[i]);
-                    }
-                }
-*/
-                mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //hip pitch
-                mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //hip roll
-                mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //hip yaw
-                mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //knee
-                mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //ankle pitch
-                mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //ankle roll
-            break;
+                case 2: //legs torque message
+                    if (perform_first_check(6)==false) break;
+                    mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //hip pitch
+                    mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //hip roll
+                    mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //hip yaw
+                    mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //knee
+                    mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //ankle pitch
+                    mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //ankle roll
+                break;
 
-            case 4: // torso             
-                if( (pTorques->size() -1) > mNChannels) 
-                {
-                    printf("Virt Analog Server ERROR case4: pTorques->size() is %d, mNChannels is %d\n", pTorques->size(), mNChannels); fflush(stdout);
-                    break;
-                }
-/*               else
-                {
-                    printf(" ok!!\n");
-                    for (int i=0; i<mNChannels; i++)
-                    {
-                        printf(" conversion ch %d: C2B %d, C2A %d\n", i, mChan2Board[i], mChan2BAddr[i]);
-                    }
-                }
-*/
-                mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //torso yaw (respect gravity)
-                mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //torso roll (lateral movement)
-                mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //torso pitch (front-back movement)
-            break;
+                case 4: // torso
+                    if (perform_first_check(6)==false) break;
+                    mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //torso yaw (respect gravity)
+                    mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //torso roll (lateral movement)
+                    mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //torso pitch (front-back movement)
+                    mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],0.0);
+                    mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],0.0);
+                    mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],0.0);
+                break;
 
-            default:
-                yError() << "Warning: got unexpected " << pTorques->get(0).asInt() << " message on virtualAnalogServer.";
+                default:
+                    yError() << "Warning: got unexpected " << pTorques->get(0).asInt() << " message on virtualAnalogServer.";
             }
 
             for (int d=0; d<mNSubdevs; ++d)

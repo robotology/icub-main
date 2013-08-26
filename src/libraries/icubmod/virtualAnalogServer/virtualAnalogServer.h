@@ -103,7 +103,6 @@ public:
     VirtualAnalogServer() : mMutex(1)
     {
         mIsVerbose=false;
-        mNChannels=0;
         mNSubdevs=0;
     }
 
@@ -126,13 +125,15 @@ public:
     virtual bool detachAll();
     //////////////////////////////////////////////////////////////////////////
 
+    // Utility
+    bool perform_first_check(int elems);
+
 protected:
 
     yarp::os::Semaphore mMutex;
 
     bool mIsVerbose;
 
-    int mNChannels;
     int mNSubdevs;
 
     std::vector<int> mChan2Board;
