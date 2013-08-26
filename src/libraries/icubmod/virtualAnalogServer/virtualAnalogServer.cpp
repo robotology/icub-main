@@ -258,8 +258,7 @@ bool VirtualAnalogServer::detachAll()
 
 bool VirtualAnalogServer::perform_first_check(int elems)
 {
-    static bool checked= false;
-    if (checked) return true;
+    if (first_check) return true;
 
     for (int i=0; i<elems; i++)
     {
@@ -271,7 +270,7 @@ bool VirtualAnalogServer::perform_first_check(int elems)
     }
 
     yDebug() << "VirtualAnalogServer::perform_first_check() successfully completed";
-    checked = true;
+    first_check = true;
     return true;
 }
 

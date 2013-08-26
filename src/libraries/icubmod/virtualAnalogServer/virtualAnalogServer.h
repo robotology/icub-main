@@ -104,6 +104,7 @@ public:
     {
         mIsVerbose=false;
         mNSubdevs=0;
+        first_check = false;
     }
 
     ~VirtualAnalogServer()
@@ -139,6 +140,7 @@ protected:
     std::vector<int> mChan2Board;
     std::vector<int> mChan2BAddr;
     double lastRecv;
+    bool first_check;
 
     std::vector<AnalogSubDevice> mSubdevices;
     yarp::os::BufferedPort<yarp::os::Bottle> mPortInputTorques;
