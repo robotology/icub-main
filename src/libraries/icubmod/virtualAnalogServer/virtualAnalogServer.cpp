@@ -291,14 +291,13 @@ void VirtualAnalogServer::run()
             switch (pTorques->get(0).asInt())
             {
                 case 1: //arm torque message
-                    if (perform_first_check(7)==false) break;
-                    mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //shoulder 1 pitch
-                    mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //shoulder 2 roll
-                    mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //shoulder 3 yaw
-                    mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //elbow
-                    mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //wrist pronosupination
-                    mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //wrist yaw
-                    mSubdevices[mChan2Board[6]].setTorque(mChan2BAddr[6],pTorques->get(7).asDouble()); //wrist pitch
+                    if (perform_first_check(6)==false) break;
+                    mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(1).asDouble()); //shoulder 1 pitch      (0)
+                    mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(2).asDouble()); //shoulder 2 roll       (1)
+                    mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],pTorques->get(3).asDouble()); //shoulder 3 yaw        (2)
+                    mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //elbow                 (3)
+                    mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //wrist pronosupination (4)
+                    mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],0.0);
                 break;
 
                 case 2: //legs torque message
@@ -309,6 +308,16 @@ void VirtualAnalogServer::run()
                     mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],pTorques->get(4).asDouble()); //knee
                     mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],pTorques->get(5).asDouble()); //ankle pitch
                     mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],pTorques->get(6).asDouble()); //ankle roll
+                break;
+
+                case 3: //wrist torque message
+                    if (perform_first_check(6)==false) break;
+                    mSubdevices[mChan2Board[0]].setTorque(mChan2BAddr[0],pTorques->get(6).asDouble()); //wrist yaw   (6)
+                    mSubdevices[mChan2Board[1]].setTorque(mChan2BAddr[1],pTorques->get(7).asDouble()); //wrist pitch (7)
+                    mSubdevices[mChan2Board[2]].setTorque(mChan2BAddr[2],0.0);
+                    mSubdevices[mChan2Board[3]].setTorque(mChan2BAddr[3],0.0);
+                    mSubdevices[mChan2Board[4]].setTorque(mChan2BAddr[4],0.0);
+                    mSubdevices[mChan2Board[5]].setTorque(mChan2BAddr[5],0.0);
                 break;
 
                 case 4: // torso
