@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
-	<device name="torso_VFTserver" type="virtualAnalogServer">
-		<param name="period">       10  				</param>
-		<param name="deviceId">     torso				</param>
-		
-		<paramlist name="networks">
-			<elem name="net_VFT_TO">  0  2  0  2 </elem> 
-		</paramlist>
+    <device name="torso_VFTserver" type="virtualAnalogServer">
+        <param name="period">       10                  </param>
+        <param name="deviceId">     torso                </param>
+        
+        <paramlist name="networks">
+            <elem name="net_VFT_TO">  0  5  0  5 </elem> 
+        </paramlist>
 
-		<param name="channels">       6  				</param>
-		<param name="name"> 	      /torso				</param>
+        <param name="name">           /torso                </param>
 
-		<action phase="startup" level="5" type="attach">
-		    <paramlist name="networks">
-			<elem name="net_VFT_TO">  torso_virtual_strain </elem>	
-		    </paramlist>
-		</action>
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+            <elem name="net_VFT_TO">  torso_virtual_strain </elem>    
+            </paramlist>
+        </action>
 
-		<action phase="shutdown" level="5" type="detach" />
-	</device>
+        <action phase="shutdown" level="5" type="detach" />
+    </device>
 </devices>
 
 
