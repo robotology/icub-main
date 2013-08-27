@@ -448,12 +448,6 @@ int main(int argc, char * argv[])
     gtk_fixed_put    (GTK_FIXED(fixed), part_frame[RIGHT_LEG],  30+150*3, 30    );
     gtk_fixed_put    (GTK_FIXED(fixed), part_frame[TORSO],      30+150*4, 30    );
 
-    for (int j=0; j<5; j++)
-    {
-        //turns off widgets of missing parts
-        if (robot->dd[j]==0) gtk_widget_set_sensitive(part_frame[j],false);
-    }
-
     radio_data r[5][5];
     for (int i=0; i<5; i++)
         for (int j=0; j<5; j++)
@@ -464,6 +458,7 @@ int main(int argc, char * argv[])
 
     for (int i=0; i<5; i++)
     {
+        //create radio buttons
         fixed_inside_part_frame[i]  = gtk_fixed_new ();
         label_info[i] = gtk_label_new("");
         gtk_container_add     (GTK_CONTAINER(part_frame[i]), fixed_inside_part_frame[i]    );
@@ -478,6 +473,18 @@ int main(int argc, char * argv[])
         gtk_fixed_put    (GTK_FIXED(fixed_inside_part_frame[i] ), radiobutton_mode_imp_m[i],   20, 120    );
         gtk_fixed_put    (GTK_FIXED(fixed_inside_part_frame[i] ), radiobutton_mode_imp_h[i],   20, 150    );
         gtk_fixed_put    (GTK_FIXED(fixed_inside_part_frame[i] ), label_info[i],               20, 200    );
+        //turns off widgets of missing parts
+        if (robot->dd[i]==0)
+        {
+            gtk_widget_set_sensitive(part_frame[i],false);
+            gtk_widget_set_sensitive(fixed_inside_part_frame[i], false);
+            gtk_widget_set_sensitive(radiobutton_mode_pos[i],    false);
+            gtk_widget_set_sensitive(radiobutton_mode_trq[i],    false);
+            gtk_widget_set_sensitive(radiobutton_mode_imp_s[i],  false);
+            gtk_widget_set_sensitive(radiobutton_mode_imp_m[i],  false);
+            gtk_widget_set_sensitive(radiobutton_mode_imp_h[i],  false);
+        }
+        //connects callbacks
         g_signal_connect (radiobutton_mode_pos[i],    "clicked",G_CALLBACK (radio_click_p),  &r[0][i]);
         g_signal_connect (radiobutton_mode_trq[i],    "clicked",G_CALLBACK (radio_click_t),  &r[1][i]);
         g_signal_connect (radiobutton_mode_imp_s[i],  "clicked",G_CALLBACK (radio_click_is), &r[2][i]);
