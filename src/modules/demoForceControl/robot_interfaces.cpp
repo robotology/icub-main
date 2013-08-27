@@ -66,6 +66,7 @@ void robot_interfaces::init(std::string robot)
         if(!dd[i] || !(dd[i]->isValid()))
         {
             fprintf(stderr,"Problems instantiating the device driver %d\n", i);
+            continue;
         }
 
         bool ok = true;

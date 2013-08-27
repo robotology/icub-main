@@ -76,7 +76,7 @@ void put_everything_in_position()
         }
         for (int j=0; j<jmax; j++)
         {
-            robot->icmd[i]->setPositionMode(j);
+            if (robot->icmd[i]) robot->icmd[i]->setPositionMode(j);
         }
     }
 }
@@ -447,6 +447,12 @@ int main(int argc, char * argv[])
     gtk_fixed_put    (GTK_FIXED(fixed), part_frame[LEFT_LEG],   30+150*2, 30    );
     gtk_fixed_put    (GTK_FIXED(fixed), part_frame[RIGHT_LEG],  30+150*3, 30    );
     gtk_fixed_put    (GTK_FIXED(fixed), part_frame[TORSO],      30+150*4, 30    );
+
+    for (int j=0; j<5; j++)
+    {
+        //turns off widgets of missing parts
+        if (robot->dd[j]==0) gtk_widget_set_sensitive(part_frame[j],false);
+    }
 
     radio_data r[5][5];
     for (int i=0; i<5; i++)
