@@ -56,21 +56,7 @@
     <param name="TPid1">        6             0             0             1333          1333          11            0             </param>       
     <param name="TPid2">        6             0             0             1333          1333          11            0             </param>       
     <param name="TPid3">        0             0             0             1333          1333          0             0             </param>       
-</group>       
- 
-<group name="CALIBRATION">   
-    <param name="CalibrationType">            3             3             3             3             </param>       
-    <param name="Calibration1">               2047.5        2047.5        2047.5        0             </param>       
-    <param name="Calibration2">               10            10            10            0             </param>       
-    <param name="Calibration3">               508.4625      2646.963      3420.463      0             </param>       
-    <param name="PositionZero">               0             0             0             0             </param>       
-    <param name="VelocityZero">               10            10            10            0             </param>       
-</group>       
- 
-<group name="HOME">          
-    <param name="PositionHome">       0             0             -20           0             </param>       
-    <param name="VelocityHome">       10            10             10            0             </param>       
-</group>       
+</group>              
  
   </device>    
 </devices>     

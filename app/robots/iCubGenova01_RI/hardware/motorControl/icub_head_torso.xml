@@ -21,15 +21,6 @@
 <param name="broadcast_vel_acc">          0             0             0             0             0             0             0             0             0             0             </param>       
 </group>       
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
 <group name="GENERAL">       
 <param name="Joints">       10            </param>       
 <param name="MaxDAC">                     100           100           100           100           100           100           100           100           100           100           </param>       
@@ -70,22 +61,7 @@
 <param name="TPid6">        6             0             0             1333          1333          11            0             </param>       
 <param name="TPid7">        6             0             0             1333          1333          11            0             </param>       
 <param name="TPid8">        6             0             0             1333          1333          11            0             </param>       
-</group>       
- 
-<group name="CALIBRATION">   
- 
-<param name="CalibrationType">            3             3             3             3             0             0             3             3             3             3             </param>       
-<param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           2047.5        2047.5        2047.5        0             </param>       
-<param name="Calibration2"> 10            10            10            10            20            20            10            10            10            0             </param>       
-<param name="Calibration3">               1410.5        1535.625      2770.95       3139.5        0             0             508.4625      2646.963      3420.463      0             </param>       
-<param name="PositionZero">               0             0             0             0             0             0             0             0             0             0             </param>       
-<param name="VelocityZero">               10            10            10            10            10            10            10            10            10            0             </param>       
-</group>       
- 
-<group name="HOME">          
-<param name="PositionHome"> -30           0             0             0             0             0             0             0             -20           0             </param>       
-<param name="VelocityHome"> 10            10            10            10            10            10            10            10            10            0             </param>       
-</group>       
+</group>           
  
   </device>    
 </devices>     

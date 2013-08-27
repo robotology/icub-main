@@ -53,20 +53,6 @@
     <param name="Pid5">         100           1000          10            1333          1333          5             0            </param>          
 </group>       
  
-<group name="CALIBRATION">   
-    <param name="CalibrationType">            3             3             3             3             0             0            </param>       
-    <param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        900           900          </param>       
-    <param name="Calibration2">               10            10            10            10            20            20           </param>       
-    <param name="Calibration3">               1410.5        1535.625      2770.95       3139.5        0             0            </param>       
-    <param name="PositionZero">               0             0             0             0             0             0            </param>       
-    <param name="VelocityZero">               10            10            10            10            10            10           </param>       
-</group>       
- 
-<group name="HOME">          
-    <param name="PositionHome">              -30           0             0             0             0             0             </param>       
-    <param name="VelocityHome">               10           10            10            10            10            10            </param>       
-</group>       
- 
   </device>    
 </devices>     
  

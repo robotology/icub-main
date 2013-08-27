@@ -20,32 +20,7 @@
 <param name="broadcast_canprint">         1             1             1             1             1             1             </param>       
 <param name="broadcast_vel_acc">          0             0             0             0             0             0             </param>       
 </group>       
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+  
 <group name="GENERAL">       
 <param name="Joints">       6             </param>       
 <param name="MaxDAC">                     100           100           100           100           100           100           </param>       
@@ -94,22 +69,6 @@
 <param name="Imp3">         0.4           0.01          </param>       
 <param name="Imp4">         0.4           0.01          </param>       
 <param name="Imp5">         0.4           0.01          </param>       
-</group>       
- 
-<group name="CALIBRATION">   
- 
-<param name="CalibrationType">            3             3             3             3             3             3             </param>       
-<param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        2047.5        2047.5        </param>       
-<param name="Calibration2"> 0             0             0             0             0             0             </param>       
-<param name="Calibration3">               2650.375      3094          3357.9        3237.325      1670.9875     908.8625      </param>       
-<param name="PositionZero">               0             8             0             0             0             -8            </param>       
-<param name="VelocityZero">               10            10            10            10            10            10            </param>       
-<param name="MaxPWM">       60            60            60            60            60            60            </param>       
-</group>       
- 
-<group name="HOME">          
-<param name="PositionHome"> 0             8             0             0             0             -8            </param>       
-<param name="VelocityHome"> 10            10            10            10            10            10            </param>       
 </group>       
  
   </device>    
