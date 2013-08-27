@@ -34,9 +34,6 @@ namespace iCub
 namespace skinDynLib
 {
 
-// temp variable
-#define OPTION2
-
 enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
 
 // DEFINE BODY PARTS AND SKIN PARTS OF ICUB ROBOT
@@ -70,7 +67,11 @@ const std::string SkinPart_s[] = {
     "all_skin_parts", "skin_part_size"
 };
 
-// association between each skin part and the corresponding body part
+// *** Mapping from SKIN PARTs to BODY PARTs ***
+// To represent this information you could use either a map<SkinPart,BodyPart>
+// or a vector of struct{SkinPart; BodyPart;}. I chose the second, but I
+// left the implementation for the first option (actually two different implementations)
+#define OPTION2 // this variable allows to switch between the different implementations
 #ifdef OPTION1
 std::map<SkinPart,BodyPart> createSkinPart_2_BodyPart();
 const std::map<SkinPart,BodyPart> SkinPart_2_BodyPart = createSkinPart_2_BodyPart();
