@@ -40,7 +40,7 @@
 #include "stdio.h"
 
 #if !defined(_MSC_VER)
-#include <bits/time.h>
+#include <time.h>
 #endif
 
 
