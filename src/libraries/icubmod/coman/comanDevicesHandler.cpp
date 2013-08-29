@@ -13,15 +13,20 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 comanDevicesHandler* comanDevicesHandler::_handle = NULL;
+int comanDevicesHandler::_usedBy = 0;
 yarp::os::Semaphore comanDevicesHandler::comanDevicesHandler_mutex = 1;
 
 comanDevicesHandler::comanDevicesHandler()
 {
     _handle = this;
     _initted = false;
+    _board_crtl = NULL;
 }
 
-comanDevicesHandler::~comanDevicesHandler() { };
+comanDevicesHandler::~comanDevicesHandler()
+{
+    close();
+};
 
 comanDevicesHandler *comanDevicesHandler::instance()
 {
@@ -33,9 +38,48 @@ comanDevicesHandler *comanDevicesHandler::instance()
         _handle = new comanDevicesHandler();
 
         if (NULL == _handle)
+        {
             yError() << "While calling comanDevicesHandler constructor";
+        }
         else
+        {
             yDebug() << "comanDevicesHandler succesfully instantiated";
+            _usedBy++;
+        }
+    }
+    else
+        _usedBy++;
+    comanDevicesHandler_mutex.post();
+
+    return _handle;
+}
+
+bool comanDevicesHandler::comanDevicesHandler::deInstance()
+{
+    yTrace();
+    comanDevicesHandler_mutex.wait();
+    if (NULL == _handle)
+    {
+        yError() << "deInstance called but singleton doesn't exists";
+    }
+    else
+    {
+        _usedBy--;
+        if(0 == _usedBy)
+        {
+            yDebug() << "closing comanDevicesHandler singleton";
+            delete _handle;
+            _handle = NULL;
+        }
+        else if(_usedBy < 0)
+        {
+            yError() << "comanDevicesHandler singleton _usedBy is " << _usedBy << ", this souldn't happen!!";
+            if (NULL != _handle)
+            {
+                delete _handle;
+                _handle = NULL;
+            }
+        }
     }
     comanDevicesHandler_mutex.post();
 
@@ -91,7 +135,7 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
     if(numActive == 0)
     {
         yError() << "No boards found, quitting!!";
-        return false;
+//        return false;
     }
     else
         yDebug() << "Found " <<  numActive << "boards";
@@ -118,6 +162,10 @@ bool comanDevicesHandler::close()
     _board_crtl->stop_rx_udp();
     _board_crtl->start_stop_bc_boards(false);
     _board_crtl->start_stop_bc_boards(false);
+
+    if(_board_crtl != NULL)
+        delete _board_crtl;
+
     return true;
 }
 

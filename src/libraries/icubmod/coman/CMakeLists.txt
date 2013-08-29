@@ -44,13 +44,13 @@ PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analo
 
 IF (NOT SKIP_${COMAN_MC} )
   add_library(${COMAN_MC} ${ThisLib_SOURCES})
-  target_link_libraries(${COMAN_MC} yaml-cpp debugStream  iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
+  target_link_libraries(${COMAN_MC} yaml-cpp debugStream  iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} pthread )  
 
   icub_export_library(${COMAN_MC} )
 ENDIF (NOT SKIP_${COMAN_MC} )
 
 IF (NOT SKIP_${COMAN_FT} )
     add_library(${COMAN_FT} ${ThisLib_SOURCES})
-    target_link_libraries(${COMAN_FT} yaml-cpp debugStream iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
+    target_link_libraries(${COMAN_FT} yaml-cpp debugStream iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} pthread)
     icub_export_library(${COMAN_FT} )
 ENDIF (NOT SKIP_${COMAN_FT} )

@@ -104,9 +104,10 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
     }
     else
     {    // get starts from 1 because the parameter name is counted as index 0
-        for(int i=0; i<numberOfBoards; i++)  
-        FTmap[i] = xtmp.get(1+i).asInt();
-        yDebug() << "FTmap is " << FTmap;
+    	for(int i=0; i<numberOfBoards; i++)
+        {
+        	FTmap[i] = xtmp.get(1+i).asInt();
+        }
     }
 
     if (!validate(config, xtmp, "channels","number of channels per FT sensor", 1))
@@ -131,6 +132,10 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
     return true;
 };
 
+bool comanFTsensor::close()
+{
+    return _comanHandler->deInstance();
+}
 
 comanFTsensor::comanFTsensor()
 {
@@ -146,9 +151,9 @@ comanFTsensor::comanFTsensor()
 comanFTsensor::~comanFTsensor()
 {
     if(FTmap != NULL)
-        delete FTmap;
+        delete[] FTmap;
     if (scaleFactor != NULL)
-        delete scaleFactor;
+        delete[] scaleFactor;
 }
 
 FtBoard * comanFTsensor::getFTpointer(int j)

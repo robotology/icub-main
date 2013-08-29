@@ -112,6 +112,7 @@ public:
     ~comanFTsensor();
 
     bool open(yarp::os::Searchable &config);
+    bool close();
 
     //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);

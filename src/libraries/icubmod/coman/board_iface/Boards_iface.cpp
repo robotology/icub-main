@@ -96,7 +96,7 @@ Boards_ctrl::Boards_ctrl(const char *config) {
 #ifndef __XENO__
     char    ip[16];
     if ( getIPv4(iface.c_str(), ip) ) {
-        perror("cannot find iface_name");
+        printf("\n\ncannot find iface_name %s\n\n\n", iface.c_str());
         assert(0);
     }
 #endif
@@ -200,13 +200,14 @@ int Boards_ctrl::init(void) {
 
     // thread configuration and creation
     pthread_attr_init(&attr);
-    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+/*    pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
     pthread_attr_setschedpolicy(&attr, policy);
     schedparam.sched_priority = sched_get_priority_max(policy);
     pthread_attr_setschedparam(&attr, &schedparam);
     pthread_attr_setstacksize(&attr, PTHREAD_STACK_MIN);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
     pthread_attr_setaffinity_np(&attr, sizeof(cpu_set), &cpu_set);
+*/
     if ( pthread_create(&rx_upd_thread, &attr, rx_udp, (void*)this) ) {
         perror("pthread_create fail ");
         exit(1);

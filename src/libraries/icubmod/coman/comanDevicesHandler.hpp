@@ -38,7 +38,7 @@ private:
     bool                          _initted;
     static comanDevicesHandler    *_handle;
     Boards_ctrl                   *_board_crtl;
-
+    static int                    _usedBy;
 
 private:
     comanDevicesHandler();                      // Singletons have private constructor
@@ -51,6 +51,12 @@ public:
      *  @return Pointer to comanDevicesHandler singleton
      */
     static  comanDevicesHandler* instance();
+
+    /*! @fn     static  comanDevicesHandler* deInstance();
+     *  @brief  Deregister from the singleton usage and destroy it when done
+     *  @return true
+     */
+    static  bool deInstance();
 
     /*! @fn     open(yarp::os::Searchable& config);
      *  @brief  Open and configure the singleton, verifies internally if already initted

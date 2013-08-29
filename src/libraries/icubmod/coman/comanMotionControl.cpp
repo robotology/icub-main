@@ -376,9 +376,10 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 		if(_bIdMap[i-1] > maxJ)
 			maxJ = _bIdMap[i-1];
 	}
-
+    maxJ +=1;  // MaxJ has to be an addressable index, so size of vector must be maxJ+1
 
     _inv_bIdMap = allocAndCheck<int>(maxJ);
+
     for(int bId_idx=0; bId_idx<maxJ; bId_idx++)
     {
         // reset array to an invaslid value
@@ -456,9 +457,11 @@ bool comanMotionControl::init()
     }
 
 
-    // read default value of motor config for j 1
+    // read default value of motor config for j 1 TODO: do it for all joints
     bool ret = true;
     McBoard *joint_p = getMCpointer(1);
+    if(joint_p != NULL)
+    {
     ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask_j1, 2) );
     printf("\n\njoint %d got motor config 0x%0X\n", 1, motor_config_mask_j1);
 
@@ -471,26 +474,23 @@ bool comanMotionControl::init()
     getTorquePidRaw(1, &pidTorque_j1);
 //	printf("trq pid: kp %f, ki %f, kd %f \n", pidTorque_j1.kp, pidTorque_j1.ki, pidTorque_j1.kd);
     //
-
-
-   // tell to ALL dps to start broadcast data
-    uint8_t start = 1;
-//    _boards_ctrl->start_stop_bc_boards(start);
-    for(int enable=9; enable<=12; enable++)
-    {
-    	McBoard *joint_p = getMCpointer(enable);
-    	joint_p->start_stop_bc(1);
     }
+
+
+//   // tell to ALL dps to start broadcast data
+//    uint8_t start = 1;
+////    _boards_ctrl->start_stop_bc_boards(start);
+//    for(int enable=9; enable<=12; enable++)
+//    {
+//    	McBoard *joint_p = getMCpointer(enable);
+//    	joint_p->start_stop_bc(1);
+//    }
     return true;
 }
 
 bool comanMotionControl::close()
 {
     yTrace();
-    _comanHandler->close();
-
-    if(_boards_ctrl != NULL)
-        delete _boards_ctrl;
 
     ImplementControlCalibration2<comanMotionControl, IControlCalibration2>::uninitialize();
     ImplementAmplifierControl<comanMotionControl, IAmplifierControl>::uninitialize();
@@ -503,7 +503,7 @@ bool comanMotionControl::close()
     ImplementControlLimits2::uninitialize();
     ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
-    return true;
+    return _comanHandler->deInstance();
 }
 
 ///////////// PID INTERFACE
@@ -1862,7 +1862,7 @@ bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 
     if( NULL == joint_p)
     {
-//         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
         *enc = j;   // return the joint number!!
         *stamp = 0;
         return false;
@@ -1873,7 +1873,6 @@ bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 #warning "this implies a memcopy!! To be optimized!! And add timestamp"
     joint_p->get_bc_data(bc_data);
     *enc = (double) data.Position;
-//    printf("[%d] enc = %d (%f)\n", j, bc_data.raw_bc_data.mc_bc_data.Position, *enc);
 
 //     *stamp = data.Timestamp;     // if dspdata have theyr own timestamp
     *stamp=Time::now();           // if dps data doesn't have theyr oen timestamp
@@ -1900,14 +1899,14 @@ bool comanMotionControl::getCurrentRaw(int j, double *curr)
 
     if( NULL == joint_p)
     {
-//         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+    	yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
         *curr = j;   // return the joint number!!
         return false;
     }
     // viene probabilmente broadcastata... usare la ricezione udp per questo.
     ts_bc_data_t bc_data;
     mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
-#warning "this implies a memcopy!! To be optimized!! And add timestamp"
+
     joint_p->get_bc_data(bc_data);
     *curr = (double) data.Current;
 
@@ -1916,12 +1915,14 @@ bool comanMotionControl::getCurrentRaw(int j, double *curr)
 
 bool comanMotionControl::getCurrentsRaw(double *vals)
 {
+	bool ret = true;
     double tmp;
     for(int i=0; i<_njoints; i++)
     {
-        getCurrentRaw(i, &tmp);
+        ret = ret && getCurrentRaw(i, &tmp);
         vals[i] = tmp;
     }
+    return ret;
 }
 
 bool comanMotionControl::setMaxCurrentRaw(int j, double val)
