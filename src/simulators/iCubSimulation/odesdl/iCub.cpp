@@ -317,9 +317,12 @@ void ICubSim::draw(){
     {
         glFinish();
         glFlush();
-        iCubHeadModel->reloadTextures();
-        topEyeLidModel->reloadTextures();
-        bottomEyeLidModel->reloadTextures();
+        if(actHeadCover == "on")
+        {
+            iCubHeadModel->reloadTextures();
+            topEyeLidModel->reloadTextures();
+            bottomEyeLidModel->reloadTextures();
+        }
 
         if (model_ThreeD_obj.size())
             model_ThreeD_obj[(*model_ThreeD_obj.begin()).first].reloadTexture(textureName[0], modelTexture[0]);
@@ -2875,7 +2878,7 @@ void ICubSim::initLeftArmJoints(OdeParams &p)
         dJointAttach (LAjoints[0], torso[4], larm);
         dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);
         dJointSetHingeAxis (LAjoints[0], jA_leftArm[0][0], jA_leftArm[0][1], jA_leftArm[0][2]);
-        //the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        //the angle has to be less than PI (180Â°) in order to be effective.....230Â° can not be reached 
         dJointSetHingeParam(LAjoints[0],dParamLoStop, -0.0);
         dJointSetHingeParam(LAjoints[0],dParamHiStop, 0.0);
         return;
@@ -3040,7 +3043,7 @@ void ICubSim::initRightArmJoints(OdeParams &p)
         dJointAttach (RAjoints[0], torso[5], rarm);
         dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);
         dJointSetHingeAxis (RAjoints[0], jA_rightArm[0][0], jA_rightArm[0][1], jA_rightArm[0][2]);
-        //the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        //the angle has to be less than PI (180Â°) in order to be effective.....230Â° can not be reached 
         dJointSetHingeParam(RAjoints[0],dParamLoStop, -0.0);
         dJointSetHingeParam(RAjoints[0],dParamHiStop, 0.0);
         return;
@@ -3064,10 +3067,10 @@ void ICubSim::initRightArmJoints(OdeParams &p)
     dJointSetHingeParam(RAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(RAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD+safetyMargin);
     dJointSetHingeParam(RAjoints[1],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin); // the lower limit should be 0 but it gives problem
-    dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180° cannot be fully reached have to make with 179.4°
+    dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180Â° cannot be fully reached have to make with 179.4Â°
     dJointSetHingeParam(RAjoints[2],dParamLoStop,  -80.0*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
-    dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin); // lower limit should be 15° but it gives problem
+    dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin); // lower limit should be 15Â° but it gives problem
     dJointSetHingeParam(RAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
     dJointSetHingeParam(RAjoints[4],dParamLoStop, -90.5*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(RAjoints[4],dParamHiStop, 90.0*CTRL_DEG2RAD+safetyMargin);
