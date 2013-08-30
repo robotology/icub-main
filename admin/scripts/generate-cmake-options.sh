@@ -18,9 +18,9 @@ case $2 in
                         -DENABLE_icubmod_icubheadcalibratorV2:BOOL=TRUE \
                         -DENABLE_icubmod_icublegscalibrator:BOOL=TRUE \
                         -DENABLE_icubmod_icubtorsoonlycalibrator:BOOL=TRUE \
-                        -DENABLE_icubmod_icublogpolarclient:BOOL=TRUE \
-                        -DENABLE_icubmod_icublogpolargrabber:BOOL=TRUE \
-                        -DENABLE_icubmod_icubskinprototype:BOOL=TRUE \
+                        -DENABLE_icubmod_logpolarclient:BOOL=TRUE \
+                        -DENABLE_icubmod_logpolargrabber:BOOL=TRUE \
+                        -DENABLE_icubmod_skinprototype:BOOL=TRUE \
                         -DENABLE_icubmod_fakecan:BOOL=TRUE \
                         -DENABLE_icubmod_canmotioncontrol:BOOL=TRUE\
                         -DENABLE_icubmod_debugInterfaceClient:BOOL=TRUE\
