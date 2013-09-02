@@ -63,21 +63,13 @@
 </group>       
  
 <group name="IMPEDANCE">     
-<param name="Imp0">         0.6           0.01          </param>       
-<param name="Imp1">         0.6           0.01          </param>       
-<param name="Imp2">         0.4           0.01          </param>       
-<param name="Imp3">         0.4           0.01          </param>       
-<param name="Imp4">         0.4           0.01          </param>       
-<param name="Imp5">         0.4           0.01          </param>       
+<param name="stiffness">    0.6           0.6           0.4           0.4           0.4           0.4           </param>       
+<param name="damping">      0.01          0.01          0.01          0.01          0.01          0.01          </param>       
 </group>        
  
   </device>    
 </devices>     
- 
- 
- 
- 
- 
+
  
  
  
