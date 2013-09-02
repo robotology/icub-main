@@ -1621,10 +1621,11 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
         _destInv[id]=-1;
 
     //now fill inverted map
+    printf("printing destinations and inverted map\n");
     for(int jj=0;jj<_njoints;jj+=2)
     {
         _destInv[_destinations[jj/2]]=jj;
-
+        printf("%d %d\n",jj,_destinations[jj/2]);
      }
 
     _bcastRecvBuffer = allocAndCheck<BCastBufferElement> (_njoints);
@@ -1930,13 +1931,13 @@ bool CanBusMotionControl::open (Searchable &config)
     yarp::os::ConstString canPhysDevName = config.find("physDevice").asString(); //for backward compatibility
     if (canPhysDevName=="") canPhysDevName = config.findGroup("CAN").find("physDevice").asString();
     prop.put("physDevice",canPhysDevName.c_str());
-    prop.put("CanDeviceNum", p._networkN);
-    prop.put("CanTxTimeout", p._txTimeout);
-    prop.put("CanRxTimeout", p._rxTimeout);
+    prop.put("canDeviceNum", p._networkN);
+    prop.put("canTxTimeout", p._txTimeout);
+    prop.put("canRxTimeout", p._rxTimeout);
     if (p._txQueueSize!=-1)
-        prop.put("CanTxQueueSize", p._txQueueSize);
+        prop.put("canTxQueueSize", p._txQueueSize);
     if (p._rxQueueSize!=-1)
-        prop.put("CanRxQueueSize", p._rxQueueSize);
+        prop.put("canRxQueueSize", p._rxQueueSize);
 
     ret=res.initialize(prop);
 
@@ -2092,7 +2093,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         RateThread::stop();
         _opened = false;
-        DEBUG_FUNC("checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
+        fprintf(stderr,"checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
         return false;
     }
     /////////////////////////////////
@@ -2103,7 +2104,7 @@ bool CanBusMotionControl::open (Searchable &config)
 #endif
 
     _opened = true;
-    DEBUG_FUNC("CanBusMotionControl::open returned true\n");
+    fprintf(stderr,"CanBusMotionControl::open returned true\n");
     return true;
 }
 
@@ -3530,6 +3531,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
         r.writePacket();
     _mutex.post();
 
+    //printf("stiffness is: %d \n", S_16(stiff));
     return true;
 }
 
@@ -4339,7 +4341,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG_FUNC("getFirmwareVersion: message timed out\n");
+        fprintf(stderr, "getFirmwareVersion: message timed out\n");
         fw_info->board_type= 0;
         fw_info->fw_major= 0;
         fw_info->fw_version= 0;
@@ -4350,6 +4352,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     CanMessage *m=t->get(0);
     if (m==0)
     {
+        fprintf(stderr, "getFirmwareVersion: message error\n");
         fw_info->board_type= 0;
         fw_info->fw_major= 0;
         fw_info->fw_version= 0;
