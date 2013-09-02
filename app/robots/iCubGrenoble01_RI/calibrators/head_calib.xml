@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>													
+<devices>													
+    <device name="head_calibrator" type="parametricCalibrator">													
+                													
+        <group name="GENERAL">													
+            <param name="joints"> 12 </param> 													
+            <param name="deviceName"> TalkingHead_Calibrator </param>													
+        </group>													
+													
+<group name="CALIBRATION">													
+													
+<param name="CalibrationType">	3	3	3	3	0	0	3	3	0	0	0	0	</param>
+<param name="Calibration1">   	2047.5	2047.5	2047.5	2047.5	900	900	2047.5	2047.5	800	400	400	900	</param>
+<param name="Calibration2">	10	10	10	10	20	20	10	10	-20	10	20	20	</param>
+<param name="Calibration3">      	154.7	503.9125	2951.8125	773.5	0	0	1535.625	1592.5	0	0	0	0	</param>
+<param name="PositionZero">      	20	0	0	0	0	0	15	0	-30	28	-30	0	</param>
+<param name="VelocityZero">     	10	10	10	10	10	10	10	10	10	10	10	10	</param>
+</group>													
+													
+<group name="HOME">													
+<param name="PositionHome">	-30	0	0	0	0	0							</param>
+<param name="VelocityHome">	10	10	10	10	10	10							</param>
+</group>													
+													
+        <param name="CALIB_ORDER"> (0 1 2 3) (4) (5) (6 7 8 9 10 11) </param>													
+        													
+        <action phase="startup" level="10" type="calibrate">													
+            <param name="target">head_mc_wrapper</param>													
+        </action>													
+													
+        <action phase="interrupt1" level="1" type="park">													
+            <param name="target">head_mc_wrapper</param>													
+        </action>													
+													
+        <action phase="interrupt3" level="1" type="abort" />													
+													
+    </device>													
+</devices>													
