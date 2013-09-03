@@ -46,8 +46,8 @@
 <param name="JNT_speed_estimation">       5             5             5             5             </param>       
 <param name="Shifts">                     8             8             8             8             </param>       
 <param name="Timeout">                    100           100           100           100           </param>       
-</group>      </param>       
-</param>       
+</group>       
+ 
 <group name="LIMITS">        
 <param name="Max">          -50           -30           -22           0             </param>       
 <param name="Min">          50            30            70            0             </param>       
