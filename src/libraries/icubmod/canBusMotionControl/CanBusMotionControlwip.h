@@ -149,6 +149,12 @@ public:
         ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
     };
 
+    bool parsePosPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
+    bool parseTrqPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
+    bool parsePidsGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
+    bool parseImpedanceGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, ImpedanceParameters vals[]);
+    bool parseDebugGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, DebugParameters vals[]);
+
     bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
 
     bool fromConfig(yarp::os::Searchable &config);
