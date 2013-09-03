@@ -51,7 +51,7 @@
 <group name="LIMITS">        
 <param name="Max">          -95.5         0             -30           15            -50           -80           -20           0             </param>       
 <param name="Min">          10            161           75            106           85            25            25            60            </param>       
-<param name="Currents">     100           100           100           100           100           100           100           100           </param>       
+<param name="Currents">     7000          7000          7000          7000          1000          800           800           800           </param>       
 </group>       
  
 <group name="POS_PIDS">      

@@ -1,39 +1,67 @@
-<?xml version="1.0" encoding="UTF-8" ?>							
-<devices>							
-    <device name="right_leg_calibrator" type="parametricCalibrator">							
-                							
-        <group name="GENERAL">							
-            <param name="joints">  6  </param> 							
-            <param name="deviceName"> Right_Leg_Calibrator </param>							
-        </group>							
-							
-<group name="CALIBRATION">							
-							
-<param name="CalibrationType">	3	3	3	3	3	3	</param>
-<param name="Calibration1">   	2047.5	2047.5	2047.5	2047.5	2047.5	2047.5	</param>
-<param name="Calibration2">	10	10	10	10	10	10	</param>
-<param name="Calibration3">      	3207.75	2869.9125	3538.7625	2069.1125	2850.575	2588.95	</param>
-<param name="PositionZero">      	0	0	0	0	0	0	</param>
-<param name="VelocityZero">     	10	10	10	10	10	10	</param>
-</group>							
-							
-<group name="HOME">							
-<param name="PositionHome">	0	0	0	0	0	0	</param>
-<param name="VelocityHome">	10	10	10	10	10	10	</param>
-</group>							
-							
-        <param name="CALIB_ORDER">(0 1 2 3 4 5) </param>							
-        							
-        <action phase="startup" level="10" type="calibrate">							
-            <param name="target">right_leg_mc_wrapper</param>							
-        </action>							
-							
-        <action phase="interrupt1" level="1" type="park">							
-            <param name="target">right_leg_mc_wrapper</param>							
-        </action>							
-							
-        <action phase="interrupt3" level="1" type="abort" />							
-							
-    </device>							
-</devices>							
-
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+    <device name="right_leg_calibrator" type="parametricCalibrator">   
+                             
+        <group name="GENERAL">             
+            <param name="joints">  6  </param>           
+            <param name="deviceName"> Right_Leg_Calibrator </param>    
+        </group>             
+ 
+<group name="CALIBRATION">   
+ 
+<param name="CalibrationType">            3             3             3             3             3             3             </param>       
+<param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        2047.5        2047.5        </param>       
+<param name="Calibration2">               10            10            10            10            10            10            </param>       
+<param name="Calibration3">               3207.75       2869.913      3538.763      2069.113      2850.575      2588.95       </param>       
+<param name="PositionZero">               0             0             0             0             0             0             </param>       
+<param name="VelocityZero">               10            10            10            10            10            10            </param>       
+</group>       
+ 
+<group name="HOME">          
+<param name="PositionHome"> 0             0             0             0             0             0             </param>       
+<param name="VelocityHome"> 10            10            10            10            10            10            </param>       
+</group>       
+ 
+        <param name="CALIB_ORDER">(0 1 2 3 4 5) </param>               
+               
+        <action phase="startup" level="10" type="calibrate">           
+            <param name="target">right_leg_mc_wrapper</param>          
+        </action>            
+ 
+        <action phase="interrupt1" level="1" type="park">              
+            <param name="target">right_leg_mc_wrapper</param>          
+        </action>            
+ 
+        <action phase="interrupt3" level="1" type="abort" />           
+ 
+    </device>  
+</devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
