@@ -946,6 +946,100 @@ bool CanBusMotionControlParameters:: setBroadCastMask(Bottle &list, int MASK)
     return false;
 }
 
+bool CanBusMotionControlParameters::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int nj, Pid myPid[])
+{
+    int j=0;
+    for(j=0;j<nj;j++)
+    {
+        char tmp[80];
+        sprintf(tmp, "Pid%d", j); 
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
+        myPid[j].kp = xtmp.get(1).asDouble();
+        myPid[j].kd = xtmp.get(2).asDouble();
+        myPid[j].ki = xtmp.get(3).asDouble();
+
+        myPid[j].max_int = xtmp.get(4).asDouble();
+        myPid[j].max_output = xtmp.get(5).asDouble();
+
+        myPid[j].scale = xtmp.get(6).asDouble();
+        myPid[j].offset = xtmp.get(7).asDouble();
+
+        if (xtmp.size()==10)
+        {
+            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
+            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+        }
+    }
+    return true;
+}
+
+bool CanBusMotionControlParameters::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int nj, Pid myPid[])
+{
+    int j=0;
+    for(j=0;j<nj;j++)
+    {
+        char tmp[80];
+        sprintf(tmp, "TPid%d", j); 
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
+        myPid[j].kp = xtmp.get(1).asDouble();
+        myPid[j].kd = xtmp.get(2).asDouble();
+        myPid[j].ki = xtmp.get(3).asDouble();
+
+        myPid[j].max_int = xtmp.get(4).asDouble();
+        myPid[j].max_output = xtmp.get(5).asDouble();
+
+        myPid[j].scale = xtmp.get(6).asDouble();
+        myPid[j].offset = xtmp.get(7).asDouble();
+
+        if (xtmp.size()==10)
+        {
+            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
+            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+        }
+    }
+    return true;
+}
+bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, int nj, Pid myPid[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("kp");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("kd");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("ki");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("maxInt");      if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("maxPwm");      if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("shift");       if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    return true;
+}
+
+bool CanBusMotionControlParameters::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, int nj, ImpedanceParameters vals[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("stiffness"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].stiffness = xtmp.get(j).asDouble();
+    xtmp = pidsGroup.findGroup("damping");   if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].damping = xtmp.get(j+1).asDouble();
+    return true;
+}
+
+bool CanBusMotionControlParameters::parseDebugGroup_NewFormat(Bottle& pidsGroup, int nj, DebugParameters vals[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("debug0"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug1"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug2"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[2] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug3"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[3] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug4"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[4] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug5"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[5] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug6"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[6] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug7"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[7] = xtmp.get(j+1).asDouble();
+    return true;
+}
 bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 {
     if (!p.check("GENERAL","section for general motor control parameters")) {
@@ -1087,112 +1181,109 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         }
     }
 
-    ////// PIDS
-    Bottle &pidsGroup=p.findGroup("PIDS", "PID parameters");
-    if (pidsGroup.isNull()) {
-            fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
-            return false;
-    }
-
     int j=0;
-    for(j=0;j<nj;j++)
+    ////// POSITION PIDS
     {
-        char tmp[80];
-        sprintf(tmp, "Pid%d", j); 
-
-        Bottle &xtmp = pidsGroup.findGroup(tmp);
-        _pids[j].kp = xtmp.get(1).asDouble();
-        _pids[j].kd = xtmp.get(2).asDouble();
-        _pids[j].ki = xtmp.get(3).asDouble();
-
-        _pids[j].max_int = xtmp.get(4).asDouble();
-        _pids[j].max_output = xtmp.get(5).asDouble();
-
-        _pids[j].scale = xtmp.get(6).asDouble();
-        _pids[j].offset = xtmp.get(7).asDouble();
-
-        if (xtmp.size()==10)
+        Bottle posPidsGroup;
+        posPidsGroup=p.findGroup("POS_PIDS", "Position Pid parameters new format");
+        if (posPidsGroup.isNull()==false)
         {
-            _pids[j].stiction_up_val = xtmp.get(8).asDouble();
-            _pids[j].stiction_down_val = xtmp.get(9).asDouble();
+           printf("Position Pids section found, new format\n");
+           if (!parsePidsGroup_NewFormat (posPidsGroup, nj, _pids))
+           {
+               printf("Position Pids section: error detected in parameters syntax\n");
+               return false;
+           }
+           else
+           {
+               printf("Position Pids successfully loaded\n");
+           }
+        }
+        else
+        {
+            Bottle posPidsGroup2=p.findGroup("PIDS", "Position Pid parameters old format");
+            if (posPidsGroup2.isNull()==false)
+            {
+                printf("Position Pids section found, old format\n");
+                parsePosPidsGroup_OldFormat (posPidsGroup2, nj, _pids);
+            }
+            else
+            {   
+                fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
+                return false;
+            }
         }
     }
-
-    ////// DEBUG PARAMETERS
-    if (p.check("DEBUG_PARAMETERS","DEBUG parameters")==true)
-    {
-        printf("DEBUG parameters section found\n");
-        for(j=0;j<nj;j++)
-        {
-            char tmp[80];
-            sprintf(tmp, "Debug%d", j);
-            if (p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").check(tmp)==true)
-            {
-                xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);
-                _debug_params[j].enabled=true;
-                for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
-            }
-        }   
-    }
-    else
-    {
-        fprintf(stderr, "Debug parameters section NOT enabled, skipping...\n");
-        //note: by default the _debug_params[j] constructor puts _debug_params[j].enabled=false;
-    }
-
+    
     ////// TORQUE PIDS
-    if (p.check("TORQUE_PIDS","TORQUE_PID parameters")==true)
     {
-        printf("Torque Pids section found\n");
-        _tpidsEnabled=true;
-        for(j=0;j<nj;j++)
+        Bottle trqPidsGroup;
+        trqPidsGroup=p.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
+        if (trqPidsGroup.isNull()==false)
         {
-            char tmp[80];
-            sprintf(tmp, "TPid%d", j); 
-            Bottle &xtmp = p.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(tmp);    
-
-            _tpids[j].kp = xtmp.get(1).asDouble();
-            _tpids[j].kd = xtmp.get(2).asDouble();
-            _tpids[j].ki = xtmp.get(3).asDouble();
-
-            _tpids[j].max_int = xtmp.get(4).asDouble();
-            _tpids[j].max_output = xtmp.get(5).asDouble();
-
-            _tpids[j].scale = xtmp.get(6).asDouble();
-            _tpids[j].offset = xtmp.get(7).asDouble();
-
-            if (xtmp.size()==10)
+           printf("Torque Pids section found, new format\n");
+           if (!parsePidsGroup_NewFormat (trqPidsGroup, nj, _tpids))
+           {
+               printf("Torque Pids section: error detected in parameters syntax\n");
+               return false;
+           }
+           else
+           {
+                printf("Torque Pids successfully loaded\n");
+               _tpidsEnabled = true;
+           }
+        }
+        else
+        {
+            Bottle trqPidsGroup2=p.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
+            if (trqPidsGroup2.isNull()==false)
             {
-                _pids[j].stiction_up_val = xtmp.get(8).asDouble();
-                _pids[j].stiction_down_val = xtmp.get(9).asDouble();
+                printf("Torque Pids section found, old format\n");
+                parseTrqPidsGroup_OldFormat (trqPidsGroup2, nj, _tpids);
+                _tpidsEnabled=true;
+                fprintf(stderr,">>>>>>>>>>>>>>>>>>>>%f<<<<<<<<<<<<<<<<<<<<\n", _tpids[0].kp);
+            }
+            else
+            {   
+                fprintf(stderr, "Torque Pids section NOT enabled, skipping...\n");
             }
         }
     }
-    else
+    
+    ////// DEBUG PARAMETERS
     {
-        fprintf(stderr, "Torque Pids section NOT enabled, skipping...\n");
+        Bottle &debugGroup=p.findGroup("DEBUG_PARAMETERS","DEBUG parameters");
+        if (debugGroup.isNull()==false)
+        {
+           printf("DEBUG parameters section found\n");
+           if (!parseDebugGroup_NewFormat (debugGroup, nj, _debug_params))
+           {
+               printf("DEBUG section: error detected in parameters syntax\n");
+               return false;
+           }
+        }
+        else
+        {
+           printf("DEBUG parameters section NOT found, skipping...\n");
+        }
     }
 
     ////// IMPEDANCE DEFAULT VALUES
-    if (p.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
     {
-        fprintf(stderr, "IMPEDANCE parameters section found\n");
-        for(j=0;j<nj;j++)
+        Bottle &impedanceGroup=p.findGroup("IMPEDANCE","IMPEDANCE parameters");
+        if (impedanceGroup.isNull()==false)
         {
-            char tmp[80];
-            sprintf(tmp, "Imp%d", j); 
-            if (p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(tmp)==true)
-            {
-                xtmp = p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(tmp);    
-                _impedance_params[j].enabled=true;
-                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
-                _impedance_params[j].damping   = xtmp.get(2).asDouble();
-            }
+           printf("IMPEDANCE parameters section found\n");
+           if (!parseImpedanceGroup_NewFormat (impedanceGroup, nj, _impedance_params))
+           {
+               printf("IMPEDANCE section: error detected in parameters syntax\n");
+               return false;
+           }
         }
-    }
-    else
-    {
-        printf("Impedance section NOT enabled, skipping...\n");
+        else
+        {
+           printf("IMPEDANCE parameters section NOT found, skipping...\n");
+        }
     }
 
     ////// IMPEDANCE LIMITS (UNDER TESTING)
@@ -1996,13 +2087,20 @@ bool CanBusMotionControl::open (Searchable &config)
     _mutex.post ();
 
     // default initialization for this device driver.
+    yarp::os::Time::delay(0.005);
     setPids(p._pids);
-    if (p._tpidsEnabled==true) setTorquePids(p._tpids);
+    
+    if (p._tpidsEnabled==true)
+    {
+        yarp::os::Time::delay(0.005);
+        setTorquePids(p._tpids);
+    }
     
     //set the source of the torque measurments to the boards
     #if 0
     for (int j=0; j<p._njoints; j++)
     {
+        yarp::os::Time::delay(0.001);
         this->setTorqueSource(j,p._torqueSensorId[j],p._torqueSensorChan[j]);
     }
     #endif
@@ -2011,6 +2109,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for (int j=0; j<p._njoints; j++)
         if (p._debug_params[j].enabled==true)
         {
+            yarp::os::Time::delay(0.001);
             for (int param_num=0; param_num<8; param_num++)
                 setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
         }
@@ -2019,27 +2118,37 @@ bool CanBusMotionControl::open (Searchable &config)
     for (int j=0; j<p._njoints; j++)
         if (p._impedance_params[j].enabled==true)
         {
+            yarp::os::Time::delay(0.001);
             setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping);
         }
 
     int i;
     for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setBCastMessages(i, p._broadcast_mask[i]);
+    }
 
     // set limits, on encoders and max current
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setLimits(i, p._limitsMin[i], p._limitsMax[i]);
         setMaxCurrent(i, p._currentLimits[i]);
     }
 
     // set limits, on encoders and max current
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {   
+        yarp::os::Time::delay(0.001);
         setVelocityShiftRaw(i, p._velocityShifts[i]);
         setVelocityTimeoutRaw(i, p._velocityTimeout[i]);
     }
 
     // set parameters for speed/acceleration estimation
-    for(i = 0; i < p._njoints; i++) {
+    for(i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         setSpeedEstimatorShiftRaw(i,p._estim_params[i].jnt_Vel_estimator_shift,
                                     p._estim_params[i].jnt_Acc_estimator_shift,
                                     p._estim_params[i].mot_Vel_estimator_shift,
@@ -2048,7 +2157,9 @@ bool CanBusMotionControl::open (Searchable &config)
     _speedEstimationHelper = new speedEstimationHelper(p._njoints, p._estim_params);
     
     // disable the controller, cards will start with the pid controller & pwm off
-    for (i = 0; i < p._njoints; i++) {
+    for (i = 0; i < p._njoints; i++)
+    {
+        yarp::os::Time::delay(0.001);
         disablePid(i);
         disableAmp(i);
     }
@@ -2081,6 +2192,7 @@ bool CanBusMotionControl::open (Searchable &config)
     icub_interface_protocol.minor=CAN_PROTOCOL_MINOR;
     for (int j=0; j<p._njoints; j++) 
     {
+        yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
         if (b==false) fprintf(stderr,"Error reading firmware version\n");
     }
@@ -3675,6 +3787,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
+    //fprintf(stderr, ">>>>>>>>>>>pid.kp set to %f\n",pid.kp);
     _mutex.wait();
         r.startPacket();
         r.addMessage (CAN_SET_TORQUE_PIDLIMITS, axis);
@@ -3695,7 +3808,6 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         *((short *)(r._writeBuffer[0].getData()+7)) = S_16(0);
         r._writeBuffer[0].setLen(8);
         r.writePacket();
-    _mutex.post();
     return true;
 }
 
@@ -4476,6 +4588,7 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
+
     
     CanBusResources& r = RES(system_resources);
     _mutex.wait();
