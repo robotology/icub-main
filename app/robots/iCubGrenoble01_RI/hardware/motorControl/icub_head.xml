@@ -5,7 +5,7 @@
   <device name="head_mc" type="canmotioncontrol">       3000           
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
-<param name="physdevice">   cfw2can       </param>       
+<param name="physDevice">   cfw2can       </param>       
 <param name="CanAddresses"> 1 2 3 7 9 10  </param>       
 <param name="CanDeviceNum"> 0             </param>       
 <param name="NetworkId">                  HEAD          </param>       

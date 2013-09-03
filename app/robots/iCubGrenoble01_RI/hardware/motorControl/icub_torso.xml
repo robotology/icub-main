@@ -5,7 +5,7 @@
   <device name="torso_mc" type="canmotioncontrol">      3000           
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
-<param name="physdevice">   cfw2can       </param>       
+<param name="physDevice">   cfw2can       </param>       
 <param name="CanAddresses"> 5 6           </param>       
 <param name="CanDeviceNum"> 0             </param>       
 <param name="NetworkId">                  TORSO         </param>       

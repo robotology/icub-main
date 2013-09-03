@@ -5,7 +5,7 @@
   <device name="right_leg_mc" type="canmotioncontrol">   
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
-<param name="physdevice">   cfw2can       </param>       
+<param name="physDevice">   cfw2can       </param>       
 <param name="CanAddresses"> 8 9 10        </param>       
 <param name="CanDeviceNum"> 4             </param>       
 <param name="NetworkId">                  RIGHTLEG      </param>       
