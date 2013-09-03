@@ -107,11 +107,7 @@ Vector iKinCtrl::calc_e()
         }
         else
         {
-            Vector v(4);
-            v[0]=x_set[3];
-            v[1]=x_set[4];
-            v[2]=x_set[5];
-            v[3]=x_set[6];
+            Vector v=x_set.subVector(3,6);
             Matrix Des=axis2dcm(v);
             Des(0,3)=x_set[0];
             Des(1,3)=x_set[1];
@@ -135,7 +131,6 @@ Vector iKinCtrl::calc_e()
     else
     {
         e=x_set-x;
-
         if (ctrlPose==IKINCTRL_POSE_XYZ)
             e[3]=e[4]=e[5]=0.0;
         else if (ctrlPose==IKINCTRL_POSE_ANG)
@@ -773,7 +768,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     else
         mjCtrlJoint=new minJerkVelCtrlForIdealPlant(Ts,dim);
 
-    mjCtrlTask =new minJerkVelCtrlForIdealPlant(Ts,x.length());
+    mjCtrlTask =new minJerkVelCtrlForIdealPlant(Ts,e.length());
     I=new Integrator(Ts,q,lim);
 
     gamma=0.05;
@@ -836,33 +831,6 @@ void MultiRefMinJerkCtrl::computeWeight()
 
 
 /************************************************************************/
-Vector MultiRefMinJerkCtrl::calc_e()
-{
-    // x must be previously set
-    Vector __e=x_set-x;
-
-    if (__e.length()>6)
-    {
-       e[0]=__e[0];
-       e[1]=__e[1];
-       e[2]=__e[2];
-       e[3]=__e[3]*__e[6];
-       e[4]=__e[4]*__e[6];
-       e[5]=__e[5]*__e[6];
-    }
-    else
-        e=__e;
-
-    if (ctrlPose==IKINCTRL_POSE_XYZ)
-        e[3]=e[4]=e[5]=0.0;
-    else if (ctrlPose==IKINCTRL_POSE_ANG)
-        e[0]=e[1]=e[2]=0.0;
-
-    return e;
-}
-
-
-/************************************************************************/
 Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
                                     const unsigned int verbose)
 {
@@ -877,17 +845,21 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
         calc_e();
 
         Vector _qdot=mjCtrlJoint->computeCmd(execTime,q_set-q+compensation);
-        Vector _xdot7=mjCtrlTask->computeCmd(execTime,x_set-x);
 
-        Vector *pxdot=(xdot_set!=NULL)?xdot_set:&_xdot7;
-        Vector _xdot(6);
-        _xdot[0]=(*pxdot)[0];
-        _xdot[1]=(*pxdot)[1];
-        _xdot[2]=(*pxdot)[2];
-        _xdot[3]=(*pxdot)[3]*(*pxdot)[6];
-        _xdot[4]=(*pxdot)[4]*(*pxdot)[6];
-        _xdot[5]=(*pxdot)[5]*(*pxdot)[6];
-    
+        Vector _xdot;
+        if (xdot_set!=NULL)
+        {
+            _xdot.resize(6);
+            _xdot[0]=(*xdot_set)[0];
+            _xdot[1]=(*xdot_set)[1];
+            _xdot[2]=(*xdot_set)[2];
+            _xdot[3]=(*xdot_set)[3]*(*xdot_set)[6];
+            _xdot[4]=(*xdot_set)[4]*(*xdot_set)[6];
+            _xdot[5]=(*xdot_set)[5]*(*xdot_set)[6];
+        }
+        else
+            _xdot=mjCtrlTask->computeCmd(execTime,e);
+   
         J =chain.GeoJacobian();
         Jt=J.transposed();
 
@@ -939,7 +911,7 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     xdot=0.0;
 
     mjCtrlJoint->reset(qdot);
-    mjCtrlTask->reset(zeros(x.length()));
+    mjCtrlTask->reset(zeros(e.length()));
 }
 
 

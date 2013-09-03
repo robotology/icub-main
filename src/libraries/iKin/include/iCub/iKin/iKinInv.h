@@ -801,7 +801,6 @@ protected:
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
                                       yarp::sig::Vector *xdot_set, const unsigned int verbose);
 
-    virtual yarp::sig::Vector calc_e();
     virtual void inTargetFcn()         { }
     virtual void deadLockRecoveryFcn() { }
     virtual void printIter(const unsigned int verbose);
