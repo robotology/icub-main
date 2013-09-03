@@ -217,9 +217,9 @@ void CanBusInertialMTB::run()
     double stampAcc=0.0;
 
     int st=IAnalogSensor::AS_ERROR;
-    static double prev = yarp::os::Time::now();
-    fprintf(stderr, "period %f delta %f canMessages %d\n",this->getRate(), yarp::os::Time::now()-prev, canMessages );
-    prev = yarp::os::Time::now();
+    //static double prev = yarp::os::Time::now();
+    //fprintf(stderr, "period %f delta %f canMessages %d\n",this->getRate(), yarp::os::Time::now()-prev, canMessages );
+    //prev = yarp::os::Time::now();
     for (unsigned int i=0; i<canMessages; i++)
     {
         CanMessage &msg=inBuffer[i];
