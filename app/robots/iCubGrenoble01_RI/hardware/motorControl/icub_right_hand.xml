@@ -6,12 +6,12 @@
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
-<param name="CanAddresses"> 1 2 3 4       </param>       
+<param name="CanAddresses"> 5 6 7 8       </param>       
 <param name="CanDeviceNum"> 6             </param>       
 <param name="NetworkId">                  RIGHT_HAND    </param>       
 <param name="CanMyAddress"> 0             </param>       
 <param name="CanPollingInterval">         10            </param>       
-<param name="CanTimeout">   2000          </param>       
+<param name="CanTimeout">   500           </param>       
 <param name="CanTxTimeout"> 500           </param>       
 <param name="CanRxTimeout"> 500           </param>       
 <param name="broadcast_pos">              1             1             1             1             1             1             1             1             </param>       
