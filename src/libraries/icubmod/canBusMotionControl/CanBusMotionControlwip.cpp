@@ -3808,6 +3808,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         *((short *)(r._writeBuffer[0].getData()+7)) = S_16(0);
         r._writeBuffer[0].setLen(8);
         r.writePacket();
+    _mutex.post();
     return true;
 }
 
