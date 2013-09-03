@@ -76,8 +76,8 @@
 <param name="ko">           0             0             0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
+</group>       
  
   </device>    
 </devices>     
  
-<?xml version="1.0" encoding="UTF-8" ?>    
