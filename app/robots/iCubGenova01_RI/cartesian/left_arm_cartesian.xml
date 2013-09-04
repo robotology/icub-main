@@ -7,7 +7,8 @@
             <param name="SolverNameToConnect">cartesianSolver/left_arm</param>
             <param name="KinematicPart">arm</param>
             <param name="KinematicType">left</param>
-            <param name="NumberOfDrivers">2</param>
+            <param name="PositionControl">on</param>
+            <param name="NumberOfDrivers">2</param>            
         </group>
 
         <group name="DRIVER_0">
