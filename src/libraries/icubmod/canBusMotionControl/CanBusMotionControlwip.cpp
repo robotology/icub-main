@@ -1319,6 +1319,15 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     if (!validate(limits, xtmp, "Min","a list of minimum angles (in degrees)", nj+1))
         return false;
   
+    for (for(i=0;i<nj; i++) 
+    {
+        if (_limitsMax[i] < _limitsMin[i])
+           {
+               fprintf(stderr, "Error: invalid limit on joint %d : Max value (%f) < Min value(%f)\n", i, _limitsMax[i], _limitsMin[i] );
+               return false;
+           }
+    }
+
     for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
     /////// [VELOCITY]
