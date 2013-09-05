@@ -25,7 +25,8 @@
 #include "include/Triangle.h"
 #include "include/Triangle_10pad.h"
 #include "include/Fingertip.h"
-
+#include "include/Fingertip2Left.h"
+#include "include/Fingertip2Right.h"
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -86,7 +87,7 @@ public:
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
-            if (type=="triangle" || type=="fingertip" || type=="triangle_10pad" || type=="quad16" || type=="palmR" || type=="palmL")
+            if (type=="triangle" || type=="fingertip" || type=="fingertip2L" || type=="fingertip2R" || type=="triangle_10pad" || type=="quad16" || type=="palmR" || type=="palmL")
             {
                 int id=sensorConfig.get(1).asInt();
                 double xc=sensorConfig.get(2).asDouble();
@@ -117,6 +118,14 @@ public:
                         if (type=="fingertip")
                         {
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
+						if (type=="fingertip2L")
+                        {
+                            sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
+						if (type=="fingertip2R")
+                        {
+                            sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
                         }
                         if (type=="quad16")
                         {
