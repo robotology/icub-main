@@ -35,7 +35,7 @@
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
 #define CARTCTRL_DEFAULT_TOL                1e-2
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
-#define CARTCTRL_DEFAULT_POSCTRL            "off"
+#define CARTCTRL_DEFAULT_POSCTRL            "on"
 #define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
 #define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
