@@ -33,7 +33,7 @@
 <param name="Zeros">        180           -182          177           180           -51           0             </param>       
 <param name="TorqueId">     0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             </param>       
-<param name="torqueMax">    0             0             0             0             0             0             </param>       
+<param name="TorqueMax">    0             0             0             0             0             0             </param>       
 <param name="Verbose">      0             0             0             0             0             0             </param>       
 <param name="Rotor">        1             1             1             1             1             1             </param>       
 <param name="GearBox">      1             1             1             1             1             1             </param>       
