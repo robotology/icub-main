@@ -744,15 +744,11 @@ static void start_end_click (GtkButton *button,	gpointer   user_data)
             }
         }
 
-        //printf("ADDRESS: %x\n",locAddr);
-        
         params.put("local", int(locAddr));
         params.put("remote",int(remAddr));
 
         params.put("canid",canID);
-        //params.put("local","10.255.72.153");
-        
-
+   
         //try to connect to the driver
         ret = downloader.initdriver(params);
         if (ret == -1)

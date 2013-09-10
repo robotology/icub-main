@@ -152,10 +152,6 @@ public:
     
     int init(yarp::os::Searchable &config)
     {
-        //ACE_UINT32 ip1,ip2,ip3,ip4;
-        //sscanf(config.find("local").asString().c_str(),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-        //ACE_UINT32 local=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-        
         ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt();
 
         if (!mSocket.create(3334,local))
@@ -164,8 +160,6 @@ public:
             return -1;
         }
 
-        //sscanf(config.find("remote").asString().c_str(),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-        //mBoardAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
         mBoardAddr=(ACE_UINT32)config.find("remote").asInt();
 
         mCanBusId=config.check("canid")?config.find("canid").asInt():0;
@@ -212,10 +206,10 @@ public:
 
                     for (int f=0; f<nframes; ++f)
                     {
-                        if (!mCanBusId || canPkt.frames[f].canId==mCanBusId)
+                        if (!mCanBusId || canPkt.frames[f].canBus==mCanBusId)
                         {
-                            //printf(">>> (RX) Len=%d ID=%x Data=",canPkt.frames[f].len,canPkt.frames[f].canId); 
-                            //for (int l=0; l<canPkt.frames[f].len; ++l) printf("%x ",canPkt.frames[f].data[l]);
+                            //printf(">>> (RX) Len=%d ID=%x Data=",canPkt.frames[0].len,canPkt.frames[0].canId); 
+                            //for (int l=0; l<canPkt.frames[0].len; ++l) printf("%x ",canPkt.frames[0].data[l]);
                             //printf("<<<\n");
 
                             messages[nread].setLen(canPkt.frames[f].len);
