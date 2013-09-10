@@ -1319,7 +1319,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     if (!validate(limits, xtmp, "Min","a list of minimum angles (in degrees)", nj+1))
         return false;
   
-    for (for(i=0;i<nj; i++) 
+    for (i=0;i<nj; i++)
     {
         if (_limitsMax[i] < _limitsMin[i])
            {
