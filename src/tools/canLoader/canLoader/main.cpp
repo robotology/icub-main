@@ -127,6 +127,7 @@ This file can be edited at src/myModule/main.cpp.
 **/
 
 #include "downloader.h"
+#include "ethDriver.h"
 #include "calibrate_window.h"
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
@@ -151,6 +152,8 @@ GtkWidget *bottom_hbox       = NULL;
 GtkWidget *start_end_button  = NULL;
 GtkWidget *combo_netId       = NULL;
 GtkWidget *combo_netType     = NULL;
+GtkWidget *combo_canId       = NULL;
+GtkWidget *box_ipAddr        = NULL;
 GtkWidget *progress_bar      = NULL;
 GtkWidget *inv1              = NULL; 
 
@@ -180,6 +183,7 @@ cDownloader downloader;
 
 //can_parameters_type params;
 int networkId=0;
+int canID=1;
 const int maxNetworks=10; //max number of can networks
 std::string networkType;
 bool calibration_enabled=false;
@@ -381,7 +385,27 @@ static GtkTreeModel * create_netType_model (void)
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, 0, "cfw2can",-1);    
     gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "socketcan",-1);    
+    gtk_list_store_set (store, &iter, 0, "socketcan",-1);
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "EMS",-1);      
+
+    return GTK_TREE_MODEL (store);
+}
+
+static GtkTreeModel * create_canId_model (void)
+{
+    gint i = 0;
+    GtkListStore *store;
+    GtkTreeIter iter;
+
+    // create list store
+    store = gtk_list_store_new (1, G_TYPE_STRING);
+
+    // add data to the list store
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "Can 1",-1);
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "Can 2",-1);        
 
     return GTK_TREE_MODEL (store);
 }
@@ -399,10 +423,49 @@ static void combo_nettype_changed (GtkComboBox *box,	gpointer   user_data)
     int net = gtk_combo_box_get_active (box);
 	switch (net)
 	{
-		case 0: networkType = "ecan"; break;
-		case 1: networkType = "pcan";  break;
-        case 2: networkType="cfw2can"; break;
-		case 3: networkType="socketcan"; break;
+		case  0:
+            networkType = "ecan";
+            gtk_widget_set_sensitive (combo_netId, false);	
+	        gtk_widget_set_sensitive (combo_canId, false);
+            gtk_widget_set_sensitive (box_ipAddr, false);
+            break;
+
+		case  1: 
+            networkType = "pcan";
+            gtk_widget_set_sensitive (combo_netId, false);	
+	        gtk_widget_set_sensitive (combo_canId, false);
+            gtk_widget_set_sensitive (box_ipAddr, false);
+            break;
+
+        case  2: 
+            networkType="cfw2can";
+            gtk_widget_set_sensitive (combo_netId, true);	
+	        gtk_widget_set_sensitive (combo_canId, false);
+            gtk_widget_set_sensitive (box_ipAddr, false);
+            break;
+
+		case  3:
+            networkType="socketcan"; 
+            gtk_widget_set_sensitive (combo_netId, false);	
+	        gtk_widget_set_sensitive (combo_canId, false);
+            gtk_widget_set_sensitive (box_ipAddr, false);
+            break;
+
+        case  4: networkType="EMS";
+            gtk_widget_set_sensitive (combo_netId, false);	
+	        gtk_widget_set_sensitive (combo_canId, true);
+            gtk_widget_set_sensitive (box_ipAddr, true);
+            break;
+	}
+}
+
+static void combo_canid_changed (GtkComboBox *box,	gpointer   user_data)
+{
+    int net = gtk_combo_box_get_active (box);
+	switch (net)
+	{
+		case  0: canID = 1; break;
+		case  1: canID = 2; break;
 	}
 }
 
@@ -451,7 +514,9 @@ void connected_status()
     gtk_widget_set_sensitive (treeview, true);
     gtk_widget_set_sensitive (combo_netId, false);	
 	gtk_widget_set_sensitive (combo_netType, false);	
-	if (calibration_enabled) gtk_widget_set_sensitive (calibrate_button, false);
+	gtk_widget_set_sensitive (combo_canId, false);
+    gtk_widget_set_sensitive (box_ipAddr, false);
+    if (calibration_enabled) { gtk_widget_set_sensitive (calibrate_button, false); }
 	return;
 	
 	//not used now
@@ -474,9 +539,12 @@ void not_connected_status()
     gtk_widget_set_sensitive (button2, false);    
     gtk_widget_set_sensitive (download_button, false);
     gtk_widget_set_sensitive (treeview, false);
-    gtk_widget_set_sensitive (combo_netId, true);
+
+    gtk_widget_set_sensitive (combo_netId, networkType=="cfw2can");
 	gtk_widget_set_sensitive (combo_netType, true);	
-	if (calibration_enabled) gtk_widget_set_sensitive (calibrate_button, false);
+	gtk_widget_set_sensitive (combo_canId, networkType=="EMS");
+    gtk_widget_set_sensitive (box_ipAddr, networkType=="EMS");
+    if (calibration_enabled) { gtk_widget_set_sensitive (calibrate_button, false); }
 	return;
 	
 	//not used now
@@ -650,6 +718,40 @@ static void start_end_click (GtkButton *button,	gpointer   user_data)
         params.put("canRxQueue", 64);
         params.put("canTxTimeout", 2000);
         params.put("canRxTimeout", 2000);
+
+        ACE_UINT32 ip1,ip2,ip3,ip4;
+        sscanf(gtk_entry_get_text(GTK_ENTRY(box_ipAddr)),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+        ACE_UINT32 remAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
+        
+        size_t count=0;
+        ACE_INET_Addr* addr_array=NULL;
+        ret=ACE::get_ip_interfaces(count,addr_array);
+
+        if (ret || count<=0)
+        {
+            dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
+            return;
+        }
+
+        ACE_UINT32 locAddr=addr_array[0].get_ip_address();
+
+        for (unsigned int a=1; a<count; ++a)
+        {
+            if ((remAddr & 0xFFFF0000)==(addr_array[a].get_ip_address() & 0xFFFF0000))
+            {
+                locAddr=addr_array[a].get_ip_address();
+                break;
+            }
+        }
+
+        //printf("ADDRESS: %x\n",locAddr);
+        
+        params.put("local", int(locAddr));
+        params.put("remote",int(remAddr));
+
+        params.put("canid",canID);
+        //params.put("local","10.255.72.153");
+        
 
         //try to connect to the driver
         ret = downloader.initdriver(params);
@@ -1459,7 +1561,7 @@ int myMain( int   argc, char *argv[] )
     downloader.board_list[0].status  = BOARD_RUNNING;
     downloader.board_list[0].selected  = false;
     strcpy(downloader.board_list[0].add_info , "can flasher default");
-    gtk_widget_set_sensitive (treeview, true);
+    printf("%d\n");gtk_widget_set_sensitive (treeview, true);
     downloader.board_list_size=1;
     */
 
@@ -1638,7 +1740,19 @@ int myMain( int   argc, char *argv[] )
     gtk_combo_box_set_active		(GTK_COMBO_BOX (combo_netType), 0);
     g_signal_connect				(combo_netType, "changed", G_CALLBACK (combo_nettype_changed), NULL);
     gtk_fixed_put					(GTK_FIXED(inv1), combo_netType ,250, 0);
-	combo_nettype_changed			(GTK_COMBO_BOX (combo_netType),0);
+	
+
+	//can bus id selection
+    model = create_canId_model ();
+    combo_canId = gtk_combo_box_new_with_model (model);
+    g_object_unref (model);
+    gtk_cell_layout_pack_start		(GTK_CELL_LAYOUT (combo_canId), renderer, TRUE);
+    gtk_cell_layout_set_attributes  (GTK_CELL_LAYOUT (combo_canId), renderer,"text", 0, NULL);
+    gtk_widget_set_size_request     (combo_canId, 100, 30);
+    gtk_combo_box_set_active		(GTK_COMBO_BOX (combo_canId), 0);
+    g_signal_connect				(combo_canId, "changed", G_CALLBACK (combo_canid_changed), NULL);
+    gtk_fixed_put					(GTK_FIXED(inv1), combo_canId ,400, 0);
+	
 
     //net id selection
     model = create_net_model ();
@@ -1650,8 +1764,21 @@ int myMain( int   argc, char *argv[] )
     gtk_combo_box_set_active		(GTK_COMBO_BOX (combo_netId), 0);
     g_signal_connect				(combo_netId, "changed", G_CALLBACK (combo_netid_changed), NULL);
     gtk_fixed_put					(GTK_FIXED(inv1), combo_netId ,100, 0);
-	combo_netid_changed				(GTK_COMBO_BOX (combo_netId) ,0);
-    
+	
+
+    //ip address selection
+    box_ipAddr = gtk_entry_new();
+    gtk_widget_set_size_request     (box_ipAddr, 100, 20);
+    gtk_widget_set_sensitive		(box_ipAddr, false);
+    gtk_entry_set_text              (GTK_ENTRY(box_ipAddr), "10.0.1.1");
+    gtk_fixed_put					(GTK_FIXED(inv1), box_ipAddr ,550, 5);
+	
+    combo_nettype_changed			(GTK_COMBO_BOX (combo_netType),0);
+    combo_canid_changed			    (GTK_COMBO_BOX (combo_canId),0);
+    combo_netid_changed				(GTK_COMBO_BOX (combo_netId) ,0);
+
+    ///////////////////////////////
+
 //    gtk_container_add (GTK_CONTAINER (top_hbox), deviceNameEntry);
 
     //Creation of the bottom frame

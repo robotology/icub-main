@@ -11,8 +11,6 @@
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/CanBusInterface.h>
 
-#include "driver.h"
-
 #include <fstream>
 
 //*****************************************************************/
@@ -89,9 +87,12 @@ public:
 void drv_sleep (double time);
 
 //*****************************************************************/
+
+class iDriver;
+
 class cDownloader
 {
-    cDriver* m_candriver;
+    iDriver* m_candriver;
     yarp::dev::CanBuffer txBuffer;
     yarp::dev::CanBuffer rxBuffer;
     int canbus_id;

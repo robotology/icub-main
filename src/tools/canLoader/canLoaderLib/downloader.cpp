@@ -7,8 +7,9 @@
  *
  */
 
+#include "driver.h"
+#include "ethDriver.h"
 #include "downloader.h"
-
 #include <yarp/os/Time.h>
 #include <stdlib.h> //added for abs
 #include <string.h>
@@ -117,7 +118,14 @@ int cDownloader::initdriver(Searchable &config)
             connected = false;
         }
 
-    m_candriver = new cDriver;
+    if (config.find("device").asString()=="EMS")
+    {
+        m_candriver = new eDriver;
+    }
+    else
+    {
+        m_candriver = new cDriver;
+    }
 
     if (m_candriver->init(config)==-1)
         {
