@@ -31,7 +31,7 @@
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="Encoder">      6.67          -1.33         -2.44         -2.53         -2.61         -2.53         -2.47         -1.84         </param>       
 <param name="Zeros">        189.00        -146.25       -188.18       -97.89        -183.83       -97.89        -200.22       -380.43       </param>       
-<param name="TorqueID">     0             0             0             0             0             0             0             0             </param>       
+<param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="torqueMax">    0             0             0             0             0             0             0             0             </param>       
 <param name="Verbose">      0             0             0             0             0             0             0             0             </param>       
