@@ -14,19 +14,19 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 #include <ace/Time_Value.h>
 #include <ace/OS_NS_sys_socket.h>
-    
+
 class CanSocket
 {
 public:
      CanSocket()
-	{ 
-		ACE_OS::socket_init(2,2);
-		mSocket=NULL; 
-	}
-    
-	~CanSocket()
-    { 
-        close(); 
+    {
+        ACE_OS::socket_init(2,2);
+        mSocket=NULL;
+    }
+
+    ~CanSocket()
+    {
+        close();
         ACE_OS::socket_fini();
     }
 
@@ -35,12 +35,12 @@ public:
         mSocket=new ACE_SOCK_Dgram_Bcast(ACE_INET_Addr(port,address));
         return mSocket!=NULL;
     }
-    
+
     void sendTo(void* data,size_t len,ACE_UINT16 port,ACE_UINT32 address)
     {
         mSocket->send(data,len,ACE_INET_Addr(port,address));
     }
-    
+
     ssize_t receiveFrom(void* data,size_t len,ACE_UINT32 &address,ACE_UINT16 &port,int wait_msec)
     {
         ACE_Time_Value tv(wait_msec/1000,(wait_msec%1000)*1000);
@@ -57,7 +57,7 @@ public:
             address=0;
             port=0;
         }
-    
+
         return nrec;
     }
 
@@ -141,7 +141,7 @@ class eDriver : public yarp::dev::ImplementCanBufferFactory<EthCanMessage,ECMSG>
 {
 private:
     CanSocket mSocket;
-    
+
     char mCanBusId;
     ACE_UINT32 mBoardAddr;
 
@@ -149,7 +149,7 @@ private:
 public:
     eDriver(){}
    ~eDriver(){}
-    
+
     int init(yarp::os::Searchable &config)
     {
         ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt();
@@ -163,9 +163,16 @@ public:
         mBoardAddr=(ACE_UINT32)config.find("remote").asInt();
 
         mCanBusId=config.check("canid")?config.find("canid").asInt():0;
+        ////////////////////////////////////
 
-        static char CMD_CANGTW_START = 0x20;
-        
+        unsigned char CMD_JMP_UPD=0x0C;
+        mSocket.sendTo(&CMD_JMP_UPD,1,3333,mBoardAddr);
+
+        yarp::os::Time::delay(3.0);
+
+        ////////////////////////////////////
+        unsigned char CMD_CANGTW_START=0x20;
+
         mSocket.sendTo(&CMD_CANGTW_START,1,3333,mBoardAddr);
 
         yarp::os::Time::delay(4.0);
@@ -183,7 +190,7 @@ public:
 
         return 0;
     }
-    
+
     int receive_message(yarp::dev::CanBuffer &messages, int howMany = MAX_READ_MSG, double TIMEOUT = 1.0)
     {
         CanPkt_t canPkt;
@@ -198,7 +205,7 @@ public:
         {
             int nrec=mSocket.receiveFrom(&canPkt,sizeof(CanPkt_t),address,port,1);
 
-            if (nrec==sizeof(CanPkt_t)) 
+            if (nrec==sizeof(CanPkt_t))
             {
                 if (address==mBoardAddr && port==3334)
                 {
@@ -208,7 +215,7 @@ public:
                     {
                         if (!mCanBusId || canPkt.frames[f].canBus==mCanBusId)
                         {
-                            //printf(">>> (RX) Len=%d ID=%x Data=",canPkt.frames[0].len,canPkt.frames[0].canId); 
+                            //printf(">>> (RX) Len=%d ID=%x Data=",canPkt.frames[0].len,canPkt.frames[0].canId);
                             //for (int l=0; l<canPkt.frames[0].len; ++l) printf("%x ",canPkt.frames[0].data[l]);
                             //printf("<<<\n");
 
@@ -227,7 +234,7 @@ public:
 
         return nread;
     }
-    
+
     int send_message(yarp::dev::CanBuffer &message, int n)
     {
         CanPkt_t canPkt;
@@ -256,7 +263,7 @@ public:
     {
         return yarp::dev::ImplementCanBufferFactory<EthCanMessage,ECMSG>::createBuffer(m);
     }
-    
+
     void destroyBuffer(yarp::dev::CanBuffer &buff)
     {
         yarp::dev::ImplementCanBufferFactory<EthCanMessage,ECMSG>::destroyBuffer(buff);

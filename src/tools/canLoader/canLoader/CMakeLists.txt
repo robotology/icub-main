@@ -18,7 +18,7 @@ include_directories(${ACE_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
 
 target_link_libraries(${PROJECTNAME} icubmod
-				     canLoaderLib
+                                     canLoaderLib
                                      ${GTK2_LIBRARIES}
                                      ${YARP_LIBRARIES}
                                      ${ACE_LIBRARIES})

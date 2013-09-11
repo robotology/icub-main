@@ -2,7 +2,7 @@
 
 /*
  * Copyright (C) 2008 RobotCub Consortium
- * Author: Marco Maggiali, Marco Randazzo
+ * Author: Marco Maggiali, Marco Randazzo, Alessandro Scalzo
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */

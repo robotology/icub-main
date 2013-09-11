@@ -5,9 +5,9 @@
 PROJECT(canLoader)
 
 if(ICUB_USE_GTK2)
-	ADD_SUBDIRECTORY(canLoader)
+    ADD_SUBDIRECTORY(canLoader)
 else(ICUB_USE_GTK2)
-	message(STATUS "GTK2 not selected, skipping canLoader")
+    message(STATUS "GTK2 not selected, skipping canLoader")
 endif(ICUB_USE_GTK2)
 
 ADD_SUBDIRECTORY(canLoaderLib)

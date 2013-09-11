@@ -30,18 +30,18 @@ int cDriver::init (Searchable &config)
     ret=dd.open(config);
     if (!ret)
         return -1;
-    
+
     dd.view(iCanBus);
     dd.view(iFactory);
-    
+
     if (iCanBus==0)
         return -1;
     if (iFactory==0)
         return -1;
 
     int i;
-	for (i = 0x700; i < 0x7FF; i++) iCanBus->canIdAdd (i);
-	for (i = 0x200; i < 0x2FF; i++) iCanBus->canIdAdd (i); //for strain board (polling messages used for calibration)
+    for (i = 0x700; i < 0x7FF; i++) iCanBus->canIdAdd (i);
+    for (i = 0x200; i < 0x2FF; i++) iCanBus->canIdAdd (i); //for strain board (polling messages used for calibration)
 
     iCanBus->canSetBaudRate(0); //0=1Mbit/s
 
@@ -73,7 +73,7 @@ int cDriver::receive_message(CanBuffer &messages, int howMany, double TIMEOUT)
     CanBuffer tmpBuff=createBuffer(MAX_READ_MSG);
     while(!done)
         {
-            
+
             ret=iCanBus->canRead(tmpBuff, MAX_READ_MSG, &how_many_messages, false);
 
             if (read+how_many_messages>MAX_READ_MSG)
@@ -86,24 +86,24 @@ int cDriver::receive_message(CanBuffer &messages, int howMany, double TIMEOUT)
                     messages[read]=tmpBuff[k];
                     read++;
                 }
-            
+
             now=Time::now();
-            
+
             if (read>=howMany)
                 {
                     done=true;
                     read=howMany;
                 }
-                
+
             if ( (now-start)>TIMEOUT)
                 done=true;
 
-            
+
             //  Time::delay(0.0);
         }
 
     destroyBuffer(tmpBuff);
-    if(!ret) 
+    if(!ret)
         return 0;
 
     return read;
@@ -114,12 +114,12 @@ int cDriver::send_message(CanBuffer &message, int messages)
 {
     unsigned int sent=0;
 
-	bool ret = iCanBus->canWrite(message, messages, &sent);
-	
-	if(!ret)
+    bool ret = iCanBus->canWrite(message, messages, &sent);
+
+    if(!ret)
         return 0;
-	else
-		return sent;
+    else
+        return sent;
 }
 
 yarp::dev::CanBuffer cDriver::createBuffer(int m)
