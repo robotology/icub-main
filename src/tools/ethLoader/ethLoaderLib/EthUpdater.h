@@ -8,17 +8,19 @@
 #ifndef __ETHUPDATER_H__
 #define __ETHUPDATER_H__
 
-#define CMD_SCAN       0xFF
+#define CMD_SCAN           0xFF
 
-#define CMD_START      0x01
-#define CMD_DATA       0x02
-#define CMD_JUMP       0x03
-#define CMD_END        0x04
-#define CMD_BOOT       0x05
-#define CMD_RESET      0x06
-#define CMD_CHADDR     0x07
-#define CMD_CHMASK     0x08
-#define CMD_PROCS      0x09
+#define CMD_START          0x01
+#define CMD_DATA           0x02
+#define CMD_JUMP           0x03
+#define CMD_END            0x04
+#define CMD_BOOT           0x05
+#define CMD_RESET          0x06
+#define CMD_CHADDR         0x07
+#define CMD_CHMASK         0x08
+#define CMD_PROCS          0x09
+#define CMD_SYSEEPROMERASE 0x12
+
 #define CMD_SHALS      0x0A
 #define CMD_BLINK      0x0B
 #define CMD_JUMP_UPD   0x0C
@@ -51,6 +53,10 @@ protected:
     DSocket mSocket;
 
 public:
+    static const int PROGRAM_APP;
+    static const int PROGRAM_LOADER;
+    static const int PROGRAM_UPDATER;
+
     EthUpdater()
     {
     }
@@ -84,7 +90,7 @@ public:
     BoardList& getBoardList(){ return mBoardList; }
 
     std::string cmdGetProcs();
-    std::string cmdProgram(FILE *programFile,void (*updateProgressBar)(float));
+    std::string cmdProgram(FILE *programFile,int partition,void (*updateProgressBar)(float));
 
     void cmdScan();
     void cmdBootSelect(unsigned char sector);
@@ -92,6 +98,7 @@ public:
     void cmdReset();
     void cmdJumpUpd();
     void cmdBlink();
+    void cmdEraseEprom();
     void cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
     void cmdChangeMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
    

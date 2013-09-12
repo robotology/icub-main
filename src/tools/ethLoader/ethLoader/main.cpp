@@ -39,13 +39,16 @@ GtkWidget *des_all_button  = NULL;
 GtkWidget *discover_button = NULL;
 GtkWidget *upload_button   = NULL;
 
+GtkWidget *upload_updater_button = NULL;
+GtkWidget *upload_loader_button  = NULL;
+
 GtkWidget *boot_upd_button = NULL;
 GtkWidget *boot_app_button = NULL;
 GtkWidget *jump_upd_button = NULL;
         
 GtkWidget *reset_button    = NULL;
 GtkWidget *procs_button    = NULL;
-         
+GtkWidget *eprom_button    = NULL;         
 GtkWidget *blink_button    = NULL;
 GtkWidget *progress_bar    = NULL;
 
@@ -77,6 +80,8 @@ void activate_buttons()
         
     gtk_widget_set_sensitive(discover_button,true);
     gtk_widget_set_sensitive(upload_button,nsel==1);
+    gtk_widget_set_sensitive(upload_loader_button, nsel==1);
+    gtk_widget_set_sensitive(upload_updater_button,nsel==1);
 
     gtk_widget_set_sensitive(boot_upd_button,bHaveSelected);
     gtk_widget_set_sensitive(boot_app_button,bHaveSelected);
@@ -84,7 +89,7 @@ void activate_buttons()
         
     gtk_widget_set_sensitive(reset_button,bHaveSelected);
     gtk_widget_set_sensitive(procs_button,bHaveSelected);
-         
+    gtk_widget_set_sensitive(eprom_button,bHaveSelected);     
     gtk_widget_set_sensitive(blink_button,bHaveSelected);
 }
 
@@ -432,6 +437,7 @@ static void destroy_main(GtkWindow *window,	gpointer user_data)
 
 static void updateProgressBar(float fraction)
 {
+    if (fraction<0.0f) fraction=0.0f; else if (fraction>1.0f) fraction=1.0f;
     gtk_progress_bar_set_fraction((GtkProgressBar*)progress_bar,fraction);
     gtk_widget_draw(window,NULL);
     gtk_main_iteration_do(false);
@@ -494,7 +500,7 @@ static void upload_cbk(GtkButton *button,gpointer user_data)
         return;
     }
     
-    std::string result=gUpdater.cmdProgram(programFile,updateProgressBar);
+    std::string result=gUpdater.cmdProgram(programFile,*(int*)user_data,updateProgressBar);
 
     fclose(programFile);
 
@@ -547,8 +553,13 @@ static void procs_cbk(GtkButton *button,gpointer user_data)
 
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),procs.c_str(),-1);
 }
-         
+       
 static void blink_cbk(GtkButton *button,gpointer user_data)
+{
+    gUpdater.cmdEraseEprom();
+}
+
+static void eraseeprom_cbk(GtkButton *button,gpointer user_data)
 {
     gUpdater.cmdBlink();
 }
@@ -558,7 +569,7 @@ static void info_cls_cbk(GtkButton *button,gpointer user_data)
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),"",-1);
 }
 
-#define MY_ADDR "10.0.0.1"
+#define MY_ADDR "10.0.1.104"
 #define MY_PORT 3333
 
 // Entry point for the GTK application
@@ -653,6 +664,12 @@ int myMain(int argc,char *argv[])
     gtk_container_add(GTK_CONTAINER(main_hbox),buttons_box);
 
     ////
+        //add_button("Discover",      discover_button, discover_cbk, buttons_box);
+        discover_button=gtk_button_new_with_mnemonic("Discover");
+        gtk_container_add(GTK_CONTAINER(buttons_box),discover_button);
+        g_signal_connect(discover_button,"clicked",G_CALLBACK(discover_cbk),NULL);
+        gtk_widget_set_size_request(discover_button,100,30);
+
         //add_button("Select All",    sel_all_button,  sel_all_cbk,  buttons_box);
         sel_all_button=gtk_button_new_with_mnemonic("Select All");
         gtk_container_add(GTK_CONTAINER(buttons_box),sel_all_button);
@@ -665,22 +682,27 @@ int myMain(int argc,char *argv[])
         g_signal_connect(des_all_button,"clicked",G_CALLBACK(des_all_cbk),NULL);
         gtk_widget_set_size_request(des_all_button,100,30);
         
-        //add_button("Discover",      discover_button, discover_cbk, buttons_box);
-        discover_button=gtk_button_new_with_mnemonic("Discover");
-        gtk_container_add(GTK_CONTAINER(buttons_box),discover_button);
-        g_signal_connect(discover_button,"clicked",G_CALLBACK(discover_cbk),NULL);
-        gtk_widget_set_size_request(discover_button,100,30);
-        
         //add_button("Start Upload",  upload_button,   upload_cbk,   buttons_box);
-        upload_button=gtk_button_new_with_mnemonic("Upload");
+        upload_button=gtk_button_new_with_mnemonic("Upload App");
         gtk_container_add(GTK_CONTAINER(buttons_box),upload_button);
-        g_signal_connect(upload_button,"clicked",G_CALLBACK(upload_cbk),NULL);
+        g_signal_connect(upload_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::PROGRAM_APP);
         gtk_widget_set_size_request(upload_button,100,30);
 
-        
+        //add_button("Upload Updater",  upload_updtater_button,   upload_cbk,   buttons_box);
+        upload_updater_button=gtk_button_new_with_mnemonic("Upload Upd");
+        gtk_container_add(GTK_CONTAINER(buttons_box),upload_updater_button);
+        g_signal_connect(upload_updater_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::PROGRAM_UPDATER);
+        gtk_widget_set_size_request(upload_updater_button,100,22);
+
+        //add_button("Upload Loader",  upload_loader_button,   upload_cbk,   buttons_box);
+        upload_loader_button=gtk_button_new_with_mnemonic("Upload Ldr");
+        gtk_container_add(GTK_CONTAINER(buttons_box),upload_loader_button);
+        g_signal_connect(upload_loader_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::PROGRAM_LOADER);
+        gtk_widget_set_size_request(upload_loader_button,100,22);
+
         progress_bar=gtk_progress_bar_new();
         gtk_container_add(GTK_CONTAINER(buttons_box),progress_bar);
-        gtk_widget_set_size_request(progress_bar,100,30);
+        gtk_widget_set_size_request(progress_bar,100,10);
 
 
         //add_button("Boot from Upd", boot_upd_button, boot_upd_cbk, buttons_box);
@@ -713,6 +735,12 @@ int myMain(int argc,char *argv[])
         g_signal_connect(procs_button,"clicked",G_CALLBACK(procs_cbk),NULL);
         gtk_widget_set_size_request(procs_button,100,30);
          
+        //add_button("Erase Eprom",    eeprom_button,    procs_cbk,    buttons_box);
+        eprom_button=gtk_button_new_with_mnemonic("Erase Eprom");
+        gtk_container_add(GTK_CONTAINER(buttons_box),eprom_button);
+        g_signal_connect(eprom_button,"clicked",G_CALLBACK(eraseeprom_cbk),NULL);
+        gtk_widget_set_size_request(eprom_button,100,30);
+
         //add_button("Blink",         blink_button,    blink_cbk,    buttons_box);
         blink_button=gtk_button_new_with_mnemonic("Blink");
         gtk_container_add(GTK_CONTAINER(buttons_box),blink_button);

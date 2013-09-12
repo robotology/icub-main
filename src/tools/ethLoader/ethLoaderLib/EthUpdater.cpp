@@ -10,6 +10,10 @@
 #include <ace/ACE.h>
 #include <yarp/os/Time.h>
 
+const int EthUpdater::PROGRAM_APP=0x5A;
+const int EthUpdater::PROGRAM_LOADER=0x55;
+const int EthUpdater::PROGRAM_UPDATER=0xAA;
+
 void EthUpdater::cmdScan()
 {
     mBoardList.empty();
@@ -21,14 +25,10 @@ void EthUpdater::cmdScan()
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress=mMyAddress;
 
-
-
     while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,1000)>0)
     {
         if (mRxBuffer[0]==CMD_SCAN)
         {
-
-
             if (rxAddress!=mMyAddress)
             {
                 ACE_UINT8 version=mRxBuffer[1];
@@ -51,11 +51,7 @@ void EthUpdater::cmdScan()
     }
 }
 
-#define PROGRAM_LOADER   0x55
-#define PROGRAM_UPDATER  0xAA
-#define PROGRAM_APP      0x5A
-
-std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(float))
+std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*updateProgressBar)(float))
 {
     updateProgressBar(0.0f);
 
@@ -63,11 +59,13 @@ std::string EthUpdater::cmdProgram(FILE *programFile,void (*updateProgressBar)(f
     const int HEAD_SIZE=7;
 
     fseek(programFile,0,SEEK_END);
-    float fileSize=(float)(ftell(programFile)/2);
+    float fileSize=(float)(ftell(programFile)/3);
     fseek(programFile,0,SEEK_SET);
 
     mTxBuffer[0]=CMD_START;
-    mTxBuffer[1]=PROGRAM_APP;
+    mTxBuffer[1]=(unsigned char)partition;
+
+    //mTxBuffer[1]=PROGRAM_APP;
     //mTxBuffer[1]=PROGRAM_LOADER;
     //mTxBuffer[1]=PROGRAM_UPDATER;
 
@@ -252,6 +250,12 @@ void EthUpdater::cmdBootSelect(unsigned char sector)
             mSocket.SendTo(mTxBuffer,2,mPort,mBoardList[i].mAddress);
         }
     }
+}
+
+
+void EthUpdater::cmdEraseEprom()
+{
+    sendCommandSelected(CMD_SYSEEPROMERASE);
 }
 
 void EthUpdater::sendCommandSelected(unsigned char command)

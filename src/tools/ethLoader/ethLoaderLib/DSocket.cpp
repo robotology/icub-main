@@ -6,8 +6,6 @@
 */
 
 #include "DSocket.h"
-
-#include <ace/ACE.h>
 #include <ace/Time_Value.h>
 #include <ace/OS_NS_sys_socket.h>
 
@@ -24,30 +22,26 @@ DSocket::~DSocket()
 
 bool DSocket::Create(ACE_UINT16 port,std::string& address)
 {
-    ACE_INET_Addr ace_addr(port,address.c_str());
-    mSocket=new ACE_SOCK_Dgram_Bcast(ace_addr);
+    mSocket=new ACE_SOCK_Dgram_Bcast(ACE_INET_Addr(port,address.c_str()));
 
     return mSocket!=NULL;
 }
 
 bool DSocket::Create(ACE_UINT16 port,ACE_UINT32 address)
 {
-    ACE_INET_Addr ace_addr(port,address);
-    mSocket=new ACE_SOCK_Dgram_Bcast(ace_addr);
+    mSocket=new ACE_SOCK_Dgram_Bcast(ACE_INET_Addr(port,address));
 
     return mSocket!=NULL;
 }
 
 void DSocket::SendTo(void* data,size_t len,ACE_UINT16 port,std::string& address)
 {
-    ACE_INET_Addr ace_addr(port,address.c_str());
-    mSocket->send(data,len,ace_addr);
+    mSocket->send(data,len,ACE_INET_Addr(port,address.c_str()));
 }
 
 void DSocket::SendTo(void* data,size_t len,ACE_UINT16 port,ACE_UINT32 address)
 {
-    ACE_INET_Addr ace_addr(port,address);
-    mSocket->send(data,len,ace_addr);
+    mSocket->send(data,len,ACE_INET_Addr(port,address));
 }
 
 void DSocket::SendBroad(void* data,size_t len,ACE_UINT16 port)

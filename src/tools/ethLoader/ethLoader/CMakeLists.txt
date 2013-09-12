@@ -18,7 +18,7 @@ include_directories(${YARP_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
 
 target_link_libraries(${PROJECTNAME}
-		      ethLoaderLib 
+                      ethLoaderLib 
                       ${GTK2_LIBRARIES}
                       ${YARP_LIBRARIES}
                       ${ACE_LIBRARIES})
