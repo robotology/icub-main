@@ -1,7 +1,7 @@
 
 option (ICUB_INSTALL_ALL_ROBOTS "Enable experimental installation of all robots" ON)
 
-set(ROBOT_NAME "$ENV{ICUB_ROBOTNAME}" CACHE PATH
+set(ROBOT_NAME "$ENV{YARP_ROBOT_NAME}" CACHE PATH
     "Name of your robot")
 
 set(ROBOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${ROBOT_NAME}")
