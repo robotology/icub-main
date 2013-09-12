@@ -4,7 +4,7 @@
         
     <!-- motor controllers wrappers -->    
     <devices file="wrappers/motorControl/head_mc_wrapper.xml" />   
-    <devices file="hardware/motorControl/icub_head.xml" />
+    <devices file="hardware/motorControl/icub_head_nozeros.xml" />
 	
     <!-- MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR-->
     <devices file="hardware/inertial.xml" />
