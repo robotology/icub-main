@@ -1,0 +1,9 @@
+<devices>
+	<device name="torso_skin" type="canBusSkin">
+		<param name="canbusDevice"> "sharedcan" </param>
+		<param name="physDevice"> "cfw2can" </param>
+		<param name="canDeviceNum"> 9 </param>
+		<param name="skinCanIds"> 7 8 9 10 </param>
+		<param name="period"> 10 </param>
+	</device>  
+</devices>
