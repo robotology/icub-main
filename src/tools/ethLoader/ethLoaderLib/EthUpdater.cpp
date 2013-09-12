@@ -166,7 +166,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
 
                 for (int i=0; i<size; ++i)
                 {
-                    mTxBuffer[HEAD_SIZE+bytesToWrite+i]=(unsigned char)strtol(line.substr(i*2+9,2).c_str(),NULL,16);
+                    mTxBuffer[HEAD_SIZE+1+bytesToWrite+i]=(unsigned char)strtol(line.substr(i*2+9,2).c_str(),NULL,16);
                 }
 
                 bytesToWrite+=size;
