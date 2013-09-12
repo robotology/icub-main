@@ -1,8 +1,6 @@
 // head 
 cfw2can 0 1 2BLLDC.1.62.out.S
 cfw2can 0 2 4DC.2.15.out.S
-cfw2can 0 7 4DC.2.15.out.S
-cfw2can 0 9 4DC.1.11.out.S
 
 // torso
 cfw2can 0 5 2BLL_IE.2.54.out.S
