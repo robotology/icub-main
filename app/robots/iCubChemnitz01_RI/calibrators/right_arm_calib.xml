@@ -10,9 +10,9 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            3             3             3             3             0             3             3             3             </param>       
-<param name="calibration1">               1706.25       853.13        2047.50       2559.38       900.00        2047.50       2047.50       2430.00       </param>       
+<param name="calibration1">               1706.25       853.13        2047.50       2559.38       900.00        2047.50       2047.50       2250.00       </param>       
 <param name="calibration2">               10.00         10.00         10.00         10.00         -20.00        10.00         10.00         100.00        </param>       
-<param name="calibration3">               216.13        3076.94       4056.33       702.98        0.00          2061.15       3282.83       0.00          </param>       
+<param name="calibration3">               582.40        3939.16       2573.03       473.20        0.00          2138.50       2121.44       0.00          </param>       
 <param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
 <param name="velocityZero">               10            10            10            10            30            10            10            100           </param>       
 <param name="maxPwm">                     120           120           120           120           0             0             0             0             </param>       
