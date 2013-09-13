@@ -10,11 +10,8 @@
     <devices file="wrappers/motorControl/right_arm_mc_wrapper.xml" />
     <devices file="wrappers/motorControl/left_leg_mc_wrapper.xml" /> 
     <devices file="wrappers/motorControl/right_leg_mc_wrapper.xml" /> 
-    <devices file="wrappers/motorControl/head_face_mc_wrapper.xml" />
-    <!-- 
     <devices file="wrappers/motorControl/head_mc_wrapper.xml" />
     <devices file="wrappers/motorControl/face_mc_wrapper.xml" />
-    -->
     <devices file="wrappers/motorControl/torso_mc_wrapper.xml" />
     <devices file="hardware/motorControl/icub_left_arm.xml" /> 
     <devices file="hardware/motorControl/icub_left_hand.xml" /> 
@@ -22,11 +19,8 @@
     <devices file="hardware/motorControl/icub_right_hand.xml" />
     <devices file="hardware/motorControl/icub_left_leg.xml" /> 
     <devices file="hardware/motorControl/icub_right_leg.xml" /> 
-    <devices file="hardware/motorControl/icub_head_face.xml" />
-    <!-- 
     <devices file="hardware/motorControl/icub_head.xml" />
     <devices file="hardware/motorControl/icub_face.xml" />
-    -->
     <devices file="hardware/motorControl/icub_torso.xml" />
     
     <!-- VIRTUAL ANALOG SERVERs -->
@@ -72,11 +66,8 @@
     <devices file="hardware/skin/right_hand_inertial_mtb.xml" />  
 
     <!-- CALIBRATORS -->
-    <devices file="calibrators/head_face_calib.xml" /> 
-    <!-- 
     <devices file="calibrators/head_calib.xml" />
     <devices file="calibrators/face_calib.xml" />
-    -->
     <devices file="calibrators/torso_calib.xml" />
     <devices file="calibrators/right_leg_calib.xml" />
     <devices file="calibrators/left_leg_calib.xml" /> 
