@@ -16,7 +16,7 @@ if(ICUB_INSTALL_ALL_ROBOTS) # Install all robot-specific files
   add_subdirectory(iCubBielefeld02)
   add_subdirectory(iCubBielefeld03)
   #add_subdirectory(iCubBremen01)
-  add_subdirectory(iCubChemnitz01_RI)
+  add_subdirectory(iCubChemnitz01)
   add_subdirectory(iCubFrankfurt01)
   add_subdirectory(iCubGenova01_RI)
   add_subdirectory(iCubGenova02)
