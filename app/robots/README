@@ -5,6 +5,12 @@ to setup the share/iCub/robots/default symlink so that the correct files will be
 
 If the ICUB_ROBOTNAME variable does not exist, setup shall be perfomed manually.
 
+The following robots are currently using robotInterface:
+- coman
+- iCubGenova01
+- iCubGrenoble01
+- iCubParis02
+- iCubChemnitz01
 
 
  
