@@ -1849,11 +1849,12 @@ bool comanMotionControl::getEncoderAccelerationsRaw(double *accs)
 bool comanMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
     double tmp;
+    bool ret = true;
     for(int i=0; i<_njoints; i++)
     {
-        getEncoderTimedRaw(i, &tmp, &stamps[i]);
-        encs[i] = tmp;
+        ret = ret && getEncoderTimedRaw(i, &encs[i], &stamps[i]);
     }
+    return ret;
 }
 
 bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
