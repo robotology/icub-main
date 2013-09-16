@@ -1,4 +1,4 @@
-set(appname iCubGrenoble01_RI)
+set(appname iCubGrenoble01)
 
 set(scripts icub_all.xml robotMotorGui.ini firmwareUpdate.txt)
 
