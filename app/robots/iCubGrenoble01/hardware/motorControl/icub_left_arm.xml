@@ -1,7 +1,7 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">               
-<devices robot="iCubGrenoble01" build="1">               
+<devices robot="iCubGrenoble01" build=1">                
   <device name="left_arm_mc" type="canmotioncontrol">    
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
@@ -30,7 +30,7 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="Encoder">      -11.375       -11.375       11.375        -11.375       706.67        -11.375       11.375        -2.91667      </param>       
-<param name="Zeros">        -177          -326          166           -182          -74           -180          180           -740.571      </param>       
+<param name="Zeros">        -172          -334          162           -178          -74           -180          180           -740.571      </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">    8             8             8             8             2             2             2             2             </param>       
