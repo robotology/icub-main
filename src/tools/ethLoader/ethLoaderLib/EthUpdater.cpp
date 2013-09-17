@@ -135,7 +135,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
         {
         case 0: //standard data record        
             {
-                int size=strtol(line.substr(1,2).c_str(),NULL,16);
+                int size =strtol(line.substr(1,2).c_str(),NULL,16);
                 int addrL=strtol(line.substr(3,4).c_str(),NULL,16);
 
                 int address=addrH<<16|addrL;
@@ -166,7 +166,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
 
                 for (int i=0; i<size; ++i)
                 {
-                    mTxBuffer[HEAD_SIZE+1+bytesToWrite+i]=(unsigned char)strtol(line.substr(i*2+9,2).c_str(),NULL,16);
+                    mTxBuffer[HEAD_SIZE+bytesToWrite+i]=(unsigned char)strtol(line.substr(i*2+9,2).c_str(),NULL,16);
                 }
 
                 bytesToWrite+=size;
