@@ -1,5 +1,5 @@
 <application>
-<name>Cameras</name>
+<name>Calib Cameras</name>
 <dependencies>
    <port>/root</port>
 </dependencies> 
@@ -17,41 +17,41 @@
 </module>
 <module>
   <name>camCalib</name>
-  <parameters>--name /icub/camcalib/left --context CHANGE --from CHANGE.ini</parameters>
-  <node>CHANGE</node>
-  <stdio>CHANGE</stdio>
+  <parameters>--context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
+  <node>icubsrv</node>
+  <stdio>icubsrv</stdio>
   <tag>camCalibLeft</tag>
 </module>
 <module>
   <name>camCalib</name>
-  <parameters>--name /icub/camcalib/right --context CHANGE --from CHANGE.ini</parameters>
-  <node>CHANGE</node>
-  <stdio>CHANGE</stdio>
+  <parameters>--context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
+  <node>icubsrv</node>
+  <stdio>icubsrv</stdio>
   <tag>camCalibRight</tag>
 </module>
 <module>
   <name>yarpview</name>
   <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
-  <node>CHANGE</node>
+  <node>icubsrv</node>
   <tag>viewleft</tag>
 </module>
 <module>
   <name>yarpview</name>
   <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
-  <node>CHANGE</node>
+  <node>icubsrv</node>
 <tag>viewright</tag>
 </module>
 <module>
   <name>frameGrabberGui2</name>
   <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
   <tag>fggui_left</tag>
-  <node>CHANGE</node>
+  <node>icubsrv</node>
 </module>
 <module>
   <name>frameGrabberGui2</name>
   <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
   <tag>fggui_right</tag>
-  <node>CHANGE</node>
+  <node>icubsrv</node>
 </module>
 <connection>
   <from>/icub/cam/left</from>
