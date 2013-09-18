@@ -263,7 +263,7 @@ public:
         dim=chain.getDOF();
         qd.resize(dim,0.0);
 
-        size_t n=std::min(q0.length(),dim);
+        size_t n=std::min((unsigned int) q0.length(),dim);
         for (size_t i=0; i<n; i++)
             qd[i]=q0[i];
 
