@@ -17,6 +17,8 @@
 #include <eODeb_eoProtoParser_hid.h>
 #include <eOtheEthLowLevelParser.h>
 
+#include <stdexcept>      // std::out_of_range
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -310,13 +312,16 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
 {
     yTrace() << id->boardNum;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
-    // Defining the var addLUT_result to have the true/false result of the insert operation...
-    // it is unlikely to fail, so keep it or not?
-    //std::pair<_Rb_tree_iterator <std::pair <const eOnvEP_t, FEAT_ID > >, bool > addLUT_result;
-    //addLUT_result =
-    boards_map.insert(std::pair<eOnvEP_t, FEAT_ID>(id->ep, *id)).second;
+    /* Defined the var addLUT_result to have the true/false result of the insert operation...It helped catching a bug.
+     * It fails if the element is already present. This can happen if someone tries to read an element with
+     * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
+     * with zeros.
+     */
+     bool addLUT_result =  boards_map.insert(std::pair<eOnvEP_t, FEAT_ID>(id->ep, *id)).second;
+
     // Check result of insertion
-    //addLUT_result.second ? yWarning() << "ok add lut element" : yError() << "NON ok add lut element";
+    addLUT_result ? yDebug() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
+                    yError() << "NON ok add lut element for board " << id->boardNum << " and ep " << id->ep;
 }
 
 bool TheEthManager::removeLUTelement(FEAT_ID element)
@@ -354,9 +359,27 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
 
 void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
 {
-//    yTrace();
 //     managerMutex.wait();
-    void * ret = boards_map[ep].handle;
+    void * ret = NULL;
+    static int error = 0;
+
+    try
+    {
+        // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
+        /* The bug is caused by the fact that the [] version will create an unitialized element inside the map,
+         * causing the return of a wrong pointer.
+         * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
+         * element is already present preventing the map to be corrected.
+         */
+        ret = boards_map.at(ep).handle;
+    }
+    catch (const std::out_of_range& error)
+    {
+//        if(0 == (error%1000) )
+            yError() << "Got a message from EP " << ep << "but boards_map does not contains any related class pointer yet";
+
+//        error++;
+    }
 //     managerMutex.post();
     return ret;
 }
