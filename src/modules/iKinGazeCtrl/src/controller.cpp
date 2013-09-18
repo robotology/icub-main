@@ -516,7 +516,7 @@ void Controller::run()
     vdeg =CTRL_RAD2DEG*v;
     mutexData.post();
 
-    // send velocities to the robot
+    // send commands to the robot
     if (Robotable)
     {
         mutexCtrl.wait();
