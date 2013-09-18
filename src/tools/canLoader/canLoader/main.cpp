@@ -719,35 +719,38 @@ static void start_end_click (GtkButton *button,    gpointer   user_data)
         params.put("canTxTimeout", 2000);
         params.put("canRxTimeout", 2000);
 
-        ACE_UINT32 ip1,ip2,ip3,ip4;
-        sscanf(gtk_entry_get_text(GTK_ENTRY(box_ipAddr)),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-        ACE_UINT32 remAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-
-        size_t count=0;
-        ACE_INET_Addr* addr_array=NULL;
-        ret=ACE::get_ip_interfaces(count,addr_array);
-
-        if (ret || count<=0)
+        if (!prompt_version)
         {
-            dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
-            return;
-        }
+            ACE_UINT32 ip1,ip2,ip3,ip4;
+            sscanf(gtk_entry_get_text(GTK_ENTRY(box_ipAddr)),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+            ACE_UINT32 remAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
 
-        ACE_UINT32 locAddr=addr_array[0].get_ip_address();
+            size_t count=0;
+            ACE_INET_Addr* addr_array=NULL;
+            ret=ACE::get_ip_interfaces(count,addr_array);
 
-        for (unsigned int a=1; a<count; ++a)
-        {
-            if ((remAddr & 0xFFFF0000)==(addr_array[a].get_ip_address() & 0xFFFF0000))
+            if (ret || count<=0)
             {
-                locAddr=addr_array[a].get_ip_address();
-                break;
+                dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
+                return;
             }
+
+            ACE_UINT32 locAddr=addr_array[0].get_ip_address();
+
+            for (unsigned int a=1; a<count; ++a)
+            {
+                if ((remAddr & 0xFFFF0000)==(addr_array[a].get_ip_address() & 0xFFFF0000))
+                {
+                    locAddr=addr_array[a].get_ip_address();
+                    break;
+                }
+            }
+        
+            params.put("local", int(locAddr));
+            params.put("remote",int(remAddr));
+        
+            params.put("canid",canID);
         }
-
-        params.put("local", int(locAddr));
-        params.put("remote",int(remAddr));
-
-        params.put("canid",canID);
 
         //try to connect to the driver
         ret = downloader.initdriver(params);
