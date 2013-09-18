@@ -134,6 +134,7 @@ protected:
     std::deque<yarp::dev::IControlLimits*>   lLim;
     std::deque<yarp::dev::IVelocityControl*> lVel;
     std::deque<yarp::dev::IPositionDirect*>  lPos;
+    std::deque<yarp::dev::IPositionControl*> lStp;
     std::deque<int>                          lJnt;
     std::deque<int*>                         lRmp;
 

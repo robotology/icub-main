@@ -155,7 +155,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
     
     v.resize(nJointsHead,0.0);
-    vdegOld=v;
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
@@ -271,12 +270,24 @@ void Controller::motionOngoingEventsFlush()
 
 
 /************************************************************************/
-void Controller::stopLimbsVel()
+void Controller::stopLimb()
 {
     if (Robotable)
     {
+        // note: vel==0.0 is always achievable
         mutexCtrl.wait();
-        velHead->velocityMove(zeros(nJointsHead).data());   // vel==0.0 is always achievable
+
+        if (posCtrlOn)
+        {
+            for (size_t i=0; i<neckJoints.size(); i++)
+                posHead->stop(neckJoints[i]);
+
+            for (size_t i=0; i<eyesJoints.size(); i++)
+                velEyes->velocityMove(eyesJoints[i],0.0);
+        }
+        else for (int i=0; i<nJointsHead; i++)
+            velHead->velocityMove(i,0.0);
+
         mutexCtrl.post();
     }
 }
@@ -331,18 +342,18 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
 {
     mutexCtrl.wait();
 
-    posHead->setRefSpeed(3,vel[0]);
-    posHead->setRefSpeed(4,vel[1]);
-    posHead->setRefSpeed(5,vel[2]);
+    posHead->setRefSpeed(eyesJoints[0],vel[0]);
+    posHead->setRefSpeed(eyesJoints[1],vel[1]);
+    posHead->setRefSpeed(eyesJoints[2],vel[2]);
 
     // enforce joints bounds
-    ang[0]=std::min(std::max(lim(3,0),ang[0]),lim(3,1));
-    ang[1]=std::min(std::max(lim(4,0),ang[1]),lim(4,1));
-    ang[2]=std::min(std::max(lim(5,0),ang[2]),lim(5,1));
+    ang[0]=std::min(std::max(lim(eyesJoints[0],0),ang[0]),lim(eyesJoints[0],1));
+    ang[1]=std::min(std::max(lim(eyesJoints[1],0),ang[1]),lim(eyesJoints[1],1));
+    ang[2]=std::min(std::max(lim(eyesJoints[2],0),ang[2]),lim(eyesJoints[2],1));
 
-    posHead->positionMove(3,CTRL_RAD2DEG*ang[0]);
-    posHead->positionMove(4,CTRL_RAD2DEG*ang[1]);
-    posHead->positionMove(5,CTRL_RAD2DEG*ang[2]);
+    posHead->positionMove(eyesJoints[0],CTRL_RAD2DEG*ang[0]);
+    posHead->positionMove(eyesJoints[1],CTRL_RAD2DEG*ang[1]);
+    posHead->positionMove(eyesJoints[2],CTRL_RAD2DEG*ang[2]);
 
     saccadeStartTime=Time::now();
     tiltDone=panDone=verDone=false;
@@ -375,13 +386,13 @@ void Controller::run()
     if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
     {
         if (!tiltDone)
-            posHead->checkMotionDone(3,&tiltDone);
+            posHead->checkMotionDone(eyesJoints[0],&tiltDone);
 
         if (!panDone)
-            posHead->checkMotionDone(4,&panDone);
+            posHead->checkMotionDone(eyesJoints[1],&panDone);
 
         if (!verDone)
-            posHead->checkMotionDone(5,&verDone);
+            posHead->checkMotionDone(eyesJoints[2],&verDone);
 
         commData->get_isSaccadeUnderway()=!(tiltDone&&panDone&&verDone);
         if (!commData->get_isSaccadeUnderway())
@@ -411,7 +422,7 @@ void Controller::run()
         {
             event="motion-done";
 
-            stopLimbsVel();
+            stopLimb();
             commData->get_isCtrlActive()=false;
         }
         // manage new target while controller is active
@@ -494,8 +505,6 @@ void Controller::run()
         else
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
     }
-    else
-        vdegOld=0.0;
 
     v.setSubvector(0,vNeck);
     v.setSubvector(3,vEyes);
@@ -520,17 +529,16 @@ void Controller::run()
     if (Robotable)
     {
         mutexCtrl.wait();
+
         if (posCtrlOn)
         {
             Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
             posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
             velEyes->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
         }
-        else if (!(vdeg==vdegOld))
-        {
+        else
             velHead->velocityMove(vdeg.data());
-            vdegOld=vdeg;
-        }
+
         mutexCtrl.post();
     }
 
@@ -603,7 +611,7 @@ void Controller::run()
 /************************************************************************/
 void Controller::threadRelease()
 {
-    stopLimbsVel();
+    stopLimb();
     notifyEvent("closing");
 
     port_x.interrupt();
@@ -627,7 +635,7 @@ void Controller::threadRelease()
 /************************************************************************/
 void Controller::suspend()
 {
-    stopLimbsVel();
+    stopLimb();
     commData->get_isCtrlActive()=false;
     commData->get_isSaccadeUnderway()=false;
     fprintf(stdout,"\nController has been suspended!\n\n");

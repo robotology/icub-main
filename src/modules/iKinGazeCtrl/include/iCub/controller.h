@@ -96,7 +96,7 @@ protected:
 
     Matrix lim;
     Vector q0deg,qddeg,qdeg,vdeg;
-    Vector v,vNeck,vEyes,vdegOld;
+    Vector v,vNeck,vEyes;
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
     VectorOf<int> neckJoints,eyesJoints;
@@ -117,7 +117,7 @@ public:
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
     void   doSaccade(Vector &ang, Vector &vel);
-    void   stopLimbsVel();
+    void   stopLimb();
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();

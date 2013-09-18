@@ -1257,19 +1257,14 @@ void ServerCartesianController::sendControlCommands()
             if (!(*chainState)[i].isBlocked())
             {
                 double v_cnt=CTRL_RAD2DEG*v[cnt];
+                double thres=lDsc[j].minAbsVels[k];
 
-                // send only if changed
-                if (v_cnt!=velCmd[cnt])
-                {
-                    double thres=lDsc[j].minAbsVels[k];
+                // apply bang-bang control to compensate for unachievable low velocities
+                if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
+                    v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
 
-                    // apply bang-bang control to compensate for unachievable low velocities
-                    if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
-                        v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
-
-                    lVel[j]->velocityMove(lRmp[j][k],velCmd[cnt]=v_cnt);
-                }
-
+                lVel[j]->velocityMove(lRmp[j][k],v_cnt);
+                velCmd[cnt]=v_cnt;
                 cnt++;
             }
 
@@ -1286,21 +1281,18 @@ void ServerCartesianController::sendControlCommands()
 /************************************************************************/
 void ServerCartesianController::stopLimb()
 {
-    if (!posDirectEnabled)
+    int j=0; int k=0;
+    for (unsigned int i=0; i<chainState->getN(); i++)
     {
-        int j=0;
-        int k=0;
+        if (!(*chainState)[i].isBlocked())
+            posDirectEnabled?
+            lStp[j]->stop(lRmp[j][k]):
+            lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
 
-        for (unsigned int i=0; i<chainState->getN(); i++)
+        if (++k>=lJnt[j])
         {
-            if (!(*chainState)[i].isBlocked())
-                lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
-
-            if (++k>=lJnt[j])
-            {
-                j++;
-                k=0;
-            }
+            j++;
+            k=0;
         }
     }
 
@@ -1718,6 +1710,7 @@ bool ServerCartesianController::close()
     lLim.clear();
     lVel.clear();
     lPos.clear();
+    lStp.clear();
     lJnt.clear();
     lRmp.clear();
 
@@ -1781,11 +1774,13 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IControlLimits   *lim;
             IVelocityControl *vel;
             IPositionDirect  *pos;
+            IPositionControl *stp;
             int               joints;
 
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(lim);
             drivers[j]->poly->view(vel);
+            drivers[j]->poly->view(stp);
             encTimedEnabled&=drivers[j]->poly->view(ent);
             pidAvailable&=drivers[j]->poly->view(pid);
             posDirectAvailable&=drivers[j]->poly->view(pos);
@@ -1825,6 +1820,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             lLim.push_back(lim);
             lVel.push_back(vel);
             lPos.push_back(pos);
+            lStp.push_back(stp);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
         }
