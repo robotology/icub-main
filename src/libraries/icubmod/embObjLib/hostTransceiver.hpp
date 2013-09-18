@@ -65,12 +65,7 @@ protected:
     uint32_t              localipaddr;
     uint32_t              remoteipaddr;
     uint16_t              ipport;
-//     EOpacket              TxPkt;
-//     EOpacket              RxPkt;
-//    EOpacket             *p_TxPkt;
     EOpacket             *p_RxPkt;
-
-    int                   bytesUsed;
 
 public:
     hostTransceiver();
@@ -114,8 +109,6 @@ public:
 
     // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
     bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
-
-    bool load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid);
 
     // somebody passes the received packet
     void SetReceived(uint8_t *data, uint16_t size);

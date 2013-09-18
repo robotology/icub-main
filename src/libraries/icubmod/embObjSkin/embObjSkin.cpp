@@ -260,17 +260,12 @@ bool EmbObjSkin::init()
     sigcfg.id = nvid;
     sigcfg.plustime = 0;
     eo_array_PushBack(array, &sigcfg);
-    res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign);
 
-    /*EOnv nvtmp_go2state;
-    eOnvID_t nvid_go2state 		= eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
-    EOnv 	*nv_p 				= res->getNVhandler(endpoint_mn_appl, nvid_go2state, &nvtmp_go2state);
-    eOmn_appl_state_t  desired 	= applstate_running;
-
-    if( eores_OK != eo_nv_Set(nv_p, &desired, eobool_true, eo_nv_upd_dontdo))
-    printf("error!!");
-    // tell agent to prepare a rop to send
-    res->load_occasional_rop(eo_ropcode_set, endpoint_mn_appl, nvid_go2state);    */
+    // Send message
+    if( !res->addSetMessage(nvid_ropsigcfgassign, endpoint_mn_comm, (uint8_t *) array) )
+    {
+        yError() << "while setting rop sig cfg";
+    }
 
     return true;
 }

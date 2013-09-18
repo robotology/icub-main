@@ -39,7 +39,7 @@ uint64_t max_idx = MAX_ACQUISITION*7*16*2 / 8;
 uint64_t utime[MAX_ACQUISITION*16*7*2*2] = {0};
 uint64_t errors[MAX_ACQUISITION*16*7*2*2][2] = {0};
 uint64_t nErr=0;
-FILE *outFile = NULL;waiting for new ms";
+FILE *outFile = NULL;
 #endif
 
 
@@ -47,7 +47,18 @@ FILE *outFile = NULL;waiting for new ms";
 hostTransceiver::hostTransceiver() : transMutex(1)
 {
     yTrace();
-    bytesUsed = 0;
+
+    ipport 		 = 0;
+    localipaddr  = 0;
+    remoteipaddr = 0;
+
+    p_RxPkt     = NULL;
+    hosttxrx    = NULL;
+    pc104txrx   = NULL;
+    pc104nvscfg = NULL;
+
+    EPvector = NULL;
+    EPhash_function_ep2index = NULL;
 }
 
 hostTransceiver::~hostTransceiver()
@@ -60,7 +71,8 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
     eOhosttransceiver_cfg_t hosttxrxcfg;
-    memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t)); // acemor on 02-may13: so that the newly introduced field sizes contains the EOK_HOSTTRANSCEIVER_* values
+    // 02-may13: so that the newly introduced field sizes contains the EOK_HOSTTRANSCEIVER_* values
+    memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr   = _remoteipaddr;
     hosttxrxcfg.remoteboardipv4port   = _ipport;
  
@@ -155,69 +167,8 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
     return ret;
 }
 
-bool hostTransceiver::load_occasional_rop(eOropcode_t opc, uint16_t ep, uint16_t nvid)
-{
-    bool ret = false;
-    eOropdescriptor_t ropdesc;
-    ropdesc.configuration = eok_ropconfiguration_basic;
-    ropdesc.configuration.plustime = 1;
-    ropdesc.ropcode = opc;
-    ropdesc.ep = ep;
-    ropdesc.id = nvid;
-    ropdesc.size = 0;
-    ropdesc.data = NULL;
-    ropdesc.signature = 0;
-
-
-    transMutex.wait();
-    eOresult_t res = eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc);
-    transMutex.post();
-
-    if(eores_OK == res)
-        ret = true;
-    else
-    {
-        yError() << "Error while loading ROP in ropframe!!\n";
-        ret = false;
-    }
-    return ret;
-}
-
-/* not possible (too messy) go have a unique function to get nvids...
-eOnvID_t hostTransceiver::getNVid(char* nvName, uint numberOf, eOnvEP_t endPoint, FeatureType type)
-{
-    eOnvID_t nvid = EOK_uint16dummy;
-    _mutex.wait();
-    switch(type)
-    {
-        // Add endpoint management
-        case Management:  (2 different functions
-            break;
-        case MotionControl:
-       3 different function: joint, motor and controller
-            nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(  (eOcfg_nvsEP_mc_endpoint_t) endPoint, (eOcfg_nvsEP_mc_jointNumber_t) numberOf, (eOcfg_nvsEP_mc_jointNVindex_t) nvName);
-            break;
-        case Skin:
-            nvid = eo_cfg_nvsEP_sk_NVID_Get(        (eOcfg_nvsEP_sk_endpoint_t) endPoint, (eOcfg_nvsEP_sk_skinNumber_t) numberOf, (eOcfg_nvsEP_sk_skinNVindex_t) nvName);
-            break;
-        case AnalogStrain:
-            nvid = eo_cfg_nvsEP_as_strain_NVID_Get( (eOcfg_nvsEP_as_endpoint_t) endPoint, (eOcfg_nvsEP_as_strainNumber_t) numberOf, (eOcfg_nvsEP_as_strainNVindex_t) nvName);
-            break;
-        case AnalogMais:
-            nvid = eo_cfg_nvsEP_as_mais_NVID_Get(   (eOcfg_nvsEP_as_endpoint_t) endPoint, (eOcfg_nvsEP_as_maisNumber_t) numberOf, (eOcfg_nvsEP_as_maisNVindex_t) nvName);
-            break;
-        default:
-            break;
-    }
-    _mutex.post();
-
-    return nvid;
-} */
-
 bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
 {
-    //uint16_t    nvSize;
-    //eOresult_t    res;
     EOnv          nv;
 
     if(nvid == EOK_uint16dummy)
@@ -236,9 +187,6 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
     transMutex.wait();
 
-    //nvSize = eo_nv_Size(&nv, data);   //TODO calcolare dimesione corretta, tenendo conto di tempo e signature
-
-
     if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
     {
         // the nv is not writeable
@@ -246,7 +194,6 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
         transMutex.post();
         return false;
     }
-
 
     eOropdescriptor_t ropdesc;
     ropdesc.configuration = eok_ropconfiguration_basic;
@@ -283,8 +230,6 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
 bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
 {
-    //uint16_t    nvSize;
-    //eOresult_t    res;
     EOnv          nv;
 
     if(nvid == EOK_uint16dummy)
@@ -525,7 +470,6 @@ void checkDataForDebug(uint8_t *data, uint16_t size)
 void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 {
     uint16_t numofrops;
-    bytesUsed = 0;
     EOpacket* ptrpkt = NULL;
     eOresult_t res;
     //is important set size to 0 because if size is 0 pc104 no trasmit data

@@ -443,9 +443,12 @@ bool embObjAnalogSensor::init()
             yError () << " EmbObj Analog Sensor while loading ropSig Array  at line " << __LINE__;
     }
 
-    if(!res->load_occasional_rop(eo_ropcode_set, endpoint_mn_comm, nvid_ropsigcfgassign))
+    // Send message
+    if( !res->addSetMessage(nvid_ropsigcfgassign, endpoint_mn_comm, (uint8_t *) array) )
+    {
+        yError() << "while setting rop sig cfg";
         return false;
-
+    }
     return true;
 }
 
