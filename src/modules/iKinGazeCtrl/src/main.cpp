@@ -142,9 +142,9 @@ Factors</a>.
   be therefore ["on"|"off"], being "on" by default.
  
 --position_control \e switch
-- Enable/disable low-level position control; the parameter
-  \e switch can be therefore ["on"|"off"], being "on" by
-  default.
+- Enable/disable low-level position control of the neck; the 
+  parameter \e switch can be therefore ["on"|"off"], being "on"
+  by default.
  
 --vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
