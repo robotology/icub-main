@@ -50,17 +50,20 @@ using namespace iCub::iKin;
 class Controller : public GazeComponent, public RateThread
 {
 protected:
-    iCubHeadCenter   *neck;
-    iKinChain        *chainNeck, *chainEyeL, *chainEyeR;
-    PolyDriver       *drvTorso,  *drvHead;
-    IPositionControl *posHead;
-    IVelocityControl *velHead;
-    exchangeData     *commData;
-    xdPort           *port_xd;
+    iCubHeadCenter    *neck;
+    iKinChain         *chainNeck, *chainEyeL, *chainEyeR;
+    PolyDriver        *drvTorso,  *drvHead;
+    IPositionControl  *posHead;
+    IVelocityControl  *velHead;
+    IPositionDirect   *posNeck;
+    IVelocityControl2 *velEyes;
+    exchangeData      *commData;
+    xdPort            *port_xd;
 
-    minJerkVelCtrl   *mjCtrlNeck;
-    minJerkVelCtrl   *mjCtrlEyes;
-    Integrator       *Int;    
+    minJerkVelCtrl    *mjCtrlNeck;
+    minJerkVelCtrl    *mjCtrlEyes;
+    Integrator        *IntState;
+    Integrator        *IntPlan;
 
     Port  port_x;
     Port  port_q;
@@ -77,6 +80,7 @@ protected:
     bool panDone;
     bool verDone;
     bool unplugCtrlEyes;
+    bool posCtrlOn;
     bool Robotable;
     bool headV2;
     int nJointsTorso;
@@ -95,6 +99,7 @@ protected:
     Vector v,vNeck,vEyes,vdegOld;
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
+    VectorOf<int> neckJoints,eyesJoints;
 
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
@@ -105,8 +110,8 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               const double _neckTime, const double _eyesTime, const double _minAbsVel,
-               const unsigned int _period);
+               const bool _posCtrlOn, const double _neckTime, const double _eyesTime,
+               const double _minAbsVel, const unsigned int _period);
 
     void   findMinimumAllowedVergence();
     void   minAllowedVergenceChanged();

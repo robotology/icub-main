@@ -261,18 +261,11 @@ public:
                    chain(c), q0(_q0), xd(_xd)
     {
         dim=chain.getDOF();
+        qd.resize(dim,0.0);
 
-        qd.resize(dim);
-
-        unsigned int n=q0.length();
-        n=n>dim ? dim : n;
-
-        unsigned int i;
-        for (i=0; i<n; i++)
+        size_t n=std::min(q0.length(),dim);
+        for (size_t i=0; i<n; i++)
             qd[i]=q0[i];
-
-        for (; i<dim; i++)
-            qd[i]=0.0;
 
         q=qd;
 

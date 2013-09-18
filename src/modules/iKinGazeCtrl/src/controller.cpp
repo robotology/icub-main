@@ -24,12 +24,12 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const double _neckTime, const double _eyesTime, const double _minAbsVel,
-                       const unsigned int _period) :
-                       RateThread(_period),   drvTorso(_drvTorso), drvHead(_drvHead),
-                       commData(_commData),   neckTime(_neckTime), eyesTime(_eyesTime),
-                       minAbsVel(_minAbsVel), period(_period),     Ts(_period/1000.0),
-                       printAccTime(0.0)
+                       const bool _posCtrlOn, const double _neckTime, const double _eyesTime,
+                       const double _minAbsVel, const unsigned int _period) :
+                       RateThread(_period), drvTorso(_drvTorso),   drvHead(_drvHead),
+                       commData(_commData), posCtrlOn(_posCtrlOn), neckTime(_neckTime),
+                       eyesTime(_eyesTime), minAbsVel(_minAbsVel), period(_period),
+                       Ts(_period/1000.0),  printAccTime(0.0)
 {
     Robotable=(drvHead!=NULL);
 
@@ -75,6 +75,19 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
         drvHead->view(posHead);
         drvHead->view(velHead);
+
+        // if requested check if position control is available
+        if (posCtrlOn)
+        {
+            bool posDirAvailable=drvHead->view(posNeck); 
+            bool vel2Available=drvHead->view(velEyes);
+            posCtrlOn=posDirAvailable&&vel2Available;
+
+            fprintf(stdout,"### neck control - requested POSITION: IPositionDirect [%s], IVelocityControl2 [%s] => %s\n",
+                    posDirAvailable?"yes":"no",vel2Available?"yes":"no",posCtrlOn?"POSITION":"VELOCITY");
+        }
+        else
+            fprintf(stdout,"### neck control - requested VELOCITY\n");
 
         // joints bounds alignment
         lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
@@ -138,10 +151,20 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     mjCtrlNeck=new minJerkVelCtrlForIdealPlant(Ts,fbNeck.length());
     mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,fbEyes.length());
-    Int=new Integrator(Ts,fbHead,lim);
+    IntState=new Integrator(Ts,fbHead,lim);
+    IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
     
     v.resize(nJointsHead,0.0);
     vdegOld=v;
+
+    neckJoints.resize(3);
+    eyesJoints.resize(3);
+    neckJoints[0]=0;
+    neckJoints[1]=1;
+    neckJoints[2]=2;
+    eyesJoints[0]=3;
+    eyesJoints[1]=4;
+    eyesJoints[2]=5;
 
     qd=fbHead;
     q0deg=CTRL_RAD2DEG*qd;
@@ -195,7 +218,7 @@ void Controller::findMinimumAllowedVergence()
 void Controller::minAllowedVergenceChanged()
 {
     lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
-    Int->setLim(lim);
+    IntState->setLim(lim);
 }
 
 
@@ -372,6 +395,7 @@ void Controller::run()
     Vector x=commData->get_x(x_stamp);
     Vector new_qd=commData->get_qd();
 
+    bool resetIntPlan=false;
     double errNeck=norm(new_qd.subVector(0,2)-fbHead.subVector(0,2));
     double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1));
     bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLETIME) ? false :
@@ -417,6 +441,7 @@ void Controller::run()
             Vector zeros(3,0.0);
             mjCtrlNeck->reset(zeros);
             mjCtrlEyes->reset(zeros);
+            resetIntPlan=true;
 
             event="motion-onset";
 
@@ -439,27 +464,27 @@ void Controller::run()
             return;
         }
 
-        Int->reset(fbHead);
+        IntState->reset(fbHead);
     }
 
     if (event=="motion-onset")
         q0deg=CTRL_RAD2DEG*fbHead;
 
     qd=new_qd;
-    for (int i=0; i<3; i++)
-    {
-        qdNeck[i]=qd[i];
-        qdEyes[i]=qd[3+i];
+    qdNeck=qd.subVector(0,2);
+    qdEyes=qd.subVector(3,5);
+    fbNeck=fbHead.subVector(0,2);
+    fbEyes=fbHead.subVector(3,5);
 
-        fbNeck[i]=fbHead[i];
-        fbEyes[i]=fbHead[3+i];
-    }
+    if (resetIntPlan)
+        IntPlan->reset(fbNeck);
 
     vNeck=0.0; vEyes=0.0;
     if (commData->get_isCtrlActive())
     {
         // control loop
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
+        IntPlan->integrate(vNeck);
 
         if (unplugCtrlEyes)
         {
@@ -472,11 +497,8 @@ void Controller::run()
     else
         vdegOld=0.0;
 
-    for (int i=0; i<3; i++)
-    {
-        v[i]  =vNeck[i];
-        v[3+i]=vEyes[i];
-    }
+    v.setSubvector(0,vNeck);
+    v.setSubvector(3,vEyes);
 
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
@@ -495,12 +517,21 @@ void Controller::run()
     mutexData.post();
 
     // send velocities to the robot
-    if (Robotable && !(vdeg==vdegOld))
+    if (Robotable)
     {
         mutexCtrl.wait();
-        velHead->velocityMove(vdeg.data());
+        if (posCtrlOn)
+        {
+            Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
+            posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
+            velEyes->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
+        }
+        else if (!(vdeg==vdegOld))
+        {
+            velHead->velocityMove(vdeg.data());
+            vdegOld=vdeg;
+        }
         mutexCtrl.post();
-        vdegOld=vdeg;
     }
 
     // print info
@@ -562,7 +593,7 @@ void Controller::run()
     }
 
     // update joints angles
-    fbHead=Int->integrate(v);
+    fbHead=IntState->integrate(v);
     commData->set_q(fbHead);
     commData->set_torso(fbTorso);
     commData->set_v(v);
@@ -588,7 +619,8 @@ void Controller::threadRelease()
     delete eyeR;
     delete mjCtrlNeck;
     delete mjCtrlEyes;
-    delete Int;
+    delete IntState;
+    delete IntPlan;
 }
 
 
@@ -610,12 +642,8 @@ void Controller::resume()
     if (Robotable)
     {
         getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
-    
-        for (int i=0; i<3; i++)
-        {
-            fbNeck[i]=fbHead[i];
-            fbEyes[i]=fbHead[3+i];
-        }
+        fbNeck=fbHead.subVector(0,2);
+        fbEyes=fbHead.subVector(3,5);
     }
 
     fprintf(stdout,"\nController has been resumed!\n\n");
