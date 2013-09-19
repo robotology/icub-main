@@ -97,24 +97,24 @@ Please make sure you understand how this works.
 In short you have the following options:
 
 - Run as iCubInterface --config <CONFIG_FILE>: loads parameters from CONFIG_FILE. CONFIG_FILE is 
-searched following the ResourceFinder policy, app/$ICUB_ROBOTNAME/conf (if the enviornment 
-variable $ICUB_ROBOTNAME exists)and app/default/conf
+searched following the ResourceFinder policy, robots/$YARP_ROBOT_NAME (if the enviornment 
+variable $YARP_ROBOT_NAME exists) and robots/default
 
-- Run without parameters: search for a file iCubInterface.ini in app/$ICUB_ROBOTNAME/app 
-(if the enviornment variable $ICUB_ROBOTNAME exists) or app/default/conf. Where iCubInterface.ini
+- Run without parameters: search for a file iCubInterface.ini in robots/$YARP_ROBOT_NAME/
+(if the enviornment variable $YARP_ROBOT_NAME exists) or robots/default. Where iCubInterface.ini
 is a file that contains the line "config CONFIG_FILE"
 
 You can prevent default behaviors in the following way:
 - Run as iCubInterface --config <CONFIG_FILE_WITHFULLPATH>: if CONFIG_FILE_WITHFULLPATH has
 full path to a valid file (as in ./icubSafe.ini), this is used in place of the defaults
 - Run as iCubInterface --from <OTHER_CONFIG>: prevents the RF from using iCubInterface.ini in 
-app/$ICUB_ROBOTNAME/conf or app/default/conf.
+robots/$YARP_ROBOT_NAME or robots/default.
 
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-iCubInterface --config $ICUB_ROOT/app/default/conf/icub.ini
+iCubInterface --config icub.ini
 
 \author Lorenzo Natale
 
@@ -228,12 +228,12 @@ int main(int argc, char *argv[])
             printf("--config <CONFIG_FILE> read config file CONFIG_FILE.\n iCubInterface now ");
             printf("uses the ResourceFinder class to search for CONFIG_FILE. ");
             printf("Make sure you understand how the ResourceFinder works. In particular ");
-            printf("you most likely need to set the ICUB_ROBOTNAME environment variable ");
-            printf("to tell the RF to add app/$ICUB_ROBOTNAME/conf to the search path.\n");
+            printf("you most likely need to set the YARP_ROBOT_NAME environment variable ");
+            printf("to tell the RF to add robots/$YARP_ROBOT_NAME to the search path.\n");
             printf("--file <CONFIG_FILE> read config file from $ICUB_ROOT/conf: old style ");
             printf("initialization method, obsolete. Still here for compatibility reasons.\n");
             printf("== New possibilities:\n");
-            printf("Place a file called iCubInterface.ini in app/$ICUB_ROBOTNAME/conf that contains ");
+            printf("Place a file called iCubInterface.ini in robots/$YARP_ROBOT_NAME that contains ");
             printf("the line \"config icubSafe.ini\" (or anything of your choice), and run iCubInterface ");
             printf("without parameters\n.");
             printf("== Preventing default behaviors:\n");
