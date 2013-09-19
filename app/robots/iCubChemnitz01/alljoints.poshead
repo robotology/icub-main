@@ -1,0 +1,9 @@
+[POSITION0] 
+jointPositions 0.00 0.00 0.00 0.00 30.00 0.00
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00 
+timing 2.00 
+[POSITION1] 
+jointPositions 0.00 0.00 0.00 0.00 -30.00 0.00
+jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00 
+timing 2.00 
+
