@@ -26,12 +26,13 @@ include_directories(${CMAKE_SOURCE_DIR}/..)
 include_directories(${CMAKE_SOURCE_DIR}/../src/libraries/icubmod)
 
 # for yarp.i
-include_directories(${YARP_MODULE_DIR}/../example/swig)
+include_directories(${YARP_BINDINGS})
 
 set(CREATE_PYTHON FALSE CACHE BOOL "Create Python interface")
 set(CREATE_RUBY FALSE CACHE BOOL "Create Ruby interface")
 set(CREATE_JAVA FALSE CACHE BOOL "Create Java interface")
 set(CREATE_CSHARP FALSE CACHE BOOL "Create CSharp interface")
+option(CREATE_LUA "Create LUA interface" FALSE)
 
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
@@ -93,3 +94,17 @@ if(CREATE_CSHARP)
     set(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
     SWIG_ADD_MODULE(icub csharp icub.i)
 endif(CREATE_CSHARP)
+
+IF (CREATE_LUA)
+  SET(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
+  find_package(Lua51 REQUIRED) 
+  INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
+  SWIG_ADD_MODULE(icub lua icub.i)
+  SWIG_LINK_LIBRARIES(icub ${LUA_LIBRARY})
+  IF (UNIX)
+    ADD_CUSTOM_COMMAND(TARGET icub
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink libicub.so icub.so 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  ENDIF (UNIX)
+ENDIF (CREATE_LUA)
