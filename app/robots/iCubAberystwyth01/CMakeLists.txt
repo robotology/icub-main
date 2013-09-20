@@ -18,7 +18,7 @@ icub_app_install(${appname}
 endif()				
 
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/scripts)
-yarp_install(FILES ${firmware} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/scripts)
+#yarp_install(FILES ${firmware} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/scripts)
 yarp_install(FILES ${conf} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
 
 
