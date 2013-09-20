@@ -83,11 +83,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
             bool vel2Available=drvHead->view(velEyes);
             posCtrlOn=posDirAvailable&&vel2Available;
 
-            fprintf(stdout,"### neck control - requested POSITION: IPositionDirect [%s], IVelocityControl2 [%s] => %s\n",
+            fprintf(stdout,"### neck control - requested POSITION mode: IPositionDirect [%s], IVelocityControl2 [%s] => %s mode selected\n",
                     posDirAvailable?"yes":"no",vel2Available?"yes":"no",posCtrlOn?"POSITION":"VELOCITY");
         }
         else
-            fprintf(stdout,"### neck control - requested VELOCITY\n");
+            fprintf(stdout,"### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
 
         // joints bounds alignment
         lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
