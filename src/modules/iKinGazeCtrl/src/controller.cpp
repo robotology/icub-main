@@ -487,8 +487,7 @@ void Controller::run()
     qd=new_qd;
     qdNeck=qd.subVector(0,2);
     qdEyes=qd.subVector(3,5);
-
-    vNeck=0.0; vEyes=0.0;
+    
     if (commData->get_isCtrlActive())
     {
         // control loop
@@ -502,6 +501,11 @@ void Controller::run()
         }
         else
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
+    }
+    else
+    {
+        vNeck=0.0;
+        vEyes=0.0;
     }
 
     v.setSubvector(0,vNeck);
@@ -524,7 +528,7 @@ void Controller::run()
     mutexData.post();
 
     // send commands to the robot
-    if (Robotable)
+    if (Robotable && commData->get_isCtrlActive())
     {
         mutexCtrl.wait();
 
