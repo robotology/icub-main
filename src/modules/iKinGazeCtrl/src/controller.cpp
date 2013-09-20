@@ -141,9 +141,10 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     else
         fbHead[5]=commData->get_minAllowedVergence();
 
-    fbNeck.resize(3); fbEyes.resize(3);
-    qdNeck.resize(3); qdEyes.resize(3);
-    vNeck.resize(3);  vEyes.resize(3);
+    fbNeck=fbHead.subVector(0,2);
+    fbEyes=fbHead.subVector(3,5);
+    qdNeck.resize(3,0.0); qdEyes.resize(3,0.0);
+    vNeck.resize(3,0.0);  vEyes.resize(3,0.0);
 
     // Set the task execution time
     setTeyes(eyesTime);
