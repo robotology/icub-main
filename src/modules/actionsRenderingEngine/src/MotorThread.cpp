@@ -19,6 +19,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #include <gsl/gsl_math.h>
 
@@ -590,7 +591,7 @@ bool MotorThread::saveKinematicOffsets()
     if(!kin_fout.is_open())
         return false;
 
-    kin_fout << bKinOffsets.toString();
+    kin_fout << bKinOffsets.toString() << endl;
 
     kin_fout.close();
 
