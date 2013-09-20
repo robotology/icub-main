@@ -407,9 +407,27 @@ void Controller::run()
     Vector x=commData->get_x(x_stamp);
     Vector new_qd=commData->get_qd();
 
-    bool resetIntPlan=false;
-    double errNeck=norm(new_qd.subVector(0,2)-fbHead.subVector(0,2));
-    double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbHead.subVector(3,fbHead.length()-1));
+    // read feedbacks
+    q_stamp=Time::now();
+    if (Robotable)
+    {
+        if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
+        {
+            fprintf(stdout,"\nCommunication timeout detected!\n\n");
+            notifyEvent("comm-timeout");
+            suspend();
+
+            return;
+        }
+
+        IntState->reset(fbHead);
+    }
+
+    fbNeck=fbHead.subVector(0,2);
+    fbEyes=fbHead.subVector(3,5);
+
+    double errNeck=norm(new_qd.subVector(0,2)-fbNeck);
+    double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbEyes);
     bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLETIME) ? false :
                    (!commData->get_isSaccadeUnderway() &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
@@ -453,7 +471,7 @@ void Controller::run()
             Vector zeros(3,0.0);
             mjCtrlNeck->reset(zeros);
             mjCtrlEyes->reset(zeros);
-            resetIntPlan=true;
+            IntPlan->reset(fbNeck);
 
             event="motion-onset";
 
@@ -463,33 +481,12 @@ void Controller::run()
         }
     }
 
-    // Introduce the feedback within the control computation
-    q_stamp=Time::now();
-    if (Robotable)
-    {
-        if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
-        {
-            fprintf(stdout,"\nCommunication timeout detected!\n\n");
-            notifyEvent("comm-timeout");
-            suspend();
-
-            return;
-        }
-
-        IntState->reset(fbHead);
-    }
-
     if (event=="motion-onset")
         q0deg=CTRL_RAD2DEG*fbHead;
 
     qd=new_qd;
     qdNeck=qd.subVector(0,2);
     qdEyes=qd.subVector(3,5);
-    fbNeck=fbHead.subVector(0,2);
-    fbEyes=fbHead.subVector(3,5);
-
-    if (resetIntPlan)
-        IntPlan->reset(fbNeck);
 
     vNeck=0.0; vEyes=0.0;
     if (commData->get_isCtrlActive())
