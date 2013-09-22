@@ -24,11 +24,11 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                       const bool _posCtrlOn, const double _neckTime, const double _eyesTime,
+                       const bool _neckPosCtrlOn, const double _neckTime, const double _eyesTime,
                        const double _minAbsVel, const unsigned int _period) :
-                       RateThread(_period), drvTorso(_drvTorso),   drvHead(_drvHead),
-                       commData(_commData), posCtrlOn(_posCtrlOn), neckTime(_neckTime),
-                       eyesTime(_eyesTime), minAbsVel(_minAbsVel), period(_period),
+                       RateThread(_period), drvTorso(_drvTorso),           drvHead(_drvHead),
+                       commData(_commData), neckPosCtrlOn(_neckPosCtrlOn), neckTime(_neckTime),
+                       eyesTime(_eyesTime), minAbsVel(_minAbsVel),         period(_period),
                        Ts(_period/1000.0),  printAccTime(0.0)
 {
     Robotable=(drvHead!=NULL);
@@ -77,14 +77,14 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         drvHead->view(velHead);
 
         // if requested check if position control is available
-        if (posCtrlOn)
+        if (neckPosCtrlOn)
         {
             bool posDirAvailable=drvHead->view(posNeck); 
             bool vel2Available=drvHead->view(velEyes);
-            posCtrlOn=posDirAvailable&&vel2Available;
+            neckPosCtrlOn=posDirAvailable&&vel2Available;
 
             fprintf(stdout,"### neck control - requested POSITION mode: IPositionDirect [%s], IVelocityControl2 [%s] => %s mode selected\n",
-                    posDirAvailable?"yes":"no",vel2Available?"yes":"no",posCtrlOn?"POSITION":"VELOCITY");
+                    posDirAvailable?"yes":"no",vel2Available?"yes":"no",neckPosCtrlOn?"POSITION":"VELOCITY");
         }
         else
             fprintf(stdout,"### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
@@ -278,7 +278,7 @@ void Controller::stopLimb()
         // note: vel==0.0 is always achievable
         mutexCtrl.wait();
 
-        if (posCtrlOn)
+        if (neckPosCtrlOn)
         {
             for (size_t i=0; i<neckJoints.size(); i++)
                 posHead->stop(neckJoints[i]);
@@ -532,7 +532,7 @@ void Controller::run()
     {
         mutexCtrl.wait();
 
-        if (posCtrlOn)
+        if (neckPosCtrlOn)
         {
             Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
             posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());

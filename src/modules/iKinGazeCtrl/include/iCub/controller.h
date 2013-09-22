@@ -80,7 +80,7 @@ protected:
     bool panDone;
     bool verDone;
     bool unplugCtrlEyes;
-    bool posCtrlOn;
+    bool neckPosCtrlOn;
     bool Robotable;
     bool headV2;
     int nJointsTorso;
@@ -110,7 +110,7 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-               const bool _posCtrlOn, const double _neckTime, const double _eyesTime,
+               const bool _neckPosCtrlOn, const double _neckTime, const double _eyesTime,
                const double _minAbsVel, const unsigned int _period);
 
     void   findMinimumAllowedVergence();
