@@ -410,7 +410,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     string message=_rf.findFile("from").c_str();
     if (!message.empty())
     {
-        message+=": intrinsic parameters for "+type; 
+        message+=": intrinsic parameters for "+type;
         Bottle &parType=_rf.findGroup(type.c_str());
 
         if (parType.size())
@@ -447,6 +447,11 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
             }
         }
     }
+    else
+    {
+        message=_rf.find("from").asString().c_str();
+        message+=": intrinsic parameters for "+type;
+    }
 
     if (verbose)
         fprintf(stdout,"%s not found!\n",message.c_str());
@@ -461,7 +466,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 {
     ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
     if ((chain!=NULL) && _rf.isConfigured())
-    {        
+    {
         string message=_rf.findFile("from").c_str();
         if (!message.empty())
         {
@@ -501,6 +506,11 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
                     return true;
                 }
             }
+        }
+        else
+        {
+            message=_rf.find("from").asString().c_str();
+            message+=": aligning matrix for "+type;
         }
 
         if (verbose)

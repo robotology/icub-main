@@ -1058,9 +1058,8 @@ public:
                 fprintf(stdout,"Head device driver not available!\n");
 
                 delete drvHead;
-                if (drvTorso!=NULL)
-                    delete drvTorso;
-
+                delete drvTorso;
+                drvTorso=drvHead=NULL;
                 return false;
             }
         }
@@ -1785,12 +1784,8 @@ public:
         delete eyesRefGen;
         delete slv;
         delete ctrl;
-
-        if (drvTorso!=NULL)
-            delete drvTorso;
-
-        if (drvHead!=NULL)
-            delete drvHead;
+        delete drvTorso;
+        delete drvHead;
 
         rpcPort.interrupt();
         rpcPort.close();
