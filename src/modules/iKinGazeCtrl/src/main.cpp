@@ -254,7 +254,7 @@ following ports:
   "right", <i> (u,v) </i> is the pixel coordinates and \e z is
   the guessed z-component in the eye's reference frame. An
   alternative command modality employs the vergence given in
-  degree in place of the z-component and its format is: [type u
+  degrees in place of the z-component and its format is: [type u
   v "ver" ver].
  
 - \e /<ctrlName>/<part>/stereo:i receives the current target 
