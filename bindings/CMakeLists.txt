@@ -28,11 +28,11 @@ include_directories(${CMAKE_SOURCE_DIR}/../src/libraries/icubmod)
 # for yarp.i
 include_directories(${YARP_BINDINGS})
 
-set(CREATE_PYTHON FALSE CACHE BOOL "Create Python interface")
-set(CREATE_RUBY FALSE CACHE BOOL "Create Ruby interface")
-set(CREATE_JAVA FALSE CACHE BOOL "Create Java interface")
-set(CREATE_CSHARP FALSE CACHE BOOL "Create CSharp interface")
-option(CREATE_LUA "Create LUA interface" FALSE)
+option(CREATE_PYTHON "Create Python interface" FALSE)
+option(CREATE_RUBY   "Create Ruby interface"   FALSE)
+option(CREATE_JAVA   "Create Java interface"   FALSE)
+option(CREATE_CSHARP "Create CSharp interface" FALSE)
+option(CREATE_LUA    "Create LUA interface"    FALSE)
 
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
