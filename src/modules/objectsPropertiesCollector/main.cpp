@@ -411,13 +411,13 @@ protected:
         Value val;
     };
 
+    ResourceFinder *rf;
     map<int,Item> itemsMap;
     Semaphore mutex;
     int  idCnt;
     bool initialized;
     bool nosave;
     bool verbose;
-    string dbFileName;
 
     BufferedPort<Bottle> *pBroadcastPort;
     bool asyncBroadcast;
@@ -542,16 +542,13 @@ public:
     /************************************************************************/
     void configure(ResourceFinder &rf)
     {
+        this->rf=&rf;
         verbose=rf.check("verbose");
         if (initialized)
         {
             printMessage("database already initialized ...\n");
             return;
         }
-
-        dbFileName=rf.getContextPath().c_str();
-        dbFileName+="/";
-        dbFileName+=rf.find("db").asString().c_str();
 
         nosave=rf.check("nosave");
         if (!rf.check("empty"))
@@ -580,6 +577,14 @@ public:
     void load()
     {
         mutex.wait();
+        string dbFileName=rf->findFile("db");
+        if (dbFileName.empty())
+        {
+            printMessage("requested database to be loaded not found!\n");
+            mutex.post();
+            return;
+        }
+
         printMessage("loading database from %s ...\n",dbFileName.c_str());
 
         clear();
@@ -636,6 +641,9 @@ public:
             return;
 
         mutex.wait();
+        string dbFileName=rf->getContextPath().c_str();
+        dbFileName+="/";
+        dbFileName+=rf->find("db").asString().c_str();
         printMessage("saving database in %s ...\n",dbFileName.c_str());
 
         FILE *fout=fopen(dbFileName.c_str(),"w");

@@ -892,12 +892,7 @@ bool MotorThread::threadInit()
     string partUsed=bMotor.check("part_used",Value("both_arms")).asString().c_str();
     setRate(bMotor.check("thread_period",Value(100)).asInt());
 
-    //if (strcmp(rf.find("actions").asString().c_str(), "OPC"))
-        //actions_path=rf.findPath("actions");
-    
-    actions_path = rf.getContextPath().c_str();
-    actions_path+= "/";
-    actions_path+= bMotor.check("actions",Value("actions")).asString().c_str();
+    actions_path=bMotor.check("actions",Value("actions")).asString().c_str();
 
     double eyesTrajTime=bMotor.check("eyes_traj_time",Value(1.0)).asDouble();
     double neckTrajTime=bMotor.check("neck_traj_time",Value(2.0)).asDouble();
@@ -1188,8 +1183,8 @@ bool MotorThread::threadInit()
             Property option_tmp(option);
             option_tmp.put("part",arm_name[arm].c_str());
 
-            string tmpGraspPath=rf.getContextPath().c_str();
-            option_tmp.put("grasp_model_file",(tmpGraspPath+"/"+bArm[arm].find("grasp_model_file").asString().c_str()).c_str());
+            string tmpGraspFile=rf.findFile(bArm[arm].find("grasp_model_file").asString().c_str());
+            option_tmp.put("grasp_model_file",tmpGraspFile.c_str());
 
             fprintf(stdout,"***** Instantiating primitives for %s\n",arm_name[arm].c_str());
             action[arm]=new ActionPrimitivesLayer2(option_tmp);
@@ -2755,11 +2750,10 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     string arm_name=(arm==LEFT?"left":"right");
 
-    ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
-    if(action_fin.is_open())
+    string fileName=rf.findFile((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+    if(!fileName.empty())
     {
         fprintf(stdout,"Error! Action '%s' already learned... stopping\n",action_name.c_str());
-        action_fin.close();
         return false;
     }
 
@@ -2809,9 +2803,11 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
 
     if(!skip)
     {
-        if (actions_path != "")
+        if (!actions_path.empty())
         {
-            ofstream action_fout(("/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str());
+            string fileName=rf.getContextPath().c_str();
+            fileName+="/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action";
+            ofstream action_fout(fileName.c_str());
             if(!action_fout.is_open())
             {
                 fprintf(stdout,"Error! Unable to open file '%s' for action %s\n",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
@@ -2821,12 +2817,7 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
                 action_fout << dragger.actions.toString();
         }
         else
-        {
-
             success = opcPort.setAction(dragger.actionName, &(dragger.actions));
-            
-        }
-    
     }
 
     // set back again to (impedance) velocity mode
@@ -2854,9 +2845,10 @@ bool MotorThread::imitateAction(Bottle &options)
     string action_name=options.find("action_name").asString().c_str();
 
     Bottle actions;
-    if (actions_path != "")
+    string fileName=rf.findFile((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+    if (!fileName.empty())
     {
-        ifstream action_fin((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+        ifstream action_fin(fileName.c_str());
         if(!action_fin.is_open())
             return false;
 

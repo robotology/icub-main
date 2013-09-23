@@ -561,8 +561,7 @@ public:
         if (fin.is_open())
             fin.close();
 
-        fin.open(fileName.c_str());        
-
+        fin.open(fileName.c_str());
         if (fin.is_open())
         {
             fin.seekg(0,ios_base::beg);
@@ -668,15 +667,15 @@ public:
 class scriptModule: public RFModule
 {
 protected:
-    Port           rpcPort;
-    string         name;
-    string         contextPath;
-    bool           verbose;
-    scriptPosPort  posPort;
-    Port           velPort;
-    Port           velInitPort;
-    WorkingThread  thread;
-    VelocityThread velThread;
+    ResourceFinder *rf;
+    Port            rpcPort;
+    string          name;
+    bool            verbose;
+    scriptPosPort   posPort;
+    Port            velPort;
+    Port            velInitPort;
+    WorkingThread   thread;
+    VelocityThread  velThread;
 
 public:
     scriptModule() 
@@ -713,8 +712,8 @@ public:
     {
         if (cmd.size()<2)
             return false;
-        
-        string fileName=contextPath+"/"+cmd.get(1).asString().c_str();
+
+        string fileName=rf->findFile(cmd.get(1).asString().c_str());
         bool ret = velThread.go(fileName);
         if (ret)
         {
@@ -785,14 +784,13 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
+        this->rf=&rf;
         Time::turboBoost();
 
         if (rf.check("name"))
             name=string("/")+rf.find("name").asString().c_str();
         else
             name="/ctpservice";
-
-        contextPath=rf.getContextPath().c_str();
 
         rpcPort.open((name+string("/")+rf.find("part").asString().c_str()+"/rpc").c_str());
         attach(rpcPort);

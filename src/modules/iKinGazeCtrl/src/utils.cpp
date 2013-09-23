@@ -408,40 +408,43 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
         return false;
     
     string message=_rf.findFile("from").c_str();
-    message+=": intrinsic parameters for "+type;
-    Bottle &parType=_rf.findGroup(type.c_str());
-
-    if (parType.size())
+    if (!message.empty())
     {
-        if (parType.check("fx") && parType.check("fy") &&
-            parType.check("cx") && parType.check("cy"))
+        message+=": intrinsic parameters for "+type; 
+        Bottle &parType=_rf.findGroup(type.c_str());
+
+        if (parType.size())
         {
-            double fx=parType.find("fx").asDouble();
-            double fy=parType.find("fy").asDouble();
-            double cx=parType.find("cx").asDouble();
-            double cy=parType.find("cy").asDouble();
-
-            if (verbose)
+            if (parType.check("fx") && parType.check("fy") &&
+                parType.check("cx") && parType.check("cy"))
             {
-                fprintf(stdout,"%s found:\n",message.c_str());
-                fprintf(stdout,"fx = %g\n",fx);
-                fprintf(stdout,"fy = %g\n",fy);
-                fprintf(stdout,"cx = %g\n",cx);
-                fprintf(stdout,"cy = %g\n",cy);
+                double fx=parType.find("fx").asDouble();
+                double fy=parType.find("fy").asDouble();
+                double cx=parType.find("cx").asDouble();
+                double cy=parType.find("cy").asDouble();
+
+                if (verbose)
+                {
+                    fprintf(stdout,"%s found:\n",message.c_str());
+                    fprintf(stdout,"fx = %g\n",fx);
+                    fprintf(stdout,"fy = %g\n",fy);
+                    fprintf(stdout,"cx = %g\n",cx);
+                    fprintf(stdout,"cy = %g\n",cy);
+                }
+
+                Matrix K=eye(3,3);
+                Matrix Pi=zeros(3,4);
+
+                K(0,0)=fx; K(1,1)=fy;
+                K(0,2)=cx; K(1,2)=cy; 
+                
+                Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
+
+                *Prj=new Matrix;
+                **Prj=K*Pi;
+
+                return true;
             }
-
-            Matrix K=eye(3,3);
-            Matrix Pi=zeros(3,4);
-
-            K(0,0)=fx; K(1,1)=fy;
-            K(0,2)=cx; K(1,2)=cy; 
-            
-            Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
-
-            *Prj=new Matrix;
-            **Prj=K*Pi;
-
-            return true;
         }
     }
 
@@ -460,40 +463,43 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
     if ((chain!=NULL) && _rf.isConfigured())
     {        
         string message=_rf.findFile("from").c_str();
-        message+=": aligning matrix for "+type;
-        Bottle &parType=_rf.findGroup(type.c_str());
-
-        if (parType.size()>0)
+        if (!message.empty())
         {
-            if (Bottle *bH=parType.find("HN").asList())
+            message+=": aligning matrix for "+type;
+            Bottle &parType=_rf.findGroup(type.c_str());
+
+            if (parType.size()>0)
             {
-                int i=0;
-                int j=0;
-
-                Matrix HN(4,4); HN=0.0;
-                for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
+                if (Bottle *bH=parType.find("HN").asList())
                 {
-                    HN(i,j)=bH->get(cnt).asDouble();
-                    if (++j>=HN.cols())
+                    int i=0;
+                    int j=0;
+
+                    Matrix HN(4,4); HN=0.0;
+                    for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
                     {
-                        i++;
-                        j=0;
+                        HN(i,j)=bH->get(cnt).asDouble();
+                        if (++j>=HN.cols())
+                        {
+                            i++;
+                            j=0;
+                        }
                     }
+
+                    // enforce the homogeneous property
+                    HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+                    HN(3,3)=1.0;
+
+                    chain->setHN(HN);
+
+                    if (verbose)
+                    {
+                        fprintf(stdout,"%s found:\n",message.c_str());
+                        fprintf(stdout,"%s\n",HN.toString(3,3).c_str());
+                    }
+
+                    return true;
                 }
-
-                // enforce the homogeneous property
-                HN(3,0)=HN(3,1)=HN(3,2)=0.0;
-                HN(3,3)=1.0;
-
-                chain->setHN(HN);
-
-                if (verbose)
-                {
-                    fprintf(stdout,"%s found:\n",message.c_str());
-                    fprintf(stdout,"%s\n",HN.toString(3,3).c_str());
-                }
-
-                return true;
             }
         }
 
