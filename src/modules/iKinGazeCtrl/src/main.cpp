@@ -1024,15 +1024,18 @@ public:
 
         if (Robotable)
         {
-            Property optHead("(device remote_controlboard)");
-            optHead.put("remote",remoteHeadName.c_str());
-            optHead.put("local",localHeadName.c_str());
-            optHead.put("part",partName.c_str());
-
             Property optTorso("(device remote_controlboard)");
             optTorso.put("remote",remoteTorsoName.c_str());
             optTorso.put("local",localTorsoName.c_str());
             optTorso.put("part",torsoName.c_str());
+
+            Property optHead("(device remote_controlboard)");
+            optHead.put("remote",remoteHeadName.c_str());
+            optHead.put("local",localHeadName.c_str());
+            optHead.put("part",partName.c_str());
+            // mixed position/velocity control entails
+            // to send two packets per control slot
+            optHead.put("writeStrict","on");
 
             if (ping_robot_tmo>0.0)
                 drvTorso=waitPart(optTorso,ping_robot_tmo);
