@@ -196,7 +196,7 @@ public:
     IAxisInfo             *info;
     IPositionDirect       *posDir;
 
-    yarp::sig::Vector encoders;
+    yarp::sig::Vector subDev_encoders;
     yarp::sig::Vector encodersTimes;
 
     SubDevice();
@@ -208,10 +208,12 @@ public:
 
     inline void refreshEncoders()
     {
-        int encSize=encoders.size();
-        int timedSize = encodersTimes.size();
-        for(int j=0; j<encSize; j++)
-            enc->getEncoderTimed(j, &encoders[j], &encodersTimes[j]);
+    	int idx = 0;
+    	double tmp = 0;
+        for(int j=base, idx=0; j<(base+axes); j++, idx++)
+        {
+            enc->getEncoderTimed(j, &subDev_encoders[idx], &encodersTimes[idx]);
+        }
     }
 
     bool isAttached()
@@ -242,7 +244,6 @@ public:
         return &subdevices[i];
     }
 };
-
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
@@ -278,6 +279,7 @@ private:
     bool verb;
 
     WrappedDevice device;
+
     bool owned;
 
     Port state_p;   // out port to read the state
@@ -296,7 +298,7 @@ private:
     // for new interface
     PortReaderBuffer<Bottle> command_buffer;
 
-    Vector            encoders;
+    Vector            CBW_encoders;
     std::string       partName;
 
     int               controlledJoints;
@@ -331,7 +333,7 @@ public:
     /**
     * Constructor.
     */
-    ControlBoardWrapper2() : RateThread(20), callback_impl(this), command_reader(this)
+    ControlBoardWrapper2() : RateThread(20), callback_impl(this), command_reader(this), control_buffer(4)
     {
         ////YARP_TRACE(Logger::get(),"ControlBoardWrapper2::ControlBoardWrapper2()", Logger::get().log_files.f3);
         controlledJoints = 0;

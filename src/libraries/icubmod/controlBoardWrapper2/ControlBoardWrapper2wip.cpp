@@ -81,7 +81,7 @@ bool SubDevice::configure(int b, int t, int n, const std::string &key)
             return false;
         }
 
-    encoders.resize(axes);
+    subDev_encoders.resize(axes);
     encodersTimes.resize(axes);
 
     configuredF=true;
@@ -2517,7 +2517,7 @@ bool ControlBoardWrapper2::openAndAttachSubDevice(Property& prop)
     if (!device.subdevices[0].attach(subDeviceOwned, subDevName))
         return false;
 
-    encoders.resize(device.lut.size());
+    CBW_encoders.resize(device.lut.size());
 
     // initialization.
     command_reader.initialize();
@@ -2561,7 +2561,7 @@ bool ControlBoardWrapper2::attachAll(const PolyDriverList &polylist)
     if (!ready)
         return false;
 
-    encoders.resize(device.lut.size());
+    CBW_encoders.resize(device.lut.size());
 
     // initialization.
     command_reader.initialize();
@@ -2592,10 +2592,9 @@ void ControlBoardWrapper2::run()
 
             for(int l=0;l<axes;l++)
             {
-                encoders[l]=device.subdevices[k].encoders[l+base];
-                timeStamp+=device.subdevices[k].encodersTimes[l+base];
+                encoders[l]=device.subdevices[k].subDev_encoders[l];
+                timeStamp+=device.subdevices[k].encodersTimes[l];
             }
-
             encoders+=device.subdevices[k].axes; //jump to next group
         }
 
