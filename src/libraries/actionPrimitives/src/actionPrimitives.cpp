@@ -2182,10 +2182,7 @@ void ActionPrimitivesLayer2::run()
             wrenchExternal[i]=(*wbdynWrench)[i];
     }
 
-    Vector forceExternal(3);
-    forceExternal[0]=wrenchExternal[0];
-    forceExternal[1]=wrenchExternal[1];
-    forceExternal[2]=wrenchExternal[2];
+    Vector forceExternal=wrenchExternal.subVector(0,2);
     const double forceExternalAbs=norm(forceExternal);
 
     // stop the arm iff contact detected while reaching
