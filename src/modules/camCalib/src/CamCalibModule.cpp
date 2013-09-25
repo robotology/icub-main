@@ -35,7 +35,6 @@ void CamCalibPort::setSaturation(double satVal)
 void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 {
     double t=Time::now();
-    int temp = 0;
     // execute calibration
     if (portImgOut!=NULL)
     {        
@@ -114,7 +113,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     botConfig.setMonitor(rf.getMonitor());		
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
-    if(botConfig.check("group", valGroup, "Configuration group to load module options from (string).")){
+    if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
+    {
         string strGroup = valGroup->asString().c_str();        
         // is group a valid bottle?
         if (botConfig.check(strGroup.c_str())){            
@@ -125,6 +125,11 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
             cout << endl << "Group " << strGroup << " not found." << endl;
             return false;
         }
+    }
+    else
+    {
+        fprintf(stdout, " There seem to be an error loading parameters (group missing), stopping module\n");
+        return false;
     }
 
     string calibToolName = botConfig.check("projection",
