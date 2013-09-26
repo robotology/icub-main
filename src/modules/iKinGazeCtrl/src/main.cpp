@@ -533,16 +533,17 @@ using namespace yarp::sig;
 class CtrlModule: public RFModule
 {
 protected:
-    Localizer     *loc;
-    EyePinvRefGen *eyesRefGen;
-    Solver        *slv;
-    Controller    *ctrl;
-    PolyDriver    *drvTorso, *drvHead;
-    exchangeData   commData;
-    Port           rpcPort;
-    bool           interrupting;
-    bool           doSaveTweakFile;
-    Semaphore      savingTweakFile;
+    ResourceFinder *rf;
+    Localizer      *loc;
+    EyePinvRefGen  *eyesRefGen;
+    Solver         *slv;
+    Controller     *ctrl;
+    PolyDriver     *drvTorso, *drvHead;
+    exchangeData    commData;
+    Port            rpcPort;
+    bool            interrupting;
+    bool            doSaveTweakFile;
+    Semaphore       savingTweakFile;
 
     struct Context
     {
@@ -904,7 +905,9 @@ protected:
         loc->getExtrinsicsMatrix("right",HNR);
 
         ofstream fout;
-        fout.open(commData.tweakFile.c_str());
+        string tweakFile=rf->getContextPath().c_str();
+        tweakFile+="/"+commData.tweakFile;
+        fout.open(tweakFile.c_str());
         if (fout.is_open())
         {
             if (validIntrinsicsL)
@@ -969,6 +972,9 @@ public:
 
         Time::turboBoost();
 
+        // save pointer to rf
+        this->rf=&rf;
+
         // get params from the command-line
         ctrlName=rf.check("ctrlName",Value("iKinGazeCtrl")).asString().c_str();        
         partName=rf.check("part",Value("head")).asString().c_str();
@@ -1009,9 +1015,6 @@ public:
         commData.tweakFile=rf.check("tweakFile",Value("tweak.ini")).asString().c_str();
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
-
-        commData.tweakFile="/"+commData.tweakFile;
-        commData.tweakFile=rf.getContextPath().c_str()+commData.tweakFile;
 
         if (commData.headV2)
             fprintf(stdout,"Controller configured for head 2.0\n");
