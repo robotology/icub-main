@@ -60,6 +60,8 @@ public:
     virtual bool open (yarp::os::Searchable &config);
     virtual bool close();
     virtual bool configure (yarp::os::Searchable &config);
+    /** Stop module if there is an unread value */
+    void stopConfig( std::string val );
 
     // ICalibTool
     void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,

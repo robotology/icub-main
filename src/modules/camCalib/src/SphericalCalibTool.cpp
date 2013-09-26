@@ -37,6 +37,11 @@ bool SphericalCalibTool::close(){
     return true;
 }
 
+void SphericalCalibTool::stopConfig( std::string val ){
+
+    fprintf(stdout,"There seem to be an error loading parameters \"%s\", stopping module\n", val.c_str());
+}
+
 bool SphericalCalibTool::configure (Searchable &config){
     
     // Defaults will correspond to a view field of 90 deg.
@@ -58,7 +63,20 @@ bool SphericalCalibTool::configure (Searchable &config){
     _k2 = config.check("k2", Value(0.0), "Radial distortion (second parameter) (double)").asDouble();
     _p1 = config.check("p1", Value(0.0), "Tangential distortion (first parameter) (double)").asDouble();
     _p2 = config.check("p2", Value(0.0), "Tangential distortion (second parameter) (double)").asDouble();
-    
+
+    //check to see if the value is read correctly without caring about the default values.
+    if ( !config.check("drawCenterCross") ) { stopConfig("drawCenterCross"); return false; }
+    if ( !config.check("w") ) { stopConfig("w"); return false;}
+    if ( !config.check("h") ) { stopConfig("h"); return false;}
+    if ( !config.check("fx") ) { stopConfig("fx"); return false;}
+    if ( !config.check("fy") ) { stopConfig("fy"); return false;}
+    if ( !config.check("cx") ) { stopConfig("cx"); return false;}
+    if ( !config.check("cy") ) { stopConfig("cy"); return false;}
+    if ( !config.check("k1") ) { stopConfig("k1"); return false;}
+    if ( !config.check("k2") ) { stopConfig("k2"); return false;}
+    if ( !config.check("p1") ) { stopConfig("p1"); return false;}
+    if ( !config.check("p2") ) { stopConfig("p2"); return false;}
+
     _fx_scaled = _fx;
     _fy_scaled = _fy;
     _cx_scaled = _cx;

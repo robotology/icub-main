@@ -42,21 +42,30 @@ bool PinholeCalibTool::open(Searchable &config){
     return configure(config);
 }
 
+void PinholeCalibTool::stopConfig( string val ){
+
+    fprintf(stdout,"There seem to be an error loading parameters \"%s\", stopping module\n", val.c_str());
+}
+
 bool PinholeCalibTool::configure (Searchable &config){
 
     _calibImgSize.width = config.check("w",
                                       Value(320),
                                       "Image width for which calibration parameters were calculated (int)").asInt();
+
     _calibImgSize.height = config.check("h",
                                       Value(240),
                                       "Image height for which calibration parameters were calculated (int)").asInt();
+
     _drawCenterCross = config.check("drawCenterCross",
                                     Value(0),
                                     "Draw a cross at calibration center (int [0|1]).").asInt()!=0;
 
+
     CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0) = (float)config.check("fx",
                                                         Value(320.0),
-                                                        "Focal length x (double)").asDouble();    
+                                                        "Focal length x (double)").asDouble();
+
     CV_MAT_ELEM( *_intrinsic_matrix, float, 0, 1) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 0, 2) = (float)config.check("cx",
                                                         Value(160.0),
@@ -72,12 +81,26 @@ bool PinholeCalibTool::configure (Searchable &config){
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 1) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 2) = 1.0f;
 
+
+    //check to see if the value is read correctly without caring about the default values.
+    if ( !config.check("drawCenterCross") ) { stopConfig("drawCenterCross"); return false; }
+    if ( !config.check("w") ) { stopConfig("w"); return false;}
+    if ( !config.check("h") ) { stopConfig("h"); return false;}
+    if ( !config.check("fx") ) { stopConfig("fx"); return false;}
+    if ( !config.check("fy") ) { stopConfig("fy"); return false;}
+    if ( !config.check("cx") ) { stopConfig("cx"); return false;}
+    if ( !config.check("cy") ) { stopConfig("cy"); return false;}
+    if ( !config.check("k1") ) { stopConfig("k1"); return false;}
+    if ( !config.check("k2") ) { stopConfig("k2"); return false;}
+    if ( !config.check("p1") ) { stopConfig("p1"); return false;}
+    if ( !config.check("p2") ) { stopConfig("p2"); return false;}
+
+
     fprintf(stdout,"fx=%g\n",config.find("fx").asDouble());
     fprintf(stdout,"fy=%g\n",config.find("fy").asDouble());
     fprintf(stdout,"cx=%g\n",config.find("cx").asDouble());
     fprintf(stdout,"cy=%g\n",config.find("cy").asDouble());
 
-    
 
     // copy to scaled matrix ;)
     CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0);

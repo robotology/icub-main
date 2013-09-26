@@ -128,7 +128,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     }
     else
     {
-        fprintf(stdout, " There seem to be an error loading parameters (group missing), stopping module\n");
+        fprintf(stdout, "There seem to be an error loading parameters (group section missing), stopping module\n");
         return false;
     }
 

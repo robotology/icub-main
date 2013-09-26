@@ -89,6 +89,9 @@ public:
     */ 
     virtual bool configure (yarp::os::Searchable &config);
 
+    /** Stop module if there is a wrong value */
+    void stopConfig( std::string val );
+
   /** Apply calibration, in = rgb image, out = calibrated rgb image.
     * If necessary the output image is resized to match the size of the 
     * input image.
