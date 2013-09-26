@@ -412,8 +412,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     {
         message+=": intrinsic parameters for "+type;
         Bottle &parType=_rf.findGroup(type.c_str());
-
-        if (parType.size())
+        if (!parType.isNull())
         {
             if (parType.check("fx") && parType.check("fy") &&
                 parType.check("cx") && parType.check("cy"))
@@ -472,8 +471,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         {
             message+=": aligning matrix for "+type;
             Bottle &parType=_rf.findGroup(type.c_str());
-
-            if (parType.size()>0)
+            if (!parType.isNull())
             {
                 if (Bottle *bH=parType.find("HN").asList())
                 {
