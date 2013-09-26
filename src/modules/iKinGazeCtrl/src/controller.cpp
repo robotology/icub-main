@@ -34,9 +34,9 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     Robotable=(drvHead!=NULL);
 
     // Instantiate objects
-    neck=new iCubHeadCenter(commData->headV2?"right_v2":"right");
-    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
-    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
+    neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
+    eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
+    eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
 
     // release links
     neck->releaseLink(0); eyeL->releaseLink(0); eyeR->releaseLink(0);

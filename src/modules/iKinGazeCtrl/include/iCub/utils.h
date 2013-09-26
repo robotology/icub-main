@@ -134,7 +134,7 @@ public:
     string         localStemName;
     double         eyeTiltMin;
     double         eyeTiltMax;
-    bool           headV2;
+    double         head_version;
     bool           tweakOverwrite;
     ResourceFinder rf_cameras;
     ResourceFinder rf_tweak;

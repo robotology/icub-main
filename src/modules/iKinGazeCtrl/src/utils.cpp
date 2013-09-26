@@ -146,7 +146,7 @@ exchangeData::exchangeData()
     localStemName="";
     eyeTiltMin=-1e9;
     eyeTiltMax=1e9;
-    headV2=false;
+    head_version=1.0;
     tweakOverwrite=true;
     tweakFile="";
 }

@@ -76,7 +76,6 @@ protected:
 
     unsigned int period;
     bool Robotable;
-    bool headV2;
     bool saccadesOn;
     bool saccadeUnderWayOld;
     bool genOn;
@@ -152,7 +151,6 @@ protected:
 
     unsigned int period;
     bool Robotable;
-    bool headV2;
     bool solveRequest;
     int nJointsTorso;
     int nJointsHead;

@@ -37,9 +37,9 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     counterRotGain=_counterRotGain;
 
     // Instantiate objects
-    neck=new iCubHeadCenter(commData->headV2?"right_v2":"right");
-    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
-    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
+    neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
+    eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
+    eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
 
     // remove constraints on the links: logging purpose
     inertialSensor.setAllConstraints(false);
@@ -547,9 +547,9 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     Robotable=(drvHead!=NULL);
 
     // Instantiate objects
-    neck=new iCubHeadCenter(commData->headV2?"right_v2":"right");
-    eyeL=new iCubEye(commData->headV2?"left_v2":"left");
-    eyeR=new iCubEye(commData->headV2?"right_v2":"right");
+    neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
+    eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
+    eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
 
     // remove constraints on the links: logging purpose
     inertialSensor.setAllConstraints(false);

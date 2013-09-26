@@ -30,7 +30,7 @@
 
 #include "ClientGazeController.h"
 
-#define GAZECTRL_CLIENT_VER     1.0
+#define GAZECTRL_CLIENT_VER     1.1
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
 #define GAZECTRL_ACK            Vocab::encode("ack")
 #define GAZECTRL_NACK           Vocab::encode("nack")
@@ -119,11 +119,9 @@ bool ClientGazeController::open(Searchable &config)
     portStateAng.open((local+"/angles:i").c_str());
     portStateHead.open((local+"/q:i").c_str());
     portEvents.open((local+"/events:i").c_str());
-    portRpc.open((local+"/rpc").c_str());   
+    portRpc.open((local+"/rpc").c_str());
 
-    remote=remote+"/head";
     bool ok=true;
-
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
     if (ok)
     {

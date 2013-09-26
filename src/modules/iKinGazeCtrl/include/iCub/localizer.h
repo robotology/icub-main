@@ -53,8 +53,7 @@ protected:
     Stamp txInfo_ang;
 
     unsigned int period;
-    bool headV2;
-        
+
     Matrix eyeCAbsFrame;
     Matrix invEyeCAbsFrame;
     double eyesHalfBaseline;

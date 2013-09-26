@@ -82,7 +82,6 @@ protected:
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
     bool Robotable;
-    bool headV2;
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;

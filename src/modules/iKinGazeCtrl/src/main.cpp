@@ -93,18 +93,17 @@ Factors</a>.
   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
---ctrlName \e name 
-- The parameter \e name identifies the controller's name; all 
-  the open ports will be tagged with the prefix
-  /<ctrlName>/<part>/. If not specified, \e iKinGazeCtrl is
-  assumed.
+--name \e ctrlName 
+- The parameter \e ctrlName identifies the controller's name; 
+  all the open ports will be tagged with the prefix
+  /<ctrlName>. If not specified, \e iKinGazeCtrl is assumed.
  
 --robot \e name 
 - The parameter \e name selects the robot name to connect to; if
   not specified, \e icub is assumed.
  
---part \e type 
-- The parameter \e type selects the robot's head port to connect
+--head \e name 
+- The parameter \e name selects the robot's head port to connect
   to; if not specified, \e head is assumed.
 
 --torso \e name 
@@ -244,48 +243,45 @@ The module creates the usual ports required for the
 communication with the robot (through interfaces) and the 
 following ports: 
  
-- \e /<ctrlName>/<part>/xd:i receives the target fixation point. 
+- \e /<ctrlName>/xd:i receives the target fixation point. 
   It accepts 3 double (also as a Bottle object) for xyz
   coordinates.
 
-- \e /<ctrlName>/<part>/mono:i receives the current target 
-  position expressed in one image plane. The input data format
-  is the Bottle [type u v z], where \e type can be "left" or
-  "right", <i> (u,v) </i> is the pixel coordinates and \e z is
-  the guessed z-component in the eye's reference frame. An
+- \e /<ctrlName>/mono:i receives the current target position 
+  expressed in one image plane. The input data format is the
+  Bottle [type u v z], where \e type can be "left" or "right",
+  <i> (u,v) </i> is the pixel coordinates and \e z is the
+  guessed z-component in the eye's reference frame. An
   alternative command modality employs the vergence given in
   degrees in place of the z-component and its format is: [type u
   v "ver" ver].
  
-- \e /<ctrlName>/<part>/stereo:i receives the current target 
-  position expressed in image planes. It accepts 4 double (also
-  as a Bottle object) in this order: [ul vl ur vr].
+- \e /<ctrlName>/stereo:i receives the current target position 
+  expressed in image planes. It accepts 4 double (also as a
+  Bottle object) in this order: [ul vl ur vr].
  
-- \e /<ctrlName>/<part>/angles:i receives the current target 
-  position expressed as azimuth/elevation/vergence triplet in
-  degrees. It accepts 1 string and 3 doubles (also as a Bottle
-  object) in this order: [mode azi ele ver], where \e mode can
-  be \e rel or \e abs. A positive azimuth will turn the gaze to
-  the right, whereas a positive elevation will move the gaze
-  upward.
+- \e /<ctrlName>/angles:i receives the current target position 
+  expressed as azimuth/elevation/vergence triplet in degrees. It
+  accepts 1 string and 3 doubles (also as a Bottle object) in
+  this order: [mode azi ele ver], where \e mode can be \e rel or
+  \e abs. A positive azimuth will turn the gaze to the right,
+  whereas a positive elevation will move the gaze upward.
  
-- \e /<ctrlName>/<part>/x:o returns the actual fixation point 
-  (Vector of 3 double). Units in meters.
+- \e /<ctrlName>/x:o returns the actual fixation point (Vector 
+  of 3 double). Units in meters.
  
-- \e /<ctrlName>/<part>/q:o returns the actual joints 
-  configuration during movement (Vector of 9 double). The order
-  for torso angles is the one defined by kinematic chain
-  (reversed order). Useful in conjunction with the \ref
-  iKinGazeView "viewer". Units in degrees.
+- \e /<ctrlName>/q:o returns the actual joints configuration 
+  during movement (Vector of 9 double). The order for torso
+  angles is the one defined by kinematic chain (reversed order).
+  Useful in conjunction with the \ref iKinGazeView "viewer".
+  Units in degrees.
 
-- \e /<ctrlName>/<part>/angles:o returns the current 
-  azimuth/elevation couple wrt to the absolute head position,
-  together with the current vergence (Vector of 3 double). Units
-  in degrees.
+- \e /<ctrlName>/angles:o returns the current azimuth/elevation 
+  couple wrt to the absolute head position, together with the
+  current vergence (Vector of 3 double). Units in degrees.
  
-- \e /<ctrlName>/<part>/events:o streams out the event 
-  associated to the controller's state. \n
-  Available events are:
+- \e /<ctrlName>/events:o streams out the event associated to 
+  the controller's state. \n Available events are:
    - "motion-onset" <time>: sent out at the beginning of the
      motion; comprise the time instant of the source when the
      event took place.
@@ -315,7 +311,7 @@ following ports:
      suspended because of a communication timeout; comprise the
      time instant of the source when the event took place.
  
-- \e /<ctrlName>/<part>/rpc remote procedure call. \n 
+- \e /<ctrlName>/rpc remote procedure call. \n 
     Recognized remote commands (be careful, <b>commands dealing
     with geometric projections will only work if the cameras
     intrinsic parameters are provided</b>):
@@ -401,7 +397,7 @@ following ports:
       target with stereo input.
     - [get] [info]: returns (enclosed in a list) a property-like
       bottle containing useful information, such as the
-      "head_version" (e.g. 1, 2, ...), the
+      "head_version" (e.g. 1.0, 2.0, ...), the
       "min_allowed_vergence" (in degrees), a list of the
       available "events", the intrinsic and extrinsic camera
       parameters used.
@@ -521,7 +517,7 @@ Windows, Linux
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
-#define GAZECTRL_SERVER_VER     1.0
+#define GAZECTRL_SERVER_VER     1.1
 
 using namespace std;
 using namespace yarp::os;
@@ -705,7 +701,7 @@ protected:
 
         Bottle &headVer=info.addList();
         headVer.addString("head_version");
-        headVer.addInt(commData.headV2?2:1);
+        headVer.addDouble(commData.head_version);
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
@@ -959,7 +955,7 @@ public:
     bool configure(ResourceFinder &rf)
     {
         string ctrlName;
-        string partName;
+        string headName;
         string torsoName;
         double neckTime;
         double eyesTime;
@@ -976,8 +972,8 @@ public:
         this->rf=&rf;
 
         // get params from the command-line
-        ctrlName=rf.check("ctrlName",Value("iKinGazeCtrl")).asString().c_str();        
-        partName=rf.check("part",Value("head")).asString().c_str();
+        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();        
+        headName=rf.check("head",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
         neckTime=rf.check("Tneck",Value(0.75)).asDouble();
         eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
@@ -992,7 +988,7 @@ public:
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
         commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
-        commData.headV2=rf.check("headV2");
+        commData.head_version=rf.check("headV2")?2.0:1.0;
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
 
         // minAbsVel is given in absolute form
@@ -1016,14 +1012,13 @@ public:
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
 
-        if (commData.headV2)
-            fprintf(stdout,"Controller configured for head 2.0\n");
+        fprintf(stdout,"Controller configured for head version %g\n",commData.head_version);
 
-        string remoteHeadName="/"+commData.robotName+"/"+partName;
-        string localHeadName="/"+ctrlName+"/"+partName;
+        commData.localStemName="/"+ctrlName;
+        string remoteHeadName="/"+commData.robotName+"/"+headName;
+        string localHeadName=commData.localStemName+"/"+headName;
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
-        string localTorsoName=localHeadName+"/"+torsoName;
-        commData.localStemName=localHeadName;
+        string localTorsoName=commData.localStemName+"/"+torsoName;        
 
         if (Robotable)
         {
@@ -1035,7 +1030,7 @@ public:
             Property optHead("(device remote_controlboard)");
             optHead.put("remote",remoteHeadName.c_str());
             optHead.put("local",localHeadName.c_str());
-            optHead.put("part",partName.c_str());
+            optHead.put("part",headName.c_str());
             // mixed position/velocity control entails
             // to send two packets per control slot
             optHead.put("writeStrict","on");
@@ -1088,7 +1083,7 @@ public:
         ctrl->start();
         loc->start();
 
-        rpcPort.open((localHeadName+"/rpc").c_str());
+        rpcPort.open((commData.localStemName+"/rpc").c_str());
         attach(rpcPort);
 
         contextIdCnt=0;
