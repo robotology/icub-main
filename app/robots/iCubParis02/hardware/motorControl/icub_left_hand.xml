@@ -60,7 +60,7 @@
 <param name="ki">           -1            -5            -5            -5            5             -5            -5            1             </param>       
 <param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
-<param name="shift">        6             8             8             8             8             8             8             5             </param>       
+<param name="shift">        6             8             8             8             8             8             8             6             </param>       
 <param name="ko">           0             0             0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
