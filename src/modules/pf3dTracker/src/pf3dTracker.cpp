@@ -296,6 +296,7 @@ bool PF3DTracker::open(Searchable& config)
             botConfig.check("cameraGroup"))
         {
             ResourceFinder camera_rf;
+            camera_rf.setVerbose();
             camera_rf.setDefaultContext(botConfig.find("cameraContext").asString().c_str());
             camera_rf.setDefaultConfigFile(botConfig.find("cameraFile").asString().c_str());
             camera_rf.configure(0,NULL);
@@ -314,13 +315,20 @@ bool PF3DTracker::open(Searchable& config)
 
         if (!rfOk)
         {
-            _calibrationImageWidth =botConfig.check("w",Value(320),"Image width  (int)").asInt();
-            _calibrationImageHeight=botConfig.check("h",Value(240),"Image height (int)").asInt();
-            _perspectiveFx         =(float)botConfig.check("perspectiveFx",Value(257.34),"Focal distance * kx  (double)").asDouble();
-            _perspectiveFy         =(float)botConfig.check("perspectiveFy",Value(257.34),"Focal distance * ky  (double)").asDouble();
-            _perspectiveCx         =(float)botConfig.check("perspectiveCx",Value(160.0),"X position of the projection center, in pixels (double)").asDouble();
-            _perspectiveCy         =(float)botConfig.check("perspectiveCy",Value(120.0),"Y position of the projection center, in pixels (double)").asDouble();
+            _calibrationImageWidth =botConfig.check("w",Value(320)).asInt();
+            _calibrationImageHeight=botConfig.check("h",Value(240)).asInt();
+            _perspectiveFx         =(float)botConfig.check("perspectiveFx",Value(257.34)).asDouble();
+            _perspectiveFy         =(float)botConfig.check("perspectiveFy",Value(257.34)).asDouble();
+            _perspectiveCx         =(float)botConfig.check("perspectiveCx",Value(160.0)).asDouble();
+            _perspectiveCy         =(float)botConfig.check("perspectiveCy",Value(120.0)).asDouble();
         }
+
+        cout<<"w ="<<_calibrationImageWidth<<endl;
+        cout<<"h ="<<_calibrationImageHeight<<endl;
+        cout<<"fx="<<_perspectiveFx<<endl;
+        cout<<"fy="<<_perspectiveFy<<endl;
+        cout<<"cx="<<_perspectiveCx<<endl;
+        cout<<"cy="<<_perspectiveCy<<endl;
     }
     else
     {
