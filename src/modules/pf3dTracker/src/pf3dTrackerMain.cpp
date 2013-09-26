@@ -73,14 +73,9 @@ Configuration is done through an initialization file (See for instance $ICUB_ROO
  #projectionModel, only the perspective one was implemented so far.
  projectionModel             perspective
  
- #iCubLisboaLeftEye_Zoom_Lens_2009_05_19
- w 320
- h 240
- perspectiveFx 445.202
- perspectiveFy 445.664
- perspectiveCx 188.297
- perspectiveCy 138.496
- 
+ cameraContext  cameraCalibration
+ cameraFile     icubEyes.ini
+ cameraGroup    CAMERA_CALIBRATION_LEFT
  
  #######################
  #tracked object models#

@@ -213,7 +213,6 @@ bool PF3DTracker::open(Searchable& config)
     //botConfig.setMonitor(config.getMonitor()); //is this needed?
 
 
-
     _inputVideoPortName = botConfig.check("inputVideoPort",
                                       Value("/pf3dTracker/video:i"),
                                       "Input video port (string)").asString();
@@ -255,19 +254,19 @@ bool PF3DTracker::open(Searchable& config)
                                         Value(0.99),
                                         "attentionOutputDecrease (double)").asDouble();
 
-	if (botConfig.check("outputUVDataPort"))
-	{
-		supplyUVdata = true;
-		_outputUVDataPortName = botConfig.check("outputUVDataPort",
+    if (botConfig.check("outputUVDataPort"))
+    {
+        supplyUVdata = true;
+        _outputUVDataPortName = botConfig.check("outputUVDataPort",
                                       Value("/PF3DTracker/dataUVOut"),
                                       "Image plane output data port (string)").asString();
-		_outputUVDataPort.open(_outputUVDataPortName);
-	}
-	else 
-	{	
-		fprintf(stderr, "No (u,v) data will be supplied\n");
-		supplyUVdata = false;
-	}
+        _outputUVDataPort.open(_outputUVDataPortName);
+    }
+    else 
+    {   
+        fprintf(stderr, "No (u,v) data will be supplied\n");
+        supplyUVdata = false;
+    }
 
     _nParticles = botConfig.check("nParticles",
                                     Value("1000"),
@@ -292,29 +291,36 @@ bool PF3DTracker::open(Searchable& config)
 
     if(_projectionModel=="perspective")
     {
+        bool rfOk=false;
+        if (botConfig.check("cameraContext") && botConfig.check("cameraFile") &&
+            botConfig.check("cameraGroup"))
+        {
+            ResourceFinder camera_rf;
+            camera_rf.setDefaultContext(botConfig.find("cameraContext").asString().c_str());
+            camera_rf.setDefaultConfigFile(botConfig.find("cameraFile").asString().c_str());
+            camera_rf.configure(0,NULL);
+            Bottle &params=camera_rf.findGroup(botConfig.find("cameraGroup").asString().c_str());
+            if (!params.isNull())
+            {
+                _calibrationImageWidth =params.check("w",Value(320)).asInt();
+                _calibrationImageHeight=params.check("h",Value(240)).asInt();
+                _perspectiveFx         =(float)params.check("fx",Value(257.34)).asDouble();
+                _perspectiveFy         =(float)params.check("fy",Value(257.34)).asDouble();
+                _perspectiveCx         =(float)params.check("cx",Value(160.0)).asDouble();
+                _perspectiveCy         =(float)params.check("cy",Value(120.0)).asDouble();
+                rfOk=true;
+            }
+        }
 
-        _calibrationImageWidth = botConfig.check("w",
-                                        Value(320),
-                                        "Image width  (int)").asInt();
-        _calibrationImageHeight = botConfig.check("h",
-                                        Value(240),
-                                        "Image height (int)").asInt();
-
-        _perspectiveFx = (float)botConfig.check("perspectiveFx",
-                                        Value(1),
-                                        "Focal distance * kx  (double)").asDouble();
-
-        _perspectiveFy = (float)botConfig.check("perspectiveFy",
-                                        Value(1),
-                                        "Focal distance * ky  (double)").asDouble();
-
-        _perspectiveCx = (float)botConfig.check("perspectiveCx",
-                                        Value(1),
-                                        "X position of the projection center, in pixels (double)").asDouble();
-
-        _perspectiveCy = (float)botConfig.check("perspectiveCy",
-                                        Value(1),
-                                        "Y position of the projection center, in pixels (double)").asDouble();
+        if (!rfOk)
+        {
+            _calibrationImageWidth =botConfig.check("w",Value(320),"Image width  (int)").asInt();
+            _calibrationImageHeight=botConfig.check("h",Value(240),"Image height (int)").asInt();
+            _perspectiveFx         =(float)botConfig.check("perspectiveFx",Value(257.34),"Focal distance * kx  (double)").asDouble();
+            _perspectiveFy         =(float)botConfig.check("perspectiveFy",Value(257.34),"Focal distance * ky  (double)").asDouble();
+            _perspectiveCx         =(float)botConfig.check("perspectiveCx",Value(160.0),"X position of the projection center, in pixels (double)").asDouble();
+            _perspectiveCy         =(float)botConfig.check("perspectiveCy",Value(120.0),"Y position of the projection center, in pixels (double)").asDouble();
+        }
     }
     else
     {
@@ -370,8 +376,8 @@ bool PF3DTracker::open(Searchable& config)
     if(_trackedObjectType=="sphere")
     {
         ;//good, this one is implemented.
-	//0 means inner and outer circle, 1 means just one circle of the correct size.
-	_circleVisualizationMode = botConfig.check("circleVisualizationMode",
+    //0 means inner and outer circle, 1 means just one circle of the correct size.
+    _circleVisualizationMode = botConfig.check("circleVisualizationMode",
                                     Value("0"),
                                     "Visualization mode for the sphere (int)").asInt();
     }
@@ -445,11 +451,11 @@ bool PF3DTracker::open(Searchable& config)
             }
 //Used to be done like this:
 //         ippsSet_32f(1,&_visualization3dPoints[0][0], 3*2*nPixels);
-// 	//COMPUTE THE MEAN OF INNER AND OUTER POINTS
+//  //COMPUTE THE MEAN OF INNER AND OUTER POINTS
 //         ippsAdd_32f(&_model3dPoints[0][0], &_model3dPoints[0][nPixels], &_visualization3dPoints[0][0], nPixels);  //sum the first half line of model3dPoints to the second half line. put the result into the first line of _visualization3dPoints.
 //         ippsAdd_32f(&_model3dPoints[1][0], &_model3dPoints[1][nPixels], &_visualization3dPoints[1][0], nPixels);  //same for the second line.
 //         ippsAdd_32f(&_model3dPoints[2][0], &_model3dPoints[2][nPixels], &_visualization3dPoints[2][0], nPixels);  //same for the third line.
-// 	ippsDivC_32f_I(2, &_visualization3dPoints[0][0], nPixels*2*3); //divide everything by 2. 
+//  ippsDivC_32f_I(2, &_visualization3dPoints[0][0], nPixels*2*3); //divide everything by 2. 
 
       }
 
@@ -1007,22 +1013,22 @@ bool PF3DTracker::updateModule()
                 //       ippsAdd_32f(noise+_nParticles*3, &_newParticles[3][0], &_particles[3][0], _nParticles*3);  //sum the second batch.
     
     
-		//------------------------------------------------------------martim
-		// get particles from input
-		if(_numParticlesReceived > 0){
-			int topdownParticles = _nParticles - _numParticlesReceived;
-			for(count=0 ; count<_numParticlesReceived ; count++){
-				cvmSet(_particles,0,topdownParticles+count, (particleInput->get(1+count*3+0)).asDouble());
-				cvmSet(_particles,1,topdownParticles+count, (particleInput->get(1+count*3+1)).asDouble());
-				cvmSet(_particles,2,topdownParticles+count, (particleInput->get(1+count*3+2)).asDouble());
-				cvmSet(_particles,3,topdownParticles+count, 0);
-				cvmSet(_particles,4,topdownParticles+count, 0);
-				cvmSet(_particles,5,topdownParticles+count, 0);
-				cvmSet(_particles,6,topdownParticles+count, 0.8); //??
-			}
-			//num_bottomup_objects=(particleInput->get(1+count*3)).asInt();
-		}
-		//------------------------------------------------------------end martim
+        //------------------------------------------------------------martim
+        // get particles from input
+        if(_numParticlesReceived > 0){
+            int topdownParticles = _nParticles - _numParticlesReceived;
+            for(count=0 ; count<_numParticlesReceived ; count++){
+                cvmSet(_particles,0,topdownParticles+count, (particleInput->get(1+count*3+0)).asDouble());
+                cvmSet(_particles,1,topdownParticles+count, (particleInput->get(1+count*3+1)).asDouble());
+                cvmSet(_particles,2,topdownParticles+count, (particleInput->get(1+count*3+2)).asDouble());
+                cvmSet(_particles,3,topdownParticles+count, 0);
+                cvmSet(_particles,4,topdownParticles+count, 0);
+                cvmSet(_particles,5,topdownParticles+count, 0);
+                cvmSet(_particles,6,topdownParticles+count, 0.8); //??
+            }
+            //num_bottomup_objects=(particleInput->get(1+count*3)).asInt();
+        }
+        //------------------------------------------------------------end martim
         }
     
 
