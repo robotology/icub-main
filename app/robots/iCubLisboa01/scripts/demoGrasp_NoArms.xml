@@ -3,7 +3,7 @@
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
-                <port>/iKinGazeCtrl/head/rpc</port>
+                <port>/iKinGazeCtrl/rpc</port>
         </dependencies>
     
         <module>

@@ -7,8 +7,8 @@
 <dependencies>
       <port>/icub/camcalib/left/out</port>
       <port>/icub/camcalib/right/out</port>
-      <port>/iKinGazeCtrl/head/x:o</port>
-      <port>/iKinGazeCtrl/head/q:o</port>
+      <port>/iKinGazeCtrl/x:o</port>
+      <port>/iKinGazeCtrl/q:o</port>
 </dependencies>
 
 <module>

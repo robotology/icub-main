@@ -11,13 +11,13 @@
                 <port>/icub/cartesianController/right_arm/state:o</port>
                 <port>/wholeBodyDynamics/left_arm/cartesianEndEffectorWrench:o</port>
                 <port>/wholeBodyDynamics/right_arm/cartesianEndEffectorWrench:o</port>
-                <port>/iKinGazeCtrl/head/rpc</port>
+                <port>/iKinGazeCtrl/rpc</port>
         </dependencies>
 
         <module>
                 <name>lumaChroma</name>
                 <!-- <parameters>- -image yuv</parameters> -->
-		<parameters>--image hsv --out</parameters>
+           <parameters>--image hsv --out</parameters>
                 <node>icubbrain1</node>
                 <tag>lumaChromaModule</tag>
         </module>

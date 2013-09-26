@@ -7,10 +7,8 @@
             <port>/icub/camcalib/right/out</port>
             <port>/icub/cartesianController/left_arm/state:o</port>
             <port>/icub/cartesianController/right_arm/state:o</port>
-            <port>/iKinGazeCtrl/head/angles:o</port>
+            <port>/iKinGazeCtrl/angles:o</port>
         </dependencies>
-
-
 
         <!--Core module-->  
         <module>

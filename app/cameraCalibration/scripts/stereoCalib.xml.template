@@ -3,22 +3,22 @@
 <dependencies>
       <port>/icub/camcalib/left/out</port>
       <port>/icub/camcalib/right/out</port>
-	  <port>/iKinGazeCtrl/head/rpc</port>
+     <port>/iKinGazeCtrl/rpc</port>
 </dependencies>
 
 <module>
       <name>stereoCalib</name>
       <parameters>--from icubEyes.ini</parameters>
-	  <node>pcNode</node>
+     <node>pcNode</node>
           <stdio>pcNode</stdio>
-	<tag>StereoCalib</tag>
+   <tag>StereoCalib</tag>
    </module>
    
    <module>
       <name>yarpview</name>
       <parameters>--name /viewLeft --synch</parameters>
       <node>pcNode</node>
-	<tag>view1</tag>
+   <tag>view1</tag>
    </module>
 
    <module>

@@ -74,7 +74,7 @@
         </connection>
         <connection>
                 <from>/demoReachManager_IIT_ISR/cmdHead:o</from>
-                <to>/iKinGazeCtrl/head/xd:i</to>
+                <to>/iKinGazeCtrl/xd:i</to>
                 <protocol>udp</protocol>
         </connection>
 

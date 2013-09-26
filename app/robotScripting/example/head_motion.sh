@@ -15,11 +15,11 @@ do
 
   let "count += 1"
   
-  echo "abs "$azi" "$ele" "$ver"" | yarp write ... /iKinGazeCtrl/head/angles:i
+  echo "abs "$azi" "$ele" "$ver"" | yarp write ... /iKinGazeCtrl/angles:i
   sleep "$2"
 done
 
-echo "abs 0.0 0.0 1.0" | yarp write ... /iKinGazeCtrl/head/angles:i
+echo "abs 0.0 0.0 1.0" | yarp write ... /iKinGazeCtrl/angles:i
 
 
 
