@@ -292,12 +292,10 @@ bool PF3DTracker::open(Searchable& config)
     if(_projectionModel=="perspective")
     {
         bool rfOk=false;
-        if (botConfig.check("cameraContext") && botConfig.check("cameraFile") &&
-            botConfig.check("cameraGroup"))
+        if (botConfig.check("cameraFile") && botConfig.check("cameraGroup"))
         {
             ResourceFinder camera_rf;
             camera_rf.setVerbose();
-            camera_rf.setDefaultContext(botConfig.find("cameraContext").asString().c_str());
             camera_rf.setDefaultConfigFile(botConfig.find("cameraFile").asString().c_str());
             camera_rf.configure(0,NULL);
             Bottle &params=camera_rf.findGroup(botConfig.find("cameraGroup").asString().c_str());
