@@ -17,14 +17,14 @@
 </module>
 <module>
   <name>camCalib</name>
-  <parameters>--context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
+  <parameters>--from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
   <node>icubsrv</node>
   <stdio>icubsrv</stdio>
   <tag>camCalibLeft</tag>
 </module>
 <module>
   <name>camCalib</name>
-  <parameters>--context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
+  <parameters>--from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
   <node>icubsrv</node>
   <stdio>icubsrv</stdio>
   <tag>camCalibRight</tag>

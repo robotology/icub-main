@@ -8,7 +8,6 @@
       
         <module>
                 <name>pf3dTracker</name>
-                <parameters>--from pf3dTracker_iCubGenova01_left.ini</parameters>
                 <node>pwrNode1</node>
                 <tag>PF3DTracker_tracker</tag>
         </module>

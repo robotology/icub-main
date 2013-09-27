@@ -14,13 +14,13 @@
    </module>
     <module>
         <name>camCalib</name>
-        <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
+        <parameters>--from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
         <node>icub-b14</node>
         <tag>camcalib_left</tag>
     </module> 
     <module>
         <name>camCalib</name>
-        <parameters>--context cameraCalibration/conf --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
+        <parameters>--from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
         <node>icub-b15</node>
         <tag>camcalib_right</tag> 
     </module> 
