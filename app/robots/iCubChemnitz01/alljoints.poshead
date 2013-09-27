@@ -1,9 +1,53 @@
 [POSITION0] 
-jointPositions 0.00 0.00 0.00 0.00 30.00 0.00
-jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00 
+jointPositions -30.00 0.00 0.00 0.00 30.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
 timing 2.00 
 [POSITION1] 
-jointPositions 0.00 0.00 0.00 0.00 -30.00 0.00
-jointVelocities 10.00 10.00 10.00 10.00 10.00 10.00 
+jointPositions 22.00 0.00 0.00 0.00 -30.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
 timing 2.00 
-
+[POSITION2] 
+jointPositions 0.00 0.00 0.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION3] 
+jointPositions 0.00 -20.00 0.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION4] 
+jointPositions 0.00 20.00 0.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION5] 
+jointPositions 0.00 0.00 -45.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION6] 
+jointPositions 0.00 0.00 45.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION7] 
+jointPositions 0.00 0.00 0.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION8] 
+jointPositions 0.00 0.00 0.00 -30.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION9] 
+jointPositions 0.00 0.00 0.00 30.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION10] 
+jointPositions 0.00 0.00 0.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION11] 
+jointPositions 0.00 0.00 0.00 0.00 0.00 50.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00 
+[POSITION12] 
+jointPositions 0.00 0.00 0.00 0.00 0.00 0.00
+jointVelocities 50.00 50.00 50.00 50.00 50.00 50.00 
+timing 2.00
+ 
