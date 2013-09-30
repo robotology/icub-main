@@ -56,6 +56,22 @@
     <devices file="hardware/MAIS/left_hand_mais.xml" /> 
     <devices file="hardware/MAIS/right_hand_mais.xml" /> 
     
+    <!-- 6SG SENSORS -->
+    <devices file="wrappers/6SG/left_arm_SG_wrapper.xml" /> 
+    <devices file="wrappers/6SG/left_lower_leg_SG_wrapper.xml" /> 
+    <devices file="wrappers/6SG/left_upper_leg_SG_wrapper.xml" /> 
+    <devices file="wrappers/6SG/right_arm_SG_wrapper.xml" /> 
+    <devices file="wrappers/6SG/right_lower_leg_SG_wrapper.xml" /> 
+    <devices file="wrappers/6SG/right_upper_leg_SG_wrapper.xml" /> 
+    <devices file="wrappers/6SG/torso_SG_wapper.xml" /> 
+    <devices file="hardware/6SG/left_arm_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/left_lower_leg_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/left_upper_leg_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/right_arm_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/right_lower_leg_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/right_upper_leg_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/torso_SG_wapper.xml" /> 
+    
     <!-- SKIN -->
     <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm_skin_wrapper.xml" />  
