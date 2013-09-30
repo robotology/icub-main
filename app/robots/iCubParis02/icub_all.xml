@@ -56,13 +56,13 @@
     <devices file="wrappers/6SG/right_lower_leg_SG_wrapper.xml" /> 
     <devices file="wrappers/6SG/right_upper_leg_SG_wrapper.xml" /> 
     <devices file="wrappers/6SG/torso_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/left_arm_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/left_lower_leg_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/left_upper_leg_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/right_arm_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/right_lower_leg_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/right_upper_leg_SG_wrapper.xml" /> 
-    <devices file="hardware/6SG/torso_SG_wrapper.xml" /> 
+    <devices file="hardware/6SG/left_arm_SG.xml" /> 
+    <devices file="hardware/6SG/left_lower_leg_SG.xml" /> 
+    <devices file="hardware/6SG/left_upper_leg_SG.xml" /> 
+    <devices file="hardware/6SG/right_arm_SG.xml" /> 
+    <devices file="hardware/6SG/right_lower_leg_SG.xml" /> 
+    <devices file="hardware/6SG/right_upper_leg_SG.xml" /> 
+    <devices file="hardware/6SG/torso_SG.xml" /> 
     
     <!-- SKIN -->
     <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
