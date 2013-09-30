@@ -18,7 +18,7 @@ using namespace yarp::dev;
 ///*****************************************************************/
 cDriver::cDriver ()
 {
-
+	yarp::os::Time::turboBoost();
 }
 
 
