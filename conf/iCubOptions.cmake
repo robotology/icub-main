@@ -6,7 +6,7 @@ MACRO(icub_install_with_rpath)
     #########################################################################
     # Control setting an rpath
     if (NOT MSVC)
-        option(ICUB_INSTALL_WITH_RPATH "Set an rpath after installing the executables" TRUE)
+        option(ICUB_INSTALL_WITH_RPATH "Set an rpath after installing the executables" FALSE)
         #mark_as_advanced(ICUB_ENABLE_FORCE_RPATH)
     endif (NOT MSVC)
 
