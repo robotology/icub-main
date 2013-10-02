@@ -96,6 +96,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     //elements are:
     sensorsNum=16*12*cardId.size();
     data.resize(sensorsNum);
+    data.clear();
 
     RateThread::start();
     return true;
