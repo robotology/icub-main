@@ -15,6 +15,8 @@
 #include <ace/Time_Value.h>
 #include <ace/OS_NS_sys_socket.h>
 
+#include "stdint.h"
+
 class CanSocket
 {
 public:
@@ -113,11 +115,19 @@ public:
 
 ///////////////////////////////////////////////////
 
+#define USE_PROG_ID
+#undef USE_EXTRA64
+
 struct CanPktHeader_t
 {
     unsigned char signature;
     unsigned char canFrameNumOf;
-    unsigned char dummy[6];
+#ifdef USE_PROG_ID   
+    uint8_t         dummy[2];    
+    uint32_t        progressive;
+#else 
+	uint8_t         dummy[6]; 
+#endif
 };
 
 struct CanPktFrame_t
@@ -133,6 +143,9 @@ struct CanPkt_t
 {
     CanPktHeader_t header;
     CanPktFrame_t frames[1];
+#ifdef USE_EXTRA64
+	uint8_t	      extra64[64];
+#endif
 };
 
 ///////////////////////////////////////////////////
@@ -165,17 +178,20 @@ public:
         mCanBusId=config.check("canid")?config.find("canid").asInt():0;
         ////////////////////////////////////
 
-        unsigned char CMD_JMP_UPD=0x0C;
-        mSocket.sendTo(&CMD_JMP_UPD,1,3333,mBoardAddr);
+		yarp::os::Time::delay(2.0); // avoids that the user sends a message too soon (2.0 is a good value)
+		
+		// removed the command to avoid a bootstrap
+        // unsigned char CMD_JMP_UPD=0x0C;
+        // mSocket.sendTo(&CMD_JMP_UPD,1,3333,mBoardAddr);
 
-        yarp::os::Time::delay(3.0);
+        // yarp::os::Time::delay(0.5); // (was 3)
 
         ////////////////////////////////////
         unsigned char CMD_CANGTW_START=0x20;
 
         mSocket.sendTo(&CMD_CANGTW_START,1,3333,mBoardAddr);
 
-        yarp::os::Time::delay(4.0);
+        yarp::os::Time::delay(0.5); 	// just the time to let the ems to init the can bus. 
 
         return 0;
     }
@@ -238,11 +254,16 @@ public:
     int send_message(yarp::dev::CanBuffer &message, int n)
     {
         CanPkt_t canPkt;
+		static uint32_t prognumber = 0;
+
 
         for (int i=0; i<n; ++i)
         {
             canPkt.header.signature=0x12;
             canPkt.header.canFrameNumOf=1;
+#ifdef USE_PROG_ID
+			canPkt.header.progressive = prognumber++;
+#endif
 
             canPkt.frames[0].canBus=mCanBusId;
             canPkt.frames[0].canId=message[i].getId();
@@ -254,6 +275,11 @@ public:
             //printf(">>>\n");
 
             mSocket.sendTo(&canPkt,sizeof(CanPkt_t),3334,mBoardAddr);
+			
+			// limit througput so that the ems board can safely receive the packet. 
+            // without this delay, the ems receives many udp packets withing a few micro-seconds, and 
+            // its dma buffer goes in overflow because the eth isr cannot execute at such speed.
+			yarp::os::Time::delay(0.001);
         }
 
         return n;
