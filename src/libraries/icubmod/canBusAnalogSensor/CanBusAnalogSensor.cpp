@@ -95,7 +95,9 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     //create the data vector:
     this->channelsNum    = config.find("channels").asInt();
     data.resize(channelsNum);
+    data.clear();
     scaleFactor.resize(channelsNum);
+    scaleFactor.clear();
 
     //start the sensor broadcast
     sensor_start(config);
