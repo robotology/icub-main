@@ -24,7 +24,8 @@ The board types currently supported by the CanLoader application are:
 - MAIS     (DSPIC 30f4013 Hall-effect position sensor)
 _ SKIN   (DSPIC 30f4011 Tactile Sensor board)
 In order to successfully transfer the firmware to the boards using the CanLoader application, the desired boards
-must be powered on and properly connected to the CAN Bus using either the 'ecan' or 'pcan' or 'cfw2can' or 'socketcan' CAN Bus driver.
+must be powered on and properly connected to the CAN Bus using either the 'ecan' or 'pcan' or 'cfw2can' or 'socketcan' CAN Bus driver,
+or, alternatively, canLoader can program the boards connected to a EMS board.
 The CanLoader application can run in two different modalities:
 - Graphical User Interface (GUI) modality:
 This modality allows the user to examinate the status of the DSP boards detected on the specified CAN Bus, to download
@@ -46,12 +47,14 @@ For example:
 executes the graphical version of the canLoader.
 
 To use the canLoader application by command line, without the graphical interface, use the following syntax:
-./canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S
+./canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S
+./canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa
 All of the parameters are mandatory. A description of the parameters follows:
 --canDeviceType t: specifies the type of canBusDriver used. The parameter t can assume the values 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'
 --canDeviceNum x: specifies the canBus identification number. The parameter x can be 0,1,2 or 3.
 --boardId y: specifies the can address of the board on which the firmware will be downloaded. The parameter y ranges from 1 to 15.
 --firmware myFirmware.out.S: specifies the file name containing the firmware (binary code) that will be downloaded.
+--boardIPAddr aaa.aaa.aaa.aaa: it is the EMS board IP address.
 
 \section portsa_sec Ports Accessed
 None
@@ -113,9 +116,10 @@ The configuration file is not used when the canLoader is executed in command lin
 Linux and Windows.
 
 \section example_sec Example Instantiation of the Module
-canLoader20
-canLoader20 --help
-canLoader20 --canDeviceType esd --canDeviceNum 2 --boardId 1 --firmware myFirmware.out.S
+canLoader
+canLoader --help
+canLoader --canDeviceType esd --canDeviceNum 2 --boardId 1 --firmware myFirmware.out.S
+canLoader --canDeviceType EMS --canDeviceNum 1 --boardId 4 --firmware myFirmware.out.S --boardIPAddr 10.0.1.8
 
 \author Marco Randazzo
 
@@ -184,6 +188,8 @@ cDownloader downloader;
 //can_parameters_type params;
 int networkId=0;
 int canID=1;
+unsigned int  localAddr=0;
+unsigned int remoteAddr=0;
 const int maxNetworks=10; //max number of can networks
 std::string networkType;
 bool calibration_enabled=false;
@@ -212,7 +218,8 @@ enum
 #define INVALID_PARAM_FILE            -5
 #define ERR_NO_BOARDS_FOUND            -10
 #define ERR_BOARD_ID_NOT_FOUND      -11
-#define    ERR_UNKNOWN                    -12
+#define ERR_UNKNOWN                    -12
+#define ERR_NO_NETWORK_INTERFACE     -13
 #define DOWNLOADERR_NOT_CONNECTED    -20
 #define DOWNLOADERR_BOARD_NOT_SEL    -21
 #define DOWNLOADERR_FILE_NOT_SEL    -22
@@ -705,6 +712,38 @@ bool dialog_question_can_address (gint old_id, gint new_id)
     return ret;
 }
 //*********************************************************************************
+
+static bool compile_ip_addresses(const char* addr)
+{
+    ACE_UINT32 ip1,ip2,ip3,ip4;
+    //sscanf(gtk_entry_get_text(GTK_ENTRY(box_ipAddr)),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+    sscanf(addr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+    remoteAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
+
+    size_t count=0;
+    ACE_INET_Addr* addr_array=NULL;
+    int ret=ACE::get_ip_interfaces(count,addr_array);
+
+    if (ret || count<=0)
+    {
+        //dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
+        return false;
+    }
+
+    localAddr=addr_array[0].get_ip_address();
+
+    for (unsigned int a=1; a<count; ++a)
+    {
+        if ((remoteAddr & 0xFFFF0000)==(addr_array[a].get_ip_address() & 0xFFFF0000))
+        {
+            localAddr=addr_array[a].get_ip_address();
+            break;
+        }
+    }
+
+    return true;
+}
+
 static void start_end_click (GtkButton *button,    gpointer   user_data)
 {
     int ret = 0;
@@ -713,49 +752,34 @@ static void start_end_click (GtkButton *button,    gpointer   user_data)
     {
         yarp::os::Property params;
         params.put("device", networkType.c_str());
-        params.put("canDeviceNum", networkId);
-        params.put("canTxQueue", 64);
-        params.put("canRxQueue", 64);
-        params.put("canTxTimeout", 2000);
-        params.put("canRxTimeout", 2000);
 
-        if (!prompt_version)
+        if (networkType=="EMS")
         {
-            ACE_UINT32 ip1,ip2,ip3,ip4;
-            sscanf(gtk_entry_get_text(GTK_ENTRY(box_ipAddr)),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-            ACE_UINT32 remAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-
-            size_t count=0;
-            ACE_INET_Addr* addr_array=NULL;
-            ret=ACE::get_ip_interfaces(count,addr_array);
-
-            if (ret || count<=0)
+            if (!prompt_version)
             {
-                dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
-                return;
-            }
-
-            ACE_UINT32 locAddr=addr_array[0].get_ip_address();
-
-            for (unsigned int a=1; a<count; ++a)
-            {
-                if ((remAddr & 0xFFFF0000)==(addr_array[a].get_ip_address() & 0xFFFF0000))
+                if (!compile_ip_addresses(gtk_entry_get_text(GTK_ENTRY(box_ipAddr))))
                 {
-                    locAddr=addr_array[a].get_ip_address();
-                    break;
+                    dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
+                    return;
                 }
             }
-        
-            params.put("local", int(locAddr));
-            params.put("remote",int(remAddr));
-        
+
+            params.put("local", int( localAddr));
+            params.put("remote",int(remoteAddr));
             params.put("canid",canID);
         }
-
-        
+        else
+        {
+            params.put("canDeviceNum", networkId);
+            params.put("canTxQueue", 64);
+            params.put("canRxQueue", 64);
+            params.put("canTxTimeout", 2000);
+            params.put("canRxTimeout", 2000);
+        }
 
         //try to connect to the driver
         ret = downloader.initdriver(params);
+
         if (ret == -1)
         {
             dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Hardware busy or not connected?!");
@@ -1509,7 +1533,8 @@ void fatal_error(int err)
     {
         case INVALID_CMD_STRING:
             printf("Error parsing the command line. The correct format is:\n");
-            printf("canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
+            printf("canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
+            printf("canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa\n");
             ::exit(err);
         break;
         case INVALID_PARAM_CANTYPE:
@@ -1541,6 +1566,9 @@ void fatal_error(int err)
             printf("ERROR: the specified board is not available \n");
             ::exit(err);
         break;
+        case ERR_NO_NETWORK_INTERFACE:
+            printf("ERROR: could not find network interface\n");
+            ::exit(err);
         case ERR_UNKNOWN:
         default:
             printf("Unknown error\n");
@@ -1583,17 +1611,19 @@ int myMain( int   argc, char *argv[] )
                 printf("CANLOADER APPLICATION V2.9\n");
                 printf("Syntax:\n");
                 printf("1) to execute the GUI version of the canLoader:\n");
-                printf("./canLoader20 \n");
+                printf("./canLoader \n");
                 printf("2) to execute the command line version of the canLoader:\n");
-                printf("./canLoader20 --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
+                printf("./canLoader --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
+                printf("./canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId <y> --firmware myFirmware.out.S --boardIPAddr <aaa.aaa.aaa.aaa>\n");
                 printf("parameter <t> is the name of the CAN bus driver. It can be 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'\n");
                 printf("parameter <x> is the number of the CAN bus (0-3)\n");
                 printf("parameter <y> is the CAN address of the board (0-15)\n");
+                printf("parameter <aaa.aaa.aaa.aaa> id the IP address of the board\n");
                 ::exit(0);
         }
-        if        (argc==9)
+        if        (argc==9 || argc==11)
         {
-                //printf("canLoader20 --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
+                //printf("canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
                 if (strcmp(argv[1],"--canDeviceType")!=0)       fatal_error(INVALID_CMD_STRING);
                 if (strcmp(argv[3],"--canDeviceNum")!=0)        fatal_error(INVALID_CMD_STRING);
                 if (strcmp(argv[5],"--boardId")!=0)                fatal_error(INVALID_CMD_STRING);
@@ -1608,7 +1638,8 @@ int myMain( int   argc, char *argv[] )
                 if (strcmp(argv[2],"ecan") !=0 &&
                     strcmp(argv[2],"pcan") !=0 &&
                     strcmp(argv[2],"cfw2can")!=0 &&
-                    strcmp(argv[2],"socketcan")!=0)
+                    strcmp(argv[2],"socketcan")!=0 &&
+                    strcmp(argv[2],"EMS")!=0)
                     {
                         fatal_error(INVALID_PARAM_CANTYPE);
                     }
@@ -1617,6 +1648,16 @@ int myMain( int   argc, char *argv[] )
                         networkType=argv[2];
                     }
 
+                if (networkType=="EMS")
+                {
+                    if (argc!=11 || strcmp(argv[9],"--boardIPAddr")) fatal_error(INVALID_CMD_STRING);
+
+                    if (!compile_ip_addresses(argv[10]))
+                    {
+                        fatal_error(ERR_NO_NETWORK_INTERFACE);
+                    }
+                }
+
                 temp_val=atoi(argv[4]);
                 if (temp_val<0 || temp_val>9)
                     {
@@ -1624,8 +1665,9 @@ int myMain( int   argc, char *argv[] )
                     }
                 else
                     {
-                        networkId=temp_val;
+                        canID=networkId=temp_val;
                     }
+
                 temp_val=atoi(argv[6]);
                 if (temp_val<0 || temp_val>15)
                     {
@@ -1759,12 +1801,12 @@ int myMain( int   argc, char *argv[] )
     model = create_net_model ();
     combo_netId = gtk_combo_box_new_with_model (model);
     g_object_unref (model);
-    gtk_cell_layout_pack_start        (GTK_CELL_LAYOUT (combo_netId), renderer, TRUE);
-    gtk_cell_layout_set_attributes    (GTK_CELL_LAYOUT (combo_netId), renderer,"text", 0, NULL);
+    gtk_cell_layout_pack_start      (GTK_CELL_LAYOUT (combo_netId), renderer, TRUE);
+    gtk_cell_layout_set_attributes  (GTK_CELL_LAYOUT (combo_netId), renderer,"text", 0, NULL);
     gtk_widget_set_size_request     (combo_netId, 100, 30);
     gtk_combo_box_set_active        (GTK_COMBO_BOX (combo_netId), 0);
     g_signal_connect                (combo_netId, "changed", G_CALLBACK (combo_netid_changed), NULL);
-    gtk_fixed_put                    (GTK_FIXED(inv1), combo_netId ,100, 0);
+    gtk_fixed_put                   (GTK_FIXED(inv1), combo_netId ,100, 0);
 
 
     //ip address selection
@@ -1772,11 +1814,11 @@ int myMain( int   argc, char *argv[] )
     gtk_widget_set_size_request     (box_ipAddr, 100, 20);
     gtk_widget_set_sensitive        (box_ipAddr, false);
     gtk_entry_set_text              (GTK_ENTRY(box_ipAddr), "10.0.1.1");
-    gtk_fixed_put                    (GTK_FIXED(inv1), box_ipAddr ,550, 5);
+    gtk_fixed_put                   (GTK_FIXED(inv1), box_ipAddr ,550, 5);
 
     combo_nettype_changed            (GTK_COMBO_BOX (combo_netType),0);
-    combo_canid_changed                (GTK_COMBO_BOX (combo_canId),0);
-    combo_netid_changed                (GTK_COMBO_BOX (combo_netId) ,0);
+    combo_canid_changed              (GTK_COMBO_BOX (combo_canId),0);
+    combo_netid_changed              (GTK_COMBO_BOX (combo_netId) ,0);
 
     ///////////////////////////////
 
