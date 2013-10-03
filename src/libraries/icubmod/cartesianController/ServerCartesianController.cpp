@@ -1279,20 +1279,23 @@ void ServerCartesianController::sendControlCommands()
 
 
 /************************************************************************/
-void ServerCartesianController::stopLimb()
+void ServerCartesianController::stopLimb(const bool execStopPosition)
 {
-    int j=0; int k=0;
-    for (unsigned int i=0; i<chainState->getN(); i++)
+    if (!posDirectEnabled || execStopPosition)
     {
-        if (!(*chainState)[i].isBlocked())
-            posDirectEnabled?
-            lStp[j]->stop(lRmp[j][k]):
-            lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
-
-        if (++k>=lJnt[j])
+        int j = 0; int k = 0; 
+        for (unsigned int i=0; i<chainState->getN(); i++)
         {
-            j++;
-            k=0;
+            if (!(*chainState)[i].isBlocked())
+                posDirectEnabled?
+                lStp[j]->stop(lRmp[j][k]):
+                lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
+
+            if (++k>=lJnt[j])
+            {
+                j++;
+                k=0;
+            }
         }
     }
 
@@ -1391,7 +1394,7 @@ void ServerCartesianController::run()
                 executingTraj=false;
                 motionDone   =true;
 
-                stopLimb();
+                stopLimb(false);
                 event="motion-done";
 
                 // switch the solver status to one shot mode

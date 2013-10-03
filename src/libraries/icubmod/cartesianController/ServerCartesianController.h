@@ -208,7 +208,7 @@ protected:
     void   newController();
     bool   getNewTarget();
     void   sendControlCommands();
-    void   stopLimb();
+    void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
     void   notifyEvent(const std::string &event, const double checkPoint=-1.0);

@@ -116,7 +116,7 @@ public:
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
     void   doSaccade(Vector &ang, Vector &vel);
-    void   stopLimb();
+    void   stopLimb(const bool execStopPosition=true);
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();

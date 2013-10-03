@@ -271,7 +271,7 @@ void Controller::motionOngoingEventsFlush()
 
 
 /************************************************************************/
-void Controller::stopLimb()
+void Controller::stopLimb(const bool execStopPosition)
 {
     if (Robotable)
     {
@@ -280,8 +280,9 @@ void Controller::stopLimb()
 
         if (neckPosCtrlOn)
         {
-            for (size_t i=0; i<neckJoints.size(); i++)
-                posHead->stop(neckJoints[i]);
+            if (execStopPosition)
+                for (size_t i = 0; i < neckJoints.size(); i++) 
+                    posHead->stop(neckJoints[i]);
 
             for (size_t i=0; i<eyesJoints.size(); i++)
                 velEyes->velocityMove(eyesJoints[i],0.0);
@@ -441,7 +442,7 @@ void Controller::run()
         {
             event="motion-done";
 
-            stopLimb();
+            stopLimb(false);
             commData->get_isCtrlActive()=false;
         }
         // manage new target while controller is active
