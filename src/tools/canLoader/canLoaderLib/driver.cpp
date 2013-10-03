@@ -45,6 +45,8 @@ int cDriver::init (Searchable &config)
 
     iCanBus->canSetBaudRate(0); //0=1Mbit/s
 
+    yarp::os::Time::delay(2.0);
+
     return 0;
 }
 

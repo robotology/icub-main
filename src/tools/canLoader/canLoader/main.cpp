@@ -752,6 +752,8 @@ static void start_end_click (GtkButton *button,    gpointer   user_data)
             params.put("canid",canID);
         }
 
+        
+
         //try to connect to the driver
         ret = downloader.initdriver(params);
         if (ret == -1)
@@ -760,7 +762,7 @@ static void start_end_click (GtkButton *button,    gpointer   user_data)
             return;
         }
 
-        drv_sleep (2000);
+        //drv_sleep (2000);
         //get the infos from the board
         ret = downloader.initschede();
 

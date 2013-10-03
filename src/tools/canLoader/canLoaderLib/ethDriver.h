@@ -15,7 +15,7 @@
 #include <ace/Time_Value.h>
 #include <ace/OS_NS_sys_socket.h>
 
-#include "stdint.h"
+//#include "stdint.h"
 
 class CanSocket
 {
@@ -123,10 +123,10 @@ struct CanPktHeader_t
     unsigned char signature;
     unsigned char canFrameNumOf;
 #ifdef USE_PROG_ID   
-    uint8_t         dummy[2];    
-    uint32_t        progressive;
+    ACE_UINT8         dummy[2];    
+    ACE_UINT32        progressive;
 #else 
-	uint8_t         dummy[6]; 
+	ACE_UINT8         dummy[6]; 
 #endif
 };
 
@@ -254,7 +254,7 @@ public:
     int send_message(yarp::dev::CanBuffer &message, int n)
     {
         CanPkt_t canPkt;
-		static uint32_t prognumber = 0;
+		static ACE_UINT32 prognumber = 0;
 
 
         for (int i=0; i<n; ++i)
