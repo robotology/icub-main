@@ -158,6 +158,8 @@ private:
     char mCanBusId;
     ACE_UINT32 mBoardAddr;
 
+	double timestart;
+
     yarp::dev::ICanBufferFactory *iFactory;
 public:
     eDriver(){}
@@ -178,6 +180,8 @@ public:
         mCanBusId=config.check("canid")?config.find("canid").asInt():0;
         ////////////////////////////////////
 
+		timestart = yarp::os::Time::now();
+
 		yarp::os::Time::delay(2.0); // avoids that the user sends a message too soon (2.0 is a good value)
 		
 		// removed the command to avoid a bootstrap
@@ -191,7 +195,12 @@ public:
 
         mSocket.sendTo(&CMD_CANGTW_START,1,3333,mBoardAddr);
 
-        yarp::os::Time::delay(0.5); 	// just the time to let the ems to init the can bus. 
+		// version 2.2 of the eUpdater waits for 2 seconds after reception of GTW_START before forwarding udp packets to can.
+		// we wait for 1.5 sec so that max wait of the udp packet is 0.5 sec and the timeout is not triggered.
+		// for next versions of eUpdater we may reduce this time to 0.5 or even entirely remove the delay.
+        yarp::os::Time::delay(1.5); 	
+
+		//printf("@ %f sec from start: exit init phase\n", yarp::os::Time::now() - timestart);
 
         return 0;
     }
@@ -275,6 +284,8 @@ public:
             //printf(">>>\n");
 
             mSocket.sendTo(&canPkt,sizeof(CanPkt_t),3334,mBoardAddr);
+
+			//printf("@ %f sec from start: sent udp packet\n", yarp::os::Time::now() - timestart);
 			
 			// limit througput so that the ems board can safely receive the packet. 
             // without this delay, the ems receives many udp packets withing a few micro-seconds, and 
