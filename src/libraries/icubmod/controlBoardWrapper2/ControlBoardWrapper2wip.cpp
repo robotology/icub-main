@@ -2500,7 +2500,7 @@ bool ControlBoardWrapper2::openAndAttachSubDevice(Property& prop)
 
     SubDevice *tmpDevice=device.getSubdevice(0);
 
-    std::string subDevName ((partName + "_" + prop.find("subdevice").asString()));
+    std::string subDevName ((partName + "_" + prop.find("subdevice").asString().c_str()));
     if (!tmpDevice->configure(base, top, controlledJoints, subDevName) )
     {
         cerr<<"configure of subdevice ret false"<<endl;
