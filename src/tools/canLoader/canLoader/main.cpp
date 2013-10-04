@@ -826,7 +826,7 @@ bool load_calibration (char* filename)
     for (i=0; i<downloader.board_list_size; i++)
     {
         if (downloader.board_list[i].status==BOARD_RUNNING &&
-            downloader.board_list[i].type==BOARD_TYPE_STRAIN &&
+            (downloader.board_list[i].type==BOARD_TYPE_STRAIN || downloader.board_list[i].type==BOARD_TYPE_6SG) &&
             downloader.board_list[i].selected==true)
             {
                 selected = i;
@@ -1196,7 +1196,7 @@ bool validate_calibration ()
     for (i=0; i<downloader.board_list_size; i++)
     {
         if (downloader.board_list[i].status==BOARD_RUNNING &&
-            downloader.board_list[i].type==BOARD_TYPE_STRAIN &&
+            (downloader.board_list[i].type==BOARD_TYPE_STRAIN || downloader.board_list[i].type==BOARD_TYPE_6SG) &&
             downloader.board_list[i].selected==true)
             {
                 count++;
