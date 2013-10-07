@@ -86,18 +86,18 @@ elseif(UNIX)
 
             # use the find_library command in order to prepare rpath correctly
             foreach(LIB ${IPOPT_DEP})
-                find_library(SEARCH_FOR_IPOPT_${LIB} ${LIB} ${IPOPT_DIR}/lib
+                find_library(IPOPT_SEARCH_FOR_${LIB} ${LIB} ${IPOPT_DIR}/lib
                                                             ${IPOPT_DIR}/lib/coin
                                                             ${IPOPT_DIR}/lib/coin/ThirdParty
                                                             NO_DEFAULT_PATH)
-                if(SEARCH_FOR_IPOPT_${LIB})
+                if(IPOPT_SEARCH_FOR_${LIB})
                     # handle non-system libraries (e.g. coinblas)
-                    set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${SEARCH_FOR_IPOPT_${LIB}})
-                else(SEARCH_FOR_IPOPT_${LIB})
+                    set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${IPOPT_SEARCH_FOR_${LIB}})
+                else(IPOPT_SEARCH_FOR_${LIB})
                     # handle system libraries (e.g. gfortran)
                     set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-                endif(SEARCH_FOR_IPOPT_${LIB})
-                mark_as_advanced(SEARCH_FOR_IPOPT_${LIB})
+                endif(IPOPT_SEARCH_FOR_${LIB})
+                mark_as_advanced(IPOPT_SEARCH_FOR_${LIB})
             endforeach(LIB)
         endif()
     endif()
