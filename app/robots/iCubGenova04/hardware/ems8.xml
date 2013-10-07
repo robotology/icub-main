@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
  <!-- Initialization file for EMS 8 - Right Upper Leg, 4 dof -->
 
- <devices>
+<devices robot="iCubGenova04" build="1">
+
   <device name="right_upper_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/ems8-eln.xml" />
       <params file="hardware/mechanicals/ems8-mec.xml" />
   </device>
 
-
   <device name="right_upper_leg_strain" type="embObjAnalogSensor">
       <params file="general.xml" />
       <params file="hardware/electronics/ems8-eln.xml" />
       <params file="hardware/analog/ems8-strain.xml" />
   </device> 
-
 </devices>
+

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<params>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
     <group name="GENERAL">
         <param name="Joints">  2  </param> <!-- the number of joints of the robot part -->
 
@@ -30,25 +32,25 @@
         <!--                      0             1      -->
         <param name="Max">        39.00         22.00		</param>
         <param name="Min">       -20.00        -22.00		</param>
-        <param name="Currents">  7000.00       7000.00		</param>
+        <param name="Currents">   6500          6500		</param>
     </group>
 
     <group name="PIDS">
         <!--                 Proportional  Derivative    Integral      Integral Limit      PWM Limit     scale factor   offset -->
-        <param name="Pid0">     10            20            500             0                3000          10              0    </param>
-        <param name="Pid1">     10            20            500             0                3000          10              0    </param>
+        <param name="Pid0">     -5            0            0             0                3000          10              0    </param>
+        <param name="Pid1">     -5            0            0             0                3000          10              0    </param>
     </group>
 
 
     <group name="IMPEDANCE">
-      <param name="Imp0">	0.4	0.01	</param>
-      <param name="Imp1">	0.4	0.01	</param>
+      <param name="Imp0">	0.2	0.05	</param>
+      <param name="Imp1">	0.2	0.05	</param>
     </group>
 
 
     <group name="TORQUE_PIDS">
-        <param name="TPid0">  0             0             0             1333          		1333          10            0  </param>
-        <param name="TPid1">  0             0             0             1333          		1333          10            0 </param>
+        <param name="TPid0">  0             0             0             0          		3000          10            0  </param>
+        <param name="TPid1">  0             0             0             0          		3000          10            0 </param>
     </group>
 
 </params>

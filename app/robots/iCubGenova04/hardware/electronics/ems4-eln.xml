@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<params>
-    <!-- this value can also be changed manually using the following line (yes, but why should I?)-->
-    <!--<param name="PC104IpAddress">10.0.1.104</param>-->
-    <params file="hardware/electronics/pc104.xml" />
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
+<params robot="iCubGenova04" build="1">
+    <params file="hardware/electronics/pc104.xml" />
     <group name="ETH">
         <param name="IpAddress">	10.0.1.4	</param>
         <param name="Ems">		4		</param>

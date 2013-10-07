@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Initialization file for EMS 2 - Left Lower Arm, 12 dof -->
-<params>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
     <group name="GENERAL">
         <param name="Joints"> 12 </param> <!-- the number of joints of the robot part -->
   
         <!--                   0             1             2             3             4             5             6             7             8             9             10            11 -->
         <param name="AxisMap"> 0             1             2             3             4             5             6             7             8             9             10            11	</param>
- 	<param name="Encoder"> -706.67     -978.46       -978.46       4.166667      -22.78     -2.44444      -2.41667      -2.55556      -2.5          -2.27778      -2.49444      -2.03704 </param>
-        <param name="Zeros">    90.00        -20.00        -52.00      540.00        -118.54     -98.18        -188.14       -93.91        -188.00       -94.39        -184.01       -343.64</param> 
-	
-<!--	<param name="Encoder">  1	   1		1	 	1		1		1		1		1	1	1	1	1    </param>  
-	<param name="Zeros">    0	   0		0		0		0		0		0		0		0   0		0	0</param> -->
+	<param name="Encoder">  -706.67     -978.46       -978.46       5.750        -17.83          -2.57      -2.44           -2.76          -2.54          -2.37        -2.54         -1.94   </param> 
+        <param name="Zeros">      90.00     -20.00        -52.00      388.69565      -142.99        -91.95      -182.05        -90.00        -187.86       -94.23        -180.01       -357.60   </param> 	
+
+ <!--	<param name="Encoder">  1	   1		1	 	1		1		1		1		1	1	1	1	1    </param>    -->
+ <!--  	<param name="Zeros">    0	   0		0		0		0		0		0		0		0   0		0	0</param> -->
 
         <param name="TorqueId">  0x0C          0             0             0             0             0             0             0             0             0             0             0 </param>
         <param name="TorqueChan">4             0             0             0             0             0             0             0             0             0             0             0 </param>

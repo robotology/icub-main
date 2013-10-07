@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<params>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
     <group name="GENERAL">
         <param name="Joints"> 3 </param> <!-- the number of joints of the robot part -->
 
-        <!--                     	0             	1             	2              -->
-	<param name="AxisMap">          2             0             1           </param>
+	<!--    			0             1             2                           numero asse logico  (icubInterface)  -->
+	<param name="AxisMap">          2             0             1           </param>   <!-- numero asse fisico  (EMS) -->
         <param name="Encoder">   	182.044       182.044       182.044     </param>
         <param name="Zeros">     	180.00        180.00        180.00      </param>
         <param name="TorqueId">  	0x0C          0x0C          0x0C  	</param>
@@ -28,23 +30,24 @@
 
     <group name="LIMITS">
         <!--                            0             1             2    -->
-        <param name="Max">              30            70            50          </param>
-        <param name="Min">              -30           -20           -50         </param>
-        <param name="Currents">         7000          7000          7000        </param>
+        <param name="Max">              50            30            70          </param>
+        <param name="Min">             -50           -30           -20          </param>
+        <param name="Currents">         6500          6500          6500        </param>
     </group>
+
 
     <group name="PIDS">
-        <!--                 Proportional  Derivative    Integral      Integral Limit      PWM Limit     scale factor    offset -->
-        <param name="Pid0">     -7         7             0             0                   8000          10            0    </param>
-        <param name="Pid1">     -10        10            0             0                   8000          10            0    </param>
-        <param name="Pid2">     -10        10            0             0                   15000         10            0    </param>
+        <!--                 Proportional  Derivative    Integral      Integral Limit     PWM Limit     scale factor    offset -->
+        <param name="Pid0">     7         0             0             0                   6500          10            0    </param>
+        <param name="Pid1">     10        0             0             0                   6500          10            0    </param>
+        <param name="Pid2">     10        0             0             0                   13000         10            0    </param>
     </group>
 
-    <!--
+    <!--  Noo torque pids because there is no torque sensor for the torso
     <group name="TORQUE_PIDS">
         <param name="TPid0">      6             0             0          1333          	1333          11            0  </param>
         <param name="TPid1">      6             0             0          1333          	1333          11            0  </param>
-        <param name="TPid2">      6             0             0          1333                 1333          11            0 </param>
+        <param name="TPid2">      6             0             0          1333           1333          11            0  </param>
     </group>
     -->
 

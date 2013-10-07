@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<devices>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
 	<device name="left_leg_calibrator" type="parametricCalibrator">
                 <params file="general.xml" />
 
 		<group name="GENERAL">
-		    <param name="Joints">  6  </param> <!-- the number of joints of the robot part -->
-		    <param name="DeviceName"> LL Calibrator </param>
+		    <param name="joints">  6  </param> <!-- the number of joints of the robot part -->
+		    <param name="deviceName"> LL Calibrator </param>
 		</group>
 
 		<group name="HOME">
 		    <!-- Joint                          0               1               2               3               4               5-->
-		    <param name="PositionHome">         0               0               0               0               0               0       </param>
-		    <param name="VelocityHome">         6               6               6               6               6               6       </param>
+		    <param name="positionHome">         0               0               0               0               0               0       </param>
+		    <param name="velocityHome">         6               6               6               6               6               6       </param>
 		</group>
 
 		<group name="CALIBRATION">
 		    <!-- Joint                          0               1               2               3               4               5       -->
-		    <param name="CalibrationType">      3               3               3               3               3               3       </param>
-		    <param name="Calibration1">         0               0               0               0               0               0       </param>
-		    <param name="Calibration2">         0               0               0               0               0               0       </param>
-		    <param name="Calibration3">         48078           22519           6317            25887           32167           64407   </param>
-		    <param name="PositionZero">         10               10             10             -10              10              10      </param>
-		    <param name="VelocityZero">         6               6               6               6               6               6       </param>
-		    <param name="MaxPWM">               2000            2000            2000            2000            2000            2000    </param>
+		    <param name="calibrationType">      3               3               3               3               3               3       </param>
+		    <param name="calibration1">         0               0               0               0               0               0       </param>
+		    <param name="calibration2">         0               0               0               0               0               0       </param>
+		    <param name="calibration3">         48078           22519           6317            25887           32167           64407   </param>
+		    <param name="positionZero">         10               10             10             -10              10              10      </param>
+		    <param name="velocityZero">         6               6               6               6               6               6       </param>
+		    <param name="maxPwm">               1500            1500            1500            1500            2000            2000    </param>
+            <param name="posZeroThreshold">2            2               2               2               2               2        </param>       
 		</group>
 
 		<param name="CALIB_ORDER"> (0 1 2 3 4 5) </param>

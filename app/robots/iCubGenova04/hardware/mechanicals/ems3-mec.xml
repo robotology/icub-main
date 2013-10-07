@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<params>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
     <group name="GENERAL">
         <param name="Joints"> 4 	</param> <!-- the number of joints of the robot part -->
 
@@ -29,49 +31,32 @@
 
     <group name="LIMITS">
         <!--                      0             1               2            3      -->
-        <param name="Max">        10            161           80            105         </param>
-        <param name="Min">        -95.5         0             -37           0           </param>
-        <param name="Currents">   8000          8000          8000          5000        </param>
+        <param name="Max">        10            160.8         80            106         </param>
+        <param name="Min">        -95.5         0             -37           15          </param>
+        <param name="Currents">   6500          6500          6500          6500        </param>
     </group>
 
     <group name="IMPEDANCE">
-      <param name="Imp0">	0.2	0.0	</param>
-      <param name="Imp1">	0.2	0.0	</param>
-      <param name="Imp2">	0.2	0.0	</param>
-      <param name="Imp3">	0.2	0.0	</param>
+      <param name="Imp0">	0.1	0.05	</param>
+      <param name="Imp1">	0.1	0.05 	</param>
+      <param name="Imp2">	0.1	0.05	</param>
+      <param name="Imp3">	0.1	0.05	</param>
     </group>
 
     <group name="PIDS">
         <!--                 Proportional  Derivative     Integral   Integral Limit      PWM Limit     scale factor   offset 	-->
-        <param name="Pid0">  -3             7               0             0                7000             10          0          </param>
-        <param name="Pid1">  -2             7               0             0                7000             10          0          </param>
-        <param name="Pid2">  -3             5               0             0                7000             10          0          </param>
-        <param name="Pid3">  -4             5               0             0                7000             10          0          </param>
+        <param name="Pid0">   5             0               0             0                6500             10          0          </param>
+        <param name="Pid1">   5             0               0             0                6500             10          0          </param>
+        <param name="Pid2">   5             0               0             0                6500             10          0          </param>
+        <param name="Pid3">   5             0               0             0                6500             10          0          </param>
     </group>
+
 
     <group name="TORQUE_PIDS">
-        <param name="TPid0"> -1  	   0   	    	   0	         0    		  3000    	   10  	       0          </param>
-        <param name="TPid1"> -1  	   0	           0		 0    		  3000    	   10  	       0 	  </param>
-        <param name="TPid2"> -1 	   0   		   0   		 0    		  3000    	   10  	       0 	  </param>
-        <param name="TPid3"> -1            0   		   0   		 0    		  3000    	   10  	       0 	  </param>
+        <param name="TPid0">  200  	       0   	    	    0	         0    		  6500    	   10  	       0          </param>
+        <param name="TPid1">  200  	       0	            0		     0    		  6500    	   10  	       0 	  </param>
+        <param name="TPid2">  200 	       0   		        0   		 0    		  6500    	   10  	       0 	  </param>
+        <param name="TPid3">  500          0   		        0   		 0    		  6500    	   10  	       0 	  </param>
     </group>
-
-
-    <!--
-    <group name="TORQUE_PIDS">
-        <param name="TPid0"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid1"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid2"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid3"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid4"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid5"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid6"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid7"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid8"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid9"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid10">-30 0   0   1333    1333    10  0 </param>
-        <param name="TPid11">-30 0   0   1333    1333    10  0 </param>
-    </group>
-    -->
 
 </params>

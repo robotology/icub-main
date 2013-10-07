@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
  <!-- Initialization file for EMS 4 - Right Lower Arm, 12 dof plus skin  -->
 
-<devices>
-        <!--  Motion Control -->
+<devices robot="iCubGenova04" build="1">
+
+  <!--  Motion Control -->
   <device name="right_lower_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/ems4-eln.xml" />
