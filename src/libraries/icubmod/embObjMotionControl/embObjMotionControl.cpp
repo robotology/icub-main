@@ -1158,14 +1158,26 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
-    // print_debug(AC_trace_file, "embObjMotionControl::setReferenceRaw()");
-    return NOT_YET_IMPLEMENTED("setReferenceRaw");
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
+
+    eOmc_setpoint_t setpoint;
+    uint16_t *prog = (uint16_t*) &setpoint;
+
+    setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
+    setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[j];
+    setpoint.to.position.withvelocity = 0;
+
+    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
 }
 
 bool embObjMotionControl::setReferencesRaw(const double *refs)
 {
-    // print_debug(AC_trace_file, "embObjMotionControl::setReferencesRaw()");
-    return NOT_YET_IMPLEMENTED("setReferencesRaw");
+    bool ret = true;
+    for(int j=0, index=0; j< _njoints; j++, index++)
+    {
+        ret &= setReferenceRaw(j, refs[index]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::setErrorLimitRaw(int j, double limit)
@@ -1649,7 +1661,6 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
 
 bool embObjMotionControl::positionMoveRaw(const double *refs)
 {
-	yTrace() << "all joints";
     bool ret = true;
 
     for(int j=0, index=0; j< _njoints; j++, index++)
