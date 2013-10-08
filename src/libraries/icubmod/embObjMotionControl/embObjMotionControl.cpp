@@ -478,10 +478,16 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             tmp_A2E = xtmp.get(i).asDouble();
 
             if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration
+            {
+            	tmp_A2E > 0 ? _encoderconversionfactor[i-1] = 1 : _encoderconversionfactor[i-1] = -1;
                 _angleToEncoder[i-1] = 1;
+            }
             else
+            {
                 _angleToEncoder[i-1] =  (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
-            _encoderconversionfactor[i-1] = float((tmp_A2E  ) / _angleToEncoder[i-1]);
+                _encoderconversionfactor[i-1] = float((tmp_A2E  ) / _angleToEncoder[i-1]);
+            }
+
             _encoderconversionoffset[i-1] = 0;
         }
 
@@ -505,7 +511,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
-            _zeros[i-1] = xtmp.get(i).asDouble();
+            if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration
+                _zeros[i-1] = 0;
+            else
+            	_zeros[i-1] = xtmp.get(i).asDouble();
 
 
     // Torque Id
@@ -1358,7 +1367,7 @@ bool embObjMotionControl::enablePidRaw(int j)
 
     // se giunto non è calibrato non fa nulla, se è calibrato manda il control mode position
     _enabledPid[j ] = true;
-    printf("nvid of enablePid 0x%04X\n", nvid);
+
 
     if(_calibrated[j ])
     {
@@ -2443,23 +2452,29 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 
 bool embObjMotionControl::updateMeasure(int j, double &fTorque)
 {
-    double NEWTON2SCALE=32768.0/_maxTorque[j];
 
-//    EOnv tmp;
-//    if (fTorque < -1000.0 || fTorque > 1000.0) fTorque = 0.0;
+	double NEWTON2SCALE=32768.0/_maxTorque[j];
 
-    if(fTorque < (- _maxTorque[j] ))
-    {
-    	fTorque = (- _maxTorque[j]);
-    }
-    if(fTorque > _maxTorque[j])
-    {
-    	fTorque = _maxTorque[j];
-    }
+	eOmeas_torque_t meas_torque = 0;
+
+	if(0 != _maxTorque[j])
+	{
+	//    EOnv tmp;
+	//    if (fTorque < -1000.0 || fTorque > 1000.0) fTorque = 0.0;
+
+		if(fTorque < (- _maxTorque[j] ))
+		{
+			fTorque = (- _maxTorque[j]);
+		}
+		if(fTorque > _maxTorque[j])
+		{
+			fTorque = _maxTorque[j];
+		}
+
+		meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
+	}
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jinputs__externallymeasuredtorque);
-
-    eOmeas_torque_t meas_torque = (eOmeas_torque_t)(NEWTON2SCALE*fTorque);
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque);
 }
 
@@ -2519,10 +2534,9 @@ bool embObjMotionControl::setRefTorquesRaw(const double *t)
 bool embObjMotionControl::setRefTorqueRaw(int j, double t)
 {
     yTrace() << _fId.name << "joint" << j;
-   static const double NEWTON2SCALE=32768.0/_maxTorque[j];
     eOmc_setpoint_t setpoint;
     setpoint.type = (eOenum08_t) eomc_setpoint_torque;
-    setpoint.to.torque.value =  (eOmeas_torque_t) (t * NEWTON2SCALE);
+    setpoint.to.torque.value =  (eOmeas_torque_t)t ;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__setpoint);
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
