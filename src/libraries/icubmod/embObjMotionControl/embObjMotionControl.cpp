@@ -1173,7 +1173,7 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
     uint16_t *prog = (uint16_t*) &setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
-    setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[j];
+    setpoint.to.position.value = (eOmeas_position_t) ref;
     setpoint.to.position.withvelocity = 0;
 
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
