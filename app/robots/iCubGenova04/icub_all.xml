@@ -63,7 +63,7 @@
 <!--  SKINS -->
     <devices file="wrappers/left_arm-skinWrapper.xml" />
     <devices file="wrappers/right_arm-skinWrapper.xml" />  
-<!--     <devices file="wrappers/torso-skinWrapper.xml" />   e' su can -->
+    <devices file="wrappers/torso-skinWrapper.xml" />    <!-- e' su can -->
 
 
     <devices file="calibrators/head-calib.xml" /> 
