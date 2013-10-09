@@ -4,7 +4,8 @@
 
 
     <!-- cartesiani --> 
-    <devices file="cartesians.xml" />
+    <devices file="cartesian/left_arm_cartesian.xml" />
+    <devices file="cartesian/right_arm_cartesian.xml" />
     
     <!-- LEFT ARM -->
     <devices file="hardware/ems1.xml" />
