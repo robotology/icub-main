@@ -56,9 +56,14 @@
     <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm_skin_wrapper.xml" />  
     <devices file="wrappers/skin/torso_skin_wrapper.xml" />  
+    <devices file="wrappers/skin/right_foot_skin_wrapper.xml" />  
+    <devices file="wrappers/skin/left_foot_skin_wrapper.xml" />  
+
     <devices file="hardware/skin/left_arm.xml" />
     <devices file="hardware/skin/right_arm.xml" />  
     <devices file="hardware/skin/torso.xml" />  
+    <devices file="hardware/skin/right_foot.xml" />  
+    <devices file="hardware/skin/left_foot.xml" />  
 
     <!-- MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR-->
     <devices file="hardware/inertial.xml" />
