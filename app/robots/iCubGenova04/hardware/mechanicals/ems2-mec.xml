@@ -55,21 +55,21 @@
         <param name="Pid11"> -120          -1250         0             1333          1333          4             0                                     </param>
     </group>
 
-    <!--
+   
     <group name="TORQUE_PIDS">
-        <param name="TPid0"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid1"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid2"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid3"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid4"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid5"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid6"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid7"> -30 0   0   1333    1333    10  0 </param>
-        <param name="TPid8"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid9"> -8  0   0   1333    1333    10  0 </param>
-        <param name="TPid10">-30 0   0   1333    1333    10  0 </param>
-        <param name="TPid11">-30 0   0   1333    1333    10  0 </param>
+        <param name="TPid0"> -50  0   0   1333    1333    10  0 </param>
+        <param name="TPid1">  0  0   0   0    0    0  0 </param>
+        <param name="TPid2">  0  0   0   0    0    0  0 </param>
+        <param name="TPid3">  0  0   0   0    0    0  0 </param>
+        <param name="TPid4">  0  0   0   0    0    0  0</param>
+        <param name="TPid5">  0  0   0   0    0    0  0</param>
+        <param name="TPid6">  0  0   0   0    0    0  0</param>
+        <param name="TPid7">  0  0   0   0    0    0  0 </param>
+        <param name="TPid8">  0  0   0   0    0    0  0 </param>
+        <param name="TPid9">  0  0   0   0    0    0  0 </param>
+        <param name="TPid10"> 0  0   0   0    0    0  0 </param>
+        <param name="TPid11"> 0  0   0   0    0    0  0</param>
     </group>
-    -->
+    
 
 </params>
