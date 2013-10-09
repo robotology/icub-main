@@ -3,4 +3,5 @@
     <group name="CULO">
         <param name="Vanilla">  0  </param>
     </group>
+    <params file="hardware/electronics/pc104.xml" />
 </params>
