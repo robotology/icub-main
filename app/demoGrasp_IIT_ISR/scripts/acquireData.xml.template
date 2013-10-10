@@ -59,22 +59,22 @@
 
         <connection>
                 <from>/icub/camcalib/left/out</from>
-                <to>/icub/PF3DTracker_L/video:i</to>
+                <to>/pf3dTracker_L/video:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/camcalib/right/out</from>
-                <to>/icub/PF3DTracker_R/video:i</to>
+                <to>/pf3dTracker_R/video:i</to>
                 <protocol>udp</protocol>
         </connection>
 
         <connection>
-                <from>/icub/PF3DTracker_L/data:o</from>
+                <from>/pf3dTracker_L/data:o</from>
                 <to>/log/left</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/icub/PF3DTracker_R/data:o</from>
+                <from>/pf3dTracker_R/data:o</from>
                 <to>/log/right</to>
                 <protocol>tcp</protocol>
         </connection>
@@ -85,12 +85,12 @@
         </connection>
 
         <connection>
-                <from>/icub/PF3DTracker_L/video:o</from>
+                <from>/pf3dTracker_L/video:o</from>
                 <to>/PF3DTracker_viewerLeft</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/PF3DTracker_R/video:o</from>
+                <from>/pf3dTracker_R/video:o</from>
                 <to>/PF3DTracker_viewerRight</to>
                 <protocol>udp</protocol>
         </connection>
