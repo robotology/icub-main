@@ -65,13 +65,13 @@
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from left_foot.ini --useCalibration  --xpos 0 --ypos 350 --width 300 --height 300</parameters>
+    <parameters>--from left_foot.ini --useCalibration  --xpos 0 --ypos 680 --width 300 --height 300</parameters>
     <node>console</node>
     <tag>skinGuiLF</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <parameters>--from right_foot.ini --useCalibration --xpos 0 --ypos 350 --width 300 --height 300</parameters>
+    <parameters>--from right_foot.ini --useCalibration --xpos 320 --ypos 680 --width 300 --height 300</parameters>
     <node>console</node>
     <tag>skinGuiRF</tag>
   </module>
