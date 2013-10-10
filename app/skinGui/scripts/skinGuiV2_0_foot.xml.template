@@ -1,0 +1,146 @@
+<application>
+  <name>Skin Gui All V2 + foot</name>
+  <module>
+    <name>skinManager</name>
+    <parameters>--from skinManAllPlusFoot.ini --context skinGui</parameters>
+    <node>console</node>
+    <tag>skinMan</tag>
+  </module>
+  <module>
+    <name>skinManagerGui</name>
+    <parameters>--from skinManGui.ini --context skinGui --xpos 1020 --ypos 350</parameters>
+    <node>console</node>
+    <tag>skinManGui</tag>
+  </module>
+
+  
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from left_arm_V2.ini --useCalibration --xpos 0 --ypos 350 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiLA</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from left_forearm_V2.ini --useCalibration --xpos 0 --ypos 0 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiLF</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from left_hand_V2.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiLH</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from right_arm_V2.ini --useCalibration --xpos 640 --ypos 350 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiRA</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from right_forearm_V2.ini --useCalibration --xpos 640 --ypos 0 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiRF</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from right_hand_V2.ini --useCalibration --xpos 960 --ypos 0 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiRH</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <parameters>--from torso.ini --useCalibration --xpos 320 --ypos 350 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiT</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_foot.ini --useCalibration  --xpos 0 --ypos 350 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiLF</tag>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_foot.ini --useCalibration --xpos 0 --ypos 350 --width 300 --height 300</parameters>
+    <node>console</node>
+    <tag>skinGuiRF</tag>
+  </module>
+  
+  
+  <connection>
+    <from>/skinManager/skin_events:o</from>
+    <to>/wholeBodyDynamics/skin_contacts:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManagerGui/rpc:o</from>
+    <to>/skinManager/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManager/monitor:o</from>
+    <to>/skinManagerGui/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManager/info:o</from>
+    <to>/skinManagerGui/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/left_hand_comp</from>
+    <to>/skinGui/left_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_forearm_comp</from>
+    <to>/skinGui/left_forearm:i</to>
+    <protocol>udp</protocol>
+  </connection>  
+  <connection>
+    <from>/icub/skin/left_arm_comp</from>
+    <to>/skinGui/left_arm:i</to>
+    <protocol>udp</protocol>
+  </connection>  
+  <connection>
+    <from>/icub/skin/right_hand_comp</from>
+    <to>/skinGui/right_hand:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_forearm_comp</from>
+    <to>/skinGui/right_forearm:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_arm_comp</from>
+    <to>/skinGui/right_arm:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/torso_comp</from>
+    <to>/skinGui/torso:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/left_foot_comp</from>
+    <to>/skinGui/left_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_foot_comp</from>
+    <to>/skinGui/right_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>
