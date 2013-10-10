@@ -35,11 +35,11 @@
   
         <connection>
                 <from>/icub/camcalib/left/out</from>
-                <to>/icub/PF3DTracker_L/videoIn</to>
+                <to>/pf3dTracker/video:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/PF3DTracker_L/videoOut</from>
+                <from>/pf3dTracker/video:o</from>
                 <to>/PF3DTracker_viewer</to>
                 <protocol>udp</protocol>
         </connection>
@@ -49,7 +49,7 @@
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/PF3DTracker_L/dataOut</from>
+                <from>/pf3dTracker/data:o</from>
                 <to>/demoGraspManager_IIT_ISR/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>
