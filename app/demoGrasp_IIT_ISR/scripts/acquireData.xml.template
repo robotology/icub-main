@@ -10,14 +10,14 @@
       
         <module>
                 <name>pf3dTracker</name>
-                <parameters>--from pf3dTracker_iCubGenova02_left.ini</parameters>
+                <parameters>--from pf3dTracker_left.ini</parameters>
                 <node>pwrNode1</node>
                 <tag>PF3DTracker_trackerLeft</tag>
         </module>
    
         <module>
                 <name>pf3dTracker</name>
-                <parameters>--from pf3dTracker_iCubGenova02_right.ini</parameters>
+                <parameters>--from pf3dTracker_right.ini</parameters>
                 <node>pwrNode2</node>
                 <tag>PF3DTracker_trackerRight</tag>
         </module>
@@ -59,22 +59,22 @@
 
         <connection>
                 <from>/icub/camcalib/left/out</from>
-                <to>/icub/PF3DTracker_L/videoIn</to>
+                <to>/icub/PF3DTracker_L/video:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
                 <from>/icub/camcalib/right/out</from>
-                <to>/icub/PF3DTracker_R/videoIn</to>
+                <to>/icub/PF3DTracker_R/video:i</to>
                 <protocol>udp</protocol>
         </connection>
 
         <connection>
-                <from>/icub/PF3DTracker_L/dataOut</from>
+                <from>/icub/PF3DTracker_L/data:o</from>
                 <to>/log/left</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/icub/PF3DTracker_R/dataOut</from>
+                <from>/icub/PF3DTracker_R/data:o</from>
                 <to>/log/right</to>
                 <protocol>tcp</protocol>
         </connection>
@@ -85,12 +85,12 @@
         </connection>
 
         <connection>
-                <from>/icub/PF3DTracker_L/videoOut</from>
+                <from>/icub/PF3DTracker_L/video:o</from>
                 <to>/PF3DTracker_viewerLeft</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/PF3DTracker_R/videoOut</from>
+                <from>/icub/PF3DTracker_R/video:o</from>
                 <to>/PF3DTracker_viewerRight</to>
                 <protocol>udp</protocol>
         </connection>
