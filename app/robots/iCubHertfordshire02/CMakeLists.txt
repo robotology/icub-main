@@ -1,21 +1,9 @@
 set(appname iCubHertfordshire02)
 
-file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.xml)
-file(GLOB firmware ${CMAKE_CURRENT_SOURCE_DIR}/scripts/firmwareUpdate.txt)
-file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
+set(scripts icub_all.xml robotMotorGui.ini firmwareUpdate.txt robotInterface.ini)
 
-if (__ICUB_INSTALL_APPLICATIONS__)
-icub_app(${appname})
-icub_app_install(${appname} 
-				FILES ${scripts}
-				DESTINATION scripts)
-icub_app_install(${appname} 
-				FILES ${firmware}
-				DESTINATION scripts)
-icub_app_install(${appname} 
-				FILES ${conf}
-				DESTINATION conf)			
-endif()
-				
-yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname}/scripts)	
-yarp_install(FILES ${conf} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})	
+yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
+yarp_install(DIRECTORY calibrators DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname} PATTERN .svn EXCLUDE)  
+yarp_install(DIRECTORY cartesian DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname} PATTERN .svn EXCLUDE)
+yarp_install(DIRECTORY wrappers DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname} PATTERN .svn EXCLUDE)
+yarp_install(DIRECTORY hardware DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname} PATTERN .svn EXCLUDE)  
