@@ -138,7 +138,7 @@ bool embObjMotionControl::alloc(int nj)
     _enabledAmp = allocAndCheck<bool>(nj);
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
-
+    _cacheImpedance = allocAndCheck<eOmc_impedance_t>(nj);
 
 #ifdef _SETPOINT_TEST_
     j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
@@ -231,6 +231,7 @@ embObjMotionControl::embObjMotionControl() :
     _encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
 
+    _cacheImpedance   = NULL;
     _impedance_params = NULL;
     _impedance_limits = NULL;
     _estim_params     = NULL;
@@ -456,7 +457,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 {
-    // yTrace();
     Bottle xtmp;
     int i;
     Bottle general = config.findGroup("GENERAL");
@@ -798,7 +798,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
 bool embObjMotionControl::init()
 {
-    // yTrace();
     eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
     EOarray                   *array;
     eOropSIGcfg_t             sigcfg;
@@ -964,6 +963,10 @@ bool embObjMotionControl::init()
             jconfig.impedance.stiffness	= (eOmeas_stiffness_t) _impedance_params[logico].stiffness * 1000;
             jconfig.impedance.offset	= 0; //impedance_params[j];
 
+            _cacheImpedance[logico].stiffness = jconfig.impedance.damping;
+        	_cacheImpedance[logico].damping   = jconfig.impedance.stiffness;
+        	_cacheImpedance[logico].offset = 0;
+
             jconfig.maxpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMax[logico], _zeros[logico], _angleToEncoder[logico]);
             jconfig.minpositionofjoint = (eOmeas_position_t) convertA2I(_limitsMin[logico], _zeros[logico], _angleToEncoder[logico]);
             jconfig.velocitysetpointtimeout = (eOmeas_time_t)_velocityTimeout[logico];
@@ -1077,7 +1080,6 @@ bool embObjMotionControl::configure_mais(void)
 
 bool embObjMotionControl::close()
 {
-    yTrace();
     ImplementControlMode::uninitialize();
     ImplementEncodersTimed::uninitialize();
     ImplementPositionControl2::uninitialize();
@@ -1104,7 +1106,6 @@ FEAT_ID embObjMotionControl::getFeat_id()
 // TODO da eliminare?
 eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint16_t nvid)
 {
-    // yTrace();
     eoRequest req;
     if(!requestQueue->threadPool->getId(&req.threadId) )
         fprintf(stderr, "Error: too much threads!! (embObjMotionControl)");
@@ -1266,9 +1267,6 @@ bool embObjMotionControl::getOutputsRaw(double *outs)
 
 bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
-    yTrace() << _fId.name << "joint" << j;
-//    EOnv tmp;
-
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidposition);
 
     // Sign up for waiting the reply
@@ -1304,7 +1302,6 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::getPidsRaw(Pid *pids)
 {
-    yTrace();
     bool ret = true;
 
     // just one joint at time, wait answer before getting to the next.
@@ -1361,8 +1358,6 @@ bool embObjMotionControl::disablePidRaw(int j)
 
 bool embObjMotionControl::enablePidRaw(int j)
 {
-    // yTrace();
-//    EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__controlmode);
 
     // se giunto non è calibrato non fa nulla, se è calibrato manda il control mode position
@@ -1384,7 +1379,6 @@ bool embObjMotionControl::enablePidRaw(int j)
 
 bool embObjMotionControl::setOffsetRaw(int j, double v)
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("setOffset");
 }
 
@@ -1394,7 +1388,6 @@ bool embObjMotionControl::setOffsetRaw(int j, double v)
 
 bool embObjMotionControl::setVelocityModeRaw()
 {
-    yTrace();
     bool ret = true;
 
     eOnvID_t  nvid;
@@ -1534,7 +1527,6 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 bool embObjMotionControl::doneRaw(int axis)
 {
-    yTrace() << _fId.name;
     // used only in calibration procedure, for normal work use the checkMotionDone
 
     bool result = false;
@@ -1572,7 +1564,6 @@ bool embObjMotionControl::doneRaw(int axis)
 
 bool embObjMotionControl::getAxes(int *ax)
 {
-    // yTrace();
     *ax=_njoints;
 
     return true;
@@ -1601,9 +1592,6 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
-    yTrace() << "board num " << _fId.boardNum << "joint" << j;
-
-//    EOnv tmp;
 #ifdef _SETPOINT_TEST_
     /*
     static eOnvID_t nvid_aux_6 = 0, nvid_aux_8=0;
@@ -1772,7 +1760,6 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
 
 bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
 {
-    yTrace() << _fId.name << "joint" << j << "Value" << sp;
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
     int index = j ;
@@ -1782,7 +1769,6 @@ bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
 
 bool embObjMotionControl::setRefSpeedsRaw(const double *spds)
 {
-    yTrace();
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
     for(int j=0, index=0; j< _njoints; j++, index++)
@@ -1794,7 +1780,6 @@ bool embObjMotionControl::setRefSpeedsRaw(const double *spds)
 
 bool embObjMotionControl::setRefAccelerationRaw(int j, double acc)
 {
-    // yTrace();
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
 
@@ -1816,7 +1801,6 @@ bool embObjMotionControl::setRefAccelerationRaw(int j, double acc)
 
 bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
 {
-    // yTrace();
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
     for(int j=0, index=0; j< _njoints; j++, index++)
@@ -1839,14 +1823,12 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
 
 bool embObjMotionControl::getRefSpeedRaw(int j, double *spd)
 {
-    // yTrace();
     *spd = _ref_speeds[j];
     return true;
 }
 
 bool embObjMotionControl::getRefSpeedsRaw(double *spds)
 {
-    // yTrace();
     memcpy(spds, _ref_speeds, sizeof(double) * _njoints);
     return true;
 }
@@ -1865,8 +1847,6 @@ bool embObjMotionControl::getRefAccelerationsRaw(double *accs)
 
 bool embObjMotionControl::stopRaw(int j)
 {
-    // yTrace();
-//    EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__stoptrajectory);
 
     eObool_t stop = eobool_true;
@@ -1973,12 +1953,8 @@ bool embObjMotionControl::stopRaw(const int n_joint, const int *joints)
 // ControlMode
 bool embObjMotionControl::setPositionModeRaw(int j)
 {
-    yTrace();
-//    EOnv              tmpnv;
     eOnvID_t          nvid;
-//    EOnv              *nvRoot;
     eOmc_controlmode_command_t  val = eomc_controlmode_cmd_position;
-
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
 
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &val);
@@ -1987,8 +1963,6 @@ bool embObjMotionControl::setPositionModeRaw(int j)
 bool embObjMotionControl::setVelocityModeRaw(int j)
 {
     eOnvID_t                      nvid;
-//    EOnv                          tmpnv;
-//    EOnv                          *nvRoot;
     eOmc_controlmode_command_t    val = eomc_controlmode_cmd_velocity;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -1998,9 +1972,7 @@ bool embObjMotionControl::setVelocityModeRaw(int j)
 
 bool embObjMotionControl::setTorqueModeRaw(int j)
 {
-    eOnvID_t                      nvid;
-//    EOnv                          tmpnv;
-//    EOnv                          *nvRoot;
+    eOnvID_t                      nvid;;
     eOmc_controlmode_command_t    val =  eomc_controlmode_cmd_torque;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -2010,8 +1982,6 @@ bool embObjMotionControl::setTorqueModeRaw(int j)
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
     eOnvID_t                      nvid;
-//    EOnv                          tmpnv;
-//    EOnv                          *nvRoot;
     eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_pos;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -2020,10 +1990,8 @@ bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    yTrace();
     eOnvID_t                      nvid;
-//    EOnv                          tmpnv;
-//    EOnv                          *nvRoot;
+
     eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_vel;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -2032,10 +2000,8 @@ bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 
 bool embObjMotionControl::setOpenLoopModeRaw(int j)
 {
-    // yTrace();
     eOnvID_t                      nvid;
-//    EOnv                          tmpnv;
-//    EOnv                          *nvRoot;
+
     eOmc_controlmode_command_t    val = eomc_controlmode_cmd_openloop;
 
     nvid   = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__controlmode);
@@ -2044,7 +2010,6 @@ bool embObjMotionControl::setOpenLoopModeRaw(int j)
 
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
-//    EOnv                          tmpnv;
     uint16_t                      size;
     eOmc_joint_status_basic_t     status;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jstatus__basic);
@@ -2117,31 +2082,26 @@ bool embObjMotionControl::getControlModesRaw(int* v)
 
 bool embObjMotionControl::setEncoderRaw(int j, double val)
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("setEncoder");
 }
 
 bool embObjMotionControl::setEncodersRaw(const double *vals)
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("setEncoders");
 }
 
 bool embObjMotionControl::resetEncoderRaw(int j)
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("resetEncoder");
 }
 
 bool embObjMotionControl::resetEncodersRaw()
 {
-    // yTrace();
     return NOT_YET_IMPLEMENTED("resetEncoders");
 }
 
 bool embObjMotionControl::getEncoderRaw(int j, double *value)
 {
-//    EOnv          tmpnv;
     eOnvID_t      nvid;
     uint16_t      size;
     eOmc_joint_status_basic_t     status;
@@ -2176,7 +2136,6 @@ bool embObjMotionControl::getEncodersRaw(double *encs)
 
 bool embObjMotionControl::getEncoderSpeedRaw(int j, double *sp)
 {
-//    EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__basic);
 
     uint16_t      size;
@@ -2199,7 +2158,6 @@ bool embObjMotionControl::getEncoderSpeedsRaw(double *spds)
 
 bool embObjMotionControl::getEncoderAccelerationRaw(int j, double *acc)
 {
-//    EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__basic);
 
     uint16_t      size;
@@ -2255,9 +2213,7 @@ bool embObjMotionControl::enableAmpRaw(int j)
 
 bool embObjMotionControl::disableAmpRaw(int j)
 {
-    // yTrace();
     // Spegni tutto!! Setta anche pid off
-//    EOnv tmpnv;
     _enabledAmp[j ] = false;      // da proteggere anche questa scrittura interna??
     _enabledPid[j ] = false;
 
@@ -2270,8 +2226,6 @@ bool embObjMotionControl::disableAmpRaw(int j)
 
 bool embObjMotionControl::getCurrentRaw(int j, double *value)
 {
-    // yTrace();
-//    EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_motorNumber_t) j, motorNVindex_mstatus__basic);
 
     uint16_t size;
@@ -2284,7 +2238,6 @@ bool embObjMotionControl::getCurrentRaw(int j, double *value)
 
 bool embObjMotionControl::getCurrentsRaw(double *vals)
 {
-    // yTrace();
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
@@ -2295,7 +2248,6 @@ bool embObjMotionControl::getCurrentsRaw(double *vals)
 
 bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
 {
-//    EOnv tmpnv;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_motorNumber_t) j, motorNVindex_mconfig__maxcurrentofmotor);
 
     eOmeas_current_t  maxCurrent = (eOmeas_current_t) val;
@@ -2304,14 +2256,12 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
 
 bool embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
-    // yTrace();
     (_enabledAmp[j ]) ? *st = 1 : *st = 0;
     return true;
 }
 
 bool embObjMotionControl::getAmpStatusRaw(int *sts)
 {
-    // yTrace();
     bool ret = true;
     for(int j=0; j<_njoints; j++)
     {
@@ -2345,7 +2295,6 @@ bool embObjMotionControl::getJointPositionsRaw        (double* value)           
 // Limit interface
 bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
 {
-    yTrace();
     bool ret = true;
     eOnvID_t nvid_max, nvid_min;
     nvid_max = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, j, jointNVindex_jconfig__maxpositionofjoint);
@@ -2533,7 +2482,6 @@ bool embObjMotionControl::setRefTorquesRaw(const double *t)
 
 bool embObjMotionControl::setRefTorqueRaw(int j, double t)
 {
-    yTrace() << _fId.name << "joint" << j;
     eOmc_setpoint_t setpoint;
     setpoint.type = (eOenum08_t) eomc_setpoint_torque;
     setpoint.to.torque.value =  (eOmeas_torque_t)t ;
@@ -2552,10 +2500,7 @@ bool embObjMotionControl::getRefTorquesRaw(double *t)
 
 bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 {
-    yTrace() << _fId.name << "joint" << j;
-
     bool ret;
-//    EOnv tmp;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jcmmnds__setpoint);
 
@@ -2636,8 +2581,7 @@ bool embObjMotionControl::getTorqueErrorsRaw(double *errs)
 
 bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
 {
-    yTrace() << _fId.name << "joint" << j;
-//    EOnv tmp;
+	// EOnv tmp;
     //_mutex.wait();
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__pidtorque);
 
@@ -2669,7 +2613,7 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::getTorquePidsRaw(Pid *pids)
 {
-    yTrace();
+    // first set is done in the open function because the whole joint config is sent to the EMSs
     bool ret = true;
        // just one joint at time, wait for the answer before getting to the next.
     // This is because otherwise too many msg will be placed into EMS can queue
@@ -2682,7 +2626,7 @@ bool embObjMotionControl::getTorquePidsRaw(Pid *pids)
 
 bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
 {
-    yTrace();
+    // first set is done in the open function because the whole joint config is sent to the EMSs
     eOmc_impedance_t val;
 
     if(!getWholeImpedanceRaw(j, val))
@@ -2695,7 +2639,7 @@ bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damp
 
 bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
 {
-    yTrace();
+    // first set is done in the open function because the whole joint config is sent to the EMSs
 //    EOnv tmp;
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t)j, jointNVindex_jconfig__impedance);
 
@@ -2725,17 +2669,22 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
 
 bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
 {
-    yTrace();
     bool ret = true;
     eOmc_impedance_t val;
 
-    // Need to read the whole struct and modify just 2 of them
-    if(!getWholeImpedanceRaw(j, val))
-        return false;
+    // Need to read the whole struct and modify just 2 of them -> now aching the old values and re-using them.
+    // first set is done in the open function because the whole joint config is sent to the EMSs
+    // cleaner solution, split the impedance structure into 2 separeted nework variables
+//    if(!getWholeImpedanceRaw(j, val))
+//        return false;
 
     // EMS will divide stiffness value by 1000 because the cycle is 1KHz. It is done on the EMS since it manage the cycle and knows the real Rate.
-	val.stiffness 	= (eOmeas_stiffness_t) (stiffness * 1000.0);
-	val.damping 	= (eOmeas_damping_t) (damping * 1000.0);
+    _cacheImpedance[j].stiffness = (eOmeas_stiffness_t) (stiffness * 1000.0);
+	_cacheImpedance[j].damping   = (eOmeas_damping_t) (damping * 1000.0);
+
+	val.stiffness 	= _cacheImpedance[j].stiffness;
+	val.damping 	= _cacheImpedance[j].damping;
+	val.offset      = _cacheImpedance[j].offset;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
     ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
@@ -2745,14 +2694,17 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
 
 bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
 {
-    yTrace();
     bool ret = true;
     eOmc_impedance_t val;
 
-    if(!getWholeImpedanceRaw(j, val))
-        return false;
+    // first set is done in the open function because the whole joint config is sent to the EMSs
+//    if(!getWholeImpedanceRaw(j, val))
+//        return false;
 
-    val.offset  = (eOmeas_torque_t)offset;
+	_cacheImpedance[j].offset   = (eOmeas_torque_t) offset;
+	val.stiffness 	= _cacheImpedance[j].stiffness;
+	val.damping 	= _cacheImpedance[j].damping;
+    val.offset  	= _cacheImpedance[j].offset;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
     ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
@@ -2762,7 +2714,6 @@ bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
 
 bool embObjMotionControl::getImpedanceOffsetRaw(int j, double *offset)
 {
-    yTrace();
     eOmc_impedance_t val;
 
     if(!getWholeImpedanceRaw(j, val))
@@ -2774,7 +2725,6 @@ bool embObjMotionControl::getImpedanceOffsetRaw(int j, double *offset)
 
 bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
 {
-    yTrace();
     *min_stiff = _impedance_limits[j].min_stiff;
     *max_stiff = _impedance_limits[j].max_stiff;
     *min_damp  = _impedance_limits[j].min_damp;

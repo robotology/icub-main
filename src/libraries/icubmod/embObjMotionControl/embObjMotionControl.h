@@ -79,7 +79,7 @@ using namespace std;
 // #include "IRobotInterface.h"
 
 #include "eoRequestsQueue.hpp"
-
+#include "EoMotionControl.h"
 //
 //   Help structure
 //
@@ -234,7 +234,7 @@ private:
     bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     //  DebugParameters *_debug_params;             /** debug parameters */
-    ImpedanceParameters *_impedance_params;     /** impedance parameters */
+
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
@@ -246,6 +246,10 @@ private:
     double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I' m already waiting for motion done */
+
+    // TODO doubled!!! optimize using just one of the 2!!!
+    ImpedanceParameters *_impedance_params;     /** impedance parameters */
+    eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
