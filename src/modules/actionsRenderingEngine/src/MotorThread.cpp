@@ -1582,7 +1582,7 @@ bool MotorThread::reach(Bottle &options)
     wpList.push_back(wp);
     wp.x=xd;
     wpList.push_back(wp);
-    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
+    action[arm]->enableReachingTimeout(3.0*reachingTimeout);
     action[arm]->pushAction(wpList);
 
     bool f;
@@ -2343,7 +2343,7 @@ bool MotorThread::calibTable(Bottle &options)
     wpList.push_back(wp);
     wp.x=deployEnd; wp.duration=3.0;
     wpList.push_back(wp);
-    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
+    action[arm]->enableReachingTimeout(3.0*reachingTimeout);
     action[arm]->pushAction(wpList);
 
     action[arm]->checkActionsDone(f,true);
