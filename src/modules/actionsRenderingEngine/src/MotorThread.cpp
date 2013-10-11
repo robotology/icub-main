@@ -1157,7 +1157,7 @@ bool MotorThread::threadInit()
 
     option.put("local",name.c_str());
 
-    reachingTimeout=2.0*option.check("default_exec_time",Value("3.0")).asDouble();
+    reachingTimeout=option.check("default_exec_time",Value("3.0")).asDouble();
 
     string arm_name[]={"left_arm","right_arm"};
 
