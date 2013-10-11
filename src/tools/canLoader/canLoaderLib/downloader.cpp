@@ -203,9 +203,18 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, 
         {
           if (rxBuffer[i].getData()[0]==0x0C &&
              rxBuffer[i].getId()==(2 << 8) + (target_id<<4))
-               {
-                 adc = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
-                 return 0;
+             {
+                 int ret_channel = rxBuffer[i].getData()[1];
+                 if (ret_channel == channel)
+                 {
+                    adc = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
+                    return 0;
+                 }
+                 else
+                 {
+                    printf ("ERR: strain_get_adc : invalid response\n");
+                    return -1;
+                 }
              }
         }
 
@@ -239,8 +248,18 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
         if (rxBuffer[i].getData()[0]==0x0B &&
             rxBuffer[i].getId()==(2 << 8) + (target_id<<4))
             {
-                offset = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
-                return 0;
+                int ret_channel = rxBuffer[i].getData()[1];
+                if (channel==ret_channel)
+                {
+                    offset = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                    return 0;
+                }
+                else
+                {
+                    printf ("ERR: strain_get_offset : invalid response\n");
+                    return -1;
+                }
+                
             }
     }
 
@@ -665,8 +684,18 @@ int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, unsign
         if (rxBuffer[i].getData()[0]==0x0A &&
             rxBuffer[i].getId()==(2 << 8) + (target_id<<4))
             {
-                elem = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
-                return 0;
+                int ret_r = rxBuffer[i].getData()[1];
+                int ret_c = rxBuffer[i].getData()[2];
+                if (r==ret_r && c==ret_c)
+                {
+                    elem = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
+                    return 0;
+                }
+                else
+                {
+                    printf ("ERR: strain_get_matrix_rc : invalid response\n");
+                    return -1;
+                }
             }
      }
      return -1;
