@@ -1785,7 +1785,6 @@ void iCubFinger::allocate(const string &_type)
             H0(2,0)=-H0(2,0);
             H0(2,1)=-H0(2,1);
             H0(1,2)=-H0(1,2);
-            H0(2,2)=-H0(2,2);
             H0(2,3)=-H0(2,3);
         }
 
