@@ -54,6 +54,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Port.h>
 
 // Emb Obj includes
 #include "hostTransceiver.hpp"
@@ -63,6 +64,11 @@
 
 // iCub debug class include
 #include "Debug.h"
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+// Statistic debug
+#include "testStats.h"
+#endif
 
 #define MSG01098 "WARNING-> on april 16 2013 some work is ongoing to clean SIZE_INFO etc."
 #if defined(_MSC_VER)
@@ -273,6 +279,12 @@ private:
     std::list<ethResources *>     *ethResList;
     void run();
 
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+    // for statistic debug purpose
+    Stats stats;
+    Port statsPort;
+#endif
+
 public:
     EthSender();
     bool config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager);
@@ -290,6 +302,12 @@ private:
     ACE_SOCK_Dgram                *recv_socket;
     TheEthManager                 *ethManager;
     std::list<ethResources *>     *ethResList;
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+    // for statistic debug purpose
+    Stats stats;
+    Port statsPort;
+#endif
 
 public:
     EthReceiver();

@@ -240,17 +240,17 @@ int TheEthManager::releaseResource(FEAT_ID resource)
 
     if(false == emsAlreadyClosed)
     {
-		ethResIt it = EMS_list.begin();
-		while(it != EMS_list.end())
-		{
-			tmpEthRes = (*it);
-			tmpEthRes->goToConfig();
-			tmpEthRes->clearPerSigMsg();
-			it++;
-		}
-		//before stopping threads, flush all pkts not yet sent.
-		flush();
-		emsAlreadyClosed = true;
+        ethResIt it = EMS_list.begin();
+        while(it != EMS_list.end())
+        {
+            tmpEthRes = (*it);
+            tmpEthRes->goToConfig();
+            tmpEthRes->clearPerSigMsg();
+            it++;
+        }
+        //before stopping threads, flush all pkts not yet sent.
+        flush();
+        emsAlreadyClosed = true;
     }
     stopThreads();
     managerMutex.wait();
@@ -622,10 +622,30 @@ bool EthSender::threadInit()
 void EthSender::run()
 {
     ethResources  *ethRes;
-//    ACE_TCHAR     address_tmp[128];
     uint16_t      bytes_to_send = 0;
     ethResIt      iterator;
     ethResRIt    riterator, _rBegin, _rEnd;
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+    // For statistic purpose
+
+    double avThTime=getEstUsed();
+    unsigned int it=getIterations();
+    if(it == 2000)
+    {
+        double avPeriod, stdPeriod;
+        double avThTime, stdTime;
+
+        getEstUsed(avThTime, stdTime);
+        getEstPeriod(avPeriod, stdPeriod);
+
+        printf("EthSender Thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
+                it,
+                avPeriod, stdPeriod,
+                avThTime, stdTime);
+        resetStat();
+    }
+#endif
 
     /*
         Usare un revers iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
@@ -790,6 +810,11 @@ void EthReceiver::run()
 
     while(!isStopping())
     {
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+        // For statistic purpose
+        stats.tickStart();
+#endif
+
         ethManager->managerMutex.wait();
         // new, reverse iterator
         ethResRIt    riterator, _rBegin, _rEnd;
@@ -806,18 +831,18 @@ void EthReceiver::run()
             ethRes = (*riterator);
             if(ethRes->isRunning() /*&& (ethRes->getLastRecvMsgTimestamp()>0)*/ && (lastHeard[ethRes->boardNum].initted))
             {
-				if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
-				{
-					if(!lastHeard[ethRes->boardNum].error_PC104)
-					{
-						yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout *1000 << "ms are passed without any news LAST=" << ethRes->getLastRecvMsgTimestamp() ;
-						lastHeard[ethRes->boardNum].error_PC104 = true;
-					}
-				}
+                if(yarp::os::Time::now() - ethRes->getLastRecvMsgTimestamp() > myTestTimeout)
+                {
+                    if(!lastHeard[ethRes->boardNum].error_PC104)
+                    {
+                        yError() << "Board " << ethRes->boardNum << ": more than " << myTestTimeout *1000 << "ms are passed without any news LAST=" << ethRes->getLastRecvMsgTimestamp() ;
+                        lastHeard[ethRes->boardNum].error_PC104 = true;
+                    }
+                }
             }
             else
             {
-            	lastHeard[ethRes->boardNum].initted = false;
+                lastHeard[ethRes->boardNum].initted = false;
             }
             riterator++;
         }
@@ -903,11 +928,26 @@ void EthReceiver::run()
 
             //ethManager->managerMutex.post();
         }
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+        stats.tickEnd();
+
+        //compute statistics
+        if (stats.getIterations() == 18000)
+        {
+            double avEst=0;
+            double stdEst=0;
+            double avUsed=0;
+            double stdUsed=0;
+            stats.getEstPeriod(avEst, stdEst);
+            stats.getEstUsed(avUsed, stdUsed);
+            printf("EthReceiver Thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n", stats.getIterations(), avEst, stdEst, avUsed, stdUsed);
+            stats.resetStat();
+        }
+#endif
     }
     yError() << "Exiting recv thread";
     return;
 }
-
 
 // eof
 
