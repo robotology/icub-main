@@ -234,8 +234,10 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
 
         fprintf(logfile, "ARMCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
         iAmps->enableAmp(k);
+        Time::delay(0.005);
         fprintf(logfile, "ARMCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
         iPids->enablePid(k);
+        Time::delay(0.005);
     }
 
     for (k = 0; k < 4; k++)
