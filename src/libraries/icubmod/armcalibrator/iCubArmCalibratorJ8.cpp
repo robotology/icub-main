@@ -82,7 +82,7 @@ bool iCubArmCalibratorJ8::open (yarp::os::Searchable& config)
     logfile_name = p.findGroup("CALIBRATION").find("Logfile").asString();
     if (logfile_name != "") 
     {
-        fprintf(stdout, "ARMCALIB::calibrator: opening logfile %s\n", logfile_name.c_str());
+        fprintf(stdout, "ARMCALIB::calibrator (r2) : opening logfile %s\n", logfile_name.c_str());
         logfile = fopen (logfile_name.c_str(), "w");
     }
     else
