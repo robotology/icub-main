@@ -413,7 +413,7 @@ protected:
 
     ResourceFinder *rf;
     map<int,Item> itemsMap;
-    Semaphore mutex;
+    Mutex mutex;
     int  idCnt;
     bool initialized;
     bool nosave;
@@ -576,12 +576,12 @@ public:
     /************************************************************************/
     void load()
     {
-        mutex.wait();
+        mutex.lock();
         string dbFileName=rf->findFile("db");
         if (dbFileName.empty())
         {
             printMessage("requested database to be loaded not found!\n");
-            mutex.post();
+            mutex.unlock();
             return;
         }
 
@@ -631,7 +631,7 @@ public:
         }
 
         printMessage("database loaded\n");
-        mutex.post();
+        mutex.unlock();
     }
 
     /************************************************************************/
@@ -640,7 +640,7 @@ public:
         if (nosave)
             return;
 
-        mutex.wait();
+        mutex.lock();
         string dbFileName=rf->getContextPath().c_str();
         dbFileName+="/";
         dbFileName+=rf->find("db").asString().c_str();
@@ -651,20 +651,20 @@ public:
         fclose(fout);
 
         printMessage("database stored\n");
-        mutex.post();
+        mutex.unlock();
     }
 
     /************************************************************************/
     void dump()
     {
-        mutex.wait();
+        mutex.lock();
         printMessage("dumping database content ... \n");
 
         if (itemsMap.size()==0)
             printMessage("empty\n");
         else
             write(stdout);
-        mutex.post();
+        mutex.unlock();
     }
 
     /************************************************************************/
@@ -674,7 +674,7 @@ public:
         {
             if (pBroadcastPort->getOutputCount()>0)
             {
-                mutex.wait();
+                mutex.lock();
                 Bottle &bottle=pBroadcastPort->prepare();
                 bottle.clear();
 
@@ -691,7 +691,7 @@ public:
                 }
 
                 pBroadcastPort->write();
-                mutex.post();
+                mutex.unlock();
             }
         }
     }
@@ -708,13 +708,13 @@ public:
             return false;
         }
 
-        mutex.wait();
+        mutex.lock();
         Property *item=new Property(content->toString().c_str());
         itemsMap[idCnt].prop=item;
         itemsMap[idCnt].lastUpdate=Time::now();
 
         printMessage("added item %s\n",item->toString().c_str());
-        mutex.post();
+        mutex.unlock();
         return true;
     }
 
@@ -724,7 +724,7 @@ public:
         if (content==NULL)
             return false;
 
-        mutex.wait();
+        mutex.lock();
         if (content->size()==1)
         {
             if (content->get(0).isVocab() || content->get(0).isString())
@@ -733,7 +733,7 @@ public:
                 {
                     clear();
                     printMessage("database cleared\n");
-                    mutex.post();
+                    mutex.unlock();
                     return true;
                 }
             }
@@ -742,7 +742,7 @@ public:
         if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.post();
+            mutex.unlock();
             return false;
         }
         
@@ -764,12 +764,12 @@ public:
                 eraseItem(it);
 
             printMessage("successfully\n");
-            mutex.post();
+            mutex.unlock();
             return true;
         }
 
         printMessage("not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -788,7 +788,7 @@ public:
         int id=content->find(PROP_ID).asInt();
         printMessage("getting item %d ... ",id);
 
-        mutex.wait();
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -812,12 +812,12 @@ public:
                 response.fromString(pProp->toString().c_str());
 
             printMessage("%s\n",response.toString().c_str());
-            mutex.post();
+            mutex.unlock();
             return true;
         }
 
         printMessage("not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -836,7 +836,7 @@ public:
         int id=content->find(PROP_ID).asInt();
         printMessage("setting item %d ... ",id);
 
-        mutex.wait();
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -874,19 +874,19 @@ public:
                 }
 
                 it->second.lastUpdate=Time::now();
-                mutex.post();
+                mutex.unlock();
                 return true;
             }
             else
             {
                 printMessage("locked by [%s]!\n",owner.c_str());
-                mutex.post();
+                mutex.unlock();
                 return false;
             }
         }
 
         printMessage("not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -905,7 +905,7 @@ public:
         int id=content->find(PROP_ID).asInt();
         printMessage("locking item %d ... ",id);
 
-        mutex.wait();
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -914,19 +914,19 @@ public:
             {
                 printMessage("successfully locked by [%s]!\n",agent.c_str());
                 it->second.owner=agent;
-                mutex.post();
+                mutex.unlock();
                 return true;
             }
             else
             {
                 printMessage("already locked by [%s]!\n",owner.c_str());
-                mutex.post();
+                mutex.unlock();
                 return false;
             }
         }
 
         printMessage("not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -945,7 +945,7 @@ public:
         int id=content->find(PROP_ID).asInt();
         printMessage("unlocking item %d ... ",id);
 
-        mutex.wait();
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -954,19 +954,19 @@ public:
             {
                 printMessage("successfully unlocked!\n");
                 it->second.owner=OPT_OWNERSHIP_ALL;
-                mutex.post();
+                mutex.unlock();
                 return true;
             }
             else
             {
                 printMessage("already locked by [%s]!\n",owner.c_str());
-                mutex.post();
+                mutex.unlock();
                 return false;
             }
         }
 
         printMessage("not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -976,11 +976,11 @@ public:
         if (content==NULL)
             return false;
 
-        mutex.wait();
+        mutex.lock();
         if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.post();
+            mutex.unlock();
             return false;
         }
 
@@ -994,12 +994,12 @@ public:
             string &owner=it->second.owner;
             response.addString(owner.c_str());
             printMessage("[%s]\n",owner.c_str());
-            mutex.post();
+            mutex.unlock();
             return true;
         }
 
         printMessage("item not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -1009,11 +1009,11 @@ public:
         if (content==NULL)
             return false;
 
-        mutex.wait();
+        mutex.lock();
         if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.post();
+            mutex.unlock();
             return false;
         }
 
@@ -1035,12 +1035,12 @@ public:
                 response.addDouble(dt);
                 printMessage("%g [s]\n",dt);
             }
-            mutex.post();
+            mutex.unlock();
             return true;
         }
 
         printMessage("item not present!\n");
-        mutex.post();
+        mutex.unlock();
         return false;
     }
 
@@ -1050,7 +1050,7 @@ public:
         if (content==NULL)
             return false;
 
-        mutex.wait();
+        mutex.lock();
         if (content->size()==1)
         {
             if (content->get(0).isVocab() || content->get(0).isString())
@@ -1062,7 +1062,7 @@ public:
                     for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                         response.addInt(it->first);
                 
-                    mutex.post();
+                    mutex.unlock();
                     return true;
                 }
             }
@@ -1076,7 +1076,7 @@ public:
         if (!(content->size()&0x01))
         {
             printMessage("uncorrect conditions received!\n");
-            mutex.post();
+            mutex.unlock();
             return false;
         }
 
@@ -1114,14 +1114,14 @@ public:
                     else
                     {
                         printMessage("unknown relational operator '%s'!\n",operation.c_str());
-                        mutex.post();
+                        mutex.unlock();
                         return false;
                     }
                 }
                 else
                 {
                     printMessage("wrong condition given!\n");
-                    mutex.post();
+                    mutex.unlock();
                     return false;
                 }
 
@@ -1133,7 +1133,7 @@ public:
                     if ((operation!="||") && (operation!="&&"))
                     {
                         printMessage("unknown boolean operator '%s'!\n",operation.c_str());
-                        mutex.post();
+                        mutex.unlock();
                         return false;
                     }
                     else
@@ -1143,7 +1143,7 @@ public:
             else
             {
                 printMessage("wrong condition given!\n");
-                mutex.post();
+                mutex.unlock();
                 return false;
             }
         }
@@ -1160,14 +1160,14 @@ public:
         }
 
         printMessage("found items matching received conditions: (%s)\n",response.toString().c_str());
-        mutex.post();
+        mutex.unlock();
         return true;
     }
 
     /************************************************************************/
     void periodicHandler(const double dt)   // manage the items life-timers
     {
-        mutex.wait();
+        mutex.lock();
         bool erased=false;
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
@@ -1190,7 +1190,7 @@ public:
                 }
             }
         }
-        mutex.post();
+        mutex.unlock();
 
         if (asyncBroadcast && erased)
             broadcast(BCTAG_ASYNC);
@@ -1499,7 +1499,7 @@ public:
         if ((type!=BCTAG_EMPTY) && (type!=BCTAG_SYNC) && (type!=BCTAG_ASYNC))
             return false;
 
-        mutex.wait();
+        mutex.lock();
         clear();
 
         if (type!=BCTAG_EMPTY)
@@ -1527,7 +1527,7 @@ public:
             }
         }
 
-        mutex.post();
+        mutex.unlock();
 
         if (asyncBroadcast)
             broadcast(BCTAG_ASYNC);

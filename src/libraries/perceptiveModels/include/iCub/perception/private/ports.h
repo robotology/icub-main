@@ -18,7 +18,7 @@
 #ifndef __PERCEPTIVEMODELS_PORTS_H__
 #define __PERCEPTIVEMODELS_PORTS_H__
 
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/Mutex.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 
@@ -32,7 +32,7 @@ namespace perception
 class Port : public yarp::os::BufferedPort<yarp::os::Bottle>
 {
 protected:
-    yarp::os::Semaphore mutex;
+    yarp::os::Mutex  mutex;
     yarp::os::Bottle bottle;
 
     void onRead(yarp::os::Bottle &bottle);

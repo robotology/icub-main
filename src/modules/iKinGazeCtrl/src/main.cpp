@@ -539,7 +539,7 @@ protected:
     Port            rpcPort;
     bool            interrupting;
     bool            doSaveTweakFile;
-    Semaphore       savingTweakFile;
+    Mutex           savingTweakFile;
 
     struct Context
     {
@@ -764,7 +764,7 @@ protected:
     bool tweakSet(const Bottle &options)
     {
         Bottle &opt=const_cast<Bottle&>(options);
-        savingTweakFile.wait();
+        savingTweakFile.lock();
 
         if (Bottle *pB=opt.find("camera_intrinsics_left").asList())
         {
@@ -874,7 +874,7 @@ protected:
             eyesRefGen->minAllowedVergenceChanged();
         }
 
-        savingTweakFile.post();
+        savingTweakFile.unlock();
         return true;
     }
 
@@ -1807,10 +1807,10 @@ public:
     {
         if (doSaveTweakFile)
         {
-            savingTweakFile.wait();
+            savingTweakFile.lock();
             saveTweakFile();
             doSaveTweakFile=false;
-            savingTweakFile.post();
+            savingTweakFile.unlock();
         }
 
         return true;

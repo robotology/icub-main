@@ -72,7 +72,7 @@ protected:
     double                orig_eye_pan_max;
 
     BufferedPort<Vector> port_inertial;
-    Semaphore mutex;
+    Mutex mutex;
 
     unsigned int period;
     bool Robotable;
@@ -147,7 +147,7 @@ protected:
     Localizer          *loc;
     Controller         *ctrl;
     xdPort             *port_xd;
-    Semaphore           mutex;
+    Mutex               mutex;
 
     unsigned int period;
     bool Robotable;

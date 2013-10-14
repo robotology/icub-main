@@ -182,9 +182,9 @@ bool EyePinvRefGen::getGyro(Vector &data)
 {
     if (port_inertial.getInputCount()>0)
     {
-        mutex.wait();
+        mutex.lock();
         data=gyro;
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -282,11 +282,11 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     H(2,3)=fp[2]-H(2,3);
 
     // gyro rate [deg/s]
-    mutex.wait();
+    mutex.lock();
     double gyrX=gyro[6];
     double gyrY=gyro[7];
     double gyrZ=gyro[8];
-    mutex.post();
+    mutex.unlock();
 
     // filter out the noise on the gyro readouts
     Vector vor_fprelv;
@@ -366,9 +366,9 @@ void EyePinvRefGen::run()
         // read gyro data
         if (Vector *_gyro=port_inertial.read(false))
         {
-            mutex.wait();
+            mutex.lock();
             gyro=*_gyro;
-            mutex.post();
+            mutex.unlock();
         }
 
         // get current target
@@ -667,10 +667,10 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 
     solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
-    mutex.wait();
+    mutex.lock();
     (*chainNeck)(0).setMin(min_rad);
     (*chainNeck)(0).setMax(max_rad);    
-    mutex.post();
+    mutex.unlock();
 
     fprintf(stdout,"\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -685,10 +685,10 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 
     solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
-    mutex.wait();
+    mutex.lock();
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
-    mutex.post();
+    mutex.unlock();
 
     fprintf(stdout,"\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -703,10 +703,10 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 
     solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
-    mutex.wait();
+    mutex.lock();
     (*chainNeck)(2).setMin(min_rad);
     (*chainNeck)(2).setMax(max_rad);
-    mutex.post();
+    mutex.unlock();
 
     fprintf(stdout,"\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
@@ -715,40 +715,40 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg)
 {
-    mutex.wait();
+    mutex.lock();
     min_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMax();
-    mutex.post();
+    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Solver::getCurNeckRollRange(double &min_deg, double &max_deg)
 {
-    mutex.wait();
+    mutex.lock();
     min_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMax();
-    mutex.post();
+    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Solver::getCurNeckYawRange(double &min_deg, double &max_deg)
 {
-    mutex.wait();
+    mutex.lock();
     min_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMax();
-    mutex.post();
+    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Solver::clearNeckPitch()
 {
-    mutex.wait();
+    mutex.lock();
     (*chainNeck)(0).setMin(neckPitchMin);
     (*chainNeck)(0).setMax(neckPitchMax);
-    mutex.post();
+    mutex.unlock();
 
     fprintf(stdout,"\nneck pitch cleared\n\n");
 }
@@ -757,10 +757,10 @@ void Solver::clearNeckPitch()
 /************************************************************************/
 void Solver::clearNeckRoll()
 {
-    mutex.wait();
+    mutex.lock();
     (*chainNeck)(1).setMin(neckRollMin);
     (*chainNeck)(1).setMax(neckRollMax);
-    mutex.post();
+    mutex.unlock();
 
     fprintf(stdout,"\nneck roll cleared\n\n");
 }
@@ -769,10 +769,10 @@ void Solver::clearNeckRoll()
 /************************************************************************/
 void Solver::clearNeckYaw()
 {
-    mutex.wait();
+    mutex.lock();
     (*chainNeck)(2).setMin(neckYawMin);
     (*chainNeck)(2).setMax(neckYawMax);
-    mutex.post();
+    mutex.unlock();
 
     fprintf(stdout,"\nneck yaw cleared\n\n");
 }
@@ -923,7 +923,7 @@ void Solver::afterStart(bool s)
 /************************************************************************/
 void Solver::run()
 {
-    mutex.wait();
+    mutex.lock();
 
     // get the current target
     Vector xd=port_xd->get_xdDelayed();
@@ -1012,7 +1012,7 @@ void Solver::run()
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
 
-    mutex.post();
+    mutex.unlock();
 }
 
 
@@ -1043,7 +1043,7 @@ void Solver::suspend()
 /************************************************************************/
 void Solver::resume()
 {
-    mutex.wait();
+    mutex.lock();
 
     if (Robotable)
     {
@@ -1078,7 +1078,7 @@ void Solver::resume()
 
     fprintf(stdout,"\nSolver has been resumed!\n\n");
 
-    mutex.post();
+    mutex.unlock();
 
     RateThread::resume();
 }

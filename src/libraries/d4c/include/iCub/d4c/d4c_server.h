@@ -26,7 +26,7 @@
 #include <yarp/os/PortReader.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/PortReport.h>
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/Mutex.h>
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
@@ -144,7 +144,7 @@ protected:
     iCub::ctrl::Integrator If;
     iCub::ctrl::Integrator Iv;
 
-    yarp::os::Semaphore           mutex;
+    yarp::os::Mutex               mutex;
     yarp::dev::PolyDriver         dCtrlLeft;
     yarp::dev::ICartesianControl *iCtrlLeft;
     yarp::dev::PolyDriver         dCtrlRight;

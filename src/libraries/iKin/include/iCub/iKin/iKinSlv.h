@@ -215,7 +215,7 @@
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/Mutex.h>
 #include <yarp/os/Event.h>
 #include <yarp/sig/Vector.h>
 
@@ -251,7 +251,7 @@ class InputPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 protected:
     CartesianSolver *slv;
 
-    yarp::os::Semaphore mutex;
+    yarp::os::Mutex mutex;
 
     bool contMode;
     bool isNew;
@@ -331,7 +331,7 @@ protected:
     yarp::os::Port                           *rpcPort;
     InputPort                                *inPort;
     yarp::os::BufferedPort<yarp::os::Bottle> *outPort;
-    yarp::os::Semaphore                       mutex;
+    yarp::os::Mutex                           mutex;
 
     std::string   slvName;
     std::string   type;

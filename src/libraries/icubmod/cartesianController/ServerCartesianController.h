@@ -153,10 +153,10 @@ protected:
     bool         skipSlvRes;
     bool         syncEventEnabled;
 
-    yarp::os::Semaphore mutex;
-    yarp::os::Event     syncEvent;
-    yarp::os::Stamp     txInfo;
-    yarp::os::Stamp     poseInfo;
+    yarp::os::Mutex mutex;
+    yarp::os::Event syncEvent;
+    yarp::os::Stamp txInfo;
+    yarp::os::Stamp poseInfo;
 
     yarp::sig::Vector xdes;
     yarp::sig::Vector qdes;

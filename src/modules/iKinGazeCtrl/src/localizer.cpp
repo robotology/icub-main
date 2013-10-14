@@ -152,21 +152,21 @@ void Localizer::afterStart(bool s)
 /************************************************************************/
 void Localizer::getPidOptions(Bottle &options)
 {
-    mutex.wait();
+    mutex.lock();
 
     pid->getOptions(options);
     Bottle &bDominantEye=options.addList();
     bDominantEye.addString("dominantEye");
     bDominantEye.addString(dominantEye.c_str());
 
-    mutex.post();
+    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Localizer::setPidOptions(const Bottle &options)
 {
-    mutex.wait();
+    mutex.lock();
 
     pid->setOptions(options);
     Bottle &opt=const_cast<Bottle&>(options);
@@ -177,7 +177,7 @@ void Localizer::setPidOptions(const Bottle &options)
             dominantEye=domEye;
     }
 
-    mutex.post();
+    mutex.unlock();
 }
 
 
@@ -229,7 +229,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     if (ver<commData->get_minAllowedVergence())
         ver=commData->get_minAllowedVergence();
 
-    mutex.wait();
+    mutex.lock();
 
     q[7]+=ver/2.0;
     eyeL->setAng(q);
@@ -243,7 +243,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     // compute new fp due to changed vergence
     computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp);
 
-    mutex.post();
+    mutex.unlock();
 
     // compute rotational matrix to
     // account for elevation and azimuth
@@ -310,9 +310,9 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
             xo.push_back(1.0);  // impose homogeneous coordinates
 
         // find position wrt the camera frame
-        mutex.wait();
+        mutex.lock();
         Vector xe=SE3inv(eye->getH(q))*xo;
-        mutex.post();
+        mutex.unlock();
 
         // find the 2D projection
         px=*Prj*xe;
@@ -368,9 +368,9 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         xe[3]=1.0;  // impose homogeneous coordinates
 
         // find position wrt the root frame
-        mutex.wait();
+        mutex.lock();
         x=eye->getH(q)*xe;
-        mutex.post();
+        mutex.unlock();
 
         x.pop_back();
         return true;
@@ -418,9 +418,9 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         n[1]=plane[1];
         n[2]=plane[2];
 
-        mutex.wait();
+        mutex.lock();
         Vector e=eye->EndEffPose().subVector(0,2);
-        mutex.post();
+        mutex.unlock();
 
         // compute the projection
         Vector v=x-e;
@@ -460,10 +460,10 @@ bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x
         Vector qR=qL;
         qR[7]-=head[5];
 
-        mutex.wait();
+        mutex.lock();
         Matrix HL=SE3inv(eyeL->getH(qL));
         Matrix HR=SE3inv(eyeR->getH(qR));
-        mutex.post();
+        mutex.unlock();
 
         Matrix tmp=zeros(3,4); tmp(2,2)=1.0;
         tmp(0,2)=pxl[0]; tmp(1,2)=pxl[1];
@@ -573,9 +573,9 @@ void Localizer::handleStereoInput()
                     fb=ul-cxl;
                 }
                 
-                mutex.wait();
+                mutex.lock();
                 Vector z=pid->compute(ref,fb);
-                mutex.post();
+                mutex.unlock();
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
                 {

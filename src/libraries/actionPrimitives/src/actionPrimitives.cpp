@@ -811,9 +811,9 @@ bool ActionPrimitives::clearActionsQueue()
 {
     if (configured)
     {
-        mutex.wait();
+        mutex.lock();
         actionsQueue.clear();
-        mutex.post();
+        mutex.unlock();
 
         return true;
     }
@@ -863,7 +863,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
 {
     if (configured && !locked)
     {
-        mutex.wait();
+        mutex.lock();
         Action action;
     
         action.waitState=false;
@@ -879,7 +879,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
         action.clb=clb;
 
         actionsQueue.push_back(action);
-        mutex.post();
+        mutex.unlock();
 
         return true;
     }
@@ -1031,7 +1031,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
 {
     if (configured && !locked)
     {
-        mutex.wait();
+        mutex.lock();
         Action action;
         ArmWayPoints *thr=new ArmWayPoints(this,wayPoints);
         thr->set_default_exec_time(default_exec_time);
@@ -1045,7 +1045,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
         action.clb=clb;
 
         actionsQueue.push_back(action);
-        mutex.post();
+        mutex.unlock();
 
         return true;
     }
@@ -1060,7 +1060,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
 {
     if (configured && !locked)
     {
-        mutex.wait();
+        mutex.lock();
         map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
         if (itr!=handSeqMap.end())
         {
@@ -1098,7 +1098,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
                 }
             }
 
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -1106,7 +1106,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
             printMessage("WARNING: \"%s\" hand sequence key not found\n",
                          handSeqKey.c_str());    
 
-            mutex.post();
+            mutex.unlock();
             return false;
         }
     }
@@ -1120,7 +1120,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
 {
     if (configured && !locked)
     {
-        mutex.wait();
+        mutex.lock();
         Action action;
 
         action.waitState=true;
@@ -1132,7 +1132,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
         action.clb=clb;
 
         actionsQueue.push_back(action);
-        mutex.post();
+        mutex.unlock();
 
         return true;
     }
@@ -1204,14 +1204,14 @@ bool ActionPrimitives::execQueuedAction()
     bool exec=false;
     Action action;
 
-    mutex.wait();
+    mutex.lock();
     if (actionsQueue.size()>0)
     {
         action=actionsQueue.front();
         actionsQueue.pop_front();
         exec=true;
     }
-    mutex.post();
+    mutex.unlock();
 
     if (exec)
     {
@@ -1245,7 +1245,7 @@ bool ActionPrimitives::execPendingHandSequences()
     bool exec=false;
     Action action;
 
-    mutex.wait();
+    mutex.lock();
     if (actionsQueue.size()>0)
     {
         // polling on the first action in the queue
@@ -1259,7 +1259,7 @@ bool ActionPrimitives::execPendingHandSequences()
             exec=true;
         }
     }
-    mutex.post();
+    mutex.unlock();
 
     return exec;
 }

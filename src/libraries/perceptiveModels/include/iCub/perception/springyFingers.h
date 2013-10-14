@@ -60,7 +60,7 @@
 #include <yarp/os/Property.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/Mutex.h>
 #include <yarp/os/Thread.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
@@ -220,7 +220,7 @@ private:
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
     yarp::dev::PolyDriver                     driver;
 
-    yarp::os::Semaphore mutex;
+    yarp::os::Mutex mutex;
 
     class CalibThread : public yarp::os::Thread
     {

@@ -31,9 +31,9 @@ iCub::perception::Port::Port()
 /************************************************************************/
 void iCub::perception::Port::onRead(Bottle &bottle)
 {
-    mutex.wait();
+    mutex.lock();
     this->bottle=bottle;
-    mutex.post();
+    mutex.unlock();
 }
 
 
@@ -41,7 +41,7 @@ void iCub::perception::Port::onRead(Bottle &bottle)
 void iCub::perception::Port::interrupt()
 {
     disableCallback();
-    mutex.post();
+    mutex.unlock();
     BufferedPort<Bottle>::interrupt();
 }
 
@@ -51,10 +51,10 @@ Value iCub::perception::Port::getValue(const int index)
 {
     Value ret;
 
-    mutex.wait();
+    mutex.lock();
     if (index<bottle.size())
         ret=Value(bottle.get(index).asDouble());
-    mutex.post();
+    mutex.unlock();
 
     return ret;
 }

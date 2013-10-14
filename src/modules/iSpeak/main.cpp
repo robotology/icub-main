@@ -102,7 +102,7 @@ class MouthHandler : public RateThread
 {
     string state;
     RpcClient emotions;
-    Semaphore mutex;
+    Mutex mutex;
     double t0, duration;
 
     /************************************************************************/
@@ -121,7 +121,7 @@ class MouthHandler : public RateThread
     /************************************************************************/
     void run()
     {
-        mutex.wait();
+        mutex.lock();
 
         if (state=="sur")
             state="hap";
@@ -130,7 +130,7 @@ class MouthHandler : public RateThread
 
         send();
 
-        mutex.post();
+        mutex.unlock();
 
         if (duration>=0.0)
             if (Time::now()-t0>=duration)
@@ -187,10 +187,10 @@ public:
 
         RateThread::suspend();
 
-        mutex.wait();
+        mutex.lock();
         state="hap";
         send();
-        mutex.post();
+        mutex.unlock();
     }
 };
 
@@ -203,7 +203,7 @@ class iSpeak : protected BufferedPort<Bottle>,
     string package;
     string package_options;
     deque<Bottle> buffer;
-    Semaphore mutex;
+    Mutex mutex;
     
     bool speaking;
     MouthHandler mouth;
@@ -211,9 +211,9 @@ class iSpeak : protected BufferedPort<Bottle>,
     /************************************************************************/
     void onRead(Bottle &request)
     {
-        mutex.wait();
+        mutex.lock();
         buffer.push_back(request);
-        mutex.post();
+        mutex.unlock();
     }
 
     /************************************************************************/
@@ -258,7 +258,7 @@ class iSpeak : protected BufferedPort<Bottle>,
         bool resetRate=false;
         double duration=-1.0;
 
-        mutex.wait();
+        mutex.lock();
         if (buffer.size()>0)    // protect also the access to the size() method
         {
             Bottle request=buffer.front();
@@ -296,7 +296,7 @@ class iSpeak : protected BufferedPort<Bottle>,
                 }
             }
         }
-        mutex.post();
+        mutex.unlock();
 
         if (speaking)
         {

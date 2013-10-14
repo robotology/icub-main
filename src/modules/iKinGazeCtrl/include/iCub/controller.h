@@ -72,9 +72,9 @@ protected:
     Stamp txInfo_q;
     Stamp txInfo_pose;
 
-    Semaphore mutexChain;
-    Semaphore mutexCtrl;
-    Semaphore mutexData;
+    Mutex mutexChain;
+    Mutex mutexCtrl;
+    Mutex mutexData;
     unsigned int period;
     bool tiltDone;
     bool panDone;

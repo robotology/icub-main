@@ -43,7 +43,7 @@ using namespace iCub::iKin;
 class Localizer : public GazeComponent, public RateThread
 {
 protected:
-    Semaphore             mutex;
+    Mutex                 mutex;
     exchangeData         *commData;
     xdPort               *port_xd;
     BufferedPort<Bottle>  port_mono;

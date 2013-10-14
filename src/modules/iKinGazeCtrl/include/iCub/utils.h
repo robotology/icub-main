@@ -55,15 +55,15 @@ class xdPort : public BufferedPort<Bottle>,
 protected:
     void  *slv;
 
-    Semaphore mutex_0;
-    Semaphore mutex_1;
-    Event     syncEvent;
-    Vector    xd;
-    Vector    xdDelayed;    
-    bool      isNew;
-    bool      isNewDelayed;
-    bool      closing;
-    int       rx;
+    Mutex  mutex_0;
+    Mutex  mutex_1;
+    Event  syncEvent;
+    Vector xd;
+    Vector xdDelayed;    
+    bool   isNew;
+    bool   isNewDelayed;
+    bool   closing;
+    int    rx;
 
     void onRead(Bottle &b);
     void run();
@@ -85,7 +85,7 @@ public:
 class exchangeData
 {
 protected:
-    Semaphore mutex[8];
+    Mutex  mutex[8];
 
     Vector xd,qd;
     Vector x,q,torso;

@@ -59,7 +59,7 @@ xdPort::~xdPort()
 /************************************************************************/
 void xdPort::onRead(Bottle &b)
 {
-    mutex_0.wait();
+    mutex_0.lock();
 
     int bLen=b.size();
     int xdLen=xd.length();
@@ -71,7 +71,7 @@ void xdPort::onRead(Bottle &b)
     isNew=true;
     rx++;
 
-    mutex_0.post();
+    mutex_0.unlock();
 
     syncEvent.signal();
 }
@@ -80,11 +80,11 @@ void xdPort::onRead(Bottle &b)
 /************************************************************************/
 void xdPort::set_xd(const Vector &_xd)
 {
-    mutex_0.wait();
+    mutex_0.lock();
     xd=_xd;
     isNew=true;
     rx++;
-    mutex_0.post();
+    mutex_0.unlock();
     syncEvent.signal();
 }
 
@@ -92,9 +92,9 @@ void xdPort::set_xd(const Vector &_xd)
 /************************************************************************/
 Vector xdPort::get_xd()
 {
-    mutex_0.wait();
+    mutex_0.lock();
     Vector _xd=xd;
-    mutex_0.post();
+    mutex_0.unlock();
     return _xd;
 }
 
@@ -102,9 +102,9 @@ Vector xdPort::get_xd()
 /************************************************************************/
 Vector xdPort::get_xdDelayed()
 {
-    mutex_1.wait();
+    mutex_1.lock();
     Vector _xdDelayed=xdDelayed;
-    mutex_1.post();
+    mutex_1.unlock();
     return _xdDelayed;
 }
 
@@ -124,12 +124,12 @@ void xdPort::run()
 
         Time::delay(timeDelay);
 
-        mutex_1.wait();
+        mutex_1.lock();
 
         xdDelayed=xd;
         isNewDelayed=true;
 
-        mutex_1.post();
+        mutex_1.unlock();
     }
 }
 
@@ -155,118 +155,118 @@ exchangeData::exchangeData()
 /************************************************************************/
 void exchangeData::resize_v(const int sz, const double val)
 {
-    mutex[MUTEX_V].wait();
+    mutex[MUTEX_V].lock();
     v.resize(sz,val);
-    mutex[MUTEX_V].post();
+    mutex[MUTEX_V].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::resize_counterv(const int sz, const double val)
 {
-    mutex[MUTEX_COUNTERV].wait();
+    mutex[MUTEX_COUNTERV].lock();
     counterv.resize(sz,val);
-    mutex[MUTEX_COUNTERV].post();
+    mutex[MUTEX_COUNTERV].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_xd(const Vector &_xd)
 {
-    mutex[MUTEX_XD].wait();
+    mutex[MUTEX_XD].lock();
     xd=_xd;
-    mutex[MUTEX_XD].post();
+    mutex[MUTEX_XD].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_qd(const Vector &_qd)
 {
-    mutex[MUTEX_QD].wait();
+    mutex[MUTEX_QD].lock();
     qd=_qd;
-    mutex[MUTEX_QD].post();
+    mutex[MUTEX_QD].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_qd(const int i, const double val)
 {
-    mutex[MUTEX_QD].wait();
+    mutex[MUTEX_QD].lock();
     qd[i]=val;
-    mutex[MUTEX_QD].post();
+    mutex[MUTEX_QD].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_x(const Vector &_x)
 {
-    mutex[MUTEX_X].wait();
+    mutex[MUTEX_X].lock();
     x=_x;
-    mutex[MUTEX_X].post();
+    mutex[MUTEX_X].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_x(const Vector &_x, const double stamp)
 {
-    mutex[MUTEX_X].wait();
+    mutex[MUTEX_X].lock();
     x=_x;
     x_stamp=stamp;
-    mutex[MUTEX_X].post();
+    mutex[MUTEX_X].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_q(const Vector &_q)
 {
-    mutex[MUTEX_Q].wait();
+    mutex[MUTEX_Q].lock();
     q=_q;
-    mutex[MUTEX_Q].post();
+    mutex[MUTEX_Q].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_torso(const Vector &_torso)
 {
-    mutex[MUTEX_TORSO].wait();
+    mutex[MUTEX_TORSO].lock();
     torso=_torso;
-    mutex[MUTEX_TORSO].post();
+    mutex[MUTEX_TORSO].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_v(const Vector &_v)
 {
-    mutex[MUTEX_V].wait();
+    mutex[MUTEX_V].lock();
     v=_v;
-    mutex[MUTEX_V].post();
+    mutex[MUTEX_V].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_counterv(const Vector &_counterv)
 {
-    mutex[MUTEX_COUNTERV].wait();
+    mutex[MUTEX_COUNTERV].lock();
     counterv=_counterv;
-    mutex[MUTEX_COUNTERV].post();
+    mutex[MUTEX_COUNTERV].unlock();
 }
 
 
 /************************************************************************/
 void exchangeData::set_fpFrame(const Matrix &_S)
 {
-    mutex[MUTEX_FPFRAME].wait();
+    mutex[MUTEX_FPFRAME].lock();
     S=_S;
-    mutex[MUTEX_FPFRAME].post();
+    mutex[MUTEX_FPFRAME].unlock();
 }
 
 
 /************************************************************************/
 Vector exchangeData::get_xd()
 {
-    mutex[MUTEX_XD].wait();
+    mutex[MUTEX_XD].lock();
     Vector _xd=xd;
-    mutex[MUTEX_XD].post();
+    mutex[MUTEX_XD].unlock();
 
     return _xd;
 }
@@ -275,9 +275,9 @@ Vector exchangeData::get_xd()
 /************************************************************************/
 Vector exchangeData::get_qd()
 {
-    mutex[MUTEX_QD].wait();
+    mutex[MUTEX_QD].lock();
     Vector _qd=qd;
-    mutex[MUTEX_QD].post();
+    mutex[MUTEX_QD].unlock();
 
     return _qd;
 }
@@ -286,9 +286,9 @@ Vector exchangeData::get_qd()
 /************************************************************************/
 Vector exchangeData::get_x()
 {
-    mutex[MUTEX_X].wait();
+    mutex[MUTEX_X].lock();
     Vector _x=x;
-    mutex[MUTEX_X].post();
+    mutex[MUTEX_X].unlock();
 
     return _x;
 }
@@ -297,10 +297,10 @@ Vector exchangeData::get_x()
 /************************************************************************/
 Vector exchangeData::get_x(double &stamp)
 {
-    mutex[MUTEX_X].wait();
+    mutex[MUTEX_X].lock();
     Vector _x=x;
     stamp=x_stamp;
-    mutex[MUTEX_X].post();
+    mutex[MUTEX_X].unlock();
 
     return _x;
 }
@@ -309,9 +309,9 @@ Vector exchangeData::get_x(double &stamp)
 /************************************************************************/
 Vector exchangeData::get_q()
 {
-    mutex[MUTEX_Q].wait();
+    mutex[MUTEX_Q].lock();
     Vector _q=q;
-    mutex[MUTEX_Q].post();
+    mutex[MUTEX_Q].unlock();
 
     return _q;
 }
@@ -320,9 +320,9 @@ Vector exchangeData::get_q()
 /************************************************************************/
 Vector exchangeData::get_torso()
 {
-    mutex[MUTEX_TORSO].wait();
+    mutex[MUTEX_TORSO].lock();
     Vector _torso=torso;
-    mutex[MUTEX_TORSO].post();
+    mutex[MUTEX_TORSO].unlock();
 
     return _torso;
 }
@@ -331,9 +331,9 @@ Vector exchangeData::get_torso()
 /************************************************************************/
 Vector exchangeData::get_v()
 {
-    mutex[MUTEX_V].wait();
+    mutex[MUTEX_V].lock();
     Vector _v=v;
-    mutex[MUTEX_V].post();
+    mutex[MUTEX_V].unlock();
 
     return _v;
 }
@@ -342,9 +342,9 @@ Vector exchangeData::get_v()
 /************************************************************************/
 Vector exchangeData::get_counterv()
 {
-    mutex[MUTEX_COUNTERV].wait();
+    mutex[MUTEX_COUNTERV].lock();
     Vector _counterv=counterv;
-    mutex[MUTEX_COUNTERV].post();
+    mutex[MUTEX_COUNTERV].unlock();
 
     return _counterv;
 }
@@ -353,9 +353,9 @@ Vector exchangeData::get_counterv()
 /************************************************************************/
 Matrix exchangeData::get_fpFrame()
 {
-    mutex[MUTEX_FPFRAME].wait();
+    mutex[MUTEX_FPFRAME].lock();
     Matrix _S=S;
-    mutex[MUTEX_FPFRAME].post();
+    mutex[MUTEX_FPFRAME].unlock();
 
     return _S;
 }

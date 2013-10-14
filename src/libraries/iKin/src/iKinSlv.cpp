@@ -84,18 +84,18 @@ InputPort::InputPort(CartesianSolver *_slv)
 /************************************************************************/
 void InputPort::set_dof(const Vector &_dof)
 {
-    mutex.wait();
+    mutex.lock();
     dof=_dof;
-    mutex.post();
+    mutex.unlock();
 }
 
 
 /************************************************************************/
 Vector InputPort::get_dof()
 {
-    mutex.wait();
+    mutex.lock();
     Vector _dof=dof;
-    mutex.post();
+    mutex.unlock();
     return _dof;
 }
 
@@ -103,9 +103,9 @@ Vector InputPort::get_dof()
 /************************************************************************/
 Vector InputPort::get_xd()
 {
-    mutex.wait();
+    mutex.lock();
     Vector _xd=xd;
-    mutex.post();
+    mutex.unlock();
     return _xd;
 }
 
@@ -113,9 +113,9 @@ Vector InputPort::get_xd()
 /************************************************************************/
 void InputPort::reset_xd(const Vector &_xd)
 {
-    mutex.wait();
+    mutex.lock();
     xd=_xd;
-    mutex.post();
+    mutex.unlock();
     isNew=false;
 }
 
@@ -138,11 +138,11 @@ bool InputPort::handleTarget(Bottle *b)
 {
     if (b!=NULL)
     {
-        mutex.wait();
+        mutex.lock();
         int len=std::min(b->size(),maxLen);
         for (int i=0; i<len; i++)
             xd[i]=b->get(i).asDouble();
-        mutex.post();
+        mutex.unlock();
 
         return isNew=true;
     }
@@ -158,11 +158,11 @@ bool InputPort::handleDOF(Bottle *b)
     {
         slv->lock();
 
-        mutex.wait();
+        mutex.lock();
         dof.resize(b->size());
         for (int i=0; i<b->size(); i++)
             dof[i]=b->get(i).asInt();
-        mutex.post();
+        mutex.unlock();
 
         slv->unlock();
 
@@ -498,14 +498,14 @@ void CartesianSolver::initPos()
 /************************************************************************/
 void CartesianSolver::lock()
 {
-    mutex.wait();
+    mutex.lock();
 }
 
 
 /************************************************************************/
 void CartesianSolver::unlock()
 {
-    mutex.post();
+    mutex.unlock();
 }
 
 

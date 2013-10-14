@@ -276,7 +276,7 @@ void Controller::stopLimb(const bool execStopPosition)
     if (Robotable)
     {
         // note: vel==0.0 is always achievable
-        mutexCtrl.wait();
+        mutexCtrl.lock();
 
         if (neckPosCtrlOn)
         {
@@ -290,7 +290,7 @@ void Controller::stopLimb(const bool execStopPosition)
         else for (int i=0; i<nJointsHead; i++)
             velHead->velocityMove(i,0.0);
 
-        mutexCtrl.post();
+        mutexCtrl.unlock();
     }
 }
 
@@ -342,7 +342,7 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::doSaccade(Vector &ang, Vector &vel)
 {
-    mutexCtrl.wait();
+    mutexCtrl.lock();
 
     posHead->setRefSpeed(eyesJoints[0],vel[0]);
     posHead->setRefSpeed(eyesJoints[1],vel[1]);
@@ -364,17 +364,17 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
 
     notifyEvent("saccade-onset");
 
-    mutexCtrl.post();    
+    mutexCtrl.unlock();    
 }
 
 
 /************************************************************************/
 void Controller::resetCtrlEyes()
 {
-    mutexCtrl.wait();
+    mutexCtrl.lock();
     mjCtrlEyes->reset(zeros(3));
     unplugCtrlEyes=false;
-    mutexCtrl.post();
+    mutexCtrl.unlock();
 }
 
 
@@ -384,7 +384,7 @@ void Controller::run()
     string event="none";
 
     // verify if any saccade is still underway
-    mutexCtrl.wait();
+    mutexCtrl.lock();
     if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
     {
         if (!tiltDone)
@@ -400,7 +400,7 @@ void Controller::run()
         if (!commData->get_isSaccadeUnderway())
             notifyEvent("saccade-done");
     }
-    mutexCtrl.post();
+    mutexCtrl.unlock();
     
     // get data
     double x_stamp;
@@ -450,9 +450,9 @@ void Controller::run()
         {
             event="motion-onset";
 
-            mutexData.wait();
+            mutexData.lock();
             motionOngoingEventsCurrent=motionOngoingEvents;
-            mutexData.post();
+            mutexData.unlock();
         }
 
         port_xd->get_new()=false;
@@ -476,9 +476,9 @@ void Controller::run()
 
             event="motion-onset";
 
-            mutexData.wait();
+            mutexData.lock();
             motionOngoingEventsCurrent=motionOngoingEvents;
-            mutexData.post();
+            mutexData.unlock();
         }
     }
 
@@ -522,16 +522,16 @@ void Controller::run()
     }
 
     // convert to degrees
-    mutexData.wait();
+    mutexData.lock();
     qddeg=CTRL_RAD2DEG*qd;
     qdeg =CTRL_RAD2DEG*fbHead;
     vdeg =CTRL_RAD2DEG*v;
-    mutexData.post();
+    mutexData.unlock();
 
     // send commands to the robot
     if (Robotable && commData->get_isCtrlActive())
     {
-        mutexCtrl.wait();
+        mutexCtrl.lock();
 
         if (neckPosCtrlOn)
         {
@@ -542,7 +542,7 @@ void Controller::run()
         else
             velHead->velocityMove(vdeg.data());
 
-        mutexCtrl.post();
+        mutexCtrl.unlock();
     }
 
     // print info
@@ -571,7 +571,7 @@ void Controller::run()
     }
 
     // update pose information
-    mutexChain.wait();
+    mutexChain.lock();
 
     for (int i=0; i<nJointsTorso; i++)
     {
@@ -590,7 +590,7 @@ void Controller::run()
 
     txInfo_pose.update(q_stamp);
 
-    mutexChain.post();
+    mutexChain.unlock();
 
     if (event=="motion-onset")
         notifyEvent(event);
@@ -736,9 +736,9 @@ bool Controller::getTrackingMode() const
 /************************************************************************/
 bool Controller::getDesired(Vector &des)
 {
-    mutexData.wait();
+    mutexData.lock();
     des=qddeg;
-    mutexData.post();
+    mutexData.unlock();
     return true;
 }
 
@@ -746,9 +746,9 @@ bool Controller::getDesired(Vector &des)
 /************************************************************************/
 bool Controller::getVelocity(Vector &vel)
 {
-    mutexData.wait();
+    mutexData.lock();
     vel=vdeg;
-    mutexData.post();
+    mutexData.unlock();
     return true;
 }
 
@@ -758,26 +758,26 @@ bool Controller::getPose(const string &poseSel, Vector &x, Stamp &stamp)
 {
     if (poseSel=="left")
     {
-        mutexChain.wait();
+        mutexChain.lock();
         x=chainEyeL->EndEffPose();
         stamp=txInfo_pose;
-        mutexChain.post();
+        mutexChain.unlock();
         return true;
     }
     else if (poseSel=="right")
     {
-        mutexChain.wait();
+        mutexChain.lock();
         x=chainEyeR->EndEffPose();
         stamp=txInfo_pose;
-        mutexChain.post();
+        mutexChain.unlock();
         return true;
     }
     else if (poseSel=="head")
     {
-        mutexChain.wait();
+        mutexChain.lock();
         x=chainNeck->EndEffPose();
         stamp=txInfo_pose;
-        mutexChain.post();
+        mutexChain.unlock();
         return true;
     }
     else
@@ -790,9 +790,9 @@ bool Controller::registerMotionOngoingEvent(const double checkPoint)
 {
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        mutexData.wait();
+        mutexData.lock();
         motionOngoingEvents.insert(checkPoint);
-        mutexData.post();
+        mutexData.unlock();
 
         return true;
     }
@@ -807,14 +807,14 @@ bool Controller::unregisterMotionOngoingEvent(const double checkPoint)
     bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        mutexData.wait();
+        mutexData.lock();
         multiset<double>::iterator itr=motionOngoingEvents.find(checkPoint);
         if (itr!=motionOngoingEvents.end())
         {
             motionOngoingEvents.erase(itr);
             ret=true;
         }
-        mutexData.post();
+        mutexData.unlock();
     }
 
     return ret;
@@ -826,10 +826,10 @@ Bottle Controller::listMotionOngoingEvents()
 {
     Bottle events;
 
-    mutexData.wait();
+    mutexData.lock();
     for (multiset<double>::iterator itr=motionOngoingEvents.begin(); itr!=motionOngoingEvents.end(); itr++)
         events.addDouble(*itr);
-    mutexData.post();
+    mutexData.unlock();
 
     return events;
 }

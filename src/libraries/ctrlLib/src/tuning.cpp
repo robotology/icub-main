@@ -310,7 +310,7 @@ bool OnlineStictionEstimator::threadInit()
 /**********************************************************************/
 void OnlineStictionEstimator::run()
 {
-    mutex.wait();
+    mutex.lock();
 
     ienc->getEncoder(joint,&x_pos);
 
@@ -366,7 +366,7 @@ void OnlineStictionEstimator::run()
     info.unput("position");  info.put("position",x_pos);
     info.unput("reference"); info.put("reference",xd_pos);
 
-    mutex.post();
+    mutex.unlock();
 
     if (done[0]*done[1]!=0.0)
         doneEvent.signal();
@@ -390,9 +390,9 @@ bool OnlineStictionEstimator::isDone()
     if (!configured)
         return false;
 
-    mutex.wait();
+    mutex.lock();
     bool ret=(done[0]*done[1]!=0.0);
-    mutex.post();
+    mutex.unlock();
 
     return ret;
 }
@@ -415,9 +415,9 @@ bool OnlineStictionEstimator::getResults(Vector &results)
     if (!configured)
         return false;
 
-    mutex.wait();
+    mutex.lock();
     results=dpos_dV*stiction;
-    mutex.post();
+    mutex.unlock();
 
     return true;
 }
@@ -429,9 +429,9 @@ bool OnlineStictionEstimator::getInfo(Property &info)
     if (!configured)
         return false;
 
-    mutex.wait();
+    mutex.lock();
     info=this->info;
-    mutex.post();
+    mutex.unlock();
 
     return true;
 }
@@ -642,7 +642,7 @@ void OnlineCompensatorDesign::run()
         if (t-t0>max_time)
             askToStop();
 
-    mutex.wait();
+    mutex.lock();
     switch (mode)
     {
         // -----
@@ -782,7 +782,7 @@ void OnlineCompensatorDesign::run()
             break;
         }
     }
-    mutex.post();
+    mutex.unlock();
 }
 
 
@@ -1041,7 +1041,7 @@ bool OnlineCompensatorDesign::getResults(Property &results)
 
     results.clear();
 
-    mutex.wait();
+    mutex.lock();
     switch (mode)
     {
         // -----
@@ -1095,7 +1095,7 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             break;
         }
     }
-    mutex.post();
+    mutex.unlock();
 
     return true;
 }

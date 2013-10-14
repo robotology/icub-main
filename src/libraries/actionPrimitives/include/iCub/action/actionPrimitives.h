@@ -83,7 +83,7 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/Mutex.h>
 #include <yarp/os/Event.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CartesianControl.h>
@@ -205,7 +205,7 @@ protected:
     perception::Model            *graspModel;
                                  
     yarp::os::RateThread         *armWaver;
-    yarp::os::Semaphore           mutex;
+    yarp::os::Mutex               mutex;
     yarp::os::Event               motionStartEvent;
     yarp::os::Event               motionDoneEvent;
 

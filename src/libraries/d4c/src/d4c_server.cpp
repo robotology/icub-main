@@ -424,7 +424,7 @@ void D4CServer::close()
                 dCtrlLeft.close();
         }
 
-        mutex.wait();
+        mutex.lock();
 
         guiQueue.clear();
 
@@ -451,7 +451,7 @@ void D4CServer::close()
 
         isOpen=false;
 
-        mutex.post();
+        mutex.unlock();
 
         printMessage(1,"server closed\n");
     }
@@ -492,7 +492,7 @@ bool D4CServer::addItem(const Property &options, int &item)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         printMessage(2,"received request for adding item: %s\n",
                      options.toString().c_str());
 
@@ -511,7 +511,7 @@ bool D4CServer::addItem(const Property &options, int &item)
         else
             printMessage(1,"wrong request detected!\n");
 
-        mutex.post();
+        mutex.unlock();
         return ret;
     }
     else
@@ -527,7 +527,7 @@ bool D4CServer::eraseItem(const int item)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         printMessage(2,"received request for erasing item %d\n",item);
 
         bool ret=false;
@@ -545,7 +545,7 @@ bool D4CServer::eraseItem(const int item)
         else
             printMessage(1,"item %d not found!\n",item);
 
-        mutex.post();
+        mutex.unlock();
         return ret;
     }
     else
@@ -561,7 +561,7 @@ bool D4CServer::clearItems()
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         for (map<int,Item*>::iterator it=table.begin(); it!=table.end(); it++)
         {
             pushEraseGuiItem(it);
@@ -571,7 +571,7 @@ bool D4CServer::clearItems()
         table.clear();
         printMessage(1,"all items have been scheduled for erasing\n");
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -587,7 +587,7 @@ bool D4CServer::getItems(Bottle &items)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         items.clear();
         for (map<int,Item*>::const_iterator it=table.begin(); it!=table.end(); it++)
             items.addInt(it->first);
@@ -595,7 +595,7 @@ bool D4CServer::getItems(Bottle &items)
         printMessage(1,"list of items ids prepared for sending: (%s)\n",
                      items.toString().c_str());
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -611,7 +611,7 @@ bool D4CServer::setProperty(const int item, const Property &options)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         printMessage(2,"received request for setting item %d property: %s\n",
                      item,options.toString().c_str());
 
@@ -629,7 +629,7 @@ bool D4CServer::setProperty(const int item, const Property &options)
         else
             printMessage(1,"item %d not found!\n",item);
 
-        mutex.post();
+        mutex.unlock();
         return ret;
     }
     else
@@ -645,7 +645,7 @@ bool D4CServer::getProperty(const int item, Property &options)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         printMessage(2,"received request for getting item %d property\n",item);
 
         bool ret=false;
@@ -661,7 +661,7 @@ bool D4CServer::getProperty(const int item, Property &options)
         else
             printMessage(1,"item %d not found!\n",item);
 
-        mutex.post();
+        mutex.unlock();
         return ret;
     }
     else
@@ -681,12 +681,12 @@ bool D4CServer::enableField()
         {
             Vector pos,orien;
             iCtrlActive->getPose(pos,orien);
-            mutex.wait();
+            mutex.lock();
             copyVectorData(pos,this->x);
             copyVectorData(orien,this->x);
             Iv.reset(x);
             initIntegration=false;
-            mutex.post();
+            mutex.unlock();
         }
         fieldEnabled=true;
         printMessage(1,"field enabled\n");
@@ -705,14 +705,14 @@ bool D4CServer::disableField()
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         if (!offlineMode)
             iCtrlActive->stopControl();
 
         fieldEnabled=false;
         printMessage(1,"field disabled\n");
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -747,7 +747,7 @@ bool D4CServer::enableControl()
     {
         if (!offlineMode)
         {
-            mutex.wait();
+            mutex.lock();
             controlEnabled=true;
             printMessage(1,"control enabled\n");
 
@@ -757,7 +757,7 @@ bool D4CServer::enableControl()
                 printMessage(2,"simulation gets automatically disabled\n");
             }
 
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -781,11 +781,11 @@ bool D4CServer::disableControl()
     {
         if (!offlineMode)
         {
-            mutex.wait();
+            mutex.lock();
             iCtrlActive->stopControl();
             controlEnabled=false;
             printMessage(1,"control disabled\n");
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -834,7 +834,7 @@ bool D4CServer::enableSimulation()
     {
         if (!offlineMode)
         {
-            mutex.wait();
+            mutex.lock();
             simulationEnabled=true;
             simulationFirstStep=true;
             printMessage(1,"simulation enabled\n");
@@ -845,7 +845,7 @@ bool D4CServer::enableSimulation()
                 printMessage(2,"control gets automatically disabled\n");
             }
 
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -917,7 +917,7 @@ bool D4CServer::setPeriod(const int period)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         this->period=period;
         double Ts=(double)this->period/1000.0;
 
@@ -930,7 +930,7 @@ bool D4CServer::setPeriod(const int period)
             printMessage(1,"thread period changed to %d [ms]\n",period);
         }
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -973,7 +973,7 @@ bool D4CServer::setPointState(const Vector &x, const Vector &o,
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         copyVectorData(x,this->x);
         copyVectorData(o,this->x);
         copyVectorData(xdot,this->xdot);
@@ -987,7 +987,7 @@ bool D4CServer::setPointState(const Vector &x, const Vector &o,
         printMessage(1,"point state changed to x = %s; xdot = %s\n",
                      this->x.toString().c_str(),this->xdot.toString().c_str());
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -1003,7 +1003,7 @@ bool D4CServer::setPointOrientation(const Vector &o, const Vector &odot)
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         copyVectorData(o,this->x);
         copyVectorData(odot,this->xdot);
 
@@ -1013,7 +1013,7 @@ bool D4CServer::setPointOrientation(const Vector &o, const Vector &odot)
         printMessage(1,"point state changed to x = %s; xdot = %s\n",
                      this->x.toString().c_str(),this->xdot.toString().c_str());
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -1036,7 +1036,7 @@ bool D4CServer::setPointStateToTool()
             iCtrlActive->getTaskVelocities(xdot,odot);
             odot=0.0;
 
-            mutex.wait();
+            mutex.lock();
             copyVectorData(x,this->x);
             copyVectorData(o,this->x);
             copyVectorData(xdot,this->xdot);
@@ -1050,7 +1050,7 @@ bool D4CServer::setPointStateToTool()
             printMessage(1,"point state changed to x = %s; xdot = %s\n",
                          this->x.toString().c_str(),this->xdot.toString().c_str());
 
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -1081,7 +1081,7 @@ bool D4CServer::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
             }
             else
             {
-                mutex.wait();
+                mutex.lock();
                 toolFrame=axis2dcm(o);
                 toolFrame(0,3)=x[0];
                 toolFrame(1,3)=x[1];
@@ -1090,7 +1090,7 @@ bool D4CServer::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
                 invToolFrame=SE3inv(toolFrame);
                 printMessage(1,"attach tool frame = %s\n",toolFrame.toString().c_str());
 
-                mutex.post();
+                mutex.unlock();
                 return true;
             }
         }
@@ -1115,7 +1115,7 @@ bool D4CServer::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o)
     {
         if (!offlineMode)
         {
-            mutex.wait();
+            mutex.lock();
             x.resize(3);            
             x[0]=toolFrame(0,3);
             x[1]=toolFrame(1,3);
@@ -1124,7 +1124,7 @@ bool D4CServer::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o)
 
             printMessage(1,"tool frame currently attached is = %s\n",toolFrame.toString().c_str());
 
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -1148,10 +1148,10 @@ bool D4CServer::removeToolFrame()
     {
         if (!offlineMode)
         {
-            mutex.wait();
+            mutex.lock();
             toolFrame=invToolFrame=eye(4,4);
             printMessage(1,"tool frame removed\n");
-            mutex.post();
+            mutex.unlock();
             return true;
         }
         else
@@ -1753,9 +1753,9 @@ bool D4CServer::read(ConnectionReader &connection)
          {
              if (isOpen)
              {
-                 mutex.wait();
+                 mutex.lock();
                  Property state=prepareData();
-                 mutex.post();
+                 mutex.unlock();
 
                  Value val_state;
                  val_state.fromString(("("+string(state.toString().c_str())+")").c_str());
@@ -1943,7 +1943,7 @@ bool D4CServer::setActiveIF(const string &activeIF)
             {
                 if ((activeIF=="right") || (activeIF=="left"))
                 {
-                    mutex.wait();
+                    mutex.lock();
                     iCtrlActive->stopControl();
                     if (activeIF=="right")
                         iCtrlActive=iCtrlRight;
@@ -1953,7 +1953,7 @@ bool D4CServer::setActiveIF(const string &activeIF)
                     this->activeIF=activeIF;
                     printMessage(1,"active interface successfully set to %s\n",activeIF.c_str());
 
-                    mutex.post();
+                    mutex.unlock();
                     return true;
                 }
                 else
@@ -2173,7 +2173,7 @@ bool D4CServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 {
     if (isOpen)
     {
-        mutex.wait();
+        mutex.lock();
         printMessage(1,"request for trajectory simulation\n");
         Vector xdotOffline=xdot;
         Vector xOffline=x;
@@ -2196,7 +2196,7 @@ bool D4CServer::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
             trajOrien.push_back(getVectorOrien(xOffline));
         }       
 
-        mutex.post();
+        mutex.unlock();
         return true;
     }
     else
@@ -2278,7 +2278,7 @@ bool D4CServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
         trackerThread.setInfo(iCtrlActive,&trajPos,&trajOrien,trajTime);
 
         // lock the main run
-        mutex.wait();
+        mutex.lock();
 
         // run the tracker
         trackerThread.start();
@@ -2286,7 +2286,7 @@ bool D4CServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
         trackerThread.stop();
 
         // unlock the main run
-        mutex.post();
+        mutex.unlock();
 
         return true;
     }
@@ -2301,7 +2301,7 @@ bool D4CServer::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
 /************************************************************************/
 void D4CServer::run()
 {
-    mutex.wait();
+    mutex.lock();
 
     if (!offlineMode)
     {
@@ -2364,7 +2364,7 @@ void D4CServer::run()
         t0=Time::now();
     }
 
-    mutex.post();
+    mutex.unlock();
 }
 
 

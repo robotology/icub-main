@@ -164,13 +164,13 @@ protected:
     yarp::dev::IEncoders      *ienc;
     yarp::dev::IPidControl    *ipid;
 
-    yarp::os::Semaphore mutex;
-    yarp::os::Event     doneEvent;
-    yarp::sig::Vector   gamma;
-    yarp::sig::Vector   stiction;
-    yarp::os::Property  info;
-    yarp::sig::Vector   done;
-                              
+    yarp::os::Mutex    mutex;
+    yarp::os::Event    doneEvent;
+    yarp::sig::Vector  gamma;
+    yarp::sig::Vector  stiction;
+    yarp::os::Property info;
+    yarp::sig::Vector  done;
+
     AWLinEstimator   velEst;
     AWQuadEstimator  accEst;
     parallelPID     *pid;
@@ -358,9 +358,9 @@ protected:
     yarp::dev::Pid               pidOld;
     yarp::dev::Pid               pidNew;
 
-    yarp::os::Semaphore mutex;
-    yarp::os::Event     doneEvent;
-    yarp::os::Port      port;
+    yarp::os::Mutex mutex;
+    yarp::os::Event doneEvent;
+    yarp::os::Port  port;
 
     yarp::sig::Vector x0;
     yarp::sig::Vector meanParams;
