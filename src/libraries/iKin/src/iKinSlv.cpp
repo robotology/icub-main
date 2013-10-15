@@ -282,6 +282,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     // initialization
     slvName=_slvName;
     configured=false;
+    closing=false;
     closed=false;
     interrupting=false;
     verbosity=false;
@@ -445,17 +446,12 @@ void CartesianSolver::getFeedback(const bool wait)
 
     for (int i=0; i<prt->num; i++)
     {    
-        bool ok;
-
-        if (wait)
+        bool ok=enc[i]->getEncoders(fbTmp.data());
+        while (wait && !closing && !ok)
         {
-            while (!enc[i]->getEncoders(fbTmp.data()))
-                Time::delay(0.00025*getRate());     // wait for 1/4 of thread period
-
-            ok=true;
-        }
-        else
             ok=enc[i]->getEncoders(fbTmp.data());
+            Time::delay(0.00025*getRate()); // wait for 1/4 of thread period
+        }
 
         if (ok)
         {    
@@ -1468,6 +1464,8 @@ void CartesianSolver::close()
     if (closed)
         return;
 
+    closing=true;
+
     if (isRunning())
         stop();
 
@@ -1476,6 +1474,7 @@ void CartesianSolver::close()
         inPort->interrupt();
         inPort->close();
         delete inPort;
+        inPort=NULL;
     }
 
     if (outPort!=NULL)
@@ -1483,21 +1482,25 @@ void CartesianSolver::close()
         outPort->interrupt();
         outPort->close();
         delete outPort;
+        outPort=NULL;
     }
 
-    if (slv!=NULL)
-        delete slv;
-
-    if (clb!=NULL)
-        delete clb;
+    delete slv;
+    delete clb;
+    slv=NULL;
+    clb=NULL;
 
     for (size_t i=0; i<drv.size(); i++)
-        if (drv[i]!=NULL)
-            delete drv[i];
+    {
+        delete drv[i];
+        drv[i]=NULL;
+    }
 
     for (size_t i=0; i<rmp.size(); i++)
-        if (rmp[i]!=NULL)
-            delete[] rmp[i];
+    {
+        delete[] rmp[i];
+        rmp[i]=NULL;
+    }
 
     drv.clear();
     lim.clear();
@@ -1508,11 +1511,9 @@ void CartesianSolver::close()
     if (prt!=NULL)
     {
         delete prt->lmb;
-
-        if (prt->cns!=NULL)
-            delete prt->cns;
-
+        delete prt->cns;
         delete prt;
+        prt=NULL;
     }
 
     fprintf(stdout,"%s closed\n",slvName.c_str());

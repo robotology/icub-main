@@ -339,6 +339,7 @@ protected:
     unsigned int  ctrlPose;
     bool          fullDOF;
     bool          configured;
+    bool          closing;
     bool          closed;
     bool          interrupting;
     bool          verbosity;
