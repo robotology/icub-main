@@ -149,6 +149,12 @@ public:
         ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
     };
 
+    bool parsePosPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
+    bool parseTrqPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
+    bool parsePidsGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
+    bool parseImpedanceGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, ImpedanceParameters vals[]);
+    bool parseDebugGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, DebugParameters vals[]);
+
     bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
 
     bool fromConfig(yarp::os::Searchable &config);
@@ -610,27 +616,29 @@ class axisTorqueHelper
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public os::RateThread, 
             public IPidControlRaw, 
-            public IPositionControlRaw,
+            public IPositionControl2Raw,
+            public IPositionDirectRaw,
             public IControlCalibration2Raw,
-            public IVelocityControlRaw, 
+            public IVelocityControl2Raw,
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
             public IDebugInterfaceRaw,
-            public IControlLimitsRaw,
+            public IControlLimits2Raw,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
             public IOpenLoopControlRaw,
             public IControlModeRaw,
             public IPreciselyTimed,
-            public ImplementPositionControl<CanBusMotionControl, IPositionControl>,
-            public ImplementVelocityControl<CanBusMotionControl, IVelocityControl>,
+            public ImplementPositionControl2,
+            public ImplementPositionDirect,
+            public ImplementVelocityControl2,
             public ImplementPidControl<CanBusMotionControl, IPidControl>,
             public IEncodersTimedRaw,
             public ImplementEncodersTimed,
             public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
             public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
-            public ImplementControlLimits<CanBusMotionControl, IControlLimits>,
+            public ImplementControlLimits2,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
             public ImplementOpenLoopControl,
@@ -934,14 +942,40 @@ public:
     /////// Limits
     virtual bool setLimitsRaw(int axis, double min, double max);
     virtual bool getLimitsRaw(int axis, double *min, double *max);
+    // Limits 2
+    bool setVelLimitsRaw(int axis, double min, double max);
+    bool getVelLimitsRaw(int axis, double *min, double *max);
 
     /////// IPreciselyTimed interface
     virtual yarp::os::Stamp getLastInputStamp();
+
+
+    // Position Control2 Interface
+    virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
+    virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas);
+    virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags);
+    virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds);
+    virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+    virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
+    virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+    virtual bool stopRaw(const int n_joint, const int *joints);
+
+    // IVelocityControl2
+    bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+    bool setVelPidRaw(int j, const Pid &pid);
+    bool setVelPidsRaw(const Pid *pids);
+    bool getVelPidRaw(int j, Pid *pid);
+    bool getVelPidsRaw(Pid *pids);
 
     // Firmware version
     bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
     // Torque measurement selection
     bool setTorqueSource (int axis, char board_id, char board_chan );
+
+    // PositionDirect Interface
+    bool setPositionRaw(int j, double ref);
+    bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+    bool setPositionsRaw(const double *refs);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);

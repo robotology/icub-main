@@ -68,6 +68,9 @@ using namespace yarp::sig;
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+
+enum MAX_VALUES_FOR_ALLOCATION_TABLE_TMP_DATA { MAX_DEVICES=5, MAX_JOINTS_ON_DEVICE=32};
+
 /* the control command message type
 * head is a Bottle which contains the specification of the message type
 * body is a Vector which move the robot accordingly
@@ -85,17 +88,20 @@ protected:
     ControlBoardWrapper2   *caller;
     yarp::dev::IPidControl          *pid;
     yarp::dev::IPositionControl     *pos;
+    yarp::dev::IPositionControl2    *pos2;
     yarp::dev::IVelocityControl     *vel;
+    yarp::dev::IVelocityControl2    *vel2;
     yarp::dev::IEncodersTimed       *enc;
     yarp::dev::IAmplifierControl    *amp;
-    yarp::dev::IControlLimits       *lim;
+    yarp::dev::IControlLimits2      *lim2;
     yarp::dev::ITorqueControl       *torque;
     yarp::dev::IControlMode         *iMode;
     yarp::dev::IDebugInterface      *iDbg;
     yarp::dev::IAxisInfo            *info;
-    yarp::dev::IControlCalibration2   *ical2;
+    yarp::dev::IControlCalibration2 *ical2;
     yarp::dev::IOpenLoopControl     *iOpenLoop;
     yarp::dev::IImpedanceControl    *iImpedance;
+    //yarp::dev::IPositionDirect      *iPosDir; //unused, it's streaming
     int controlledJoints;
     Vector vect;
 
@@ -135,9 +141,12 @@ public:
 */
 class ImplementCallbackHelper2 : public TypedReaderCallback<CommandMessage> {
 protected:
-    IPositionControl *pos;
-    IVelocityControl *vel;
-    IOpenLoopControl *iOpenLoop;
+    IPositionControl  *pos;
+    IPositionControl2 *pos2;
+    IPositionDirect   *posDir;
+    IVelocityControl  *vel;
+    IVelocityControl2 *vel2;
+    IOpenLoopControl  *iOpenLoop;
     int controlledAxes;
 
 public:
@@ -167,24 +176,27 @@ public:
     bool configuredF;
     bool attachedF;
 
-    PolyDriver *subdevice;
-    IPidControl       *pid;
-    IPositionControl  *pos;
-    IVelocityControl  *vel;
-    IEncodersTimed *enc;
-    IAmplifierControl *amp;
-    IControlLimits    *lim;
-    IControlCalibration *calib;
-    IControlCalibration2 *calib2;
-    IPreciselyTimed      *iTimed;
-    ITorqueControl       *iTorque;
-    IImpedanceControl    *iImpedance;
-    IOpenLoopControl     *iOpenLoop;
-    IDebugInterface      *iDbg;
-    IControlMode         *iMode;
-    IAxisInfo          *info;
+    PolyDriver            *subdevice;
+    IPidControl           *pid;
+    IPositionControl      *pos;
+    IPositionControl2     *pos2;
+    IVelocityControl      *vel;
+    IVelocityControl2     *vel2;
+    IEncodersTimed        *enc;
+    IAmplifierControl     *amp;
+    IControlLimits2       *lim2;
+    IControlCalibration   *calib;
+    IControlCalibration2  *calib2;
+    IPreciselyTimed       *iTimed;
+    ITorqueControl        *iTorque;
+    IImpedanceControl     *iImpedance;
+    IOpenLoopControl      *iOpenLoop;
+    IDebugInterface       *iDbg;
+    IControlMode          *iMode;
+    IAxisInfo             *info;
+    IPositionDirect       *posDir;
 
-    yarp::sig::Vector encoders;
+    yarp::sig::Vector subDev_encoders;
     yarp::sig::Vector encodersTimes;
 
     SubDevice();
@@ -196,11 +208,17 @@ public:
 
     inline void refreshEncoders()
     {
-        enc->getEncodersTimed(encoders.data(), encodersTimes.data());
+    	int idx = 0;
+    	double tmp = 0;
+        for(int j=base, idx=0; j<(base+axes); j++, idx++)
+        {
+            enc->getEncoderTimed(j, &subDev_encoders[idx], &encodersTimes[idx]);
+        }
     }
 
     bool isAttached()
     { return attachedF; }
+
 };
 
 typedef std::vector<SubDevice> SubDeviceVector;
@@ -227,7 +245,6 @@ public:
     }
 };
 
-
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
 /*
@@ -239,11 +256,13 @@ public:
 class ControlBoardWrapper2 : public DeviceDriver,
                              public RateThread,
                              public IPidControl,
-                             public IPositionControl,
-                             public IVelocityControl,
+                             public IPositionControl2,
+                             public IPositionDirect,
+//                             public IVelocityControl,
+                             public IVelocityControl2,
                              public IEncodersTimed,
                              public IAmplifierControl,
-                             public IControlLimits,
+                             public IControlLimits2,
                              public IDebugInterface,
                              public IControlCalibration,
                              public IControlCalibration2,
@@ -261,6 +280,8 @@ private:
 
     WrappedDevice device;
 
+    bool owned;
+
     Port state_p;   // out port to read the state
     Port control_p; // in port to command the robot
     Port rpc_p;     // RPC to configure the robot
@@ -277,7 +298,7 @@ private:
     // for new interface
     PortReaderBuffer<Bottle> command_buffer;
 
-    Vector            encoders;
+    Vector            CBW_encoders;
     std::string       partName;
 
     int               controlledJoints;
@@ -299,12 +320,20 @@ private:
         return true;
     }
 
+    // Default usage
+    // Open the wrapper only, the attach method needs to be called before using it
+    bool openDeferredAttach(Property& prop);
+
+    // For the simulator, if a subdevice parameter is given to the wrapper, it will
+    // open it and and attach to it immediatly.
+    PolyDriver *subDeviceOwned;
+    bool openAndAttachSubDevice(Property& prop);
 
 public:
     /**
     * Constructor.
     */
-    ControlBoardWrapper2() : RateThread(20), callback_impl(this), command_reader(this)
+    ControlBoardWrapper2() : RateThread(20), callback_impl(this), command_reader(this), control_buffer(4)
     {
         ////YARP_TRACE(Logger::get(),"ControlBoardWrapper2::ControlBoardWrapper2()", Logger::get().log_files.f3);
         controlledJoints = 0;
@@ -345,11 +374,11 @@ public:
     * Open the device driver.
     * @param prop is a Searchable object which contains the parameters.
     * Allowed parameters are:
-    * - verbose or v to print diagnostic information while running.
-    * - subdevice to specify the name of the wrapped device.
-    * - name to specify the predix of the port names.
-    * - calibrator to specify the name of the calibrator object (created through a PolyDriver).
-    * and all parameters required by the wrapped device driver.
+    * - verbose or v to print diagnostic information while running..
+    * - name to specify the prefix of the port names.
+    * - subdevice [optional] if specified, the openAndAttachSubDevice will be
+    *             called, otherwise openDeferredAttach is called.
+    * and all parameters required by the wrapper.
     */
     virtual bool open(Searchable& prop);
 
@@ -692,7 +721,6 @@ public:
         SubDevice *p=device.getSubdevice(subIndex);
         if (!p)
             return false;
-
         if (p->pid)
         {
             return p->pid->getReference(off+base, ref);
@@ -925,25 +953,117 @@ public:
     * @param refs array, new reference points.
     * @return true/false on success/failure
     */
-    virtual bool positionMove(const double *refs) {
-        bool ret=true;
+    virtual bool positionMove(const double *refs)
+    {
+        bool ret = true;
+        int j_wrap = 0;         // index of the wrapper joint
 
-        for(int l=0;l<controlledJoints;l++)
+        int nDev = device.subdevices.size();
+        for(unsigned int subDev_idx=0; subDev_idx < device.subdevices.size(); subDev_idx++)
         {
-            int off=device.lut[l].offset;
-            int subIndex=device.lut[l].deviceEntry;
-
+            int subIndex=device.lut[j_wrap].deviceEntry;
             SubDevice *p=device.getSubdevice(subIndex);
-            if (!p)
+
+            int wrapped_joints=(p->top - p->base) + 1;
+            int *joints = new int[wrapped_joints];
+
+            if(!p)
                 return false;
 
-            if (p->pos)
+            if(p->pos2)   // Position Control 2
             {
-                ret=ret&&p->pos->positionMove(off+base, refs[l]);
+                // verione comandi su subset di giunti
+                for(int j_dev = 0; j_dev < wrapped_joints; j_dev++)
+                {
+                    joints[j_dev] = p->base + j_dev;  // for all joints is equivalent to add offset term
+                }
+
+                ret = ret && p->pos2->positionMove(wrapped_joints, joints, &refs[j_wrap]);
+                j_wrap+=wrapped_joints;
             }
-            else
-                ret=false;
+            else   // Classic Position Control
+            {
+                if(p->pos)
+                {
+
+                    for(int j_dev = 0; j_dev < wrapped_joints; j_dev++, j_wrap++)
+                    {
+                        int off=device.lut[j_wrap].offset;
+                        ret=ret && p->pos->positionMove(p->base+off, refs[j_wrap]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+
+            if(joints!=0)
+            { delete [] joints;
+              joints = 0;}
         }
+
+        return ret;
+    }
+
+    /** Set new reference point for a subset of axis.
+     * @param joints pointer to the array of joint numbers
+     * @param refs   pointer to the array specifing the new reference points
+     * @return true/false on success/failure
+     */
+    virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
+    {
+        bool ret = true;
+
+    /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+     * then it is optimizable by instantiating the table once and for all during the creation of the class.
+     * TODO check if concurrency problems are real!!
+     */
+
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double   XRefs[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice   *ps[MAX_DEVICES];
+
+       for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+
+       // Create a map of joints for each subDevice
+       int subIndex = 0;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           XRefs[subIndex][X_idx[subIndex]] = refs[j];
+           X_idx[subIndex]++;
+       }
+
+       for(subIndex=0; subIndex<nDev; subIndex++)
+       {
+           if(ps[subIndex]->pos2)   // Position Control 2
+           {
+               ret= ret && ps[subIndex]->pos2->positionMove(X_idx[subIndex], XJoints[subIndex], XRefs[subIndex]);
+           }
+           else   // Classic Position Control
+           {
+               if(ps[subIndex]->pos)
+               {
+                   for(int i = 0; i < X_idx[subIndex]; i++)
+                   {
+                       ret=ret && ps[subIndex]->pos->positionMove(XJoints[subIndex][i], XRefs[subIndex][i]);
+                   }
+               }
+               else
+               {
+                   ret=false;
+               }
+           }
+       }
         return ret;
     }
 
@@ -992,6 +1112,67 @@ public:
             else
                 ret=false;
         }
+        return ret;
+    }
+
+    /** Set relative position for a subset of joints.
+     * @param joints pointer to the array of joint numbers
+     * @param deltas pointer to the array of relative commands
+     * @return true/false on success/failure
+     */
+    virtual bool relativeMove(const int n_joints, const int *joints, const double *deltas)
+    {
+        bool ret = true;
+
+    /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+     * then it is optimizable by instantiating the table once and for all during the creation of the class.
+     * TODO check this!!
+     */
+
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double   XRefs[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice   *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+
+       // Create a map of joints for each subDevice
+       int subIndex = 0;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           XRefs[subIndex][X_idx[subIndex]] = deltas[j];
+           X_idx[subIndex]++;
+       }
+
+       for(subIndex=0; subIndex<nDev; subIndex++)
+       {
+           if(ps[subIndex]->pos2)   // Position Control 2
+           {
+               ret= ret && ps[subIndex]->pos2->relativeMove(X_idx[subIndex], XJoints[subIndex], XRefs[subIndex]);
+           }
+           else   // Classic Position Control
+           {
+               if(ps[subIndex]->pos)
+               {
+                   for(int i = 0; i < X_idx[subIndex]; i++)
+                   {
+                       ret=ret && ps[subIndex]->pos->relativeMove(XJoints[subIndex][i], XRefs[subIndex][i]);
+                   }
+               }
+               else
+               {
+                   ret=false;
+               }
+           }
+       }
         return ret;
     }
 
@@ -1048,6 +1229,71 @@ public:
         return ret;
     }
 
+
+    /** Check if the current trajectory is terminated. Non blocking.
+     * @param joints pointer to the array of joint numbers
+     * @param flags  pointer to the array that will store the actual value of the checkMotionDone
+     * @return true/false if network communication went well.
+     */
+    virtual bool checkMotionDone(const int n_joints, const int *joints, bool *flags)
+    {
+        bool ret = true;
+
+    /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+     * then it is optimizable by instantiating the table once and for all during the creation of the class.
+     * TODO check this!!
+     */
+
+        int    nDev   = device.subdevices.size();
+        bool   XFlags = true;
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice   *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+
+       // Create a map of joints for each subDevice
+       int subIndex;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           int tmp1= X_idx[subIndex];
+           int tmp2 = joints[j];
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           X_idx[subIndex]++;
+       }
+
+       for(subIndex=0; subIndex<nDev; subIndex++)
+       {
+           if(ps[subIndex]->pos2)   // Position Control 2
+           {
+               ret= ret && ps[subIndex]->pos2->checkMotionDone(X_idx[subIndex], XJoints[subIndex], &XFlags);
+                *flags = flags && XFlags;
+           }
+           else   // Classic Position Control
+           {
+               if(ps[subIndex]->pos)
+               {
+                   for(int i = 0; i < X_idx[subIndex]; i++)
+                   {
+                       ret=ret && ps[subIndex]->pos->checkMotionDone(XJoints[subIndex][i], &XFlags);
+                        *flags = flags && XFlags;
+                   }
+               }
+               else
+               {
+                   ret=false;
+               }
+           }
+       }
+        return ret;
+    }
+
     /** Set reference speed for a joint, this is the speed used during the
     * interpolation of the trajectory.
     * @param j joint number
@@ -1074,25 +1320,116 @@ public:
     * @param spds pointer to the array of speed values.
     * @return true/false upon success/failure
     */
-    virtual bool setRefSpeeds(const double *spds) {
-        bool ret=true;
+    virtual bool setRefSpeeds(const double *spds)
+    {
+        bool ret = true;
+        int j_wrap = 0;         // index of the wrapper joint
 
-        for(int l=0;l<controlledJoints;l++)
+        int nDev = device.subdevices.size();
+        for(unsigned int subDev_idx=0; subDev_idx < device.subdevices.size(); subDev_idx++)
         {
-            int off=device.lut[l].offset;
-            int subIndex=device.lut[l].deviceEntry;
+            SubDevice *p=device.getSubdevice(subDev_idx);
 
-            SubDevice *p=device.getSubdevice(subIndex);
-            if (!p)
+            if(!p)
                 return false;
 
-            if (p->pos)
+            int wrapped_joints=(p->top - p->base) + 1;
+            int *joints = new int[wrapped_joints];
+
+            if(p->pos2)   // Position Control 2
             {
-                ret=ret&&p->pos->setRefSpeed(off+base, spds[l]);
+                // verione comandi su subset di giunti
+                for(int j_dev = 0; j_dev < wrapped_joints; j_dev++)
+                {
+                    joints[j_dev] = p->base + j_dev;
+                }
+
+                p->pos2->setRefSpeeds(wrapped_joints, joints, &spds[j_wrap]);
+                j_wrap += wrapped_joints;
             }
-            else
-                ret=false;
+            else   // Classic Position Control
+            {
+                if(p->pos)
+                {
+                    for(int j_dev = 0; j_dev < wrapped_joints; j_dev++, j_wrap++)
+                    {
+                        int off=device.lut[j_wrap].offset;
+                        ret=ret && p->pos->setRefSpeed(p->base+off, spds[j_wrap]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+
+            if(joints!=0)
+            { delete [] joints;
+              joints = 0;}
         }
+
+        return ret;
+    }
+
+
+    /** Set reference speed on all joints. These values are used during the
+     * interpolation of the trajectory.
+     * @param joints pointer to the array of joint numbers
+     * @param spds   pointer to the array with speed values.
+     * @return true/false upon success/failure
+     */
+    virtual bool setRefSpeeds(const int n_joints, const int *joints, const double *spds)
+    {
+        /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check this!!
+         */
+
+        bool ret = true;
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double   XSpeds[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice   *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+
+       // Create a map of joints for each subDevice
+       int subIndex = 0;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           XSpeds[subIndex][X_idx[subIndex]] = spds[j];
+           X_idx[subIndex]++;
+       }
+
+       for(subIndex=0; subIndex<nDev; subIndex++)
+       {
+           if(ps[subIndex]->pos2)   // Position Control 2
+           {
+               ret= ret && ps[subIndex]->pos2->setRefSpeeds(X_idx[subIndex], XJoints[subIndex], XSpeds[subIndex]);
+           }
+           else   // Classic Position Control
+           {
+               if(ps[subIndex]->pos)
+               {
+                   for(int i = 0; i < X_idx[subIndex]; i++)
+                   {
+                       ret=ret && ps[subIndex]->pos->setRefSpeed(XJoints[subIndex][i], XSpeds[subIndex][i]);
+                   }
+               }
+               else
+               {
+                   ret=false;
+               }
+           }
+       }
         return ret;
     }
 
@@ -1123,35 +1460,125 @@ public:
     * @param accs pointer to the array of acceleration values
     * @return true/false upon success/failure
     */
-    virtual bool setRefAccelerations(const double *accs) {
-        bool ret=true;
+    virtual bool setRefAccelerations(const double *accs)
+    {
+        bool ret = true;
+        int j_wrap = 0;    // index of the joint from the wrapper side (useful if wrapper joins 2 subdevices)
 
-        for(int l=0;l<controlledJoints;l++)
+        // for all subdevices
+        for(unsigned int subDev_idx=0; subDev_idx < device.subdevices.size(); subDev_idx++)
         {
-            int off=device.lut[l].offset;
-            int subIndex=device.lut[l].deviceEntry;
+            SubDevice *p=device.getSubdevice(subDev_idx);
 
-            SubDevice *p=device.getSubdevice(subIndex);
-
-            if (!p)
+            if(!p)
                 return false;
 
-            if (p->pos)
+            int wrapped_joints=(p->top - p->base) + 1;
+            int *joints = new int[wrapped_joints];  // to be defined once and for all?
+
+            if(p->pos2)   // Position Control 2
             {
-                ret=ret&&p->pos->setRefAcceleration(off+base, accs[l]);
+                // verione comandi su subset di giunti
+                for(int j_dev = 0; j_dev < wrapped_joints; j_dev++)
+                {
+                    joints[j_dev] = p->base + j_dev;
+                }
+
+                p->pos2->setRefAccelerations(wrapped_joints, joints, &accs[j_wrap]);
+                j_wrap += wrapped_joints;
             }
-            else
-                ret=false;
+            else        // Classic Position Control
+            {
+                if(p->pos)
+                {
+                    for(int j_dev = 0; j_dev < wrapped_joints; j_dev++, j_wrap++)
+                    {
+                        int off=device.lut[j_wrap].offset;
+                        ret=ret && p->pos->setRefAcceleration(p->base+off, accs[j_wrap]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+
+            if(joints!=0)
+            { delete [] joints;
+            joints = 0;}
         }
+
         return ret;
     }
 
+    /** Set reference acceleration on all joints. This is the valure that is
+     * used during the generation of the trajectory.
+     * @param joints pointer to the array of joint numbers
+     * @param accs   pointer to the array with acceleration values
+     * @return true/false upon success/failure
+     */
+    virtual bool setRefAccelerations(const int n_joints, const int *joints, const double *accs)
+    {
+        /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check this!!
+         */
+
+        bool ret = true;
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double   XAccs[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice  *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+
+       // Create a map of joints for each subDevice
+       int subIndex = 0;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           XAccs[subIndex][X_idx[subIndex]] = accs[j];
+           X_idx[subIndex]++;
+       }
+
+       for(subIndex=0; subIndex<nDev; subIndex++)
+       {
+           if(ps[subIndex]->pos2)   // Position Control 2
+           {
+               ret= ret && ps[subIndex]->pos2->setRefAccelerations(X_idx[subIndex], XJoints[subIndex], XAccs[subIndex]);
+           }
+           else   // Classic Position Control
+           {
+               if(ps[subIndex]->pos)
+               {
+                   for(int i = 0; i < X_idx[subIndex]; i++)
+                   {
+                       ret=ret && ps[subIndex]->pos->setRefAcceleration(XJoints[subIndex][i], XAccs[subIndex][i]);
+                   }
+               }
+               else
+               {
+                   ret=false;
+               }
+           }
+       }
+        return ret;
+    }
+
+
     /** Get reference speed for a joint. Returns the speed used to
-    * generate the trajectory profile.
-    * @param j joint number
-    * @param ref pointer to storage for the return value
-    * @return true/false on success or failure
-    */
+     * generate the trajectory profile.
+     * @param j joint number
+     * @param ref pointer to storage for the return value
+     * @return true/false on success or failure
+     */
     virtual bool getRefSpeed(int j, double *ref) {
         int off=device.lut[j].offset;
         int subIndex=device.lut[j].deviceEntry;
@@ -1168,6 +1595,7 @@ public:
         *ref=0;
         return false;
     }
+
 
     /** Get reference speed of all joints. These are the  values used during the
     * interpolation of the trajectory.
@@ -1197,6 +1625,88 @@ public:
         return ret;
     }
 
+
+    /** Get reference speed of all joints. These are the  values used during the
+     * interpolation of the trajectory.
+     * @param joints pointer to the array of joint numbers
+     * @param spds   pointer to the array that will store the speed values.
+     * @return true/false upon success/failure
+     */
+    virtual bool getRefSpeeds(const int n_joints, const int *joints, double *spds)
+    {
+        /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check this!!
+         */
+
+        bool ret = true;
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double  XSpeds[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice  *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+        // Create a map of joints for each subDevice
+       int subIndex = 0;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           X_idx[subIndex]++;
+       }
+
+        for(subIndex=0; subIndex<nDev; subIndex++)
+        {
+            SubDevice *p=device.getSubdevice(subIndex);
+            if(ps[subIndex]->pos2)   // Position Control 2
+            {
+                ret= ret && p->pos2->getRefSpeeds(X_idx[subIndex], XJoints[subIndex], &XSpeds[subIndex][0]);
+            }
+            else   // Classic Position Control
+            {
+                if(ps[subIndex]->pos)
+                {
+                    for(int i = 0; i < X_idx[subIndex]; i++)
+                    {
+                        ret=ret && ps[subIndex]->pos->getRefSpeed(XJoints[subIndex][i], &XSpeds[subIndex][i]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+        }
+
+        if(ret)
+        {
+            // ReMix values by user expectations
+            for(int i=0; i<nDev; i++)
+                X_idx[i]=0;       // reset index
+
+            for(int j=0; j<n_joints; j++)
+            {
+                subIndex = device.lut[joints[j]].deviceEntry;
+                spds[j] = XSpeds[subIndex][X_idx[subIndex]];
+                X_idx[subIndex]++;
+            }
+        }
+        else
+        {
+            for(int j=0; j<n_joints; j++)
+            {
+                spds[j] = 0;
+            }
+        }
+        return ret;
+    }
+
     /** Get reference acceleration for a joint. Returns the acceleration used to
     * generate the trajectory profile.
     * @param j joint number
@@ -1219,6 +1729,7 @@ public:
         *acc=0;
         return false;
     }
+
 
     /** Get reference acceleration of all joints. These are the values used during the
     * interpolation of the trajectory.
@@ -1248,6 +1759,92 @@ public:
         return ret;
     }
 
+
+    /** Get reference acceleration for a joint. Returns the acceleration used to
+     * generate the trajectory profile.
+     * @param joints pointer to the array of joint numbers
+     * @param accs   pointer to the array that will store the acceleration values
+     * @return true/false on success/failure
+     */
+    virtual bool getRefAccelerations(const int n_joints, const int *joints, double *accs)
+    {
+        /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check this!!
+         */
+
+        bool ret = true;
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double  XAccs[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice  *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+        // Create a map of joints for each subDevice
+        int subIndex = 0;
+        for(int j=0; j<n_joints; j++)
+        {
+            subIndex = device.lut[joints[j]].deviceEntry;
+            XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+            X_idx[subIndex]++;
+        }
+
+        for(subIndex=0; subIndex<nDev; subIndex++)
+        {
+            SubDevice *p=device.getSubdevice(subIndex);
+            if(p->pos2)   // Position Control 2
+            {
+                ret= ret && p->pos2->getRefAccelerations(X_idx[subIndex], XJoints[subIndex], &XAccs[subIndex][0]);
+            }
+            else   // Classic Position Control
+            {
+                if(p->pos)
+                {
+                    for(int i = 0; i < X_idx[subIndex]; i++)
+                    {
+                        int tmp_jDev = XJoints[subIndex][i];
+                        int off=device.lut[tmp_jDev].offset;
+                        ret=ret && p->pos->getRefAcceleration(p->base+off, &XAccs[subIndex][i]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+        }
+
+        if(ret)
+        {
+            // ReMix values by user expectations
+            for(int i=0; i<nDev; i++)
+                X_idx[i]=0;       // reset index
+
+            subIndex=0;
+            for(int j=0; j<n_joints; j++)
+            {
+                subIndex = device.lut[joints[j]].deviceEntry;
+                accs[j] = XAccs[subIndex][X_idx[subIndex]];
+                X_idx[subIndex]++;
+            }
+        }
+        else
+        {
+            for(int j=0; j<n_joints; j++)
+            {
+                accs[j] = 0;
+            }
+        }
+
+        return ret;
+    }
+
     /** Stop motion, single joint
     * @param j joint number
     * @return true/false on success/failure
@@ -1267,6 +1864,7 @@ public:
         }
         return false;
     }
+
 
     /**
     * Stop motion, multiple joints
@@ -1292,6 +1890,64 @@ public:
             else
                 ret=false;
         }
+        return ret;
+    }
+
+
+    /** Stop motion for subset of joints
+     * @param joints pointer to the array of joint numbers
+     * @return true/false on success/failure
+     */
+    virtual bool stop(const int n_joints, const int *joints)
+    {
+     /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check this!!
+         */
+
+        bool ret = true;
+        int    nDev   = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice  *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+       {
+           X_idx[i]=0;
+           ps[i]=device.getSubdevice(i);
+       }
+
+
+       // Create a map of joints for each subDevice
+       int subIndex = 0;
+       for(int j=0; j<n_joints; j++)
+       {
+           subIndex = device.lut[joints[j]].deviceEntry;
+           XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+           X_idx[subIndex]++;
+       }
+
+       for(subIndex=0; subIndex<nDev; subIndex++)
+       {
+           if(ps[subIndex]->pos2)   // Position Control 2
+           {
+               ret= ret && ps[subIndex]->pos2->stop(X_idx[subIndex], XJoints[subIndex]);
+           }
+           else   // Classic Position Control
+           {
+               if(ps[subIndex]->pos)
+               {
+                   for(int i = 0; i < X_idx[subIndex]; i++)
+                   {
+                       ret=ret && ps[subIndex]->pos->stop(XJoints[subIndex][i]);
+                   }
+               }
+               else
+               {
+                   ret=false;
+               }
+           }
+       }
         return ret;
     }
 
@@ -1324,26 +1980,54 @@ public:
     * @param v is a vector of double representing the requested speed.
     * @return true/false on success/failure.
     */
-    virtual bool velocityMove(const double *v) {
-        bool ret=true;
+    virtual bool velocityMove(const double *v)
+    {
+        bool ret = true;
+        int j_wrap = 0;         // index of the wrapper joint
 
-        for(int l=0;l<controlledJoints;l++)
+        int nDev = device.subdevices.size();
+        for(unsigned int subDev_idx=0; subDev_idx < device.subdevices.size(); subDev_idx++)
         {
-            int off=device.lut[l].offset;
-            int subIndex=device.lut[l].deviceEntry;
+            SubDevice *p=device.getSubdevice(subDev_idx);
 
-            SubDevice *p=device.getSubdevice(subIndex);
-
-            if (!p)
+            if(!p)
                 return false;
 
-            if (p->vel)
+            int wrapped_joints=(p->top - p->base) + 1;
+            int *joints = new int[wrapped_joints];
+
+            if(p->vel2)   // Velocity Control 2
             {
-                ret=ret&&p->vel->velocityMove(off+base, v[l]);
+                // verione comandi su subset di giunti
+                for(int j_dev = 0; j_dev < wrapped_joints; j_dev++)
+                {
+                    joints[j_dev] = p->base + j_dev;
+                }
+
+                ret = ret && p->vel2->velocityMove(wrapped_joints, joints, &v[j_wrap]);
+                j_wrap += wrapped_joints;
             }
-            else
-                ret=false;
+            else   // Classic Position Control
+            {
+                if(p->vel)
+                {
+                    for(int j_dev = 0; j_dev < wrapped_joints; j_dev++, j_wrap++)
+                    {
+                        int off=device.lut[j_wrap].offset;
+                        ret=ret && p->vel->velocityMove(p->base+off, v[j_wrap]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+
+            if(joints!=0)
+            { delete [] joints;
+              joints = 0;}
         }
+
         return ret;
     }
 
@@ -1832,9 +2516,9 @@ public:
         if (!p)
             return false;
 
-        if (p->lim)
+        if (p->lim2)
         {
-            return p->lim->setLimits(off+base,min, max);
+            return p->lim2->setLimits(off+base,min, max);
         }
         return false;
     }
@@ -1852,21 +2536,70 @@ public:
 
         SubDevice *p=device.getSubdevice(subIndex);
         if (!p)
-            {
-                *min=0.0;
-                *max=0.0;
-                return false;
-            }
+        {
+            *min=0.0;
+            *max=0.0;
+            return false;
+        }
 
-        if (p->lim)
-            {
-                return p->lim->getLimits(off+base,min, max);
-            }
+        if (p->lim2)
+        {
+            return p->lim2->getLimits(off+base,min, max);
+        }
         *min=0.0;
         *max=0.0;
         return false;
     }
 
+    /**
+    * Set the software velocity limits for a particular axis, the behavior of the
+    * control card when these limits are exceeded, depends on the implementation.
+    * @param axis joint number
+    * @param min the value of the lower limit
+    * @param max the value of the upper limit
+    * @return true or false on success or failure
+    */
+    virtual bool setVelLimits(int j, double min, double max) {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (!p->lim2)
+        {
+            return false;
+        }
+        return p->lim2->setVelLimits(off+base,min, max);
+    }
+
+    /**
+    * Get the software velocity limits for a particular axis.
+    * @param axis joint number
+    * @param min pointer to store the value of the lower limit
+    * @param max pointer to store the value of the upper limit
+    * @return true if everything goes fine, false if something bad happens
+    */
+    virtual bool getVelLimits(int j, double *min, double *max) {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        *min=0.0;
+        *max=0.0;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+        {
+            return false;
+        }
+
+        if(!p->lim2)
+        {
+            return false;
+        }
+        return p->lim2->getVelLimits(off+base,min, max);
+    }
 
     /* IControlCalibration */
 
@@ -2950,10 +3683,234 @@ public:
         return ret;
     }
 
+    virtual bool setPosition(int j, double ref)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *p=device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        if (p->posDir)
+        {
+            return p->posDir->setPosition(off+base, ref);
+        }
+
+        return false;
+    }
+
+    virtual bool setPositions(const int n_joints, const int *joints, double *dpos)
+    {
+        bool ret = true;
+
+        /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check if concurrency problems are real!!
+         */
+
+        int    nDev  = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double   XRefs[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice  *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+        {
+            X_idx[i]=0;
+            ps[i]=device.getSubdevice(i);
+        }
+
+
+        // Create a map of joints for each subDevice
+        int subIndex = 0;
+        for(int j=0; j<n_joints; j++)
+        {
+            subIndex = device.lut[joints[j]].deviceEntry;
+            XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+            XRefs[subIndex][X_idx[subIndex]] = dpos[j];
+            X_idx[subIndex]++;
+        }
+
+        for(subIndex=0; subIndex<nDev; subIndex++)
+        {
+            if(ps[subIndex]->posDir)
+            {
+                ret= ret && ps[subIndex]->posDir->setPositions(X_idx[subIndex], XJoints[subIndex], XRefs[subIndex]);
+            }
+            else
+            {
+                ret=false;
+            }
+        }
+        return ret;
+    }
+
+    virtual bool setPositions(const double *refs)
+    {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->posDir)
+            {
+                ret = p->posDir->setPosition(off+base, refs[l]) && ret;
+            }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
     virtual Stamp getLastInputStamp() {
         timeMutex.wait();
         Stamp ret=time;
         timeMutex.post();
+        return ret;
+    }
+
+    //
+    // IVelocityControl2 Interface
+    //
+    virtual bool velocityMove(const int n_joints, const int *joints, const double *spds)
+    {
+        bool ret = true;
+
+        /* This table is created here each time to avoid concurrency problems... if this shall not be the case,
+         * then it is optimizable by instantiating the table once and for all during the creation of the class.
+         * TODO check if concurrency problems are real!!
+         */
+
+        int    nDev  = device.subdevices.size();
+        int    XJoints[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        double   XRefs[MAX_DEVICES][MAX_JOINTS_ON_DEVICE];
+        int      X_idx[MAX_DEVICES];
+        SubDevice  *ps[MAX_DEVICES];
+
+        for(int i=0; i<nDev; i++)
+        {
+            X_idx[i]=0;
+            ps[i]=device.getSubdevice(i);
+        }
+
+
+        // Create a map of joints for each subDevice
+        int subIndex = 0;
+        for(int j=0; j<n_joints; j++)
+        {
+            subIndex = device.lut[joints[j]].deviceEntry;
+            XJoints[subIndex][X_idx[subIndex]] = device.lut[joints[j]].offset + ps[subIndex]->base;
+            XRefs[subIndex][X_idx[subIndex]] = spds[j];
+            X_idx[subIndex]++;
+        }
+
+        for(subIndex=0; subIndex<nDev; subIndex++)
+        {
+            if(ps[subIndex]->vel2)   // Velocity Control 2
+            {
+                ret= ret && ps[subIndex]->vel2->velocityMove(X_idx[subIndex], XJoints[subIndex], XRefs[subIndex]);
+            }
+            else   // Classic Velocity Control
+            {
+                if(ps[subIndex]->vel)
+                {
+                    for(int i = 0; i < X_idx[subIndex]; i++)
+                    {
+                        ret=ret && ps[subIndex]->vel->velocityMove(XJoints[subIndex][i], XRefs[subIndex][i]);
+                    }
+                }
+                else
+                {
+                    ret=false;
+                }
+            }
+        }
+        return ret;
+    }
+
+    virtual bool setVelPid(int j, const Pid &pid)
+    {
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *s=device.getSubdevice(subIndex);
+        if (!s)
+            return false;
+
+        if (s->vel2)
+        {
+            return s->vel2->setVelPid(off+base, pid);
+        }
+        return false;
+    }
+
+    virtual bool setVelPids(const Pid *pids)
+    {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->vel2)
+            {
+                ret=ret&&p->vel2->setVelPid(off+base, pids[l]);
+            }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
+    virtual bool getVelPid(int j, Pid *pid)
+    {
+        //#warning "check for max number of joints!?!?!"
+        int off=device.lut[j].offset;
+        int subIndex=device.lut[j].deviceEntry;
+
+        SubDevice *s=device.getSubdevice(subIndex);
+        if (!s)
+            return false;
+
+        if (s->vel2)
+        {
+            return s->vel2->getVelPid(off+base, pid);
+        }
+        return false;
+    }
+
+    virtual bool getVelPids(Pid *pids)
+    {
+        bool ret=true;
+
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+            if (!p)
+                return false;
+
+            if (p->vel2)
+            {
+                ret=ret&&p->vel2->getVelPid(off+base, pids+l);
+            }
+            else
+                ret=false;
+        }
         return ret;
     }
 };

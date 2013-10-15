@@ -32,7 +32,7 @@
 #include <string.h>
 
 /// specific to this device driver.
-#include "CanBusMotionControl.h"
+#include "CanBusMotionControlwip.h"
 
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
@@ -946,6 +946,100 @@ bool CanBusMotionControlParameters:: setBroadCastMask(Bottle &list, int MASK)
     return false;
 }
 
+bool CanBusMotionControlParameters::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int nj, Pid myPid[])
+{
+    int j=0;
+    for(j=0;j<nj;j++)
+    {
+        char tmp[80];
+        sprintf(tmp, "Pid%d", j); 
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
+        myPid[j].kp = xtmp.get(1).asDouble();
+        myPid[j].kd = xtmp.get(2).asDouble();
+        myPid[j].ki = xtmp.get(3).asDouble();
+
+        myPid[j].max_int = xtmp.get(4).asDouble();
+        myPid[j].max_output = xtmp.get(5).asDouble();
+
+        myPid[j].scale = xtmp.get(6).asDouble();
+        myPid[j].offset = xtmp.get(7).asDouble();
+
+        if (xtmp.size()==10)
+        {
+            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
+            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+        }
+    }
+    return true;
+}
+
+bool CanBusMotionControlParameters::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int nj, Pid myPid[])
+{
+    int j=0;
+    for(j=0;j<nj;j++)
+    {
+        char tmp[80];
+        sprintf(tmp, "TPid%d", j); 
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
+        myPid[j].kp = xtmp.get(1).asDouble();
+        myPid[j].kd = xtmp.get(2).asDouble();
+        myPid[j].ki = xtmp.get(3).asDouble();
+
+        myPid[j].max_int = xtmp.get(4).asDouble();
+        myPid[j].max_output = xtmp.get(5).asDouble();
+
+        myPid[j].scale = xtmp.get(6).asDouble();
+        myPid[j].offset = xtmp.get(7).asDouble();
+
+        if (xtmp.size()==10)
+        {
+            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
+            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+        }
+    }
+    return true;
+}
+bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, int nj, Pid myPid[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("kp");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("kd");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("ki");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("maxInt");      if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("maxPwm");      if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("shift");       if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    return true;
+}
+
+bool CanBusMotionControlParameters::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, int nj, ImpedanceParameters vals[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("stiffness"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].stiffness = xtmp.get(j).asDouble();
+    xtmp = pidsGroup.findGroup("damping");   if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].damping = xtmp.get(j+1).asDouble();
+    return true;
+}
+
+bool CanBusMotionControlParameters::parseDebugGroup_NewFormat(Bottle& pidsGroup, int nj, DebugParameters vals[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("debug0"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug1"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug2"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[2] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug3"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[3] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug4"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[4] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug5"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[5] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug6"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[6] = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("debug7"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[7] = xtmp.get(j+1).asDouble();
+    return true;
+}
 bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 {
     if (!p.check("GENERAL","section for general motor control parameters")) {
@@ -1087,112 +1181,109 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         }
     }
 
-    ////// PIDS
-    Bottle &pidsGroup=p.findGroup("PIDS", "PID parameters");
-    if (pidsGroup.isNull()) {
-            fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
-            return false;
-    }
-
     int j=0;
-    for(j=0;j<nj;j++)
+    ////// POSITION PIDS
     {
-        char tmp[80];
-        sprintf(tmp, "Pid%d", j); 
-
-        Bottle &xtmp = pidsGroup.findGroup(tmp);
-        _pids[j].kp = xtmp.get(1).asDouble();
-        _pids[j].kd = xtmp.get(2).asDouble();
-        _pids[j].ki = xtmp.get(3).asDouble();
-
-        _pids[j].max_int = xtmp.get(4).asDouble();
-        _pids[j].max_output = xtmp.get(5).asDouble();
-
-        _pids[j].scale = xtmp.get(6).asDouble();
-        _pids[j].offset = xtmp.get(7).asDouble();
-
-        if (xtmp.size()==10)
+        Bottle posPidsGroup;
+        posPidsGroup=p.findGroup("POS_PIDS", "Position Pid parameters new format");
+        if (posPidsGroup.isNull()==false)
         {
-            _pids[j].stiction_up_val = xtmp.get(8).asDouble();
-            _pids[j].stiction_down_val = xtmp.get(9).asDouble();
+           printf("Position Pids section found, new format\n");
+           if (!parsePidsGroup_NewFormat (posPidsGroup, nj, _pids))
+           {
+               printf("Position Pids section: error detected in parameters syntax\n");
+               return false;
+           }
+           else
+           {
+               printf("Position Pids successfully loaded\n");
+           }
+        }
+        else
+        {
+            Bottle posPidsGroup2=p.findGroup("PIDS", "Position Pid parameters old format");
+            if (posPidsGroup2.isNull()==false)
+            {
+                printf("Position Pids section found, old format\n");
+                parsePosPidsGroup_OldFormat (posPidsGroup2, nj, _pids);
+            }
+            else
+            {   
+                fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
+                return false;
+            }
         }
     }
-
-    ////// DEBUG PARAMETERS
-    if (p.check("DEBUG_PARAMETERS","DEBUG parameters")==true)
-    {
-        printf("DEBUG parameters section found\n");
-        for(j=0;j<nj;j++)
-        {
-            char tmp[80];
-            sprintf(tmp, "Debug%d", j);
-            if (p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").check(tmp)==true)
-            {
-                xtmp = p.findGroup("DEBUG_PARAMETERS","DEBUG parameters").findGroup(tmp);
-                _debug_params[j].enabled=true;
-                for (int par=0; par<8; par++) {_debug_params[j].data[par] = xtmp.get(par+1).asDouble();}
-            }
-        }   
-    }
-    else
-    {
-        fprintf(stderr, "Debug parameters section NOT enabled, skipping...\n");
-        //note: by default the _debug_params[j] constructor puts _debug_params[j].enabled=false;
-    }
-
+    
     ////// TORQUE PIDS
-    if (p.check("TORQUE_PIDS","TORQUE_PID parameters")==true)
     {
-        printf("Torque Pids section found\n");
-        _tpidsEnabled=true;
-        for(j=0;j<nj;j++)
+        Bottle trqPidsGroup;
+        trqPidsGroup=p.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
+        if (trqPidsGroup.isNull()==false)
         {
-            char tmp[80];
-            sprintf(tmp, "TPid%d", j); 
-            Bottle &xtmp = p.findGroup("TORQUE_PIDS","TORQUE_PID parameters").findGroup(tmp);    
-
-            _tpids[j].kp = xtmp.get(1).asDouble();
-            _tpids[j].kd = xtmp.get(2).asDouble();
-            _tpids[j].ki = xtmp.get(3).asDouble();
-
-            _tpids[j].max_int = xtmp.get(4).asDouble();
-            _tpids[j].max_output = xtmp.get(5).asDouble();
-
-            _tpids[j].scale = xtmp.get(6).asDouble();
-            _tpids[j].offset = xtmp.get(7).asDouble();
-
-            if (xtmp.size()==10)
+           printf("Torque Pids section found, new format\n");
+           if (!parsePidsGroup_NewFormat (trqPidsGroup, nj, _tpids))
+           {
+               printf("Torque Pids section: error detected in parameters syntax\n");
+               return false;
+           }
+           else
+           {
+                printf("Torque Pids successfully loaded\n");
+               _tpidsEnabled = true;
+           }
+        }
+        else
+        {
+            Bottle trqPidsGroup2=p.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
+            if (trqPidsGroup2.isNull()==false)
             {
-                _pids[j].stiction_up_val = xtmp.get(8).asDouble();
-                _pids[j].stiction_down_val = xtmp.get(9).asDouble();
+                printf("Torque Pids section found, old format\n");
+                parseTrqPidsGroup_OldFormat (trqPidsGroup2, nj, _tpids);
+                _tpidsEnabled=true;
+                fprintf(stderr,">>>>>>>>>>>>>>>>>>>>%f<<<<<<<<<<<<<<<<<<<<\n", _tpids[0].kp);
+            }
+            else
+            {   
+                fprintf(stderr, "Torque Pids section NOT enabled, skipping...\n");
             }
         }
     }
-    else
+    
+    ////// DEBUG PARAMETERS
     {
-        fprintf(stderr, "Torque Pids section NOT enabled, skipping...\n");
+        Bottle &debugGroup=p.findGroup("DEBUG_PARAMETERS","DEBUG parameters");
+        if (debugGroup.isNull()==false)
+        {
+           printf("DEBUG parameters section found\n");
+           if (!parseDebugGroup_NewFormat (debugGroup, nj, _debug_params))
+           {
+               printf("DEBUG section: error detected in parameters syntax\n");
+               return false;
+           }
+        }
+        else
+        {
+           printf("DEBUG parameters section NOT found, skipping...\n");
+        }
     }
 
     ////// IMPEDANCE DEFAULT VALUES
-    if (p.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
     {
-        fprintf(stderr, "IMPEDANCE parameters section found\n");
-        for(j=0;j<nj;j++)
+        Bottle &impedanceGroup=p.findGroup("IMPEDANCE","IMPEDANCE parameters");
+        if (impedanceGroup.isNull()==false)
         {
-            char tmp[80];
-            sprintf(tmp, "Imp%d", j); 
-            if (p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(tmp)==true)
-            {
-                xtmp = p.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(tmp);    
-                _impedance_params[j].enabled=true;
-                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
-                _impedance_params[j].damping   = xtmp.get(2).asDouble();
-            }
+           printf("IMPEDANCE parameters section found\n");
+           if (!parseImpedanceGroup_NewFormat (impedanceGroup, nj, _impedance_params))
+           {
+               printf("IMPEDANCE section: error detected in parameters syntax\n");
+               return false;
+           }
         }
-    }
-    else
-    {
-        printf("Impedance section NOT enabled, skipping...\n");
+        else
+        {
+           printf("IMPEDANCE parameters section NOT found, skipping...\n");
+        }
     }
 
     ////// IMPEDANCE LIMITS (UNDER TESTING)
@@ -1228,6 +1319,15 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     if (!validate(limits, xtmp, "Min","a list of minimum angles (in degrees)", nj+1))
         return false;
   
+    for (i=0;i<nj; i++)
+    {
+        if (_limitsMax[i] < _limitsMin[i])
+           {
+               fprintf(stderr, "Error: invalid limit on joint %d : Max value (%f) < Min value(%f)\n", i, _limitsMax[i], _limitsMin[i] );
+               return false;
+           }
+    }
+
     for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
     /////// [VELOCITY]
@@ -1621,10 +1721,11 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
         _destInv[id]=-1;
 
     //now fill inverted map
+    printf("printing destinations and inverted map\n");
     for(int jj=0;jj<_njoints;jj+=2)
     {
         _destInv[_destinations[jj/2]]=jj;
-
+        printf("%d %d\n",jj,_destinations[jj/2]);
      }
 
     _bcastRecvBuffer = allocAndCheck<BCastBufferElement> (_njoints);
@@ -1640,7 +1741,7 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     //previously initialized
     iCanBus->canSetBaudRate(_speed);
     unsigned int i=0;
-    
+
 #if ICUB_CANMASKS_STRICT_FILTER
     // sets all message ID's for class 0
     for (int j=0; j<CAN_MAX_CARDS; j++)
@@ -1866,19 +1967,22 @@ bool CanBusResources::dumpBuffers (void)
 
 CanBusMotionControl::CanBusMotionControl() : 
 RateThread(10),
-ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
-ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
+//ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
+ImplementPositionControl2(this),
+//ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
+ImplementVelocityControl2(this),
 ImplementPidControl<CanBusMotionControl, IPidControl>(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
 ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
-ImplementControlLimits<CanBusMotionControl, IControlLimits>(this),
+ImplementControlLimits2(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
 ImplementControlMode(this),
 ImplementDebugInterface(this),
+ImplementPositionDirect(this),
 _mutex(1),
 _done(0)
 {
@@ -1927,13 +2031,13 @@ bool CanBusMotionControl::open (Searchable &config)
     yarp::os::ConstString canPhysDevName = config.find("physDevice").asString(); //for backward compatibility
     if (canPhysDevName=="") canPhysDevName = config.findGroup("CAN").find("physDevice").asString();
     prop.put("physDevice",canPhysDevName.c_str());
-    prop.put("CanDeviceNum", p._networkN);
-    prop.put("CanTxTimeout", p._txTimeout);
-    prop.put("CanRxTimeout", p._rxTimeout);
+    prop.put("canDeviceNum", p._networkN);
+    prop.put("canTxTimeout", p._txTimeout);
+    prop.put("canRxTimeout", p._rxTimeout);
     if (p._txQueueSize!=-1)
-        prop.put("CanTxQueueSize", p._txQueueSize);
+        prop.put("canTxQueueSize", p._txQueueSize);
     if (p._rxQueueSize!=-1)
-        prop.put("CanRxQueueSize", p._rxQueueSize);
+        prop.put("canRxQueueSize", p._rxQueueSize);
 
     ret=res.initialize(prop);
 
@@ -1948,11 +2052,14 @@ bool CanBusMotionControl::open (Searchable &config)
     _writerequested = false;
     _noreply = false;
 
-    ImplementPositionControl<CanBusMotionControl, IPositionControl>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementPositionControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementVelocityControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+//    ImplementPositionControl<CanBusMotionControl, IPositionControl>::
+//        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+//
+//    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
+//        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementPidControl<CanBusMotionControl, IPidControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -1968,8 +2075,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlLimits<CanBusMotionControl, IControlLimits>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
@@ -1978,6 +2084,8 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
+
+    ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -2000,7 +2108,7 @@ bool CanBusMotionControl::open (Searchable &config)
     //set the source of the torque measurments to the boards
     #if 0
     for (int j=0; j<p._njoints; j++)
-    {   
+    {
         yarp::os::Time::delay(0.001);
         this->setTorqueSource(j,p._torqueSensorId[j],p._torqueSensorChan[j]);
     }
@@ -2106,7 +2214,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         RateThread::stop();
         _opened = false;
-        DEBUG_FUNC("checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
+        fprintf(stderr,"checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
         return false;
     }
     /////////////////////////////////
@@ -2117,7 +2225,7 @@ bool CanBusMotionControl::open (Searchable &config)
 #endif
 
     _opened = true;
-    DEBUG_FUNC("CanBusMotionControl::open returned true\n");
+    fprintf(stderr,"CanBusMotionControl::open returned true\n");
     return true;
 }
 
@@ -2399,22 +2507,26 @@ bool CanBusMotionControl::close (void)
         }
 
         RateThread::stop ();/// stops the thread first (joins too).
-        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
 
-        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
+        ImplementPositionControl2::uninitialize();
+        ImplementVelocityControl2::uninitialize();
+
+//        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
+//        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
+
         ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
         ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
-        ImplementControlLimits<CanBusMotionControl, IControlLimits>::uninitialize();
+        ImplementControlLimits2::uninitialize();
 
         ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
+        ImplementPositionDirect::uninitialize();
 
-        
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
         while(it!=analogSensors.end())
@@ -3540,6 +3652,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
         r.writePacket();
     _mutex.post();
 
+    //printf("stiffness is: %d \n", S_16(stiff));
     return true;
 }
 
@@ -3683,6 +3796,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
         r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
+    //fprintf(stderr, ">>>>>>>>>>>pid.kp set to %f\n",pid.kp);
     _mutex.wait();
         r.startPacket();
         r.addMessage (CAN_SET_TORQUE_PIDLIMITS, axis);
@@ -4349,7 +4463,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        DEBUG_FUNC("getFirmwareVersion: message timed out\n");
+        fprintf(stderr, "getFirmwareVersion: message timed out\n");
         fw_info->board_type= 0;
         fw_info->fw_major= 0;
         fw_info->fw_version= 0;
@@ -4360,6 +4474,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     CanMessage *m=t->get(0);
     if (m==0)
     {
+        fprintf(stderr, "getFirmwareVersion: message error\n");
         fw_info->board_type= 0;
         fw_info->fw_major= 0;
         fw_info->fw_version= 0;
@@ -4483,6 +4598,7 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
+
     
     CanBusResources& r = RES(system_resources);
     _mutex.wait();
@@ -5393,6 +5509,181 @@ bool CanBusMotionControl::getLimitsRaw(int axis, double *min, double *max)
 
     return ret;
 }
+
+
+////////////////////////////////////////
+//     Position control2 interface    //
+////////////////////////////////////////
+
+bool CanBusMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && positionMoveRaw(joints[j], refs[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *joints, const double *deltas)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && relativeMoveRaw(joints[j], deltas[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && checkMotionDoneRaw(joints[j], flag+j);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && setRefSpeedRaw(joints[j], spds[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && setRefAccelerationRaw(joints[j], accs[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getRefSpeedsRaw(const int n_joint, const int *joints, double *spds)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && getRefSpeedRaw(joints[j], &spds[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && getRefAccelerationRaw(joints[j], &accs[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::stopRaw(const int n_joint, const int *joints)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && stopRaw(joints[j]);
+    }
+    return ret;
+}
+
+///////////// END Position Control 2 INTERFACE  //////////////////
+
+////////////////////////////////////////
+//     Velocity control2 interface    //
+////////////////////////////////////////
+
+bool CanBusMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
+{
+    bool ret = true;
+    for(int j=0; j< n_joint; j++)
+    {
+        ret = ret && velocityMoveRaw(joints[j], spds[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::setVelPidRaw(int j, const Pid &pid)
+{
+    // Our boards do not have a Velocity Pid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+bool CanBusMotionControl::setVelPidsRaw(const Pid *pids)
+{
+    // Our boards do not have a VelocityPid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+bool CanBusMotionControl::getVelPidRaw(int j, Pid *pid)
+{
+    // Our boards do not have a VelocityPid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
+bool CanBusMotionControl::getVelPidsRaw(Pid *pids)
+{
+    // Our boards do not have a VelocityPid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+///////////// END Velocity Control 2 INTERFACE  //////////////////
+
+// IControlLimits2
+bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
+{
+    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
+}
+
+bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+}
+
+
+// PositionDirect Interface
+bool CanBusMotionControl::setPositionRaw(int j, double ref)
+{
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(ref));
+}
+
+bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+{
+    bool ret = true;
+
+    for(int j=0; j< n_joint; j++)
+    {
+        ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::setPositionsRaw(const double *refs)
+{
+    CanBusResources& r = RES(system_resources);
+    bool ret = true;
+
+    int i;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, i, S_32(refs[i]));
+    }
+    return ret;
+}
+
+
+
 
 bool CanBusMotionControl::loadBootMemory()
 {

@@ -7,7 +7,7 @@
  *
  */
 
-#include "ControlBoardWrapper2.h"
+#include "ControlBoardWrapper2wip.h"
 
 #include <iostream>
 
@@ -26,10 +26,13 @@ SubDevice::SubDevice()
 {
     pid = 0;
     pos = 0;
+    pos2 = 0;
+    posDir = 0;
     vel = 0;
+    vel2 = 0;
     enc = 0;
     amp = 0;
-    lim = 0;
+    lim2 = 0;
     calib = 0;
     calib2 = 0;
     iTimed= 0;
@@ -78,7 +81,7 @@ bool SubDevice::configure(int b, int t, int n, const std::string &key)
             return false;
         }
 
-    encoders.resize(axes);
+    subDev_encoders.resize(axes);
     encodersTimes.resize(axes);
 
     configuredF=true;
@@ -91,9 +94,12 @@ void SubDevice::detach()
 
     pid=0;
     pos=0;
+    pos2=0;
+    posDir=0;
     vel=0;
+    vel2=0;
     enc=0;
-    lim=0;
+    lim2=0;
     calib=0;
     calib2=0;
     info=0;
@@ -135,9 +141,12 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
         {
             subdevice->view(pid);
             subdevice->view(pos);
+            subdevice->view(pos2);
+            subdevice->view(posDir);
             subdevice->view(vel);
+            subdevice->view(vel2);
             subdevice->view(amp);
-            subdevice->view(lim);
+            subdevice->view(lim2);
             subdevice->view(calib);
             subdevice->view(calib2);
             subdevice->view(info);
@@ -176,7 +185,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
 
     int deviceJoints=0;
 
-    if (pos!=0||vel!=0)
+    if ( pos!=0 || pos2!=0 || vel!=0)
         {
             if (pos!=0)
                 {
@@ -186,6 +195,16 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
                             return false;
                         }
                 }
+
+            if (pos2!=0)
+                {
+                    if (!pos2->getAxes(&deviceJoints))
+                        {
+                            std::cerr<< "Error: attached device has 0 axes\n";
+                            return false;
+                        }
+                }
+
             if (vel!=0)
                 {
                     if (!vel->getAxes(&deviceJoints))
@@ -222,7 +241,10 @@ DriverCreator *createControlBoardWrapper2() {
 
 ImplementCallbackHelper2::ImplementCallbackHelper2(ControlBoardWrapper2 *x) {
     pos = dynamic_cast<yarp::dev::IPositionControl *> (x);
+    pos2 = dynamic_cast<yarp::dev::IPositionControl2 *> (x);
+    posDir = dynamic_cast<yarp::dev::IPositionDirect *> (x);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (x);
+    vel2 = dynamic_cast<yarp::dev::IVelocityControl2 *> (x);
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (x);
 }
 
@@ -803,16 +825,19 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     Bottle& b = v.head;
     Vector& cmdVector = v.body;
 
+    //Use the following only for debug, since it can heavily slow down the system
+    //fprintf(stderr, "Received command %s, %s\n", b.toString().c_str(), cmdVector.toString().c_str());
+
     // some consistency checks
-    if (controlledAxes!=cmdVector.size())
+    if (cmdVector.size() > controlledAxes)
     {
         yarp::os::ConstString str = yarp::os::Vocab::decode(b.get(0).asVocab());
-        fprintf(stderr, "Received command vector with incorrect number of elements (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,(int)cmdVector.size());
+        fprintf(stderr, "Received command vector with number of elements bigger than axis controlled by this wrapper (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,(int)cmdVector.size());
         return;
     }
     if (cmdVector.data()==0)
     {
-         fprintf(stderr, "Received null command vector\n");
+         fprintf(stderr, "Errors: received null command vector\n");
          return;
     }
 
@@ -834,7 +859,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
                     {
                         bool ok = pos->positionMove(cmdVector.data());
                         if (!ok)
-                            fprintf(stderr, "Issues while trying to start a position move\n");
+                            fprintf(stderr, "Errors while trying to start a position move\n");
                     }
 
             }
@@ -855,7 +880,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
                     {
                         bool ok = vel->velocityMove(cmdVector.data());
                         if (!ok)
-                            fprintf(stderr, "Issues while trying to start a velocity move\n");
+                            fprintf(stderr, "Errors while trying to start a velocity move\n");
                     }
             }
             break;
@@ -865,10 +890,81 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
                     {
                         bool ok=iOpenLoop->setOutputs(cmdVector.data());
                         if (!ok)
-                            fprintf(stderr, "Issues while trying to command an open loop message\n");
+                            fprintf(stderr, "Errors while trying to command an open loop message\n");
                     }
             }
             break;
+        case VOCAB_POSITION_DIRECT:
+        {
+            if(posDir)
+            {
+                int temp_j = b.get(1).asInt();
+                double temp_val = cmdVector.operator [](0);
+                bool ok = posDir->setPosition(b.get(1).asInt(), cmdVector.operator [](0)); // cmdVector.data());
+                if (!ok)
+                {   fprintf(stderr, "Errors while trying to command an streaming position direct message on joint %d\n", b.get(1).asInt() ); }
+            }
+        }
+        break;
+        case VOCAB_POSITION_DIRECT_GROUP:
+        {
+
+            if(posDir)
+            {
+                int n_joints = b.get(1).asInt();
+                Bottle *jlut = b.get(2).asList();
+                if( (jlut->size() != n_joints) && (cmdVector.size() != n_joints) )
+                {
+                    fprintf(stderr, "Received VOCAB_POSITION_DIRECT_GROUP size of joints vector or positions vector does not match the selected joint number\n" );
+
+                }
+
+                int *joint_list = new int[n_joints];
+                for (int i = 0; i < n_joints; i++)
+                    joint_list[i] = jlut->get(i).asInt();
+
+
+                bool ok = posDir->setPositions(n_joints, joint_list, cmdVector.data());
+                if (!ok)
+                {   fprintf(stderr, "Error while trying to command a streaming position direct message on joint group\n" ); }
+
+                delete[] joint_list;
+            }
+        }
+        break;
+
+        case VOCAB_POSITION_DIRECTS:
+        {
+            if(posDir)
+            {
+                bool ok = posDir->setPositions(cmdVector.data());
+                if (!ok)
+                {   fprintf(stderr, "Error while trying to command a streaming position direct message on all joints\n" ); }
+            }
+        }
+        break;
+        case VOCAB_VELOCITY_MOVE_GROUP:
+        {
+            if(vel2)
+            {
+                int n_joints = b.get(1).asInt();
+                Bottle *jlut = b.get(2).asList();
+                if( (jlut->size() != n_joints) && (cmdVector.size() != n_joints) )
+                    fprintf(stderr, "Received VOCAB_VELOCITY_MOVE_GROUP size of joints vector or positions vector does not match the selected joint number\n" );
+
+                int *joint_list = new int[n_joints];
+                for (int i = 0; i < n_joints; i++)
+                    joint_list[i] = jlut->get(i).asInt();
+
+                bool ok = vel2->velocityMove(n_joints, joint_list, cmdVector.data());
+                if (!ok)
+                {   fprintf(stderr, "Error while trying to command a streaming position direct message on joint group\n" ); }
+
+                delete[] joint_list;
+            }
+        }
+        break;
+
         default:
             {
                 yarp::os::ConstString str = yarp::os::Vocab::decode(b.get(0).asVocab());
@@ -1065,7 +1161,6 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                     for (i = 0; i < njs; i++)
                                     {
                                         Bottle *c = b->get(i).asList();
-                                        
 
                                         if (c!=NULL)
                                         {
@@ -1093,6 +1188,72 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 }
                             }
                             break;
+
+                        case VOCAB_VEL_PID:
+                        {
+                            Pid p;
+                            int j = cmd.get(2).asInt();
+                            Bottle *b = cmd.get(3).asList();
+
+                            if (b==NULL)
+                                break;
+
+                            p.kp = b->get(0).asDouble();
+                            p.kd = b->get(1).asDouble();
+                            p.ki = b->get(2).asDouble();
+                            p.max_int = b->get(3).asDouble();
+                            p.max_output = b->get(4).asDouble();
+                            p.offset = b->get(5).asDouble();
+                            p.scale = b->get(6).asDouble();
+                            p.stiction_up_val = b->get(7).asDouble();
+                            p.stiction_down_val = b->get(8).asDouble();
+                            ok = vel2->setVelPid(j, p);
+                        }
+
+                        case VOCAB_VEL_PIDS:
+                        {
+                            Bottle *b = cmd.get(2).asList();
+
+                            if (b==NULL)
+                                break;
+
+                            int i;
+                            const int njs = b->size();
+                            if (njs==controlledJoints)
+                            {
+                                Pid *p = new Pid[njs];
+
+                                bool allOK=true;
+
+                                for (i = 0; i < njs; i++)
+                                {
+                                    Bottle *c = b->get(i).asList();
+
+                                    if (c!=NULL)
+                                    {
+                                        p[i].kp = c->get(0).asDouble();
+                                        p[i].kd = c->get(1).asDouble();
+                                        p[i].ki = c->get(2).asDouble();
+                                        p[i].max_int = c->get(3).asDouble();
+                                        p[i].max_output = c->get(4).asDouble();
+                                        p[i].offset = c->get(5).asDouble();
+                                        p[i].scale = c->get(6).asDouble();
+                                        p[i].stiction_up_val = c->get(7).asDouble();
+                                        p[i].stiction_down_val = c->get(8).asDouble();
+                                    }
+                                    else
+                                    {
+                                        allOK=false;
+                                    }
+                                }
+                                if (allOK)
+                                    ok = vel2->setVelPids(p);
+                                else
+                                    ok=false;
+
+                                delete[] p;
+                            }
+                        }
 
                         case VOCAB_REF:
                             {
@@ -1178,13 +1339,14 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_POSITION_MODE:
                             {
+
                                 ok = pos->setPositionMode();
                             }
                             break;
 
                         case VOCAB_POSITION_MOVE:
                             {
-                                ok = pos->positionMove(cmd.get(2).asInt(), cmd.get(3).asDouble());
+                               ok = pos->positionMove(cmd.get(2).asInt(), cmd.get(3).asDouble());
                             }
                             break;
 
@@ -1206,33 +1368,34 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                     ok = pos->positionMove(&vect[0]);
                             }
                             break;
-                        #define VOCAB_POSITION_MOVE_GROUP VOCAB4('p','o','s','g')
+
                         case VOCAB_POSITION_MOVE_GROUP:
-                            {
-                                int nj = cmd.get(2).asInt();
-                                Bottle *jlut = cmd.get(3).asList();
-                                Bottle *pos = cmd.get(4).asList();
+                        {
+                           int len = cmd.get(2).asInt();
+                            Bottle *jlut = cmd.get(3).asList();
+                            Bottle *pos_val= cmd.get(4).asList();
 
-                                if (jlut==NULL || pos==NULL)
+                            if (pos2 == NULL)
+                                break;
+
+                            if (jlut==NULL || pos_val==NULL)
+                                break;
+                            if (len!=jlut->size() || len!=pos_val->size())
                                     break;
-                                if (nj!=jlut->size() || nj!=pos->size())
-                                    break;
-                                
-                                int *lut_tmp=new int [nj];
-                                double *pos_tmp=new double [nj];
-                               
-                                for (int i = 0; i < nj; i++)
-                                    lut_tmp[i] = jlut->get(i).asInt();
 
-                                for (int i = 0; i < nj; i++)
-                                    pos_tmp[i] = pos->get(i).asDouble();
+                                int *j_tmp=new int [len];
+                                double *pos_tmp=new double [len];
 
-                                //if (pos!=NULL)
-                                    // ok = pos->positionMove(nj, lut_tmp, pos_tmp);
+                                for (int i = 0; i < len; i++)
+                                    j_tmp[i] = jlut->get(i).asInt();
 
-                                delete [] lut_tmp;
+                                for (int i = 0; i < len; i++)
+                                    pos_tmp[i] = pos_val->get(i).asDouble();
+
+                                ok = pos2->positionMove(len, j_tmp, pos_tmp);
+
+                                delete [] j_tmp;
                                 delete [] pos_tmp;
-                            
                             }
                             break;
 
@@ -1261,6 +1424,36 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             }
                             break;
 
+                        case VOCAB_RELATIVE_MOVE_GROUP:
+                        {
+                            int len = cmd.get(2).asInt();
+                            Bottle *jBottle_p = cmd.get(3).asList();
+                            Bottle *posBottle_p= cmd.get(4).asList();
+
+                            if (pos2 == NULL)
+                                break;
+
+                            if (jBottle_p==NULL || posBottle_p==NULL)
+                                break;
+                            if (len!=jBottle_p->size() || len!=posBottle_p->size())
+                                break;
+
+                            int *j_tmp=new int [len];
+                            double *pos_tmp=new double [len];
+
+                            for (int i = 0; i < len; i++)
+                                j_tmp[i] = jBottle_p->get(i).asInt();
+
+                            for (int i = 0; i < len; i++)
+                                pos_tmp[i] = posBottle_p->get(i).asDouble();
+
+                            ok = pos2->relativeMove(len, j_tmp, pos_tmp);
+
+                            delete [] j_tmp;
+                            delete [] pos_tmp;
+                        }
+                        break;
+
                         case VOCAB_RELATIVE_MOVES:
                             {
                                 Bottle *b = cmd.get(2).asList();
@@ -1283,6 +1476,34 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                         case VOCAB_REF_SPEED:
                             {
                                 ok = pos->setRefSpeed(cmd.get(2).asInt(), cmd.get(3).asDouble());
+                            }
+                            break;
+
+                        case VOCAB_REF_SPEED_GROUP:
+                            {
+                                int len = cmd.get(2).asInt();
+                                Bottle *jBottle_p = cmd.get(3).asList();
+                                Bottle *velBottle_p= cmd.get(4).asList();
+
+                                if (pos2 == NULL)
+                                    break;
+
+                                if (jBottle_p==NULL || velBottle_p==NULL)
+                                    break;
+                                if (len!=jBottle_p->size() || len!=velBottle_p->size())
+                                    break;
+
+                                int *j_tmp=new int [len];
+                                double *spds_tmp=new double [len];
+
+                                for (int i = 0; i < len; i++)
+                                    j_tmp[i] = jBottle_p->get(i).asInt();
+
+                                for (int i = 0; i < len; i++)
+                                    spds_tmp[i] = velBottle_p->get(i).asDouble();
+
+                                ok = pos2->setRefSpeeds(len, j_tmp, spds_tmp);
+                                delete[] j_tmp, spds_tmp;
                             }
                             break;
 
@@ -1311,6 +1532,34 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             }
                             break;
 
+                        case VOCAB_REF_ACCELERATION_GROUP:
+                        {
+                            int len = cmd.get(2).asInt();
+                            Bottle *jBottle_p = cmd.get(3).asList();
+                            Bottle *accBottle_p = cmd.get(4).asList();
+
+                            if (pos2 == NULL)
+                                break;
+
+                            if (jBottle_p==NULL || accBottle_p==NULL)
+                                break;
+                            if (len!=jBottle_p->size() || len!=accBottle_p->size())
+                                break;
+
+                            int *j_tmp = new int [len];
+                            double *accs_tmp = new double [len];
+
+                            for (int i = 0; i < len; i++)
+                                j_tmp[i] = jBottle_p->get(i).asInt();
+
+                            for (int i = 0; i < len; i++)
+                                accs_tmp[i] = accBottle_p->get(i).asDouble();
+
+                            ok = pos2->setRefAccelerations(len, j_tmp, accs_tmp);
+                            delete[] j_tmp, accs_tmp;
+                        }
+                        break;
+
                         case VOCAB_REF_ACCELERATIONS:
                             {
                                 Bottle *b = cmd.get(2).asList();
@@ -1335,6 +1584,30 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 ok = pos->stop(cmd.get(2).asInt());
                             }
                             break;
+
+                        case VOCAB_STOP_GROUP:
+                        {
+                            int len = cmd.get(2).asInt();
+                            Bottle *jBottle_p = cmd.get(3).asList();
+
+                            if (pos2 == NULL)
+                                break;
+
+                            if (jBottle_p==NULL)
+                                break;
+                            if (len!=jBottle_p->size())
+                                break;
+
+                            int *j_tmp = new int [len];
+                            double *accs_tmp = new double [len];
+
+                            for (int i = 0; i < len; i++)
+                                j_tmp[i] = jBottle_p->get(i).asInt();
+
+                            ok = pos2->stop(len, j_tmp);
+                            delete[] j_tmp;
+                        }
+                        break;
 
                         case VOCAB_STOPS:
                             {
@@ -1399,7 +1672,13 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         case VOCAB_LIMITS:
                             {
-                                ok = lim->setLimits(cmd.get(2).asInt(), cmd.get(3).asDouble(), cmd.get(4).asDouble());
+                                ok = lim2->setLimits(cmd.get(2).asInt(), cmd.get(3).asDouble(), cmd.get(4).asDouble());
+                            }
+                            break;
+
+                        case VOCAB_VEL_LIMITS:
+                            {
+                                ok = lim2->setVelLimits(cmd.get(2).asInt(), cmd.get(3).asDouble(), cmd.get(4).asDouble());
                             }
                             break;
 
@@ -1597,8 +1876,46 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             }
                             break;
 
-                        case VOCAB_REFERENCE:
+                        case VOCAB_VEL_PID:
+                        {
+                            Pid p;
+                            ok = vel2->getVelPid(cmd.get(2).asInt(), &p);
+                            Bottle& b = response.addList();
+                            b.addDouble(p.kp);
+                            b.addDouble(p.kd);
+                            b.addDouble(p.ki);
+                            b.addDouble(p.max_int);
+                            b.addDouble(p.max_output);
+                            b.addDouble(p.offset);
+                            b.addDouble(p.scale);
+                            b.addDouble(p.stiction_up_val);
+                            b.addDouble(p.stiction_down_val);
+                        }
+
+                        case VOCAB_VEL_PIDS:
+                        {
+                            Pid *p = new Pid[controlledJoints];
+                            ok = vel2->getVelPids(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
                             {
+                                Bottle& c = b.addList();
+                                c.addDouble(p[i].kp);
+                                c.addDouble(p[i].kd);
+                                c.addDouble(p[i].ki);
+                                c.addDouble(p[i].max_int);
+                                c.addDouble(p[i].max_output);
+                                c.addDouble(p[i].offset);
+                                c.addDouble(p[i].scale);
+                                c.addDouble(p[i].stiction_up_val);
+                                c.addDouble(p[i].stiction_down_val);
+                            }
+                            delete[] p;
+                        }
+
+                        case VOCAB_REFERENCE:
+                        {
                                 ok = pid->getReference(cmd.get(2).asInt(), &dtmp);
                                 response.addDouble(dtmp);
                             }
@@ -1651,6 +1968,24 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             }
                             break;
 
+/*                        case VOCAB_MOTION_DONE_GROUP:
+                            {
+                                bool x = false;
+                                int len = cmd.get(2).asInt();
+                                Bottle& in = *(cmd.get(3).asList());
+                                int *jointList = new int[len];
+                                for(int j=0; j<len; j++)
+                                {
+                                    jointList[j] = in.get(j).asInt();
+                                }
+                                if(pos2!=NULL)
+                                    ok = pos2->checkMotionDone(len, jointList, &x);
+                                response.addInt(x);
+
+                                delete[] jointList;
+                            }
+                            break;
+*/
                         case VOCAB_MOTION_DONES:
                             {
                                 bool x = false;
@@ -1663,6 +1998,27 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             {
                                 ok = pos->getRefSpeed(cmd.get(2).asInt(), &dtmp);
                                 response.addDouble(dtmp);
+                            }
+                            break;
+
+                        case VOCAB_REF_SPEED_GROUP:
+                            {
+                                int len = cmd.get(2).asInt();
+                                Bottle& in = *(cmd.get(3).asList());
+                                int *jointList = new int[len];
+                                double *speeds = new double[len];
+
+                                for(int j=0; j<len; j++)
+                                {
+                                    jointList[j] = in.get(j).asInt();
+                                }
+                                ok = pos2->getRefSpeeds(len, jointList, speeds);
+
+                                Bottle& b = response.addList();
+                                for (int i = 0; i < len; i++)
+                                    b.addDouble(speeds[i]);
+
+                                delete[] jointList, speeds;
                             }
                             break;
 
@@ -1684,6 +2040,27 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                                 response.addDouble(dtmp);
                             }
                             break;
+
+                        case VOCAB_REF_ACCELERATION_GROUP:
+                        {
+                            int len = cmd.get(2).asInt();
+                            Bottle& in = *(cmd.get(3).asList());
+                            int *jointList = new int[len];
+                            double *accs = new double[len];
+
+                            for(int j=0; j<len; j++)
+                            {
+                                jointList[j] = in.get(j).asInt();
+                            }
+                            ok = pos2->getRefAccelerations(len, jointList, accs);
+
+                            Bottle& b = response.addList();
+                            for (int i = 0; i < len; i++)
+                                b.addDouble(accs[i]);
+
+                            delete[] jointList, accs;
+                        }
+                        break;
 
                         case VOCAB_REF_ACCELERATIONS:
                             {
@@ -1797,7 +2174,16 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                         case VOCAB_LIMITS:
                             {
                                 double min = 0.0, max = 0.0;
-                                ok = lim->getLimits(cmd.get(2).asInt(), &min, &max);
+                                ok = lim2->getLimits(cmd.get(2).asInt(), &min, &max);
+                                response.addDouble(min);
+                                response.addDouble(max);
+                            }
+                            break;
+
+                        case VOCAB_VEL_LIMITS:
+                            {
+                                double min = 0.0, max = 0.0;
+                                ok = lim2->getVelLimits(cmd.get(2).asInt(), &min, &max);
                                 response.addDouble(min);
                                 response.addDouble(max);
                             }
@@ -1889,10 +2275,12 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)
     caller = x;
     pid = dynamic_cast<yarp::dev::IPidControl *> (caller);
     pos = dynamic_cast<yarp::dev::IPositionControl *> (caller);
+    pos2 = dynamic_cast<yarp::dev::IPositionControl2 *> (caller);
     vel = dynamic_cast<yarp::dev::IVelocityControl *> (caller);
+    vel2 = dynamic_cast<yarp::dev::IVelocityControl2 *> (caller);
     enc = dynamic_cast<yarp::dev::IEncodersTimed *> (caller);
     amp = dynamic_cast<yarp::dev::IAmplifierControl *> (caller);
-    lim = dynamic_cast<yarp::dev::IControlLimits *> (caller);
+    lim2 = dynamic_cast<yarp::dev::IControlLimits2 *> (caller);
     info = dynamic_cast<yarp::dev::IAxisInfo *> (caller);
     ical2= dynamic_cast<yarp::dev::IControlCalibration2 *> (caller);
     iOpenLoop=dynamic_cast<yarp::dev::IOpenLoopControl *> (caller);
@@ -1905,11 +2293,13 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)
 
 
 
-bool ControlBoardWrapper2::open(Searchable& prop)
+bool ControlBoardWrapper2::open(Searchable& config)
 {
-    string str=prop.toString().c_str();
+    string str=config.toString().c_str();
 
-    cout << str << endl << endl;
+    Property prop;
+    prop.fromString(config.toString().c_str());
+    cout << "CBW2 Rulez!!" << str << endl << endl;
 
     verb = (prop.check("verbose","if present, give detailed output"));
     if (verb)
@@ -1917,10 +2307,74 @@ bool ControlBoardWrapper2::open(Searchable& prop)
 
     thread_period = prop.check("threadrate", 20, "thread rate in ms. for streaming encoder data").asInt();
 
-    int totalJ=0;
-
     std::cout<<"Using ControlBoardWrapper2\n";
+    if (prop.check("subdevice", "Do I need one?"))
+    {
+        std::cout << "\nFound " << prop.find("subdevice").asString() << " subdevice, opening it\n";
+        if(! openAndAttachSubDevice(prop))
+        {
+            printf("Error while opening subdevice\n");
+            return false;
+        }
+    }
+    else
+    {
+        if(!openDeferredAttach(prop))
+            return false;
+    }
 
+
+    /* const values MAX_JOINTS_ON_DEVICE and MAX_DEVICES are used while parsing group joints commands like
+        virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
+        into ControlBoardWrapper2.h file to build a static table to prevent cocurrencu problem.
+        It will suffice to build a table for the rpc port and another one the for streaming port and use the
+        correct one because it is the only source of concurrency inside the object. To be done?
+    */
+    if(controlledJoints > MAX_JOINTS_ON_DEVICE)
+    {
+        cerr << " ERROR: number of subdevices for this wrapper (" << controlledJoints << ") is bigger than maximum currently handled ("  << MAX_JOINTS_ON_DEVICE << ").";
+        cerr << " To help fixing this error, please send an email to robotcub-hackers@lists.sourceforge.net with this error message (ControlBoardWrapper2.cpp @ line " << __LINE__ << endl;
+        return false;
+    }
+
+    // initialize callback
+    if (!callback_impl.initialize())
+    {
+        cerr<<"Error could not initialize callback object"<<endl;
+        return false;
+    }
+
+    std::string rootName = prop.check("rootName",Value("/"), "starting '/' if needed.").asString().c_str();
+    partName=prop.check("name",Value("controlboard"), "prefix for port names").asString().c_str();
+
+    cout << " rootName " << rootName << " partName " << partName;
+
+    rootName+=(partName);
+
+    // attach readers.
+    // rpc_p.setReader(command_reader);
+    // changed so that streaming input accepted if offered
+    command_buffer.attach(rpc_p);
+    command_reader.attach(command_buffer);
+
+    // attach buffers.
+    state_buffer.attach(state_p);
+    control_buffer.attach(control_p);
+    // attach callback.
+    control_buffer.useCallback(callback_impl);
+
+    rpc_p.open((rootName+"/rpc:i").c_str());
+    control_p.open((rootName+"/command:i").c_str());
+    state_p.open((rootName+"/state:o").c_str());
+
+    return true;
+}
+
+
+// Default usage
+// Open the wrapper only, the attach method needs to be called before using it
+bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
+{
     if (!prop.check("networks", "list of networks merged by this wrapper"))
         return false;
 
@@ -1931,28 +2385,24 @@ bool ControlBoardWrapper2::open(Searchable& prop)
 
     controlledJoints=prop.find("joints").asInt();
 
-    int nsubdevices=nets->size();
-    device.lut.resize(controlledJoints);
-    device.subdevices.resize(nsubdevices);
 
-    // check on the format of the configuration file
-    for(int k=0;k<nets->size();k++)
+    /*  const values MAX_JOINTS_ON_DEVICE and MAX_DEVICES are used while parsing group joints commands like
+        virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
+        into ControlBoardWrapper2.h file to build a static table to prevent cocurrencu problem.
+        It will suffice to build a table for the rpc port and another one the for streaming port and use the
+        correct one because it is the only source of concurrency inside the object. To be done?
+     */
+    int nsubdevices=nets->size();
+
+    if(nsubdevices > MAX_DEVICES)
     {
-        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
-        if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
-            {
-                cerr<<"Error: check network parameters in part description"<<endl;
-                cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
-                return false;
-            }
-        int axes = parameters.get(4).asInt() - parameters.get(3).asInt() + 1;
-        totalJ+=axes;
-    }
-    if (totalJ!=controlledJoints)
-    {
-        cerr<<"Error total number of mapped joints ("<< totalJ <<") does not correspond to part joints (" << controlledJoints << ")" << endl;
+        cerr << " ERROR: number of subdevices for this wrapper (" << nsubdevices << ") is bigger than maximum currently handled ("  << MAX_DEVICES << ").";
+        cerr << " To help fixing this error, please send an email to robotcub-hackers@lists.sourceforge.net with this error message (ControlBoardWrapper2.cpp @ line " << __LINE__ << endl;
         return false;
     }
+
+    device.lut.resize(controlledJoints);
+    device.subdevices.resize(nsubdevices);
 
     // configure the devices
     for(int k=0;k<nets->size();k++)
@@ -1981,36 +2431,104 @@ bool ControlBoardWrapper2::open(Searchable& prop)
         }
     }
 
-    // initialize callback
-    if (!callback_impl.initialize())
+    int totalJ=0;
+    // check on the format of the configuration file
+    for(int k=0;k<nets->size();k++)
     {
-        cerr<<"Error could not initialize callback object"<<endl;
+        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
+        if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
+            {
+                cerr<<"Error: check network parameters in part description"<<endl;
+                cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
+                return false;
+            }
+        int axes = parameters.get(4).asInt() - parameters.get(3).asInt() + 1;
+        totalJ+=axes;
+    }
+    if (totalJ!=controlledJoints)
+    {
+        cerr<<"Error total number of mapped joints ("<< totalJ <<") does not correspond to part joints (" << controlledJoints << ")" << endl;
         return false;
     }
 
-    partName=prop.check("name",Value("controlboard"),
-                        "prefix for port names").asString().c_str();
-    std::string rootName="/";
-    rootName+=(partName);
-
-    // attach readers.
-    // rpc_p.setReader(command_reader);
-    // changed so that streaming input accepted if offered
-    command_buffer.attach(rpc_p);
-    command_reader.attach(command_buffer);
-
-    // attach buffers.
-    state_buffer.attach(state_p);
-    control_buffer.attach(control_p);
-    // attach callback.
-    control_buffer.useCallback(callback_impl);
-
-    rpc_p.open((rootName+"/rpc:i").c_str());
-    control_p.open((rootName+"/command:i").c_str());
-    state_p.open((rootName+"/state:o").c_str());
-
+    prop.put("rootName", "/");
     return true;
 }
+
+// For the simulator, if a subdevice parameter is given to the wrapper, it will
+// open it and and attach to immediatly.
+bool ControlBoardWrapper2::openAndAttachSubDevice(Property& prop)
+{
+    Property p;
+    subDeviceOwned = new PolyDriver;
+    p.fromString(prop.toString().c_str());
+
+    p.setMonitor(prop.getMonitor(), "subdevice"); // pass on any monitoring
+
+
+    p.unput("device");
+    p.put("device",prop.find("subdevice").asString());
+
+    // if error occour during open, quit here.
+    printf("opening controlBoardWrapper2 subdevice\n");
+    subDeviceOwned->open(p);
+
+    if (!subDeviceOwned->isValid())
+    {
+        printf("opening controlBoardWrapper2 subdevice... FAILED\n");
+        return false;
+    }
+
+    printf("opening controlBoardWrapper2 subdevice... done\n");
+
+    // getting parameters in simStyle
+    if (!p.check("GENERAL","section for general motor control parameters"))
+    {
+        fprintf(stderr, "Cannot understand configuration parameters\n");
+        return false;
+    }
+
+    controlledJoints = p.findGroup("GENERAL").check("TotalJoints",Value(1), "Number of total joints").asInt();
+    device.lut.resize(controlledJoints);
+    device.subdevices.resize(1);
+
+    printf("Attaching controlBoardWrapper2 to subdevice\n");
+
+    // configure the device
+    base = 0;
+    top  = controlledJoints-1;
+
+    SubDevice *tmpDevice=device.getSubdevice(0);
+
+    std::string subDevName ((partName + "_" + prop.find("subdevice").asString().c_str()));
+    if (!tmpDevice->configure(base, top, controlledJoints, subDevName) )
+    {
+        cerr<<"configure of subdevice ret false"<<endl;
+        return false;
+    }
+
+    for(int j=0; j<controlledJoints; j++)
+    {
+        device.lut[j].deviceEntry = 0;
+        device.lut[j].offset = j;
+    }
+
+
+    if (!device.subdevices[0].attach(subDeviceOwned, subDevName))
+        return false;
+
+    CBW_encoders.resize(device.lut.size());
+
+    // initialization.
+    command_reader.initialize();
+
+    RateThread::setRate(thread_period);
+    RateThread::start();
+
+    prop.put("rootName", "");
+    return true;
+}
+
 
 bool ControlBoardWrapper2::attachAll(const PolyDriverList &polylist)
 {
@@ -2043,7 +2561,7 @@ bool ControlBoardWrapper2::attachAll(const PolyDriverList &polylist)
     if (!ready)
         return false;
 
-    encoders.resize(device.lut.size());
+    CBW_encoders.resize(device.lut.size());
 
     // initialization.
     command_reader.initialize();
@@ -2074,10 +2592,9 @@ void ControlBoardWrapper2::run()
 
             for(int l=0;l<axes;l++)
             {
-                encoders[l]=device.subdevices[k].encoders[l+base];
-                timeStamp+=device.subdevices[k].encodersTimes[l+base];
+                encoders[l]=device.subdevices[k].subDev_encoders[l];
+                timeStamp+=device.subdevices[k].encodersTimes[l];
             }
-
             encoders+=device.subdevices[k].axes; //jump to next group
         }
 
