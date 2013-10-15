@@ -599,11 +599,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 reply.addString(ack.c_str());
                 break;
             }
-    
+
             //-----------------
             case IKINSLV_VOCAB_CMD_SUSP:
-            {                    
-                fprintf(stdout,"%s suspended\n",slvName.c_str());
+            {
                 suspend();
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 break;
@@ -611,20 +610,14 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
     
             //-----------------
             case IKINSLV_VOCAB_CMD_RUN:
-            {   
+            {
                 if (!isRunning())
                 {
                     initPos();
                     start();
                 }
-                else if (isSuspended())
-                {    
-                    fprintf(stdout,"%s resumed\n",slvName.c_str());
-                    initPos();
-                    resume();
-                }
                 else
-                    fprintf(stdout,"%s is already running\n",slvName.c_str());
+                    resume();
 
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 break;
@@ -632,7 +625,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
             //-----------------
             case IKINSLV_VOCAB_CMD_QUIT:
-            {                    
+            {
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 close();
                 break;
@@ -1545,6 +1538,33 @@ void CartesianSolver::afterStart(bool s)
 {
     fprintf(stdout,"%s %s\n",slvName.c_str(),
             s?"started successfully":"did not start!");
+}
+
+
+/************************************************************************/
+void CartesianSolver::suspend()
+{
+    if (isRunning())
+    {
+        fprintf(stdout,"%s suspended\n",slvName.c_str());
+        RateThread::suspend();
+    }
+    else
+        fprintf(stdout,"%s is already suspended\n",slvName.c_str());
+}
+
+
+/************************************************************************/
+void CartesianSolver::resume()
+{
+    if (isSuspended())
+    {
+        fprintf(stdout, "%s resumed\n", slvName.c_str());
+        initPos();
+        RateThread::resume();
+    }
+    else
+        fprintf(stdout,"%s is already running\n",slvName.c_str());
 }
 
 

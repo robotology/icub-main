@@ -250,10 +250,16 @@ public:
     /************************************************************************/
     bool updateModule()
     {
-        if (slv->isClosed() || slv->getTimeoutFlag())
+        if (slv->isClosed())
             return false;
-        else
-            return true;
+
+        if (slv->getTimeoutFlag())
+        {
+            slv->getTimeoutFlag()=false;
+            slv->suspend();
+        }
+
+        return true;
     }
 };
 

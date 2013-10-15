@@ -526,6 +526,16 @@ public:
     virtual bool &getTimeoutFlag() { return timeout_detected; }
 
     /**
+    * Suspend the solver's main loop.
+    */
+    virtual void suspend();
+
+    /**
+    * Resume the solver's main loop.
+    */
+    virtual void resume();
+
+    /**
     * Default destructor.
     */
     virtual ~CartesianSolver();
