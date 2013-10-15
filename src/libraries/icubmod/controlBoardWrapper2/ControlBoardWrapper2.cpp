@@ -829,7 +829,7 @@ void ImplementCallbackHelper2::onRead(CommandMessage& v)
     //fprintf(stderr, "Received command %s, %s\n", b.toString().c_str(), cmdVector.toString().c_str());
 
     // some consistency checks
-    if (cmdVector.size() > controlledAxes)
+    if ((int)cmdVector.size() > controlledAxes)
     {
         yarp::os::ConstString str = yarp::os::Vocab::decode(b.get(0).asVocab());
         fprintf(stderr, "Received command vector with number of elements bigger than axis controlled by this wrapper (cmd: %s requested jnts: %d received jnts: %d)\n",str.c_str(),controlledAxes,(int)cmdVector.size());
