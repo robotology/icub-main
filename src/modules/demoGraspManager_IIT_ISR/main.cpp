@@ -916,6 +916,8 @@ protected:
 
     void selectArm()
     {
+        static double timeout_check1 = Time::now();
+
         if (useLeftArm && useRightArm)
         {
             if (state==STATE_REACH)
@@ -926,12 +928,19 @@ protected:
                 {
                     fprintf(stdout,"*** Change arm event triggered\n");
                     state=STATE_CHECKMOTIONDONE;
+                    timeout_check1 = Time::now();
                 }
             }
             else if (state==STATE_CHECKMOTIONDONE)
             {
-                bool done=false;
+                bool done = false;
                 cartArm->checkMotionDone(&done);
+
+                if (Time::now()-timeout_check1> 10.0)
+                {
+                   fprintf (stdout,"CHECK: Timeout in selectArm()\n");
+                   //done = true;
+                }
 
                 if (done)
                 {
