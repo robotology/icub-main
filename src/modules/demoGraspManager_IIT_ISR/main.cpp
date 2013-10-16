@@ -916,8 +916,6 @@ protected:
 
     void selectArm()
     {
-        static double timeout_check1 = Time::now();
-
         if (useLeftArm && useRightArm)
         {
             if (state==STATE_REACH)
@@ -928,18 +926,20 @@ protected:
                 {
                     fprintf(stdout,"*** Change arm event triggered\n");
                     state=STATE_CHECKMOTIONDONE;
-                    timeout_check1 = Time::now();
+                    latchTimer=Time::now();
                 }
             }
             else if (state==STATE_CHECKMOTIONDONE)
             {
-                bool done = false;
+                bool done;
                 cartArm->checkMotionDone(&done);
-
-                if (Time::now()-timeout_check1> 10.0)
+                if (!done)
                 {
-                   fprintf (stdout,"CHECK: Timeout in selectArm()\n");
-                   //done = true;
+                    if (Time::now()-latchTimer>3.0*trajTime)
+                    {
+                        fprintf(stdout,"--- Timeout elapsed => FORCE STOP and CHANGE ARM\n");
+                        done=true;
+                    }
                 }
 
                 if (done)
@@ -1102,7 +1102,7 @@ protected:
             resetTargetBall();
             return false;
         }
-        else if (t-latchTimer<sphereTmo || t-idleTimer>1.0)
+        else if ((t-latchTimer<sphereTmo) || (t-idleTimer>1.0))
             return false;
         else
             return true;
