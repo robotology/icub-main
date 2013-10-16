@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
-    <device name="head_calibrator" type="parametricCalibrator">        
-                             
+<!--    <device name="head_calibrator" type="icubheadcalibrator"> -->       
+       <device name="head_calibrator" type="parametricCalibrator">
+
         <group name="GENERAL">             
             <param name="joints"> 6 </param>             
             <param name="deviceName"> Head_Calibrator </param>         
@@ -13,9 +14,9 @@
 <param name="calibration1">               500           1333          1333          600           500           500           </param>       
 <param name="calibration2">               20            20            20            -20           20            20            </param>       
 <param name="calibration3">               0             0             0             0             0             0             </param>       
-<param name="positionZero">               20            0             0             0             0             0             </param>       
+<param name="positionZero">               0             0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
-<param name="maxPwm">                     120           120           120           0             0             0             </param>       
+<param name="maxPwm">                     1333          1333          1333          1333          1333          1333          </param>       
 <param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
 </group>       
  
