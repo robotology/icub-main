@@ -74,6 +74,9 @@ space.
 --onlyXYZ  
 - disable orientation control. 
  
+--reinstate_context 
+- reinstate controller context upon target reception.
+ 
 \section portsa_sec Ports Accessed
  
 Assumes that \ref icub_iCubInterface (with ICartesianControl 
@@ -148,10 +151,12 @@ protected:
     BufferedPort<Bottle> port_xd;
 
     bool ctrlCompletePose;
+    bool reinstateContext;
     string remoteName;
     string localName;
 
     int startup_context_id;
+    int task_context_id;
 
     Vector xd;
     Vector od;
@@ -170,10 +175,8 @@ public:
     bool threadInit()
     {
         // get params from the RF
-        if (rf.check("onlyXYZ"))
-            ctrlCompletePose=false;
-        else
-            ctrlCompletePose=true;
+        ctrlCompletePose=!rf.check("onlyXYZ");
+        reinstateContext=rf.check("reinstate_context");
 
         // open the client
         Property option("(device cartesiancontrollerclient)");
@@ -234,6 +237,9 @@ public:
         // set tracking mode
         iarm->setTrackingMode(false);
 
+        // latch the controller context for our task
+        iarm->storeContext(&task_context_id);
+
         // init variables
         while (true)
         {
@@ -276,8 +282,10 @@ public:
                         od[i]=b->get(3+i).asDouble();
                 }
 
-                const double execTime=calcExecTime(xd);
+                if (reinstateContext)
+                    iarm->restoreContext(task_context_id);
 
+                const double execTime=calcExecTime(xd);
                 if (ctrlCompletePose)
                     iarm->goToPose(xd,od,execTime);
                 else
