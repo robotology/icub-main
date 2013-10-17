@@ -1283,7 +1283,7 @@ void ServerCartesianController::stopLimb(const bool execStopPosition)
 {
     if (!posDirectEnabled || execStopPosition)
     {
-        int j = 0; int k = 0; 
+        int j=0; int k=0;
         for (unsigned int i=0; i<chainState->getN(); i++)
         {
             if (!(*chainState)[i].isBlocked())
