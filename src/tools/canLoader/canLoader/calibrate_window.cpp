@@ -577,6 +577,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&offset[i]);
         downloader.strain_set_offset (downloader.board_list[selected].pid, i, offset[i]);
+		drv_sleep(200);
     }
 
     //calibration matrix
