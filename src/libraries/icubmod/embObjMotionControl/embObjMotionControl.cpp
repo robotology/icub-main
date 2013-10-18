@@ -215,7 +215,8 @@ embObjMotionControl::embObjMotionControl() :
     ImplementTorqueControl(this),
     ImplementControlLimits2(this),
     ImplementPositionDirect(this),
-    _mutex(1)
+    _mutex(1),
+    SAFETY_THRESHOLD(2.0)
 {
     initted       = 0;
     _pids         = NULL;
@@ -2354,8 +2355,8 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     bool ret = res->readBufferedValue(nvid_min, _fId.ep, (uint8_t *)&eomin, &size);
     ret &= res->readBufferedValue(nvid_max, _fId.ep, (uint8_t *)&eomax, &size);
 
-    *min = (double)eomin;
-    *max = (double)eomax;
+    *min = (double)eomin + SAFETY_THRESHOLD;
+    *max = (double)eomax - SAFETY_THRESHOLD;
     return ret;
 }
 

@@ -254,6 +254,7 @@ private:
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 
+    double 		SAFETY_THRESHOLD;
     // debug
     int     start;
     int     end;
