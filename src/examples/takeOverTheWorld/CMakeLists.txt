@@ -36,18 +36,18 @@ install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 ################### application code
 set(appname takeOverTheWorld)
-icub_app(${appname})
-
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/*.ini)
 file(GLOB res ${CMAKE_CURRENT_SOURCE_DIR}/conf/example1/resources/*.jpg)
 
+if (__ICUB_INSTALL_APPLICATIONS__)
+icub_app(${appname})
 icub_app_install(${appname} FILES ${conf} DESTINATION conf/example1)
 icub_app_install(${appname} FILES ${res} DESTINATION conf/example1/resources)
+endif()
 
 yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/example1)
 yarp_install(FILES ${res} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/example1/resources)
                            
-icub_add_target(${appname})
 
 
 

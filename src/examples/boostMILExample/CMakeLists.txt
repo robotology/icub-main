@@ -19,11 +19,12 @@ TARGET_LINK_LIBRARIES(${PROJECTNAME} boostMIL ${YARP_LIBRARIES})
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 ########## application
-icub_app(${PROJECTNAME})
-
 file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
 
+if (__ICUB_INSTALL_APPLICATIONS__)
+icub_app(${PROJECTNAME})
 icub_app_install(${PROJECTNAME} FILES ${conf})
+endif()
 
 yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${PROJECTNAME})
 

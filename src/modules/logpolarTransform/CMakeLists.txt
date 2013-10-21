@@ -15,23 +15,15 @@ source_group("Header Files" FILES ${folder_header})
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${logpolar_INCLUDE_DIRS}
-	${iCubDev_INCLUDE_DIRS}
+   ${iCubDev_INCLUDE_DIRS}
     ${YARP_INCLUDE_DIRS}
 )
 
 if (folder_source)
-	add_executable(${PROJECTNAME} ${folder_source} ${header_files})
-	target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} logpolar) 
-	install(TARGETS ${PROJECTNAME} DESTINATION bin)
+   add_executable(${PROJECTNAME} ${folder_source} ${header_files})
+   target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} logpolar) 
+   install(TARGETS ${PROJECTNAME} DESTINATION bin)
 else (folder_source)
     message(STATUS "No source code files found. Please add something")
 endif (folder_source)
-
-set(appname logpolarTransform)
-icub_app(${appname})
-file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
-icub_app_install(${appname} 
-                FILES ${conf}
-                DESTINATION conf/)
-icub_add_target(${appname})
 
