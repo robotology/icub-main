@@ -41,6 +41,7 @@ protected:
     ICanBufferFactory  *pCanBufferFactory;
     CanBuffer          inBuffer;
     CanBuffer          outBuffer;
+    int                canDeviceNum;
    
     yarp::os::Semaphore mutex;
 

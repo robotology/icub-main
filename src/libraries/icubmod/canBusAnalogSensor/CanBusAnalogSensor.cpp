@@ -43,7 +43,8 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     prop.put("physDevice", config.find("physDevice").asString().c_str());
     prop.put("canTxTimeout", 500);
     prop.put("canRxTimeout", 500);
-    prop.put("canDeviceNum", config.find("canDeviceNum").asInt());
+    canDeviceNum = config.find("canDeviceNum").asInt();
+    prop.put("canDeviceNum", canDeviceNum);
     prop.put("canMyAddress", 0);
     prop.put("canTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
     prop.put("canRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
@@ -149,7 +150,7 @@ bool CanBusAnalogSensor::readFullScaleAnalog(int ch)
 
     if (full_scale_read==false) 
         {                            
-            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
+            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor %d net [%d]: no answer received or message lost (ch:%d)\n", boardId, canDeviceNum, ch);
             return false;
         }
 
