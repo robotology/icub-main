@@ -157,6 +157,10 @@ int strain_get_serial_number (int target_id, char* serial_number);
 int strain_set_serial_number (int target_id, const char* serial_number);
 int strain_get_eeprom_saved  (int target_id, bool* status);
 
+int sg6_get_amp_gain      (int target_id, char channel, unsigned int& gain1, unsigned int& gain2 );
+int sg6_set_amp_gain      (int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );
+
+
 cDownloader();
 };
 
