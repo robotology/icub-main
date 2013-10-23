@@ -20,6 +20,8 @@ int       selected = 0;
 unsigned int calibration_value=32767;
 int ch[6]={0,1,2,3,4,5};
 unsigned int offset[6];
+unsigned int amp_gain1[6];
+unsigned int amp_gain2[6];
 unsigned int adc[6]={0,0,0,0,0,0};
 unsigned int maxadc[6]={0,0,0,0,0,0};
 int calib_bias[6]={0,0,0,0,0,0};
@@ -113,6 +115,16 @@ gboolean timer_func (gpointer data)
     int ret=0;
     ret =downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
     if (ret!=0) printf("debug: message 'strain_get_eeprom_saved' lost.\n");
+
+    /*
+    ret =downloader.sg6_get_amp_gain (downloader.board_list[selected].pid, 0, amp_gain1[0], amp_gain2[0]);
+    ret|=downloader.sg6_get_amp_gain (downloader.board_list[selected].pid, 1, amp_gain1[1], amp_gain2[1]);
+    ret|=downloader.sg6_get_amp_gain (downloader.board_list[selected].pid, 2, amp_gain1[2], amp_gain2[2]);
+    ret|=downloader.sg6_get_amp_gain (downloader.board_list[selected].pid, 3, amp_gain1[3], amp_gain2[3]);
+    ret|=downloader.sg6_get_amp_gain (downloader.board_list[selected].pid, 4, amp_gain1[4], amp_gain2[4]);
+    ret|=downloader.sg6_get_amp_gain (downloader.board_list[selected].pid, 5, amp_gain1[5], amp_gain2[5]);
+    if (ret!=0) printf("debug: message 'sg6_get_amp_gain' lost.\n");
+    */
 
     ret =downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
     ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
@@ -844,6 +856,8 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     for (i=0; i<6;i++)
     {
         first_time[i]=true;
+        amp_gain1[i]=0;
+        amp_gain2[i]=0;
     }
 
     for (i=0; i<downloader.board_list_size; i++)

@@ -1600,9 +1600,12 @@ int myMain( int   argc, char *argv[] )
     yarp::dev::DriverCollection dev;
     #endif
 
-
+    if   (argc==2 && strcmp(argv[1],"--calib")==0)
+    {
+         calibration_enabled=true;
+    }
     //printf("argc = %d\n",argc);
-    if (argc!=1)
+    else if (argc!=1)
     {
         prompt_version=true;
         printf("Initializing prompt version of canLoader...\n");
@@ -1731,7 +1734,7 @@ int myMain( int   argc, char *argv[] )
         }
         if        (argc!=9)
         {
-                fatal_error(INVALID_CMD_STRING);
+          //      fatal_error(INVALID_CMD_STRING);
         }
     }
     else
