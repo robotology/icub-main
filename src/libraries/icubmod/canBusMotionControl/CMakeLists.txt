@@ -44,6 +44,10 @@ else()
        add_definitions(-DICUB_CANPROTOCOL_STRICT)
    endif()
 
+   if (ICUB_CANMASKS_STRICT_FILTER)
+       add_definitions(-DICUB_CANMASKS_STRICT_FILTER)
+   endif()
+
    if (ICUB_USE_INTERFACEGUI)
        add_definitions(-D_USE_INTERFACEGUI)
    endif (ICUB_USE_INTERFACEGUI)
