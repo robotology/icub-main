@@ -2645,9 +2645,19 @@ void CanBusMotionControl::handleBroadcasts()
                 {
                     static int count=0;
                     if (count%5000==0)
+                    {
                         fprintf(stderr, "%s [%d] Warning, got unexpected broadcast msg(s), last one from address %d, (original) id  0x%x, len %d\n", canDevName.c_str(), _networkN, addr, id, len);
-                    count++;
-                    j=-1; //error
+                        char tmp1 [255]; tmp1[0]=0;
+                        char tmp2 [255]; tmp2[0]=0;
+                        for (j = 0; j < CAN_MAX_CARDS; j++)
+                        {
+                            sprintf (tmp1, "%d ", r._destinations[j]);
+                            strcat  (tmp2,tmp1);
+                        }
+                        fprintf(stderr, "%s [%d] valid addresses are (%s)\n",canDevName.c_str(), _networkN,tmp2);
+                        count++;
+                        j=-1; //error
+                    }
                 }
                 else
                 {
