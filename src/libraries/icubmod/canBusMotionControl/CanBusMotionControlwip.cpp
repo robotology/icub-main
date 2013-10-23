@@ -1743,6 +1743,7 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     unsigned int i=0;
 
 #if ICUB_CANMASKS_STRICT_FILTER
+    printf("using ICUB_CANMASKS_STRICT_FILTER option\n");
     // sets all message ID's for class 0
     for (int j=0; j<CAN_MAX_CARDS; j++)
     {
