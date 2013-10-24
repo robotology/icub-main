@@ -780,7 +780,7 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
     }
     if (count_ok==36)
     {
-        printf ("Calibration file applied with no errors\n");
+        printf ("Calibration file %s applied with no errors\n", buff);
         matrix_changed=false;
     }
     else
