@@ -1676,6 +1676,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             }
                             break;
 
+
                         case VOCAB_VEL_LIMITS:
                             {
                                 ok = lim2->setVelLimits(cmd.get(2).asInt(), cmd.get(3).asDouble(), cmd.get(4).asDouble());
@@ -2296,10 +2297,8 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)
 bool ControlBoardWrapper2::open(Searchable& config)
 {
     string str=config.toString().c_str();
-
     Property prop;
     prop.fromString(config.toString().c_str());
-    cout << "CBW2 Rulez!!" << str << endl << endl;
 
     verb = (prop.check("verbose","if present, give detailed output"));
     if (verb)
@@ -2322,7 +2321,6 @@ bool ControlBoardWrapper2::open(Searchable& config)
         if(!openDeferredAttach(prop))
             return false;
     }
-
 
     /* const values MAX_JOINTS_ON_DEVICE and MAX_DEVICES are used while parsing group joints commands like
         virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
@@ -2347,7 +2345,7 @@ bool ControlBoardWrapper2::open(Searchable& config)
     std::string rootName = prop.check("rootName",Value("/"), "starting '/' if needed.").asString().c_str();
     partName=prop.check("name",Value("controlboard"), "prefix for port names").asString().c_str();
 
-    cout << " rootName " << rootName << " partName " << partName;
+    // cout << " rootName " << rootName << " partName " << partName;
 
     rootName+=(partName);
 
@@ -2379,12 +2377,16 @@ bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
         return false;
 
     Bottle *nets=prop.find("networks").asList();
+    if(nets==0)
+    {
+       cerr<<"Error parsing parameters: \"networks\" should be followed by a list\n";
+       return false;
+    }
 
     if (!prop.check("joints", "number of joints of the part"))
         return false;
 
     controlledJoints=prop.find("joints").asInt();
-
 
     /*  const values MAX_JOINTS_ON_DEVICE and MAX_DEVICES are used while parsing group joints commands like
         virtual bool positionMove(const int n_joints, const int *joints, const double *refs)
@@ -2405,16 +2407,43 @@ bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
     device.subdevices.resize(nsubdevices);
 
     // configure the devices
+    int totalJ=0;
     for(int k=0;k<nets->size();k++)
     {
-        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
-        int wBase=parameters.get(1).asInt();
-        int wTop=parameters.get(2).asInt();
-        base=parameters.get(3).asInt();
-        top=parameters.get(4).asInt();
+        Bottle parameters;
+        int wBase;
+        int wTop;
 
-        //cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
+        parameters=prop.findGroup(nets->get(k).asString().c_str());
 
+        // cout<<"Net is "<< nets->get(k).asString().c_str()<<"\n";
+        //cout<<parameters.toString().c_str();
+
+        if(parameters.size()==2)
+        {
+            Bottle *bot=parameters.get(1).asList();
+            wBase=bot->get(0).asInt();
+            wTop=bot->get(1).asInt();
+            base=bot->get(2).asInt();
+            top=bot->get(3).asInt();
+        }
+        else if (parameters.size()==5)
+        {
+            // cout<<"Parameter networks use deprecated syntax\n";
+            wBase=parameters.get(1).asInt();
+            wTop=parameters.get(2).asInt();
+            base=parameters.get(3).asInt();
+            top=parameters.get(4).asInt();
+        }
+        else
+        {
+            cerr<<"Error: check network parameters in part description"<<endl;
+            cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by a list of four integers in parenthesis"<<endl;
+            cerr<<"Got: "<< parameters.toString().c_str() << "\n";                 
+            return false;
+        }
+
+        
         SubDevice *tmpDevice=device.getSubdevice(k);
 
         int axes=top-base+1;
@@ -2429,22 +2458,10 @@ bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
             device.lut[j].deviceEntry=k;
             device.lut[j].offset=j-wBase;
         }
-    }
 
-    int totalJ=0;
-    // check on the format of the configuration file
-    for(int k=0;k<nets->size();k++)
-    {
-        Bottle parameters=prop.findGroup(nets->get(k).asString().c_str());
-        if (parameters.size()!=5)    // mapping joints using the paradigm: part from - to / network from - to
-            {
-                cerr<<"Error: check network parameters in part description"<<endl;
-                cerr<<"--> I was expecting "<<nets->get(k).asString().c_str() << " followed by four integers"<<endl;
-                return false;
-            }
-        int axes = parameters.get(4).asInt() - parameters.get(3).asInt() + 1;
         totalJ+=axes;
     }
+
     if (totalJ!=controlledJoints)
     {
         cerr<<"Error total number of mapped joints ("<< totalJ <<") does not correspond to part joints (" << controlledJoints << ")" << endl;
