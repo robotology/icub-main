@@ -174,6 +174,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
         msg.setLen(2);
         canMessages=0;
         pCanBus->canWrite(outBuffer, 1, &canMessages);
+        fprintf(stderr, "using broadcast period %d on device %s\n", period, analogConfig.find("deviceId").toString().c_str());
     }
 
     //init message for mais board
@@ -194,6 +195,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
         //calibrated astrain board
         if (useCalibration)
         {
+            fprintf(stderr, "using internal calibration on device %s\n", analogConfig.find("deviceId").toString().c_str());
             //get the full scale values from the strain board
             for (int ch=0; ch<6; ch++)
             {
@@ -240,6 +242,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
         //not calibrated strain board
         else
         {
+            fprintf(stderr, "using uncalibrated raw data for device %s\n", analogConfig.find("deviceId").toString().c_str());
             CanMessage &msg=outBuffer[0];
             msg.setId(id);
             msg.getData()[0]=0x07;
