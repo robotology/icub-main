@@ -1752,6 +1752,7 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
         iCanBus->canIdAdd(sent_addr);
         iCanBus->canIdAdd(recv_addr);
     }
+    printf("class 0 set\n");
 
     // set all message ID's for class 1
     for (int j=0; j<CAN_MAX_CARDS; j++)
@@ -1761,23 +1762,30 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
         for (i = start_addr; i < end_addr; i++)
             iCanBus->canIdAdd(i);
     }
+    printf("class 1 set\n");
+
 #else
+    printf("opening all CAN masks\n");
     // sets all message ID's for class 0
     for (i = 0x000; i < 0x0ff; i++)
         iCanBus->canIdAdd(i);
+    printf("class 0 set\n");
 
     // set all message ID's for class 1
     for (i = 0x100; i < 0x1ff; i++)
         iCanBus->canIdAdd(i);
+    printf("class 1 set\n");
 #endif
 
     // set all message ID's for class 2
     for (i = 0x200; i < 0x2ff; i++)
         iCanBus->canIdAdd(i);
+    printf("class 2 set\n");
 
     // set all message ID's for class 3
     for (i = 0x300; i < 0x3ff; i++)
         iCanBus->canIdAdd(i);
+    printf("class 3 set\n");
 
     _readBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _writeBuffer=iBufferFactory->createBuffer(BUF_SIZE);
