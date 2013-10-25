@@ -3,17 +3,17 @@ File version:
 Serial number:
 SN000
 Offsets:
-99
-96
-98
-98
+52
+51
+59
+60
 98
 98
 Calibration matrix:
 7fff
 8000
-0
-0
+8000
+7fff
 0
 0
 0
@@ -27,7 +27,7 @@ Calibration matrix:
 0
 0
 7fff
-8000
+0
 0
 0
 0
