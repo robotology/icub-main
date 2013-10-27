@@ -315,9 +315,6 @@ following ports:
     Recognized remote commands (be careful, <b>commands dealing
     with geometric projections will only work if the cameras
     intrinsic parameters are provided</b>):
-    - [quit]: quit the module.
-    - [susp]: suspend the module.
-    - [run]: resume the module.
     - [stop]: stop the motion immediately.
     - [bind] [pitch] <min> <max>: bind the neck pitch within a
       range given in degrees.
@@ -444,6 +441,10 @@ following ports:
       "motion-ongoing" event with the given checkpoint in [0,1].
     - [list] [ongoing]: return the list of registered
       "motion-ongoing" events.
+    - [susp]: suspend the module.
+    - [run]: resume the module.
+    - [status]: returns "running" or "suspended".
+    - [quit]: quit the module.
  
 \note When the tracking mode is active and the controller has 
       reached the target, it keeps on sending velocities to the
@@ -1547,26 +1548,6 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('s','u','s','p'):
-                {
-                    ctrl->suspend();
-                    eyesRefGen->suspend();
-                    slv->suspend();
-                    reply.addVocab(ack);
-                    return true;
-                }
-
-                //-----------------
-                case VOCAB3('r','u','n'):
-                {
-                    slv->resume();
-                    eyesRefGen->resume();
-                    ctrl->resume();
-                    reply.addVocab(ack);
-                    return true;
-                }
-
-                //-----------------
                 case VOCAB4('s','t','o','p'):
                 {
                     eyesRefGen->stopControl();
@@ -1754,6 +1735,37 @@ public:
                     }
 
                     break;
+                }
+
+                //-----------------
+                case VOCAB4('s','u','s','p'):
+                {
+                    ctrl->suspend();
+                    eyesRefGen->suspend();
+                    slv->suspend();
+                    reply.addVocab(ack);
+                    return true;
+                }
+
+                //-----------------
+                case VOCAB3('r','u','n'):
+                {
+                    slv->resume();
+                    eyesRefGen->resume();
+                    ctrl->resume();
+                    reply.addVocab(ack);
+                    return true;
+                }
+
+                //-----------------
+                case VOCAB4('s','t','a','t'):
+                {
+                    reply.addVocab(ack);
+                    if (ctrl->isSuspended())
+                        reply.addString("suspended");
+                    else
+                        reply.addString("running");
+                    return true; 
                 }
 
                 //-----------------

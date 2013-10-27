@@ -516,7 +516,7 @@ void EyePinvRefGen::threadRelease()
 /************************************************************************/
 void EyePinvRefGen::suspend()
 {
-    fprintf(stdout,"\nPseudoinverse Reference Generator has been suspended!\n\n");
+    fprintf(stdout,"Pseudoinverse Reference Generator has been suspended!\n");
     RateThread::suspend();
 }
 
@@ -524,7 +524,7 @@ void EyePinvRefGen::suspend()
 /************************************************************************/
 void EyePinvRefGen::resume()
 {
-    fprintf(stdout,"\nPseudoinverse Reference Generator has been resumed!\n\n");
+    fprintf(stdout,"Pseudoinverse Reference Generator has been resumed!\n");
     RateThread::resume();
 }
 
@@ -1035,7 +1035,7 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
-    fprintf(stdout,"\nSolver has been suspended!\n\n");
+    fprintf(stdout,"Solver has been suspended!\n");
     RateThread::suspend();
 }
 
@@ -1076,7 +1076,7 @@ void Solver::resume()
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;    
 
-    fprintf(stdout,"\nSolver has been resumed!\n\n");
+    fprintf(stdout,"Solver has been resumed!\n");
 
     mutex.unlock();
 

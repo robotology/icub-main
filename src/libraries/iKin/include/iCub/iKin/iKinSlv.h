@@ -168,7 +168,10 @@
  *  
  * \b susp request: example [susp], suspend the thread. 
  *  
- * \b run request: example [run], let the thread run again. 
+ * \b run request: example [run], let the thread run again.  
+ *  
+ * \b status request: example [status], returns [ack] 
+ *    "not_started"|"running"|"suspended".
  *  
  * \b quit request: example [quit], close ports and quit the
  *    thread. [ack] is returned.

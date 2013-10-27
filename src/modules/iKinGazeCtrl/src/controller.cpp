@@ -641,7 +641,7 @@ void Controller::suspend()
     stopLimb();
     commData->get_isCtrlActive()=false;
     commData->get_isSaccadeUnderway()=false;
-    fprintf(stdout,"\nController has been suspended!\n\n");
+    fprintf(stdout,"Controller has been suspended!\n");
     RateThread::suspend();
     notifyEvent("suspended");
 }
@@ -657,7 +657,7 @@ void Controller::resume()
         fbEyes=fbHead.subVector(3,5);
     }
 
-    fprintf(stdout,"\nController has been resumed!\n\n");
+    fprintf(stdout,"Controller has been resumed!\n");
     RateThread::resume();
     notifyEvent("resumed");
 }
