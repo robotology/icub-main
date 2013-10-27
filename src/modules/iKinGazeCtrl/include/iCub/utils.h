@@ -62,6 +62,7 @@ protected:
     Vector xdDelayed;    
     bool   isNew;
     bool   isNewDelayed;
+    bool   locked;
     bool   closing;
     int    rx;
 
@@ -72,6 +73,9 @@ public:
     xdPort(const Vector &xd0, void *_slv);
     ~xdPort();
 
+    void    lock()           { locked=true;         }
+    void    unlock()         { locked=false;        }
+    bool    islocked() const { return locked;       }
     int     get_rx() const   { return rx;           }
     bool   &get_new()        { return isNew;        }
     bool   &get_newDelayed() { return isNewDelayed; }    

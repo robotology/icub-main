@@ -36,6 +36,7 @@ xdPort::xdPort(const Vector &xd0, void *_slv)
 {   
     xdDelayed=xd=xd0;
     isNewDelayed=isNew=false;
+    locked=false;
     closing=false;
     rx=0;
 
@@ -59,12 +60,11 @@ xdPort::~xdPort()
 /************************************************************************/
 void xdPort::onRead(Bottle &b)
 {
+    if (locked)
+        return;
+
     mutex_0.lock();
-
-    int bLen=b.size();
-    int xdLen=xd.length();
-    int n=bLen>xdLen ? xdLen : bLen;    
-
+    int n=std::min(b.size(),(int)xd.length());
     for (int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
 
@@ -72,7 +72,6 @@ void xdPort::onRead(Bottle &b)
     rx++;
 
     mutex_0.unlock();
-
     syncEvent.signal();
 }
 
@@ -80,6 +79,9 @@ void xdPort::onRead(Bottle &b)
 /************************************************************************/
 void xdPort::set_xd(const Vector &_xd)
 {
+    if (locked)
+        return;
+
     mutex_0.lock();
     xd=_xd;
     isNew=true;

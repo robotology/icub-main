@@ -1035,6 +1035,7 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
+    port_xd->lock();
     fprintf(stdout,"Solver has been suspended!\n");
     RateThread::suspend();
 }
@@ -1080,6 +1081,7 @@ void Solver::resume()
 
     mutex.unlock();
 
+    port_xd->unlock();
     RateThread::resume();
 }
 
