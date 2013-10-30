@@ -49,6 +49,10 @@ iCubHeadCalibrator::~iCubHeadCalibrator()
 }
 
 
+void tolower(char& in)
+{
+  if(in<='Z' && in>='A') in=in-('Z'-'z');
+} 
 
 bool readCalibparam (Property p, std::string groupstring, std::string paramstring, double variable [], int nj)
 {
@@ -57,14 +61,19 @@ bool readCalibparam (Property p, std::string groupstring, std::string paramstrin
     xtmp = p.findGroup(groupstring).findGroup(paramstring);
     if (xtmp.isNull()==true)
     {
-        std::transform(groupstring.begin(), groupstring.end(), groupstring.begin(), ::tolower);
-        std::transform(paramstring.begin(), paramstring.end(), paramstring.begin(), ::tolower);
+        //std::transform(paramstring.begin(), paramstring.end(), paramstring.begin(), ::tolower);
+        tolower(paramstring[0]);
         xtmp = p.findGroup(groupstring).findGroup(paramstring);
     }
-    int joints = xtmp.size()<nj ? xtmp.size():nj;
-    for (int i=0; i<joints; i++)
+    if (xtmp.size()-1!=nj)
+    {
+        printf("Invalid number of parameter %s (found %d instead of %d) \n", paramstring.c_str(), xtmp.size()-1, nj);
+        return false;
+    }
+    for (int i=0; i<nj; i++)
     {
          variable[i] = xtmp.get(i+1).asDouble();
+         printf("loading parameter %s: %f \n", paramstring.c_str(), variable[i] );
     }
     return true;
 }
@@ -79,9 +88,27 @@ bool iCubHeadCalibrator::open (yarp::os::Searchable& config)
         return false;
     }
 
-    canID =  p.findGroup("CAN").find("CanDeviceNum").asInt();
+    canID =  0;
+    if (p.findGroup("CAN").check("CanDeviceNum"))
+    canID = p.findGroup("CAN").find("CanDeviceNum").asInt();
+    else if (p.findGroup("CAN").check("canDeviceNum"))
+    canID = p.findGroup("CAN").find("canDeviceNum").asInt();
+    else
+    {
+        fprintf(stderr, "using default CAN id 0");
+    }
 
-    int nj = p.findGroup("GENERAL").find("Joints").asInt();
+    int nj = 0;
+    if (p.findGroup("GENERAL").check("Joints"))
+    nj = p.findGroup("GENERAL").find("Joints").asInt();
+    else if (p.findGroup("GENERAL").check("joints"))
+    nj = p.findGroup("GENERAL").find("joints").asInt();
+    else
+    {
+        fprintf(stderr,"unable to find joints parameter");
+        return false;
+    }
+
     dtype = new double[nj];
     type = new unsigned char[nj];
     param1 = new double[nj];
