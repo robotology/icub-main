@@ -11,6 +11,8 @@
 
 #include "iCubHeadCalibratorV2.h"
 #include <math.h>
+#include <string>
+#include <algorithm>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -59,6 +61,7 @@ bool iCubHeadCalibratorV2::open (yarp::os::Searchable& config)
     canID =  p.findGroup("CAN").find("CanDeviceNum").asInt();
 
     int nj = p.findGroup("GENERAL").find("Joints").asInt();
+    dtype = new double[nj];
     type = new unsigned char[nj];
     param1 = new double[nj];
     param2 = new double[nj];

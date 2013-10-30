@@ -18,8 +18,8 @@
 #ifndef __ICUB_HEAD_CALIBRATOR__
 #define __ICUB_HEAD_CALIBRATOR__
 
+#include <string>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
@@ -86,6 +86,7 @@ private:
     void goToZero(int j);
     bool checkCalibrateJointEnded(int j);
     void checkGoneToZero(int j);
+    bool checkGoneToZeroThreshold(int j);
 
     IControlCalibration2 *iCalibrate;
     IAmplifierControl *iAmps;
@@ -95,16 +96,23 @@ private:
 	IControlMode *iControlMode;
 
     unsigned char *type;
-	double *param1;
-	double *param2;
-	double *param3;
-	double *pos;
-	double *vel;
-
-    double *homePos;
+    double        *dtype;
+    int    canID;
+    double *param1;
+    double *param2;
+    double *param3;
+    int    *maxPWM;
+    double *currPos;
+    double *currVel;
+    Pid    *original_pid;
+    Pid    *limited_pid;
+    double *zeroVel;
+    double *zeroPos;
     double *homeVel;
-
-    bool abortParking;
+    double *homePos;
     bool abortCalib;
+    bool abortParking;
+    FILE   *logfile;   
+    std::string  logfile_name;
 };
 #endif

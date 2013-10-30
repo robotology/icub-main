@@ -96,6 +96,7 @@ private:
     IControlMode *iControlMode;
 
     unsigned char *type;
+    double        *dtype;
     int    canID;
     double *param1;
     double *param2;
