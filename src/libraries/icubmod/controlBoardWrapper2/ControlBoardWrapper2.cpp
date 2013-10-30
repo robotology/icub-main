@@ -2422,6 +2422,27 @@ bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
         if(parameters.size()==2)
         {
             Bottle *bot=parameters.get(1).asList();
+            Bottle tmpBot;
+            if(bot==NULL)
+            {
+                // probably data are not passed in the correct way, try to read them as a string.
+                ConstString bString(parameters.get(1).asString());
+                tmpBot.fromString(bString);
+
+                if(tmpBot.size() != 4)
+                {
+                    cerr << "Error: check network parameters in part description" << endl;
+                    cerr << "--> I was expecting "<<nets->get(k).asString().c_str() << " followed by a list of four integers in parenthesis" << endl;
+                    cerr << "Got: "<< parameters.toString().c_str() << "\n";
+                    return false;
+                }
+                else
+                {
+                    bot = &tmpBot;
+                }
+            }
+
+            // If I came here, bot is correct
             wBase=bot->get(0).asInt();
             wTop=bot->get(1).asInt();
             base=bot->get(2).asInt();
@@ -2443,7 +2464,6 @@ bool ControlBoardWrapper2::openDeferredAttach(Property& prop)
             return false;
         }
 
-        
         SubDevice *tmpDevice=device.getSubdevice(k);
 
         int axes=top-base+1;
