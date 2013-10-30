@@ -1014,7 +1014,7 @@ void ServerCartesianController::alignJointsBounds()
     fprintf(stdout,"%s: aligning joints bounds ...\n",ctrlName.c_str());
     for (size_t i=0; i<lDsc.size(); i++)
     {
-        fprintf(stdout,"part #%d: %s\n",i,lDsc[i].key.c_str());
+        fprintf(stdout,"part #%lu: %s\n",(unsigned long)i,lDsc[i].key.c_str());
         for (int j=0; j<lJnt[i]; j++)
         {
             lLim[i]->getLimits(lRmp[i][j],&min,&max);
