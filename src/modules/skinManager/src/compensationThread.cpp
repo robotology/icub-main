@@ -173,10 +173,12 @@ bool CompensationThread::threadInit()
 
                 printf("Max neighbor distance: %f m\n", maxNeighDist);
                 FOR_ALL_PORTS(i){
-	                string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
-	                string filePath(rf->findFile(taxelPosFile.c_str()));
-                    compensators[i]->setMaxNeighborDistance(maxNeighDist);
-	                compensators[i]->setTaxelPosesFromFile(filePath.c_str());
+                    if(compWorking[i]){
+	                    string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
+	                    string filePath(rf->findFile(taxelPosFile.c_str()));
+                        compensators[i]->setMaxNeighborDistance(maxNeighDist);
+	                    compensators[i]->setTaxelPosesFromFile(filePath.c_str());
+                    }
 	            }
             }
         }
