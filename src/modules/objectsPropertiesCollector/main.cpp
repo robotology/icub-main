@@ -576,17 +576,16 @@ public:
     /************************************************************************/
     void load()
     {
-        mutex.lock();
         string dbFileName=rf->findFile("db");
         if (dbFileName.empty())
         {
             printMessage("requested database to be loaded not found!\n");
-            mutex.unlock();
             return;
         }
 
         printMessage("loading database from %s ...\n",dbFileName.c_str());
 
+        mutex.lock();
         clear();
         idCnt=0;
 
@@ -723,14 +722,14 @@ public:
     {
         if (content==NULL)
             return false;
-
-        mutex.lock();
+        
         if (content->size()==1)
         {
             if (content->get(0).isVocab() || content->get(0).isString())
             {
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
+                    mutex.lock();
                     clear();
                     printMessage("database cleared\n");
                     mutex.unlock();
@@ -742,13 +741,13 @@ public:
         if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.unlock();
             return false;
         }
-        
+
         int id=content->find(PROP_ID).asInt();
         printMessage("removing item %d ... ",id);
 
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -975,18 +974,17 @@ public:
     {
         if (content==NULL)
             return false;
-
-        mutex.lock();
+        
         if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.unlock();
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
         printMessage("getting owner of the item %d ... ",id);
 
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -1008,18 +1006,17 @@ public:
     {
         if (content==NULL)
             return false;
-
-        mutex.lock();
+        
         if (!content->check(PROP_ID))
         {
             printMessage("%s field not present within the request!\n",PROP_ID);
-            mutex.unlock();
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
         printMessage("getting time elapsed from last update for item %d ... ",id);
 
+        mutex.lock();
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
