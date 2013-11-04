@@ -1,0 +1,11 @@
+<application>
+<name>icubHertfordshire01</name>
+<module>
+      <name>iCubInterface</name>
+      <parameters></parameters>
+	  <node>pc104</node>
+	  <stdio>icubsrv</stdio>	
+	<tag>iCubInterface</tag>
+   </module>
+   </application>
+
