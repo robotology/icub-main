@@ -19,13 +19,13 @@
 IF (NOT ODE_DIR)
 	SET (ODE_ENV_DIR $ENV{ODE_DIR})
 	IF (ODE_ENV_DIR)
-		FIND_PATH(ODE_DIR include/ode/ode.h "$ENV{ODE_DIR}")
+		FIND_PATH(ODE_DIR include/ode/ode.h HINTS "${ODE_ENV_DIR}")
 	ELSE (ODE_ENV_DIR)
 		FIND_PATH(ODE_DIR include/ode/ode.h ${CMAKE_PROJECT_DIR})
 	ENDIF (ODE_ENV_DIR)
 ENDIF (NOT ODE_DIR)
 
-FIND_PATH(ODE_INCLUDE_DIRS ode/ode.h "${ODE_DIR}/include")
+FIND_PATH(ODE_INCLUDE_DIRS ode/ode.h HINTS "${ODE_DIR}/include")
 MARK_AS_ADVANCED(ODE_INCLUDE_DIRS)
 
 SET (ODE_SYSTEM_LIBS)
@@ -38,35 +38,35 @@ IF (MSVC)
   #search static and dynamic libs, single and double precision
   FIND_LIBRARY(ODE_MAIN_STATIC_DOUBLE_DB 
                 NAMES ode ode_doubled 
-                PATHS "${ODE_DIR}/lib/debuglib" "${ODE_DIR}/lib/debugdoublelib")
+                HINTS "${ODE_DIR}/lib/debuglib" "${ODE_DIR}/lib/debugdoublelib")
   
   FIND_LIBRARY(ODE_MAIN_STATIC_DOUBLE_RE 
                NAMES ode ode_double 
-               PATHS "${ODE_DIR}/lib/releaselib" "${ODE_DIR}/lib/releasedoublelib")
+               HINTS "${ODE_DIR}/lib/releaselib" "${ODE_DIR}/lib/releasedoublelib")
 
   FIND_LIBRARY(ODE_MAIN_DLL_DOUBLE_DB 
                NAMES ode ode_doubled 
-               PATHS "${ODE_DIR}/lib/debugdll"	"${ODE_DIR}/lib/debugdoubledll")
+               HINTS "${ODE_DIR}/lib/debugdll"	"${ODE_DIR}/lib/debugdoubledll")
 
   FIND_LIBRARY(ODE_MAIN_DLL_DOUBLE_RE 
                 NAMES ode ode_double 
-                PATHS "${ODE_DIR}/lib/releasedll" "${ODE_DIR}/lib/releasedoubledll")
+                HINTS "${ODE_DIR}/lib/releasedll" "${ODE_DIR}/lib/releasedoubledll")
 
   FIND_LIBRARY(ODE_MAIN_STATIC_SINGLE_DB 
                 NAMES ode ode_singled 
-                PATHS "${ODE_DIR}/lib/debuglib" "${ODE_DIR}/lib/debugsinglelib")
+                HINTS "${ODE_DIR}/lib/debuglib" "${ODE_DIR}/lib/debugsinglelib")
 
   FIND_LIBRARY(ODE_MAIN_STATIC_SINGLE_RE 
                 NAMES ode ode_single 
-                PATHS "${ODE_DIR}/lib/releaselib" "${ODE_DIR}/lib/releasesinglelib")
+                HINTS "${ODE_DIR}/lib/releaselib" "${ODE_DIR}/lib/releasesinglelib")
 
   FIND_LIBRARY(ODE_MAIN_DLL_SINGLE_DB 
                 NAMES ode ode_singled 
-                PATHS "${ODE_DIR}/lib/debugdll" "${ODE_DIR}/lib/debugsingledll")
+                HINTS "${ODE_DIR}/lib/debugdll" "${ODE_DIR}/lib/debugsingledll")
 
   FIND_LIBRARY(ODE_MAIN_DLL_SINGLE_RE 
                 NAMES ode ode_single 
-                PATHS "${ODE_DIR}/lib/releasedll" "${ODE_DIR}/lib/releasesingledll")
+                HINTS "${ODE_DIR}/lib/releasedll" "${ODE_DIR}/lib/releasesingledll")
  
   MARK_AS_ADVANCED(ODE_MAIN_STATIC_SINGLE_DB 
                    ODE_MAIN_STATIC_SINGLE_RE
@@ -116,7 +116,7 @@ IF (MSVC)
 
 ELSE (MSVC) 
 
-  FIND_LIBRARY(ODE_MAIN_LIBRARY ode libode "${ODE_DIR}/lib" "${ODE_DIR}/ode/src" "${ODE_DIR}/ode/src/.libs")
+  FIND_LIBRARY(ODE_MAIN_LIBRARY ode libode HINTS "${ODE_DIR}/lib" "${ODE_DIR}/ode/src" "${ODE_DIR}/ode/src/.libs")
   MARK_AS_ADVANCED(ODE_MAIN_LIBRARY)
 
   FIND_PACKAGE(OpenGL)
