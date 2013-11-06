@@ -7,7 +7,7 @@
  *
  */
 
-#include "ControlBoardWrapper2wip.h"
+#include "ControlBoardWrapper2.h"
 
 #include <iostream>
 
