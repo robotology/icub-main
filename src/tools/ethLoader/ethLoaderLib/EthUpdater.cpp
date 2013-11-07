@@ -19,7 +19,7 @@ void EthUpdater::cmdScan()
     mBoardList.empty();
 
     mTxBuffer[0]=CMD_SCAN;
-    //mSocket.SendTo(mTxBuffer,1,mPort,mBroadcast);
+    //mSocket.SendTo(mTxBuffer,1,mPort,0x0A000163);
     mSocket.SendBroad(mTxBuffer,1,mPort);
 
     ACE_UINT16 rxPort;
@@ -31,6 +31,9 @@ void EthUpdater::cmdScan()
         {
             if (rxAddress!=mMyAddress)
             {
+                printf("ADDRESS=%x\n",rxAddress);
+                fflush(stdout);
+
                 ACE_UINT8 version=mRxBuffer[1];
                 ACE_UINT8 release=mRxBuffer[2];
                 ACE_UINT8 build  =mRxBuffer[3];
