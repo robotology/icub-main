@@ -58,7 +58,7 @@
 
 // Emb Obj includes
 #include "hostTransceiver.hpp"
-//#include "debugFunctions.h"
+#include "debugFunctions.h"
 #include "FeatureInterface_hid.h"
 
 
@@ -305,7 +305,7 @@ private:
 
 #ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
     // for statistic debug purpose
-    Stats stats;
+    Stats stats[10];
     Port statsPort;
 #endif
 
