@@ -44,6 +44,9 @@ FILE *outFile = NULL;
 
 
 
+#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ //if this macro is defined then ethMenager sends pkts to ems even if they are empty
+                                              //ATTENTION: is important to define also the same macro in ethManager.cpp
+
 hostTransceiver::hostTransceiver() : transMutex(1)
 {
     yTrace();
@@ -561,8 +564,11 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 
     //ADD
     res = eo_transceiver_outpacket_Prepare(pc104txrx, &numofrops);
-    if((eores_OK != res) || (0 == numofrops))
- //   if((eores_OK != res))
+#ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
+    if((eores_OK != res))
+#else
+    if((eores_OK != res) || (0 == numofrops)) //transmit only if res is ok and there is at least one rop to send
+#endif
     {
     	//if I have no rop to send don't send any pkt
     	return;
