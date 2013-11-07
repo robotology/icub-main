@@ -251,6 +251,26 @@ private:
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
+    //debug purpose
+    
+#undef  VERIFY_ROP_SETIMPEDANCE   //this macro let you send setimpedence rop with signature.								  //if you want use this feature, you should compiled ems firmware with same macro.
+#undef VERIFY_ROP_SETPOSITIONRAW  //this macro let you send setposition rop with signature.
+								  //if you want use this feature, yuo should compiled ems firmware with same macro.
+    
+#ifdef VERIFY_ROP_SETIMPEDANCE 
+    uint32_t *impedanceSignature;
+#endif
+
+#ifdef VERIFY_ROP_SETPOSITIONRAW
+    uint32_t *refRawSignature;
+    bool        *sendingDirects;
+#endif
+    
+    
+    
+    
+    
+
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 

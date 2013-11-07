@@ -140,6 +140,18 @@ bool embObjMotionControl::alloc(int nj)
     _calibrated = allocAndCheck<bool>(nj);
     _cacheImpedance = allocAndCheck<eOmc_impedance_t>(nj);
 
+    //debug purpose
+
+    
+#ifdef VERIFY_ROP_SETIMPEDANCE 
+    impedanceSignature = allocAndCheck<uint32_t> (nj);
+#endif
+
+#ifdef VERIFY_ROP_SETPOSITIONRAW
+    refRawSignature = allocAndCheck<uint32_t> (nj);
+    sendingDirects = allocAndCheck<bool>(nj);
+#endif
+
 #ifdef _SETPOINT_TEST_
     j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
 #endif
@@ -1177,6 +1189,24 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
     setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
     setpoint.to.position.value = (eOmeas_position_t) ref;
     setpoint.to.position.withvelocity = 0;
+#ifdef VERIFY_ROP_SETPOSITIONRAW
+    refRawSignature[j]++;
+
+    switch(_fId.boardNum)
+    {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            if( (!sendingDirects) && (j<5) )
+            {
+                yWarning() << "Sending positionDirect/setReference for board" << _fId.boardNum << "joint " << j;
+                sendingDirects[j]=true;
+            }
+    }
+
+    return res->addSetMessageWithSignature(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint, refRawSignature[j]);
+#endif 
 
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
 }
@@ -1212,7 +1242,7 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
     getControlModeRaw(j, &mycontrolMode);
     if(VOCAB_CM_POSITION != mycontrolMode )
     {
-        yWarning() << "Asked for Position PID Error while not in Position control mode. Returning zeros";
+        //yWarning() << "Asked for Position PID Error while not in Position control mode. Returning zeros";
         err = 0;
         return false;
     }
@@ -1316,12 +1346,25 @@ bool embObjMotionControl::getPidsRaw(Pid *pids)
 
 bool embObjMotionControl::getReferenceRaw(int j, double *ref)
 {
-    return NOT_YET_IMPLEMENTED("getReference");
+    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jstatus__ofpid);
+    uint16_t size;
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    res->readBufferedValue(nvid, _fId.ep, (uint8_t *)&tmpJointStatus, &size);
+    *ref = tmpJointStatus.reference;
+    return true;
 }
 
 bool embObjMotionControl::getReferencesRaw(double *refs)
 {
-    return NOT_YET_IMPLEMENTED("getReference");
+    bool ret = true;
+
+    // just one joint at time, wait answer before getting to the next.
+    // This is because otherwise too many msg will be placed into can queue
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getReferenceRaw(j, &refs[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getErrorLimitRaw(int j, double *limit)
@@ -1652,6 +1695,21 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     }
 #endif
 
+#ifdef VERIFY_ROP_SETPOSITIONRAW
+    switch(_fId.boardNum)
+    {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            if( (sendingDirects) && (j<5) )
+            {
+                yWarning() << "Sending positionMove for board" << _fId.boardNum << "joint " << j;
+                sendingDirects[j]=false;
+            }
+    }
+#endif
+
 //    yDebug() << "Position move EP" << _fId.ep << "j" << j << setpoint.to.position.value << "\tspeed " << setpoint.to.position.withvelocity  << " at time: " << (Time::now()/1e6);
 
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &setpoint);
@@ -1851,6 +1909,20 @@ bool embObjMotionControl::stopRaw(int j)
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jcmmnds__stoptrajectory);
 
     eObool_t stop = eobool_true;
+    
+#ifdef VERIFY_ROP_SETPOSITIONRAW
+    switch(_fId.boardNum)
+    {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            if(j<5)
+            {
+                yWarning() << "Sending stop for board" << _fId.boardNum << "joint " << j;
+            }
+    }
+#endif
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &stop);
 }
 
@@ -2403,7 +2475,7 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 bool embObjMotionControl::updateMeasure(int j, double &fTorque)
 {
 
-	double NEWTON2SCALE=32768.0/_maxTorque[j];
+	double NEWTON2SCALE=32767.0/_maxTorque[j];
 
 	eOmeas_torque_t meas_torque = 0;
 
@@ -2561,7 +2633,7 @@ bool embObjMotionControl::getTorqueErrorRaw(int j, double *err)
     getControlModeRaw(j, &mycontrolMode);
     if(VOCAB_CM_TORQUE != mycontrolMode)
     {
-        yWarning() << "Asked for Torque PID Error while not in Torque control mode. Returning zeros";
+        //yWarning() << "Asked for Torque PID Error while not in Torque control mode. Returning zeros";
         err = 0;
         return false;
     }
@@ -2688,8 +2760,14 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
 	val.offset      = _cacheImpedance[j].offset;
 
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
-    ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
+    
+#ifdef VERIFY_ROP_SETIMPEDANCE
+    impedanceSignature[j]++;
+    ret &= res->addSetMessageWithSignature(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val, impedanceSignature[j]);
+    return ret;
+#endif
 
+    ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
     return ret;
 }
 
@@ -2706,8 +2784,16 @@ bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
 	val.stiffness 	= _cacheImpedance[j].stiffness;
 	val.damping 	= _cacheImpedance[j].damping;
     val.offset  	= _cacheImpedance[j].offset;
-
+    
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) j, jointNVindex_jconfig__impedance);
+    
+    
+#ifdef VERIFY_ROP_SETIMPEDANCE
+    impedanceSignature[j]++;
+    ret &= res->addSetMessageWithSignature(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val, impedanceSignature[j]);
+    return ret;
+#endif
+
     ret &= res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t *) &val);
 
     return ret;
@@ -2834,22 +2920,25 @@ bool embObjMotionControl::getVelPidsRaw(Pid *pids)
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocit as well as positionMove
-	return positionMoveRaw(j, ref);
-    return NOT_YET_IMPLEMENTED("setPositionRaw Single joint");
+    // does the same as setReferenceRaw, with some more misterious (missing) checks.
+	return setReferenceRaw(j, ref);
 }
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
 {
     // needs to send both position and velocit as well as positionMove
-	return positionMoveRaw(n_joint, joints, refs);
-    return NOT_YET_IMPLEMENTED("setPositionsRaw Group");
+    bool ret = true;    
+    for(int i=0; i<n_joint; i++)
+    {
+        ret &= setReferenceRaw(joints[i], refs[i]);
+    }
+	return ret;
 }
 
 bool embObjMotionControl::setPositionsRaw(const double *refs)
 {
     // needs to send both position and velocit as well as positionMove
-	return positionMoveRaw(refs);
-    return NOT_YET_IMPLEMENTED("setPositionsRaw All joints");
+	return setReferencesRaw(refs);
 }
 
 
