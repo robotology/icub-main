@@ -16,6 +16,8 @@ private:
     double sumUsedSq;      //cumulative sum sq of estimated thread tun
     double previousRun;    //time when last iteration started
     double currentRun;     //time when this iteration started
+    // AC
+    double elapsed;        //time between start and end
     bool scheduleReset;
 
     void _resetStat() {
@@ -115,10 +117,16 @@ public:
 
     void tickEnd()
     {
-        double elapsed=yarp::os::Time::now()-currentRun;
+        elapsed=(yarp::os::Time::now()-currentRun) * 1000;
 
         //save last
-        totalUsed+=elapsed*1000;
-        sumUsedSq+=elapsed*1000*elapsed*1000;
+        totalUsed+=elapsed;
+        sumUsedSq+=elapsed*elapsed;
+    }
+
+    //AC
+    double getElapsed()
+    {
+    	return elapsed;
     }
 };

@@ -44,15 +44,29 @@
 
 #define _DEEP_DEBUG_
 
-#define eb1_ip "10.0.0.1"
+#define eb1_ip "10.0.1.1"
 #define eb2_ip "10.0.1.2"
-#define eb3_ip "10.255.72.101"
+#define eb3_ip "10.0.1.3"
 #define eb4_ip "10.0.1.4"
-#define eb5_ip "192.168.202.1"
-#define eb6_ip "10.0.0.100"
+#define eb5_ip "10.0.1.5"
+#define eb6_ip "10.0.1.6"
+#define eb7_ip "10.0.1.7"
+#define eb8_ip "10.0.1.8"
+#define eb9_ip "10.0.1.9"
+
+#define eb1_addr inet_addr(eb1_ip)
+#define eb2_addr inet_addr(eb2_ip)
+#define eb3_addr inet_addr(eb3_ip)
+#define eb4_addr inet_addr(eb4_ip)
+#define eb5_addr inet_addr(eb5_ip)
+#define eb6_addr inet_addr(eb6_ip)
+#define eb7_addr inet_addr(eb7_ip)
+#define eb8_addr inet_addr(eb8_ip)
+#define eb9_addr inet_addr(eb9_ip)
 
 
-#define	BOARD_NUM					7
+
+#define	BOARD_NUM					10
 #define SOGLIA						1700
 #define MAX_ACQUISITION 			100*1000
 
@@ -66,46 +80,46 @@ void print_data(void);
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
-  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+#define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
 
 struct timezone
 {
-  int  tz_minuteswest; /* minutes W of Greenwich */
-  int  tz_dsttime;     /* type of dst correction */
+    int  tz_minuteswest; /* minutes W of Greenwich */
+    int  tz_dsttime;     /* type of dst correction */
 };
 
 #else
-  #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+#define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
 #endif
 
 static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)
 {
-	/* Perform the carry for the later subtraction by updating y. */
+    /* Perform the carry for the later subtraction by updating y. */
 
-	if(_x->tv_usec < _y->tv_usec)
-	{
-		int nsec    = (_y->tv_usec - _x->tv_usec) / 1000000 + 1;
+    if(_x->tv_usec < _y->tv_usec)
+    {
+        int nsec    = (_y->tv_usec - _x->tv_usec) / 1000000 + 1;
 
-		_y->tv_usec -= 1000000 * nsec;
-		_y->tv_sec  += nsec;
-	}
+        _y->tv_usec -= 1000000 * nsec;
+        _y->tv_sec  += nsec;
+    }
 
-	if(_x->tv_usec - _y->tv_usec > 1000000)
-	{
-		int nsec    = (_x->tv_usec - _y->tv_usec) / 1000000;
+    if(_x->tv_usec - _y->tv_usec > 1000000)
+    {
+        int nsec    = (_x->tv_usec - _y->tv_usec) / 1000000;
 
-		_y->tv_usec += 1000000 * nsec;
-		_y->tv_sec  -= nsec;
-	}
+        _y->tv_usec += 1000000 * nsec;
+        _y->tv_sec  -= nsec;
+    }
 
-	/* Compute the time remaining to wait. tv_usec is certainly positive. */
+    /* Compute the time remaining to wait. tv_usec is certainly positive. */
 
-	_result->tv_sec  = _x->tv_sec  - _y->tv_sec;
-	_result->tv_usec = _x->tv_usec - _y->tv_usec;
+    _result->tv_sec  = _x->tv_sec  - _y->tv_sec;
+    _result->tv_usec = _x->tv_usec - _y->tv_usec;
 
-	/* Return 1 if result is negative. */
+    /* Return 1 if result is negative. */
 
-	return _x->tv_sec < _y->tv_sec;
+    return _x->tv_sec < _y->tv_sec;
 }
 
 
