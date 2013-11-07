@@ -60,7 +60,7 @@ extern OPCprotocolManager *opcMan_ptr;
 extern ACE_SOCK_Dgram	*ACE_socket;
 
 eOdgn_commands_t dgnCommands={0};
-
+uint32_t cmdena_rxsetPointCheck = 0;
 
 // --------------------------------------------------------------------------------------------------------------------
 // - typedef with internal scope
@@ -72,7 +72,7 @@ eOdgn_commands_t dgnCommands={0};
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
 static uint32_t s_getAddressFromUser(void);
-static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr, bool enableCheckExtFault);
+static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr);
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialization) of static variables
@@ -87,9 +87,9 @@ void commands(void)
 	printf("\nq: quit\n");
 	printf("0: ena/disa diagnostics on a ems\n");
 	printf("1: ena/disa diagnostics on a group of ems (exteranl fault is NOT checked)\n");
-	printf("1: ena/disa diagnostics on a group of ems and exteranl fault is checked \n");
-	printf("3: ........\n");
-	printf("4: ........\n");
+	printf("2: ena/disa diagnostics on a group of ems and exteranl fault is checked \n");
+	printf("3: advanced configuration....\n");
+	printf("4: ena/disa rx setpoint che for red ball demo.\n");
 	printf("5: ........\n");
 	printf("\n");
 }
@@ -143,6 +143,8 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 	uint16_t size = 0;
     uint32_t cmdena=0;
     uint32_t extFaultEna=0;
+    uint32_t canStatistics=0;
+    uint32_t ethCounters=0;
     opcprotman_res_t res;
 
     if(opcMan_ptr ==  NULL)
@@ -158,6 +160,11 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     printf("enable/disable Check external fault. Press 1 to enable 0 otherwise\n");
     scanf("%d", &extFaultEna);
 
+    printf("enable/disable can statistics. Press 1 to enable 0 otherwise\n");
+    scanf("%d", &canStatistics);
+
+    printf("enable/disable Check eth counters. Press 0 to disable or 1 for crcError, 2 for num of rxUnicat, 4 for txtUnicast\n");
+    scanf("%d", &ethCounters);
 
     dest_addr = s_getAddressFromUser();
     printf("address is 0x %x \n", dest_addr);
@@ -169,12 +176,17 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 
     if(extFaultEna>1)
     {
-    	extFaultEna=1;
+        extFaultEna=1;
     }
 
+    if(canStatistics>1)
+	{
+    	canStatistics=1;
+	}
     dgnCommands.enable = cmdena;
     dgnCommands.signalExtFault = extFaultEna;
-	
+    dgnCommands.signalEthCounters = ethCounters;
+    dgnCommands.signalCanStatistics = canStatistics;
 //	addr->set(4444, (10<<24)|(255<<16)|(72<<8)|19 );
 	addr->set(4444, dest_addr);
 
@@ -191,24 +203,10 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 
 
 
-// fill the callback with your code
-/*uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr	*addr)
-{
-	uint32_t dest_addr = s_getAddressFromUser();
-	uint16_t size = 0;
 
-	
-//	addr->set(4444, (10<<24)|(255<<16)|(72<<8)|19 );
-	addr->set(4444, dest_addr);
-
-	opcprotman_Form(opcMan_ptr, opcprotman_opc_ask, 1, NULL /*setdata, payload_ptr, &size);
-
-	return(size);
-}*/
 uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
-
-
+	uint32_t cmdena=0;
 
     if(opcMan_ptr ==  NULL)
 	{
@@ -216,70 +214,100 @@ uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 		return(0);
 	}
 
+    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
+    scanf("%d", &cmdena);
+    dgnCommands.enable = cmdena;
 
-    enaDisaDiagnostic(payload_ptr, payload_size, addr, false);
+    dgnCommands.signalExtFault = 0;
+    dgnCommands.signalEthCounters = 0;
+    dgnCommands.signalCanStatistics = 0;
 
-//    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
-//    scanf("%d", &cmdena);
-//    dgnCommands.enable = cmdena;
-//
-//    printf("insert renge of board[1,9]: min max\n");
-//    scanf("%d %d", &min, &max);
-//    if(min>max)
-//    {
-//        printf("error: min > max!\n");
-//        return(0);
-//    }
-//    if(min<1)
-//    {
-//        min = 1;
-//    }
-//    if(max>9)
-//    {
-//        max = 9;
-//    }
-//
-//    for(j=min; j<=max; j++)
-//    {
-//    	address = (10<<24)|(0<<16)|(1<<8)|j ;
-//    	addr->set(4444, address);
-//    	res = opcprotman_Form(opcMan_ptr, opcprotman_opc_set, eodgn_nvidbdoor_cmds,  &dgnCommands, (opcprotman_message_t*)payload_ptr, &size);
-//		if(opcprotman_OK  != res)
-//		{
-//
-//			printf("erron in former\n");
-//			return(0);
-//		}
-//    		ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
-//			ACE_TCHAR     address[64];
-//			addr->addr_to_string(address, 64);
-//			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
-//	}
+    enaDisaDiagnostic(payload_ptr, payload_size, addr);
+
     return(0); //no data to send in main loop
 
 }
 
 uint32_t callback_button_2(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
+	uint32_t cmdena=0;
+
     if(opcMan_ptr ==  NULL)
 	{
 		printf("opcMan_ptr is NULL\n");
 		return(0);
 	}
 
+    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
+    scanf("%d", &cmdena);
+    dgnCommands.enable = cmdena;
 
-    enaDisaDiagnostic(payload_ptr, payload_size, addr, true);
+    dgnCommands.signalExtFault = 1;
+    dgnCommands.signalEthCounters = 0;
+    dgnCommands.signalCanStatistics = 0;
+
+    enaDisaDiagnostic(payload_ptr, payload_size, addr);
+    return(0); //no data to send in main loop
 }
 
 
 uint32_t callback_button_3(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
+    uint32_t cmdena=0;
+    uint32_t extFaultEna=0;
+    uint32_t canStatistics=0;
+    uint32_t ethCounters=0;
+
+    if(opcMan_ptr ==  NULL)
+	{
+		printf("opcMan_ptr is NULL\n");
+		return(0);
+	}
+
+	printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
+	scanf("%d", &cmdena);
+	dgnCommands.enable = cmdena;
+
+	 if(cmdena)
+	 {
+		 printf("enable/disable Check external fault. Press 1 to enable 0 otherwise\n");
+		 scanf("%d", &extFaultEna);
+
+		 printf("enable/disable can statistics. Press 1 to enable 0 otherwise\n");
+		 scanf("%d", &canStatistics);
+
+		 printf("enable/disable Check eth counters. Press 0 to disable or 1 for crcError, 2 for num of rxUnicat, 4 for txtUnicast\n");
+		 scanf("%d", &ethCounters);
+
+	    dgnCommands.signalExtFault = extFaultEna;
+	    dgnCommands.signalEthCounters = ethCounters;
+	    dgnCommands.signalCanStatistics = canStatistics;
+	 }
+	 else
+	 {
+		 dgnCommands.signalExtFault = 0;
+		 dgnCommands.signalEthCounters = 0;
+		 dgnCommands.signalCanStatistics = 0;
+	 }
+
+	enaDisaDiagnostic(payload_ptr, payload_size, addr);
+
+
 	return(0);
 }
 
 uint32_t callback_button_4(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
-	return(0);
+	uint16_t size = 0;
+    uint32_t cmdena=0;
+    uint32_t min, max, j;
+    opcprotman_res_t res;
+    uint32_t address=0;
+
+
+    printf("enable/disable diagnostics about rx setpoint (red ball demo). Press 1 to enable 0 otherwise\n");
+    scanf("%d", &cmdena_rxsetPointCheck);
+
 }
 
 uint32_t callback_button_5(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
@@ -315,20 +343,14 @@ uint32_t callback_button_10(uint8_t *payload_ptr, uint32_t payload_size, ACE_INE
 
 
 
-static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr, bool enableCheckExtFault)
+static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
 
 	uint16_t size = 0;
-    uint32_t cmdena=0;
     uint32_t min, max, j;
     opcprotman_res_t res;
     uint32_t address=0;
 
-
-    printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &cmdena);
-    dgnCommands.enable = cmdena;
-    dgnCommands.signalExtFault = enableCheckExtFault;
 
     printf("insert renge of board[1,9]: min max\n");
     scanf("%d %d", &min, &max);
@@ -337,6 +359,26 @@ static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_I
         printf("error: min > max!\n");
         return;
     }
+
+    if((min == 0) && (max ==0))
+    {
+    	//use debug board on desk
+    	address = (10<<24)|(0<<16)|(1<<8)|99 ;
+		addr->set(4444, address);
+		res = opcprotman_Form(opcMan_ptr, opcprotman_opc_set, eodgn_nvidbdoor_cmds,  &dgnCommands, (opcprotman_message_t*)payload_ptr, &size);
+		if(opcprotman_OK  != res)
+		{
+
+			printf("erron in former\n");
+			return;
+		}
+			ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
+			ACE_TCHAR     address[64];
+			addr->addr_to_string(address, 64);
+			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
+    }
+
+
     if(min<1)
     {
         min = 1;

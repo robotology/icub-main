@@ -52,11 +52,17 @@
 // - definition (and initialisation) of extern variables, but better using _get(), _set() 
 // --------------------------------------------------------------------------------------------------------------------
 extern eOdgn_commands_t dgnCommands;
+extern uint32_t cmdena_rxsetPointCheck;
+extern uint8_t board;
 
 // --------------------------------------------------------------------------------------------------------------------
 // - typedef with internal scope
 // --------------------------------------------------------------------------------------------------------------------
-// empty-section
+typedef struct
+{
+	uint32_t sum;
+} ethCounters_total;
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -75,6 +81,10 @@ static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads);
 
 static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
 static void on_rec_errorLog(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
+static void on_rec_canQueueStatistics(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata);
+
 
 /*
 extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
@@ -122,8 +132,8 @@ extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map,
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
-
-
+static eOdgn_emsapplication_emswithmc_t s_emswithmc_data;
+static ethCounters_total ethCounterBoards[9][3] = {{0}}; //9= num of boards; 3 is num of eth links
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
@@ -183,9 +193,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 /*personalize eodgn_nvidbdoor_emsapplmc var*/
 	res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsapplmc,
-                                        NULL,  //use NULL because i'd like print received data and not store them!!
-                                        	   //pay attention: see NOTE 1 at the end of this function!!!
-                                        //NULL);
+                                        (void*)&s_emswithmc_data,
                                         on_rec_emsapplmc);
 
     if(opcprotman_OK != res)
@@ -206,6 +214,26 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
         return(res);
     }
 
+    /*personalize eodgn_nvidbdoor_jointsStateCmd var*/
+    	res = opcprotman_personalize_var(   p,
+    										eodgn_nvidbdoor_canQueueStatistics,
+                                            NULL,
+                                            on_rec_canQueueStatistics);
+
+        if(opcprotman_OK != res)
+        {
+            return(res);
+        }
+   /*personalize eodgn_nvidbdoor_rxcheckSetpoints var */
+    	res = opcprotman_personalize_var(   p,
+                                            eodgn_nvidbdoor_rxcheckSetpoints,
+                                            NULL,
+                                            on_rec_rxcheckSetpoints);
+
+        if(opcprotman_OK != res)
+        {
+            return(res);
+        }
 
     return(res);
 
@@ -231,13 +259,15 @@ static void s_print_emsperiph_candata(eOdgn_canstatus_t *canst_ptr)
 {
     printf("\t\twarning=%d passive=%d busoff=%d\n", canst_ptr->hw.warning, canst_ptr->hw.passive, canst_ptr->hw.busoff);  
     printf("\t\thw_rx_queue_is_full=%d\n", canst_ptr->hw.rxqueueisfull);
-    printf("\t\tsw_rx_queue_is_full=%d sw_tx_queue_is_full=%d\n", canst_ptr->sw.rxqueueisfull, canst_ptr->sw.txqueueisfull);
+    printf("\t\tsw_rx_queue_is_full=%d sw_tx_queue_is_full=%d dummy=0x%x\n", canst_ptr->sw.rxqueueisfull, canst_ptr->sw.txqueueisfull, canst_ptr->sw.dummy);
 }
 
 static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {
     eOdgn_emsperipheralstatus_t* data = (eOdgn_emsperipheralstatus_t*)recdata;
-    
+    uint8_t i;
+    uint8_t myboard;
+
     switch(opc)
     {
         
@@ -257,7 +287,35 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             printf("\t CAN 2:\n");
             s_print_emsperiph_candata(&data->can_dev[1]);
             printf("\t ETH MASK: 0x%x\n", data->eth_dev.linksmask);
-                    
+	     for(i=0; i<3; i++)
+            {
+                if(((data->eth_dev.crcErrorCnt_validVal & (1<<i)) == (1<<i)))
+                {
+                    int overflow=0;
+                    if(((data->eth_dev.crcErrorCnt_overflow & (1<<i)) == (1<<i)))
+                    {
+                        overflow =1;
+                    }
+                    printf("\t CRC_error phy-port %d: %d overflow=%d", i, data->eth_dev.crcErrorCnt[i], overflow);
+                    if(board>9)
+                    {
+                    	//in case i use board on desk with addr 99
+                    	myboard = 0;
+                    }
+                    else
+                    {
+                    	myboard = board-1;
+                    }
+                    ethCounterBoards[myboard][i].sum +=  data->eth_dev.crcErrorCnt[i];
+                    printf(" Sum=%d", ethCounterBoards[myboard][i].sum);
+                }
+                else
+                {
+                    printf("\t CRC_error phy-port %d: INVALID VALUE", i);
+                }
+            }
+	     	fflush(stdout);
+
         } break;
     }       
 
@@ -357,9 +415,30 @@ static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
         
             printf("-----EMS appl mc---\n");
 
-            s_print_emsapplmc_encoderserror(&(data->encreads));
 
-            fflush(stdout);    
+//            s_print_emsapplmc_encoderserror(&(data->encreads));
+//
+//
+//            printf("Limited current mask: 0x%x\n", data->encreads.dummy);
+//
+//            fflush(stdout);
+//            memcpy(&s_emswithmc_data, data, sizeof(eOdgn_emsapplication_emswithmc_t));
+
+
+
+            if(memcmp(&data->encreads.encList[0], &s_emswithmc_data.encreads.encList[0], eOdgn_emsmaxnumofencoders*sizeof(eOappEncReader_error_t)) != 0)
+            {
+                //if i received new data about encoders' error
+                s_print_emsapplmc_encoderserror(&(data->encreads));
+            }
+            if(data->encreads.dummy != s_emswithmc_data.encreads.dummy)
+            {
+                //if i receved new data
+                printf(">>>>>>>>>>>>>>>>>>>>>>>>> Limited current mask: 0x%x<<<<<<<<<<<<<<<<<<<<<<<\n", data->encreads.dummy);
+            }
+            fflush(stdout);
+            memcpy(&s_emswithmc_data, data, sizeof(eOdgn_emsapplication_emswithmc_t));
+
         } break;
     }      
 
@@ -420,6 +499,163 @@ static void on_rec_errorLog(opcprotman_opc_t opc, opcprotman_var_map_t* map, voi
 
 	printf("----- switch to error state because... \n");
 	printf("\t%s\n", data->errorstate_str);
+}
+
+static void on_rec_canQueueStatistics(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{
+	eOdgn_can_statistics_t* data = (eOdgn_can_statistics_t*)recdata;
+	uint8_t i;
+
+	switch(opc)
+	{
+
+		default:
+		case opcprotman_opc_set:
+		{   // nobody can order that to us
+			// we just dont do it ...
+		} break;
+
+		case opcprotman_opc_say:    // someboby has replied to a ask we sent
+		case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+		{
+
+			printf("-----can queue statistics ---\n");
+
+			printf("Config_mode: ");
+			for(i=0; i<2; i++)
+			{
+				printf("\t port %d ==> rx.min=%d, rx.max=%d, tx.min=%d, tx.max=%d\n\t",i, data->config_mode.stat[i].info_rx.min, data->config_mode.stat[i].info_rx.max,
+																						data->config_mode.stat[i].info_tx.min, data->config_mode.stat[i].info_tx.max);
+		    }
+			printf("\nRun_mode: ");
+			for(i=0; i<2; i++)
+			{
+				printf("\t port %d ==> rx.min=%d, rx.max=%d, tx.min=%d, tx.max=%d\n\t",i, data->run_mode.stat[i].info_rx.min, data->run_mode.stat[i].info_rx.max,
+																						data->run_mode.stat[i].info_tx.min, data->run_mode.stat[i].info_tx.max);
+		    }
+			fflush(stdout);
+		} break;
+	}
+
+
+}
+//static void on_rec_jointsStateCmd(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+//{
+//    eOdgn_jointsStateCmd_t* data = (eOdgn_jointsStateCmd_t*)recdata;
+//    uint8_t i;
+//
+//    switch(opc)
+//    {
+//
+//        default:
+//        case opcprotman_opc_set:
+//        {   // nobody can order that to us
+//            // we just dont do it ...
+//        } break;
+//
+//        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+//        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+//        {
+//
+//            printf("-----joints last received cmd---\n");
+//
+//            for(i=0; i<12; i++)
+//            {
+//
+//				printf("j %d cmd=0x%x last_two_are_equal=%d\n", i, data->jLastRecCmd[i], data->lastTwoEqual[i]);
+//            }
+//
+//
+//            fflush(stdout);
+//        } break;
+//    }
+//
+//}
+
+
+
+
+static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
+{
+
+    eOdgn_rxCheckSetpoints_t* data = (eOdgn_rxCheckSetpoints_t*)recdata;
+    uint8_t i;
+    
+    if(!cmdena_rxsetPointCheck)
+    {
+    	return;
+    }
+
+
+    switch(opc)
+    {
+        
+        default:
+        case opcprotman_opc_set:
+        {   // nobody can order that to us           
+            // we just dont do it ...         
+        } break;
+        
+        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+        {   
+        
+            printf("\n\n-----rx check setpoints---\n");
+
+            for(i=0; i<4; i++)
+            {
+                //printf("\tj %d: pos-deltaprognum 0x%x   pos-deltarxtime0x%x    imp-deltaprognum 0x%x   imp-deltarxtime0x%x\n", i,  data->position[i].deltaprognumber,  data->position[i].deltarxtime,  data->impedence[i].deltaprognumber, data->impedence[i].deltarxtime);
+				printf("\tj %d: pos-deltaprognum =", i );
+				if(data->position[i].deltaprognumber == INT32_MAX)
+				{
+					printf(" __ ");
+				}
+				else
+				{
+					printf(" %d ", data->position[i].deltaprognumber);
+				}
+
+				printf("    pos-deltarxtime =");
+				if(data->position[i].deltarxtime == UINT32_MAX)
+				{
+					printf(" __ ");
+				}
+				else
+				{
+					printf(" %d ", data->position[i].deltarxtime);
+				}
+
+					printf("    imp-deltaprognum =");
+
+				if(data->impedence[i].deltaprognumber == INT32_MAX)
+				{
+					printf(" __ ");
+				}
+				else
+				{
+					printf(" %d ", data->impedence[i].deltaprognumber);
+				}
+
+
+				printf("    imp-deltarxtime=");
+
+				if(data->impedence[i].deltarxtime == UINT32_MAX)
+				{
+					printf(" __ \n");
+				}
+				else
+				{
+					printf(" %d \n", data->impedence[i].deltarxtime);
+				}
+
+            }
+
+
+            fflush(stdout);    
+        } break;
+    }      
+
+
 }
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)

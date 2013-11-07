@@ -120,6 +120,7 @@ extern "C" {
 // --------------------------------------------------------------------------------------------------------------------
 ACE_SOCK_Dgram	*ACE_socket;
 int keepGoingOn   = 1;
+uint8_t board = 0;
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
@@ -415,7 +416,7 @@ static void s_check_seqNum(ACE_INET_Addr src_addr, uint32_t recseqnum)
 {
 	uint32_t addr = src_addr.get_ip_address();
 
-	uint8_t board = addr- 0xa000100;
+	board = addr- 0xa000100;
 	if(board >=10)
 	{
 		printf("error in get board: num=%d, addr=%d\n", board, addr );
