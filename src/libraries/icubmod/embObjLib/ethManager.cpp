@@ -26,6 +26,21 @@ using namespace yarp::os::impl;
 TheEthManager* TheEthManager::handle = NULL;
 yarp::os::Semaphore TheEthManager::managerMutex = 1;
 
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+ACE_INET_Addr		eb1(eb1_ip":12345");
+ACE_INET_Addr		eb2(eb2_ip":12345");
+ACE_INET_Addr		eb3(eb3_ip":12345");
+ACE_INET_Addr		eb4(eb4_ip":12345");
+ACE_INET_Addr		eb5(eb5_ip":12345");
+ACE_INET_Addr		eb6(eb6_ip":12345");
+ACE_INET_Addr		eb7(eb7_ip":12345");
+ACE_INET_Addr		eb8(eb8_ip":12345");
+ACE_INET_Addr		eb9(eb9_ip":12345");
+#endif
+
+
+#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ //if this macro is defined then ethMenager sends pkts to ems even if they are empty
+											  //ATTENTION: is importan to define also the same macro in hostTransceiver.cpp
 
 
 
@@ -361,7 +376,7 @@ void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
 {
 //     managerMutex.wait();
     void * ret = NULL;
-    static int error = 0;
+    static int _error = 0;
 
     try
     {
@@ -373,12 +388,12 @@ void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
          */
         ret = boards_map.at(ep).handle;
     }
-    catch (const std::out_of_range& error)
+    catch (const std::out_of_range& errMsg)
     {
-//        if(0 == (error%1000) )
+        if(0 == (_error%1000) )
             yError() << "Got a message from EP " << ep << "but boards_map does not contains any related class pointer yet";
 
-//        error++;
+        _error++;
     }
 //     managerMutex.post();
     return ret;
@@ -683,7 +698,12 @@ void EthSender::run()
 
         // This uses directly the pointer of the transceiver
         ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send);
+
+#ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
+        if((NULL != p_sendData))
+#else
         if((bytes_to_send > EMPTY_PACKET_SIZE) && (NULL != p_sendData))
+#endif
         {
             ACE_INET_Addr addr = ethRes->getRemoteAddress();
             int ret = ethManager->send(p_sendData, (size_t)bytes_to_send, addr);
@@ -808,13 +828,15 @@ void EthReceiver::run()
     eODeb_eoProtoParser *PP =  eODeb_eoProtoParser_GetHandle();
     eOethLowLevParser_packetInfo_t pckInfo;
 
-    while(!isStopping())
-    {
 #ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
-        // For statistic purpose
-        stats.tickStart();
+    for(int i=1; i<=9; i++)
+    {
+    	stats[i].resetStat();
+    }
 #endif
 
+    while(!isStopping())
+    {
         ethManager->managerMutex.wait();
         // new, reverse iterator
         ethResRIt    riterator, _rBegin, _rEnd;
@@ -824,6 +846,54 @@ void EthReceiver::run()
 
         // per ogni msg ricevuto  -1 visto come 65535!!
         recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+        	int board;
+
+        	// detect board
+        	if( sender_addr == eb1)
+        	{
+        		board = 1;
+        	}
+        	else if( sender_addr == eb2)
+        	{
+        		board = 2;
+        	}
+        	else if( sender_addr == eb3)
+        	{
+        		board = 3;
+        	}
+        	else if( sender_addr == eb4)
+        	{
+        		board = 4;
+        	}
+        	else if( sender_addr == eb5)
+        	{
+        		board = 5;
+        	}
+        	else if( sender_addr == eb6)
+        	{
+        		board = 6;
+        	}
+        	else if( sender_addr == eb7)
+        	{
+        		board = 7;
+        	}
+        	else if( sender_addr == eb8)
+        	{
+        		board = 8;
+        	}
+        	else if( sender_addr == eb9)
+        	{
+        		board = 9;
+        	}
+        	else
+        	{
+        		board = 0;
+        	}
+        // For statistic purpose
+        stats[board].tickStart();
+#endif
 
         riterator = _rBegin;
         while(riterator != _rEnd)
@@ -929,19 +999,30 @@ void EthReceiver::run()
             //ethManager->managerMutex.post();
         }
 #ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
-        stats.tickEnd();
+        stats[board].tickEnd();
 
         //compute statistics
-        if (stats.getIterations() == 18000)
+        if (stats[board].getIterations() == 2000)
         {
             double avEst=0;
             double stdEst=0;
             double avUsed=0;
             double stdUsed=0;
-            stats.getEstPeriod(avEst, stdEst);
-            stats.getEstUsed(avUsed, stdUsed);
-            printf("EthReceiver Thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n", stats.getIterations(), avEst, stdEst, avUsed, stdUsed);
-            stats.resetStat();
+            stats[board].getEstPeriod(avEst, stdEst);
+            stats[board].getEstUsed(avUsed, stdUsed);
+            printf("EthReceiver Thread [%d] run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n", board, stats[board].getIterations(), avEst, stdEst, avUsed, stdUsed);
+            stats[board].resetStat();
+        }
+
+        double totUsed = 0;
+        if(board == 9)
+        {
+        	for(int i=1; i<=9; i++)
+        	{
+        		totUsed += stats[i].getElapsed();
+        	}
+        	if(totUsed >= 0.95)
+        		printf("**EthReceiver Thread: total used time to precess 9 ropframe is %f**\n", totUsed);
         }
 #endif
     }
