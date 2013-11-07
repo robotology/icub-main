@@ -88,6 +88,7 @@ public:
         Note: size is calculated internally by getting Network Variable associated metadata
         */
     bool addSetMessage( eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data);
+    bool addSetMessageWithSignature(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data, uint32_t sig);   //as above, but with signature
 
     /*! This method add a Get type rop in the next ropframe.
         Parameters are:

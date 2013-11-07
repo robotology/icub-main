@@ -173,7 +173,7 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
 
     if(nvid == EOK_uint16dummy)
     {
-        yError() << "eo HostTransceiver: called addSetMessage with invalid nvid";
+        yError() << "eo HostTransceiver: called addSetMessage with invalid nvid ";
         return false;
     }
 
@@ -213,16 +213,90 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
         transMutex.wait();
         if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
         {
-            yError() << "Error while loading ROP in ropframe\n";
+            yWarning() << "addSetMessage: attempt num " << i+1 << ": Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
             transMutex.post();
             yarp::os::Time::delay(0.001);
 
         }
         else
         {
+        	if(i!=0)
+                yWarning() << "addSetMessage: SUCCESS at attempt num " << i+1 << "for loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+
             transMutex.post();
             ret = true;
         }
+    }
+    if(!ret)
+    {
+    	yError() << "addSetMessage: Finished attempts!! Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+    }
+    return ret;
+}
+
+bool hostTransceiver::addSetMessageWithSignature(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data, uint32_t sig)
+{
+    EOnv          nv;
+
+    if(nvid == EOK_uint16dummy)
+    {
+        yError() << "eo HostTransceiver: called addSetMessage with invalid nvid ";
+        return false;
+    }
+
+    EOnv *nvRoot = getNVhandler(endPoint, nvid, &nv);
+
+    if(NULL == nvRoot)
+    {
+        yError() << "Unable to get pointer to desired NV with id" << nvid;
+        return false;
+    }
+
+    transMutex.wait();
+
+    if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+    {
+        // the nv is not writeable
+        yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+        transMutex.post();
+        return false;
+    }
+
+    eOropdescriptor_t ropdesc;
+    ropdesc.configuration = eok_ropconfiguration_basic;
+    ropdesc.configuration.plustime = 1;
+    ropdesc.ropcode = eo_ropcode_set;
+    ropdesc.ep = endPoint;
+    ropdesc.id = nvid;
+    ropdesc.size = 0;
+    ropdesc.data = NULL;
+    ropdesc.signature = sig;
+
+    transMutex.post();
+    bool ret = false;
+
+    for(int i=0; ( (i<5) && (!ret) ); i++)
+    {
+        transMutex.wait();
+        if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+        {
+            yWarning() << "addSetMessage: attempt num " << i+1 << ": Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+            transMutex.post();
+            yarp::os::Time::delay(0.001);
+
+        }
+        else
+        {
+        	if(i!=0)
+                yWarning() << "addSetMessage: SUCCESS at attempt num " << i+1 << "for loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+
+            transMutex.post();
+            ret = true;
+        }
+    }
+    if(!ret)
+    {
+    	yError() << "addSetMessage: Finished attempts!! Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
     }
     return ret;
 }
@@ -261,7 +335,7 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
         transMutex.wait();
         if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
         {
-            yError() << "Error while loading ROP in ropframe\n";
+            yWarning() << "addGetMessage: attempt num " << i+1 << ": Error while loading GET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
             transMutex.post();
             yarp::os::Time::delay(0.001);
         }
@@ -270,6 +344,10 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
             transMutex.post();
             ret = true;
         }
+    }
+    if(!ret)
+    {
+    	yError() << "addGetMessage: Finished attempts!!Error while loading GET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
     }
     return ret;
 }
@@ -346,7 +424,7 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
 
     // protezione per la scrittura dei dati all'interno della memoria del transceiver, su ricezione di un rop.
     // il mutex è unico per tutto il transceiver (quindi più endpoint)
-    transMutex.wait();
+    //transMutex.wait();
     eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
     if(size > capacityrxpkt)
     {
@@ -357,7 +435,7 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
     eo_packet_Payload_Set(p_RxPkt, data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
-    transMutex.post();
+    //transMutex.post();
 }
 
 // and Processes it
@@ -484,6 +562,7 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
     //ADD
     res = eo_transceiver_outpacket_Prepare(pc104txrx, &numofrops);
     if((eores_OK != res) || (0 == numofrops))
+ //   if((eores_OK != res))
     {
     	//if I have no rop to send don't send any pkt
     	return;
