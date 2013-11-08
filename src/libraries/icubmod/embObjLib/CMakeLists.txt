@@ -212,8 +212,8 @@ set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/eoRequestsQueue.cpp)
 
 set(DEBUG_SOURCE    ${DEBUG_FOLDER}/src/eODeb_eoProtoParser.c
-                    ${DEBUG_FOLDER}/src/eOtheEthLowLevelParser.c
-                    ${EXTRA_FOLDER}/tools/parser_cfg_getPid.cpp)
+                    ${DEBUG_FOLDER}/src/eOtheEthLowLevelParser.c)
+#                    ${EXTRA_FOLDER}/tools/parser_cfg_getPid.cpp)
 
 set(embobj_source 		
 						${CORE_FOLDER_SOURCE} 
