@@ -265,16 +265,6 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
     id.type = MotionControl;
     addEncoderTimeStamp( &id,  jointNum);
 
-//	eOmc_joint_status_t *jstatus = nv->rem;
-//	static uint8_t old_control_mode[16] = {0};
-//    if(old_control_mode[xx] != jstatus->basic.controlmodestatus)
-//    {
-//
-//    	printf("\n\n******************\n");
-//    	printf("  j %d, controlmode=%d\n", xx, jstatus->basic.controlmodestatus);
-//    	printf("******************\n");
-//    	old_control_mode[xx] = jstatus->basic.controlmodestatus;
-//    }
 #ifdef _SETPOINT_TEST_
     //per test
 
