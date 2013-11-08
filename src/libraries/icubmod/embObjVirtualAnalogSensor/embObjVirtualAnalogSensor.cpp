@@ -314,7 +314,7 @@ bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
     eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) ch, jointNVindex_jinputs__externallymeasuredtorque);
 
                 //    example measure * 32768.0/12.0;
-    eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * (_resolution[ch]/_fullscale[ch]));
+    eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
     return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque);
 }
 
