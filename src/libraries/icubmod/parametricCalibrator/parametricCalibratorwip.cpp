@@ -633,10 +633,27 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     int timeout = 0;
 
-    iPosition->setPositionMode();
+    int * currentControlModes = new int[nj];
+
+    bool res = iControlMode->getControlModes(currentControlModes);
+    if(!res)
+    {
+        yError() << deviceName << ": error getting control mode during parking";
+    }
+
+    for(int i=0; i<nj; i++)
+    {
+        if(currentControlModes[i] != VOCAB_CM_IDLE)
+        {
+            iControlMode->setPositionMode(i);
+        }
+    }
+
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);     // all joints together????
-	//TODO fix checkMotionDone in such a way that does not depend on timing!
+
+
+    //TODO fix checkMotionDone in such a way that does not depend on timing!
     Time::delay(0.01);
 
 
