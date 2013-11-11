@@ -16,6 +16,8 @@
 
 #include "SharedCanBus.h"
 
+const int CAN_DRIVER_BUFFER_SIZE = 500;
+
 class SharedCanBus : public yarp::os::RateThread
 {
 public:
@@ -249,7 +251,7 @@ public:
 
         polyDriver.view(theCanBusErrors);
 
-        mBufferSize=BUF_SIZE;
+        mBufferSize=CAN_DRIVER_BUFFER_SIZE;
 
         if (config.check("canRxQueueSize"))
         {
