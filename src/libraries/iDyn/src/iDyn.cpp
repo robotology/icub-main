@@ -2378,6 +2378,9 @@ iCubLegDynV2::iCubLegDynV2(const iCubLegDyn &leg)
     clone(leg);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/**
+commented by Traversaro, 2 sept 2013
 void iCubLegDynV2::allocate(const string &_type)
 {
     iDynLimb::allocate(_type);
@@ -2433,6 +2436,71 @@ void iCubLegDynV2::allocate(const string &_type)
         pushLink(new iDynLink(2.032,  124.3956e-3,  -45.0091e-6,   6.2408e-3,        15455.9e-6,    -1390.3e-6,      -3945.4e-6,          70277.0e-6,       719.9501e-6,          65964.5e-6,      -0.2005,         0.0,        M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.643,   26.5892e-6,  -0.82253e-3,  10.2574e-3,       4765.926e-3,     9.7426e-6,      26.8085e-6,           4093.5e-6,      -353.7961e-6,           3668.8e-6,          0.0,         0.0,    M_PI/2.0,         0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0.861,   32.4154e-3, -613.9310e-6,  24.0690e-3,        1584.66e-6, -14.357866e-6,    21.079452e-6,        2014.6957e-6,     -17.241674e-6,        977.22556e-6,      -0.0685,      0.0035,        M_PI,         0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+
+    }
+#endif
+
+#ifdef NO_JOINT_COSTRAINTS
+    this->setAllConstraints(false);
+#endif
+}
+*/
+
+void iCubLegDynV2::allocate(const string &_type)
+{
+    iDynLimb::allocate(_type);
+
+    Matrix H0(4,4);
+    H0.eye();       
+    setH0(H0);
+
+#ifdef LEGS_NO_WEIGHT
+    if(getType()="right")
+    {
+        //create iDynLink from parameters calling
+        //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
+        //                    m            rcx        rcy        rcZ                          I1             I2               I3                   I4          I5           I6          A            D        alpha       offset      
+        pushLink(new iDynLink(0,   80.4310e-6,  -6.91643e-3,  2.30470e-3,                 0,             0,               0,                   0,           0,          0,      0.0,        0.0,    M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,  -31.3229e-6,  -1.09640e-3,  59.8624e-3,                 0,             0,               0,                   0,           0,          0,      0.0,    M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,    3.1143e-3,   60.0431e-3,  -1.3437e-3,                 0,             0,               0,                   0,           0,          0,  -0.0009175,    0.234545,   -M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,  124.3956e-3,  -45.0091e-6,  -6.2408e-3,                 0,             0,               0,                   0,           0,          0,     -0.2005,         0.0,        M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,   -5.3995e-6, -0.858761e-3, -10.2169e-3,                 0,             0,               0,                   0,           0,          0,         0.0,         0.0,    M_PI/2.0,         0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,      32.41539-3,  613.9310e-6,  24.0690e-3,                  0,             0,               0,                   0,           0,          0,     -0.0685,      0.0035,        M_PI,         0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+
+    }
+    else
+    {
+        pushLink(new iDynLink(0,   80.4310e-6,  -6.91643e-3, -2.30470e-3,                 0,             0,               0,                   0,           0,          0,      0.0,        0.0,    -M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,   31.3229e-6,  -1.09640e-3, -59.8624e-3,                 0,             0,               0,                   0,           0,          0,      0.0,        0.0,    -M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,    3.1143e-3,   60.0431e-3,   1.3437e-3,                 0,             0,               0,                   0,           0,          0,  -0.0009175,    -0.234545,   M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,  124.3956e-3,  -45.0091e-6,   6.2408e-3,                 0,             0,               0,                   0,           0,          0,     -0.2005,         0.0,        M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,    5.3995e-6, -0.858761e-3,  10.2169e-3,                 0,             0,               0,                   0,           0,          0,         0.0,         0.0,    -M_PI/2.0,         0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0,      32.41539-3, -613.9310e-6,  24.0690e-3,                  0,             0,               0,                   0,           0,          0,     -0.0685,      -0.0035,        0,         0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+
+    }
+#else
+    if(getType()=="right")
+    {
+        //create iDynLink from parameters calling
+        //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
+
+        pushLink(new iDynLink(0.695,  80.4310e-6,  -6.91643e-3,  2.30470e-3,        4470.534e-6,    -22.209e-6,     -13.9712e-6,        3250.8524e-6,       -47.7629e-6,        4904.8747e-6,       0.0,        0.0,    M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.982, -31.3229e-6,  -1.09640e-3,  59.8624e-3,         27271.4e-6,    -1.2116e-6,      11.5713e-6,          25364.6e-6,      -491.0806e-6,           4173.9e-6,       0.0,        0.0,    M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(1.522,   3.1143e-3,   60.0431e-3,  -1.3437e-3,         45491.7e-6,  -940.9711e-6,     -53.7405e-6,          10040.0e-6,        -1203.0e-6,          45825.5e-6,   -0.0009175,    0.234545,   -M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(2.032, 124.3956e-3,  -45.0091e-6,  -6.2408e-3,         15455.9e-6,    -1390.3e-6,       3945.4e-6,          70277.0e-6,      -719.9501e-6,          65964.5e-6,      -0.2005,         0.0,        M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.643, -26.5892e-6,  -0.82253e-3, -10.2574e-3,        4765.926e-3,     9.7426e-6,     -26.8085e-6,           4093.5e-6,       353.7961e-6,           3668.8e-6,          0.0,         0.0,    M_PI/2.0,         0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.861, 32.41539e-3,  613.9310e-6,  24.0690e-3,         1584.66e-6,  14.357686e-6,    21.079452e-6,        2014.6957e-6,      17.241674e-6,        977.22556e-6,      -0.0685,      0.0035,        M_PI,         0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
+
+    }
+    else
+    {
+
+        pushLink(new iDynLink(0.695,   80.4310e-6,  -6.91643e-3, -2.30470e-3,       4470.534e-6,    -22.209e-6,      13.9712e-6,        3250.8524e-6,        47.7629e-6,        4904.8747e-6,       0.0,        0.0,    -M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.982,   31.3229e-6,  -1.09640e-3, -59.8624e-3,        27271.4e-6,     1.2116e-6,      11.5713e-6,          25364.6e-6,       491.0806e-6,           4173.9e-6,       0.0,        0.0,    -M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(1.522,    3.1143e-3,   60.0431e-3,   1.3437e-3,        45491.7e-6,  -940.9711e-6,      53.7405e-6,          10040.0e-6,         1203.0e-6,          45825.5e-6,   -0.0009175,    -0.234545,   M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(2.032,  124.3956e-3,  -45.0091e-6,   6.2408e-3,        15455.9e-6,    -1390.3e-6,      -3945.4e-6,          70277.0e-6,       719.9501e-6,          65964.5e-6,      -0.2005,         0.0,        M_PI,    M_PI/2.0, -125.0*CTRL_DEG2RAD,      23.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.643,   26.5892e-6,  -0.82253e-3,  10.2574e-3,       4765.926e-3,     9.7426e-6,      26.8085e-6,           4093.5e-6,      -353.7961e-6,           3668.8e-6,          0.0,         0.0,    -M_PI/2.0,         0.0,  -42.0*CTRL_DEG2RAD,      21.0*CTRL_DEG2RAD));
+        pushLink(new iDynLink(0.861,   32.4154e-3, -613.9310e-6,  24.0690e-3,        1584.66e-6, -14.357866e-6,    21.079452e-6,        2014.6957e-6,     -17.241674e-6,        977.22556e-6,      -0.0685,      -0.0035,        0,         0.0,  -24.0*CTRL_DEG2RAD,      24.0*CTRL_DEG2RAD));
 
     }
 #endif
