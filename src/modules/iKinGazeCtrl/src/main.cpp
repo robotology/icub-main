@@ -902,7 +902,7 @@ protected:
         loc->getExtrinsicsMatrix("right",HNR);
 
         ofstream fout;
-        string tweakFile=rf->getContextPath().c_str();
+        string tweakFile=rf->getHomeContextPath().c_str();
         tweakFile+="/"+commData.tweakFile;
         fout.open(tweakFile.c_str());
         if (fout.is_open())

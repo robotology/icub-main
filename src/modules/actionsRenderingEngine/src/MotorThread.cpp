@@ -802,7 +802,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
 
     if(b.check("grasp_model_file"))
     {
-        string tmpGraspPath=rf.getContextPath().c_str();
+        string tmpGraspPath=rf.getHomeContextPath().c_str();
         graspPath[arm]=tmpGraspPath+"/"+b.find("grasp_model_file").asString().c_str();
     }
 
@@ -2805,7 +2805,7 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
     {
         if (!actions_path.empty())
         {
-            string fileName=rf.getContextPath().c_str();
+            string fileName=rf.getHomeContextPath().c_str();
             fileName+="/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action";
             ofstream action_fout(fileName.c_str());
             if(!action_fout.is_open())

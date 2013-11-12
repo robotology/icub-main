@@ -27,10 +27,10 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->commandPort=commPort;
     this->imageDir=imageDir;
     this->startCalibration=0;
-    this->currentPathDir=rf.getContextPath().c_str();
+    this->currentPathDir=rf.getHomeContextPath().c_str();
     int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt();
     this->stereo= tmp?false:true;
-    this->camCalibFile=rf.getContextPath().c_str();
+    this->camCalibFile=rf.getHomeContextPath().c_str();
 
 
     string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();

@@ -20,7 +20,7 @@ bool stereoCalibModule::configure(yarp::os::ResourceFinder &rf)
                            );
     char dirName[255];
     bool proceed=true;
-    string dir = rf.getContextPath().c_str();
+    string dir = rf.getHomeContextPath().c_str();
 
     for (int i=1; proceed; i++)
     {

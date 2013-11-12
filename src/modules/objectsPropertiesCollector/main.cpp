@@ -640,7 +640,7 @@ public:
             return;
 
         mutex.lock();
-        string dbFileName=rf->getContextPath().c_str();
+        string dbFileName=rf->getHomeContextPath().c_str();
         dbFileName+="/";
         dbFileName+=rf->find("db").asString().c_str();
         printMessage("saving database in %s ...\n",dbFileName.c_str());
