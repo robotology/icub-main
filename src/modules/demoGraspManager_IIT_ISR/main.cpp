@@ -1201,26 +1201,13 @@ protected:
 
     void close()
     {
-        if (drvTorso)
-            delete drvTorso;
-
-        if (drvHead)
-            delete drvHead;
-
-        if (drvLeftArm)
-            delete drvLeftArm;
-
-        if (drvRightArm)
-            delete drvRightArm;
-
-        if (drvCartLeftArm)
-            delete drvCartLeftArm;
-
-        if (drvCartRightArm)
-            delete drvCartRightArm;
-
-        if (drvGazeCtrl)
-            delete drvGazeCtrl;
+        delete drvTorso;
+        delete drvHead;
+        delete drvLeftArm;
+        delete drvRightArm;
+        delete drvCartLeftArm;
+        delete drvCartRightArm;
+        delete drvGazeCtrl;
 
         inportTrackTarget.interrupt();
         inportTrackTarget.close();
