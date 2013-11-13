@@ -146,11 +146,13 @@ public:
 						if (type=="fingertip2L")
                         {
                             sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
+							sensor[id]->setCalibrationFlag(useCalibration);
                         }
 						if (type=="fingertip2R")
                         {
                             sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
-                        }
+                        	sensor[id]->setCalibrationFlag(useCalibration);
+						}
                         if (type=="quad16")
                         {
                             printf("Quad16");
