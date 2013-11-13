@@ -192,13 +192,6 @@ private:
     bool                  *_calibrated;             // Flag to know if the calibrate function has been called for the joint
 
 
-#if 0
-    DebugParameters *_debug_params;             /** debug parameters */
-    ImpedanceParameters *_impedance_params;   /** impedance parameters */
-    ImpedanceLimits     *_impedance_limits;     /** impedance limits */
-    SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-#endif
-
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     McBoard *getMCpointer(int j);
@@ -210,7 +203,7 @@ private:
     uint16_t strtouli(ConstString asString, int arg2, int arg3);
 public:
     comanMotionControl();
-    ~comanMotionControl();
+    virtual ~comanMotionControl();
 
     char                        info[SIZE_INFO];
     yarp::os::Semaphore         semaphore;

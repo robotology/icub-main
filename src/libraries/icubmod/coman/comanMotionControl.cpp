@@ -145,7 +145,7 @@ bool comanMotionControl::alloc(int nj)
     return true;
 }
 
-comanMotionControl::comanMotionControl() :
+   comanMotionControl::comanMotionControl() :
     ImplementControlCalibration2<comanMotionControl, IControlCalibration2>(this),
     ImplementAmplifierControl<comanMotionControl, IAmplifierControl>(this),
     ImplementPidControl<comanMotionControl, IPidControl>(this),
@@ -1786,7 +1786,7 @@ bool comanMotionControl::getEncoderRaw(int j, double *enc)
         ret = (!joint_p->getItem(GET_ENCODER_POSITION, NULL, 1, REPLY_ENCODER_POSITION, &data.Position, sizeof(int)) );
     }
 
-    *enc = (double) data.Position;
+    *enc = (double) data.Lin_enc_raw;
     return ret;
 }
 

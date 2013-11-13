@@ -7,50 +7,63 @@
 
 SET(COMAN_MC comanMotionControl)
 SET(COMAN_FT comanFTsensor)
+SET(COMAN_VO comanVelocityObserver)
+SET(COMAN_JT comanJointTorqueSensor)
+
 
 PROJECT(coman)
 
-PREPARE_DEVICE(${COMAN_MC} TYPE ${COMAN_MC} INCLUDE ${COMAN_MC}.h  WRAPPER controlboard)
+PREPARE_DEVICE(${COMAN_MC} TYPE ${COMAN_MC} INCLUDE ${COMAN_MC}.h  WRAPPER controlboardwrapper)
 PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analogServer)
+PREPARE_DEVICE(${COMAN_VO} TYPE ${COMAN_VO} INCLUDE ${COMAN_VO}.h  WRAPPER analogServer)
+PREPARE_DEVICE(${COMAN_JT} TYPE ${COMAN_JT} INCLUDE ${COMAN_JT}.h  WRAPPER analogServer)
 
 
+if (USE_REALTIME)
+  add_definitions(-DRT_ENV)
+endif (USE_REALTIME)
 
-  if (USE_REALTIME) 
-    add_definitions(-DRT_ENV)
-  endif (USE_REALTIME)
+set (COMAN_MC_SRC   comanMotionControl.cpp       comanMotionControl.h)
+set (COMAN_FT_SRC   comanFTsensor.cpp            comanFTsensor.h )
+set (COMAN_VO_SRC   comanVelocityObserver.cpp    comanVelocityObserver.h)
+set (COMAN_JT_SRC   comanJointTorqueSensor.cpp   comanJointTorqueSensor.h)
 
-  set(ThisLib_SOURCES 
-  board_iface/Boards_iface.cpp
-  board_iface/CommProtocol.cpp
-  board_iface/DSP_board.cpp
-  comanMotionControl.cpp
-  comanFTsensor.cpp
-  comanDevicesHandler.cpp
-  )
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/board_iface ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ../debugStream/)
 
-  set(HEADERS_TO_INSTALL
-  board_iface/Boards_iface.h
-  board_iface/CommProtocol.hpp
-  board_iface/definitions.h
-  board_iface/DSP_board.h
-  comanMotionControl.h
-  comanFTsensor.h
-  comanDevicesHandler.hpp
-)
-
-  #add_definitions("-std=c++0x")
-
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/board_iface ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ../debugStream/)
+unset(ICUB_COMPILE_COMAN_LIBRARY CACHE)
 
 IF (NOT SKIP_${COMAN_MC} )
-  add_library(${COMAN_MC} ${ThisLib_SOURCES})
-  target_link_libraries(${COMAN_MC} yaml-cpp debugStream  iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} pthread )  
-
-  icub_export_library(${COMAN_MC} )
+    set(ICUB_COMPILE_COMAN_LIBRARY ON CACHE BOOL "use the coman lib")
+    mark_as_advanced(ICUB_COMPILE_COMAN_LIBRARY)
+    add_library(${COMAN_MC} ${COMAN_MC_SRC} )
+    target_link_libraries(${COMAN_MC} robolli_lib debugStream  iCubDev ${YARP_LIBRARIES})
+    icub_export_library(${COMAN_MC} )
 ENDIF (NOT SKIP_${COMAN_MC} )
 
+
 IF (NOT SKIP_${COMAN_FT} )
-    add_library(${COMAN_FT} ${ThisLib_SOURCES})
-    target_link_libraries(${COMAN_FT} yaml-cpp debugStream iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES} pthread)
+    set(ICUB_COMPILE_COMAN_LIBRARY ON CACHE BOOL "use the coman lib")
+    mark_as_advanced(ICUB_COMPILE_COMAN_LIBRARY)
+    add_library(${COMAN_FT} ${COMAN_FT_SRC})
+    target_link_libraries(${COMAN_FT} robolli_lib ${COMAN_LIB} debugStream iCubDev ${YARP_LIBRARIES})
     icub_export_library(${COMAN_FT} )
 ENDIF (NOT SKIP_${COMAN_FT} )
+
+
+IF (NOT SKIP_${COMAN_VO} )
+    set(ICUB_COMPILE_COMAN_LIBRARY ON CACHE BOOL "use the coman lib")
+    mark_as_advanced(ICUB_COMPILE_COMAN_LIBRARY)
+    add_library(${COMAN_VO} ${COMAN_VO_SRC})
+    target_link_libraries(${COMAN_VO} robolli_lib ${COMAN_LIB} debugStream iCubDev ${YARP_LIBRARIES})
+    icub_export_library(${COMAN_VO} )
+ENDIF (NOT SKIP_${COMAN_VO} )
+
+
+IF (NOT SKIP_${COMAN_JT} )
+    set(ICUB_COMPILE_COMAN_LIBRARY ON CACHE BOOL "use the coman lib")
+    mark_as_advanced(ICUB_COMPILE_COMAN_LIBRARY)
+    add_library(${COMAN_JT} ${COMAN_JT_SRC})
+    target_link_libraries(${COMAN_JT} robolli_lib ${COMAN_LIB} debugStream iCubDev ${YARP_LIBRARIES})
+    icub_export_library(${COMAN_JT} )
+ENDIF (NOT SKIP_${COMAN_JT} )
+

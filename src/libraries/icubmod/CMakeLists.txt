@@ -57,6 +57,12 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 
+IF (ICUB_COMPILE_COMAN_LIBRARY )
+# adding subdirectory for common library used by coman devices, if anyone
+# of them is selected
+  add_subdirectory(coman/board_iface)
+ENDIF (ICUB_COMPILE_COMAN_LIBRARY )
+
 icub_export_library(icubmod)
 
 ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)

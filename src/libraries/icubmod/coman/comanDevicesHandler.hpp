@@ -19,7 +19,7 @@
 #ifndef __comanDevicesHandler_h__
 #define __comanDevicesHandler_h__
 
-#include <Debug.h>
+#include "Debug.h"
 #include <yarp/dev/Drivers.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
