@@ -3,30 +3,30 @@ File version:
 Serial number:
 SN000
 Offsets:
-52
-51
-59
-60
+99
+96
+98
+98
 98
 98
 Calibration matrix:
 7fff
 8000
+0
+0
+0
+0
+0
+0
 8000
 7fff
 0
 0
 0
 0
-7fff
-8000
 0
 0
 0
-0
-0
-0
-7fff
 0
 0
 0
@@ -58,7 +58,7 @@ Tare:
 Full scale values:
 100
 100
-100
+0
 0
 0
 0
