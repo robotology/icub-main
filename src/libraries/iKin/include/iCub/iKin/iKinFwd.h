@@ -1171,7 +1171,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" leg
+    *              "right" leg. Further available options are
+    *              "[left|right]_v[1|2.5]".
     */
     iCubLeg(const std::string &_type);
 
