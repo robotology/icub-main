@@ -1505,14 +1505,17 @@ bool ServerCartesianController::open(Searchable &config)
         return false;
     }
 
+    string _partKinType;
     if (optGeneral.check("KinematicType"))
     {
         kinType=optGeneral.find("KinematicType").asString();
+        string _kinType=kinType.c_str();
+        _partKinType=_kinType.substr(0,_kinType.find("_"));
 
-        if ((kinType!="left") && (kinType!="right"))
+        if ((_partKinType!="left") && (_partKinType!="right"))
         {
-            fprintf(stdout,"Attempt to instantiate an unknown kinematic type\n");
-            fprintf(stdout,"Available types are: left, right\n");
+            fprintf(stdout,"Attempt to instantiate unknown kinematic type\n");
+            fprintf(stdout,"Available types are: left, right, left_v*, right_v*\n");
             close();
 
             return false;
@@ -1552,7 +1555,8 @@ bool ServerCartesianController::open(Searchable &config)
     {
         ctrlName="cartController";
         ctrlName=ctrlName+"/";
-        ctrlName=ctrlName+kinPart+kinType;
+        ctrlName=ctrlName+kinPart;
+        ctrlName=ctrlName+_partKinType.c_str();
         fprintf(stdout,"default ControllerName assumed: %s",ctrlName.c_str());
     }
 
