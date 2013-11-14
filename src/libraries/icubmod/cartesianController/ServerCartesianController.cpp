@@ -20,6 +20,7 @@
 // Developed by Ugo Pattacini
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <algorithm>
 #include <sstream>
 
@@ -3110,7 +3111,7 @@ bool ServerCartesianController::getInfo(Bottle &info)
         size_t pos=type.find("_v");
         double hwVer=1.0;
         if (pos!=string::npos)
-            hwVer=stod(type.substr(pos+2));
+            hwVer=strtod(type.substr(pos+2).c_str(),NULL);
 
         Bottle &partVer=info.addList();
         partVer.addString((string(kinPart.c_str())+"_version").c_str());
