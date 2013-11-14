@@ -1487,7 +1487,6 @@ bool ServerCartesianController::open(Searchable &config)
     if (optGeneral.check("KinematicPart"))
     {
         kinPart=optGeneral.find("KinematicPart").asString();
-
         if ((kinPart!="arm") && (kinPart!="leg") && (kinPart!="custom"))
         {
             fprintf(stdout,"Attempt to instantiate an unknown kinematic part\n");
@@ -3106,6 +3105,16 @@ bool ServerCartesianController::getInfo(Bottle &info)
         Bottle &serverVer=info.addList();
         serverVer.addString("server_version");
         serverVer.addDouble(CARTCTRL_SERVER_VER);
+
+        string type=limbState->getType();
+        size_t pos=type.find("_v");
+        double hwVer=1.0;
+        if (pos!=string::npos)
+            hwVer=stod(type.substr(pos+2));
+
+        Bottle &partVer=info.addList();
+        partVer.addString((string(kinPart.c_str())+"_version").c_str());
+        partVer.addDouble(hwVer);
 
         Bottle &events=info.addList();
         events.addString("events");
