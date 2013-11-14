@@ -1285,7 +1285,7 @@ bool CartesianSolver::open(Searchable &options)
 
         int *rmpTmp=new int[joints];
         for (int j=0; j<joints; j++)
-            rmpTmp[j]=prt->rvs[i] ? joints-j-1 : j;
+            rmpTmp[j]=prt->rvs[i]?(joints-j-1):j;
 
         drv.push_back(pDrv);
         lim.push_back(pLim);
@@ -1693,11 +1693,13 @@ CartesianSolver::~CartesianSolver()
 PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
 {
     type="right";
+    string part_type=type;
     if (options.check("type"))
-    {    
+    {
         type=options.find("type").asString().c_str();
-        if ((type!="left") && (type!="right"))
-            type="right";
+        part_type=type.substr(0,type.find("_"));
+        if ((part_type!="left") && (part_type!="right"))
+            type=part_type="right";
     }
 
     string robot=options.check("robot",Value("icub")).asString().c_str();
@@ -1712,7 +1714,7 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     optTorso.put("robot",robot.c_str());
     optTorso.put("part",partTorso.c_str());
 
-    string partArm  =type=="left" ? "left_arm" : "right_arm";
+    string partArm  =part_type=="left"?"left_arm":"right_arm";
     string remoteArm="/"+robot+"/"+partArm;
     string localArm ="/"+slvName+"/"+partArm;
     optArm.put("remote",remoteArm.c_str());
@@ -1783,17 +1785,19 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
 PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
 {
     type="right";
+    string part_type=type;
     if (options.check("type"))
-    {    
+    {
         type=options.find("type").asString().c_str();
-        if ((type!="left") && (type!="right"))
-            type="right";
+        part_type=type.substr(0,type.find("_"));
+        if ((part_type!="left") && (part_type!="right"))
+            type=part_type="right";
     }
 
     string robot=options.check("robot",Value("icub")).asString().c_str();
     Property optLeg("(device remote_controlboard)");
 
-    string partLeg  =type=="left" ? "left_leg" : "right_leg";
+    string partLeg  =part_type=="left"?"left_leg":"right_leg";
     string remoteLeg="/"+robot+"/"+partLeg;
     string localLeg ="/"+slvName+"/"+partLeg;
 
