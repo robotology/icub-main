@@ -40,6 +40,7 @@
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
 
+#include <string>
 #include <set>
 #include <deque>
 #include <map>
