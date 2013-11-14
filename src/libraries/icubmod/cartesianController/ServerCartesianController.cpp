@@ -1081,7 +1081,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
 
 
 /************************************************************************/
-void ServerCartesianController::newController()
+void ServerCartesianController::createController()
 {
     // guard
     if (chainState==NULL)
@@ -1432,7 +1432,7 @@ void ServerCartesianController::run()
     {
         if (connectToSolver())
         {
-            newController();
+            createController();
 
             // reserve id==0 for start-up context
             int id0;
@@ -1865,7 +1865,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     connectToSolver();
 
     // create controller
-    newController();
+    createController();
 
     // reserve id==0 for start-up context
     int id0;
@@ -2433,7 +2433,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             }
 
             // update controller
-            newController();
+            createController();
             ret=true;
         }
         else

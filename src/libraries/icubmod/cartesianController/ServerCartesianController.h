@@ -205,7 +205,7 @@ protected:
     bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);    
     void   alignJointsBounds();
     double getFeedback(yarp::sig::Vector &_fb);
-    void   newController();
+    void   createController();
     bool   getNewTarget();
     void   sendControlCommands();
     void   stopLimb(const bool execStopPosition=true);
