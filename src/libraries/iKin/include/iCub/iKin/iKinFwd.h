@@ -1050,7 +1050,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" arm
+    *              "right" arm. Further available options are
+    *              "[left|right]_v[1|1.7|2]".
     */
     iCubArm(const std::string &_type);
 
