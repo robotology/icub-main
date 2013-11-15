@@ -432,14 +432,14 @@ static void combo_nettype_changed (GtkComboBox *box,    gpointer   user_data)
     {
         case  0:
             networkType = "ecan";
-            gtk_widget_set_sensitive (combo_netId, false);
+            gtk_widget_set_sensitive (combo_netId, true);
             gtk_widget_set_sensitive (combo_canId, false);
             gtk_widget_set_sensitive (box_ipAddr, false);
             break;
 
         case  1:
             networkType = "pcan";
-            gtk_widget_set_sensitive (combo_netId, false);
+            gtk_widget_set_sensitive (combo_netId, true);
             gtk_widget_set_sensitive (combo_canId, false);
             gtk_widget_set_sensitive (box_ipAddr, false);
             break;
@@ -453,7 +453,7 @@ static void combo_nettype_changed (GtkComboBox *box,    gpointer   user_data)
 
         case  3:
             networkType="socketcan";
-            gtk_widget_set_sensitive (combo_netId, false);
+            gtk_widget_set_sensitive (combo_netId, true);
             gtk_widget_set_sensitive (combo_canId, false);
             gtk_widget_set_sensitive (box_ipAddr, false);
             break;
@@ -547,7 +547,7 @@ void not_connected_status()
     gtk_widget_set_sensitive (download_button, false);
     gtk_widget_set_sensitive (treeview, false);
 
-    gtk_widget_set_sensitive (combo_netId, networkType=="cfw2can");
+    gtk_widget_set_sensitive (combo_netId, networkType!="EMS");
     gtk_widget_set_sensitive (combo_netType, true);
     gtk_widget_set_sensitive (combo_canId, networkType=="EMS");
     gtk_widget_set_sensitive (box_ipAddr, networkType=="EMS");
