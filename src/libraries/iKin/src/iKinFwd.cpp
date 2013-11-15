@@ -1465,6 +1465,18 @@ void iKinLimb::getMatrixFromProperties(Property &options, const string &tag, Mat
 
 
 /************************************************************************/
+void iKinLimb::setMatrixToProperties(Property &options, const string &tag, Matrix &H)
+{
+    Bottle b; Bottle &l=b.addList();
+    for (int r=0; r<H.rows(); r++)
+        for (int c=0; c<H.cols(); c++)
+            l.addDouble(H(r,c));
+
+    options.put(tag.c_str(),b.get(0));
+}
+
+
+/************************************************************************/
 bool iKinLimb::fromLinksProperties(const Property &options)
 {
     Property &opt=const_cast<Property&>(options);
@@ -1519,6 +1531,60 @@ bool iKinLimb::fromLinksProperties(const Property &options)
     }
 
     return configured=true;
+}
+
+
+/************************************************************************/
+bool iKinLimb::toLinksProperties(Property &options)
+{
+    if (!configured)
+        return false;
+
+    Bottle links;
+    for (unsigned int i=0; i<N; i++)
+    {
+        Bottle &link=links.addList();
+        ostringstream tag;
+        tag<<"link_"<<i;
+        link.addString(tag.str().c_str());
+
+        Bottle &A=link.addList();
+        A.addString("A");
+        A.addDouble(allList[i]->getA());
+
+        Bottle &D=link.addList();
+        D.addString("D");
+        D.addDouble(allList[i]->getD());
+
+        Bottle &alpha=link.addList();
+        alpha.addString("alpha");
+        alpha.addDouble(allList[i]->getAlpha());
+
+        Bottle &offset=link.addList();
+        offset.addString("offset");
+        offset.addDouble(allList[i]->getOffset());
+
+        Bottle &min=link.addList();
+        min.addString("min");
+        min.addDouble(CTRL_RAD2DEG*allList[i]->getMin());
+
+        Bottle &max=link.addList();
+        max.addString("max");
+        max.addDouble(CTRL_RAD2DEG*allList[i]->getMax());
+
+        if (allList[i]->isBlocked())
+            link.addList().addString("blocked");
+    }
+
+    options.fromString(links.toString().c_str());
+
+    options.put("type",getType().c_str());
+    options.put("numLinks",(int)N);
+
+    setMatrixToProperties(options,"H0",H0);
+    setMatrixToProperties(options,"HN",HN);    
+
+    return true;
 }
 
 

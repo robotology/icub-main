@@ -1687,6 +1687,9 @@ bool ServerCartesianController::open(Searchable &config)
         return false;
     }
 
+    Property DHTable; limbState->toLinksProperties(DHTable);
+    fprintf(stdout,"DH Table: %s\n",DHTable.toString().c_str());
+
     // duplicate the limb for planning purpose
     limbPlan=new iKinLimb(*limbState);
 

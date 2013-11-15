@@ -886,6 +886,8 @@ protected:
 
     virtual void getMatrixFromProperties(yarp::os::Property &options,
                                          const std::string &tag, yarp::sig::Matrix &H);
+    virtual void setMatrixToProperties(yarp::os::Property &options,
+                                       const std::string &tag, yarp::sig::Matrix &H);
     virtual void allocate(const std::string &_type);
     virtual void clone(const iKinLimb &limb);
     virtual void dispose();
@@ -982,8 +984,17 @@ public:
     * link_1 (option1 value1) ... 
     * ... 
     * @endcode 
+    *  
+    * @return true iff correctly coinfigured. 
     */
     bool fromLinksProperties(const yarp::os::Property &options);
+
+    /**
+    * Provides the links attributes listed in a property object.
+    * @param options is the list of links properties. 
+    * @return true iff successful.  
+    */
+    bool toLinksProperties(yarp::os::Property &options);
 
     /**
     * Checks if the limb has been properly configured.

@@ -1232,7 +1232,10 @@ bool CartesianSolver::open(Searchable &options)
     {
         fprintf(stdout,"Detected errors while processing parts description!\n");
         return false;
-    }    
+    }
+
+    Property DHTable; prt->lmb->toLinksProperties(DHTable);
+    fprintf(stdout,"DH Table: %s\n",DHTable.toString().c_str());
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
