@@ -1298,35 +1298,35 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
 /************************************************************************/
 Matrix iKinChain::DJacobian(const Vector &dq)
 {
-    Matrix J = GeoJacobian();
-    Matrix dJ(6,DOF);
-    dJ.zero();
-    double dqj, dqi, a, b, c;
+    Matrix J=GeoJacobian();
+    Matrix dJ(6,DOF); dJ.zero();
+    double dqj,dqi,a,b,c;
     for (unsigned int i=0; i<DOF; i++)  // i: col
     {
         for (unsigned int j=0; j<=i; j++)  // j: row
         {
-            dqj = dq(j);
+            dqj=dq[j];
             
-            a = J(4,j)*J(2,i) - J(5,j)*J(1,i);
-            b = J(5,j)*J(0,i) - J(3,j)*J(2,i);
-            c = J(3,j)*J(1,i) - J(4,j)*J(0,i);
-            dJ(0,i) += dqj*a;
-            dJ(1,i) += dqj*b;
-            dJ(2,i) += dqj*c;
-            dJ(3,i) += dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
-            dJ(4,i) += dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
-            dJ(5,i) += dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
+            a=J(4,j)*J(2,i)-J(5,j)*J(1,i);
+            b=J(5,j)*J(0,i)-J(3,j)*J(2,i);
+            c=J(3,j)*J(1,i)-J(4,j)*J(0,i);
+            dJ(0,i)+=dqj*a;
+            dJ(1,i)+=dqj*b;
+            dJ(2,i)+=dqj*c;
+            dJ(3,i)+=dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
+            dJ(4,i)+=dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
+            dJ(5,i)+=dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
             
-            if(i!=j)
+            if (i!=j)
             {
-                dqi = dq(i);
-                dJ(0,j) += dqi*a;
-                dJ(1,j) += dqi*b;
-                dJ(2,j) += dqi*c;
+                dqi     =dq[i];
+                dJ(0,j)+=dqi*a;
+                dJ(1,j)+=dqi*b;
+                dJ(2,j)+=dqi*c;
             }
         }
     }
+
     return dJ;
 
     /* OLD IMPLEMENTATION (SLOWER, BUT CLEARER)
@@ -1346,35 +1346,35 @@ Matrix iKinChain::DJacobian(const Vector &dq)
 /************************************************************************/
 Matrix iKinChain::DJacobian(const unsigned int lnk, const Vector &dq)
 {
-    Matrix J = GeoJacobian(lnk);
-    Matrix dJ(6,lnk-1);
-    dJ.zero();
-    double dqj, dqi, a, b, c;
+    Matrix J=GeoJacobian(lnk);
+    Matrix dJ(6,lnk-1); dJ.zero();
+    double dqj,dqi,a,b,c;
     for (unsigned int i=0; i<lnk; i++)  // i: col
     {
         for (unsigned int j=0; j<=i; j++)  // j: row
         {
-            dqj = dq(j);
+            dqj=dq[j];
             
-            a = J(4,j)*J(2,i) - J(5,j)*J(1,i);
-            b = J(5,j)*J(0,i) - J(3,j)*J(2,i);
-            c = J(3,j)*J(1,i) - J(4,j)*J(0,i);
-            dJ(0,i) += dqj*a;
-            dJ(1,i) += dqj*b;
-            dJ(2,i) += dqj*c;
-            dJ(3,i) += dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
-            dJ(4,i) += dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
-            dJ(5,i) += dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
+            a=J(4,j)*J(2,i)-J(5,j)*J(1,i);
+            b=J(5,j)*J(0,i)-J(3,j)*J(2,i);
+            c=J(3,j)*J(1,i)-J(4,j)*J(0,i);
+            dJ(0,i)+=dqj*a;
+            dJ(1,i)+=dqj*b;
+            dJ(2,i)+=dqj*c;
+            dJ(3,i)+=dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
+            dJ(4,i)+=dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
+            dJ(5,i)+=dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
             
-            if(i!=j)
+            if (i!=j)
             {
-                dqi = dq(i);
-                dJ(0,j) += dqi*a;
-                dJ(1,j) += dqi*b;
-                dJ(2,j) += dqi*c;
+                dqi     =dq[i];
+                dJ(0,j)+=dqi*a;
+                dJ(1,j)+=dqi*b;
+                dJ(2,j)+=dqi*c;
             }
         }
     }
+
     return dJ;
 
     // OLD IMPLEMENTATION (SLOWER, BUT CLEARER)
