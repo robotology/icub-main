@@ -1550,29 +1550,29 @@ bool iKinLimb::toLinksProperties(Property &options)
 
         Bottle &A=link.addList();
         A.addString("A");
-        A.addDouble(allList[i]->getA());
+        A.addDouble((*this)[i].getA());
 
         Bottle &D=link.addList();
         D.addString("D");
-        D.addDouble(allList[i]->getD());
+        D.addDouble((*this)[i].getD());
 
         Bottle &alpha=link.addList();
         alpha.addString("alpha");
-        alpha.addDouble(allList[i]->getAlpha());
+        alpha.addDouble((*this)[i].getAlpha());
 
         Bottle &offset=link.addList();
         offset.addString("offset");
-        offset.addDouble(allList[i]->getOffset());
+        offset.addDouble((*this)[i].getOffset());
 
         Bottle &min=link.addList();
         min.addString("min");
-        min.addDouble(CTRL_RAD2DEG*allList[i]->getMin());
+        min.addDouble(CTRL_RAD2DEG*(*this)[i].getMin());
 
         Bottle &max=link.addList();
         max.addString("max");
-        max.addDouble(CTRL_RAD2DEG*allList[i]->getMax());
+        max.addDouble(CTRL_RAD2DEG*(*this)[i].getMax());
 
-        if (allList[i]->isBlocked())
+        if ((*this)[i].isBlocked())
             link.addList().addString("blocked");
     }
 
