@@ -1584,74 +1584,66 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
 bool comanMotionControl::setTorqueModeRaw(int j)
 {
-    yTrace();
-    uint8_t stop = 0;
+    // Chiedere info
     McBoard *joint_p = getMCpointer(j);
     uint8_t bId = jointTobId(j);
-
     if( NULL == joint_p)
     {
         yError() << "Calling setTorqueModeRaw on a non-existing joint j" << j;
         return false;
     }
-    uint8_t trq_on = 1;  //1 for torque control    0 for position control
-    bool ret = true;
 
+    bool ret = true;
+    uint8_t start = 1;
+    uint8_t stop = 0;
+    uint16_t motor_config_mask = 0;
+
+    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
 
-/*  // stop what is running
-    if(0)
-    switch(_controlMode[j])
-    {
-        case VOCAB_CM_POSITION:
-            cout << "joint "<< j << "stopping position mode";
-            ret = ret && (!boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
+    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
+    printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
 
-            if(!ret)
-                cout << "error while stopping position mode";
-             break;
+    motor_config_mask |= 0x4803;   // add bit about impedance control.??? needed here???
 
-        case VOCAB_CM_VELOCITY:
-            cout << "joint "<< j << "stopping velocity mode";
-            ret = ret && (!boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
+    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
+    printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
 
-            if(!ret)
-                cout << "error while stopping velocity mode";
-            break;
+    uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
 
-        case VOCAB_CM_TORQUE:
-            cout << "joint "<< j << "already in torque mode";
-            //return true;
-            break;
+    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
 
-        default:
-                cout << "joint "<< j << "TODO setvelocity mode coming from un-handled case... stop something here!!\n";
-                disablePidRaw(j);
-                break;
-    }
+    // set position pids
+    pid_gains_t p_i_d;
+    p_i_d.p = (int32_t) 0;
+    p_i_d.i = (int32_t) 0;
+    p_i_d.d = (int32_t) 0;
+    p_i_d.gain_set = POSITION_GAINS;
+    ret = ret && (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
 
+    p_i_d.p = (int32_t) 445;
+    p_i_d.i = (int32_t) 22;
+    p_i_d.d = (int32_t) 0;
+    p_i_d.gain_set = TORQUE_GAINS;
+    ret = ret && (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
 
-//     ret = (!joint_p->getItem(GET_TORQUE_ON_OFF, NULL, 0, REPLY_TORQUE_ON_OFF, &trq_on, sizeof(trq_on)));
+    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
 
-    if(!ret)
-        yError() << "while getting torque status";
-    else
-        yError() << "torque control is " << (trq_on? "enabled\n" : "disabled\n");
-*/
-
-    trq_on = 1;
-    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &trq_on, sizeof(trq_on)) );
+    printf("setTorqueModeRaw joint [%d]: message was sent with %s\n", j, ret? "SUCCESS" : "FAILURE");
 
     if(ret)
-        _controlMode[j] = VOCAB_CM_TORQUE;
+        _controlMode[j] = VOCAB_CM_TORQUE;    
     return (ret);
 }
 
 bool comanMotionControl::setTorqueModeRaw( )
 {
-    yTrace();
-    return NOT_YET_IMPLEMENTED("setTorqueModeRaw all joints");
+    bool ret = true;
+    for(j=0; j<_njoints; j++)
+        ret = ret && setTorqueModeRaw(j);
+
+    return ret;
 }
 
 bool comanMotionControl::setImpedancePositionModeRaw(int j)
