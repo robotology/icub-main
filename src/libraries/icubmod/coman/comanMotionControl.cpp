@@ -395,9 +395,9 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++)
             _zeros[i-1] = xtmp.get(i).asDouble();
 
-    if (!extractGroup(general, xtmp, "newtonToSensor", "a list of scales for force/torque values", _njoints+1))
+    if (!extractGroup(general, xtmp, "newtonsToSensor", "a list of scales for force/torque values", _njoints+1))
     {
-        printf("'newtonToSensor' conversion factor was not found in the config file\n");
+        printf("'newtonsToSensor' conversion factor was not found in the config file\n");
         return false;
     }
     else

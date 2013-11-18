@@ -165,26 +165,26 @@ bool comanJointTorqueSensor::fromConfig(yarp::os::Searchable &config)
     int i;
     Bottle general = config.findGroup("GENERAL");
 
-    Value &tmp= general.find("Joints");
+    Value &tmp= general.find("joints");
     if(tmp.isNull())
     {
-    	yError() << "Missing Joints number!\n";
+        yError() << "Missing joints number!\n";
 		return false;
     }
-    _nChannels = general.find("Joints").asInt();
+    _nChannels = general.find("joints").asInt();
     yWarning() << " njoints is " << _nChannels;
     alloc(_nChannels);
 
-    // leggere i valori da file, AxisMap is optional
+    // leggere i valori da file, axisMap is optional
     // This is a remapping for the user. It is optional because it is actually unuseful and can even add more confusion than other.
-    if (extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _nChannels+1))
+    if (extractGroup(general, xtmp, "axisMap", "a list of reordered indices for the axes", _nChannels+1))
     {
     	for (i = 1; i < xtmp.size(); i++)
     		_axisMap[i-1] = xtmp.get(i).asInt();
     }
     else
     {
-    	yWarning() << "No AxisMap map found, using default configuration: continuous from 0 to n";
+        yWarning() << "No axisMap map found, using default configuration: continuous from 0 to n";
     	for (i = 1; i < xtmp.size(); i++)
     	{
     		_axisMap[i-1] = i-1;
@@ -219,28 +219,19 @@ bool comanJointTorqueSensor::fromConfig(yarp::os::Searchable &config)
     }
 
     // MaxTorque
-    if (!extractGroup(general, xtmp, "MaxTorque", "a list of scales for the encoders", _nChannels+1))
+    if (!extractGroup(general, xtmp, "maxTorque", "max values", _nChannels+1))
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
             _maxTorque[i-1] = xtmp.get(i).asDouble();
 
     // Scale Factor
-    if (!extractGroup(general, xtmp, "ScaleFactor","a list of offsets for the zero point", _nChannels+1))
+    if (!extractGroup(general, xtmp, "newtonsToSensor","a list of scale factors", _nChannels+1))
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
             _newtonsToSensor[i-1] = xtmp.get(i).asDouble();
 
-//    bc_policy = 0;
-//    extra_policy = 0;
-//    Bottle mc_board = config.findGroup("MC_BOARD");
-//    bc_policy = mc_board.find("policy").asInt();
-//    extra_policy = mc_board.find("extra_policy").asInt();
-//    bc_rate = mc_board.find("bc_rate").asInt();
-
-//    printf("bc policy    = %d (0x%0x)", bc_policy, bc_policy);
-//    printf("extra_policy = %d (0x%0x)", extra_policy, extra_policy);
     return true;
 }
 
