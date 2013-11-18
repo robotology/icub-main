@@ -3,6 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_subdirectory(demoModule)
+add_subdirectory(rpcIdl)
 add_subdirectory(lib0)
 add_subdirectory(lib1)
 add_subdirectory(sharksWithLasers)
