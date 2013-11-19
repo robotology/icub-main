@@ -121,6 +121,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         }
 
         // vergence
+        lim(nJointsHead-1,0)=0.0;
         lim(nJointsHead-1,1)=lim(nJointsHead-2,1);
 
         fbTorso.resize(nJointsTorso,0.0);
@@ -186,9 +187,9 @@ void Controller::findMinimumAllowedVergence()
     Vector zeros(cl.getDOF(),0.0);
     cl.setAng(zeros); cr.setAng(zeros);
 
-    double minVer=0.5*CTRL_DEG2RAD;
+    double minVer=lim(nJointsHead-1,0);
     double maxVer=lim(nJointsHead-1,1);
-    for (double ver=0.0; ver<maxVer; ver+=0.5*CTRL_DEG2RAD)
+    for (double ver=minVer; ver<maxVer; ver+=0.5*CTRL_DEG2RAD)
     {
         cl(cl.getDOF()-1).setAng(ver/2.0);
         cr(cr.getDOF()-1).setAng(-ver/2.0);
