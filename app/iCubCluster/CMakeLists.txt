@@ -1,7 +1,7 @@
 set(appname iCubCluster)
 
 file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster.py)
-file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini)
+set(conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/cluster-config.xml)
 
 if (__ICUB_INSTALL_APPLICATIONS__)
 icub_app(${appname})
@@ -10,6 +10,16 @@ icub_app_install(${appname} FILES ${conf} FORCE_UPDATE)
 endif()
 
 yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
-yarp_install(FILES ${scripts} DESTINATION ${ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
 
+################ Copy/install cluster management scripts)
+
+install(PROGRAMS scripts/icub-cluster.py COMPONENT Core DESTINATION bin)
+
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cluster-scripts-cmd
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster-server.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster-run.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMENT "Copying icub-cluster scripts to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
+add_custom_target(cluster-scripts ALL DEPENDS ${CMAKE_BINARY_DIR}/cluster-scripts-cmd)
 

@@ -413,9 +413,10 @@ def printUsage(scriptName):
     print scriptName, ": python gui for managing yarprun servers (Linux only)"
     print "Usage:"
     print scriptName, 
-    print "cluster-config.xml"
-    print "cluster-config.xml: cluster configuration file."
-    print "To learn how to write a valid cluster-config.xml see template in app/iCubCluster/scripts"
+    print "[xml_configuration_file] [context]\n"
+    print "  xml_configuration_file: cluster configuration file (default: cluster-config.xml)."
+    print "  context: context where xml configuration file is sought through yarp's ResourceFinder (default: iCubCluster)."
+    print "  To learn how to write a valid cluster-config.xml see example in app/iCubCluster/conf"
 
 
 if __name__ == '__main__':
@@ -423,15 +424,27 @@ if __name__ == '__main__':
     #first check arguments
     argc = len(sys.argv)
 
-    if (argc!=2):
+    if (argc>2):
+         contextName=sys.argv[2]
+    else:    
+         contextName="iCubCluster"
+    if (argc>1):
+         configFileName=sys.argv[1]
+    else:    
+         configFileName="cluster-config.xml"
+
+    if (configFileName == "help"):
         printUsage("icub-cluster.py")
         sys.exit(1)
 
-    configFilename=sys.argv[1]
+    print "Config file name: " + configFileName + ", context name: " + contextName
 
-    print configFilename
+    configFilePath=subprocess.check_output(["yarp",  "resource",  "--find", configFileName, "--context", contextName])
+    if not configFilePath[1:-2] :  # "slicing" output variable to remove quotes and EOL
+       print "Could not find file " + configFileName + " in context " + contextName + ", exiting."
+       sys.exit(1)
 
-    config = xml.dom.minidom.parse(configFilename)
+    config = xml.dom.minidom.parse(configFilePath[1:-2])
 
     clusters=config.getElementsByTagName("cluster")
 
