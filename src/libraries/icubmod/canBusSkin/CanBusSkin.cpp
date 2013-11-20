@@ -8,7 +8,6 @@
 
 #include <yarp/os/Time.h>
 #include <iostream>
-#include <string.h>
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
@@ -23,14 +22,15 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     fprintf(stderr, "%s\n", config.toString().c_str());
 #endif
 
+    // Mandatory parameters for all skin patches
     correct &= config.check("canbusDevice");
     correct &= config.check("canDeviceNum");
     correct &= config.check("skinCanIds");
     correct &= config.check("period");
-
+    
     if (!correct)
     {
-        std::cerr<<"Error: insufficient parameters to SkinPrototypce\n"; 
+        std::cerr<<"Error: Insufficient parameters supplied to CanBusSkin. \n"; 
         return false;
     }
 
@@ -51,6 +51,38 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
             fprintf(stderr, "Id reading from %d\n", id);
         #endif
     }
+    
+    /* ******* Parameters for hand skin patches. If these are not specified, default values are used. ******* */
+    // Initialise parameter vectors
+    int nCards = ids.size();
+    // 4C Message
+    msg4C_Timer = config.findGroup("4C_Timer");                // 4C_Timer
+    msg4C_CDCOffsetL = config.findGroup("4C_CDCOffsetL");      // 4C_CDCOffsetL
+    msg4C_CDCOffsetH = config.findGroup("4C_CDCOffsetH");      // 4C_CDCOffsetR
+    msg4C_TimeL = config.findGroup("4C_TimeL");                // 4C_TimeL
+    msg4C_TimeH = config.findGroup("4C_TimeH");                // 4C_TimeH
+    // 4E Message
+    msg4E_Shift = config.findGroup("4E_Shift");                // 4E_Shift
+    msg4E_Shift3_1 = config.findGroup("4E_Shift3_1");          // 4E_Shift3_1
+    msg4E_NoLoad = config.findGroup("4E_NoLoad");              // 4E_NoLoad
+    msg4E_Param = config.findGroup("4E_Param");                // 4E_Param
+    msg4E_EnaL = config.findGroup("4E_EnaL");                  // 4E_EnaL
+    msg4E_EnaH = config.findGroup("4E_EnaH");                  // 4E_EnaH
+
+    // Check parameter list length
+    // 4C Message
+    checkParameterListLength("4C_Timer", msg4C_Timer, nCards, 0x01);
+    checkParameterListLength("4C_CDCOffsetL", msg4C_CDCOffsetL, nCards, 0x00);
+    checkParameterListLength("4C_CDCOffsetH", msg4C_CDCOffsetH, nCards, 0x20);
+    checkParameterListLength("4C_TimeL", msg4C_TimeL, nCards, 0x00);
+    checkParameterListLength("4C_TimeH", msg4C_TimeH, nCards, 0x00);
+    // 4C Message
+    checkParameterListLength("4E_Shift", msg4E_Shift, nCards, 0x02);
+    checkParameterListLength("4E_Shift3_1", msg4E_Shift3_1, nCards, 0x22);
+    checkParameterListLength("4E_NoLoad", msg4E_NoLoad, nCards, 0xF0);
+    checkParameterListLength("4E_Param", msg4E_Param, nCards, 0x00);
+    checkParameterListLength("4E_EnaL", msg4E_EnaL, nCards, 0xFF);
+    checkParameterListLength("4E_EnaH", msg4E_EnaH, nCards, 0xFF);
 
     Property prop;
 
@@ -84,11 +116,11 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-    for (unsigned int i=0; i<cardId.size(); i++)
-        for (unsigned int id=0; id<16; ++id)
-        {
+    for (unsigned int i=0; i<cardId.size(); i++) {
+        for (unsigned int id=0; id<16; ++id) {
             pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
         }
+    }
 
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
@@ -133,32 +165,9 @@ int CanBusSkin::getChannels()
     return sensorsNum;
 }
 
-int CanBusSkin::calibrateSensor()
-{
-    for (unsigned int i=0; i<cardId.size(); i++)
-    {
-        #if SKIN_DEBUG
-            printf("CanBusSkin:: calibrating boardId: %d\n",cardId[i]);
-        #endif 
-
-         unsigned int canMessages=0;
-        unsigned id = 0x200 + cardId[i];
-       
-        CanMessage &msg=outBuffer[0];
-        msg.setId(id);
-        msg.getData()[0]=0x4C; // message type
-        msg.getData()[1]=0x01; 
-        msg.getData()[2]=0x01; 
-        msg.getData()[3]=0x01;
-        msg.getData()[4]=0;
-        msg.getData()[5]=0x22;
-        msg.getData()[6]=0;
-        msg.getData()[7]=0;
-        msg.setLen(8);
-        canMessages=0;
-        pCanBus->canWrite(outBuffer, 1, &canMessages);
-    }
-
+int CanBusSkin::calibrateSensor() {
+    sendCANMessage4C();
+    
     return AS_OK;
 }
 
@@ -179,33 +188,11 @@ int CanBusSkin::calibrateChannel(int ch)
 }
 
 
-bool CanBusSkin::threadInit()
-{
-    for (int i=0; i<cardId.size(); i++)
-    {
-        #if SKIN_DEBUG
-            printf("CanBusSkin:: thread initialising boardId:%d\n",cardId[i]);
-        #endif 
-
-           unsigned int canMessages=0;
-        unsigned id = 0x200 + cardId[i];
-       
-        CanMessage &msg=outBuffer[0];
-        msg.setId(id);
-        msg.getData()[0]=0x4C; // message type
-        msg.getData()[1]=0x01; 
-        msg.getData()[2]=0x01; 
-        msg.getData()[3]=0x01;
-        msg.getData()[4]=0;
-        msg.getData()[5]=0x22;
-        msg.getData()[6]=0;
-        msg.getData()[7]=0;
-        msg.setLen(8);
-        canMessages=0;
-        pCanBus->canWrite(outBuffer, 1, &canMessages);
-    }
-
-    return true;
+bool CanBusSkin::threadInit() {
+    sendCANMessage4C();
+    sendCANMessage4E();
+    
+    return AS_OK;
 }
 
 void CanBusSkin::run()
@@ -240,19 +227,15 @@ void CanBusSkin::run()
                 int index=16*12*i + sensorId*12;
                 
                 if (type)
-                    {
-                        for(int k=0;k<5;k++)
-                            data[index+k+7]=msg.getData()[k+1];
-                    }
+                {
+                    for(int k=0;k<5;k++)
+                        data[index+k+7]=msg.getData()[k+1];
+                }
                 else 
-                    {
-                        for(int k=0;k<7;k++)
-                            data[index+k]=msg.getData()[k+1];
-                    }
-          //    else
-          //        {
-          //            std::cerr<<"Error: skin received malformed message\n";
-          //        }
+                {
+                    for(int k=0;k<7;k++)
+                        data[index+k]=msg.getData()[k+1];
+                }
             }
         }
     }
@@ -268,3 +251,91 @@ void CanBusSkin::threadRelease()
 #endif
 }
 
+/* *********************************************************************************************************************** */
+/* ******* Converts input parameter bottle into a std vector.               ********************************************** */
+void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_paramList, const int &i_length, const Value &i_defaultValue) {
+    if ((i_paramList.isNull()) || (i_paramList.size() != i_length)) {
+        cout << "WARNING: CanBusSkin: a number of " << i_paramName << " parameters different than the number of CAN IDs. Check your parameters. \n";
+        cout << "WARNING: CanBusSkin: Using default values for " << i_paramName << " parameters. \n";
+
+        for (size_t i = i_paramList.size(); i <= i_length; ++i) {
+            i_paramList.add(i_defaultValue);
+        }
+    }
+}
+/* *********************************************************************************************************************** */
+
+
+/* *********************************************************************************************************************** */
+/* ******* Sends CAN setup message type 4C.                                 ********************************************** */
+void CanBusSkin::sendCANMessage4C(void) {
+    // Send 0x4C message to initialise boards
+    for (int i = 0; i < cardId.size(); ++i) {
+        #if SKIN_DEBUG
+            printf("CanBusSkin: Thread initialising board ID: %d. \n",cardId[i]);
+            printf("CanBusSkin: Sending 0x4C message to skin boards. \n"i);
+        #endif 
+
+        unsigned int canMessages = 0;
+        unsigned int id = 0x200 + cardId[i];
+       
+        CanMessage &msg=outBuffer[0];
+        msg.setId(id);
+        msg.getData()[0]=0x4C; // message type
+        msg.getData()[1]=0x01; 
+        msg.getData()[2]=0x01; 
+//        msg.getData()[3]=0x01;
+//        msg.getData()[4]=0;
+//        msg.getData()[5]=0x20;
+//        msg.getData()[6]=0;
+//        msg.getData()[7]=0;
+        msg.getData()[3] = msg4C_Timer.get(i).asInt();
+        msg.getData()[4] = msg4C_CDCOffsetL.get(i).asInt();
+        msg.getData()[5] = msg4C_CDCOffsetH.get(i).asInt();
+        msg.getData()[6] = msg4C_TimeL.get(i).asInt();
+        msg.getData()[7] = msg4C_TimeH.get(i).asInt();
+        msg.setLen(8);
+
+        canMessages = 0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
+    }
+}
+/* *********************************************************************************************************************** */
+
+
+/* *********************************************************************************************************************** */
+/* ******* Sends CAN setup message type 4E.                                 ********************************************** */
+void CanBusSkin::sendCANMessage4E(void) {
+    // Send 0x4E message to modify offset
+    for (int i = 0; i < cardId.size(); ++i) {
+        // FG: Dirty implementation due to not knowing the parameters for default 4E message. 
+        // This is the first time we are sending it.
+        if (cardId[i] == 14) {
+            #if SKIN_DEBUG
+                printf("CanBusSkin: Thread initialising board ID: %d. \n", cardId[i]);
+                printf("CanBusSkin: Sending 0x4E message to skin boards. \n"i);
+            #endif 
+    
+            unsigned int canMessages = 0;
+            unsigned int id = 0x200 + cardId[i];       // 14 is the Hand MTB board
+                
+            CanMessage &msg4e = outBuffer[0];
+            msg4e.setId(id);
+            msg4e.getData()[0] = 0x4E; // message type
+            msg4e.getData()[1] = msg4E_Shift.get(i).asInt(); 
+            msg4e.getData()[2] = msg4E_Shift3_1.get(i).asInt(); 
+            msg4e.getData()[3] = msg4E_NoLoad.get(i).asInt();
+            msg4e.getData()[4] = msg4E_Param.get(i).asInt();
+            msg4e.getData()[5] = msg4E_EnaL.get(i).asInt();
+            msg4e.getData()[6] = msg4E_EnaH.get(i).asInt();
+            msg4e.getData()[7] = 0x0A;
+            msg4e.setLen(8);
+
+            canMessages=0;
+            pCanBus->canWrite(outBuffer, 1, &canMessages);
+
+            break;
+        }
+    }
+}
+/* *********************************************************************************************************************** */
