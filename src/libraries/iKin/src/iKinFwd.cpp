@@ -1573,7 +1573,11 @@ bool iKinLimb::toLinksProperties(Property &options)
         max.addDouble(CTRL_RAD2DEG*(*this)[i].getMax());
 
         if ((*this)[i].isBlocked())
-            link.addList().addString("blocked");
+        {
+            Bottle &blocked=link.addList();
+            blocked.addString("blocked");
+            blocked.addDouble(CTRL_RAD2DEG*(*this)[i].getAng());
+        }
     }
 
     options.fromString(links.toString().c_str());
@@ -1582,7 +1586,7 @@ bool iKinLimb::toLinksProperties(Property &options)
     options.put("numLinks",(int)N);
 
     setMatrixToProperties(options,"H0",H0);
-    setMatrixToProperties(options,"HN",HN);    
+    setMatrixToProperties(options,"HN",HN);
 
     return true;
 }
