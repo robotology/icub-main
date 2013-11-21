@@ -67,7 +67,12 @@
                 <node>pwrNode6</node>
                 <tag>gravityCompensatorTag</tag>
         </module>
-
+		
+        <module>
+                <name>fingersTuner</name>
+                <node>console</node>
+                <tag>fingersTuner</tag>
+        </module>
 
         <connection>
                 <from>/icubinterfacegui/client</from>
