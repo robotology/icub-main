@@ -348,7 +348,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
         else
         {
         	if(error == 0)
-        		yError() << "Unknown Message received from skin: frameID=" << canframe->id << "\n" ;
+        		yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
         	error++;
         	if (error == 10000)
         		error = 0;
