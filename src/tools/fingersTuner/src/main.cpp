@@ -34,7 +34,7 @@ improve the performance.
 - ctrlLib. 
 
 \section parameters_sec Parameters
-The configuration parameter looks like in the following:
+The configuration parameter looks like the following:
 
 \code
 [general]
@@ -64,8 +64,8 @@ Most of the options are self-explaining, whereas the <b>status</b>
 deserves an explanation. Its value can be either <i>download</i> or
 <i>upload</i>: in the first case it is asked the module at startup to
 store locally the PIDs values available onboard the robot, while in
-the second case the local configuration values will be uploaded to
-the robot.
+the second case the local configuration values will be uploaded 
+to the robot. 
  
 \section portsif_sec Ports Interface 
 The interface to this module is implemented through 
