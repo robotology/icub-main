@@ -18,6 +18,8 @@
 #include <eOtheEthLowLevelParser.h>
 
 #include <stdexcept>      // std::out_of_range
+#include <yarp/os/Network.h>
+#include <yarp/os/NetType.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -26,7 +28,7 @@ using namespace yarp::os::impl;
 TheEthManager* TheEthManager::handle = NULL;
 yarp::os::Semaphore TheEthManager::managerMutex = 1;
 
-#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+//#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
 ACE_INET_Addr		eb1(eb1_ip":12345");
 ACE_INET_Addr		eb2(eb2_ip":12345");
 ACE_INET_Addr		eb3(eb3_ip":12345");
@@ -36,7 +38,7 @@ ACE_INET_Addr		eb6(eb6_ip":12345");
 ACE_INET_Addr		eb7(eb7_ip":12345");
 ACE_INET_Addr		eb8(eb8_ip":12345");
 ACE_INET_Addr		eb9(eb9_ip":12345");
-#endif
+//#endif
 
 
 #undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ //if this macro is defined then ethMenager sends pkts to ems even if they are empty
@@ -533,8 +535,13 @@ bool TheEthManager::stopThreads()
     if(sender->isRunning() )
         sender->stop();
     if(receiver->isRunning() )
+    {
+#ifdef ETHRECEIVER_ISPERIODICTHREAD
+        receiver->stop();
+#else
         ret = receiver->stop();
-
+#endif
+    }
     return ret;
 }
 
@@ -720,8 +727,11 @@ void EthSender::run()
     }
     //ethManager->managerMutex.post();
 }
-
+#ifdef ETHRECEIVER_ISPERIODICTHREAD
+EthReceiver::EthReceiver(): RateThread(1)
+#else
 EthReceiver::EthReceiver()
+#endif
 {
     yTrace();
 }
@@ -744,6 +754,40 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     ethManager  = _ethManager;
     ethResList  = &(_ethManager->EMS_list);
 
+    int sockfd = pSocket->get_handle();
+    int retval;
+    int32_t mysize = 102400; //100kb note:actually kernel uses memory with size doblem of mysize
+                            //with this size i'm sure ems pkts are not lost
+    socklen_t len = sizeof(mysize);
+
+    //the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
+    ConstString _dgram_buffer_size = NetworkBase::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
+    if (_dgram_buffer_size!="")
+        mysize = NetType::toInt(_dgram_buffer_size);
+
+    retval = ACE_OS::setsockopt  (sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&mysize, sizeof(mysize));
+    if (retval != 0)
+    {
+        int myerr = errno;
+        yError()<< "ERROR in SetSockOpt SO_RCVBUF";
+    }
+
+    int32_t sock_input_buf_size =0;
+    retval = getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&sock_input_buf_size, &len);
+    if (retval != 0)
+    {
+        int myerr = errno;
+        yError() << "ERROR inGetSockOpt SO_RCVBUF";
+    }
+
+    yDebug() << "ethReceiver config socket with queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
+
+
+    for(int i=0; i<10; i++)
+    {
+        recFirstPkt[i] = false;
+        seqnumList[i] = 0;
+    }
     return true;
 }
 
@@ -791,6 +835,8 @@ public:
     double        gap_EMS;
     uint64_t      ageofframe_EMS;
     double        gap_PC104;
+    double        gap_PC104_min;
+    double        gap_PC104_max;
     bool          error_PC104;
     bool          error_EMS;
 };
@@ -803,10 +849,87 @@ times_test_delay::times_test_delay()
     gap_EMS = 0;
     ageofframe_EMS =0;
     gap_PC104 = 0;
+    gap_PC104_min = DBL_MAX;
+    gap_PC104_max = 0;
     error_PC104 = false;
     error_EMS = false;
 }
 
+
+
+int EthReceiver::getBoardNum(ACE_INET_Addr addr)
+{
+    int board;
+
+    // detect board
+    if( addr == eb1)
+    {
+        board = 1;
+    }
+    else if( addr == eb2)
+    {
+        board = 2;
+    }
+    else if( addr == eb3)
+    {
+        board = 3;
+    }
+    else if( addr == eb4)
+    {
+        board = 4;
+    }
+    else if( addr == eb5)
+    {
+        board = 5;
+    }
+    else if( addr == eb6)
+    {
+        board = 6;
+    }
+    else if( addr == eb7)
+    {
+        board = 7;
+    }
+    else if( addr == eb8)
+    {
+        board = 8;
+    }
+    else if( addr == eb9)
+    {
+        board = 9;
+    }
+    else
+    {
+        board = 0;
+    }
+
+    return(board);
+}
+
+
+
+void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
+{
+    int board = getBoardNum(addr);
+    //check seq num
+    uint64_t seqnum = *((uint64_t*)(&pktpayload[16]));
+    if(recFirstPkt[board]==false)
+    {
+        seqnumList[board] = seqnum;
+        recFirstPkt[board] = true;
+        yError()<< "EthREceiver: FIRST SEQ NUM for board=" <<board<< " is "<<seqnum;
+    }
+    else
+    {
+        if(seqnum != seqnumList[board]+1)
+        {
+            yError()<< "EthREceiver: ---LOST PKTS---board=" <<board<< " seq num rec="<<seqnum << " expected=" << seqnumList[board]+1;
+        }
+        seqnumList[board] = seqnum;
+    }
+}
+
+#ifndef ETHRECEIVER_ISPERIODICTHREAD
 void EthReceiver::run()
 {
     yTrace();
@@ -815,23 +938,23 @@ void EthReceiver::run()
     ssize_t       recv_size;
     ACE_INET_Addr sender_addr;
     char          incoming_msg[RECV_BUFFER_SIZE];
+    int board;
 
     // TODO aggiunto per debugging. tenere tempo trascorso dall'ultima ricezione di un msg da parte della ems i-esima.
     std::map<int, times_test_delay> lastHeard;
 
-    yError() << "Starting udp RECV thread\n";
+    yError() << "Starting udp RECV thread with prio "<< getPriority() << "\n";
 
     ACE_Time_Value recvTimeOut;
     fromDouble(recvTimeOut, 0.01);
     double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
 
-    eODeb_eoProtoParser *PP =  eODeb_eoProtoParser_GetHandle();
-    eOethLowLevParser_packetInfo_t pckInfo;
+
 
 #ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
     for(int i=1; i<=9; i++)
     {
-    	stats[i].resetStat();
+        stats[i].resetStat();
     }
 #endif
 
@@ -844,57 +967,22 @@ void EthReceiver::run()
         _rEnd = ethResList->rend();
         ethManager->managerMutex.post();
 
-        // per ogni msg ricevuto  -1 visto come 65535!!
+        // ricevo un messaggio dal socket: chiamata bloccante con timeout
         recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
 
-#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
-        	int board;
+        if(recv_size < 1)
+        {
+            //if i'm here, i exited from recv because of timeout
+            yError() << "EthReceiver: passed " <<myTestTimeout *1000<< " ms without receive a pkt!!";
+        }
 
-        	// detect board
-        	if( sender_addr == eb1)
-        	{
-        		board = 1;
-        	}
-        	else if( sender_addr == eb2)
-        	{
-        		board = 2;
-        	}
-        	else if( sender_addr == eb3)
-        	{
-        		board = 3;
-        	}
-        	else if( sender_addr == eb4)
-        	{
-        		board = 4;
-        	}
-        	else if( sender_addr == eb5)
-        	{
-        		board = 5;
-        	}
-        	else if( sender_addr == eb6)
-        	{
-        		board = 6;
-        	}
-        	else if( sender_addr == eb7)
-        	{
-        		board = 7;
-        	}
-        	else if( sender_addr == eb8)
-        	{
-        		board = 8;
-        	}
-        	else if( sender_addr == eb9)
-        	{
-        		board = 9;
-        	}
-        	else
-        	{
-        		board = 0;
-        	}
-        // For statistic purpose
-        stats[board].tickStart();
-#endif
+        if( recv_size > 60000)
+        {
+            yWarning() << "Huge message received " << recv_size;
+        }
 
+
+        //verifico che non siano passati più di 10 milli da l'ultima volta che ho ricevuta un pkt da una scheda
         riterator = _rBegin;
         while(riterator != _rEnd)
         {
@@ -917,26 +1005,23 @@ void EthReceiver::run()
             riterator++;
         }
 
-        if( recv_size > 60000)
-        {
-            yWarning() << "Huge message received " << recv_size;
-        }
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+        int board = getBoardNum(sender_addr);
+        // For statistic purpose
+        stats[board].tickStart();
+#endif
+
+
 
         sender_addr.addr_to_string(address, 64);
 
         if( (recv_size > 0) && (isRunning()) )
         {
-            pckInfo.payload_ptr = (uint8_t *) incoming_msg;
-            pckInfo.prototype = protoType_udp;
-            pckInfo.dst_port = sender_addr.get_port_number();
-            pckInfo.src_port = sender_addr.get_port_number();
-            pckInfo.src_addr = 1;
-            pckInfo.dst_addr = 2;
+            checkPktSeqNum(incoming_msg, sender_addr);
 
-            ethManager->managerMutex.wait();
-            eODeb_eoProtoParser_RopFrameDissect(PP, &pckInfo);
-            ethManager->managerMutex.post();
 
+            //se ho ricevuto un pkt, allora cerco la scheda nella lista e controllo le tempistiche
             riterator = _rBegin;
 
             while(riterator != _rEnd)
@@ -950,12 +1035,12 @@ void EthReceiver::run()
                     }
                     else
                     {
-//                         lastHeard[ethRes->boardNum].prevRecvMsg_PC104 = ethRes->getLastRecvMsgTimestamp();
                         memcpy(ethRes->recv_msg, incoming_msg, recv_size);
                         ethRes->onMsgReception(ethRes->recv_msg, recv_size);
 
                         if(lastHeard[ethRes->boardNum].initted)
                         {
+                            bool gap_ems_limits_changed =false;
                             //check recvTime on the PC104 side
                             lastHeard[ethRes->boardNum].gap_PC104 = ethRes->getLastRecvMsgTimestamp() - lastHeard[ethRes->boardNum].prevRecvMsg_PC104;
 
@@ -964,6 +1049,25 @@ void EthReceiver::run()
                                 yError() << "Board " << ethRes->boardNum << ": Gap of " << lastHeard[ethRes->boardNum].gap_PC104*1000 << "ms between two consecutive messages !!!";
                             }
 
+                            if(lastHeard[ethRes->boardNum].gap_PC104 < lastHeard[ethRes->boardNum].gap_PC104_min)
+                            {
+                                lastHeard[ethRes->boardNum].gap_PC104_min = lastHeard[ethRes->boardNum].gap_PC104;
+                                gap_ems_limits_changed = true;
+                            }
+
+
+                            if(lastHeard[ethRes->boardNum].gap_PC104 > lastHeard[ethRes->boardNum].gap_PC104_max)
+                            {
+                                lastHeard[ethRes->boardNum].gap_PC104_max = lastHeard[ethRes->boardNum].gap_PC104;
+                                gap_ems_limits_changed = true;
+                            }
+
+                            if(gap_ems_limits_changed)
+                            {
+                                yError() << "EthReceiver: ems gap changed for board " << ethRes->boardNum << ": min=" << lastHeard[ethRes->boardNum].gap_PC104_min*1000 << " max=" << lastHeard[ethRes->boardNum].gap_PC104_max*1000;
+                            }
+
+
                             // check time written into packet
                             int diff = (int)(getRopFrameAge(incoming_msg)/1000 - lastHeard[ethRes->boardNum].ageofframe_EMS/1000);
                             if( diff > (int)(myTestTimeout * 1000))
@@ -971,22 +1075,22 @@ void EthReceiver::run()
                                 yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << diff << "ms.";
                             }
 
-                            //reset errors
+                            //se sono qui significa che ho ricevuto un pkt dalla scheda, allora resetto gli errori
                             lastHeard[ethRes->boardNum].error_PC104 = false;
 
                         }
                         else
                         {
-                        	if(ethRes->isRunning())
-                        	{
-                        		lastHeard[ethRes->boardNum].initted = true;
-                        	}
-                        	else
-                        	{
-                        		lastHeard[ethRes->boardNum].initted = false;
-                        	}
+                            if(ethRes->isRunning())
+                            {
+                                lastHeard[ethRes->boardNum].initted = true;
+                            }
+                            else
+                            {
+                                lastHeard[ethRes->boardNum].initted = false;
+                            }
                         }
-
+                        //aggiorno i valori
                         lastHeard[ethRes->boardNum].ageofframe_EMS = getRopFrameAge(incoming_msg);
                         lastHeard[ethRes->boardNum].prevRecvMsg_PC104 = ethRes->getLastRecvMsgTimestamp();
                     }
@@ -1017,18 +1121,229 @@ void EthReceiver::run()
         double totUsed = 0;
         if(board == 9)
         {
-        	for(int i=1; i<=9; i++)
-        	{
-        		totUsed += stats[i].getElapsed();
-        	}
-        	if(totUsed >= 0.95)
-        		printf("**EthReceiver Thread: total used time to precess 9 ropframe is %f**\n", totUsed);
+            for(int i=1; i<=9; i++)
+            {
+                totUsed += stats[i].getElapsed();
+            }
+            if(totUsed >= 0.95)
+                printf("**EthReceiver Thread: total used time to precess 9 ropframe is %f**\n", totUsed);
         }
 #endif
     }
     yError() << "Exiting recv thread";
     return;
 }
+#endif
+
+
+#ifdef ETHRECEIVER_ISPERIODICTHREAD
+#define MAX_COUNT_STAT  10000
+#define MAX_NUM_PKT     15
+void EthReceiver::run()
+{
+//attention: don't insert too prints because this function is called every 1 millisec
+
+    ACE_TCHAR     address[64];
+    ethResources  *ethRes;
+    ssize_t       recv_size;
+    ACE_INET_Addr sender_addr;
+    char          incoming_msg[RECV_BUFFER_SIZE];
+    int flags = 0;
+    static int countstat =0;
+    int num_pkt;
+    int myerr;
+
+
+    // TODO aggiunto per debugging. tenere tempo trascorso dall'ultima ricezione di un msg da parte della ems i-esima.
+    static std::map<int, times_test_delay> lastHeard;
+
+
+    ACE_Time_Value recvTimeOut;
+    fromDouble(recvTimeOut, 0.01);
+    double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
+
+
+    countstat++;
+    if(countstat== MAX_COUNT_STAT)
+    {
+        double av, std, avUsed, stdUsed;
+        getEstPeriod (av, std);
+        getEstUsed (avUsed, stdUsed);
+        yDebug()<< "=== estPeriod: av=" <<av<<" std=" <<std;
+        yDebug()<< "===UsedPeriod: av=" <<avUsed<<" std=" <<stdUsed;
+        for(int i=1;i<10; i++)
+        {
+            yDebug() << "=== ems gap for board " << i << ": min=" << lastHeard[i].gap_PC104_min*1000 << " max=" << lastHeard[i].gap_PC104_max*1000;
+        }
+        countstat = 0;
+    }
+
+
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+    for(int i=1; i<=9; i++)
+    {
+        stats[i].resetStat();
+    }
+#endif
+
+
+    flags |= MSG_DONTWAIT;
+
+    while(num_pkt<MAX_NUM_PKT)
+    {
+        ethManager->managerMutex.wait();
+        // new, reverse iterator
+        ethResRIt    riterator, _rBegin, _rEnd;
+        _rBegin = ethResList->rbegin();
+        _rEnd = ethResList->rend();
+        ethManager->managerMutex.post();
+
+        // per ogni msg ricevuto  -1 visto come 65535!!
+        recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, flags);
+        if(recv_size < 1)
+        {
+            //if i'm here socket input queue is empty
+            return;
+        }
+
+        if( recv_size > 60000)
+        {
+            yWarning() << "Huge message received " << recv_size;
+        }
+
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+        int board = getBoardNum(sender_addr);
+        // For statistic purpose
+        stats[board].tickStart();
+#endif
+
+
+
+        sender_addr.addr_to_string(address, 64);
+
+        if( (recv_size > 0) && (isRunning()) )
+        {
+            checkPktSeqNum(incoming_msg, sender_addr);
+
+            //se ho ricevuto un pkt, allora cerco la scheda nella lista e controllo le tempistiche
+            riterator = _rBegin;
+
+            while(riterator != _rEnd)
+            {
+                ethRes = (*riterator);
+                if(ethRes->getRemoteAddress() == sender_addr)
+                {
+                    if(recv_size > ethRes->getBufferSize())
+                    {
+                        yError() << "EthReceiver got a message of wrong size ( received" << recv_size << " bytes while buffer is" << ethRes->getBufferSize() << " bytes long)";
+                    }
+                    else
+                    {
+                        memcpy(ethRes->recv_msg, incoming_msg, recv_size);
+                        ethRes->onMsgReception(ethRes->recv_msg, recv_size);
+
+                        if(lastHeard[ethRes->boardNum].initted)
+                        {
+                            bool gap_ems_limits_changed =false;
+                            //check recvTime on the PC104 side
+                            lastHeard[ethRes->boardNum].gap_PC104 = ethRes->getLastRecvMsgTimestamp() - lastHeard[ethRes->boardNum].prevRecvMsg_PC104;
+
+                            if(lastHeard[ethRes->boardNum].gap_PC104 > myTestTimeout)
+                            {
+                                yError() << "Board " << ethRes->boardNum << ": Gap of " << lastHeard[ethRes->boardNum].gap_PC104*1000 << "ms between two consecutive messages !!!";
+                            }
+
+                            if(lastHeard[ethRes->boardNum].gap_PC104 < lastHeard[ethRes->boardNum].gap_PC104_min)
+                            {
+                                lastHeard[ethRes->boardNum].gap_PC104_min = lastHeard[ethRes->boardNum].gap_PC104;
+                                gap_ems_limits_changed = true;
+                            }
+
+
+                            if(lastHeard[ethRes->boardNum].gap_PC104 > lastHeard[ethRes->boardNum].gap_PC104_max)
+                            {
+                                lastHeard[ethRes->boardNum].gap_PC104_max = lastHeard[ethRes->boardNum].gap_PC104;
+                                gap_ems_limits_changed = true;
+                            }
+
+//                            if(gap_ems_limits_changed) DON?T PRINT HERE!!!
+//                            {
+//                                yError() << "EthReceiver: ems gap changed for board " << ethRes->boardNum << ": min=" << lastHeard[ethRes->boardNum].gap_PC104_min*1000 << " max=" << lastHeard[ethRes->boardNum].gap_PC104_max*1000;
+//                            }
+
+
+                            // check time written into packet
+                            int diff = (int)(getRopFrameAge(incoming_msg)/1000 - lastHeard[ethRes->boardNum].ageofframe_EMS/1000);
+                            if( diff > (int)(myTestTimeout * 1000))
+                            {
+                                yError() << "Board " << ethRes->boardNum << ": EMS time between 2 ropframes bigger then " << myTestTimeout * 1000 << "ms;\t Actual delay is" << diff << "ms.";
+                            }
+
+                            //se sono qui significa che ho ricevuto un pkt dalla scheda, allora resetto gli errori
+                            lastHeard[ethRes->boardNum].error_PC104 = false;
+
+                        }
+                        else
+                        {
+                            if(ethRes->isRunning())
+                            {
+                                lastHeard[ethRes->boardNum].initted = true;
+                            }
+                            else
+                            {
+                                lastHeard[ethRes->boardNum].initted = false;
+                            }
+                        }
+                        //aggiorno i valori
+                        lastHeard[ethRes->boardNum].ageofframe_EMS = getRopFrameAge(incoming_msg);
+                        lastHeard[ethRes->boardNum].prevRecvMsg_PC104 = ethRes->getLastRecvMsgTimestamp();
+                    }
+
+                    //break;  // devo uscire da questo while e rimanere in quello più esterno.
+                }
+                riterator++;
+            }
+
+
+        }   //ethManager->managerMutex.post();
+
+#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
+        stats[board].tickEnd();
+
+        //compute statistics
+        if (stats[board].getIterations() == 2000)
+        {
+            double avEst=0;
+            double stdEst=0;
+            double avUsed=0;
+            double stdUsed=0;
+            stats[board].getEstPeriod(avEst, stdEst);
+            stats[board].getEstUsed(avUsed, stdUsed);
+            printf("EthReceiver Thread [%d] run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n", board, stats[board].getIterations(), avEst, stdEst, avUsed, stdUsed);
+            stats[board].resetStat();
+        }
+
+        double totUsed = 0;
+        if(board == 9)
+        {
+            for(int i=1; i<=9; i++)
+            {
+                totUsed += stats[i].getElapsed();
+            }
+            if(totUsed >= 0.95)
+                printf("**EthReceiver Thread: total used time to precess 9 ropframe is %f**\n", totUsed);
+        }
+#endif
+        num_pkt++;
+    }
+//    yError() << "Exiting recv thread";
+    return;
+}
+
+#endif
+
 
 // eof
 

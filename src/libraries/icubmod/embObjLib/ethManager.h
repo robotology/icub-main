@@ -46,6 +46,9 @@
 #include <ace/config.h>
 #include <ace/Thread.h>
 #include <ace/SOCK_Dgram_Bcast.h>
+#include "ace/OS_main.h"
+#include "ace/OS_NS_string.h"
+#include "ace/OS_NS_sys_socket.h"
 
 // YARP includes
 #include <yarp/dev/DeviceDriver.h>
@@ -295,13 +298,19 @@ public:
 //            EthReceiver
 // -------------------------------------------------------------------\\
 
+#ifdef ETHRECEIVER_ISPERIODICTHREAD
+class EthReceiver : public yarp::os::RateThread
+#else
 class EthReceiver : public yarp::os::Thread
+#endif
 {
 private:
     uint8_t                       recvBuffer[rxBUFFERsize];
     ACE_SOCK_Dgram                *recv_socket;
     TheEthManager                 *ethManager;
     std::list<ethResources *>     *ethResList;
+    uint64_t                       seqnumList[10];
+    bool                           recFirstPkt[10];
 
 #ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
     // for statistic debug purpose
@@ -309,6 +318,8 @@ private:
     Port statsPort;
 #endif
 
+    int getBoardNum(ACE_INET_Addr addr);//return board num from address (returns 0 in case of error)
+    void checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr);
 public:
     EthReceiver();
     ~EthReceiver();
