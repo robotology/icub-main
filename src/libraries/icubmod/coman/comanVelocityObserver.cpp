@@ -258,19 +258,25 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
 
         if( NULL == joint_p)
         {
-            //         yError() << "Trying to get value from a non-existing joint j" << j;
-            out[j] = j;   // return the joint number just to debug!!
-            return false;
+            // The following is a test to see if the value is read from the right board.
+            // The output will be the bId I want to read the value from for positions and
+            // 100 + that number for velocities
+            out[j] = j;
+            out[_nChannels+j] = 100+jointTobId(j);
+            yError() << "Trying to get pos/vel values on a non-existing boardId " << jointTobId(j) << "\n";
+            return yarp::dev::IAnalogSensor::AS_ERROR;
         }
+        else
+        {
+            ts_bc_data_t bc_data;
+            joint_p->get_bc_data(bc_data);
 
-        ts_bc_data_t bc_data;
-        joint_p->get_bc_data(bc_data);
-
-        mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
+            mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
+        }
         out[j] = (double) (data.Position / _angleToEncoder[j]) - _zero[j];
         out[_nChannels+j] = (double) (data.Velocity / _angleToEncoder[j]);
     }
-    return true;
+    return yarp::dev::IAnalogSensor::AS_OK;
 }
 
 int comanVelocityObserver::getState(int ch)

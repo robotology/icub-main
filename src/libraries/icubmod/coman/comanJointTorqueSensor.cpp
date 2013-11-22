@@ -258,24 +258,24 @@ int comanJointTorqueSensor::read(yarp::sig::Vector &out)
 
         if( NULL == joint_p)
         {
-            //         yError() << "Trying to get velocity value on a non-existing joint j" << j;
-            out[j] = j;   // return the joint number just to debug!!
-            return false;
+            // The following is a test to see if the value is read from the right board.
+            // The output will be the bId I want to read the value from.
+            //
+            out[j] = jointTobId(j);
+            yError() << "Trying to get torque value on a non-existing boardId " << jointTobId(j) << "\n";
+            return yarp::dev::IAnalogSensor::AS_ERROR;
+        }
+        else
+        {
+            ts_bc_data_t bc_data;
+            mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
         }
 
-        ts_bc_data_t bc_data;
-        mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
 
-//      Do per scontato che la velocità sia broadcastata.
-//        if(bc_policy & BC_POLICY_MOTOR_POSITION)  // se viene broadcastata... usare la ricezione udp
-//        {
-            joint_p->get_bc_data(bc_data);
-//            ret = true;
-//        }
-
-//            out[j] = (double) data.Torque?? * _newtonsToSensor[j];
+        // Real value from the boards
+        // out[j] = (double) data.Torque?? * _newtonsToSensor[j];
     }
-    return true;
+    return yarp::dev::IAnalogSensor::AS_OK;
 }
 
 int comanJointTorqueSensor::getState(int ch)
