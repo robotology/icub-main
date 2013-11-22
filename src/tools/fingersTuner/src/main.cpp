@@ -276,7 +276,7 @@ protected:
         designer.tuneController(pControllerRequirements,pController);
         printf("tuning results: %s\n",pController.toString().c_str());
         double Kp=pController.find("Kp").asDouble();
-        double Ki=(i!=15)?pController.find("Ki").asDouble():0.0;
+        double Ki=pController.find("Ki").asDouble();
         pid.scale=4.0;
         int scale=(int)pid.scale; int shift=1<<scale;
         double fwKp=floor(Kp*pid.encs_ratio*shift);
