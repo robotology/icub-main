@@ -284,7 +284,7 @@ protected:
         pid.Kp=iCub::ctrl::sign(pid.Kp*fwKp)>0.0?fwKp:-fwKp;
         pid.Ki=iCub::ctrl::sign(pid.Ki*fwKi)>0.0?fwKi:-fwKi;
         pid.Kd=0.0;
-        printf("Kp (FW) = %g; Ki (FW) = %g; shift factor = %d\n",pid.Kp,pid.Ki,scale);
+        printf("Kp (FW) = %g; Ki (FW) = %g; Kd (FW) = %g; shift factor = %d\n",pid.Kp,pid.Ki,pid.Kd,scale);
 
         Property pStictionEstimation;
         pStictionEstimation.put("max_time",40.0);
