@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="coman" build="1">
+    <devices file="wrappers/jointTorqueWrapper/jt_left_arm_wrapper.xml" />
+    <devices file="wrappers/jointTorqueWrapper/jt_left_leg_wrapper.xml" />
+    <devices file="wrappers/jointTorqueWrapper/jt_right_arm_wrapper.xml" />
+    <devices file="wrappers/jointTorqueWrapper/jt_right_leg_wrapper.xml" />
+    <devices file="wrappers/jointTorqueWrapper/jt_torso_wrapper.xml" />
+</devices>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="coman" build="1">
+    <devices file="wrappers/velocityObserver/vo_left_arm_wrapper.xml" />
+    <devices file="wrappers/velocityObserver/vo_left_leg_wrapper.xml" />
+    <devices file="wrappers/velocityObserver/vo_right_arm_wrapper.xml" />
+    <devices file="wrappers/velocityObserver/vo_right_leg_wrapper.xml" />
+    <devices file="wrappers/velocityObserver/vo_torso_wrapper.xml" />
+</devices>
+
+

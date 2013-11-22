@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<robot name="coman">
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="coman" build="1" portprefix="coman" >
 
   <device name="coman_mc" type="comanMotionControl">
     <params file="general.xml" />
@@ -13,23 +15,23 @@
 
 
    <!-- wrappers  -->
-  <devices file="wrappers/coman_mc_left_leg_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_left_arm_wrapper.xml" />
+  <!--
+  <devices file="wrappers/coman_mc_left_leg_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_right_arm_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_right_leg_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_torso_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_neck_wrapper.xml" />
+   <devices file="wrappers/coman_ft_wrappers.xml" />   -->
 
-   <devices file="wrappers/coman_ft_wrappers.xml" />
-
-   <!-- inertial sensor -->
-   <devices file="hardware/coman_inertial.xml" /> 
+   <!-- inertial sensor 
+   <devices file="hardware/coman_inertial.xml" />   -->
 
    <!-- read additional pos and vel -->
-    <devices file="hardware/velocityObserver.xml" /> 
-    <devices file="wrappers/coman_VO_wrappers.xml" /> 
+    <devices file="hardware/velocityObservers.xml" /> 
+    <devices file="wrappers/vo_wrappers.xml" /> 
 
-   <!-- boadcast torque values -->
-    <devices file="hardware/jointTorqueSensor.xml" /> 
-    <devices file="wrappers/coman_JT_wrappers.xml" /> 
+   <!-- boadcast torque values     -->
+    <devices file="hardware/jointTorqueSensors.xml" /> 
+    <devices file="wrappers/jt_wrappers.xml" />  
 </robot>

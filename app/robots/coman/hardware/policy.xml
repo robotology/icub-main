@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<params>
+    <group name="GENERAL">
+        <param name="MaxTorque"> 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 </param>
+        <param name="ScaleFactor"> 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 </param>
+    </group>
+</params>
+    

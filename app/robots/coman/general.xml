@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<params>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="coman" build="1">
     <group name="GENERAL">
         <param name="YAML">  "/usr/local/share/iCub/robots/coman/basic.yaml"  </param>
     </group>
