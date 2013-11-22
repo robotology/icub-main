@@ -70,8 +70,9 @@ to the robot.
 \section portsif_sec Ports Interface 
 The interface to this module is implemented through 
 \ref fingersTuner_IDLServer . \n 
-Be careful that a yarp::os::Value must be typed by the user 
-enclosed between parentheses.
+Be careful that from the console a yarp::os::Value must be typed
+by the user enclosed between parentheses, so that typical 
+commands are "tune left_hand (12)" or "tune left_hand (index)". 
 
 \section tested_os_sec Tested OS
 Windows, Linux
