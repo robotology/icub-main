@@ -1791,12 +1791,13 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     _writeBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _replyBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _echoBuffer=iBufferFactory->createBuffer(BUF_SIZE);
+    printf("Can read/write buffers created, buffer size: %d\n", BUF_SIZE);
 
     requestsQueue = new RequestsQueue(_njoints, NUM_OF_MESSAGES);
 
     _initialized=true;
 
-    DEBUG_FUNC("CanBusResources::initialized correctly\n");
+    printf("CanBusResources::initialized correctly\n");
     return true;
 }
 
