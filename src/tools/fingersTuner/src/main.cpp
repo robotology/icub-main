@@ -264,12 +264,19 @@ protected:
         pControllerRequirements.put("tau",tau);
         pControllerRequirements.put("K",K);
         pControllerRequirements.put("f_c",0.75);
-        pControllerRequirements.put("T_dr",1.0);
-        pControllerRequirements.put("type","PI");
+
+        if (i!=15)
+        {
+            pControllerRequirements.put("T_dr",1.0);
+            pControllerRequirements.put("type","PI");
+        }
+        else
+            pControllerRequirements.put("type","P");
+
         designer.tuneController(pControllerRequirements,pController);
         printf("tuning results: %s\n",pController.toString().c_str());
         double Kp=pController.find("Kp").asDouble();
-        double Ki=pController.find("Ki").asDouble();
+        double Ki=(i!=15)?pController.find("Ki").asDouble():0.0;
         pid.scale=4.0;
         int scale=(int)pid.scale; int shift=1<<scale;
         double fwKp=floor(Kp*pid.encs_ratio*shift);
