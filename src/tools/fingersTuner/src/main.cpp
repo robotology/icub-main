@@ -72,7 +72,8 @@ The interface to this module is implemented through
 \ref fingersTuner_IDLServer . \n 
 Be careful that from the console a yarp::os::Value must be typed
 by the user enclosed between parentheses, so that typical 
-commands are "tune left_hand (12)" or "tune left_hand (index)". 
+commands are <i>tune left_hand (12)</i> or <i>tune left_hand 
+(index)</i>. 
 
 \section tested_os_sec Tested OS
 Windows, Linux
