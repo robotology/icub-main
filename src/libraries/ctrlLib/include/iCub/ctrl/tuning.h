@@ -233,15 +233,16 @@ public:
      * @b Kd <double>: specify the derivative term of the 
      *    high-level controller for tracking purpose.
      *  
-     * @b vel_thres <double>: specify the velocity threshold used to 
-     *    identify the estimation time windows. The estimation is
-     *    carried out whenever |vel|<vel_thres.
+     * @b vel_thres <double>: specify the velocity threshold (in 
+     *    degrees) used to identify the estimation time windows. The
+     *    estimation is carried out whenever |vel|<vel_thres.
      *  
-     * @b e_thres <double>: specify the error threshold above which 
-     *    keep updating the stiction values. The estimation is
-     *    carried out until |e_mean|>e_thres, where e_mean accounts
-     *    for the integral average of the error computed within the
-     *    estimation time window.
+     * @b e_thres <double>: specify the error threshold (in degrees)
+     *    above which keep updating the stiction values. The
+     *    estimation is carried out until |e_mean|>e_thres, where
+     *    e_mean accounts for the integral average of the error
+     *    computed within the estimation time window. Value given in
+     *    degrees.
      *  
      * @b gamma (<double> <double>): specify the gains used for 
      *    updating the stiction up and down values, respectively.
