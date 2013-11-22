@@ -184,7 +184,8 @@ protected:
     double x_pos,x_vel,x_acc;
     double Kp,Ki,Kd;
     double vel_thres,e_thres;
-    double tg,xd_pos;    
+    double tg,xd_pos;
+    double stiction_limit;
     bool   adapt,adaptOld;
     bool   configured;
 
@@ -194,6 +195,7 @@ protected:
         falling
     } state;
 
+    void applyStictionLimit();
     bool threadInit();
     void run();
     void threadRelease();

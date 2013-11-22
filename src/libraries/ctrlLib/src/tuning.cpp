@@ -257,6 +257,14 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
 
 
 /**********************************************************************/
+void OnlineStictionEstimator::applyStictionLimit()
+{
+    stiction[0]=std::min(std::max(stiction[0],-stiction_limit),stiction_limit);
+    stiction[1]=std::min(std::max(stiction[1],-stiction_limit),stiction_limit);
+}
+
+
+/**********************************************************************/
 bool OnlineStictionEstimator::threadInit()
 {
     if (!configured)
@@ -292,6 +300,8 @@ bool OnlineStictionEstimator::threadInit()
     Matrix _satLim(1,2);
     _satLim(0,0)=-pidInfo.max_int;
     _satLim(0,1)=pidInfo.max_int;
+    stiction_limit=pidInfo.max_output;
+    applyStictionLimit();
 
     pid=new parallelPID(0.001*getRate(),_Kp,_Ki,_Kd,_Wp,_Wi,_Wd,_N,_Tt,_satLim);
     pid->reset(Vector(1,0.0));
@@ -350,6 +360,7 @@ void OnlineStictionEstimator::run()
         if (yarp::math::norm(e_mean)>e_thres)
         {
             stiction+=gamma*e_mean;
+            applyStictionLimit();
             done[state]=0.0;
         }
         else
