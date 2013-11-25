@@ -541,13 +541,20 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        bus->_writeMessages++;
        bus->writePacket();
 
-       if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
+       if (canEchoEnabled)
        {
-           bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
-           bus->_echoBuffer[bus->_echoMessages].setLen(6);
-           for (i=0; i<6; i++)
-                bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
-           bus->_echoMessages++;
+           if (bus->_readMessages<BUF_SIZE-1 && bus->_echoMessages<BUF_SIZE-1)
+           {
+               bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
+               bus->_echoBuffer[bus->_echoMessages].setLen(6);
+               for (i=0; i<6; i++)
+                    bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
+               bus->_echoMessages++;
+           }
+           else
+           {
+               fprintf(stderr,"ERROR: Echobuffer full \n");
+           }
        }
 
        bus->startPacket();
@@ -563,13 +570,20 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        bus->_writeMessages++;
        bus->writePacket();
        
-       if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
+       if (canEchoEnabled)
        {
-           bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
-           bus->_echoBuffer[bus->_echoMessages].setLen(6);
-           for (i=0; i<6; i++)
-                bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
-           bus->_echoMessages++;
+           if (bus->_readMessages<BUF_SIZE-1 && bus->_echoMessages<BUF_SIZE-1)
+           {
+               bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
+               bus->_echoBuffer[bus->_echoMessages].setLen(6);
+               for (i=0; i<6; i++)
+                    bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
+               bus->_echoMessages++;
+           }
+           else
+           {
+               fprintf(stderr,"ERROR: Echobuffer full \n");
+           }
        }
 
     }
