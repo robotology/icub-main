@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<params>
+    <!-- GENERAL group is in the following file -->
+    <params file="hardware/motor_params.xml" />
+    
+    <group name="MC_BOARD">
+        <!-- old version  -->
+        <param name="policy">           0x28FF  </param>
+        <param name="extra_policy">     0x0004  </param> 
+      <!-- new version 
+        <param name="policy">           0x89BB  </param>
+        <param name="extra_policy">     0x10C1  </param>    -->
+        <param name="bc_rate">          2       </param>
+    </group>
+    
+    <group name="IMPEDANCE_PIDS">
+         <!--                     Kp       Kd     Ki   Integral    PWM    scale
+                                                        Limit     Limit  factor  offset    -->
+        <param name="ImpPid0">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid1">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid2">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid3">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid4">     445       0      22       0       6500    10      0       </param>
+        
+        <param name="ImpPid5">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid6">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid7">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid8">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid9">     445       0      22       0       6500    10      0       </param>
+        
+        <param name="ImpPid10">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid11">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid12">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid13">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid14">    445       0      22       0       6500    10      0       </param>
+        
+        <param name="ImpPid15">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid16">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid17">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid18">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid19">    445       0      22       0       6500    10      0       </param>
+        
+        <param name="ImpPid20">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid21">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid22">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid23">    445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid24">    445       0      22       0       6500    10      0       </param>
+    </group>
+    
+</params>
+    

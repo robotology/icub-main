@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+    <device name="coman_jt" type="comanJointTorqueSensor">
+        <params file="general.xml" />
+        <params file="hardware/motor_params.xml" />
+    </device>
+</devices>
