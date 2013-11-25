@@ -1,7 +1,0 @@
-<devices>
-    <device name="inertial" type="inertial">
-      <!-- baud rate is fixed to the maximum of 115200 -->
-      <param name="subdevice">  imu3DM_GX3  </param>
-      <param name="serial">  /dev/ttyACM0   </param>
-    </device>
-</devices>
