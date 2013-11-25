@@ -13,7 +13,7 @@ class fingersTuner_IDLServer;
 
 /**
  * fingersTuner_IDLServer
- * Interface.
+ * IDL Interface to \ref fingersTuner services.
  */
 class fingersTuner_IDLServer : public yarp::os::Wire {
 public:

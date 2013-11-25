@@ -9,7 +9,7 @@ struct Value { }
 /**
 * fingersTuner_IDLServer
 *
-* Interface. 
+* IDL Interface to \ref fingersTuner services.
 */
 
 service fingersTuner_IDLServer
