@@ -7,8 +7,8 @@ board_ctrl:
 # assume boards of same type have the same policy bc_rate !!! 
 
 mc_board:
-  policy: 0x28FF         
-  extra_policy: 0x0004	 
+  policy: 0x893F         
+  extra_policy: 0x0001	 
   bc_rate: 2
 
 ft_board:

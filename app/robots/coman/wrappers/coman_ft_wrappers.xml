@@ -3,7 +3,7 @@
 <devices>
     <device name="coman_ft_wrapper" type="analogServer">
       <param name="period">     20                </param>
-      <param name="deviceId">   trial             </param>     
+      <param name="deviceId">   forceTorque             </param>     
       <param name="channels"> 12              </param>
 
       <paramlist name="ports">

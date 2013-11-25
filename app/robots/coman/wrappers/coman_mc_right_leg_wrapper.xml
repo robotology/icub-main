@@ -27,9 +27,9 @@
 	<device name="coman_VO_right_leg_wrapper" type="analogServer">
 	      <param name="period">     20                </param>
 	      <param name="deviceId">   right_leg         </param>
-              <param name="channels">   12       </param>
+              <param name="channels">   6       </param>
 	      <paramlist name="ports">
-		   <elem name="speeds">    0 11  0 11  </elem>
+		   <elem name="speeds">    0 5  0 5  </elem>
 	      </paramlist>
 	      <action phase="startup" level="5" type="attach">
 		<paramlist name="networks">
@@ -46,7 +46,7 @@
 	      <param name="deviceId">   right_leg         </param>
               <param name="channels">   6       </param>
 	      <paramlist name="ports">
-		   <elem name="torques">    0 5  0 5  </elem>
+		   <elem name="torques">    11 16  0 5  </elem>
 	      </paramlist>
 	      <action phase="startup" level="5" type="attach">
 		<paramlist name="networks">

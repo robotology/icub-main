@@ -26,9 +26,9 @@
     <device name="coman_VO_left_arm_wrapper" type="analogServer">
 	<param name="period">     20                </param>
       	<param name="deviceId">   left_arm       </param>
-	<param name="channels">   8       </param>
+	<param name="channels">   4       </param>
       	<paramlist name="ports">
-    		<elem name="speeds">    0 7  0 7  </elem>
+    		<elem name="speeds">    0 3  0 3  </elem>
       	</paramlist>
       	<action phase="startup" level="5" type="attach">
         	<paramlist name="networks">
@@ -45,7 +45,7 @@
       	<param name="deviceId">   left_arm       </param>
         <param name="channels">   4       </param>
       	<paramlist name="ports">
-   		<elem name="torques">    0 3  0 3  </elem>
+   		<elem name="torques">   3 6  0 3  </elem>
 	</paramlist>
       	<action phase="startup" level="5" type="attach">
 		<paramlist name="networks">
