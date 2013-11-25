@@ -133,6 +133,9 @@ public:
 int32_t IRpcServer::get_answer() {
   int32_t _return = 0;
   IRpcServer_get_answer helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::get_answer()");
+  }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
@@ -140,6 +143,9 @@ bool IRpcServer::set_answer(const int32_t rightAnswer) {
   bool _return = false;
   IRpcServer_set_answer helper;
   helper.rightAnswer = rightAnswer;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::set_answer(const int32_t rightAnswer)");
+  }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
@@ -147,24 +153,36 @@ int32_t IRpcServer::add_one(const int32_t x) {
   int32_t _return = 0;
   IRpcServer_add_one helper;
   helper.x = x;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::add_one(const int32_t x)");
+  }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
 bool IRpcServer::start() {
   bool _return = false;
   IRpcServer_start helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::start()");
+  }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
 bool IRpcServer::stop() {
   bool _return = false;
   IRpcServer_stop helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::stop()");
+  }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
 bool IRpcServer::is_running() {
   bool _return = false;
   IRpcServer_is_running helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::is_running()");
+  }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
