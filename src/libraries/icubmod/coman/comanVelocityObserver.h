@@ -120,7 +120,6 @@ private:
     int                     *_bIdMap;                           /* conversion from joint number to bId */
     int                     *_inv_bIdMap;                       /* conversion back from bId to joint number */
     double                  *_angleToEncoder;                   /** mRads to degrees conversion factors */
-    double                  *_zero;
 
     // basic knowledge of my joints
     int                     _nChannels;                         // Number of channels handled by this class; this values will be extracted by the config file

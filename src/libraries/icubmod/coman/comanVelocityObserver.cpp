@@ -88,21 +88,20 @@ bool comanVelocityObserver::alloc(int nj)
 //     _inv_bIdMap = allocAndCheck<int>(nj);      // this will be allocated after!!
 
     _angleToEncoder=allocAndCheck<double>(nj);
-    _zero = allocAndCheck<double>(nj);
-
     return true;
 }
 
 comanVelocityObserver::comanVelocityObserver() :  _mutex(1)
 {
     yTrace();
-    _boards_ctrl    = NULL;
+    _boards_ctrl = NULL;
     _nChannels 		= 0;
     _axisMap		= NULL;
-    _bIdMap         = NULL;
-    _inv_bIdMap     = NULL;
+    _bIdMap     = NULL;
+    _inv_bIdMap = NULL;
     _angleToEncoder = NULL;
-    _zero           = NULL;
+//    bc_policy     = 0;
+//    bc_rate     =   0;
 }
 
 comanVelocityObserver::~comanVelocityObserver()
@@ -113,7 +112,6 @@ comanVelocityObserver::~comanVelocityObserver()
     checkAndDestroy<int>(_bIdMap);
     checkAndDestroy<int>(_inv_bIdMap);
     checkAndDestroy<double>(_angleToEncoder);
-    checkAndDestroy<double>(_zero);
 }
 
 
@@ -162,26 +160,26 @@ bool comanVelocityObserver::fromConfig(yarp::os::Searchable &config)
     int i;
     Bottle general = config.findGroup("GENERAL");
 
-    Value &tmp= general.find("joints");
+    Value &tmp= general.find("Joints");
     if(tmp.isNull())
     {
         yError() << "Missing Joints number!\n";
         return false;
     }
-    _nChannels = general.find("joints").asInt();
+    _nChannels = general.find("Joints").asInt();
     yWarning() << " njoints is " << _nChannels;
     alloc(_nChannels);
 
     // leggere i valori da file, AxisMap is optional
     // This is a remapping for the user. It is optional because it is actually unuseful and can even add more confusion than other.
-    if (extractGroup(general, xtmp, "axisMap", "a list of reordered indices for the axes", _nChannels+1))
+    if (extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _nChannels+1))
     {
         for (i = 1; i < xtmp.size(); i++)
             _axisMap[i-1] = xtmp.get(i).asInt();
     }
     else
     {
-        yWarning() << "No axisMap map found, using default configuration: continuous from 0 to n";
+        yWarning() << "No AxisMap map found, using default configuration: continuous from 0 to n";
         for (i = 1; i < xtmp.size(); i++)
         {
             _axisMap[i-1] = i-1;
@@ -216,22 +214,21 @@ bool comanVelocityObserver::fromConfig(yarp::os::Searchable &config)
     }
 
     // Encoder scales
-    if (!extractGroup(general, xtmp, "encoder", "a list of scales for the encoders", _nChannels+1))
+    if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _nChannels+1))
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
             _angleToEncoder[i-1] = xtmp.get(i).asDouble();
 
-    // Zero Values
-    if (!extractGroup(general, xtmp, "zeros","a list of offsets for the zero point", _nChannels+1))
-    {
-        printf("'zeros' factor was not found in the config file\n");
-        return false;
-    }
-    else
-        for (i = 1; i < xtmp.size(); i++)
-            _zero[i-1] = xtmp.get(i).asDouble();
+//    bc_policy = 0;
+//    extra_policy = 0;
+//    Bottle mc_board = config.findGroup("MC_BOARD");
+//    bc_policy = mc_board.find("policy").asInt();
+//    extra_policy = mc_board.find("extra_policy").asInt();
+//    bc_rate = mc_board.find("bc_rate").asInt();
 
+//    printf("bc policy    = %d (0x%0x)", bc_policy, bc_policy);
+//    printf("extra_policy = %d (0x%0x)", extra_policy, extra_policy);
     return true;
 }
 
@@ -258,25 +255,20 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
 
         if( NULL == joint_p)
         {
-            // The following is a test to see if the value is read from the right board.
-            // The output will be the bId I want to read the value from for positions and
-            // 100 + that number for velocities
-            out[j] = j;
-            out[_nChannels+j] = 100+jointTobId(j);
-            yError() << "Trying to get pos/vel values on a non-existing boardId " << jointTobId(j) << "\n";
-            return yarp::dev::IAnalogSensor::AS_ERROR;
+            //         yError() << "Trying to get value from a non-existing joint j" << j;
+            out[j] = j;   // return the joint number just to debug!!
+            return false;
         }
-        else
-        {
-            ts_bc_data_t bc_data;
-            joint_p->get_bc_data(bc_data);
 
-            mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
-        }
-        out[j] = (double) (data.Position / _angleToEncoder[j]) - _zero[j];
-        out[_nChannels+j] = (double) (data.Velocity / _angleToEncoder[j]);
+        ts_bc_data_t bc_data;
+        mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
+
+        joint_p->get_bc_data(bc_data);
+
+        out[j] = (double) data.Position;
+        out[_nChannels+j] = (double) data.Velocity;
     }
-    return yarp::dev::IAnalogSensor::AS_OK;
+    return true;
 }
 
 int comanVelocityObserver::getState(int ch)

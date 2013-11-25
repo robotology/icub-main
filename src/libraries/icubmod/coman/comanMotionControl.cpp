@@ -118,6 +118,8 @@ bool comanMotionControl::alloc(int nj)
     _zeros = allocAndCheck<double>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    for(int j=0; j<nj; j++)
+        _newtonsToSensor[j] = 1000.0;
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1630,6 +1632,7 @@ bool comanMotionControl::setTorqueModeRaw(int j)
 
     ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+
     printf("setTorqueModeRaw joint [%d]: message was sent with %s\n", j, ret? "SUCCESS" : "FAILURE");
 
     if(ret)

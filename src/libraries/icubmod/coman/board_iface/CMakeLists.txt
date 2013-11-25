@@ -17,7 +17,6 @@ set(ThisLib_HEADERS     Boards_iface.h
                         CommProtocol.hpp
                         definitions.h
                         DSP_board.h
-                        broadcast_data.h
                         ../comanDevicesHandler.hpp)
 
 add_library(robolli_lib ${ThisLib_SOURCES} ${ThisLib_HEADERS})
