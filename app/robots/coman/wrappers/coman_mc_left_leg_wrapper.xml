@@ -8,7 +8,7 @@
 	    <param name="threadrate">  10  </param>
 	    <!-- elem name hereafter (FirstSetOfJoints) are custom names that live only in this file, they are used in the attach phase -->
 	    <paramlist name="networks">
-		<elem name="FirstSetOfJoints"> 0 5  19 24 </elem>
+		<elem name="FirstSetOfJoints"> 0 5  17 22 </elem>
 	    </paramlist>
 	    <param name="period"> 20                    </param>
 	    <param name="name">   coman/left_leg        </param>

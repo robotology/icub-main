@@ -5,7 +5,7 @@
     <param name="threadrate">  10  </param>
     <paramlist name="networks">
       <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
-	<elem name="FirstSetOfJoints"> 0 1  3 4   </elem>
+	<elem name="FirstSetOfJoints"> 0 1  23 24   </elem>
 	
     </paramlist>
 
