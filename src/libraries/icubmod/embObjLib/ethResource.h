@@ -43,6 +43,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
+#include "statExt.h"
 
 // embObj includes
 
@@ -88,6 +89,53 @@ using namespace yarp::dev;
 using namespace std;
 
 
+//this class contains all info about pkts received from a specific ems (its id is stored in "board" field)
+//and let you calculate statistic about receive timing and check if one of following errors occur:
+// 1) error in sequence number
+// 2) between two consecutive pkts there are more the "timeout" sec (default is 0.01 sec and this is can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC):
+      //this elapsed time is calculated in two way:
+      //1) using sys time: when arrived a pkt number n its received time(get by sys call) is compared with received time of pkt number n-1
+      //2) using ageOfFrame filed in packets: this time is insert by transmitter board. when arrive a pkt number n its is compared with ageOfFrme of pkt n-1.
+      //   if there are more then timeout sec it mean that board did not transmit for this period.
+class infoOfRecvPkts
+{
+private:
+    int board; //num of ems board
+public:
+    bool          initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
+    bool          isInError;        //is true if an error occur. it is used to avoid to print error every cicle
+    int           count;
+    int           max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
+    double        timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
+
+    uint64_t      last_seqNum;      //last seqNum rec
+    uint64_t      last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
+    double        last_recvPktTime; //time of last recv pkt
+
+    int           totPktLost;       //total pakt lost
+    StatExt       *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
+    StatExt       *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
+    StatExt       *stat_precessPktTime; //values are stored in sec
+
+
+    infoOfRecvPkts();
+    void printStatistics(void);
+    void clearStatistics(void);
+    uint64_t getSeqNum(uint8_t *packet);
+    uint64_t getAgeOfFrame(uint8_t * packet);
+
+    /*!   @fn       void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
+     *    @brief    updates communication info statistics and checks if there is a transmission error with this ems board.In case of error print it.
+     *    @param    packet           pointer to received packet
+     *    @param    reckPktTime      sys time on rec pkt (expressed in seconds)
+     *    @param    processPktTime   time needed to process this packet (expressed in seconds)
+     */
+    void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
+
+    void setBoardNum(int board);
+};
+
+
 class yarp::dev::ethResources:  public DeviceDriver,
                                 public hostTransceiver
 {
@@ -99,6 +147,9 @@ private:
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+    infoOfRecvPkts    *infoPkts;
+
+
 
 public:
 //     hostTransceiver   *transceiver;         //!< Pointer to the protocol handler   non più usato. ora c'è derivazione diretta.
@@ -179,6 +230,12 @@ public:
      *    @return   true if goToRun command has been sent to EMS else false
      */
     bool            isRunning(void);
+
+    /*!   @fn       checkIsAlive(double curr_time);
+     *    @brief    check if ems is ok by verifing time elapsed from last received packet. In case of error print yError.
+     *    @return
+     */
+    void checkIsAlive(double curr_time);
 
 
 

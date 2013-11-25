@@ -10,10 +10,51 @@
 #include "ethResource.h"
 #include <ethManager.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/NetType.h>
+
+//embobj
+#include "EOropframe_hid.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
+
+#define DEFAULT_MAX_COUNT_STAT  60000 //1 minuts
+#define DEFAULT_TIMEOUT_STAT    0.01 //expessed in sec
+infoOfRecvPkts::infoOfRecvPkts()
+{
+    board = 0;      //after ethresource is opened, then this board num is set
+    initted = false;
+    isInError = false;
+    count = 0;
+    max_count = DEFAULT_MAX_COUNT_STAT;
+    timeout = DEFAULT_TIMEOUT_STAT;
+
+    last_seqNum = 0;
+    last_ageOfFrame = 0;
+    last_recvPktTime = 0.0;
+
+    totPktLost = 0;
+    stat_ageOfFrame = new StatExt();
+    stat_periodPkt = new StatExt();
+    stat_precessPktTime = new StatExt();
+
+
+    ConstString statistcs_count_max = NetworkBase::getEnvironment("ETHREC_STATISTICS_COUNT_RECPKT_MAX");
+    if (statistcs_count_max!="")
+        max_count = NetType::toInt(statistcs_count_max);
+
+    ConstString statistcs_timeout = NetworkBase::getEnvironment("ETHREC_STATISTICS_TIMEOUT_MSEC");
+        if (statistcs_timeout!="")
+        {
+            timeout = (double)(NetType::toInt(statistcs_timeout))/1000; //because timeout is in sec
+        }
+
+    yTrace() << "^^^^^^^^^^^^^^^^^^^^^^^^Initialized with timeout " << timeout << "sec and count_rec_pkt " << max_count;
+
+
+}
 
 ethResources::ethResources()
 {
@@ -21,7 +62,8 @@ ethResources::ethResources()
     how_many_features     = 0;
     ethManager            = NULL;
     lastRecvMsgTimestamp  = -1.0;
-    isInRunningMode             = false;
+    isInRunningMode       = false;
+    infoPkts              = new infoOfRecvPkts();
 }
 
 ethResources::~ethResources()
@@ -71,6 +113,9 @@ bool ethResources::open(FEAT_ID request)
     ACE_INET_Addr myIP((u_short)request.EMSipAddr.port, hostip);
     remote_dev = myIP;
     transMutex.post();
+
+    infoPkts->setBoardNum(boardNum);
+
     return ret;
 }
 
@@ -133,15 +178,134 @@ int  ethResources::getBufferSize()
     return (int) RECV_BUFFER_SIZE;
 }
 
+void infoOfRecvPkts::setBoardNum(int boardnum)
+{
+    board=boardnum;
+}
+
+void infoOfRecvPkts::printStatistics(void)
+{
+    yDebug()<< "STAT board "<< board<< " tot pkt lost = " << totPktLost;
+    yDebug()<< "STAT board "<< board<< " age of frame: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
+    yDebug()<< "STAT board "<< board<< " period of pkt: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
+    yDebug()<< "STAT board "<< board<< " pkt proccess time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values\n";
+}
+
+void infoOfRecvPkts::clearStatistics(void)
+{
+    stat_ageOfFrame->clear();
+    stat_periodPkt->clear();
+    stat_precessPktTime->clear();
+    totPktLost = 0;
+    initted = false;
+}
+
+
+
+uint64_t infoOfRecvPkts::getSeqNum(uint8_t *packet)
+{
+    EOropframeHeader_t *hdr_ptr = (EOropframeHeader_t*)packet;
+    return(hdr_ptr->sequencenumber);
+}
+uint64_t infoOfRecvPkts::getAgeOfFrame(uint8_t * packet)
+{
+    EOropframeHeader_t *hdr_ptr = (EOropframeHeader_t*)packet;
+    return(hdr_ptr->ageofframe);
+}
+
+
+void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime)
+{
+
+    uint64_t curr_seqNum = getSeqNum(packet);
+    uint64_t curr_ageOfFrame = getAgeOfFrame(packet);
+    double curr_periodPkt;
+    double diff_ageofframe;
+    int diff;
+
+    if(initted)
+    {
+        //1) check seq num
+        if(curr_seqNum != last_seqNum+1)
+        {
+            yError()<< "LOST PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!!Tot lost pkt=" << totPktLost;
+            totPktLost++;
+        }
+
+        //2) check ageOfPkt
+        diff= (int)(curr_ageOfFrame - last_ageOfFrame);
+        diff_ageofframe = (double)(diff/1000); //age of frame is expressed in microsec
+        if( diff_ageofframe > (timeout*1000))
+        {
+            yError() << "Board " << board << ": EMS time(ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe << "ms diff="<< diff;
+        }
+
+        //3) check rec time
+        curr_periodPkt = reckPktTime - last_recvPktTime;
+        if(curr_periodPkt > timeout)
+        {
+            yError() << "Board " << board << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
+        }
+
+        stat_ageOfFrame->add(diff_ageofframe);
+        stat_periodPkt->add(curr_periodPkt);
+        stat_precessPktTime->add(processPktTime);
+    }
+    else
+    {
+        initted = true; //i rec fisrt pkt
+        isInError = false;
+    }
+
+    //aggiorno i dati;
+    last_seqNum = curr_seqNum;
+    last_ageOfFrame = curr_ageOfFrame;
+    last_recvPktTime = reckPktTime;
+    count++;
+
+    if(count == max_count)
+    {
+        printStatistics();
+        clearStatistics();
+        count = 0;
+    }
+
+}
+
+
+void ethResources::checkIsAlive(double curr_time)
+{
+    if((infoPkts->isInError) || (!infoPkts->initted))
+    {
+        return;
+    }
+
+    if((curr_time - infoPkts->last_recvPktTime) > infoPkts->timeout)
+    {
+        yError() << "Board " << boardNum << ": more than " << infoPkts->timeout *1000 << "ms are passed without any news LAST=" << infoPkts->last_recvPktTime*1000 << "ms";
+        infoPkts->isInError =true;
+        infoPkts->printStatistics();
+        infoPkts->clearStatistics();
+    }
+
+}
 // I could Call directly the hostTransceiver method instead of this one, I do it here in order to add the mutex
 // at EMS level
 void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
-    // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane più chiaro da leggere. Il mutex è lo stesso
-    // perchè questa classe (ethResource) deriva da hostTransceiver
-    lastRecvMsgTimestamp = yarp::os::Time::now();
-    hostTransceiver::onMsgReception(data, size);
-//     transMutex.post();
+     double curr_timeBeforeParsing = yarp::os::Time::now();
+
+     // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane più chiaro da leggere. Il mutex è lo stesso
+     // perchè questa classe (ethResource) deriva da hostTransceiver
+     hostTransceiver::onMsgReception(data, size);
+     //     transMutex.post();
+
+     double curr_timeAfetrParsing = yarp::os::Time::now();
+
+     if(isInRunningMode)
+     {
+         infoPkts->updateAndCheck(data, curr_timeBeforeParsing, (curr_timeAfetrParsing-curr_timeBeforeParsing));
+     }
 }
 
 ACE_INET_Addr   ethResources::getRemoteAddress()
@@ -195,7 +359,7 @@ bool ethResources::goToRun(void)
 
 double  ethResources::getLastRecvMsgTimestamp(void)
 {
-    return lastRecvMsgTimestamp;
+    infoPkts->last_recvPktTime;
 }
 
 bool ethResources::clearPerSigMsg(void)
