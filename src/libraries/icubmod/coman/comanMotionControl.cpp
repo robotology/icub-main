@@ -1858,7 +1858,7 @@ bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 
     if( NULL == joint_p)
     {
-         yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
+         //yError() << "Calling getEncoderTimedRaw on a non-existing joint j" << j;
         *enc = j;   // return the joint number!!
         *stamp = 0;
         return false;

@@ -155,24 +155,24 @@ bool comanVelocityObserver::open(yarp::os::Searchable &config)
 
 bool comanVelocityObserver::fromConfig(yarp::os::Searchable &config)
 {
-    yError() << config.toString().c_str();
+    //yDebug() << config.toString().c_str();
     Bottle xtmp;
     int i;
     Bottle general = config.findGroup("GENERAL");
 
-    Value &tmp= general.find("Joints");
+    Value &tmp= general.find("joints");
     if(tmp.isNull())
     {
-        yError() << "Missing Joints number!\n";
+        yError() << "Missing joints number!\n";
         return false;
     }
-    _nChannels = general.find("Joints").asInt();
+    _nChannels = general.find("joints").asInt();
     yWarning() << " njoints is " << _nChannels;
     alloc(_nChannels);
 
     // leggere i valori da file, AxisMap is optional
     // This is a remapping for the user. It is optional because it is actually unuseful and can even add more confusion than other.
-    if (extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _nChannels+1))
+    if (extractGroup(general, xtmp, "axisMap", "a list of reordered indices for the axes", _nChannels+1))
     {
         for (i = 1; i < xtmp.size(); i++)
             _axisMap[i-1] = xtmp.get(i).asInt();
@@ -214,7 +214,7 @@ bool comanVelocityObserver::fromConfig(yarp::os::Searchable &config)
     }
 
     // Encoder scales
-    if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _nChannels+1))
+    if (!extractGroup(general, xtmp, "encoder", "a list of scales for the encoders", _nChannels+1))
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
@@ -257,7 +257,7 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
         {
             //         yError() << "Trying to get value from a non-existing joint j" << j;
             out[j] = j;   // return the joint number just to debug!!
-            return false;
+            return AS_ERROR;
         }
 
         ts_bc_data_t bc_data;
@@ -268,7 +268,7 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
         out[j] = (double) data.Position;
         out[_nChannels+j] = (double) data.Velocity;
     }
-    return true;
+    return AS_OK;
 }
 
 int comanVelocityObserver::getState(int ch)
