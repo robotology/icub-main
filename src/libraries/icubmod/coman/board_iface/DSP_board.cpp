@@ -341,7 +341,7 @@ void McBoard::configure(const YAML::Node &doc) {
     (*mc_board_node)["policy"] >> policy;
     (*mc_board_node)["extra_policy"] >> extra_policy;
 
-    ts_bc_data.raw_bc_data.mc_bc_data.check_policy(policy, extra_policy);
+    //ts_bc_data.raw_bc_data.mc_bc_data.check_policy(policy, extra_policy);
 
     setItem(CLEAR_BOARD_FAULT, 0, 0);
 
@@ -668,7 +668,7 @@ void FtBoard::configure(const YAML::Node &doc) {
     bc_rate = tmp;
     (*ft_board_node)["policy"] >> policy;
 
-    ts_bc_data.raw_bc_data.ft_bc_data.check_policy(policy, 0);
+    //ts_bc_data.raw_bc_data.ft_bc_data.check_policy(policy, 0);
 
     setItem(SET_BCAST_POLICY, &policy, 2);
     try {

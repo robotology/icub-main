@@ -282,7 +282,7 @@ int comanJointTorqueSensor::read(yarp::sig::Vector &out)
 //            ret = true;
 //        }
 
-         out[j] = (double) data.Delta_tor / _newtonsToSensor[j];
+         out[j] = (double) data.Torque / _newtonsToSensor[j];
     }
     return AS_OK;
 }

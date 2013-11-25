@@ -1781,7 +1781,7 @@ bool comanMotionControl::getEncoderRaw(int j, double *enc)
         ret = (!joint_p->getItem(GET_ENCODER_POSITION, NULL, 1, REPLY_ENCODER_POSITION, &data.Position, sizeof(int)) );
     }
 
-    *enc = (double) data.Lin_enc_raw;
+    *enc = (double) data.Position;
     return ret;
 }
 
@@ -2125,8 +2125,8 @@ bool comanMotionControl::getTorqueRaw(int j, double *t)
     joint_p->get_bc_data(bc_data);
     // la nuova versione generata da python non ha questo campo.
     // C'è un modo per verificare l'esistenza del campo e fa compilare cmq anche se il cmapo è assente??
-//     *t = (double) data.Torque;
-    *t = 0;
+    *t = (double) data.Torque  / _newtonsToSensor[j];
+//    *t = 0;
     return true;
 };
 

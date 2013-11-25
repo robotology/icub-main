@@ -247,7 +247,7 @@ bool comanVelocityObserver::close()
 
 int comanVelocityObserver::read(yarp::sig::Vector &out)
 {
-    out.resize(2*_nChannels);
+    out.resize(_nChannels);
     for(int j=0; j<_nChannels; j++)
     {
         bool ret = true;
@@ -265,8 +265,8 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
 
         joint_p->get_bc_data(bc_data);
 
-        out[j] = (double) data.Position;
-        out[_nChannels+j] = (double) data.Velocity;
+        //out[j] = (double) data.Position;
+        out[j] = (double) data.Velocity;
     }
     return AS_OK;
 }
