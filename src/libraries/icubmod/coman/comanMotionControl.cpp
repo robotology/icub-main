@@ -335,7 +335,7 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
 
 bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 {
-    yError() << config.toString().c_str();
+    //yDebug() << config.toString().c_str();
     Bottle xtmp;
     int i;
     Bottle general = config.findGroup("GENERAL");
