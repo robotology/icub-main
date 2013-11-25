@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <params>
     <group name="GENERAL">
-        <param name="YAML">  "/home/enrico/iCub/main/app/robots/coman/conf/basic.yaml"  </param>
+        <param name="YAML">  "/usr/local/share/iCub/robots/coman/basic.yaml"  </param>
     </group>
 </params>
