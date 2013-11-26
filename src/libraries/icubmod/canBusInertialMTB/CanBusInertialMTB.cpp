@@ -188,7 +188,7 @@ bool CanBusInertialMTB::threadInit()
     CanMessage &msg=outBuffer[0];
     msg.setId(id);
     msg.getData()[0]=0x4F; // message type
-    msg.getData()[1]=0x07; // = 0b111 enable mask
+    msg.getData()[1]=0x06; // = enable digital accelerometer and gyroscope
     msg.getData()[2]=0x01; // period (ms)
     msg.getData()[3]=0;
     msg.getData()[4]=0;
