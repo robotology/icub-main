@@ -396,6 +396,7 @@ iCubDriver::ResultCode iCubDriver::getEncPos(int part,int joint,double &pos)
     }
 
     //return IENC_GETPOS_OK;
+    printf("Encoder err\n");
     return IENC_GETPOS_FAILED;
 }
 

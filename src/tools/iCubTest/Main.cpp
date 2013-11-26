@@ -175,6 +175,7 @@ This file can be edited at src/iCubTest/main.cpp.
 #include "testRoie/TestRoie.h"
 #include "testMotors/TestMotors.h"
 #include "testMotorsStiction/TestMotorsStiction.h"
+#include "testMotorsStictionIncremental/TestMotorsStictionIncremental.h"
 #include "DriverInterface.h"
 
 YARP_DECLARE_DEVICES(icubmod)
@@ -223,6 +224,10 @@ int main(int argc,char* argv[])
         else if (testType=="iCubTestMotorsStiction")
         {
             ts.addTest(new iCubTestMotorsStiction(testRf));
+        }
+        else if (testType=="iCubTestMotorsStictionIncremental")
+        {
+            ts.addTest(new iCubTestMotorsStictionIncremental(testRf));
         }
         else if (testType=="iCubTestRoie")
         {
