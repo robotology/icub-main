@@ -29,8 +29,8 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      17.22         -2.54         -2.48         -2.22         -2.67         -2.39         -2.39         -2.22         </param>       
-<param name="Zeros">        26.13         -99.83        -200.18       -112.50       -189.38       -106.74       -213.49       -340.09       </param>       
+<param name="Encoder">      17.22         -2.54         -2.48         -2.28         -2.67         -2.39         -2.50         -2.22         </param>       
+<param name="Zeros">        26.13         -99.83        -200.18       -111.95       -189.38       -106.74       -204.00       -340.09       </param>       
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
