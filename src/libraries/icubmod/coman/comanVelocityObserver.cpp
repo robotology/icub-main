@@ -250,7 +250,6 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
     out.resize(_nChannels);
     for(int j=0; j<_nChannels; j++)
     {
-        bool ret = true;
         McBoard *joint_p = getMCpointer(j);   //  -> giusto
 
         if( NULL == joint_p)
@@ -266,7 +265,7 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
         joint_p->get_bc_data(bc_data);
 
         //out[j] = (double) data.Position;
-        out[j] = (double) data.Velocity;
+        out[j] = (double) data.Velocity / _angleToEncoder[j];
     }
     return AS_OK;
 }
