@@ -13,7 +13,7 @@ public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeListHeader(3)) return false;
     if (!writer.writeTag("sync",1,1)) return false;
     if (!writer.writeString(part)) return false;
     if (!writer.write(val)) return false;
@@ -37,7 +37,7 @@ public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeListHeader(3)) return false;
     if (!writer.writeTag("tune",1,1)) return false;
     if (!writer.writeString(part)) return false;
     if (!writer.write(val)) return false;

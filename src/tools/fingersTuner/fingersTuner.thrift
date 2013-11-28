@@ -1,6 +1,10 @@
 #fingersTuner.thrift
 
-struct Value { }
+struct Value
+{
+  // just a placeholder
+  1:double content;
+}
 (
   yarp.name = "yarp::os::Value"
   yarp.includefile="yarp/os/Value.h"
