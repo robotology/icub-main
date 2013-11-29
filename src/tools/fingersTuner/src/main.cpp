@@ -287,7 +287,7 @@ protected:
         printf("Kp (FW) = %g; Ki (FW) = %g; Kd (FW) = %g; shift factor = %d\n",pid.Kp,pid.Ki,pid.Kd,scale);
 
         Property pStictionEstimation;
-        pStictionEstimation.put("max_time",40.0);
+        pStictionEstimation.put("max_time",60.0);
         pStictionEstimation.put("Kp",Kp);
         pStictionEstimation.put("Ki",0.0);
         pStictionEstimation.put("Kd",0.0);
