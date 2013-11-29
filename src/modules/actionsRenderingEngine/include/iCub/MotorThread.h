@@ -313,6 +313,7 @@ public:
     void setGazeIdle()
     {
         head_mode=HEAD_MODE_IDLE;
+        ctrl_gaze->stopControl();
         ctrl_gaze->restoreContext(initial_gaze_context);
         gazeUnderControl=false;
     }
