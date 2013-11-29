@@ -43,9 +43,6 @@ set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_board.c
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb8.c
 							${NVS_EB_SRC_FOLDER}eOcfg_EPs_eb9.c  )
 
-
-#set(NVS_EB_HEADER 			${NVS_EB_FOLDER}eOcfg_EPs_eb1.h  eOcfg_EPs_eb3.h  eOcfg_EPs_eb5.h  eOcfg_EPs_eb7.h  eOcfg_EPs_eb9.h  _eOcfg_EPs_loc_ebx.h 		eOcfg_EPs_eb2.h  eOcfg_EPs_eb4.h  eOcfg_EPs_eb6.h  eOcfg_EPs_eb8.h  eOcfg_EPs_ebx.h  _eOcfg_EPs_rem_ebx.h)
-
 	
 set(NVS_MC_SOURCE 			${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc.c
 							${NVS_MC_SRC_FOLDER}eOcfg_nvsEP_mc_any_con_bodypart.c
@@ -88,10 +85,6 @@ set(NVS_SENSORS_SOURCE		${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as.c
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onemais_usr.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onestrain_con.c 
 							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_onestrain_usr.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_upperarm_con.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_upperarm_usr.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_con.c 
-#							${NVS_SENSORS_SRC_FOLDER}eOcfg_nvsEP_as_wholebody_usr.c 
 							)
 
 #SET_SOURCE_FILES_PROPERTIES( ${NVS_SKIN_CBK_FOLDER}eOcfg_nvsEP_sk_usrcbk_ebx.c PROPERTIES LANGUAGE CXX )
@@ -121,89 +114,87 @@ set(CORE_FOLDER_SOURCE  	${CORE_FOLDER}/EOarray.c
 							${CORE_FOLDER}/EOtheErrorManager.c
 							${CORE_FOLDER}/EOtheMemoryPool.c
 							${CORE_FOLDER}/EOvector.c
-							${CORE_YEE}/src/EOYtheSystem.c
-							
+							${CORE_FOLDER}/EOpacket.c
+							${CORE_YEE}/EOYtheSystem.c							
 							)
 
-set(CORE_VEE_SOURCE			${CORE_VEE_FOLDER}/EOVmutex.c
-							${CORE_VEE_FOLDER}/EOVtask.c
-							${CORE_VEE_FOLDER}/EOVtheSystem.c
-#							${CORE_API}/EOVmutex_hid.h
-#							${CORE_API}/EOVstorage_hid.h
-#							${CORE_API}/EOVtask_hid.h
-#							${CORE_API}/EOVtheSystem_hid.h
+set(CORE_VEE_SOURCE			${CORE_FOLDER}/EOVmutex.c
+							${CORE_FOLDER}/EOVtask.c
+							${CORE_FOLDER}/EOVtheSystem.c
 							)
 						
-set(CORE_API_HEADER	  			${CORE_API}/EOarray.h
-						${CORE_API}/EoCommon.h
-						${CORE_API}/EOconstarray.h
-						${CORE_API}/EOconstvector.h
-						${CORE_API}/EOdeque.h
-						${CORE_API}/EOfifo.h
-						${CORE_API}/EOfifoByte.h
-						${CORE_API}/EOfifoWord.h
-						${CORE_API}/EOlist.h
-						${CORE_API}/EOtheErrorManager.h
-						${CORE_API}/EOtheMemoryPool.h
-						${CORE_API}/EOvector.h
-#						${CORE_API}/EOVmutex.h
-#						${CORE_API}/EOVstorage.h
-#						${CORE_API}/EOVtask.h
-#						${CORE_API}/EOVtheSystem.h
-            ${CORE_YEE}/api/EOYtheSystem.h
+set(CORE_API_HEADER	  			${CORE_FOLDER}/EOarray.h
+						${CORE_FOLDER}/EoCommon.h
+						${CORE_FOLDER}/EOconstarray.h
+						${CORE_FOLDER}/EOconstvector.h
+						${CORE_FOLDER}/EOdeque.h
+						${CORE_FOLDER}/EOfifo.h
+						${CORE_FOLDER}/EOfifoByte.h
+						${CORE_FOLDER}/EOfifoWord.h
+						${CORE_FOLDER}/EOlist.h
+						${CORE_FOLDER}/EOtheErrorManager.h
+						${CORE_FOLDER}/EOtheMemoryPool.h
+						${CORE_FOLDER}/EOvector.h						
+						${CORE_YEE}/EOYtheSystem.h					
+						${CORE_FOLDER}/EOpacket.h
+#						${CORE_FOLDER}/EOVmutex.h
+#						${CORE_FOLDER}/EOVstorage.h
+#						${CORE_FOLDER}/EOVtask.h
+#						${CORE_FOLDER}/EOVtheSystem.h
+                        
 						)						
-
 						
-set(CORE_FOLDER_HEADER	  			${CORE_API}/EOarray_hid.h
-						${CORE_API}/EoCommon_hid.h
-						${CORE_API}/EOconstarray_hid.h
-						${CORE_API}/EOconstvector_hid.h
-						${CORE_API}/EOdeque_hid.h
-						${CORE_API}/EOfifo_hid.h
-						${CORE_API}/EOfifoByte_hid.h
-						${CORE_API}/EOfifoWord_hid.h
-						${CORE_API}/EOlist_hid.h
-						${CORE_API}/EOtheErrorManager_hid.h
-						${CORE_API}/EOtheMemoryPool_hid.h
+set(CORE_FOLDER_HEADER	  			${CORE_FOLDER}/EOarray_hid.h
+						${CORE_FOLDER}/EoCommon_hid.h
+						${CORE_FOLDER}/EOconstarray_hid.h
+						${CORE_FOLDER}/EOconstvector_hid.h
+						${CORE_FOLDER}/EOdeque_hid.h
+						${CORE_FOLDER}/EOfifo_hid.h
+						${CORE_FOLDER}/EOfifoByte_hid.h
+						${CORE_FOLDER}/EOfifoWord_hid.h
+						${CORE_FOLDER}/EOlist_hid.h
+						${CORE_FOLDER}/EOtheErrorManager_hid.h
+						${CORE_FOLDER}/EOtheMemoryPool_hid.h
 						${CORE_API}/EOvector_hid.h
-						${CORE_API}/EOYtheSystem_hid.h
+						${CORE_FOLDER}/EOpacket_hid.h
+						${CORE_YEE}/EOYtheSystem_hid.h
 						)
 
 # EmbObj-NV & Protocol files
 set(PROT_SOURCE  				
-						${PROT_FOLDER}/EOnv.c
-						${PROT_FOLDER}/EOnvsCfg.c
-						${PROT_FOLDER}/EOreceiver.c
-						${PROT_FOLDER}/EOrop.c
-						${PROT_FOLDER}/EOropframe.c
-						${PROT_FOLDER}/EOtheAgent.c
-						${PROT_FOLDER}/EOtheFormer.c
-						${PROT_FOLDER}/EOtheParser.c
-						${PROT_FOLDER}/EOtransceiver.c
-						${PROT_FOLDER}/EOtransmitter.c
-						${PROT_FOLDER}/EOtreenode.c
-						${PROT_FOLDER}/EOtheBOARDtransceiver.c
-						${PROT_FOLDER}/EOhostTransceiver.c
-						${PROT_FOLDER}/EOVstorage.c
-						${PROT_FOLDER}EOmatrix3d.c
+						${PROT_FOLDER}/prot/EOnv.c
+						${PROT_FOLDER}/prot/EOnvsCfg.c
+						${PROT_FOLDER}/prot/EOreceiver.c
+						${PROT_FOLDER}/prot/EOrop.c
+						${PROT_FOLDER}/prot/EOropframe.c
+						${PROT_FOLDER}/prot/EOtheAgent.c
+						${PROT_FOLDER}/prot/EOtheFormer.c
+						${PROT_FOLDER}/prot/EOtheParser.c
+						${PROT_FOLDER}/prot/EOtransceiver.c
+						${PROT_FOLDER}/prot/EOtransmitter.c
+						${PROT_FOLDER}/prot/EOtreenode.c
+						${PROT_FOLDER}/prot/EOtheBOARDtransceiver.c
+						${PROT_FOLDER}/prot/EOhostTransceiver.c
+						${PROT_FOLDER}/prot/EOVstorage.c
+						${PROT_FOLDER}/prot/EOmatrix3d.c
 						${NVS_MNGMNT_CBK_FOLDER}/protocol_callback.c)
 
-set(PROT_HEADER  		${PROT_FOLDER}/EOhostTransceiver_hid.h
-						${PROT_FOLDER}/EOnv_hid.h
-						${PROT_FOLDER}/EOnvsCfg_hid.h
-						${PROT_FOLDER}/EOreceiver_hid.h
-						${PROT_FOLDER}/EOrop_hid.h
-						${PROT_FOLDER}/EOropframe_hid.h
-						${PROT_FOLDER}/EOtheAgent_hid.h
-						${PROT_FOLDER}/EOtheFormer_hid.h
-						${PROT_FOLDER}/EOtheParser_hid.h
-						${PROT_FOLDER}/EOtransceiver_hid.h
-						${PROT_FOLDER}/EOtransmitter_hid.h
-						${PROT_FOLDER}/EOtreenode_hid.h)
+set(PROT_HEADER  		${PROT_FOLDER}/prot/EOhostTransceiver_hid.h
+						${PROT_FOLDER}/prot/EOnv_hid.h
+						${PROT_FOLDER}/prot/EOnvsCfg_hid.h
+						${PROT_FOLDER}/prot/EOreceiver_hid.h
+						${PROT_FOLDER}/prot/EOrop_hid.h
+						${PROT_FOLDER}/prot/EOropframe_hid.h
+						${PROT_FOLDER}/prot/EOtheAgent_hid.h
+						${PROT_FOLDER}/prot/EOtheFormer_hid.h
+						${PROT_FOLDER}/prot/EOtheParser_hid.h
+						${PROT_FOLDER}/prot/EOtransceiver_hid.h
+						${PROT_FOLDER}/prot/EOtransmitter_hid.h
+						${PROT_FOLDER}/prot/EOtreenode_hid.h)
 
 
-set(IPNET_SOURCE		${IPNET_FOLDER}/EOpacket.c)
-set(IPNET_HEADER		${IPNET_FOLDER}/EOpacket_hid.h)
+#set(IPNET_SOURCE		${IPNET_FOLDER}/EOpacket.c)
+#set(IPNET_HEADER		${IPNET_FOLDER}/EOpacket_hid.h)
 
 set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 						${EXTRA_FOLDER}/ethManager.cpp
@@ -211,15 +202,14 @@ set(EXTRA_SOURCE 		${EXTRA_FOLDER}/hostTransceiver.cpp
 #						${EXTRA_FOLDER}/tools/debugFunctions.cpp
 						${EXTRA_FOLDER}/eoRequestsQueue.cpp)
 
-set(DEBUG_SOURCE    ${DEBUG_FOLDER}/src/eODeb_eoProtoParser.c
-                    ${DEBUG_FOLDER}/src/eOtheEthLowLevelParser.c)
-#                    ${EXTRA_FOLDER}/tools/parser_cfg_getPid.cpp)
+set(DEBUG_SOURCE    ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
+                    ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
+
 
 set(embobj_source 		
 						${CORE_FOLDER_SOURCE} 
 						${CORE_VEE_SOURCE}  
-						${PROT_SOURCE} 
-						${IPNET_SOURCE} 
+						${PROT_SOURCE}  
 						${EXTRA_SOURCE}
 						${PROT_FOLDER}
 						${NVS_EB_SOURCE} 
@@ -235,7 +225,6 @@ set(embobj_source
 set(embobj_header 		${BODY_COMMON_SOURCE} 
 						${CORE_API_HEADER} 
 						${PROT_HEADER} 
-						${IPNET_HEADER}
 						${NVS_EB_SRC_FOLDER})
 					
 
