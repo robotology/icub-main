@@ -598,7 +598,6 @@ protected:
 
                     if (!gsl_isnan(fp[0]) && !gsl_isnan(fp[1]) && !gsl_isnan(fp[2]))
                     {
-                        
                         Vector x,o;
                         if (eyeUsed=="left")
                             gazeCtrl->getLeftEyePose(x,o);
@@ -1117,12 +1116,12 @@ protected:
 
     void stopControl()
     {
-        fprintf(stderr, "stopping control\n");
         if (useLeftArm || useRightArm)
+        {
+            fprintf(stdout,"stopping control\n");
             cartArm->stopControl();
-//        yarp::os::Time::delay(10.0);
-        yarp::os::Time::delay(0.1); 
-        fprintf(stderr, "now sending pos move\n");
+            Time::delay(0.1);
+        }        
     }
 
     void setFace(const string &type)
