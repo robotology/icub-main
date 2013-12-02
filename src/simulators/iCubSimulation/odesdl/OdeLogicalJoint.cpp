@@ -194,7 +194,7 @@ double OdeLogicalJoint::getAngleRaw() {
         return 0;
     } 
     double result = (left->getAngleRaw() + 
-                     verge*right->getAngleRaw());
+                     verge*right->getAngleRaw() * 0.5);
     return result;
 }
 
@@ -214,7 +214,7 @@ double OdeLogicalJoint::getVelocityRaw() {
         return 0;
     } 
     double result = (left->getVelocityRaw() + 
-                     verge*right->getVelocityRaw());
+                     verge*right->getVelocityRaw()) * 0.5;
     return result;
 }
 
