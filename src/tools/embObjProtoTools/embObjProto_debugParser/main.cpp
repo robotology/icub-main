@@ -49,6 +49,7 @@
 #include "eOtheEthLowLevelParser.h"
 //pcap stuff
 #include "pcap_wrapper_linux.h"
+#include "stdio.h"
 
 
 
@@ -77,6 +78,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 //extern const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg;
 extern const eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr;
+FILE *file;
 
 
 
@@ -181,6 +183,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    file = fopen("test.txt", "a+");
+    if(NULL == file)
+    {
+    	printf("cannot open file \n");
+    	return(0);
+
+    }
+
     //set filter
     if((filterOnSrc) &&(filterOnDst))
     {
@@ -250,12 +260,14 @@ int main(int argc, char *argv[])
 	pcap_loop(handle, maxacquisition, s_process_packet, NULL); // Get into the loop
 
 */
+    printf("start\n");
     wrapperPcap_loop(maxacquisition, s_process_packet, NULL);
 
 	printf("\nCapture complete.\n");
 
 	//6) close the session
     wrapperPcap_close();
+    fclose(file);
 
 	return(0); // everything ok
 }
