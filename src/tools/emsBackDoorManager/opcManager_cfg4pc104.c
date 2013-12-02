@@ -287,7 +287,7 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             printf("\t CAN 2:\n");
             s_print_emsperiph_candata(&data->can_dev[1]);
             printf("\t ETH MASK: 0x%x\n", data->eth_dev.linksmask);
-	     for(i=0; i<3; i++)
+            for(i=0; i<3; i++)
             {
                 if(((data->eth_dev.crcErrorCnt_validVal & (1<<i)) == (1<<i)))
                 {
@@ -313,7 +313,14 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
                 {
                     printf("\t CRC_error phy-port %d: INVALID VALUE", i);
                 }
+
             }
+            printf("\n");
+            for(i=0; i<3; i++)
+            {
+                printf("\t i2cError %d on phy-port %d", data->eth_dev.i2c_error[i], i);
+            }
+            printf("\n");
 	     	fflush(stdout);
 
         } break;
