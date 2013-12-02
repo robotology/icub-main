@@ -21,13 +21,13 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
 
 
-set(CORE_FOLDER  		${BASE}any-arch/sys/embobj/core/src/)
-set(CORE_API	  		${BASE}any-arch/sys/embobj/core/api/)
-set(CORE_VEE_FOLDER  	${BASE}any-arch/sys/embobj/core-vee/src/)
-set(PROT_FOLDER  		${BASE}any-arch/sys/embobj/prot/src/)
+set(CORE_FOLDER  		${BASE}embobj/core/src/)
+set(CORE_API	  		${BASE}embobj/core/api/)
+set(CORE_VEE_FOLDER  	${BASE}embobj/core-vee/src/)
+set(PROT_FOLDER  		${BASE}embobj/prot/src/)
 set(PORTING_FOLDER 		${BASE}porting/)
-set(UTILS_FOLDER  		${BASE}any-arch/sys/embobj/utils/src/)
-set(ICUB_API     		${BASE}any-arch/sys/embobj/icub/api/)
+set(UTILS_FOLDER  		${BASE}embobj/utils/src/)
+set(ICUB_API     		${BASE}embobj/icub/api/)
 
 
 set(embObj_includes 	
@@ -85,7 +85,11 @@ set(embobj_source
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_getPid.cpp )
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint4all.cpp )
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint.cpp )
-set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_enaDisaJoints.cpp)
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_enaDisaJoints.cpp)
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_startupConfig.cpp)
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_FullScale.cpp)
+set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_seqNum.cpp)
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_posleftlegj0.cpp)
 
 message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")
 
