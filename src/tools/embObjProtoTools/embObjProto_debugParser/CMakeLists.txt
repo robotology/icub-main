@@ -17,49 +17,39 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 
 #headers-----------
 
-#set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
-set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
+set(BASE 			$ENV{ICUB_ROOT}//main/src/libraries/icubmod/embObj)
 
 
-set(CORE_FOLDER  		${BASE}embobj/core/src/)
-set(CORE_API	  		${BASE}embobj/core/api/)
-set(CORE_VEE_FOLDER  	${BASE}embobj/core-vee/src/)
-set(PROT_FOLDER  		${BASE}embobj/prot/src/)
-set(PORTING_FOLDER 		${BASE}porting/)
-set(UTILS_FOLDER  		${BASE}embobj/utils/src/)
-set(ICUB_API     		${BASE}embobj/icub/api/)
+set(CORE_FOLDER  		${BASE}/core/)
+set(CORE_API	  		${BASE}/core/)
+set(PROT_FOLDER  		${BASE}/comm-v1/prot/)
+set(UTILS_FOLDER  		${BASE}/utils/)
+set(ICUB_API     		${BASE}/comm-v1/icub/)
 
 
 set(embObj_includes 	
-						${CORE_API}
 						${CORE_FOLDER}
-						${PROT_FOLDER}../api/
 						${PROT_FOLDER}
-						${PORTING_FOLDER}
-						${CORE_VEE_FOLDER}../api/
-						${CORE_VEE_FOLDER}
 						${UTILS_FOLDER}
-						${UTILS_FOLDER}../api/
 						${ICUB_API}
 						)   
 
 set(ALL_INCLUDES		${embObj_includes}
-						${EXTRA_FOLDER})
+						${EXTRA_FOLDER}
+						)
 
 include_directories (${ALL_INCLUDES} )
 #message(INFO "includes: ${ALL_INCLUDES}")
 
 #source code --------------
 
-					
-					
-
-
 set(UTILS_SOURCE		${UTILS_FOLDER}/eODeb_eoProtoParser.c
-				${UTILS_FOLDER}/eOtheEthLowLevelParser.c)
+				        ${UTILS_FOLDER}/eOtheEthLowLevelParser.c
+				        )
 
 set(UTILS_HEADER		${UTILS_FOLDER}/eODeb_eoProtoParser_hid.h
-				${UTILS_FOLDER}/eOtheEthLowLevelParser_hid.h)
+				        ${UTILS_FOLDER}/eOtheEthLowLevelParser_hid.h
+				        )
 
 
 
@@ -70,15 +60,17 @@ set(CORE_SOURCE 		${CORE_FOLDER}/EOarray.c
 						${CORE_FOLDER}/EoCommon.c
                         )
 
-set(CORE_VEE_SOURCE			${CORE_VEE_FOLDER}/EOVmutex.c
-							${CORE_VEE_FOLDER}/EOVtask.c
-							${CORE_VEE_FOLDER}/EOVtheSystem.c	)
+set(CORE_VEE_SOURCE			${CORE_FOLDER}/EOVmutex.c
+							${CORE_FOLDER}/EOVtask.c
+							${CORE_FOLDER}/EOVtheSystem.c	
+							)
 
 set(embobj_source 
                         ${CORE_SOURCE}						
                         ${UTILS_HEADER}
 						${UTILS_SOURCE}
-                        ${CORE_VEE_SOURCE})
+                        ${CORE_VEE_SOURCE}
+                        )
 
 
 #insert here name of parser cfg file!!! 
@@ -98,8 +90,9 @@ set(EXTRA_SOURCE 	    ${PARSER_CFG_FILE}
 						${EXTRA_FOLDER}/pcap_wrapper_linux.cpp
                         )
 
-set(ALL_SOURCE_CODE				${embobj_source}
-						${EXTRA_SOURCE})
+set(ALL_SOURCE_CODE	    ${embobj_source}
+						${EXTRA_SOURCE}
+						)
 
 add_executable(${PROJECTNAME} ${ALL_SOURCE_CODE})
 
