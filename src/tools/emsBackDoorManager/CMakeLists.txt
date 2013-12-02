@@ -42,61 +42,57 @@ ENDIF ("${BUTTON_FILE}" STREQUAL "")
 
 SET(ACE_INCLUDE_DIR "/usr/include")
 
-#set(BASE 			$ENV{ICUB_ROOT}/firmware/emBODY/)
-set(BASE 			$ENV{ICUB_ROOT}/main/src/libraries/icubmod/emBODY/)
-set(OPC_PROTO_FOLDER             ${BASE}embobj/icub-app/)
-set(COMMON_FOLDER		 ${BASE}embobj/core/)
-set(PORTING_FOLDER		 ${BASE}/porting/)
-set(EMBOBJ_TYPE_FOLDER           ${BASE}embobj/icub/api/)
+set(BASE 			     $ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObj)
+set(COMMON_FOLDER		 ${BASE}/core/)
+set(ICUB_HEADER_FOLDER   ${BASE}/comm-v1/icub/)
+set(OPC_PROTO_FOLDER     ${BASE}/comm-v1/opcprot/)
+set(OPC_PROTO_FOLDER_CFG ${BASE}/cfg-v1/backdoor/)
 
-set(ALL_INCLUDES				${EXTRA_FOLDER}
+
+set(ALL_INCLUDES		${EXTRA_FOLDER}
 						${ACE_INCLUDE_DIR}
-						${OPC_PROTO_FOLDER}/api
-						${OPC_PROTO_FOLDER}/src
-						${OPC_PROTO_FOLDER}/cfg
-						${COMMON_FOLDER}/api
-						${PORTING_FOLDER}
-						${EMBOBJ_TYPE_FOLDER}
-)
+						${COMMON_FOLDER}
+						${ICUB_HEADER_FOLDER}
+						${OPC_PROTO_FOLDER}
+						${OPC_PROTO_FOLDER_CFG}
+                        )
 
 include_directories (${ALL_INCLUDES} )
 message(INFO "includes: ${ALL_INCLUDES}")
 
 #source code --------------
-#set(BODY_COMMON_SOURCE 		${BODY_COMMON_FOLDER}/eEcommon.c)
 
 
-set(OPC_PROTO_HEADER		${OPC_PROTO_FOLDER}/api/OPCprotocolManager.h
+
+set(OPC_PROTO_HEADER		${OPC_PROTO_FOLDER}/OPCprotocolManager.h
 				)
 message(INFO "OPC_PROTO_HEADER: ${OPC_PROTO_HEADER}")
 
 
 set(OPC_PROTO_SOURCE
-					${OPC_PROTO_FOLDER}/src/OPCprotocolManager.c
-					${OPC_PROTO_FOLDER}/src/OPCprotocolManager_hid.h
+					${OPC_PROTO_FOLDER}/OPCprotocolManager.c
+					${OPC_PROTO_FOLDER}/OPCprotocolManager_hid.h
 					)
 
 # configuration ------------------------
-set(OPC_PROTO_CFG_HEADER		${OPC_PROTO_FOLDER}/cfg/OPCprotocolManager_Cfg.h
-					)
-set(OPC_PROTO_CFG_SOURCE		${OPC_PROTO_FOLDER}/cfg/OPCprotocolManager_Cfg.c
-					)
+set(OPC_PROTO_CFG_HEADER		${OPC_PROTO_FOLDER_CFG}/OPCprotocolManager_Cfg.h )
+set(OPC_PROTO_CFG_SOURCE		${OPC_PROTO_FOLDER_CFG}/OPCprotocolManager_Cfg.c )
 
 
-set(embobj_source 
-					${OPC_PROTO_SOURCE}
+set(embobj_source   ${OPC_PROTO_SOURCE}
 					${OPC_PROTO_CFG_SOURCE}
 					)
 
 
 
-set(EXTRA_SOURCE 				${EXTRA_FOLDER}/main.cpp
+set(EXTRA_SOURCE 		${EXTRA_FOLDER}/main.cpp
 						${EXTRA_FOLDER}/diagnostics_buttons.cpp
 						${EXTRA_FOLDER}/opcManager_cfg4pc104.c
 						)
 
-set(ALL_SOURCE_CODE				${embobj_source}
-						${EXTRA_SOURCE})
+set(ALL_SOURCE_CODE		${embobj_source}
+						${EXTRA_SOURCE}
+						)
 
 add_executable(${PROJECTNAME} ${ALL_SOURCE_CODE})
 target_link_libraries(${PROJECTNAME} ${ACE_LIBRARIES} pthread)
