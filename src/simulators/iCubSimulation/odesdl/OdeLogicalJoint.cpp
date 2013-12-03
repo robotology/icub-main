@@ -192,9 +192,16 @@ double OdeLogicalJoint::getAngleRaw() {
             return dJointGetUniversalAngle2(*joint);
         } 
         return 0;
-    } 
-    double result = (left->getAngleRaw() + 
-                     verge*right->getAngleRaw() * 0.5);
+    }
+    double result = 0;
+    if (verge==-1)
+    {
+        result = (left->getAngleRaw() + 
+                         verge*right->getAngleRaw());
+    }
+    else
+        result = (left->getAngleRaw() + 
+                         verge*right->getAngleRaw()) * 0.5;
     return result;
 }
 
