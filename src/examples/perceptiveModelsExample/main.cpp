@@ -215,13 +215,12 @@ public:
             calibrate=false;
 
             ipos->setRefAcceleration(joint,1e9);
-
             if ((fingerName=="ring")||(fingerName=="little"))
                 ipos->setRefSpeed(joint,60.0);
             else
                 ipos->setRefSpeed(joint,30.0);
 
-            ipos->positionMove(joint,*val);            
+            ipos->positionMove(joint,*val);
         }
         else
         {
@@ -229,7 +228,6 @@ public:
             {
                 Value data; finger->getSensorsData(data);
                 Value out;  finger->getOutput(out);
-
                 fprintf(stdout,"%s sensors data = %s; output = %s\n",
                         finger->getName().c_str(),data.toString().c_str(),out.toString().c_str());
             }
@@ -237,11 +235,7 @@ public:
             double fb; ienc->getEncoder(joint,&fb);
             if (fabs(*val-fb)<5.0)
             {
-                if (val==&min)
-                    val=&max;
-                else
-                    val=&min;
-
+                val==&min?val=&max:val=&min;
                 ipos->positionMove(joint,*val);
             }
         }
