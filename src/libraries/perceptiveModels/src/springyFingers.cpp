@@ -119,10 +119,7 @@ bool SpringyFinger::toStream(ostream &str) const
     str<<"scaler      "<<("("+string(scaler.toString().c_str())+")").c_str()<<endl;
     str<<"lssvm       "<<("("+string(lssvm.toString().c_str())+")").c_str()<<endl;
 
-    if (str.fail())
-        return false;
-    else
-        return true;
+    return !str.fail();
 }
 
 
@@ -164,11 +161,16 @@ bool SpringyFinger::getSensorsData(Value &data) const
     }
 
     Property prop;
-    Value i; i.fromString(("("+string(in.toString().c_str())+")").c_str());
-    Value o; o.fromString(("("+string(out.toString().c_str())+")").c_str());
-    prop.put("in",i);
-    prop.put("out",o);
-    data.fromString(("("+string(prop.toString().c_str())+")").c_str());
+    Bottle b;
+
+    b.addList().read(in);
+    prop.put("in",b.get(0));
+
+    b.addList().read(out);
+    prop.put("out",b.get(1));
+
+    b.addList().read(prop);
+    data=b.get(2);
 
     return true;
 }
@@ -177,24 +179,32 @@ bool SpringyFinger::getSensorsData(Value &data) const
 /************************************************************************/
 bool SpringyFinger::extractSensorsData(Vector &in, Vector &out) const
 {
+    bool ret=false;
+
     Value data;
     if (getSensorsData(data))
     {
-        Property prop(data.asList()->toString().c_str());
-        Bottle *b;
+        if (Bottle *b1=data.asList())
+        {
+            if (Bottle *b2=b1->find("in").asList())
+            {
+                in.resize(b2->size());
+                for (size_t i=0; i<in.length(); i++)
+                    in[i]=b2->get(i).asDouble();
+            }
 
-        b=prop.find("in").asList(); in.resize(b->size());
-        for (size_t i=0; i<in.length(); i++)
-            in[i]=b->get(i).asDouble();
+            if (Bottle *b2=b1->find("out").asList())
+            {
+                out.resize(b2->size());
+                for (size_t i=0; i<out.length(); i++)
+                    out[i]=b2->get(i).asDouble();
 
-        b=prop.find("out").asList(); out.resize(b->size());
-        for (size_t i=0; i<out.length(); i++)
-            out[i]=b->get(i).asDouble();
-
-        return true;
+                ret=true;
+            }
+        }
     }
-    else
-        return false;
+
+    return ret;
 }
 
 

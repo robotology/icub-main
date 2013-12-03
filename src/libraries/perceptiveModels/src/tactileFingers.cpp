@@ -114,9 +114,13 @@ bool TactileFinger::getSensorsData(Value &data) const
     }
 
     Property prop;
-    Value i; i.fromString(("("+string(in.toString().c_str())+")").c_str());
-    prop.put("in",i);
-    data.fromString(("("+string(prop.toString().c_str())+")").c_str());
+    Bottle b;
+
+    b.addList().read(in);
+    prop.put("in",b.get(0));
+
+    b.addList().read(prop);
+    data=b.get(1);
 
     return true;
 }
@@ -125,18 +129,25 @@ bool TactileFinger::getSensorsData(Value &data) const
 /************************************************************************/
 bool TactileFinger::extractSensorsData(Vector &in) const
 {
+    bool ret=false;
+
     Value data;
     if (getSensorsData(data))
     {
-        Property prop(data.asList()->toString().c_str());
-        Bottle *b=prop.find("in").asList(); in.resize(b->size());
-        for (size_t i=0; i<in.length(); i++)
-            in[i]=b->get(i).asDouble();
+        if (Bottle *b1=data.asList())
+        {
+            if (Bottle *b2=b1->find("in").asList())
+            {
+                in.resize(b2->size()); 
+                for (size_t i=0; i<in.length(); i++)
+                    in[i]=b2->get(i).asDouble();
 
-        return true;
+                ret=true;
+            }
+        }
     }
-    else
-        return false;
+
+    return ret;
 }
 
 

@@ -198,7 +198,7 @@ public:
 
         Property options;
         model->toProperty(options);
-        fprintf(stdout,"saving options: %s\n",options.toString().c_str());
+        fprintf(stdout,"model options: %s\n",options.toString().c_str());
         
         return true;
     }
@@ -263,6 +263,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefault("name","percex");
+    rf.setDefault("robot","icub");
     rf.setDefault("hand","right");
     rf.setDefault("modelType","springy");
     rf.setDefault("finger","index");

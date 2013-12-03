@@ -91,7 +91,6 @@ bool SensorPort::getOutput(Value &in) const
     if (configured)
     {
         in=static_cast<iCub::perception::Port*>(source)->getValue(index);
-
         return true;
     }
     else
