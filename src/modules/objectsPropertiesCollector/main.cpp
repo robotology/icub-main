@@ -686,7 +686,7 @@ public:
                     Bottle &idList=item.addList();
                     idList.addString(PROP_ID);
                     idList.addInt(it->first);
-                    item.append(Bottle(it->second.prop->toString().c_str()));
+                    item.read(*it->second.prop);
                 }
 
                 pBroadcastPort->write();
@@ -805,10 +805,10 @@ public:
                         prop.put(propName.c_str(),pProp->find(propName.c_str()));
                 }
 
-                response.fromString(prop.toString().c_str());
+                response.read(prop);
             }
             else
-                response.fromString(pProp->toString().c_str());
+                response.read(*pProp);
 
             printMessage("%s\n",response.toString().c_str());
             mutex.unlock();
