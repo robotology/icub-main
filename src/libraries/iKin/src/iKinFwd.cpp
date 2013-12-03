@@ -1580,7 +1580,7 @@ bool iKinLimb::toLinksProperties(Property &options)
         }
     }
 
-    options.fromString(links.toString().c_str());
+    links.write(options);
 
     options.put("type",getType().c_str());
     options.put("numLinks",(int)N);
