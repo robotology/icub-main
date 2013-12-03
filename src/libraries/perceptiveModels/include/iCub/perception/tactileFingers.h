@@ -78,9 +78,9 @@ public:
     * <b>logic</b>: it can be "direct" or "inverse". A direct logic 
     * indicates that the attached sensors represent the floating 
     * condition (no external forces excerted on the tactile patch) 
-    * with the maximum value (e.g. 255 for a byte). 
+    * with the maximum value (e.g. 255 for a byte). \n
     * <b>output_gain</b>: a double that is used to multiply the 
-    * final output for normalization purpose.\n  
+    * final output for normalization purpose.
     * @return true/false on success/failure.
     */
     bool fromProperty(const yarp::os::Property &options);
@@ -185,11 +185,11 @@ public:
     * <b>robot</b>: the name of the robot to connect to; e.g. "icub" 
     * or "icubSim".\n 
     * <b>carrier</b>: the protocol used to connect yarp streaming 
-    * ports; e.g. "udp", "mcast", "tcp". 
+    * ports; e.g. "udp", "mcast", "tcp". \n
     * <b>compensation</b>: it can be "true" or "false" and indicates 
     * which ports to connect to for data acquisition. When false it 
     * collects the raw data, when true it connects to the 
-    * compensated ports. 
+    * compensated ports. \n
     * <b>verbosity</b>: an integer that accounts for the verbosity 
     * level of model print-outs. 
     * @return true/false on success/failure.

@@ -51,6 +51,9 @@ should be the force excerted by the external object.
 --name \e name
 - specify the module name, which is \e percex by default. 
  
+--robot \e robot
+- specify the robot name (e.g. \e icub or \e icubSim). 
+ 
 --hand \e hand 
 - specify which hand has to be used: \e hand can be \e left or 
   \e right (by default).
@@ -115,6 +118,7 @@ public:
     bool configure(ResourceFinder &rf)
     {
         string name=rf.find("name").asString().c_str();
+        string robot=rf.find("robot").asString().c_str();
         string hand=rf.find("hand").asString().c_str();
         string modelType=rf.find("modelType").asString().c_str();
         fingerName=rf.find("finger").asString().c_str();
@@ -136,7 +140,7 @@ public:
         }
 
         Property driverOpt("(device remote_controlboard)");
-        driverOpt.put("remote",("/icub/"+hand+"_arm").c_str());
+        driverOpt.put("remote",("/"+robot+"/"+hand+"_arm").c_str());
         driverOpt.put("local",("/"+name).c_str());
         if (!driver.open(driverOpt))
             return false;
@@ -155,6 +159,7 @@ public:
 
         Property genOpt;
         genOpt.put("name",(name+"/"+modelType).c_str());
+        genOpt.put("robot",robot.c_str());
         genOpt.put("type",hand.c_str());
         genOpt.put("verbose",1);
         string general(genOpt.toString().c_str());

@@ -281,7 +281,7 @@ public:
     * <b>robot</b>: the name of the robot to connect to; e.g. "icub" 
     * or "icubSim".\n 
     * <b>carrier</b>: the protocol used to connect yarp streaming 
-    * ports; e.g. "udp", "mcast", "tcp". 
+    * ports; e.g. "udp", "mcast", "tcp". \n
     * <b>verbosity</b>: an integer that accounts for the verbosity 
     * level of model print-outs. 
     * @return true/false on success/failure.
