@@ -518,6 +518,7 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 /************************************************************************/
 bool ActionPrimitives::configGraspModel(Property &opt)
 {
+    bool ret=false;
     if (opt.check("grasp_model_type"))
     {
         string modelType=opt.find("grasp_model_type").asString().c_str();
@@ -554,15 +555,16 @@ bool ActionPrimitives::configGraspModel(Property &opt)
 
                 // override some information
                 modelProp.put("robot",robot.c_str());
-
                 return graspModel->fromProperty(modelProp);
             }
             else
                 printMessage("WARNING: unable to find \"grasp_model_file\" option!\n");
         }
+        else
+            ret=true;
     }
 
-    return false;
+    return ret;
 }
 
 
@@ -592,7 +594,11 @@ bool ActionPrimitives::open(Property &opt)
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
 
     // create the model for grasp detection (if any)
-    configGraspModel(opt);
+    if (!configGraspModel(opt))
+    {
+        close();
+        return false;
+    }
 
     // get hand sequence motions (if any)
     configHandSeq(opt);
@@ -718,11 +724,8 @@ void ActionPrimitives::close()
         polyCart.close();
     }
 
-    if (graspModel!=NULL)
-    {
-        delete graspModel;
-        graspModel=NULL;
-    }
+    delete graspModel;
+    graspModel=NULL;
 
     actionsQueue.clear();
 
