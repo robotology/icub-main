@@ -985,9 +985,8 @@ public:
     * ... 
     * @endcode 
     *  
-    * @note Please note how the link options (e.g. \b A, 
-    *       \b D, \b alpha ...) are to be given using the
-    *       group identifiers \b link_#.
+    * @note Please note how the link options (e.g. A, D, alpha ...)
+    *       are to be given using the group identifiers link_#.
     *  
     * @return true iff correctly configured. 
     */
