@@ -43,6 +43,12 @@ skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, u
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
 geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir,
+	const yarp::sig::Vector &_Mu, const yarp::sig::Vector &_Fdir)
+ :dynContact(_bodyPart,_linkNumber,_CoP,_Mu,_Fdir), skinPart(_skinPart),
+ geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir){}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact()
 : dynContact(), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
 //~~~~~~~~~~~~~~~~~~~~~~

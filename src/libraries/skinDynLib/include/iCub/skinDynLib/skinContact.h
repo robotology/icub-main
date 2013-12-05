@@ -130,6 +130,24 @@ public:
     */
     skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir);
+    
+     /**
+    * Constructor with contact surface normal, list of active taxels, direction of contact force, and moment applied at this contact.
+    * @param _bodyPart the part of the body
+    * @param _skinPart the part of the skin
+    * @param _linkNumber the link number relative to the specified body part
+    * @param _CoP the center of pressure (link reference frame)
+    * @param _geoCenter the geometric center of the contact area (link reference frame)
+    * @param _taxelList list of activated taxels
+    * @param _pressure average pressure applied on the contact area
+    * @param _normalDir contact area normal direction (link reference frame)
+    * @param _Mu the moment applied at this contact, expressed in link reference frame
+    * @param _Fdir the direction of the contact force, expressed in link reference frame
+    */
+    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+        const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir,
+	const yarp::sig::Vector &_Mu, const yarp::sig::Vector &_Fdir);
+
 
     //~~~~~~~~~~~~~~~~~~~~~~
 	//   GET methods
