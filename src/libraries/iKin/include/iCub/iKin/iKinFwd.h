@@ -985,9 +985,9 @@ public:
     * ... 
     * @endcode 
     *  
-    * @note Please note how the link options (e.g. <b>A<\b>, 
-    *       <b>D<\b>, <b>alpha<\b> ...) are to be given using the
-    *       group identifiers <b>link_#<\b>.
+    * @note Please note how the link options (e.g. \b A, 
+    *       \b D, \b alpha ...) are to be given using the
+    *       group identifiers \b link_#.
     *  
     * @return true iff correctly configured. 
     */
