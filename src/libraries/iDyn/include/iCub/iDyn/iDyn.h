@@ -1276,7 +1276,7 @@ public:
 
     /**
     * Checks if the limb has been properly configured.
-    * @return true iff correctly coinfigured.
+    * @return true iff correctly configured.
     */
     bool isValid() { return configured; }
 

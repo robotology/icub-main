@@ -985,7 +985,11 @@ public:
     * ... 
     * @endcode 
     *  
-    * @return true iff correctly coinfigured. 
+    * @note Please note how the link options (e.g. <b>A<\b>, 
+    *       <b>D<\b>, <b>alpha<\b> ...) are to be given using the
+    *       group identifiers <b>link_#<\b>.
+    *  
+    * @return true iff correctly configured. 
     */
     bool fromLinksProperties(const yarp::os::Property &options);
 
@@ -998,7 +1002,7 @@ public:
 
     /**
     * Checks if the limb has been properly configured.
-    * @return true iff correctly coinfigured.
+    * @return true iff correctly configured.
     */
     bool isValid() const { return configured; }
 
