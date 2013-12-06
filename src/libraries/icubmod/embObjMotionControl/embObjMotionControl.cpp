@@ -1075,7 +1075,7 @@ bool embObjMotionControl::configure_mais(void)
         }
 
         //set tx mode continuosly
-        eOsnsr_maismode_t     maismode  = snsr_maismode_txdatacontinuously;
+        eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
         nvid = eo_cfg_nvsEP_as_mais_NVID_Get(mais_ep, maisnum, maisNVindex_mconfig__mode);
         if(EOK_uint16dummy == nvid)
         {
