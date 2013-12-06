@@ -25,6 +25,7 @@
 
 #define OVERRIDE_eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues
 #define OVERRIDE_eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues
+#define OVERRIDE_eo_cfg_nvsEP_as_hid_UPDT_Mxx_mstatus__the15values
 
 
 #endif  // include-guard

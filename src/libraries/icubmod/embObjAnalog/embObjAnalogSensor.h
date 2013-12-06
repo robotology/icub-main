@@ -76,11 +76,12 @@ class yarp::dev::embObjAnalogSensor:    public yarp::dev::IAnalogSensor,
                                         public IiCubFeature
 {
 public:
-    enum AnalogDataFormat
-    {
-        ANALOG_FORMAT_8,
-        ANALOG_FORMAT_16,
-    };
+//    enum AnalogDataFormat
+//    {
+//        ANALOG_FORMAT_NONE=0,
+//        ANALOG_FORMAT_8=8,
+//        ANALOG_FORMAT_16=16,
+//    };
 
     enum SensorStatus
     {
@@ -90,6 +91,13 @@ public:
         ANALOG_SATURATION=-2,
         ANALOG_ERROR=-3,
     };
+
+    enum AnalogSensorType
+        {
+            AS_NONE = 0,
+            AS_MAIS = 1,
+            AS_STRAIN = 2,
+        };
 
 private:
 
@@ -107,9 +115,11 @@ private:
 
     ////////////////////
     // parameters
-    int             _period;
-    int             _channels;
-    short           _useCalibration;
+    int                 _period;
+    int                 _channels;
+    short               _useCalibration;
+    //AnalogDataFormat    _format;
+    AnalogSensorType    _as_type;
 
     AnalogData *data;
     short status;
@@ -127,6 +137,10 @@ private:
     // Read useful data from config and check for correctness
     bool fromConfig(yarp::os::Searchable &config);
     bool getFullscaleValues();
+    bool sendConfig2Strain(void);
+    bool sendConfig2Mais(void);
+    bool fillDatOfStrain(void *as_array_raw);
+    bool fillDatOfMais(void *as_array_raw);
 public:
 
     embObjAnalogSensor();

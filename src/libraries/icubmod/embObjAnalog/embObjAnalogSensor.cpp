@@ -33,6 +33,11 @@
 const int REPORT_PERIOD=6; //seconds
 const double BCAST_STATUS_TIMEOUT=6; //seconds
 
+#define NUMCHANNEL_STRAIN 6
+#define NUMCHANNEL_MAIS 16
+#define FORMATDATA_STRAIN 16
+#define FORMATDATA_MAIS 8
+
 
 using namespace yarp;
 using namespace yarp::os;
@@ -70,6 +75,7 @@ static inline bool extractGroup(Bottle &input, Bottle &out, const std::string &k
 bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 {
     Bottle xtmp;
+    int format=0;
 
   // embObj parameters, in ETH group
     Value val =_config.findGroup("ETH").check("Ems",Value(1), "Board number");
@@ -77,6 +83,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         _fId.boardNum =val.asInt();
     else
     {
+        _as_type=AS_NONE;
         yError () << "embObjAnalogSensor: EMS Board number identifier not found\n";
         return false;
     }
@@ -87,6 +94,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     {
         yError() << "embObjAnalogSensor Using default value = 0 (disabled)";
         _period = 0;
+        _as_type=AS_NONE;
     }
     else
     {
@@ -99,20 +107,54 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (disabled)\n");
         _channels = 0;
         _period   = 0;
+        _as_type=AS_NONE;
     }
     else
     {
         _channels = xtmp.get(1).asInt();
     }
 
-    if (!extractGroup(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
+
+    if (!extractGroup(config, xtmp, "Format","data format of the Analog Sensor", 1))
     {
-        fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (Don't use calibration)\n");
-        _useCalibration = 0;
+        fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (disabled)\n");
+        _channels = 0;
+        _period   = 0;
+        _as_type=AS_NONE;
     }
     else
     {
-        _useCalibration = xtmp.get(1).asInt();
+        format = xtmp.get(1).asInt();
+    }
+
+
+
+    if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
+    {
+        _as_type=AS_STRAIN;
+    }
+    else if((_channels==NUMCHANNEL_MAIS) && (format==FORMATDATA_MAIS))
+    {
+        _as_type=AS_MAIS;
+    }
+    else
+    {
+        _as_type=AS_NONE;
+        yError() << "embObjAnalogSensor incorrect config!channels="<< _channels <<" format="<< format;
+        return false;
+    }
+
+    if(AS_STRAIN == _as_type)
+    {
+        if (!extractGroup(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
+        {
+            fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (Don't use calibration)\n");
+            _useCalibration = 0;
+        }
+        else
+        {
+            _useCalibration = xtmp.get(1).asInt();
+        }
     }
     return true;
 };
@@ -123,6 +165,8 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
     _useCalibration=0;
     _channels=0;
     _period=0;
+    _as_type=AS_NONE;
+    //_format=ANALOG_FORMAT_NONE;
 
     scaleFactor=0;
 
@@ -162,6 +206,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     Bottle          groupEth;
     ACE_TCHAR       address[64];
     ACE_UINT16      port;
+    bool            ret;
 
 
     // Get both PC104 and EMS ip addresses and port from config file
@@ -269,7 +314,39 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 #endif
 
 //     res->goToConfig();
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            ret = sendConfig2Mais();
+        }break;
+        case AS_STRAIN:
+        {
+            ret = sendConfig2Strain();
+        }break;
+        default:
+        {
+            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            ret = false;
+        }
+    }
+    if(!ret)
+        return false;
 
+
+    // Set variable to be signalled
+    if(! init())
+        return false;
+
+    res->goToRun();
+
+    yTrace()<< "EmbObj Analog Sensor for board"<< _fId.boardNum << "instantiated correctly";
+    return true;
+}
+
+
+bool embObjAnalogSensor::sendConfig2Strain(void)
+{
     eOsnsr_strain_config_t strainConfig;
     strainConfig.datarate = _period;
     strainConfig.signaloncefullscale = eobool_false;
@@ -291,11 +368,42 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     eOnvID_t nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
     res->addSetMessage(nvid_strain_config, _fId.ep, (uint8_t *) &strainConfig);
 
-    // Set variable to be signalled
-    init();
-    res->goToRun();
+    return true;
 
-    printf("EmbObj Analog Sensor for board %d intatiated correctly", _fId.boardNum);
+}
+bool embObjAnalogSensor::sendConfig2Mais(void)
+{
+    eOnvID_t nvid;
+    eOcfg_nvsEP_as_maisNumber_t maisnum = 0;
+    uint8_t datarate  = _period;
+
+    //set mais datarate = 1millisec
+    nvid = eo_cfg_nvsEP_as_mais_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, maisnum, maisNVindex_mconfig__datarate);
+    if(EOK_uint16dummy == nvid)
+    {
+        yError () << " NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
+        return false;
+    }
+
+    if(!res->addSetMessage(nvid, _fId.ep, &datarate))
+    {
+        yError() << "while setting mais datarate";
+    }
+
+    //set tx mode continuosly
+    eOsnsr_maismode_t     maismode  = snsr_maismode_txdatacontinuously;
+    nvid = eo_cfg_nvsEP_as_mais_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, maisnum, maisNVindex_mconfig__mode);
+    if(EOK_uint16dummy == nvid)
+    {
+        yError () << "NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
+        return false;
+    }
+
+    if(!res->addSetMessage(nvid, _fId.ep, (uint8_t *) &maismode))
+    {
+        yError() << "while setting mais maismode";
+    }
+
     return true;
 }
 
@@ -405,7 +513,7 @@ bool embObjAnalogSensor::getFullscaleValues()
 bool embObjAnalogSensor::init()
 {
     yTrace();
-    eOnvID_t nvid;
+    eOnvID_t                  nvid;
 
     // Configure values to be sent regularly
     eOnvID_t                  nvid_ropsigcfgassign;       // nvID
@@ -425,22 +533,38 @@ bool embObjAnalogSensor::init()
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
-    if(_useCalibration)
-        nvid = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sstatus__calibratedvalues);
-    else
-        nvid = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sstatus__uncalibratedvalues);
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            nvid = eo_cfg_nvsEP_as_mais_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, 0, (eOcfg_nvsEP_as_maisNVindex_t) maisNVindex_mstatus__the15values);
+        }break;
+        case AS_STRAIN:
+        {
+            if(_useCalibration)
+                nvid = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sstatus__calibratedvalues);
+            else
+                nvid = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sstatus__uncalibratedvalues);
+        }break;
+        default:
+        {
+            nvid=EOK_uint16dummy;
+        }
+    }
 
     if(EOK_uint16dummy == nvid)
     {
         yError () << " EmbObj Analog Sensor NVID not found for EndPoint" << _fId.ep <<" at line " << __LINE__;
+        return false;
     }
-    else
+
+    sigcfg.ep = _fId.ep;
+    sigcfg.id = nvid;
+    sigcfg.plustime = 0;
+    if(eores_OK != eo_array_PushBack(array, &sigcfg))
     {
-        sigcfg.ep = _fId.ep;
-        sigcfg.id = nvid;
-        sigcfg.plustime = 0;
-        if(eores_OK != eo_array_PushBack(array, &sigcfg))
-            yError () << " EmbObj Analog Sensor while loading ropSig Array  at line " << __LINE__;
+        yError () << " EmbObj Analog Sensor while loading ropSig Array  at line " << __LINE__;
+        return false;
     }
 
     // Send message
@@ -542,8 +666,35 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
 
 bool embObjAnalogSensor::fillData(void *as_array_raw)
 {
+    bool ret;
+
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            ret = fillDatOfMais(as_array_raw);
+        }break;
+        case AS_STRAIN:
+        {
+            ret = fillDatOfStrain(as_array_raw);
+        }break;
+        default:
+        {
+            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+
+
+
+
+
+bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
+{
     // Called by eoCallback.
-//     yTrace();
     mutex.wait();
 //     printf("\nembObj Analog Sensor fill_as_data\n");
     // do the decode16 code
@@ -572,7 +723,7 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
 //        printf("%d(%d %d) vs %d\n\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
 //        }
 //
-        
+
         if (_useCalibration==1)
         {
             _buffer[k]=_buffer[k]*scaleFactor[k]/float(0x8000);
@@ -582,6 +733,31 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
     mutex.post();
     return AS_OK;
 }
+
+
+
+
+bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
+{
+    // Called by eoCallback.
+
+    mutex.wait();
+
+    eOsnsr_arrayofupto36bytes_t  *as_array = (eOsnsr_arrayofupto36bytes_t*) as_array_raw;
+    double *_buffer = data->getBuffer();
+
+    for(int k=0; k<_channels; k++)
+    {
+        uint8_t val = *((uint8_t*)eo_array_At((EOarray*) as_array, k));
+        // Get the kth element of the array
+        _buffer[k] = (double)val;
+    }
+    mutex.post();
+    return AS_OK;
+}
+
+
+
 
 bool embObjAnalogSensor::close()
 {

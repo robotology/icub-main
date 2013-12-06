@@ -79,7 +79,7 @@
 // //     eo_array_Reset();
 // }
 
-static void handle_data(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign);
+static void handle_data(FeatureType f_type, const EOnv* nv, const eOabstime_t time, const uint32_t sign);
 
 extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
@@ -93,7 +93,7 @@ extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues(eOcfg_nvsEP_a
 
 //#warning "strain status calib values update strong iCubInterface"
 //     printf("iCub AS status calib values Callback\n");
-    handle_data(sxx, nv, time, sign);
+    handle_data(AnalogStrain, nv, time, sign);
 }
 
 extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
@@ -105,25 +105,32 @@ extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues(eOcfg_nvsEP
 #else
     #warning MSG010989
 #endif
-//     printf("iCub AS status UNcalib values Callback\n");
-    handle_data(sxx, nv, time, sign);
+
+    handle_data(AnalogStrain, nv, time, sign);
 }
 
-static void handle_data(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+
+extern void eo_cfg_nvsEP_as_hid_UPDT_Mxx_mstatus__the15values(eOcfg_nvsEP_as_maisNumber_t mxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+{
+    handle_data(AnalogMais, nv, time, sign);
+}
+
+static void handle_data(FeatureType f_type, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
 {
     //int i;
-    FEAT_ID id;
+
 
 #define _debug_as_data
 
-    eOsnsr_arrayofupto12bytes_t *jstatus_b = nv->rem;
 
 #ifdef _debug_as_data
 //     printf("iCub AS status full Callback\n");
 #endif
-
-    id.type = Skin;
+    FEAT_ID id;
+    id.type = f_type;
     id.ep = nv->ep;
+    handle_AS_data(&id, nv->rem);
+
 
     //i=0;
 /*  printf("0x");
@@ -131,7 +138,6 @@ static void handle_data(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const
         printf("%02X", ((char*) jstatus_b)[i]);
     printf("\n\n");
 */
-    handle_AS_data(&id, (void *)jstatus_b);
 }
 
 // eof
