@@ -15,6 +15,8 @@
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
 
+#include "EoAnalogSensors.h"
+
 #ifdef _SETPOINT_TEST_
 #include <time.h>
 #include <sys/time.h>
@@ -96,7 +98,7 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
 {
     IiCubFeature *iAnalog;
 
-    eOsnsr_arrayofupto12bytes_t *debug_tmp = (eOsnsr_arrayofupto12bytes_t *) as_array;
+    eOas_arrayofupto12bytes_t *debug_tmp = (eOas_arrayofupto12bytes_t *) as_array;
     // specie di view grezza, usare dynamic cast?
     embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandleFromEP(id->ep));
 
