@@ -25,6 +25,7 @@
 #include <embObjAnalogSensor.h>
 #include <ethManager.h>
 #include <Debug.h>
+#include "EoAnalogSensors.h"
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -347,7 +348,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
 {
-    eOsnsr_strain_config_t strainConfig;
+    eOas_strain_config_t strainConfig;
     strainConfig.datarate = _period;
     strainConfig.signaloncefullscale = eobool_false;
 
@@ -358,11 +359,11 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 //             yError() << "EmbObj AnalogSensor, problem while getting fullscale values!";
             return false;
         }
-        strainConfig.mode = snsr_strainmode_txcalibrateddatacontinuously;
+        strainConfig.mode = eoas_strainmode_txcalibrateddatacontinuously;
     }
     else
     {
-        strainConfig.mode = snsr_strainmode_txuncalibrateddatacontinuously;
+        strainConfig.mode = eoas_strainmode_txuncalibrateddatacontinuously;
     }
 
     eOnvID_t nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
@@ -391,7 +392,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     }
 
     //set tx mode continuosly
-    eOsnsr_maismode_t     maismode  = snsr_maismode_txdatacontinuously;
+    eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     nvid = eo_cfg_nvsEP_as_mais_NVID_Get((eOcfg_nvsEP_as_endpoint_t)_fId.ep, maisnum, maisNVindex_mconfig__mode);
     if(EOK_uint16dummy == nvid)
     {
@@ -415,7 +416,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     uint16_t tmpNVsize;
     EOnv tmpNV, *p_tmpNV;
     eOnvID_t nvid_strain_config, nvid_fullscale;
-    eOsnsr_arrayofupto12bytes_t fullscale_values;
+    eOas_arrayofupto12bytes_t fullscale_values;
 /*  can't do a reset if array is not correctly initialized with eo_new_blablabla function.
  * This needs knowing how data are actually stored, bytes dimension etc... which is quite low level knowledge to be placed here.
     I rely on the fact that iitialization of the variable is correctly done by transceiver.
@@ -443,9 +444,9 @@ bool embObjAnalogSensor::getFullscaleValues()
         yError() << "Initial size of array is different from zero (" << NVsize << ") for board" << _fId.boardNum;
 
      // Prepare analog sensor
-    eOsnsr_strain_config_t strainConfig;
+    eOas_strain_config_t strainConfig;
     strainConfig.datarate = _period;
-    strainConfig.mode = snsr_strainmode_acquirebutdonttx;
+    strainConfig.mode = eoas_strainmode_acquirebutdonttx;
     strainConfig.signaloncefullscale = eobool_true;
 
     nvid_strain_config = eo_cfg_nvsEP_as_strain_NVID_Get((eOcfg_nvsEP_as_endpoint_t) _fId.ep, (eOcfg_nvsEP_as_strainNumber_t) 0, (eOcfg_nvsEP_as_strainNVindex_t) strainNVindex_sconfig);
@@ -698,7 +699,7 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
     mutex.wait();
 //     printf("\nembObj Analog Sensor fill_as_data\n");
     // do the decode16 code
-    eOsnsr_arrayofupto12bytes_t  *as_array = (eOsnsr_arrayofupto12bytes_t*) as_array_raw;
+    eOas_arrayofupto12bytes_t  *as_array = (eOas_arrayofupto12bytes_t*) as_array_raw;
     uint8_t msg[2];
     double *_buffer = data->getBuffer();
 
@@ -743,7 +744,7 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 
     mutex.wait();
 
-    eOsnsr_arrayofupto36bytes_t  *as_array = (eOsnsr_arrayofupto36bytes_t*) as_array_raw;
+    eOas_arrayofupto36bytes_t  *as_array = (eOas_arrayofupto36bytes_t*) as_array_raw;
     double *_buffer = data->getBuffer();
 
     for(int k=0; k<_channels; k++)
