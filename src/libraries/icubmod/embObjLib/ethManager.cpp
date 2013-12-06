@@ -751,7 +751,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     ethManager  = _ethManager;
     ethResList  = &(_ethManager->EMS_list);
 
-    int sockfd = pSocket->get_handle();
+    ACE_HANDLE sockfd = pSocket->get_handle();
     int retval;
     int32_t mysize = 102400; //100kb note:actually kernel uses memory with size doblem of mysize
                             //with this size i'm sure ems pkts are not lost
@@ -770,7 +770,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     }
 
     int32_t sock_input_buf_size =0;
-    retval = getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&sock_input_buf_size, &len);
+    retval = ACE_OS::getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&sock_input_buf_size, &len);
     if (retval != 0)
     {
         int myerr = errno;
