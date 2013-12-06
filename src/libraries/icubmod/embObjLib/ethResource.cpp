@@ -359,7 +359,7 @@ bool ethResources::goToRun(void)
 
 double  ethResources::getLastRecvMsgTimestamp(void)
 {
-    infoPkts->last_recvPktTime;
+    return(infoPkts->last_recvPktTime);
 }
 
 bool ethResources::clearPerSigMsg(void)
