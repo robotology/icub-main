@@ -755,7 +755,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     int retval;
     int32_t mysize = 102400; //100kb note:actually kernel uses memory with size doblem of mysize
                             //with this size i'm sure ems pkts are not lost
-    socklen_t len = sizeof(mysize);
+    int len = sizeof(mysize);
 
     //the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
     ConstString _dgram_buffer_size = NetworkBase::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
