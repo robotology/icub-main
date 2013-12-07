@@ -36,7 +36,7 @@ bool minVolumeEllipsoid(const deque<Vector> &points, const double tol,
     // iteratively the following problem:
     //
     // min log(det(A))
-    // s.t. (points[i]-c)' * A * (points[i]-c) <= 1
+    // s.t. (points[i]-c)'*A*(points[i]-c)<=1
 
     if (points.empty())
         return false;
@@ -55,11 +55,10 @@ bool minVolumeEllipsoid(const deque<Vector> &points, const double tol,
     Matrix Qt=Q.transposed();
 
     // run the Khachiyan algorithm
-    Matrix X,M;
-    for (;;)
+    Matrix M;
+    while (true)
     {
-        X=Q*U*Qt;
-        M=Qt*pinv(X)*Q;
+        M=Qt*pinv(Q*U*Qt)*Q;
         int j=0;
         double max=-1e9;
         for (int row=0; row<M.rows(); row++)
