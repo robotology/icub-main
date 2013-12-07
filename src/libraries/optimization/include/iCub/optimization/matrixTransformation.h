@@ -16,13 +16,6 @@
 */
 
 /** 
- * @defgroup optimization optimization
- * @ingroup icub_libraries 
- *  
- * Tools designed to deal with optimization tasks.
- *  
- * @author Ugo Pattacini
- *  
  * @defgroup MatrixTransformations Finding Matrix Transformations
  * @ingroup optimization
  *

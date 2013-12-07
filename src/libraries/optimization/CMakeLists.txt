@@ -5,13 +5,15 @@
 set(PROJECTNAME optimization)
 project(${PROJECTNAME})
 
-set(folder_source src/calibReference.cpp
+set(folder_source src/algorithms.cpp
+                  src/calibReference.cpp
                   src/affinity.cpp
                   src/neuralNetworks.cpp)
-set(folder_header include/iCub/optimization/matrixTransformation.h
+set(folder_header include/iCub/optimization/algorithms.h
+                  include/iCub/optimization/matrixTransformation.h
                   include/iCub/optimization/calibReference.h
                   include/iCub/optimization/affinity.h
-                  include/iCub/optimization/neuralNetworks.h)
+				  include/iCub/optimization/neuralNetworks.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
