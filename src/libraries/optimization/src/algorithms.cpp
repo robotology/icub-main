@@ -26,8 +26,9 @@ using namespace iCub::optimization;
 
 
 /****************************************************************/
-bool minVolumeEllipsoid(const deque<Vector> &points, const double tol,
-                        Matrix &A, Vector &c)
+bool iCub::optimization::minVolumeEllipsoid(const deque<Vector> &points,
+                                            const double tol,
+                                            Matrix &A, Vector &c)
 {
     // This code is a C++ version of the MATLAB script written by:
     // Nima Moshtagh (nima@seas.upenn.edu), University of Pennsylvania
