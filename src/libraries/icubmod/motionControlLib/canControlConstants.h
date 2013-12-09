@@ -24,7 +24,7 @@
 // that can be queued by a thread before waiting on synch().
 // the worst case is when a request is sent to all joints of a 
 // netowork, we use 50 to be conservative.
-const int BUF_SIZE=50;
+const int BUF_SIZE=500;
 const int debug_mask = 0x20;
 
 /**
