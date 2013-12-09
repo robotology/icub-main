@@ -1,14 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
-* @ingroup icub_module
-* 
-* \defgroup RpcIdl RpcIdl
-*
-* Example to show idl usage. Implements a trivial server that provides
-* access to an integer.
-*
-* The interface of this module is defined in IRpcServer.
 * 
 * Copyright (C) 2013 Istituto Italiano di Tecnologia, iCub Facility
 *
