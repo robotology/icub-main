@@ -466,9 +466,9 @@ void OneLinkNewtonEuler::computeAngAccBackward(OneLinkNewtonEuler *next)
         {
             Vector nextDw = next->getR() * next->getAngAcc();
             const Vector& w = getAngVel();
-            nextDw[0] -= getDq()*w[1];
-            nextDw[1] += getDq()*w[0];
-            nextDw[2] -= getD2q();
+            nextDw[0] -= next->getDq()*w[1];
+            nextDw[1] += next->getDq()*w[0];
+            nextDw[2] -= next->getD2q();
             setAngAcc(nextDw);
             //setAngAcc( next->getR() * next->getAngAcc() - next->getD2q() * z0 - next->getDq() * cross(getAngVel(),z0) );
             break;
@@ -477,8 +477,8 @@ void OneLinkNewtonEuler::computeAngAccBackward(OneLinkNewtonEuler *next)
         {
             Vector nextDw = next->getR() * next->getAngAcc();
             const Vector& w = getAngVel();
-            nextDw[0] -= getDq()*w[1];
-            nextDw[1] += getDq()*w[0];
+            nextDw[0] -= next->getDq()*w[1];
+            nextDw[1] += next->getDq()*w[0];
             setAngAcc(nextDw);
             //setAngAcc( next->getR() * next->getAngAcc() - next->getDq() * cross(getAngVel(),z0) );
             break;
@@ -523,7 +523,7 @@ void OneLinkNewtonEuler::computeLinAccBackward(OneLinkNewtonEuler *next)
     case DYNAMIC_CORIOLIS_GRAVITY:
     case DYNAMIC_W_ROTOR:
         {
-            const Vector& r = getr(true);
+            const Vector& r = next->getr(true);
             Vector temp = next->getLinAcc();
             temp -= cross(next->getAngAcc(), r);
             temp -= cross(next->getAngVel(), cross(next->getAngVel(), r));

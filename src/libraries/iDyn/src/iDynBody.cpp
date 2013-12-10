@@ -207,7 +207,7 @@ void RigidBodyTransformation::computeKinematic()
         case DYNAMIC:
         case DYNAMIC_CORIOLIS_GRAVITY:
         case DYNAMIC_W_ROTOR:
-            ddp = getR() * ( ddp + cross(dw,getr(true)) + cross(w,cross(w,getr(true))) ) ;
+            ddp = getR() * ( ddp - cross(dw,getr(true)) - cross(w,cross(w,getr(true))) ) ;
             w   = getR() * w ;
             dw  = getR() * dw ; 
             break;
@@ -230,9 +230,9 @@ void RigidBodyTransformation::computeKinematic()
         case DYNAMIC:
         case DYNAMIC_CORIOLIS_GRAVITY:
         case DYNAMIC_W_ROTOR:
-            ddp = getR().transposed() * (ddp - cross(dw,getr(true)) - cross(w,cross(w,getr(true))) );
             w   = getR().transposed() * w ;
-            dw  = getR().transposed() * dw ;
+            dw  = getR().transposed() * dw;
+            ddp = getR().transposed() * (ddp) + cross(dw,getr(true)) + cross(w,cross(w,getr(true))) ;
             break;
         case STATIC:    
             w   = 0.0;
@@ -2636,6 +2636,30 @@ bool iCubWholeBody::getAllVelocities(Vector &vel)
 
     return true;
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*
+bool iCubWholeBody::getAllAccelerations(Vector &acc)
+{
+    Vector ll = this->lowerTorso->left->getD2Ang();
+    Vector rl = this->lowerTorso->right->getD2Ang();
+    Vector to = this->lowerTorso->up->getD2Ang();
+    Vector la = this->upperTorso->left->getD2Ang();
+    Vector ra = this->upperTorso->right->getD2Ang();
+    Vector hd = this->upperTorso->up->getD2Ang();
+    acc.clear();
+    acc.resize(32,0.0);
+    int i=0; int j=0;
+    for (i=0; i<6; i++, j++) acc[j] = ll[i];
+    for (i=0; i<6; i++, j++) acc[j] = rl[i];
+    for (i=0; i<3; i++, j++) acc[j] = to[i];
+    for (i=0; i<7; i++, j++) acc[j] = la[i];
+    for (i=0; i<7; i++, j++) acc[j] = ra[i];
+    for (i=0; i<3; i++, j++) acc[j] = hd[i];
+
+    return true;
+}
+*/
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
