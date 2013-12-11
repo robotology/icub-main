@@ -8,7 +8,7 @@
   </module>
 
   <connection>
-    <from>/armSkinMan/skin_events:o</from>
+    <from>/skinManager/skin_events:o</from>
     <to>/iCubGui/forces</to>
     <protocol>udp</protocol>
   </connection>
