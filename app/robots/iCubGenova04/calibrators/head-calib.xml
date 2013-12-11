@@ -2,7 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova04" build="1">
-	<device name="head_calibrator" type="icubheadcalibrator">
+	<device name="head_calibrator" type="icubheadcalibratorV2">
                 <params file="general.xml" />
 
 		<group name="GENERAL">
@@ -11,22 +11,22 @@
 		</group>
 
 		<group name="HOME">
-		    <!-- Joint                     0             1             2           	3	    4		  5-->
-		    <param name="PositionHome">    -30           0             0             0             0             0		</param>
-		    <param name="VelocityHome">    10            10            10            10            10            10		</param>
+		    <!-- Joint                     0             1             2           	3	           4		     5-->
+            <param name="PositionHome">   -30            0             0             0             0             0             </param>       
+            <param name="VelocityHome">    10            10            10            10            10            10            </param>     
 		</group>
 
 		<group name="CALIBRATION">
 		    <param name="Joints"> 6 </param>  <!-- the number of joints of the robot part -->
 		    <!-- Joint                       0             1             2           -->
-		    <param name="CalibrationType">   0             0             0             0             0             0		</param>
-		    <param name="Calibration1">      500           1000          900           600           500           500		</param>
-		    <param name="Calibration2">      20            20            20            -20           20            20		</param>
-		    <param name="Calibration3">      0             0             0             0             0             0		</param>
-		    <param name="PositionZero">      -30           0             0             0             0             0		</param>
-		    <param name="VelocityZero">      10            10            10            10            10            10		</param>
-		    <param name="MaxPWM">            250           250           600           600           600           600		</param>
-            <param name="posZeroThreshold">    2             2             2             2             2             2             </param>      
+            <param name="CalibrationType">            3             3             3             3             0             0             </param>       
+            <param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
+            <param name="Calibration2">               10            10            10            10            20            20            </param>       
+            <param name="Calibration3">               1765.4        3280.55       466.375       546           0             0             </param>       
+            <param name="PositionZero">               0             0             0             0             0             0             </param>       
+            <param name="VelocityZero">               10            10            10            10            10            10            </param>       
+            <param name="MaxPwm">                     120           120           120           0             0             0             </param>       
+            <param name="posZeroThreshold">           2             2             2             2             2             2             </param>   
 		</group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->

@@ -10,6 +10,7 @@
       <params file="hardware/mechanicals/ems1-mec.xml" />
   </device>
 
+
   <device name="left_upper_arm_strain" type="embObjAnalogSensor">
       <params file="general.xml" />
       <params file="hardware/electronics/ems1-eln.xml" />

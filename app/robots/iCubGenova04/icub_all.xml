@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<robot name="icub">
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubGenova04" build="1" portprefix="icub">
     <params file="hardware/electronics/pc104.xml" />
 
 
@@ -19,24 +21,20 @@
     <devices file="wrappers/right_arm-mcWrapper.xml" />
 
 
-   <!-- LEFT LEG  -->
-    <devices file="hardware/ems6.xml" />
-    <devices file="hardware/ems7.xml" />
-    <devices file="wrappers/left_leg-mcWrapper.xml" /> 
+
     
 
      <!-- ANALOG SENSOR WRAPPERs TORQUE -->
      <devices file="wrappers/left_arm-asWrapper.xml" /> 
      <devices file="wrappers/right_arm-asWrapper.xml" />
-     <devices file="wrappers/right_leg-asWrapper.xml" /> 
-     <devices file="wrappers/left_leg-asWrapper.xml" />
+
 
     <!-- VIRTUAL ANALOG SERVERs -->
 
     <devices file="wrappers/left_arm-VFTserver.xml" /> 
+    <devices file="wrappers/right_leg-VFTserver.xml" /> 
     <devices file="wrappers/left_leg-VFTserver.xml" /> 
     <devices file="wrappers/right_arm-VFTserver.xml" /> 
-    <devices file="wrappers/right_leg-VFTserver.xml" /> 
 
     <!-- HEAD -->	
     <devices file="hardware/cfw002_0.xml" />
@@ -49,12 +47,18 @@
     <devices file="wrappers/torso-mcWrapper.xml" />
 
  
+   <!-- LEFT LEG  -->
+    <devices file="hardware/ems6.xml" />
+    <devices file="hardware/ems7.xml" />
+    <devices file="wrappers/left_leg-mcWrapper.xml" /> 
 
 
     <!-- RIGHT LEG -->
     <devices file="hardware/ems8.xml" />
     <devices file="hardware/ems9.xml" />
-    <devices file="wrappers/right_leg-mcWrapper.xml" />		
+    <devices file="wrappers/right_leg-mcWrapper.xml" />	
+
+	
 
     
     <!-- INERTIAL SENSOR -->
@@ -64,7 +68,8 @@
     <devices file="wrappers/left_arm-skinWrapper.xml" />
     <devices file="wrappers/right_arm-skinWrapper.xml" />  
     <devices file="wrappers/torso-skinWrapper.xml" />    <!-- e' su can -->
-
+    <devices file="wrappers/right_leg-asWrapper.xml" /> 
+    <devices file="wrappers/left_leg-asWrapper.xml" />
 
     <devices file="calibrators/head-calib.xml" /> 
     <devices file="calibrators/torso-calib.xml" />
@@ -75,4 +80,5 @@
 
 
 </robot> 
+
 
