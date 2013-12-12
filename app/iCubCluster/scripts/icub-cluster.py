@@ -408,6 +408,18 @@ class App:
         else:
             print 'Nameserver was not running'
 
+def check_output(*popenargs, **kwargs):
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        error = subprocess.CalledProcessError(retcode, cmd)
+        error.output = output
+        raise error
+    return output
 
 def printUsage(scriptName):
     print scriptName, ": python gui for managing yarprun servers (Linux only)"
@@ -439,7 +451,10 @@ if __name__ == '__main__':
 
     print "Config file name: " + configFileName + ", context name: " + contextName
 
-    configFilePath=subprocess.check_output(["yarp",  "resource",  "--find", configFileName, "--context", contextName])
+    if(sys.hexversion < 0x02070000):
+        configFilePath=check_output(["yarp",  "resource",  "--find", configFileName, "--context", contextName])
+    else:
+        configFilePath=subprocess.check_output(["yarp",  "resource",  "--find", configFileName, "--context", contextName])
     if not configFilePath[1:-2] :  # "slicing" output variable to remove quotes and EOL
        print "Could not find file " + configFileName + " in context " + contextName + ", exiting."
        sys.exit(1)
