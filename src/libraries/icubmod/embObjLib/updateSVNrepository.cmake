@@ -4,7 +4,11 @@
 
 find_package(Subversion)
 if(NOT Subversion_FOUND)
-    message(FATAL_ERROR "Cannot find Subversion")
+    if(WIN32)
+        message(FATAL_ERROR "\nCannot find Subversion executable, maybe command line tool for subversion was not intalled?  Check wiki.icub.org for more info.\n")
+    else(WIN32)
+        message(FATAL_ERROR "Cannot find Subversion, you can do 'sudo apt-get install subversion' to install it.")
+    endif(WIN32)
 endif()
 
 
@@ -23,15 +27,7 @@ endif()
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
     message(STATUS " Downloading embObjLib from repository")
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} co -r${eBcode_REVISION} --depth empty ${eBcode_BASE_URL} --non-interactive embObj
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET RESULT_VARIABLE res ERROR_VARIABLE err)
-
-    # Check if subversion is working fine.
-    # RESULT_VARIABLE will be 0 if everu=ythung was fine
-
-    if(RESULT_VARIABLE)
-        message(ERROR " CMake was not able to download library, maybe command line tool for subversion was not intalled? \n      Check wiki.icub.org for more info.")
-        return()
-    endif()
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_QUIET)
 
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} --depth empty embobj --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
