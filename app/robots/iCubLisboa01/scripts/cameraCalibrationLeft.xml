@@ -7,7 +7,7 @@
 
 <module>
    <name>stereoCalib</name>
-   <parameters>--context iCubLisboa01/conf --from chessboard_8x6_4.245cm.ini --STEREO_CALIBRATION_CONFIGURATION::MonoCalib 1</parameters>
+   <parameters>--from chessboard_8x6_4.245cm.ini --STEREO_CALIBRATION_CONFIGURATION::MonoCalib 1</parameters>
    <stdio>chico3</stdio>
    <node>icubbrain2</node>
    <tag>calib</tag>

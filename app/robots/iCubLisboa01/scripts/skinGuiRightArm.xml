@@ -7,7 +7,7 @@
 
   <module>
     <name>skinManager</name>
-    <parameters>--from skinManRight.ini --context iCubLisboa01/conf</parameters>
+    <parameters>--from skinManRight.ini</parameters>
     <node>chico3</node>
     <tag>driftCompRA</tag>
   </module>

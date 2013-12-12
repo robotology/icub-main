@@ -17,13 +17,13 @@
 </module>
 <module>
       <name>camCalib</name>
-      <parameters>--context iCubLisboa01/conf --from icubEyes320x240.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
+      <parameters>--from icubEyes320x240.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
       <node>icubbrain1</node>
       <tag>camCalibLeft</tag>
 </module>
 <module>
       <name>camCalib</name>
-      <parameters>--context iCubLisboa01/conf --from icubEyes320x240.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
+      <parameters>--from icubEyes320x240.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
       <node>icubbrain2</node>
       <tag>camCalibRight</tag>
 </module>

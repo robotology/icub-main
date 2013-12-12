@@ -13,7 +13,7 @@
 
 <module>
       <name>stereoDisparity</name>
-      <parameters>--context iCubLisboa01/conf --from icubEyes640x480.ini</parameters>
+      <parameters>--from icubEyes640x480.ini</parameters>
       <node>chico3</node>
       <stdio>chico3</stdio>
       <tag>stereoDisparity</tag>
