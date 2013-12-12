@@ -15,6 +15,9 @@
 
 #include <yarp/os/ConstString.h>
 
+template <typename T>
+std::ostringstream& operator<<(std::ostringstream &oss, const std::vector<T> &t);
+
 
 namespace DebugStream
 {
