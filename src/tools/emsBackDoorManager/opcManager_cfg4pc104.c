@@ -60,7 +60,7 @@ extern uint8_t board;
 // --------------------------------------------------------------------------------------------------------------------
 typedef struct
 {
-	uint32_t sum;
+    uint32_t sum;
 } ethCounters_total;
 
 
@@ -107,18 +107,18 @@ extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map,
         
             printf("\n\n-----received data of runner---\n");
 
-	    printf("numberofperiods=%lld\n ", data->numberofperiods);
-	    printf("cumulativeabsoluteerrorinperiod=%lld\n ", data->cumulativeabsoluteerrorinperiod);
-	    printf("meanofabsoluteerrorinperiod=%d\n ", data->meanofabsoluteerrorinperiod);
+        printf("numberofperiods=%lld\n ", data->numberofperiods);
+        printf("cumulativeabsoluteerrorinperiod=%lld\n ", data->cumulativeabsoluteerrorinperiod);
+        printf("meanofabsoluteerrorinperiod=%d\n ", data->meanofabsoluteerrorinperiod);
 
-	    printf("movingmeanofabsoluteerrorinperiod=%d\n ", data->movingmeanofabsoluteerrorinperiod);
-	    printf("maxabsoluteerrorinperiod=%d\n ", data->maxabsoluteerrorinperiod);
-	    printf("minabsoluteerrorinperiod=%d\n ", data->minabsoluteerrorinperiod);
+        printf("movingmeanofabsoluteerrorinperiod=%d\n ", data->movingmeanofabsoluteerrorinperiod);
+        printf("maxabsoluteerrorinperiod=%d\n ", data->maxabsoluteerrorinperiod);
+        printf("minabsoluteerrorinperiod=%d\n ", data->minabsoluteerrorinperiod);
 
-	    printf("executionoverflows[0]=%d\n ", data->executionoverflows[0]);
-	    printf("executionoverflows[1]=%d\n ", data->executionoverflows[1]);
-	    printf("executionoverflows[2]=%d\n ", data->executionoverflows[2]);
-	    printf("datagrams_failed_to_go_in_txsocket=%d\n ", data->datagrams_failed_to_go_in_txsocket);
+        printf("executionoverflows[0]=%d\n ", data->executionoverflows[0]);
+        printf("executionoverflows[1]=%d\n ", data->executionoverflows[1]);
+        printf("executionoverflows[2]=%d\n ", data->executionoverflows[2]);
+        printf("datagrams_failed_to_go_in_txsocket=%d\n ", data->datagrams_failed_to_go_in_txsocket);
         
         } break;
     }       
@@ -144,7 +144,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
     opcprotman_res_t res = opcprotman_OK;
 
 /* personalize eodgn_nvidbdoor_cmd */
-	res = opcprotman_personalize_var(   p,
+    res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_cmds,
                                         (void*)&dgnCommands,
                                         NULL); //here I'm not interested in callback func on received, becose ems never will send me it
@@ -154,21 +154,21 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
         return(res);
     }
 /* personalize eodgn_nvidbdoor_errorlog */
-	res = opcprotman_personalize_var(   p,
-										eodgn_nvidbdoor_errorlog,
-										NULL,//use NULL because i'd like print received data and not store them!!
-                                 	   //pay attention: see NOTE 1 at the end of this function!!!
-										on_rec_errorLog);
+    res = opcprotman_personalize_var(   p,
+                                        eodgn_nvidbdoor_errorlog,
+                                        NULL,//use NULL because i'd like print received data and not store them!!
+                                       //pay attention: see NOTE 1 at the end of this function!!!
+                                        on_rec_errorLog);
 
-	if(opcprotman_OK != res)
-	{
-		return(res);
-	}
+    if(opcprotman_OK != res)
+    {
+        return(res);
+    }
 /*personalize eodgn_nvidbdoor_emsperiph var*/
-	res = opcprotman_personalize_var(   p,
+    res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsperiph,
                                         NULL,  //use NULL because i'd like print received data and not store them!!
-                                        	   //pay attention: see NOTE 1 at the end of this function!!!
+                                               //pay attention: see NOTE 1 at the end of this function!!!
                                         on_rec_emsperiph);
 
     if(opcprotman_OK != res)
@@ -178,10 +178,10 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 
 
 /*personalize eodgn_nvidbdoor_emsapplcommon var*/
-	res = opcprotman_personalize_var(   p,
+    res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsapplcommon,
                                         NULL,  //use NULL because i'd like print received data and not store them!!
-                                        	   //pay attention: see NOTE 1 at the end of this function!!!
+                                               //pay attention: see NOTE 1 at the end of this function!!!
                                         on_rec_emsapplcommon);
 
     if(opcprotman_OK != res)
@@ -191,7 +191,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 
 
 /*personalize eodgn_nvidbdoor_emsapplmc var*/
-	res = opcprotman_personalize_var(   p,
+    res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_emsapplmc,
                                         (void*)&s_emswithmc_data,
                                         on_rec_emsapplmc);
@@ -203,10 +203,10 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 
 
 /*personalize eodgn_nvidbdoor_motorstatus var*/
-	res = opcprotman_personalize_var(   p,
+    res = opcprotman_personalize_var(   p,
                                         eodgn_nvidbdoor_motorstatus,
                                         NULL,  //use NULL because i'd like print received data and not store them!!
-                                        	   //pay attention: see NOTE 1 at the end of this function!!!
+                                               //pay attention: see NOTE 1 at the end of this function!!!
                                         on_rec_motorstflags);
 
     if(opcprotman_OK != res)
@@ -215,8 +215,8 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
     }
 
     /*personalize eodgn_nvidbdoor_jointsStateCmd var*/
-    	res = opcprotman_personalize_var(   p,
-    										eodgn_nvidbdoor_canQueueStatistics,
+        res = opcprotman_personalize_var(   p,
+                                            eodgn_nvidbdoor_canQueueStatistics,
                                             NULL,
                                             on_rec_canQueueStatistics);
 
@@ -225,7 +225,7 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
             return(res);
         }
    /*personalize eodgn_nvidbdoor_rxcheckSetpoints var */
-    	res = opcprotman_personalize_var(   p,
+        res = opcprotman_personalize_var(   p,
                                             eodgn_nvidbdoor_rxcheckSetpoints,
                                             NULL,
                                             on_rec_rxcheckSetpoints);
@@ -299,12 +299,12 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
                     printf("\t CRC_error phy-port %d: %d overflow=%d", i, data->eth_dev.crcErrorCnt[i], overflow);
                     if(board>9)
                     {
-                    	//in case i use board on desk with addr 99
-                    	myboard = 0;
+                        //in case i use board on desk with addr 99
+                        myboard = 0;
                     }
                     else
                     {
-                    	myboard = board-1;
+                        myboard = board-1;
                     }
                     ethCounterBoards[myboard][i].sum +=  data->eth_dev.crcErrorCnt[i];
                     printf(" Sum=%d", ethCounterBoards[myboard][i].sum);
@@ -321,7 +321,7 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
                 printf("\t i2cError %d on phy-port %d", data->eth_dev.i2c_error[i], i);
             }
             printf("\n");
-	     	fflush(stdout);
+            fflush(stdout);
 
         } break;
     }       
@@ -361,18 +361,18 @@ static void on_rec_emsapplcommon(opcprotman_opc_t opc, opcprotman_var_map_t* map
 static void s_print_emsapplcomm_core(eOdgn_coreapplication_t *appcore_ptr)
 {
     printf("\tRUNNING ST\n");
-	    printf("\t\tnumberofperiods=%lld\n ", appcore_ptr->runst.numberofperiods);
-	    printf("\t\tcumulativeabsoluteerrorinperiod=%lld\n ", appcore_ptr->runst.cumulativeabsoluteerrorinperiod);
-	    printf("\t\tmeanofabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.meanofabsoluteerrorinperiod);
+        printf("\t\tnumberofperiods=%lld\n ", appcore_ptr->runst.numberofperiods);
+        printf("\t\tcumulativeabsoluteerrorinperiod=%lld\n ", appcore_ptr->runst.cumulativeabsoluteerrorinperiod);
+        printf("\t\tmeanofabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.meanofabsoluteerrorinperiod);
 
-	    printf("\t\tmovingmeanofabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.movingmeanofabsoluteerrorinperiod);
-	    printf("\t\tmaxabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.maxabsoluteerrorinperiod);
-	    printf("\t\tminabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.minabsoluteerrorinperiod);
+        printf("\t\tmovingmeanofabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.movingmeanofabsoluteerrorinperiod);
+        printf("\t\tmaxabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.maxabsoluteerrorinperiod);
+        printf("\t\tminabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.minabsoluteerrorinperiod);
 
-	    printf("\t\texecutionoverflows[0]=%d\n ", appcore_ptr->runst.executionoverflows[0]);
-	    printf("\t\texecutionoverflows[1]=%d\n ", appcore_ptr->runst.executionoverflows[1]);
-	    printf("\t\texecutionoverflows[2]=%d\n ", appcore_ptr->runst.executionoverflows[2]);
-	    printf("\t\tdatagrams_failed_to_go_in_txsocket=%d\n ", appcore_ptr->runst.datagrams_failed_to_go_in_txsocket);
+        printf("\t\texecutionoverflows[0]=%d\n ", appcore_ptr->runst.executionoverflows[0]);
+        printf("\t\texecutionoverflows[1]=%d\n ", appcore_ptr->runst.executionoverflows[1]);
+        printf("\t\texecutionoverflows[2]=%d\n ", appcore_ptr->runst.executionoverflows[2]);
+        printf("\t\tdatagrams_failed_to_go_in_txsocket=%d\n ", appcore_ptr->runst.datagrams_failed_to_go_in_txsocket);
         printf("\t\tcantxfailuretimeoutsemaphore=%d\n ", appcore_ptr->runst.cantxfailuretimeoutsemaphore);
 
     printf("\tCONFIG ST\n");
@@ -381,22 +381,22 @@ static void s_print_emsapplcomm_core(eOdgn_coreapplication_t *appcore_ptr)
 static void s_print_emsapplcomm_ipnet(eOdgn_ipnet_t  *appipnet_ptr)
 {
     printf("\tIPNET INFO\n");
-	    printf("\t\tdatagrams_failed_to_go_in_rxfifo=%d\n ", appipnet_ptr->datagrams_failed_to_go_in_rxfifo);
-	    printf("\t\tdatagrams_failed_to_go_in_txosalqueue=%d\n ", appipnet_ptr->datagrams_failed_to_go_in_txosalqueue);
-	    printf("\t\tdatagrams_failed_to_be_retrieved_from_txfifo=%d\n ", appipnet_ptr->datagrams_failed_to_be_retrieved_from_txfifo);
-	    printf("\t\tdatagrams_failed_to_be_sent_by_ipal=%d\n ", appipnet_ptr->datagrams_failed_to_be_sent_by_ipal);
+        printf("\t\tdatagrams_failed_to_go_in_rxfifo=%d\n ", appipnet_ptr->datagrams_failed_to_go_in_rxfifo);
+        printf("\t\tdatagrams_failed_to_go_in_txosalqueue=%d\n ", appipnet_ptr->datagrams_failed_to_go_in_txosalqueue);
+        printf("\t\tdatagrams_failed_to_be_retrieved_from_txfifo=%d\n ", appipnet_ptr->datagrams_failed_to_be_retrieved_from_txfifo);
+        printf("\t\tdatagrams_failed_to_be_sent_by_ipal=%d\n ", appipnet_ptr->datagrams_failed_to_be_sent_by_ipal);
 }
 static void s_print_emsapplcomm_transceiver(eOdgn_embObjtransceiver_t  *apptrans_ptr)
 {
 
     printf("\tTRANSCEIVER INFO\n");
-	    printf("\t\trxinvalidropframes=%d\n ", apptrans_ptr->rxinvalidropframes);
-	    printf("\t\trxseqnumwrong=%d\n ", apptrans_ptr->rxseqnumwrong);
-	    printf("\t\tlostreplies=%d\n ", apptrans_ptr->lostreplies);
-	    printf("\t\tfailuresinloadofreplyropframe=%d\n ", apptrans_ptr->failuresinloadofreplyropframe);
-	    printf("\t\ttxropframeistoobigforthepacket=%d\n ", apptrans_ptr->txropframeistoobigforthepacket);
-	    printf("\t\tcannotloadropinregulars=%d\n ", apptrans_ptr->cannotloadropinregulars);
-	    printf("\t\tcannotloadropinoccasionals=%d\n ", apptrans_ptr->cannotloadropinoccasionals);
+        printf("\t\trxinvalidropframes=%d\n ", apptrans_ptr->rxinvalidropframes);
+        printf("\t\trxseqnumwrong=%d\n ", apptrans_ptr->rxseqnumwrong);
+        printf("\t\tlostreplies=%d\n ", apptrans_ptr->lostreplies);
+        printf("\t\tfailuresinloadofreplyropframe=%d\n ", apptrans_ptr->failuresinloadofreplyropframe);
+        printf("\t\ttxropframeistoobigforthepacket=%d\n ", apptrans_ptr->txropframeistoobigforthepacket);
+        printf("\t\tcannotloadropinregulars=%d\n ", apptrans_ptr->cannotloadropinregulars);
+        printf("\t\tcannotloadropinoccasionals=%d\n ", apptrans_ptr->cannotloadropinoccasionals);
 
 
 }
@@ -468,6 +468,7 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
 {
     eOdgn_motorstatusflags_t* data = (eOdgn_motorstatusflags_t*)recdata;
     uint8_t i;
+    char stroutput[300];
     
     switch(opc)
     {
@@ -488,7 +489,27 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
             {
                 if(data->motorlist[i] != 0)
                 {
-                    printf("\tmotor %d with err flags=0x%x\n", i, data->motorlist[i]);
+                    //printf("\tmotor %d with err flags=0x%x\n", i, data->motorlist[i]);
+                    sprintf(stroutput, "\tmotor %d with err flags=0x%x: ", i, data->motorlist[i]);
+
+                    if((data->motorlist[i] & DGN_MOTOR_FAULT_UNDERVOLTAGE) == DGN_MOTOR_FAULT_UNDERVOLTAGE)
+                        strcat("UNDERVOLTAGE, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_OVERVOLTAGE) == DGN_MOTOR_FAULT_OVERVOLTAGE)
+                        strcat("OVERVOLTAGE, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_EXTERNAL) == DGN_MOTOR_FAULT_EXTERNAL)
+                        strcat("EXTERNAL, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_OVERCURRENT) == DGN_MOTOR_FAULT_OVERCURRENT)
+                        strcat("OVERCURRENT, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_I2TFAILURE) == DGN_MOTOR_FAULT_I2TFAILURE)
+                        strcat("I2TFAILURE, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_CANRECWARNING) == DGN_MOTOR_FAULT_CANRECWARNING)
+                        strcat("CANRECWARNING, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_CANRECERROR) == DGN_MOTOR_FAULT_CANRECERROR)
+                        strcat("CANRECERROR, ", stroutput);
+                    else if((data->motorlist[i] & DGN_MOTOR_FAULT_CANRECHWOVERRUN) == DGN_MOTOR_FAULT_CANRECHWOVERRUN)
+                        strcat("CANRECHWOVERRUN ", stroutput);
+
+                    printf("%s\n", stroutput;)
                 }
             }
 
@@ -502,47 +523,47 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
 
 static void on_rec_errorLog(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {
-	eOdgn_errorlog_t *data = (eOdgn_errorlog_t *)recdata;
+    eOdgn_errorlog_t *data = (eOdgn_errorlog_t *)recdata;
 
-	printf("----- switch to error state because... \n");
-	printf("\t%s\n", data->errorstate_str);
+    printf("----- switch to error state because... \n");
+    printf("\t%s\n", data->errorstate_str);
 }
 
 static void on_rec_canQueueStatistics(opcprotman_opc_t opc, opcprotman_var_map_t* map, void* recdata)
 {
-	eOdgn_can_statistics_t* data = (eOdgn_can_statistics_t*)recdata;
-	uint8_t i;
+    eOdgn_can_statistics_t* data = (eOdgn_can_statistics_t*)recdata;
+    uint8_t i;
 
-	switch(opc)
-	{
+    switch(opc)
+    {
 
-		default:
-		case opcprotman_opc_set:
-		{   // nobody can order that to us
-			// we just dont do it ...
-		} break;
+        default:
+        case opcprotman_opc_set:
+        {   // nobody can order that to us
+            // we just dont do it ...
+        } break;
 
-		case opcprotman_opc_say:    // someboby has replied to a ask we sent
-		case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-		{
+        case opcprotman_opc_say:    // someboby has replied to a ask we sent
+        case opcprotman_opc_sig:    // someboby has spontaneously sent some data
+        {
 
-			printf("-----can queue statistics ---\n");
+            printf("-----can queue statistics ---\n");
 
-			printf("Config_mode: ");
-			for(i=0; i<2; i++)
-			{
-				printf("\t port %d ==> rx.min=%d, rx.max=%d, tx.min=%d, tx.max=%d\n\t",i, data->config_mode.stat[i].info_rx.min, data->config_mode.stat[i].info_rx.max,
-																						data->config_mode.stat[i].info_tx.min, data->config_mode.stat[i].info_tx.max);
-		    }
-			printf("\nRun_mode: ");
-			for(i=0; i<2; i++)
-			{
-				printf("\t port %d ==> rx.min=%d, rx.max=%d, tx.min=%d, tx.max=%d\n\t",i, data->run_mode.stat[i].info_rx.min, data->run_mode.stat[i].info_rx.max,
-																						data->run_mode.stat[i].info_tx.min, data->run_mode.stat[i].info_tx.max);
-		    }
-			fflush(stdout);
-		} break;
-	}
+            printf("Config_mode: ");
+            for(i=0; i<2; i++)
+            {
+                printf("\t port %d ==> rx.min=%d, rx.max=%d, tx.min=%d, tx.max=%d\n\t",i, data->config_mode.stat[i].info_rx.min, data->config_mode.stat[i].info_rx.max,
+                                                                                        data->config_mode.stat[i].info_tx.min, data->config_mode.stat[i].info_tx.max);
+            }
+            printf("\nRun_mode: ");
+            for(i=0; i<2; i++)
+            {
+                printf("\t port %d ==> rx.min=%d, rx.max=%d, tx.min=%d, tx.max=%d\n\t",i, data->run_mode.stat[i].info_rx.min, data->run_mode.stat[i].info_rx.max,
+                                                                                        data->run_mode.stat[i].info_tx.min, data->run_mode.stat[i].info_tx.max);
+            }
+            fflush(stdout);
+        } break;
+    }
 
 
 }
@@ -569,7 +590,7 @@ static void on_rec_canQueueStatistics(opcprotman_opc_t opc, opcprotman_var_map_t
 //            for(i=0; i<12; i++)
 //            {
 //
-//				printf("j %d cmd=0x%x last_two_are_equal=%d\n", i, data->jLastRecCmd[i], data->lastTwoEqual[i]);
+//              printf("j %d cmd=0x%x last_two_are_equal=%d\n", i, data->jLastRecCmd[i], data->lastTwoEqual[i]);
 //            }
 //
 //
@@ -590,7 +611,7 @@ static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* 
     
     if(!cmdena_rxsetPointCheck)
     {
-    	return;
+        return;
     }
 
 
@@ -612,48 +633,48 @@ static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* 
             for(i=0; i<4; i++)
             {
                 //printf("\tj %d: pos-deltaprognum 0x%x   pos-deltarxtime0x%x    imp-deltaprognum 0x%x   imp-deltarxtime0x%x\n", i,  data->position[i].deltaprognumber,  data->position[i].deltarxtime,  data->impedence[i].deltaprognumber, data->impedence[i].deltarxtime);
-				printf("\tj %d: pos-deltaprognum =", i );
-				if(data->position[i].deltaprognumber == INT32_MAX)
-				{
-					printf(" __ ");
-				}
-				else
-				{
-					printf(" %d ", data->position[i].deltaprognumber);
-				}
+                printf("\tj %d: pos-deltaprognum =", i );
+                if(data->position[i].deltaprognumber == INT32_MAX)
+                {
+                    printf(" __ ");
+                }
+                else
+                {
+                    printf(" %d ", data->position[i].deltaprognumber);
+                }
 
-				printf("    pos-deltarxtime =");
-				if(data->position[i].deltarxtime == UINT32_MAX)
-				{
-					printf(" __ ");
-				}
-				else
-				{
-					printf(" %d ", data->position[i].deltarxtime);
-				}
+                printf("    pos-deltarxtime =");
+                if(data->position[i].deltarxtime == UINT32_MAX)
+                {
+                    printf(" __ ");
+                }
+                else
+                {
+                    printf(" %d ", data->position[i].deltarxtime);
+                }
 
-					printf("    imp-deltaprognum =");
+                    printf("    imp-deltaprognum =");
 
-				if(data->impedence[i].deltaprognumber == INT32_MAX)
-				{
-					printf(" __ ");
-				}
-				else
-				{
-					printf(" %d ", data->impedence[i].deltaprognumber);
-				}
+                if(data->impedence[i].deltaprognumber == INT32_MAX)
+                {
+                    printf(" __ ");
+                }
+                else
+                {
+                    printf(" %d ", data->impedence[i].deltaprognumber);
+                }
 
 
-				printf("    imp-deltarxtime=");
+                printf("    imp-deltarxtime=");
 
-				if(data->impedence[i].deltarxtime == UINT32_MAX)
-				{
-					printf(" __ \n");
-				}
-				else
-				{
-					printf(" %d \n", data->impedence[i].deltarxtime);
-				}
+                if(data->impedence[i].deltarxtime == UINT32_MAX)
+                {
+                    printf(" __ \n");
+                }
+                else
+                {
+                    printf(" %d \n", data->impedence[i].deltarxtime);
+                }
 
             }
 
