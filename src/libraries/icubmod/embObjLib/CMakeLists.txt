@@ -7,15 +7,22 @@
 SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
-# defined in porting.h
-#add_definitions( -D_ICUB_CALLBACK_ -DEOCFG_NVSEP_MC_OVERRIDE -DEOCFG_NVSEP_SK_OVERRIDE)
+
+
+# defined in porting.h  -- update: now seems that the porting file doen not exists anymore....
 add_definitions( -D_ICUB_CALLBACK_)
 
 PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h ethResource.h)
 
+if(ICUB_COMPILE_EMBOBJ_LIBRARY)
+#--------------------------------------------------------#
+# download embObjlib from firmware repository
+include(updateSVNrepository.cmake)
+#--------------------------------------------------------#
+
 #--------------------------------------------------------#
 # using embObjLib.conf to define PATH VARIABLES
-include(embObjLib.conf)
+include(embObjLib.cmake)
 #--------------------------------------------------------#
 
 include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
@@ -27,9 +34,7 @@ include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
 
 # Common, architecture independent
 
-set(ICUB_INTERFACE_SOURCE	${EXTRA_FOLDER}/FeatureInterface.cpp
-#							${ICUB_INTERFACE_CORE_FOLDER}RobotInterfaceRemap.cpp
-							)
+set(ICUB_INTERFACE_SOURCE	${EXTRA_FOLDER}/FeatureInterface.cpp)
 
 # Network Variable configuration# Network Variable configuration
 set(NVS_EB_SOURCE 			${NVS_EB_SRC_FOLDER}eOcfg_EPs_board.c  
@@ -239,6 +244,9 @@ include_directories (   ${CMAKE_CURRENT_SOURCE_DIR}
   
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
+#add_dependencies(${PROJECTNAME} eBcode-download)
 TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
 
 icub_export_library(${PROJECTNAME})
+
+endif(ICUB_COMPILE_EMBOBJ_LIBRARY)

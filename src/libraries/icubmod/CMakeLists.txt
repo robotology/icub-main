@@ -7,6 +7,9 @@
 
 include(YarpPlugin)
 
+#unset(ICUB_COMPILE_EMBOBJ_LIBRARY\)
+set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE)
+
 project(icubmod)
 
 add_subdirectory(debugStream)
@@ -47,7 +50,6 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(canBusInertialMTB)
   add_subdirectory(canBusSkin)
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
-  add_subdirectory(embObjLib)
   add_subdirectory(embObjMotionControl)
   add_subdirectory(embObjSkin)
   add_subdirectory(embObjAnalog)
@@ -57,11 +59,15 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 
-IF (ICUB_COMPILE_COMAN_LIBRARY )
-# adding subdirectory for common library used by coman devices, if anyone
-# of them is selected
-  add_subdirectory(coman/board_iface)
-ENDIF (ICUB_COMPILE_COMAN_LIBRARY )
+#IF (ICUB_COMPILE_COMAN_LIBRARY )
+# adding subdirectory for common library used by coman devices, if anyone of them is selected
+#  add_subdirectory(coman/board_iface)
+#ENDIF (ICUB_COMPILE_COMAN_LIBRARY )
+
+IF (ICUB_COMPILE_EMBOBJ_LIBRARY)
+# adding subdirectory for embObj library used by EMS devices, if anyone of them is selected
+  add_subdirectory(embObjLib)
+ENDIF (ICUB_COMPILE_EMBOBJ_LIBRARY)
 
 icub_export_library(icubmod)
 
