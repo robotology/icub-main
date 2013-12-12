@@ -471,13 +471,6 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         lit  = tmp.begin();
         while(lit != lend)    // per ogni giunto del set
         {
-
-#define MSG0109 "WARNING-> Tapullo: per il polso e dita uso il checkMotionDone ... etc. (see comment in code)"
-#if defined(_MSC_VER)
-    #pragma message(MSG0109)
-#else
-    #warning MSG0109
-#endif
             yWarning() << " joint" << (*lit) << " using encoder";
             goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
             lit++;
