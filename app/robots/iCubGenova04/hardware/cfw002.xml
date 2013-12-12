@@ -11,7 +11,7 @@
   
   <device name="torso_skin" type="skinprototype">
       <params file="general.xml" />
-      <params file="hardware/analog/cfw002_9-eln.xml"/>
+      <params file="hardware/analog/cfw002_skin.xml"/>
   </device>
 </devices>
 

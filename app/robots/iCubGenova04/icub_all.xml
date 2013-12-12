@@ -37,7 +37,7 @@
     <devices file="wrappers/right_arm-VFTserver.xml" /> 
 
     <!-- HEAD -->	
-    <devices file="hardware/cfw002_0.xml" />
+    <devices file="hardware/cfw002.xml" />
     <devices file="wrappers/head-mcWrapper.xml" />
 
 
