@@ -67,4 +67,3 @@ add_subdirectory(dataSetPlayer)
 add_subdirectory(simFaceExpressions)
 add_subdirectory(fingersTuner)
 
-#123
