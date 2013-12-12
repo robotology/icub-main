@@ -22,7 +22,7 @@
   
         <module>
                 <name>yarpview</name>
-                <parameters>--name /PF3DTracker_viewer --x 320 --y 0 --RefreshTime 50</parameters>
+                <parameters>--name /PF3DTracker_viewer --x 640 --y 0 --RefreshTime 50</parameters>
                 <node>chico3</node>
                 <tag>PF3DTracker_viewer</tag>
         </module>
