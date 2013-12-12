@@ -489,27 +489,24 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
             {
                 if(data->motorlist[i] != 0)
                 {
-                    //printf("\tmotor %d with err flags=0x%x\n", i, data->motorlist[i]);
-                    sprintf(stroutput, "\tmotor %d with err flags=0x%x: ", i, data->motorlist[i]);
-
+                    sprintf(stroutput, "motor %d with err flags=0x%x: ", i, data->motorlist[i]);
                     if((data->motorlist[i] & DGN_MOTOR_FAULT_UNDERVOLTAGE) == DGN_MOTOR_FAULT_UNDERVOLTAGE)
-                        strcat("UNDERVOLTAGE, ", stroutput);
+                        strcat(stroutput, "UNDERVOLTAGE, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_OVERVOLTAGE) == DGN_MOTOR_FAULT_OVERVOLTAGE)
-                        strcat("OVERVOLTAGE, ", stroutput);
+                        strcat(stroutput, "OVERVOLTAGE, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_EXTERNAL) == DGN_MOTOR_FAULT_EXTERNAL)
-                        strcat("EXTERNAL, ", stroutput);
+                        strcat(stroutput, "EXTERNAL, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_OVERCURRENT) == DGN_MOTOR_FAULT_OVERCURRENT)
-                        strcat("OVERCURRENT, ", stroutput);
+                        strcat(stroutput, "OVERCURRENT, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_I2TFAILURE) == DGN_MOTOR_FAULT_I2TFAILURE)
-                        strcat("I2TFAILURE, ", stroutput);
+                        strcat(stroutput, "I2TFAILURE, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_CANRECWARNING) == DGN_MOTOR_FAULT_CANRECWARNING)
-                        strcat("CANRECWARNING, ", stroutput);
+                        strcat(stroutput, "CANRECWARNING, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_CANRECERROR) == DGN_MOTOR_FAULT_CANRECERROR)
-                        strcat("CANRECERROR, ", stroutput);
+                        strcat(stroutput, "CANRECERROR, ");
                     else if((data->motorlist[i] & DGN_MOTOR_FAULT_CANRECHWOVERRUN) == DGN_MOTOR_FAULT_CANRECHWOVERRUN)
-                        strcat("CANRECHWOVERRUN ", stroutput);
-
-                    printf("%s\n", stroutput;)
+                        strcat(stroutput, "CANRECHWOVERRUN ");
+                    printf("%s\n", stroutput);
                 }
             }
 
