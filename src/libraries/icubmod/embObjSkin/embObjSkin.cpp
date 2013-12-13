@@ -149,7 +149,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     init();
     res->goToRun();
-    printf("EmbObj Skin for board %d intatiated correctly\n", _fId.boardNum);
+    yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
     return true;
 }
 

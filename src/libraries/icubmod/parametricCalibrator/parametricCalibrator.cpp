@@ -63,7 +63,8 @@ parametricCalibrator::parametricCalibrator() :
     zeroPosThreshold(0),
     abortCalib(false),
     isCalibrated(false),
-    calibMutex(1)
+    calibMutex(1),
+    skipCalibration(false)
 {
 }
 
@@ -75,7 +76,6 @@ parametricCalibrator::~parametricCalibrator()
 
 bool parametricCalibrator::open(yarp::os::Searchable& config)
 {
-    yDebug() << "Entering parametricCalibrator::open()";
     yTrace();
     Property p;
     p.fromString(config.toString());
@@ -104,9 +104,10 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     }  
 
     // Check Vanilla = do not use calibration!
-    isVanilla =config.findGroup("GENERAL").find("vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
-    isVanilla = !!isVanilla;
-    yWarning() << "embObjMotionControl: vanilla " << isVanilla;
+    skipCalibration =config.findGroup("GENERAL").find("skipCalibration").asBool() ;// .check("Vanilla",Value(1), "Vanilla config");
+    skipCalibration = !!skipCalibration;
+    if(skipCalibration )
+        yWarning() << "parametric calibrator: skipping calibration!! This option was set in general.xml file.";
 
     int nj = 0;
     if(p.findGroup("GENERAL").check("joints"))
@@ -176,7 +177,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
     xtmp = p.findGroup("CALIB_ORDER");
-    yDebug() << "Group size " << xtmp.size() << "\nvalues: " << xtmp.toString().c_str();
+//    yDebug() << "Group size " << xtmp.size() << "\nvalues: " << xtmp.toString().c_str();
     std::list<int>  tmp;
     for(int i=1; i<xtmp.size(); i++)
     {
@@ -190,8 +191,6 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
         }
         joints.push_back(tmp);
     }
-
-    yDebug() << "parametricCalibrator::open() complete ";
     return true;
 }
 
@@ -331,7 +330,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     original_pid=new Pid[nj];
     limited_pid =new Pid[nj];
 
-    if(isVanilla)
+    if(skipCalibration)
         yWarning() << deviceName << "Vanilla flag is on!! Did the set safe pid but skipping calibration!!";
     else
         yWarning() << deviceName << "\n\nGoing to calibrate!!!!\n\n";
@@ -379,7 +378,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         // Calibrazione
         //
 
-        if(isVanilla)     // if this flag is on, fake calibration
+        if(skipCalibration)     // if this flag is on, fake calibration
         {
             Bit++;
             continue;
@@ -624,7 +623,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     //TODO fix checkMotionDone in such a way that does not depend on timing!
     Time::delay(0.01);
     
-    if(isVanilla)
+    if(skipCalibration)
     {
         yWarning() << deviceName << "Vanilla flag is on!! Faking park!!";
         return true;

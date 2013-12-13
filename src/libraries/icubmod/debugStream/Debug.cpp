@@ -32,6 +32,7 @@ std::ofstream DebugStream::Debug::ferr;
 
  bool DebugStream::Debug::colored_output(getenv("ICUB_COLORED_OUTPUT") && (strcmp(getenv("ICUB_COLORED_OUTPUT"), "1") == 0));
  bool DebugStream::Debug::verbose_output(getenv("ICUB_VERBOSE_OUTPUT") && (strcmp(getenv("ICUB_VERBOSE_OUTPUT"), "1") == 0));
+ bool DebugStream::Debug::trace_output(getenv("ICUB_TRACE_ENABLE") && (strcmp(getenv("ICUB_TRACE_ENABLE"), "1") == 0));
 
 #else // WIN32
 
@@ -44,7 +45,7 @@ std::ofstream DebugStream::Debug::ferr;
 
  bool DebugStream::Debug::colored_output(false);
  bool DebugStream::Debug::verbose_output(false);
-
+ bool DebugStream::Debug::trace_output(false);
 #endif // WIN32
 
 
@@ -55,8 +56,8 @@ void DebugStream::Debug::print_output(MsgType t,
                                          const char *func)
 {
     switch (t) {
-#ifdef DEBUG
     case TraceType:
+        if(trace_output)
         if (ftrc.is_open()) {
             if (verbose_output) {
                 ftrc << "T: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
@@ -86,7 +87,7 @@ void DebugStream::Debug::print_output(MsgType t,
             }
         }
         break;
-#endif
+
     case WarningType:
         if (ferr.is_open()) {
             if (verbose_output) {

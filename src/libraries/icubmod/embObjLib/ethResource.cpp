@@ -105,7 +105,7 @@ bool ethResources::open(FEAT_ID request)
     else
     {
         ret = true;
-        yDebug() << "Transceiver succesfully initted.";
+//        yDebug() << "Transceiver succesfully initted.";
     }
 
     boardNum = request.boardNum;
@@ -140,10 +140,6 @@ int ethResources::deregisterFeature(FEAT_ID request)
     yTrace() << request.boardNum;
     transMutex.wait();
     how_many_features--;
-    if(1 == how_many_features)
-        yWarning() << "1 feature left";
-    if(0 == how_many_features)
-        yWarning() << "0 feature left";
     int ret = how_many_features;
     transMutex.post();
     return ret;

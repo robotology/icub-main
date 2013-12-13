@@ -295,10 +295,18 @@ embObjMotionControl::~embObjMotionControl()
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
     std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
-        str=config.toString().c_str();
+    if(!config.findGroup("GENERAL").find("verbose").isBool())
+    {
+        yWarning() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
+        str=" ";
+    }
     else
-        str="\n";
+    {
+        if(config.findGroup("GENERAL").find("verbose").asBool())
+            str=config.toString().c_str();
+        else
+            str=" ";
+    }
     yTrace() << str;
 
     // Tmp variables
@@ -334,14 +342,17 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
 
     // Check input parameters
-    bool correct=true;
-    //correct &= config.check("Period");
-
     sprintf(info, "embObjMotionControl - referred to EMS: %s", _fId.EMSipAddr.string);
 
-    // Check Vanilla = do not use calibration!
-    isVanilla =config.findGroup("GENERAL").find("Vanilla").asInt() ;// .check("Vanilla",Value(1), "Vanilla config");
-    isVanilla = !!isVanilla;
+    // Check useRawEncoderData = do not use calibration!
+    if(!config.findGroup("GENERAL").find("useRawEncoderData").isBool())
+    {
+        yWarning() << " useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
+        useRawEncoderData = false;
+    }
+
+    if(config.findGroup("GENERAL").find("useRawEncoderData").asBool())
+        yWarning() << "eo MotionControl using raw data from encoders! Be careful";
 
     // Saving User Friendly Id
     memset(_fId.name, 0x00, SIZE_INFO);
@@ -490,7 +501,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             tmp_A2E = xtmp.get(i).asDouble();
 
-            if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration
+            if(useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
             {
             	tmp_A2E > 0 ? _encoderconversionfactor[i-1] = 1 : _encoderconversionfactor[i-1] = -1;
                 _angleToEncoder[i-1] = 1;
@@ -524,7 +535,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
-            if(isVanilla)   // do not use any configuration, this is intended for doing the very first calibration
+            if(useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
                 _zeros[i-1] = 0;
             else
             	_zeros[i-1] = xtmp.get(i).asDouble();
@@ -1002,7 +1013,7 @@ bool embObjMotionControl::init()
     // invia la configurazione dei MOTORI   //
     //////////////////////////////////////////
 
-    yDebug() << "Sending motor MAX CURRENT ONLY";
+//    yDebug() << "Sending motor MAX CURRENT ONLY";
     totConfigSize = 0;
     if( EOK_HOSTTRANSCEIVER_capacityofrop < mConfigSize )
     {
@@ -1037,7 +1048,7 @@ bool embObjMotionControl::init()
             Time::delay(0.01);
         }
     }
-    printf("EmbObj Motion Control for board %d istantiated correctly\n", _fId.boardNum);
+    yTrace() << "EmbObj Motion Control for board " << _fId.boardNum << " istantiated correctly\n";
     return true;
 }
 

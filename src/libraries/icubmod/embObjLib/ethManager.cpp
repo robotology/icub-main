@@ -111,7 +111,7 @@ ethResources* TheEthManager::getResource(yarp::os::Searchable &config)
     if(NULL == newRes)
     {
         // device doesn't exist yet, create it
-        yDebug() << "Creating EMS device with IP " << remote_address;
+        yTrace() << "Creating EMS device with IP " << remote_address;
         newRes = new ethResources;
         if(!newRes->open(config))
         {
@@ -208,7 +208,7 @@ ethResources *TheEthManager::requestResource(FEAT_ID *request)
     if(NULL == newRes)
     {
         // device doesn't exist yet, create it
-        yDebug() << "Creating EMS device with IP " << request->EMSipAddr.string;
+        yTrace() << "Creating EMS device with IP " << request->EMSipAddr.string;
         newRes = new ethResources;
         if(!newRes->open(*request))
         {
@@ -334,7 +334,7 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
      bool addLUT_result =  boards_map.insert(std::pair<eOnvEP_t, FEAT_ID>(id->ep, *id)).second;
 
     // Check result of insertion
-    addLUT_result ? yDebug() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
+    addLUT_result ? yTrace() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
                     yError() << "NON ok add lut element for board " << id->boardNum << " and ep " << id->ep;
 }
 
@@ -356,7 +356,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
 
         case 1:
         {
-            yDebug() << "FEAT_ID element removed succesfully from the map" << element.name;
+            yTrace() << "FEAT_ID element removed succesfully from the map" << element.name;
             ret = true;
             break;
         }
@@ -1154,7 +1154,7 @@ void EthReceiver::run()
     bool allEmsInConfigstate = true; //if true means all ems are in config state
 
 
-    yError() << "Starting udp RECV thread with prio "<< getPriority() << "\n";
+    //yDebug() << "Starting udp RECV thread with prio "<< getPriority() << "\n";
 
     ACE_Time_Value recvTimeOut;
     fromDouble(recvTimeOut, 0.01);

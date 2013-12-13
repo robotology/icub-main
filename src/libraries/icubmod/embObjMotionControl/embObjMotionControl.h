@@ -214,7 +214,7 @@ public IDebugInterfaceRaw
 
 {
 private:
-    int           isVanilla;
+    bool          useRawEncoderData;
     int           tot_packet_recv, errors;
 
     bool initted;

@@ -461,7 +461,7 @@ void AnalogServer::run()
 
 bool AnalogServer::close()
 {
-    fprintf(stderr, "AnalogServer::Close\n");
+    yTrace() << "AnalogServer::Close";
     RateThread::stop();
     detachAll();
     removeHandlers();

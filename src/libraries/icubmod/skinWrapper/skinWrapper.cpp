@@ -161,7 +161,6 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
 
 bool skinWrapper::close()
 {
-    std::cout<<"Closing skin part "<< id << endl;
     if (NULL != analogServer)
     {
         delete analogServer;
@@ -170,7 +169,6 @@ bool skinWrapper::close()
         analog=0;
 
     driver.close();
-    std::cout<<"Done closing skin part " << id << "!" << endl;
     return true;
 }
 

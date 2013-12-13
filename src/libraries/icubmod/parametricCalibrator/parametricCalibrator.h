@@ -119,7 +119,7 @@ private:
     bool    abortCalib;
     bool    abortParking;
     bool    isCalibrated;
-    int     isVanilla;
+    bool    skipCalibration;
 
     std::string deviceName;
 };
