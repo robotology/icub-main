@@ -60,9 +60,8 @@ bool iCub::optimization::minVolumeEllipsoid(const deque<Vector> &points,
     while (true)
     {
         M=Qt*pinv(Q*U*Qt)*Q;
-        int j=0;
-        double max=-1e9;
-        for (int row=0; row<M.rows(); row++)
+        int j=0; double max=M(j,j);
+        for (int row=1; row<M.rows(); row++)
         {
             if (M(row,row)>max)
             {
