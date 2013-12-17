@@ -76,7 +76,7 @@
         <module>
                 <name>actionsRenderingEngine</name>
                 <node>icubbrain1</node>
-                <parameters></parameters>
+                <parameters>--from config_Lisboa.ini</parameters>
                 <tag>actionsRendererModule</tag>
         </module>
         <module>
