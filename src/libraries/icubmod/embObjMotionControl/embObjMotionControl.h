@@ -214,7 +214,6 @@ public IDebugInterfaceRaw
 
 {
 private:
-    bool          useRawEncoderData;
     int           tot_packet_recv, errors;
 
     bool initted;
@@ -245,11 +244,13 @@ private:
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
     double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
-    bool  *checking_motiondone;                 /* flag telling if I' m already waiting for motion done */
+    bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
 
     // TODO doubled!!! optimize using just one of the 2!!!
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
+
+    bool          useRawEncoderData;
 
     //debug purpose
     

@@ -299,12 +299,6 @@ int TheEthManager::releaseResource(FEAT_ID resource)
         iterator++;
     }
 
-    if(EMS_list.size() == 0 )
-        yError() << "EMS_list.size() = 0";
-
-    if(boards_map.size() == 0 )
-        yError() << "boards_map.size = 0";
-
     if(     (EMS_list.size() == 0 ) && (boards_map.size() != 0 )
         ||  (EMS_list.size() != 0 ) && (boards_map.size() == 0 ) )
     {
@@ -314,6 +308,7 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     if(!ret)
         yError() << "EthManager: Trying to release a non existing resource" << resource.name << " for boardId " << resource.boardNum << "maybe already deleted?";
 
+    // ret = -1 means that the singleton is not needed anymore
     if( (EMS_list.size() == 0 ) || (boards_map.size() == 0 ) )
         ret = -1;
 
@@ -1237,7 +1232,7 @@ void EthReceiver::run()
 
     }//while(!isStopping)
 
-    yError() << "Exiting recv thread";
+//    yError() << "Exiting recv thread";
     return;
 }
 #endif

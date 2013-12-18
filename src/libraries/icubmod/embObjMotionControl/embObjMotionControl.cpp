@@ -278,6 +278,8 @@ embObjMotionControl::embObjMotionControl() :
     _calibrated       = NULL;
     // NV stuff
     NVnumber          = 0;
+
+    useRawEncoderData = false;
 }
 
 embObjMotionControl::~embObjMotionControl()
@@ -344,15 +346,30 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     // Check input parameters
     sprintf(info, "embObjMotionControl - referred to EMS: %s", _fId.EMSipAddr.string);
 
-    // Check useRawEncoderData = do not use calibration!
-    if(!config.findGroup("GENERAL").find("useRawEncoderData").isBool())
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_raw = config.findGroup("GENERAL").find("useRawEncoderData");
+
+    if(use_raw.isNull())
     {
-        yWarning() << " useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
         useRawEncoderData = false;
     }
+    else
+    {
+        if(!use_raw.isBool())
+        {
+            yWarning() << " useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
+            useRawEncoderData = false;
+        }
+        else
+        {
+            useRawEncoderData = use_raw.asBool();
+            if(useRawEncoderData)
+                yWarning() << "eo MotionControl using raw data from encoders! Be careful. \n" <<
+                              "\t  DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! See 'useRawEncoderData' param in config file";
+        }
+    }
 
-    if(config.findGroup("GENERAL").find("useRawEncoderData").asBool())
-        yWarning() << "eo MotionControl using raw data from encoders! Be careful";
+//    yWarning() << "useRawEncoderData is " << useRawEncoderData;
 
     // Saving User Friendly Id
     memset(_fId.name, 0x00, SIZE_INFO);
@@ -619,7 +636,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
     else
     {
-    	yDebug( ) << "TORQUE PIDS group found for board" << _fId.boardNum;
+        //yDebug( ) << "TORQUE PIDS group found for board" << _fId.boardNum;
         _tpidsEnabled=true;
         for(j=0; j<_njoints; j++)
         {

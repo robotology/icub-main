@@ -169,7 +169,7 @@ bool eoRequestsQueue::cleanTimeouts(eoThreadId id)
         {
             if((*it) == id)
             {
-                printf("Cleaning timeouts for thread Id %d, req %d\n", id, i);
+//                printf("Cleaning timeouts for thread Id %d, req %d\n", id, i);
 
                 eoThreadEntry *th = threadPool->getThreadTable(id);
                 th->timeout();
