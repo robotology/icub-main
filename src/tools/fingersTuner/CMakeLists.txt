@@ -11,7 +11,7 @@ yarp_idl_to_dir(${PROJECTNAME}.thrift ${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB header include/*.h)
 file(GLOB source src/*.cpp)
-set(idl fingersTuner.thrift)
+set(idl ${PROJECTNAME}.thrift)
 source_group("Header Files" FILES ${header})
 source_group("Source Files" FILES ${source})
 source_group("IDL Files"    FILES ${idl})
