@@ -15,6 +15,7 @@ gaze control as well as the dynamics computed for the whole body.
 - \ref iKinGazeCtrl
 - \ref wholeBodyDynamics
 - \ref gravityCompensator
+- \ref icub_fingersTuner
 
 \section howto How to run the Application
 Customize the file ./scripts/*.template for your specific platform.
