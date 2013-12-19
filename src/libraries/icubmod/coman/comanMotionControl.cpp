@@ -461,21 +461,21 @@ bool comanMotionControl::init()
 
     // read default value of motor config for j 1 TODO: do it for all joints
     bool ret = true;
-    McBoard *joint_p = getMCpointer(1);
+    McBoard *joint_p = getMCpointer(0);
     if(joint_p != NULL)
     {
-    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask_j1, 2) );
-    printf("\n\njoint %d got motor config 0x%0X\n", 1, motor_config_mask_j1);
+        ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask_j1, 2) );
+        printf("\n\njoint %d got motor config 0x%0X\n", 1, motor_config_mask_j1);
 
-    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2_j1, 2) );
-    printf("joint %d got motor config2  0x%0X\n\n\n", 1, motor_config_mask2_j1);
+        ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2_j1, 2) );
+        printf("joint %d got motor config2  0x%0X\n\n\n", 1, motor_config_mask2_j1);
 
-    getPidRaw(1, &pid_j1);
-//    printf("pos pid: kp %f, ki %f, kd %f \n", pid_j1.kp, pid_j1.ki, pid_j1.kd);
+        getPidRaw(1, &pid_j1);
+        //    printf("pos pid: kp %f, ki %f, kd %f \n", pid_j1.kp, pid_j1.ki, pid_j1.kd);
 
-    getTorquePidRaw(1, &pidTorque_j1);
-//	printf("trq pid: kp %f, ki %f, kd %f \n", pidTorque_j1.kp, pidTorque_j1.ki, pidTorque_j1.kd);
-    //
+        getTorquePidRaw(1, &pidTorque_j1);
+        //	printf("trq pid: kp %f, ki %f, kd %f \n", pidTorque_j1.kp, pidTorque_j1.ki, pidTorque_j1.kd);
+        //
     }
 
 
@@ -1540,6 +1540,17 @@ bool comanMotionControl::setPositionModeRaw(int j)
             yDebug() << "joint "<< j << "stopping torque mode";
             ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)));   // setItem returns 0 if ok, 2 if error
 
+            ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask_j1, sizeof(motor_config_mask_j1)) );
+            printf("joint %d set motor config 0x%0X\n", j, motor_config_mask_j1);
+
+            ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2_j1, sizeof(motor_config_mask2_j1)) );
+
+            setPidRaw(1, pid_j1);
+            setTorquePidRaw(1, pidTorque_j1);
+
+//            	ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
+            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+
             if(!ret)
                 yError() << "error while stopping torque mode";
             break;
@@ -1553,7 +1564,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             Time::delay(0.01);
 
         	// TESTING!! only joint 1 for now
-            if(j == 1)
+            if(j == 0)
             {
             	ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask_j1, sizeof(motor_config_mask_j1)) );
             	printf("joint %d set motor config 0x%0X\n", j, motor_config_mask_j1);
@@ -1573,7 +1584,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             disablePidRaw(j);
             break;
     }
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, 1, POSITION_MOVE));      // j+1 per solita differenza di corrispondenze tra bId e n' giunto, 1 = ON
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, 1, POSITION_MOVE));      //  1 = ON
 
     if(ret)
         _controlMode[j] = VOCAB_CM_POSITION;

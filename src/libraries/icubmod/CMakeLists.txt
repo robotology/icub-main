@@ -59,15 +59,15 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
 endif()
 END_PLUGIN_LIBRARY(icubmod)
 
-#IF (ICUB_COMPILE_COMAN_LIBRARY )
+if(ICUB_COMPILE_COMAN_LIBRARY )
 # adding subdirectory for common library used by coman devices, if anyone of them is selected
-#  add_subdirectory(coman/board_iface)
-#ENDIF (ICUB_COMPILE_COMAN_LIBRARY )
+  add_subdirectory(coman/comanLib)
+endif(ICUB_COMPILE_COMAN_LIBRARY )
 
-IF (ICUB_COMPILE_EMBOBJ_LIBRARY)
+if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 # adding subdirectory for embObj library used by EMS devices, if anyone of them is selected
   add_subdirectory(embObjLib)
-ENDIF (ICUB_COMPILE_EMBOBJ_LIBRARY)
+endif(ICUB_COMPILE_EMBOBJ_LIBRARY)
 
 icub_export_library(icubmod)
 

@@ -7,7 +7,7 @@
 
 #include <yarp/os/Time.h>
 #include "comanDevicesHandler.hpp"
-#include "Boards_iface.h"
+//#include "Boards_iface.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -25,8 +25,10 @@ comanDevicesHandler::comanDevicesHandler()
 
 comanDevicesHandler::~comanDevicesHandler()
 {
+    if(_usedBy != 0)
+        yError() << "Singleton closed while is still used by " <<  _usedBy << "devices. This souldn't happens\n";
     close();
-};
+}
 
 comanDevicesHandler *comanDevicesHandler::instance()
 {

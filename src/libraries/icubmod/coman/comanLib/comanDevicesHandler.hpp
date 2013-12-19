@@ -25,7 +25,7 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 
-#include "Boards_iface.h"
+#include <Boards_iface.h>
 
 // No need to include this class into yarp::dev namespace.
 class comanDevicesHandler: public yarp::dev::DeviceDriver
