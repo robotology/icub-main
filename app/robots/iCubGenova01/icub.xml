@@ -76,5 +76,15 @@
     <devices file="calibrators/right_arm_calib.xml" />
     <devices file="calibrators/left_hand_calib.xml" /> 
     <devices file="calibrators/right_hand_calib.xml" />
+    
+    <!-- Motor parameters and Joint coupling information-->
+    <devices file="hardware/motorSpecs/icub_left_arm.xml" /> 
+    <devices file="hardware/motorSpecs/icub_left_hand.xml" /> 
+    <devices file="hardware/motorSpecs/icub_right_arm.xml" />
+    <devices file="hardware/motorSpecs/icub_right_hand.xml" />
+    <devices file="hardware/motorSpecs/icub_left_leg.xml" /> 
+    <devices file="hardware/motorSpecs/icub_right_leg.xml" /> 
+    <devices file="hardware/motorSpecs/icub_head.xml" />
+    <devices file="hardware/motorSpecs/icub_torso.xml" />
 </robot> 
 
