@@ -22,6 +22,7 @@ cfw2can 2 2 2BLL.1.57.out.S
 cfw2can 2 3 4DC.1.19.out.S
 
 // right_hand
+// Note: temp. changed to CAN9 in 2013-10
 cfw2can 6 5 4DC.1.28.out.S
 cfw2can 6 7 4DC.1.30.out.S
 
