@@ -32,34 +32,42 @@
 /**
 * iCub parts class.
 */
-const int NUM_ICUB_PARTS = 6;
+static const int NUM_ICUB_PARTS = 6;
 class iCubPart
 {
 private:
+    std::string part_names[NUM_ICUB_PARTS];
     int num_part;
+
 public:
     iCubPart ()
     {
+        int cnt=0;
+        part_names[cnt++]="torso";
+        part_names[cnt++]="head";
+        part_names[cnt++]="left_arm";
+        part_names[cnt++]="right_arm";
+        part_names[cnt++]="left_leg";
+        part_names[cnt++]="right_leg";
         num_part = 0; //by default the part is torso
     }
-    iCubPart (std::string part)
+    iCubPart (const std::string &part)
     {
-        char* part_names[NUM_ICUB_PARTS] =  {"torso","head","left_arm","right_arm","left_leg","right_leg"};
-        for (int i=0; i< 6; i++)
-            if (part==part_names[i]) num_part=i;
+        for (int i=0; i<6; i++)
+            if (part==part_names[i])
+                num_part=i;
     }
     iCubPart (int p)
     {
         num_part = p;
     }
-    operator int()
+    operator int ()
     {
         return num_part;
     }
     operator std::string ()
     {
-        char* part_names[NUM_ICUB_PARTS] =  {"torso","head","left_arm","right_arm","left_leg","right_leg"};
-        return std::string(part_names[num_part]);
+        return part_names[num_part];
     }
 };
 

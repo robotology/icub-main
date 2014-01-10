@@ -73,7 +73,6 @@ iCubTestReport* iCubTestMotorsStictionIncremental::run()
             char tmpString[200];
             while (!complete)
             {
-                iCubDriver::ResultCode result;
                 m_icubDriver.getEncPos(m_part,0,pos_start);
                 m_icubDriver.startOpenloopCmd(m_part,0,pwm);
                 yarp::os::Time::delay(1);
