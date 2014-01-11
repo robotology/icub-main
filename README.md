@@ -1,15 +1,8 @@
-====================================================================
-   
-	  Welcome to the iCub repository!
 
-====================================================================
+iCub
+====
 
-Organization.
-
-The officially supported iCub build is contained in the main directory.
-User contributed software is stored in contrib.
-
-See main/COPYNG and main/AUTHORS for licensing info, authors and copyright holders.
+See COPYING and AUTHORS for licensing info, authors and copyright holders.
 
 The iCub manual contains more details about the structure of the 
 repository and how the code is organized. The manual is available
