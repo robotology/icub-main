@@ -5,14 +5,6 @@ file(GLOB conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/*.ini ${CMAKE_CURRENT_SOURCE_DIR
 file(GLOB confpos ${CMAKE_CURRENT_SOURCE_DIR}/conf/positions/*.txt)
 file(GLOB confgui ${CMAKE_CURRENT_SOURCE_DIR}/conf/skinGui/*.ini)
 
-if (__ICUB_INSTALL_APPLICATIONS__)
-icub_app(${appname})
-icub_app_install(${appname} FILES ${scripts} DESTINATION scripts)
-icub_app_install(${appname} FILES ${conf})
-icub_app_install(${appname} FILES ${confpos} DESTINATION positions)
-icub_app_install(${appname} FILES ${confgui} DESTINATION skinGui)
-endif()
-
 yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${confpos} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/positions)
 yarp_install(FILES ${confgui} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname}/skinGui)

@@ -9,26 +9,6 @@ PROJECT (iCub)
 # If we include them here, sub-projects can be configured a bit faster.
 # Only a few demo projects are included so far.
 
-if (__ICUB_INSTALL_APPLICATIONS__)
-####
-# Setup app directory, this is a target called "app" that is added to the main build.
-# first set up some files in the application directory
-icub_app(app)
-endif()
-
-## policy file go to the icub application destination directory
-icub_app_install(app
-                 ROOT
-                 FILES "${CMAKE_CURRENT_SOURCE_DIR}/ICUB_ROOT.ini")
-
-## some other files go inside the "application directory"/app 
-#icub_app_install(app
-#                 ROOT
-#                 FILES "${CMAKE_CURRENT_SOURCE_DIR}/ymanager.ini;${CMAKE_CURRENT_SOURCE_DIR}/icubapp.py;${CMAKE_CURRENT_SOURCE_DIR}/app.txt.template"
-#                 DESTINATION app
-#                 FORCE_UPDATE)
-#################################
-
 ### Go through single applications
 
 add_subdirectory(default)

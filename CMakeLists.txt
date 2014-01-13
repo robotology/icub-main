@@ -114,20 +114,7 @@ file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
 
 # Some options: mostly cache variables
-option(ICUB_INSTALL_APPLICATIONS "Turn on/off install for applications" OFF)
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
-
-if (ICUB_INSTALL_APPLICATIONS)
-   if (NOT env_icub_root)
-       message("No ICUB_ROOT environment variable set, disabling application install rules.")
-       set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
-   else()
-       set(__ICUB_INSTALL_APPLICATIONS__ TRUE)
-   endif()
-else()
-   set(__ICUB_INSTALL_APPLICATIONS__ FALSE)
-endif()
-
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
 mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 
@@ -144,17 +131,10 @@ set(ENABLE_icubmod_controlboardwrapper2 TRUE CACHE BOOL "enable controlboardWrap
 ###################### End options and definitions
 
 ########### populate applications
-#if (__ICUB_INSTALL_APPLICATIONS__)
-    add_subdirectory(app)
-#endif(__ICUB_INSTALL_APPLICATIONS__)
+add_subdirectory(app)
 
 # Create everything needed to build our executables.
 add_subdirectory(src)
-
-############ generate custom target that exports all applications
-if (__ICUB_INSTALL_APPLICATIONS__)
-    icub_app_all()
-endif(__ICUB_INSTALL_APPLICATIONS__)
 
 ########### propagate version info to targets
 get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
