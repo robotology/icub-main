@@ -1,5 +1,5 @@
 
-option(ICUB_INSTALL_ALL_ROBOTS "Enable installation of all robots" ON)
+option(ICUB_INSTALL_ALL_ROBOTS "Enable installation of all robots" OFF)
 
 set(ROBOT_NAME "$ENV{YARP_ROBOT_NAME}" CACHE PATH
     "Name of your robot")
