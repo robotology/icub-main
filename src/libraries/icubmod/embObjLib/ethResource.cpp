@@ -36,6 +36,7 @@ infoOfRecvPkts::infoOfRecvPkts()
     last_recvPktTime = 0.0;
 
     totPktLost = 0;
+    currPeriodPktLost = 0;
     stat_ageOfFrame = new StatExt();
     stat_periodPkt = new StatExt();
     stat_precessPktTime = new StatExt();
@@ -146,7 +147,7 @@ int ethResources::deregisterFeature(FEAT_ID request)
 }
 
 
-// Invia un pacchetto sul socket, usato dal thread di invio. Può inviare qualunque cosa, no check su contenuto.
+// Invia un pacchetto sul socket, usato dal thread di invio. Puo' inviare qualunque cosa, no check su contenuto.
 // int ethResources::send(void *data, size_t len)
 // {
 //     return ethManager->send(data, len, remote_dev);
@@ -181,7 +182,7 @@ void infoOfRecvPkts::setBoardNum(int boardnum)
 
 void infoOfRecvPkts::printStatistics(void)
 {
-    yDebug()<< "STAT board "<< board<< " tot pkt lost = " << totPktLost;
+    yDebug()<< "STAT board "<< board<< " curr pkt lost = " << currPeriodPktLost<< "   tot pkt lost = " << totPktLost;
     yDebug()<< "STAT board "<< board<< " age of frame: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
     yDebug()<< "STAT board "<< board<< " period of pkt: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
     yDebug()<< "STAT board "<< board<< " pkt proccess time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values\n";
@@ -192,7 +193,7 @@ void infoOfRecvPkts::clearStatistics(void)
     stat_ageOfFrame->clear();
     stat_periodPkt->clear();
     stat_precessPktTime->clear();
-    totPktLost = 0;
+    currPeriodPktLost = 0;
     initted = false;
 }
 
@@ -224,8 +225,9 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
         //1) check seq num
         if(curr_seqNum != last_seqNum+1)
         {
-            yError()<< "LOST PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!!Tot lost pkt=" << totPktLost;
+            yError()<< "LOST PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
             totPktLost++;
+            currPeriodPktLost++;
         }
 
         //2) check ageOfPkt
@@ -291,8 +293,8 @@ void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
      double curr_timeBeforeParsing = yarp::os::Time::now();
 
-     // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane più chiaro da leggere. Il mutex è lo stesso
-     // perchè questa classe (ethResource) deriva da hostTransceiver
+     // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane piu' chiaro da leggere. Il mutex e' lo stesso
+     // perche' questa classe (ethResource) deriva da hostTransceiver
      hostTransceiver::onMsgReception(data, size);
      //     transMutex.post();
 

@@ -112,7 +112,8 @@ public:
     uint64_t      last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
     double        last_recvPktTime; //time of last recv pkt
 
-    int           totPktLost;       //total pakt lost
+    int           totPktLost;       //total pkt lost from start up
+    int           currPeriodPktLost; // total pkt lost during thsi period
     StatExt       *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
     StatExt       *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
     StatExt       *stat_precessPktTime; //values are stored in sec
