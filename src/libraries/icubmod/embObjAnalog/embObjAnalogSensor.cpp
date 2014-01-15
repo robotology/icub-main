@@ -35,7 +35,7 @@ const int REPORT_PERIOD=6; //seconds
 const double BCAST_STATUS_TIMEOUT=6; //seconds
 
 #define NUMCHANNEL_STRAIN 6
-#define NUMCHANNEL_MAIS 16
+#define NUMCHANNEL_MAIS 15
 #define FORMATDATA_STRAIN 16
 #define FORMATDATA_MAIS 8
 
@@ -490,7 +490,7 @@ bool embObjAnalogSensor::getFullscaleValues()
 
         yDebug() << "Fullscale values for board " << _fId.boardNum << "are:";
         for(int k=0; k<12; k++)
-            yDebug() << "channel " << fullscale_values.data[k] << "full scale value " << fullscale_values.data[k];
+            yDebug() << "channel " <<k << "full scale value " << fullscale_values.data[k];
 
         for(int i=0; i<_channels; i++)
         {
@@ -681,7 +681,6 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
             ret = false;
         }
     }
-
     return ret;
 }
 
@@ -738,18 +737,26 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 {
     // Called by eoCallback.
 
-    mutex.wait();
-
     eOas_arrayofupto36bytes_t  *as_array = (eOas_arrayofupto36bytes_t*) as_array_raw;
+    uint8_t size = eo_array_Size((EOarray *)as_array);
+    if(0 == size)
+    {
+        return false;
+    }
+
+    mutex.wait();
     double *_buffer = data->getBuffer();
 
-    for(int k=0; k<_channels; k++)
+    //NOTE: here i suppose that size of array is equal to num of channel or to 0 if sensor did not send something
+    //this is an agreement with firmware.
+    for(int k=0; k<size; k++)
     {
         uint8_t val = *((uint8_t*)eo_array_At((EOarray*) as_array, k));
         // Get the kth element of the array
         _buffer[k] = (double)val;
     }
     mutex.post();
+
     return AS_OK;
 }
 
