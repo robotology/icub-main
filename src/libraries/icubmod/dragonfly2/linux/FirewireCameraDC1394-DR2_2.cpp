@@ -243,11 +243,17 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     }
     */
 
-    // if previous instance crashed we need to clean up 
+    // if previous instance crashed we need to clean up
     // allocated bandwidth -- Added Lorenzo Natale, 9/2/2010.
+#ifdef _ENABLE_LEGACY_STACK_
+    // ifdeffed by Alberto Cardellino on 08/01/2014 in
+    // order to enable compatibility with new firewire stack into kernel
+    // and avoid recompiling the kernel itself with old legacy support.
+    // Pay attention to see if the cleanup problem shows up again
     const int BANDWIDTH_MAX=0x7FFFFFFF;
     error=dc1394_iso_release_bandwidth(m_pCamera, BANDWIDTH_MAX);
     if (manage(error)) { fprintf(stderr,"LINE: %d\n",__LINE__); return false; }
+#endif
 
 	dc1394speed_t isoSpeed;
 	error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
