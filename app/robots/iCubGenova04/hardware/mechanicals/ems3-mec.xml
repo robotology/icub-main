@@ -33,7 +33,7 @@
         <!--                      0             1               2            3      -->
         <param name="Max">        10            160.8         80            106         </param>
         <param name="Min">        -95.5         0             -37           15          </param>
-        <param name="Currents">   6500          6500          6500          6500        </param>
+        <param name="Currents">   5000          5000          5000          5000        </param>
     </group>
 
     <group name="IMPEDANCE">
@@ -45,18 +45,18 @@
 
     <group name="PIDS">
         <!--                 Proportional  Derivative     Integral   Integral Limit      PWM Limit     scale factor   offset 	-->
-        <param name="Pid0">   5             0               0             0                6500             10          0          </param>
-        <param name="Pid1">   5             0               0             0                6500             10          0          </param>
-        <param name="Pid2">   5             0               0             0                6500             10          0          </param>
-        <param name="Pid3">   5             0               0             0                6500             10          0          </param>
+        <param name="Pid0">   5             0               0             0                10000             10          0          </param>
+        <param name="Pid1">   5             0               0             0                10000             10          0          </param>
+        <param name="Pid2">   5             0               0             0                10000             10          0          </param>
+        <param name="Pid3">   5             0               0             0                10000             10          0          </param>
     </group>
 
 
     <group name="TORQUE_PIDS">
-        <param name="TPid0">  200  	       0   	    	    0	         0    		  6500    	   10  	       0          </param>
-        <param name="TPid1">  200  	       0	            0		     0    		  6500    	   10  	       0 	  </param>
-        <param name="TPid2">  200 	       0   		        0   		 0    		  6500    	   10  	       0 	  </param>
-        <param name="TPid3">  500          0   		        0   		 0    		  6500    	   10  	       0 	  </param>
+        <param name="TPid0">  200  	       0   	    	    0	         0    		  10000    	   10  	       0          </param>
+        <param name="TPid1">  200  	       0	            0		     0    		  10000    	   10  	       0 	  </param>
+        <param name="TPid2">  200 	       0   		        0   		 0    		  10000    	   10  	       0 	  </param>
+        <param name="TPid3">  500          0   		        0   		 0    		  10000    	   10  	       0 	  </param>
     </group>
 
 </params>
