@@ -124,6 +124,7 @@ bool eoThreadFifo::push(eoThreadId id)      // add an element at the end of the 
 
 eoRequestsQueue::eoRequestsQueue(int num_msgs)
 {
+    yTrace() << "num msg=" << num_msgs;
     num_of_messages = num_msgs;
     threadPool = new eoThreadArray;
     requests   = new eoThreadFifo[num_of_messages];
@@ -148,11 +149,14 @@ eoThreadFifo *eoRequestsQueue::getFifo(int nv_index)
 // append requests
 void eoRequestsQueue::append(const eoRequest &rqst)
 {
+    yTrace() << "th_id=" << rqst.threadId << " nv_prog_num=" << rqst.nvid << " joint=" << rqst.joint;
     eoThreadFifo *fifo=getFifo(rqst.nvid);
 
     if(!fifo)
+    {
+        yError() << "eoRequestsQueue::append: fifo is null for th_id=" << rqst.threadId << " nvid=" << rqst.nvid << " joint=" << rqst.joint;
         return;
-
+    }
     fifo->push(rqst.threadId);
     whole_pendings++;
 }

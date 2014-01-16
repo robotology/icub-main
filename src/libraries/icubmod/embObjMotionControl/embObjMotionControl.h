@@ -313,7 +313,7 @@ public:
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
 
-    eoThreadEntry *appendWaitRequest(int j, uint16_t nvid);
+    eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);
 
     bool alloc(int njoints);

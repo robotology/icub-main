@@ -219,31 +219,10 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    switch(_fId.boardNum)
+    if((_fId.boardNum == 5) || (_fId.boardNum == 7) || (_fId.boardNum == 9))
     {
-    case 1:
-        _fId.ep = endpoint_mc_leftupperarm;
-        break;
-    case 2:
-        _fId.ep = endpoint_mc_leftlowerarm;
-        break;
-    case 3:
-        _fId.ep = endpoint_mc_rightupperarm;
-        break;
-    case 4:
-        _fId.ep = endpoint_mc_rightlowerarm;
-        break;
-    case 6:
-        _fId.ep = endpoint_mc_leftupperleg;
-        break;
-    case 8:
-        _fId.ep = endpoint_mc_rightupperleg;
-        break;
-    default:
-        _fId.ep = 255;
         yError () << "\n embObjAnalogSensor: Found non-existing board identifier number" << _fId.boardNum << "!!!";
         return false;
-        break;
     }
 
     ethManager = TheEthManager::instance();
@@ -311,12 +290,11 @@ bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
 bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
 {
     // Here measure is supposed to be a Torque
-    eOnvID_t nvid = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) ch, jointNVindex_jinputs__externallymeasuredtorque);
-
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, ch, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
                 //    example measure * 32768.0/12.0;
     // measure should to saturated to resolution -2.0 to avoid casting problem.
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
-    return res->addSetMessage(nvid, (eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (uint8_t*) &meas_torque);
+    return res->addSetMessage(protid, (uint8_t*) &meas_torque);
 }
 
 bool embObjVirtualAnalogSensor::close()

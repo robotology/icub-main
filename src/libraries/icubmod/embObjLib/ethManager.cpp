@@ -320,17 +320,38 @@ int TheEthManager::releaseResource(FEAT_ID resource)
 void TheEthManager::addLUTelement(FEAT_ID *id)
 {
     yTrace() << id->boardNum;
+    //in maps use board num starts from 0 so
+    eOnvBRD_t nvBrdNum = id->boardNum; //featIdBoardNum2nvBoardNum(id->boardNum);
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     /* Defined the var addLUT_result to have the true/false result of the insert operation...It helped catching a bug.
      * It fails if the element is already present. This can happen if someone tries to read an element with
      * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
      * with zeros.
      */
-     bool addLUT_result =  boards_map.insert(std::pair<eOnvEP_t, FEAT_ID>(id->ep, *id)).second;
+     bool addLUT_result =  boards_map.insert(std::pair< std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>(std::make_pair<eOnvBRD_t, eOnvEP8_t>(nvBrdNum, id->ep), *id)).second;
 
     // Check result of insertion
-    addLUT_result ? yTrace() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
+    addLUT_result ? yDebug() << ">>>>>>>>>>>> ok add lut element for board " << id->boardNum << " and ep " << id->ep :
                     yError() << "NON ok add lut element for board " << id->boardNum << " and ep " << id->ep;
+
+
+    std::pair<eOnvBRD_t, eOnvEP8_t > key (nvBrdNum, id->ep);
+    try
+        {
+            // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
+            /* The bug is caused by the fact that the [] version will create an unitialized element inside the map,
+             * causing the return of a wrong pointer.
+             * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
+             * element is already present preventing the map to be corrected.
+             */
+        void * ret = boards_map.at(key).handle;
+        }
+        catch (const std::out_of_range& errMsg)
+        {
+                yError() << "dopo inserimento LUT ho errore!!!";
+        }
+
+    printf("EXIT addLUTelement\n");
 }
 
 bool TheEthManager::removeLUTelement(FEAT_ID element)
@@ -338,7 +359,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     yTrace() << element.boardNum;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     bool ret = false;
-    int n = (int) boards_map.erase(element.ep);
+    int n = (int) boards_map.erase(std::make_pair<eOnvBRD_t, eOnvEP8_t>(element.boardNum, element.ep));
 
     switch(n)
     {
@@ -366,11 +387,12 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     return ret;
 }
 
-void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
+void *TheEthManager::getHandle(eOnvBRD_t boardnum, eOnvEP8_t ep)
 {
 //     managerMutex.wait();
     void * ret = NULL;
     static int _error = 0;
+    std::pair<eOnvBRD_t, eOnvEP8_t > key (boardnum, ep);
 
     try
     {
@@ -380,12 +402,12 @@ void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
          * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
          * element is already present preventing the map to be corrected.
          */
-        ret = boards_map.at(ep).handle;
+        ret = boards_map.at(key).handle;
     }
     catch (const std::out_of_range& errMsg)
     {
         if(0 == (_error%1000) )
-            yError() << "Got a message from EP " << ep << "but boards_map does not contains any related class pointer yet";
+            yError() << "Got a message from boardNum "<< boardnum << " and EP " << ep << "but boards_map does not contains any related class pointer yet";
 
         _error++;
     }
@@ -393,12 +415,14 @@ void *TheEthManager::getHandleFromEP(eOnvEP_t ep)
     return ret;
 }
 
-FEAT_ID TheEthManager::getFeatInfoFromEP(eOnvEP_t ep)
+FEAT_ID TheEthManager::getFeatInfo(eOnvBRD_t boardnum, eOnvEP8_t ep)
 {
 //    yTrace();
     FEAT_ID ret_val;
+    std::pair<eOnvBRD_t, eOnvEP8_t > key (boardnum, ep);
+
 //     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run ... // nn più vero dopo le ultime ottimizzazioni
-    ret_val = boards_map[ep];
+    ret_val = boards_map.at(key);
 //     managerMutex.post();
     return ret_val;
 }
@@ -565,7 +589,7 @@ TheEthManager::~TheEthManager()
 
     if(boards_map.size() != 0)
     {
-        std::map<eOnvEP_t, FEAT_ID>::iterator mIt;
+        std::map<std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>::iterator mIt;
         for(mIt = boards_map.begin(); mIt!=boards_map.end(); mIt++)
         {
             yError() << "Feature " << mIt->second.name << "was not correctly removed from map.., removing it now in the EthManager destructor.";

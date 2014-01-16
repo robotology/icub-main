@@ -46,8 +46,8 @@
 #include "EoCommon.h"
 #include "EOnv_hid.h"
 
-#include "eOcfg_nvsEP_as_overridden.h"
-#include "eOcfg_nvsEP_as_hid.h"
+#include "EoProtocolAS_overridden_fun.h"
+//#include "eOcfg_nvsEP_as_hid.h"
 
 
 #ifdef _ICUB_CALLBACK_
@@ -79,9 +79,9 @@
 // //     eo_array_Reset();
 // }
 
-static void handle_data(FeatureType f_type, const EOnv* nv, const eOabstime_t time, const uint32_t sign);
+static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescriptor_t* rd);
 
-extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 
 #define MSG010980 "WARNING-> strain status calib values update strong iCubInterface"
@@ -93,10 +93,10 @@ extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues(eOcfg_nvsEP_a
 
 //#warning "strain status calib values update strong iCubInterface"
 //     printf("iCub AS status calib values Callback\n");
-    handle_data(AnalogStrain, nv, time, sign);
+    handle_data(AnalogStrain, nv, rd);
 }
 
-extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues(eOcfg_nvsEP_as_strainNumber_t sxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_as_strain_status_uncalibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "strain status UNcalib values update strong iCubInterface"
 #define MSG010989 "WARNING-> strain status UNcalib values update strong iCubInterface"
@@ -106,16 +106,16 @@ extern void eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues(eOcfg_nvsEP
     #warning MSG010989
 #endif
 
-    handle_data(AnalogStrain, nv, time, sign);
+    handle_data(AnalogStrain, nv, rd);
 }
 
 
-extern void eo_cfg_nvsEP_as_hid_UPDT_Mxx_mstatus__the15values(eOcfg_nvsEP_as_maisNumber_t mxx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(AnalogMais, nv, time, sign);
+    handle_data(AnalogMais, nv, rd);
 }
 
-static void handle_data(FeatureType f_type, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescriptor_t* rd)
 {
     //int i;
 
@@ -128,8 +128,9 @@ static void handle_data(FeatureType f_type, const EOnv* nv, const eOabstime_t ti
 #endif
     FEAT_ID id;
     id.type = f_type;
-    id.ep = nv->ep;
-    handle_AS_data(&id, nv->rem);
+    id.ep = eo_nv_GetEP8(nv);
+    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
+    handle_AS_data(&id, nv->ram);
 
 
     //i=0;

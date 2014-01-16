@@ -40,11 +40,21 @@
 
 	// Boards configurations
 
-#include "eOcfg_nvsEP_mn.h"
-#include "eOcfg_nvsEP_mc.h"
-#include "eOcfg_nvsEP_sk.h"
+//#include "eOcfg_nvsEP_mn.h"
+//#include "eOcfg_nvsEP_mc.h"
+//#include "eOcfg_nvsEP_sk.h"
+#include "EOnvSet.h"
 
-#include "eOcfg_EPs_board.h"
+//#include "eOcfg_EPs_board.h"
+#include "eOprot_b01.h"
+#include "eOprot_b02.h"
+#include "eOprot_b03.h"
+#include "eOprot_b04.h"
+#include "eOprot_b05.h"
+#include "eOprot_b06.h"
+#include "eOprot_b07.h"
+#include "eOprot_b08.h"
+#include "eOprot_b09.h"
 
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/DeviceDriver.h>
@@ -59,20 +69,21 @@ void checkDataForDebug(uint8_t *data, uint16_t size);
 class hostTransceiver
 {
 protected:
-    EOhostTransceiver    *hosttxrx;
-    EOtransceiver        *pc104txrx;
-    EOnvsCfg             *pc104nvscfg;
-    uint32_t              localipaddr;
-    uint32_t              remoteipaddr;
-    uint16_t              ipport;
-    EOpacket             *p_RxPkt;
+    EOhostTransceiver       *hosttxrx;
+    EOtransceiver           *pc104txrx;
+    eOhosttransceiver_cfg_t hosttxrxcfg;
+    EOnvSet                 *nvset;
+    uint32_t                localipaddr;
+    uint32_t                remoteipaddr;
+    uint16_t                ipport;
+    EOpacket                *p_RxPkt;
 
 public:
     hostTransceiver();
     ~hostTransceiver();
 
-    const EOconstvector*  EPvector;
-    eOuint16_fp_uint16_t  EPhash_function_ep2index;
+//    const EOconstvector*  EPvector;
+//    eOuint16_fp_uint16_t  EPhash_function_ep2index;
     yarp::os::Semaphore   transMutex;
 
 
@@ -87,15 +98,15 @@ public:
         ----
         Note: size is calculated internally by getting Network Variable associated metadata
         */
-    bool addSetMessage( eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data);
-    bool addSetMessageWithSignature(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data, uint32_t sig);   //as above, but with signature
+    bool addSetMessage( eOprotID32_t protid, uint8_t* data);
+    bool addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig);   //as above, but with signature
 
     /*! This method add a Get type rop in the next ropframe.
         Parameters are:
         nvid: unique network variable identifier got with the appropriate eo_cfg_nvsEP_XXX_NVID_Get
         endpoint: enum of the enpoint it has to operate into
         */
-    bool addGetMessage( eOnvID_t nvid, eOnvEP_t endPoint);
+    bool addGetMessage( eOprotID32_t protid);
 
     /*! Read data from the transceiver internal memory.
         Parameters are:
@@ -103,10 +114,10 @@ public:
         endpoint: enum of the enpoint it has to operate into
         data: pointer to 
      */
-    bool readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
+    bool readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size);
 
     /* ! This method echoes back a value that has just been sent from the hostTransceiver to someone else */
-    bool readSentValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size);
+    bool readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t* size);
 
     // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
     bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
@@ -121,16 +132,18 @@ protected:
      * This pointer will be modified by the getPack function to point to the TX buffer.
      * No need to allocate memory here */
     void getTransmit(uint8_t **data, uint16_t *size);
+private:
+    bool addSetMessage__( eOprotID32_t protid, uint8_t* data, uint32_t signature);
 
 public:
-    bool getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size);
-    EOnv* getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot);
+    bool getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size);
+    EOnv* getNVhandler(eOprotID32_t protid, EOnv* nv);
 
 
-    void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
+    //void getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function);
 
-    uint16_t getNVnumber(int boardNum, eOnvEP_t ep);
-    uint16_t translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid);
+    uint16_t getNVnumber(int boardNum, eOnvEP8_t ep);
+    uint32_t translate_NVid2index(int boardNum, eOprotID32_t protoid);
 };
 
 #endif  // include-guard

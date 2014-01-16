@@ -129,13 +129,14 @@ private:
 
     static TheEthManager          *handle;
     bool                          keepGoingOn;
-    bool 						  emsAlreadyClosed;
+    bool                          emsAlreadyClosed;
 
     // Data for EMS handling
 public:
 //    int                           nBoards;            //!< Number of EMS instantiated
     // Creare un metodo get!! questi devono essere usabili ma non modificabili da altri.
-    map<eOnvEP_t, FEAT_ID>        boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
+    //map<eOnvEP_t, FEAT_ID>        boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
+    map<std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>        boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
     std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
     ACE_INET_Addr                 local_addr;         // sarebbe privato.
 
@@ -235,14 +236,14 @@ public:
      *  @param  ep  The desired EndPoint
      *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
      */
-    void *getHandleFromEP(eOnvEP_t ep);
+    void *getHandle(eOnvBRD_t boardnum, eOnvEP8_t ep);
 
     /*! @fn     FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
      *  @brief  Get the struct of FEAT_ID type with useful information about the class handling the desired EndPoint.
      *  @param  ep  The desired EndPoint
      *  @return std::list<ethResources *>Struct with info
      */
-    FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
+    FEAT_ID getFeatInfo(eOnvBRD_t boardnum, eOnvEP8_t ep);
 
     // Methods for UDP socket handling
 private:

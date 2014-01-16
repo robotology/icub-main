@@ -130,7 +130,7 @@ bool ethResources::registerFeature(FEAT_ID *request)
 {
     yTrace() << request->boardNum;
     transMutex.wait();
-    getHostData(&(request->EPvector), &(request->EPhash_function) );
+    //getHostData(&(request->EPvector), &(request->EPhash_function) );
     how_many_features++;
     transMutex.post();
     return true;
@@ -147,7 +147,7 @@ int ethResources::deregisterFeature(FEAT_ID request)
 }
 
 
-// Invia un pacchetto sul socket, usato dal thread di invio. Puo' inviare qualunque cosa, no check su contenuto.
+// Invia un pacchetto sul socket, usato dal thread di invio. Può inviare qualunque cosa, no check su contenuto.
 // int ethResources::send(void *data, size_t len)
 // {
 //     return ethManager->send(data, len, remote_dev);
@@ -226,7 +226,6 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
         if(curr_seqNum != last_seqNum+1)
         {
             yError()<< "LOST PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
-            totPktLost++;
             currPeriodPktLost++;
         }
 
@@ -293,8 +292,8 @@ void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 {
      double curr_timeBeforeParsing = yarp::os::Time::now();
 
-     // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane piu' chiaro da leggere. Il mutex e' lo stesso
-     // perche' questa classe (ethResource) deriva da hostTransceiver
+     // transMutex.wait();  // spostato all'interno della funzione qui sotto, rimane più chiaro da leggere. Il mutex è lo stesso
+     // perchè questa classe (ethResource) deriva da hostTransceiver
      hostTransceiver::onMsgReception(data, size);
      //     transMutex.post();
 
@@ -315,20 +314,18 @@ ACE_INET_Addr   ethResources::getRemoteAddress()
 bool ethResources::goToConfig(void)
 {
     yTrace() << info;
-    eOnvID_t nvid;
 //    EOnv tmp;
 
     // attiva il loop di controllo
-    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used but there for API compatibility
-    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
     eOmn_appl_state_t  desired  = applstate_config;
-    if(!addSetMessage( nvid, endpoint_mn_appl, (uint8_t*) &desired))
+    if(!addSetMessage(protid, (uint8_t*) &desired))
     {
         yError() << "for var goToConfig";
         return false;
     }
-    double          getLastRecvMsgTimestamp(void);
+    //double          getLastRecvMsgTimestamp(void);
 
     isInRunningMode = false;
     return true;
@@ -337,15 +334,13 @@ bool ethResources::goToConfig(void)
 bool ethResources::goToRun(void)
 {
     yTrace() << info;
-    eOnvID_t nvid;
 //    EOnv tmp;
 
     // attiva il loop di controllo
-    eOcfg_nvsEP_mn_applNumber_t dummy = 0;  // not used, here for API compatibility
-    nvid = eo_cfg_nvsEP_mn_appl_NVID_Get(endpoint_mn_appl, dummy, applNVindex_cmmnds__go2state);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
     eOmn_appl_state_t  desired  = applstate_running;
-    if(!addSetMessage( nvid, endpoint_mn_appl, (uint8_t*) &desired))
+    if(!addSetMessage(protid, (uint8_t*) &desired))
     {
         yError() << "for var goToRun";
         return false;
@@ -365,12 +360,11 @@ bool ethResources::clearPerSigMsg(void)
     yTrace() << info;
 
     // Configure values to be sent regularly
-    eOnvID_t                  nvid_ropsigcfgassign;       // nvID
     eOmn_ropsigcfg_command_t  ropsigcfgassign;
     EOarray                   *array;                     // array containing nvids to be signalled
 
     //get nvid
-    nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, 0, commNVindex__ropsigcfgcommand);
+    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
     //prepare data
     ropsigcfgassign.array.head.capacity = NUMOFROPSIGCFG;
     ropsigcfgassign.array.head.itemsize = sizeof(eOropSIGcfg_t);
@@ -378,7 +372,7 @@ bool ethResources::clearPerSigMsg(void)
     ropsigcfgassign.cmmnd = ropsigcfg_cmd_clear;
 
     //send set command
-    if(!addSetMessage( nvid_ropsigcfgassign, endpoint_mn_comm, (uint8_t*) &ropsigcfgassign))
+    if(!addSetMessage(protid_ropsigcfgassign, (uint8_t*) &ropsigcfgassign))
     {
         yError() << "in clearing periodic signal msg";
         return false;

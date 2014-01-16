@@ -59,11 +59,9 @@
 #include "EOnv_hid.h"
 
 #include "EoSkin.h"
-#include "eOcfg_nvsEP_sk.h"
-#include "eOcfg_nvsEP_sk_hid.h"
 
-#include "eOcfg_nvsEP_sk_overridden.h"
-#include "eOcfg_nvsEP_sk_emsboard_usr_hid.h"
+#include "EoProtocolSK_overridden_fun.h"
+//#include "eOcfg_nvsEP_sk_emsboard_usr_hid.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -106,13 +104,13 @@ FILE *outFile1, *outFile2;
 //  CALLBACK VERA!!
 // --------------------------------------------------------------------------------------------------------------------
 
-extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, const EOnv *nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "skin strong callback iCubInterface"
 //  printf("new callback\n");
 
 
-    EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->rem;
+    EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->ram;
 //    int i;
 
     s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
@@ -158,10 +156,11 @@ extern void eo_cfg_nvsEP_sk_hid_UPDT_sstatus__arrayof10canframe(uint16_t n, cons
 //    void *featList;
     FEAT_ID id;
     id.type = Skin;
-    id.ep = nv->ep;
+    id.ep = eo_nv_GetEP8(nv);
+    id.boardNum = nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
 
 
-//  printf("iCub Callback, looking for ep %d\n", id.ep);
+  //printf("skin iCub Callback, looking for ep %d\n", id.ep);
 //   s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(sk_array);
     findAndFill(&id, (char *)sk_array);
     }
@@ -216,7 +215,7 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
     int i, cardId, valid, mtbId, triangle, msgtype;
 
     EOarray_of_10canframes sk_array;
-    memcpy(&sk_array, nv->rem, sizeof(EOarray_of_10canframes));
+    memcpy(&sk_array, nv->ram, sizeof(EOarray_of_10canframes));
 
     
 

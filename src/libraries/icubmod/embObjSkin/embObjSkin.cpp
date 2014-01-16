@@ -95,7 +95,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         cardId.push_back (id);
     }
 
-
     //elements are:
     // sensorsNum=16*12*cardId.size();  // orig
     sensorsNum=16*12*7;		// max num of card
@@ -114,24 +113,20 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     _fId.boardNum  = 255;
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
-        _fId.boardNum =val.asInt();
-    else
-        printf("No board number found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-    switch(_fId.boardNum)
     {
-    case 2:
-        _fId.ep = endpoint_sk_emsboard_leftlowerarm;
-        yDebug() << "Opening eoSkin class for left lower arm (eb2)\n";
-        break;
-    case 4:
-        _fId.ep = endpoint_sk_emsboard_rightlowerarm;
-        yDebug() << "Opening eoSkin class for right lower arm (eb4)\n";
-        break;
-    default:
-        yError() << "Requested non-existing Skin endpoint for board" << _fId.boardNum;
-        return false;
+        _fId.boardNum =val.asInt();
+        if((_fId.boardNum != 2) && (_fId.boardNum != 4))
+        {
+            yError() << "Requested non-existing Skin endpoint for board" << _fId.boardNum;
+            return false;
+        }
     }
+    else
+    {
+        yError() << "skin: No board number found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+        return false;
+     }
+    _fId.ep = eoprot_endpoint_skin;
 
     //N.B.: use a dynamic_cast to extract correct interface when using this pointer
     _fId.handle = (this);
@@ -146,8 +141,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         yError() << "EMS device not instantiated... unable to continue";
         return false;
     }
-
     init();
+
     res->goToRun();
     yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
     return true;
@@ -226,8 +221,6 @@ bool EmbObjSkin::init()
     eOmn_ropsigcfg_command_t    *ropsigcfgassign;
     EOarray                     *array;
     eOropSIGcfg_t               sigcfg;
-    eOcfg_nvsEP_mn_commNumber_t dummy = 0;
-    eOnvID_t                    nvid;
     EOnv                        *nvRoot;
     EOnv                        nvtmp;
 
@@ -235,34 +228,32 @@ bool EmbObjSkin::init()
     eoy_sys_Initialise(NULL, NULL, NULL);
 #endif
 
-    eOcfg_nvsEP_sk_endpoint_t ep = (eOcfg_nvsEP_sk_endpoint_t) _fId.ep;
-    nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)ep, dummy, skinNVindex_sconfig__sigmode);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
 
     uint8_t dat = 1;
 
-   res->addSetMessage(nvid, ep, &dat);
+   res->addSetMessage(protoid, &dat);
 
     //
     //	config regulars
     //
     EOnv nvtmp_ropsigcfgassign;
-    eOnvID_t nvid_ropsigcfgassign = eo_cfg_nvsEP_mn_comm_NVID_Get(endpoint_mn_comm, dummy, commNVindex__ropsigcfgcommand);
-    cnv = res->getNVhandler(endpoint_mn_comm, nvid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
-    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->loc;
+    eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
+
+    cnv = res->getNVhandler(protoid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
+    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->ram;
     array = (EOarray*) &ropsigcfgassign->array;
     eo_array_Reset(array);
     array->head.capacity = NUMOFROPSIGCFG;
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
-    sigcfg.ep = _fId.ep;
-    nvid = eo_cfg_nvsEP_sk_NVID_Get((eOcfg_nvsEP_sk_endpoint_t)sigcfg.ep, 0, skinNVindex_sstatus__arrayof10canframe);
-    sigcfg.id = nvid;
-    sigcfg.plustime = 0;
+    protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_status_arrayof10canframes);
+    sigcfg.id32 = protoid;
     eo_array_PushBack(array, &sigcfg);
 
     // Send message
-    if( !res->addSetMessage(nvid_ropsigcfgassign, endpoint_mn_comm, (uint8_t *) array) )
+    if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
     {
         yError() << "while setting rop sig cfg";
     }
@@ -276,6 +267,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
     uint8_t           i, triangle = 0;
     EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
     static int error = 0;
+
 
     for(i=0; i<sk_array->head.size; i++)
     {

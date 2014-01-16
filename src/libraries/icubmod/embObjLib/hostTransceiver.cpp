@@ -22,11 +22,15 @@ using namespace std;
 #include "EOYtheSystem.h"
 
 #include "EoCommon.h"
+#include "EOnv.h"
 #include "EOnv_hid.h"
 #include "EOrop.h"
+#include "EoProtocol.h"
 #include "Debug.h"
 
 #include <yarp/os/Time.h>
+
+#include "EoProtocol.h"
 
 #define _DEBUG_ON_FILE_
 #undef _DEBUG_ON_FILE_
@@ -58,10 +62,7 @@ hostTransceiver::hostTransceiver() : transMutex(1)
     p_RxPkt     = NULL;
     hosttxrx    = NULL;
     pc104txrx   = NULL;
-    pc104nvscfg = NULL;
-
-    EPvector = NULL;
-    EPhash_function_ep2index = NULL;
+    nvset       = NULL;
 }
 
 hostTransceiver::~hostTransceiver()
@@ -73,7 +74,7 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
 {
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
-    eOhosttransceiver_cfg_t hosttxrxcfg;
+
     // 02-may13: so that the newly introduced field sizes contains the EOK_HOSTTRANSCEIVER_* values
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr   = _remoteipaddr;
@@ -84,40 +85,31 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     switch(_board_n)
     {
     case 1:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb1;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb1_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b01_nvsetDEVcfg;
         break;
     case 2:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb2;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb2_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b02_nvsetDEVcfg;
         break;
     case 3:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb3;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb3_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b03_nvsetDEVcfg;
         break;
     case 4:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb4;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb4_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b04_nvsetDEVcfg;
         break;
     case 5:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb5;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb5_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b05_nvsetDEVcfg;
         break;
     case 6:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb6;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb6_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b06_nvsetDEVcfg;
         break;
     case 7:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb7;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb7_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b07_nvsetDEVcfg;
         break;
     case 8:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb8;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb8_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b08_nvsetDEVcfg;
         break;
     case 9:
-        hosttxrxcfg.vectorof_endpoint_cfg = eo_cfg_EPs_vectorof_eb9;
-        hosttxrxcfg.hashfunction_ep2index = eo_cfg_nvsEP_eb9_fptr_hashfunction_ep2index;
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b09_nvsetDEVcfg;
         break;
     default:
         yError() << "Got a non existing board number" << _board_n;
@@ -134,14 +126,19 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
         return false;
 
     // retrieve teh transceiver
-    pc104txrx    = eo_hosttransceiver_Transceiver(hosttxrx);
+    pc104txrx    = eo_hosttransceiver_GetTransceiver(hosttxrx);
     if(pc104txrx == NULL)
         return false;
 
     // retrieve the nvscfg
-    pc104nvscfg  = eo_hosttransceiver_NVsCfg(hosttxrx);
-    if(pc104nvscfg == NULL)
+//    pc104nvscfg  = eo_hosttransceiver_NVsCfg(hosttxrx);
+//    if(pc104nvscfg == NULL)
+//        return false;
+    nvset = eo_hosttransceiver_GetNVset(hosttxrx);
+    if(NULL == nvset)
+    {
         return false;
+    }
 
 //    p_TxPkt = eo_packet_New(_pktsize);
 //    if(p_TxPkt == NULL)
@@ -151,9 +148,9 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     if(p_RxPkt == NULL)
         return false;
 
-    // save board specific configs for later use (they may be needed by some callbacks)
-    EPvector = hosttxrxcfg.vectorof_endpoint_cfg;
-    EPhash_function_ep2index = hosttxrxcfg.hashfunction_ep2index;
+//    // save board specific configs for later use (they may be needed by some callbacks)
+//    EPvector = hosttxrxcfg.vectorof_endpoint_cfg;
+//    EPhash_function_ep2index = hosttxrxcfg.hashfunction_ep2index;
     return true;
 }
 
@@ -170,21 +167,22 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
     return ret;
 }
 
-bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data)
+
+bool hostTransceiver::addSetMessage__( eOprotID32_t protid, uint8_t* data, uint32_t signature)
 {
     EOnv          nv;
 
-    if(nvid == EOK_uint16dummy)
+    if(protid == EOK_uint16dummy)
     {
         yError() << "eo HostTransceiver: called addSetMessage with invalid nvid ";
         return false;
     }
 
-    EOnv *nvRoot = getNVhandler(endPoint, nvid, &nv);
+    EOnv *nv_ptr = getNVhandler(protid, &nv);
 
-    if(NULL == nvRoot)
+    if(NULL == nv_ptr)
     {
-        yError() << "Unable to get pointer to desired NV with id" << nvid;
+        yError() << "addSetMessage__: Unable to get pointer to desired NV with protid" << protid;
         return false;
     }
 
@@ -198,15 +196,15 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
         return false;
     }
 
-    eOropdescriptor_t ropdesc;
-    ropdesc.configuration = eok_ropconfiguration_basic;
-    ropdesc.configuration.plustime = 1;
+    eOropdescriptor_t ropdesc = {0};
+
+    //ropdesc.control = {0};
+    ropdesc.control.plustime = 1;
     ropdesc.ropcode = eo_ropcode_set;
-    ropdesc.ep = endPoint;
-    ropdesc.id = nvid;
-    ropdesc.size = 0;
-    ropdesc.data = NULL;
-    ropdesc.signature = 0;
+    ropdesc.id32 = protid;
+    ropdesc.size = eo_nv_Size(&nv);
+    ropdesc.data = data;
+    ropdesc.signature = signature;
 
     transMutex.post();
     bool ret = false;
@@ -214,131 +212,76 @@ bool hostTransceiver::addSetMessage(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* d
     for(int i=0; ( (i<5) && (!ret) ); i++)
     {
         transMutex.wait();
-        if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+        if(eores_OK != eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc))
         {
-            yWarning() << "addSetMessage: attempt num " << i+1 << ": Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+            yWarning() << "addSetMessage: attempt num " << i+1 << ": Error while loading SET ROP with ep "<< eoprot_ID2endpoint(protid) << " entity " << eoprot_ID2entity(protid)  << " index " << eoprot_ID2index(protid)  << " tag " << eoprot_ID2tag(protid) << "in ropframe";
             transMutex.post();
             yarp::os::Time::delay(0.001);
 
         }
         else
         {
-        	if(i!=0)
-                yWarning() << "addSetMessage: SUCCESS at attempt num " << i+1 << "for loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
-
+            if(i!=0)
+                yWarning() << "addSetMessage: SUCCESS at attempt num " << i+1 << "for loading SET ROP with ep "<< eoprot_ID2endpoint(protid) << " entity " << eoprot_ID2entity(protid)  << " index " << eoprot_ID2index(protid)  << " tag " << eoprot_ID2tag(protid) << "in ropframe";
             transMutex.post();
             ret = true;
         }
     }
     if(!ret)
     {
-    	yError() << "addSetMessage: Finished attempts!! Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+        yError() << "addSetMessage: Finished attempts!! Error while loading SET ROP with ep "<<eoprot_ID2endpoint(protid) << " entity " << eoprot_ID2entity(protid)  << " index " << eoprot_ID2index(protid)  << " tag " << eoprot_ID2tag(protid) << "in ropframe";
     }
     return ret;
 }
 
-bool hostTransceiver::addSetMessageWithSignature(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t* data, uint32_t sig)
+bool hostTransceiver::addSetMessage( eOprotID32_t protid, uint8_t* data)
 {
-    EOnv          nv;
+   return(hostTransceiver::addSetMessage__(protid, data, 0));
+}
 
-    if(nvid == EOK_uint16dummy)
-    {
-        yError() << "eo HostTransceiver: called addSetMessage with invalid nvid ";
-        return false;
-    }
-
-    EOnv *nvRoot = getNVhandler(endPoint, nvid, &nv);
-
-    if(NULL == nvRoot)
-    {
-        yError() << "Unable to get pointer to desired NV with id" << nvid;
-        return false;
-    }
-
-    transMutex.wait();
-
-    if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
-    {
-        // the nv is not writeable
-        yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
-        transMutex.post();
-        return false;
-    }
-
-    eOropdescriptor_t ropdesc;
-    ropdesc.configuration = eok_ropconfiguration_basic;
-    ropdesc.configuration.plustime = 1;
-    ropdesc.ropcode = eo_ropcode_set;
-    ropdesc.ep = endPoint;
-    ropdesc.id = nvid;
-    ropdesc.size = 0;
-    ropdesc.data = NULL;
-    ropdesc.signature = sig;
-
-    transMutex.post();
-    bool ret = false;
-
-    for(int i=0; ( (i<5) && (!ret) ); i++)
-    {
-        transMutex.wait();
-        if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
-        {
-            yWarning() << "addSetMessage: attempt num " << i+1 << ": Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
-            transMutex.post();
-            yarp::os::Time::delay(0.001);
-
-        }
-        else
-        {
-        	if(i!=0)
-                yWarning() << "addSetMessage: SUCCESS at attempt num " << i+1 << "for loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
-
-            transMutex.post();
-            ret = true;
-        }
-    }
-    if(!ret)
-    {
-    	yError() << "addSetMessage: Finished attempts!! Error while loading SET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
-    }
-    return ret;
+bool hostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig)
+{
+    return(hostTransceiver::addSetMessage__(protid, data, sig));
 }
 
 
-bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
+bool hostTransceiver::addGetMessage( eOprotID32_t protid)
 {
     EOnv          nv;
 
-    if(nvid == EOK_uint16dummy)
+    if(protid == EOK_uint16dummy)
     {
         yError() << "eo HostTransceiver: called addGetMessage with invalid nvid";
         return false;
     }
 
-    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+    EOnv *nv_ptr = getNVhandler(protid, &nv);
 
-    if(NULL == nvRoot)
-        yError() << "Unable to get pointer to desired NV with id" << nvid;
+    if(NULL == nv_ptr)
+    {
+        yError() << "addGetMessage: Unable to get pointer to desired NV with id" << protid;
+        return false;
+    }
 
+    eOropdescriptor_t ropdesc = {0};
 
-    eOropdescriptor_t ropdesc;
-    ropdesc.configuration = eok_ropconfiguration_basic;
-    ropdesc.configuration.plustime = 1;
+    //ropdesc.control = {0};
+    ropdesc.control.plustime = 1;
     ropdesc.ropcode = eo_ropcode_ask;
-    ropdesc.ep = endPoint;
-    ropdesc.id = nvid;
+    ropdesc.id32 = protid;
     ropdesc.size = 0;
     ropdesc.data = NULL;
     ropdesc.signature = 0;
     
+
     bool ret = false;
 
     for(int i=0; ( (i<5) && (!ret) ); i++)
     {
         transMutex.wait();
-        if(eores_OK != eo_transceiver_rop_occasional_Load(pc104txrx, &ropdesc))
+        if(eores_OK != eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc))
         {
-            yWarning() << "addGetMessage: attempt num " << i+1 << ": Error while loading GET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+            yWarning() << "addGetMessage: attempt num " << i+1 << ": Error while loading GET ROP with ep "<< eoprot_ID2endpoint(protid) << " and nvid " << protid << "in ropframe";
             transMutex.post();
             yarp::os::Time::delay(0.001);
         }
@@ -350,54 +293,54 @@ bool hostTransceiver::addGetMessage(eOnvID_t nvid, eOnvEP_t endPoint)
     }
     if(!ret)
     {
-    	yError() << "addGetMessage: Finished attempts!!Error while loading GET ROP with ep "<< endPoint << " and nvid " << nvid << "in ropframe";
+    	yError() << "addGetMessage: Finished attempts!!Error while loading GET ROP with ep "<< eoprot_ID2endpoint(protid)<< " and nvid " << protid << "in ropframe";
     }
     return ret;
 }
 
-bool hostTransceiver::readBufferedValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
+bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size)
 {
     EOnv nv;
-    if(nvid == EOK_uint16dummy)
+    if(protid == EOK_uint16dummy)
     {
         yError() << "eo HostTransceiver: called readValue with invalid nvid";
         return false;
     }
 
-    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+    EOnv *nv_ptr = getNVhandler(protid, &nv);
 
-    if(NULL == nvRoot)
+    if(NULL == nv_ptr)
     {
-        yError() << "Unable to get pointer to desired NV with id" << nvid;
+        yError() << "readBufferedValue: Unable to get pointer to desired NV with id" << protid;
         return false;
     }
     //protetion on reading data by yarp
     transMutex.wait();
-    getNVvalue(nvRoot, data, size);
+    getNVvalue(nv_ptr, data, size);
     transMutex.post();
     return true;
 }
 
-bool hostTransceiver::readSentValue(eOnvID_t nvid, eOnvEP_t endPoint, uint8_t *data, uint16_t* size)
+bool hostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t* size)
 {
     EOnv nv;
     bool ret;
-    if(nvid == EOK_uint16dummy)
+    if(protid == EOK_uint16dummy)
     {
         yError() << "eo HostTransceiver: called readValue with invalid nvid";
         return false;
     }
 
-    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &nv);
+    EOnv *nv_ptr = getNVhandler(protid, &nv);
 
-    if(NULL == nvRoot)
+    if(NULL == nv_ptr)
     {
-        yError() << "Unable to get pointer to desired NV with id" << nvid;
+        yError() << "readSentValue: Unable to get pointer to desired NV with id" << protid;
         return false;
     }
     //protetion on reading data by yarp
     transMutex.wait();
-    (eores_OK == eo_nv_Get(nvRoot, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
+    (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
     transMutex.post();
     return true;
 }
@@ -597,70 +540,56 @@ void hostTransceiver::getTransmit(uint8_t *_data, uint16_t *size) //**data
 }
 */
 
-EOnv* hostTransceiver::getNVhandler(uint16_t endpoint, uint16_t id, EOnv *nvRoot)
+EOnv* hostTransceiver::getNVhandler(eOprotID32_t protid, EOnv* nv)
 {
-    //	yTrace();
-    uint16_t      ondevindex = 0, onendpointindex = 0 , onidindex = 0;
-    EOtreenode    *nvTreenodeRoot= NULL;
     eOresult_t    res;
 
-    // convetire come parametro, oppure mettere direttam l'indirizzo ip come parametro...
-    eOnvOwnership_t	nvownership = eo_nv_ownership_remote;
-
-//    _mutex.wait();
-    res = eo_nvscfg_GetIndices(	this->pc104nvscfg, remoteipaddr, endpoint, id, &ondevindex,	&onendpointindex, &onidindex);
-
-    // if the nvscfg does not have the triple (ip, ep, id) then we return an error
+    res = eo_nvset_NV_Get(nvset, remoteipaddr, protid, nv);
     if(eores_OK != res)
     {
-        // Do something about this case?
-        nvRoot = NULL;
+        return NULL;
     }
-    else
-    {
-        // nvRoot MUST be a pointer to an already existing object, created by the caller!!
-        nvRoot = eo_nvscfg_GetNV(this->pc104nvscfg, ondevindex, onendpointindex, onidindex, nvTreenodeRoot, nvRoot);
-    }
-//    _mutex.post();
-    return(nvRoot);
+
+    return(nv);
 }
 
 
-bool hostTransceiver::getNVvalue(EOnv *nvRoot, uint8_t* data, uint16_t* size)
+bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
 {
     bool ret;
-    if (NULL == nvRoot)
+    if (NULL == nv)
     {   // should return false as error
         return false;
     }
 //     transMutex.wait();
-    (eores_OK == eo_nv_remoteGet(nvRoot, data, size)) ? ret = true : ret = false;
+    (eores_OK == eo_nv_Get(nv, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
 //     _mutex.post();
     return ret;
 }
 
 
-void hostTransceiver::getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function)
+//void hostTransceiver::getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function)
+//{
+//    *pEPvector = EPvector;
+//    *pEPhash_function = EPhash_function_ep2index;
+//}
+
+uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP8_t ep)
 {
-    *pEPvector = EPvector;
-    *pEPhash_function = EPhash_function_ep2index;
+    yTrace() << "board num=" << boardNum << " ep=" << ep;
+    if(ep < hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->size)
+    {
+        eOnvset_EPcfg_t *setcfg = (eOnvset_EPcfg_t *)hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->item_array_data;
+        return(setcfg[ep].protif->getvarsnumberof(boardNum-1, ep));
+    }
+
+    yError() << "cfg size=" <<  hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->size << " ep=" << ep << " board num=" << boardNum;
+    return 0;
 }
 
-uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP_t ep)
+uint32_t hostTransceiver::translate_NVid2index(int boardNum, eOprotID32_t protoid)
 {
-//    yTrace();
-    const EOconstvector* EPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
-    uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
-    return eo_cfg_nvsEP_board_NVs_endpoint_numberof_get(EPvector, epindex);
-}
-
-uint16_t hostTransceiver::translate_NVid2index(uint8_t boardNum, eOnvEP_t ep, eOnvID_t nvid)
-{
-    //  yTrace();
-    const EOconstvector* pEPvector = eo_cfg_nvsEP_board_EPs_nvscfgep_get(boardNum);
-    uint16_t epindex = eo_cfg_nvsEP_board_EPs_epindex_get(boardNum, ep);
-    eOnvscfg_EP_t* EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(pEPvector,  epindex);
-    return eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
+    return(eoprot_endpoint_id2prognum(boardNum-1, protoid));
 }
 
 

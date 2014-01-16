@@ -33,8 +33,6 @@
 
 #include "EoCommon.h"
 
-#include "eOcfg_nvsEP_mn.h"
-#include "eOcfg_nvsEP_mn_hid.h"
 
 #include "EOarray.h"
 #include "EOnv_hid.h"
@@ -94,60 +92,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 
-extern void eo_cfg_nvsEP_mngmnt_usr_hid_INITIALISE(eOnvEP_t ep, void *loc, void *rem)
-{
-    eObool_t theOwnershipIsRemote = (NULL == rem) ? eobool_true : eobool_false;
-    
-//    memcpy(loc, eOcfg_nvsEP_mngmnt_defaultvalue, sizeof(eo_cfg_nvsEP_mngmnt_t));
-//    if(NULL != rem)
-//    {
-//        memcpy(rem, eOcfg_nvsEP_mn_defaultvalue, sizeof(eo_cfg_nvsEP_mngmnt_t));
-//    }
-    
-    // nothing else ...
 
-}
-
-
-extern void eo_cfg_nvsEP_mngmnt_usr_hid_INIT__ropsigcfgassign(uint16_t n, const EOnv* nv)
-{
-    eObool_t theOwnershipIsRemote = (NULL == nv->rem) ? eobool_true : eobool_false;
-    
-    EOarray* arrayloc = (EOarray*)nv->loc;
-    EOarray* arrayrem = (EOarray*)nv->rem;
-    
-    if(eobool_false == theOwnershipIsRemote)
-    {   // function is called from within the local board
-    	//this function has been commented because not called in pc104
-        //s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(arrayloc);
-    }
-    else
-    {   // function is called from within the remote host because it has initialised its data
-        // it is possible to know which board owns the arrayrem from the ip address
-        eOipv4addr_t ipaddress_of_remote_board = nv->ip;
-
-    }    
-}
-
-extern void eo_cfg_nvsEP_mngmnt_usr_hid_UPDT__ropsigcfgcommand(uint16_t n, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
-{
-    eObool_t theOwnershipIsRemote = (NULL == nv->rem) ? eobool_true : eobool_false;
-    
-    EOarray* arrayloc = (EOarray*)nv->loc;
-    EOarray* arrayrem = (EOarray*)nv->rem;
-    
-    if(eobool_false == theOwnershipIsRemote)
-    {   // function is called from within the local board
-    	//this function has been commented because not called in pc104
-        //s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(arrayloc);
-    }
-    else
-    {   // function is called from within the remote host because it has received a say or a sig
-        // it is possible to know which board has sent the say/sig by the ipaddress
-        eOipv4addr_t ipaddress_of_remote_board = nv->ip;
-
-    }    
-}
 
 
 

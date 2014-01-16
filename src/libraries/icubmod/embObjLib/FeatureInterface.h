@@ -66,7 +66,7 @@ typedef struct
 typedef struct
 {
     uint8_t         boardNum;
-    eOnvEP_t        ep;
+    eOnvEP8_t        ep;
     void            *handle;
 
 //    ACE_INET_Addr   PC104ipAddr;
@@ -75,8 +75,8 @@ typedef struct
     FEAT_ip_addr      PC104ipAddr;
     FEAT_ip_addr      EMSipAddr;
     // eoStuff
-    const EOconstvector  *EPvector;
-    eOuint16_fp_uint16_t  EPhash_function;
+//    const EOconstvector  *EPvector;
+//    eOuint16_fp_uint16_t  EPhash_function;
 
     // Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
     // They may be removed very soon!
@@ -111,13 +111,16 @@ void initCallback(void *p);
 fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum);
 fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array);
 fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array);
-void * get_MChandler_fromEP(eOnvEP_t ep);
-fakestdbool_t MCmutex_post(void * p, uint16_t epindex, uint16_t nvindex);
+void * get_MChandler_fromEP(eOnvBRD_t boardnum, eOnvEP8_t ep);
+fakestdbool_t MCmutex_post(void * p, uint32_t prognum);
+uint8_t nvBoardNum2FeatIdBoardNum(eOnvBRD_t nvboardnum);
 
-fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex);
+eOnvBRD_t featIdBoardNum2nvBoardNum(uint8_t fid_boardnum);
 
-void transceiver_wait(eOnvEP_t ep);
-void transceiver_post(eOnvEP_t ep);
+//fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex);
+
+//void transceiver_wait(eOnvEP_t ep);
+//void transceiver_post(eOnvEP_t ep);
 
 #ifdef __cplusplus
 }

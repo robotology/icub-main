@@ -10,7 +10,6 @@
 #include "FeatureInterface_hid.h"
 
 #include <ethManager.h>
-#include "eOcfg_EPs_board.h"
 #include "embObjMotionControl.h"
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
@@ -37,8 +36,7 @@ void initCallback(void *p)
 
 fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
 {
-    embObjMotionControl *tmp = (embObjMotionControl *)(_interface2ethManager->getHandleFromEP(id->ep));
-
+    embObjMotionControl *tmp = (embObjMotionControl *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
     if(tmp != NULL)
     {
         tmp->refreshEncoderTimeStamp(jointNum);
@@ -55,7 +53,7 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
     static int error = 0;
     static int notYetInitted = 0;
     IiCubFeature *skin;
-    EmbObjSkin *tmp = (EmbObjSkin *)(_interface2ethManager->getHandleFromEP(id->ep));
+    EmbObjSkin *tmp = (EmbObjSkin *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
 
     if(NULL == tmp)
     {
@@ -84,10 +82,10 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
     return fakestdbool_true;
 }
 
-void *get_MChandler_fromEP(eOnvEP_t ep)
+void *get_MChandler_fromEP(eOnvBRD_t boardnum, eOnvEP8_t ep)
 {
     void *h = NULL;
-    h = _interface2ethManager->getHandleFromEP(ep);
+    h = _interface2ethManager->getHandle(boardnum, ep);
 //     FEAT_ID id = _interface2ethManager->getFeatInfoFromEP(ep);
 
     return h;
@@ -99,7 +97,7 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
 
     eOas_arrayofupto12bytes_t *debug_tmp = (eOas_arrayofupto12bytes_t *) as_array;
     // specie di view grezza, usare dynamic cast?
-    embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandleFromEP(id->ep));
+    embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
 
     if(NULL == tmp)
     {
@@ -117,13 +115,13 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
     return fakestdbool_true;
 }
 
-fakestdbool_t MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
+fakestdbool_t MCmutex_post(void *p, uint32_t  prognum)
 {
     //epindex in realtà non serve.
     eoThreadEntry *th = NULL;
     embObjMotionControl *handler = (embObjMotionControl *) p;
     int threadId;
-    eoThreadFifo *fuffy = handler->requestQueue->getFifo(nvindex);
+    eoThreadFifo *fuffy = handler->requestQueue->getFifo(prognum);
 
     if( (threadId=fuffy->pop()) < 0)
     {
@@ -142,33 +140,44 @@ fakestdbool_t MCmutex_post(void *p, uint16_t epindex, uint16_t nvindex)
     return fakestdbool_false;
 }
 
-fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)
+
+uint8_t nvBoardNum2FeatIdBoardNum(eOnvBRD_t nvboardnum)
 {
-    // prendo la struttura che mi descrive la classe eoXXX n base all'EndPoint.
-    FEAT_ID _fId = _interface2ethManager->getFeatInfoFromEP(ep);
-    // prendo la hash function salvata in precedenza dentro la struttura.
-    eOuint16_fp_uint16_t p = _fId.EPhash_function;
-    // Ricavo l'ep index dalla funzione di hash
-    *epindex = p(ep);
-    // Prendo la descrizione dell'EndPoint in base all'indice (relativo alla singola EMS)
-    eOnvscfg_EP_t  *EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(_fId.EPvector, *epindex);
-    // Finalmente prendo l'indice della nv all'interno diu questo EndPoint
-    *nvindex = eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
-    // Ora ho gli indici che mi servono per accedere alla tabella dei thread
-    return fakestdbool_true; // acemor added
+    return(nvboardnum+1);
 }
 
-void transceiver_wait(eOnvEP_t ep)
+eOnvBRD_t featIdBoardNum2nvBoardNum(uint8_t fid_boardnum)
 {
-    embObjMotionControl *handler = (embObjMotionControl *) get_MChandler_fromEP(ep);
-    handler->res->transMutex.wait();
+    return(fid_boardnum-1);
 }
+//fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)
+//{
+//    // prendo la struttura che mi descrive la classe eoXXX n base all'EndPoint.
+//    FEAT_ID _fId = _interface2ethManager->getFeatInfoFromEP(ep);
+//    // prendo la hash function salvata in precedenza dentro la struttura.
+//    eOuint16_fp_uint16_t p = _fId.EPhash_function;
+//    // Ricavo l'ep index dalla funzione di hash
+//    *epindex = p(ep);
+//    // Prendo la descrizione dell'EndPoint in base all'indice (relativo alla singola EMS)
+//    eOnvscfg_EP_t  *EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(_fId.EPvector, *epindex);
+//    // Finalmente prendo l'indice della nv all'interno diu questo EndPoint
+//    *nvindex = eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
+//    // Ora ho gli indici che mi servono per accedere alla tabella dei thread
+//    return fakestdbool_true; // acemor added
+//}
 
-void transceiver_post(eOnvEP_t ep)
-{
-    embObjMotionControl *handler = (embObjMotionControl *) get_MChandler_fromEP(ep);
-    handler->res->transMutex.post();
-}
+//vale servono???
+//void transceiver_wait(eOnvEP_t ep)
+//{
+//    embObjMotionControl *handler = (embObjMotionControl *) get_MChandler(ep);
+//    handler->res->transMutex.wait();
+//}
+//
+//void transceiver_post(eOnvEP_t ep)
+//{
+//    embObjMotionControl *handler = (embObjMotionControl *) get_MChandler_fromEP(ep);
+//    handler->res->transMutex.post();
+//}
 
 #ifdef _SETPOINT_TEST_
 //static void s_print_test_data(int jointNum, setpoint_test_data_t *test_data_ptr, uint64_t diff_ms)

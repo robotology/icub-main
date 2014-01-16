@@ -14,14 +14,14 @@ endif()
 
 
 set(eBcode_BASE_URL "https://svn.code.sf.net/p/robotcub/code/trunk/iCub/firmware/emBODY/eBcode/")
-if(EXISTS ${CMAKE_SOURCE_DIR}/.svn)
-  Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR} ICUB)
-  set(eBcode_REVISION ${ICUB_WC_REVISION})
+#if(EXISTS ${CMAKE_SOURCE_DIR}/.svn)
+#  Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR} ICUB)
+  set(eBcode_REVISION "HEAD" ) #${ICUB_WC_REVISION})
   set(eBcode_REVISION_description "current iCub HEAD")
-else()
-  set(eBcode_REVISION 27643)
-  set(eBcode_REVISION_description ${eBcode_REVISION})
-endif()
+#else()
+#  set(eBcode_REVISION 27643)
+#  set(eBcode_REVISION_description ${eBcode_REVISION})
+#endif()
 
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
@@ -37,6 +37,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} --depth empty embobj/plus --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET )
+
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} --depth empty robotconfig --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
 
@@ -44,8 +45,13 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/core/exec/yarp --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
+
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/plus/comm-v1 --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
+
+    execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/plus/comm-v2 --non-interactive
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
+
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/plus/utils --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} robotconfig/v1 --non-interactive

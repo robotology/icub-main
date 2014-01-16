@@ -45,10 +45,12 @@
 
 #include "EoCommon.h"
 #include "EOnv_hid.h"
+#include "EoProtocol.h"
+#include "EoProtocolMC.h"
 
-#include "eOcfg_nvsEP_mc_overridden.h"
+#include "EoProtocolMC_overridden_fun.h"
 #include <FeatureInterface.h>
-#include "eOcfg_nvsEP_mc_hid.h"
+//#include "eOcfg_nvsEP_mc_hid.h"
 
 
 #ifdef _ICUB_CALLBACK_
@@ -62,72 +64,73 @@
 
 #define DEG_2_ICUBDEG  182.04444
 
-void ep2char(char* str, uint16_t ep)
-{
-    switch(	ep)
-    {
-    case endpoint_mc_leftupperarm:
-        memcpy(str, "LA U MC\0", strlen("LA U MC\0")+1);
-        break;
-    case endpoint_mc_leftlowerarm:
-        memcpy(str, "LA L MC\0", strlen("LA L MC\0")+1);
-        break;
-    case endpoint_mc_rightupperarm:
-        memcpy(str, "RA U MC\0", strlen("RA U MC\0")+1);
-        break;
-    case endpoint_mc_rightlowerarm:
-        memcpy(str, "RA L MC\0", strlen("RA L MC\0")+1);
-        break;
-    case endpoint_mc_torso:
-        memcpy(str, "T MC\0", strlen("T MC\0")+1);
-        break;
-    case endpoint_mc_leftupperleg:
-        memcpy(str, "LL U MC\0", strlen("LL U MC\0")+1);
-        break;
-    case endpoint_mc_leftlowerleg:
-        memcpy(str, "LL L MC\0", strlen("LL L MC\0")+1);
-        break;
-    case endpoint_mc_rightupperleg:
-        memcpy(str, "RL U MC\0", strlen("RL U MC\0")+1);
-        break;
-    case endpoint_mc_rightlowerleg:
-        memcpy(str, "RL L MC\0", strlen("RL L MC\0")+1);
-        break;
-    }
-}
+//void ep2char(char* str, uint16_t ep)
+//{
+//    switch(	ep)
+//    {
+//    case endpoint_mc_leftupperarm:
+//        memcpy(str, "LA U MC\0", strlen("LA U MC\0")+1);
+//        break;
+//    case endpoint_mc_leftlowerarm:
+//        memcpy(str, "LA L MC\0", strlen("LA L MC\0")+1);
+//        break;
+//    case endpoint_mc_rightupperarm:
+//        memcpy(str, "RA U MC\0", strlen("RA U MC\0")+1);
+//        break;
+//    case endpoint_mc_rightlowerarm:
+//        memcpy(str, "RA L MC\0", strlen("RA L MC\0")+1);
+//        break;
+//    case endpoint_mc_torso:
+//        memcpy(str, "T MC\0", strlen("T MC\0")+1);
+//        break;
+//    case endpoint_mc_leftupperleg:
+//        memcpy(str, "LL U MC\0", strlen("LL U MC\0")+1);
+//        break;
+//    case endpoint_mc_leftlowerleg:
+//        memcpy(str, "LL L MC\0", strlen("LL L MC\0")+1);
+//        break;
+//    case endpoint_mc_rightupperleg:
+//        memcpy(str, "RL U MC\0", strlen("RL U MC\0")+1);
+//        break;
+//    case endpoint_mc_rightlowerleg:
+//        memcpy(str, "RL L MC\0", strlen("RL L MC\0")+1);
+//        break;
+//    }
+//}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
-void jwake(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, eOcfg_nvsEP_mc_jointNVindex_t nv_name)
+void jwake(eOprotIndex_t xx, const EOnv* nv, eOprot_tag_mc_joint_t nv_name)
 {
-    eOnvID_t nvid;
-    uint16_t epindex, nvindex;
-    void *handler = (void*) get_MChandler_fromEP(nv->ep);
+    eOprotID32_t protoid;
+    void *handler = (void*) get_MChandler_fromEP(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetEP8(nv));
     if(NULL == handler)
     {
         printf("eoMC class not found\n");
         return;
     }
-    nvid = eo_cfg_nvsEP_mc_joint_NVID_Get(nv->ep, xx, nv_name);  // ce ne battiamo il belino   // (??)
     
-    EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
-    MCmutex_post(handler, epindex, nvindex);
+    protoid = eo_nv_GetID32(nv);
+    eOprotProgNumber_t  prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), protoid);
+    MCmutex_post(handler, prognum);
 }
 
-void mwake(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv,  eOcfg_nvsEP_mc_motorNVindex_t nv_name)
-{
-    void *handler = (void*) get_MChandler_fromEP(nv->ep);
-    eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get(nv->ep, xx, nv_name);
-    uint16_t epindex, nvindex;
-    EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
-    MCmutex_post(handler, epindex, nvindex);
-}
+////e'uguale a jwake
+//void mwake(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv,  eOcfg_nvsEP_mc_motorNVindex_t nv_name)
+//{
+//    void *handler = (void*) get_MChandler_fromEP(nv->ep);
+//    eOnvID_t nvid = eo_cfg_nvsEP_mc_motor_NVID_Get(nv->ep, xx, nv_name);
+//    uint16_t epindex, nvindex;
+//    EP_NV_2_index(nv->ep, nvid, &epindex, &nvindex);
+//    MCmutex_post(handler, epindex, nvindex);
+//}
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "joint status basic strong iCubInterface"
+    eOprotIndex_t xx = eoprot_ID2index(rd->id32);
 #define _debug_jstatus_basic_
 #ifdef _debug_jstatus_basic_
     static int i = 0;
@@ -149,9 +152,9 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumb
 
   //  if(print)
     {
-        eOmc_joint_status_basic_t *jstatus_b = nv->rem;
+        eOmc_joint_status_basic_t *jstatus_b = nv->ram;
         printf("\njstatus__basic for Joint num = %d\n", xx);
-        printf("ep = 0x%X\n", nv->ep);
+        printf("ep = 0x%X\n", eo_nv_GetEP8(nv));
         printf("jstatus_b->acceleration = 0x%X\n", jstatus_b->acceleration);
         printf("jstatus_b->controlmodestatus = 0x%X\n", jstatus_b->controlmodestatus);
         printf("jstatus_b->motionmonitorstatus = 0x%X\n", jstatus_b->motionmonitorstatus);
@@ -180,14 +183,16 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic(eOcfg_nvsEP_mc_jointNumb
     FEAT_ID id;
     int jointNum = (int) xx;
 
-    id.ep = nv->ep;
+    id.ep = eo_nv_GetEP8(nv);
     id.type = MotionControl;
+    id.boardNum =  eo_nv_GetBRD(nv);
     addEncoderTimeStamp( &id,  jointNum);
     }
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    eOprotIndex_t xx = eoprot_ID2index(rd->id32);
 //#warning "joint status full strong iCubInterface"
 //#define _debug_jstatus_full_
 #ifdef  _debug_jstatus_full_
@@ -259,10 +264,12 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 
     // Add timestamp
     FEAT_ID id;
+
     int jointNum = (int) xx;
 
-    id.ep = nv->ep;
+    id.ep = eo_nv_GetEP8(nv);
     id.type = MotionControl;
+    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
     addEncoderTimeStamp( &id,  jointNum);
 
 #ifdef _SETPOINT_TEST_
@@ -278,8 +285,9 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus(eOcfg_nvsEP_mc_jointNumber_t xx
 #endif
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    eOprotIndex_t xx = eoprot_ID2index(rd->id32);
 //#warning "motor status basic strong iCubInterface"
 //#define _debug_mstatus_basic_
 #ifdef _debug_mstatus_basic_
@@ -316,8 +324,9 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic(eOcfg_nvsEP_mc_motorNumb
 #endif
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    eOprotIndex_t xx = eoprot_ID2index(rd->id32);
 #ifdef _debug_jxx_jconfig_
     //transceiver_wait(nv->ep);
     eOmc_joint_config_t *jConfig = nv->rem;
@@ -337,8 +346,9 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig(eOcfg_nvsEP_mc_jointNumber_t xx
 #endif
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_motor_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    eOprotIndex_t xx = eoprot_ID2index(rd->id32);
 //#warning "mconfig strong iCubInterface"
 //#define _debug_mxx_mconfig_
 #ifdef _debug_mxx_mconfig_
@@ -359,70 +369,57 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig(eOcfg_nvsEP_mc_motorNumber_t xx
 #endif
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__maxpositionofjoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+
+
+extern void eoprot_fun_UPDT_mc_joint_config_limitsofjoint(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    //transceiver_wait(nv->ep);
-    eOmeas_position_t *jMaxPosition_b = nv->rem;
-    char str[16];
-    ep2char(str, nv->ep);
-//    printf("Callback: maxpositionofjoint for ep 0x%0X (%s) Joint num = %d ", nv->ep, str, xx);
-//    printf("pos = %d\n", *jMaxPosition_b);
-    jwake(xx, nv, jointNVindex_jconfig__maxpositionofjoint);
-    //transceiver_post(nv->ep);
+    jwake(eoprot_ID2index(rd->id32), nv, eoprot_tag_mc_joint_config_limitsofjoint);
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__minpositionofjoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
-{
-    //transceiver_wait(nv->ep);
-    eOmeas_position_t *jMinPosition_b = nv->rem;
-//    printf("callback: minpositionofjoint for Joint num = %d ", xx);
-//    printf("pos = %d\n", *jMinPosition_b);
-    jwake(xx, nv, jointNVindex_jconfig__minpositionofjoint);
-    //transceiver_post(nv->ep);
-}
-
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig__maxcurrentofmotor(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "maxcurrentofmoto strong iCubInterface"
     //transceiver_wait(nv->ep);
-    eOmeas_position_t *jMaxCurrent_b = nv->rem;
+    eOmeas_position_t *jMaxCurrent_b = nv->ram;
 //    printf("\ncallback: maxcurrentofmotor for Joint num = %d\n", xx);
 //    printf("ep = 0x%X\n", nv->ep);
 //    printf("maxcurrentofmotor = 0x%X\n", jMaxCurrent_b);
     //transceiver_post(nv->ep);
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_config_pidposition(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "Position Pid strong iCubInterface"
-    char str[16];
-    ep2char(str, nv->ep);
+//    char str[16];
+//    ep2char(str, nv->ep);
  //   printf("Position Pid Callback ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, xx, xx);
-    jwake(xx, nv, jointNVindex_jconfig__pidposition);
+    //yDebug()<< "callback pid position: nvid=" << rd->id32 << "progressivenum=" << eoprot_ID2index(rd->id32);
+    printf("\n\n$$$$$$callback pid position: nvid=%d  progressivenum=%d boardnum=%d\n", rd->id32, eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), rd->id32), eo_nv_GetBRD(nv));
+    jwake(eoprot_ID2index(rd->id32), nv, eoprot_tag_mc_joint_config_pidposition);
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidtorque(eOcfg_nvsEP_mc_motorNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_config_pidtorque(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "Torque Pid strong iCubInterface"
-    char str[16];
-    ep2char(str, nv->ep);
+//    char str[16];
+//    ep2char(str, nv->ep);
 //    printf("Torque Pid Callback ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, xx, xx);
-    jwake(xx, nv, jointNVindex_jconfig__pidtorque);
+    jwake(eoprot_ID2index(rd->id32), nv, eoprot_tag_mc_joint_config_pidtorque);
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
-{
-//    printf("jconfig__controlmode, j=%d\n", xx);
-    //transceiver_wait(nv->ep);
-    //jwake(xx, nv, jointNVindex_jcmmnds__controlmode);	//???
-    //transceiver_post(nv->ep);
-}
+//extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode(const EOnv* nv, const eOropdescriptor_t* rd)
+//{
+////    printf("jconfig__controlmode, j=%d\n", xx);
+//    //transceiver_wait(nv->ep);
+//    //jwake(xx, nv, jointNVindex_jcmmnds__controlmode);	//???
+//    //transceiver_post(nv->ep);
+//}
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint(eOcfg_nvsEP_mc_jointNumber_t xx, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_cmmnds_setpoint(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 //#warning "joint jcmmnds setpoint strong iCubInterface"
 
-    eOmc_setpoint_t *setpoint_got = (eOmc_setpoint_t*) nv->rem;
+    eOmc_setpoint_t *setpoint_got = (eOmc_setpoint_t*) nv->ram;
     static int32_t zero = 360;
     static prev = 0;
     int32_t pos;
@@ -438,16 +435,16 @@ extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint(eOcfg_nvsEP_mc_jointN
         printf(">>>>>>Missing packet!! prev was %d, actual is %d (missing 0x%04X) <<<<<\n", prev, checkProg[1], prev+1);
 
     prev = checkProg[1];
-    jwake(xx, nv, jointNVindex_jcmmnds__setpoint);
+    jwake(eoprot_ID2index(rd->id32), nv, eoprot_tag_mc_joint_cmmnds_setpoint);
 }
 
-extern void eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__impedance(eOcfg_nvsEP_mc_jointNumber_t j, const EOnv* nv, const eOabstime_t time, const uint32_t sign)
+extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-//#warning "joint jconfig impedance strong iCubInterface"
-    char str[16];
-    ep2char(str, nv->ep);
-//    printf("Impedance Params Callback ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, j, j);
-    jwake(j, nv, jointNVindex_jconfig__impedance);
+////#warning "joint jconfig impedance strong iCubInterface"
+//    char str[16];
+//    ep2char(str, nv->ep);
+////    printf("Impedance Params Callback ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, j, j);
+    jwake(eoprot_ID2index(rd->id32), nv, eoprot_tag_mc_joint_config_impedance);
 }
 
 // eof
