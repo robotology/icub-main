@@ -42,19 +42,19 @@ ENDIF ("${BUTTON_FILE}" STREQUAL "")
 
 SET(ACE_INCLUDE_DIR "/usr/include")
 
-set(BASE 			     $ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObj)
-set(COMMON_FOLDER		 ${BASE}/core/)
-set(ICUB_HEADER_FOLDER   ${BASE}/comm-v1/icub/)
-set(OPC_PROTO_FOLDER     ${BASE}/comm-v1/opcprot/)
-set(OPC_PROTO_FOLDER_CFG ${BASE}/cfg-v1/backdoor/)
+set(BASE                 $ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/embObj)
+set(COMMON_FOLDER        ${BASE}/embobj/core/core)
+set(ICUB_HEADER_FOLDER   ${BASE}/embobj/plus/comm-v1/icub/)
+set(OPC_PROTO_FOLDER     ${BASE}/embobj/plus/comm-v1/opcprot/)
+set(OPC_PROTO_FOLDER_CFG ${BASE}/robotconfig/v1/backdoor)
 
 
-set(ALL_INCLUDES		${EXTRA_FOLDER}
-						${ACE_INCLUDE_DIR}
-						${COMMON_FOLDER}
-						${ICUB_HEADER_FOLDER}
-						${OPC_PROTO_FOLDER}
-						${OPC_PROTO_FOLDER_CFG}
+set(ALL_INCLUDES        ${EXTRA_FOLDER}
+                        ${ACE_INCLUDE_DIR}
+                        ${COMMON_FOLDER}
+                        ${ICUB_HEADER_FOLDER}
+                        ${OPC_PROTO_FOLDER}
+                        ${OPC_PROTO_FOLDER_CFG}
                         )
 
 include_directories (${ALL_INCLUDES} )
@@ -70,7 +70,7 @@ message(INFO "OPC_PROTO_HEADER: ${OPC_PROTO_HEADER}")
 
 
 set(OPC_PROTO_SOURCE
-					${OPC_PROTO_FOLDER}/OPCprotocolManager.c
+                    ${OPC_PROTO_FOLDER}/OPCprotocolManager.c
 					${OPC_PROTO_FOLDER}/OPCprotocolManager_hid.h
 					)
 

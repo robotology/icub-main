@@ -38,6 +38,9 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} --depth empty embobj/plus --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET )
 
+    execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION}  --depth empty embobj/plus/comm-v1 --non-interactive
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
+
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} --depth empty robotconfig --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
 
@@ -46,7 +49,7 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/core/exec/yarp --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
 
-    execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/plus/comm-v1 --non-interactive
+    execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/plus/comm-v1/opcprot --non-interactive
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/embObj OUTPUT_QUIET)
 
     execute_process(COMMAND ${Subversion_SVN_EXECUTABLE} up -r${eBcode_REVISION} embobj/plus/comm-v2 --non-interactive
