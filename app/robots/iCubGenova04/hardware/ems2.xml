@@ -19,6 +19,14 @@
       <params file="general.xml" />
       <params file="hardware/electronics/ems2-eln.xml" />
       <!-- <params file="hardware/mechanicals/ems2-skin.xml" />  -->
-  </device>                                                
+  </device>
+
+   <!--  mais --> 
+  <device name="left_hand_mais" type="embObjAnalogSensor">
+      <params file="general.xml" />
+      <params file="hardware/electronics/ems2-eln.xml" />
+      <params file="hardware/analog/ems2-mais.xml" />
+  </device> 
+                                                
 </devices>
   
