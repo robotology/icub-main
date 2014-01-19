@@ -25,6 +25,7 @@
 #include <IpIpoptApplication.hpp>
 
 using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -464,6 +465,9 @@ public:
 /****************************************************************/
 CalibReferenceWithMatchedPoints::CalibReferenceWithMatchedPoints()
 {
+    max_iter=300;
+    tol=1e-8;
+
     min.resize(6); max.resize(6);
     min[0]=-1.0;   max[0]=1.0;
     min[1]=-1.0;   max[1]=1.0;
@@ -632,16 +636,30 @@ bool CalibReferenceWithMatchedPoints::setScalingInitialGuess(const double s)
 
 
 /****************************************************************/
+bool CalibReferenceWithMatchedPoints::setCalibrationOptions(const Property &options)
+{
+    Property opt=const_cast<Property&>(options);
+    if (opt.check("max_iter"))
+        max_iter=opt.find("max_iter").asInt();
+
+    if (opt.check("tol"))
+        tol=opt.find("tol").asDouble();
+
+    return true;
+}
+
+
+/****************************************************************/
 bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &error)
 {
     if (p0.size()>0)
     {
         Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
-        app->Options()->SetNumericValue("tol",1e-8);
-        app->Options()->SetNumericValue("acceptable_tol",1e-8);
+        app->Options()->SetNumericValue("tol",tol);
+        app->Options()->SetNumericValue("acceptable_tol",tol);
         app->Options()->SetIntegerValue("acceptable_iter",10);
         app->Options()->SetStringValue("mu_strategy","adaptive");
-        app->Options()->SetIntegerValue("max_iter",300);
+        app->Options()->SetIntegerValue("max_iter",max_iter);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
         app->Options()->SetStringValue("hessian_approximation","limited-memory");
         app->Options()->SetIntegerValue("print_level",0);
@@ -671,11 +689,11 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, Vector &s,
     if (p0.size()>0)
     {
         Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
-        app->Options()->SetNumericValue("tol",1e-8);
-        app->Options()->SetNumericValue("acceptable_tol",1e-8);
+        app->Options()->SetNumericValue("tol",tol);
+        app->Options()->SetNumericValue("acceptable_tol",tol);
         app->Options()->SetIntegerValue("acceptable_iter",10);
         app->Options()->SetStringValue("mu_strategy","adaptive");
-        app->Options()->SetIntegerValue("max_iter",300);
+        app->Options()->SetIntegerValue("max_iter",max_iter);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
         app->Options()->SetStringValue("hessian_approximation","limited-memory");
         app->Options()->SetIntegerValue("print_level",0);
@@ -708,11 +726,11 @@ bool CalibReferenceWithMatchedPoints::calibrate(Matrix &H, double &s,
     if (p0.size()>0)
     {
         Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
-        app->Options()->SetNumericValue("tol",1e-8);
-        app->Options()->SetNumericValue("acceptable_tol",1e-8);
+        app->Options()->SetNumericValue("tol",tol);
+        app->Options()->SetNumericValue("acceptable_tol",tol);
         app->Options()->SetIntegerValue("acceptable_iter",10);
         app->Options()->SetStringValue("mu_strategy","adaptive");
-        app->Options()->SetIntegerValue("max_iter",300);
+        app->Options()->SetIntegerValue("max_iter",max_iter);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
         app->Options()->SetStringValue("hessian_approximation","limited-memory");
         app->Options()->SetIntegerValue("print_level",0);

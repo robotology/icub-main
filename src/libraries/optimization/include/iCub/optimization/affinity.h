@@ -30,6 +30,7 @@
 #define __ICUB_OPT_AFFINITY_H__
 
 #include <deque>
+#include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <iCub/optimization/matrixTransformation.h>
 
@@ -51,6 +52,9 @@ class AffinityWithMatchedPoints : public MatrixTransformationWithMatchedPoints
 protected:
     yarp::sig::Matrix min, max;    
     yarp::sig::Matrix A0;
+
+    int max_iter;
+    double tol;
     
     std::deque<yarp::sig::Vector> p0;
     std::deque<yarp::sig::Vector> p1;
@@ -111,6 +115,14 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool setInitialGuess(const yarp::sig::Matrix &A);
+
+    /**
+    * Allow setting further options used during calibration.
+    * @param options a Property-like object accounting for 
+    *               calibration options.
+    * @return true/false on success/fail. 
+    */
+    virtual bool setCalibrationOptions(const yarp::os::Property &options);
 
     /**
     * Perform optimization to determine the affine matrix A. 

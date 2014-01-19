@@ -29,6 +29,7 @@
 #ifndef __ICUB_OPT_MATRIXTRANSFORMATION_H__
 #define __ICUB_OPT_MATRIXTRANSFORMATION_H__
 
+#include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 
 namespace iCub
@@ -91,6 +92,14 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool setInitialGuess(const yarp::sig::Matrix &M) = 0;
+
+    /**
+    * Allow setting further options used during calibration.
+    * @param options a Property-like object accounting for 
+    *               calibration options.
+    * @return true/false on success/fail. 
+    */
+    virtual bool setCalibrationOptions(const yarp::os::Property &options) { return true; }
 
     /**
     * Perform optimization to determine the matrix transformation. 
