@@ -74,10 +74,11 @@ MACRO(icub_export_library target)
   # Install/export rules
   install(TARGETS ${target} EXPORT icub-targets LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT Development)
   if (MSVC) 
-	install (	FILES ${CMAKE_BINARY_DIR}/lib/Debug/${target}d.pdb 
-				DESTINATION lib 
-				CONFIGURATIONS Debug 
-				COMPONENT Development )
+    install ( FILES ${CMAKE_BINARY_DIR}/lib/Debug/${target}d.pdb
+              DESTINATION lib
+              CONFIGURATIONS Debug
+              COMPONENT Development
+              OPTIONAL)
   endif()
   export(TARGETS ${target} APPEND FILE ${CMAKE_BINARY_DIR}/${ICUB_EXPORTBUILD_FILE})
     #important wrap ${dependencies} with "" to allows storing a list of dependencies
