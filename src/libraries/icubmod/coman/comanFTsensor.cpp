@@ -89,11 +89,19 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
         numberOfBoards = xtmp.get(1).asInt();
     }
 
-    scaleFactor=new double[numberOfBoards];
-    int i=0;
-    for (i=0; i<numberOfBoards; i++) scaleFactor[i]=1;
-
     FTmap = new int[numberOfBoards];
+    scaleFactor=new double[numberOfBoards];
+
+
+    if (!validate(config, xtmp, "scaleFactor","Scaling factor for FT sensors", numberOfBoards))
+    {
+    	yError() << "scaleFactor param was not found";
+    }
+    else
+    {
+        for (int i=0; i<numberOfBoards; i++)
+        	scaleFactor[i]=xtmp.get(1+i).asDouble();
+    }
 
     if (!validate(config, xtmp, "FTmap","mapping of FTsensor unique Ids and a sequence number", numberOfBoards))
     {
@@ -135,6 +143,8 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
 bool comanFTsensor::close()
 {
     return _comanHandler->deInstance();
+    delete [] scaleFactor;
+    delete [] FTmap;
 }
 
 comanFTsensor::comanFTsensor()
