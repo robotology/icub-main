@@ -247,12 +247,12 @@ int comanFTsensor::read(yarp::sig::Vector &out)
         ftSensor->get_bc_data(bc_data);
 
         // ci sono 6 valori da leggere per ogni FT, per ora!!
-        out[idx*_channels + 0] = data.fx;
-        out[idx*_channels + 1] = data.fy;
-        out[idx*_channels + 2] = data.fz;
-        out[idx*_channels + 3] = data.tx;
-        out[idx*_channels + 4] = data.ty;
-        out[idx*_channels + 5] = data.tz;
+        out[idx*_channels + 0] = (double)data.fx / scaleFactor[idx];
+        out[idx*_channels + 1] = (double)data.fy / scaleFactor[idx];
+        out[idx*_channels + 2] = (double)data.fz / scaleFactor[idx];
+        out[idx*_channels + 3] = (double)data.tx / scaleFactor[idx];
+        out[idx*_channels + 4] = (double)data.ty / scaleFactor[idx];
+        out[idx*_channels + 5] = (double)data.tz / scaleFactor[idx];
     }
     mutex.post();
 
