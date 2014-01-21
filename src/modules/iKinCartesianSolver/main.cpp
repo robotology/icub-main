@@ -235,9 +235,7 @@ public:
     /************************************************************************/
     bool close()
     {
-        if (slv!=NULL)
-            delete slv;
-
+        delete slv;
         return true;
     }
 
