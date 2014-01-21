@@ -67,7 +67,8 @@ previously open.
  
 \section conf_file_sec Configuration Files
  
-Here's how the configuration file will look like: 
+Here's how the configuration file will look like for the 
+specific icub part left_arm: 
  
 \code 
 [left_arm]
@@ -86,57 +87,32 @@ tol            0.001
 xyzTol         0.000001
 interPoints    off 
 ping_robot_tmo 20.0 
+\endcode 
  
-[right_arm]
-robot          icub
-name           cartesianSolver/right_arm
-type           right
-period         20
-dof            (0 0 0 1 1 1 1 1 1 1)
-rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
-rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
-pose           full
-mode           shot
-verbosity      off
-maxIter        200
-tol            0.001   
-xyzTol         0.000001
-interPoints    off 
-ping_robot_tmo 20.0 
+Here's how the configuration file will look like for a custom 
+robot part: 
  
-[left_leg]
-robot          icub
-name           cartesianSolver/left_leg
-type           left
-period         20
-dof            (1 1 1 1 1 1)
-rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0)
-rest_weights   (0.0 0.0 0.0 0.0 0.0 0.0) 
-pose           full
-mode           shot
-verbosity      off
-maxIter        200
-tol            0.001   
-xyzTol         0.000001
-interPoints    off
-ping_robot_tmo 20.0 
-
-[right_leg]
-robot          icub
-name           cartesianSolver/right_leg
-type           right
-period         20
-dof            (1 1 1 1 1 1)
-rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0)
-rest_weights   (0.0 0.0 0.0 0.0 0.0 0.0) 
-pose           full
-mode           shot
-verbosity      off
-maxIter        200
-tol            0.001   
-xyzTol         0.000001
-interPoints    off
-ping_robot_tmo 20.0 
+\code 
+[left_arm]
+robot           my-robot
+name            cartesianSolver/left_arm 
+customKinFile   cartesian/kinematics.ini 
+period          20
+dof             (0 0 0 1 1 1 1)
+rest_pos        (0.0 0.0 0.0 0.0 0.0 0.0 0.0)
+rest_weights    (1.0 1.0 1.0 0.0 0.0 0.0 0.0) 
+pose            full
+mode            shot
+verbosity       off
+maxIter         200
+tol             0.001
+xyzTol          0.000001
+interPoints     off 
+ping_robot_tmo  20.0 
+ 
+NumberOfDrivers 2 
+driver_0        (Key torso)    (JointsOrder reversed) 
+driver_1        (Key left_arm) (JointsOrder direct) 
 \endcode 
  
 \note for a detailed description of options, see \ref iKinSlv
@@ -151,6 +127,7 @@ Windows, Linux
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <sstream>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -160,6 +137,103 @@ Windows, Linux
 using namespace std;
 using namespace yarp::os;
 using namespace iCub::iKin;
+
+static string pathToCustomKinFile;
+
+
+/************************************************************************/
+class CustomCartesianSolver : public CartesianSolver
+{
+protected:
+    /************************************************************************/
+    PartDescriptor *getPartDesc(Searchable &options)
+    {
+        if (!options.check("robot"))
+        {
+            cout<<"Error: \"robot\" option is missing!"<<endl;
+            return NULL;
+        }
+
+        if (!options.check("NumberOfDrivers"))
+        {
+            cout<<"Error: \"NumberOfDrivers\" option is missing!"<<endl;
+            return NULL;
+        }
+
+        string robot=options.find("robot").asString().c_str();
+        cout<<"Configuring solver for "<<robot<<" ..."<<endl;
+
+        Property linksOptions;
+        linksOptions.fromConfigFile(pathToCustomKinFile.c_str());
+        iKinLimb *limb=new iKinLimb(linksOptions);
+        if (!limb->isValid())
+        {
+            cout<<"Error: invalid links parameters!"<<endl;
+            delete limb;
+            return NULL;
+        }
+
+        PartDescriptor *p=new PartDescriptor;
+        p->lmb=limb;
+        p->chn=limb->asChain();
+        p->cns=NULL;
+
+        bool failure=false;
+        p->num=options.find("NumberOfDrivers").asInt();
+        for (int cnt=0; cnt<p->num; cnt++)
+        {
+            ostringstream str;
+            str<<"driver_"<<cnt;
+            Bottle &driver=options.findGroup(str.str().c_str());
+            if (driver.isNull())
+            {
+                cout<<"Error: \""<<str.str()<<"\" option is missing!"<<endl;
+                failure=true;
+                break;
+            }
+
+            if (!driver.check("Key"))
+            {
+                cout<<"Error: \"Key\" option is missing!"<<endl;
+                failure=true;
+                break;
+            }
+
+            if (!driver.check("JointsOrder"))
+            {
+                cout<<"Error: \"JointsOrder\" option is missing!"<<endl;
+                failure=true;
+                break;
+            }
+
+            string part=driver.find("Key").asString().c_str();
+            bool directOrder=(driver.find("JointsOrder").asString()=="direct");
+
+            Property optPart;
+            optPart.put("device","remote_controlboard");
+            optPart.put("remote",(robot+"/"+part).c_str());
+            optPart.put("local",(slvName+"/"+part).c_str());
+            optPart.put("robot",robot.c_str());
+            optPart.put("part",part.c_str());
+            p->prp.push_back(optPart);
+            p->rvs.push_back(directOrder);
+        }
+
+        if (failure)
+        {
+            delete limb;
+            delete p;
+            return NULL;
+        }
+        else
+            return p;
+    }
+
+public:
+    /************************************************************************/
+    CustomCartesianSolver(const string &name) : CartesianSolver(name) { }
+};
+
 
 
 /************************************************************************/
@@ -179,7 +253,6 @@ public:
     bool configure(ResourceFinder &rf)
     {                
         string part, slvName;
-
         if (rf.check("part"))
             part=rf.find("part").asString().c_str();
         else
@@ -189,7 +262,6 @@ public:
         }
 
         Bottle &group=rf.findGroup(part.c_str());
-
         if (group.isNull())
         {
             cout<<"Error: unable to locate "<<part<<" definition"<<endl;
@@ -204,7 +276,20 @@ public:
             return false;
         }
 
-        if ((part=="left_arm") || (part=="right_arm"))
+        if (group.check("customKinFile"))
+        {
+            cout<<"Custom Cartesian Solver detected!"<<endl;
+
+            ResourceFinder rf_kin;
+            rf_kin.setVerbose(true);
+            rf_kin.setDefaultContext(rf.getContext().c_str());
+            rf_kin.setDefault("customKinFile",group.find("customKinFile").asString().c_str());
+            rf_kin.configure(0,NULL);
+            pathToCustomKinFile=rf_kin.findFile("customKinFile");
+
+            slv=new CustomCartesianSolver(slvName);
+        }
+        else if ((part=="left_arm") || (part=="right_arm"))
             slv=new iCubArmCartesianSolver(slvName);
         else if ((part=="left_leg") || (part=="right_leg"))
             slv=new iCubLegCartesianSolver(slvName);
