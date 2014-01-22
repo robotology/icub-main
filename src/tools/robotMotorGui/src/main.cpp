@@ -705,6 +705,7 @@ int myMain( int   argc, char *argv[] )
   
     //retrieve information for the list of parts
     finder->setVerbose();
+    finder->setDefaultContext("robotMotorGui"); //this is just a "backup" in case a robotMotorGui.ini file is not found in the robot-specific directory
     finder->setDefaultConfigFile("robotMotorGui.ini");
     finder->setDefault("name", "icub");
     finder->configure(argc,argv);
@@ -733,7 +734,7 @@ int myMain( int   argc, char *argv[] )
 
     std::string robotName=finder->find("name").asString().c_str();
     Bottle *pParts=finder->find("parts").asList();
-    if (pParts!=0)
+    if (pParts!=NULL)
         NUMBER_OF_AVAILABLE_PARTS=pParts->size();
     else
         NUMBER_OF_AVAILABLE_PARTS=0;
