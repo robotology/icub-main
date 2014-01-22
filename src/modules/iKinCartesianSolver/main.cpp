@@ -211,8 +211,8 @@ protected:
 
             Property optPart;
             optPart.put("device","remote_controlboard");
-            optPart.put("remote",(robot+"/"+part).c_str());
-            optPart.put("local",(slvName+"/"+part).c_str());
+            optPart.put("remote",("/"+robot+"/"+part).c_str());
+            optPart.put("local",("/"+slvName+"/"+part).c_str());
             optPart.put("robot",robot.c_str());
             optPart.put("part",part.c_str());
             p->prp.push_back(optPart);
