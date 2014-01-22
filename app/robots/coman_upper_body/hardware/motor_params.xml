@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<params>
+    <group name="GENERAL">
+        <param name="joints">   16 </param>
+        <!--                    left arm                  right_arm               left_hand       right_hand-->         
+        <param name="bIdMap">    20 21 22 23 29 30 31     16 17 18 19 26 27 28     33             32  </param>
+        <param name="axisMap">   0  1  2  3  4  5  6      7  8  9  10 11 12  13    14             15  </param> 
+        <!-- valore di conversione da mRad a gradi è 1745.33  (punto,  non virgola)-->
+        <param name="encoder">  1745.33  1745.33 1745.33 1745.33 1745.33 1745.33 1745.33  1745.33 1745.33 1745.33 1745.33 1745.33 1745.33  1745.33  1745.33  1745.33 </param>
+       <param name="zeros">      0 -90  0  0 0 0 0       0  90  0  0 0 0 0  0  0 </param>
+        <param name="maxTorque">    50 50 50 50 50 50 50  50 50 50 50 50 50 50 5  5</param>
+        <param name="scaleFactor">    1000 1000 1000 1000 1000 1000 1000  1000  1000 1000 1000 1000 1000  1000  1000  1000 </param>
+    </group>
+</params>

@@ -1089,10 +1089,27 @@ bool comanMotionControl::setPositionModeRaw()
 
 bool comanMotionControl::positionMoveRaw(int j, double ref)
 {
+//    struct timespec t_start, t_end;
+//    clock_gettime(CLOCK_REALTIME, &t_start);
+
+
     yTrace();
     uint8_t bId = jointTobId(j);
 
     _ref_positions[j] = (int32_t) ref;
+
+        /*clock_gettime(CLOCK_REALTIME, &t_end);
+        timespec temp;
+        if ((t_end.tv_nsec-t_start.tv_nsec)<0) {
+            temp.tv_sec = t_end.tv_sec-t_start.tv_sec-1;
+            temp.tv_nsec = 1e9+t_end.tv_nsec-t_start.tv_nsec;
+        } else {
+            temp.tv_sec = t_end.tv_sec-t_start.tv_sec;
+            temp.tv_nsec = t_end.tv_nsec-t_start.tv_nsec;
+        }
+        printf("%ld.%06ld ms\n",
+                 (long)(temp.tv_nsec) / 1000000,
+                 (long)(temp.tv_nsec) % 1000000);*/
 
     return (!_boards_ctrl->set_position_velocity_group(&bId, &_ref_positions[j], &_ref_speeds[j], 1) );
 }
@@ -1769,6 +1786,9 @@ bool comanMotionControl::resetEncodersRaw()
 
 bool comanMotionControl::getEncoderRaw(int j, double *enc)
 {
+//    struct timespec t_start, t_end;
+//    clock_gettime(CLOCK_REALTIME, &t_start);
+
     bool ret = true;
     McBoard *joint_p = getMCpointer(j);   //  -> giusto
 
@@ -1793,6 +1813,21 @@ bool comanMotionControl::getEncoderRaw(int j, double *enc)
     }
 
     *enc = (double) data.Position;
+
+//    clock_gettime(CLOCK_REALTIME, &t_end);
+//    timespec temp;
+//    if ((t_end.tv_nsec-t_start.tv_nsec)<0) {
+//        temp.tv_sec = t_end.tv_sec-t_start.tv_sec-1;
+//        temp.tv_nsec = 1e9+t_end.tv_nsec-t_start.tv_nsec;
+//    } else {
+//        temp.tv_sec = t_end.tv_sec-t_start.tv_sec;
+//        temp.tv_nsec = t_end.tv_nsec-t_start.tv_nsec;
+//    }
+//    printf("%ld.%06ld ms",
+//             (long)(temp.tv_nsec) / 1000000,
+//             (long)(temp.tv_nsec) % 1000000);
+
+
     return ret;
 }
 
@@ -1854,17 +1889,38 @@ bool comanMotionControl::getEncoderAccelerationsRaw(double *accs)
 
 bool comanMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
+//    struct timespec t_start, t_end;
+//    clock_gettime(CLOCK_REALTIME, &t_start);
+
     double tmp;
     bool ret = true;
     for(int i=0; i<_njoints; i++)
     {
         ret = ret && getEncoderTimedRaw(i, &encs[i], &stamps[i]);
     }
+
+//    clock_gettime(CLOCK_REALTIME, &t_end);
+//    timespec temp;
+//    if ((t_end.tv_nsec-t_start.tv_nsec)<0) {
+//        temp.tv_sec = t_end.tv_sec-t_start.tv_sec-1;
+//        temp.tv_nsec = 1e9+t_end.tv_nsec-t_start.tv_nsec;
+//    } else {
+//        temp.tv_sec = t_end.tv_sec-t_start.tv_sec;
+//        temp.tv_nsec = t_end.tv_nsec-t_start.tv_nsec;
+//    }
+//    printf("%ld.%06ld ms",
+//             (long)(temp.tv_nsec) / 1000000,
+//             (long)(temp.tv_nsec) % 1000000);
+
+
     return ret;
 }
 
 bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 {
+//    struct timespec t_start, t_end;
+//    clock_gettime(CLOCK_REALTIME, &t_start);
+
     McBoard *joint_p = getMCpointer(j);
 
     if( NULL == joint_p)
@@ -1883,6 +1939,21 @@ bool comanMotionControl::getEncoderTimedRaw(int j, double *enc, double *stamp)
 
 //     *stamp = data.Timestamp;     // if dspdata have theyr own timestamp
     *stamp=Time::now();           // if dps data doesn't have theyr oen timestamp
+
+//    clock_gettime(CLOCK_REALTIME, &t_end);
+//    timespec temp;
+//    if ((t_end.tv_nsec-t_start.tv_nsec)<0) {
+//        temp.tv_sec = t_end.tv_sec-t_start.tv_sec-1;
+//        temp.tv_nsec = 1e9+t_end.tv_nsec-t_start.tv_nsec;
+//    } else {
+//        temp.tv_sec = t_end.tv_sec-t_start.tv_sec;
+//        temp.tv_nsec = t_end.tv_nsec-t_start.tv_nsec;
+//    }
+//    printf("%ld.%06ld ms",
+//             (long)(temp.tv_nsec) / 1000000,
+//             (long)(temp.tv_nsec) % 1000000);
+
+
     return true;
 }
 

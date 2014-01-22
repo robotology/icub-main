@@ -254,7 +254,7 @@ int comanVelocityObserver::read(yarp::sig::Vector &out)
 
         if( NULL == joint_p)
         {
-            //         yError() << "Trying to get value from a non-existing joint j" << j;
+            //         yError() << "Trying to get value from a non-existing joint: " << j;
             out[j] = j;   // return the joint number just to debug!!
             return AS_ERROR;
         }

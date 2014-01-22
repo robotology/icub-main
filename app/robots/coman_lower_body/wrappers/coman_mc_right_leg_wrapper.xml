@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Right Leg Configuration file for motor side control, motor side position sensing, motor side velocity sensing and motor side torque sensing -->
+
+<devices>
+
+<!-- Motor Control -->
+    <device name="coman_mc_wrapper" type="controlboardwrapper2">
+	    <param name="threadrate">  20  </param>
+	    <paramlist name="networks">
+	      <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
+		<elem name="FirstSetOfJoints"> 0 5  0 5  </elem>	
+	    </paramlist>
+	    <param name="period"> 1                    </param> <!-- ms -->
+	    <param name="name">   coman/right_leg       </param>
+	    <param name="ports">  right_leg             </param>
+	    <param name="joints"> 6                     </param>
+	    <action phase="startup" level="5" type="attach">
+	    <!-- The param value must match the device name in the coman.xml file -->
+		<paramlist name="networks">
+		    <elem name="FirstSetOfJoints"> coman_mc </elem>  
+		</paramlist>
+	    </action>
+	    <action phase="shutdown" level="5" type="detach" />
+    </device>
+
+<!-- Velocity Observer -->
+	<device name="coman_VO_right_leg_wrapper" type="analogServer">
+	      <param name="period">     1                </param> <!-- ms -->
+	      <param name="deviceId">   right_leg         </param>
+              <param name="channels">   6       </param>
+	      <paramlist name="ports">
+		   <elem name="speeds">    0 5  0 5  </elem>
+	      </paramlist>
+	      <action phase="startup" level="5" type="attach">
+		<paramlist name="networks">
+		    <!-- The param value must match the device name in the corresponding emsX file -->
+		  <elem name="FirstSetOfJoints"> vo_right_leg </elem>
+		</paramlist>
+	      </action>
+	      <action phase="shutdown" level="5" type="detach" />
+	</device>
+
+<!-- Joint Torque Observer -->
+	<device name="coman_JT_right_leg_wrapper" type="analogServer">
+	      <param name="period">     1                </param> <!-- ms -->
+	      <param name="deviceId">   right_leg         </param>
+              <param name="channels">   6       </param>
+	      <paramlist name="ports">
+		   <elem name="torques">    0 5   0 5  </elem>
+	      </paramlist>
+	      <action phase="startup" level="5" type="attach">
+		<paramlist name="networks">
+		    <!-- The param value must match the device name in the corresponding emsX file -->
+		  <elem name="FirstSetOfJoints"> coman_jt </elem>
+		</paramlist>
+	      </action>
+	      <action phase="shutdown" level="5" type="detach" />
+	</device>      
+</devices>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<params>
+    <group name="ANALOG">
+        <param name="numberOfSensors">  2                       </param>
+        <!--  number of sensor channels for each board DO NOT CHANGE THIS VALUE!! -->
+        <param name="channels">         6                       </param> 
+        <!--  boards Id  -->
+        <param name="FTmap">            36      37              </param>
+        <param name="UseCalibration">   0                        </param>
+        <param name="Calibration">      0       0               </param>  
+        <param name="scaleFactor">      1000    1000            </param>
+    </group>
+    
+    <group name="FT_BOARD">
+        <param name="policy">           0x2     </param>
+        <param name="bc_rate">          2       </param>
+        <param name="calibrate_offset"> true    </param>
+    </group>
+</params>
