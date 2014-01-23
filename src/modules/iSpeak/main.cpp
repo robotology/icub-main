@@ -245,7 +245,7 @@ class iSpeak : protected BufferedPort<Bottle>,
             command+="--tts ";
 
         command+=package_options;
-        system(command.c_str());
+        int ret=system(command.c_str());
     }
 
     /************************************************************************/
