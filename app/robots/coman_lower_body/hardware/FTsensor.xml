@@ -5,7 +5,7 @@
         <!--  number of sensor channels for each board DO NOT CHANGE THIS VALUE!! -->
         <param name="channels">         6                       </param> 
         <!--  boards Id  -->
-        <param name="FTmap">            26      27              </param>
+        <param name="FTmap">            34      35              </param>
         <param name="UseCalibration">   0                       </param>
         <param name="Calibration">      0       0               </param>  
         <param name="scaleFactor">      1000    1000            </param>
