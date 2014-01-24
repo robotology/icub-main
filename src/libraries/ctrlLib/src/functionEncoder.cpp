@@ -16,6 +16,8 @@
  * Public License for more details
 */
 
+#include <algorithm>
+
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_integration.h>
 
@@ -26,6 +28,7 @@
 #define CAST_GSLWS(x)       (static_cast<gsl_integration_workspace*>(x))
 #define WAVELET_LUP_SIZE    57
 
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -35,74 +38,72 @@ namespace iCub
 
 namespace ctrl
 {
-    double waveLUP[WAVELET_LUP_SIZE][2]={ { 0.000,                   0.0 },
-                                          { 0.125,    0.0345833411415645 },
-                                          { 0.250,     0.107309738113335 },
-                                          { 0.375,     0.202014885729746 }, 
-                                          { 0.500,     0.328773960240219 }, 
-                                          { 0.625,     0.467801596736295 },
-                                          { 0.750,     0.618433317340402 },
-                                          { 0.875,     0.799799587363102 },
-                                          { 1.000,      1.00839956631986 },
-                                          { 1.125,      1.11213550554368 },
-                                          { 1.250,      1.10075377628576 },
-                                          { 1.375,      1.03456741914056 },
-                                          { 1.500,     0.876691003658645 },
-                                          { 1.625,     0.708936729237485 },
-                                          { 1.750,     0.535149009932799 },
-                                          { 1.875,     0.281586312944196 },
-                                          { 2.000,   -0.0358782406601501 },
-                                          { 2.125,    -0.233040642106083 },
-                                          { 2.250,    -0.302412553008806 },
-                                          { 2.375,    -0.321628766530846 },
-                                          { 2.500,    -0.241966742214465 },
-                                          { 2.625,    -0.190865137334676 },
-                                          { 2.750,    -0.175103704342541 },
-                                          { 2.875,   -0.0890678401406110 },
-                                          { 3.000,    0.0407115008395991 },
-                                          { 3.125,     0.108682072349430 },
-                                          { 3.250,     0.118185639560005 },
-                                          { 3.375,     0.101870197888310 },
-                                          { 3.500,    0.0341494900045930 },
-                                          { 3.625,   0.00431657421191742 },
-                                          { 3.750,    0.0162890023018952 },
-                                          { 3.875,   0.00436750867994683 },
-                                          { 4.000,   -0.0120853649259263 },
-                                          { 4.125,   -0.0194095628614931 },
-                                          { 4.250,   -0.0234198437934784 },
-                                          { 4.375,   -0.0169172631594144 },
-                                          { 4.500,   0.00224836903406590 },
-                                          { 4.625,   0.00948830118465152 },
-                                          { 4.750,   0.00525142022644811 },
-                                          { 4.875,   0.00340625270534754 },
-                                          { 5.000,  -0.00116770339087780 },
-                                          { 5.125,  -0.00296115923392665 },
-                                          { 5.250, -0.000413390931405029 },
-                                          { 5.375,  9.35269316433299e-05 },
-                                          { 5.500,  0.000103919276941685 },
-                                          { 5.625,  0.000321935964326630 },
-                                          { 5.750, -1.90454590045895e-05 },
-                                          { 5.875, -9.18215519817765e-05 },
-                                          { 6.000,  2.02418174948211e-05 },
-                                          { 6.125,  1.04451668231589e-05 },
-                                          { 6.250, -3.36622541321180e-06 },
-                                          { 6.375,                   0.0 },
-                                          { 6.500,                   0.0 },
-                                          { 6.625,                   0.0 },
-                                          { 6.750,                   0.0 },
-                                          { 6.875,                   0.0 },
-                                          { 7.000,                   0.0 } };
+    static double waveLUP[WAVELET_LUP_SIZE][2]={ { 0.000,                   0.0 },
+                                                 { 0.125,    0.0345833411415645 },
+                                                 { 0.250,     0.107309738113335 },
+                                                 { 0.375,     0.202014885729746 }, 
+                                                 { 0.500,     0.328773960240219 }, 
+                                                 { 0.625,     0.467801596736295 },
+                                                 { 0.750,     0.618433317340402 },
+                                                 { 0.875,     0.799799587363102 },
+                                                 { 1.000,      1.00839956631986 },
+                                                 { 1.125,      1.11213550554368 },
+                                                 { 1.250,      1.10075377628576 },
+                                                 { 1.375,      1.03456741914056 },
+                                                 { 1.500,     0.876691003658645 },
+                                                 { 1.625,     0.708936729237485 },
+                                                 { 1.750,     0.535149009932799 },
+                                                 { 1.875,     0.281586312944196 },
+                                                 { 2.000,   -0.0358782406601501 },
+                                                 { 2.125,    -0.233040642106083 },
+                                                 { 2.250,    -0.302412553008806 },
+                                                 { 2.375,    -0.321628766530846 },
+                                                 { 2.500,    -0.241966742214465 },
+                                                 { 2.625,    -0.190865137334676 },
+                                                 { 2.750,    -0.175103704342541 },
+                                                 { 2.875,   -0.0890678401406110 },
+                                                 { 3.000,    0.0407115008395991 },
+                                                 { 3.125,     0.108682072349430 },
+                                                 { 3.250,     0.118185639560005 },
+                                                 { 3.375,     0.101870197888310 },
+                                                 { 3.500,    0.0341494900045930 },
+                                                 { 3.625,   0.00431657421191742 },
+                                                 { 3.750,    0.0162890023018952 },
+                                                 { 3.875,   0.00436750867994683 },
+                                                 { 4.000,   -0.0120853649259263 },
+                                                 { 4.125,   -0.0194095628614931 },
+                                                 { 4.250,   -0.0234198437934784 },
+                                                 { 4.375,   -0.0169172631594144 },
+                                                 { 4.500,   0.00224836903406590 },
+                                                 { 4.625,   0.00948830118465152 },
+                                                 { 4.750,   0.00525142022644811 },
+                                                 { 4.875,   0.00340625270534754 },
+                                                 { 5.000,  -0.00116770339087780 },
+                                                 { 5.125,  -0.00296115923392665 },
+                                                 { 5.250, -0.000413390931405029 },
+                                                 { 5.375,  9.35269316433299e-05 },
+                                                 { 5.500,  0.000103919276941685 },
+                                                 { 5.625,  0.000321935964326630 },
+                                                 { 5.750, -1.90454590045895e-05 },
+                                                 { 5.875, -9.18215519817765e-05 },
+                                                 { 6.000,  2.02418174948211e-05 },
+                                                 { 6.125,  1.04451668231589e-05 },
+                                                 { 6.250, -3.36622541321180e-06 },
+                                                 { 6.375,                   0.0 },
+                                                 { 6.500,                   0.0 },
+                                                 { 6.625,                   0.0 },
+                                                 { 6.750,                   0.0 },
+                                                 { 6.875,                   0.0 },
+                                                 { 7.000,                   0.0 } };
 
     /************************************************************************/
-    double integrand(double x, void *params)
+    static double integrand(double x, void *params)
     {
-        waveletEncoder *pWavEnc=(waveletEncoder*)params;
-
-        Vector &Val=*pWavEnc->pVal;
+        WaveletEncoder *pWavEnc=(WaveletEncoder*)params;
+        const Vector &values=*pWavEnc->pVal;
         unsigned int n=pWavEnc->iCoeff;
-        double R=pWavEnc->Resolution;
-
-        return (pWavEnc->interpFunction(Val,x)-Val[0]) * (R*pWavEnc->interpWavelet(R*x-n));
+        double R=pWavEnc->resolution;
+        return (pWavEnc->interpFunction(values,x)-values[0]) * (R*pWavEnc->interpWavelet(R*x-n));
     }
 }
 
@@ -110,8 +111,9 @@ namespace ctrl
 
 
 /************************************************************************/
-waveletEncoder::waveletEncoder()
+WaveletEncoder::WaveletEncoder()
 {
+    resolution=(WAVELET_LUP_SIZE-1)/2.0;
     w=gsl_integration_workspace_alloc(1000);
     F=new gsl_function;
 
@@ -121,7 +123,7 @@ waveletEncoder::waveletEncoder()
 
 
 /************************************************************************/
-double waveletEncoder::interpWavelet(const double x)
+double WaveletEncoder::interpWavelet(const double x)
 {
     if ((x<=waveLUP[0][0]) || (x>=waveLUP[WAVELET_LUP_SIZE-1][0]))
         return 0.0;
@@ -139,26 +141,26 @@ double waveletEncoder::interpWavelet(const double x)
 
 
 /************************************************************************/
-double waveletEncoder::interpFunction(const Vector &Val, const double x)
+double WaveletEncoder::interpFunction(const Vector &values, const double x)
 {
     // x shall be in [0,1]
-    double L=Val.size()-1;
+    double L=values.size()-1;
 
     if (x<=0.0)
-        return Val[0];
+        return values[0];
     else if (x>=1.0)
-        return Val[(size_t)L];
+        return values[(size_t)L];
     else
     {
         size_t i=(size_t)(x*L);
         double x0=((double)i)/L;
-        double y0=Val[i];
+        double y0=values[i];
 
         if (++i>L)
             i=(size_t)L;
 
         double x1=((double)i)/L;
-        double y1=Val[i];
+        double y1=values[i];
 
         return ((x-x0)/(x1-x0))*(y1-y0)+y0;
     }
@@ -166,58 +168,70 @@ double waveletEncoder::interpFunction(const Vector &Val, const double x)
 
 
 /************************************************************************/
-Vector waveletEncoder::encode(Vector &Val, double R)
+bool WaveletEncoder::setEncoderOptions(const Property &options)
 {
-    // apply saturation
-    if (R<0.0)
-        R=0.0;
-    else if (R>WAVELET_LUP_SIZE-1)
-        R=WAVELET_LUP_SIZE-1;
-
-    pVal=&Val;
-    Resolution=R;
-
-    unsigned int N=(unsigned int)R+1;
-    Vector Coeffs(N+1);
-    double error;
-
-    Coeffs[0]=Val[0];
-
-    for (iCoeff=0; iCoeff<N; iCoeff++)
+    Property opt=const_cast<Property&>(options);
+    if (opt.check("resolution"))
     {
-        double tau1=(waveLUP[0][0]+iCoeff)/R;
-        double tau2=(waveLUP[WAVELET_LUP_SIZE-1][0]+iCoeff)/R;
+        double R=opt.find("resolution").asDouble();
 
-        gsl_integration_qag(CAST_GSLFUNC(F),tau1,tau2,1e-3,1e-2,1000,GSL_INTEG_GAUSS61,CAST_GSLWS(w),
-                            &Coeffs[iCoeff+1],&error);
+        // apply saturation
+        resolution=std::max(0.0,std::min(R,double(WAVELET_LUP_SIZE-1)));
+        return true;
     }
-
-    return Coeffs;
+    else
+        return false;
 }
 
 
 /************************************************************************/
-double waveletEncoder::decode(const Vector &Coeffs, double R, const double x)
+Property WaveletEncoder::getEncoderOptions()
 {
-    // apply saturation
-    if (R<0.0)
-        R=0.0;
-    else if (R>WAVELET_LUP_SIZE-1)
-        R=WAVELET_LUP_SIZE-1;
+    Property options;
+    options.put("resolution",resolution);
+    return options;
+}
 
-    unsigned int N=(unsigned int)R+1;
-    double decodedVal=Coeffs[0];
+
+/************************************************************************/
+Code WaveletEncoder::encode(const Vector &values)
+{
+    Code code;
+    pVal=&values;
+    unsigned int N=(unsigned int)resolution+1;    
+    code.coefficients.resize(N+1);
+    double error;
+
+    code.coefficients[0]=values[0];
+    for (iCoeff=0; iCoeff<N; iCoeff++)
+    {
+        double tau1=(waveLUP[0][0]+iCoeff)/resolution;
+        double tau2=(waveLUP[WAVELET_LUP_SIZE-1][0]+iCoeff)/resolution;
+
+        gsl_integration_qag(CAST_GSLFUNC(F),tau1,tau2,1e-3,1e-2,1000,GSL_INTEG_GAUSS61,CAST_GSLWS(w),
+                            &code.coefficients[iCoeff+1],&error);
+    }
+
+    return code;
+}
+
+
+/************************************************************************/
+double WaveletEncoder::decode(const Code &code, const double x)
+{
+    unsigned int N=(unsigned int)resolution+1;
+    double decodedVal=code.coefficients[0];
 
     // compute the linear combination of wavelets
     for (unsigned int n=0; n<N; n++)
-        decodedVal+=Coeffs[n+1]*interpWavelet(R*x-n);
+        decodedVal+=code.coefficients[n+1]*interpWavelet(resolution*x-n);
 
     return decodedVal;
 }
 
 
 /************************************************************************/
-waveletEncoder::~waveletEncoder()
+WaveletEncoder::~WaveletEncoder()
 {
     gsl_integration_workspace_free(CAST_GSLWS(w));
     delete CAST_GSLFUNC(F);

@@ -21,7 +21,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for encoding functions
+ * Classes for encoding functions.
  *
  * \author Ugo Pattacini
  *
@@ -30,6 +30,7 @@
 #ifndef __FUNCTIONENCODER_H__
 #define __FUNCTIONENCODER_H__
 
+#include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
 
@@ -41,22 +42,86 @@ namespace ctrl
 
 /**
 * \ingroup functionEncoder
+*  
+* Code book. 
+*/
+struct Code
+{
+    /**
+    * The vector of coefficients encoding the function.
+    */
+    yarp::sig::Vector coefficients;
+};
+
+
+/**
+* \ingroup functionEncoder
 *
-* Encodes any given function as a set of wavelet coefficients. 
+* Abstract class to deal with function encoding.
+*/
+class FunctionEncoder
+{
+public:
+    /**
+    * Configure the encoder. 
+    * @param options encoder's options in form of a Property object.
+    * @return true/false on success/fail. 
+    */
+    virtual bool setEncoderOptions(const yarp::os::Property &options) = 0;
+
+    /**
+    * Retrieve the encoder's configuration options.
+    * @return a Property object containing the encoder's options. 
+    */
+    virtual yarp::os::Property getEncoderOptions() = 0;
+
+    /**
+    * Encode the function.
+    * @param values is the vector containing the samples of function
+    *            \b f to be encoded. The \e x coordinates of the
+    *            points are intended to be normalized in [0,1], so
+    *            that f(0)=values[0] and
+    *            f(1)=values[values.length()-1].
+    * @return the code book encoding the function \b f.
+    */
+    virtual Code encode(const yarp::sig::Vector &values) = 0;
+
+    /**
+    * Compute the approximated value of function in \b x, given the 
+    * code book. 
+    * @param code contains the function representation in the 
+    *                 vector space.
+    * @param x is the point at which the result is computed. It 
+    *          shall be in [0,1].
+    * @return the decoded function value. 
+    */
+    virtual double decode(const Code &code, const double x) = 0;
+
+    /**
+    * Destructor. 
+    */
+    virtual ~FunctionEncoder() { }
+};
+
+
+/**
+* \ingroup functionEncoder
+*
+* Encode any given function as a set of wavelet coefficients. 
 * The father wavelet used here is the \b db4.
 */
-class waveletEncoder
+class WaveletEncoder : public FunctionEncoder
 {
 protected:
     void *w;
     void *F;
-    yarp::sig::Vector *pVal;
+    const yarp::sig::Vector *pVal;
 
     unsigned int iCoeff;
-    double Resolution;
+    double resolution;
 
     double interpWavelet(const double x);
-    double interpFunction(const yarp::sig::Vector &Val, const double x);
+    double interpFunction(const yarp::sig::Vector &values, const double x);
 
     friend double integrand(double x, void *params);
 
@@ -64,43 +129,58 @@ public:
     /**
     * Constructor. 
     */
-    waveletEncoder();
+    WaveletEncoder();
 
     /**
-    * Encodes the function.
-    * @param Val is the vector containing the samples of function 
-    *            \b f to be encoded. The \e x coordinates of the
-    *            points are intended to be normalized in [0,1], so
-    *            that f(0)=Val[0] and f(1)=Val[Val.length()-1].
-    * @param R is the resolution to which the encoding is computed. 
-    * @return the computed 1+N coefficients, with the first one 
-    *         being f(0) and the following N are the actual wavelet
-    *         expansion coefficients.
-    * @note It holds that N=floor(R)+1, where N is the number of
-    *       coefficients of the vector space. Recap that floor() is
+    * Configure the encoder. 
+    * @param options lets user specify the resolution R to which the
+    *                encoding is computed. Accepted options are of
+    *                the form ("resolution" <double>).
+    * @return true/false on success/fail. 
+    *  
+    * @note It holds that N=floor(R)+1, where N is the number of 
+    *       coefficients of the vector space. Recap that floor(.) is
     *       the round function towards minus infinity.
     */
-    virtual yarp::sig::Vector encode(yarp::sig::Vector &Val, double R);
+    virtual bool setEncoderOptions(const yarp::os::Property &options);
 
     /**
-    * Computes the approximated value of function in x, given the 
+    * Retrieve the encoder's configuration options.
+    * @return a Property object containing the encoder options. 
+    */
+    virtual yarp::os::Property getEncoderOptions();
+
+    /**
+    * Encode the function.
+    * @param values is the vector containing the samples of function
+    *            \b f to be encoded. The \e x coordinates of the
+    *            points are intended to be normalized in [0,1], so
+    *            that f(0)=values[0] and
+    *            f(1)=values[values.length()-1].
+    * @return the code book containing the computed 1+N 
+    *         coefficients, with the first one being f(0) and the
+    *         following N are the actual wavelet expansion
+    *         coefficients.
+    */
+    virtual Code encode(const yarp::sig::Vector &values);
+
+    /**
+    * Compute the approximated value of function in \b x, given the 
     * input set of wavelet coefficients. 
-    * @param Coeffs is the wavelet coefficients vector along with 
+    * @param code contains wavelet coefficients vector along with 
     *               the first initial value f(0).
-    * @param R is the resolution to which the decoding is computed. 
     * @param x is the point at which the result is computed. It 
     *          shall be in [0,1].
     * @return the decoded function value. 
-    * @note It shall hold that Coeffs.length()>=floor(R)+2. Recap 
-    *       that floor() is the round function towards minus
-    *       infinity.
+    *  
+    * @note It shall hold that coefficients.length()>=floor(R)+2.
     */
-    virtual double decode(const yarp::sig::Vector &Coeffs, double R, const double x);
+    virtual double decode(const Code &code, const double x);
 
     /**
     * Destructor. 
     */
-    ~waveletEncoder();
+    virtual ~WaveletEncoder();
 };
 
 }
@@ -108,6 +188,5 @@ public:
 }
 
 #endif
-
 
 
