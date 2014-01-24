@@ -87,7 +87,7 @@ public:
     * input set of wavelet coefficients. 
     * @param Coeffs is the wavelet coefficients vector along with 
     *               the first initial value f(0).
-    * @param R is the resolution to which the deconding is computed. 
+    * @param R is the resolution to which the decoding is computed. 
     * @param x is the point at which the result is computed. It 
     *          shall be in [0,1].
     * @return the decoded function value. 
