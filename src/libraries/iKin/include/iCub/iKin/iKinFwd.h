@@ -32,11 +32,8 @@
  * - IPOPT: see the <a
  *   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
  *  
- * \note Tutorials are available under 
- *       <i>$ICUB_ROOT/main/src/libraries/iKin/tutorials</i>.
- *  
-   \note <b>If you're going to use iKin for your work, please
-         quote it within any resulting publication</b>.
+ * \note <b>If you're going to use iKin for your work, please
+ *       quote it within any resulting publication</b>.
  *  
  * \author Ugo Pattacini 
  *  
