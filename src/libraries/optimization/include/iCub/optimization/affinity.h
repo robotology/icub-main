@@ -134,6 +134,11 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool calibrate(yarp::sig::Matrix &A, double &error);
+
+    /**
+    * Destructor.
+    */
+    virtual ~AffinityWithMatchedPoints() { }
 };
 
 }

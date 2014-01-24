@@ -225,6 +225,11 @@ public:
     * @return true/false on success/fail. 
     */
     virtual bool calibrate(yarp::sig::Matrix &H, double &s, double &error);
+
+    /**
+    * Destructor.
+    */
+    virtual ~CalibReferenceWithMatchedPoints() { }
 };
 
 }
