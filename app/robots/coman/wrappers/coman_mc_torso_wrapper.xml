@@ -4,12 +4,12 @@
 <devices>
 <!-- Motor Control -->
     <device name="coman_mc_torso_wrapper" type="controlboardwrapper2">
-	<param name="threadrate">  10  </param>
+	<param name="threadrate">  20  </param>
     	<paramlist name="networks">
       		<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
 		<elem name="FirstSetOfJoints"> 0 2  0 2   </elem>	
     	</paramlist>
-    	<param name="period"> 20                    </param>
+    	<param name="period"> 1                    </param>
     	<param name="name">   coman/torso           </param>
     	<param name="ports">  torso                 </param>
     	<param name="joints"> 3                     </param>
@@ -24,7 +24,7 @@
 
 <!-- Velocity Observer -->
 	<device name="coman_VO_torso_wrapper" type="analogServer">
-      		<param name="period">     20                </param>
+      		<param name="period">     1                </param>
       		<param name="deviceId">   torso             </param>
                 <param name="channels">   3       </param>
       		<paramlist name="ports">
@@ -41,7 +41,7 @@
 
 <!-- Joint Torque Observer -->
 	<device name="coman_JT_torso_wrapper" type="analogServer">
-      		<param name="period">     20                </param>
+      		<param name="period">     1                </param>
       		<param name="deviceId">   torso             </param>
                 <param name="channels">   3       </param>
 	      	<paramlist name="ports">

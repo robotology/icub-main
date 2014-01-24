@@ -13,6 +13,8 @@
     <devices file="hardware/velocityObserver/vo_right_arm.xml" />
     <devices file="hardware/velocityObserver/vo_right_leg.xml" />
     <devices file="hardware/velocityObserver/vo_torso.xml" />
+    <devices file="hardware/velocityObserver/vo_left_hand.xml" />
+    <devices file="hardware/velocityObserver/vo_right_hand.xml" />
 
   <devices file="hardware/jointTorqueSensor.xml" />
 
@@ -27,18 +29,19 @@
 
 <!-- #################PARTS WRAPPERS################## -->
 
-  <devices file="wrappers/coman_mc_left_leg_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_left_arm_wrapper.xml" />
+  <devices file="wrappers/coman_mc_left_leg_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_right_arm_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_right_leg_wrapper.xml" /> 
   <devices file="wrappers/coman_mc_torso_wrapper.xml" /> 
-  <!-- devices file="wrappers/coman_mc_neck_wrapper.xml" / -->
+  <devices file="wrappers/coman_mc_left_hand_wrapper.xml" />
+  <devices file="wrappers/coman_mc_right_hand_wrapper.xml" /> 
 
 <!-- ########################################## -->
 
 <!-- #################SENSORS WRAPPERS################## -->
 
-   <devices file="wrappers/coman_ft_wrappers.xml" />
+  <devices file="wrappers/coman_ft_wrappers.xml" /> 
     
 <!-- ########################################## -->
 

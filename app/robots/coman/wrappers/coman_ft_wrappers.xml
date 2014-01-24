@@ -2,13 +2,15 @@
 
 <devices>
     <device name="coman_ft_wrapper" type="analogServer">
-      <param name="period">     20                </param>
+      <param name="period">     1                </param>
       <param name="deviceId">   forceTorque             </param>     
-      <param name="channels"> 12              </param>
+      <param name="channels"> 24              </param>
 
       <paramlist name="ports">
-           <elem name="left_leg">    0 5  0 5  </elem>
-           <elem name="right_leg">   6 11 0 5  </elem>
+           <elem name="right_leg">    0 5  0 5  </elem>
+           <elem name="left_leg">     6 11 0 5  </elem>
+           <elem name="right_arm">    12  17  0 5  </elem>
+           <elem name="left_arm">   18 23 0 5  </elem>
       </paramlist>
 
       <action phase="startup" level="5" type="attach">

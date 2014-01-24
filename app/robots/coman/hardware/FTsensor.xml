@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <params>
     <group name="ANALOG">
-        <param name="numberOfSensors">  2                       </param>
+        <param name="numberOfSensors">  4                       </param>
         <!--  number of sensor channels for each board DO NOT CHANGE THIS VALUE!! -->
         <param name="channels">         6                       </param> 
         <!--  boards Id  -->
-        <param name="FTmap">            26      27              </param>
+        <param name="FTmap">            34      35    36    37              </param>  <!-- right_foot_ft  left_foot_ft  right_forearm_ft  left_forearm_ft --> 
         <param name="UseCalibration">   0                       </param>
-        <param name="Calibration">      0       0               </param>    
+        <param name="Calibration">      0       0    0     0           </param>  
+        <param name="scaleFactor">      1000    1000 1000  1000           </param>  
     </group>
     
     <group name="FT_BOARD">
