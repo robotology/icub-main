@@ -17,7 +17,7 @@
 */
 
 /**
- * \defgroup Kalman Kalman 
+ * \defgroup Kalman Kalman Observer
  *  
  * @ingroup ctrlLib
  *

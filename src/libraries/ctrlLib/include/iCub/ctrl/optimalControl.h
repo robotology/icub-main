@@ -17,7 +17,7 @@
 */
 
 /**
- * \defgroup optimalControl optimalControl 
+ * \defgroup optimalControl Optimal Control
  *    
  * @ingroup ctrlLib
  *  

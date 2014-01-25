@@ -97,7 +97,7 @@ namespace ctrl
                                           { 7.000,                   0.0 } };
 
     /************************************************************************/
-    double integrand(double x, void *params)
+    double waveletIntegrand(double x, void *params)
     {
         WaveletEncoder *pWavEnc=(WaveletEncoder*)params;
         const Vector &values=*pWavEnc->pVal;
@@ -117,7 +117,7 @@ WaveletEncoder::WaveletEncoder()
     w=gsl_integration_workspace_alloc(1000);
     F=new gsl_function;
 
-    CAST_GSLFUNC(F)->function=&integrand;
+    CAST_GSLFUNC(F)->function=&waveletIntegrand;
     CAST_GSLFUNC(F)->params=(void*)this;
 }
 

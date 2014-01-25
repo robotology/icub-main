@@ -17,7 +17,7 @@
 */
 
 /**
- * \defgroup minJerkCtrl minJerkCtrl
+ * \defgroup minJerkCtrl Minimum-Jerk Controller
  *  
  * @ingroup ctrlLib
  *

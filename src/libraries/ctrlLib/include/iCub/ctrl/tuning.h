@@ -16,7 +16,7 @@
 */
 
 /**
- * \defgroup Tuning Tuning
+ * \defgroup Tuning Tuning of Compensators
  *  
  * @ingroup ctrlLib
  *

@@ -17,7 +17,7 @@
 */
 
 /**
- * \defgroup neuralNetworks neuralNetworks 
+ * \defgroup neuralNetworks Neural Networks
  *  
  * @ingroup ctrlLib
  *

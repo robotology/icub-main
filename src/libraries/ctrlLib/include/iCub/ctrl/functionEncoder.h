@@ -17,7 +17,7 @@
 */
 
 /**
- * \defgroup functionEncoder functionEncoder
+ * \defgroup functionEncoder Functions Encoding
  *  
  * @ingroup ctrlLib
  *
@@ -43,7 +43,7 @@ namespace ctrl
 /**
 * \ingroup functionEncoder
 *  
-* Code book. 
+* Code. 
 */
 struct Code
 {
@@ -82,13 +82,13 @@ public:
     *            points are intended to be normalized in [0,1], so
     *            that f(0)=values[0] and
     *            f(1)=values[values.length()-1].
-    * @return the code book encoding the function \b f.
+    * @return the code encoding the function \b f.
     */
     virtual Code encode(const yarp::sig::Vector &values) = 0;
 
     /**
     * Compute the approximated value of function in \b x, given the 
-    * code book. 
+    * code. 
     * @param code contains the function representation in the 
     *                 vector space.
     * @param x is the point at which the result is computed. It 
@@ -123,7 +123,7 @@ protected:
     double interpWavelet(const double x);
     double interpFunction(const yarp::sig::Vector &values, const double x);
 
-    friend double integrand(double, void*);
+    friend double waveletIntegrand(double, void*);
 
 public:
     /**
@@ -157,10 +157,9 @@ public:
     *            points are intended to be normalized in [0,1], so
     *            that f(0)=values[0] and
     *            f(1)=values[values.length()-1].
-    * @return the code book containing the computed 1+N 
-    *         coefficients, with the first one being f(0) and the
-    *         following N are the actual wavelet expansion
-    *         coefficients.
+    * @return the code containing the computed 1+N coefficients,
+    *         with the first one being f(0) and the following N are
+    *         the actual wavelet expansion coefficients.
     */
     virtual Code encode(const yarp::sig::Vector &values);
 
