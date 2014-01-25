@@ -21,7 +21,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for neural networking
+ * Classes for neural networking.
  *
  * \author Ugo Pattacini
  *

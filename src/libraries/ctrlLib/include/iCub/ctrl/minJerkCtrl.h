@@ -21,7 +21,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for Minimum-Jerk Control
+ * Classes for Minimum-Jerk Control.
  *
  * \author Ugo Pattacini
  *

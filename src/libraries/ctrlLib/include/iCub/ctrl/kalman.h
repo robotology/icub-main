@@ -17,11 +17,11 @@
 */
 
 /**
- * \defgroup Kalman Kalman Observer
+ * \defgroup Kalman Kalman Estimation
  *  
  * @ingroup ctrlLib
  *
- * Classes for Kalman estimation
+ * Classes for Kalman estimation.
  *
  * \author Ugo Pattacini
  *

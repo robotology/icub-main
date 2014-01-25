@@ -21,7 +21,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for filtering 
+ * Classes for filtering.
  *
  * \author Ugo Pattacini
  *

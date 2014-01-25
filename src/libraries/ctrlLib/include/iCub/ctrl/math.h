@@ -31,7 +31,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Collection of mathematical functions
+ * Collection of mathematical functions.
  *
  * \author Ugo Pattacini, Serena Ivaldi, Francesco Nori
  * 

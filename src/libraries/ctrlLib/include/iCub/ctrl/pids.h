@@ -21,7 +21,7 @@
  *  
  * @ingroup ctrlLib
  *
- * Classes for PIDs
+ * Classes for PIDs.
  *
  * \author Ugo Pattacini
  *

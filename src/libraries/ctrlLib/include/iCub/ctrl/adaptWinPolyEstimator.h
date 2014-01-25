@@ -17,8 +17,7 @@
 */
 
 /**
- * \defgroup adaptWinPolyEstimator Adaptive Window Polynomial 
- *           Fitting Estimator
+ * \defgroup adaptWinPolyEstimator Adaptive Window Polynomial Fitting Estimator
  *  
  * @ingroup ctrlLib
  *
