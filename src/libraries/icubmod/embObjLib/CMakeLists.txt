@@ -12,11 +12,6 @@ PROJECT(${PROJECTNAME})
 add_definitions( -D_ICUB_CALLBACK_)
 
 
-PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME}  INCLUDE ethManager.h ethResource.h)
-
-
-
-
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 #--------------------------------------------------------#
 # download embObjlib from firmware repository
