@@ -282,7 +282,7 @@ void Controller::stopLimb(const bool execStopPosition)
         if (neckPosCtrlOn)
         {
             if (execStopPosition)
-                for (size_t i = 0; i < neckJoints.size(); i++) 
+                for (size_t i=0; i<neckJoints.size(); i++) 
                     posHead->stop(neckJoints[i]);
 
             for (size_t i=0; i<eyesJoints.size(); i++)
