@@ -246,7 +246,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    printf("EmbObj Virtual Analog Sensor for board %d intatiated correctly", _fId.boardNum);
+    yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNum << "instantiated correctly";
     return true;
 }
 

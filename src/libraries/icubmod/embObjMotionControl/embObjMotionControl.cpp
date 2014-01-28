@@ -1116,8 +1116,6 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
         yError() << "Error: too much threads!! (embObjMotionControl)";
     req.joint = j;
     req.nvid = res->translate_NVid2index(_fId.boardNum, protoid);
-
-    yDebug() << "appendWaitRequest: j="<<j<< " protoId=" <<protoid << " prog_num_id=" << req.nvid << "thid=" << req.threadId;
     requestQueue->append(req);
     return requestQueue->threadPool->getThreadTable(req.threadId);
 }
@@ -1290,7 +1288,6 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 {
     eOprotID32_t protid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     // Sign up for waiting the reply
-    yDebug() << "getPidRaw: ep=" << _fId.ep << "j=" <<j<< " nvid_tag=" <<eoprot_tag_mc_joint_config_pidposition <<" protId="<<protid;
 
     eoThreadEntry *tt = appendWaitRequest(j, protid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
     tt->setPending(1);

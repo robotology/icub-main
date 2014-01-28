@@ -394,7 +394,6 @@ extern void eoprot_fun_UPDT_mc_joint_config_pidposition(const EOnv* nv, const eO
 //    ep2char(str, nv->ep);
  //   printf("Position Pid Callback ep =0x%0X(%s), j=%d (0x%0X) \n", nv->ep, str, xx, xx);
     //yDebug()<< "callback pid position: nvid=" << rd->id32 << "progressivenum=" << eoprot_ID2index(rd->id32);
-    printf("\n\n$$$$$$callback pid position: nvid=%d  progressivenum=%d boardnum=%d\n", rd->id32, eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), rd->id32), eo_nv_GetBRD(nv));
     jwake(eoprot_ID2index(rd->id32), nv, eoprot_tag_mc_joint_config_pidposition);
 }
 
