@@ -525,8 +525,10 @@ void Localizer::handleMonocularInput()
             Vector fp;
             if (projectPoint(type,u,v,z,fp))
             {
-                (port_xd!=NULL)?port_xd->set_xd(fp):
-                                printf("Internal error occured!\n");
+                if (port_xd!=NULL)
+                    port_xd->set_xd(fp);
+                else
+                    printf("Internal error occured!\n");
             }
         }
         else
@@ -574,8 +576,10 @@ void Localizer::handleStereoInput()
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
                 {
-                    (port_xd!=NULL)?port_xd->set_xd(fp):
-                                    printf("Internal error occured!\n");
+                    if (port_xd!=NULL)
+                        port_xd->set_xd(fp);
+                    else
+                        printf("Internal error occured!\n");
                 }
             }
             else
@@ -602,8 +606,10 @@ void Localizer::handleAnglesInput()
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
 
             Vector xd=get3DPoint(type,ang);
-            (port_xd!=NULL)?port_xd->set_xd(xd):
-                            printf("Internal error occured!\n");
+            if (port_xd!=NULL)
+                port_xd->set_xd(xd);
+            else
+                printf("Internal error occured!\n");
         }
         else
             printf("Got wrong angles information!\n");
