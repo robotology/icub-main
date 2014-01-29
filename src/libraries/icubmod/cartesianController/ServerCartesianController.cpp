@@ -1317,12 +1317,7 @@ bool ServerCartesianController::threadInit()
 /************************************************************************/
 void ServerCartesianController::afterStart(bool s)
 {
-    printf("%s ",ctrlName.c_str());
-
-    if (s)
-        printf(" started successfully\n");
-    else
-        printf(" did not start!\n");
+    printf("%s %s\n",ctrlName.c_str(),s?"started successfully":"did not start!");
 }
 
 
