@@ -132,17 +132,17 @@ bool ClientGazeController::open(Searchable &config)
             double server_version=info.find("server_version").asDouble();
             if (server_version!=GAZECTRL_CLIENT_VER)
             {
-                fprintf(stdout,"Error: version mismatch => server(%g) != client(%g); please update accordingly\n",
-                               server_version,GAZECTRL_CLIENT_VER);
+                printf("Error: version mismatch => server(%g) != client(%g); please update accordingly\n",
+                       server_version,GAZECTRL_CLIENT_VER);
                 return false;
             }
         }
         else
-            fprintf(stdout,"Warning: unable to retrieve sever version; please update the server\n");
+            printf("Warning: unable to retrieve sever version; please update the server\n");
     }
     else
     {
-        fprintf(stdout,"Error: unable to connect to the sever rpc port!\n");
+        printf("Error: unable to connect to the sever rpc port!\n");
         return false;
     }
 
@@ -209,7 +209,7 @@ bool ClientGazeController::setTrackingMode(const bool f)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -229,7 +229,7 @@ bool ClientGazeController::getTrackingMode(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -404,7 +404,7 @@ bool ClientGazeController::getNeckTrajTime(double *t)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -430,7 +430,7 @@ bool ClientGazeController::getEyesTrajTime(double *t)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -456,7 +456,7 @@ bool ClientGazeController::getVORGain(double *gain)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -482,7 +482,7 @@ bool ClientGazeController::getOCRGain(double *gain)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -508,7 +508,7 @@ bool ClientGazeController::getSaccadesStatus(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -534,7 +534,7 @@ bool ClientGazeController::getSaccadesInhibitionPeriod(double *period)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -560,7 +560,7 @@ bool ClientGazeController::getSaccadesActivationAngle(double *angle)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -588,7 +588,7 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -666,7 +666,7 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -705,7 +705,7 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -747,7 +747,7 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -786,7 +786,7 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -822,7 +822,7 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -861,7 +861,7 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -893,7 +893,7 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -925,7 +925,7 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -957,7 +957,7 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -987,7 +987,7 @@ bool ClientGazeController::setNeckTrajTime(const double t)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
     
@@ -1008,7 +1008,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
     
@@ -1029,7 +1029,7 @@ bool ClientGazeController::setVORGain(const double gain)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
     
@@ -1050,7 +1050,7 @@ bool ClientGazeController::setOCRGain(const double gain)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
     
@@ -1071,7 +1071,7 @@ bool ClientGazeController::setSaccadesStatus(const bool f)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1092,7 +1092,7 @@ bool ClientGazeController::setSaccadesInhibitionPeriod(const double period)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1113,7 +1113,7 @@ bool ClientGazeController::setSaccadesActivationAngle(const double angle)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1134,7 +1134,7 @@ bool ClientGazeController::setStereoOptions(const Bottle &options)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1157,7 +1157,7 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1189,7 +1189,7 @@ bool ClientGazeController::getNeckJointRange(const string &joint, double *min,
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1216,7 +1216,7 @@ bool ClientGazeController::clearJoint(const string &joint)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1300,7 +1300,7 @@ bool ClientGazeController::blockEyes(const double ver)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1352,7 +1352,7 @@ bool ClientGazeController::getBlockedVergence(double *ver)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1406,7 +1406,7 @@ bool ClientGazeController::getNeckAngleUserTolerance(double *angle)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1433,7 +1433,7 @@ bool ClientGazeController::setNeckAngleUserTolerance(const double angle)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1453,7 +1453,7 @@ bool ClientGazeController::checkMotionDone(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1497,7 +1497,7 @@ bool ClientGazeController::checkSaccadeDone(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1540,7 +1540,7 @@ bool ClientGazeController::stopControl()
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
     
@@ -1559,7 +1559,7 @@ bool ClientGazeController::storeContext(int *id)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1585,7 +1585,7 @@ bool ClientGazeController::restoreContext(const int id)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1605,7 +1605,7 @@ bool ClientGazeController::deleteContext(const int id)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1636,7 +1636,7 @@ bool ClientGazeController::deleteContexts()
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1655,7 +1655,7 @@ bool ClientGazeController::getInfoHelper(Bottle &info)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1754,7 +1754,7 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
 
         if (!portRpc.write(command,reply))
         {
-            fprintf(stdout,"Error: unable to get reply from server!\n");
+            printf("Error: unable to get reply from server!\n");
             return false;
         }
 
@@ -1789,7 +1789,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
 
         if (!portRpc.write(command,reply))
         {
-            fprintf(stdout,"Error: unable to get reply from server!\n");
+            printf("Error: unable to get reply from server!\n");
             return false;
         }
 
@@ -1819,7 +1819,7 @@ bool ClientGazeController::tweakSet(const Bottle &options)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 
@@ -1839,7 +1839,7 @@ bool ClientGazeController::tweakGet(Bottle &options)
 
     if (!portRpc.write(command,reply))
     {
-        fprintf(stdout,"Error: unable to get reply from server!\n");
+        printf("Error: unable to get reply from server!\n");
         return false;
     }
 

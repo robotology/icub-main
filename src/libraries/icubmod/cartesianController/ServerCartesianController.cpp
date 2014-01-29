@@ -310,7 +310,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 
                 if (!portSlvRpc.write(slvCommand,reply))
                 {
-                    fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+                    printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
 
@@ -1012,14 +1012,14 @@ void ServerCartesianController::alignJointsBounds()
     double min, max; 
     int cnt=0;
 
-    fprintf(stdout,"%s: aligning joints bounds ...\n",ctrlName.c_str());
+    printf("%s: aligning joints bounds ...\n",ctrlName.c_str());
     for (size_t i=0; i<lDsc.size(); i++)
     {
-        fprintf(stdout,"part #%lu: %s\n",(unsigned long)i,lDsc[i].key.c_str());
+        printf("part #%lu: %s\n",(unsigned long)i,lDsc[i].key.c_str());
         for (int j=0; j<lJnt[i]; j++)
         {
             lLim[i]->getLimits(lRmp[i][j],&min,&max);
-            fprintf(stdout,"joint #%d: [%g, %g] deg\n",cnt,min,max);
+            printf("joint #%d: [%g, %g] deg\n",cnt,min,max);
             (*chainState)[cnt].setMin(CTRL_DEG2RAD*min);
             (*chainState)[cnt].setMax(CTRL_DEG2RAD*max);
             (*chainPlan)[cnt].setMin(CTRL_DEG2RAD*min);
@@ -1136,8 +1136,8 @@ bool ServerCartesianController::getNewTarget()
         // token shall be not greater than the trasmitted one
         if (tokened && (rxToken>txToken))
         {
-            fprintf(stdout,"%s warning: skipped message from solver due to invalid token (rx=%g)>(thr=%g)\n",
-                    ctrlName.c_str(),rxToken,txToken);
+            printf("%s warning: skipped message from solver due to invalid token (rx=%g)>(thr=%g)\n",
+                   ctrlName.c_str(),rxToken,txToken);
 
             return false;
         }
@@ -1148,8 +1148,8 @@ bool ServerCartesianController::getNewTarget()
         {
             if (tokened && !trackingMode && (rxToken<=txTokenLatchedStopControl))
             {
-                fprintf(stdout,"%s warning: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)\n",
-                        ctrlName.c_str(),rxToken,txTokenLatchedStopControl);
+                printf("%s warning: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)\n",
+                       ctrlName.c_str(),rxToken,txTokenLatchedStopControl);
 
                 return false;
             }
@@ -1188,8 +1188,8 @@ bool ServerCartesianController::getNewTarget()
 
             if (_qdes.length()!=ctrl->get_dim())
             {    
-                fprintf(stdout,"%s warning: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)\n",
-                        ctrlName.c_str(),(int)_qdes.length(),ctrl->get_dim());
+                printf("%s warning: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)\n",
+                       ctrlName.c_str(),(int)_qdes.length(),ctrl->get_dim());
 
                 return false;
             }
@@ -1308,7 +1308,7 @@ void ServerCartesianController::stopLimb(const bool execStopPosition)
 /************************************************************************/
 bool ServerCartesianController::threadInit()
 {
-    fprintf(stdout,"Starting %s at %d ms\n",ctrlName.c_str(),(int)getRate());
+    printf("Starting %s at %d ms\n",ctrlName.c_str(),(int)getRate());
 
     return true;
 }
@@ -1317,12 +1317,12 @@ bool ServerCartesianController::threadInit()
 /************************************************************************/
 void ServerCartesianController::afterStart(bool s)
 {
-    fprintf(stdout,"%s ",ctrlName.c_str());
+    printf("%s ",ctrlName.c_str());
 
     if (s)
-        fprintf(stdout," started successfully\n");
+        printf(" started successfully\n");
     else
-        fprintf(stdout," did not start!\n");
+        printf(" did not start!\n");
 }
 
 
@@ -1448,7 +1448,7 @@ void ServerCartesianController::run()
 /************************************************************************/
 void ServerCartesianController::threadRelease()
 {
-    fprintf(stdout,"Stopping %s\n",ctrlName.c_str());
+    printf("Stopping %s\n",ctrlName.c_str());
 
     if (connected)
         stopLimb();
@@ -1460,26 +1460,26 @@ void ServerCartesianController::threadRelease()
 /************************************************************************/
 bool ServerCartesianController::open(Searchable &config)
 {
-    fprintf(stdout,"***** Configuring cartesian controller *****\n");
+    printf("***** Configuring cartesian controller *****\n");
 
     // GENERAL group
     Bottle &optGeneral=config.findGroup("GENERAL");
     if (optGeneral.isNull())
     {
-        fprintf(stdout,"GENERAL group is missing\n");
+        printf("GENERAL group is missing\n");
         close();
 
         return false;
     }
 
-    fprintf(stdout,"Acquiring options for group GENERAL...\n");
+    printf("Acquiring options for group GENERAL...\n");
 
     // scan for required params
     if (optGeneral.check("SolverNameToConnect"))
         slvName=optGeneral.find("SolverNameToConnect").asString();
     else
     {
-        fprintf(stdout,"SolverNameToConnect option is missing\n");
+        printf("SolverNameToConnect option is missing\n");
         close();
 
         return false;
@@ -1490,8 +1490,8 @@ bool ServerCartesianController::open(Searchable &config)
         kinPart=optGeneral.find("KinematicPart").asString();
         if ((kinPart!="arm") && (kinPart!="leg") && (kinPart!="custom"))
         {
-            fprintf(stdout,"Attempt to instantiate an unknown kinematic part\n");
-            fprintf(stdout,"Available parts are: arm, leg, custom\n");
+            printf("Attempt to instantiate an unknown kinematic part\n");
+            printf("Available parts are: arm, leg, custom\n");
             close();
 
             return false;
@@ -1499,7 +1499,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        fprintf(stdout,"KinematicPart option is missing\n");
+        printf("KinematicPart option is missing\n");
         close();
 
         return false;
@@ -1514,8 +1514,8 @@ bool ServerCartesianController::open(Searchable &config)
 
         if ((_partKinType!="left") && (_partKinType!="right"))
         {
-            fprintf(stdout,"Attempt to instantiate unknown kinematic type\n");
-            fprintf(stdout,"Available types are: left, right, left_v*, right_v*\n");
+            printf("Attempt to instantiate unknown kinematic type\n");
+            printf("Available types are: left, right, left_v*, right_v*\n");
             close();
 
             return false;
@@ -1523,7 +1523,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else if (kinPart!="custom")
     {
-        fprintf(stdout,"KinematicType option is missing\n");
+        printf("KinematicType option is missing\n");
         close();
 
         return false;
@@ -1534,7 +1534,7 @@ bool ServerCartesianController::open(Searchable &config)
         numDrv=optGeneral.find("NumberOfDrivers").asInt();
         if (numDrv<=0)
         {
-            fprintf(stdout,"NumberOfDrivers shall be positive\n");
+            printf("NumberOfDrivers shall be positive\n");
             close();
 
             return false;
@@ -1542,7 +1542,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        fprintf(stdout,"NumberOfDrivers option is missing\n");
+        printf("NumberOfDrivers option is missing\n");
         close();
 
         return false;
@@ -1557,7 +1557,7 @@ bool ServerCartesianController::open(Searchable &config)
         ctrlName=ctrlName+"/";
         ctrlName=ctrlName+kinPart;
         ctrlName=ctrlName+_partKinType.c_str();
-        fprintf(stdout,"default ControllerName assumed: %s",ctrlName.c_str());
+        printf("default ControllerName assumed: %s",ctrlName.c_str());
     }
 
     if (optGeneral.check("ControllerPeriod"))
@@ -1578,13 +1578,13 @@ bool ServerCartesianController::open(Searchable &config)
         Bottle &optDrv=config.findGroup(entry);
         if (optDrv.isNull())
         {
-            fprintf(stdout,"%s group is missing\n",entry);
+            printf("%s group is missing\n",entry);
             close();
 
             return false;
         }
 
-        fprintf(stdout,"Acquiring options for group %s...\n",entry);
+        printf("Acquiring options for group %s...\n",entry);
 
         DriverDescriptor desc;
 
@@ -1592,7 +1592,7 @@ bool ServerCartesianController::open(Searchable &config)
             desc.key=optDrv.find("Key").asString();
         else
         {
-            fprintf(stdout,"Key option is missing\n");
+            printf("Key option is missing\n");
             close();
 
             return false;
@@ -1608,8 +1608,8 @@ bool ServerCartesianController::open(Searchable &config)
                 desc.jointsDirectOrder=false;
             else
             {
-                fprintf(stdout,"Attempt to select an unknown mapping order\n");
-                fprintf(stdout,"Available orders are: direct, reversed\n");
+                printf("Attempt to select an unknown mapping order\n");
+                printf("Available orders are: direct, reversed\n");
                 close();
 
                 return false;
@@ -1617,7 +1617,7 @@ bool ServerCartesianController::open(Searchable &config)
         }
         else
         {
-            fprintf(stdout,"JointsOrder option is missing\n");
+            printf("JointsOrder option is missing\n");
             close();
 
             return false;
@@ -1638,7 +1638,7 @@ bool ServerCartesianController::open(Searchable &config)
         }
         else
         {
-            fprintf(stdout,"MinAbsVels option is missing ... using default values\n");
+            printf("MinAbsVels option is missing ... using default values\n");
             desc.useDefaultMinAbsVel=true;
         }
 
@@ -1649,7 +1649,7 @@ bool ServerCartesianController::open(Searchable &config)
     Bottle &optPlantModel=config.findGroup("PLANT_MODEL");
     if (!optPlantModel.isNull())
     {
-        fprintf(stdout,"PLANT_MODEL group detected\n");
+        printf("PLANT_MODEL group detected\n");
         plantModelProperties.fromString(optPlantModel.toString().c_str());
 
         // append information about the predictor's period,
@@ -1673,7 +1673,7 @@ bool ServerCartesianController::open(Searchable &config)
         limbState=new iKinLimb(linksOptions);
         if (!limbState->isValid())
         {
-            fprintf(stdout,"Invalid links parameters\n");
+            printf("Invalid links parameters\n");
             close();
 
             return false;
@@ -1681,14 +1681,14 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        fprintf(stdout,"customKinFile option is missing\n");
+        printf("customKinFile option is missing\n");
         close();
 
         return false;
     }
 
     Property DHTable; limbState->toLinksProperties(DHTable);
-    fprintf(stdout,"DH Table: %s\n",DHTable.toString().c_str());
+    printf("DH Table: %s\n",DHTable.toString().c_str());
 
     // duplicate the limb for planning purpose
     limbPlan=new iKinLimb(*limbState);
@@ -1745,12 +1745,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     drivers=p;
     int nd=drivers.size();
 
-    fprintf(stdout,"***** Attaching drivers to cartesian controller %s *****\n",ctrlName.c_str());
-    fprintf(stdout,"Received list of %d driver(s)\n",nd);
+    printf("***** Attaching drivers to cartesian controller %s *****\n",ctrlName.c_str());
+    printf("Received list of %d driver(s)\n",nd);
 
     if (nd!=numDrv)
     {
-        fprintf(stdout,"Expected list of %d driver(s)\n",numDrv);
+        printf("Expected list of %d driver(s)\n",numDrv);
         return false;
     }
 
@@ -1758,7 +1758,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     for (int i=0; i<numDrv; i++)
     {
-        fprintf(stdout,"Acquiring info on driver %s... ",lDsc[i].key.c_str());
+        printf("Acquiring info on driver %s... ",lDsc[i].key.c_str());
 
         // check if what we require is present within the given list
         int j;
@@ -1768,7 +1768,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
         if (j>=drivers.size())
         {
-            fprintf(stdout,"None of provided drivers is of type %s\n",lDsc[i].key.c_str());
+            printf("None of provided drivers is of type %s\n",lDsc[i].key.c_str());
             return false;
         }
 
@@ -1776,7 +1776,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         encTimedEnabled=pidAvailable=posDirectAvailable=true;
         if (drivers[j]->poly->isValid())
         {
-            fprintf(stdout,"ok\n");
+            printf("ok\n");
 
             IEncoders        *enc;
             IEncodersTimed   *ent;
@@ -1836,23 +1836,23 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         }
         else
         {
-            fprintf(stdout,"error\n");
+            printf("error\n");
             return false;
         }
     }
 
-    fprintf(stdout,"%s: %s interface will be used\n",ctrlName.c_str(),
-            encTimedEnabled?"IEncodersTimed":"IEncoders");
+    printf("%s: %s interface will be used\n",ctrlName.c_str(),
+           encTimedEnabled?"IEncodersTimed":"IEncoders");
 
-    fprintf(stdout,"%s: IPidControl %s\n",ctrlName.c_str(),
-            pidAvailable?"available":"not available");
+    printf("%s: IPidControl %s\n",ctrlName.c_str(),
+           pidAvailable?"available":"not available");
 
-    fprintf(stdout,"%s: IPositionDirect %s\n",ctrlName.c_str(),
-            posDirectAvailable?"available":"not available");
+    printf("%s: IPositionDirect %s\n",ctrlName.c_str(),
+           posDirectAvailable?"available":"not available");
 
     posDirectEnabled&=posDirectAvailable;
-    fprintf(stdout,"%s: %s interface will be used\n",ctrlName.c_str(),
-            posDirectEnabled?"IPositionDirect":"IVelocityControl");
+    printf("%s: %s interface will be used\n",ctrlName.c_str(),
+           posDirectEnabled?"IPositionDirect":"IVelocityControl");
 
     alignJointsBounds();
 
@@ -1905,11 +1905,11 @@ bool ServerCartesianController::pingSolver()
     ConstString portSlvName="/";
     portSlvName=portSlvName+slvName+"/in";
 
-    fprintf(stdout,"%s: Checking if cartesian solver %s is alive... ",ctrlName.c_str(),slvName.c_str());
+    printf("%s: Checking if cartesian solver %s is alive... ",ctrlName.c_str(),slvName.c_str());
 
     bool ok=Network::exists(portSlvName.c_str(),true);
 
-    fprintf(stdout,"%s\n",ok?"ready":"not yet");
+    printf("%s\n",ok?"ready":"not yet");
 
     return ok;
 }
@@ -1920,7 +1920,7 @@ bool ServerCartesianController::connectToSolver()
 {
     if (attached && !connected && pingSolver())
     {        
-        fprintf(stdout,"%s: Connecting to cartesian solver %s...\n",ctrlName.c_str(),slvName.c_str());
+        printf("%s: Connecting to cartesian solver %s...\n",ctrlName.c_str(),slvName.c_str());
 
         ConstString portSlvName="/";
         portSlvName=portSlvName+slvName;
@@ -1932,10 +1932,10 @@ bool ServerCartesianController::connectToSolver()
         ok&=Network::connect(portSlvRpc.getName().c_str(),(portSlvName+"/rpc").c_str());
 
         if (ok)
-            fprintf(stdout,"%s: Connections established with %s\n",ctrlName.c_str(),slvName.c_str());
+            printf("%s: Connections established with %s\n",ctrlName.c_str(),slvName.c_str());
         else
         {
-            fprintf(stdout,"%s: Problems detected while connecting to %s\n",ctrlName.c_str(),slvName.c_str());
+            printf("%s: Problems detected while connecting to %s\n",ctrlName.c_str(),slvName.c_str());
             return false;
         }
 
@@ -1951,7 +1951,7 @@ bool ServerCartesianController::connectToSolver()
         // send command to solver and wait for reply
         if (!portSlvRpc.write(command,reply))
         {
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
             return false;
         }
 
@@ -2041,7 +2041,7 @@ bool ServerCartesianController::setTrackingModeHelper(const bool f)
         // send command to solver and wait for reply
         bool ret=false;
         if (!portSlvRpc.write(command,reply))
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
         else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
         {
             trackingMode=f;
@@ -2288,7 +2288,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
     mutex.unlock();
     return ret;
@@ -2323,7 +2323,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
     mutex.unlock();
     return ret;
@@ -2349,7 +2349,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
     mutex.unlock();
     return ret;
@@ -2376,7 +2376,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
     mutex.unlock();
     return ret;
@@ -2444,7 +2444,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             ret=true;
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
         mutex.unlock();
         return ret;
@@ -2477,7 +2477,7 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
             ret=true;            
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
         mutex.unlock();
         return ret;
@@ -2513,7 +2513,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
             ret=true;            
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
             
         mutex.unlock();
         return ret;
@@ -2546,7 +2546,7 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
             ret=true;            
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
             
         mutex.unlock();
         return ret;
@@ -2583,7 +2583,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
             ret=true;
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
             
         mutex.unlock();
         return ret;
@@ -2609,7 +2609,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min, double *m
 
             // send command to solver and wait for reply
             if (!portSlvRpc.write(command,reply))
-                fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+                printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
             else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
             {
                 *min=reply.get(1).asDouble();
@@ -2642,7 +2642,7 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
 
         // send command to solver and wait for reply        
         if (!portSlvRpc.write(command,reply))
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
         else
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
 
@@ -2851,7 +2851,7 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
             }
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
 
         mutex.unlock();
         return ret;
@@ -3341,7 +3341,7 @@ bool ServerCartesianController::getTask2ndOptions(Value &v)
                 v=reply.get(1);
         }
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
     }
 
     return ret;
@@ -3363,7 +3363,7 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            fprintf(stdout,"%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
     }
 
     return ret;

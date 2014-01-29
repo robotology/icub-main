@@ -483,9 +483,10 @@ void Controller::run()
             ctrlInhibited=!port_xd->get_new();
 
         // switch-on condition
-        commData->get_isCtrlActive()=port_xd->get_new() || 
-                                     (!ctrlInhibited && ((new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]))) ||
-                                     (!commData->get_canCtrlBeDisabled() && (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES));
+        commData->get_isCtrlActive()=port_xd->get_new() ||
+                                     (!ctrlInhibited &&
+                                     (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
+                                     (!commData->get_canCtrlBeDisabled() && (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES)));
 
         // reset controllers
         if (commData->get_isCtrlActive())
