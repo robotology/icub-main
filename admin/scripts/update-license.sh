@@ -18,7 +18,7 @@ echo -n | tee licenses-all.txt
 rm licenses-*.txt
 
 prefix_dir="./license_check/main/"
-prefix_dir="./main/src/"
+prefix_dir="./src/"
 
 #`cd $prefix svn up`
 file_list=`cd $prefix_dir; find . -type f -iname "*.cpp" -or -iname "*.c" -or -iname "*.h" -or -iname "*.hpp" -or -iname "CMakeLists.txt" -or -iname "*.cmake"`
@@ -76,7 +76,7 @@ equivalent to the following list of institutions:
 
 EOF
 
-) > main/COPYING_new
+) > COPYING_new
 
 (
  echo "This is the list of authors who contributed code to the iCub main package:"
@@ -84,6 +84,6 @@ EOF
  cat licenses-authors-compact.txt
  echo
 
-) > main/AUTHORS_new
+) > AUTHORS_new
 
 
