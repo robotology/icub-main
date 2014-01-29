@@ -72,6 +72,7 @@ protected:
     Stamp txInfo_q;
     Stamp txInfo_pose;
 
+    Mutex mutexRun;
     Mutex mutexChain;
     Mutex mutexCtrl;
     Mutex mutexData;
@@ -81,6 +82,7 @@ protected:
     bool verDone;
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
+    bool ctrlInhibited;
     bool Robotable;
     int nJointsTorso;
     int nJointsHead;
@@ -103,6 +105,7 @@ protected:
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
 
+    void stopLimb(const bool execStopPosition=true);
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
     void motionOngoingEventsFlush();
@@ -115,8 +118,8 @@ public:
     void   findMinimumAllowedVergence();
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
-    void   doSaccade(Vector &ang, Vector &vel);
-    void   stopLimb(const bool execStopPosition=true);
+    void   doSaccade(Vector &ang, Vector &vel);    
+    void   stopControl();
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();

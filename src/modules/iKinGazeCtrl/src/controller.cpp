@@ -83,11 +83,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
             bool vel2Available=drvHead->view(velEyes);
             neckPosCtrlOn=posDirAvailable&&vel2Available;
 
-            fprintf(stdout,"### neck control - requested POSITION mode: IPositionDirect [%s], IVelocityControl2 [%s] => %s mode selected\n",
-                    posDirAvailable?"yes":"no",vel2Available?"yes":"no",neckPosCtrlOn?"POSITION":"VELOCITY");
+            printf("### neck control - requested POSITION mode: IPositionDirect [%s], IVelocityControl2 [%s] => %s mode selected\n",
+                   posDirAvailable?"yes":"no",vel2Available?"yes":"no",neckPosCtrlOn?"POSITION":"VELOCITY");
         }
         else
-            fprintf(stdout,"### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
+            printf("### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
 
         // joints bounds alignment
         lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
@@ -177,6 +177,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     saccadeStartTime=0.0;
     tiltDone=panDone=verDone=false;
     unplugCtrlEyes=false;
+    ctrlInhibited=false;
 }
 
 
@@ -210,7 +211,7 @@ void Controller::findMinimumAllowedVergence()
         }
     }
 
-    fprintf(stdout,"### computed minimum allowed vergence = %g [deg]\n",minVer*CTRL_RAD2DEG);
+    printf("### computed minimum allowed vergence = %g [deg]\n",minVer*CTRL_RAD2DEG);
     commData->get_minAllowedVergence()=minVer;
 }
 
@@ -276,8 +277,7 @@ void Controller::stopLimb(const bool execStopPosition)
 {
     if (Robotable)
     {
-        // note: vel==0.0 is always achievable
-        mutexCtrl.lock();
+        // note: vel==0.0 is always achievable        
 
         if (neckPosCtrlOn)
         {
@@ -289,10 +289,24 @@ void Controller::stopLimb(const bool execStopPosition)
                 velEyes->velocityMove(eyesJoints[i],0.0);
         }
         else for (int i=0; i<nJointsHead; i++)
-            velHead->velocityMove(i,0.0);
-
-        mutexCtrl.unlock();
+            velHead->velocityMove(i,0.0);        
     }
+
+    commData->get_isCtrlActive()=false;
+}
+
+
+/************************************************************************/
+void Controller::stopControl()
+{
+    mutexRun.lock();
+    mutexCtrl.lock();
+    q_stamp=Time::now();
+    ctrlInhibited=true;
+    stopLimb();
+    notifyEvent("motion-done");
+    mutexCtrl.unlock();
+    mutexRun.unlock();
 }
 
 
@@ -304,14 +318,14 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
     {
         printAccTime=0.0;
 
-        fprintf(stdout,"\n");
-        fprintf(stdout,"norm(e)           = %g\n",norm(xd-fp));
-        fprintf(stdout,"Target fix. point = %s\n",xd.toString().c_str());
-        fprintf(stdout,"Actual fix. point = %s\n",fp.toString().c_str());
-        fprintf(stdout,"Target Joints     = %s\n",qd.toString().c_str());
-        fprintf(stdout,"Actual Joints     = %s\n",q.toString().c_str());
-        fprintf(stdout,"Velocity          = %s\n",v.toString().c_str());
-        fprintf(stdout,"\n");
+        printf("\n");
+        printf("norm(e)           = %g\n",norm(xd-fp));
+        printf("Target fix. point = %s\n",xd.toString().c_str());
+        printf("Actual fix. point = %s\n",fp.toString().c_str());
+        printf("Target Joints     = %s\n",qd.toString().c_str());
+        printf("Actual Joints     = %s\n",q.toString().c_str());
+        printf("Velocity          = %s\n",v.toString().c_str());
+        printf("\n");
     }
 }
 
@@ -323,7 +337,7 @@ bool Controller::threadInit()
     port_q.open((commData->localStemName+"/q:o").c_str());
     port_event.open((commData->localStemName+"/events:o").c_str());
 
-    fprintf(stdout,"Starting Controller at %d ms\n",period);
+    printf("Starting Controller at %d ms\n",period);
     q_stamp=Time::now();
 
     return true;
@@ -333,17 +347,18 @@ bool Controller::threadInit()
 /************************************************************************/
 void Controller::afterStart(bool s)
 {
-    if (s)
-        fprintf(stdout,"Controller started successfully\n");
-    else
-        fprintf(stdout,"Controller did not start\n");
+    s?printf("Controller started successfully\n"):
+      printf("Controller did not start\n");
 }
 
 
 /************************************************************************/
 void Controller::doSaccade(Vector &ang, Vector &vel)
 {
-    mutexCtrl.lock();
+    if (ctrlInhibited)
+        return;
+
+    mutexCtrl.lock(); 
 
     posHead->setRefSpeed(eyesJoints[0],vel[0]);
     posHead->setRefSpeed(eyesJoints[1],vel[1]);
@@ -382,6 +397,7 @@ void Controller::resetCtrlEyes()
 /************************************************************************/
 void Controller::run()
 {
+    mutexRun.lock();
     string event="none";
 
     // verify if any saccade is still underway
@@ -415,10 +431,11 @@ void Controller::run()
     {
         if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
         {
-            fprintf(stdout,"\nCommunication timeout detected!\n\n");
+            printf("\nCommunication timeout detected!\n\n");
             notifyEvent("comm-timeout");
             suspend();
 
+            mutexRun.unlock();
             return;
         }
 
@@ -443,8 +460,9 @@ void Controller::run()
         {
             event="motion-done";
 
+            mutexCtrl.lock();
             stopLimb(false);
-            commData->get_isCtrlActive()=false;
+            mutexCtrl.unlock();
         }
         // manage new target while controller is active
         else if (port_xd->get_new())
@@ -460,8 +478,13 @@ void Controller::run()
     }
     else
     {
+        // inhibition is cleared upon new target arrival
+        if (ctrlInhibited)
+            ctrlInhibited=!port_xd->get_new();
+
         // switch-on condition
-        commData->get_isCtrlActive()=port_xd->get_new() || (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
+        commData->get_isCtrlActive()=port_xd->get_new() || 
+                                     (!ctrlInhibited && ((new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]))) ||
                                      (!commData->get_canCtrlBeDisabled() && (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES));
 
         // reset controllers
@@ -609,6 +632,8 @@ void Controller::run()
     commData->set_q(fbHead);
     commData->set_torso(fbTorso);
     commData->set_v(v);
+
+    mutexRun.unlock();
 }
 
 
@@ -639,12 +664,13 @@ void Controller::threadRelease()
 /************************************************************************/
 void Controller::suspend()
 {
+    mutexCtrl.lock();
+    RateThread::suspend();    
     stopLimb();
-    commData->get_isCtrlActive()=false;
     commData->get_isSaccadeUnderway()=false;
-    fprintf(stdout,"Controller has been suspended!\n");
-    RateThread::suspend();
+    printf("Controller has been suspended!\n");
     notifyEvent("suspended");
+    mutexCtrl.unlock();
 }
 
 
@@ -657,9 +683,9 @@ void Controller::resume()
         fbNeck=fbHead.subVector(0,2);
         fbEyes=fbHead.subVector(3,5);
     }
-
-    fprintf(stdout,"Controller has been resumed!\n");
+    
     RateThread::resume();
+    printf("Controller has been resumed!\n");
     notifyEvent("resumed");
 }
 
@@ -684,9 +710,8 @@ void Controller::setTneck(const double execTime)
     double lowerThresNeck=eyesTime+0.2;
     if (execTime<lowerThresNeck)
     {        
-        fprintf(stdout,"Warning: neck execution time is under the lower bound!\n");
-        fprintf(stdout,"A new neck execution time of %g s is chosen\n",lowerThresNeck);
-
+        printf("Warning: neck execution time is under the lower bound!\n");
+        printf("A new neck execution time of %g s is chosen\n",lowerThresNeck);
         neckTime=lowerThresNeck;
     }
     else
@@ -700,9 +725,8 @@ void Controller::setTeyes(const double execTime)
     double lowerThresEyes=10.0*Ts;
     if (execTime<lowerThresEyes)
     {        
-        fprintf(stdout,"Warning: eyes execution time is under the lower bound!\n");
-        fprintf(stdout,"A new eyes execution time of %g s is chosen\n",lowerThresEyes);
-
+        printf("Warning: eyes execution time is under the lower bound!\n");
+        printf("A new eyes execution time of %g s is chosen\n",lowerThresEyes);
         eyesTime=lowerThresEyes;
     }
     else
@@ -721,7 +745,6 @@ bool Controller::isMotionDone() const
 void Controller::setTrackingMode(const bool f)
 {
     commData->get_canCtrlBeDisabled()=!f;
-
     if ((port_xd!=NULL) && f)
         port_xd->set_xd(commData->get_x());
 }

@@ -586,18 +586,16 @@ protected:
             pDrv=new PolyDriver(options);
             bool ok=pDrv->isValid();
 
-            fprintf(stdout,"Checking if %s part is active ... ",partName.c_str());
-
+            printf("Checking if %s part is active ... ",partName.c_str());
             if (ok)
             {
-                fprintf(stdout,"yes\n");
+                printf("yes\n");
                 return pDrv;
             }
             else
             {
                 double dt=ping_robot_tmo-(Time::now()-t0);
-                fprintf(stdout,"not yet: still %.1f [s] to timeout expiry\n",
-                        dt>0.0?dt:0.0);
+                printf("not yet: still %.1f [s] to timeout expiry\n",dt>0.0?dt:0.0);
 
                 double t1=Time::now();
                 while (Time::now()-t1<1.0)
@@ -1013,7 +1011,7 @@ public:
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
 
-        fprintf(stdout,"Controller configured for head version %g\n",commData.head_version);
+        printf("Controller configured for head version %g\n",commData.head_version);
 
         commData.localStemName="/"+ctrlName;
         string remoteHeadName="/"+commData.robotName+"/"+headName;
@@ -1043,8 +1041,8 @@ public:
 
             if (!drvTorso->isValid())
             {
-                fprintf(stdout,"Torso device driver not available!\n");
-                fprintf(stdout,"Perhaps only the head is running; trying to continue ...\n");
+                printf("Torso device driver not available!\n");
+                printf("Perhaps only the head is running; trying to continue ...\n");
 
                 delete drvTorso;
                 drvTorso=NULL;
@@ -1057,7 +1055,7 @@ public:
 
             if (!drvHead->isValid())
             {
-                fprintf(stdout,"Head device driver not available!\n");
+                printf("Head device driver not available!\n");
 
                 delete drvHead;
                 delete drvTorso;
@@ -1067,7 +1065,7 @@ public:
         }
         else
         {
-            fprintf(stdout,"Controller running in simulation mode\n");
+            printf("Controller running in simulation mode\n");
             drvTorso=drvHead=NULL;
         }
 
@@ -1550,7 +1548,7 @@ public:
                 //-----------------
                 case VOCAB4('s','t','o','p'):
                 {
-                    eyesRefGen->stopControl();
+                    ctrl->stopControl();
                     reply.addVocab(ack);
                     return true;
                 }
@@ -1839,16 +1837,10 @@ int main(int argc, char *argv[])
     rf.setDefaultConfigFile("config.ini");
     rf.configure(argc,argv);
 
-    if (rf.check("help"))
-    {
-        fprintf(stdout,"please look at the online documentation :)\n");
-        return 0;
-    }
-
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        fprintf(stdout,"YARP server not available!\n");
+        printf("YARP server not available!\n");
         return -1;
     }
 

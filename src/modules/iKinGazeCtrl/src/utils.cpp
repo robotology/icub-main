@@ -426,11 +426,11 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
 
                 if (verbose)
                 {
-                    fprintf(stdout,"%s found:\n",message.c_str());
-                    fprintf(stdout,"fx = %g\n",fx);
-                    fprintf(stdout,"fy = %g\n",fy);
-                    fprintf(stdout,"cx = %g\n",cx);
-                    fprintf(stdout,"cy = %g\n",cy);
+                    printf("%s found:\n",message.c_str());
+                    printf("fx = %g\n",fx);
+                    printf("fy = %g\n",fy);
+                    printf("cx = %g\n",cx);
+                    printf("cy = %g\n",cy);
                 }
 
                 Matrix K=eye(3,3);
@@ -455,7 +455,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     }
 
     if (verbose)
-        fprintf(stdout,"%s not found!\n",message.c_str());
+        printf("%s not found!\n",message.c_str());
 
     return false;
 }
@@ -499,8 +499,8 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 
                     if (verbose)
                     {
-                        fprintf(stdout,"%s found:\n",message.c_str());
-                        fprintf(stdout,"%s\n",HN.toString(3,3).c_str());
+                        printf("%s found:\n",message.c_str());
+                        printf("%s\n",HN.toString(3,3).c_str());
                     }
 
                     return true;
@@ -514,7 +514,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         }
 
         if (verbose)
-            fprintf(stdout,"%s not found!\n",message.c_str());
+            printf("%s not found!\n",message.c_str());
     }
 
     return false;

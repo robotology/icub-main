@@ -214,7 +214,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
         lim(2,0)=lim(2,1)=ver_rad;
         I->setLim(lim);
 
-        stopControl();
+        port_xd->set_xd(fp);
         return true;
     }
     else
@@ -322,9 +322,9 @@ bool EyePinvRefGen::threadInit()
     string robotPortInertial=("/"+commData->robotName+"/inertial");
     port_inertial.open((commData->localStemName+"/inertial:i").c_str());
     if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
-        fprintf(stdout,"Unable to connect to %s\n",robotPortInertial.c_str());
+        printf("Unable to connect to %s\n",robotPortInertial.c_str());
 
-    fprintf(stdout,"Starting Pseudoinverse Reference Generator at %d ms\n",period);
+    printf("Starting Pseudoinverse Reference Generator at %d ms\n",period);
 
     saccadesRxTargets=0;
     saccadesClock=Time::now();
@@ -336,10 +336,8 @@ bool EyePinvRefGen::threadInit()
 /************************************************************************/
 void EyePinvRefGen::afterStart(bool s)
 {
-    if (s)
-        fprintf(stdout,"Pseudoinverse Reference Generator started successfully\n");
-    else
-        fprintf(stdout,"Pseudoinverse Reference Generator did not start\n");
+    s?printf("Pseudoinverse Reference Generator started successfully\n"):
+      printf("Pseudoinverse Reference Generator did not start\n");
 }
 
 
@@ -515,24 +513,17 @@ void EyePinvRefGen::threadRelease()
 
 /************************************************************************/
 void EyePinvRefGen::suspend()
-{
-    fprintf(stdout,"Pseudoinverse Reference Generator has been suspended!\n");
+{    
     RateThread::suspend();
+    printf("Pseudoinverse Reference Generator has been suspended!\n");
 }
 
 
 /************************************************************************/
 void EyePinvRefGen::resume()
-{
-    fprintf(stdout,"Pseudoinverse Reference Generator has been resumed!\n");
+{    
     RateThread::resume();
-}
-
-
-/************************************************************************/
-void EyePinvRefGen::stopControl()
-{
-    port_xd->set_xd(fp);
+    printf("Pseudoinverse Reference Generator has been resumed!\n");
 }
 
 
@@ -672,7 +663,7 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     (*chainNeck)(0).setMax(max_rad);    
     mutex.unlock();
 
-    fprintf(stdout,"\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+    printf("\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
 
 
@@ -690,7 +681,7 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     (*chainNeck)(1).setMax(max_rad);
     mutex.unlock();
 
-    fprintf(stdout,"\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+    printf("\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
 
 
@@ -708,7 +699,7 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     (*chainNeck)(2).setMax(max_rad);
     mutex.unlock();
 
-    fprintf(stdout,"\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+    printf("\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
 }
 
 
@@ -750,7 +741,7 @@ void Solver::clearNeckPitch()
     (*chainNeck)(0).setMax(neckPitchMax);
     mutex.unlock();
 
-    fprintf(stdout,"\nneck pitch cleared\n\n");
+    printf("\nneck pitch cleared\n\n");
 }
 
 
@@ -762,7 +753,7 @@ void Solver::clearNeckRoll()
     (*chainNeck)(1).setMax(neckRollMax);
     mutex.unlock();
 
-    fprintf(stdout,"\nneck roll cleared\n\n");
+    printf("\nneck roll cleared\n\n");
 }
 
 
@@ -774,7 +765,7 @@ void Solver::clearNeckYaw()
     (*chainNeck)(2).setMax(neckYawMax);
     mutex.unlock();
 
-    fprintf(stdout,"\nneck yaw cleared\n\n");
+    printf("\nneck yaw cleared\n\n");
 }
 
 
@@ -904,8 +895,7 @@ bool Solver::threadInit()
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
 
-    fprintf(stdout,"Starting Solver at %d ms\n",period);
-
+    printf("Starting Solver at %d ms\n",period);
     return true;
 }
 
@@ -913,10 +903,8 @@ bool Solver::threadInit()
 /************************************************************************/
 void Solver::afterStart(bool s)
 {
-    if (s)
-        fprintf(stdout,"Solver started successfully\n");
-    else
-        fprintf(stdout,"Solver did not start\n");
+    s?printf("Solver started successfully\n"):
+      printf("Solver did not start\n");
 }
 
 
@@ -1035,9 +1023,9 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
-    port_xd->lock();
-    fprintf(stdout,"Solver has been suspended!\n");
+    port_xd->lock();    
     RateThread::suspend();
+    printf("Solver has been suspended!\n");
 }
 
 
@@ -1070,19 +1058,15 @@ void Solver::resume()
     Matrix J(3,3);
     computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
-    // update input port
-    port_xd->set_xd(fp);
-
     // update latched quantities
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;    
-
-    fprintf(stdout,"Solver has been resumed!\n");
-
+    
     mutex.unlock();
 
     port_xd->unlock();
     RateThread::resume();
+    printf("Solver has been resumed!\n");
 }
 
 

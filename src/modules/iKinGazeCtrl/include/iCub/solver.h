@@ -127,7 +127,6 @@ public:
     void   threadRelease();
     void   suspend();
     void   resume();
-    void   stopControl();
 };
 
 
