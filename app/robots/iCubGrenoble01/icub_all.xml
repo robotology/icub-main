@@ -62,10 +62,10 @@
 
     <!-- MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR-->
     <devices file="hardware/inertial.xml" />
-    <devices file="wrappers/skin/left_hand_inertial_wrapper.xml" />
+    <!-- <devices file="wrappers/skin/left_hand_inertial_wrapper.xml" />
     <devices file="wrappers/skin/right_hand_inertial_wrapper.xml" />
     <devices file="hardware/skin/left_hand_inertial_mtb.xml" />
-    <devices file="hardware/skin/right_hand_inertial_mtb.xml" />
+    <devices file="hardware/skin/right_hand_inertial_mtb.xml" />-->
 
     <!-- CALIBRATORS -->
     <devices file="calibrators/head_calib.xml" />
