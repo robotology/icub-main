@@ -11,7 +11,6 @@ struct Value { }
 *
 * IDL Interface to \ref fingersTuner services.
 */
-
 service fingersTuner_IDLServer
 {
   /**
