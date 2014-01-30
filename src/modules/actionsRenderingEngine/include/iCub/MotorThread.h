@@ -153,6 +153,7 @@ private:
 
     ActionPrimitivesLayer2              *action[2];
 
+    bool                                homeFixCartType;
     Vector                              homeFix;
     Vector                              reachAboveDisp;
     Vector                              graspAboveRelief;

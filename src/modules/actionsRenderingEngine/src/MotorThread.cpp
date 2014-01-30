@@ -603,10 +603,19 @@ bool MotorThread::getGeneralOptions(Bottle &b)
 {
     if (Bottle *pB=b.find("home_fixation_point").asList())
     {
-        homeFix.resize(pB->size());
+        homeFixCartType=true;
+        Value v=pB->get(0);
+        int offs=0;
 
-        for (int i=0; i<pB->size(); i++)
-            homeFix[i]=pB->get(i).asDouble();
+        if (v.isString())
+        {
+            homeFixCartType=(v.asString()=="xyz");
+            offs++;
+        }
+
+        homeFix.resize(pB->size()-offs);
+        for (size_t i=0; i<homeFix.length(); i++)
+            homeFix[i]=pB->get(offs+i).asDouble();
     }
     else
         return false;
@@ -1281,7 +1290,8 @@ void MotorThread::run()
                 gazeUnderControl=true;
             }
 
-            ctrl_gaze->lookAtFixationPoint(homeFix);
+            homeFixCartType?ctrl_gaze->lookAtFixationPoint(homeFix):
+                            ctrl_gaze->lookAtAbsAngles(homeFix);
             break;
         }
 
