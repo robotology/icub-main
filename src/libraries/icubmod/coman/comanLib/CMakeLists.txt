@@ -26,7 +26,7 @@ if(ICUB_COMPILE_COMAN_LIBRARY )
 	set(handler_HEADERS     comanDevicesHandler.hpp)
 	add_library(${PROJECTNAME} ${handler_SOURCES} ${handler_HEADERS})
         set_target_properties(${PROJECTNAME} PROPERTIES COMPILE_FLAGS "-std=c++0x")
-	target_link_libraries(${PROJECTNAME} ${robolli_LIB} debugStream yaml-cpp pthread)
+        target_link_libraries(${PROJECTNAME} ${robolli_LIB} rt debugStream yaml-cpp pthread)
 	icub_export_library(${PROJECTNAME} )
 
 #else()
