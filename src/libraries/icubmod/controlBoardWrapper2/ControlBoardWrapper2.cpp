@@ -2200,7 +2200,7 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
 
                         default:
                             {
-                                printf("received an unknown request after a VOCAB_GET\n");
+                                printf("received an unknown request after a VOCAB_GET: %s\n", yarp::os::Vocab::decode(cmd.get(1).asVocab()).c_str());
                             }
                             break;
                     } //switch cmd.get(1).asVocab())

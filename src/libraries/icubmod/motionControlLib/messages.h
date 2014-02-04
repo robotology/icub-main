@@ -141,7 +141,26 @@
 #define CAN_SET_MODEL_PARAMS         99
 #define CAN_GET_MODEL_PARAMS        100
 
-#define NUM_OF_MESSAGES             101
+#define CAN_SET_CURRENT_PID       	101
+#define CAN_GET_CURRENT_PID 		102
+#define CAN_SET_CURRENT_PIDLIMITS   103
+#define CAN_GET_CURRENT_PIDLIMITS 	104
+#define CAN_SET_VELOCITY_PID        105
+#define CAN_GET_VELOCITY_PID        106
+#define CAN_SET_VELOCITY_PIDLIMITS  107
+#define CAN_GET_VELOCITY_PIDLIMITS  108
+#define CAN_SET_DESIRED_CURRENT		109
+#define CAN_GET_DESIRED_CURRENT		110
+#define CAN_SET_PERIODIC_MSG_CONTENTS   111 //this message is used only for 2foc boards
+#define CAN_SET_I2T_PARAMS			112
+#define CAN_GET_I2T_PARAMS			113
+#define CAN_SET_OPENLOOP_PARAMS     114
+#define CAN_GET_OPENLOOP_PARAMS		115
+
+#define CAN_SET_OPENLOOP_PARAMS     114
+#define CAN_GET_OPENLOOP_PARAMS		115
+
+#define NUM_OF_MESSAGES             116
 
 /* error status values */
 #define ERROR_NONE					0			/* no error, all ok */
