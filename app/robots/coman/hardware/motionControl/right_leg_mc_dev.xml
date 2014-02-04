@@ -10,7 +10,7 @@
     <group name="IMPEDANCE_PIDS">
          <!--                     Kp       Kd     Ki   Integral    PWM    scale
                                                         Limit     Limit  factor  offset    -->
-<param name="ImpPid0">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid0">     445       0      22       0       6500    10      0       </param>
         <param name="ImpPid1">     445       0      22       0       6500    10      0       </param>
         <param name="ImpPid2">     445       0      22       0       6500    10      0       </param>
         <param name="ImpPid3">     445       0      22       0       6500    10      0       </param>

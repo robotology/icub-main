@@ -11,7 +11,7 @@
         <!--  number of sensor channels for each sensor  -->
         <param name="channels">           6                       </param> 
         <!--  boards Id  -->
-        <param name="FTmap">              37     </param>          
+        <param name="FTmap">              35     </param>          
         <param name="UseCalibration">     0      </param>
         <param name="Calibration">        0      </param>    
         <param name="newtonsToSensor">    1000   </param>  

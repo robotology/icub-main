@@ -3,7 +3,7 @@
 
 <devices robot="coman" build="1">
     <device name="right_arm_mc_wrapper" type="controlboardwrapper2">
-    <param name="threadrate">  10  </param>
+    <param name="threadrate">  1  </param>
     
     <!-- elem name hereafter (FirstSetOfJoints) are custom names that live only in this file, they are used in the attach phase -->
     <paramlist name="networks">

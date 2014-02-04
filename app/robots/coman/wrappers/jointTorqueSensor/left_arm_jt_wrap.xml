@@ -4,12 +4,13 @@
 <devices robot="coman" build="1">
     
     <device name="left_arm_jt_wrapper" type="analogServer">
-      <param name="period">         20                </param>
+      <param name="threadrate">     1                 </param>
+      <param name="period">           1                </param>
       <param name="deviceId">       left_arm          </param>          <!-- will determine part of the port name -->
-      <param name="channels">       4                 </param>
+      <param name="channels">       7                 </param>
 
       <paramlist name="ports">
-           <elem name="torque">     0 3  0 3  </elem>                   <!-- will determine part of the port name -->
+           <elem name="torque">     0 6  0 6  </elem>                   <!-- will determine part of the port name -->
       </paramlist>
 
       <action phase="startup" level="5" type="attach">

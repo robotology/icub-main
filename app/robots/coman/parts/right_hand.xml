@@ -4,8 +4,12 @@
 <devices robot="coman" build="1">
     <!-- devices  -->
     <devices file="hardware/motionControl/right_hand_mc_dev.xml" />
+    <devices file="hardware/jointTorqueSensor/right_hand_jt_dev.xml" />
+    <devices file="hardware/velocityObserver/right_hand_vo_dev.xml" />
     
     <!-- wrappers -->
     <devices file="wrappers/motionControl/right_hand_mc_wrap.xml" />
+    <devices file="wrappers/jointTorqueSensor/right_hand_jt_wrap.xml" />
+    <devices file="wrappers/velocityObserver/right_hand_vo_wrap.xml" />
 
 </devices>

@@ -4,14 +4,12 @@
 <devices robot="coman" build="1">
     <!-- devices  -->
     <devices file="hardware/motionControl/torso_mc_dev.xml" />
-    <devices file="hardware/FT_sensor/torso_ft_dev.xml" />
     <devices file="hardware/jointTorqueSensor/torso_jt_dev.xml" />
     <devices file="hardware/velocityObserver/torso_vo_dev.xml" />
 
     
     <!-- wrappers -->
     <devices file="wrappers/motionControl/torso_mc_wrap.xml" />
-    <devices file="wrappers/FT_sensor/torso_ft_wrap.xml" />
     <devices file="wrappers/jointTorqueSensor/torso_jt_wrap.xml" />
     <devices file="wrappers/velocityObserver/torso_vo_wrap.xml" />
 </devices>

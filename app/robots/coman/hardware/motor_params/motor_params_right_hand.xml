@@ -11,7 +11,7 @@
         <param name="axisMap">          0           </param> 
         <param name="encoder">          1745.33     </param>
         <param name="zeros">            0           </param>
-        <param name="maxTorque">        50          </param>
+        <param name="maxTorque">        5          </param>
         <param name="newtonsToSensor">  1000        </param>  
     </group>
 </params>

@@ -3,7 +3,7 @@
 
 <params robot="coman" build="1">
     <group name="GENERAL">
-        <param name="YAML">  "/home/icub/.local/share/yarp/robots/coman/basic.yaml"  </param>
+        <param name="YAML">  "basic.yaml"  </param>
     </group>
     
     <group name="MC_BOARD">
