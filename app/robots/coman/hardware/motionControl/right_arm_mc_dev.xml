@@ -14,6 +14,9 @@
         <param name="ImpPid1">     445       0      22       0       6500    10      0       </param>
         <param name="ImpPid2">     445       0      22       0       6500    10      0       </param>
         <param name="ImpPid3">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid4">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid5">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid6">     445       0      22       0       6500    10      0       </param>
     </group>
     </device>
 </devices>

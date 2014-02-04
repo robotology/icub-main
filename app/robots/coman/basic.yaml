@@ -2,7 +2,7 @@
 
 board_ctrl:
   eth_iface: eth0
-  boards_num: 25
+  boards_num: 35
 
 # assume boards of same type have the same policy bc_rate !!! 
 

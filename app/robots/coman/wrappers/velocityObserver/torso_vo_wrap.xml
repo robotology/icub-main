@@ -4,7 +4,8 @@
 <devices robot="coman" build="1">
     
     <device name="torso_vo_wrapper" type="analogServer">
-      <param name="period">         20                </param>
+      <param name="threadrate">     1                 </param>
+      <param name="period">         1                 </param>
       <param name="deviceId">       torso             </param>        <!-- will determine part of the port name -->
       <param name="channels">       3                 </param>
 
