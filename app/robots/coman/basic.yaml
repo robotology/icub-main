@@ -2,13 +2,13 @@
 
 board_ctrl:
   eth_iface: eth0
-  boards_num: 35
+  boards_num: 25
 
 # assume boards of same type have the same policy bc_rate !!! 
 
 mc_board:
   policy: 0x893F         
-  extra_policy: 0x0001	 
+  extra_policy: 0x0001	 	 
   bc_rate: 2
 
 ft_board:

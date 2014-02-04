@@ -1,48 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<robot name="coman">
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<!-- #################DEVICES################## -->
+<robot name="coman" build="1" portprefix="coman">
 
-  <device name="coman_mc" type="comanMotionControl">
-    <params file="general.xml" />
-    <params file="hardware/motionControl.xml" />
-  </device>
+<!-- ################# ROBOT PARTS ################## -->
 
-    <devices file="hardware/velocityObserver/vo_left_arm.xml" />
-    <devices file="hardware/velocityObserver/vo_left_leg.xml" />
-    <devices file="hardware/velocityObserver/vo_right_arm.xml" />
-    <devices file="hardware/velocityObserver/vo_right_leg.xml" />
-    <devices file="hardware/velocityObserver/vo_torso.xml" />
-    <devices file="hardware/velocityObserver/vo_left_hand.xml" />
-    <devices file="hardware/velocityObserver/vo_right_hand.xml" />
+  <devices file="parts/left_arm.xml" />
+  <devices file="parts/left_hand.xml" />
+  <devices file="parts/left_leg.xml" />
+  <devices file="parts/right_arm.xml" />
+  <devices file="parts/right_hand.xml" />
+  <devices file="parts/right_leg.xml" />
 
-  <devices file="hardware/jointTorqueSensor.xml" />
+  <devices file="parts/torso.xml" />
 
-  <device name="coman_ft" type="comanFTsensor">
-    <params file="general.xml" />
-    <params file="hardware/FTsensor.xml" />
-  </device>
-
-  <devices file="hardware/coman_inertial.xml" />
-
-<!-- ########################################## -->
-
-<!-- #################PARTS WRAPPERS################## -->
-
-  <devices file="wrappers/coman_mc_left_arm_wrapper.xml" />
-  <devices file="wrappers/coman_mc_left_leg_wrapper.xml" /> 
-  <devices file="wrappers/coman_mc_right_arm_wrapper.xml" /> 
-  <devices file="wrappers/coman_mc_right_leg_wrapper.xml" /> 
-  <devices file="wrappers/coman_mc_torso_wrapper.xml" /> 
-  <devices file="wrappers/coman_mc_left_hand_wrapper.xml" />
-  <devices file="wrappers/coman_mc_right_hand_wrapper.xml" /> 
-
-<!-- ########################################## -->
-
-<!-- #################SENSORS WRAPPERS################## -->
-
-  <devices file="wrappers/coman_ft_wrappers.xml" /> 
-    
-<!-- ########################################## -->
-
+<!--   <devices file="hardware/coman_inertial.xml" />  -->
 </robot>

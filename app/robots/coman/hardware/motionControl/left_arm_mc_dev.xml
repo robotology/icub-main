@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="coman" build="1">
+
+  <device name="left_arm_mc_dev" type="comanMotionControl">
+    <params file="robolli.xml" />     <!-- robolli config -->
+    <params file="hardware/motor_params/motor_params_left_arm.xml" />         
+       
+    <group name="IMPEDANCE_PIDS">
+         <!--                     Kp       Kd     Ki   Integral    PWM    scale
+                                                        Limit     Limit  factor  offset    -->
+        <param name="ImpPid0">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid1">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid2">     445       0      22       0       6500    10      0       </param>
+        <param name="ImpPid3">     445       0      22       0       6500    10      0       </param>
+    </group>
+  </device>
+</devices>
+    
