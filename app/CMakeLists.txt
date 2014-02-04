@@ -46,4 +46,5 @@ add_subdirectory(iCubStartup)
 add_subdirectory(dataSetPlayer)
 add_subdirectory(simFaceExpressions)
 add_subdirectory(fingersTuner)
+add_subdirectory(robotMotorGui)
 
