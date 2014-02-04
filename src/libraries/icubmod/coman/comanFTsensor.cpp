@@ -75,6 +75,16 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
 {
     Bottle xtmp;
 
+    if(_config.check("name") )
+    {
+        setDeviceId(_config.find("name").asString() );
+    }
+    else
+    {
+        printf("No name found?????");
+        std::cout << "Params are: " << _config.toString();
+    }
+
     // Analog Sensor stuff
     Bottle config = _config.findGroup("ANALOG");
     if (!validate(config, xtmp, "numberOfSensors","Number of FT boards", 1))
@@ -92,10 +102,11 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
     FTmap = new int[numberOfBoards];
     scaleFactor=new double[numberOfBoards];
 
-
-    if (!validate(config, xtmp, "scaleFactor","Scaling factor for FT sensors", numberOfBoards))
+    std::cout << "\n\n  num of boards is " << numberOfBoards << "\n\n";
+    if (!validate(config, xtmp, "newtonsToSensor","Scaling factor for FT sensors", numberOfBoards))
     {
-    	yError() << "scaleFactor param was not found";
+        yError() << "FTSensor " << getDeviceId() << ": newtonsToSensor param was not found";
+        return false;
     }
     else
     {
@@ -107,14 +118,18 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
     {
         yWarning() << "comanFTsensor: FT sensor map not found or not correct, check your config file. Quitting";
         for(int i=0; i < numberOfBoards; i++)
+        {
             FTmap[i] = 0;
+            std::cout << "Ftmap[" << i << "] is " << FTmap[i];
+        }
         return false;
     }
     else
     {    // get starts from 1 because the parameter name is counted as index 0
-    	for(int i=0; i<numberOfBoards; i++)
+        for(int i=0; i<numberOfBoards; i++)
         {
         	FTmap[i] = xtmp.get(1+i).asInt();
+            std::cout << "Ftmap[" << i << "] is " << FTmap[i];
         }
     }
 
@@ -224,7 +239,6 @@ int comanFTsensor::read(yarp::sig::Vector &out)
 
     // TODO
     int sensor_idx = 0;
-    // Che TIPO di dato è (int, double...)??? Chi lo decide???
     out.resize(numberOfBoards * _channels);
 
     for(int idx = 0; idx < numberOfBoards; idx++)
@@ -237,9 +251,18 @@ int comanFTsensor::read(yarp::sig::Vector &out)
             //yError() << "Trying to read data from a non-existing FT sensor " << sensor_idx << ", check your config file";
             for(int tmp_idx = 0; tmp_idx < _channels; tmp_idx++)
                 out[idx*_channels + tmp_idx] = 0;
+
+//          Debug purpose, this way the output will be the boardId, to check if it is
+//          trying to read from the right board
+            out[idx*_channels + 0] = (double) sensor_idx;
+            out[idx*_channels + 1] = (double) sensor_idx;
+            out[idx*_channels + 2] = (double) sensor_idx;
+            out[idx*_channels + 3] = (double) sensor_idx;
+            out[idx*_channels + 4] = (double) sensor_idx;
+            out[idx*_channels + 5] = (double) sensor_idx;
             continue;
-            //return AS_ERROR;
         }
+
 
         ts_bc_data_t bc_data;
         ft_bc_data_t &data = bc_data.raw_bc_data.ft_bc_data;

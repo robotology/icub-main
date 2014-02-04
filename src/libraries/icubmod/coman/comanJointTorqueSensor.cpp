@@ -226,7 +226,7 @@ bool comanJointTorqueSensor::fromConfig(yarp::os::Searchable &config)
             _maxTorque[i-1] = xtmp.get(i).asDouble();
 
     // Scale Factor
-    if (!extractGroup(general, xtmp, "scaleFactor","a list of offsets for the zero point", _nChannels+1))
+    if (!extractGroup(general, xtmp, "newtonsToSensor","conversion factor for oint torque sensors", _nChannels+1))
         return false;
     else
         for (i = 1; i < xtmp.size(); i++)
