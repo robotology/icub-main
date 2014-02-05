@@ -306,18 +306,18 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     carrier=opt.check("carrier",Value("udp")).asString().c_str();
     verbosity=opt.check("verbosity",Value(0)).asInt();
 
-    string part_motor=string("/"+type+"_arm");
-    string part_analog=string("/"+type+"_hand");
+    string part_motor=string(type+"_arm");
+    string part_analog=string(type+"_hand");
 
     Property prop;
     prop.put("device","remote_controlboard");
-    prop.put("remote",("/"+robot+part_motor).c_str());
-    prop.put("local",("/"+name+part_motor).c_str());
+    prop.put("remote",("/"+robot+"/"+part_motor).c_str());
+    prop.put("local",("/"+name+"/"+part_motor).c_str());
     if (!driver.open(prop))
         return false;
     
-    port->open(("/"+name+part_analog+"/analog:i").c_str());
-    string analogPortName(("/"+robot+part_analog+"/analog:o").c_str());
+    port->open(("/"+name+"/"+part_analog+"/analog:i").c_str());
+    string analogPortName(("/"+robot+"/"+part_analog+"/analog:o").c_str());
     if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),carrier.c_str()))
     {
         printMessage(1,"unable to connect to %s\n",analogPortName.c_str());
