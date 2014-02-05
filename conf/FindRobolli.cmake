@@ -13,9 +13,12 @@ IF(NOT ROBOLLI_FOUND)
     # CASE 1: library has been compiled and installed somewhere.
     #           ENV var COMAN_ROOT points to the source code (COMAN_shared folder)
     #           ENV var COMAN_DIR  points to the binaries, wherever they are
+    #         By default COMAN_shared installs in COMAN_ROOT, therefore
+    #         try ${COMAN_ROOT}/include as well
     find_path(   robolli_INCLUDE_DIRS
                  NAMES broadcast_data.h
                  PATHS $ENV{COMAN_DIR}
+                       $ENV{COMAN_ROOT}
                  PATH_SUFFIXES include)
 
     if(NOT robolli_INCLUDE_DIRS)
@@ -27,6 +30,7 @@ IF(NOT ROBOLLI_FOUND)
     find_library(robolli_LIB
                  NAMES robolli
                  PATHS $ENV{COMAN_DIR}
+                       $ENV{COMAN_ROOT}
                  PATH_SUFFIXES lib)
 
     if(robolli_LIB)
