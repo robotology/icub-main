@@ -42,7 +42,6 @@ ACE_INET_Addr		eb9(eb9_ip":12345");
 											  //ATTENTION: is importan to define also the same macro in hostTransceiver.cpp
 
 
-
 #if 0
 ethResources* TheEthManager::getResource(yarp::os::Searchable &config)
 {
@@ -331,7 +330,7 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
      bool addLUT_result =  boards_map.insert(std::pair< std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>(std::make_pair<eOnvBRD_t, eOnvEP8_t>(nvBrdNum, id->ep), *id)).second;
 
     // Check result of insertion
-    addLUT_result ? yDebug() << ">>>>>>>>>>>> ok add lut element for board " << id->boardNum << " and ep " << id->ep :
+    addLUT_result ? yTrace() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
                     yError() << "NON ok add lut element for board " << id->boardNum << " and ep " << id->ep;
 
 
@@ -348,10 +347,8 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
         }
         catch (const std::out_of_range& errMsg)
         {
-                yError() << "dopo inserimento LUT ho errore!!!";
+                yError() << "Error after  LUT insertion!!!";
         }
-
-    printf("EXIT addLUTelement\n");
 }
 
 bool TheEthManager::removeLUTelement(FEAT_ID element)
@@ -750,6 +747,16 @@ EthReceiver::EthReceiver()
 #endif
 {
     yTrace();
+#ifdef ETHRECEIVER_STATISTICS_ON
+    stat = new StatExt();
+    stat_onRecFunc  = new StatExt();
+    stat_onMutex = new StatExt();
+#endif
+
+#ifdef ETHRECEIVER_ISPERIODICTHREAD
+    count=0;
+    isFirst=true;
+#endif
 }
 
 void EthReceiver::onStop()
@@ -1174,21 +1181,38 @@ void EthReceiver::run()
 
 
     //yDebug() << "Starting udp RECV thread with prio "<< getPriority() << "\n";
-
     ACE_Time_Value recvTimeOut;
     fromDouble(recvTimeOut, 0.01);
 
+#ifdef ETHRECEIVER_STATISTICS_ON
+    bool isFirst =true;
+    double last_time, curr_time, diff;
+    double before_rec, after_rec, diff_onRec;
+    double before_mutex, after_mutex, diff_onMutex;
+    int count;
+    #define count_max 5000
+#endif
     while(!isStopping())
     {
 
+#ifdef ETHRECEIVER_STATISTICS_ON
+        before_rec = yarp::os::Time::now();
+#endif
         //get pkt from socket: blocking call with timeout
         recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
-
+#ifdef ETHRECEIVER_STATISTICS_ON
+        after_rec =  yarp::os::Time::now();
+        diff_onRec = after_rec - before_rec;
+        stat_onRecFunc->add((diff_onRec*1000));
+#endif
         if(!isRunning())
         {
             continue; //i go to recv a new pkt and wait someone to stop me
         }
 
+#ifdef ETHRECEIVER_STATISTICS_ON
+        before_mutex = yarp::os::Time::now();
+#endif
         //take pointers to ems board list
          ethManager->managerMutex.wait();
          // new, reverse iterator
@@ -1197,6 +1221,12 @@ void EthReceiver::run()
          _rEnd = ethResList->rend();
          ethManager->managerMutex.post();
 
+
+#ifdef ETHRECEIVER_STATISTICS_ON
+         after_mutex = yarp::os::Time::now();
+         diff_onMutex = after_mutex - before_mutex;
+         stat_onMutex->add((diff_onMutex*1000));
+#endif
 
          //i get here because of timeout ot i received a pkt;in both cases i check if all boards are alive.In the meanwhile i check if all ems are in config state.
          riterator = _rBegin;
@@ -1230,6 +1260,39 @@ void EthReceiver::run()
             recError=false;
         }
 
+#ifdef ETHRECEIVER_STATISTICS_ON
+        if(isFirst)
+        {
+            last_time = yarp::os::Time::now();
+            isFirst = false;
+        }
+        else
+        {
+            curr_time = yarp::os::Time::now();
+            diff = curr_time - last_time;
+            stat->add((diff*1000));
+            if (diff> 0.006)
+                yError() <<"ethReceiver pass more 6 mill without activity!!! diff= "<< diff;
+
+            count++;
+            last_time = curr_time;
+        }
+
+        if(count == count_max)
+        {
+            yDebug()<< "ETHRECEIVER stat: avg=" << stat->mean()<< "ms std=" << stat->deviation()<< "ms min=" << stat->getMin() << "ms max=" << stat->getMax()<< "ms  " ;
+            yDebug()<< "ETHRECEIVER stat_onRecFunc: avg=" << stat_onRecFunc->mean()<< "ms std=" << stat_onRecFunc->deviation()<< "ms min=" << stat_onRecFunc->getMin() << "ms max=" << stat_onRecFunc->getMax()<< "ms  " ;
+            yDebug()<< "ETHRECEIVER stat_onMutex: avg=" << stat_onMutex->mean()<< "ms std=" << stat_onMutex->deviation()<< "ms min=" << stat_onMutex->getMin() << "ms max=" << stat_onMutex->getMax()<< "ms  " ;
+            count = 0;
+            stat->clear();
+            stat_onRecFunc->clear();
+            stat_onMutex->clear();
+        }
+#endif
+
+
+
+
 
         //if i rec a pkt, then looking for the sender ems and parse the pkt
         sender_addr.addr_to_string(address, 64);
@@ -1260,19 +1323,6 @@ void EthReceiver::run()
     return;
 }
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

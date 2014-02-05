@@ -225,9 +225,21 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
         //1) check seq num
         if(curr_seqNum != last_seqNum+1)
         {
-            currPeriodPktLost++;
-            totPktLost++;
-            yError()<< "LOST PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
+            int num_lost_pkts=0;
+
+            if(curr_seqNum < (last_seqNum+1))
+            {
+                yError()<< "REC PKTS not in order!!!!" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!!!!!!!" ;
+            }
+            else
+            {
+                //i lost some pkts
+                num_lost_pkts = curr_seqNum - last_seqNum -1;
+            }
+            currPeriodPktLost+= num_lost_pkts;
+            totPktLost+= num_lost_pkts;
+
+            yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
         //2) check ageOfPkt

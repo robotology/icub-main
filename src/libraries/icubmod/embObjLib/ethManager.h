@@ -85,6 +85,7 @@
 #define SIZE_INFO                 128
 //#define MAX_ICUB_EP               32
 
+
 // sizes of rx and tx buffers. 
 // the rx buffer must be able to accepts udp packets of max size (1500), so that we are safe against changes 
 // of tx size done inside the ems boards. 
@@ -312,6 +313,18 @@ private:
     std::list<ethResources *>     *ethResList;
     uint64_t                       seqnumList[10];
     bool                           recFirstPkt[10];
+
+
+#ifdef ETHRECEIVER_STATISTICS_ON
+    StatExt                       *stat;
+    StatExt                       *stat_onRecFunc;
+    StatExt                       *stat_onMutex;
+#endif
+
+#ifdef ETHRECEIVER_ISPERIODICTHREAD
+    int count;
+    bool isFirst;
+#endif
 
 #ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
     // for statistic debug purpose
