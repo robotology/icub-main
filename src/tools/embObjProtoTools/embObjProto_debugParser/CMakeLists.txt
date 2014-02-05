@@ -17,19 +17,20 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 
 #headers-----------
 
-set(BASE 			$ENV{ICUB_ROOT}//main/src/libraries/icubmod/embObj)
+set(BASE 			$ENV{ICUB_ROOT}//main/src/libraries/icubmod/embObjLib/embObj/embobj/)
 
 
-set(CORE_FOLDER  		${BASE}/core/)
-set(CORE_API	  		${BASE}/core/)
-set(PROT_FOLDER  		${BASE}/comm-v1/prot/)
-set(UTILS_FOLDER  		${BASE}/utils/)
-set(ICUB_API     		${BASE}/comm-v1/icub/)
+set(CORE_FOLDER  		${BASE}/core/core/)
+set(CORE_API	  		${BASE}/core/core/)
+set(PROT_FOLDER  		${BASE}/plus/comm-v2/)
+set(UTILS_FOLDER  		${BASE}/plus/utils/)
+set(ICUB_API     		${BASE}/plus/comm-v2/icub/)
 
 
 set(embObj_includes 	
 						${CORE_FOLDER}
-						${PROT_FOLDER}
+						${PROT_FOLDER}/transport/
+                        ${PROT_FOLDER}/protocol/api
 						${UTILS_FOLDER}
 						${ICUB_API}
 						)   
@@ -65,11 +66,14 @@ set(CORE_VEE_SOURCE			${CORE_FOLDER}/EOVmutex.c
 							${CORE_FOLDER}/EOVtheSystem.c	
 							)
 
+#set(PROTO_SRC               ${PROT_FOLDER}/protocol/src/EoProtocol.c)
+
 set(embobj_source 
                         ${CORE_SOURCE}						
                         ${UTILS_HEADER}
 						${UTILS_SOURCE}
                         ${CORE_VEE_SOURCE}
+#                        ${PROTO_SRC}
                         )
 
 

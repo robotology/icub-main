@@ -99,7 +99,7 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 				EO_INIT(.head)
 				{
 					EO_INIT(.capacity)       eODeb_eoProtoParser_maxNV2find,
-					EO_INIT(.itemsize)       sizeof(eODeb_eoProtoParser_nvidEp_couple_t),
+					EO_INIT(.itemsize)       sizeof(eODeb_eoProtoParser_nv_identify_t),
 					EO_INIT(.size)           0,
 				},
 				EO_INIT(.data)
@@ -166,7 +166,7 @@ return;
 static void my_cbk_onNVfound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_eoProtoParser_ropAdditionalInfo_t *ropAddInfo_ptr)
 {
 
-	printf("NV found!!: ep=%x id=%x\n", ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
+	printf("NV found!!: id=%x\n", ropAddInfo_ptr->desc.id32);
 	return;
 }
 
@@ -184,57 +184,7 @@ static void my_cbk_onNVsetpointFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr
 
 	//printf("NV found!!: ep=%x id=%x\n", ropAddInfo_ptr->desc.ep, ropAddInfo_ptr->desc.id);
 
-    if(ropAddInfo_ptr->desc.ep == 0x18)
-    {
-        board = 8;
-        enc_factor = enc_factor_8;
-        zero = zero_8;
-    }
-    else if(ropAddInfo_ptr->desc.ep == 0x16)
-    {
-        board = 6;
-        enc_factor = enc_factor_6;
-        zero = zero_6;
-    }
-    else
-    {
-        printf("\n\n ERROR: un expected ep!!! %d \n ", ropAddInfo_ptr->desc.ep);
-        return;
-    }
-
-    if(setpoint_ptr->type != eomc_setpoint_position)
-    {
-        printf("ERR: no setpoint position. typse= %d", setpoint_ptr->type);
-        return;
-    }
-
-    switch(ropAddInfo_ptr->desc.id)
-    {
-        case 0xbc1a:
-        {
-            j = 0;
-        }break;
-
-        case 0xbc3a:
-        {
-            j = 1;
-        }break;
-
-        case 0xbc5a:
-        {
-            j = 2;
-        }break;
-
-        case 0xbc7a:
-        {
-            j = 3;
-        }break;
-        default:
-        {
-            printf("ERROR: receiv unexpected nvid %x", ropAddInfo_ptr->desc.id);
-            return;
-        }
-    }
+    //add here code to get info of j and board
     float vel, pos;
 
     pos = (setpoint_ptr->to.position.value/enc_factor)-zero;
