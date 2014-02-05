@@ -435,7 +435,26 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             Bit++;
             continue;
         }
+        //VALE: i can add this cycle for calib on eth because it does nothing,
+        //     because enablePid doesn't send command because joints are not calibrated
 
+        //------------------------------------------------
+        //enable only the motors which have to test the hardware limit
+        for(lit  = tmp.begin(); lit != lend; lit++)  
+        {
+            if (type[*lit]==0 ||
+                type[*lit]==4 ) 
+            {
+                yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
+                iAmps->enableAmp(*lit); 
+                iPids->enablePid(*lit);
+            }
+        }
+        //------------------------------------------------
+
+        Time::delay(0.1f);
+
+        //------------------------------------------------
         for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
         {
             // Enable amp moved into EMS class;
@@ -443,13 +462,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             calibrateJoint((*lit));
         }
 
-        for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
-        {
-            iEncoders->getEncoders(currPos);
-//            yDebug() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
-        }
+        //VALE: commented because it is useless. used for debug only.
+//        for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
+//        {
+//            iEncoders->getEncoders(currPos);
+////            yDebug() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
+//        }
 
-        Time::delay(4.0f);
+//        Time::delay(4.0f); VALE: i can remove this dalay because now checkCalibrateJointEnded work properly!!
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
@@ -464,7 +484,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
         else    // keep pid safe  and go on
         {
-            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
+            yError() <<  deviceName  << " set" << setOfJoint_idx << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
             while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
@@ -472,12 +492,16 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             }
         }
 
+        //VALE:
+        //this cycle should be useless, because after calibration all joints should be in idle state (if calibration process ends without success)
+        //or "control mode position" state if calibration is ok.
+        //currently it is important leave this cycle else ems boards don't work properly.
         lit  = tmp.begin();
         while(lit != lend)    // per ogni giunto del set
         {
             // Abilita il giunto
             //iAmps->enableAmp((*lit));
-            iControlMode->setPositionMode((*lit)); 
+            iControlMode->setPositionMode((*lit));
             lit++;
         }
 
