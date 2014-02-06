@@ -3,7 +3,7 @@
 * \page application_documentation Application Documentation
 
 This is a template you can use to document an application (a bunch of scripts
-in a directory in ICUB_ROOT/app, which instatiate and run a set of modules
+in a directory in icub-main/app, which instatiate and run a set of modules
 to produce a meaningful behavior of the robot).
 
 Replace "exampleApplication" with the name of your application.
