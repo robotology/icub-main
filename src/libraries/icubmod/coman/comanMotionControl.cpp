@@ -15,6 +15,7 @@
 #include <string.h>
 #include <ode/odeconfig.h>
 #include <yarp/os/Time.h>
+#include <yarp/sig/Vector.h>
 
 #include "comanDevicesHandler.hpp"
 #include "comanMotionControl.h"
@@ -259,34 +260,7 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
         _controlMode[i] = VOCAB_CM_IDLE;
     }
 
-/* TODO ??
-    // per tutti i giunti... non fare niente. Le schede partono già con i parametri corretti. Chiedere cosa è necessario fare all'avvio del robot
-    for(int i=0; i< _njoints; i++)
-    {
-        int j = _axisMap[i];
-        int16_t _min_pos = (int16_t) min;  // boards use int, we use double;
-        int16_t _max_pos = (int16_t) max;
 
-        McBoard *joint_p = getMCpointer(j);
-        if( NULL == joint_p)
-        {
-            yError() << "Calling setLimitsRaw on a non-existing joint j" << j;
-            return false;
-        }
-
-        // set limits for pos, vel torque
-        ret &= (!joint_p->setItem(SET_MIN_POSITION, &_min_pos, sizeof(_min_pos)) );  // setItem returns 0 if ok, 2 if error
-        ret &= (!joint_p->setItem(SET_MAX_POSITION, &_max_pos, sizeof(_max_pos)) );
-        ret &= (!joint_p->setItem(SET_MIN_VELOCITY, &        , sizeof(        )) );
-        ret &= (!joint_p->setItem(SET_MAX_VELOCITY, &        , sizeof(        )) );
-        ret &= (!joint_p->setItem(SET_MIN_TORQUE,   &        , sizeof(        )) );
-        ret &= (!joint_p->setItem(SET_MAX_TORQUE,   &        , sizeof(        )) );
-
-        // set broadcast policy
-        ret &= (!joint_p->setItem(SET_BROADCAST_RATE,     &        , sizeof(        )) );
-        ret &= (!joint_p->setItem(SET_BROADCAST_POLICY,   &        , sizeof(        )) );
-    }
-*/
 //
 //      INIT ALL INTERFACES
 //
@@ -422,24 +396,7 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 bool comanMotionControl::init()
 {
 #warning "A firmware version check could be usefull here?"
-//   //Do some init for each board if needed... maybe check firmware version??
-//     McBoard *joint_p = getMCpointer(0);
-//     uint8_t boardId = 0x03;
-//     if(NULL != joint_p)
-//     {
-//         if(0 != joint_p->setItem(SET_BOARD_NUMBER, &boardId, sizeof(uint8_t)))
-//         {
-//             yError() << "setting boardId";
-//         }
-//
-//         if(0 != joint_p->setItem(SAVE_PARAMS_TO_FLASH, NULL, 0 ))
-//         {
-//             yError() << "saving boardId into flash memory";
-//         }
-//     }
-
-//     _boards_ctrl->body_homing(_ref_positions, _ref_speeds, _ref_torques);  // calibratore
-    // MUST be in this order: velocity, position and torque??
+// MUST be in this order: velocity, position and torque??
     _boards_ctrl->set_velocity(_ref_speeds, _njoints * sizeof(_ref_speeds[0]));
     _boards_ctrl->set_position(_ref_positions, _njoints * sizeof(_ref_positions[0]));
     _boards_ctrl->set_torque(_ref_torques, _njoints * sizeof(_ref_torques[0]));
@@ -479,14 +436,23 @@ bool comanMotionControl::init()
     }
 
 
-//   // tell to ALL dps to start broadcast data
-//    uint8_t start = 1;
-////    _boards_ctrl->start_stop_bc_boards(start);
-//    for(int enable=9; enable<=12; enable++)
-//    {
-//    	McBoard *joint_p = getMCpointer(enable);
-//    	joint_p->start_stop_bc(1);
-//    }
+    // set current position as target to keep the robot steady at the start-up; set initial ref speed
+    double initialPosition[_njoints];
+    yarp::sig::Vector initialSpeeds(_njoints, 10);
+
+    ret = getEncoders(initialPosition);
+    if(ret)
+    {
+        setRefSpeeds(initialSpeeds.data());
+        setPositions(initialPosition);
+        std::cout << "===============================" << std::endl;
+        std::cout << " Coman MC: Inital speeds are \n" << initialSpeeds.toString() << std::endl;
+        std::cout << "===============================" << std::endl;
+
+    }
+    else
+        std::cout << "Coman MC: error! Not able to read initial positions";
+
     return true;
 }
 
