@@ -1500,6 +1500,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
     uint8_t stop = 0;
     bool ret = true;
     uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
+    double initialPosition;
 
     if( NULL == joint_p)
     {
@@ -1517,6 +1518,16 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
         case VOCAB_CM_VELOCITY:
             // now firmware is able to do a smooth transition from pos to vel, so nothing to do here
+            if(getEncoder(j, &initialPosition) )
+                positionMove(j, initialPosition);
+            else
+                std::cout << "Coman MC: error! Not able to read initial positions";
+
+            if(getEncoder(j, &initialPosition) )
+                positionMove(j, initialPosition);
+            else
+                std::cout << "Coman MC: error! Not able to read initial positions";
+
             break;
 
         case VOCAB_CM_TORQUE:
@@ -1533,6 +1544,11 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
 //            	ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
             ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+
+            if(getEncoder(j, &initialPosition) )
+                positionMove(j, initialPosition);
+            else
+                std::cout << "Coman MC: error! Not able to read initial positions";
 
             if(!ret)
                 yError() << "error while stopping torque mode";
@@ -1560,10 +1576,21 @@ bool comanMotionControl::setPositionModeRaw(int j)
 //            	ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
             	ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
             }
+
+            if(getEncoder(j, &initialPosition) )
+                positionMove(j, initialPosition);
+            else
+                std::cout << "Coman MC: error! Not able to read initial positions";
+
             break;
 
         default:
             yDebug() << "joint "<< j << "set position mode coming from unknown controlmode... stop everything and then enable position\n";
+            if(getEncoder(j, &initialPosition) )
+                positionMove(j, initialPosition);
+            else
+                std::cout << "Coman MC: error! Not able to read initial positions";
+
             disablePidRaw(j);
             break;
     }
@@ -1646,6 +1673,7 @@ bool comanMotionControl::setTorqueModeRaw( )
 bool comanMotionControl::setImpedancePositionModeRaw(int j)
 {
     // Chiedere info
+    double initialPosition;
     McBoard *joint_p = getMCpointer(j);
     uint8_t bId = jointTobId(j);
     if( NULL == joint_p)
@@ -1691,6 +1719,12 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
 
     ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+
+    if(getEncoder(j, &initialPosition) )
+        positionMove(j, initialPosition);
+    else
+        std::cout << "Coman MC: error! Not able to read initial positions";
+
 
     if(ret)
         _controlMode[j] = VOCAB_CM_IMPEDANCE_POS;
