@@ -478,7 +478,7 @@ Random Feature preprocessor.
 Step 2.
 Configure the machine, for this example we set lambda to 0.2 for all outputs. 
 (train)-------------------------------------------------------------------------
-set lambda all 0.2
+set lambda 0.2
 "Setting configuration option succeeded"
 --------------------------------------------------------------------------------
 
@@ -586,7 +586,7 @@ ports.
 
 4.2 Initialization and Configuration
 Specifying executable parameters can be rather cumbersome. Note that all modules 
-support a '--file filename' parameter that can be used to read out startup 
+support a '--commands filename' parameter that can be used to read out startup 
 parameters from a file.
 
 Although that helps for the initialization parameters, it cannot be used for 
