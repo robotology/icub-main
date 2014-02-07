@@ -1,3 +1,7 @@
+2014-01-24 Ugo Pattacini <ugo.pattacini@iit.it>
+      * functionEncoder: framework redesigned as interface in order
+	    to add up new methods in the near future.
+
 2013-02-13 Ugo Pattacini <ugo.pattacini@iit.it>
       * tuning: added PI controller design
 
