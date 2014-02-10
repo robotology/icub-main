@@ -2,13 +2,13 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
-  <device name="right_leg_mc" type="canmotioncontrol">   
+  <device name="head_mc" type="canmotioncontrol">        
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
-<param name="CanAddresses"> 8 9 10        </param>       
-<param name="CanDeviceNum"> 4             </param>       
-<param name="NetworkId">                  RIGHTLEG      </param>       
+<param name="CanAddresses"> 1 2 3         </param>       
+<param name="CanDeviceNum"> 0             </param>       
+<param name="NetworkId">                  HEAD          </param>       
 <param name="CanMyAddress"> 0             </param>       
 <param name="CanPollingInterval">         10            </param>       
 <param name="CanTimeout">   500           </param>       
@@ -28,15 +28,15 @@
  
 <group name="GENERAL">       
 <param name="Joints">       6             </param>       
-<param name="AxisMap">      2             3             0             1             4             5             </param>       
-<param name="Encoder">      -11.375       -11.375       -11.375       -11.375       -11.375       -11.375       </param>       
-<param name="Zeros">        -180          -180          -180          -180          -180          -180          </param>       
-<param name="TorqueId">     0x0B          0x0B          0x0B          0x0B          0x0B          0x0B          </param>       
-<param name="TorqueChan">   0             1             2             3             4             5             </param>       
-<param name="TorqueMax">    12            12            12            12            12            12            </param>       
+<param name="AxisMap">      0             1             2             3             4             5             </param>       
+<param name="Encoder">      11.375        -11.375       11.375        11.375        568.88        284.44        </param>       
+<param name="Zeros">        0             0             0             0             0             0             </param>       
+<param name="TorqueId">     0             0             0             0             0             0             </param>       
+<param name="TorqueChan">   0             0             0             0             0             0             </param>       
+<param name="TorqueMax">    0             0             0             0             0             0             </param>       
 <param name="Verbose">      0             0             0             0             0             0             </param>       
-<param name="Rotor">        21.888        21.888        21.888        21.888        21.888        21.888        </param>       
-<param name="GearBox">      150           100           100           100           100           100           </param>       
+<param name="Rotor">        1             1             1             1             1             1             </param>       
+<param name="GearBox">      1             1             1             1             1             1             </param>       
 </group>       
  
 <group name="VELOCITY">      
@@ -49,30 +49,30 @@
 </group>       
  
 <group name="LIMITS">        
-<param name="Min">          -30           0             -40           -120          -20           -10           </param>       
-<param name="Max">          90            90            65            0             30            15            </param>       
-<param name="Currents">     7000          7000          7000          7000          7000          7000          </param>       
+<param name="Min">          -30           -20           -45           -30           -30           0             </param>       
+<param name="Max">          22            20            45            30            30            50            </param>       
+<param name="Currents">     2000          2000          1200          620           600           600           </param>       
 </group>       
  
 <group name="POS_PIDS">      
-<param name="kp">           32000         -32000        32000         -32000        -32000        32000         </param>       
-<param name="kd">           100           -100          100           -100          -100          100           </param>       
-<param name="ki">           60            -60           60            -60           -60           60            </param>       
-<param name="maxPwm">       800           800           800           800           800           800           </param>       
-<param name="maxInt">       800           800           800           800           800           800           </param>       
-<param name="shift">        13            13            13            13            13            13            </param>       
+<param name="kp">           6000          -6000         3200          -400          100           100           </param>       
+<param name="kd">           500           -500          3200          -400          1000          1000          </param>       
+<param name="ki">           5             -5            10            -4            10            10            </param>       
+<param name="maxPwm">       800           800           1333          1333          1333          1333          </param>       
+<param name="maxInt">       800           800           1333          1333          1333          1333          </param>       
+<param name="shift">        8             8             6             4             5             5             </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
 </group>       
  
 <group name="TRQ_PIDS">      
-<param name="kp">           -76           76            -76           76            0             0             </param>       
+<param name="kp">           0             0             0             0             0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             </param>       
-<param name="maxPwm">       800           800           800           800           800           800           </param>       
-<param name="maxInt">       800           800           800           800           800           800           </param>       
-<param name="shift">        14            14            14            14            14            14            </param>       
+<param name="maxPwm">       0             0             0             0             0             0             </param>       
+<param name="maxInt">       0             0             0             0             0             0             </param>       
+<param name="shift">        0             0             0             0             0             0             </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
