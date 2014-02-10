@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+<device type="canBusAnalogSensor" name="left_hand_mais">
+	<param name="canbusDevice"> "sharedcan" </param>
+	<param name="physDevice"> "cfw2can" </param>
+	<param name="canDeviceNum"> 5 </param>
+	<param name="canAddress"> 0x0E </param>
+	<param name="format"> 8 </param>
+	<param name="channels"> 16 </param>
+	<param name="period"> 1 </param>
+</device>
+</devices>
