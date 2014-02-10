@@ -1511,6 +1511,15 @@ bool comanMotionControl::setPositionModeRaw(int j)
     // stop what is running
     switch(_controlMode[j])
     {
+        case VOCAB_CM_IDLE:
+        if(getEncoder(j, &initialPosition) )
+            positionMove(j, initialPosition);
+        else
+            std::cout << "Coman MC: error! Not able to read initial positions";
+
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+
+        break;
         case VOCAB_CM_POSITION:
             yDebug() << "joint "<< j << "already in position mode";
             return true;
@@ -1518,11 +1527,6 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
         case VOCAB_CM_VELOCITY:
             // now firmware is able to do a smooth transition from pos to vel, so nothing to do here
-            if(getEncoder(j, &initialPosition) )
-                positionMove(j, initialPosition);
-            else
-                std::cout << "Coman MC: error! Not able to read initial positions";
-
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
