@@ -160,6 +160,7 @@ bool comanMotionControl::alloc(int nj)
     ImplementControlLimits2(this),
     ImplementTorqueControl(this),
     ImplementPositionDirect(this),
+     _initialPidConfigFound(false),
     _mutex(1)
 {
     yTrace();
@@ -388,8 +389,98 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
     extra_policy = mc_board.find("extra_policy").asInt();
     bc_rate = mc_board.find("bc_rate").asInt();
 
-    printf("bc policy    = %d (0x%0x)", bc_policy, bc_policy);
-    printf("extra_policy = %d (0x%0x)", extra_policy, extra_policy);
+    printf("bc policy    = %d (0x%0x)\n", bc_policy, bc_policy);
+    printf("extra_policy = %d (0x%0x)\n", extra_policy, extra_policy);
+
+
+    ////// POSITION PIDS  - optional
+    {
+        Bottle posPidsGroup;
+        posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
+        if (posPidsGroup.isNull()==false)
+        {
+           yDebug() << "Position Pids section found\n";
+           if (!parsePidsGroup(posPidsGroup, _pids))
+           {
+               yError() << "Position Pids section: error detected in parameters syntax\n";
+               return false;
+           }
+           else
+           {
+               yDebug() << "Position Pids successfully loaded\n";
+               _initialPidConfigFound = true;
+           }
+        }
+        else
+        {
+            yWarning() << "POS_PIDS group not found, using defaults from boards!!\n\n";
+        }
+
+    }
+    return true;
+}
+
+bool comanMotionControl::parsePidsGroup(Bottle& pidsGroup, Pid myPid[])
+{
+    int j=0;
+    Bottle xtmp;
+
+    if (!extractGroup(pidsGroup, xtmp, "kp", "kp parameter", _njoints+1))  return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].kp = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "ki", "ki parameter", _njoints+1))  return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].ki = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "maxInt parameter", _njoints+1))  return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].max_int = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "maxPwm", "maxPwm parameter", _njoints+1))   return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].max_output = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "shift", "scale parameter", _njoints+1))     return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].scale = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "ko", "pid offset parameter", _njoints+1))   return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].offset = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "stictionUp parameter", _njoints+1))    return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    }
+
+    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "stictionDwn parameter", _njoints+1))  return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    }
+
     return true;
 }
 
@@ -415,6 +506,14 @@ bool comanMotionControl::init()
         _controlMode[i] = VOCAB_CM_IDLE;
     }
 
+    if(_initialPidConfigFound)
+    {
+        for(int i=0; i< _njoints; i++)
+        {
+            setPid(i, _pids[i]);
+            yarp::os::Time::delay(0.1);
+        }
+    }
 
     // read default value of motor config for j 1 TODO: do it for all joints
     bool ret = true;
@@ -445,9 +544,9 @@ bool comanMotionControl::init()
     {
         setRefSpeeds(initialSpeeds.data());
         setPositions(initialPosition);
-        std::cout << "===============================" << std::endl;
-        std::cout << " Coman MC: Inital speeds are \n" << initialSpeeds.toString() << std::endl;
-        std::cout << "===============================" << std::endl;
+//        std::cout << "===============================" << std::endl;
+//        std::cout << " Coman MC: Inital speeds are \n" << initialSpeeds.toString() << std::endl;
+//        std::cout << "===============================" << std::endl;
 
     }
     else
@@ -485,7 +584,7 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 
     if( NULL == joint_p)
     {
-        yError() << "Calling SetPid on a non-existing joint j" ; // << j << "(bId" << jointTobId(j) << ")" ;
+        yError() << "Calling SetPid on a non-existing joint j"  << j << "(bId" << jointTobId(j) << ")" ;
         return false;
     }
     else

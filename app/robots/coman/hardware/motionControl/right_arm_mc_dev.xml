@@ -7,6 +7,20 @@
     <params file="robolli.xml" />     <!-- robolli config -->
     <params file="hardware/motor_params/motor_params_right_arm.xml" />
 
+<!--    
+    <group name="POS_PIDS">      
+        <param name="kp">           32000         32000         -32000        32000         -200          1000          -1000                   </param>       
+        <param name="kd">           50            50            -50           20            -1000         10000         -10000                  </param>       
+        <param name="ki">           60            60            -60           60            -1            1             -1                      </param>       
+        <param name="maxPwm">       800           800           800           800           1333          1333          1333                    </param>       
+        <param name="maxInt">       800           800           800           800           1333          1333          1333                    </param>       
+        <param name="shift">        13            13            13            13            6             7             7                       </param>       
+        <param name="ko">           0             0             0             0             0             0             0                       </param>       
+        <param name="stictionUp">   0             0             0             0             0             0             0                       </param>       
+        <param name="stictionDwn">  0             0             0             0             0             0             0                       </param>       
+    </group>   
+--> 
+    
     <group name="IMPEDANCE_PIDS">
          <!--                     Kp       Kd     Ki   Integral    PWM    scale
                                                         Limit     Limit  factor  offset    -->

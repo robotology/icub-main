@@ -6,7 +6,20 @@
   <device name="left_hand_mc_dev" type="comanMotionControl">
     <params file="robolli.xml" />     <!-- robolli config -->
     <params file="hardware/motor_params/motor_params_left_hand.xml" />         
-       
+  
+<!--       
+     <group name="POS_PIDS">      
+        <param name="kp">           0               </param>       
+        <param name="kd">           0               </param>       
+        <param name="ki">           0               </param>       
+        <param name="maxPwm">       0               </param>       
+        <param name="maxInt">       0               </param>       
+        <param name="shift">        0               </param>       
+        <param name="ko">           0               </param>       
+        <param name="stictionUp">   0               </param>       
+        <param name="stictionDwn">  0               </param>       
+    </group>  
+-->    
     <group name="IMPEDANCE_PIDS">
          <!--                     Kp       Kd     Ki   Integral    PWM    scale
                                                         Limit     Limit  factor  offset    -->
