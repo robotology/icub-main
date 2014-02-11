@@ -206,12 +206,82 @@ bool fingersTuner_IDLServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "help") {
+      std::string functionName;
+      if (!reader.readString(functionName)) {
+        functionName = "--all";
+      }
+      std::vector<std::string> _return=help(functionName);
+      yarp::os::idl::WireWriter writer(reader);
+        if (!writer.isNull()) {
+          if (!writer.writeListHeader(2)) return false;
+          if (!writer.writeTag("many",1, 0)) return false;
+          if (!writer.writeListBegin(BOTTLE_TAG_INT, static_cast<uint32_t>(_return.size()))) return false;
+          std::vector<std::string> ::iterator _iterHelp;
+          for (_iterHelp = _return.begin(); _iterHelp != _return.end(); ++_iterHelp)
+          {
+            if (!writer.writeString(*_iterHelp)) return false;
+           }
+          if (!writer.writeListEnd()) return false;
+        }
+      reader.accept();
+      return true;
+    }
     if (reader.noMore()) { reader.fail(); return false; }
     yarp::os::ConstString next_tag = reader.readTag();
     if (next_tag=="") break;
     tag = tag + "_" + next_tag;
   }
   return false;
+}
+
+std::vector<std::string> fingersTuner_IDLServer::help(const std::string& functionName) {
+  bool showAll=(functionName=="--all");
+  std::vector<std::string> helpString;
+  if(showAll) {
+    helpString.push_back("*** Available commands:");
+    helpString.push_back("sync");
+    helpString.push_back("tune");
+    helpString.push_back("save");
+    helpString.push_back("quit");
+  }
+  else {
+    if (functionName=="sync") {
+      helpString.push_back("bool sync(const std::string& part, const yarp::os::Value& val) ");
+      helpString.push_back("Synchronize PID values with values stored ");
+      helpString.push_back("in the configuration file. ");
+      helpString.push_back("@param part specifies the part name as per ");
+      helpString.push_back("configuration file. ");
+      helpString.push_back("@param val accounts for a single joint if ");
+      helpString.push_back("the corresponding integer is given or a set ");
+      helpString.push_back("of joints if the corresponding alias is provided ");
+      helpString.push_back("as defined within the configuration file. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="tune") {
+      helpString.push_back("bool tune(const std::string& part, const yarp::os::Value& val) ");
+      helpString.push_back("Tune PID of a joint or a set of joints. ");
+      helpString.push_back("@param part specifies the part name as per ");
+      helpString.push_back("configuration file. ");
+      helpString.push_back("@param val accounts for a single joint if ");
+      helpString.push_back("the corresponding integer is given or a set ");
+      helpString.push_back("of joints if the corresponding alias is provided ");
+      helpString.push_back("as defined within the configuration file. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="save") {
+      helpString.push_back("bool save() ");
+      helpString.push_back("Save the PID parameters on configuration file. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="quit") {
+      helpString.push_back("bool quit() ");
+      helpString.push_back("Quit the module. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+  }
+  if ( helpString.empty()) helpString.push_back("Command not found");
+  return helpString;
 }
 
 
