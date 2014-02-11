@@ -94,7 +94,7 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
 
     if(_initted)
     {
-        yDebug() << "Already initted!";
+//        yDebug() << "Coman handler already initted!";
         comanDevicesHandler_mutex.post();
         return true;
     }

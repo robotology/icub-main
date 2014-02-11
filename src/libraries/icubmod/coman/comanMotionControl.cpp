@@ -322,7 +322,6 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
 		return false;
     }
     _njoints = general.find("joints").asInt();
-    yWarning() << " njoints is " << _njoints;
     alloc(_njoints);
 
     // leggere i valori da file, AxisMap is optional
@@ -399,7 +398,7 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yDebug() << "Position Pids section found\n";
+//           yDebug() << "Position Pids section found";
            if (!parsePidsGroup(posPidsGroup, _pids))
            {
                yError() << "Position Pids section: error detected in parameters syntax\n";
@@ -413,7 +412,7 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
         }
         else
         {
-            yWarning() << "POS_PIDS group not found, using defaults from boards!!\n\n";
+            yWarning() << "POS_PIDS group not found, using defaults from boards!!\n";
         }
 
     }
@@ -506,14 +505,14 @@ bool comanMotionControl::init()
         _controlMode[i] = VOCAB_CM_IDLE;
     }
 
-//    if(_initialPidConfigFound)
-//    {
-//        for(int i=0; i< _njoints; i++)
-//        {
-//            setPid(i, _pids[i]);
-//            yarp::os::Time::delay(0.1);
-//        }
-//    }
+    if(_initialPidConfigFound)
+    {
+        for(int i=0; i< _njoints; i++)
+        {
+            setPid(i, _pids[i]);
+            yarp::os::Time::delay(0.1);
+        }
+    }
 
     // read default value of motor config for j 1 TODO: do it for all joints
     bool ret = true;
