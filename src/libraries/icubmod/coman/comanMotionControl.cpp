@@ -493,9 +493,9 @@ bool comanMotionControl::init()
     _boards_ctrl->set_torque(_ref_torques, _njoints * sizeof(_ref_torques[0]));
 
     // test settings
-    _boards_ctrl->test();
+//    _boards_ctrl->test();
     // ... WAIT  to let dsp thinking .... LEAVE HERE
-    sleep(1);
+//    sleep(1);
 
     // let the calibrator or user application start the controller through the setPositionMode command
     uint8_t stop = 0;
@@ -523,15 +523,16 @@ bool comanMotionControl::init()
         ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask_j1, 2) );
         printf("\n\njoint %d got motor config 0x%0X\n", 1, motor_config_mask_j1);
 
+        yarp::os::Time::delay(0.01);
+
         ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2_j1, 2) );
         printf("joint %d got motor config2  0x%0X\n\n\n", 1, motor_config_mask2_j1);
 
         getPidRaw(1, &pid_j1);
-        //    printf("pos pid: kp %f, ki %f, kd %f \n", pid_j1.kp, pid_j1.ki, pid_j1.kd);
+        yarp::os::Time::delay(0.01);
 
         getTorquePidRaw(1, &pidTorque_j1);
-        //	printf("trq pid: kp %f, ki %f, kd %f \n", pidTorque_j1.kp, pidTorque_j1.ki, pidTorque_j1.kd);
-        //
+        yarp::os::Time::delay(0.1);
     }
 
 
@@ -543,7 +544,11 @@ bool comanMotionControl::init()
     if(ret)
     {
         setRefSpeeds(initialSpeeds.data());
+        yarp::os::Time::delay(0.01);
+
         setPositions(initialPosition);
+        yarp::os::Time::delay(0.01);
+
 //        std::cout << "===============================" << std::endl;
 //        std::cout << " Coman MC: Inital speeds are \n" << initialSpeeds.toString() << std::endl;
 //        std::cout << "===============================" << std::endl;
@@ -602,9 +607,11 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
         scales[1] = (int32_t) pid.scale;
         scales[2] = (int32_t) pid.scale;
 
+        yWarning() << "setPid: maxint 32bit" << _max_int << " double" << pid.max_int << "\n";
+
         ret &= (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
-        ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(pid.scale) ) );
-        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );
+        ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(pid.scale) ));
+        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );  // comment this line
         ret &= comanMotionControl::setOffsetRaw(j, (int16_t) pid_off);  // j is the yarp joint
     }
     return ret;
@@ -733,6 +740,8 @@ bool comanMotionControl::getPidRaw(int j, Pid *pid)
     ret &= (!joint_p->getItem(GET_ILIM_GAIN,      &pidType, 1, REPLY_ILIM_GAIN,       &integral_limit,  sizeof(integral_limit)) );
     ret &= (!joint_p->getItem(GET_PID_OFFSET,     NULL,     0, REPLY_PID_OFFSET,      &pid_offset,      sizeof(pid_offset)) );
 //     ret &= (!joint_p->getItem(GET_START_OFFSET,   NULL,     1, REPLY_START_OFFSET,    &pid_offset,      sizeof(ComanPid)) );
+
+    yWarning() << "setPid: maxint 32bit" << integral_limit << " double" << pid->max_int << "\n";
 
 	if(ret)
 	{
