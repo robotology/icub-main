@@ -506,14 +506,14 @@ bool comanMotionControl::init()
         _controlMode[i] = VOCAB_CM_IDLE;
     }
 
-    if(_initialPidConfigFound)
-    {
-        for(int i=0; i< _njoints; i++)
-        {
-            setPid(i, _pids[i]);
-            yarp::os::Time::delay(0.1);
-        }
-    }
+//    if(_initialPidConfigFound)
+//    {
+//        for(int i=0; i< _njoints; i++)
+//        {
+//            setPid(i, _pids[i]);
+//            yarp::os::Time::delay(0.1);
+//        }
+//    }
 
     // read default value of motor config for j 1 TODO: do it for all joints
     bool ret = true;
@@ -585,7 +585,7 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
     yTrace() << "joint " << j << "(bId" << jointTobId(j) << ")";
     pid_gains_t p_i_d;
     McBoard *joint_p = getMCpointer(j);
-    bool ret = true;
+    int ret = 0;
 
     if( NULL == joint_p)
     {
@@ -607,14 +607,19 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
         scales[1] = (int32_t) pid.scale;
         scales[2] = (int32_t) pid.scale;
 
-        yWarning() << "setPid: maxint 32bit" << _max_int << " double" << pid.max_int << "\n";
+//        yWarning() << "setPid: maxint 32bit" << _max_int << " double" << pid.max_int << "\n";
 
         ret &= (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
+//        yError() << "SetPid: pid gains returns " << ret;
+
         ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(pid.scale) ));
-        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );  // comment this line
+//        yError() << "SetPid: scale returns " << ret;
+
+        //        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );  // comment this line
         ret &= comanMotionControl::setOffsetRaw(j, (int16_t) pid_off);  // j is the yarp joint
+//        yError() << "SetPid: offset returns " << ret;
     }
-    return ret;
+    return !ret;
 }
 
 bool comanMotionControl::setPidsRaw(const Pid *pids)
@@ -741,7 +746,6 @@ bool comanMotionControl::getPidRaw(int j, Pid *pid)
     ret &= (!joint_p->getItem(GET_PID_OFFSET,     NULL,     0, REPLY_PID_OFFSET,      &pid_offset,      sizeof(pid_offset)) );
 //     ret &= (!joint_p->getItem(GET_START_OFFSET,   NULL,     1, REPLY_START_OFFSET,    &pid_offset,      sizeof(ComanPid)) );
 
-    yWarning() << "setPid: maxint 32bit" << integral_limit << " double" << pid->max_int << "\n";
 
 	if(ret)
 	{
