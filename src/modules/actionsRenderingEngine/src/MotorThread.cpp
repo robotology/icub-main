@@ -1654,7 +1654,8 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     Vector z=R.getCol(2).subVector(0,2);
     Vector d=((arm==RIGHT)?-1.0:1.0)*z;
-    d-=R.getCol(0).subVector(0,2);      // go a bit back to leave space for object's volume
+    d-=R.getCol(0).subVector(0,2);      // go a bit back ...
+    d[1]+=(arm==RIGHT)?1.0:-1.0;        // ... and a bit aside to leave space for object's volume
     d*=(1.0/norm(d));                   // normalize
     Vector approach_x=x+pwrGraspApproachDisplacement[arm]*d;
     Vector approach_o=dcm2axis(axis2dcm(y)*R);
