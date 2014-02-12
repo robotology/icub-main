@@ -431,6 +431,13 @@ bool comanMotionControl::parsePidsGroup(Bottle& pidsGroup, Pid myPid[])
             myPid[j].kp = xtmp.get(j+1).asDouble();
     }
 
+    if (!extractGroup(pidsGroup, xtmp, "kd", "kd parameter", _njoints+1))  return false;
+    else
+    {
+        for (j=0; j<_njoints; j++)
+            myPid[j].kd = xtmp.get(j+1).asDouble();
+    }
+
     if (!extractGroup(pidsGroup, xtmp, "ki", "ki parameter", _njoints+1))  return false;
     else
     {
@@ -609,14 +616,16 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 //        yWarning() << "setPid: maxint 32bit" << _max_int << " double" << pid.max_int << "\n";
 
         ret &= (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
-//        yError() << "SetPid: pid gains returns " << ret;
+        yError() << "SetPid: pid gains returns " << ret;
+        yError() << "Pid: kp " <<  p_i_d.p <<  "kd " <<  p_i_d.d  << "ki " << p_i_d.i;
+
 
         ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(pid.scale) ));
-//        yError() << "SetPid: scale returns " << ret;
+        yError() << "SetPid: scale returns " << ret;
 
         //        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );  // comment this line
         ret &= comanMotionControl::setOffsetRaw(j, (int16_t) pid_off);  // j is the yarp joint
-//        yError() << "SetPid: offset returns " << ret;
+        yError() << "SetPid: offset returns " << ret;
     }
     return !ret;
 }
