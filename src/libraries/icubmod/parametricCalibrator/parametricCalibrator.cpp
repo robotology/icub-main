@@ -389,6 +389,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         for(lit  = tmp.begin(); lit != lend; lit++)  
         {
             if (type[*lit]==0 ||
+                type[*lit]==2 ||
                 type[*lit]==4 ) 
             {
                 yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
@@ -418,14 +419,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
-            yWarning() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
-            lit  = tmp.begin();
-            lend = tmp.end();
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
-            {
-                iPids->setPid((*lit),original_pid[(*lit)]);
-                lit++;
-            }
+            yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
         }
         else    // keep pid safe  and go on
         {
@@ -470,7 +464,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         lit  = tmp.begin();
         while(lit != lend)    // per ogni giunto del set
         {
-            yWarning() << " joint" << (*lit) << " using encoder";
+            yDebug() << " joint" << (*lit) << " using encoder";
             goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
             lit++;
         }
@@ -478,6 +472,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         if(goneToZero)
         {
             yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Reached zero position!\n";
+            lit  = tmp.begin();
+            lend = tmp.end();
+            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
+            {
+                iPids->setPid((*lit),original_pid[(*lit)]);
+                lit++;
+            }
         }
         else          // keep pid safe and go on
         {
