@@ -615,17 +615,16 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 
 //        yWarning() << "setPid: maxint 32bit" << _max_int << " double" << pid.max_int << "\n";
 
-        ret &= (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
-        yError() << "SetPid: pid gains returns " << ret;
-        yError() << "Pid: kp " <<  p_i_d.p <<  "kd " <<  p_i_d.d  << "ki " << p_i_d.i;
+        ret = (!joint_p->setItem(SET_PID_GAINS, &p_i_d.gain_set, sizeof(p_i_d)) );  // setItem returns 0 if ok, 2 if error
+        if(!ret)
+            yError() << "SetPid: pid gains returns " << ret << "0 is ok, else is error)";
+        yDebug() << "Pid: kp " <<  p_i_d.p <<  "kd " <<  p_i_d.d  << "ki " << p_i_d.i;
 
 
         ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(pid.scale) ));
-        yError() << "SetPid: scale returns " << ret;
 
         //        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );  // comment this line
         ret &= comanMotionControl::setOffsetRaw(j, (int16_t) pid_off);  // j is the yarp joint
-        yError() << "SetPid: offset returns " << ret;
     }
     return !ret;
 }
