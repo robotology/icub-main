@@ -10,7 +10,7 @@
     <group name="POS_PIDS">      
         <param name="kp">         150000      150000      150000      150000       50000       50000       50000  </param>
         <param name="kd">          10000       10000       10000       10000           0           0           0  </param>
-        <param name="ki">             10          10          10          10           0           0           0  </param>
+        <param name="ki">             10          10          10           0           0           0           0  </param>
         <param name="maxPwm">          0           0           0           0           0           0           0  </param>
         <param name="maxInt"> 1677721601  1677721601  1677721601  1677721601      128001      128001      128001  </param>
         <param name="shift">         257         257         257         257         257         257         257  </param>
