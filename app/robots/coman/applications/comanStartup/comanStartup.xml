@@ -1,0 +1,87 @@
+<application>
+<name>COMAN Startup</name>
+
+      <dependencies>
+         <port>/root</port>
+      </dependencies>
+    
+      <module>
+              <name>robotInterface</name>
+              <node>localhost</node>
+              <tag>robotInterface</tag>
+      </module>
+
+      <module>
+              <name>simple_homing</name>
+              <node>localhost</node>
+              <tag>simple_homing</tag>
+      </module>
+   
+
+      <module>
+              <name>flat_walk</name>
+              <node>localhost</node>
+              <tag>flat_walk</tag>
+      </module>
+
+      <module>
+              <name>jinoh_arash_valve</name>
+              <node>localhost</node>
+              <tag>jinoh_arash_valve</tag>
+      </module>
+      
+      <module>
+              <name> pilot_interface</name>
+              <node>localhost</node>
+              <tag>pilot_interface</tag>
+      </module>
+      
+    <connection>
+        <from>/interface/homing_command:o</from>
+        <to>/simple_homing/do_homing:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+      <connection>
+        <from>/simple_homing/status:o</from>
+        <to>/interface/homing_status:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+    
+        <connection>
+        <from>/interface/homing_command:o</from>
+        <to>/simple_homing/do_homing:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+      <connection>
+        <from>/simple_homing/status:o</from>
+        <to>/interface/homing_status:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+        <connection>
+        <from>/interface/homing_command:o</from>
+        <to>/simple_homing/do_homing:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+    <connection>
+        <from>/interface/manipulation/control:o</from>
+        <to>/turn_valve/control:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+    <connection>
+        <from>/interface/manipulation/valve_data:o</from>
+        <to>/turn_valve/valve_data:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    
+    <connection>
+        <from>/interface/locomotion/command:o</from>
+        <to>/flat_walk/command:i</to>
+        <protocol>udp</protocol>
+    </connection>
+</application>
