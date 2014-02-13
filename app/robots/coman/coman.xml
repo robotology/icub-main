@@ -14,5 +14,5 @@
 
   <devices file="parts/torso.xml" />
 
-  <devices file="hardware/coman_inertial.xml" /> 
+  <!-- devices file="hardware/coman_inertial.xml" / --> 
 </robot>
