@@ -213,22 +213,35 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     }
 
     Vector v(3);
-    double r2 = R(2,0)*R(2,0) + R(2,1)*R(2,1);
-    if (r2 > 0)
+    bool singularity=false;
+    if (R(2,2)<1.0)
     {
-        v[1]=atan2(sqrt(r2), R(2,2));
-        v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
-        v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
+        if (R(2,2)>-1.0)
+        {
+            v[0]=atan2(R(1,2),R(0,2));
+            v[1]=acos(R(2,2));
+            v[2]=atan2(R(2,1),-R(2,0));
+        }
+        else
+        {
+            // Not a unique solution: gamma-alpha=atan2(R10,R11)
+            singularity=true;
+            v[0]=-atan2(R(1,0),R(1,1));
+            v[1]=M_PI;
+            v[2]=0.0;
+        }
     }
     else
     {
-        if (verbose)
-            fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
-
-        v[1]=0;
-        v[0]=atan2(R(1,0), R(0,0));
-        v[2]=0;
+        // Not a unique solution: gamma+alpha=atan2(R10,R11)
+        singularity=true;
+        v[0]=atan2(R(1,0),R(1,1));
+        v[1]=0.0;
+        v[2]=0.0;
     }
+
+    if (verbose && singularity)
+        fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
 
     return v;
 }
