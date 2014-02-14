@@ -355,10 +355,12 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::doSaccade(Vector &ang, Vector &vel)
 {
+    mutexCtrl.lock();
     if (ctrlInhibited)
+    {
+        mutexCtrl.unlock();
         return;
-
-    mutexCtrl.lock(); 
+    }
 
     posHead->setRefSpeed(eyesJoints[0],vel[0]);
     posHead->setRefSpeed(eyesJoints[1],vel[1]);
