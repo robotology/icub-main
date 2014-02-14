@@ -561,16 +561,18 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     double angj = 0;
 //    double pwm[4];
     double delta=0;
+    bool done = false;
 
     double start_time = yarp::os::Time::now();
     while ( (!finished) && (!abortCalib))
     {
         iEncoders->getEncoder(j, &angj);
+        iPosition->checkMotionDone(j, &done);
 
         delta = fabs(angj-zeroPos[j]);
         yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
 
-        if (delta < zeroPosThreshold[j])
+        if (delta < zeroPosThreshold[j] && done)
         {
             yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;
