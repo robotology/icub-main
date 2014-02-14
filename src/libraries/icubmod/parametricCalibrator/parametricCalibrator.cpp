@@ -424,23 +424,25 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         else    // keep pid safe  and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
+            for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
-                lit++;
             }
         }
         //------------------------------------------------
 
         //------------------------------------------------
         yDebug() <<  deviceName  << "Enabling PWM";
-        lit  = tmp.begin();
-        while(lit != lend)
+        for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
         {
-            iAmps->enableAmp((*lit));
-            iPids->enablePid((*lit));
-            iControlMode->setPositionMode((*lit)); 
-            lit++;
+            if (type[*lit]!=0 &&
+                type[*lit]!=2 &&
+                type[*lit]!=4 ) 
+            {
+                iAmps->enableAmp((*lit));
+                iPids->enablePid((*lit));
+                iControlMode->setPositionMode((*lit));
+            }
         }
         yDebug() <<  deviceName  <<  "Enabling PWM complete";
         //------------------------------------------------
@@ -472,21 +474,17 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         if(goneToZero)
         {
             yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Reached zero position!\n";
-            lit  = tmp.begin();
-            lend = tmp.end();
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
+            for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
                 iPids->setPid((*lit),original_pid[(*lit)]);
-                lit++;
             }
         }
         else          // keep pid safe and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
-            while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+            for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
-                lit++;
             }
         }
 
