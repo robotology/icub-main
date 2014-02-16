@@ -721,7 +721,6 @@ void ActionPrimitives::close()
     {
         printMessage("closing cartesian driver ...\n");
         cartCtrl->restoreContext(startup_context_id);
-        cartCtrl->deleteContext(startup_context_id);
         polyCart.close();
     }
 
