@@ -161,26 +161,26 @@ void getRate(Property p, int &r)
     if (!p.check("rate"))
         r = 500;
     else
-        {
-            Value& rate = p.find("rate");
-            r = rate.asInt();
-        }
+    {
+        Value& rate = p.find("rate");
+        r = rate.asInt();
+    }
 }
 
 int getNumberUsedJoints(Property p, int &n)
 {
     if (!p.check("joints"))
-        {
-            fprintf(stderr, "Missing option 'joints' in given config file\n");
-            return 0;
-        }
+    {
+        fprintf(stderr, "Missing option 'joints' in given config file\n");
+        return 0;
+    }
     Value& joints =  p.find("joints");
     Bottle *pJoints = joints.asList();
-	if (pJoints == 0)
-	{
-            fprintf(stderr, "Error in option 'joints'\n");
-            return 0;
-	}
+    if (pJoints == 0)
+    {
+         fprintf(stderr, "Error in option 'joints'\n");
+         return 0;
+    }
     n = pJoints->size();
 
     return 1;
@@ -195,16 +195,16 @@ int getUsedJointsMap(Property p, int n, int* thetaMap)
         }
     Value& joints =  p.find("joints");
     Bottle *pJoints = joints.asList();
-	if (pJoints == 0)
-	{
-            fprintf(stderr, "Error in option 'joints'\n");
-            return 0;
-	}
+    if (pJoints == 0)
+    {
+        fprintf(stderr, "Error in option 'joints'\n");
+        return 0;
+    }
     if (pJoints->size()!=n)
-        {
-            fprintf(stderr, "The 'nJoints' and 'joints' params are incompatible");
-            return 0;
-        }
+    {
+        fprintf(stderr, "The 'nJoints' and 'joints' params are incompatible");
+        return 0;
+    }
 
     for (int i = 0; i < n; i++)
     {
@@ -217,10 +217,10 @@ int getUsedJointsMap(Property p, int n, int* thetaMap)
 int getNumberConstraints(Property p, int &n)
 {
     if (!p.check("nConstr"))
-        {
-            fprintf(stderr, "Missing option 'nConstr' in given config file\n");
-            return 0;
-        }
+    {
+        fprintf(stderr, "Missing option 'nConstr' in given config file\n");
+        return 0;
+    }
     Value& nJoints = p.find("nConstr");
     n = nJoints.asInt();
     return 1;
@@ -229,17 +229,17 @@ int getNumberConstraints(Property p, int &n)
 int getNumberDataToDump(Property p, int &n)
 {
     if (!p.check("dataToDump"))
-        {
-            fprintf(stderr, "Missing option 'dataToDump' in given config file\n");
-            return 0;
-        }
+    {
+        fprintf(stderr, "Missing option 'dataToDump' in given config file\n");
+        return 0;
+    }
     Value& list = p.find("dataToDump");
     Bottle *pList = list.asList();
-	if (pList == 0)
-	{
+    if (pList == 0)
+    {
             fprintf(stderr, "Error in option 'dataToDump'\n");
             return 0;
-	}
+    }
     n = pList->size();
     return 1;
 }
@@ -262,7 +262,7 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     availableDataToDump[8]  = ConstString("getRotorPositions");
     availableDataToDump[9]  = ConstString("getRotorSpeeds");
     availableDataToDump[10] = ConstString("getRotorAccelerations");
-	availableDataToDump[11] = ConstString("getPidReferences");
+    availableDataToDump[11] = ConstString("getPidReferences");
 
     if (!p.check("dataToDump"))
         {
@@ -275,16 +275,16 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     for (int i = 0; i < n; i++)
     {
         listOfData[i] = pList->get(i).toString();
-	for(j = 0; j< NUMBER_OF_AVAILABLE_DATA_TO_DUMP; j++)
-	{
-		if(listOfData[i] == (availableDataToDump[j]))
-				break;
-	}
-	if(j == NUMBER_OF_AVAILABLE_DATA_TO_DUMP)
-	{
-		fprintf(stderr, "Illegal values for 'dataToDump': %s does not exist!\n",listOfData[i].c_str());
-		return 0;
-	}	
+    for(j = 0; j< NUMBER_OF_AVAILABLE_DATA_TO_DUMP; j++)
+    {
+        if(listOfData[i] == (availableDataToDump[j]))
+                break;
+    }
+    if(j == NUMBER_OF_AVAILABLE_DATA_TO_DUMP)
+    {
+        fprintf(stderr, "Illegal values for 'dataToDump': %s does not exist!\n",listOfData[i].c_str());
+        return 0;
+    }    
     }
    return 1;
 }
@@ -323,7 +323,7 @@ private:
     //pid
     IPidControl *ipid;
     GetPosErrs myGetPosErrs;
-	GetPidRefs myGetPidRefs;
+    GetPidRefs myGetPidRefs;
     GetOuts myGetOuts;
     //amp
     IAmplifierControl *iamp;
@@ -357,10 +357,10 @@ public:
         // get command line options
         options.fromString(s.toString());
         if (!options.check("robot") || !options.check("part")) 
-            {
-                printf("Missing either --robot or --part options. Quitting!\n");
-                return false;
-            }
+        {
+            printf("Missing either --robot or --part options. Quitting!\n");
+            return false;
+        }
 
         // get command file options
 
@@ -461,10 +461,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetEncs.setInterface(ienc);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getEncoders::The time stamp initalization interfaces was successfull! \n");
-                                    myGetEncs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getEncoders::The time stamp initalization interfaces was successfull! \n");
+                                myGetEncs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetEncs);
@@ -478,10 +478,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetSpeeds.setInterface(ienc);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getEncodersSpeed::The time stamp initalization interfaces was successfull! \n");
-                                    myGetSpeeds.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getEncodersSpeed::The time stamp initalization interfaces was successfull! \n");
+                                myGetSpeeds.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetSpeeds);
@@ -494,15 +494,15 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetAccs.setInterface(ienc);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getEncoderAccelerations::The time stamp initalization interfaces was successfull! \n");
-                                    myGetAccs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getEncoderAccelerations::The time stamp initalization interfaces was successfull! \n");
+                                myGetAccs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetAccs);
                         }
-				if (dataToDump[i] == "getPidReferences")
+                if (dataToDump[i] == "getPidReferences")
                     if (ddBoard.view(ipid))
                         {
                             fprintf(stderr, "Initializing a getErrs thread\n");
@@ -510,10 +510,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetPidRefs.setInterface(ipid);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getPidReferences::The time stamp initalization interfaces was successfull! \n");
-                                    myGetPidRefs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getPidReferences::The time stamp initalization interfaces was successfull! \n");
+                                myGetPidRefs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetPidRefs);
@@ -526,10 +526,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetPosErrs.setInterface(ipid);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getPositionErrors::The time stamp initalization interfaces was successfull! \n");
-                                    myGetPosErrs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getPositionErrors::The time stamp initalization interfaces was successfull! \n");
+                                myGetPosErrs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetPosErrs);
@@ -542,10 +542,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetOuts.setInterface(ipid);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getOutputs::The time stamp initalization interfaces was successfull! \n");
-                                    myGetOuts.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getOutputs::The time stamp initalization interfaces was successfull! \n");
+                                myGetOuts.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetOuts);
@@ -558,10 +558,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetCurrs.setInterface(iamp);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getCurrents::The time stamp initalization interfaces was successfull! \n");
-                                    myGetCurrs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getCurrents::The time stamp initalization interfaces was successfull! \n");
+                                myGetCurrs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
@@ -575,10 +575,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetTrqs.setInterface(itrq);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
-                                    myGetTrqs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getTorques::The time stamp initalization interfaces was successfull! \n");
+                                myGetTrqs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
@@ -592,10 +592,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetTrqErrs.setInterface(itrq);
                             if (ddBoard.view(istmp))
-                                {
-                                    fprintf(stderr, "getTorqueErrors::The time stamp initalization interfaces was successfull! \n");
-                                    myGetTrqErrs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getTorqueErrors::The time stamp initalization interfaces was successfull! \n");
+                                myGetTrqErrs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
@@ -611,10 +611,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetRotorPoss.setInterface(idbg);
                             if (ddDebug.view(istmp))
-                                {
-                                    fprintf(stderr, "getRotorPositions::The time stamp initalization interfaces was successfull! \n");
-                                    myGetRotorPoss.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getRotorPositions::The time stamp initalization interfaces was successfull! \n");
+                                myGetRotorPoss.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
@@ -638,10 +638,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetRotorVels.setInterface(idbg);
                             if (ddDebug.view(istmp))
-                                {
-                                    fprintf(stderr, "getRotorSpeeds::The time stamp initalization interfaces was successfull! \n");
-                                    myGetRotorVels.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getRotorSpeeds::The time stamp initalization interfaces was successfull! \n");
+                                myGetRotorVels.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
@@ -665,10 +665,10 @@ public:
                             myDumper[i].setThetaMap(thetaMap, nJoints);
                             myGetRotorAccs.setInterface(idbg);
                             if (ddDebug.view(istmp))
-                                {
-                                    fprintf(stderr, "getRotorAccelerations::The time stamp initalization interfaces was successfull! \n");
-                                    myGetRotorAccs.setStamp(istmp);
-                                }
+                            {
+                                fprintf(stderr, "getRotorAccelerations::The time stamp initalization interfaces was successfull! \n");
+                                myGetRotorAccs.setStamp(istmp);
+                            }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                                
@@ -737,19 +737,47 @@ int main(int argc, char *argv[])
     p.fromString(rf.toString());
 
     if (!p.check("rate"))
+    {
         p.put("rate", 500);
+    }
     if (!p.check("joints"))
-        {
-            Value v;
-            v.fromString("(0 1)");
-            p.put("joints", v);
-        }
+    {
+        Value v;
+        v.fromString("(0 1)");
+        p.put("joints", v);
+    }
     if (!p.check("dataToDump"))
-        {
-            Value v;
-            v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPidReferences)");
-            p.put("dataToDump", v);
-        }
+    {
+        Value v;
+        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPidReferences)");
+        p.put("dataToDump", v);
+    }
+    if (p.check("dataToDumpAll"))
+    {
+        Value v;
+        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPidReferences getRotorPositions getRotorSpeeds getRotorAccelerations)");
+        p.put("dataToDump", v);
+    }
+    if (p.check("help"))
+    {
+        printf ("controlBoardDumper usage:\n");
+        printf ("1) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDump \"(xxx)\"\n");
+        printf (" where xxx can be one of the following:\n");
+        printf (" getEncoders             (joint position)\n");
+        printf (" getEncoderSpeeds        (joint velocity)\n");
+        printf (" getEncoderAccelerations (joint acceleration)\n");
+        printf (" getPositionErrors       (difference between desired and actual position)\n");
+        printf (" getTorqueErrors         (difference between desired and measured torque, if available)\n");
+        printf (" getOutputs              (voltage (PWM) given to the motor)\n");
+        printf (" getCurrents             (current given to the motor)\n");
+        printf (" getTorques              (joint torques, if available)\n");
+        printf (" getRotorPositions       (hi-res rotor position, if available)\n");
+        printf (" getRotorSpeeds          (hi-res rotor velocity, if available)\n");
+        printf (" getRotorAccelerations   (hi-res rotor acceleration, if available)\n");
+        printf ("\n2) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDumpAll\n");
+
+        return 0;
+    }
 
     fprintf(stderr, "Current configuration is: %s\n", p.toString().c_str());
     if (mod.open(p))

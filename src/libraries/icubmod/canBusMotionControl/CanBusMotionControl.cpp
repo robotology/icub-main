@@ -4675,7 +4675,7 @@ bool CanBusMotionControl::setOutputRaw(int axis, double v)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    return _writeWord16 (CAN_SET_OFFSET, axis, S_16(v));
+    return _writeWord16 (CAN_SET_OPENLOOP_PARAMS, axis, S_16(v));
 
 }
 

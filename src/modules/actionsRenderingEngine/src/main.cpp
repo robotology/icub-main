@@ -372,6 +372,7 @@ Windows, Linux
 #define GET_HOLDING                 VOCAB4('h','o','l','d')
 #define GET_HAND                    VOCAB4('h','a','n','d')
 #define GET_IMAGE                   VOCAB4('i','m','a','g')
+#define GET_IDLE                    VOCAB4('i','d','l','e')
 
 //sub commands: calib
 #define CALIB_TABLE                 VOCAB4('t','a','b','l')
@@ -415,6 +416,7 @@ protected:
 
     bool                        interrupted;
     volatile bool               closing;
+    bool                        idle;
 
 
     bool check(Bottle &bot, const string &name)
@@ -455,6 +457,7 @@ public:
 
         interrupted=false;
         closing=false;
+        idle=true;
 
         return true;
     }
@@ -667,6 +670,16 @@ public:
 
                             break;
                         }
+                        case GET_IDLE:
+                        {
+                            reply.clear();
+                            if(idle)
+                                reply.addVocab(ACK);
+                            else
+                                reply.addVocab(NACK);
+
+                            break;
+                        }
 
                         case GET_TABLE:
                         {
@@ -843,11 +856,12 @@ public:
                         {
                             case CALIB_TABLE:
                             {
+                                idle = false;
                                 if(motorThr->calibTable(command))
                                     reply.addVocab(ACK);
                                 else
                                     reply.addVocab(NACK);
-
+                                idle = true;
                                 break;
                             }
 
@@ -1082,7 +1096,7 @@ public:
                         //    motorThr->goHome(command);
                         //    break;
                        // }
-
+                        idle = false;
                         if(check(command,"over") && command.size()>2)
                             visuoThr->getTarget(command.get(2),command);
 
@@ -1096,12 +1110,13 @@ public:
                         motorThr->setGazeIdle();
 
                         reply.addVocab(ACK);
-
+                        idle = true;
                         break;
                     }
 
                     case CMD_TAKE:
                     {
+                        idle = false;
                         if(command.size()<2)
                         {
                             reply.addVocab(NACK);
@@ -1145,12 +1160,14 @@ public:
                            motorThr->goHome(command);
                            reply.addVocab(NACK);
                         }
+                        idle = true;
 
                         break;
                     }
 
                     case CMD_GRASP:
                     {
+                        idle = false;
                         if(command.size()<2)
                         {
                             reply.addVocab(NACK);
@@ -1159,6 +1176,7 @@ public:
 
                         visuoThr->getTarget(command.get(1),command);
                         motorThr->powerGrasp(command)?reply.addVocab(ACK):reply.addVocab(NACK);
+                        idle = true;
                         break;
                     }
 
@@ -1290,6 +1308,7 @@ public:
                     }
                 }
             }
+            
         }
 
         if(reply.isNull() || reply.size()==0)

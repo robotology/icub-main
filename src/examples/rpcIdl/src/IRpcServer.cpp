@@ -270,12 +270,83 @@ bool IRpcServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "help") {
+      std::string functionName;
+      if (!reader.readString(functionName)) {
+        functionName = "--all";
+      }
+      std::vector<std::string> _return=help(functionName);
+      yarp::os::idl::WireWriter writer(reader);
+        if (!writer.isNull()) {
+          if (!writer.writeListHeader(2)) return false;
+          if (!writer.writeTag("many",1, 0)) return false;
+          if (!writer.writeListBegin(BOTTLE_TAG_INT, static_cast<uint32_t>(_return.size()))) return false;
+          std::vector<std::string> ::iterator _iterHelp;
+          for (_iterHelp = _return.begin(); _iterHelp != _return.end(); ++_iterHelp)
+          {
+            if (!writer.writeString(*_iterHelp)) return false;
+           }
+          if (!writer.writeListEnd()) return false;
+        }
+      reader.accept();
+      return true;
+    }
     if (reader.noMore()) { reader.fail(); return false; }
     yarp::os::ConstString next_tag = reader.readTag();
     if (next_tag=="") break;
     tag = tag + "_" + next_tag;
   }
   return false;
+}
+
+std::vector<std::string> IRpcServer::help(const std::string& functionName) {
+  bool showAll=(functionName=="--all");
+  std::vector<std::string> helpString;
+  if(showAll) {
+    helpString.push_back("*** Available commands:");
+    helpString.push_back("get_answer");
+    helpString.push_back("set_answer");
+    helpString.push_back("add_one");
+    helpString.push_back("start");
+    helpString.push_back("stop");
+    helpString.push_back("is_running");
+  }
+  else {
+    if (functionName=="get_answer") {
+      helpString.push_back("int32_t get_answer() ");
+      helpString.push_back("Get answer from server ");
+      helpString.push_back("@return the answer ");
+    }
+    if (functionName=="set_answer") {
+      helpString.push_back("bool set_answer(const int32_t rightAnswer) ");
+      helpString.push_back("Set value for future answers. ");
+      helpString.push_back("@param rightAnswer new answer ");
+      helpString.push_back("@return true if connection was successful ");
+    }
+    if (functionName=="add_one") {
+      helpString.push_back("int32_t add_one(const int32_t x) ");
+      helpString.push_back("Add one integet to future answers. ");
+      helpString.push_back("@param x value to add ");
+      helpString.push_back("@return new value ");
+    }
+    if (functionName=="start") {
+      helpString.push_back("bool start() ");
+      helpString.push_back("Start service ");
+      helpString.push_back("@return true if service started correctly ");
+    }
+    if (functionName=="stop") {
+      helpString.push_back("bool stop() ");
+      helpString.push_back("Stop service ");
+      helpString.push_back("@return true if service stopped correctly ");
+    }
+    if (functionName=="is_running") {
+      helpString.push_back("bool is_running() ");
+      helpString.push_back("Check is service is running ");
+      helpString.push_back("@return true/false if service is/is not running ");
+    }
+  }
+  if ( helpString.empty()) helpString.push_back("Command not found");
+  return helpString;
 }
 
 

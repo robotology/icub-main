@@ -213,22 +213,35 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     }
 
     Vector v(3);
-    double r2 = R(2,0)*R(2,0) + R(2,1)*R(2,1);
-    if (r2 > 0)
+    bool singularity=false;
+    if (R(2,2)<1.0)
     {
-        v[1]=atan2(sqrt(r2), R(2,2));
-        v[0]=atan2(R(1,2)/sin(v[1]), R(0,2)/sin(v[1]));
-        v[2]=atan2(R(2,1)/sin(v[1]),-R(2,0)/sin(v[1]));
+        if (R(2,2)>-1.0)
+        {
+            v[0]=atan2(R(1,2),R(0,2));
+            v[1]=acos(R(2,2));
+            v[2]=atan2(R(2,1),-R(2,0));
+        }
+        else
+        {
+            // Not a unique solution: gamma-alpha=atan2(R10,R11)
+            singularity=true;
+            v[0]=-atan2(R(1,0),R(1,1));
+            v[1]=M_PI;
+            v[2]=0.0;
+        }
     }
     else
     {
-        if (verbose)
-            fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
-
-        v[1]=0;
-        v[0]=atan2(R(1,0), R(0,0));
-        v[2]=0;
+        // Not a unique solution: gamma+alpha=atan2(R10,R11)
+        singularity=true;
+        v[0]=atan2(R(1,0),R(1,1));
+        v[1]=0.0;
+        v[2]=0.0;
     }
+
+    if (verbose && singularity)
+        fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
 
     return v;
 }
@@ -270,19 +283,33 @@ Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
     }
 
     Vector v(3);
-    /* 
-    double Rz1=atan2(R[1][0],R[0][0]);
-    double Rx3=atan2(R[2][1],R[2][2]);
-    double Ry2=atan2(-R[2][0],cos(Rz1)*R[0][0]+sin(Rz1)*R[1][0]);]);
-    */
+    bool singularity=false;
+    if (R(2,0)<1.0)
+    {
+        if (R(2,0)>-1.0)
+        {
+            v[0]=atan2(R(2,1),R(2,2));
+            v[1]=asin(-R(2,0));
+            v[2]=atan2(R(1,0),R(0,0));
+        }
+        else
+        {
+            // Not a unique solution: psi-phi=atan2(-R12,R11)
+            v[0]=0.0;
+            v[1]=M_PI/2.0;
+            v[2]=-atan2(-R(1,2),R(1,1));
+        }
+    }
+    else
+    {
+        // Not a unique solution: psi+phi=atan2(-R12,R11)
+        v[0]=0.0;
+        v[1]=-M_PI/2.0;
+        v[2]=atan2(-R(1,2),R(1,1));
+    }
 
-    double Ry2=atan2(-R[2][0],sqrt(R[2][1]*R[2][1]+R[2][2]*R[2][2]));
-    double ct = 1.0;//cos(Ry2);
-    double Rz1=atan2(R[1][0]/ct,R[0][0]/ct);
-    double Rx3=atan2(R[2][1]/ct,R[2][2]/ct);
-    v[0] = Rx3;
-    v[1] = Ry2;
-    v[2] = Rz1;
+    if (verbose && singularity)
+        fprintf(stderr,"dcm2rpy() in singularity: choosing one solution among multiple\n");
 
     return v;
 }
@@ -304,9 +331,9 @@ Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
     double pitch=v[1];  double cp=cos(pitch); double sp=sin(pitch);
     double yaw=v[2];    double cy=cos(yaw);   double sy=sin(yaw);
     
-    Rz(0,0)=cy; Rz(1,1)=cy; Rz(0,1)=-sy; Rz(1,0)=sy;    // z-rotation with yaw
-    Ry(0,0)=cp; Ry(2,2)=cp; Ry(0,2)=-sp; Ry(2,0)=sp;    // y-rotation with pitch
-    Rx(1,1)=cr; Rx(2,2)=cr; Rx(1,2)=-sr; Rx(2,1)=sr;    // x-rotation with roll
+    Rz(0,0)=cy; Rz(1,1)=cy; Rz(0,1)=-sy; Rz(1,0)= sy;   // z-rotation with yaw
+    Ry(0,0)=cp; Ry(2,2)=cp; Ry(0,2)= sp; Ry(2,0)=-sp;   // y-rotation with pitch
+    Rx(1,1)=cr; Rx(2,2)=cr; Rx(1,2)=-sr; Rx(2,1)= sr;   // x-rotation with roll
 
     return Rz*Ry*Rx;
 }

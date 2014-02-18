@@ -190,10 +190,12 @@ private:
     bool                  *_enabledAmp;             // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
     bool                  *_enabledPid;             // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
     bool                  *_calibrated;             // Flag to know if the calibrate function has been called for the joint
-
+    bool                   _initialPidConfigFound;
 
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
+    bool parsePidsGroup(Bottle& pidsGroup, Pid myPid[]);
+
     McBoard *getMCpointer(int j);
     int bId2Joint(int j);
     uint8_t jointTobId(int j);

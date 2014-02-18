@@ -389,6 +389,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         for(lit  = tmp.begin(); lit != lend; lit++)  
         {
             if (type[*lit]==0 ||
+                type[*lit]==2 ||
                 type[*lit]==4 ) 
             {
                 yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
@@ -418,35 +419,30 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
         if(checkCalibrateJointEnded((*Bit)) )
         {
-            yWarning() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
-            lit  = tmp.begin();
-            lend = tmp.end();
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
-            {
-                iPids->setPid((*lit),original_pid[(*lit)]);
-                lit++;
-            }
+            yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
         }
         else    // keep pid safe  and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
+            for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
-                lit++;
             }
         }
         //------------------------------------------------
 
         //------------------------------------------------
         yDebug() <<  deviceName  << "Enabling PWM";
-        lit  = tmp.begin();
-        while(lit != lend)
+        for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
         {
-            iAmps->enableAmp((*lit));
-            iPids->enablePid((*lit));
-            iControlMode->setPositionMode((*lit)); 
-            lit++;
+            if (type[*lit]!=0 &&
+                type[*lit]!=2 &&
+                type[*lit]!=4 ) 
+            {
+                iAmps->enableAmp((*lit));
+                iPids->enablePid((*lit));
+                iControlMode->setPositionMode((*lit));
+            }
         }
         yDebug() <<  deviceName  <<  "Enabling PWM complete";
         //------------------------------------------------
@@ -470,7 +466,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         lit  = tmp.begin();
         while(lit != lend)    // per ogni giunto del set
         {
-            yWarning() << " joint" << (*lit) << " using encoder";
+            yDebug() << " joint" << (*lit) << " using encoder";
             goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
             lit++;
         }
@@ -478,14 +474,17 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         if(goneToZero)
         {
             yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Reached zero position!\n";
+            for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
+            {
+                iPids->setPid((*lit),original_pid[(*lit)]);
+            }
         }
         else          // keep pid safe and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
-            while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+            for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));
-                lit++;
             }
         }
 
@@ -562,16 +561,18 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     double angj = 0;
 //    double pwm[4];
     double delta=0;
+    bool done = false;
 
     double start_time = yarp::os::Time::now();
     while ( (!finished) && (!abortCalib))
     {
         iEncoders->getEncoder(j, &angj);
+        iPosition->checkMotionDone(j, &done);
 
         delta = fabs(angj-zeroPos[j]);
         yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
 
-        if (delta < zeroPosThreshold[j])
+        if (delta < zeroPosThreshold[j] && done)
         {
             yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;

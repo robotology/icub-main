@@ -278,17 +278,16 @@ public:
         else
             drvOptions.put("device","remote_controlboard");
 
-        string name="/local/";
+        string name=string(options.find("name").asString());
 
         string remote=string("/")+string(options.find("robot").asString());
-        remote+=name+string(options.find("part").asString());
+        remote+=string("/")+string(options.find("part").asString());
 
-        string local=string("/")+string(options.find("robot").asString());
-        local+=string("/")+string(options.find("part").asString());
+        string local=name;
+        local+=string("/local/")+string(options.find("part").asString());
    
-        drvOptions.put("remote",local.c_str());
-        drvOptions.put("local",remote.c_str());
-
+        drvOptions.put("remote",remote.c_str());
+        drvOptions.put("local",local.c_str());
 
         if (verbose)
         {
@@ -795,12 +794,10 @@ public:
         rpcPort.open((name+string("/")+rf.find("part").asString().c_str()+"/rpc").c_str());
         attach(rpcPort);
 
-        rf.find("part").asString();
-        rf.find("robot").asString();
-
         Property portProp;
-        portProp.put("part", rf.find("part"));
+        portProp.put("name", name.c_str());
         portProp.put("robot", rf.find("robot"));
+        portProp.put("part", rf.find("part"));
 
         if (!posPort.configure(portProp))
         {
