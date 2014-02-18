@@ -3333,11 +3333,7 @@ bool ServerCartesianController::getTask2ndOptions(Value &v)
         if (portSlvRpc.write(command,reply))
         {
             if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
-            {
-                // workaround: "v=reply.get(1);" seems not working
-                Value tmp(reply.get(1));
-                v=tmp;
-            }
+                v=reply.get(1);
         }
         else
             printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
