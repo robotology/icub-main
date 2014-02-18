@@ -91,9 +91,9 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
     myThread = new CompensationThread(moduleName, &rf, robotName, compGain, contCompGain, addThreshold, minBaseline, 
 	    zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
     /* now start the thread to do the work */
-    myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
+    return myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
-    return true ;      // let the RFModule know everything went well so that it will then run the module
+//    return true ;      // let the RFModule know everything went well so that it will then run the module
 }
 
 
