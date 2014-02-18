@@ -366,7 +366,7 @@ void CompensationThread::sendMonitorData(){
 
 void CompensationThread::sendInfoMsg(string msg){
     //printf("\n");
-    printf("%s\n", msg.c_str());
+    printf("CompensationThread: %s\n", msg.c_str());
     Bottle& b = infoPort.prepare();
     b.clear();
     b.addString(msg.c_str());
