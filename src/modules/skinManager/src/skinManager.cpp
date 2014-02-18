@@ -20,78 +20,80 @@
 #include <sstream>			// string stream
 #include "iCub/skinManager/skinManager.h"
  
+using std::string;
+using std::vector;
+
+using yarp::os::Bottle;
+using yarp::sig::Vector;
+
 using namespace iCub::skinManager;
 
 // module default values
 const int skinManager::MIN_BASELINE_DEFAULT = 3;
 const int skinManager::ADD_THRESHOLD_DEFAULT = 2;
 const int skinManager::PERIOD_DEFAULT = 50;
+const bool skinManager::SMOOTH_FILTER_DEFAULT = false;
 const float skinManager::SMOOTH_FACTOR_DEFAULT = 0.5;
 const float skinManager::COMPENSATION_GAIN_DEFAULT = 0.2f;
 const float skinManager::CONTACT_COMPENSATION_GAIN_DEFAULT = 0.0f;
 const string skinManager::MODULE_NAME_DEFAULT = "skinManager";
 const string skinManager::ROBOT_NAME_DEFAULT = "icub";
-const string skinManager::ZERO_UP_RAW_DATA_DEFAULT = "notFound";
+const bool skinManager::ZERO_UP_RAW_DATA_DEFAULT = false;
+const bool skinManager::BINARIZATION_DEFAULT = false;
 const string skinManager::RPC_PORT_DEFAULT = "/rpc";
 
-bool skinManager::configure(yarp::os::ResourceFinder &rf)
-{    
-	/* Process all parameters from both command-line and .ini file */
+bool skinManager::configure(yarp::os::ResourceFinder &rf) {    
+    /* Process all parameters from both command-line and .ini file */
 
-	/* get the module name which will form the stem of all module port names */
-	moduleName			= rf.check("name", Value(MODULE_NAME_DEFAULT.c_str()), "module name (string)").asString();
-	robotName			= rf.check("robot", Value(ROBOT_NAME_DEFAULT.c_str()), "name of the robot (string)").asString();
-	/* before continuing, set the module name before getting any other parameters, 
-	* specifically the port names which are dependent on the module name*/
-	setName(moduleName.c_str());
+    /* get the module name which will form the stem of all module port names */
+    moduleName			= rf.check("name", Value(MODULE_NAME_DEFAULT.c_str()), "module name (string)").asString();
+    robotName			= rf.check("robot", Value(ROBOT_NAME_DEFAULT.c_str()), "name of the robot (string)").asString();
+    /* before continuing, set the module name before getting any other parameters, 
+    * specifically the port names which are dependent on the module name*/
+    setName(moduleName.c_str());
 
-	/* get some other values from the configuration file */
-	float minBaseline		= (float)rf.check("minBaseline", Value(MIN_BASELINE_DEFAULT), 
-	   "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
-	int period				= (int)rf.check("period", Value(PERIOD_DEFAULT), 
-	   "Period of the thread in ms (positive int)").asInt();
-	bool binarization		= rf.check("binarization");
-	bool smoothFilter		= rf.check("smoothFilter");
-	float smoothFactor		= (float)rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
-	   "Determine the smoothing intensity (float in [0,1])").asDouble();
-	float compGain			= (float)rf.check("compensationGain", Value(COMPENSATION_GAIN_DEFAULT), 
-	   "Gain of the compensation algorithm (float)").asDouble();
+    /* get some other values from the configuration file */
+    int period				= (int)rf.check("period", Value(PERIOD_DEFAULT), 
+       "Period of the thread in ms (positive int)").asInt();
+    float minBaseline		= (float)rf.check("minBaseline", Value(MIN_BASELINE_DEFAULT), 
+       "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
+    float compGain			= (float)rf.check("compensationGain", Value(COMPENSATION_GAIN_DEFAULT), 
+       "Gain of the compensation algorithm (float)").asDouble();
     float contCompGain		= (float)rf.check("contactCompensationGain", Value(CONTACT_COMPENSATION_GAIN_DEFAULT), 
-	   "Gain of the compensation algorithm during contact (float)").asDouble();
-	int addThreshold		= (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
-	   "Value added to all the touch thresholds (positive int)").asInt();
-	
-	bool zeroUpRawData = true;
-	string zeroUpRawDataStr		= rf.check("zeroUpRawData", Value(ZERO_UP_RAW_DATA_DEFAULT.c_str()), 
-	   "if true the raw data are considered from zero up, otherwise from 255 down (string)").asString().c_str();
-	if(zeroUpRawDataStr.compare("true")==0){
-		zeroUpRawData = true;
-	}else if(zeroUpRawDataStr.compare("false")==0){
-		zeroUpRawData = false;
-	}
+       "Gain of the compensation algorithm during contact (float)").asDouble();
+    int addThreshold		= (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
+       "Value added to all the touch thresholds (positive int)").asInt();
+    
+    bool zeroUpRawData = rf.check("zeroUpRawData", ZERO_UP_RAW_DATA_DEFAULT, 
+        "if true the raw data are considered from zero up, otherwise from 255 down (bool)").asBool();
+    bool smoothFilter = rf.check("smoothFilter", SMOOTH_FILTER_DEFAULT,
+            "if true then the smoothing filter is active (bool)").asBool();
+    float smoothFactor		= (float) rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
+       "Determine the smoothing intensity (float in [0,1])").asDouble();
+    bool binarization = rf.check("binarization", BINARIZATION_DEFAULT,
+            "if true then the binarization is active (bool)").asBool();
 
-	/*
-	* attach a port of the same name as the module (prefixed with a /) to the module
-	* so that messages received from the port are redirected to the respond method
-	*/
-	string handlerPortName = "/";
-	handlerPortName += getName(rf.check("handlerPort", Value(RPC_PORT_DEFAULT.c_str())).asString());
-	if (!handlerPort.open(handlerPortName.c_str())) {
-		cout << getName() << ": Unable to open port " << handlerPortName << endl;  
-		return false;
-	}
-	attach(handlerPort);                  // attach to port	
+    /*
+    * attach a port of the same name as the module (prefixed with a /) to the module
+    * so that messages received from the port are redirected to the respond method
+    */
+    string handlerPortName = "/";
+    handlerPortName += getName(rf.check("handlerPort", Value(RPC_PORT_DEFAULT.c_str())).asString());
+    if (!handlerPort.open(handlerPortName.c_str())) {
+	    cout << getName() << ": Unable to open port " << handlerPortName << endl;  
+	    return false;
+    }
+    attach(handlerPort);                  // attach to port	
     handlerPort.setRpcMode(true);
 
 
-	/* create the thread and pass pointers to the module parameters */
-	myThread = new CompensationThread(moduleName, &rf, robotName, compGain, contCompGain, addThreshold, minBaseline, 
-		zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
-	/* now start the thread to do the work */
-	myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
+    /* create the thread and pass pointers to the module parameters */
+    myThread = new CompensationThread(moduleName, &rf, robotName, compGain, contCompGain, addThreshold, minBaseline, 
+	    zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
+    /* now start the thread to do the work */
+    myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
 
-	return true ;      // let the RFModule know everything went well
-					  // so that it will then run the module
+    return true ;      // let the RFModule know everything went well so that it will then run the module
 }
 
 
@@ -116,8 +118,7 @@ bool skinManager::close()
 }
 
 
-bool skinManager::respond(const Bottle& command, Bottle& reply) 
-{
+bool skinManager::respond(const Bottle& command, Bottle& reply) {
 	stringstream temp;
 	reply.clear();
 
@@ -545,7 +546,7 @@ bool skinManager::bottleToVector(const yarp::os::Bottle& b, yarp::sig::Vector& v
 /**
   * Identify the command in the bottle and return the correspondent enum value.
   */
-bool skinManager::identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bottle& params){
+bool skinManager::identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bottle& params) {
 	for(unsigned int i=0; i<SkinManagerCommandSize; i++){
 		stringstream stream(SkinManagerCommandList[i]);
 		string word;
@@ -571,7 +572,7 @@ bool skinManager::identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bo
 	return false;
 }
 
-bool skinManager::updateModule(){ 
+bool skinManager::updateModule() { 
     double avgTime, stdDev, period;
     period = myThread->getRate();
     myThread->getEstPeriod(avgTime, stdDev);
@@ -583,5 +584,6 @@ bool skinManager::updateModule(){
     }
     return true;
 }
+
 double skinManager::getPeriod(){ return 1.0;}
 

@@ -137,7 +137,7 @@ will be accessed.
 
 \section portsc_sec Ports Created
 <b>Output ports </b>
-- Every port specified in the "outputPorts" parameter: outputs a yarp::os::Vector containing the compensated tactile data.
+- Every port specified in the "outputPorts" parameter: outputs a yarp::sig::Vector containing the compensated tactile data.
 - "/"+moduleName+"/monitor:o": \n 
     outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
     (used to communicate with the \ref icub_skinManagerGui). The first value is the data frequency, while
@@ -153,9 +153,9 @@ will be accessed.
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
 - "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used). 
-    This port accepts a yarp::os::Bottle that contains one of these commands:
+    This port accepts a yarp::os::yarp::os::Bottle that contains one of these commands:
 	- “calib”: force the sensor calibration
-	- "get touch thr": return a yarp::os::Bottle containing the 95 percentile values of the tactile sensors
+	- "get touch thr": return a yarp::os::yarp::os::Bottle containing the 95 percentile values of the tactile sensors
 	- "set binarization": enable or disable the binarization (specifying the value on/off)
 	- "get binarization": get the binarization filter state (on, off)
 	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
@@ -197,7 +197,7 @@ Linux and Windows.
 skinManager --context skinGui --from driftCompRight.ini
 
 
-\author Andrea Del Prete (andrea.delprete@iit.it), Alexander Schmitz
+\author Andrea Del Prete (andrea.delprete@iit.it), Alexander Schmitz, Francesco Giovannini (francesco.giovannini@iit.it)
 
 Copyright (C) 2010 RobotCub Consortium
 
@@ -210,7 +210,6 @@ This file can be edited at ICUB_HOME/main/src/modules/skinManager/include/iCub/s
 #ifndef __ICUB_skinManager_H__
 #define __ICUB_skinManager_H__
 
-#include <iostream>
 #include <string>
 
 #include <yarp/os/RFModule.h>
@@ -220,57 +219,50 @@ This file can be edited at ICUB_HOME/main/src/modules/skinManager/include/iCub/s
 #include "iCub/skinManager/compensationThread.h"
 #include "iCub/skinDynLib/rpcSkinManager.h"
  
-using namespace std;
-using namespace yarp::os; 
-using namespace yarp::sig;
+namespace iCub {
+    namespace skinManager {
+        class skinManager : public RFModule {
+        public:
+            bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
+            bool interruptModule();                       // interrupt, e.g., the ports 
+            bool close();                                 // close and shut down the module
+            bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
+            double getPeriod(); 
+            bool updateModule();
 
-namespace iCub{
+        private:
+            // module default values
+            static const bool CALIBRATION_ALLOWED_DEFAULT;
+            static const int MIN_BASELINE_DEFAULT;
+            static const int PERIOD_DEFAULT;
+            static const int ADD_THRESHOLD_DEFAULT;
+            static const bool SMOOTH_FILTER_DEFAULT;
+            static const float SMOOTH_FACTOR_DEFAULT;
+            static const float COMPENSATION_GAIN_DEFAULT;
+            static const float CONTACT_COMPENSATION_GAIN_DEFAULT;
+            static const std::string MODULE_NAME_DEFAULT;
+            static const std::string ROBOT_NAME_DEFAULT;
+            static const bool ZERO_UP_RAW_DATA_DEFAULT;
+            static const bool BINARIZATION_DEFAULT;
+            static const std::string RPC_PORT_DEFAULT;
 
-namespace skinManager{
+            /* module parameters */
+            std::string moduleName;
+            std::string robotName;
 
-class skinManager:public RFModule
-{
-public:
-	bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
-	bool interruptModule();                       // interrupt, e.g., the ports 
-	bool close();                                 // close and shut down the module
-	bool respond(const Bottle& command, Bottle& reply);
-	double getPeriod(); 
-	bool updateModule();
+            /* ports */
+            yarp::os::Port handlerPort;									// a port to handle messages
 
-private:
-	// module default values
-	static const bool CALIBRATION_ALLOWED_DEFAULT;
-	static const int MIN_BASELINE_DEFAULT;
-	static const int PERIOD_DEFAULT;
-	static const int ADD_THRESHOLD_DEFAULT;
-	static const float SMOOTH_FACTOR_DEFAULT;
-	static const float COMPENSATION_GAIN_DEFAULT;
-    static const float CONTACT_COMPENSATION_GAIN_DEFAULT;
-	static const string MODULE_NAME_DEFAULT;
-	static const string ROBOT_NAME_DEFAULT;
-	static const string ZERO_UP_RAW_DATA_DEFAULT;
-	static const string RPC_PORT_DEFAULT;
+            /* pointer to a new thread to be created and started in configure() and stopped in close() */
+            CompensationThread *myThread;
 
-	/* module parameters */
-	string moduleName;
-	string robotName;
+            void addToBottle(yarp::os::Bottle& b, const yarp::sig::Vector& v);
+            void addToBottle(yarp::os::Bottle& b, const std::vector<yarp::sig::Vector>& v);
+            bool bottleToVector(const yarp::os::Bottle& b, yarp::sig::Vector& v);
+            bool identifyCommand(yarp::os::Bottle commandBot, SkinManagerCommand &com, yarp::os::Bottle& params);
 
-	/* ports */
-	Port handlerPort;									// a port to handle messages
-
-	/* pointer to a new thread to be created and started in configure() and stopped in close() */
-	CompensationThread *myThread;
-
-    void addToBottle(Bottle& b, const Vector& v);
-    void addToBottle(Bottle& b, const vector<Vector>& v);
-    bool bottleToVector(const yarp::os::Bottle& b, yarp::sig::Vector& v);
-	bool identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bottle& params);
-
-};
-
-} //namespace iCub
-
+        };
+    } //namespace iCub
 } //namespace skinManager
 
 #endif // __ICUB_skinManager_H__
