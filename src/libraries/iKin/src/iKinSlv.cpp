@@ -657,12 +657,12 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             Bottle &payLoad=reply.addList();
-                            payLoad.addInt(slv->get2ndTaskChain().getN()-1);
+                            payLoad.addInt(slv->get2ndTaskChain().getN());
             
                             Bottle &posPart=payLoad.addList();
                             for (size_t i=0; i<xd_2ndTask.length(); i++)
                                 posPart.addDouble(xd_2ndTask[i]);
-            
+
                             Bottle &weightsPart=payLoad.addList();
                             for (size_t i=0; i<w_2ndTask.length(); i++)
                                 weightsPart.addDouble(w_2ndTask[i]);
@@ -860,7 +860,11 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                             for (size_t i=0; i<w_2ndTask.length(); i++)
                                                 w_2ndTask[i]=weightsPart->get(i).asDouble();
             
-                                            (n>=0)?slv->specify2ndTaskEndEff(n):slv->get2ndTaskChain().clear();
+                                            if (n>=0)
+                                                slv->specify2ndTaskEndEff(n);
+                                            else
+                                                slv->get2ndTaskChain().clear();
+
                                             reply.addVocab(IKINSLV_VOCAB_REP_ACK); 
                                             break;
                                         }
