@@ -278,10 +278,10 @@ void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_p
 /* ******* Sends CAN setup message type 4C.                                 ********************************************** */
 void CanBusSkin::sendCANMessage4C(void) {
     for (size_t i = 0; i < cardId.size(); ++i) {
-        #if SKIN_DEBUG
-            printf("CanBusSkin: Thread initialising board ID: %d. \n",cardId[i]);
-            printf("CanBusSkin: Sending 0x4C message to skin boards. \n");
-        #endif 
+#if SKIN_DEBUG
+        printf("CanBusSkin: Thread initialising board ID: %d. \n",cardId[i]);
+        printf("CanBusSkin: Sending 0x4C message to skin boards. \n");
+#endif 
 
         unsigned int canMessages=0;
         unsigned id = 0x200 + cardId[i];
@@ -298,14 +298,18 @@ void CanBusSkin::sendCANMessage4C(void) {
         msg4c.getData()[7] = msg4C_TimeH.get(i).asInt();
         msg4c.setLen(8);
 
-        #if SKIN_DEBUG
-            printf("WARNING: CanBusSkin: Input parameters are: %i, %i, %i, %i, %i, %i, %i, %i. \n", 
-                msg4c.getData()[0], msg4c.getData()[1], msg4c.getData()[2], msg4C_Timer.get(i).asInt(), 
-                msg4C_CDCOffsetL.get(i).asInt(), msg4C_CDCOffsetH.get(i).asInt(), msg4C_TimeL.get(i).asInt(), msg4C_TimeH.get(i).asInt());
-            printf("WARNING: CanBusSkin: Output parameters are: %i, %i, %i, %i, %i, %i, %i, %i. \n", 
-                msg4c.getData()[0], msg4c.getData()[1], msg4c.getData()[2], msg4c.getData()[3],
-                msg4c.getData()[4], msg4c.getData()[5], msg4c.getData()[6], msg4c.getData()[7]);
-        #endif
+#if SKIN_DEBUG
+        cout << "INFO: CanBusSkin: Input parameters (msg 4C) are: " << std::hex << std::showbase
+            << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " "
+            << msg4C_Timer.get(i).asInt() << " " << msg4C_CDCOffsetL.get(i).asInt() << " " << msg4C_CDCOffsetH.get(i).asInt() << " " 
+            << msg4C_TimeL.get(i).asInt() << " " << msg4C_TimeH.get(i).asInt()
+            << ". \n";
+        cout << "INFO: CanBusSkin: Output parameters (msg 4C) are: " << std::hex << std::showbase
+            << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " " 
+            << (int) msg4c.getData()[3] << " " << (int) msg4c.getData()[4] << " " << (int) msg4c.getData()[5] << " " 
+            << (int) msg4c.getData()[6] << " " << (int) msg4c.getData()[7]
+            << ". \n";
+#endif
 
         canMessages=0;
         pCanBus->canWrite(outBuffer, 1, &canMessages);
@@ -319,42 +323,44 @@ void CanBusSkin::sendCANMessage4C(void) {
 void CanBusSkin::sendCANMessage4E(void) {
     // Send 0x4E message to modify offset
     for (size_t i = 0; i < cardId.size(); ++i) {
-        // FG: Dirty implementation due to not having to send 0x4E to any other skin MTB. 
-        if (cardId[i] == 14) {       // 14 is the Hand MTB board
-            #if SKIN_DEBUG
-                printf("CanBusSkin: Thread initialising board ID: %d. \n", cardId[i]);
-                printf("CanBusSkin: Sending 0x4E message to skin boards. \n");
-            #endif 
+        // FG: Sending 4E message to all MTBs
+#if SKIN_DEBUG
+        printf("CanBusSkin: Thread initialising board ID: %d. \n", cardId[i]);
+        printf("CanBusSkin: Sending 0x4E message to skin boards. \n");
+#endif 
     
-            unsigned int canMessages = 0;
-            unsigned id = 0x200 + cardId[i];
+        unsigned int canMessages = 0;
+        unsigned id = 0x200 + cardId[i];
                 
-            CanMessage &msg4e = outBuffer[0];
-            msg4e.setId(id);
-            msg4e.getData()[0] = 0x4E; // Message type
-            msg4e.getData()[1] = msg4E_Shift.get(i).asInt(); 
-            msg4e.getData()[2] = msg4E_Shift3_1.get(i).asInt(); 
-            msg4e.getData()[3] = msg4E_NoLoad.get(i).asInt();
-            msg4e.getData()[4] = msg4E_Param.get(i).asInt();
-            msg4e.getData()[5] = msg4E_EnaL.get(i).asInt();
-            msg4e.getData()[6] = msg4E_EnaH.get(i).asInt();
-            msg4e.getData()[7] = 0x0A;
-            msg4e.setLen(8);
+        CanMessage &msg4e = outBuffer[0];
+        msg4e.setId(id);
+        msg4e.getData()[0] = 0x4E; // Message type
+        msg4e.getData()[1] = msg4E_Shift.get(i).asInt(); 
+        msg4e.getData()[2] = msg4E_Shift3_1.get(i).asInt(); 
+        msg4e.getData()[3] = msg4E_NoLoad.get(i).asInt();
+        msg4e.getData()[4] = msg4E_Param.get(i).asInt();
+        msg4e.getData()[5] = msg4E_EnaL.get(i).asInt();
+        msg4e.getData()[6] = msg4E_EnaH.get(i).asInt();
+        msg4e.getData()[7] = 0x0A;
+        msg4e.setLen(8);
             
-            #if SKIN_DEBUG
-            printf("WARNING: CanBusSkin: Input parameters are: %i, %i, %i, %i, %i, %i, %i, %i. \n", 
-                msg4e.getData()[0], msg4E_Shift.get(i).asInt(), msg4E_Shift3_1.get(i).asInt(), msg4E_NoLoad.get(i).asInt(), 
-                msg4E_Param.get(i).asInt(), msg4E_EnaL.get(i).asInt(), msg4E_EnaH.get(i).asInt(), msg4e.getData()[7]);
-            printf("WARNING: CanBusSkin: Output parameters are: %i, %i, %i, %i, %i, %i, %i, %i. \n", 
-                msg4e.getData()[0], msg4e.getData()[1], msg4e.getData()[2], msg4e.getData()[3],
-                msg4e.getData()[4], msg4e.getData()[5], msg4e.getData()[6], msg4e.getData()[7]);
-            #endif
+#if SKIN_DEBUG
+        cout << "INFO: CanBusSkin: Input parameters (msg 4E) are: " << std::hex << std::showbase
+            << (int) msg4e.getData()[0] << " " << msg4E_Shift.get(i).asInt() << " " << msg4E_Shift3_1.get(i).asInt() << " " 
+            << msg4E_NoLoad.get(i).asInt() << " " << msg4E_Param.get(i).asInt() << " " << msg4E_EnaL.get(i).asInt() << " " 
+            << msg4E_EnaH.get(i).asInt() << " " << (int) msg4e.getData()[7]
+            << ". \n";
+        cout << "INFO: CanBusSkin: Output parameters (msg 4E) are: " << std::hex << std::showbase
+            << (int) msg4e.getData()[0] << " " << (int) msg4e.getData()[1] << " " << (int) msg4e.getData()[2] << " " 
+            << (int) msg4e.getData()[3] << " " << (int) msg4e.getData()[4] << " " << (int) msg4e.getData()[5] << " " 
+            << (int) msg4e.getData()[6] << " " << (int) msg4e.getData()[7]
+            << ". \n";
+#endif
 
-            canMessages = 0;
-            pCanBus->canWrite(outBuffer, 1, &canMessages);
+        canMessages = 0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
 
-            break;
-        }
+        break;
     }
 }
 /* *********************************************************************************************************************** */
