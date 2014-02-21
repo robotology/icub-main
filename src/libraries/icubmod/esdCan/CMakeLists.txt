@@ -12,6 +12,10 @@ IF (NOT SKIP_ecan)
   IF(NOT ESDCANAPI_FOUND)
     MESSAGE(SEND_ERROR "ecan: cannot find esdcan api, turn off device")
   ELSE(NOT ESDCANAPI_FOUND)
+    # Print out library location
+    MESSAGE(STATUS " ++++ ESD CAN library found at: ${ESDCANAPI_LIB}")
+    MESSAGE(STATUS " ++++ ESD CAN include files found at: ${ESDCANAPI_INC_DIRS}")
+    
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${ESDCANAPI_INC_DIRS} ${YARP_INCLUDE_DIRS})
     ADD_LIBRARY(esdCan EsdCan.cpp EsdCan.h)
     
