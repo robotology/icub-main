@@ -192,10 +192,11 @@ int CanBusSkin::calibrateChannel(int ch)
 
 
 bool CanBusSkin::threadInit() {
-    sendCANMessage4C();
-    sendCANMessage4E();
-
-    return true;
+    if(sendCANMessage4C()) {
+        return sendCANMessage4E();
+    } else {
+        return false;
+    }
 }
 
 void CanBusSkin::run() {    
@@ -276,7 +277,7 @@ void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_p
 
 /* *********************************************************************************************************************** */
 /* ******* Sends CAN setup message type 4C.                                 ********************************************** */
-void CanBusSkin::sendCANMessage4C(void) {
+bool CanBusSkin::sendCANMessage4C(void) {
     for (size_t i = 0; i < cardId.size(); ++i) {
 #if SKIN_DEBUG
         printf("CanBusSkin: Thread initialising board ID: %d. \n",cardId[i]);
@@ -311,16 +312,20 @@ void CanBusSkin::sendCANMessage4C(void) {
             << ". \n";
 #endif
 
-        canMessages=0;
-        pCanBus->canWrite(outBuffer, 1, &canMessages);
+        if (!pCanBus->canWrite(outBuffer, 1, &canMessages)) {
+            cerr << "ERROR: CanBusSkin: Could not write to the CAN interface. \n";
+            return false;
+        }
     }
+
+    return true;
 }
 /* *********************************************************************************************************************** */
 
 
 /* *********************************************************************************************************************** */
 /* ******* Sends CAN setup message type 4E.                                 ********************************************** */
-void CanBusSkin::sendCANMessage4E(void) {
+bool CanBusSkin::sendCANMessage4E(void) {
     // Send 0x4E message to modify offset
     for (size_t i = 0; i < cardId.size(); ++i) {
         // FG: Sending 4E message to all MTBs
@@ -357,10 +362,12 @@ void CanBusSkin::sendCANMessage4E(void) {
             << ". \n";
 #endif
 
-        canMessages = 0;
-        pCanBus->canWrite(outBuffer, 1, &canMessages);
-
-        break;
+        if (!pCanBus->canWrite(outBuffer, 1, &canMessages)) {
+            cerr << "ERROR: CanBusSkin: Could not write to the CAN interface. \n";
+            return false;
+        }
     }
+
+    return true;
 }
 /* *********************************************************************************************************************** */
