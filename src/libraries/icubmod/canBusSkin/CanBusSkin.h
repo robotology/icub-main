@@ -90,11 +90,12 @@ private:
     /**
      * Sends the CMD_TACT_SETUP 0x4C CAN message to the MTB boards.
      */
-    void sendCANMessage4C(void);
+    bool sendCANMessage4C(void);
+    
     /**
      * Sends the CMD_TACT_SETUP2 0x4E CAN message to the MTB boards.
      */
-    void sendCANMessage4E(void);
+    bool sendCANMessage4E(void);
 };
 
 #endif
