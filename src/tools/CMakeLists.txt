@@ -80,3 +80,10 @@ if(ICUB_USE_GTK2 AND ICUB_USE_OpenCV)
 else(ICUB_USE_GTK2 AND ICUB_USE_OpenCV)
     message(STATUS "OpenCV or GTK2 not found/selected, skipping dataSetPlayer")
 endif(ICUB_USE_GTK2 AND ICUB_USE_OpenCV)
+
+if(ICUB_USE_GSL AND ICUB_USE_OpenCV AND ICUB_USE_IPOPT)
+    add_subdirectory(depth2kin)
+else()
+    message(STATUS "GSL and/or OpenCV and/or IPOPT not found/selected, skipping depth2kin")
+endif()
+
