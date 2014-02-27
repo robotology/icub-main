@@ -38,4 +38,5 @@ target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
                                      learningMachine
                                      icubmod)
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
+yarp_install(FILES ${PROJECTNAME}.xml DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 
