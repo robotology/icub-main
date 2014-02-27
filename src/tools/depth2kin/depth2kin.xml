@@ -5,7 +5,7 @@
 
    <name>depth2kin</name>
    <doxygen-group>icub_tools</doxygen-group>
-   <description>Stereo-Kinematics Calibrator.</description>
+   <description>Stereo-Kinematics Calibration.</description>
    <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
    <version>1.0</version>
    
