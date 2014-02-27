@@ -19,10 +19,13 @@ source_group("IDL Files"    FILES ${idl})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS}
-                    ${ICUB_INCLUDE_DIRS}
                     ${GSL_INCLUDE_DIRS}
                     ${IPOPT_INCLUDE_DIRS}
-                    ${OpenCV_INCLUDE_DIRS})
+                    ${OpenCV_INCLUDE_DIRS}
+                    ${ctrlLib_INCLUDE_DIRS}
+                    ${iKin_INCLUDE_DIRS}
+                    ${optimization_INCLUDE_DIRS}
+                    ${learningMachine_INCLUDE_DIRS})
                     
 add_executable(${PROJECTNAME} ${headers} ${sources} ${idl})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
