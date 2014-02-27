@@ -31,4 +31,5 @@ add_executable(${PROJECTNAME}
 
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}) 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
+yarp_install(FILES rpcIdl.xml DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 
