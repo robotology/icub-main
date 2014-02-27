@@ -21,7 +21,7 @@
 #include <string>
 #include <deque>
 
-#include <opencv2/opencv.hpp>
+#include <cv.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
