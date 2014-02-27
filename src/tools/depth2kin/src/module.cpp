@@ -424,7 +424,7 @@ void CalibModule::doMotorExploration()
 
         Vector od=dcm2axis(axis2dcm(rot_y)*Hd);
         printf("moving to xd=(%s); od=(%s); #%d remaining points\n",
-               xd.toString(3,3).c_str(),od.toString(3,3).c_str(),targetsConsumed.size());
+               xd.toString(3,3).c_str(),od.toString(3,3).c_str(),(int)targetsConsumed.size());
 
         iarm->goToPoseSync(xd,od);
         igaze->lookAtFixationPoint(xd);
