@@ -44,7 +44,7 @@ SET(ACE_INCLUDE_DIR "/usr/include")
 
 set(BASE                 $ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/embObj)
 set(COMMON_FOLDER        ${BASE}/embobj/core/core)
-set(ICUB_HEADER_FOLDER   ${BASE}/embobj/plus/comm-v1/icub/)
+set(ICUB_HEADER_FOLDER   ${BASE}/embobj/plus/comm-v2/icub/)
 set(OPC_PROTO_FOLDER     ${BASE}/embobj/plus/comm-v1/opcprot/)
 set(OPC_PROTO_FOLDER_CFG ${BASE}/robotconfig/v1/backdoor)
 
