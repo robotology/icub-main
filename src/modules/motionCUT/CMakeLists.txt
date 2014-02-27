@@ -7,11 +7,8 @@ set(PROJECTNAME motionCUT)
 project(${PROJECTNAME})
 
 set(folder_header main.h)
-#if(OpenCV_VERSION_MAJOR GREATER 2 OR OpenCV_VERSION_MAJOR EQUAL 2 AND OpenCV_VERSION_MINOR GREATER 2)
-#    set(folder_source main_cv_cpp.cpp)
-#else()
-    set(folder_source main_cv_c.cpp)
-#endif()
+set(folder_source main_cv_c.cpp)
+#set(folder_source main_cv_cpp.cpp)
 
 source_group("Header Files" FILES ${folder_header})
 source_group("Source Files" FILES ${folder_source})

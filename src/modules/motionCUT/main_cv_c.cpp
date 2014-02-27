@@ -108,20 +108,17 @@ protected:
     /************************************************************************/
     void disposeMem()
     {
-        if (nodesPrev!=NULL)
-            delete nodesPrev;
+        delete nodesPrev;
+        delete nodesCurr;
+        delete nodesPersistence;
+        delete featuresFound;
+        delete featuresErrors;
 
-        if (nodesCurr!=NULL)
-            delete nodesCurr;
-
-        if (nodesPersistence!=NULL)
-            delete nodesPersistence;
-
-        if (featuresFound!=NULL)
-            delete featuresFound;
-
-        if (featuresErrors!=NULL)
-            delete featuresErrors;
+        nodesPrev=NULL;
+        nodesCurr=NULL;
+        nodesPersistence=NULL;
+        featuresFound=NULL;
+        featuresErrors=NULL;
     }
 
 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
@@ -160,7 +157,7 @@ public:
         coverYratio=rf.check("coverYratio",Value(0.75)).asDouble();
         nodesStep=rf.check("nodesStep",Value(6)).asInt();
         winSize=rf.check("winSize",Value(15)).asInt();
-        recogThres=rf.check("recogThres",Value(0.5)).asDouble();
+        recogThres=rf.check("recogThres",Value(0.01)).asDouble();
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
@@ -204,35 +201,35 @@ public:
     {
         if (s)
         {
-            fprintf(stdout,"Process started successfully\n");
-            fprintf(stdout,"\n");
-            fprintf(stdout,"Using ...\n");
-            fprintf(stdout,"name               = %s\n",name.c_str());
-            fprintf(stdout,"coverXratio        = %g\n",coverXratio);
-            fprintf(stdout,"coverYratio        = %g\n",coverYratio);
-            fprintf(stdout,"nodesStep          = %d\n",nodesStep);
-            fprintf(stdout,"winSize            = %d\n",winSize);
-            fprintf(stdout,"recogThres         = %g\n",recogThres);
-            fprintf(stdout,"recogThresAbs      = %g\n",recogThresAbs);
-            fprintf(stdout,"adjNodesThres      = %d\n",adjNodesThres);
-            fprintf(stdout,"blobMinSizeThres   = %d\n",blobMinSizeThres);
-            fprintf(stdout,"framesPersistence  = %d\n",framesPersistence);
+            printf("Process started successfully\n");
+            printf("\n");
+            printf("Using ...\n");
+            printf("name               = %s\n",name.c_str());
+            printf("coverXratio        = %g\n",coverXratio);
+            printf("coverYratio        = %g\n",coverYratio);
+            printf("nodesStep          = %d\n",nodesStep);
+            printf("winSize            = %d\n",winSize);
+            printf("recogThres         = %g\n",recogThres);
+            printf("recogThresAbs      = %g\n",recogThresAbs);
+            printf("adjNodesThres      = %d\n",adjNodesThres);
+            printf("blobMinSizeThres   = %d\n",blobMinSizeThres);
+            printf("framesPersistence  = %d\n",framesPersistence);
             if (fixedRadius)
-                fprintf(stdout,"cropRadius (fixed) = %d\n",cropRadius);
+                printf("cropRadius (fixed) = %d\n",cropRadius);
             else               
-                fprintf(stdout,"cropRadius (var)   = %d\n",cropRadius);
+                printf("cropRadius (var)   = %d\n",cropRadius);
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-            fprintf(stdout,"numThreads        = %d\n",numThreads);
+            printf("numThreads        = %d\n",numThreads);
         #else
-            fprintf(stdout,"numThreads        = OpenCV version does not support OpenMP multi-threading\n");
+            printf("numThreads        = OpenCV version does not support OpenMP multi-threading\n");
         #endif
             
-            fprintf(stdout,"verbosity         = %s\n",verbosity?"on":"off");            
-            fprintf(stdout,"\n");
+            printf("verbosity         = %s\n",verbosity?"on":"off");            
+            printf("\n");
         }
         else
-            fprintf(stdout,"Process did not start\n");
+            printf("Process did not start\n");
     }
 
     /************************************************************************/
@@ -244,13 +241,12 @@ public:
         {
             // acquire new image
             ImageOf<PixelBgr> *pImgBgrIn=inPort.read(true);
+            if (isStopping() || (pImgBgrIn==NULL))
+                break;
 
             // get the envelope from the image
             Stamp stamp;
             inPort.getEnvelope(stamp);
-
-            if (isStopping() || (pImgBgrIn==NULL))
-                break;
 
             double t0=Time::now();
              
@@ -298,8 +294,8 @@ public:
                 if (verbosity)
                 {
                     // log message
-                    fprintf(stdout,"Detected image of size %dx%d;\nusing %dx%d=%d nodes;\npopulated %d nodes\n",
-                            imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
+                    printf("Detected image of size %dx%d;\nusing %dx%d=%d nodes;\npopulated %d nodes\n",
+                           imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
                 }
 
                 // skip to the next cycle
@@ -497,8 +493,8 @@ public:
             if (verbosity)
             {
                 // dump statistics
-                fprintf(stdout,"cycle timing [ms]: optflow(%g), colorgrid(%g), blobdetection(%g), overall(%g)\n",
-                        1000.0*dt0,1000.0*dt1,1000.0*dt2,1000.0*(t1-t0));
+                printf("cycle timing [ms]: optflow(%g), colorgrid(%g), blobdetection(%g), overall(%g)\n",
+                       1000.0*dt0,1000.0*dt1,1000.0*dt2,1000.0*(t1-t0));
             }
         }
     }
@@ -507,10 +503,6 @@ public:
     void onStop()
     {
         inPort.interrupt();
-        outPort.interrupt();
-        optPort.interrupt();
-        nodesPort.interrupt();
-        blobsPort.interrupt();
     }
 
     /************************************************************************/
@@ -780,29 +772,29 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        fprintf(stdout,"\n");
+        printf("\n");
     #ifdef CV_MAJOR_VERSION
-        fprintf(stdout,"This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
+        printf("This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
     #else
-        fprintf(stdout,"This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
+        printf("This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
     #endif        
-        fprintf(stdout,"\n");
-        fprintf(stdout,"Available options:\n");
-        fprintf(stdout,"\t--name              <string>\n");
-        fprintf(stdout,"\t--coverXratio       <double>\n");
-        fprintf(stdout,"\t--coverYratio       <double>\n");
-        fprintf(stdout,"\t--nodesStep         <int>\n");
-        fprintf(stdout,"\t--winSize           <int>\n");
-        fprintf(stdout,"\t--recogThres        <double>\n");
-        fprintf(stdout,"\t--adjNodesThres     <int>\n");
-        fprintf(stdout,"\t--blobMinSizeThres  <int>\n");
-        fprintf(stdout,"\t--framesPersistence <int>\n");
-        fprintf(stdout,"\t--cropRadius        <int>\n");
+        printf("\n");
+        printf("Available options:\n");
+        printf("\t--name              <string>\n");
+        printf("\t--coverXratio       <double>\n");
+        printf("\t--coverYratio       <double>\n");
+        printf("\t--nodesStep         <int>\n");
+        printf("\t--winSize           <int>\n");
+        printf("\t--recogThres        <double>\n");
+        printf("\t--adjNodesThres     <int>\n");
+        printf("\t--blobMinSizeThres  <int>\n");
+        printf("\t--framesPersistence <int>\n");
+        printf("\t--cropRadius        <int>\n");
     #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-        fprintf(stdout,"\t--numThreads        <int>\n");
+        printf("\t--numThreads        <int>\n");
     #endif
-        fprintf(stdout,"\t--verbosity           -\n");
-        fprintf(stdout,"\n");
+        printf("\t--verbosity           -\n");
+        printf("\n");
         
         return 0;
     }
@@ -810,7 +802,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        fprintf(stdout,"YARP server not available!\n");
+        printf("YARP server not available!\n");
         return -1;
     }
 
