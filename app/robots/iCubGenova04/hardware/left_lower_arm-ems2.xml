@@ -9,22 +9,22 @@
 
   <device name="left_lower_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems2-eln.xml" />
-      <params file="hardware/mechanicals/ems2-mec.xml" />
+      <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
+      <params file="hardware/mechanicals/left_lower_arm-ems2-mec.xml" />
   </device>  
 
   
       <!--  Skin -->
   <device name="left_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems2-eln.xml" />
+      <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
   </device>
 
    <!--  mais --> 
   <device name="left_hand_mais" type="embObjAnalogSensor">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems2-eln.xml" />
-      <params file="hardware/analog/ems2-mais.xml" />
+      <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
+      <params file="hardware/analog/left_lower_arm-ems2-mais.xml" />
   </device> 
 </devices>
   
