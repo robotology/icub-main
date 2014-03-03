@@ -42,7 +42,7 @@ ENDIF ("${BUTTON_FILE}" STREQUAL "")
 
 SET(ACE_INCLUDE_DIR "/usr/include")
 
-set(BASE                 $ENV{ICUB_ROOT}/main/src/libraries/icubmod/embObjLib/embObj)
+set(BASE                 $ENV{ICUB_ROOT}/src/libraries/icubmod/embObjLib/embObj)
 set(COMMON_FOLDER        ${BASE}/embobj/core/core)
 set(ICUB_HEADER_FOLDER   ${BASE}/embobj/plus/comm-v2/icub/)
 set(OPC_PROTO_FOLDER     ${BASE}/embobj/plus/comm-v1/opcprot/)
