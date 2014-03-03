@@ -8,7 +8,7 @@
 	<param name="Format">		16	</param>	<!-- not used anymore -->
         <param name="Channels"> 	 6	</param>
         <param name="Period">		 1	</param>
-	<param name="UseCalibration">	 1	</param>
+	<param name="UseCalibration">	 1 	</param>
     </group>
 </params>
 

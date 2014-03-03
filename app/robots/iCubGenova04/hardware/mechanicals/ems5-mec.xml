@@ -11,7 +11,7 @@
         <param name="Zeros">     	180.00        180.00        180.00      </param>
         <param name="TorqueId">  	0x0C          0x0C          0x0C  	</param>
         <param name="TorqueChan">	0             1             2		</param>
-        <param name="TorqueMax"> 	12            12            12		</param>
+        <param name="TorqueMax"> 	18            18            18		</param>
         <param name="Rotor">     	1             1             1 		</param>
         <param name="Gearbox">   	1             1             1 		</param>
         <param name="Verbose">		0	</param>
@@ -40,15 +40,13 @@
         <!--                 Proportional  Derivative    Integral      Integral Limit     PWM Limit     scale factor    offset -->
         <param name="Pid0">     7         0             0             0                   10000          10            0    </param>
         <param name="Pid1">     10        0             0             0                   10000          10            0    </param>
-        <param name="Pid2">     10        0             0             0                   20000         10            0    </param>
+        <param name="Pid2">     10        0             0             0                   20000          10            0    </param>
     </group>
 
-    <!--  Noo torque pids because there is no torque sensor for the torso
     <group name="TORQUE_PIDS">
-        <param name="TPid0">      6             0             0          1333          	1333          11            0  </param>
-        <param name="TPid1">      6             0             0          1333          	1333          11            0  </param>
-        <param name="TPid2">      6             0             0          1333           1333          11            0  </param>
+        <param name="TPid0">      300             0             0          0          	  10000          10            0  </param>
+        <param name="TPid1">      400             0             0          0          	  10000          10            0  </param>
+        <param name="TPid2">      400             0             0          0              20000          10            0  </param>
     </group>
-    -->
 
 </params>

@@ -41,18 +41,18 @@
 
     <group name="PIDS">
         <!--                 Proportional  Derivative    Integral      Integral Limit              PWM Limit     scale factor >>             offset -->
-        <param name="Pid0">  200           1000          1             1333          1333          6             0                                     </param>
-        <param name="Pid1">  100           100           2             1333          1333          6             0                                     </param>
-        <param name="Pid2">  100           100           2             1333          1333          6             0                                     </param>
-        <param name="Pid3">  -200          -200          -1            1333          1333          5             0                                     </param>
-        <param name="Pid4">  8000          32000         5             1333          1333          12            0                                     </param>
-        <param name="Pid5">  -8000         -32000        -5            1333          1333          10            0                                     </param>
-        <param name="Pid6">  8000          32000         5             1333          1333          10            0                                     </param>
-        <param name="Pid7">  -8000         -32000        -5            1333          1333          10            0                                     </param>
-        <param name="Pid8">  8000          32000         5             1333          1333          10            0                                     </param>
-        <param name="Pid9">  -8000         -32000        -5            1333          1333          10            0                                     </param>
-        <param name="Pid10"> -8000         -32000        -5            1333          1333          10            0                                     </param>
-        <param name="Pid11"> -120          -1250         0             1333          1333          4             0                                     </param>
+        <param name="Pid0">   200           1000          1             1333          1333          6             0                                     </param>
+        <param name="Pid1">   100           100           2             1333          1333          6             0                                     </param>
+        <param name="Pid2">   100           100           2             1333          1333          6             0                                     </param>
+        <param name="Pid3">  -200          -200          -1             1333          1333          5             0                                     </param>
+        <param name="Pid4">   8000          32000         5             1333          1333          12            0                                     </param>
+        <param name="Pid5">  -8000         -32000        -5             1333          1333          10            0                                     </param>
+        <param name="Pid6">   8000          32000         5             1333          1333          10            0                                     </param>
+        <param name="Pid7">  -8000         -32000        -5             1333          1333          10            0                                     </param>
+        <param name="Pid8">   8000          32000         5             1333          1333          10            0                                     </param>
+        <param name="Pid9">  -8000         -32000        -5             1333          1333          10            0                                     </param>
+        <param name="Pid10"> -8000         -32000        -5             1333          1333          10            0                                     </param>
+        <param name="Pid11"> -120          -1250         0              1333          1333          4             0                                     </param>
     </group>
 
    
