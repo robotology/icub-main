@@ -10,9 +10,6 @@
 	<param name="Encoder">  -706.67     -978.46       -978.46       5.750        -17.83          -2.57      -2.44           -2.76          -2.54          -2.37        -2.54         -1.94   </param> 
         <param name="Zeros">      90.00     -20.00        -52.00      388.69565      -142.99        -91.95      -182.05        -90.00        -187.86       -94.23        -180.01       -357.60   </param> 	
 
- <!--	<param name="Encoder">  1	   1		1	 	1		1		1		1		1	1	1	1	1    </param>    -->
- <!--  	<param name="Zeros">    0	   0		0		0		0		0		0		0		0   0		0	0</param> -->
-
         <param name="TorqueId">  0x0C          0             0             0             0             0             0             0             0             0             0             0 </param>
         <param name="TorqueChan">4             0             0             0             0             0             0             0             0             0             0             0 </param>
         <param name="TorqueMax"> 2             2             2             2             2             2             2             2             2             2             2             2 </param>

@@ -3,11 +3,10 @@
 
 <params robot="iCubGenova04" build="1">
     <group name="ETH">
- 	<param name="IpAddress">	10.0.1.1	</param> 
-        <param name="Ems">		1		</param>
+        <param name="IpAddress">	10.0.1.1	</param> 
+        <param name="Ems">		    1		    </param>
         <param name="CmdPort">		12345		</param>
         <param name="SrvPort">		4444		</param>
     </group>
 
- <!-- AXIS MAP HAS BEEN MOVED INTO THE MECHANICAL PART!!!! -->
 </params>

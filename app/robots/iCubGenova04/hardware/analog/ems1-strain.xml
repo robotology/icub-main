@@ -13,11 +13,3 @@
 </params>
 
 
-<!-- questi parametri servono per associare una lettura di coppia ad un determinato giunto... come fare nella nuova versione?  ora sono usati nel motionControl
-
-<param name="TorqueId">     0x0C          0x0C          0x0C          0x0C	</param>
-<param name="TorqueChan">	0             1             2             3	</param>
-<param name="TorqueMax"> 	8             8             8             8	</param>
-<param name="Verbose">		0	</param>
-
--->

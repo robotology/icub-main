@@ -10,10 +10,6 @@
  	    <param name="Zeros">        90            -14           -52          244.918        -205.511811   -94.18604651  -187.742      -91.8         -187.912      -91.9149      -183.711      -363.273    </param> 
 
 
-<!--   <param name="Encoder">    1	1	1	1	1	1	1	1	1	1	1	1    </param>   
-	<param name="Zeros">   0	   0		0		0		0		0		0		0		0   0		0	0</param> -->
-	 
-
         <param name="TorqueId">  0x0C     	0             0             0     		0             0              0             0            0             0            0             0              </param>
         <param name="TorqueChan">   4     	0             0             0     		0             0              0             0            0             0            0             0          	</param>
         <param name="TorqueMax">    2     	2             2             2     		0             0              0             0            0             0            0             0       	</param>

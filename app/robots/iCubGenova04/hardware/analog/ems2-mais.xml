@@ -4,11 +4,9 @@
 <params robot="iCubGenova04" build="1">
     <params file="hardware/electronics/pc104.xml" />
 
-  <!-- MAIS sensor ... questa parte serivirà ancora o può essere eliminata? -->
-  <!-- purtroppo serivirà ancora -->
    <group name="GENERAL"> 
-        <param name="CanAddress">     0x0E	</param>	<!-- not used anymore ??-->
-        <param name="Format">		8	</param>	<!-- not used anymore ??-->
+        <param name="CanAddress">     0x0E	</param>
+        <param name="Format">		8	</param>
         <param name="Channels"> 	15	</param>
         <param name="Period">		10	</param>
     </group>

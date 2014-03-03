@@ -16,7 +16,6 @@
   <device name="right_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />
       <params file="hardware/electronics/ems4-eln.xml" />
-<!--       <params file="hardware/mechanicals/ems4-skin.xml" />  -->
   </device>  
 
 <!--  mais --> 
@@ -24,5 +23,5 @@
       <params file="general.xml" />
       <params file="hardware/electronics/ems4-eln.xml" />
       <params file="hardware/analog/ems4-mais.xml" />
-  </device>                                               
+  </device>
 </devices>

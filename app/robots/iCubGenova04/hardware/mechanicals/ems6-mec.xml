@@ -5,9 +5,9 @@
     <group name="GENERAL">
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
 
-        <param name="AxisMap">          0             1             2             3         	</param>
-        <param name="Encoder">          182.044       182.044       182.044       182.044       </param>
-        <param name="Zeros">            180           180           180           180</param>
+        <param name="AxisMap">      0             1             2             3         	</param>
+        <param name="Encoder">      182.044       182.044       182.044       182.044       </param>
+        <param name="Zeros">        180           180           180           180</param>
         <param name="TorqueId">  	0x0B          0x0B          0x0B          0x0B 		</param>
         <param name="TorqueChan">	0             1             2             3		</param>
         <param name="TorqueMax"> 	12            12            12            12		</param>
