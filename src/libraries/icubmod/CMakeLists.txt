@@ -14,6 +14,10 @@ project(icubmod)
 
 add_subdirectory(debugStream)
 
+option (ICUB_PARAM_CALIB_WIP "use ParametricCalibratorWip")
+mark_as_advanced (ICUB_PARAM_CALIB_WIP)
+set(ICUB_PARAM_CALIB_WIP FALSE CACHE BOOL " ")
+
 BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
   add_subdirectory(canBusMotionControl)
