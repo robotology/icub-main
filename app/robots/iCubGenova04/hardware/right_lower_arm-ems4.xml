@@ -8,20 +8,20 @@
   <!--  Motion Control -->
   <device name="right_lower_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems4-eln.xml" />
-      <params file="hardware/mechanicals/ems4-mec.xml" />
+      <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
+      <params file="hardware/mechanicals/right_lower_arm-ems4-mec.xml" />
   </device>
  
         <!--  Skin -->
   <device name="right_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems4-eln.xml" />
+      <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
   </device>  
 
 <!--  mais --> 
   <device name="right_hand_mais" type="embObjAnalogSensor">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems4-eln.xml" />
-      <params file="hardware/analog/ems4-mais.xml" />
+      <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
+      <params file="hardware/analog/right_lower_arm-ems4-mais.xml" />
   </device>
 </devices>

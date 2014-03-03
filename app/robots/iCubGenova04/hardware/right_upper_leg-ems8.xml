@@ -7,14 +7,14 @@
 
   <device name="right_upper_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems8-eln.xml" />
-      <params file="hardware/mechanicals/ems8-mec.xml" />
+      <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
+      <params file="hardware/mechanicals/right_upper_leg-ems8-mec.xml" />
   </device>
 
   <device name="right_upper_leg_strain" type="embObjAnalogSensor">
       <params file="general.xml" />
-      <params file="hardware/electronics/ems8-eln.xml" />
-      <params file="hardware/analog/ems8-strain.xml" />
+      <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
+      <params file="hardware/analog/right_upper_leg-ems8-strain.xml" />
   </device> 
 </devices>
 

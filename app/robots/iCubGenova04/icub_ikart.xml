@@ -15,19 +15,19 @@
     <devices file="wrappers/head-mcWrapper.xml" />
 
     <!-- TORSO -->
-    <devices file="hardware/ems5.xml" />
+    <devices file="hardware/torso-ems5.xml" />
     <devices file="wrappers/torso-mcWrapper.xml" />
 
 
     <!-- LEFT ARM -->
-    <devices file="hardware/ems1.xml" />
-    <devices file="hardware/ems2.xml" />
+    <devices file="hardware/left_upper_arm-ems1.xml" />
+    <devices file="hardware/left_lower_arm-ems2.xml" />
     <devices file="wrappers/left_arm-mcWrapper.xml" /> 
 
 
     <!-- RIGHT ARM -->
-    <devices file="hardware/ems3.xml" />
-    <devices file="hardware/ems4.xml" />
+    <devices file="hardware/right_upper_arm-ems3.xml" />
+    <devices file="hardware/right_lower_arm-ems4.xml" />
     <devices file="wrappers/right_arm-mcWrapper.xml" />
 
 
