@@ -9,7 +9,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/dev/PolyDriver.h>
 
-#include "parametricCalibrator.h"
+#include "parametricCalibratorwip.h"
 #include <math.h>
 
 #include "Debug.h"
@@ -242,6 +242,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
         }
         joints.push_back(tmp);
     }
+
     return true;
 }
 
@@ -308,12 +309,11 @@ bool parametricCalibrator::close ()
     return true;
 }
 
-bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il wrapper, non mc
+bool parametricCalibrator::calibrate(DeviceDriver *dd)
 {
     yDebug() << deviceName << "Entering parametricCalibrator::calibrate()";
     yTrace();
-    abortCalib  = false;
-    bool goHome_ok = true;
+    abortCalib  = false; //set true in quitCalibrate function  (called on ctrl +c signal )
     int  setOfJoint_idx = 0;
 
     int nj=0;
@@ -334,41 +334,28 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
     if ( !iEncoders->getAxes(&nj))
     {
-        yError() << deviceName << "CALIB: error getting number of encoders" ;
+        yError() << deviceName << "CALIB: error getting number of axes" ;
         return false;
     }
 
 // ok we have all interfaces
 
 
-    int a = joints.size();
-//     printf("List of list size %d\n", a);
+    std::list<int>  currentSetList;
 
-    std::list<int>  tmp;
-
-    std::list<std::list<int> >::iterator Bit=joints.begin();
+    //iterator on sets list
+    std::list<std::list<int> >::iterator Bit=joints.begin(); 
     std::list<std::list<int> >::iterator Bend=joints.end();
 
-    std::list<int>::iterator lit;
-    std::list<int>::iterator lend;
 
-// count how many joints are there in the list of things to be calibrated
+
+    // count how many joints are there in the list of things to be calibrated
     while(Bit != Bend)
     {
-        tmp.clear();
-        tmp = (*Bit);
-        lit  = tmp.begin();
-        lend = tmp.end();
-        totJointsToCalibrate += tmp.size();
+        currentSetList.clear();
+        currentSetList = (*Bit);
+        totJointsToCalibrate += currentSetList.size();
 
-//      Debug print
-//        printf("Joints calibration order :\n");
-//        while(lit != lend)
-//        {
-//            printf("%d,", (*lit));
-//            lit++;
-//        }
-//        printf("\n");
         Bit++;
     }
 
@@ -389,13 +376,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
     Bit=joints.begin();
     while( (Bit != Bend) && (!abortCalib) )   // per ogni set di giunti
     {
+        std::list<int>::iterator lit; //iterator for joint in a set 
+        
         setOfJoint_idx++;
-        tmp.clear();
-        tmp = (*Bit);
-
-        lit  = tmp.begin();
-        lend = tmp.end();
-        while( (lit != lend) && (!abortCalib) )     // per ogni giunto del set
+        currentSetList.clear();
+        currentSetList = (*Bit);
+        
+        // 1) set safe pid
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             if ( ((*lit) <0) || ((*lit) >= nj) )   // check the axes actually exists
             {
@@ -422,139 +410,142 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 limited_pid[(*lit)].max_output=maxPWM[(*lit)];
                 iPids->setPid((*lit),limited_pid[(*lit)]);
             }
-            
-            lit++;
         }
-
-        //
-        // Calibrazione
-        //
 
         if(skipCalibration)     // if this flag is on, fake calibration
         {
             Bit++;
             continue;
         }
+        
+        //2) if calibration needs to go to hardware limits, enable joint
         //VALE: i can add this cycle for calib on eth because it does nothing,
         //     because enablePid doesn't send command because joints are not calibrated
 
-        //------------------------------------------------
-        //enable only the motors which have to test the hardware limit
-        for(lit  = tmp.begin(); lit != lend; lit++)  
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             if (type[*lit]==0 ||
+                type[*lit]==2 ||
                 type[*lit]==4 ) 
             {
-                yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
+                yDebug() << "In calibration " <<  deviceName  << ": enabling joint " << *lit << " to test hardware limit";
                 iAmps->enableAmp(*lit); 
                 iPids->enablePid(*lit);
             }
         }
-        //------------------------------------------------
-
+        if(abortCalib)
+        {
+            continue; //exit
+        }
+        
         Time::delay(0.1f);
 
-        //------------------------------------------------
-        for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
+        //3) send calibration command
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             // Enable amp moved into EMS class;
             // Here we just call the calibration procedure
             calibrateJoint((*lit));
         }
 
-        //VALE: commented because it is useless. used for debug only.
-//        for(lit  = tmp.begin(); lit != lend; lit++)      // per ogni giunto del set
-//        {
-//            iEncoders->getEncoders(currPos);
-////            yDebug() <<  deviceName  << " set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
-//        }
-
-//        Time::delay(4.0f); VALE: i can remove this dalay because now checkCalibrateJointEnded work properly!!
-
-        if(checkCalibrateJointEnded((*Bit)) )
+        if(abortCalib)
         {
-//            yWarning() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
-            lit  = tmp.begin();
-            lend = tmp.end();
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
-            {
-                iPids->setPid((*lit),original_pid[(*lit)]);
-                lit++;
-            }
+            continue;
+        }
+        
+        //4) check calibration result
+        if(checkCalibrateJointEnded((*Bit)) ) //check calibration on entire set
+        {
+            yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
         }
         else    // keep pid safe  and go on
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
-            while( (lit != lend) && (!abortCalib) )   // per ogni giunto del set
+
+            for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
                 iAmps->disableAmp((*lit));
-                lit++;
+            }
+            Bit++;
+            continue; //go to next set
+        }
+
+        // 5) if calibration finish with success enable disabled joints in order to move them to zero
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+        {
+            // if the joint han not been enabled at point 1, now i enable it 
+            //iAmps->enableAmp((*lit));
+            if (type[*lit]!=0 &&
+                type[*lit] != 2 &&
+                type[*lit] != 4 )
+            {
+                iControlMode->setPositionMode((*lit));
             }
         }
 
-        //VALE:
-        //this cycle should be useless, because after calibration all joints should be in idle state (if calibration process ends without success)
-        //or "control mode position" state if calibration is ok.
-        //currently it is important leave this cycle else ems boards don't work properly.
-        lit  = tmp.begin();
-        while(lit != lend)    // per ogni giunto del set
+        if(abortCalib)
         {
-            // Abilita il giunto
-            //iAmps->enableAmp((*lit));
-            iControlMode->setPositionMode((*lit));
-            lit++;
+            continue;
         }
-
         Time::delay(0.5f);    // needed?
 
-        lit  = tmp.begin();
-        while(lit != lend)    // per ogni giunto del set
+        //6) go to zero
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            // Manda in Home
+            // Manda in Zero
             goToZero((*lit));
-            lit++;
+        }
+        
+        if(abortCalib)
+        {
+            continue;
         }
         Time::delay(1.0);     // needed?
 
+        //7) check joints are in position
         bool goneToZero = true;
-        lit  = tmp.begin();
-        while(lit != lend)    // per ogni giunto del set
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-
-#define MSG0109 "WARNING-> Tapullo: per il polso e dita uso il checkMotionDone ... etc. (see comment in code)"
-#if defined(_MSC_VER)
-    #pragma message(MSG0109)
-#else
-    #warning MSG0109
-#endif
-//#warning  "Tapullo: per il polso e dita uso il checkMotionDone, per le spalle e gambe uso la lettura encoder. \
-//            Il discriminante è giunti da 0 a 5 con encoder, dal 6 in poi con motionDone. Migliorare in qualche modo, parametro di config al posto della soglia che indichi quale \
-//            metodo usare oppure fare un calibratore apposta per la mano?"
-            if( (*lit) < 6)
-            {
-            	yWarning() << " joint" << (*lit) << " using encoder";
-                goneToZero &= checkGoneToZeroThreshold(*lit);   // BLL style, use encoder position
-            }
-            else
-            {
-            	yWarning() << " joint" << (*lit) << " using checkMotionDone";
-            	goneToZero &= checkGoneToZero(*lit);            // 4dc style, use the checkMotionDone
-            }
-            lit++;
+            goneToZero &= checkGoneToZeroThreshold(*lit);
         }
 
-        if(!goneToZero)
+        if(abortCalib)
+        {
+            continue;
+        }
+        
+        if(goneToZero)
+        {
+            yDebug() <<  deviceName  << " set" << setOfJoint_idx  << ": Reached zero position!\n";
+            for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+            {
+                iPids->setPid((*lit),original_pid[(*lit)]);
+            }
+        }
+        else
         {
             yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
-            while( (lit != lend) && (!abortCalib) )		// per ogni giunto del set
+
+            for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
                 iAmps->disableAmp((*lit));
-                lit++;
             }
         }
+        
+        
 
         // Go to the next set of joints to calibrate... if any
         Bit++;
+    }
+    
+    if(abortCalib)
+    {
+        yError() << deviceName << "calibration has been aborted!I'm going to disable all joints..." ;
+        for(int i=0; i<nj; i++) //for each joint of set
+        {
+            iAmps->disableAmp((i));
+        }
+        return false;
     }
     calibMutex.wait();
     isCalibrated = true;
@@ -638,7 +629,6 @@ bool parametricCalibrator::checkGoneToZero(int j)
     return ok;
 }
 
-// Not used anymore... EMS knows wath to do. Just ask if motion is done!! ^_^
 bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 {
     // wait.
@@ -647,16 +637,18 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     double angj = 0;
 //    double pwm[4];
     double delta=0;
+    bool done = false;
 
     double start_time = yarp::os::Time::now();
     while ( (!finished) && (!abortCalib))
     {
         iEncoders->getEncoder(j, &angj);
-
+        iPosition->checkMotionDone(j, &done);
+        
         delta = fabs(angj-zeroPos[j]);
-//        yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
+        yDebug() << "In calib: checkGoneToZero "<< deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
 
-        if (delta < zeroPosThreshold[j])
+         if (delta < zeroPosThreshold[j] && done)
         {
 //            yDebug() << deviceName.c_str() << "joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
             finished=true;
@@ -665,12 +657,12 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 
         if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
         {
-        	yError() <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
+            yError() << "In calib: checkGoneToZero " <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
             return false;
         }
         if (abortCalib)
         {
-            yWarning() <<  deviceName.c_str() << " joint " << j << " Aborting go to zero!\n";
+            yWarning() << "In calib: checkGoneToZero " <<  deviceName.c_str() << " joint " << j << " Aborting go to zero!\n";
             break;
         }
         Time::delay(0.5);
