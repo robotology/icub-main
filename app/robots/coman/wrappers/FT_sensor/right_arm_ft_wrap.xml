@@ -3,8 +3,8 @@
 
 <devices robot="coman" build="1">
     <device name="right_arm_ft_wrapper" type="analogServer">
-      <param name="threadrate">     1                 </param>
-      <param name="period">           1                </param>
+      <param name="threadrate">     10                 </param>
+      <param name="period">           10                </param>
       <param name="deviceId">         right_arm          </param>      <!-- will determine part of the port name -->
       <param name="channels">         6                 </param>
 
