@@ -802,7 +802,6 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     }
     else
         return false;
-    
 
     extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
@@ -1221,19 +1220,28 @@ bool MotorThread::threadInit()
             ICartesianControl *tmpCtrl;
             action[arm]->getCartesianIF(tmpCtrl);
 
-
             double armTargetTol=bMotor.check("arm_target_tol",Value(0.01)).asDouble();
             tmpCtrl->setInTargetTol(armTargetTol);
 
             double tmpTargetTol;
             tmpCtrl->getInTargetTol(&tmpTargetTol);
+            fprintf(stdout,"new arm target tol %g\n",tmpTargetTol);
 
-            fprintf(stdout,"new arm target tol%f\n",tmpTargetTol);
-
-            armInUse=arm;
+            // set elbow parameters
+            if (Bottle *pB=bArm[arm].find("elbow_height").asList())
+            {
+                if (pB->size()>=2)
+                {
+                    double height=pB->get(0).asDouble();
+                    double weight=pB->get(1).asDouble();
+                    changeElbowHeight(arm,height,weight);
+                }
+            }
 
             for(int i=0; i<bImpedanceArmStiff->size(); i++)
                 ctrl_impedance_arm[arm]->setImpedance(i,arm_stiffness[i],arm_damping[i]);
+
+            armInUse=arm;
         }
     }
 
@@ -2043,6 +2051,33 @@ bool MotorThread::release(Bottle &options)
     action[arm]->checkActionsDone(f,true);
 
     return true;
+}
+
+
+bool MotorThread::changeElbowHeight(const int arm, const double height, const double weight)
+{
+    if (action[arm]!=NULL)
+    {
+        Bottle tweakOptions;
+        Bottle &optTask2=tweakOptions.addList();
+        optTask2.addString("task_2");
+        Bottle &plTask2=optTask2.addList();
+        plTask2.addInt(6);
+        Bottle &posPart=plTask2.addList();
+        posPart.addDouble(0.0);
+        posPart.addDouble(0.0);
+        posPart.addDouble(height);
+        Bottle &weightsPart=plTask2.addList();
+        weightsPart.addDouble(0.0);
+        weightsPart.addDouble(0.0);
+        weightsPart.addDouble(weight);
+
+        ICartesianControl *ctrl;
+        action[arm]->getCartesianIF(ctrl);
+        return ctrl->tweakSet(tweakOptions);
+    }
+    else
+        return false;
 }
 
 
