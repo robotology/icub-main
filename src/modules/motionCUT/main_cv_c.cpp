@@ -710,6 +710,7 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
+        // request high resolution scheduling
         Time::turboBoost();
 
         thr=new ProcessThread(rf);

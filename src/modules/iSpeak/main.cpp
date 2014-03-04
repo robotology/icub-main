@@ -370,6 +370,7 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
+        // request high resolution scheduling
         Time::turboBoost();
 
         speaker.configure(rf);
