@@ -1,8 +1,8 @@
 <application>
 <name>Stereo Calibration</name>
 <dependencies>
-      <port>/icub/camcalib/left/out</port>
-      <port>/icub/camcalib/right/out</port>
+      <port>/icub/cam/left</port>
+      <port>/icub/cam/right</port>
      <port>/iKinGazeCtrl/rpc</port>
 </dependencies>
 
