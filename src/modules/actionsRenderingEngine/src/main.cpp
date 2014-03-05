@@ -617,10 +617,10 @@ public:
                     double weight=command.get(3).asDouble();
 
                     if ((arm=="both") || (arm=="left"))
-                        motorThr->changeElbowHeight(0,height,weight);
+                        motorThr->changeElbowHeight(LEFT,height,weight);
 
                     if ((arm=="both") || (arm=="right"))
-                        motorThr->changeElbowHeight(1,height,weight);
+                        motorThr->changeElbowHeight(RIGHT,height,weight);
 
                     reply.addString("elbow parameters updated");
                 }
