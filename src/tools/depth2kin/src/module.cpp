@@ -213,13 +213,22 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
 
 
 /************************************************************************/
+double CalibModule::getMinVer() const
+{
+    Bottle info;
+    igaze->getInfo(info);
+    return info.find("min_allowed_vergence").asDouble();
+}
+
+
+/************************************************************************/
 bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M)
 {
     if (((eye!="left") && (eye!="right")) ||
         ((type!="intrinsics") && (type!="extrinsics")))
         return false;
 
-    Bottle info; 
+    Bottle info;
     igaze->getInfo(info);
     if (Bottle *pB=info.find(("camera_"+type+"_"+eye).c_str()).asList())
     {        
@@ -235,6 +244,7 @@ bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M
     else
         return false;
 }
+
 
 /************************************************************************/
 bool CalibModule::pushExtrinsics(const string &eye, const Matrix &H)
@@ -774,6 +784,13 @@ bool CalibModule::configure(ResourceFinder &rf)
     lim.push_back(ilim);
     finger.alignJointsBounds(lim);
 
+    double minVer=getMinVer();
+    if (block_eyes<minVer)
+    {
+        block_eyes=minVer;
+        printf("*** warning: blockEyes saturated at minimum allowed vergence angle %g\n",block_eyes);
+    }
+
     touchInPort.open(("/"+name+"/touch:i").c_str());
     depthInPort.open(("/"+name+"/depth:i").c_str());
     depthOutPort.open(("/"+name+"/depth:o").c_str());
@@ -1053,8 +1070,13 @@ bool CalibModule::stop()
 /************************************************************************/
 bool CalibModule::setBlockEyes(const double block_eyes)
 {
-    this->block_eyes=block_eyes;
-    return true;
+    if (block_eyes>=getMinVer())
+    {
+        this->block_eyes=block_eyes;
+        return true;
+    }
+    else
+        return true;
 }
 
 

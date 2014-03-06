@@ -117,6 +117,7 @@ protected:
     bool factory(Value &v);
     cv::Rect extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelBgr> &imgOut,
                               const Vector &c, Vector &px);
+    double getMinVer() const;
     bool getGazeParams(const string &eye, const string &type, Matrix &M);
     bool pushExtrinsics(const string &eye, const Matrix &H);
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);

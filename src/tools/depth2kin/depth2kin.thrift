@@ -107,7 +107,9 @@ service depth2kin_IDLServer
 
    /**
    * Set the vergence angle used to keep the gaze fixed.
-   * @param block_eyes the value in degrees of the vergence.
+   * @param block_eyes the value in degrees of the vergence. It must
+   * be equal or greater than the minimum vergence angle allowed
+   * by the gaze controller.
    * @return true/false on success/failure.
    */
    bool setBlockEyes(1:double block_eyes);

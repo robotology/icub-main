@@ -1458,7 +1458,9 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     if (functionName=="setBlockEyes") {
       helpString.push_back("bool setBlockEyes(const double block_eyes) ");
       helpString.push_back("Set the vergence angle used to keep the gaze fixed. ");
-      helpString.push_back("@param block_eyes the value in degrees of the vergence. ");
+      helpString.push_back("@param block_eyes the value in degrees of the vergence. It must ");
+      helpString.push_back("be equal or greater than the minimum vergence angle allowed ");
+      helpString.push_back("by the gaze controller. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="getBlockEyes") {
