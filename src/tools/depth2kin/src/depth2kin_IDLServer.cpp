@@ -148,6 +148,90 @@ public:
   }
 };
 
+class depth2kin_IDLServer_setMaxDist : public yarp::os::Portable {
+public:
+  double max_dist;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("setMaxDist",1,1)) return false;
+    if (!writer.writeDouble(max_dist)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getMaxDist : public yarp::os::Portable {
+public:
+  double _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getMaxDist",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readDouble(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_setRoiEdge : public yarp::os::Portable {
+public:
+  int32_t roi_edge;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("setRoiEdge",1,1)) return false;
+    if (!writer.writeI32(roi_edge)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getRoiEdge : public yarp::os::Portable {
+public:
+  int32_t _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getRoiEdge",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readI32(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
 class depth2kin_IDLServer_setBlockEyes : public yarp::os::Portable {
 public:
   double block_eyes;
@@ -684,6 +768,44 @@ bool depth2kin_IDLServer::stop() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
+bool depth2kin_IDLServer::setMaxDist(const double max_dist) {
+  bool _return = false;
+  depth2kin_IDLServer_setMaxDist helper;
+  helper.max_dist = max_dist;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setMaxDist(const double max_dist)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+double depth2kin_IDLServer::getMaxDist() {
+  double _return = (double)0;
+  depth2kin_IDLServer_getMaxDist helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDLServer::getMaxDist()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDLServer::setRoiEdge(const int32_t roi_edge) {
+  bool _return = false;
+  depth2kin_IDLServer_setRoiEdge helper;
+  helper.roi_edge = roi_edge;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setRoiEdge(const int32_t roi_edge)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+int32_t depth2kin_IDLServer::getRoiEdge() {
+  int32_t _return = 0;
+  depth2kin_IDLServer_getRoiEdge helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDLServer::getRoiEdge()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
 bool depth2kin_IDLServer::setBlockEyes(const double block_eyes) {
   bool _return = false;
   depth2kin_IDLServer_setBlockEyes helper;
@@ -985,6 +1107,60 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
         if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "setMaxDist") {
+      double max_dist;
+      if (!reader.readDouble(max_dist)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setMaxDist(max_dist);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getMaxDist") {
+      double _return;
+      _return = getMaxDist();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeDouble(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "setRoiEdge") {
+      int32_t roi_edge;
+      if (!reader.readI32(roi_edge)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setRoiEdge(roi_edge);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getRoiEdge") {
+      int32_t _return;
+      _return = getRoiEdge();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeI32(_return)) return false;
       }
       reader.accept();
       return true;
@@ -1385,6 +1561,10 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     helpString.push_back("log");
     helpString.push_back("explore");
     helpString.push_back("stop");
+    helpString.push_back("setMaxDist");
+    helpString.push_back("getMaxDist");
+    helpString.push_back("setRoiEdge");
+    helpString.push_back("getRoiEdge");
     helpString.push_back("setBlockEyes");
     helpString.push_back("getBlockEyes");
     helpString.push_back("blockEyes");
@@ -1454,6 +1634,32 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("bool stop() ");
       helpString.push_back("Yield an asynchronous stop of the exploration phase. ");
       helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="setMaxDist") {
+      helpString.push_back("bool setMaxDist(const double max_dist) ");
+      helpString.push_back("Set the maximum allowed distance between the depth point and ");
+      helpString.push_back("kinematic prediction to enable data collection. ");
+      helpString.push_back("@param max_dist the value in meters. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getMaxDist") {
+      helpString.push_back("double getMaxDist() ");
+      helpString.push_back("Return the maximum allowed distance between depth point and ");
+      helpString.push_back("kinematic prediction to enable data collection. ");
+      helpString.push_back("@return the distance. ");
+    }
+    if (functionName=="setRoiEdge") {
+      helpString.push_back("bool setRoiEdge(const int32_t roi_edge) ");
+      helpString.push_back("Set the edge of the squared window used to filter data ");
+      helpString.push_back("collection in the image plane. ");
+      helpString.push_back("@param roi_edge the length of the window edge. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getRoiEdge") {
+      helpString.push_back("int32_t getRoiEdge() ");
+      helpString.push_back("Return the edge of the squared window used to filter data ");
+      helpString.push_back("collection in the image plane. ");
+      helpString.push_back("@return the window edge. ");
     }
     if (functionName=="setBlockEyes") {
       helpString.push_back("bool setBlockEyes(const double block_eyes) ");

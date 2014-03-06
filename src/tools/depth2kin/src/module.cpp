@@ -16,6 +16,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -657,10 +658,10 @@ bool CalibModule::configure(ResourceFinder &rf)
     string robot=rf.check("robot",Value("icub")).asString().c_str();
     string name=rf.check("name",Value("depth2kin")).asString().c_str();
     string type=rf.check("type",Value("se3+scale")).asString().c_str();
-    test=rf.check("test",Value(-1)).asInt();
+    test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
-    block_eyes=rf.check("block_eyes",Value(5.0)).asDouble();
-    roi_edge=rf.check("roi_edge",Value(100)).asInt();
+    roi_edge=abs(rf.check("roi_edge",Value(100)).asInt());
+    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
 
     motorExplorationAsyncStop=false;
     motorExplorationState=motorExplorationStateIdle;
@@ -1064,6 +1065,36 @@ bool CalibModule::stop()
     motorExplorationAsyncStop=true;
     mutex.unlock();
     return true;
+}
+
+
+/************************************************************************/
+bool CalibModule::setMaxDist(const double max_dist)
+{
+    this->max_dist=fabs(max_dist);
+    return true;
+}
+
+
+/************************************************************************/
+double CalibModule::getMaxDist()
+{
+    return max_dist;
+}
+
+
+/************************************************************************/
+bool CalibModule::setRoiEdge(const int roi_edge)
+{
+    this->roi_edge=abs(roi_edge);
+    return true;
+}
+
+
+/************************************************************************/
+int CalibModule::getRoiEdge()
+{
+    return roi_edge;
 }
 
 

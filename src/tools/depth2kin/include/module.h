@@ -144,6 +144,10 @@ public:
     bool log(const string &type);
     bool explore();
     bool stop();
+    bool setMaxDist(const double max_dist);
+    double getMaxDist();
+    bool setRoiEdge(const int roi_edge);
+    int getRoiEdge();
     bool setBlockEyes(const double block_eyes);
     double getBlockEyes();
     bool blockEyes();

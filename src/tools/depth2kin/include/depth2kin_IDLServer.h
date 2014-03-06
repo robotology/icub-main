@@ -67,6 +67,32 @@ public:
  */
   virtual bool stop();
 /**
+ * Set the maximum allowed distance between the depth point and
+ * kinematic prediction to enable data collection.
+ * @param max_dist the value in meters.
+ * @return true/false on success/failure.
+ */
+  virtual bool setMaxDist(const double max_dist);
+/**
+ * Return the maximum allowed distance between depth point and
+ * kinematic prediction to enable data collection.
+ * @return the distance.
+ */
+  virtual double getMaxDist();
+/**
+ * Set the edge of the squared window used to filter data
+ * collection in the image plane.
+ * @param roi_edge the length of the window edge.
+ * @return true/false on success/failure.
+ */
+  virtual bool setRoiEdge(const int32_t roi_edge);
+/**
+ * Return the edge of the squared window used to filter data
+ * collection in the image plane.
+ * @return the window edge.
+ */
+  virtual int32_t getRoiEdge();
+/**
  * Set the vergence angle used to keep the gaze fixed.
  * @param block_eyes the value in degrees of the vergence. It must
  * be equal or greater than the minimum vergence angle allowed
