@@ -672,12 +672,12 @@ bool CalibModule::configure(ResourceFinder &rf)
     calibrator=factory(type);
 
     Vector min(6),max(6);
-    min[0]=0.0;                max[0]=0.0;
-    min[1]=0.0;                max[1]=0.0;
-    min[2]=0.0;                max[2]=0.02;
-    min[3]=-CTRL_DEG2RAD*0.0;  max[3]=CTRL_DEG2RAD*0.0;     // roll
-    min[4]=-CTRL_DEG2RAD*10.0; max[4]=CTRL_DEG2RAD*10.0;    // pitch
-    min[5]=-CTRL_DEG2RAD*10.0; max[5]=CTRL_DEG2RAD*10.0;    // yaw
+    min[0]=-0.005;             max[0]=0.005;
+    min[1]=-0.005;             max[1]=0.005;
+    min[2]=-0.01;              max[2]=0.01;
+    min[3]=-CTRL_DEG2RAD*15.0; max[3]=CTRL_DEG2RAD*15.0;    // roll
+    min[4]=-CTRL_DEG2RAD*15.0; max[4]=CTRL_DEG2RAD*15.0;    // pitch
+    min[5]=-CTRL_DEG2RAD*15.0; max[5]=CTRL_DEG2RAD*15.0;    // yaw
     alignerL.setBounds(min,max);
     alignerR.setBounds(min,max);
     alignerL.setInitialGuess(eye(4,4));
