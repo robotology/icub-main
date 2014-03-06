@@ -1107,7 +1107,7 @@ bool CalibModule::setBlockEyes(const double block_eyes)
         return true;
     }
     else
-        return true;
+        return false;
 }
 
 
