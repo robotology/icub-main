@@ -1611,6 +1611,7 @@ bool MotorThread::reach(Bottle &options)
     action[arm]->enableReachingTimeout(reachingTimeout);
 
     // go up straightaway
+    if (f)
     {
         Vector x,o;
         action[arm]->getPose(x,o);
