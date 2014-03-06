@@ -162,7 +162,13 @@ service depth2kin_IDLServer
    * @param arm is "left" or "right".
    * @return true/false on success/failure.
    */
-   bool selectArm(1:string arm);
+   bool setArm(1:string arm);
+
+   /**
+   * Return the current arm.
+   * @return "left" or "right".
+   */
+   string getArm();
 
    /**
    * Set up the calibrator type.

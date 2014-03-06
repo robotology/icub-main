@@ -116,7 +116,12 @@ public:
  * @param arm is "left" or "right".
  * @return true/false on success/failure.
  */
-  virtual bool selectArm(const std::string& arm);
+  virtual bool setArm(const std::string& arm);
+/**
+ * Return the current arm.
+ * @return "left" or "right".
+ */
+  virtual std::string getArm();
 /**
  * Set up the calibrator type.
  * @param type can be one of the following: \n

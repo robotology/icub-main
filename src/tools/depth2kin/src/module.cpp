@@ -1127,7 +1127,7 @@ bool CalibModule::blockEyes()
 
 
 /************************************************************************/
-bool CalibModule::selectArm(const string &arm)
+bool CalibModule::setArm(const string &arm)
 {
     if (!selectArmEnabled || ((arm!="left") && (arm!="right")))
         return false;
@@ -1139,6 +1139,13 @@ bool CalibModule::selectArm(const string &arm)
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
     finger=iCubFinger(arm+"_index");
     return true;
+}
+
+
+/************************************************************************/
+string CalibModule::getArm()
+{
+    return arm;
 }
 
 

@@ -294,14 +294,14 @@ public:
   }
 };
 
-class depth2kin_IDLServer_selectArm : public yarp::os::Portable {
+class depth2kin_IDLServer_setArm : public yarp::os::Portable {
 public:
   std::string arm;
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
     if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("selectArm",1,1)) return false;
+    if (!writer.writeTag("setArm",1,1)) return false;
     if (!writer.writeString(arm)) return false;
     return true;
   }
@@ -309,6 +309,26 @@ public:
     yarp::os::idl::WireReader reader(connection);
     if (!reader.readListReturn()) return false;
     if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getArm : public yarp::os::Portable {
+public:
+  std::string _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getArm",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readString(_return)) {
       reader.fail();
       return false;
     }
@@ -834,12 +854,21 @@ bool depth2kin_IDLServer::blockEyes() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::selectArm(const std::string& arm) {
+bool depth2kin_IDLServer::setArm(const std::string& arm) {
   bool _return = false;
-  depth2kin_IDLServer_selectArm helper;
+  depth2kin_IDLServer_setArm helper;
   helper.arm = arm;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::selectArm(const std::string& arm)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setArm(const std::string& arm)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+std::string depth2kin_IDLServer::getArm() {
+  std::string _return = "";
+  depth2kin_IDLServer_getArm helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDLServer::getArm()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1203,18 +1232,29 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "selectArm") {
+    if (tag == "setArm") {
       std::string arm;
       if (!reader.readString(arm)) {
         reader.fail();
         return false;
       }
       bool _return;
-      _return = selectArm(arm);
+      _return = setArm(arm);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
         if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getArm") {
+      std::string _return;
+      _return = getArm();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeString(_return)) return false;
       }
       reader.accept();
       return true;
@@ -1568,7 +1608,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     helpString.push_back("setBlockEyes");
     helpString.push_back("getBlockEyes");
     helpString.push_back("blockEyes");
-    helpString.push_back("selectArm");
+    helpString.push_back("setArm");
+    helpString.push_back("getArm");
     helpString.push_back("setCalibrationType");
     helpString.push_back("getCalibrationType");
     helpString.push_back("calibrate");
@@ -1680,11 +1721,16 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("vergence angle and stay still. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
-    if (functionName=="selectArm") {
-      helpString.push_back("bool selectArm(const std::string& arm) ");
+    if (functionName=="setArm") {
+      helpString.push_back("bool setArm(const std::string& arm) ");
       helpString.push_back("Select the arm to deal with. ");
       helpString.push_back("@param arm is \"left\" or \"right\". ");
       helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getArm") {
+      helpString.push_back("std::string getArm() ");
+      helpString.push_back("Return the current arm. ");
+      helpString.push_back("@return \"left\" or \"right\". ");
     }
     if (functionName=="setCalibrationType") {
       helpString.push_back("bool setCalibrationType(const std::string& type, const std::string& extrapolation = \"auto\") ");

@@ -151,7 +151,8 @@ public:
     bool setBlockEyes(const double block_eyes);
     double getBlockEyes();
     bool blockEyes();
-    bool selectArm(const string &arm);    
+    bool setArm(const string &arm);
+    string getArm();
     bool setCalibrationType(const string &type, const string &extrapolation);
     string getCalibrationType();
     Property calibrate();
