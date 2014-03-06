@@ -267,8 +267,8 @@ service depth2kin_IDLServer
    * @param cx the center x-coordinate.
    * @param cy the center y-coordinate.
    * @param cz the center z-coordiante.
-   * @param a the major semi-axis lenght.
-   * @param b the minor semi-axis lenght.
+   * @param a the major semi-axis length.
+   * @param b the minor semi-axis length.
    * @return true/false on success/failure.
    */
    bool setExplorationSpace(1:double cx, 2:double cy, 3:double cz, 4:double a, 5:double b);
@@ -279,8 +279,8 @@ service depth2kin_IDLServer
    * @param dcx the center delta x-coordinate.
    * @param dcy the center delta y-coordinate.
    * @param dcz the center delta z-coordiante.
-   * @param da the major semi-axis delta lenght.
-   * @param db the minor semi-axis delta lenght.
+   * @param da the major semi-axis delta length.
+   * @param db the minor semi-axis delta length.
    * @return true/false on success/failure.
    */
    bool setExplorationSpaceDelta(1:double dcx=0.0, 2:double dcy=0.0, 3:double dcz=0.0,

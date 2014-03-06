@@ -207,8 +207,8 @@ public:
  * @param cx the center x-coordinate.
  * @param cy the center y-coordinate.
  * @param cz the center z-coordiante.
- * @param a the major semi-axis lenght.
- * @param b the minor semi-axis lenght.
+ * @param a the major semi-axis length.
+ * @param b the minor semi-axis length.
  * @return true/false on success/failure.
  */
   virtual bool setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b);
@@ -218,8 +218,8 @@ public:
  * @param dcx the center delta x-coordinate.
  * @param dcy the center delta y-coordinate.
  * @param dcz the center delta z-coordiante.
- * @param da the major semi-axis delta lenght.
- * @param db the minor semi-axis delta lenght.
+ * @param da the major semi-axis delta length.
+ * @param db the minor semi-axis delta length.
  * @return true/false on success/failure.
  */
   virtual bool setExplorationSpaceDelta(const double dcx = 0, const double dcy = 0, const double dcz = 0, const double da = 0, const double db = 0);

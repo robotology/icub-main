@@ -1777,8 +1777,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("@param cx the center x-coordinate. ");
       helpString.push_back("@param cy the center y-coordinate. ");
       helpString.push_back("@param cz the center z-coordiante. ");
-      helpString.push_back("@param a the major semi-axis lenght. ");
-      helpString.push_back("@param b the minor semi-axis lenght. ");
+      helpString.push_back("@param a the major semi-axis length. ");
+      helpString.push_back("@param b the minor semi-axis length. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="setExplorationSpaceDelta") {
@@ -1788,8 +1788,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("@param dcx the center delta x-coordinate. ");
       helpString.push_back("@param dcy the center delta y-coordinate. ");
       helpString.push_back("@param dcz the center delta z-coordiante. ");
-      helpString.push_back("@param da the major semi-axis delta lenght. ");
-      helpString.push_back("@param db the minor semi-axis delta lenght. ");
+      helpString.push_back("@param da the major semi-axis delta length. ");
+      helpString.push_back("@param db the minor semi-axis delta length. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="getExplorationData") {
