@@ -1127,8 +1127,8 @@ public:
                         motorThr->setGazeIdle();
 
                         motorThr->deploy(command);
-
                         motorThr->keepFixation(command);
+                        motorThr->goUp(command,0.03);
 
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
