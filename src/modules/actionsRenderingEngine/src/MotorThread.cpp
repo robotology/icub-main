@@ -1556,6 +1556,24 @@ void MotorThread::onStop()
 }
 
 
+bool MotorThread::goUp(Bottle &options, const double h)
+{
+    int arm=ARM_MOST_SUITED;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+     Vector x,o;
+     action[arm]->getPose(x,o);
+     x[2]+=h;
+
+     bool f;
+     action[arm]->pushAction(x,o);
+     action[arm]->checkActionsDone(f,true);
+
+     return true;
+}
+
+
 bool MotorThread::reach(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;

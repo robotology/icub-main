@@ -1168,6 +1168,7 @@ public:
                             }
                             else
                             {
+                                motorThr->goUp(command,0.03);
                                 motorThr->setGazeIdle();
                                 Bottle b;
                                 b.addString("head");

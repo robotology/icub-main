@@ -366,6 +366,7 @@ public:
     bool targetToCartesian(Bottle *target, Vector &xd);
 
     // basic commands
+    bool goUp(Bottle &options, const double h);
     bool goHome(Bottle &options);
     bool reach(Bottle &options);
     bool powerGrasp(Bottle &options);
