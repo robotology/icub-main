@@ -2210,16 +2210,10 @@ bool MotorThread::goHome(Bottle &options)
     if(hand_home)
     {
         if(left_arm)
-        {
-            Bottle b("left");
-            release(b);
-        }
+            action[LEFT]->pushAction("open_hand");
 
         if(right_arm)
-        {
-            Bottle b("right");
-            release(b);
-        }
+            action[RIGHT]->pushAction("open_hand");
     }
 
     if(head_home)
