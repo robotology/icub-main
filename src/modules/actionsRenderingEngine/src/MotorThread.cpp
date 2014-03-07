@@ -730,6 +730,15 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
+    if (Bottle *pB=b.find("deploy_orientation").asList())
+    {
+        deployOrient[arm].resize(pB->size());
+        for (int i=0; i<pB->size(); i++)
+            deployOrient[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        deployOrient[arm]=reachAboveOrient[arm];
+
     if (Bottle *pB=b.find("draw_near_position").asList())
     {
         drawNearPos[arm].resize(pB->size());
@@ -1556,6 +1565,24 @@ void MotorThread::onStop()
 }
 
 
+bool MotorThread::goUp(Bottle &options, const double h)
+{
+    int arm=ARM_MOST_SUITED;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+     Vector x,o;
+     action[arm]->getPose(x,o);
+     x[2]+=h;
+
+     bool f;
+     action[arm]->pushAction(x,o);
+     action[arm]->checkActionsDone(f,true);
+
+     return true;
+}
+
+
 bool MotorThread::reach(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
@@ -1611,6 +1638,7 @@ bool MotorThread::reach(Bottle &options)
     action[arm]->enableReachingTimeout(reachingTimeout);
 
     // go up straightaway
+    if (f)
     {
         Vector x,o;
         action[arm]->getPose(x,o);
@@ -2208,7 +2236,6 @@ bool MotorThread::deploy(Bottle &options)
 
     Bottle *bTarget=options.find("target").asList();
 
-
     if(!targetToCartesian(bTarget,deployZone))
     {
 
@@ -2232,9 +2259,7 @@ bool MotorThread::deploy(Bottle &options)
             deployZone[2]+=table_height-table_height_tolerance+0.10;
         else
             deployZone[2]=table_height;
-
     }
-
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
@@ -2245,7 +2270,7 @@ bool MotorThread::deploy(Bottle &options)
         ctrl_gaze->lookAtFixationPoint(deployFixZone);
     }
 
-    Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:reachAboveCata[arm]);
+    Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:deployOrient[arm]);
 
     Vector preDeployZone=deployZone;
     preDeployZone[2]=x[2];

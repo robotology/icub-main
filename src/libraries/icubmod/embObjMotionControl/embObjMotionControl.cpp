@@ -826,6 +826,38 @@ bool embObjMotionControl::init()
         j_debug_data[i].mutex = Semaphore(1);
     }
 #endif
+
+
+
+    /////////////////////////////////////////////////
+    //SEND DISABLE TO ALL JOINTS
+    ////////////////////////////////////////////////
+    int totConfigSize   = 0;
+    for(int logico=0; logico< _njoints; logico++)
+    {
+        int fisico = _axisMap[logico];
+        if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += sizeof(eOmc_controlmode_command_t))) )
+        {
+            // yDebug() << "Too many stuff to be sent at once... splitting in more messages";
+            Time::delay(0.01);
+            totConfigSize = 0;
+        }
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_cmmnds_controlmode);
+
+        eOmc_controlmode_command_t controlMode = eomc_controlmode_cmd_switch_everything_off;
+
+        //yDebug() << "add set control mode j fisico " << fisico;
+        if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
+        {
+            yError() << "while setting eomc_controlmode_cmd_switch_everything_off in init";
+        }
+    }
+    Time::delay(0.01);
+
+    ////////////////////////////////////////////////
+    // set ropsig
+    ///////////////////////////////////////////////
+
     eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
 
 
@@ -840,6 +872,12 @@ bool embObjMotionControl::init()
     array->head.capacity = NUMOFROPSIGCFG;
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+
+
+
+
+
+
 
     ///////////////////////////////////////////////////
     // Configura le variabili da segnalare ogni ms   //
@@ -926,7 +964,7 @@ bool embObjMotionControl::init()
 
     int jConfigSize 	= sizeof(eOmc_joint_config_t);
     int mConfigSize 	= sizeof(eOmc_motor_config_t);
-    int totConfigSize	= 0;
+    totConfigSize	= 0;
     int index 				= 0;
 
 //    EOnv *nvRoot;

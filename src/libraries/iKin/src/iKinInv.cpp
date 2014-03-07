@@ -768,7 +768,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     else
         mjCtrlJoint=new minJerkVelCtrlForIdealPlant(Ts,dim);
 
-    mjCtrlTask =new minJerkVelCtrlForIdealPlant(Ts,e.length());
+    mjCtrlTask=new minJerkVelCtrlForIdealPlant(Ts,e.length());
     I=new Integrator(Ts,q,lim);
 
     gamma=0.05;

@@ -617,10 +617,10 @@ public:
                     double weight=command.get(3).asDouble();
 
                     if ((arm=="both") || (arm=="left"))
-                        motorThr->changeElbowHeight(0,height,weight);
+                        motorThr->changeElbowHeight(LEFT,height,weight);
 
                     if ((arm=="both") || (arm=="right"))
-                        motorThr->changeElbowHeight(1,height,weight);
+                        motorThr->changeElbowHeight(RIGHT,height,weight);
 
                     reply.addString("elbow parameters updated");
                 }
@@ -1127,8 +1127,8 @@ public:
                         motorThr->setGazeIdle();
 
                         motorThr->deploy(command);
-
                         motorThr->keepFixation(command);
+                        motorThr->goUp(command,0.03);
 
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
@@ -1168,6 +1168,7 @@ public:
                             }
                             else
                             {
+                                motorThr->goUp(command,0.03);
                                 motorThr->setGazeIdle();
                                 Bottle b;
                                 b.addString("head");

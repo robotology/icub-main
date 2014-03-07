@@ -67,8 +67,36 @@ public:
  */
   virtual bool stop();
 /**
+ * Set the maximum allowed distance between the depth point and
+ * kinematic prediction to enable data collection.
+ * @param max_dist the value in meters.
+ * @return true/false on success/failure.
+ */
+  virtual bool setMaxDist(const double max_dist);
+/**
+ * Return the maximum allowed distance between depth point and
+ * kinematic prediction to enable data collection.
+ * @return the distance.
+ */
+  virtual double getMaxDist();
+/**
+ * Set the edge of the squared window used to filter data
+ * collection in the image plane.
+ * @param roi_edge the length of the window edge.
+ * @return true/false on success/failure.
+ */
+  virtual bool setRoiEdge(const int32_t roi_edge);
+/**
+ * Return the edge of the squared window used to filter data
+ * collection in the image plane.
+ * @return the window edge.
+ */
+  virtual int32_t getRoiEdge();
+/**
  * Set the vergence angle used to keep the gaze fixed.
- * @param block_eyes the value in degrees of the vergence.
+ * @param block_eyes the value in degrees of the vergence. It must
+ * be equal or greater than the minimum vergence angle allowed
+ * by the gaze controller.
  * @return true/false on success/failure.
  */
   virtual bool setBlockEyes(const double block_eyes);
@@ -88,7 +116,12 @@ public:
  * @param arm is "left" or "right".
  * @return true/false on success/failure.
  */
-  virtual bool selectArm(const std::string& arm);
+  virtual bool setArm(const std::string& arm);
+/**
+ * Return the current arm.
+ * @return "left" or "right".
+ */
+  virtual std::string getArm();
 /**
  * Set up the calibrator type.
  * @param type can be one of the following: \n
@@ -179,8 +212,8 @@ public:
  * @param cx the center x-coordinate.
  * @param cy the center y-coordinate.
  * @param cz the center z-coordiante.
- * @param a the major semi-axis lenght.
- * @param b the minor semi-axis lenght.
+ * @param a the major semi-axis length.
+ * @param b the minor semi-axis length.
  * @return true/false on success/failure.
  */
   virtual bool setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b);
@@ -190,8 +223,8 @@ public:
  * @param dcx the center delta x-coordinate.
  * @param dcy the center delta y-coordinate.
  * @param dcz the center delta z-coordiante.
- * @param da the major semi-axis delta lenght.
- * @param db the minor semi-axis delta lenght.
+ * @param da the major semi-axis delta length.
+ * @param db the minor semi-axis delta length.
  * @return true/false on success/failure.
  */
   virtual bool setExplorationSpaceDelta(const double dcx = 0, const double dcy = 0, const double dcz = 0, const double da = 0, const double db = 0);

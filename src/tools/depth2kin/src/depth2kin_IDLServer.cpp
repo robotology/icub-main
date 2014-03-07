@@ -148,6 +148,90 @@ public:
   }
 };
 
+class depth2kin_IDLServer_setMaxDist : public yarp::os::Portable {
+public:
+  double max_dist;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("setMaxDist",1,1)) return false;
+    if (!writer.writeDouble(max_dist)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getMaxDist : public yarp::os::Portable {
+public:
+  double _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getMaxDist",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readDouble(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_setRoiEdge : public yarp::os::Portable {
+public:
+  int32_t roi_edge;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("setRoiEdge",1,1)) return false;
+    if (!writer.writeI32(roi_edge)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getRoiEdge : public yarp::os::Portable {
+public:
+  int32_t _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getRoiEdge",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readI32(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
 class depth2kin_IDLServer_setBlockEyes : public yarp::os::Portable {
 public:
   double block_eyes;
@@ -210,14 +294,14 @@ public:
   }
 };
 
-class depth2kin_IDLServer_selectArm : public yarp::os::Portable {
+class depth2kin_IDLServer_setArm : public yarp::os::Portable {
 public:
   std::string arm;
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
     if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("selectArm",1,1)) return false;
+    if (!writer.writeTag("setArm",1,1)) return false;
     if (!writer.writeString(arm)) return false;
     return true;
   }
@@ -225,6 +309,26 @@ public:
     yarp::os::idl::WireReader reader(connection);
     if (!reader.readListReturn()) return false;
     if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getArm : public yarp::os::Portable {
+public:
+  std::string _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getArm",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readString(_return)) {
       reader.fail();
       return false;
     }
@@ -684,6 +788,44 @@ bool depth2kin_IDLServer::stop() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
+bool depth2kin_IDLServer::setMaxDist(const double max_dist) {
+  bool _return = false;
+  depth2kin_IDLServer_setMaxDist helper;
+  helper.max_dist = max_dist;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setMaxDist(const double max_dist)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+double depth2kin_IDLServer::getMaxDist() {
+  double _return = (double)0;
+  depth2kin_IDLServer_getMaxDist helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDLServer::getMaxDist()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDLServer::setRoiEdge(const int32_t roi_edge) {
+  bool _return = false;
+  depth2kin_IDLServer_setRoiEdge helper;
+  helper.roi_edge = roi_edge;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setRoiEdge(const int32_t roi_edge)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+int32_t depth2kin_IDLServer::getRoiEdge() {
+  int32_t _return = 0;
+  depth2kin_IDLServer_getRoiEdge helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDLServer::getRoiEdge()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
 bool depth2kin_IDLServer::setBlockEyes(const double block_eyes) {
   bool _return = false;
   depth2kin_IDLServer_setBlockEyes helper;
@@ -712,12 +854,21 @@ bool depth2kin_IDLServer::blockEyes() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::selectArm(const std::string& arm) {
+bool depth2kin_IDLServer::setArm(const std::string& arm) {
   bool _return = false;
-  depth2kin_IDLServer_selectArm helper;
+  depth2kin_IDLServer_setArm helper;
   helper.arm = arm;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::selectArm(const std::string& arm)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setArm(const std::string& arm)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+std::string depth2kin_IDLServer::getArm() {
+  std::string _return = "";
+  depth2kin_IDLServer_getArm helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDLServer::getArm()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -989,6 +1140,60 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "setMaxDist") {
+      double max_dist;
+      if (!reader.readDouble(max_dist)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setMaxDist(max_dist);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getMaxDist") {
+      double _return;
+      _return = getMaxDist();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeDouble(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "setRoiEdge") {
+      int32_t roi_edge;
+      if (!reader.readI32(roi_edge)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setRoiEdge(roi_edge);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getRoiEdge") {
+      int32_t _return;
+      _return = getRoiEdge();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeI32(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "setBlockEyes") {
       double block_eyes;
       if (!reader.readDouble(block_eyes)) {
@@ -1027,18 +1232,29 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "selectArm") {
+    if (tag == "setArm") {
       std::string arm;
       if (!reader.readString(arm)) {
         reader.fail();
         return false;
       }
       bool _return;
-      _return = selectArm(arm);
+      _return = setArm(arm);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
         if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getArm") {
+      std::string _return;
+      _return = getArm();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeString(_return)) return false;
       }
       reader.accept();
       return true;
@@ -1385,10 +1601,15 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     helpString.push_back("log");
     helpString.push_back("explore");
     helpString.push_back("stop");
+    helpString.push_back("setMaxDist");
+    helpString.push_back("getMaxDist");
+    helpString.push_back("setRoiEdge");
+    helpString.push_back("getRoiEdge");
     helpString.push_back("setBlockEyes");
     helpString.push_back("getBlockEyes");
     helpString.push_back("blockEyes");
-    helpString.push_back("selectArm");
+    helpString.push_back("setArm");
+    helpString.push_back("getArm");
     helpString.push_back("setCalibrationType");
     helpString.push_back("getCalibrationType");
     helpString.push_back("calibrate");
@@ -1455,10 +1676,38 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("Yield an asynchronous stop of the exploration phase. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
+    if (functionName=="setMaxDist") {
+      helpString.push_back("bool setMaxDist(const double max_dist) ");
+      helpString.push_back("Set the maximum allowed distance between the depth point and ");
+      helpString.push_back("kinematic prediction to enable data collection. ");
+      helpString.push_back("@param max_dist the value in meters. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getMaxDist") {
+      helpString.push_back("double getMaxDist() ");
+      helpString.push_back("Return the maximum allowed distance between depth point and ");
+      helpString.push_back("kinematic prediction to enable data collection. ");
+      helpString.push_back("@return the distance. ");
+    }
+    if (functionName=="setRoiEdge") {
+      helpString.push_back("bool setRoiEdge(const int32_t roi_edge) ");
+      helpString.push_back("Set the edge of the squared window used to filter data ");
+      helpString.push_back("collection in the image plane. ");
+      helpString.push_back("@param roi_edge the length of the window edge. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getRoiEdge") {
+      helpString.push_back("int32_t getRoiEdge() ");
+      helpString.push_back("Return the edge of the squared window used to filter data ");
+      helpString.push_back("collection in the image plane. ");
+      helpString.push_back("@return the window edge. ");
+    }
     if (functionName=="setBlockEyes") {
       helpString.push_back("bool setBlockEyes(const double block_eyes) ");
       helpString.push_back("Set the vergence angle used to keep the gaze fixed. ");
-      helpString.push_back("@param block_eyes the value in degrees of the vergence. ");
+      helpString.push_back("@param block_eyes the value in degrees of the vergence. It must ");
+      helpString.push_back("be equal or greater than the minimum vergence angle allowed ");
+      helpString.push_back("by the gaze controller. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="getBlockEyes") {
@@ -1472,11 +1721,16 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("vergence angle and stay still. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
-    if (functionName=="selectArm") {
-      helpString.push_back("bool selectArm(const std::string& arm) ");
+    if (functionName=="setArm") {
+      helpString.push_back("bool setArm(const std::string& arm) ");
       helpString.push_back("Select the arm to deal with. ");
       helpString.push_back("@param arm is \"left\" or \"right\". ");
       helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getArm") {
+      helpString.push_back("std::string getArm() ");
+      helpString.push_back("Return the current arm. ");
+      helpString.push_back("@return \"left\" or \"right\". ");
     }
     if (functionName=="setCalibrationType") {
       helpString.push_back("bool setCalibrationType(const std::string& type, const std::string& extrapolation = \"auto\") ");
@@ -1569,8 +1823,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("@param cx the center x-coordinate. ");
       helpString.push_back("@param cy the center y-coordinate. ");
       helpString.push_back("@param cz the center z-coordiante. ");
-      helpString.push_back("@param a the major semi-axis lenght. ");
-      helpString.push_back("@param b the minor semi-axis lenght. ");
+      helpString.push_back("@param a the major semi-axis length. ");
+      helpString.push_back("@param b the minor semi-axis length. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="setExplorationSpaceDelta") {
@@ -1580,8 +1834,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("@param dcx the center delta x-coordinate. ");
       helpString.push_back("@param dcy the center delta y-coordinate. ");
       helpString.push_back("@param dcz the center delta z-coordiante. ");
-      helpString.push_back("@param da the major semi-axis delta lenght. ");
-      helpString.push_back("@param db the minor semi-axis delta lenght. ");
+      helpString.push_back("@param da the major semi-axis delta length. ");
+      helpString.push_back("@param db the minor semi-axis delta length. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="getExplorationData") {
