@@ -8,9 +8,14 @@
     <group name="GENERAL">
         <param name="joints">   3     </param>
         <param name="axisMap">          0         1         2           </param> 
+<<<<<<< Updated upstream
         <param name="bIdMap">           3         2         1           </param>
         <param name="encoder">          1745.33   1745.33   1745.33     </param>
        <param name="zeros">             0         0         0           </param>
+=======
+        <param name="bIdMap">           1         2         3           </param>
+        <param name="zeros">             0         0         0           </param>
+>>>>>>> Stashed changes
         <param name="maxTorque">        50        50        50          </param>
         <param name="newtonsToSensor">  1000      1000      1000        </param> 
     </group>
