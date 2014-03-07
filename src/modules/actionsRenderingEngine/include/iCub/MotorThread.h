@@ -175,6 +175,7 @@ private:
     Vector                              reachAboveCata[2];
     Vector                              reachSideOrient[2];
     Vector                              deployPos[2];
+    Vector                              deployOrient[2];
     Vector                              drawNearPos[2];
     Vector                              drawNearOrient[2];
     Vector                              shiftPos[2];

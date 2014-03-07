@@ -730,6 +730,15 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
+    if (Bottle *pB=b.find("deploy_orientation").asList())
+    {
+        deployOrient[arm].resize(pB->size());
+        for (int i=0; i<pB->size(); i++)
+            deployOrient[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        deployOrient[arm]=reachAboveOrient[arm];
+
     if (Bottle *pB=b.find("draw_near_position").asList())
     {
         drawNearPos[arm].resize(pB->size());
@@ -2227,7 +2236,6 @@ bool MotorThread::deploy(Bottle &options)
 
     Bottle *bTarget=options.find("target").asList();
 
-
     if(!targetToCartesian(bTarget,deployZone))
     {
 
@@ -2251,9 +2259,7 @@ bool MotorThread::deploy(Bottle &options)
             deployZone[2]+=table_height-table_height_tolerance+0.10;
         else
             deployZone[2]=table_height;
-
     }
-
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
@@ -2264,7 +2270,7 @@ bool MotorThread::deploy(Bottle &options)
         ctrl_gaze->lookAtFixationPoint(deployFixZone);
     }
 
-    Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:reachAboveCata[arm]);
+    Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:deployOrient[arm]);
 
     Vector preDeployZone=deployZone;
     preDeployZone[2]=x[2];
