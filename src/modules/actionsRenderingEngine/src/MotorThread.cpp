@@ -2087,7 +2087,7 @@ bool MotorThread::release(Bottle &options)
 
     arm=checkArm(arm);
 
-    action[arm]->pushAction("open_hand");
+    action[arm]->pushAction("pregrasp_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);
