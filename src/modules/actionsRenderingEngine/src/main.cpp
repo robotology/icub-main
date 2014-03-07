@@ -245,8 +245,8 @@ the projection of the end-effector of the active arm in both the robot cameras t
 - \ref ActionPrimitives library. 
  
 \section portsa_sec Ports Accessed
-Assumes that \ref icub_iCubInterface (with ICartesianControl interface implemented) is running together with the
-cartesian controllers \ref icub_cartesianController.
+Assume that the robot interface is operative and the
+\ref wholeBodyDynamics is running.
  
 \section portsc_sec Ports Created 
 Aside from the internal ports created by \ref ActionPrimitives 
