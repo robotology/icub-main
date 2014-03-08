@@ -595,8 +595,8 @@ public:
 
         Property finProperty;
         finProperty.fromConfigFile(dbFileName.c_str());
-        Bottle finBottle(finProperty.toString().c_str());
 
+        Bottle finBottle; finBottle.read(finProperty);
         for (int i=0; i<finBottle.size(); i++)
         {
             ostringstream tag;
