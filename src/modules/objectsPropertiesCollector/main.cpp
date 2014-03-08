@@ -179,7 +179,7 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
  
 --context \e contextName 
 - To specify the context where to search for the database file; 
-  \e objectsPropertiesCollector is the default value.
+  \e objectsPropertiesCollector is the default context.
  
 --empty 
 - If this options is given then an empty database is started.
