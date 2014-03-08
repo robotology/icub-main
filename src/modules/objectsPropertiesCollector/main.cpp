@@ -580,7 +580,7 @@ public:
     /************************************************************************/
     void load()
     {
-        string dbFileName=rf->findFile("db");
+        string dbFileName=rf->findFile("db").c_str();
         if (dbFileName.empty())
         {
             printMessage("requested database to be loaded not found!\n");
