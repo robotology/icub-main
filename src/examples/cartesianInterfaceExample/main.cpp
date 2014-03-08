@@ -82,9 +82,9 @@ space.
 - reinstate controller context upon target reception.
  
 \section portsa_sec Ports Accessed
- 
-Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) is running. 
+
+The robot interface is assumed to be operative; in particular, 
+the ICartesianControl interface must be available. 
  
 \section portsc_sec Ports Created 
  
