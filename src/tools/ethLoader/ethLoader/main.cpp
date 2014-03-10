@@ -133,7 +133,7 @@ static GtkTreeModel* refresh_board_list_model()
         sprintf(board_mac,"%04X%08X",macH,macL);
 
         sprintf(board_version,"%d",gUpdater.getBoardList()[i].mVersion);
-        sprintf(board_release,"%X",gUpdater.getBoardList()[i].mRelease);
+        sprintf(board_release,"%d",gUpdater.getBoardList()[i].mRelease);
         sprintf(board_build,  "%d",gUpdater.getBoardList()[i].mBuild);
 
         gtk_list_store_append(store,&iter);
