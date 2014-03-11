@@ -2322,7 +2322,7 @@ bool MotorThread::drawNear(Bottle &options)
     return true;
 }
 
-bool MotorThread::shift(Bottle &options)
+bool MotorThread::shiftAndGrasp(Bottle &options)
 {
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
@@ -2334,7 +2334,7 @@ bool MotorThread::shift(Bottle &options)
     action[arm]->getPose(x,o);
     x=x+shiftPos[arm];
 
-    action[arm]->pushAction(x,reachAboveOrient[arm]);
+    action[arm]->pushAction(x,reachAboveOrient[arm],"close_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);

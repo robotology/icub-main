@@ -1157,8 +1157,7 @@ public:
                         }
 
                         motorThr->lookAtHand(command);
-                        motorThr->shift(command);
-                        motorThr->grasp(command);
+                        motorThr->shiftAndGrasp(command);
 
                         if(motorThr->isHolding(command))
                         {

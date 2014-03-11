@@ -380,7 +380,7 @@ public:
     bool release(Bottle &options);
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
-    bool shift(Bottle &options);
+    bool shiftAndGrasp(Bottle &options);
     bool expect(Bottle &options);
     bool give(Bottle &options);
 
