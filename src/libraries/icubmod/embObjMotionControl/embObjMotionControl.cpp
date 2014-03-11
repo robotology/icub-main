@@ -235,6 +235,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementTorqueControl(this),
     ImplementControlLimits2(this),
     ImplementPositionDirect(this),
+    ImplementInteractionMode(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
@@ -3176,6 +3177,44 @@ bool embObjMotionControl::setPositionsRaw(const double *refs)
 	return setReferencesRaw(refs);
 }
 
+
+
+// IInteractionMode
+bool embObjMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+{
+    std::cout << "getInteractionModeRaw single joint NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool embObjMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool embObjMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool embObjMotionControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
+{
+    std::cout << "setInteractionModeRaw single NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
 
 // eof
 

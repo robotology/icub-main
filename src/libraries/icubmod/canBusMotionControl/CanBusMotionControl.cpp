@@ -2149,6 +2149,7 @@ ImplementOpenLoopControl(this),
 ImplementControlMode(this),
 ImplementDebugInterface(this),
 ImplementPositionDirect(this),
+ImplementInteractionMode(this),
 _mutex(1),
 _done(0)
 {
@@ -2251,6 +2252,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
 
     // temporary variables used by the ddriver.
@@ -2698,6 +2700,7 @@ bool CanBusMotionControl::close (void)
         ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
         ImplementPositionDirect::uninitialize();
+        ImplementInteractionMode::uninitialize();
 
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
@@ -6503,3 +6506,39 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
 }
 
 
+// IInteractionMode
+bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+{
+    std::cout << "getInteractionModeRaw single joint NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool CanBusMotionControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
+{
+    std::cout << "setInteractionModeRaw single NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}

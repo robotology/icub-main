@@ -169,6 +169,7 @@ bool comanMotionControl::alloc(int nj)
     ImplementTorqueControl(this),
     ImplementPositionDirect(this),
     ImplementImpedanceControl(this),
+    ImplementInteractionMode(this),
      _initialPidConfigFound(false),
     _mutex(1)
 {
@@ -292,7 +293,8 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
         _encoderToAngle[i] = M_PI/180.0; //Conversion from [mNm/rad] to [Nm/deg]
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _encoderToAngle, _zeros, _newtonsToSensor);
     delete [] _encoderToAngle;
-
+   
+     ImplementInteractionMode::initialize(_njoints, _axisMap);
     _comanHandler = comanDevicesHandler::instance();
 
     if(_comanHandler == NULL)
@@ -662,6 +664,7 @@ bool comanMotionControl::close()
     ImplementControlLimits2::uninitialize();
     ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
+    ImplementInteractionMode::uninitialize();
     return _comanHandler->deInstance();
 }
 
@@ -1866,6 +1869,7 @@ bool comanMotionControl::setTorqueModeRaw(int j)
         printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
     /*CAB_CM_VEL
         uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
+
         ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
     */
         // set pids
@@ -2825,6 +2829,31 @@ bool comanMotionControl::setPositionsRaw(const double *refs)
     return (!_boards_ctrl->set_position_velocity(_ref_positions, _ref_speeds, _njoints) );
 }
 
+// IInteractionMode
+bool comanMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+{
+    std::cout << "getInteractionModeRaw single joint NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
+{
+    std::cout << "setInteractionModeRaw single NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
 bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
 {
     Pid pid;
@@ -2881,4 +2910,22 @@ bool comanMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, d
 {
     // Command not present in firmware
     return NOT_YET_IMPLEMENTED("getCurrentImpedanceLimitRaw");
+}
+
+bool comanMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
 }
