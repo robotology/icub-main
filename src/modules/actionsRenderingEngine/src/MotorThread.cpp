@@ -2230,7 +2230,6 @@ bool MotorThread::goHome(Bottle &options)
 
 bool MotorThread::deploy(Bottle &options)
 {
-
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
@@ -2246,7 +2245,6 @@ bool MotorThread::deploy(Bottle &options)
 
     if(!targetToCartesian(bTarget,deployZone))
     {
-
         deployZone=deployPos[arm];
 
         if(checkOptions(options,"away"))
@@ -2262,10 +2260,7 @@ bool MotorThread::deploy(Bottle &options)
     else
     {
         arm=checkArm(arm,deployZone);
-
-        if(!checkOptions(options,"gently"))
-            deployZone[2]+=table_height-table_height_tolerance+0.10;
-        else
+        if(checkOptions(options,"gently"))
             deployZone[2]=table_height;
     }
 
