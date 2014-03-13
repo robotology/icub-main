@@ -70,8 +70,7 @@ reach(x2+lift_displacement,o)).
   default.
  
 \section portsa_sec Ports Accessed
-Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) is running. 
+The robot interface is assumed to be operative.
  
 \section portsc_sec Ports Created 
 Aside from the internal ports created by \ref ActionPrimitives 

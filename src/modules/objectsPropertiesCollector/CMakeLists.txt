@@ -3,22 +3,15 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-SET(PROJECTNAME objectsPropertiesCollector)
+set(PROJECTNAME objectsPropertiesCollector)
+project(${PROJECTNAME})
 
-PROJECT(${PROJECTNAME})
+set(folder_source main.cpp)
+source_group("Source Files" FILES ${folder_source})
+include_directories(${YARP_INCLUDE_DIRS})
 
-SET(folder_source main.cpp)
-
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-
-INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
-
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
-
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES})
-
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
-
-yarp_install(FILES objectsPropertiesCollector.xml DESTINATION ${ICUB_MODULES_INSTALL_DIR})
+add_executable(${PROJECTNAME} ${folder_source})
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 

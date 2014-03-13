@@ -730,6 +730,15 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     else
         return false;
 
+    if (Bottle *pB=b.find("deploy_orientation").asList())
+    {
+        deployOrient[arm].resize(pB->size());
+        for (int i=0; i<pB->size(); i++)
+            deployOrient[arm][i]=pB->get(i).asDouble();
+    }
+    else
+        deployOrient[arm]=reachAboveOrient[arm];
+
     if (Bottle *pB=b.find("draw_near_position").asList())
     {
         drawNearPos[arm].resize(pB->size());
@@ -802,7 +811,6 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     }
     else
         return false;
-    
 
     extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
@@ -1221,19 +1229,28 @@ bool MotorThread::threadInit()
             ICartesianControl *tmpCtrl;
             action[arm]->getCartesianIF(tmpCtrl);
 
-
             double armTargetTol=bMotor.check("arm_target_tol",Value(0.01)).asDouble();
             tmpCtrl->setInTargetTol(armTargetTol);
 
             double tmpTargetTol;
             tmpCtrl->getInTargetTol(&tmpTargetTol);
+            fprintf(stdout,"new arm target tol %g\n",tmpTargetTol);
 
-            fprintf(stdout,"new arm target tol%f\n",tmpTargetTol);
-
-            armInUse=arm;
+            // set elbow parameters
+            if (Bottle *pB=bArm[arm].find("elbow_height").asList())
+            {
+                if (pB->size()>=2)
+                {
+                    double height=pB->get(0).asDouble();
+                    double weight=pB->get(1).asDouble();
+                    changeElbowHeight(arm,height,weight);
+                }
+            }
 
             for(int i=0; i<bImpedanceArmStiff->size(); i++)
                 ctrl_impedance_arm[arm]->setImpedance(i,arm_stiffness[i],arm_damping[i]);
+
+            armInUse=arm;
         }
     }
 
@@ -1548,6 +1565,38 @@ void MotorThread::onStop()
 }
 
 
+bool MotorThread::preGraspHand(Bottle &options)
+{
+    int arm=ARM_MOST_SUITED;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+     bool f;
+     action[arm]->pushAction("pregrasp_hand");
+     action[arm]->checkActionsDone(f,true);
+
+     return true;
+}
+
+
+bool MotorThread::goUp(Bottle &options, const double h)
+{
+    int arm=ARM_MOST_SUITED;
+    if(checkOptions(options,"left") || checkOptions(options,"right"))
+        arm=checkOptions(options,"left")?LEFT:RIGHT;
+
+     Vector x,o;
+     action[arm]->getPose(x,o);
+     x[2]+=h;
+
+     bool f;
+     action[arm]->pushAction(x,o);
+     action[arm]->checkActionsDone(f,true);
+
+     return true;
+}
+
+
 bool MotorThread::reach(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
@@ -1603,6 +1652,7 @@ bool MotorThread::reach(Bottle &options)
     action[arm]->enableReachingTimeout(reachingTimeout);
 
     // go up straightaway
+    if (f)
     {
         Vector x,o;
         action[arm]->getPose(x,o);
@@ -2037,12 +2087,39 @@ bool MotorThread::release(Bottle &options)
 
     arm=checkArm(arm);
 
-    action[arm]->pushAction("open_hand");
+    action[arm]->pushAction("pregrasp_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);
 
     return true;
+}
+
+
+bool MotorThread::changeElbowHeight(const int arm, const double height, const double weight)
+{
+    if (action[arm]!=NULL)
+    {
+        Bottle tweakOptions;
+        Bottle &optTask2=tweakOptions.addList();
+        optTask2.addString("task_2");
+        Bottle &plTask2=optTask2.addList();
+        plTask2.addInt(6);
+        Bottle &posPart=plTask2.addList();
+        posPart.addDouble(0.0);
+        posPart.addDouble(0.0);
+        posPart.addDouble(height);
+        Bottle &weightsPart=plTask2.addList();
+        weightsPart.addDouble(0.0);
+        weightsPart.addDouble(0.0);
+        weightsPart.addDouble(weight);
+
+        ICartesianControl *ctrl;
+        action[arm]->getCartesianIF(ctrl);
+        return ctrl->tweakSet(tweakOptions);
+    }
+    else
+        return false;
 }
 
 
@@ -2133,16 +2210,10 @@ bool MotorThread::goHome(Bottle &options)
     if(hand_home)
     {
         if(left_arm)
-        {
-            Bottle b("left");
-            release(b);
-        }
+            action[LEFT]->pushAction("open_hand");
 
         if(right_arm)
-        {
-            Bottle b("right");
-            release(b);
-        }
+            action[RIGHT]->pushAction("open_hand");
     }
 
     if(head_home)
@@ -2159,7 +2230,6 @@ bool MotorThread::goHome(Bottle &options)
 
 bool MotorThread::deploy(Bottle &options)
 {
-
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
@@ -2173,10 +2243,8 @@ bool MotorThread::deploy(Bottle &options)
 
     Bottle *bTarget=options.find("target").asList();
 
-
     if(!targetToCartesian(bTarget,deployZone))
     {
-
         deployZone=deployPos[arm];
 
         if(checkOptions(options,"away"))
@@ -2192,14 +2260,9 @@ bool MotorThread::deploy(Bottle &options)
     else
     {
         arm=checkArm(arm,deployZone);
-
-        if(!checkOptions(options,"gently"))
-            deployZone[2]+=table_height-table_height_tolerance+0.10;
-        else
+        if(checkOptions(options,"gently"))
             deployZone[2]=table_height;
-
     }
-
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
@@ -2210,7 +2273,7 @@ bool MotorThread::deploy(Bottle &options)
         ctrl_gaze->lookAtFixationPoint(deployFixZone);
     }
 
-    Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:reachAboveCata[arm]);
+    Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:deployOrient[arm]);
 
     Vector preDeployZone=deployZone;
     preDeployZone[2]=x[2];
@@ -2254,7 +2317,7 @@ bool MotorThread::drawNear(Bottle &options)
     return true;
 }
 
-bool MotorThread::shift(Bottle &options)
+bool MotorThread::shiftAndGrasp(Bottle &options)
 {
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
@@ -2266,7 +2329,7 @@ bool MotorThread::shift(Bottle &options)
     action[arm]->getPose(x,o);
     x=x+shiftPos[arm];
 
-    action[arm]->pushAction(x,reachAboveOrient[arm]);
+    action[arm]->pushAction(x,reachAboveOrient[arm],"close_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);

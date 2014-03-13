@@ -310,6 +310,7 @@ std::vector<std::string> IRpcServer::help(const std::string& functionName) {
     helpString.push_back("start");
     helpString.push_back("stop");
     helpString.push_back("is_running");
+    helpString.push_back("help");
   }
   else {
     if (functionName=="get_answer") {
@@ -343,6 +344,12 @@ std::vector<std::string> IRpcServer::help(const std::string& functionName) {
       helpString.push_back("bool is_running() ");
       helpString.push_back("Check is service is running ");
       helpString.push_back("@return true/false if service is/is not running ");
+    }
+    if (functionName=="help") {
+      helpString.push_back("std::vector<std::string> help(const std::string& functionName=\"--all\")");
+      helpString.push_back("Return list of available commands, or help message for a specific function");
+      helpString.push_back("@param functionName name of command for which to get a detailed description. If none or '--all' is provided, print list of available commands");
+      helpString.push_back("@return list of strings (one string per line)");
     }
   }
   if ( helpString.empty()) helpString.push_back("Command not found");

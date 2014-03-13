@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+ 
+<module>
+
+   <name>depth2kin</name>
+   <doxygen-group>icub_tools</doxygen-group>
+   <description>Stereo-Kinematics Calibration.</description>
+   <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
+   <version>1.0</version>
+   
+   <description-long>
+    TBD.
+   </description-long>
+
+   <arguments>
+   <param default="dept2kin" desc="name of the module">name</param>
+   <param default="" desc="configuration file name">from</param>
+   <param default="" desc="select the current context">context</param>
+   </arguments>
+
+   <authors>
+       <author email="ugo.pattacini@iit.it"> Ugo Pattacini </author>
+   </authors>
+
+   <data>
+     <!--
+      <input>
+          <type>Image</type>
+          <port carrier="tcp">/rpcIdl/img:i</port>
+          <required>no</required>
+          <priority>no</priority>
+          <description>Feed images to rpcIdl using this port.</description>
+      </input>
+
+      <output type="service">
+          <type>Image</type>
+          <port carrier="udp">/rpcIdl/img:o</port>
+          <description>Output image.</description>
+      </output>
+
+      <output>
+          <type>yarp::os::Bottle</type>
+          <port carrier="udp">/rpcIdl/target:o</port>
+          <description>
+              Outputs the x-y location of whatever is the output of the module:
+              - int i value of y
+              - int j value of x
+          </description>
+      </output>
+         -->
+   </data>
+   
+   <services>
+       <server>
+           <type>depth2kin_IDLServer</type>
+           <idl>depth2kin.thrift</idl>
+           <port>/depth2kin/rpc</port>
+           <description>Command port</description>
+       </server>
+   </services>
+   
+</module>
+

@@ -2,7 +2,7 @@
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <params robot="iCubGenova04" build="1">
-        <param name="CanDeviceNum"> 8     </param>
+        <param name="CanDeviceNum"> 9     </param>
         <param name="SkinCanIds">   7 8 9 10	</param>
         <param name="Period"> 10    </param>
         <param name="canbusdevice"> cfw2can    </param>

@@ -1416,6 +1416,11 @@ public:
     * @param verb verbosity flag
     */
     iCubUpperTorso(version_tag tag, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
+    
+    /**
+    * Destructor
+    */
+    ~iCubUpperTorso();
 
 };
 
@@ -1447,6 +1452,11 @@ public:
     * @param verb verbosity flag
     */
     iCubLowerTorso(version_tag _tag, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
+    
+    /**
+    * Destructor
+    */
+    ~iCubLowerTorso();
 
 };
 

@@ -1,4 +1,8 @@
-#fingersTuner.thrift
+# Copyright: (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
+# Authors: Ugo Pattacini
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#
+# fingersTuner.thrift
 
 struct Value { }
 (

@@ -1,4 +1,8 @@
-#IRpcServer.thrift
+# Copyright: (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
+# Authors: Lorenzo Natale
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#
+# IRpcServer.thrift
 
 /**
 * IRpcServer

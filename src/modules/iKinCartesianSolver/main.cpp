@@ -285,7 +285,7 @@ public:
             rf_kin.setDefaultContext(rf.getContext().c_str());
             rf_kin.setDefault("customKinFile",group.find("customKinFile").asString().c_str());
             rf_kin.configure(0,NULL);
-            pathToCustomKinFile=rf_kin.findFile("customKinFile");
+            pathToCustomKinFile=rf_kin.findFile("customKinFile").c_str();
 
             slv=new CustomCartesianSolver(slvName);
         }

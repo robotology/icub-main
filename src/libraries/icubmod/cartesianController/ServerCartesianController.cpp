@@ -1372,7 +1372,7 @@ void ServerCartesianController::run()
             txInfo.update(stamp);
         else
             txInfo.update();
-            
+
         if (executingTraj)
         {
             // add the contribution of the Smith Predictor block

@@ -52,9 +52,10 @@ network.
 \section parameters_sec Parameters
 None. 
  
-\section portsa_sec Ports Accessed
-Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) and \ref iKinGazeCtrl are running. 
+\section portsa_sec Ports Accessed 
+The robot interface is assumed to be operative; in particular, 
+the ICartesianControl interface must be available. The 
+\ref iKinGazeCtrl must be running.
  
 \section portsc_sec Ports Created 
  

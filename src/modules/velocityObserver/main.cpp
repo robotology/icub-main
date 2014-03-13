@@ -253,6 +253,7 @@ private:
 public:
     virtual bool configure(ResourceFinder &rf)
     {
+        // request high resolution scheduling
         Time::turboBoost();
 
         string portName=rf.check("name",Value("/velObs")).asString().c_str();

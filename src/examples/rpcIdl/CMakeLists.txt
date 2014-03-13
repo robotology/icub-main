@@ -5,7 +5,7 @@
 #
 # demoModule CMake file.
 #
-set(PROJECTNAME "rpcIdl")
+set(PROJECTNAME rpcIdl)
 project(${PROJECTNAME})
 
 include_directories(
@@ -31,4 +31,5 @@ add_executable(${PROJECTNAME}
 
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}) 
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
+yarp_install(FILES ${PROJECTNAME}.xml DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 

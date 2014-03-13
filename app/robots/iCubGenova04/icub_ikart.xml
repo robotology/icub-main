@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubGenova04" build="1" portprefix="icub">
+    <params file="hardware/electronics/pc104.xml" />
+
+
+    <!-- cartesiani --> 
+    <devices file="cartesian/left_arm_cartesian.xml" />
+    <devices file="cartesian/right_arm_cartesian.xml" />
+    
+
+    <!-- HEAD -->	
+    <devices file="hardware/cfw002.xml" />
+    <devices file="wrappers/head-mcWrapper.xml" />
+
+    <!-- TORSO -->
+    <devices file="hardware/torso-ems5.xml" />
+    <devices file="wrappers/torso-mcWrapper.xml" />
+
+
+    <!-- LEFT ARM -->
+    <devices file="hardware/left_upper_arm-ems1.xml" />
+    <devices file="hardware/left_lower_arm-ems2.xml" />
+    <devices file="wrappers/left_arm-mcWrapper.xml" /> 
+
+
+    <!-- RIGHT ARM -->
+    <devices file="hardware/right_upper_arm-ems3.xml" />
+    <devices file="hardware/right_lower_arm-ems4.xml" />
+    <devices file="wrappers/right_arm-mcWrapper.xml" />
+
+
+
+    
+
+     <!-- ANALOG SENSOR WRAPPERs TORQUE -->
+     <devices file="wrappers/left_arm-asWrapper.xml" /> 
+     <devices file="wrappers/right_arm-asWrapper.xml" />
+
+
+    <!-- VIRTUAL ANALOG SERVERs -->
+
+    <devices file="wrappers/left_arm-VFTserver.xml" />    
+    <devices file="wrappers/right_arm-VFTserver.xml" /> 
+    <devices file="wrappers/torso-VFTserver.xml" /> 
+
+    <!-- ANALOG SENSOR WRAPPERs MAIS -->
+    <devices file="wrappers/left_arm-asWrapperMais.xml" /> 
+    <devices file="wrappers/right_arm-asWrapperMais.xml" /> 
+
+    
+ 
+
+
+    
+    <!-- INERTIAL SENSOR -->
+    <devices file="hardware/inertial.xml" />
+
+    <!--  SKINS -->
+    <devices file="wrappers/left_arm-skinWrapper.xml" />
+    <devices file="wrappers/right_arm-skinWrapper.xml" />  
+    <devices file="wrappers/torso-skinWrapper.xml" />    <!-- e' su can -->
+    
+
+    <!--  CALIBRATORS -->
+    <devices file="calibrators/head-calib.xml" /> 
+    <devices file="calibrators/torso-calib.xml" /> 
+    <devices file="calibrators/left_arm-calib.xml" /> 
+    <devices file="calibrators/right_arm-calib.xml" />
+
+
+</robot> 
+
+

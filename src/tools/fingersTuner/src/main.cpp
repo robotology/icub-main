@@ -604,7 +604,10 @@ public:
         }
 
         rpcPort.open(("/"+name+"/rpc").c_str());
-        attach(rpcPort);        
+        attach(rpcPort);
+
+        // request high resolution scheduling
+        Time::turboBoost();
 
         return true;
     }

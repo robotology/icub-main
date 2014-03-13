@@ -965,6 +965,7 @@ public:
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
+        // request high resolution scheduling
         Time::turboBoost();
 
         // save pointer to rf

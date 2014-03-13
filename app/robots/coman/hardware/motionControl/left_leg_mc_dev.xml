@@ -7,9 +7,13 @@
     <params file="robolli.xml" />     <!-- robolli config -->
     <params file="hardware/motor_params/motor_params_left_leg.xml" />
 
+    <group name="GENERAL">
+        <param name="encoder">   1745.33     1745.33     1745.33     1745.33     1745.33     1745.33     </param>
+    </group>
+
     <group name="POS_PIDS">      
-        <param name="kp">         200000      200000      200000      200000      200000      200000  </param>
-        <param name="kd">          10000       10000       10000       10000       10000       10000  </param>       
+        <param name="kp">         250000      200000      200000      200000      200000      250000  </param>
+        <param name="kd">          12000       10000       10000       10000       10000       12000  </param>       
         <param name="ki">              0           0           0           0           0           0  </param>       
         <param name="maxPwm">          0           0           0           0           0           0  </param>       
         <param name="maxInt"> 1677721601  1677721601  1677721601  1677721601  1677721601  1677721601  </param>       

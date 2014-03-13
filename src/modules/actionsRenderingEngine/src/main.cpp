@@ -245,8 +245,8 @@ the projection of the end-effector of the active arm in both the robot cameras t
 - \ref ActionPrimitives library. 
  
 \section portsa_sec Ports Accessed
-Assumes that \ref icub_iCubInterface (with ICartesianControl interface implemented) is running together with the
-cartesian controllers \ref icub_cartesianController.
+Assume that the robot interface is operative and the
+\ref wholeBodyDynamics is running.
  
 \section portsc_sec Ports Created 
 Aside from the internal ports created by \ref ActionPrimitives 
@@ -257,7 +257,7 @@ library, we also have:
   replies as soon as the current action has been completed.
  
 - \e /<modName>/rpc remote procedure call. 
-    Recognized remote commands:
+    Recognized remote commands:\n
     -[help]: returns the list of available rpc commands.\n
     -[get]: get requests\n
         * [status]:returns the bottle (gaze <status>) (left_arm <status>) (right_arm <status>) where\n
@@ -267,6 +267,8 @@ library, we also have:
     -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.\n
     -[interrupt] : interrupts any action deleting also the action queue for both arms.\n
     -[reinstate] : if the module was interrupted reinstate it.\n
+    -[elbow] "left"|"right"|"both" <height> <weight> : to change
+     elbow parameters.
  
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
@@ -309,9 +311,8 @@ Windows, Linux
 #include <yarp/os/RpcServer.h>
 #include <yarp/os/PortReader.h>
 #include <yarp/os/Time.h>
-#include <yarp/sig/Vector.h>
-
 #include <yarp/os/Semaphore.h>
+#include <yarp/sig/Vector.h>
 
 #include <string>
 
@@ -331,6 +332,7 @@ Windows, Linux
 #define RPC_INTERRUPT               VOCAB4('i','n','t','e')
 #define RPC_REINSTATE               VOCAB4('r','e','i','n')
 #define RPC_WAVEING                 VOCAB4('w','a','v','e')
+#define RPC_ELBOW                   VOCAB4('e','l','b','o')
 
 #define CMD_IDLE                    VOCAB4('i','d','l','e')
 #define CMD_HOME                    VOCAB4('h','o','m','e')
@@ -603,6 +605,28 @@ public:
                 motorThr->reinstate();
                 visuoThr->reinstate();
                 reply.addString("reinstated");
+                break;
+            }
+
+            case RPC_ELBOW:
+            {
+                if (command.size()>=4)
+                {
+                    string arm=command.get(1).asString().c_str();
+                    double height=command.get(2).asDouble();
+                    double weight=command.get(3).asDouble();
+
+                    if ((arm=="both") || (arm=="left"))
+                        motorThr->changeElbowHeight(LEFT,height,weight);
+
+                    if ((arm=="both") || (arm=="right"))
+                        motorThr->changeElbowHeight(RIGHT,height,weight);
+
+                    reply.addString("elbow parameters updated");
+                }
+                else
+                    reply.addString("missing elbow parameters");
+
                 break;
             }
 
@@ -1103,8 +1127,8 @@ public:
                         motorThr->setGazeIdle();
 
                         motorThr->deploy(command);
-
                         motorThr->keepFixation(command);
+                        motorThr->goUp(command,0.07);
 
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
@@ -1124,6 +1148,7 @@ public:
                         }
 
                         visuoThr->getTarget(command.get(1),command);
+                        motorThr->preGraspHand(command);
 
                         if(!motorThr->reach(command))
                         {
@@ -1132,8 +1157,7 @@ public:
                         }
 
                         motorThr->lookAtHand(command);
-                        motorThr->shift(command);
-                        motorThr->grasp(command);
+                        motorThr->shiftAndGrasp(command);
 
                         if(motorThr->isHolding(command))
                         {
@@ -1144,6 +1168,7 @@ public:
                             }
                             else
                             {
+                                motorThr->goUp(command,0.07);
                                 motorThr->setGazeIdle();
                                 Bottle b;
                                 b.addString("head");

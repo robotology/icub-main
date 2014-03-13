@@ -27,25 +27,5 @@
 
     <action phase="shutdown" level="5" type="detach" />
 
-<!-- Alternative
-    <action phase="startup" level="5" type="attach">
-	<param name="device">torso</param>
-	<param name="network">net_headtorso</param>
-    </action>
-    <action phase="shutdown" type="detach" level="5">
-	<param name="device">torso</param>
-	<param name="network">net_headtorso</param>
-    </action>d
--->
-
-
-<!--
-    <action phase="interrupt" type="abort" level="5" />
-
-    <action phase="shutdown" type="custom" level="1" />
-    <action phase="shutdown" type="custom" level="10" />
-    <action phase="shutdown" type="custom" level="30" />
-    <action phase="shutdown" type="custom" level="2" />
--->
 	</device>
 </devices>

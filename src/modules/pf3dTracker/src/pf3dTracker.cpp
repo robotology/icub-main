@@ -407,8 +407,8 @@ bool PF3DTracker::open(Searchable& config)
     //Build and read the color model for the tracked object
     //*****************************************************
     //
-    trackedObjectColorTemplate = rf.findFile("trackedObjectColorTemplate");
-    dataFileName = rf.findFile("trackedObjectTemp");
+    trackedObjectColorTemplate = rf.findFile("trackedObjectColorTemplate").c_str();
+    dataFileName = rf.findFile("trackedObjectTemp").c_str();
     //cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<trackedObjectColorTemplate<<endl;
   
     failure=computeTemplateHistogram(trackedObjectColorTemplate,dataFileName);
@@ -433,7 +433,7 @@ bool PF3DTracker::open(Searchable& config)
     //*******************************************
     //Read the shape model for the tracked object
     //*******************************************
-    trackedObjectShapeTemplate = rf.findFile("trackedObjectShapeTemplate");
+    trackedObjectShapeTemplate = rf.findFile("trackedObjectShapeTemplate").c_str();
     failure=readInitialmodel3dPoints(_model3dPointsMat,trackedObjectShapeTemplate);
     if(failure)
     {
@@ -474,7 +474,7 @@ bool PF3DTracker::open(Searchable& config)
                                         Value(150),
                                         "StDev of acceleration noise (double)").asDouble();
 
-    motionModelMatrix = rf.findFile("motionModelMatrix");
+    motionModelMatrix = rf.findFile("motionModelMatrix").c_str();
 
     //allocate space for the _A matrix. 32bit floats, one channel.
     _A=cvCreateMat(7,7,CV_32FC1);

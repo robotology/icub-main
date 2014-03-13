@@ -269,6 +269,11 @@ public:
      * Constructor, with initialization of some data
      */
     OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb = iCub::skinDynLib::NO_VERBOSE, iDyn::iDynLink *dlink=NULL);
+    
+    /**
+     * Destructor
+     */
+    virtual ~OneLinkNewtonEuler() {};
          
     /**
      * Set everything to zero; R is set to an identity matrix
@@ -768,7 +773,11 @@ public:
     */
     SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
     
-
+    /**
+     * Destructor
+     */
+    virtual ~SensorLinkNewtonEuler() {};
+    
     /**
      * Set the sensor measured force/moment - if measured by a FT sensor
       * @param _F the final force
@@ -1386,6 +1395,11 @@ public:
     * @param verb flag for verbosity
     */
     iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
+    
+    /**
+     * Destructor
+     */
+    virtual ~iCubArmSensorLink() {};
 
     /**
     * @return type the arm type: left/right
@@ -1419,6 +1433,11 @@ protected:
     */
     iCubLegSensorLink(const std::string _type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
+    /**
+     * Destructor
+     */
+    virtual ~iCubLegSensorLink() {};
+    
     /**
     * @return type the leg type: left/right
     */
