@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- La skin ha bisogno delle info presenti nella parte eln e di info per il suo wrapper, qui sotto -->
+<devices robot="SkinTableTop">
+	<device name="fingertip_wrapper" type="skinWrapper">
+		<param name="period">       20  				</param>
+		<param name="total_taxels"> 12				</param>
+		<param name="device">       skinWrapper				</param>
+		
+		<paramlist name="ports">
+            <!-- Change this according to fingertip id currently being used. 
+                    Start value:    id*12
+                    End value:      Start+11    -->
+            <elem name="fingertip"> 	12   23  0 11</elem>
+		</paramlist>
+		
+		<action phase="startup" level="5" type="attach">
+		    <paramlist name="networks">
+		<!-- The param value must match the device name in the corresponding emsX file -->
+		        <elem name="FirstSetOfSkins">  fingertip </elem>
+		    </paramlist>
+		</action>
+
+		<action phase="shutdown" level="5" type="detach" />
+	</device>
+</devices>
