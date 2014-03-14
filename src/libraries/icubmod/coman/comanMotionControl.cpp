@@ -1636,7 +1636,9 @@ bool comanMotionControl::setPositionModeRaw(int j)
         else
             std::cout << "Coman MC: error! Not able to read initial positions";
 
+        Time::delay(0.01);
         ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+        Time::delay(0.01);
 
         break;
         case VOCAB_CM_POSITION:

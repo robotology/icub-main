@@ -4,8 +4,8 @@
 <devices robot="coman" build="1">
     
     <device name="right_hand_jt_wrapper" type="analogServer">
-      <param name="threadrate">     1                 </param>
-      <param name="period">           1                </param>
+      <param name="threadrate">     20                 </param>
+      <param name="period">           20                </param>
       <param name="deviceId">       right_hand          </param>          <!-- will determine part of the port name -->
       <param name="channels">       1                 </param>
 

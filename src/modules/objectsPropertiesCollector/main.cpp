@@ -176,7 +176,11 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 --db \e dbFileName 
 - The parameter \e dbFileName specifies the name of the database 
   to load at startup (if already existing) and save at shutdown.
-
+ 
+--context \e contextName 
+- To specify the context where to search for the database file; 
+  \e objectsPropertiesCollector is the default context.
+ 
 --empty 
 - If this options is given then an empty database is started.
  
@@ -576,7 +580,7 @@ public:
     /************************************************************************/
     void load()
     {
-        string dbFileName=rf->findFile("db");
+        string dbFileName=rf->findFile("db").c_str();
         if (dbFileName.empty())
         {
             printMessage("requested database to be loaded not found!\n");
@@ -591,8 +595,8 @@ public:
 
         Property finProperty;
         finProperty.fromConfigFile(dbFileName.c_str());
-        Bottle finBottle(finProperty.toString().c_str());
 
+        Bottle finBottle; finBottle.read(finProperty);
         for (int i=0; i<finBottle.size(); i++)
         {
             ostringstream tag;
@@ -1632,6 +1636,7 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
+        // request high resolution scheduling
         Time::turboBoost();
 
         dataBase.configure(rf);

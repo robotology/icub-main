@@ -117,6 +117,7 @@ protected:
     bool factory(Value &v);
     cv::Rect extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelBgr> &imgOut,
                               const Vector &c, Vector &px);
+    double getMinVer() const;
     bool getGazeParams(const string &eye, const string &type, Matrix &M);
     bool pushExtrinsics(const string &eye, const Matrix &H);
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);
@@ -143,10 +144,15 @@ public:
     bool log(const string &type);
     bool explore();
     bool stop();
+    bool setMaxDist(const double max_dist);
+    double getMaxDist();
+    bool setRoiEdge(const int roi_edge);
+    int getRoiEdge();
     bool setBlockEyes(const double block_eyes);
     double getBlockEyes();
     bool blockEyes();
-    bool selectArm(const string &arm);    
+    bool setArm(const string &arm);
+    string getArm();
     bool setCalibrationType(const string &type, const string &extrapolation);
     string getCalibrationType();
     Property calibrate();

@@ -175,6 +175,7 @@ private:
     Vector                              reachAboveCata[2];
     Vector                              reachSideOrient[2];
     Vector                              deployPos[2];
+    Vector                              deployOrient[2];
     Vector                              drawNearPos[2];
     Vector                              drawNearOrient[2];
     Vector                              shiftPos[2];
@@ -366,6 +367,8 @@ public:
     bool targetToCartesian(Bottle *target, Vector &xd);
 
     // basic commands
+    bool preGraspHand(Bottle &options);
+    bool goUp(Bottle &options, const double h);
     bool goHome(Bottle &options);
     bool reach(Bottle &options);
     bool powerGrasp(Bottle &options);
@@ -377,7 +380,7 @@ public:
     bool release(Bottle &options);
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
-    bool shift(Bottle &options);
+    bool shiftAndGrasp(Bottle &options);
     bool expect(Bottle &options);
     bool give(Bottle &options);
 
@@ -403,6 +406,7 @@ public:
     bool startLearningModeKinOffset(Bottle &options);
     bool suspendLearningModeKinOffset(Bottle &options);
 
+    bool changeElbowHeight(const int arm, const double height, const double weight);
 
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);

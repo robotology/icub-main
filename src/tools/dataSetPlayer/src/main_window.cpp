@@ -51,6 +51,24 @@ void sighandler(int sig)
 MainWindow::MainWindow(yarp::os::ResourceFinder    &rf)
 {
     moduleName =  rf.check("name", Value("dataSetPlayer"), "module name (string)").asString();
+
+    if (rf.check("withExtraTimeCol"))
+    {
+        withExtraTimeCol = true;
+        column = rf.check("withExtraTimeCol",Value(1)).asInt();
+
+        if (column < 1 || column > 2 )
+            column = 1;
+
+        fprintf(stdout, "Selected timestamp column to check is %d \n", column);
+
+    }else
+    {
+        withExtraTimeCol = false;
+        column = 0;
+    }
+
+
     add_prefix= rf.check("add_prefix");
     createUtilities();
     set_title( (const Glib::ustring) moduleName );
@@ -198,6 +216,8 @@ int MainWindow::initialize(void)
 void MainWindow::createUtilities()
 {
     utilities = new Utilities(moduleName,add_prefix);
+    utilities->withExtraColumn = withExtraTimeCol;
+    utilities->column = column;
 }
 /**********************************************************/
 void MainWindow::clearUtilities()
@@ -215,6 +235,7 @@ int MainWindow::doGuiSetup(string newPath)
     partsFullPath.clear();
     partsInfoPath.clear();
     partsLogPath.clear();
+    
     utilities->resetMaxTimeStamp();
 
     subDirCnt = utilities->getRecSubDirList(newPath.c_str(), partsName, partsInfoPath, partsLogPath, partsFullPath, 1);

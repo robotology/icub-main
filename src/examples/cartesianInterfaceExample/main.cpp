@@ -62,6 +62,10 @@ space.
   execution time since there exists a controller running
   underneath.
  
+--tol \e tol 
+- specify the cartesian tolerance in meters for reaching the 
+  target.
+ 
 --DOF8
 - enable the control of torso yaw joint. 
  
@@ -78,9 +82,9 @@ space.
 - reinstate controller context upon target reception.
  
 \section portsa_sec Ports Accessed
- 
-Assumes that \ref icub_iCubInterface (with ICartesianControl 
-interface implemented) is running. 
+
+The robot interface is assumed to be operative; in particular, 
+the ICartesianControl interface must be available. 
  
 \section portsc_sec Ports Created 
  
@@ -176,7 +180,7 @@ public:
     {
         // get params from the RF
         ctrlCompletePose=!rf.check("onlyXYZ");
-        reinstateContext=rf.check("reinstate_context");
+        reinstateContext=rf.check("reinstate_context");        
 
         // open the client
         Property option("(device cartesiancontrollerclient)");
@@ -236,6 +240,10 @@ public:
 
         // set tracking mode
         iarm->setTrackingMode(false);
+
+        // set cartesian tolerance
+        if (rf.check("tol"))
+            iarm->setInTargetTol(rf.find("tol").asDouble());
 
         // latch the controller context for our task
         iarm->storeContext(&task_context_id);
@@ -446,14 +454,15 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         printf("Options:\n\n");
-        printf("\t--ctrlName name: controller name (default armCtrl)\n");
-        printf("\t--robot    name: robot name to connect to (default: icub)\n");
-        printf("\t--part     type: robot arm type, left_arm or right_arm (default: right_arm)\n");
-        printf("\t--T        time: specify the task execution time in seconds (default: 2.0)\n");
-        printf("\t--DOF10        : control the torso yaw/roll/pitch as well\n");
-        printf("\t--DOF9         : control the torso yaw/pitch as well\n");
-        printf("\t--DOF8         : control the torso yaw as well\n");
-        printf("\t--onlyXYZ      : disable orientation control\n");
+        printf("\t--ctrlName name     : controller name (default armCtrl)\n");
+        printf("\t--robot    name     : robot name to connect to (default: icub)\n");
+        printf("\t--part     type     : robot arm type, left_arm or right_arm (default: right_arm)\n");
+        printf("\t--T        time     : specify the task execution time in seconds (default: 2.0)\n");
+        printf("\t--tol      tolerance: specify the cartesian tolerance in meters\n");
+        printf("\t--DOF10             : control the torso yaw/roll/pitch as well\n");
+        printf("\t--DOF9              : control the torso yaw/pitch as well\n");
+        printf("\t--DOF8              : control the torso yaw as well\n");
+        printf("\t--onlyXYZ           : disable orientation control\n");
 
         return 0;
     }

@@ -16,6 +16,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -213,13 +214,22 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
 
 
 /************************************************************************/
+double CalibModule::getMinVer() const
+{
+    Bottle info;
+    igaze->getInfo(info);
+    return info.find("min_allowed_vergence").asDouble();
+}
+
+
+/************************************************************************/
 bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M)
 {
     if (((eye!="left") && (eye!="right")) ||
         ((type!="intrinsics") && (type!="extrinsics")))
         return false;
 
-    Bottle info; 
+    Bottle info;
     igaze->getInfo(info);
     if (Bottle *pB=info.find(("camera_"+type+"_"+eye).c_str()).asList())
     {        
@@ -235,6 +245,7 @@ bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M
     else
         return false;
 }
+
 
 /************************************************************************/
 bool CalibModule::pushExtrinsics(const string &eye, const Matrix &H)
@@ -647,10 +658,10 @@ bool CalibModule::configure(ResourceFinder &rf)
     string robot=rf.check("robot",Value("icub")).asString().c_str();
     string name=rf.check("name",Value("depth2kin")).asString().c_str();
     string type=rf.check("type",Value("se3+scale")).asString().c_str();
-    test=rf.check("test",Value(-1)).asInt();
+    test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
-    block_eyes=rf.check("block_eyes",Value(5.0)).asDouble();
-    roi_edge=rf.check("roi_edge",Value(100)).asInt();
+    roi_edge=abs(rf.check("roi_edge",Value(100)).asInt());
+    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
 
     motorExplorationAsyncStop=false;
     motorExplorationState=motorExplorationStateIdle;
@@ -672,12 +683,12 @@ bool CalibModule::configure(ResourceFinder &rf)
     calibrator=factory(type);
 
     Vector min(6),max(6);
-    min[0]=0.0;                max[0]=0.0;
-    min[1]=0.0;                max[1]=0.0;
-    min[2]=0.0;                max[2]=0.02;
-    min[3]=-CTRL_DEG2RAD*0.0;  max[3]=CTRL_DEG2RAD*0.0;     // roll
-    min[4]=-CTRL_DEG2RAD*10.0; max[4]=CTRL_DEG2RAD*10.0;    // pitch
-    min[5]=-CTRL_DEG2RAD*10.0; max[5]=CTRL_DEG2RAD*10.0;    // yaw
+    min[0]=-0.005;             max[0]=0.005;
+    min[1]=-0.005;             max[1]=0.005;
+    min[2]=-0.01;              max[2]=0.01;
+    min[3]=-CTRL_DEG2RAD*15.0; max[3]=CTRL_DEG2RAD*15.0;    // roll
+    min[4]=-CTRL_DEG2RAD*15.0; max[4]=CTRL_DEG2RAD*15.0;    // pitch
+    min[5]=-CTRL_DEG2RAD*15.0; max[5]=CTRL_DEG2RAD*15.0;    // yaw
     alignerL.setBounds(min,max);
     alignerR.setBounds(min,max);
     alignerL.setInitialGuess(eye(4,4));
@@ -774,6 +785,13 @@ bool CalibModule::configure(ResourceFinder &rf)
     lim.push_back(ilim);
     finger.alignJointsBounds(lim);
 
+    double minVer=getMinVer();
+    if (block_eyes<minVer)
+    {
+        block_eyes=minVer;
+        printf("*** warning: blockEyes saturated at minimum allowed vergence angle %g\n",block_eyes);
+    }
+
     touchInPort.open(("/"+name+"/touch:i").c_str());
     depthInPort.open(("/"+name+"/depth:i").c_str());
     depthOutPort.open(("/"+name+"/depth:o").c_str());
@@ -783,6 +801,10 @@ bool CalibModule::configure(ResourceFinder &rf)
     attach(rpcPort);
 
     setExplorationSpaceDelta(0.0,0.0,0.0,0.0,0.0);
+
+    // request high resolution scheduling
+    Time::turboBoost();
+
     return true;
 }
 
@@ -1047,10 +1069,45 @@ bool CalibModule::stop()
 
 
 /************************************************************************/
+bool CalibModule::setMaxDist(const double max_dist)
+{
+    this->max_dist=fabs(max_dist);
+    return true;
+}
+
+
+/************************************************************************/
+double CalibModule::getMaxDist()
+{
+    return max_dist;
+}
+
+
+/************************************************************************/
+bool CalibModule::setRoiEdge(const int roi_edge)
+{
+    this->roi_edge=abs(roi_edge);
+    return true;
+}
+
+
+/************************************************************************/
+int CalibModule::getRoiEdge()
+{
+    return roi_edge;
+}
+
+
+/************************************************************************/
 bool CalibModule::setBlockEyes(const double block_eyes)
 {
-    this->block_eyes=block_eyes;
-    return true;
+    if (block_eyes>=getMinVer())
+    {
+        this->block_eyes=block_eyes;
+        return true;
+    }
+    else
+        return false;
 }
 
 
@@ -1070,7 +1127,7 @@ bool CalibModule::blockEyes()
 
 
 /************************************************************************/
-bool CalibModule::selectArm(const string &arm)
+bool CalibModule::setArm(const string &arm)
 {
     if (!selectArmEnabled || ((arm!="left") && (arm!="right")))
         return false;
@@ -1082,6 +1139,13 @@ bool CalibModule::selectArm(const string &arm)
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
     finger=iCubFinger(arm+"_index");
     return true;
+}
+
+
+/************************************************************************/
+string CalibModule::getArm()
+{
+    return arm;
 }
 
 
