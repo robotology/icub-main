@@ -2276,7 +2276,7 @@ bool MotorThread::deploy(Bottle &options)
     Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:deployOrient[arm]);
 
     Vector preDeployZone=deployZone;
-    preDeployZone[2]=x[2];
+    preDeployZone[2]+=reachAboveDisp[2];
 
     // prepare hand for deployment
     action[arm]->pushAction(preDeployZone,tmpOrient);

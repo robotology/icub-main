@@ -277,8 +277,7 @@ void Controller::stopLimb(const bool execStopPosition)
 {
     if (Robotable)
     {
-        // note: vel==0.0 is always achievable        
-
+        // note: vel==0.0 is always achievable
         if (neckPosCtrlOn)
         {
             if (execStopPosition)
