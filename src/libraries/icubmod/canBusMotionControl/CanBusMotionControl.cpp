@@ -1028,6 +1028,10 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+
+    //optional
+    xtmp = pidsGroup.findGroup("kff");         if (xtmp.isNull()) return true;  for (j=0;j<nj;j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+
     return true;
 }
 
@@ -1244,6 +1248,8 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            else
            {
                 printf("Torque Pids successfully loaded\n");
+                xtmp = trqPidsGroup.findGroup("kbemf"); 
+                if (!xtmp.isNull()) {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
                _tpidsEnabled = true;
            }
         }
@@ -1539,6 +1545,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _impedance_params=0;
     _impedance_limits=0;
     _estim_params=0;
+    _bemfGain=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1564,6 +1571,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _bemfGain=allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1618,6 +1626,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_torqueSensorChan);
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
+    checkAndDestroy<double>(_bemfGain);
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<Pid>(_tpids);
@@ -2127,6 +2136,12 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.005);
         setTorquePids(p._tpids);
+        
+        for (int i=0; i<p._njoints; i++)
+        {
+            this->setBemfParam(i,p._bemfGain[i]);
+            yarp::os::Time::delay(0.002);
+        }
     }
     
     //set the source of the torque measurments to the boards

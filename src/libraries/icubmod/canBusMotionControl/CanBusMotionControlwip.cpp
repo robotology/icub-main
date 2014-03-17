@@ -541,13 +541,20 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        bus->_writeMessages++;
        bus->writePacket();
 
-       if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
+       if (canEchoEnabled)
+       {
+           if (bus->_readMessages<BUF_SIZE-1 && bus->_echoMessages<BUF_SIZE-1)
        {
            bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
            bus->_echoBuffer[bus->_echoMessages].setLen(6);
            for (i=0; i<6; i++)
                 bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
            bus->_echoMessages++;
+       }
+           else
+           {
+               fprintf(stderr,"ERROR: Echobuffer full \n");
+           }
        }
 
        bus->startPacket();
@@ -563,13 +570,20 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        bus->_writeMessages++;
        bus->writePacket();
        
-       if (canEchoEnabled && bus->_readMessages<BUF_SIZE-1)
+       if (canEchoEnabled)
+       {
+           if (bus->_readMessages<BUF_SIZE-1 && bus->_echoMessages<BUF_SIZE-1)
        {
            bus->_echoBuffer[bus->_echoMessages].setId(fakeId);
            bus->_echoBuffer[bus->_echoMessages].setLen(6);
            for (i=0; i<6; i++)
                 bus->_echoBuffer[bus->_echoMessages].getData()[i]=bus->_writeBuffer[0].getData()[i];
            bus->_echoMessages++;
+       }
+           else
+           {
+               fprintf(stderr,"ERROR: Echobuffer full \n");
+           }
        }
 
     }
@@ -1014,6 +1028,10 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+
+    //optional
+    xtmp = pidsGroup.findGroup("kff");         if (xtmp.isNull()) return true;  for (j=0;j<nj;j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+
     return true;
 }
 
@@ -1230,6 +1248,8 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            else
            {
                 printf("Torque Pids successfully loaded\n");
+                xtmp = trqPidsGroup.findGroup("kbemf"); 
+                if (!xtmp.isNull()) {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
                _tpidsEnabled = true;
            }
         }
@@ -1525,6 +1545,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _impedance_params=0;
     _impedance_limits=0;
     _estim_params=0;
+    _bemfGain=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1550,6 +1571,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _bemfGain=allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1604,6 +1626,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_torqueSensorChan);
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
+    checkAndDestroy<double>(_bemfGain);
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<Pid>(_tpids);
@@ -1791,12 +1814,13 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     _writeBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _replyBuffer=iBufferFactory->createBuffer(BUF_SIZE);
     _echoBuffer=iBufferFactory->createBuffer(BUF_SIZE);
+    printf("Can read/write buffers created, buffer size: %d\n", BUF_SIZE);
 
     requestsQueue = new RequestsQueue(_njoints, NUM_OF_MESSAGES);
 
     _initialized=true;
 
-    DEBUG_FUNC("CanBusResources::initialized correctly\n");
+    printf("CanBusResources::initialized correctly\n");
     return true;
 }
 
@@ -2112,6 +2136,12 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.005);
         setTorquePids(p._tpids);
+        
+        for (int i=0; i<p._njoints; i++)
+        {
+            this->setBemfParam(i,p._bemfGain[i]);
+            yarp::os::Time::delay(0.002);
+        }
     }
     
     //set the source of the torque measurments to the boards
@@ -4660,7 +4690,7 @@ bool CanBusMotionControl::setOutputRaw(int axis, double v)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    return _writeWord16 (CAN_SET_OFFSET, axis, S_16(v));
+    return _writeWord16 (CAN_SET_OPENLOOP_PARAMS, axis, S_16(v));
 
 }
 
