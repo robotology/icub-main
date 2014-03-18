@@ -604,6 +604,48 @@ public:
   }
 };
 
+class depth2kin_IDLServer_setExplorationWait : public yarp::os::Portable {
+public:
+  double wait;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("setExplorationWait",1,1)) return false;
+    if (!writer.writeDouble(wait)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDLServer_getExplorationWait : public yarp::os::Portable {
+public:
+  double _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getExplorationWait",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readDouble(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
 class depth2kin_IDLServer_setExplorationSpace : public yarp::os::Portable {
 public:
   double cx;
@@ -991,6 +1033,25 @@ bool depth2kin_IDLServer::resetExtrinsics(const std::string& eye) {
   helper.eye = eye;
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::resetExtrinsics(const std::string& eye)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDLServer::setExplorationWait(const double wait) {
+  bool _return = false;
+  depth2kin_IDLServer_setExplorationWait helper;
+  helper.wait = wait;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setExplorationWait(const double wait)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+double depth2kin_IDLServer::getExplorationWait() {
+  double _return = (double)0;
+  depth2kin_IDLServer_getExplorationWait helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDLServer::getExplorationWait()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1460,6 +1521,33 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "setExplorationWait") {
+      double wait;
+      if (!reader.readDouble(wait)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setExplorationWait(wait);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getExplorationWait") {
+      double _return;
+      _return = getExplorationWait();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeDouble(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "setExplorationSpace") {
       double cx;
       double cy;
@@ -1622,6 +1710,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     helpString.push_back("getExperiment");
     helpString.push_back("getExtrinsics");
     helpString.push_back("resetExtrinsics");
+    helpString.push_back("setExplorationWait");
+    helpString.push_back("getExplorationWait");
     helpString.push_back("setExplorationSpace");
     helpString.push_back("setExplorationSpaceDelta");
     helpString.push_back("getExplorationData");
@@ -1713,7 +1803,7 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     if (functionName=="getBlockEyes") {
       helpString.push_back("double getBlockEyes() ");
       helpString.push_back("Return the current angle to keep the vergence at. ");
-      helpString.push_back("@return the vergence angle. ");
+      helpString.push_back("@return the vergence angle in degrees. ");
     }
     if (functionName=="blockEyes") {
       helpString.push_back("bool blockEyes() ");
@@ -1814,6 +1904,19 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("Reset the extrinsics matrix to default eye matrix. ");
       helpString.push_back("@param eye is \"left\" or \"right\" camera eye. ");
       helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="setExplorationWait") {
+      helpString.push_back("bool setExplorationWait(const double wait) ");
+      helpString.push_back("Set up the wait timeout used during exploration between ");
+      helpString.push_back("two consecutive data points. ");
+      helpString.push_back("@param wait the timeout in seconds. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getExplorationWait") {
+      helpString.push_back("double getExplorationWait() ");
+      helpString.push_back("Return the current wait timeout used during exploration ");
+      helpString.push_back("between two consecutive data points. ");
+      helpString.push_back("@return the wait timeout in seconds. ");
     }
     if (functionName=="setExplorationSpace") {
       helpString.push_back("bool setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b) ");

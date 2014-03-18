@@ -451,7 +451,7 @@ void CalibModule::doMotorExploration()
         {
             igaze->stopControl();
             mutex.unlock();
-            Time::delay(2.0);
+            Time::delay(exploration_wait);
             mutex.lock();
             motorExplorationState=motorExplorationStateLog;
         }
@@ -662,6 +662,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_edge=abs(rf.check("roi_edge",Value(100)).asInt());
     block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
+    exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
 
     motorExplorationAsyncStop=false;
     motorExplorationState=motorExplorationStateIdle;
@@ -1353,6 +1354,21 @@ Vector CalibModule::getExtrinsics(const string &eye)
 bool CalibModule::resetExtrinsics(const string &eye)
 {
     return pushExtrinsics(eye,yarp::math::eye(4,4));
+}
+
+
+/************************************************************************/
+bool CalibModule::setExplorationWait(const double wait)
+{
+    exploration_wait=fabs(wait);
+    return true;
+}
+
+
+/************************************************************************/
+double CalibModule::getExplorationWait()
+{
+    return exploration_wait;
 }
 
 

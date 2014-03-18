@@ -83,6 +83,7 @@ protected:
     bool   selectArmEnabled;
     double max_dist;
     double block_eyes;
+    double exploration_wait;
     int    roi_edge;
     int    nEncs;
     int    test;
@@ -165,6 +166,8 @@ public:
     string getExperiment(const string &exp);
     Vector getExtrinsics(const string &eye);
     bool resetExtrinsics(const string &eye);
+    bool setExplorationWait(const double wait);
+    double getExplorationWait();
     bool setExplorationSpace(const double cx, const double cy, const double cz,
                              const double a, const double b);
     bool setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz,

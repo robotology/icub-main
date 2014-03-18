@@ -146,7 +146,7 @@ service depth2kin_IDLServer
 
    /**
    * Return the current angle to keep the vergence at.
-   * @return the vergence angle.
+   * @return the vergence angle in degrees.
    */
    double getBlockEyes();
 
@@ -267,6 +267,21 @@ service depth2kin_IDLServer
    bool resetExtrinsics(1:string eye);
 
    /**
+   * Set up the wait timeout used during exploration between
+   * two consecutive data points.
+   * @param wait the timeout in seconds.
+   * @return true/false on success/failure.
+   */
+   bool setExplorationWait(1:double wait);
+
+   /**
+   * Return the current wait timeout used during exploration
+   * between two consecutive data points.
+   * @return the wait timeout in seconds.
+   */
+   double getExplorationWait();
+
+   /**
    * Set up the internally coded exploration space composed by
    * two co-centered ellipses, one orthogonal to other, and defined
    * by means of the center and the two semi-axes.
@@ -312,3 +327,4 @@ service depth2kin_IDLServer
    */
    bool quit();  
 }
+
