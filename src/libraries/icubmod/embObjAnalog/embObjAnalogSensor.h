@@ -141,6 +141,7 @@ private:
     bool sendConfig2Mais(void);
     bool fillDatOfStrain(void *as_array_raw);
     bool fillDatOfMais(void *as_array_raw);
+    bool isEpManagedByBoard();
 public:
 
     embObjAnalogSensor();

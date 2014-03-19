@@ -385,13 +385,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(_fId.boardNum > 9)
-    {
-        _fId.ep = 255;
-        yError () << "\n embObjMotionControl: board with number "<<_fId.boardNum << "not -exists!!!" ;
-        return false;
-    }
-
     _fId.ep = eoprot_endpoint_motioncontrol;
     //
     //  Read Configuration params from file
@@ -446,6 +439,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
+    if(!isEpManagedByBoard())
+    {
+        yError() << "EMS "<< _fId.boardNum << "is not connected to joints";
+        return false;
+    }
+
     NVnumber = res->getNVnumber(_fId.boardNum, _fId.ep);
     requestQueue = new eoRequestsQueue(NVnumber);
 
@@ -467,6 +466,16 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     return true;
 }
 
+bool embObjMotionControl::isEpManagedByBoard()
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 0, eoprot_tag_mc_joint_config);
+    EOnv nv;
+    if(NULL == res->getNVhandler(protoid, &nv))
+    {
+        return false;
+    }
+    return true;
+}
 
 bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 {
