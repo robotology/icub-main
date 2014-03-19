@@ -111,6 +111,12 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     case 9:
         hosttxrxcfg.nvsetdevcfg = &eoprot_b09_nvsetDEVcfg;
         break;
+    case 10:
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b10_nvsetDEVcfg;
+        break;
+    case 11:
+        hosttxrxcfg.nvsetdevcfg = &eoprot_b11_nvsetDEVcfg;
+        break;
     default:
         yError() << "Got a non existing board number" << _board_n;
         return false;
@@ -543,7 +549,6 @@ void hostTransceiver::getTransmit(uint8_t *_data, uint16_t *size) //**data
 EOnv* hostTransceiver::getNVhandler(eOprotID32_t protid, EOnv* nv)
 {
     eOresult_t    res;
-
     res = eo_nvset_NV_Get(nvset, remoteipaddr, protid, nv);
     if(eores_OK != res)
     {
