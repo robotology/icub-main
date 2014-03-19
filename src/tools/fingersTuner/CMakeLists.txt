@@ -5,7 +5,6 @@
 set(PROJECTNAME fingersTuner)
 project(${PROJECTNAME})
 
-include(YarpInstallationHelpers)
 include(YarpIDL)
 
 file(GLOB header include/*.h)

@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 2.6)
 set(PROJECTNAME depth2kin)
 project(${PROJECTNAME})
 
-include(YarpInstallationHelpers)
 include(YarpIDL)
 
 file(GLOB headers include/*.h)
