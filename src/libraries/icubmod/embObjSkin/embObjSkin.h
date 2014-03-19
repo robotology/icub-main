@@ -61,6 +61,7 @@ protected:
 
 
     bool            init();
+    bool            isEpManagedByBoard();
 
 
 public:

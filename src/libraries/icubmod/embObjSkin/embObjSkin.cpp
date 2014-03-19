@@ -68,7 +68,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     // Check input parameters
     bool correct=true;
 
-    sprintf(info, "EmbObjSkin - referred to EMS: %s", _fId.PC104ipAddr.string);
+    sprintf(info, "EmbObjSkin - referred to EMS: %s", _fId.EMSipAddr.string);
 
     if (!correct)
     {
@@ -83,13 +83,22 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    Bottle ids=config.findGroup("SkinCanIds").tail();
 
+    Bottle ids;
+    ids.clear();
+    ids=config.findGroup("SkinCanIds").tail();
+    if(ids.size() == 0)
+    {
+        yError() << "DOPO CLEAR embObjSkin: " << _fId.name << "i did't find <SkinCanIds> param!!!";
+        return false;
+    }
     if (ids.size()>1)
     {
         yWarning() <<"EmbObjSkin id list contains more than one entry -> devices will be merged.";
     }
-    for (int i=0; i<ids.size(); i++)
+    cardId.resize(ids.size());
+
+    for(int i=0; i<ids.size(); i++)
     {
         int id = ids.get(i).asInt();
         cardId.push_back (id);
@@ -97,7 +106,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     //elements are:
     // sensorsNum=16*12*cardId.size();  // orig
-    sensorsNum=16*12*7;		// max num of card
+    sensorsNum=16*12*cardId.size();		// max num of card
     data.resize(sensorsNum);
 
     int ttt = data.size();
@@ -105,7 +114,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         data[i]=(double)255;
 
     // fill FEAT_ID data
-    _fId.ep = 255;
     _fId.type = Skin;
     std::string FeatId = config.find("FeatId").asString().c_str();
     strcpy(_fId.name, FeatId.c_str());
@@ -115,11 +123,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     if(val.isInt())
     {
         _fId.boardNum =val.asInt();
-        if((_fId.boardNum != 2) && (_fId.boardNum != 4))
-        {
-            yError() << "Requested non-existing Skin endpoint for board" << _fId.boardNum;
-            return false;
-        }
     }
     else
     {
@@ -141,12 +144,33 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         yError() << "EMS device not instantiated... unable to continue";
         return false;
     }
+
+    if(!isEpManagedByBoard())
+    {
+        yError() << "EMS "<< _fId.boardNum << "is not connected to skin";
+        return false;
+    }
+
     init();
 
     res->goToRun();
     yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
     return true;
 }
+
+
+bool EmbObjSkin::isEpManagedByBoard()
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
+
+    EOnv nv;
+    if(NULL == res->getNVhandler(protoid, &nv))
+    {
+        return false;
+    }
+    return true;
+}
+
 
 bool EmbObjSkin::close()
 {
@@ -249,6 +273,7 @@ bool EmbObjSkin::init()
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_status_arrayof10canframes);
+    yError() << "chiedo di segnalare: " << protoid;
     sigcfg.id32 = protoid;
     eo_array_PushBack(array, &sigcfg);
 
@@ -273,43 +298,33 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
     {
         eOutil_canframe_t *canframe;
         //uint8_t  j; 
-        uint8_t mtbId =0;
-        uint8_t  cardId, valid = 0;
+        uint8_t mtbId =255; //unknown mtb card addr
+        uint8_t  cardAddr, valid = 0;
 
         canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
         valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
 
         if(valid)
         {
-            cardId = (canframe->id & 0x00f0) >> 4;
-            switch (cardId)
+
+            cardAddr = (canframe->id & 0x00f0) >> 4;
+            //get index of start of data of board with addr cardId.
+            for(int cId_index = 0; cId_index< cardId.size(); cId_index++)
             {
-            case 14:
-                mtbId = 0;
-                break;
-            case 13:
-                mtbId = 1;
-                break;
-            case 12:
-                mtbId = 2;
-                break;
-            case 11:
-                mtbId = 3;
-                break;
-            case 10:
-                mtbId = 4;
-                break;
-            case 9:
-                mtbId = 5;
-                break;
-            case 8:
-                mtbId = 6;
-                break;
-            default:
-                yError() << "Unknown cardId from skin\n";
-                return false;
-                break;
+                if(cardId[cId_index] == cardAddr)
+                {
+                    mtbId = cId_index-1;
+                    break;
+                }
             }
+
+            if(mtbId == 255)
+            {
+               // yError() << "Unknown cardId from skin\n";
+                return false;
+            }
+
+            //printf("mtbId=%d\n", mtbId);
             triangle = (canframe->id & 0x000f);
             msgtype= ((canframe->data[0])& 0x80);
 
