@@ -8,17 +8,17 @@ project(${PROJECTNAME})
 
 include(YarpIDL)
 
-file(GLOB headers include/*.h)
-file(GLOB sources src/*.cpp)
-set(idl ${PROJECTNAME}.thrift)
-set(doc ${PROJECTNAME}.xml)
+file(GLOB header_files include/*.h)
+file(GLOB source_files src/*.cpp)
+set(idl_files ${PROJECTNAME}.thrift)
+set(doc_files ${PROJECTNAME}.xml)
 
-yarp_idl_to_dir(${idl} ${PROJECT_SOURCE_DIR})
+yarp_idl_to_dir(${idl_files} ${PROJECT_SOURCE_DIR})
 
-source_group("Header Files" FILES ${headers})
-source_group("Source Files" FILES ${sources})
-source_group("IDL Files"    FILES ${idl})
-source_group("DOC Files"    FILES ${doc})
+source_group("Header Files" FILES ${header_files})
+source_group("Source Files" FILES ${source_files})
+source_group("IDL Files"    FILES ${idl_files})
+source_group("DOC Files"    FILES ${doc_files})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS}
@@ -30,7 +30,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${optimization_INCLUDE_DIRS}
                     ${learningMachine_INCLUDE_DIRS})
                     
-add_executable(${PROJECTNAME} ${headers} ${sources} ${idl} ${doc})
+add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files} ${doc_files})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
                                      ${GSL_LIBRARIES}
                                      ${IPOPT_LIBRARIES}
@@ -41,5 +41,5 @@ target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
                                      learningMachine
                                      icubmod)
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
-yarp_install(FILES ${doc} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
+yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 

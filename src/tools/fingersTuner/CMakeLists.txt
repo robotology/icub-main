@@ -7,18 +7,18 @@ project(${PROJECTNAME})
 
 include(YarpIDL)
 
-file(GLOB header include/*.h)
-file(GLOB source src/*.cpp)
-set(idl ${PROJECTNAME}.thrift)
+file(GLOB header_files include/*.h)
+file(GLOB source_files src/*.cpp)
+set(idl_files ${PROJECTNAME}.thrift)
 
-yarp_idl_to_dir(${idl} ${CMAKE_CURRENT_SOURCE_DIR})
+yarp_idl_to_dir(${idl_files} ${CMAKE_CURRENT_SOURCE_DIR})
 
-source_group("Header Files" FILES ${header})
-source_group("Source Files" FILES ${source})
-source_group("IDL Files"    FILES ${idl})
+source_group("Header Files" FILES ${header_files})
+source_group("Source Files" FILES ${source_files})
+source_group("IDL Files"    FILES ${idl_files})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${YARP_INCLUDE_DIRS} ${ctrlLib_INCLUDE_DIRS})
 
-add_executable(${PROJECTNAME} ${header} ${source} ${idl})
+add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib)
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
