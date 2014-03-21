@@ -1982,7 +1982,7 @@ bool comanMotionControl::getEncoderSpeedRaw(int j, double *spd)
     mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
 #warning "this implies a memcopy!! To be optimized!! And add timestamp"
     joint_p->get_bc_data(bc_data);
-    *spd = (double) data.Velocity;
+    *spd = (double) data.Velocity * COMAN_POS_TO_VEL_GAIN; //Ottimo...
 
     return true;
 }
