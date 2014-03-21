@@ -6,26 +6,6 @@
 
 
 
-class dataSetPlayer_IDL_getHelp : public yarp::os::Portable {
-public:
-  std::string _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getHelp",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readString(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
-};
-
 class dataSetPlayer_IDL_step : public yarp::os::Portable {
 public:
   bool _return;
@@ -194,15 +174,6 @@ public:
   }
 };
 
-std::string dataSetPlayer_IDL::getHelp() {
-  std::string _return = "";
-  dataSetPlayer_IDL_getHelp helper;
-  if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","std::string dataSetPlayer_IDL::getHelp()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
 bool dataSetPlayer_IDL::step() {
   bool _return = false;
   dataSetPlayer_IDL_step helper;
@@ -287,17 +258,6 @@ bool dataSetPlayer_IDL::read(yarp::os::ConnectionReader& connection) {
   yarp::os::ConstString tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
-    if (tag == "getHelp") {
-      std::string _return;
-      _return = getHelp();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeString(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
     if (tag == "step") {
       bool _return;
       _return = step();
@@ -440,7 +400,6 @@ std::vector<std::string> dataSetPlayer_IDL::help(const std::string& functionName
   std::vector<std::string> helpString;
   if(showAll) {
     helpString.push_back("*** Available commands:");
-    helpString.push_back("getHelp");
     helpString.push_back("step");
     helpString.push_back("setFrame");
     helpString.push_back("getFrame");
@@ -452,11 +411,6 @@ std::vector<std::string> dataSetPlayer_IDL::help(const std::string& functionName
     helpString.push_back("help");
   }
   else {
-    if (functionName=="getHelp") {
-      helpString.push_back("std::string getHelp() ");
-      helpString.push_back("Gets the list of commands available ");
-      helpString.push_back("@return Bottle containing all available commands ");
-    }
     if (functionName=="step") {
       helpString.push_back("bool step() ");
       helpString.push_back("Steps the player once. The player will be stepped ");
