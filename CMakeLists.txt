@@ -185,7 +185,7 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   # in YARP we used to copy Find* scripts to the build directory
-  # this as changed in YARP but NOT in iCub.
+  # this has changed in YARP but NOT in iCub.
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
 
