@@ -1,8 +1,8 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#ifndef YARP_THRIFT_GENERATOR_depth2kin_IDLServer
-#define YARP_THRIFT_GENERATOR_depth2kin_IDLServer
+#ifndef YARP_THRIFT_GENERATOR_depth2kin_IDL
+#define YARP_THRIFT_GENERATOR_depth2kin_IDL
 
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
@@ -10,16 +10,16 @@
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
-class depth2kin_IDLServer;
+class depth2kin_IDL;
 
 
 /**
- * depth2kin_IDLServer
+ * depth2kin_IDL
  * IDL Interface to \ref depth2kin services.
  */
-class depth2kin_IDLServer : public yarp::os::Wire {
+class depth2kin_IDL : public yarp::os::Wire {
 public:
-  depth2kin_IDLServer() { yarp().setOwner(*this); }
+  depth2kin_IDL() { yarp().setOwner(*this); }
 /**
  * Return the number of available experts.
  * @return the number of available experts.

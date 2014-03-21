@@ -45,11 +45,11 @@ struct PointReq
 }
 
 /**
-* depth2kin_IDLServer
+* depth2kin_IDL
 *
 * IDL Interface to \ref depth2kin services.
 */
-service depth2kin_IDLServer
+service depth2kin_IDL
 {
    /**
    * Return the number of available experts.

@@ -104,7 +104,9 @@ make_directory(${EXECUTABLE_OUTPUT_PATH})
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 
-
+set(IDL_GENERATED_CODE_DIR ${PROJECT_SOURCE_DIR}/src/idl_generated_code)
+mark_as_advanced(IDL_GENERATED_CODE_DIR)
+message(STATUS "IDL generated files go to ${IDL_GENERATED_CODE_DIR}")
 
 # clean up:
 # icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-install-includes.cmake

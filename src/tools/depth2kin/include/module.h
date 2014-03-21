@@ -29,7 +29,7 @@
 
 #include <iCub/iKin/iKinFwd.h>
 
-#include "depth2kin_IDLServer.h"
+#include "depth2kin_IDL.h"
 #include "methods.h"
 #include "nlp.h"
 
@@ -57,7 +57,7 @@ public:
 
 
 /************************************************************************/
-class CalibModule : public RFModule, public depth2kin_IDLServer
+class CalibModule : public RFModule, public depth2kin_IDL
 {
 protected:
     ResourceFinder    *rf;

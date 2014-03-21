@@ -11,11 +11,11 @@ struct Value { }
 )
 
 /**
-* fingersTuner_IDLServer
+* fingersTuner_IDL
 *
 * IDL Interface to \ref fingersTuner services.
 */
-service fingersTuner_IDLServer
+service fingersTuner_IDL
 {
   /**
   * Synchronize PID values with values stored

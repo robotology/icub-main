@@ -1,12 +1,12 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <fingersTuner_IDLServer.h>
+#include <fingersTuner_IDL.h>
 #include <yarp/os/idl/WireTypes.h>
 
 
 
-class fingersTuner_IDLServer_sync : public yarp::os::Portable {
+class fingersTuner_IDL_sync : public yarp::os::Portable {
 public:
   std::string part;
   yarp::os::Value val;
@@ -30,7 +30,7 @@ public:
   }
 };
 
-class fingersTuner_IDLServer_tune : public yarp::os::Portable {
+class fingersTuner_IDL_tune : public yarp::os::Portable {
 public:
   std::string part;
   yarp::os::Value val;
@@ -54,7 +54,7 @@ public:
   }
 };
 
-class fingersTuner_IDLServer_save : public yarp::os::Portable {
+class fingersTuner_IDL_save : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -74,7 +74,7 @@ public:
   }
 };
 
-class fingersTuner_IDLServer_quit : public yarp::os::Portable {
+class fingersTuner_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -94,48 +94,48 @@ public:
   }
 };
 
-bool fingersTuner_IDLServer::sync(const std::string& part, const yarp::os::Value& val) {
+bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val) {
   bool _return = false;
-  fingersTuner_IDLServer_sync helper;
+  fingersTuner_IDL_sync helper;
   helper.part = part;
   helper.val = val;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDLServer::sync(const std::string& part, const yarp::os::Value& val)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool fingersTuner_IDLServer::tune(const std::string& part, const yarp::os::Value& val) {
+bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val) {
   bool _return = false;
-  fingersTuner_IDLServer_tune helper;
+  fingersTuner_IDL_tune helper;
   helper.part = part;
   helper.val = val;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDLServer::tune(const std::string& part, const yarp::os::Value& val)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool fingersTuner_IDLServer::save() {
+bool fingersTuner_IDL::save() {
   bool _return = false;
-  fingersTuner_IDLServer_save helper;
+  fingersTuner_IDL_save helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDLServer::save()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::save()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool fingersTuner_IDLServer::quit() {
+bool fingersTuner_IDL::quit() {
   bool _return = false;
-  fingersTuner_IDLServer_quit helper;
+  fingersTuner_IDL_quit helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDLServer::quit()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::quit()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
 
-bool fingersTuner_IDLServer::read(yarp::os::ConnectionReader& connection) {
+bool fingersTuner_IDL::read(yarp::os::ConnectionReader& connection) {
   yarp::os::idl::WireReader reader(connection);
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
@@ -235,7 +235,7 @@ bool fingersTuner_IDLServer::read(yarp::os::ConnectionReader& connection) {
   return false;
 }
 
-std::vector<std::string> fingersTuner_IDLServer::help(const std::string& functionName) {
+std::vector<std::string> fingersTuner_IDL::help(const std::string& functionName) {
   bool showAll=(functionName=="--all");
   std::vector<std::string> helpString;
   if(showAll) {
