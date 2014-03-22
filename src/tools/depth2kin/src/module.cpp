@@ -184,7 +184,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
 
     cv::Mat img((IplImage*)imgOut.getIplImage());
     cv::Mat imgRoi((IplImage*)imgOut.getIplImage(),rect);
-    cv::threshold(imgRoi,imgRoi,100,255,cv::THRESH_TOZERO);
+    cv::threshold(imgRoi,imgRoi,100,255,cv::THRESH_BINARY);
 
     px.resize(2,0.0);
     bool ok=false;
