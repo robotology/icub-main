@@ -67,7 +67,7 @@ public:
 /**
 * \ingroup outliersDetection
 *
-* Abstract class for outliers detection.
+* Perform modified Thompson tau technique for outlier detection.
 */
 class ModifiedThompsonTau : public OutliersDetection
 {
