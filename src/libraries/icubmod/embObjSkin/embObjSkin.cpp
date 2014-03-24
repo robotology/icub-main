@@ -89,7 +89,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     ids=config.findGroup("SkinCanIds").tail();
     if(ids.size() == 0)
     {
-        yError() << "DOPO CLEAR embObjSkin: " << _fId.name << "i did't find <SkinCanIds> param!!!";
+        yError() << "embObjSkin: " << _fId.name << "i did't find <SkinCanIds> param!!!";
         return false;
     }
     if (ids.size()>1)
@@ -273,7 +273,6 @@ bool EmbObjSkin::init()
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_status_arrayof10canframes);
-    yError() << "chiedo di segnalare: " << protoid;
     sigcfg.id32 = protoid;
     eo_array_PushBack(array, &sigcfg);
 
