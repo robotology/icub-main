@@ -131,7 +131,7 @@ ModifiedThompsonTau::ModifiedThompsonTau()
     tauLUP[500] =1.9572;
     tauLUP[1000]=1.9586;
     tauLUP[5000]=1.9597;
-    //n -> inf => tau=1.96
+    // n -> inf => tau -> 1.96
 }
 
 
@@ -200,7 +200,7 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     }
 
     // choose tau
-    double tau=0.0;
+    double tau;
     if (data.length()>5000)
         tau=1.96;
     else if (data.length()>1000)
