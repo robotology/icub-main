@@ -84,14 +84,14 @@ public:
     * Perform outliers detection of provided data. 
     * @param data contains points to be verified. 
     * @param options contains detection options. If the properties
-    *                "mean" and "std" are provided with
+    *                <i>mean</i> and <i>std</i> are provided with
     *                corresponding doubles, then the computation of
     *                relative values is skipped. If the property
-    *                "sorted" is provided, then the data are
+    *                <i>sorted</i> is provided, then the data are
     *                expected to be sorted either in ascending or
     *                descending order; further, if the
-    *                "check_outlier" property is provided with a
-    *                string value equal to "first" ("last"), then
+    *                <i>check_outlier</i> property is provided with
+    *                a string value equal to "first" ("last"), then
     *                only the first (last) value is checked during
     *                detection.
     * @return vector containing the outliers indexes.
