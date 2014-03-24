@@ -1872,7 +1872,33 @@ bool comanMotionControl::setOpenLoopModeRaw(int j)
 bool comanMotionControl::getControlModeRaw(int j, int *v)
 {
     // cached value must be correct!!
-    *v = _controlMode[j];
+
+    bool ret = true;
+    McBoard *joint_p = getMCpointer(j);   //  -> giusto
+
+    if( NULL == joint_p)
+    {
+        return false;
+    }
+
+    ts_bc_data_t bc_data;
+    mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
+
+    joint_p->get_bc_data(bc_data);
+
+    uint8_t faults = data.faults();
+
+    //    *v= ((bool)faults *  VOCAB3('e','r','r')) + ((1 - (bool)faults ) *_controlMode[j]);
+
+    if (faults)
+    {
+        *v = VOCAB3('e','r','r');
+        std::cout << "Joint " << j << " returned error code " << (int)faults;
+    }
+    else
+    {
+        *v = _controlMode[j];
+    }
     return true;
 }
 
@@ -2093,7 +2119,14 @@ bool comanMotionControl::enableAmpRaw(int j)
 bool comanMotionControl::disableAmpRaw(int j)
 {
     yTrace();
-    return NOT_YET_IMPLEMENTED("disableAmpRaw");
+    McBoard *joint_p = getMCpointer(j);
+
+    if( NULL == joint_p)
+    {
+        yError() << "Calling disableAmpRaw on a non-existing joint j" << j;
+        return false;
+    }
+    return (!joint_p->setItem(CLEAR_BOARD_FAULT, 0, 0));  // setItem returns 0 if ok, 2 if error
 }
 
 bool comanMotionControl::getCurrentRaw(int j, double *curr)
