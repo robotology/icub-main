@@ -1341,7 +1341,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
 
-    if (!validate(limits, xtmp, "MaxPosStep", "the maximum amplitude of a position direct step", nj+1))
+    if (!validate(limits, xtmp, "maxPosStep", "the maximum amplitude of a position direct step", nj+1))
     {
         fprintf(stderr, "Using default MaxPosStep=10 degs\n");
         for(i=1;i<nj+1; i++)
