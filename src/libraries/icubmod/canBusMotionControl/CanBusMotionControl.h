@@ -190,6 +190,7 @@ public:
     double *_currentLimits;                     /** current limits */
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
+    double *_maxStep;                           /** max size of a positionDirect step */
     double *_optical_factor;                    /** reduction ratio of the optical encoder on motor axis */ 
     int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
@@ -565,6 +566,23 @@ class axisImpedanceHelper
            }
     
     inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
+};
+
+class positionDirectHelper
+{
+    int  jointsNum;
+    double* maxStep;
+    
+    public:
+    positionDirectHelper(int njoints, double* _maxStep );
+
+    inline ~positionDirectHelper()
+    {
+        delete [] maxStep;
+        maxStep=0;
+    }
+    
+    inline double* getMaxStep () {return maxStep;}
 };
 
 class axisTorqueHelper
@@ -1025,6 +1043,7 @@ protected:
     axisImpedanceHelper   *_axisImpedanceHelper;
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
+    positionDirectHelper  *_positionDirectHelper;
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.
