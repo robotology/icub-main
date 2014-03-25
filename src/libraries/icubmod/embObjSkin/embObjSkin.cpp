@@ -31,6 +31,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
     ethManager  = NULL;
     initted     = false;
     sensorsNum  = 0;
+    numOfPatches = 0;
     memset(info, 0x00, (size_t)SIZE_INFO);
 };
 
@@ -84,29 +85,48 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     }
 
 
-    Bottle ids;
-    ids.clear();
-    ids=config.findGroup("SkinCanIds").tail();
-    if(ids.size() == 0)
+    Bottle ids_port1, ids_port2;
+    ids_port1.clear();
+    ids_port2.clear();
+
+    ids_port1=config.findGroup("SkinCanIds_canPort1").tail();
+    ids_port2=config.findGroup("SkinCanIds_canPort2").tail();
+    if((ids_port1.size() == 0) && (ids_port2.size() == 0))
     {
-        yError() << "embObjSkin: " << _fId.name << "i did't find <SkinCanIds> param!!!";
+        yError() << "embObjSkin: " << _fId.name << "i did't find <SkinCanIds_canPort1>  or <SkinCanIds_canPort2> params!!!";
         return false;
     }
-    if (ids.size()>1)
+    if(ids_port1.size()> 0)
+    {
+        numOfPatches++;
+    }
+
+    if(ids_port2.size()> 0)
+    {
+        numOfPatches++;
+    }
+
+    if((ids_port1.size() + ids_port2.size()) >1 )
     {
         yWarning() <<"EmbObjSkin id list contains more than one entry -> devices will be merged.";
     }
-    cardId.resize(ids.size());
+    cardId.resize(ids_port1.size() + ids_port2.size());
 
-    for(int i=0; i<ids.size(); i++)
+    //fill cardId list with boards connected to canPort1 and canPort2
+    for(int i=0; i<ids_port1.size(); i++)
     {
-        int id = ids.get(i).asInt();
+        int id = ids_port1.get(i).asInt();
+        cardId.push_back (id);
+    }
+    for(int i=0; i<ids_port2.size(); i++)
+    {
+        int id = ids_port2.get(i).asInt();
         cardId.push_back (id);
     }
 
     //elements are:
     // sensorsNum=16*12*cardId.size();  // orig
-    sensorsNum=16*12*cardId.size();		// max num of card
+    sensorsNum=16*12*cardId.size();     // max num of card
     data.resize(sensorsNum);
 
     int ttt = data.size();
@@ -247,17 +267,18 @@ bool EmbObjSkin::init()
     eOropSIGcfg_t               sigcfg;
     EOnv                        *nvRoot;
     EOnv                        nvtmp;
+    eOprotID32_t                protoid;
 
 #ifdef _SETPOINT_TEST_
     eoy_sys_Initialise(NULL, NULL, NULL);
 #endif
 
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
-
-    uint8_t dat = 1;
-
-   res->addSetMessage(protoid, &dat);
-
+    for(int i=0; i<numOfPatches;i++)
+    {
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_config_sigmode);
+        uint8_t dat = 1;
+       res->addSetMessage(protoid, &dat);
+    }
     //
     //	config regulars
     //
@@ -272,9 +293,12 @@ bool EmbObjSkin::init()
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
-    protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_status_arrayof10canframes);
-    sigcfg.id32 = protoid;
-    eo_array_PushBack(array, &sigcfg);
+    for(int i=0; i<numOfPatches; i++)
+    {
+        protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_status_arrayof10canframes);
+        sigcfg.id32 = protoid;
+        eo_array_PushBack(array, &sigcfg);
+    }
 
     // Send message
     if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
@@ -348,16 +372,16 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
         }
         else if(canframe->id == 0x100)
         {
-        	/* Can frame with id =0x100 contains Debug info. SO I skip it.*/
-        	return true;
+            /* Can frame with id =0x100 contains Debug info. SO I skip it.*/
+            return true;
         }
         else
         {
-        	if(error == 0)
-        		yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
-        	error++;
-        	if (error == 10000)
-        		error = 0;
+            if(error == 0)
+                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
+            error++;
+            if (error == 10000)
+                error = 0;
         }
     }
     return true;
