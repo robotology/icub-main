@@ -49,7 +49,7 @@ class OutliersDetection
 {
 public:
     /**
-    * Perform outliers detection of provided data. 
+    * Perform outliers detection over the provided data. 
     * @param data contains points to be verified. 
     * @param options contains detection options. 
     * @return vector containing the outliers indexes.
@@ -81,7 +81,8 @@ public:
     ModifiedThompsonTau();
 
     /**
-    * Perform outliers detection of provided data. 
+    * Perform outliers detection over the provided data. \n 
+    * Only one element is considered at a time.
     * @param data contains points to be verified. 
     * @param options contains detection options. If the properties
     *                <i>mean</i> and <i>std</i> are provided with
