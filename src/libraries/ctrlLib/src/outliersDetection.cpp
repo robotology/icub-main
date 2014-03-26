@@ -142,7 +142,7 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     if (data.length()<3)
         return res;
 
-    double mean=0.0; 
+    double mean=0.0;
     double stdev=0.0;
 
     Property &opt=const_cast<Property&>(options);
@@ -156,8 +156,12 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
         // find mean and standard deviation
         for (size_t i=0; i<data.length(); i++)
         {
-            mean+=data[i];
-            stdev+=data[i]*data[i];
+            // don't account for recursive outliers
+            if (recurIdx.find(i)!=recurIdx.end())
+            {
+                mean+=data[i]; 
+                stdev+=data[i]*data[i];
+            }
         }
 
         mean/=data.length();
@@ -168,34 +172,36 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     double delta_check=0.0;
     if (opt.check("sorted"))
     {
-        double delta_0=fabs(data[0]-mean);
-        double delta_n1=fabs(data[data.length()-1]-mean);
+        // don't account for recursive outliers
+        size_t i_1,i_n;
+        for (i_1=0; recurIdx.find(i_1)==recurIdx.end(); i_1++);
+        for (i_n=data.length()-1; recurIdx.find(i_n)==recurIdx.end(); i_n--);
 
-        // default=last
-        delta_check=delta_n1;
-        i_check=data.length()-1;
+        double delta_1=fabs(data[i_1]-mean);
+        double delta_n=fabs(data[i_n]-mean);
 
-        if (opt.check("check_outlier"))
+        if (delta_1>delta_n)
         {
-            if (opt.find("check_outlier").asString()=="first")
-            {
-                delta_check=delta_0;
-                i_check=0;
-            }
+            delta_check=delta_1;
+            i_check=i_1;
         }
-        else if (delta_0>delta_n1)
+        else
         {
-            delta_check=delta_0;
-            i_check=0;
+            delta_check=delta_n;
+            i_check=i_n;
         }
     }
     else for (size_t i=0; i<data.length(); i++)
     {
-        double delta=fabs(data[i]-mean);
-        if (delta>delta_check)
+        // don't account for recursive outliers
+        if (recurIdx.find(i)!=recurIdx.end())
         {
-            delta_check=delta;
-            i_check=i;
+            double delta=fabs(data[i]-mean);
+            if (delta>delta_check)
+            {
+                delta_check=delta;
+                i_check=i;
+            }
         }
     }
 
@@ -218,7 +224,29 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
 
     // perform detection
     if (delta_check>tau*stdev)
+    {
+        // account for current instance
         res.push_back(i_check);
+
+        // recursive computation
+        if (opt.check("recursive"))
+        {
+            // extend the set of current outliers
+            recurIdx.insert((size_t)i_check);
+
+            // recursive call
+            VectorOf<int> tmpRes=detect(data,options);
+
+            // if tmpRes is empty then we're done;
+            // hence clear the temporary variables
+            if (tmpRes.size()==0)
+                recurIdx.clear();
+            // aggregate results
+            else for (size_t i=0; i<tmpRes.size(); i++)
+                res.push_back(tmpRes[i]);            
+        }
+
+    }
 
     return res;
 }
