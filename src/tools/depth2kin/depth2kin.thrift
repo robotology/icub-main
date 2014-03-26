@@ -189,11 +189,11 @@ service depth2kin_IDL
 
    /**
    * Ask the current calibrator to carry out the calibration.
-   * @param removeOutliers if true outliers removal is performed.
+   * @param rm_outliers if true outliers removal is performed.
    * @return a property containing the output in terms of
    * calibration errors for each subsystem: "calibrator", "alignerL", "alignerR".
    */
-   Property calibrate(1:bool removeOutliers=true);
+   Property calibrate(1:bool rm_outliers=true);
 
    /**
    * Push the current calibrator in the list of experts.

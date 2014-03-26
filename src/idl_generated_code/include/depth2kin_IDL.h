@@ -139,11 +139,11 @@ public:
   virtual std::string getCalibrationType();
 /**
  * Ask the current calibrator to carry out the calibration.
- * @param removeOutliers if true outliers removal is performed.
+ * @param rm_outliers if true outliers removal is performed.
  * @return a property containing the output in terms of
  * calibration errors for each subsystem: "calibrator", "alignerL", "alignerR".
  */
-  virtual yarp::os::Property calibrate(const bool removeOutliers = 1);
+  virtual yarp::os::Property calibrate(const bool rm_outliers = 1);
 /**
  * Push the current calibrator in the list of experts.
  * @return true/false on success/failure.

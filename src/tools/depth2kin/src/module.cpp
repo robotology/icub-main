@@ -1212,7 +1212,7 @@ string CalibModule::getCalibrationType()
 
 
 /************************************************************************/
-Property CalibModule::calibrate(const bool removeOutliers)
+Property CalibModule::calibrate(const bool rm_outliers)
 {
     mutex.lock();
     double error;
@@ -1221,8 +1221,8 @@ Property CalibModule::calibrate(const bool removeOutliers)
 
     if (exp_depth2kin)
     {
-        if (removeOutliers)
-            reply.put("outliers",removeOutliers);
+        if (rm_outliers)
+            reply.put("outliers",removeOutliers());
 
         calibrator->calibrate(error);
         reply.put("calibrator",error);

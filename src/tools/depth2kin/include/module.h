@@ -157,7 +157,7 @@ public:
     string getArm();
     bool setCalibrationType(const string &type, const string &extrapolation);
     string getCalibrationType();
-    Property calibrate(const bool removeOutliers);
+    Property calibrate(const bool rm_outliers);
     bool pushCalibrator();
     bool setTouchWithExperts(const string &sw);
     string getTouchWithExperts();
