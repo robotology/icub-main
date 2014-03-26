@@ -144,6 +144,7 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
 
     double mean=0.0;
     double stdev=0.0;
+    size_t N=data.length()-recurIdx.size();
 
     Property &opt=const_cast<Property&>(options);
     if (opt.check("mean") && opt.check("std"))
@@ -157,15 +158,15 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
         for (size_t i=0; i<data.length(); i++)
         {
             // don't account for recursive outliers
-            if (recurIdx.find(i)!=recurIdx.end())
+            if (recurIdx.find(i)==recurIdx.end())
             {
-                mean+=data[i]; 
+                mean+=data[i];
                 stdev+=data[i]*data[i];
             }
         }
 
-        mean/=data.length();
-        stdev=sqrt(stdev/data.length()-mean*mean);
+        mean/=N;
+        stdev=sqrt(stdev/N-mean*mean);
     }
 
     int i_check;
@@ -174,8 +175,8 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     {
         // don't account for recursive outliers
         size_t i_1,i_n;
-        for (i_1=0; recurIdx.find(i_1)==recurIdx.end(); i_1++);
-        for (i_n=data.length()-1; recurIdx.find(i_n)==recurIdx.end(); i_n--);
+        for (i_1=0; recurIdx.find(i_1)!=recurIdx.end(); i_1++);
+        for (i_n=data.length()-1; recurIdx.find(i_n)!=recurIdx.end(); i_n--);
 
         double delta_1=fabs(data[i_1]-mean);
         double delta_n=fabs(data[i_n]-mean);
@@ -194,7 +195,7 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     else for (size_t i=0; i<data.length(); i++)
     {
         // don't account for recursive outliers
-        if (recurIdx.find(i)!=recurIdx.end())
+        if (recurIdx.find(i)==recurIdx.end())
         {
             double delta=fabs(data[i]-mean);
             if (delta>delta_check)
@@ -207,20 +208,20 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
 
     // choose tau
     double tau;
-    if (data.length()>5000)
+    if (N>5000)
         tau=1.96;
-    else if (data.length()>1000)
+    else if (N>1000)
         tau=tauLUP[5000];
-    else if (data.length()>500)
+    else if (N>500)
         tau=tauLUP[1000];
-    else if (data.length()>200)
+    else if (N>200)
         tau=tauLUP[500];
-    else if (data.length()>150)
+    else if (N>150)
         tau=tauLUP[200];
-    else if (data.length()>100)
+    else if (N>100)
         tau=tauLUP[150];
     else
-        tauLUP[data.length()];
+        tau=tauLUP[N];
 
     // perform detection
     if (delta_check>tau*stdev)
@@ -243,7 +244,7 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
                 recurIdx.clear();
             // aggregate results
             else for (size_t i=0; i<tmpRes.size(); i++)
-                res.push_back(tmpRes[i]);            
+                res.push_back(tmpRes[i]);
         }
 
     }
