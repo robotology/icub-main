@@ -51,7 +51,7 @@
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) --> 
     <parameters>--from right_hand_V2_1.ini --useCalibration --xpos 960 --ypos 0 --width 300 --height 300</parameters>
     <node>localhost</node>
     <tag>skinGuiRH</tag>
