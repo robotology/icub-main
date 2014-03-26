@@ -30,6 +30,7 @@
 #define __CanBusMotionControlh__
 
 #include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -568,21 +569,29 @@ class axisImpedanceHelper
     inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
 };
 
-class positionDirectHelper
+class axisPositionDirectHelper
 {
     int  jointsNum;
-    double* maxStep;
+    double* maxHwStep;
+    double* maxUserStep;
+    ControlBoardHelper* helper;
     
     public:
-    positionDirectHelper(int njoints, double* _maxStep );
+    axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _maxStep);
 
-    inline ~positionDirectHelper()
+    inline ~axisPositionDirectHelper()
     {
-        delete [] maxStep;
-        maxStep=0;
+        delete [] maxHwStep;
+        maxHwStep=0;
+        delete [] maxUserStep;
+        maxUserStep=0;
+        delete helper;
+        helper = 0;
     }
     
-    inline double* getMaxStep () {return maxStep;}
+    inline double getMaxHwStep (int j) {return maxHwStep[j];}
+    inline double getMaxUserStep (int j) {return maxUserStep[j];}
+    inline double getSaturatedValue (int j, double curr_value, double ref_value); 
 };
 
 class axisTorqueHelper
@@ -1043,7 +1052,7 @@ protected:
     axisImpedanceHelper   *_axisImpedanceHelper;
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
-    positionDirectHelper  *_positionDirectHelper;
+    axisPositionDirectHelper  *_axisPositionDirectHelper;
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.

@@ -611,14 +611,30 @@ axisImpedanceHelper::axisImpedanceHelper(int njoints, ImpedanceLimits* imped_lim
         memset(impLimits, 0, sizeof(ImpedanceLimits)*jointsNum);
 }
 
-positionDirectHelper::positionDirectHelper(int njoints, double* _stepLimit)
+axisPositionDirectHelper::axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _stepLimit)
 {
     jointsNum=njoints;
-    maxStep = new double [jointsNum];
-    if (_stepLimit != 0)
-        memcpy(maxStep, _stepLimit, sizeof(double)*jointsNum);
-    else
-        memset(maxStep, 0, sizeof(double)*jointsNum);
+    helper = new ControlBoardHelper(njoints, aMap, angToEncs, 0, 0);
+    maxHwStep = new double [jointsNum];
+    maxUserStep = new double [jointsNum];
+    for (int i=0; i<jointsNum; i++)
+    {
+        int    hw_i=0;
+        double hw_ang=0;
+        helper->posA2E(_stepLimit[i], i, hw_ang, hw_i);
+        maxHwStep[hw_i] = hw_ang;
+        maxUserStep[i] = _stepLimit[i];
+    }
+}
+
+double axisPositionDirectHelper::getSaturatedValue (int hw_j, double hw_curr_value, double hw_ref_value)
+{
+    //here hw_j isthe joint number after the axis_map; hw_value is in encoder ticks
+    double hw_maxval = hw_curr_value + getMaxHwStep(hw_j);
+    double hw_minval = hw_curr_value - getMaxHwStep(hw_j);
+    double hw_val    = (std::min)((std::max)(hw_ref_value, hw_minval), hw_maxval);
+
+    return hw_val;
 }
 
 axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
@@ -2151,7 +2167,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-    _positionDirectHelper = new positionDirectHelper(p._njoints, p._maxStep);
+    _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -5739,16 +5755,13 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    if (fabs(ref-r._bcastRecvBuffer[axis]._position_joint._value) < _positionDirectHelper->getMaxStep()[axis])
+    if (fabs(ref-r._bcastRecvBuffer[axis]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(axis))
     {
         return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(ref));
     }
     else
     {
-        double maxval = r._bcastRecvBuffer[axis]._position_joint._value + _positionDirectHelper->getMaxStep()[axis];
-        double minval = r._bcastRecvBuffer[axis]._position_joint._value - _positionDirectHelper->getMaxStep()[axis];
-        double val    = (std::min)((std::max)(val, minval), maxval);
-        _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(_positionDirectHelper->getMaxStep()[axis]));
+        _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(_axisPositionDirectHelper->getSaturatedValue(axis,r._bcastRecvBuffer[j]._position_joint._value,ref)));
         return false;
     }
 }
@@ -5760,16 +5773,13 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
 
     for(int j=0; j< n_joint; j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _positionDirectHelper->getMaxStep()[j])
+        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
         }
         else
         {
-            double maxval = r._bcastRecvBuffer[j]._position_joint._value + _positionDirectHelper->getMaxStep()[j];
-            double minval = r._bcastRecvBuffer[j]._position_joint._value - _positionDirectHelper->getMaxStep()[j];
-            double val    = (std::min)((std::max)(val, minval), maxval);
-            _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(val));
+            _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(_axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j])));
             ret = false;
         }
     }
@@ -5783,16 +5793,13 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _positionDirectHelper->getMaxStep()[j])
+        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(refs[j]));
         }
         else
         {
-            double maxval = r._bcastRecvBuffer[j]._position_joint._value + _positionDirectHelper->getMaxStep()[j];
-            double minval = r._bcastRecvBuffer[j]._position_joint._value - _positionDirectHelper->getMaxStep()[j];
-            double val    = (std::min)((std::max)(val, minval), maxval);
-            _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(val));
+            _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(_axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j])));
             ret = false;
         }
     }
