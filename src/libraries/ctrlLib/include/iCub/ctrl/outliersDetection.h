@@ -30,6 +30,7 @@
 #define __OUTLIERSDETECTION_H__
 
 #include <map>
+#include <set>
 
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
@@ -73,6 +74,7 @@ class ModifiedThompsonTau : public OutliersDetection
 {
 protected:
     std::map<size_t,double> tauLUP;
+    std::set<size_t> recurIdx;
 
 public:
     /**
@@ -82,7 +84,8 @@ public:
 
     /**
     * Perform outliers detection over the provided data. \n 
-    * Only one element is considered at a time.
+    * Only one element is considered at a time, unless the 
+    * <i>recursive</i> option is specified. 
     * @param data contains points to be verified. 
     * @param options contains detection options. If the properties
     *                <i>mean</i> and <i>std</i> are provided with
@@ -90,7 +93,11 @@ public:
     *                relative values is skipped. If the property
     *                <i>sorted</i> is provided, then the data are
     *                expected to be sorted either in ascending or
-    *                descending order.
+    *                descending order. If the property
+    *                <i>recursive</i> is specified, then the
+    *                detection is carried out over and over on the
+    *                outcome of the previous instance until no more
+    *                outliers are found.
     * @return vector containing the outliers indexes.
     */
     yarp::sig::VectorOf<int> detect(const yarp::sig::Vector &data,
