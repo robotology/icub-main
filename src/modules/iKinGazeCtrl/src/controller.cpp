@@ -559,14 +559,21 @@ void Controller::run()
     {
         mutexCtrl.lock();
 
+        bool gotProblem=false;
         if (neckPosCtrlOn)
         {
             Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
-            posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
+            gotProblem=!posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
             velEyes->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
         }
         else
             velHead->velocityMove(vdeg.data());
+
+        if (gotProblem)
+        {
+            event="motion-done";
+            stopLimb();
+        }
 
         mutexCtrl.unlock();
     }
