@@ -29,6 +29,7 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <string.h>
 
 /// specific to this device driver.
@@ -1350,7 +1351,14 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     else
     {
         for(i=1;i<xtmp.size(); i++) 
+        {
             _maxStep[i-1]=xtmp.get(i).asDouble();
+            if (_maxStep[i-1]<0)
+            {
+                fprintf(stderr,"ERROR: Invalid MaxPosStep parameter <0\n");
+                return false;
+            }
+        }
     }
 
     if (!validate(limits, xtmp, "Max","a list of maximum angles (in degrees)", nj+1))
@@ -5731,12 +5739,15 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    if (fabs(ref-r._bcastRecvBuffer[axis]._position_joint._value) > _positionDirectHelper->getMaxStep()[axis])
+    if (fabs(ref-r._bcastRecvBuffer[axis]._position_joint._value) < _positionDirectHelper->getMaxStep()[axis])
     {
     return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(ref));
     }
     else
     {
+        double maxval = r._bcastRecvBuffer[axis]._position_joint._value + _positionDirectHelper->getMaxStep()[axis];
+        double minval = r._bcastRecvBuffer[axis]._position_joint._value - _positionDirectHelper->getMaxStep()[axis];
+        double val    = (std::min)((std::max)(val, minval), maxval);
         _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(_positionDirectHelper->getMaxStep()[axis]));
         return false;
     }
@@ -5749,13 +5760,16 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
 
     for(int j=0; j< n_joint; j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) > _positionDirectHelper->getMaxStep()[j])
+        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _positionDirectHelper->getMaxStep()[j])
         {
         ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
     }
         else
         {
-            _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(_positionDirectHelper->getMaxStep()[j]));
+            double maxval = r._bcastRecvBuffer[j]._position_joint._value + _positionDirectHelper->getMaxStep()[j];
+            double minval = r._bcastRecvBuffer[j]._position_joint._value - _positionDirectHelper->getMaxStep()[j];
+            double val    = (std::min)((std::max)(val, minval), maxval);
+            _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(val));
             ret = false;
         }
     }
@@ -5769,13 +5783,16 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) > _positionDirectHelper->getMaxStep()[j])
+        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _positionDirectHelper->getMaxStep()[j])
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(refs[j]));
         }
         else
     {
-            _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(_positionDirectHelper->getMaxStep()[j]));
+            double maxval = r._bcastRecvBuffer[j]._position_joint._value + _positionDirectHelper->getMaxStep()[j];
+            double minval = r._bcastRecvBuffer[j]._position_joint._value - _positionDirectHelper->getMaxStep()[j];
+            double val    = (std::min)((std::max)(val, minval), maxval);
+            _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(val));
             ret = false;
         }
     }
