@@ -160,6 +160,7 @@ bool comanMotionControl::alloc(int nj)
     ImplementControlLimits2(this),
     ImplementTorqueControl(this),
     ImplementPositionDirect(this),
+    ImplementImpedanceControl(this),
      _initialPidConfigFound(false),
     _mutex(1)
 {
@@ -276,6 +277,7 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
 
     _comanHandler = comanDevicesHandler::instance();
 
@@ -2694,4 +2696,44 @@ bool comanMotionControl::setPositionsRaw(const double *refs)
     return (!_boards_ctrl->set_position_velocity(_ref_positions, _ref_speeds, _njoints) );
 }
 
+bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
+{
+    return NOT_YET_IMPLEMENTED("getImpedanceOffsetRaw");
+}
 
+bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
+{
+    uint8_t bId = jointTobId(j);
+    int tmp_stiff = (int) stiffness;
+    int tmp_damp  = (int) damping;
+
+    if(stiffness < 5)
+    {
+        yWarning() << "------------------------------------------------------";
+        yWarning() << " Value of stiffnes " << "stiffness is below threshold ";
+        yWarning() << "------------------------------------------------------";
+    }
+
+    bool ret = (!_boards_ctrl->set_stiffness_damping_group(&bId, &tmp_stiff, &tmp_damp, 1));
+
+    if(!ret)
+    {
+        cout << "ERROR in setImpedanceRaw for joint " << j;
+    }
+    return ret;
+}
+
+bool comanMotionControl::setImpedanceOffsetRaw(int j, double offset)
+{
+    return NOT_YET_IMPLEMENTED("setImpedanceOffsetRaw");
+}
+
+bool comanMotionControl::getImpedanceOffsetRaw(int j, double* offset)
+{
+    return NOT_YET_IMPLEMENTED("getImpedanceOffsetRaw");
+}
+
+bool comanMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentImpedanceLimitRaw");
+}

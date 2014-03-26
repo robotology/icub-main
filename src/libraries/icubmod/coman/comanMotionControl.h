@@ -121,7 +121,9 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public ImplementTorqueControl,
     public IDebugInterfaceRaw,
     public IPositionDirectRaw,
-    public ImplementPositionDirect
+    public ImplementPositionDirect,
+    public IImpedanceControlRaw,
+    public ImplementImpedanceControl
 {
 private:
 
@@ -395,6 +397,17 @@ public:
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
+
+
+    //----------------------------------------------\\
+    //  Impedance Control interface
+    //----------------------------------------------\\
+
+    bool getImpedanceRaw(int j, double *stiffness, double *damping);
+    bool setImpedanceRaw(int j, double stiffness, double damping);
+    bool setImpedanceOffsetRaw(int j, double offset);
+    bool getImpedanceOffsetRaw(int j, double* offset);
+    bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
 };
 
 #endif // include guard
