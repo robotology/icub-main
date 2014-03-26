@@ -1222,7 +1222,7 @@ Property CalibModule::calibrate(const bool rm_outliers)
     if (exp_depth2kin)
     {
         if (rm_outliers)
-            reply.put("outliers",removeOutliers());
+            reply.put("outliers_removed",removeOutliers());
 
         calibrator->calibrate(error);
         reply.put("calibrator",error);
