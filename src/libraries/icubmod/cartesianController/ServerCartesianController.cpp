@@ -1219,11 +1219,12 @@ bool ServerCartesianController::getNewTarget()
 
 
 /************************************************************************/
-void ServerCartesianController::sendControlCommands()
+bool ServerCartesianController::sendControlCommands()
 {
     int j=0;
     int k=0;
     int cnt=0;
+    bool ret=true;
 
     if (posDirectEnabled)
     {        
@@ -1242,7 +1243,7 @@ void ServerCartesianController::sendControlCommands()
 
             if (++k>=lJnt[j])
             {
-                lPos[j]->setPositions(joints.size(),joints.getFirst(),refs.data());
+                ret&=lPos[j]->setPositions(joints.size(),joints.getFirst(),refs.data());
                 joints.clear();
                 refs.clear();
                 j++;
@@ -1276,6 +1277,8 @@ void ServerCartesianController::sendControlCommands()
             }
         }
     }
+
+    return ret;
 }
 
 
@@ -1398,9 +1401,9 @@ void ServerCartesianController::run()
                 if (!trackingMode && (rxToken==txToken))
                     setTrackingModeHelper(false);
             }
-            else
-                // send commands to the robot
-                sendControlCommands();
+            // send commands to the robot
+            else if (!sendControlCommands())
+                stopControlHelper();
         }
 
         mutex.unlock();
