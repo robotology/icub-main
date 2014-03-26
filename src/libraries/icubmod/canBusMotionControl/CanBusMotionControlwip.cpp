@@ -614,7 +614,7 @@ axisImpedanceHelper::axisImpedanceHelper(int njoints, ImpedanceLimits* imped_lim
 axisPositionDirectHelper::axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _stepLimit)
 {
     jointsNum=njoints;
-    helper = new ControlBoardHelper(njoints, aMap, angToEncs, 0, 0);
+    helper = new ControlBoardHelper(njoints, aMap, angToEncs, 0, 0); //NB: zeros=0 is mandatory for this algorithm
     maxHwStep = new double [jointsNum];
     maxUserStep = new double [jointsNum];
     for (int i=0; i<jointsNum; i++)
@@ -622,7 +622,7 @@ axisPositionDirectHelper::axisPositionDirectHelper(int njoints, const int *aMap,
         int    hw_i=0;
         double hw_ang=0;
         helper->posA2E(_stepLimit[i], i, hw_ang, hw_i);
-        maxHwStep[hw_i] = hw_ang;
+        maxHwStep[hw_i] = fabs(hw_ang); //NB: fabs() is mandatory for this algorithm (because angToEncs is signed)
         maxUserStep[i] = _stepLimit[i];
     }
 }
