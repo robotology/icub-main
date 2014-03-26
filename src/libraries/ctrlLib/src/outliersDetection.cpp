@@ -168,25 +168,18 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     double delta_check=0.0;
     if (opt.check("sorted"))
     {
-        double delta_0=fabs(data[0]-mean);
-        double delta_n1=fabs(data[data.length()-1]-mean);
+        double delta_1=fabs(data[0]-mean);
+        double delta_n=fabs(data[data.length()-1]-mean);
 
-        // default=last
-        delta_check=delta_n1;
-        i_check=data.length()-1;
-
-        if (opt.check("check_outlier"))
+        if (delta_1>delta_n)
         {
-            if (opt.find("check_outlier").asString()=="first")
-            {
-                delta_check=delta_0;
-                i_check=0;
-            }
-        }
-        else if (delta_0>delta_n1)
-        {
-            delta_check=delta_0;
+            delta_check=delta_1;
             i_check=0;
+        }
+        else
+        {
+            delta_check=delta_n;
+            i_check=data.length()-1;
         }
     }
     else for (size_t i=0; i<data.length(); i++)

@@ -90,11 +90,7 @@ public:
     *                relative values is skipped. If the property
     *                <i>sorted</i> is provided, then the data are
     *                expected to be sorted either in ascending or
-    *                descending order; further, in case of sorted
-    *                data, if the <i>check_outlier</i> property is
-    *                provided with a string value equal to "first"
-    *                ("last"), then only the first (last) value is
-    *                checked during detection.
+    *                descending order.
     * @return vector containing the outliers indexes.
     */
     yarp::sig::VectorOf<int> detect(const yarp::sig::Vector &data,
