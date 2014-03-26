@@ -28,6 +28,12 @@ using namespace iCub::ctrl;
 /**********************************************************************/
 ModifiedThompsonTau::ModifiedThompsonTau()
 {
+    // MATLAB code to find out tau values:
+    // n: degrees of freedom
+    // t: the critical student's t value
+    // t=tinv(1-0.05/2,n-2);
+    // tau=(t*(n-1))/sqrt(n*(n-2+t^2));
+
     tauLUP[3]   =1.1511;
     tauLUP[4]   =1.4250;
     tauLUP[5]   =1.5712;
