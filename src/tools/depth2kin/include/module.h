@@ -124,6 +124,7 @@ protected:
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);
     bool getDepthAveraged(const Vector &px, Vector &x, Vector &pxr, const int maxSamples=5);
     void prepareRobot();
+    int removeOutliers();
     void doMotorExploration();
     void doTouch(const Vector &xd);
     void doTest();
@@ -156,7 +157,7 @@ public:
     string getArm();
     bool setCalibrationType(const string &type, const string &extrapolation);
     string getCalibrationType();
-    Property calibrate();
+    Property calibrate(const bool removeOutliers);
     bool pushCalibrator();
     bool setTouchWithExperts(const string &sw);
     string getTouchWithExperts();

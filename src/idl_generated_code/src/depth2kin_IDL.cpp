@@ -382,11 +382,13 @@ public:
 
 class depth2kin_IDL_calibrate : public yarp::os::Portable {
 public:
+  bool removeOutliers;
   yarp::os::Property _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeListHeader(2)) return false;
     if (!writer.writeTag("calibrate",1,1)) return false;
+    if (!writer.writeBool(removeOutliers)) return false;
     return true;
   }
   virtual bool read(yarp::os::ConnectionReader& connection) {
@@ -935,11 +937,12 @@ std::string depth2kin_IDL::getCalibrationType() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-yarp::os::Property depth2kin_IDL::calibrate() {
+yarp::os::Property depth2kin_IDL::calibrate(const bool removeOutliers) {
   yarp::os::Property _return;
   depth2kin_IDL_calibrate helper;
+  helper.removeOutliers = removeOutliers;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDL::calibrate()");
+    fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDL::calibrate(const bool removeOutliers)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1352,8 +1355,12 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       return true;
     }
     if (tag == "calibrate") {
+      bool removeOutliers;
+      if (!reader.readBool(removeOutliers)) {
+        removeOutliers = 1;
+      }
       yarp::os::Property _return;
-      _return = calibrate();
+      _return = calibrate(removeOutliers);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1838,8 +1845,9 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("@return the calibration type. ");
     }
     if (functionName=="calibrate") {
-      helpString.push_back("yarp::os::Property calibrate() ");
+      helpString.push_back("yarp::os::Property calibrate(const bool removeOutliers = 1) ");
       helpString.push_back("Ask the current calibrator to carry out the calibration. ");
+      helpString.push_back("@param removeOutliers if true outliers removal is performed. ");
       helpString.push_back("@return a property containing the output in terms of ");
       helpString.push_back("calibration errors for each subsystem: \"calibrator\", \"alignerL\", \"alignerR\". ");
     }

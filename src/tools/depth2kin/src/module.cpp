@@ -30,6 +30,7 @@
 #include <yarp/math/NormRand.h>
 
 #include <iCub/ctrl/math.h>
+#include <iCub/ctrl/outliersDetection.h>
 
 #include "module.h"
 
@@ -385,6 +386,42 @@ void CalibModule::prepareRobot()
 
 
 /************************************************************************/
+int CalibModule::removeOutliers()
+{
+    // calibrate using the current setting
+    double error;
+    calibrator->calibrate(error);
+
+    deque<Vector> p_depth, p_kin;
+    calibrator->getPoints(p_depth,p_kin);
+
+    // compute the prediction errors
+    Vector e(p_depth.size());
+    for (size_t i=0; i<p_depth.size(); i++)
+    {
+        Vector x;
+        calibrator->retrieve(p_depth[i],x);
+        e[i]=norm(p_kin[i]-x);
+    }
+
+    // perform outliers removal
+    ModifiedThompsonTau detector;
+    set<size_t> idx=detector.detect(e,Property("(recursive)"));
+
+    // feed the calibrator with inliers only
+    if (!idx.empty())
+    {
+        calibrator->clearPoints();
+        for (size_t i=0; i<p_depth.size(); i++)
+            if (idx.find(i)==idx.end())
+                calibrator->addPoints(p_depth[i],p_kin[i]);
+    }
+
+    return idx.size();
+}
+
+
+/************************************************************************/
 void CalibModule::doMotorExploration()
 {
     mutex.lock();
@@ -616,7 +653,7 @@ void CalibModule::doTest()
 
             arm="left";
             experts=&expertsL;
-            Property ret=calibrate();
+            Property ret=calibrate(false);
             pushCalibrator();
             printf("H\n%s\n\n",H.toString(5,5).c_str());
             printf("calibration output\n%s\n",ret.toString().c_str());
@@ -1175,7 +1212,7 @@ string CalibModule::getCalibrationType()
 
 
 /************************************************************************/
-Property CalibModule::calibrate()
+Property CalibModule::calibrate(const bool removeOutliers)
 {
     mutex.lock();
     double error;
@@ -1184,6 +1221,9 @@ Property CalibModule::calibrate()
 
     if (exp_depth2kin)
     {
+        if (removeOutliers)
+            reply.put("outliers",removeOutliers);
+
         calibrator->calibrate(error);
         reply.put("calibrator",error);
         calibrated=true;

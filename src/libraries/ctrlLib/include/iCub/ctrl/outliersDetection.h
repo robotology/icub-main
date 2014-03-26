@@ -53,10 +53,10 @@ public:
     * Perform outliers detection over the provided data. 
     * @param data contains points to be verified. 
     * @param options contains detection options. 
-    * @return vector containing the outliers indexes.
+    * @return set containing the outliers indexes.
     */
-    virtual yarp::sig::VectorOf<int> detect(const yarp::sig::Vector &data,
-                                            const yarp::os::Property &options) = 0;
+    virtual std::set<size_t> detect(const yarp::sig::Vector &data,
+                                    const yarp::os::Property &options) = 0;
 
     /**
     * Virtual destructor.
@@ -98,10 +98,10 @@ public:
     *                detection is carried out over and over on the
     *                outcome of the previous instance until no more
     *                outliers are found.
-    * @return vector containing the outliers indexes.
+    * @return set containing the outliers indexes.
     */
-    yarp::sig::VectorOf<int> detect(const yarp::sig::Vector &data,
-                                    const yarp::os::Property &options);
+    std::set<size_t> detect(const yarp::sig::Vector &data,
+                            const yarp::os::Property &options);
 
     /**
     * Virtual destructor.

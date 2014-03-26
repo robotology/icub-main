@@ -142,9 +142,9 @@ ModifiedThompsonTau::ModifiedThompsonTau()
 
 
 /**********************************************************************/
-VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &options)
+set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &options)
 {
-    VectorOf<int> res;
+    set<size_t> res;
     if (data.length()<3)
         return res;
 
@@ -175,7 +175,7 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
         stdev=sqrt(stdev/N-mean*mean);
     }
 
-    int i_check;
+    size_t i_check;
     double delta_check=0.0;
     if (opt.check("sorted"))
     {
@@ -233,24 +233,24 @@ VectorOf<int> ModifiedThompsonTau::detect(const Vector &data, const Property &op
     if (delta_check>tau*stdev)
     {
         // account for current instance
-        res.push_back(i_check);
+        res.insert(i_check);
 
         // recursive computation
         if (opt.check("recursive"))
         {
             // extend the set of current outliers
-            recurIdx.insert((size_t)i_check);
+            recurIdx.insert(i_check);
 
             // recursive call
-            VectorOf<int> tmpRes=detect(data,options);
+            set<size_t> tmpRes=detect(data,options);
 
             // if tmpRes is empty then we're done;
             // hence clear the temporary variables
-            if (tmpRes.size()==0)
+            if (tmpRes.empty())
                 recurIdx.clear();
             // aggregate results
-            else for (size_t i=0; i<tmpRes.size(); i++)
-                res.push_back(tmpRes[i]);
+            else for (set<size_t>::iterator it=tmpRes.begin(); it!=tmpRes.end(); it++)
+                res.insert(*it);
         }
 
     }
