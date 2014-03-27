@@ -73,6 +73,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         IEncoders *encHead; drvHead->view(encHead);
         encHead->getAxes(&nJointsHead);
 
+        drvHead->view(modHead);
         drvHead->view(posHead);
         drvHead->view(velHead);
 
@@ -178,6 +179,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     tiltDone=panDone=verDone=false;
     unplugCtrlEyes=false;
     ctrlInhibited=false;
+    jointsHealthy=true;
 }
 
 
@@ -300,10 +302,15 @@ void Controller::stopControl()
 {
     mutexRun.lock();
     mutexCtrl.lock();
-    q_stamp=Time::now();
-    ctrlInhibited=true;
-    stopLimb();
-    notifyEvent("motion-done");
+
+    if (commData->get_isCtrlActive())
+    {
+        q_stamp=Time::now();
+        ctrlInhibited=true;
+        stopLimb();
+        notifyEvent("motion-done");
+    }
+
     mutexCtrl.unlock();
     mutexRun.unlock();
 }
@@ -396,8 +403,34 @@ void Controller::resetCtrlEyes()
 
 
 /************************************************************************/
+bool Controller::areJointsHealthy()
+{
+    VectorOf<int> modes(nJointsHead);
+    modHead->getControlModes(modes.getFirst());
+    for (size_t i=0; i<modes.size(); i++)
+    {
+        if (modes[i]==VOCAB_CM_IDLE)
+        {
+            if (jointsHealthy)
+            {                
+                jointsHealthy=false;
+                stopControl(); 
+            }
+
+            return false; 
+        }
+    }
+
+    return jointsHealthy=true;
+}
+
+
+/************************************************************************/
 void Controller::run()
 {
+    if (!areJointsHealthy())
+        return;
+
     mutexRun.lock();
     string event="none";
 
@@ -559,22 +592,14 @@ void Controller::run()
     {
         mutexCtrl.lock();
 
-        bool gotProblem=false;
         if (neckPosCtrlOn)
         {
             Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
-            gotProblem=!posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
+            posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
             velEyes->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
         }
         else
             velHead->velocityMove(vdeg.data());
-
-        if (gotProblem)
-        {
-            ctrlInhibited=true;
-            event="motion-done";
-            stopLimb();
-        }
 
         mutexCtrl.unlock();
     }
