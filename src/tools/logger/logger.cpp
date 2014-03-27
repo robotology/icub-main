@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <stdio.h>
 #include <yarp/os/Semaphore.h>
 
 //private classes

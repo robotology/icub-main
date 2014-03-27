@@ -26,6 +26,7 @@
 #include <yarp/dev/PolyDriver.h>
 
 #include <string>
+#include <stdio.h>
 
 #include "logger.h"
 
