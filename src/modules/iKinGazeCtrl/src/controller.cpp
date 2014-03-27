@@ -179,7 +179,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     tiltDone=panDone=verDone=false;
     unplugCtrlEyes=false;
     ctrlInhibited=false;
-    jointsHealthy=true;
 }
 
 
@@ -411,17 +410,12 @@ bool Controller::areJointsHealthy()
     {
         if (modes[i]==VOCAB_CM_IDLE)
         {
-            if (jointsHealthy)
-            {                
-                jointsHealthy=false;
-                stopControl(); 
-            }
-
+            stopControl();
             return false; 
         }
     }
 
-    return jointsHealthy=true;
+    return true;
 }
 
 

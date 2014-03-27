@@ -84,7 +84,6 @@ protected:
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
     bool ctrlInhibited;
-    bool jointsHealthy;
     bool Robotable;
     int nJointsTorso;
     int nJointsHead;
