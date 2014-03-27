@@ -5750,18 +5750,15 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);
-    const int axis = j;
 
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    if (fabs(ref-r._bcastRecvBuffer[axis]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(axis))
+    if (fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
     {
-        return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(ref));
+        return _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
-    {
-        _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(_axisPositionDirectHelper->getSaturatedValue(axis,r._bcastRecvBuffer[j]._position_joint._value,ref)));
+    { 
+        fprintf(stderr, "WARN: limiting setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+        _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(_axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,ref)));
         return false;
     }
 }
@@ -5779,6 +5776,7 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
         }
         else
         {
+            fprintf(stderr, "WARN: limiting setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
             _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(_axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j])));
             ret = false;
         }
@@ -5799,6 +5797,7 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
         }
         else
         {
+            fprintf(stderr, "WARN: limiting setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
             _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(_axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j])));
             ret = false;
         }
