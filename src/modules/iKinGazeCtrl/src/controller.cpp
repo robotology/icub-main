@@ -571,6 +571,7 @@ void Controller::run()
 
         if (gotProblem)
         {
+            ctrlInhibited=true;
             event="motion-done";
             stopLimb();
         }
