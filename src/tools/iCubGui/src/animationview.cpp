@@ -75,6 +75,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
 
     mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str(),config.find("forceport").asString().c_str());
     //printf("objport=%s\n",config.find("objport").asString().c_str());
+    mSubtitlesManager = new SubtitlesManager("/speechText:i", "/dbgText:i");
 
     leftMouseButton=false;
     modifier=0;
@@ -99,6 +100,7 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
 AnimationView::~AnimationView()
 {
     if (mObjectsManager) delete mObjectsManager;
+    if (mSubtitlesManager) delete mSubtitlesManager; 
 
     if (pBVH) delete pBVH;
 }
@@ -224,6 +226,7 @@ void AnimationView::draw()
     glRotated( 90.0,0.0,0.0,1.0);
 
     pBVH->draw();
+    mSubtitlesManager->draw();
 
     glPopMatrix();
 

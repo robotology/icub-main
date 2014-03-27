@@ -24,6 +24,7 @@
 #include "camera.h"
 #include "bvh.h"
 #include "objectsthread.h"
+#include "subtitilessthread.h"
 
 //#include "rotation.h"
 //#include "prop.h"
@@ -119,6 +120,7 @@ protected:
     QTimer mTimer;
     BVH* pBVH;
     ObjectsManager* mObjectsManager;
+    SubtitlesManager* mSubtitlesManager; 
 
     QPoint clickPos;           // holds the mouse click position for dragging
     QPoint returnPos;          // holds the mouse position to return to after dragging
@@ -137,6 +139,7 @@ protected:
 
     void clearSelected();
     void drawCircle(int axis, float radius, int width);    
+
 };
 
 #endif
