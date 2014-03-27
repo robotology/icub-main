@@ -8,6 +8,7 @@ add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 add_subdirectory(iCubTest)
 add_subdirectory(fingersTuner)
+add_subdirectory(logger)
 
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)
