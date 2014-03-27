@@ -407,13 +407,8 @@ bool Controller::areJointsHealthy()
     VectorOf<int> modes(nJointsHead);
     modHead->getControlModes(modes.getFirst());
     for (size_t i=0; i<modes.size(); i++)
-    {
         if (modes[i]==VOCAB_CM_IDLE)
-        {
-            stopControl();
             return false; 
-        }
-    }
 
     return true;
 }
@@ -423,7 +418,11 @@ bool Controller::areJointsHealthy()
 void Controller::run()
 {
     if (!areJointsHealthy())
+    {
+        stopControl();
+        port_xd->get_new()=false;
         return;
+    }
 
     mutexRun.lock();
     string event="none";
