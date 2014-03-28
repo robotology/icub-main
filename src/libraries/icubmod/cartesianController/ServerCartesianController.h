@@ -113,6 +113,7 @@ protected:
     bool posDirectAvailable;
     bool pidAvailable;
     bool useReferences;
+    bool jointsHealthy;
 
     yarp::os::ConstString ctrlName;
     yarp::os::ConstString slvName;

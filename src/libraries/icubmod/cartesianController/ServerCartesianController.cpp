@@ -168,6 +168,7 @@ void ServerCartesianController::init()
     taskVelModeOn=false;
     motionDone   =true;
     useReferences=false;
+    jointsHealthy=true;
 
     connectCnt=0;
     ctrlPose=IKINCTRL_POSE_FULL;
@@ -1348,7 +1349,8 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
-        if (!areJointsHealthy())
+        jointsHealthy=areJointsHealthy();
+        if (!jointsHealthy)
         {
             stopControl();
             return;
@@ -2011,7 +2013,7 @@ bool ServerCartesianController::connectToSolver()
 bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
                                      const double t, const bool latchToken)
 {    
-    if (connected && (ctrl->get_dim()!=0))
+    if (connected && (ctrl->get_dim()!=0) && jointsHealthy)
     {
         motionDone=false;
         
