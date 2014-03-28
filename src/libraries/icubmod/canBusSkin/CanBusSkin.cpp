@@ -199,50 +199,43 @@ bool CanBusSkin::threadInit() {
     }
 }
 
-void CanBusSkin::run() {    
+void CanBusSkin::run() {
     mutex.wait();
 
-    unsigned int canMessages=0;
+    unsigned int canMessages = 0;
 
-    bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
-    if (!res)
-    {
-        std::cerr<<"canRead failed\n";
+    bool res=pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
+    if (!res) {
+        std::cerr << "canRead failed \n";
     }
 
-    for (unsigned int i=0; i<canMessages; i++)
-    {
-        CanMessage &msg=inBuffer[i];
+    for (unsigned int i = 0; i < canMessages; i++) {
+        CanMessage &msg = inBuffer[i];
 
-        unsigned int msgid=msg.getId();
+        unsigned int msgid = msg.getId();
         unsigned int id;
         unsigned int sensorId;
-        id=(msgid & 0x00f0)>>4;
-        sensorId=msgid&0x000f;
+        id = (msgid & 0x00F0) >> 4;
+        sensorId = (msgid & 0x000F);
 
-        unsigned int type=msg.getData()[0]&0x80;
+        unsigned int msgTail = (msg.getData()[0] & 0x80);
         int len=msg.getLen();
 
-        for (int i=0; i<cardId.size(); i++)
-        {
-            if (id==cardId[i])
-            {
-                int index=16*12*i + sensorId*12;
+        for (int i = 0; i < cardId.size(); i++) {
+            if (id == cardId[i]) {
+                int index = 16*12*i + sensorId*12;
                 
-                if (type)
-                    {
-                        for(int k=0;k<5;k++)
-                            data[index+k+7]=msg.getData()[k+1];
+                if (msgTail) {
+                    // Message tail
+                    for(int k = 0; k < 5; k++) {
+                        data[index + k + 7] = msg.getData()[k + 1];
                     }
-                else 
-                    {
-                        for(int k=0;k<7;k++)
-                            data[index+k]=msg.getData()[k+1];
+                } else {
+                    // Message head
+                    for(int k = 0; k < 7; k++) {
+                        data[index + k] = msg.getData()[k + 1];
                     }
-          //    else
-          //        {
-          //            std::cerr<<"Error: skin received malformed message\n";
-          //        }
+                }
             }
         }
     }
