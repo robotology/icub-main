@@ -1664,7 +1664,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask_j1, sizeof(motor_config_mask_j1)) );
             printf("joint %d set motor config 0x%0X\n", j, motor_config_mask_j1);
 
-            ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2_j1, sizeof(motor_config_mask2_j1)) );
+//            ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2_j1, sizeof(motor_config_mask2_j1)) );
 
             setPidRaw(1, pid_j1);
             setTorquePidRaw(1, pidTorque_j1);
@@ -1695,7 +1695,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             	ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask_j1, sizeof(motor_config_mask_j1)) );
             	printf("joint %d set motor config 0x%0X\n", j, motor_config_mask_j1);
 
-            	ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2_j1, sizeof(motor_config_mask2_j1)) );
+//            	ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2_j1, sizeof(motor_config_mask2_j1)) );
 
             	setPidRaw(1, pid_j1);
             	setTorquePidRaw(1, pidTorque_j1);
@@ -1759,11 +1759,10 @@ bool comanMotionControl::setTorqueModeRaw(int j)
 
     ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
     printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
-
+/*
     uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
-
     ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
-
+*/
     // set position pids
     pid_gains_t p_i_d;
     p_i_d.p = (int32_t) 0;
@@ -1813,6 +1812,7 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
     uint8_t start = 1;  //1 for torque control    0 for position control
     uint8_t stop = 0;
     uint16_t motor_config_mask = 0;
+//    uint16_t motor_config_mask2 = 0;
 
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
@@ -1825,11 +1825,11 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
 
     ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
     printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
-
-    uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
-
+/*
+    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2, 2) );
+    uint16_t motor_config_mask2 |= 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
     ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
-
+*/
     // set impedance position pids
     pid_gains_t p_i_d;
     p_i_d.p = (int32_t) 40000;
