@@ -27,7 +27,7 @@
                     
             <param name="velocityZero">         10             10               10             10             30            30            30            100           100           100           100           100           100           100           100           100    </param>
 		    
-            <param name="maxPwm">             6000             6000            6000            6000             0            0            0               0            0                0           0          0              1000          1000          1000          1000   </param>
+            <param name="maxPwm">             1200             1200            1200            1200             0            0            0               0            0                0           0          0              0               0              0            0   </param>
 		</group>
 
 		<group name="HOME">
