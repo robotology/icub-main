@@ -49,7 +49,7 @@
 #define AF_CAN PF_CAN
 #endif
 
-#define SOCK_DEBUG 1
+#define SOCK_DEBUG 0
 
 using namespace yarp::dev;
 using namespace yarp::os;
