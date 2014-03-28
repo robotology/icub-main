@@ -14,10 +14,10 @@ endif(COMMAND cmake_policy)
 project(iCub)
 
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
-SET(ICUB_REQYARP_VERSION_MAJOR "2")
-SET(ICUB_REQYARP_VERSION_MINOR "3")
-SET(ICUB_REQYARP_VERSION_PATCH "60")
-set(ICUB_REQYARP_VERSION_TWEAK "0")
+set(ICUB_REQYARP_VERSION_MAJOR "2")
+set(ICUB_REQYARP_VERSION_MINOR "3")
+set(ICUB_REQYARP_VERSION_PATCH "62")
+set(ICUB_REQYARP_VERSION_TWEAK "1")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -104,7 +104,9 @@ make_directory(${EXECUTABLE_OUTPUT_PATH})
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 
-
+set(IDL_GENERATED_CODE_DIR ${PROJECT_SOURCE_DIR}/src/idl_generated_code)
+mark_as_advanced(IDL_GENERATED_CODE_DIR)
+message(STATUS "IDL generated files go to ${IDL_GENERATED_CODE_DIR}")
 
 # clean up:
 # icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-install-includes.cmake
@@ -185,7 +187,7 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   # in YARP we used to copy Find* scripts to the build directory
-  # this as changed in YARP but NOT in iCub.
+  # this has changed in YARP but NOT in iCub.
   configure_file(${CMAKE_SOURCE_DIR}/conf/${conf}
                  ${CMAKE_BINARY_DIR}/conf/${conf} COPYONLY IMMEDIATE)
 

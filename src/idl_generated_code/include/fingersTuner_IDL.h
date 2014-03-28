@@ -1,23 +1,23 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#ifndef YARP_THRIFT_GENERATOR_fingersTuner_IDLServer
-#define YARP_THRIFT_GENERATOR_fingersTuner_IDLServer
+#ifndef YARP_THRIFT_GENERATOR_fingersTuner_IDL
+#define YARP_THRIFT_GENERATOR_fingersTuner_IDL
 
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
 #include <yarp/os/Value.h>
 
-class fingersTuner_IDLServer;
+class fingersTuner_IDL;
 
 
 /**
- * fingersTuner_IDLServer
+ * fingersTuner_IDL
  * IDL Interface to \ref fingersTuner services.
  */
-class fingersTuner_IDLServer : public yarp::os::Wire {
+class fingersTuner_IDL : public yarp::os::Wire {
 public:
-  fingersTuner_IDLServer() { yarp().setOwner(*this); }
+  fingersTuner_IDL() { yarp().setOwner(*this); }
 /**
  * Synchronize PID values with values stored
  * in the configuration file.

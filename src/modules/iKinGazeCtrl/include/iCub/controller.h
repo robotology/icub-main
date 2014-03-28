@@ -53,6 +53,7 @@ protected:
     iCubHeadCenter    *neck;
     iKinChain         *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver        *drvTorso,  *drvHead;
+    IControlMode      *modHead;
     IPositionControl  *posHead;
     IVelocityControl  *velHead;
     IPositionDirect   *posNeck;
@@ -105,10 +106,11 @@ protected:
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
 
+    bool areJointsHealthy();
     void stopLimb(const bool execStopPosition=true);
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
-    void motionOngoingEventsFlush();
+    void motionOngoingEventsFlush();    
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,

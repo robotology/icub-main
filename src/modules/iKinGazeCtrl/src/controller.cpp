@@ -73,6 +73,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         IEncoders *encHead; drvHead->view(encHead);
         encHead->getAxes(&nJointsHead);
 
+        drvHead->view(modHead);
         drvHead->view(posHead);
         drvHead->view(velHead);
 
@@ -277,8 +278,7 @@ void Controller::stopLimb(const bool execStopPosition)
 {
     if (Robotable)
     {
-        // note: vel==0.0 is always achievable        
-
+        // note: vel==0.0 is always achievable
         if (neckPosCtrlOn)
         {
             if (execStopPosition)
@@ -301,10 +301,15 @@ void Controller::stopControl()
 {
     mutexRun.lock();
     mutexCtrl.lock();
-    q_stamp=Time::now();
-    ctrlInhibited=true;
-    stopLimb();
-    notifyEvent("motion-done");
+
+    if (commData->get_isCtrlActive())
+    {
+        q_stamp=Time::now();
+        ctrlInhibited=true;
+        stopLimb();
+        notifyEvent("motion-done");
+    }
+
     mutexCtrl.unlock();
     mutexRun.unlock();
 }
@@ -397,8 +402,28 @@ void Controller::resetCtrlEyes()
 
 
 /************************************************************************/
+bool Controller::areJointsHealthy()
+{
+    VectorOf<int> modes(nJointsHead);
+    modHead->getControlModes(modes.getFirst());
+    for (size_t i=0; i<modes.size(); i++)
+        if (modes[i]==VOCAB_CM_IDLE)
+            return false; 
+
+    return true;
+}
+
+
+/************************************************************************/
 void Controller::run()
 {
+    if (!areJointsHealthy())
+    {
+        stopControl();
+        port_xd->get_new()=false;
+        return;
+    }
+
     mutexRun.lock();
     string event="none";
 

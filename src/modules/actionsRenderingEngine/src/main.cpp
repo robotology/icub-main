@@ -1128,7 +1128,7 @@ public:
 
                         motorThr->deploy(command);
                         motorThr->keepFixation(command);
-                        motorThr->goUp(command,0.07);
+                        motorThr->goUp(command,0.1);
 
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
@@ -1168,7 +1168,7 @@ public:
                             }
                             else
                             {
-                                motorThr->goUp(command,0.07);
+                                motorThr->goUp(command,0.1);
                                 motorThr->setGazeIdle();
                                 Bottle b;
                                 b.addString("head");

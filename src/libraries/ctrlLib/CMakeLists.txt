@@ -15,7 +15,8 @@ SET(folder_source src/math.cpp
                   src/minJerkCtrl.cpp
                   src/functionEncoder.cpp
                   src/optimalControl.cpp
-                  src/neuralNetworks.cpp)
+                  src/neuralNetworks.cpp
+				  src/outliersDetection.cpp)
 
 SET(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/filters.h
@@ -26,7 +27,8 @@ SET(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/minJerkCtrl.h
                   include/iCub/ctrl/functionEncoder.h
                   include/iCub/ctrl/optimalControl.h
-                  include/iCub/ctrl/neuralNetworks.h)
+                  include/iCub/ctrl/neuralNetworks.h
+				  include/iCub/ctrl/outliersDetection.h)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})

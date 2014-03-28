@@ -12,6 +12,15 @@ then
 	YARP_DIR=/usr
 fi
 
+if [[ $# -eq 0 ]] ; then
+    echo "No argument provided! Here's a list of the available arguments:"
+    echo "    start -> Starts up a yarp run. Some arguments can be provided, e.g."
+    echo "             When calling  icub-cluster-run.sh  start  display  :0.0 "
+    echo "    kill  -> Kills the yarp run"
+    echo "    stop  -> Stops the yarp run"
+    exit 0
+fi
+
 case "$1" in
 	start)
 		if [ "k$3" != "k" ];

@@ -76,7 +76,7 @@ endif(ICUB_COMPILE_EMBOBJ_LIBRARY)
 icub_export_library(icubmod)
 
 ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)
-target_link_libraries(icubmoddev YARP_OS YARP_dev YARP_init)
+target_link_libraries(icubmoddev YARP::YARP_OS YARP::YARP_dev YARP::YARP_init)
 INSTALL(TARGETS icubmoddev DESTINATION bin)
 #INSTALL(TARGETS icubmod DESTINATION lib)
 

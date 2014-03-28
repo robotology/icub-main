@@ -3,13 +3,13 @@
   <module>
     <name>skinManager</name>
     <parameters>--from skinManAll.ini --context skinGui</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinMan</tag>
   </module>
   <module>
     <name>skinManagerGui</name>
     <parameters>--from skinManGui.ini --context skinGui --xpos 1020 --ypos 350</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinManGui</tag>
   </module>
 
@@ -18,49 +18,49 @@
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
     <parameters>--from left_arm.ini --useCalibration --xpos 0 --ypos 350 --width 300 --height 300</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinGuiLA</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
     <parameters>--from left_forearm.ini --useCalibration --xpos 0 --ypos 0 --width 300 --height 300</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinGuiLF</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
-    <parameters>--from left_hand.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300</parameters>
-    <node>console</node>
+    <parameters>--from left_hand_V2_1.ini --useCalibration --xpos 320 --ypos 0 --width 300 --height 300</parameters>
+    <node>localhost</node>
     <tag>skinGuiLH</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
     <parameters>--from right_arm.ini --useCalibration --xpos 640 --ypos 350 --width 300 --height 300</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinGuiRA</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
     <parameters>--from right_forearm.ini --useCalibration --xpos 640 --ypos 0 --width 300 --height 300</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinGuiRF</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
-    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
-    <parameters>--from right_hand.ini --useCalibration --xpos 960 --ypos 0 --width 300 --height 300</parameters>
-    <node>console</node>
+    <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) --> 
+    <parameters>--from right_hand_V2_1.ini --useCalibration --xpos 960 --ypos 0 --width 300 --height 300</parameters>
+    <node>localhost</node>
     <tag>skinGuiRH</tag>
   </module>
   <module>
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
     <parameters>--from torso.ini --useCalibration --xpos 320 --ypos 350 --width 300 --height 300</parameters>
-    <node>console</node>
+    <node>localhost</node>
     <tag>skinGuiT</tag>
   </module>
   

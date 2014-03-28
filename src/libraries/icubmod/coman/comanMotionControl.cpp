@@ -160,6 +160,7 @@ bool comanMotionControl::alloc(int nj)
     ImplementControlLimits2(this),
     ImplementTorqueControl(this),
     ImplementPositionDirect(this),
+    ImplementImpedanceControl(this),
      _initialPidConfigFound(false),
     _mutex(1)
 {
@@ -276,6 +277,7 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
 
     _comanHandler = comanDevicesHandler::instance();
 
@@ -1872,7 +1874,33 @@ bool comanMotionControl::setOpenLoopModeRaw(int j)
 bool comanMotionControl::getControlModeRaw(int j, int *v)
 {
     // cached value must be correct!!
-    *v = _controlMode[j];
+
+    bool ret = true;
+    McBoard *joint_p = getMCpointer(j);   //  -> giusto
+
+    if( NULL == joint_p)
+    {
+        return false;
+    }
+
+    ts_bc_data_t bc_data;
+    mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
+
+    joint_p->get_bc_data(bc_data);
+
+    uint8_t faults = data.faults();
+
+    //    *v= ((bool)faults *  VOCAB3('e','r','r')) + ((1 - (bool)faults ) *_controlMode[j]);
+
+    if (faults)
+    {
+        *v = VOCAB3('e','r','r');
+        std::cout << "Joint " << j << " returned error code " << (int)faults;
+    }
+    else
+    {
+        *v = _controlMode[j];
+    }
     return true;
 }
 
@@ -1982,7 +2010,7 @@ bool comanMotionControl::getEncoderSpeedRaw(int j, double *spd)
     mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
 #warning "this implies a memcopy!! To be optimized!! And add timestamp"
     joint_p->get_bc_data(bc_data);
-    *spd = (double) data.Velocity;
+    *spd = (double) data.Velocity * COMAN_POS_TO_VEL_GAIN; //Ottimo...
 
     return true;
 }
@@ -2093,7 +2121,14 @@ bool comanMotionControl::enableAmpRaw(int j)
 bool comanMotionControl::disableAmpRaw(int j)
 {
     yTrace();
-    return NOT_YET_IMPLEMENTED("disableAmpRaw");
+    McBoard *joint_p = getMCpointer(j);
+
+    if( NULL == joint_p)
+    {
+        yError() << "Calling disableAmpRaw on a non-existing joint j" << j;
+        return false;
+    }
+    return (!joint_p->setItem(CLEAR_BOARD_FAULT, 0, 0));  // setItem returns 0 if ok, 2 if error
 }
 
 bool comanMotionControl::getCurrentRaw(int j, double *curr)
@@ -2661,4 +2696,44 @@ bool comanMotionControl::setPositionsRaw(const double *refs)
     return (!_boards_ctrl->set_position_velocity(_ref_positions, _ref_speeds, _njoints) );
 }
 
+bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
+{
+    return NOT_YET_IMPLEMENTED("getImpedanceOffsetRaw");
+}
 
+bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
+{
+    uint8_t bId = jointTobId(j);
+    int tmp_stiff = (int) stiffness;
+    int tmp_damp  = (int) damping;
+
+    if(stiffness < 5)
+    {
+        yWarning() << "------------------------------------------------------";
+        yWarning() << " Value of stiffnes " << "stiffness is below threshold ";
+        yWarning() << "------------------------------------------------------";
+    }
+
+    bool ret = (!_boards_ctrl->set_stiffness_damping_group(&bId, &tmp_stiff, &tmp_damp, 1));
+
+    if(!ret)
+    {
+        cout << "ERROR in setImpedanceRaw for joint " << j;
+    }
+    return ret;
+}
+
+bool comanMotionControl::setImpedanceOffsetRaw(int j, double offset)
+{
+    return NOT_YET_IMPLEMENTED("setImpedanceOffsetRaw");
+}
+
+bool comanMotionControl::getImpedanceOffsetRaw(int j, double* offset)
+{
+    return NOT_YET_IMPLEMENTED("getImpedanceOffsetRaw");
+}
+
+bool comanMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentImpedanceLimitRaw");
+}

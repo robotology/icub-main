@@ -1,12 +1,12 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <depth2kin_IDLServer.h>
+#include <depth2kin_IDL.h>
 #include <yarp/os/idl/WireTypes.h>
 
 
 
-class depth2kin_IDLServer_getNumExperts : public yarp::os::Portable {
+class depth2kin_IDL_getNumExperts : public yarp::os::Portable {
 public:
   int32_t _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -26,7 +26,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_clearExperts : public yarp::os::Portable {
+class depth2kin_IDL_clearExperts : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -46,7 +46,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_load : public yarp::os::Portable {
+class depth2kin_IDL_load : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -66,7 +66,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_save : public yarp::os::Portable {
+class depth2kin_IDL_save : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -86,7 +86,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_log : public yarp::os::Portable {
+class depth2kin_IDL_log : public yarp::os::Portable {
 public:
   std::string type;
   bool _return;
@@ -108,7 +108,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_explore : public yarp::os::Portable {
+class depth2kin_IDL_explore : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -128,7 +128,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_stop : public yarp::os::Portable {
+class depth2kin_IDL_stop : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -148,7 +148,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setMaxDist : public yarp::os::Portable {
+class depth2kin_IDL_setMaxDist : public yarp::os::Portable {
 public:
   double max_dist;
   bool _return;
@@ -170,7 +170,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getMaxDist : public yarp::os::Portable {
+class depth2kin_IDL_getMaxDist : public yarp::os::Portable {
 public:
   double _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -190,7 +190,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setRoiEdge : public yarp::os::Portable {
+class depth2kin_IDL_setRoiEdge : public yarp::os::Portable {
 public:
   int32_t roi_edge;
   bool _return;
@@ -212,7 +212,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getRoiEdge : public yarp::os::Portable {
+class depth2kin_IDL_getRoiEdge : public yarp::os::Portable {
 public:
   int32_t _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -232,7 +232,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setBlockEyes : public yarp::os::Portable {
+class depth2kin_IDL_setBlockEyes : public yarp::os::Portable {
 public:
   double block_eyes;
   bool _return;
@@ -254,7 +254,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getBlockEyes : public yarp::os::Portable {
+class depth2kin_IDL_getBlockEyes : public yarp::os::Portable {
 public:
   double _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -274,7 +274,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_blockEyes : public yarp::os::Portable {
+class depth2kin_IDL_blockEyes : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -294,7 +294,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setArm : public yarp::os::Portable {
+class depth2kin_IDL_setArm : public yarp::os::Portable {
 public:
   std::string arm;
   bool _return;
@@ -316,7 +316,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getArm : public yarp::os::Portable {
+class depth2kin_IDL_getArm : public yarp::os::Portable {
 public:
   std::string _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -336,7 +336,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setCalibrationType : public yarp::os::Portable {
+class depth2kin_IDL_setCalibrationType : public yarp::os::Portable {
 public:
   std::string type;
   std::string extrapolation;
@@ -360,7 +360,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getCalibrationType : public yarp::os::Portable {
+class depth2kin_IDL_getCalibrationType : public yarp::os::Portable {
 public:
   std::string _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -380,13 +380,15 @@ public:
   }
 };
 
-class depth2kin_IDLServer_calibrate : public yarp::os::Portable {
+class depth2kin_IDL_calibrate : public yarp::os::Portable {
 public:
+  bool rm_outliers;
   yarp::os::Property _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeListHeader(2)) return false;
     if (!writer.writeTag("calibrate",1,1)) return false;
+    if (!writer.writeBool(rm_outliers)) return false;
     return true;
   }
   virtual bool read(yarp::os::ConnectionReader& connection) {
@@ -400,7 +402,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_pushCalibrator : public yarp::os::Portable {
+class depth2kin_IDL_pushCalibrator : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -420,7 +422,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setTouchWithExperts : public yarp::os::Portable {
+class depth2kin_IDL_setTouchWithExperts : public yarp::os::Portable {
 public:
   std::string sw;
   bool _return;
@@ -442,7 +444,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getTouchWithExperts : public yarp::os::Portable {
+class depth2kin_IDL_getTouchWithExperts : public yarp::os::Portable {
 public:
   std::string _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -462,7 +464,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_touch : public yarp::os::Portable {
+class depth2kin_IDL_touch : public yarp::os::Portable {
 public:
   int32_t u;
   int32_t v;
@@ -486,7 +488,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getPoint : public yarp::os::Portable {
+class depth2kin_IDL_getPoint : public yarp::os::Portable {
 public:
   std::string arm;
   double x;
@@ -514,7 +516,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setExperiment : public yarp::os::Portable {
+class depth2kin_IDL_setExperiment : public yarp::os::Portable {
 public:
   std::string exp;
   std::string v;
@@ -538,7 +540,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getExperiment : public yarp::os::Portable {
+class depth2kin_IDL_getExperiment : public yarp::os::Portable {
 public:
   std::string exp;
   std::string _return;
@@ -560,7 +562,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getExtrinsics : public yarp::os::Portable {
+class depth2kin_IDL_getExtrinsics : public yarp::os::Portable {
 public:
   std::string eye;
   yarp::sig::Vector _return;
@@ -582,7 +584,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_resetExtrinsics : public yarp::os::Portable {
+class depth2kin_IDL_resetExtrinsics : public yarp::os::Portable {
 public:
   std::string eye;
   bool _return;
@@ -604,7 +606,49 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setExplorationSpace : public yarp::os::Portable {
+class depth2kin_IDL_setExplorationWait : public yarp::os::Portable {
+public:
+  double wait;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("setExplorationWait",1,1)) return false;
+    if (!writer.writeDouble(wait)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDL_getExplorationWait : public yarp::os::Portable {
+public:
+  double _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("getExplorationWait",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readDouble(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDL_setExplorationSpace : public yarp::os::Portable {
 public:
   double cx;
   double cy;
@@ -634,7 +678,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_setExplorationSpaceDelta : public yarp::os::Portable {
+class depth2kin_IDL_setExplorationSpaceDelta : public yarp::os::Portable {
 public:
   double dcx;
   double dcy;
@@ -664,7 +708,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_getExplorationData : public yarp::os::Portable {
+class depth2kin_IDL_getExplorationData : public yarp::os::Portable {
 public:
   yarp::os::Property _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -684,7 +728,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_clearExplorationData : public yarp::os::Portable {
+class depth2kin_IDL_clearExplorationData : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -704,7 +748,7 @@ public:
   }
 };
 
-class depth2kin_IDLServer_quit : public yarp::os::Portable {
+class depth2kin_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -724,334 +768,354 @@ public:
   }
 };
 
-int32_t depth2kin_IDLServer::getNumExperts() {
+int32_t depth2kin_IDL::getNumExperts() {
   int32_t _return = 0;
-  depth2kin_IDLServer_getNumExperts helper;
+  depth2kin_IDL_getNumExperts helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDLServer::getNumExperts()");
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDL::getNumExperts()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::clearExperts() {
+bool depth2kin_IDL::clearExperts() {
   bool _return = false;
-  depth2kin_IDLServer_clearExperts helper;
+  depth2kin_IDL_clearExperts helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::clearExperts()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearExperts()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::load() {
+bool depth2kin_IDL::load() {
   bool _return = false;
-  depth2kin_IDLServer_load helper;
+  depth2kin_IDL_load helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::load()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::load()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::save() {
+bool depth2kin_IDL::save() {
   bool _return = false;
-  depth2kin_IDLServer_save helper;
+  depth2kin_IDL_save helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::save()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::save()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::log(const std::string& type) {
+bool depth2kin_IDL::log(const std::string& type) {
   bool _return = false;
-  depth2kin_IDLServer_log helper;
+  depth2kin_IDL_log helper;
   helper.type = type;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::log(const std::string& type)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::log(const std::string& type)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::explore() {
+bool depth2kin_IDL::explore() {
   bool _return = false;
-  depth2kin_IDLServer_explore helper;
+  depth2kin_IDL_explore helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::explore()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::explore()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::stop() {
+bool depth2kin_IDL::stop() {
   bool _return = false;
-  depth2kin_IDLServer_stop helper;
+  depth2kin_IDL_stop helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::stop()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::stop()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setMaxDist(const double max_dist) {
+bool depth2kin_IDL::setMaxDist(const double max_dist) {
   bool _return = false;
-  depth2kin_IDLServer_setMaxDist helper;
+  depth2kin_IDL_setMaxDist helper;
   helper.max_dist = max_dist;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setMaxDist(const double max_dist)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setMaxDist(const double max_dist)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-double depth2kin_IDLServer::getMaxDist() {
+double depth2kin_IDL::getMaxDist() {
   double _return = (double)0;
-  depth2kin_IDLServer_getMaxDist helper;
+  depth2kin_IDL_getMaxDist helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDLServer::getMaxDist()");
+    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDL::getMaxDist()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setRoiEdge(const int32_t roi_edge) {
+bool depth2kin_IDL::setRoiEdge(const int32_t roi_edge) {
   bool _return = false;
-  depth2kin_IDLServer_setRoiEdge helper;
+  depth2kin_IDL_setRoiEdge helper;
   helper.roi_edge = roi_edge;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setRoiEdge(const int32_t roi_edge)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setRoiEdge(const int32_t roi_edge)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-int32_t depth2kin_IDLServer::getRoiEdge() {
+int32_t depth2kin_IDL::getRoiEdge() {
   int32_t _return = 0;
-  depth2kin_IDLServer_getRoiEdge helper;
+  depth2kin_IDL_getRoiEdge helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDLServer::getRoiEdge()");
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDL::getRoiEdge()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setBlockEyes(const double block_eyes) {
+bool depth2kin_IDL::setBlockEyes(const double block_eyes) {
   bool _return = false;
-  depth2kin_IDLServer_setBlockEyes helper;
+  depth2kin_IDL_setBlockEyes helper;
   helper.block_eyes = block_eyes;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setBlockEyes(const double block_eyes)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setBlockEyes(const double block_eyes)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-double depth2kin_IDLServer::getBlockEyes() {
+double depth2kin_IDL::getBlockEyes() {
   double _return = (double)0;
-  depth2kin_IDLServer_getBlockEyes helper;
+  depth2kin_IDL_getBlockEyes helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDLServer::getBlockEyes()");
+    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDL::getBlockEyes()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::blockEyes() {
+bool depth2kin_IDL::blockEyes() {
   bool _return = false;
-  depth2kin_IDLServer_blockEyes helper;
+  depth2kin_IDL_blockEyes helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::blockEyes()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::blockEyes()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setArm(const std::string& arm) {
+bool depth2kin_IDL::setArm(const std::string& arm) {
   bool _return = false;
-  depth2kin_IDLServer_setArm helper;
+  depth2kin_IDL_setArm helper;
   helper.arm = arm;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setArm(const std::string& arm)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setArm(const std::string& arm)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-std::string depth2kin_IDLServer::getArm() {
+std::string depth2kin_IDL::getArm() {
   std::string _return = "";
-  depth2kin_IDLServer_getArm helper;
+  depth2kin_IDL_getArm helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDLServer::getArm()");
+    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getArm()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setCalibrationType(const std::string& type, const std::string& extrapolation) {
+bool depth2kin_IDL::setCalibrationType(const std::string& type, const std::string& extrapolation) {
   bool _return = false;
-  depth2kin_IDLServer_setCalibrationType helper;
+  depth2kin_IDL_setCalibrationType helper;
   helper.type = type;
   helper.extrapolation = extrapolation;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setCalibrationType(const std::string& type, const std::string& extrapolation)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setCalibrationType(const std::string& type, const std::string& extrapolation)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-std::string depth2kin_IDLServer::getCalibrationType() {
+std::string depth2kin_IDL::getCalibrationType() {
   std::string _return = "";
-  depth2kin_IDLServer_getCalibrationType helper;
+  depth2kin_IDL_getCalibrationType helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDLServer::getCalibrationType()");
+    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getCalibrationType()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-yarp::os::Property depth2kin_IDLServer::calibrate() {
+yarp::os::Property depth2kin_IDL::calibrate(const bool rm_outliers) {
   yarp::os::Property _return;
-  depth2kin_IDLServer_calibrate helper;
+  depth2kin_IDL_calibrate helper;
+  helper.rm_outliers = rm_outliers;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDLServer::calibrate()");
+    fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDL::calibrate(const bool rm_outliers)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::pushCalibrator() {
+bool depth2kin_IDL::pushCalibrator() {
   bool _return = false;
-  depth2kin_IDLServer_pushCalibrator helper;
+  depth2kin_IDL_pushCalibrator helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::pushCalibrator()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::pushCalibrator()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setTouchWithExperts(const std::string& sw) {
+bool depth2kin_IDL::setTouchWithExperts(const std::string& sw) {
   bool _return = false;
-  depth2kin_IDLServer_setTouchWithExperts helper;
+  depth2kin_IDL_setTouchWithExperts helper;
   helper.sw = sw;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setTouchWithExperts(const std::string& sw)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setTouchWithExperts(const std::string& sw)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-std::string depth2kin_IDLServer::getTouchWithExperts() {
+std::string depth2kin_IDL::getTouchWithExperts() {
   std::string _return = "";
-  depth2kin_IDLServer_getTouchWithExperts helper;
+  depth2kin_IDL_getTouchWithExperts helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDLServer::getTouchWithExperts()");
+    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getTouchWithExperts()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::touch(const int32_t u, const int32_t v) {
+bool depth2kin_IDL::touch(const int32_t u, const int32_t v) {
   bool _return = false;
-  depth2kin_IDLServer_touch helper;
+  depth2kin_IDL_touch helper;
   helper.u = u;
   helper.v = v;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::touch(const int32_t u, const int32_t v)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::touch(const int32_t u, const int32_t v)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-PointReq depth2kin_IDLServer::getPoint(const std::string& arm, const double x, const double y, const double z) {
+PointReq depth2kin_IDL::getPoint(const std::string& arm, const double x, const double y, const double z) {
   PointReq _return;
-  depth2kin_IDLServer_getPoint helper;
+  depth2kin_IDL_getPoint helper;
   helper.arm = arm;
   helper.x = x;
   helper.y = y;
   helper.z = z;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","PointReq depth2kin_IDLServer::getPoint(const std::string& arm, const double x, const double y, const double z)");
+    fprintf(stderr,"Missing server method '%s'?\n","PointReq depth2kin_IDL::getPoint(const std::string& arm, const double x, const double y, const double z)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setExperiment(const std::string& exp, const std::string& v) {
+bool depth2kin_IDL::setExperiment(const std::string& exp, const std::string& v) {
   bool _return = false;
-  depth2kin_IDLServer_setExperiment helper;
+  depth2kin_IDL_setExperiment helper;
   helper.exp = exp;
   helper.v = v;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setExperiment(const std::string& exp, const std::string& v)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExperiment(const std::string& exp, const std::string& v)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-std::string depth2kin_IDLServer::getExperiment(const std::string& exp) {
+std::string depth2kin_IDL::getExperiment(const std::string& exp) {
   std::string _return = "";
-  depth2kin_IDLServer_getExperiment helper;
+  depth2kin_IDL_getExperiment helper;
   helper.exp = exp;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDLServer::getExperiment(const std::string& exp)");
+    fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getExperiment(const std::string& exp)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-yarp::sig::Vector depth2kin_IDLServer::getExtrinsics(const std::string& eye) {
+yarp::sig::Vector depth2kin_IDL::getExtrinsics(const std::string& eye) {
   yarp::sig::Vector _return;
-  depth2kin_IDLServer_getExtrinsics helper;
+  depth2kin_IDL_getExtrinsics helper;
   helper.eye = eye;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","yarp::sig::Vector depth2kin_IDLServer::getExtrinsics(const std::string& eye)");
+    fprintf(stderr,"Missing server method '%s'?\n","yarp::sig::Vector depth2kin_IDL::getExtrinsics(const std::string& eye)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::resetExtrinsics(const std::string& eye) {
+bool depth2kin_IDL::resetExtrinsics(const std::string& eye) {
   bool _return = false;
-  depth2kin_IDLServer_resetExtrinsics helper;
+  depth2kin_IDL_resetExtrinsics helper;
   helper.eye = eye;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::resetExtrinsics(const std::string& eye)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::resetExtrinsics(const std::string& eye)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b) {
+bool depth2kin_IDL::setExplorationWait(const double wait) {
   bool _return = false;
-  depth2kin_IDLServer_setExplorationSpace helper;
+  depth2kin_IDL_setExplorationWait helper;
+  helper.wait = wait;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExplorationWait(const double wait)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+double depth2kin_IDL::getExplorationWait() {
+  double _return = (double)0;
+  depth2kin_IDL_getExplorationWait helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDL::getExplorationWait()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDL::setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b) {
+  bool _return = false;
+  depth2kin_IDL_setExplorationSpace helper;
   helper.cx = cx;
   helper.cy = cy;
   helper.cz = cz;
   helper.a = a;
   helper.b = b;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz, const double da, const double db) {
+bool depth2kin_IDL::setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz, const double da, const double db) {
   bool _return = false;
-  depth2kin_IDLServer_setExplorationSpaceDelta helper;
+  depth2kin_IDL_setExplorationSpaceDelta helper;
   helper.dcx = dcx;
   helper.dcy = dcy;
   helper.dcz = dcz;
   helper.da = da;
   helper.db = db;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz, const double da, const double db)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz, const double da, const double db)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-yarp::os::Property depth2kin_IDLServer::getExplorationData() {
+yarp::os::Property depth2kin_IDL::getExplorationData() {
   yarp::os::Property _return;
-  depth2kin_IDLServer_getExplorationData helper;
+  depth2kin_IDL_getExplorationData helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDLServer::getExplorationData()");
+    fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDL::getExplorationData()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::clearExplorationData() {
+bool depth2kin_IDL::clearExplorationData() {
   bool _return = false;
-  depth2kin_IDLServer_clearExplorationData helper;
+  depth2kin_IDL_clearExplorationData helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::clearExplorationData()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearExplorationData()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDLServer::quit() {
+bool depth2kin_IDL::quit() {
   bool _return = false;
-  depth2kin_IDLServer_quit helper;
+  depth2kin_IDL_quit helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDLServer::quit()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::quit()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
 
-bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
+bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
   yarp::os::idl::WireReader reader(connection);
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
@@ -1291,8 +1355,12 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       return true;
     }
     if (tag == "calibrate") {
+      bool rm_outliers;
+      if (!reader.readBool(rm_outliers)) {
+        rm_outliers = 1;
+      }
       yarp::os::Property _return;
-      _return = calibrate();
+      _return = calibrate(rm_outliers);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1460,6 +1528,33 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "setExplorationWait") {
+      double wait;
+      if (!reader.readDouble(wait)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setExplorationWait(wait);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getExplorationWait") {
+      double _return;
+      _return = getExplorationWait();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeDouble(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "setExplorationSpace") {
       double cx;
       double cy;
@@ -1589,7 +1684,7 @@ bool depth2kin_IDLServer::read(yarp::os::ConnectionReader& connection) {
   return false;
 }
 
-std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionName) {
+std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
   bool showAll=(functionName=="--all");
   std::vector<std::string> helpString;
   if(showAll) {
@@ -1622,6 +1717,8 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     helpString.push_back("getExperiment");
     helpString.push_back("getExtrinsics");
     helpString.push_back("resetExtrinsics");
+    helpString.push_back("setExplorationWait");
+    helpString.push_back("getExplorationWait");
     helpString.push_back("setExplorationSpace");
     helpString.push_back("setExplorationSpaceDelta");
     helpString.push_back("getExplorationData");
@@ -1713,7 +1810,7 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
     if (functionName=="getBlockEyes") {
       helpString.push_back("double getBlockEyes() ");
       helpString.push_back("Return the current angle to keep the vergence at. ");
-      helpString.push_back("@return the vergence angle. ");
+      helpString.push_back("@return the vergence angle in degrees. ");
     }
     if (functionName=="blockEyes") {
       helpString.push_back("bool blockEyes() ");
@@ -1748,8 +1845,9 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("@return the calibration type. ");
     }
     if (functionName=="calibrate") {
-      helpString.push_back("yarp::os::Property calibrate() ");
+      helpString.push_back("yarp::os::Property calibrate(const bool rm_outliers = 1) ");
       helpString.push_back("Ask the current calibrator to carry out the calibration. ");
+      helpString.push_back("@param rm_outliers if true outliers removal is performed. ");
       helpString.push_back("@return a property containing the output in terms of ");
       helpString.push_back("calibration errors for each subsystem: \"calibrator\", \"alignerL\", \"alignerR\". ");
     }
@@ -1814,6 +1912,19 @@ std::vector<std::string> depth2kin_IDLServer::help(const std::string& functionNa
       helpString.push_back("Reset the extrinsics matrix to default eye matrix. ");
       helpString.push_back("@param eye is \"left\" or \"right\" camera eye. ");
       helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="setExplorationWait") {
+      helpString.push_back("bool setExplorationWait(const double wait) ");
+      helpString.push_back("Set up the wait timeout used during exploration between ");
+      helpString.push_back("two consecutive data points. ");
+      helpString.push_back("@param wait the timeout in seconds. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getExplorationWait") {
+      helpString.push_back("double getExplorationWait() ");
+      helpString.push_back("Return the current wait timeout used during exploration ");
+      helpString.push_back("between two consecutive data points. ");
+      helpString.push_back("@return the wait timeout in seconds. ");
     }
     if (functionName=="setExplorationSpace") {
       helpString.push_back("bool setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b) ");

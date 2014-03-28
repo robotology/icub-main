@@ -1,27 +1,22 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#ifndef YARP_THRIFT_GENERATOR_dataSetPlayer_IDLServer
-#define YARP_THRIFT_GENERATOR_dataSetPlayer_IDLServer
+#ifndef YARP_THRIFT_GENERATOR_dataSetPlayer_IDL
+#define YARP_THRIFT_GENERATOR_dataSetPlayer_IDL
 
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
 
-class dataSetPlayer_IDLServer;
+class dataSetPlayer_IDL;
 
 
 /**
- * dataSetPlayer_IDLServer
+ * dataSetPlayer_IDL
  * Interface.
  */
-class dataSetPlayer_IDLServer : public yarp::os::Wire {
+class dataSetPlayer_IDL : public yarp::os::Wire {
 public:
-  dataSetPlayer_IDLServer() { yarp().setOwner(*this); }
-/**
- * Gets the list of commands available
- * @return Bottle containing all available commands
- */
-  virtual std::string getHelp();
+  dataSetPlayer_IDL() { yarp().setOwner(*this); }
 /**
  * Steps the player once. The player will be stepped
  * until all parts have sent data

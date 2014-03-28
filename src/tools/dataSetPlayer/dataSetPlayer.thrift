@@ -5,19 +5,13 @@
 # dataSetPlayer.thrift
 
 /**
-* dataSetPlayer_IDLServer
+* dataSetPlayer_IDL
 *
 * Interface. 
 */
 
-service dataSetPlayer_IDLServer
+service dataSetPlayer_IDL
 {
-  /**
-  * Gets the list of commands available
-  * @return Bottle containing all available commands
-  */
-  string getHelp();
-
   /**
   * Steps the player once. The player will be stepped 
   * until all parts have sent data

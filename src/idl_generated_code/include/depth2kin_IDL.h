@@ -1,8 +1,8 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#ifndef YARP_THRIFT_GENERATOR_depth2kin_IDLServer
-#define YARP_THRIFT_GENERATOR_depth2kin_IDLServer
+#ifndef YARP_THRIFT_GENERATOR_depth2kin_IDL
+#define YARP_THRIFT_GENERATOR_depth2kin_IDL
 
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
@@ -10,16 +10,16 @@
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 
-class depth2kin_IDLServer;
+class depth2kin_IDL;
 
 
 /**
- * depth2kin_IDLServer
+ * depth2kin_IDL
  * IDL Interface to \ref depth2kin services.
  */
-class depth2kin_IDLServer : public yarp::os::Wire {
+class depth2kin_IDL : public yarp::os::Wire {
 public:
-  depth2kin_IDLServer() { yarp().setOwner(*this); }
+  depth2kin_IDL() { yarp().setOwner(*this); }
 /**
  * Return the number of available experts.
  * @return the number of available experts.
@@ -102,7 +102,7 @@ public:
   virtual bool setBlockEyes(const double block_eyes);
 /**
  * Return the current angle to keep the vergence at.
- * @return the vergence angle.
+ * @return the vergence angle in degrees.
  */
   virtual double getBlockEyes();
 /**
@@ -139,10 +139,11 @@ public:
   virtual std::string getCalibrationType();
 /**
  * Ask the current calibrator to carry out the calibration.
+ * @param rm_outliers if true outliers removal is performed.
  * @return a property containing the output in terms of
  * calibration errors for each subsystem: "calibrator", "alignerL", "alignerR".
  */
-  virtual yarp::os::Property calibrate();
+  virtual yarp::os::Property calibrate(const bool rm_outliers = 1);
 /**
  * Push the current calibrator in the list of experts.
  * @return true/false on success/failure.
@@ -205,6 +206,19 @@ public:
  * @return true/false on success/failure.
  */
   virtual bool resetExtrinsics(const std::string& eye);
+/**
+ * Set up the wait timeout used during exploration between
+ * two consecutive data points.
+ * @param wait the timeout in seconds.
+ * @return true/false on success/failure.
+ */
+  virtual bool setExplorationWait(const double wait);
+/**
+ * Return the current wait timeout used during exploration
+ * between two consecutive data points.
+ * @return the wait timeout in seconds.
+ */
+  virtual double getExplorationWait();
 /**
  * Set up the internally coded exploration space composed by
  * two co-centered ellipses, one orthogonal to other, and defined

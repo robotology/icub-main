@@ -30,6 +30,7 @@
 #include <yarp/math/NormRand.h>
 
 #include <iCub/ctrl/math.h>
+#include <iCub/ctrl/outliersDetection.h>
 
 #include "module.h"
 
@@ -184,7 +185,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
 
     cv::Mat img((IplImage*)imgOut.getIplImage());
     cv::Mat imgRoi((IplImage*)imgOut.getIplImage(),rect);
-    cv::threshold(imgRoi,imgRoi,100,255,cv::THRESH_TOZERO);
+    cv::threshold(imgRoi,imgRoi,100,255,cv::THRESH_BINARY);
 
     px.resize(2,0.0);
     bool ok=false;
@@ -385,6 +386,42 @@ void CalibModule::prepareRobot()
 
 
 /************************************************************************/
+int CalibModule::removeOutliers()
+{
+    // calibrate using the current setting
+    double error;
+    calibrator->calibrate(error);
+
+    deque<Vector> p_depth, p_kin;
+    calibrator->getPoints(p_depth,p_kin);
+
+    // compute the prediction errors
+    Vector e(p_depth.size());
+    for (size_t i=0; i<p_depth.size(); i++)
+    {
+        Vector x;
+        calibrator->retrieve(p_depth[i],x);
+        e[i]=norm(p_kin[i]-x);
+    }
+
+    // perform outliers removal
+    ModifiedThompsonTau detector;
+    set<size_t> idx=detector.detect(e,Property("(recursive)"));
+
+    // feed the calibrator with inliers only
+    if (!idx.empty())
+    {
+        calibrator->clearPoints();
+        for (size_t i=0; i<p_depth.size(); i++)
+            if (idx.find(i)==idx.end())
+                calibrator->addPoints(p_depth[i],p_kin[i]);
+    }
+
+    return idx.size();
+}
+
+
+/************************************************************************/
 void CalibModule::doMotorExploration()
 {
     mutex.lock();
@@ -451,7 +488,7 @@ void CalibModule::doMotorExploration()
         {
             igaze->stopControl();
             mutex.unlock();
-            Time::delay(2.0);
+            Time::delay(exploration_wait);
             mutex.lock();
             motorExplorationState=motorExplorationStateLog;
         }
@@ -616,7 +653,7 @@ void CalibModule::doTest()
 
             arm="left";
             experts=&expertsL;
-            Property ret=calibrate();
+            Property ret=calibrate(false);
             pushCalibrator();
             printf("H\n%s\n\n",H.toString(5,5).c_str());
             printf("calibration output\n%s\n",ret.toString().c_str());
@@ -662,6 +699,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_edge=abs(rf.check("roi_edge",Value(100)).asInt());
     block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
+    exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
 
     motorExplorationAsyncStop=false;
     motorExplorationState=motorExplorationStateIdle;
@@ -1174,7 +1212,7 @@ string CalibModule::getCalibrationType()
 
 
 /************************************************************************/
-Property CalibModule::calibrate()
+Property CalibModule::calibrate(const bool rm_outliers)
 {
     mutex.lock();
     double error;
@@ -1183,6 +1221,9 @@ Property CalibModule::calibrate()
 
     if (exp_depth2kin)
     {
+        if (rm_outliers)
+            reply.put("outliers_removed",removeOutliers());
+
         calibrator->calibrate(error);
         reply.put("calibrator",error);
         calibrated=true;
@@ -1353,6 +1394,21 @@ Vector CalibModule::getExtrinsics(const string &eye)
 bool CalibModule::resetExtrinsics(const string &eye)
 {
     return pushExtrinsics(eye,yarp::math::eye(4,4));
+}
+
+
+/************************************************************************/
+bool CalibModule::setExplorationWait(const double wait)
+{
+    exploration_wait=fabs(wait);
+    return true;
+}
+
+
+/************************************************************************/
+double CalibModule::getExplorationWait()
+{
+    return exploration_wait;
 }
 
 

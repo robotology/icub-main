@@ -30,7 +30,7 @@
 #include <yarp/os/RpcClient.h>
 #include <yarp/os/Module.h>
 #include <yarp/os/RpcServer.h>
-#include "dataSetPlayer_IDLServer.h"
+#include "dataSetPlayer_IDL.h"
 
 /**********************************************************/
 class PartModelColumns : public Gtk::TreeModel::ColumnRecord
@@ -58,7 +58,7 @@ public:
 };
 
 /**********************************************************/
-class MainWindow : public Gtk::Window, public yarp::os::ResourceFinder, public yarp::os::Module, public dataSetPlayer_IDLServer
+class MainWindow : public Gtk::Window, public yarp::os::ResourceFinder, public yarp::os::Module, public dataSetPlayer_IDL
 {
 public:
     MainWindow(yarp::os::ResourceFinder    &rf);
@@ -121,10 +121,6 @@ public:
      */
     bool attach(yarp::os::RpcServer &source);
     /**
-     * function that andles an IDL message - getHelp
-     */
-    std::string getHelp();
-    /**
      * function that that handles an IDL message - step
      */
     bool step();
@@ -170,11 +166,6 @@ protected:
      * function steps datasets when requeted from terminal
      */
     void stepFromCommand(yarp::os::Bottle &reply);
-    /**
-     * function that lists the list of commands
-     */
-    void listOfCommands(yarp::os::Bottle &reply);
-
     /**
      * signal handle function - quit
      */

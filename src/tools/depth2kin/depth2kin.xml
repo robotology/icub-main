@@ -53,7 +53,7 @@
    
    <services>
        <server>
-           <type>depth2kin_IDLServer</type>
+           <type>depth2kin_IDL</type>
            <idl>depth2kin.thrift</idl>
            <port>/depth2kin/rpc</port>
            <description>Command port</description>

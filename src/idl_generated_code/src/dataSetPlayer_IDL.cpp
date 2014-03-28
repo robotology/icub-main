@@ -1,32 +1,12 @@
 // This is an automatically-generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <dataSetPlayer_IDLServer.h>
+#include <dataSetPlayer_IDL.h>
 #include <yarp/os/idl/WireTypes.h>
 
 
 
-class dataSetPlayer_IDLServer_getHelp : public yarp::os::Portable {
-public:
-  std::string _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getHelp",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readString(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
-};
-
-class dataSetPlayer_IDLServer_step : public yarp::os::Portable {
+class dataSetPlayer_IDL_step : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -46,7 +26,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_setFrame : public yarp::os::Portable {
+class dataSetPlayer_IDL_setFrame : public yarp::os::Portable {
 public:
   std::string name;
   int32_t frameNum;
@@ -70,7 +50,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_getFrame : public yarp::os::Portable {
+class dataSetPlayer_IDL_getFrame : public yarp::os::Portable {
 public:
   std::string name;
   int32_t _return;
@@ -92,7 +72,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_load : public yarp::os::Portable {
+class dataSetPlayer_IDL_load : public yarp::os::Portable {
 public:
   std::string path;
   bool _return;
@@ -114,7 +94,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_play : public yarp::os::Portable {
+class dataSetPlayer_IDL_play : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -134,7 +114,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_pause : public yarp::os::Portable {
+class dataSetPlayer_IDL_pause : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -154,7 +134,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_stop : public yarp::os::Portable {
+class dataSetPlayer_IDL_stop : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -174,7 +154,7 @@ public:
   }
 };
 
-class dataSetPlayer_IDLServer_quit : public yarp::os::Portable {
+class dataSetPlayer_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
@@ -194,110 +174,90 @@ public:
   }
 };
 
-std::string dataSetPlayer_IDLServer::getHelp() {
-  std::string _return = "";
-  dataSetPlayer_IDLServer_getHelp helper;
+bool dataSetPlayer_IDL::step() {
+  bool _return = false;
+  dataSetPlayer_IDL_step helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","std::string dataSetPlayer_IDLServer::getHelp()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::step()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool dataSetPlayer_IDLServer::step() {
+bool dataSetPlayer_IDL::setFrame(const std::string& name, const int32_t frameNum) {
   bool _return = false;
-  dataSetPlayer_IDLServer_step helper;
-  if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::step()");
-  }
-  bool ok = yarp().write(helper,helper);
-  return ok?helper._return:_return;
-}
-bool dataSetPlayer_IDLServer::setFrame(const std::string& name, const int32_t frameNum) {
-  bool _return = false;
-  dataSetPlayer_IDLServer_setFrame helper;
+  dataSetPlayer_IDL_setFrame helper;
   helper.name = name;
   helper.frameNum = frameNum;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::setFrame(const std::string& name, const int32_t frameNum)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::setFrame(const std::string& name, const int32_t frameNum)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-int32_t dataSetPlayer_IDLServer::getFrame(const std::string& name) {
+int32_t dataSetPlayer_IDL::getFrame(const std::string& name) {
   int32_t _return = 0;
-  dataSetPlayer_IDLServer_getFrame helper;
+  dataSetPlayer_IDL_getFrame helper;
   helper.name = name;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t dataSetPlayer_IDLServer::getFrame(const std::string& name)");
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t dataSetPlayer_IDL::getFrame(const std::string& name)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool dataSetPlayer_IDLServer::load(const std::string& path) {
+bool dataSetPlayer_IDL::load(const std::string& path) {
   bool _return = false;
-  dataSetPlayer_IDLServer_load helper;
+  dataSetPlayer_IDL_load helper;
   helper.path = path;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::load(const std::string& path)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::load(const std::string& path)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool dataSetPlayer_IDLServer::play() {
+bool dataSetPlayer_IDL::play() {
   bool _return = false;
-  dataSetPlayer_IDLServer_play helper;
+  dataSetPlayer_IDL_play helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::play()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::play()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool dataSetPlayer_IDLServer::pause() {
+bool dataSetPlayer_IDL::pause() {
   bool _return = false;
-  dataSetPlayer_IDLServer_pause helper;
+  dataSetPlayer_IDL_pause helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::pause()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::pause()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool dataSetPlayer_IDLServer::stop() {
+bool dataSetPlayer_IDL::stop() {
   bool _return = false;
-  dataSetPlayer_IDLServer_stop helper;
+  dataSetPlayer_IDL_stop helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::stop()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::stop()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool dataSetPlayer_IDLServer::quit() {
+bool dataSetPlayer_IDL::quit() {
   bool _return = false;
-  dataSetPlayer_IDLServer_quit helper;
+  dataSetPlayer_IDL_quit helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDLServer::quit()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::quit()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
 
-bool dataSetPlayer_IDLServer::read(yarp::os::ConnectionReader& connection) {
+bool dataSetPlayer_IDL::read(yarp::os::ConnectionReader& connection) {
   yarp::os::idl::WireReader reader(connection);
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
   yarp::os::ConstString tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
-    if (tag == "getHelp") {
-      std::string _return;
-      _return = getHelp();
-      yarp::os::idl::WireWriter writer(reader);
-      if (!writer.isNull()) {
-        if (!writer.writeListHeader(1)) return false;
-        if (!writer.writeString(_return)) return false;
-      }
-      reader.accept();
-      return true;
-    }
     if (tag == "step") {
       bool _return;
       _return = step();
@@ -435,12 +395,11 @@ bool dataSetPlayer_IDLServer::read(yarp::os::ConnectionReader& connection) {
   return false;
 }
 
-std::vector<std::string> dataSetPlayer_IDLServer::help(const std::string& functionName) {
+std::vector<std::string> dataSetPlayer_IDL::help(const std::string& functionName) {
   bool showAll=(functionName=="--all");
   std::vector<std::string> helpString;
   if(showAll) {
     helpString.push_back("*** Available commands:");
-    helpString.push_back("getHelp");
     helpString.push_back("step");
     helpString.push_back("setFrame");
     helpString.push_back("getFrame");
@@ -452,11 +411,6 @@ std::vector<std::string> dataSetPlayer_IDLServer::help(const std::string& functi
     helpString.push_back("help");
   }
   else {
-    if (functionName=="getHelp") {
-      helpString.push_back("std::string getHelp() ");
-      helpString.push_back("Gets the list of commands available ");
-      helpString.push_back("@return Bottle containing all available commands ");
-    }
     if (functionName=="step") {
       helpString.push_back("bool step() ");
       helpString.push_back("Steps the player once. The player will be stepped ");

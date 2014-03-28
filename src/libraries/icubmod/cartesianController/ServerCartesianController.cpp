@@ -1219,6 +1219,28 @@ bool ServerCartesianController::getNewTarget()
 
 
 /************************************************************************/
+bool ServerCartesianController::areJointsHealthy()
+{
+    VectorOf<int> modes(maxPartJoints);
+    int chainCnt=0;
+
+    for (int i=0; i<numDrv; i++)
+    {
+        lMod[i]->getControlModes(modes.getFirst());
+        for (int j=0; j<lJnt[i]; j++)
+        {
+            if (!(*chainState)[chainCnt].isBlocked() && (modes[j]==VOCAB_CM_IDLE))
+                return false;
+
+            chainCnt++;
+        }
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 void ServerCartesianController::sendControlCommands()
 {
     int j=0;
@@ -1326,6 +1348,12 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
+        if (!areJointsHealthy())
+        {
+            stopControl();
+            return;
+        }
+
         mutex.lock();
 
         string event="none";
@@ -1709,6 +1737,7 @@ bool ServerCartesianController::close()
         delete[] lRmp[i];
 
     lDsc.clear();
+    lMod.clear();
     lEnc.clear();
     lEnt.clear();
     lPid.clear();
@@ -1773,6 +1802,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         {
             printf("ok\n");
 
+            IControlMode     *mod;
             IEncoders        *enc;
             IEncodersTimed   *ent;
             IPidControl      *pid;
@@ -1782,6 +1812,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IPositionControl *stp;
             int               joints;
 
+            drivers[j]->poly->view(mod);
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(lim);
             drivers[j]->poly->view(vel);
@@ -1819,6 +1850,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
                     lDsc[i].minAbsVels[k]=tmp[k];
             }
 
+            lMod.push_back(mod);
             lEnc.push_back(enc);
             lEnt.push_back(ent);
             lPid.push_back(pid);
@@ -2922,24 +2954,24 @@ bool ServerCartesianController::stopControlHelper()
 {
     if (connected)
     {
-        bool notify=executingTraj;
+        if (executingTraj)
+        {
+            executingTraj=false;
+            taskVelModeOn=false;
+            motionDone   =true;
 
-        executingTraj=false;
-        taskVelModeOn=false;
-        motionDone   =true;
-        
-        stopLimb();
+            stopLimb();
 
-        txTokenLatchedStopControl=txToken;
-        skipSlvRes=true;
+            txTokenLatchedStopControl=txToken;
+            skipSlvRes=true;
 
-        if (notify)
             notifyEvent("motion-done");
 
-        // switch the solver status to one shot mode
-        // if that's the case
-        if (!trackingMode)
-            setTrackingModeHelper(false);
+            // switch the solver status to one shot mode
+            // if that's the case
+            if (!trackingMode)
+                setTrackingModeHelper(false);
+        }
 
         return true;
     }

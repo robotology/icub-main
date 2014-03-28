@@ -29,7 +29,7 @@
 
 #include <iCub/iKin/iKinFwd.h>
 
-#include "depth2kin_IDLServer.h"
+#include "depth2kin_IDL.h"
 #include "methods.h"
 #include "nlp.h"
 
@@ -57,7 +57,7 @@ public:
 
 
 /************************************************************************/
-class CalibModule : public RFModule, public depth2kin_IDLServer
+class CalibModule : public RFModule, public depth2kin_IDL
 {
 protected:
     ResourceFinder    *rf;
@@ -83,6 +83,7 @@ protected:
     bool   selectArmEnabled;
     double max_dist;
     double block_eyes;
+    double exploration_wait;
     int    roi_edge;
     int    nEncs;
     int    test;
@@ -123,6 +124,7 @@ protected:
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);
     bool getDepthAveraged(const Vector &px, Vector &x, Vector &pxr, const int maxSamples=5);
     void prepareRobot();
+    int removeOutliers();
     void doMotorExploration();
     void doTouch(const Vector &xd);
     void doTest();
@@ -155,7 +157,7 @@ public:
     string getArm();
     bool setCalibrationType(const string &type, const string &extrapolation);
     string getCalibrationType();
-    Property calibrate();
+    Property calibrate(const bool rm_outliers);
     bool pushCalibrator();
     bool setTouchWithExperts(const string &sw);
     string getTouchWithExperts();
@@ -165,6 +167,8 @@ public:
     string getExperiment(const string &exp);
     Vector getExtrinsics(const string &eye);
     bool resetExtrinsics(const string &eye);
+    bool setExplorationWait(const double wait);
+    double getExplorationWait();
     bool setExplorationSpace(const double cx, const double cy, const double cz,
                              const double a, const double b);
     bool setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz,

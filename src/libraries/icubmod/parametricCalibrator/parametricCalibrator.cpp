@@ -481,7 +481,9 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
         else          // keep pid safe and go on
         {
-            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
+            //The following line causes segfault and it has been commented out. Please fix it.
+            //yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand ` it is wrong.\n";
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << "(*lit)" << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand ` it is wrong.\n";
             for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
                 iAmps->disableAmp((*lit));

@@ -45,11 +45,11 @@ struct PointReq
 }
 
 /**
-* depth2kin_IDLServer
+* depth2kin_IDL
 *
 * IDL Interface to \ref depth2kin services.
 */
-service depth2kin_IDLServer
+service depth2kin_IDL
 {
    /**
    * Return the number of available experts.
@@ -146,7 +146,7 @@ service depth2kin_IDLServer
 
    /**
    * Return the current angle to keep the vergence at.
-   * @return the vergence angle.
+   * @return the vergence angle in degrees.
    */
    double getBlockEyes();
 
@@ -189,10 +189,11 @@ service depth2kin_IDLServer
 
    /**
    * Ask the current calibrator to carry out the calibration.
+   * @param rm_outliers if true outliers removal is performed.
    * @return a property containing the output in terms of
    * calibration errors for each subsystem: "calibrator", "alignerL", "alignerR".
    */
-   Property calibrate();
+   Property calibrate(1:bool rm_outliers=true);
 
    /**
    * Push the current calibrator in the list of experts.
@@ -267,6 +268,21 @@ service depth2kin_IDLServer
    bool resetExtrinsics(1:string eye);
 
    /**
+   * Set up the wait timeout used during exploration between
+   * two consecutive data points.
+   * @param wait the timeout in seconds.
+   * @return true/false on success/failure.
+   */
+   bool setExplorationWait(1:double wait);
+
+   /**
+   * Return the current wait timeout used during exploration
+   * between two consecutive data points.
+   * @return the wait timeout in seconds.
+   */
+   double getExplorationWait();
+
+   /**
    * Set up the internally coded exploration space composed by
    * two co-centered ellipses, one orthogonal to other, and defined
    * by means of the center and the two semi-axes.
@@ -312,3 +328,4 @@ service depth2kin_IDLServer
    */
    bool quit();  
 }
+

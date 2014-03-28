@@ -69,7 +69,7 @@ to the robot.
  
 \section portsif_sec Ports Interface 
 The interface to this module is implemented through 
-\ref fingersTuner_IDLServer . \n 
+\ref fingersTuner_IDL . \n 
 Be careful that from the console a yarp::os::Value must be typed
 by the user enclosed between parentheses, so that typical 
 commands are <i>tune left_hand (12)</i> or <i>tune left_hand 
@@ -93,7 +93,7 @@ Windows, Linux
 #include <yarp/dev/all.h>
 #include <iCub/ctrl/tuning.h>
 
-#include "fingersTuner_IDLServer.h"
+#include "fingersTuner_IDL.h"
 
 using namespace std;
 using namespace yarp::os;
@@ -553,7 +553,7 @@ public:
 
 unsigned int Tuner::instances=0;
 /************************************************************************/
-class TunerModule: public RFModule, public fingersTuner_IDLServer
+class TunerModule: public RFModule, public fingersTuner_IDL
 {
 protected:
     ResourceFinder *rf;
