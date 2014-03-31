@@ -88,14 +88,18 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     Bottle ids_port1, ids_port2;
     ids_port1.clear();
     ids_port2.clear();
-
+    cardId.clear();
+    
     ids_port1=config.findGroup("SkinCanIds_canPort1").tail();
     ids_port2=config.findGroup("SkinCanIds_canPort2").tail();
+    
     if((ids_port1.size() == 0) && (ids_port2.size() == 0))
     {
         yError() << "embObjSkin: " << _fId.name << "i did't find <SkinCanIds_canPort1>  or <SkinCanIds_canPort2> params!!!";
         return false;
     }
+    
+
     if(ids_port1.size()> 0)
     {
         numOfPatches++;
@@ -106,12 +110,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         numOfPatches++;
     }
 
-    if((ids_port1.size() + ids_port2.size()) >1 )
-    {
-        yWarning() <<"EmbObjSkin id list contains more than one entry -> devices will be merged.";
-    }
-    cardId.resize(ids_port1.size() + ids_port2.size());
-
+   
     //fill cardId list with boards connected to canPort1 and canPort2
     for(int i=0; i<ids_port1.size(); i++)
     {
@@ -122,7 +121,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     {
         int id = ids_port2.get(i).asInt();
         cardId.push_back (id);
-    }
+    }    
 
     //elements are:
     // sensorsNum=16*12*cardId.size();  // orig
@@ -148,7 +147,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     {
         yError() << "skin: No board number found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
         return false;
-     }
+    }
     _fId.ep = eoprot_endpoint_skin;
 
     //N.B.: use a dynamic_cast to extract correct interface when using this pointer
@@ -336,14 +335,14 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
             {
                 if(cardId[cId_index] == cardAddr)
                 {
-                    mtbId = cId_index-1;
+                    mtbId = cId_index;
                     break;
                 }
             }
 
             if(mtbId == 255)
             {
-               // yError() << "Unknown cardId from skin\n";
+                //yError() << "Unknown cardId from skin\n";
                 return false;
             }
 
@@ -353,6 +352,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
 
             int index=16*12*mtbId + triangle*12;
 
+            //yError() << "skin fill data: mtbid" << mtbId<< " triangle " << triangle << "  msgtype" << msgtype;
             if (msgtype)
             {
                 for(int k=0; k<5; k++)
