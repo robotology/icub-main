@@ -2,7 +2,7 @@
  <name>iCubGui</name>
    <module>
     <name>iCubGui</name>
-    <parameters>--xpos 1000 --ypos 100 --width 370</parameters> 
+    <parameters>--xpos 1500 --ypos 50 --width 370</parameters> 
     <node>console-node</node>
     <tag>iCubGui</tag>
   </module>
