@@ -38,7 +38,6 @@ include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
 set(ICUB_INTERFACE_SOURCE   ${EXTRA_FOLDER}/FeatureInterface.cpp)
 
 set(NVS_EB_SOURCE           ${NVS_EB_SRC_FOLDER}eOprot_b01.c  
-                            ${NVS_EB_SRC_FOLDER}eOprot_b01.c
                             ${NVS_EB_SRC_FOLDER}eOprot_b02.c
                             ${NVS_EB_SRC_FOLDER}eOprot_b03.c  
                             ${NVS_EB_SRC_FOLDER}eOprot_b04.c
@@ -47,6 +46,8 @@ set(NVS_EB_SOURCE           ${NVS_EB_SRC_FOLDER}eOprot_b01.c
                             ${NVS_EB_SRC_FOLDER}eOprot_b07.c  
                             ${NVS_EB_SRC_FOLDER}eOprot_b08.c
                             ${NVS_EB_SRC_FOLDER}eOprot_b09.c  
+                            ${NVS_EB_SRC_FOLDER}eOprot_b10.c  
+                            ${NVS_EB_SRC_FOLDER}eOprot_b11.c  
                             )
 
 set(NVS_SOURCE              ${NVS_MC_SRC_FOLDER}/EoProtocol.c

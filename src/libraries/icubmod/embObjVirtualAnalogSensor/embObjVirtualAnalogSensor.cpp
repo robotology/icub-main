@@ -219,11 +219,6 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if((_fId.boardNum == 5) || (_fId.boardNum == 7) || (_fId.boardNum == 9))
-    {
-        yError () << "\n embObjAnalogSensor: Found non-existing board identifier number" << _fId.boardNum << "!!!";
-        return false;
-    }
 
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
@@ -245,6 +240,14 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         yError() << "EMS device not instantiated... unable to continue";
         return false;
     }
+
+    /*IMPORTANT: implement isEpManagedByBoard like every embObj obj when virtaulAnalogSensor will be exist in eo proto!!!!*/
+//    if(!isEpManagedByBoard())
+//    {
+//        yError() << "EMS "<< _fId.boardNum << "is not connected to virtual analog sensor";
+//        return false;
+//    }
+
 
     yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNum << "instantiated correctly";
     return true;

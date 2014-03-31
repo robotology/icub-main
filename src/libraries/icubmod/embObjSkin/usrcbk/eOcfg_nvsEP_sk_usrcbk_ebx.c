@@ -113,7 +113,7 @@ extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, co
     EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->ram;
 //    int i;
 
-    s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
+   // s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
 
     /*  Vale stats
         if(nv->ep == endpoint_sk_emsboard_rightlowerarm)
@@ -158,7 +158,6 @@ extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, co
     id.type = Skin;
     id.ep = eo_nv_GetEP8(nv);
     id.boardNum = nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
-
 
   //printf("skin iCub Callback, looking for ep %d\n", id.ep);
 //   s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(sk_array);

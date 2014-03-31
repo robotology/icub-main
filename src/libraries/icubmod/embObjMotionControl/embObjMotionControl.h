@@ -295,6 +295,7 @@ private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool configure_mais(void);
     bool dealloc();
+    bool isEpManagedByBoard();
 
 public:
     embObjMotionControl();
