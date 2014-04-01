@@ -197,7 +197,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     {
         for (int x=tl.x; x<br.x; x++)
         {
-            if (imgOut(x,y).b>0)
+            if (imgIn(x,y)>0)
             {
                 // predict the center of the finger a bit shifted
                 x+=3;    y+=5;
