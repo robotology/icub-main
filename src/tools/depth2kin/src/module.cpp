@@ -184,14 +184,14 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     cv::Rect rect(tl,br);
 
     // run Otsu algorithm to segment out the finger
-    cv::Mat imgMatIn((IplImage*)imgIn.getIplImage());
-    cv::Mat imgMatInRoi(imgMatIn,rect);
-    cv::threshold(imgMatInRoi,imgMatInRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
+    cv::Mat imgInMat((IplImage*)imgIn.getIplImage());
+    cv::Mat imgInMatRoi(imgInMat,rect);
+    cv::threshold(imgInMatRoi,imgInMatRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
 
     // produce a colored image
     imgOut.resize(imgIn);
-    cvCvtColor(imgIn.getIplImage(),imgOut.getIplImage(),CV_GRAY2BGR);
-    cv::Mat imgMatOut((IplImage*)imgOut.getIplImage());
+    cv::Mat imgOutMat((IplImage*)imgOut.getIplImage());
+    cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
 
     px.resize(2,0.0);
     bool ok=false;
@@ -204,7 +204,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
                 // predict the center of the finger a bit shifted
                 x+=3;    y+=5;
                 px[0]=x; px[1]=y;
-                cv::circle(imgMatOut,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
+                cv::circle(imgOutMat,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
                 ok=true;
                 break;
             }
@@ -214,8 +214,8 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
             break;
     }
 
-    cv::circle(imgMatOut,ct,5,cv::Scalar(0,255,0),-1);
-    cv::rectangle(imgMatOut,tl,br,cv::Scalar(255,255,255),4);
+    cv::circle(imgOutMat,ct,5,cv::Scalar(0,255,0),-1);
+    cv::rectangle(imgOutMat,tl,br,cv::Scalar(255,255,255),4);
     return rect;
 }
 
