@@ -183,10 +183,12 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     br.y=std::max(1,br.y); br.y=std::min(br.y,imgIn.height()-1);
     cv::Rect rect(tl,br);
 
+    // run Otsu algorithm to segment out the finger
     cv::Mat imgMatIn((IplImage*)imgIn.getIplImage());
     cv::Mat imgMatInRoi(imgMatIn,rect);
-    cv::threshold(imgMatInRoi,imgMatInRoi,0,255,cv::THRESH_BINARY | cv::THRESH_OTSU);
+    cv::threshold(imgMatInRoi,imgMatInRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
 
+    // produce a colored image
     imgOut.resize(imgIn);
     cvCvtColor(imgIn.getIplImage(),imgOut.getIplImage(),CV_GRAY2BGR);
     cv::Mat imgMatOut((IplImage*)imgOut.getIplImage());
