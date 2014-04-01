@@ -183,9 +183,13 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     br.y=std::max(1,br.y); br.y=std::min(br.y,imgIn.height()-1);
     cv::Rect rect(tl,br);
 
-    cv::Mat img((IplImage*)imgOut.getIplImage());
-    cv::Mat imgRoi((IplImage*)imgOut.getIplImage(),rect);
-    cv::threshold(imgRoi,imgRoi,100,255,cv::THRESH_BINARY);
+    cv::Mat imgMatIn((IplImage*)imgIn.getIplImage());
+    cv::Mat imgMatInRoi(imgMatIn,rect);
+    cv::threshold(imgMatInRoi,imgMatInRoi,0,255,cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+    imgOut.resize(imgIn);
+    cvCvtColor(imgIn.getIplImage(),imgOut.getIplImage(),CV_GRAY2BGR);
+    cv::Mat imgMatOut((IplImage*)imgOut.getIplImage());
 
     px.resize(2,0.0);
     bool ok=false;
@@ -198,7 +202,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
                 // predict the center of the finger a bit shifted
                 x+=3;    y+=5;
                 px[0]=x; px[1]=y;
-                cv::circle(img,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
+                cv::circle(imgMatOut,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
                 ok=true;
                 break;
             }
@@ -208,8 +212,8 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
             break;
     }
 
-    cv::circle(img,ct,5,cv::Scalar(0,255,0),-1);
-    cv::rectangle(img,tl,br,cv::Scalar(255,255,255),4);
+    cv::circle(imgMatOut,ct,5,cv::Scalar(0,255,0),-1);
+    cv::rectangle(imgMatOut,tl,br,cv::Scalar(255,255,255),4);
     return rect;
 }
 
@@ -852,15 +856,13 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
 {
     mutex.lock();
 
-    ImageOf<PixelBgr> imgOut;
-    imgOut.resize(imgIn);
-    cvCvtColor(imgIn.getIplImage(),imgOut.getIplImage(),CV_GRAY2BGR);
-
     Vector kinPoint,o;
     iarm->getPose(kinPoint,o);
 
     Vector c,tipl(2,0.0),tipr(2,0.0);
     igaze->get2DPixel(0,kinPoint,c);
+
+    ImageOf<PixelBgr> imgOut;
     cv::Rect rect=extractFingerTip(imgIn,imgOut,c,tipl);
     
     bool holdImg=false;
