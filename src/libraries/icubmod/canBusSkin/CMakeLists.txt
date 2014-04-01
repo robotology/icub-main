@@ -9,7 +9,7 @@ if (NOT SKIP_canBusSkin)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ${YARP_INCLUDE_DIRS})
 
-add_library(canBusSkin CanBusSkin.h CanBusSkin.cpp)
+yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp)
 target_link_libraries(canBusSkin ${YARP_LIBRARIES})
 
 icub_export_library(canBusSkin)

@@ -9,7 +9,7 @@ PREPARE_DEVICE(fakecan TYPE FakeCan
 
 IF (NOT SKIP_fakecan)
     include_directories(${YARP_INCLUDE_DIRS})
-    ADD_LIBRARY(fcan fakeCan.cpp fakeBoard.cpp fakeCan.h fakeBoard.h fbCanBusMessage.h msgList.h)
+    yarp_add_plugin(fcan fakeCan.cpp fakeBoard.cpp fakeCan.h fakeBoard.h fbCanBusMessage.h msgList.h)
     target_link_libraries(fcan ${YARP_LIBRARIES})
     
     icub_export_library(fcan)

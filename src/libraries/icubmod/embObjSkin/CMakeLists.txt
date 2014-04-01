@@ -12,7 +12,7 @@ if (NOT SKIP_embObjSkin)
                    ${YARP_INCLUDE_DIRS}
                    ${iCubDev_INCLUDE_DIRS})
 
-    add_library(embObjSkin embObjSkin.h embObjSkin.cpp)
+    yarp_add_plugin(embObjSkin embObjSkin.h embObjSkin.cpp)
     target_link_libraries(embObjSkin ethResources ${YARP_LIBRARIES})
     icub_export_library(embObjSkin)
 endif (NOT SKIP_embObjSkin)

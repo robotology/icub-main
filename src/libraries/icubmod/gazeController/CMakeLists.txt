@@ -13,7 +13,7 @@ IF (NOT SKIP_gazecontrollerclient)
   
    INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
 
-   ADD_LIBRARY(gazecontrollerclient ${client_source} ${client_header})
+   yarp_add_plugin(gazecontrollerclient ${client_source} ${client_header})
 
    TARGET_LINK_LIBRARIES(gazecontrollerclient ${YARP_LIBRARIES})
 

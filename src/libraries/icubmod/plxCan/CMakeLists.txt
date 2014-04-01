@@ -18,7 +18,7 @@ if (NOT SKIP_pcan)
 
         #plx-api related define
         ADD_DEFINITIONS(-DPLX_LITTLE_ENDIAN -DPLX_LINUX -DGCC)
-        ADD_LIBRARY(pcan PlxCan.cpp PlxCan.h)
+        yarp_add_plugin(pcan PlxCan.cpp PlxCan.h)
 
         TARGET_LINK_LIBRARIES(pcan ${PLXCANAPI_LIB} ${YARP_LIBRARIES})
         

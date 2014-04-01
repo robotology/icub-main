@@ -9,7 +9,7 @@ if (NOT SKIP_canBusInertialMTB)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ${YARP_INCLUDE_DIRS})
 
-add_library(canBusInertialMTB CanBusInertialMTB.h CanBusInertialMTB.cpp)
+yarp_add_plugin(canBusInertialMTB CanBusInertialMTB.h CanBusInertialMTB.cpp)
 target_link_libraries(canBusInertialMTB ${YARP_LIBRARIES})
 
 icub_export_library(canBusInertialMTB)

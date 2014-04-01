@@ -9,7 +9,7 @@ IF (NOT SKIP_embObjVirtualAnalogSensor)
   INCLUDE(../embObjLib/embObjLib.cmake)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )
 
-  ADD_LIBRARY(embObjVirtualAnalogSensor embObjVirtualAnalogSensor.cpp embObjVirtualAnalogSensor.h)
+  yarp_add_plugin(embObjVirtualAnalogSensor embObjVirtualAnalogSensor.cpp embObjVirtualAnalogSensor.h)
   
   TARGET_LINK_LIBRARIES(embObjVirtualAnalogSensor debugStream  ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
  icub_export_library(embObjVirtualAnalogSensor)

@@ -31,7 +31,7 @@ IF (ICUB_CONTROLWRAPPER_WIP)
    SOURCE_GROUP("Source Files" FILES ${folder_source})
    SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-   ADD_LIBRARY(canmotioncontrol ${folder_source} ${folder_header})
+   yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
    TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
   
    icub_export_library(canmotioncontrol)
@@ -63,7 +63,7 @@ else()
    SOURCE_GROUP("Source Files" FILES ${folder_source})
    SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-   ADD_LIBRARY(canmotioncontrol ${folder_source} ${folder_header})
+   yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
    TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
   
    icub_export_library(canmotioncontrol)
