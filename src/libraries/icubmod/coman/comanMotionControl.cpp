@@ -2758,7 +2758,7 @@ bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping
     int tmp_stiff = (int) stiffness;
     int tmp_damp  = (int) damping;
 
-    if(stiffness < 5)
+    if(stiffness < 5 *_newtonsToSensor[j]/_angleToEncoder[j])
     {
         yWarning() << "------------------------------------------------------";
         yWarning() << " Value of stiffnes " << "stiffness is below threshold ";
