@@ -75,13 +75,13 @@ bool comanFTsensor::fromConfig(yarp::os::Searchable &_config)
 {
     Bottle xtmp;
 
-    if(_config.check("name") )
+    if(_config.check("device") )
     {
-        setDeviceId(_config.find("name").asString() );
+        setDeviceId(_config.find("device").asString() );
     }
     else
     {
-        printf("No name found?????");
+        printf("No device name found.");
         std::cout << "Params are: " << _config.toString();
     }
 
