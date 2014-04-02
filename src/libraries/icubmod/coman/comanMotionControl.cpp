@@ -2725,15 +2725,19 @@ bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping
 
 bool comanMotionControl::setImpedanceOffsetRaw(int j, double offset)
 {
-    return NOT_YET_IMPLEMENTED("setImpedanceOffsetRaw");
+    // use SET_GRAVITY_COMPENSATION_GROUP when available;
+    uint8_t bId = jointTobId(j);
+    return _comanHandler->setGravityOffset(bId, (int)offset);
 }
 
 bool comanMotionControl::getImpedanceOffsetRaw(int j, double* offset)
 {
+    // Command not present in firmware
     return NOT_YET_IMPLEMENTED("getImpedanceOffsetRaw");
 }
 
 bool comanMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
 {
+    // Command not present in firmware
     return NOT_YET_IMPLEMENTED("getCurrentImpedanceLimitRaw");
 }

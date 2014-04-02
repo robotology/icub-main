@@ -39,6 +39,8 @@ private:
     static comanDevicesHandler    *_handle;
     Boards_ctrl                   *_board_crtl;
     static int                    _usedBy;
+    int                           *_gravityOffsets;
+    int                           _gravityOffsetsVectorSize;
 
 private:
     comanDevicesHandler();                      // Singletons have private constructor
@@ -66,6 +68,9 @@ public:
     bool open(yarp::os::Searchable& config);
     bool close();
     Boards_ctrl *getBoard_ctrl_p();
+
+    void initGravityWorkAround();
+    bool setGravityOffset(int bId, int offset);
 };
 
 #endif
