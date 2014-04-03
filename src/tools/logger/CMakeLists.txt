@@ -1,7 +1,7 @@
 # Copyright: (C) 2014 RobotCub Consortium
 # Authors: Marco Randazzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-SET(PROJECTNAME logger)
+SET(PROJECTNAME iCubLogger)
 PROJECT(${PROJECTNAME})
 
 FILE(GLOB source *.cpp)
