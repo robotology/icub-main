@@ -17,7 +17,7 @@ set(eBcode_BASE_URL "https://svn.code.sf.net/p/robotcub/code/trunk/iCub/firmware
 #if(EXISTS ${CMAKE_SOURCE_DIR}/.svn)
 #  Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR} ICUB)
   set(eBcode_REVISION "HEAD" ) #${ICUB_WC_REVISION})
-  set(eBcode_REVISION_description "current iCub HEAD")
+  set(eBcode_REVISION_description "current iCub  28798")
 #else()
 #  set(eBcode_REVISION 27643)
 #  set(eBcode_REVISION_description ${eBcode_REVISION})
