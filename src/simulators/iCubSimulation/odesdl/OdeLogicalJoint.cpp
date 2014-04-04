@@ -273,7 +273,7 @@ void OdeLogicalJoint::setVelocityRaw(double target) {
 
 
 void OdeLogicalJoint::controlModeChanged(int cm){
-    if(hinged){
+    if(hinged && joint){
         // only hinge joints can be torque controlled
         if(cm==MODE_TORQUE){
             dJointSetHingeParam(*joint, dParamFMax, dryFriction);

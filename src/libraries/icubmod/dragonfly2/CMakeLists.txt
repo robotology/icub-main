@@ -37,6 +37,10 @@ IF(NOT SKIP_dragonfly2)
 	yarp_add_plugin(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
   
     target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
+
+    add_executable(firewirebusreset linux/fwBusReset_main.cpp ${EXTRA_SOURCES})
+    target_link_libraries(firewirebusreset ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
+    install(TARGETS firewirebusreset DESTINATION bin)
      
   ENDIF (WIN32)
 
