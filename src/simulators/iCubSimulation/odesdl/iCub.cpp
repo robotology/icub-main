@@ -379,7 +379,7 @@ void ICubSim::draw(){
         {
             glColor3d(0.9,0.9,0.9);
             glPushMatrix();LDEsetM(dGeomGetPosition(l_leg0_geom),dGeomGetRotation(l_leg0_geom));
-            DrawBox(0.09,0.004,0.21,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
+            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
 
         glColor3d(0.5,0.5,0.5);
@@ -412,7 +412,7 @@ void ICubSim::draw(){
         {
             glColor3d(0.9,0.9,0.9);
             glPushMatrix();LDEsetM(dGeomGetPosition(r_leg0_geom),dGeomGetRotation(r_leg0_geom));
-            DrawBox(0.09,0.004,0.21,false,textured,2);glPopMatrix();
+            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
         }
         glColor3d(0.5,0.5,0.5);
         glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg1_geom),dGeomGetRotation(r_leg1_geom));
@@ -446,7 +446,7 @@ void ICubSim::draw(){
         {
             glColor3d(1.0,1.0,1.0);
             glPushMatrix();LDEsetM(dBodyGetPosition(leftLeg[0]),dBodyGetRotation(leftLeg[0]));
-            DrawBox(0.09,0.004,0.21,false,textured,2);glPopMatrix();                                               //foot
+            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();                                               //foot
         }
         if (actLegsCovers == "on")
         {   glColor3d(1.0,1.0,1.0);
@@ -514,7 +514,7 @@ void ICubSim::draw(){
         {
             glColor3d(0.9,0.9,0.9);
             glPushMatrix();LDEsetM(dBodyGetPosition(rightLeg[0]),dBodyGetRotation(rightLeg[0]));
-            DrawBox(0.09,0.004,0.21,false,textured,2);glPopMatrix();
+            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
         }
 
         glColor3d(0.5,0.5,0.5);
@@ -1563,7 +1563,7 @@ void ICubSim::initLegsOff(dWorldID world)
     dMatrix3 Rtx;
 
     legs = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    l_leg0_geom = dCreateBox (iCub,0.09,0.004,0.21);dMassSetBoxTotal(&m2,0.22,0.09,0.004,0.21);
+    l_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
     dGeomSetBody (l_leg0_geom,legs);
     dGeomSetOffsetPosition(l_leg0_geom,-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
@@ -1614,7 +1614,7 @@ void ICubSim::initLegsOff(dWorldID world)
 
     double r_foot_y=fabs(jP_leftLeg[0][1]-jP_rightLeg[0][1]);
 
-    r_leg0_geom = dCreateBox (iCub,0.09,0.004,0.21);dMassSetBoxTotal(&m2,0.22,0.09,0.004,0.21);
+    r_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
     dGeomSetBody (r_leg0_geom,legs);
     dGeomSetOffsetPosition(r_leg0_geom,-r_foot_y-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
@@ -1676,9 +1676,9 @@ void ICubSim::initLegsOn(dWorldID world)
     dQFromAxisAndAngle(q1,0,1,0,M_PI * 0.5);
     
     //left lower parts
-    leftLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.22,0.09,0.004,0.21); //Y, Z, X
+    leftLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
     dBodySetMass(leftLeg[0],&m);
-    leftLegGeom[0] = dCreateBox (iCub,0.09,0.004,0.21);dGeomSetBody (leftLegGeom[0],leftLeg[0]);
+    leftLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (leftLegGeom[0],leftLeg[0]);
 
     leftLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
     dBodySetMass(leftLeg[1],&m);
@@ -1750,9 +1750,9 @@ void ICubSim::initLegsOn(dWorldID world)
     //RIGHT LEG
     //--------------------------------------------------------
     //right lower parts
-    rightLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.22,0.09,0.004,0.21); //Y, Z, X
+    rightLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
     dBodySetMass(rightLeg[0],&m);
-    rightLegGeom[0] = dCreateBox (iCub,0.09,0.004,0.21);dGeomSetBody (rightLegGeom[0],rightLeg[0]);
+    rightLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (rightLegGeom[0],rightLeg[0]);
 
     rightLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
     dBodySetMass(rightLeg[1],&m);
