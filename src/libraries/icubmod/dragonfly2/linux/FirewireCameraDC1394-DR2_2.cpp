@@ -13,6 +13,7 @@
 //  L      I  N  NN  U   U   X X
 //  LLLLL  I  N   N   UUU   X   X
 
+#include <stdlib.h>
 #include "linux/FirewireCameraDC1394-DR2_2.h"
 #include <arpa/inet.h>
 
@@ -209,6 +210,33 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         fprintf(stderr,"LINE: %d\n",__LINE__); 
         return false;
     }
+
+	if (config.check("guid"))
+	{
+		yarp::os::ConstString sguid=config.find("guid").asString();
+
+		uint64_t guid=strtoull(sguid.c_str(),NULL,16);
+
+		int cid;
+
+		for (cid=0; cid<m_nNumCameras; ++cid)
+		{
+			if (guid==m_pCameraList->ids[cid].guid)
+			{
+				break;
+			}
+		}
+
+		if (cid==m_nNumCameras)
+		{
+			fprintf(stderr,"WARNING: GUID=%s camera not found, using ID=%d camera\n",sguid.c_str(),idCamera);
+			fprintf(stderr,"LINE: %d\n",__LINE__); 
+		}
+		else
+		{
+			idCamera=cid;
+		}
+	}
 
     if (idCamera<0 || idCamera>=m_nNumCameras)
     {
