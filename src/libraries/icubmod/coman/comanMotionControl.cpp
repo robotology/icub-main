@@ -690,11 +690,15 @@ bool comanMotionControl::setPidRaw(int j, const Pid &pid)
 
 
         ret &= (!joint_p->setItem(SET_PID_GAIN_SCALE, &scales, 3*sizeof(pid.scale) ));
+        if(!ret)
+            yError() << "setItem() SET_PID_GAIN_SCALE returned an error!";
 
         //        ret &= (!joint_p->setItem(SET_ILIM_GAIN, &(_max_int), sizeof(_max_int)) );  // comment this line
         ret &= comanMotionControl::setOffsetRaw(j, (int16_t) pid_off);  // j is the yarp joint
+        if(!ret)
+            yError() << "setOffsetRaw() returned an error!";
     }
-    return !ret;
+    return ret;
 }
 
 bool comanMotionControl::setPidsRaw(const Pid *pids)
@@ -1881,10 +1885,14 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
 
     ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
     printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
+    if(!ret)
+        yError()<<"getItem() GET_MOTOR_CONFIG returned error!";
 
     motor_config_mask |= 0x4803;   // add bit about impedance control.
 
     ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
+    if(!ret)
+        yError()<<"setItem() SET_MOTOR_CONFIG returned error!";
     printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
 /*
     ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2, 2) );
@@ -1893,10 +1901,17 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
 */
     // set impedance position pids
     ret = ret && setPidRaw(j, _impPosPids[j]);      yarp::os::Time::delay(0.01);
+    if(!ret)
+        yError()<<"setPidRaw returned error!";
     ret = ret && setTorquePidRaw(j, _trqPids[j]);   yarp::os::Time::delay(0.01);
-
+    if(!ret)
+        yError()<<"setTorquePidRaw returned error!";
     ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
+    if(!ret)
+        yError()<<"setItem() TORQUE_ON_OFF returned error!";
     ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+    if(!ret)
+        yError()<<"start_stop_single_control() returned error!";
 
     if(getEncoder(j, &initialPosition) )
         positionMove(j, initialPosition);
@@ -2535,7 +2550,7 @@ bool comanMotionControl::setTorquePidRaw(int j, const Pid &pid)
         ret &= setOffsetRaw(j, (int16_t) pid_off);
     }
     return ret;
-};
+}
 
 bool comanMotionControl::setTorquePidsRaw(const Pid *pids)
 {
@@ -2545,7 +2560,7 @@ bool comanMotionControl::setTorquePidsRaw(const Pid *pids)
         ret = ret && setTorquePidRaw(j, pids[j]);
     }
     return ret;
-};
+}
 
 bool comanMotionControl::setTorqueErrorLimitRaw(int j, double limit)
 {
