@@ -145,19 +145,19 @@ Example:
 
 icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --guid 0xAB10980D6656E455 [...]
+icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --guid AB10980D6656E455 [...]
 
 icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --guid 0x98FF0666E478A001 [...]
+icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
 icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --guid 0xAB10980D6656E455 [...]
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --guid AB10980D6656E455 [...]
 
 icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 0x98FF0666E478A001 [...]
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
 \author Paul Fitzpatrick, Lorenzo Natale, Giorgio Metta, Alessandro Scalzo
 
