@@ -296,6 +296,9 @@ private:
     bool configure_mais(void);
     bool dealloc();
     bool isEpManagedByBoard();
+    bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
+    bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
+    bool parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
 
 public:
     embObjMotionControl();

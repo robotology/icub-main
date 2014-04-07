@@ -477,10 +477,83 @@ bool embObjMotionControl::isEpManagedByBoard()
     return true;
 }
 
+
+bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+{
+    int j=0;
+    for(j=0;j<njoints;j++)
+    {
+        char tmp[80];
+        sprintf(tmp, "Pid%d", j);
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
+        myPid[j].kp = xtmp.get(1).asDouble();
+        myPid[j].kd = xtmp.get(2).asDouble();
+        myPid[j].ki = xtmp.get(3).asDouble();
+
+        myPid[j].max_int = xtmp.get(4).asDouble();
+        myPid[j].max_output = xtmp.get(5).asDouble();
+
+        myPid[j].scale = xtmp.get(6).asDouble();
+        myPid[j].offset = xtmp.get(7).asDouble();
+
+        if (xtmp.size()==10)
+        {
+            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
+            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+        }
+    }
+    return true;
+}
+
+bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+{
+    int j=0;
+    for(j=0;j<njoints;j++)
+    {
+        char tmp[80];
+        sprintf(tmp, "TPid%d", j);
+
+        Bottle &xtmp = pidsGroup.findGroup(tmp);
+        myPid[j].kp = xtmp.get(1).asDouble();
+        myPid[j].kd = xtmp.get(2).asDouble();
+        myPid[j].ki = xtmp.get(3).asDouble();
+
+        myPid[j].max_int = xtmp.get(4).asDouble();
+        myPid[j].max_output = xtmp.get(5).asDouble();
+
+        myPid[j].scale = xtmp.get(6).asDouble();
+        myPid[j].offset = xtmp.get(7).asDouble();
+
+        if (xtmp.size()==10)
+        {
+            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
+            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+        }
+    }
+    return true;
+}
+bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+{
+    int j=0;
+    Bottle xtmp;
+    xtmp = pidsGroup.findGroup("kp");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("kd");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("ki");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("maxInt");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("maxPwm");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("shift");       if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    return true;
+}
+
+
 bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 {
     Bottle xtmp;
-    int i;
+    int i,j;
     Bottle general = config.findGroup("GENERAL");
 
     // leggere i valori da file
@@ -582,58 +655,89 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         }
     }
 
-    ////// PIDS
-    Bottle pidsGroup=config.findGroup("PIDS", "PID parameters");
-    if (pidsGroup.isNull()) 
+//    ////// PIDS
+//    Bottle pidsGroup=config.findGroup("PIDS", "PID parameters");
+//    if (pidsGroup.isNull())
+//    {
+//        yError() << ": no PIDS group found in for board" << _fId.boardNum << "... closing";
+//        return false;
+//    }
+
+
+    ////// POSITION PIDS
     {
-        yError() << ": no PIDS group found in for board" << _fId.boardNum << "... closing";
-        return false;
-    }
+        Bottle posPidsGroup;
+        posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
+        if (posPidsGroup.isNull()==false)
+        {
+           yDebug()<< "Position Pids section found, new format";
+           if (!parsePidsGroup_NewFormat (posPidsGroup, _njoints, _pids))
+           {
+               yError() << "Position Pids section: error detected in parameters syntax";
+               return false;
+           }
+           else
+           {
+               yDebug() << "Position Pids successfully loaded";
+           }
+        }
+        else
+        {
+            Bottle posPidsGroup2=config.findGroup("PIDS", "Position Pid parameters old format");
+            if (posPidsGroup2.isNull()==false)
+            {
+                yDebug() << "Position Pids section found, old format";
+                parsePosPidsGroup_OldFormat (posPidsGroup2, _njoints, _pids);
+            }
+            else
+            {
+                yError() <<"Error: no PIDS group found in config file, returning";
+                return false;
+            }
+        }
 
-    int j=0;
-    for(j=0; j<_njoints; j++)
-    {
-        char tmp[80];
-        sprintf(tmp, "Pid%d", j);
-
-        Bottle &xtmp2 = pidsGroup.findGroup(tmp);
-        _pids[j].kp = xtmp2.get(1).asDouble();
-        _pids[j].kd = xtmp2.get(2).asDouble();
-        _pids[j].ki = xtmp2.get(3).asDouble();
-
-        _pids[j].max_int = xtmp2.get(4).asDouble();
-        _pids[j].max_output = xtmp2.get(5).asDouble();
-
-        _pids[j].scale = xtmp2.get(6).asDouble();
-        _pids[j].offset = xtmp2.get(7).asDouble();
     }
 
 
     ////// TORQUE PIDS
-    Bottle TPidsGroup=config.findGroup("TORQUE_PIDS","TORQUE_PID parameters");
-    if (TPidsGroup.isNull())
     {
-        yWarning( ) << "no TORQUE PIDS group found for board" << _fId.boardNum << ", skipping";
-    }
-    else
-    {
-        //yDebug( ) << "TORQUE PIDS group found for board" << _fId.boardNum;
-        _tpidsEnabled=true;
-        for(j=0; j<_njoints; j++)
+        Bottle trqPidsGroup;
+        trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
+        if (trqPidsGroup.isNull()==false)
         {
-            char str1[80];
-            sprintf(str1, "TPid%d", j);
-
-            Bottle &xtmp3 = TPidsGroup.findGroup(str1);
-            _tpids[j].kp = xtmp3.get(1).asDouble();
-            _tpids[j].kd = xtmp3.get(2).asDouble();
-            _tpids[j].ki = xtmp3.get(3).asDouble();
-
-            _tpids[j].max_int = xtmp3.get(4).asDouble();
-            _tpids[j].max_output = xtmp3.get(5).asDouble();
-
-            _tpids[j].scale = xtmp3.get(6).asDouble();
-            _tpids[j].offset = xtmp3.get(7).asDouble();
+           yDebug()<<"Torque Pids section found, new format";
+           if (!parsePidsGroup_NewFormat (trqPidsGroup, _njoints, _tpids))
+           {
+               yError() << "Torque Pids section: error detected in parameters syntax";
+               return false;
+           }
+           else
+           {
+                yDebug() << "Torque Pids new format successfully loaded";
+               _tpidsEnabled = true;
+           }
+        }
+        else
+        {
+            Bottle trqPidsGroup2=config.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
+            if (trqPidsGroup2.isNull()==false)
+            {
+                yDebug() << "Torque Pids section found, old format";
+                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _njoints, _tpids))
+                {
+                     yError() << "Torque Pids section: error detected in parameters syntax";
+                     return false;
+                }
+                else
+               {
+                    yDebug() << "Torque Pids new format successfully loaded";
+                   _tpidsEnabled = true;
+               }
+            }
+            else
+            {
+                yWarning() << "Torque Pids section NOT enabled, skipping...";
+            }
         }
     }
 
