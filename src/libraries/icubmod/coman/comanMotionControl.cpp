@@ -286,7 +286,11 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-    ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
+    double *_encoderToAngle = new double[_njoints];
+    for(unsigned int i = 0; i < _njoints; ++i)
+        _encoderToAngle[i] = M_PI/180.0; //Conversion from [mNm/rad] to [Nm/deg]
+    ImplementImpedanceControl::initialize(_njoints, _axisMap, _encoderToAngle, _zeros, _newtonsToSensor);
+    delete [] _encoderToAngle;
 
     _comanHandler = comanDevicesHandler::instance();
 
@@ -1879,18 +1883,24 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
     uint16_t motor_config_mask = 0;
 //    uint16_t motor_config_mask2 = 0;
 
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
-    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE)); yarp::os::Time::delay(0.01);
+    if(!ret)
+        yError()<<"start_stop_single_control() POSITION_MOVE returned error!";
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE)); yarp::os::Time::delay(0.01);
+    if(!ret)
+        yError()<<"start_stop_single_control() VELOCITY_MOVE returned error!";
+    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) ); yarp::os::Time::delay(0.01);
+    if(!ret)
+        yError()<<"setItem() SET_TORQUE_ON_OFF returned error!";
 
-    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
+    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) ); yarp::os::Time::delay(0.01);
     printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
     if(!ret)
         yError()<<"getItem() GET_MOTOR_CONFIG returned error!";
 
     motor_config_mask |= 0x4803;   // add bit about impedance control.
 
-    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
+    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) ); yarp::os::Time::delay(0.01);
     if(!ret)
         yError()<<"setItem() SET_MOTOR_CONFIG returned error!";
     printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
@@ -2764,7 +2774,17 @@ bool comanMotionControl::setPositionsRaw(const double *refs)
 
 bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
 {
-    return NOT_YET_IMPLEMENTED("getImpedanceOffsetRaw");
+    Pid pid;
+    getPidRaw(j, &pid);
+
+    if(pid.ki > 1e-6){
+        yError()<<"In Impedance mode Ki gain should be 0.0!";
+        return false;}
+
+    *stiffness = pid.kp;
+    *damping = pid.kd;
+
+    return true;
 }
 
 bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
