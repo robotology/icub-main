@@ -135,11 +135,14 @@ Usage syntax:
 
 icubmoddev --device grabber --subdevice dragonfly2 --name <yarp port name> 
 [--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
-[--d <unit_number>] [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
+[--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 icubmoddev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
 [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
-[--d <unit_number>] [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
+[--guid <64_bit_global_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
+
+<B>WARNING: the old --d <unit_number> parameter is still working but deprecated, please use --guid <64_bit_global_unique_identifier> instead,
+because --d <unit_number> camera has become non deterministic in left/right assignment in latest linux releases.</B> 
 
 Example:
 
