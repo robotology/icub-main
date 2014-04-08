@@ -135,29 +135,34 @@ Usage syntax:
 
 icubmoddev --device grabber --subdevice dragonfly2 --name <yarp port name> 
 [--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
-[--unit_number|d <un>] [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
+[--d <unit_number>] [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 icubmoddev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
 [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
-[--unit_number|d <un>] [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
+[--d <unit_number>] [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 Example:
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
-
 icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --guid AB10980D6656E455 [...]
-
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
 
 icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
 icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --guid AB10980D6656E455 [...]
 
+<deprecated>:
+
+icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
+
+icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
+
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
+
 icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
+
+
 
 \author Paul Fitzpatrick, Lorenzo Natale, Giorgio Metta, Alessandro Scalzo
 
