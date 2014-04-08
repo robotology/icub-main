@@ -138,11 +138,11 @@ bool ClientGazeController::open(Searchable &config)
             }
         }
         else
-            printf("Warning: unable to retrieve sever version; please update the server\n");
+            printf("Warning: unable to retrieve server version; please update the server\n");
     }
     else
     {
-        printf("Error: unable to connect to the sever rpc port!\n");
+        printf("Error: unable to connect to the server rpc port!\n");
         return false;
     }
 

@@ -1571,11 +1571,19 @@ bool MotorThread::preGraspHand(Bottle &options)
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
-     bool f;
-     action[arm]->pushAction("pregrasp_hand");
-     action[arm]->checkActionsDone(f,true);
+    Bottle *bTarget=options.find("target").asList();
 
-     return true;
+    Vector xd;
+    if(!targetToCartesian(bTarget,xd))
+        return false;
+
+    arm=checkArm(arm,xd);
+
+    bool f;
+    action[arm]->pushAction("pregrasp_hand");
+    action[arm]->checkActionsDone(f,true);
+
+    return true;
 }
 
 
@@ -1585,15 +1593,17 @@ bool MotorThread::goUp(Bottle &options, const double h)
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
-     Vector x,o;
-     action[arm]->getPose(x,o);
-     x[2]+=h;
+    arm=checkArm(arm);
 
-     bool f;
-     action[arm]->pushAction(x,o);
-     action[arm]->checkActionsDone(f,true);
+    Vector x,o;
+    action[arm]->getPose(x,o);
+    x[2]+=h;
 
-     return true;
+    bool f;
+    action[arm]->pushAction(x,o);
+    action[arm]->checkActionsDone(f,true);
+
+    return true;
 }
 
 

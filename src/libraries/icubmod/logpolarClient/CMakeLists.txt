@@ -13,7 +13,7 @@ IF(NOT SKIP_logpolarclient)
                       ${PROJECT_SOURCE_DIR}/logpolarGrabber
                       ${YARP_INCLUDE_DIRS})
 
-  ADD_LIBRARY(logpolarclient ClientLogpolarFrameGrabber.cpp)
+  yarp_add_plugin(logpolarclient ClientLogpolarFrameGrabber.cpp)
 
   TARGET_LINK_LIBRARIES(logpolarclient  iCubDev 
 										logpolar

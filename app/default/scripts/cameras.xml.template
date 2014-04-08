@@ -1,7 +1,6 @@
 <application>
 <name>Cameras</name>
 <dependencies>
-      <port>/root</port>
 </dependencies> 
 <module>
       <name>icubmoddev</name>
@@ -17,13 +16,13 @@
    </module>
    <module>
       <name>yarpview</name>
-      <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
+      <parameters>--name /icub/view/left --x 0 --y 0 --p 50</parameters>
       <node>icubsrv</node>
 	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
-      <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
+      <parameters>--name /icub/view/right --x 320 --y 0 --p 50</parameters>
       <node>icubsrv</node>
 	<tag>viewright</tag>
    </module>

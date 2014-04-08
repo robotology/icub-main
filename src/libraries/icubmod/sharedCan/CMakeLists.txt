@@ -8,7 +8,7 @@ PREPARE_DEVICE(sharedcan TYPE CanBusAccessPoint
 
 IF (NOT SKIP_sharedcan)
     include_directories(${YARP_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/)
-    ADD_LIBRARY(shcan SharedCanBus.h SharedCanBus.cpp)
+    yarp_add_plugin(shcan SharedCanBus.h SharedCanBus.cpp)
     target_link_libraries(shcan ${YARP_LIBRARIES})
     
     icub_export_library(shcan)

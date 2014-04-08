@@ -10,7 +10,7 @@ IF(NOT SKIP_logpolargrabber)
     INCLUDE_DIRECTORIES(${logpolar_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} 
                         ${YARP_INCLUDE_DIRS})
                       
-  ADD_LIBRARY(logpolargrabber ServerLogpolarFrameGrabber.cpp yarp/dev/ServerLogpolarFrameGrabber.h)
+  yarp_add_plugin(logpolargrabber ServerLogpolarFrameGrabber.cpp yarp/dev/ServerLogpolarFrameGrabber.h)
   TARGET_LINK_LIBRARIES(logpolargrabber logpolar 
                                         ${iCubDev_LIBRARIES} 
                                         ${YARP_LIBRARIES})

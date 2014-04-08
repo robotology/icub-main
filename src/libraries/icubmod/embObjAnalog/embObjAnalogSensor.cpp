@@ -234,7 +234,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     // Set dummy values
     _fId.boardNum  = 255;
-    _fId.ep = 255;
 
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
@@ -242,13 +241,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     else
     {
         yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.PC104ipAddr.string;
-        return false;
-    }
-
-    if((_fId.boardNum == 7) || (_fId.boardNum == 9))
-    {
-        _fId.ep = 255;
-        yError () << "\n embObjAnalogSensor: board with number "<<_fId.boardNum << "not -exists!!!" ;
         return false;
     }
 
@@ -272,6 +264,12 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
+        return false;
+    }
+
+    if(!isEpManagedByBoard())
+    {
+        yError() << "EMS "<< _fId.boardNum << "is not connected to a analog sensor";
         return false;
     }
 
@@ -326,6 +324,35 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     return true;
 }
 
+bool embObjAnalogSensor::isEpManagedByBoard()
+{
+    eOprotID32_t protoid;
+    EOnv         nv;
+
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config);
+        }break;
+        case AS_STRAIN:
+        {
+            protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+        }break;
+        default:
+        {
+            //never i should be here, because if analos sensor type is unknown, then function fromConfig should be retrun with error!
+            return false;
+        }
+    }
+
+
+    if(NULL == res->getNVhandler(protoid, &nv))
+    {
+        return false;
+    }
+    return true;
+}
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
 {

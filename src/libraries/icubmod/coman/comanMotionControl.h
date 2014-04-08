@@ -136,10 +136,10 @@ private:
     uint16_t              extra_policy;
     int                   bc_rate;
 
-    uint16_t              motor_config_mask_j1;     // motor configuration for joint 1 (as test on this joint)
-    uint16_t              motor_config_mask2_j1;    // motor configuration for joint 1 (as test on this joint)
-    Pid                   pid_j1;
-    Pid                   pidTorque_j1;
+    uint16_t              *motor_config_mask;     // motor configuration for joint 1 (as test on this joint)
+    uint16_t              *motor_config_mask2;    // motor configuration for joint 1 (as test on this joint)
+    Pid                   *pid;
+    Pid                   *pidTorque;
 
     bool                  pos_changed;
     bool                  vel_changed;
@@ -171,8 +171,9 @@ private:
     double                *_angleToEncoder;                   /** angle to iCubDegrees conversion factors */
     double                *_rotToEncoder;                     /** angle to rotor conversion factors */
     double                *_zeros;                            /** encoder zeros */
-    Pid                   *_pids;                             /** initial gains */
-    Pid                   *_tpids;                            /** initial torque gains */
+    Pid                   *_posPids;                          /*  initial gains */
+    Pid                   *_trqPids;                          /*  initial torque gains */
+    Pid                   *_impPosPids;                       /*  position Pids for impedance control */
     bool                  _tpidsEnabled;                      /** abilitation for torque gains */
 
 

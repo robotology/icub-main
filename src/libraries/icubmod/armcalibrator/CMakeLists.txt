@@ -15,10 +15,10 @@ IF (NOT SKIP_icubarmcalibratorj8 OR NOT SKIP_icubarmcalibratorj4 OR NOT SKIP_icu
     ADD_DEFINITIONS(-D_REENTRANT)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${ACE_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 
-    add_library(armcalibrator iCubArmCalibrator.cpp iCubArmCalibrator.h)
-    add_library(armcalibratorj8 iCubArmCalibratorJ8.cpp iCubArmCalibratorJ8.h)
-    add_library(armcalibratorj4 iCubArmCalibratorJ4.cpp iCubArmCalibratorJ4.h)
-    add_library(DFKI_hand_calibrator DFKI_hand_calibrator.cpp DFKI_hand_calibrator.h)
+    yarp_add_plugin(armcalibrator iCubArmCalibrator.cpp iCubArmCalibrator.h)
+    yarp_add_plugin(armcalibratorj8 iCubArmCalibratorJ8.cpp iCubArmCalibratorJ8.h)
+    yarp_add_plugin(armcalibratorj4 iCubArmCalibratorJ4.cpp iCubArmCalibratorJ4.h)
+    yarp_add_plugin(DFKI_hand_calibrator DFKI_hand_calibrator.cpp DFKI_hand_calibrator.h)
 
     target_link_libraries(armcalibratorj8 ${YARP_LIBRARIES})
     target_link_libraries(armcalibratorj4 ${YARP_LIBRARIES})

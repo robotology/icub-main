@@ -58,7 +58,7 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
     else
     {
         period=20;
-        std::cout<<"Warning: part "<<id<<" using default period ("<<period<<")\n";
+        yDebug() <<"SkinWrapper Warning: part "<<id<<" using default period ("<<period<<")\n";
     }
 
 /*  // Open the device -- no necessary, the factory will do the job, add an attach method for getting the IAnalogInterface from the sensor
@@ -129,12 +129,12 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
             int base=parameters.get(3).asInt();
             int top=parameters.get(4).asInt();
 
-            cout<<"--> "<<wBase<<" "<<wTop<<" "<<base<<" "<<top<<endl;
+            yDebug() << "SkinWrapper part "<< id << " mapping port/taxels--> "<< ports->get(k).asString().c_str() << ": "<< wBase<<" "<<wTop<<" "<<base<<" "<<top;
 
             //check consistenty
             if(wTop-wBase != top-base){
-                cerr<<"Error: check skin port parameters in part description"<<endl;
-                cerr<<"Numbers of mapped taxels do not match.\n";
+                yError() <<"Error: check skin port parameters in part description";
+                yError() <<"Numbers of mapped taxels do not match.";
                 return false;
             }
             int taxels=top-base+1;
@@ -148,7 +148,7 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
 
         if (totalT!=total_taxels)
         {
-            cerr<<"Error total number of mapped taxels does not correspond to total taxels"<<endl;
+            yError() <<"Error total number of mapped taxels does not correspond to total taxels";
             return false;
         }
     }

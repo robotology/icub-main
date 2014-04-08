@@ -12,7 +12,7 @@ IF (NOT SKIP_${PROJECTNAME})
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS})
 
-  ADD_LIBRARY(${PROJECTNAME} ${PROJECTNAME}.cpp ${PROJECTNAME}.h ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.cpp ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.h)
+  yarp_add_plugin(${PROJECTNAME} ${PROJECTNAME}.cpp ${PROJECTNAME}.h ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.cpp ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.h)
   TARGET_LINK_LIBRARIES(${PROJECTNAME}  debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_library(${PROJECTNAME})
 ENDIF (NOT SKIP_${PROJECTNAME})

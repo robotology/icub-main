@@ -295,6 +295,10 @@ private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool configure_mais(void);
     bool dealloc();
+    bool isEpManagedByBoard();
+    bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
+    bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
+    bool parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[]);
 
 public:
     embObjMotionControl();

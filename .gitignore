@@ -8,3 +8,5 @@
 /bindings/ruby/
 *kdev*
 *.orig
+/src/idl_generated_code/*.cmake
+/src/examples/rpcIdl/*.cmake

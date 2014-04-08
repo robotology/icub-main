@@ -31,6 +31,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
     ethManager  = NULL;
     initted     = false;
     sensorsNum  = 0;
+    numOfPatches = 0;
     memset(info, 0x00, (size_t)SIZE_INFO);
 };
 
@@ -68,7 +69,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     // Check input parameters
     bool correct=true;
 
-    sprintf(info, "EmbObjSkin - referred to EMS: %s", _fId.PC104ipAddr.string);
+    sprintf(info, "EmbObjSkin - referred to EMS: %s", _fId.EMSipAddr.string);
 
     if (!correct)
     {
@@ -83,21 +84,48 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    Bottle ids=config.findGroup("SkinCanIds").tail();
 
-    if (ids.size()>1)
+    Bottle ids_port1, ids_port2;
+    ids_port1.clear();
+    ids_port2.clear();
+    cardId.clear();
+    
+    ids_port1=config.findGroup("SkinCanIds_canPort1").tail();
+    ids_port2=config.findGroup("SkinCanIds_canPort2").tail();
+    
+    if((ids_port1.size() == 0) && (ids_port2.size() == 0))
     {
-        yWarning() <<"EmbObjSkin id list contains more than one entry -> devices will be merged.";
+        yError() << "embObjSkin: " << _fId.name << "i did't find <SkinCanIds_canPort1>  or <SkinCanIds_canPort2> params!!!";
+        return false;
     }
-    for (int i=0; i<ids.size(); i++)
+    
+
+    if(ids_port1.size()> 0)
     {
-        int id = ids.get(i).asInt();
+        numOfPatches++;
+    }
+
+    if(ids_port2.size()> 0)
+    {
+        numOfPatches++;
+    }
+
+   
+    //fill cardId list with boards connected to canPort1 and canPort2
+    for(int i=0; i<ids_port1.size(); i++)
+    {
+        int id = ids_port1.get(i).asInt();
         cardId.push_back (id);
     }
+    for(int i=0; i<ids_port2.size(); i++)
+    {
+        int id = ids_port2.get(i).asInt();
+        cardId.push_back (id);
+    }    
 
     //elements are:
     // sensorsNum=16*12*cardId.size();  // orig
-    sensorsNum=16*12*7;		// max num of card
+    sensorsNum=16*12*cardId.size();     // max num of card
     data.resize(sensorsNum);
 
     int ttt = data.size();
@@ -105,7 +133,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         data[i]=(double)255;
 
     // fill FEAT_ID data
-    _fId.ep = 255;
     _fId.type = Skin;
     std::string FeatId = config.find("FeatId").asString().c_str();
     strcpy(_fId.name, FeatId.c_str());
@@ -115,17 +142,12 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     if(val.isInt())
     {
         _fId.boardNum =val.asInt();
-        if((_fId.boardNum != 2) && (_fId.boardNum != 4))
-        {
-            yError() << "Requested non-existing Skin endpoint for board" << _fId.boardNum;
-            return false;
-        }
     }
     else
     {
         yError() << "skin: No board number found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
         return false;
-     }
+    }
     _fId.ep = eoprot_endpoint_skin;
 
     //N.B.: use a dynamic_cast to extract correct interface when using this pointer
@@ -141,12 +163,33 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         yError() << "EMS device not instantiated... unable to continue";
         return false;
     }
+
+    if(!isEpManagedByBoard())
+    {
+        yError() << "EMS "<< _fId.boardNum << "is not connected to skin";
+        return false;
+    }
+
     init();
 
     res->goToRun();
     yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
     return true;
 }
+
+
+bool EmbObjSkin::isEpManagedByBoard()
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
+
+    EOnv nv;
+    if(NULL == res->getNVhandler(protoid, &nv))
+    {
+        return false;
+    }
+    return true;
+}
+
 
 bool EmbObjSkin::close()
 {
@@ -223,17 +266,18 @@ bool EmbObjSkin::init()
     eOropSIGcfg_t               sigcfg;
     EOnv                        *nvRoot;
     EOnv                        nvtmp;
+    eOprotID32_t                protoid;
 
 #ifdef _SETPOINT_TEST_
     eoy_sys_Initialise(NULL, NULL, NULL);
 #endif
 
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
-
-    uint8_t dat = 1;
-
-   res->addSetMessage(protoid, &dat);
-
+    for(int i=0; i<numOfPatches;i++)
+    {
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_config_sigmode);
+        uint8_t dat = 1;
+       res->addSetMessage(protoid, &dat);
+    }
     //
     //	config regulars
     //
@@ -248,9 +292,12 @@ bool EmbObjSkin::init()
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
-    protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_status_arrayof10canframes);
-    sigcfg.id32 = protoid;
-    eo_array_PushBack(array, &sigcfg);
+    for(int i=0; i<numOfPatches; i++)
+    {
+        protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_status_arrayof10canframes);
+        sigcfg.id32 = protoid;
+        eo_array_PushBack(array, &sigcfg);
+    }
 
     // Send message
     if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
@@ -273,48 +320,39 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
     {
         eOutil_canframe_t *canframe;
         //uint8_t  j; 
-        uint8_t mtbId =0;
-        uint8_t  cardId, valid = 0;
+        uint8_t mtbId =255; //unknown mtb card addr
+        uint8_t  cardAddr, valid = 0;
 
         canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
         valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
 
         if(valid)
         {
-            cardId = (canframe->id & 0x00f0) >> 4;
-            switch (cardId)
+
+            cardAddr = (canframe->id & 0x00f0) >> 4;
+            //get index of start of data of board with addr cardId.
+            for(int cId_index = 0; cId_index< cardId.size(); cId_index++)
             {
-            case 14:
-                mtbId = 0;
-                break;
-            case 13:
-                mtbId = 1;
-                break;
-            case 12:
-                mtbId = 2;
-                break;
-            case 11:
-                mtbId = 3;
-                break;
-            case 10:
-                mtbId = 4;
-                break;
-            case 9:
-                mtbId = 5;
-                break;
-            case 8:
-                mtbId = 6;
-                break;
-            default:
-                yError() << "Unknown cardId from skin\n";
-                return false;
-                break;
+                if(cardId[cId_index] == cardAddr)
+                {
+                    mtbId = cId_index;
+                    break;
+                }
             }
+
+            if(mtbId == 255)
+            {
+                //yError() << "Unknown cardId from skin\n";
+                return false;
+            }
+
+            //printf("mtbId=%d\n", mtbId);
             triangle = (canframe->id & 0x000f);
             msgtype= ((canframe->data[0])& 0x80);
 
             int index=16*12*mtbId + triangle*12;
 
+            //yError() << "skin fill data: mtbid" << mtbId<< " triangle " << triangle << "  msgtype" << msgtype;
             if (msgtype)
             {
                 for(int k=0; k<5; k++)
@@ -334,16 +372,16 @@ bool EmbObjSkin::fillData(void *raw_skin_data)
         }
         else if(canframe->id == 0x100)
         {
-        	/* Can frame with id =0x100 contains Debug info. SO I skip it.*/
-        	return true;
+            /* Can frame with id =0x100 contains Debug info. SO I skip it.*/
+            return true;
         }
         else
         {
-        	if(error == 0)
-        		yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
-        	error++;
-        	if (error == 10000)
-        		error = 0;
+            if(error == 0)
+                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
+            error++;
+            if (error == 10000)
+                error = 0;
         }
     }
     return true;

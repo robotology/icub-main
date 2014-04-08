@@ -11,7 +11,7 @@ PREPARE_DEVICE(parametricCalibrator TYPE parametricCalibrator INCLUDE parametric
                        ${iCubDev_INCLUDE_DIRS}
                        ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/debugStream/)
     
-    add_library(parametricCalibrator parametricCalibratorwip.h parametricCalibratorwip.cpp)
+    yarp_add_plugin(parametricCalibrator parametricCalibratorwip.h parametricCalibratorwip.cpp)
     target_link_libraries(parametricCalibrator debugStream ${YARP_LIBRARIES})
     icub_export_library(parametricCalibrator)
 else()
@@ -22,7 +22,7 @@ PREPARE_DEVICE(parametricCalibrator TYPE parametricCalibrator INCLUDE parametric
                        ${iCubDev_INCLUDE_DIRS}
                        ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/debugStream/)
     
-    add_library(parametricCalibrator parametricCalibrator.h parametricCalibrator.cpp)
+    yarp_add_plugin(parametricCalibrator parametricCalibrator.h parametricCalibrator.cpp)
     target_link_libraries(parametricCalibrator debugStream ${YARP_LIBRARIES})
     icub_export_library(parametricCalibrator)
 endif()

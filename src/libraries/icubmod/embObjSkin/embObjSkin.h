@@ -58,9 +58,11 @@ protected:
     VectorOf<int>   cardId;
     size_t          sensorsNum;
     Vector          data;
+    uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
 
 
     bool            init();
+    bool            isEpManagedByBoard();
 
 
 public:

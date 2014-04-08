@@ -55,6 +55,8 @@
 #include "eOprot_b07.h"
 #include "eOprot_b08.h"
 #include "eOprot_b09.h"
+#include "eOprot_b10.h"
+#include "eOprot_b11.h"
 
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/DeviceDriver.h>

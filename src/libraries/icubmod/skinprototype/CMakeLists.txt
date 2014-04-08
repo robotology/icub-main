@@ -9,7 +9,7 @@ if (NOT SKIP_skinprototype)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ${YARP_INCLUDE_DIRS})
 
-add_library(skinprototype skinprototype.h skinprototype.cpp)
+yarp_add_plugin(skinprototype skinprototype.h skinprototype.cpp)
 target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
 icub_export_library(skinprototype)

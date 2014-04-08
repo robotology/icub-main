@@ -13,6 +13,7 @@
 //  L      I  N  NN  U   U   X X
 //  LLLLL  I  N   N   UUU   X   X
 
+#include <stdlib.h>
 #include "linux/FirewireCameraDC1394-DR2_2.h"
 #include <arpa/inet.h>
 
@@ -172,7 +173,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     int format=checkInt(config,"video_type");
     mUseHardwareTimestamp = !checkInt(config,"use_network_time");
 
-    unsigned int idCamera=checkInt(config,"d");
+    unsigned int idCamera=0;
+
     m_Framerate=checkInt(config,"framerate");
     
     fprintf(stderr,"Format = %d\n",format);
@@ -208,6 +210,33 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         fprintf(stderr,"ERROR: no active cameras\n");
         fprintf(stderr,"LINE: %d\n",__LINE__); 
         return false;
+    }
+
+	if (config.check("guid"))
+	{
+		yarp::os::ConstString sguid=config.find("guid").asString();
+
+		uint64_t guid=strtoull(sguid.c_str(),NULL,16);
+
+		for (idCamera=0; idCamera<m_nNumCameras; ++idCamera)
+		{
+			if (guid==m_pCameraList->ids[idCamera].guid)
+			{
+				break;
+			}
+		}
+
+		if (idCamera==m_nNumCameras)
+		{
+			fprintf(stderr,"ERROR: GUID=%s camera not found\n",sguid.c_str());
+			fprintf(stderr,"LINE: %d\n",__LINE__);
+            return false;  
+		}
+	}
+    else if (config.check("d"))
+    {
+        fprintf(stderr,"WARNING: --d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
+        idCamera=config.find("d").asInt(); 
     }
 
     if (idCamera<0 || idCamera>=m_nNumCameras)

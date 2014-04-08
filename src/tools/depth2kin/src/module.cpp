@@ -183,9 +183,15 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     br.y=std::max(1,br.y); br.y=std::min(br.y,imgIn.height()-1);
     cv::Rect rect(tl,br);
 
-    cv::Mat img((IplImage*)imgOut.getIplImage());
-    cv::Mat imgRoi((IplImage*)imgOut.getIplImage(),rect);
-    cv::threshold(imgRoi,imgRoi,100,255,cv::THRESH_BINARY);
+    // run Otsu algorithm to segment out the finger
+    cv::Mat imgInMat((IplImage*)imgIn.getIplImage());
+    cv::Mat imgInMatRoi(imgInMat,rect);
+    cv::threshold(imgInMatRoi,imgInMatRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
+
+    // produce a colored image
+    imgOut.resize(imgIn);
+    cv::Mat imgOutMat((IplImage*)imgOut.getIplImage());
+    cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
 
     px.resize(2,0.0);
     bool ok=false;
@@ -193,12 +199,12 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     {
         for (int x=tl.x; x<br.x; x++)
         {
-            if (imgOut(x,y).b>0)
+            if (imgIn(x,y)>0)
             {
                 // predict the center of the finger a bit shifted
                 x+=3;    y+=5;
                 px[0]=x; px[1]=y;
-                cv::circle(img,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
+                cv::circle(imgOutMat,cv::Point(x,y),5,cv::Scalar(0,0,255),-1);
                 ok=true;
                 break;
             }
@@ -208,8 +214,8 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
             break;
     }
 
-    cv::circle(img,ct,5,cv::Scalar(0,255,0),-1);
-    cv::rectangle(img,tl,br,cv::Scalar(255,255,255),4);
+    cv::circle(imgOutMat,ct,5,cv::Scalar(0,255,0),-1);
+    cv::rectangle(imgOutMat,tl,br,cv::Scalar(255,255,255),4);
     return rect;
 }
 
@@ -852,15 +858,13 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
 {
     mutex.lock();
 
-    ImageOf<PixelBgr> imgOut;
-    imgOut.resize(imgIn);
-    cvCvtColor(imgIn.getIplImage(),imgOut.getIplImage(),CV_GRAY2BGR);
-
     Vector kinPoint,o;
     iarm->getPose(kinPoint,o);
 
     Vector c,tipl(2,0.0),tipr(2,0.0);
     igaze->get2DPixel(0,kinPoint,c);
+
+    ImageOf<PixelBgr> imgOut;
     cv::Rect rect=extractFingerTip(imgIn,imgOut,c,tipl);
     
     bool holdImg=false;

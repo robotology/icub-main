@@ -9,7 +9,7 @@ if (NOT SKIP_canBusVirtualAnalogSensor)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ${YARP_INCLUDE_DIRS})
 
-add_library(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirtualAnalogSensor.cpp)
+yarp_add_plugin(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirtualAnalogSensor.cpp)
 target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})
 
 icub_export_library(canBusVirtualAnalogSensor)
