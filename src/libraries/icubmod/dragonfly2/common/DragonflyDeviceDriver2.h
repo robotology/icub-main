@@ -89,9 +89,109 @@ The video_type parameter determines how images are acquired by the dragonfly chi
 
 -video_type 3: the image is acquired as a raw Bayer pattern 640x480 image, and transferred in this format to the framegrabber driver memory buffer. In this way, the bandwidth required to the Firewire bus is lower than in the previous format, allowing 60 fps. The Bayer decoding to the usual RGB format provided by the DragonflyDeviceDriver2 framegrabber is performed at software level by the driver itself. If specified, the --width and --height parameters will '''crop''' the original 640 x 480 image to the specified dimension.
 
-\subsection port_units Port and Unit number
+\subsection port_units Port, Unit number and 64 bit Global Unique Identifier
 
-Many cameras can coexist on the same Firewire bus (port), sharing the available bandwidth. Each camera connected to the same Firewire bus will be identified by a unit number. Port numbers, as well as unit numbers, are assigned increasingly starting from 0. The iCub robot has one only Firewire card, and thus its port number is always 0 (can be omitted). The two left and right cameras will be unit 0 and 1. Unfortunately, there is no way to fix, for instance, the left camera as unit 0 and the right to unit 1: it depends on the starting order. Thus, if launching the driver you notice that the right and left camera Yarp port names are inverted, you will have to stop and restart the driver inverting the names.
+Many cameras can coexist on the same Firewire bus (port), sharing the available bandwidth. Each camera connected to the same Firewire bus is associated to a unit number. Port numbers, as well as unit numbers, are assigned increasingly starting from 0. 
+The iCub robot has one only Firewire card, and thus its port number is always 0 (can be omitted). The two left and right cameras will be unit 0 and 1, but unfortunately this association is not deterministic, and thus the Global Unique Identifier (guid) must be used in order to univokely identify a camera.
+The icubmoddev device driver supports configuration files, thus the most convenient way to deal with GUIDs is putting them in .ini files that will be passed to icubmoddev together with all the other parameters as follows:
+
+icubmoddev --from camera/dragonfly2_config_left.ini
+icubmoddev --from camera/dragonfly2_config_right.ini 
+
+In the latest iCub software releases the .ini files are already supplied in <B>app/robots/iCubXXXnn/camera</B> folders. The --d option must be replaced in them by assigning the guid of the corresponding camera to the guid parameter. 
+The following configuration file dragonfly2_config_left.ini
+
+device grabber
+subdevice dragonfly2
+width 320
+height 240
+video_type 1
+white_balance 0.506 0.494 
+gain 0.312
+shutter 0.913
+name /icub/cam/left
+brightness 0
+DR2
+stamp
+sharpness 0.5
+hue 0.48
+gamma 0.4
+saturation 0.271
+framerate 30
+d 0
+#guid <64bit global identifier, without the leading 0x> then remove the d option
+
+will become after configuration, if (for example) A0BB98F34560AAB5 is the guid of the left camera:
+
+device grabber
+subdevice dragonfly2
+width 320
+height 240
+video_type 1
+white_balance 0.506 0.494 
+gain 0.312
+shutter 0.913
+name /icub/cam/left
+brightness 0
+DR2
+stamp
+sharpness 0.5
+hue 0.48
+gamma 0.4
+saturation 0.271
+framerate 30
+guid A0BB98F34560AAB5
+
+The configuration files already present in the /app/robots/iCubXXXnn/camera folder are:
+
+dragonfly_config_left.ini
+dragonfly_config_right.ini
+dragonfly_config_left_bayer_320_240.ini
+dragonfly_config_right_bayer_320_240.ini
+dragonfly_config_left_bayer_640_480.ini
+dragonfly_config_right_bayer_640_480.ini
+
+\subsection How to obtain GUID from a camera
+
+Execute from terminal:
+
+icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam0 --d 0 
+
+The driver will answer something like:
+
+------ Camera information ------
+Vendor                            :     Point Grey Research
+Model                             :     Dragonfly2 DR2-03S2C-EX
+Unit                              :     0
+Specifications ID                 :     0xa02d
+Software revision                 :     0x102
+IIDC version code                 :     548
+Unit directory offset             :     0x428
+Unit dependent directory offset   :     0x440
+Commands registers base           :     0xf00000
+Unique ID                         :     0x00b09d01006fb1fb  <B><== THIS IS THE INFORMATION THAT YOU NEED!!!</B>
+Vendor ID                         :     0xb09d
+Model ID                          :     0x1
+Advanced features found at offset :     0xf01000
+1394b mode capable (>=800Mbit/s)  :     Yes
+Platform backend                  :     juju
+------ Camera platform-specific information ------
+Device filename                   :     /dev/fw2 
+
+Now, from another terminal, execute
+
+yarpview --name /fooview0
+yarp connect /foocam0 /fooview0
+
+and check in the viewer if the camera is the left or right iCub eye. Supposing that it is the left one, write the guid parameter in the dragonfly2_config_left*.ini files as shown in the former section.
+Do the same for the other camera, using unit number 1:
+
+icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam1 --d 1 
+yarpview --name /fooview1
+yarp connect /foocam1 /fooview1
+
+and set the corresponding guid in the other camera's .ini files. 
+
 
 \subsection features Features
 
