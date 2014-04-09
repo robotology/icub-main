@@ -70,7 +70,9 @@ PGRFlyCapture (Windows)
 
 --port_number      // Firewire channel (need to specify only if you have more than one firewire card)
 
---d|unit_number    // camera unit number 
+--guid             // camera global unique 64 bit identifier <B>WARNING: replaces --d</B> 
+
+--d                // camera unit number <B>DEPRECATED</B>
 
 --white_balance    // red and blue balance, values are normalized betwen 0.0 and 1.0 
 
@@ -150,11 +152,11 @@ icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --guid
 
 icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
-
 icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --guid AB10980D6656E455 [...]
 
-<deprecated>:
+icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
+
+<B>DEPRECATED:</B>
 
 icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
 
