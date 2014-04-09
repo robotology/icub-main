@@ -140,7 +140,7 @@ hue 0.48
 gamma 0.4
 saturation 0.271
 framerate 30
-guid A0BB98F34560AAB5
+guid  A0BB98F34560AAB5
 
 The configuration files already present in the /app/robots/iCubXXXnn/camera folder are:
 
