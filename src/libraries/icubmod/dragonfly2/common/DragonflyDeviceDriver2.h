@@ -151,7 +151,7 @@ dragonfly_config_right_bayer_320_240.ini
 dragonfly_config_left_bayer_640_480.ini
 dragonfly_config_right_bayer_640_480.ini
 
-\subsection How to obtain GUID from a camera
+\subsection how_to_guid How to obtain GUID from a camera
 
 Execute from terminal:
 
@@ -176,7 +176,7 @@ Advanced features found at offset :     0xf01000
 1394b mode capable (>=800Mbit/s)  :     Yes
 Platform backend                  :     juju
 ------ Camera platform-specific information ------
-Device filename                   :     /dev/fw2 
+Device filename                   :     /dev/fw2
 
 Now, from another terminal, execute
 
