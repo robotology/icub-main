@@ -1057,7 +1057,15 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
 
     //optional
-    xtmp = pidsGroup.findGroup("kff");         if (xtmp.isNull()) return true;  for (j=0;j<nj;j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+    xtmp = pidsGroup.findGroup("kff");         
+    if (!xtmp.isNull())
+    {
+        for (j=0;j<nj;j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+    }
+    else
+    {
+         for (j=0;j<nj;j++) myPid[j].kff = 0;
+    }
 
     return true;
 }
