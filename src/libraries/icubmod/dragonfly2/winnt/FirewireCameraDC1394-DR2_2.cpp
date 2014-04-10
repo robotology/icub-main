@@ -185,7 +185,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     int off_x=checkInt(config,"xoff");
     int off_y=checkInt(config,"yoff");
     int format=checkInt(config,"video_type");
-    unsigned int idCamera=checkInt(config,"d");
+    unsigned int idCamera=0;
     
     m_pFrame=new FlyCapture2::Image();
     m_pBayer=new FlyCapture2::Image();
@@ -214,10 +214,35 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         return false;
     }
 
-    if (idCamera<0 || idCamera>=m_nNumCameras)
+    FlyCapture2::PGRGuid Guid;
+    
+    /*
+	if (config.check("guid"))
+	{
+		yarp::os::ConstString sguid=config.find("guid").asString();
+
+        Guid.value[0]=strtoul(sguid.substr(0,8).c_str(),NULL,16);
+        Guid.value[1]=strtoul(sguid.substr(8,8).c_str(),NULL,16);
+        Guid.value[2]=0;
+        Guid.value[3]=0;
+	}
+    else
+    */
     {
-        fprintf(stderr,"ERROR: invalid camera number\n");
-        return false;       
+        if (config.check("d"))
+        {
+            //fprintf(stderr,"WARNING: --d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
+            //idCamera=config.find("d").asInt();
+
+            if (idCamera<0 || idCamera>=m_nNumCameras)
+            {
+                fprintf(stderr,"ERROR: invalid camera number\n");
+                return false;       
+            }
+        }
+
+        error=m_pBusManager->GetCameraFromIndex(idCamera,&Guid);
+        if (manage(error)) return false;	
     }
 
     if (!(m_pCamera=new FlyCapture2::Camera()))
@@ -226,15 +251,14 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         return false;
     }
 
-    FlyCapture2::PGRGuid Guid;
-    error=m_pBusManager->GetCameraFromIndex(idCamera,&Guid);
-    if (manage(error)) return false;	
-
     error=m_pCamera->Connect(&Guid);
     if (manage(error)) return false;
 
     error=m_pCamera->GetCameraInfo(&m_CameraInfo);
     if (manage(error)) return false;
+
+    fprintf(stderr,"GUID = %x%x",Guid.value[0],Guid.value[1]);
+    fprintf(stderr,"%x%x\n",Guid.value[2],Guid.value[3]);
 
     mHires=(strcmp("1032x776",m_CameraInfo.sensorResolution)==0);
 

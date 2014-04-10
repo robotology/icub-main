@@ -101,55 +101,55 @@ icubmoddev --from camera/dragonfly2_config_right.ini
 In the latest iCub software releases the .ini files are already supplied in <B>app/robots/iCubXXXnn/camera</B> folders. The --d option must be replaced in them by assigning the guid of the corresponding camera to the guid parameter. 
 The following configuration file dragonfly2_config_left.ini
 
-device grabber
-subdevice dragonfly2
-width 320
-height 240
-video_type 1
-white_balance 0.506 0.494 
-gain 0.312
-shutter 0.913
-name /icub/cam/left
-brightness 0
-DR2
-stamp
-sharpness 0.5
-hue 0.48
-gamma 0.4
-saturation 0.271
-framerate 30
-d 0
-#guid <64bit global identifier, without the leading 0x> then remove the d option
+device grabber \n
+subdevice dragonfly2 \n
+width 320 \n
+height 240 \n
+video_type 1 \n
+white_balance 0.506 0.494 \n 
+gain 0.312 \n
+shutter 0.913 \n
+name /icub/cam/left \n
+brightness 0 \n
+DR2 \n
+stamp \n
+sharpness 0.5 \n
+hue 0.48 \n
+gamma 0.4 \n
+saturation 0.271 \n
+framerate 30 \n
+d 0 \n
+#guid <64bit global identifier, without the leading 0x> then remove the d option \n
 
 will become after configuration, if (for example) A0BB98F34560AAB5 is the guid of the left camera:
 
-device grabber
-subdevice dragonfly2
-width 320
-height 240
-video_type 1
-white_balance 0.506 0.494 
-gain 0.312
-shutter 0.913
-name /icub/cam/left
-brightness 0
-DR2
-stamp
-sharpness 0.5
-hue 0.48
-gamma 0.4
-saturation 0.271
-framerate 30
-guid  A0BB98F34560AAB5
+device grabber \n
+subdevice dragonfly2 \n
+width 320 \n
+height 240 \n
+video_type 1 \n
+white_balance 0.506 0.494 \n 
+gain 0.312 \n
+shutter 0.913 \n
+name /icub/cam/left \n
+brightness 0 \n
+DR2 \n
+stamp \n
+sharpness 0.5 \n
+hue 0.48 \n
+gamma 0.4 \n
+saturation 0.271 \n
+framerate 30 \n
+guid  A0BB98F34560AAB5 \n
 
 The configuration files already present in the /app/robots/iCubXXXnn/camera folder are:
 
-dragonfly_config_left.ini
-dragonfly_config_right.ini
-dragonfly_config_left_bayer_320_240.ini
-dragonfly_config_right_bayer_320_240.ini
-dragonfly_config_left_bayer_640_480.ini
-dragonfly_config_right_bayer_640_480.ini
+dragonfly_config_left.ini \n
+dragonfly_config_right.ini \n
+dragonfly_config_left_bayer_320_240.ini \n
+dragonfly_config_right_bayer_320_240.ini \n
+dragonfly_config_left_bayer_640_480.ini \n
+dragonfly_config_right_bayer_640_480.ini \n
 
 \subsection how_to_guid How to obtain GUID from a camera
 
@@ -159,38 +159,38 @@ icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam0 --d 0
 
 The driver will answer something like:
 
------- Camera information ------
-Vendor                            :     Point Grey Research
-Model                             :     Dragonfly2 DR2-03S2C-EX
-Unit                              :     0
-Specifications ID                 :     0xa02d
-Software revision                 :     0x102
-IIDC version code                 :     548
-Unit directory offset             :     0x428
-Unit dependent directory offset   :     0x440
-Commands registers base           :     0xf00000
-Unique ID                         :     0x00b09d01006fb1fb  <B><== THIS IS THE INFORMATION THAT YOU NEED!!!</B>
-Vendor ID                         :     0xb09d
-Model ID                          :     0x1
-Advanced features found at offset :     0xf01000
-1394b mode capable (>=800Mbit/s)  :     Yes
-Platform backend                  :     juju
------- Camera platform-specific information ------
-Device filename                   :     /dev/fw2
+------ %Camera information ------ \n
+Vendor                            :     %Point Grey Research \n
+%Model                             :     Dragonfly2 DR2-03S2C-EX \n
+Unit                              :     0 \n
+Specifications ID                 :     0xa02d \n
+Software revision                 :     0x102 \n
+IIDC version code                 :     548 \n
+Unit directory offset             :     0x428 \n
+Unit dependent directory offset   :     0x440 \n
+Commands registers base           :     0xf00000 \n
+Unique ID                         :     0x00b09d01006fb1fb  <B><== THIS IS THE INFORMATION THAT YOU NEED!!!</B> \n
+Vendor ID                         :     0xb09d \n
+%Model ID                          :     0x1 \n
+Advanced features found at offset :     0xf01000 \n
+1394b mode capable (>=800Mbit/s)  :     Yes \n
+Platform backend                  :     juju \n
+------ %Camera platform-specific information ------ \n
+Device filename                   :     /dev/fw2 \n
 
 Now, from another terminal, execute
 
-yarpview --name /fooview0
-yarp connect /foocam0 /fooview0
+yarpview --name /fooview0 \n
+yarp connect /foocam0 /fooview0 \n
 
 and check in the viewer if the camera is the left or right iCub eye. Supposing that it is the left one, write the guid parameter in the dragonfly2_config_left*.ini files as shown in the former section.
 Do the same for the other camera, using unit number 1:
 
-icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam1 --d 1 
-yarpview --name /fooview1
-yarp connect /foocam1 /fooview1
+icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam1 --d 1 \n 
+yarpview --name /fooview1 \n
+yarp connect /foocam1 /fooview1 \n
 
-and set the corresponding guid in the other camera's .ini files. 
+and set the corresponding guid in the other camera's .ini files, <B>without leading 0x</B>. 
 
 
 \subsection features Features
