@@ -189,7 +189,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     cv::threshold(imgInMatRoi,imgInMatRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
 
     // produce a colored image
-    imgOut.resize(imgIn);
+    imgOut.resize(imgIn.width(),imgIn.height());
     cv::Mat imgOutMat((IplImage*)imgOut.getIplImage());
     cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
 
