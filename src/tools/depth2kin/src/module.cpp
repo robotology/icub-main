@@ -167,6 +167,13 @@ bool CalibModule::factory(Value &v)
 cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelBgr> &imgOut,
                                        const Vector &c, Vector &px)
 {
+    cv::Mat imgInMat((IplImage*)imgIn.getIplImage());
+
+    // produce a colored image    
+    imgOut.resize(imgIn);
+    cv::Mat imgOutMat((IplImage*)imgOut.getIplImage());
+    cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
+
     // proceed iff the center is within the image plane
     if ((c[0]<10.0) || (c[0]>imgIn.width()-10) ||
         (c[1]<10.0) || (c[1]>imgIn.height()-10))
@@ -183,15 +190,9 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     br.y=std::max(1,br.y); br.y=std::min(br.y,imgIn.height()-1);
     cv::Rect rect(tl,br);
 
-    // run Otsu algorithm to segment out the finger
-    cv::Mat imgInMat((IplImage*)imgIn.getIplImage());
+    // run Otsu algorithm to segment out the finger    
     cv::Mat imgInMatRoi(imgInMat,rect);
     cv::threshold(imgInMatRoi,imgInMatRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
-
-    // produce a colored image
-    imgOut.resize(imgIn.width(),imgIn.height());
-    cv::Mat imgOutMat((IplImage*)imgOut.getIplImage());
-    cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
 
     px.resize(2,0.0);
     bool ok=false;
@@ -864,7 +865,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
     Vector c,tipl(2,0.0),tipr(2,0.0);
     igaze->get2DPixel(0,kinPoint,c);
 
-    ImageOf<PixelBgr> imgOut;
+    ImageOf<PixelBgr> imgOut;    
     cv::Rect rect=extractFingerTip(imgIn,imgOut,c,tipl);
     
     bool holdImg=false;
