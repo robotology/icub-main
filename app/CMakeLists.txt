@@ -47,4 +47,5 @@ add_subdirectory(dataSetPlayer)
 add_subdirectory(simFaceExpressions)
 add_subdirectory(fingersTuner)
 add_subdirectory(depth2kin)
+add_subdirectory(fingertipsPortScope)
 
