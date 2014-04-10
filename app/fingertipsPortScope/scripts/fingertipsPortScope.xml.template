@@ -10,7 +10,7 @@
     <module>
         <name>yarpscope</name>
         <node></node>
-        <parameters>--xml FingertipsPortScopeConf-LeftHandAll.xml</parameters>
+        <parameters>--context fingertipsPortScope --xml FingertipsPortScopeConf-LeftHandAll.xml</parameters>
         <workdir></workdir>
         <tag>Fingertips Port Scope - Left Hand All</tag>
     </module>
@@ -18,7 +18,7 @@
     <module>
         <name>yarpscope</name>
         <node></node>
-        <parameters>--xml FingertipsPortScopeConf-RightHandAll.xml</parameters>
+        <parameters>--context fingertipsPortScope --xml FingertipsPortScopeConf-RightHandAll.xml</parameters>
         <workdir></workdir>
         <tag>Fingertips Port Scope - Right Hand All</tag>
     </module>
