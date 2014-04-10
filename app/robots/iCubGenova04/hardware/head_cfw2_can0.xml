@@ -5,8 +5,8 @@
 <devices robot="iCubGenova04" build="1">
   <device name="head_mc" type="canmotioncontrol">
       <params file="general.xml" />
-      <params file="hardware/electronics/cfw002_0-eln.xml" />
-      <params file="hardware/mechanicals/cfw002_0-mec.xml" />
+      <params file="hardware/electronics/head-cfw2_can0-eln.xml" />
+      <params file="hardware/mechanicals/head-cfw2_can0-mec.xml" />
   </device>
   
   <device name="torso_skin" type="skinprototype">
