@@ -154,6 +154,7 @@ bool SubDevice::attach(yarp::dev::PolyDriver *d, const std::string &k)
             subdevice->view(iTorque);
             subdevice->view(iImpedance);
             subdevice->view(iMode);
+            subdevice->view(iMode2);
             subdevice->view(iOpenLoop);
             subdevice->view(iDbg);
             subdevice->view(enc);
@@ -382,6 +383,10 @@ void CommandsHelper2::handleControlModeMsg(const yarp::os::Bottle& cmd,
                 {
                     case VOCAB_CM_POSITION:
                         *ok = iMode->setPositionMode(axis);
+                        break;
+                    case VOCAB_CM_POSITION_DIRECT:
+                        if(iMode2)
+                            *ok = iMode2->setControlMode(axis, VOCAB_CM_POSITION_DIRECT);
                         break;
                     case VOCAB_CM_VELOCITY:
                         *ok = iMode->setVelocityMode(axis);
@@ -1365,6 +1370,11 @@ bool CommandsHelper2::respond(const yarp::os::Bottle& cmd,
                             }
                             break;
 
+                        case VOCAB_POSITION_DIRECT:
+                            {
+                                ok = iPosDir->setPositionDirectMode();
+                            }
+
                         case VOCAB_POSITION_MOVE:
                             {
                                ok = pos->positionMove(cmd.get(2).asInt(), cmd.get(3).asDouble());
@@ -2314,6 +2324,7 @@ CommandsHelper2::CommandsHelper2(ControlBoardWrapper2 *x)
     iImpedance=dynamic_cast<yarp::dev::IImpedanceControl *> (caller);
     torque=dynamic_cast<yarp::dev::ITorqueControl *> (caller);
     iMode=dynamic_cast<yarp::dev::IControlMode *> (caller);
+    iMode2=dynamic_cast<yarp::dev::IControlMode2 *> (caller);
     controlledJoints = 0;
 }
 

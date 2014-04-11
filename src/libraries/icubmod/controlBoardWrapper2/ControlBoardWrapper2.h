@@ -85,7 +85,7 @@ class ControlBoardWrapper2;
 */
 class CommandsHelper2 : public DeviceResponder {
 protected:
-    ControlBoardWrapper2   *caller;
+    ControlBoardWrapper2            *caller;
     yarp::dev::IPidControl          *pid;
     yarp::dev::IPositionControl     *pos;
     yarp::dev::IPositionControl2    *pos2;
@@ -96,12 +96,13 @@ protected:
     yarp::dev::IControlLimits2      *lim2;
     yarp::dev::ITorqueControl       *torque;
     yarp::dev::IControlMode         *iMode;
+    yarp::dev::IControlMode2        *iMode2;
     yarp::dev::IDebugInterface      *iDbg;
     yarp::dev::IAxisInfo            *info;
     yarp::dev::IControlCalibration2 *ical2;
     yarp::dev::IOpenLoopControl     *iOpenLoop;
     yarp::dev::IImpedanceControl    *iImpedance;
-    //yarp::dev::IPositionDirect      *iPosDir; //unused, it's streaming
+    yarp::dev::IPositionDirect      *iPosDir;      //used, only for setPositionMode()
     int controlledJoints;
     Vector vect;
 
@@ -193,6 +194,7 @@ public:
     IOpenLoopControl      *iOpenLoop;
     IDebugInterface       *iDbg;
     IControlMode          *iMode;
+    IControlMode2         *iMode2;
     IAxisInfo             *info;
     IPositionDirect       *posDir;
 
@@ -3677,6 +3679,27 @@ public:
             {
                 ret=ret&&p->iOpenLoop->setOutput(off+base, outs[l]);
             }
+            else
+                ret=false;
+        }
+        return ret;
+    }
+
+    virtual bool setPositionDirectMode()
+    {
+        bool ret=true;
+        for(int l=0;l<controlledJoints;l++)
+        {
+            int off=device.lut[l].offset;
+            int subIndex=device.lut[l].deviceEntry;
+
+            SubDevice *p=device.getSubdevice(subIndex);
+
+            if (!p)
+                return false;
+
+            if(p->iMode2)
+                ret = ret && p->iMode2->setControlMode(off+base, VOCAB_CM_POSITION_DIRECT);
             else
                 ret=false;
         }
