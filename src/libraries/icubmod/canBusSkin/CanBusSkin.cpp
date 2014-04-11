@@ -8,6 +8,7 @@
 
 #include <yarp/os/Time.h>
 #include <iostream>
+#include <sstream>
 
 const int CAN_DRIVER_BUFFER_SIZE = 2047;
 
@@ -219,11 +220,21 @@ void CanBusSkin::run() {
         sensorId = (msgid & 0x000F);
 
         unsigned int msgTail = (msg.getData()[0] & 0x80);
-        int len=msg.getLen();
+        int len = msg.getLen();
 
-        for (int i = 0; i < cardId.size(); i++) {
-            if (id == cardId[i]) {
-                int index = 16*12*i + sensorId*12;
+#if SKIN_DEBUG
+        cout << "CAN message type is: " << std::showbase << std::hex << (int) msg.getData()[0] << std::noshowbase << std::dec 
+            << " with length " << len << ".\n";
+        cout << "CAN message content is: " << std::showbase << std::hex;
+        for (int k = 0; k < len; ++k) {
+            cout << (int) msg.getData()[k] << "\t";
+        }
+        cout  << "\n" << std::noshowbase << std::dec;
+#endif
+
+        for (int j = 0; j < cardId.size(); j++) {
+            if (id == cardId[j]) {
+                int index = 16*12*j + sensorId*12;
                 
                 if (msgTail) {
                     // Message tail
@@ -296,12 +307,12 @@ bool CanBusSkin::sendCANMessage4C(void) {
         cout << "INFO: CanBusSkin: Input parameters (msg 4C) are: " << std::hex << std::showbase
             << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " "
             << msg4C_Timer.get(i).asInt() << " " << msg4C_CDCOffsetL.get(i).asInt() << " " << msg4C_CDCOffsetH.get(i).asInt() << " " 
-            << msg4C_TimeL.get(i).asInt() << " " << msg4C_TimeH.get(i).asInt()
+            << msg4C_TimeL.get(i).asInt() << " " << msg4C_TimeH.get(i).asInt() << std::dec << std::noshowbase
             << ". \n";
         cout << "INFO: CanBusSkin: Output parameters (msg 4C) are: " << std::hex << std::showbase
             << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " " 
             << (int) msg4c.getData()[3] << " " << (int) msg4c.getData()[4] << " " << (int) msg4c.getData()[5] << " " 
-            << (int) msg4c.getData()[6] << " " << (int) msg4c.getData()[7]
+            << (int) msg4c.getData()[6] << " " << (int) msg4c.getData()[7] << std::dec << std::noshowbase
             << ". \n";
 #endif
 
@@ -346,12 +357,12 @@ bool CanBusSkin::sendCANMessage4E(void) {
         cout << "INFO: CanBusSkin: Input parameters (msg 4E) are: " << std::hex << std::showbase
             << (int) msg4e.getData()[0] << " " << msg4E_Shift.get(i).asInt() << " " << msg4E_Shift3_1.get(i).asInt() << " " 
             << msg4E_NoLoad.get(i).asInt() << " " << msg4E_Param.get(i).asInt() << " " << msg4E_EnaL.get(i).asInt() << " " 
-            << msg4E_EnaH.get(i).asInt() << " " << (int) msg4e.getData()[7]
+            << msg4E_EnaH.get(i).asInt() << " " << (int) msg4e.getData()[7] << std::dec << std::noshowbase
             << ". \n";
         cout << "INFO: CanBusSkin: Output parameters (msg 4E) are: " << std::hex << std::showbase
             << (int) msg4e.getData()[0] << " " << (int) msg4e.getData()[1] << " " << (int) msg4e.getData()[2] << " " 
             << (int) msg4e.getData()[3] << " " << (int) msg4e.getData()[4] << " " << (int) msg4e.getData()[5] << " " 
-            << (int) msg4e.getData()[6] << " " << (int) msg4e.getData()[7]
+            << (int) msg4e.getData()[6] << " " << (int) msg4e.getData()[7] << std::dec << std::noshowbase
             << ". \n";
 #endif
 
