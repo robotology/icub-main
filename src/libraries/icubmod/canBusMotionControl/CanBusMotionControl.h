@@ -1006,6 +1006,7 @@ public:
     bool setTorqueSource (int axis, char board_id, char board_chan );
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);

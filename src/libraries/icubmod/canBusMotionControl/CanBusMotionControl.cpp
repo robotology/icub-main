@@ -4843,6 +4843,11 @@ bool CanBusMotionControl::disablePidRaw(int axis)
     return _writeNone (ICUBCANPROTO_POL_MC_CMD__CONTROLLER_IDLE, axis);
 }
 
+bool CanBusMotionControl::setPositionDirectModeRaw()
+{
+    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+}
+
 bool CanBusMotionControl::setPositionModeRaw()
 {
     CanBusResources& r = RES(system_resources);
