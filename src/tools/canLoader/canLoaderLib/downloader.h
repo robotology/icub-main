@@ -14,6 +14,9 @@
 #include <yarp/dev/CanBusInterface.h>
 
 #include <fstream>
+#include "stdint.h"
+#include "iCubCanProtocol.h"
+#include "iCubCanProto_types.h"
 
 //*****************************************************************/
 
@@ -53,36 +56,36 @@ public:
 #define SPRS_TYPE_4 '4'
 #define SPRS_TYPE_7 '7'
 
-#define ID_CMD         0x07
+#define ID_CMD         ICUBCANPROTO_CLASS_BOOTLOADER
 #define ID_MASTER      0x00
 #define ID_BROADCAST   0x0F
 
-#define BOARD_TYPE_DSP    0x00
-#define BOARD_TYPE_PIC    0x01
-#define BOARD_TYPE_2DC    0x02
-#define BOARD_TYPE_4DC    0x03
-#define BOARD_TYPE_BLL    0x04
-#define BOARD_TYPE_SKIN   0x05
-#define BOARD_TYPE_STRAIN 0x06
-#define BOARD_TYPE_MAIS   0x07
-#define BOARD_TYPE_2FOC   0x08
-#define BOARD_TYPE_6SG    0x09
-#define BOARD_TYPE_JOG    0x0A
-#define BOARD_UNKNOWN     0xFF
+//#define BOARD_TYPE_DSP    icubCanProto_boardType__dsp
+//#define BOARD_TYPE_PIC    icubCanProto_boardType__pic
+//#define BOARD_TYPE_2DC    icubCanProto_boardType__2dc
+//#define BOARD_TYPE_4DC    icubCanProto_boardType__4dc
+//#define BOARD_TYPE_BLL    icubCanProto_boardType__bll
+//#define BOARD_TYPE_SKIN   icubCanProto_boardType__skin
+//#define BOARD_TYPE_STRAIN icubCanProto_boardType__strain
+//#define BOARD_TYPE_MAIS   icubCanProto_boardType__mais
+//#define BOARD_TYPE_2FOC   icubCanProto_boardType__2foc
+//#define BOARD_TYPE_6SG    icubCanProto_boardType__6sg
+#define BOARD_TYPE_JOG      0x0A
+#define BOARD_UNKNOWN       icubCanProto_boardType__unknown
 
 
-#define CMD_BOARD 	   0x00
-#define CMD_ADDRESS    0x01
-#define CMD_START	   0x02
-#define CMD_DATA	   0x03
-#define CMD_END	       0x04
-#define CMD_ERR	       0x05
-#define CMD_BROADCAST  0xFF
+#define CMD_BOARD           ICUBCANPROTO_BL_BOARD
+#define CMD_ADDRESS         ICUBCANPROTO_BL_ADDRESS
+#define CMD_START           ICUBCANPROTO_BL_START
+#define CMD_DATA            ICUBCANPROTO_BL_DATA
+#define CMD_END             ICUBCANPROTO_BL_END
+#define CMD_ERR             ICUBCANPROTO_BL_ERROR
+#define CMD_BROADCAST       ICUBCANPROTO_BL_BROADCAST
 
-#define CAN_SET_BOARD_ID	50
-#define CAN_GET_BOARD_ID	51
-#define CAN_GET_ADDITIONAL_INFO		12
-#define CAN_SET_ADDITIONAL_INFO		13
+#define CAN_SET_BOARD_ID    ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID
+#define CAN_GET_BOARD_ID    ICUBCANPROTO_POL_MC_CMD__GET_BOARD_ID
+//#define CAN_GET_ADDITIONAL_INFO       ICUBCANPROTO_POL_MC_CMD__GET_ADDITIONAL_INFO
+//#define CAN_SET_ADDITIONAL_INFO		ICUBCANPROTO_POL_MC_CMD__SET_ADDITIONAL_INFO
 
 //*****************************************************************/
 
