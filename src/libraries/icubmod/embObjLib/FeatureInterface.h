@@ -5,6 +5,7 @@
  *
  */
 
+ 
 #ifndef FEATUREINTERFACE_H_
 #define FEATUREINTERFACE_H_
 
@@ -53,15 +54,18 @@ typedef struct
     char      string[64];
 } FEAT_ip_addr;
 
+typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxnum]. moreover 0xff is the invalid value.
+#define FEAT_boardnumber_dummy      0xff
+
 /** \anchor FEAT_ID   */
 typedef struct
 {
-    uint8_t             boardNum;       // marco.accame: usa numerazione [1, maxnum]
+    FEAT_boardnumber_t  boardNum;       
     eOprotEndpoint_t    ep;
     void                *handle;
 
-    FEAT_ip_addr      PC104ipAddr;
-    FEAT_ip_addr      EMSipAddr;
+    FEAT_ip_addr        PC104ipAddr;
+    FEAT_ip_addr        EMSipAddr;
 
     // Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
     // They may be removed very soon!
@@ -102,14 +106,14 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array);
 fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array);
 
 // requires boardnum in range [1, max] as used by cpp objects
-void * get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep);
+void * get_MChandler_fromEP(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
 
 fakestdbool_t MCmutex_post(void * p, uint32_t prognum);
 
 // it converts the protocol board number with range [0, max-1] into the range used by cpp object [1, max]
-uint8_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
+FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
 
-eOprotBRD_t featIdBoardNum2nvBoardNum(uint8_t fid_boardnum);
+eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 
 #ifdef __cplusplus

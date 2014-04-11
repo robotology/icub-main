@@ -6,6 +6,7 @@
  */
 
 
+ 
 #include "FeatureInterface.h"
 #include "FeatureInterface_hid.h"
 
@@ -140,13 +141,23 @@ fakestdbool_t MCmutex_post(void *p, uint32_t prognum)
 }
 
 
-uint8_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum)
+FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum)
 {
+    if(eo_prot_BRDdummy == nvboardnum)
+    {
+        return(FEAT_boardnumber_dummy);
+    }
+    
     return(nvboardnum+1);
 }
 
-eOprotBRD_t featIdBoardNum2nvBoardNum(uint8_t fid_boardnum)
+eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
 {
+    if(FEAT_boardnumber_dummy == nvboardnum)
+    {
+        return(eo_prot_BRDdummy);
+    }
+
     return(fid_boardnum-1);
 }
 
