@@ -658,7 +658,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
             public IOpenLoopControlRaw,
-            public IControlModeRaw,
+            public IControlMode2Raw,
             public IPreciselyTimed,
             public ImplementPositionControl2,
             public ImplementPositionDirect,
@@ -673,7 +673,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
             public ImplementOpenLoopControl,
-            public ImplementControlMode,
+            public ImplementControlMode2,
             public ImplementDebugInterface,
             public IInteractionModeRaw,
             public ImplementInteractionMode,
@@ -886,6 +886,13 @@ public:
     virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
+
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
+
 
     ///////////// OpenLoop control interface raw
     ///

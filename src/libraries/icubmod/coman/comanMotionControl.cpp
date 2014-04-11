@@ -1248,16 +1248,11 @@ bool comanMotionControl::getAxes(int *ax)
     return true;
 }
 
-bool comanMotionControl::setPositionDirectModeRaw()
-{
-    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
-}
-
 bool comanMotionControl::setPositionModeRaw()
 {
 #ifdef _DEBUG_INTERFACE_
       for(int i =0; i<_njoints; i++)
-        _controlMode[i] = VOCAB_CM_VELOCITY;
+        _controlMode[i] = VOCAB_CM_POSITION;
 return true;
 #endif
 
@@ -1861,10 +1856,12 @@ return true;
 
 bool comanMotionControl::setTorqueModeRaw(int j)
 {
-#ifdef _DEBUG_INTERFACE_
+//#ifdef _DEBUG_INTERFACE_
     _controlMode[j] = VOCAB_CM_TORQUE;
+    std::cout << "Coman setTorqueModeRaw j " << j << " mode " << Vocab::decode(_controlMode[j]).c_str() << std::endl << " input " << Vocab::decode(VOCAB_CM_TORQUE).c_str() << std::endl;
+
     return true;
-#endif
+//#endif
     // Chiedere info
     McBoard *joint_p = getMCpointer(j);
     uint8_t bId = jointTobId(j);
@@ -1935,10 +1932,9 @@ bool comanMotionControl::setTorqueModeRaw(int j)
 bool comanMotionControl::setTorqueModeRaw( )
 {
     bool ret = true;
-    /*
     for(int j=0; j<_njoints; j++)
         ret = ret && setTorqueModeRaw(j);
-    */
+
     return ret;
 }
 
@@ -2060,10 +2056,12 @@ bool comanMotionControl::setOpenLoopModeRaw(int j)
 bool comanMotionControl::getControlModeRaw(int j, int *v)
 {
     // cached value must be correct!!
-    McBoard *joint_p = getMCpointer(j);   //  -> giusto
-
+#ifdef _DEBUG_INTERFACE_
+	std::cout << "coman getControlModeRaw j " << j << " mode " << Vocab::decode(_controlMode[j]).c_str() << std::endl << " int " << _controlMode[j];
     *v = _controlMode[j];
     return true;
+#endif
+    McBoard *joint_p = getMCpointer(j);   //  -> giusto
 
     if( NULL == joint_p)
     {
@@ -2099,43 +2097,47 @@ bool comanMotionControl::getControlModesRaw(int* v)
 }
 
 // Control Mode 2
+
 bool comanMotionControl::getControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
-    return NOT_YET_IMPLEMENTED("getControlModesRaw");
+    return NOT_YET_IMPLEMENTED("getControlModes group of joints");
 }
 
 bool comanMotionControl::setControlModeRaw(const int j, const int mode)
 {
+#ifdef _DEBUG_INTERFACE_
+    std::cout << "coman setControlModeRaw j " << j << " mode " << Vocab::decode(mode).c_str() << std::endl;
     _controlMode[j] = mode;
-    yWarning() << "setControlMode j " << j << ", mode " << Vocab::decode(mode).c_str();
     return true;
-//    return NOT_YET_IMPLEMENTED("setControlModeRaw");
+#endif
+    return NOT_YET_IMPLEMENTED("setControlMode single joint");
 }
 
 bool comanMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
-    yWarning() << "setControlMode group ";
+#ifdef _DEBUG_INTERFACE_
+    std::cout << "setControlModeRaw group" << std::endl;
     for(int i=0; i<n_joint; i++)
     {
-//        yWarning() << "\t j " << joints[i] << ", mode " << Vocab::decode(modes[i]).c_str();
-        setControlModeRaw(joints[i], modes[i]);
+        std::cout << "j " << joints[i] << " mode " << Vocab::decode(modes[i]).c_str() << std::endl;
+        _controlMode[i] = modes[i];
     }
     return true;
-
-    return NOT_YET_IMPLEMENTED("setControlModesRaw");
+#endif
+    return NOT_YET_IMPLEMENTED("setControlModes group of joints");
 }
 
 bool comanMotionControl::setControlModesRaw(int *modes)
 {
-    yWarning() << "setControlMode all ";
-    for(int i=0; i< _njoints; i++)
+#ifdef _DEBUG_INTERFACE_
+    for(int i=0; i<_njoints; i++)
     {
-//        yWarning() << "\t j " << i << ", mode " << Vocab::decode(modes[i]).c_str();
-        setControlModeRaw(i, modes[i]);
+        std::cout << "j " << i << " mode " << Vocab::decode(modes[i]).c_str() << std::endl;
+        _controlMode[i] = modes[i];
     }
     return true;
-
-    return NOT_YET_IMPLEMENTED("setControlModesRaw");
+#endif
+    return NOT_YET_IMPLEMENTED("setControlModes all joints");
 }
 
 //////////////////////// BEGIN EncoderInterface
@@ -2880,8 +2882,17 @@ bool comanMotionControl::getVelLimitsRaw(int j, double *min, double *max)
     return true;
 }
 
-
 // PositionDirect Interface
+bool comanMotionControl::setPositionDirectModeRaw()
+{
+#ifdef _DEBUG_INTERFACE_
+    for(int i=0; i<_njoints; i++)
+        _controlMode[i] = VOCAB_CM_POSITION_DIRECT;
+return true;
+#endif
+    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+}
+
 bool comanMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocity as well as positionMove

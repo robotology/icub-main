@@ -2146,7 +2146,7 @@ ImplementControlLimits2(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
-ImplementControlMode(this),
+ImplementControlMode2(this),
 ImplementDebugInterface(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
@@ -2244,7 +2244,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlMode::initialize(p._njoints, p._axisMap);
+    ImplementControlMode2::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
@@ -2695,7 +2695,7 @@ bool CanBusMotionControl::close (void)
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
 
-        ImplementControlMode::uninitialize();
+        ImplementControlMode2::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
@@ -3646,6 +3646,27 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     _mutex.post();
 
     return true;
+}
+
+// IControl Mode 2
+bool CanBusMotionControl::getControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    return NOT_YET_IMPLEMENTED("getControlModesRaw");
+}
+
+bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
+{
+    return NOT_YET_IMPLEMENTED("setControlModeRaw single joint");
+}
+
+bool CanBusMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    return NOT_YET_IMPLEMENTED("setControlModesRaw group of joints");
+}
+
+bool CanBusMotionControl::setControlModesRaw(int *modes)
+{
+    return NOT_YET_IMPLEMENTED("setControlModesRaw all joints");
 }
 
 // return the number of controlled axes.
@@ -4843,11 +4864,6 @@ bool CanBusMotionControl::disablePidRaw(int axis)
     return _writeNone (ICUBCANPROTO_POL_MC_CMD__CONTROLLER_IDLE, axis);
 }
 
-bool CanBusMotionControl::setPositionDirectModeRaw()
-{
-    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
-}
-
 bool CanBusMotionControl::setPositionModeRaw()
 {
     CanBusResources& r = RES(system_resources);
@@ -5839,6 +5855,11 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 
 
 // PositionDirect Interface
+bool CanBusMotionControl::setPositionDirectModeRaw()
+{
+    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+}
+
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);

@@ -111,8 +111,6 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public ImplementPositionControl2,
     public IVelocityControl2Raw,
     public ImplementVelocityControl2,
-//    public IControlLimitsRaw,
-//    public ImplementControlLimits<comanMotionControl, IControlLimits>,
     public IControlLimits2Raw,
     public ImplementControlLimits2,
     public IControlMode2Raw,
@@ -315,7 +313,8 @@ public:
     virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
-    // Control Mode 2
+
+    // ControlMode 2
     virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
     virtual bool setControlModeRaw(const int j, const int mode);
     virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);

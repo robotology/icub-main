@@ -1845,11 +1845,6 @@ bool embObjMotionControl::getAxes(int *ax)
     return true;
 }
 
-bool embObjMotionControl::setPositionDirectModeRaw()
-{
-    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
-}
-
 bool embObjMotionControl::setPositionModeRaw()
 {
     bool ret = true;
@@ -2368,6 +2363,7 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
     return true;
 }
 
+// IControl Mode 2
 bool embObjMotionControl::getControlModesRaw(int* v)
 {
     bool ret = true;
@@ -2397,7 +2393,6 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 {
     return NOT_YET_IMPLEMENTED("setControlModesRaw");
 }
-
 
 
 //////////////////////// BEGIN EncoderInterface
@@ -3178,8 +3173,12 @@ bool embObjMotionControl::getVelPidsRaw(Pid *pids)
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
-
 // PositionDirect Interface
+bool embObjMotionControl::setPositionDirectModeRaw()
+{
+    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+}
+
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocit as well as positionMove
