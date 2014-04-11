@@ -1,0 +1,27 @@
+<application>
+<name>Fingertips Port Scope</name>
+<dependencies>
+</dependencies>
+
+
+<!-- ****************************************************************************************************************** -->
+<!-- ******************************************************************************** -->
+<!-- ** Port Scope                                                                    -->
+    <module>
+        <name>yarpscope</name>
+        <node></node>
+        <parameters>--context fingertipsPortScope --xml FingertipsPortScopeConf-LeftHandAll.xml</parameters>
+        <workdir></workdir>
+        <tag>Fingertips Port Scope - Left Hand All</tag>
+    </module>
+
+    <module>
+        <name>yarpscope</name>
+        <node></node>
+        <parameters>--context fingertipsPortScope --xml FingertipsPortScopeConf-RightHandAll.xml</parameters>
+        <workdir></workdir>
+        <tag>Fingertips Port Scope - Right Hand All</tag>
+    </module>
+<!-- ****************************************************************************************************************** -->
+
+</application>

@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<portscope rows="4" columns="4" carrier="mcast">
+<!-- ****************************************************************************************************************** -->
+<!-- ******************************************************************************** -->
+<!-- ** Skin Values                                                                   -->
+<!-- ** Right Hand                                                                    -->
+    <!-- Raw values-->
+    <plot gridx="0" gridy="0" hspan="2" vspan="2"
+          title="Right Hand Raw - Index"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand" index="0"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="1"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="2"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="3"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="4"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="5"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="6"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="7"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="8"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="9"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="10"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="11"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="2" gridy="0" hspan="2" vspan="2"
+          title="Right Hand Raw - Middle"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand" index="12"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="13"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="14"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="15"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="16"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="17"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="18"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="19"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="20"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="21"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="22"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="23"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="4" gridy="0" hspan="2" vspan="2"
+          title="Right Hand Raw - Ring"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand" index="24"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="25"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="26"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="27"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="28"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="29"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="30"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="31"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="32"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="33"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="34"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="35"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="6" gridy="0" hspan="2" vspan="2"
+          title="Right Hand Raw - Little"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand" index="36"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="37"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="38"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="39"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="40"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="41"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="42"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="43"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="44"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="45"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="46"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="47"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="8" gridy="0" hspan="2" vspan="2"
+          title="Right Hand Raw - Thumb"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand" index="48"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="49"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="50"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="51"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="52"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="53"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="54"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="55"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="56"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="57"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="58"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand" index="59"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+    
+    <!-- Compensated values-->
+    <plot gridx="0" gridy="2" hspan="2" vspan="2"
+          title="Right Hand Comp - Index"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand_comp" index="0"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="1"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="2"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="3"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="4"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="5"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="6"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="7"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="8"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="9"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="10"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="11"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="2" gridy="2" hspan="2" vspan="2"
+          title="Right Hand Comp - Middle"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand_comp" index="12"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="13"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="14"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="15"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="16"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="17"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="18"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="19"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="20"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="21"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="22"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="23"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="4" gridy="2" hspan="2" vspan="2"
+          title="Right Hand Comp - Ring"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand_comp" index="24"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="25"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="26"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="27"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="28"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="29"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="30"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="31"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="32"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="33"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="34"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="35"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="6" gridy="2" hspan="2" vspan="2"
+          title="Right Hand Comp - Little"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand_comp" index="36"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="37"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="38"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="39"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="40"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="41"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="42"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="43"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="44"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="45"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="46"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="47"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+
+    <plot gridx="8" gridy="2" hspan="2" vspan="2"
+          title="Right Hand Comp - Thumb"
+          size="60" minval="-1" maxval="256"
+          bgcolor="LightSlateGrey">
+        <graph remote="/icub/skin/right_hand_comp" index="48"
+               color="#0000FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="49"
+               color="#FF0000" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="50"
+               color="#FF6E00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="51"
+               color="#FFD800" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="52"
+               color="#6EF400" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="53"
+               color="#0E8C00" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="54"
+               color="#6B0089" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="55"
+               color="#00DCF4" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="56"
+               color="#184672" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="57"
+               color="#90E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="58"
+               color="#A0E5FF" title="Raw values" size="2" type="lines" />
+        <graph remote="/icub/skin/right_hand_comp" index="59"
+               color="#FFFFFF" title="Raw values" size="2" type="lines" />
+    </plot>
+<!-- ******************************************************************************** -->
+<!-- ****************************************************************************************************************** -->
+</portscope>

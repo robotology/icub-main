@@ -171,20 +171,29 @@ public:
             else
                 cartCtrl->goToPosition(x,trajTime);
         }
-        else if (i+1<wayPoints.size())
-        {
-            execCallback();
-            x0=wayPoints[i].x;
-
-            i++;
-            printWayPoint();
-            setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
-            t0=Time::now();
-        }
         else
         {
             execCallback();
-            askToStop();
+
+            // last waypoint => end condition
+            if (i>=wayPoints.size()-1)
+            {
+                const double trajTime=checkDefaultTime(wayPoints[i].trajTime);
+                if (wayPoints[i].oEnabled)
+                    cartCtrl->goToPose(wayPoints[i].x,wayPoints[i].o,trajTime);
+                else
+                    cartCtrl->goToPosition(wayPoints[i].x,trajTime);
+
+                askToStop();
+            }
+            else
+            {
+                x0=wayPoints[i].x;
+                i++;
+                printWayPoint();
+                setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
+                t0=Time::now(); 
+            }
         }
     }
 

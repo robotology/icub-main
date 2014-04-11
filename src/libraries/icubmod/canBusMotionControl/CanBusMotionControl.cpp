@@ -29,6 +29,7 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <string.h>
 
 /// specific to this device driver.
@@ -610,6 +611,32 @@ axisImpedanceHelper::axisImpedanceHelper(int njoints, ImpedanceLimits* imped_lim
         memset(impLimits, 0, sizeof(ImpedanceLimits)*jointsNum);
 }
 
+axisPositionDirectHelper::axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _stepLimit)
+{
+    jointsNum=njoints;
+    helper = new ControlBoardHelper(njoints, aMap, angToEncs, 0, 0); //NB: zeros=0 is mandatory for this algorithm
+    maxHwStep = new double [jointsNum];
+    maxUserStep = new double [jointsNum];
+    for (int i=0; i<jointsNum; i++)
+    {
+        int    hw_i=0;
+        double hw_ang=0;
+        helper->posA2E(_stepLimit[i], i, hw_ang, hw_i);
+        maxHwStep[hw_i] = fabs(hw_ang); //NB: fabs() is mandatory for this algorithm (because angToEncs is signed)
+        maxUserStep[i] = _stepLimit[i];
+    }
+}
+
+double axisPositionDirectHelper::getSaturatedValue (int hw_j, double hw_curr_value, double hw_ref_value)
+{
+    //here hw_j isthe joint number after the axis_map; hw_value is in encoder ticks
+    double hw_maxval = hw_curr_value + getMaxHwStep(hw_j);
+    double hw_minval = hw_curr_value - getMaxHwStep(hw_j);
+    double hw_val    = (std::min)((std::max)(hw_ref_value, hw_minval), hw_maxval);
+
+    return hw_val;
+}
+
 axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
 {
     jointsNum=njoints;
@@ -1028,6 +1055,18 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+
+    //optional
+    xtmp = pidsGroup.findGroup("kff");         
+    if (!xtmp.isNull())
+    {
+        for (j=0;j<nj;j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+    }
+    else
+    {
+         for (j=0;j<nj;j++) myPid[j].kff = 0;
+    }
+
     return true;
 }
 
@@ -1244,6 +1283,8 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            else
            {
                 printf("Torque Pids successfully loaded\n");
+                xtmp = trqPidsGroup.findGroup("kbemf"); 
+                if (!xtmp.isNull()) {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
                _tpidsEnabled = true;
            }
         }
@@ -1324,6 +1365,25 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
 
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
+
+    if (!validate(limits, xtmp, "maxPosStep", "the maximum amplitude of a position direct step", nj+1))
+    {
+        fprintf(stderr, "Using default MaxPosStep=10 degs\n");
+        for(i=1;i<nj+1; i++)
+            _maxStep[i-1] = 10;   //Default value
+    }
+    else
+    {
+        for(i=1;i<xtmp.size(); i++) 
+        {
+            _maxStep[i-1]=xtmp.get(i).asDouble();
+            if (_maxStep[i-1]<0)
+            {
+                fprintf(stderr,"ERROR: Invalid MaxPosStep parameter <0\n");
+                return false;
+            }
+        }
+    }
 
     if (!validate(limits, xtmp, "Max","a list of maximum angles (in degrees)", nj+1))
         return false;
@@ -1539,6 +1599,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _impedance_params=0;
     _impedance_limits=0;
     _estim_params=0;
+    _bemfGain=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1564,6 +1625,8 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _bemfGain=allocAndCheck<double>(nj);
+    _maxStep=allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1584,6 +1647,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     memset(_velocityShifts, 0, sizeof(int)*nj);
     memset(_optical_factor, 0, sizeof(double)*nj);
     memset(_velocityTimeout, 0, sizeof(int)*nj);
+    memset(_maxStep, 0, sizeof(double)*nj);
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1618,6 +1682,8 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_torqueSensorChan);
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
+    checkAndDestroy<double>(_bemfGain);
+    checkAndDestroy<double>(_maxStep);
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<Pid>(_tpids);
@@ -2108,8 +2174,8 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
-
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -2127,6 +2193,12 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.005);
         setTorquePids(p._tpids);
+        
+        for (int i=0; i<p._njoints; i++)
+        {
+            this->setBemfParam(i,p._bemfGain[i]);
+            yarp::os::Time::delay(0.002);
+        }
     }
     
     //set the source of the torque measurments to the boards
@@ -5685,20 +5757,39 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 // PositionDirect Interface
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
-    const int axis = j;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+    CanBusResources& r = RES(system_resources);
 
-    return _writeDWord (CAN_SET_COMMAND_POSITION, axis, S_32(ref));
+    if (fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+    {
+        return _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(ref));
+    }
+    else
+    { 
+        fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+        //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,ref);
+        //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
+        return false;
+    }
 }
 
 bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
 {
+    CanBusResources& r = RES(system_resources);
     bool ret = true;
 
     for(int j=0; j< n_joint; j++)
     {
-        ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
+        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+        {
+            ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
+        }
+        else
+        {
+            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+            //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(joints[j],r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
+            //_writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(saturated_cmd));
+            ret = false;
+        }
     }
     return ret;
 }
@@ -5708,10 +5799,19 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
     CanBusResources& r = RES(system_resources);
     bool ret = true;
 
-    int i;
-    for (i = 0; i < r.getJoints(); i++)
+    for (int j = 0; j < r.getJoints(); j++)
     {
-        ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, i, S_32(refs[i]));
+        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+        {
+            ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(refs[j]));
+        }
+        else
+        {
+            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+            //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
+            //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
+            ret = false;
+        }
     }
     return ret;
 }
