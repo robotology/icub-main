@@ -30,6 +30,7 @@
 #define __CanBusMotionControlh__
 
 #include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -184,11 +185,13 @@ public:
     DebugParameters *_debug_params;             /** debug parameters */
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
+    double *_bemfGain;                          /** bemf compensation gain */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
+    double *_maxStep;                           /** max size of a positionDirect step */
     double *_optical_factor;                    /** reduction ratio of the optical encoder on motor axis */ 
     int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
@@ -564,6 +567,31 @@ class axisImpedanceHelper
            }
     
     inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
+};
+
+class axisPositionDirectHelper
+{
+    int  jointsNum;
+    double* maxHwStep;
+    double* maxUserStep;
+    ControlBoardHelper* helper;
+    
+    public:
+    axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _maxStep);
+
+    inline ~axisPositionDirectHelper()
+    {
+        delete [] maxHwStep;
+        maxHwStep=0;
+        delete [] maxUserStep;
+        maxUserStep=0;
+        delete helper;
+        helper = 0;
+    }
+    
+    inline double getMaxHwStep (int j) {return maxHwStep[j];}
+    inline double getMaxUserStep (int j) {return maxUserStep[j];}
+    inline double getSaturatedValue (int j, double curr_value, double ref_value); 
 };
 
 class axisTorqueHelper
@@ -1024,6 +1052,7 @@ protected:
     axisImpedanceHelper   *_axisImpedanceHelper;
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
+    axisPositionDirectHelper  *_axisPositionDirectHelper;
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.
