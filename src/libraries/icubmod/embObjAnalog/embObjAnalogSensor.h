@@ -214,7 +214,7 @@ public:
     
     // embObj interface
     bool init();
-    virtual bool fillData(void *as_array);
+    virtual bool fillData(void *as_array, eOnvID32_t id32);
 };
 
 

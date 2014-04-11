@@ -672,7 +672,7 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-bool embObjAnalogSensor::fillData(void *as_array_raw)
+bool embObjAnalogSensor::fillData(void *as_array_raw, eOnvID32_t id32)
 {
     bool ret;
 

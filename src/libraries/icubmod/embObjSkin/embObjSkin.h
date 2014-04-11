@@ -31,12 +31,14 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/sig/Matrix.h>
 
 // embObj includes
 #include <ethManager.h>
 #include <ethResource.h>
 #include "EoUtilities.h"
 #include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
+#include "skinParams.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -54,15 +56,20 @@ protected:
     FEAT_ID         _fId;
     bool            initted;
     Semaphore       mutex;
-
-    VectorOf<int>   cardId;
+    std::vector < std::vector <int>  >  cardIdPerPatch;
+    int             totalCardsNum;
     size_t          sensorsNum;
     Vector          data;
     uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
-
+    SkinBoardCfgParam _brdCfg;
+    SkinTriangleCfgParam _triangCfg;
+    bool            _newCfg;
 
     bool            init();
+    bool            fromConfig(yarp::os::Searchable& config);
+    bool            initWithSpecialConfig(yarp::os::Searchable& config);
     bool            isEpManagedByBoard();
+    bool            start();
 
 
 public:
@@ -84,7 +91,7 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    fillData(void *data);
+    virtual bool    fillData(void *data, eOnvID32_t id32);
     virtual void    setId(FEAT_ID &id);
     bool            isInitted(void);
 };
