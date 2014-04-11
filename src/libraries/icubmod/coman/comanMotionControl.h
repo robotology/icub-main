@@ -36,6 +36,10 @@
 // $Id: comanMotionControl.h,v 1.0 2013/02/5 $
 //
 
+//#define _DEBUG_INTERFACE_
+#undef _DEBUG_INTERFACE_
+
+
 #ifndef __comanMotionControl_h__
 #define __comanMotionControl_h__
 
@@ -107,12 +111,12 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public ImplementPositionControl2,
     public IVelocityControl2Raw,
     public ImplementVelocityControl2,
-    public IControlModeRaw,
 //    public IControlLimitsRaw,
 //    public ImplementControlLimits<comanMotionControl, IControlLimits>,
     public IControlLimits2Raw,
     public ImplementControlLimits2,
-    public ImplementControlMode,
+    public IControlMode2Raw,
+    public ImplementControlMode2,
     public ImplementAmplifierControl<comanMotionControl, IAmplifierControl>,
     public ImplementControlCalibration2<comanMotionControl, IControlCalibration2>,
     public ImplementPidControl<comanMotionControl, IPidControl>,
@@ -123,7 +127,9 @@ class yarp::dev::comanMotionControl:  public DeviceDriver,
     public IPositionDirectRaw,
     public ImplementPositionDirect,
     public IImpedanceControlRaw,
-    public ImplementImpedanceControl
+    public ImplementImpedanceControl,
+    public IInteractionModeRaw,
+    public ImplementInteractionMode
 {
 private:
 
@@ -161,8 +167,12 @@ private:
     comanDevicesHandler     *_comanHandler;
     Boards_ctrl             *_boards_ctrl;
     Boards_ctrl::mcs_map_t  _mcs;
-    int                     *_controlMode;                        // memorize the type of control currently running... safe??
+    int                     *_controlMode;                    // memorize the type of control currently running... safe??
+    int                     *_interactionMode;                // memorize the type of interaction currently running... safe??
+
+
     ////////  canonical
+    ///
     yarp::os::Semaphore   _mutex;
 
     int                   *_axisMap;                          /** axis remapping lookup-table */
@@ -305,6 +315,11 @@ public:
     virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
+    // Control Mode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
 
     //////// BEGIN EncoderInterface
     virtual bool resetEncoderRaw(int j);
@@ -394,7 +409,8 @@ public:
     bool enableTorquePidRaw(int j);
     bool setTorqueOffsetRaw(int j, double v);
 
-
+    // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
