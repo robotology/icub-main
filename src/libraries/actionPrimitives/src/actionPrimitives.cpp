@@ -160,40 +160,29 @@ public:
         }
 
         double t=Time::now()-t0;
+        double trajTime=checkDefaultTime(wayPoints[i].trajTime);
         double r=t/checkTime(checkDefaultTime(wayPoints[i].duration));
-        if (r<1.0)
-        {
-            const double trajTime=checkDefaultTime(wayPoints[i].trajTime);
-            Vector x=x0+r*(wayPoints[i].x-x0);
 
-            if (wayPoints[i].oEnabled)
-                cartCtrl->goToPose(x,wayPoints[i].o,trajTime);
-            else
-                cartCtrl->goToPosition(x,trajTime);
-        }
+        Vector x=(r<1.0)?(x0+r*(wayPoints[i].x-x0)):wayPoints[i].x;
+        if (wayPoints[i].oEnabled)
+            cartCtrl->goToPose(x,wayPoints[i].o,trajTime);
         else
+            cartCtrl->goToPosition(x,trajTime);
+
+        // waypoint attained
+        if (r>=1.0)
         {
             execCallback();
-
-            // last waypoint => end condition
-            if (i>=wayPoints.size()-1)
-            {
-                const double trajTime=checkDefaultTime(wayPoints[i].trajTime);
-                if (wayPoints[i].oEnabled)
-                    cartCtrl->goToPose(wayPoints[i].x,wayPoints[i].o,trajTime);
-                else
-                    cartCtrl->goToPosition(wayPoints[i].x,trajTime);
-
-                askToStop();
-            }
-            else
+            if (i<wayPoints.size()-1)
             {
                 x0=wayPoints[i].x;
                 i++;
                 printWayPoint();
                 setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
-                t0=Time::now(); 
+                t0=Time::now();
             }
+            else
+                askToStop();
         }
     }
 
