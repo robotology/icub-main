@@ -1,0 +1,13 @@
+<application>
+<name>COMAN Startup</name>
+
+      <dependencies>
+         <port>/root</port>
+      </dependencies>
+    
+      <module>
+              <name>robotInterface</name>
+              <node>localhost</node>
+              <tag>robotInterface</tag>
+      </module>
+</application>
