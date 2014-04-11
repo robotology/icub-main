@@ -191,12 +191,12 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementEncodersTimed,
     public IPositionControl2Raw,
     public IVelocityControl2Raw,
-    public IControlModeRaw,
+    public IControlMode2Raw,
+    public ImplementControlMode2,
     public IControlLimits2Raw,
     public IImpedanceControlRaw,
     public ImplementImpedanceControl,
     public ImplementControlLimits2,
-    public ImplementControlMode,
     public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
     public ImplementPositionControl2,
     public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
@@ -208,8 +208,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IVirtualAnalogSensor,
     public IPositionDirectRaw,
     public ImplementPositionDirect,
-    public IInteractionModeRaw,
-    public ImplementInteractionMode
+    public ImplementInteractionMode,
+    public IInteractionModeRaw
 {
 private:
     int           tot_packet_recv, errors;
@@ -397,6 +397,12 @@ public:
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int *v);
 
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
+
     //////////////////////// BEGIN EncoderInterface
     virtual bool resetEncoderRaw(int j);
     virtual bool resetEncodersRaw();
@@ -544,6 +550,7 @@ public:
     bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
