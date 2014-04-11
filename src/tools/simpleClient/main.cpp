@@ -48,9 +48,12 @@ using namespace yarp::os;
 
 void handleTorqueMsg(ITorqueControl *itq, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
-void handleControlModeMsg(IControlMode *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
+void handleControlModeMsg(IControlMode2 *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
+void handleInteractionModeMsg(IInteractionMode *_iInteract, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 
 //
+int jnts = 0;  // joint number
+
 int main(int argc, char *argv[]) 
 {
     // just list the devices if no argument given
@@ -107,15 +110,18 @@ int main(int argc, char *argv[])
     }
 
     IPositionControl *pos;
+    IPositionDirect  *posDir;
     IVelocityControl *vel;
     IEncoders *enc;
     IPidControl *pid;
     IAmplifierControl *amp;
     IControlLimits *lim;
-    IControlMode *icm;
+//    IControlMode *icm;
+    IControlMode2 *iMode2;
     ITorqueControl *itorque;
     IOpenLoopControl *iopenloop;
 	IImpedanceControl *iimp;
+    IInteractionMode *iInteract;
 
     bool ok;
     ok = dd.view(pos);
@@ -124,17 +130,19 @@ int main(int argc, char *argv[])
     ok &= dd.view(pid);
     ok &= dd.view(amp);
     ok &= dd.view(lim);
-    ok &= dd.view(icm);
+//    ok &= dd.view(icm);
     ok &= dd.view(itorque);
     ok &= dd.view(iopenloop);
 	ok &= dd.view(iimp);
+    ok &= dd.view(posDir);
+    ok &= dd.view(iMode2);
+    ok &= dd.view(iInteract);
 
     if (!ok) {
         printf("Problems acquiring interfaces\n");
         return 1;
     }
 
-    int jnts = 0;
     pos->getAxes(&jnts);
     printf("Working with %d axes\n", jnts);
     double *tmp = new double[jnts];
@@ -175,11 +183,17 @@ int main(int argc, char *argv[])
                     Vocab::decode(VOCAB_OUTPUTS).c_str());
 
             printf("IControlMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_ICONTROLMODE).c_str());
-            printf("	[set] [%s]|[%s]|[%s]|[%s]\n",
-                    Vocab::decode(VOCAB_CM_TORQUE).c_str(),
+            printf("	[set] [%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s][%s]|[%s]\n",
                     Vocab::decode(VOCAB_CM_POSITION).c_str(),
+                    Vocab::decode(VOCAB_CM_POSITION_DIRECT).c_str(),
                     Vocab::decode(VOCAB_CM_VELOCITY).c_str(),
-                    Vocab::decode(VOCAB_CM_OPENLOOP).c_str());
+                    Vocab::decode(VOCAB_CM_MIXED).c_str(),
+                    Vocab::decode(VOCAB_CM_TORQUE).c_str(),
+                    Vocab::decode(VOCAB_CM_OPENLOOP).c_str(),
+                    Vocab::decode(VOCAB_CM_IDLE).c_str(),
+                    Vocab::decode(VOCAB_CM_FORCE_IDLE).c_str(),
+                    Vocab::decode(VOCAB_CM_IMPEDANCE_POS).c_str(),
+                    Vocab::decode(VOCAB_CM_IMPEDANCE_VEL).c_str());
             
             printf("	[get] [%s] <int>\n\n",
                 Vocab::decode(VOCAB_CM_CONTROL_MODE).c_str());
@@ -205,6 +219,16 @@ int main(int argc, char *argv[])
                 Vocab::decode(VOCAB_IMP_PARAM).c_str());
             printf("	[get] [%s] <int>\n\n", 
                 Vocab::decode(VOCAB_IMP_OFFSET).c_str());
+
+            printf("IInteractionMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_INTERFACE_INTERACTION_MODE).c_str());
+            printf("	[set] [%s]|[%s] <int>\n",
+                    Vocab::decode(VOCAB_IM_STIFF).c_str(),
+                    Vocab::decode(VOCAB_IM_COMPLIANT).c_str());
+
+            printf("	[get] [%s] <int>\n",
+                Vocab::decode(VOCAB_INTERACTION_MODE).c_str());
+            printf("	[get] [%s] \n\n",
+                Vocab::decode(VOCAB_INTERACTION_MODES).c_str());
 
 			printf("Standard Interfaces:\n");
             printf("type [get] and one of the following:\n");
@@ -254,7 +278,7 @@ int main(int argc, char *argv[])
 
         case VOCAB_ICONTROLMODE:
             {
-                handleControlModeMsg(icm, p, response, &rec, &ok);
+                handleControlModeMsg(iMode2, p, response, &rec, &ok);
                 printf("%s\n", response.toString().c_str());
                 break;
             }
@@ -272,6 +296,13 @@ int main(int argc, char *argv[])
 				printf("%s\n", response.toString().c_str());
 				break;
 			}
+
+        case VOCAB_INTERFACE_INTERACTION_MODE:
+            {
+                handleInteractionModeMsg(iInteract, p, response, &rec, &ok);
+                printf("%s\n", response.toString().c_str());
+                break;
+            }
 
         case VOCAB_GET:
             switch(p.get(1).asVocab()) {
@@ -991,7 +1022,7 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
 }
 
 
-void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd, 
+void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
                           yarp::os::Bottle& response, bool *rec, bool *ok)
 {
     fprintf(stderr, "Handling IControlMode message %s\n", cmd.toString().c_str());
@@ -1002,7 +1033,6 @@ void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd,
             return;
         }
 
-    //TODO: handle here messages about  IControlMode interface
     int code = cmd.get(1).asVocab();
     *ok=true;
 
@@ -1017,15 +1047,33 @@ void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd,
                     case VOCAB_CM_POSITION:
                         *ok = iMode->setPositionMode(axis);
 						break;
+                    case VOCAB_CM_POSITION_DIRECT:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_POSITION_DIRECT);
+						break;
                     case VOCAB_CM_VELOCITY:
                         *ok = iMode->setVelocityMode(axis);
 						break;
+                    case VOCAB_CM_MIXED:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_MIXED);
+                        break;
                     case VOCAB_CM_TORQUE:
                         *ok = iMode->setTorqueMode(axis);
-						break;
+                        break;
                     case VOCAB_CM_OPENLOOP:
                         *ok = iMode->setOpenLoopMode(axis);
-						break;
+                        break;
+                    case VOCAB_CM_IDLE:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_IDLE);
+                        break;
+                    case VOCAB_CM_FORCE_IDLE:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_FORCE_IDLE);
+                        break;
+                    case VOCAB_CM_IMPEDANCE_POS:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_IMPEDANCE_POS);
+                        break;
+                    case VOCAB_CM_IMPEDANCE_VEL:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_IMPEDANCE_VEL);
+                        break;
                     default:
                         *ok = false;
 						break;
@@ -1061,3 +1109,98 @@ void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd,
 }
 
 
+
+void handleInteractionModeMsg(IInteractionMode *iInteract, const yarp::os::Bottle& cmd,
+                          yarp::os::Bottle& response, bool *rec, bool *ok)
+{
+    fprintf(stderr, "Handling IInteractionMode message %s\n", cmd.toString().c_str());
+    if (!iInteract)
+    {
+        fprintf(stderr, "Error I do not have a valid interface\n");
+        *ok=false;
+        return;
+    }
+
+    int code = cmd.get(1).asVocab();
+    *ok=true;
+
+    switch(code)
+    {
+        case VOCAB_SET:
+        {
+            int axis = cmd.get(3).asInt();
+            yarp::dev::InteractionModeEnum mode = (yarp::dev::InteractionModeEnum) cmd.get(2).asVocab();
+            *ok = iInteract->setInteractionMode(axis, mode);
+            *rec=true; //or false
+        }
+        break;
+
+        case VOCAB_GET:
+        {
+            int which = cmd.get(2).asVocab();
+            switch(which)
+            {
+                case VOCAB_INTERACTION_MODE:
+                {
+                    int axis = cmd.get(3).asInt();
+                    yarp::dev::InteractionModeEnum mode;
+                    *ok = iInteract->getInteractionMode(axis, &mode);
+                    // create response
+                    if(*ok)
+                    {
+                        response.addVocab(VOCAB_IS);
+                        response.addInt(axis);
+                        response.addVocab(VOCAB_INTERACTION_MODE);
+                        response.addVocab(mode);
+                        *rec=true;
+                    }
+                    else
+                    {
+                        response.addVocab(VOCAB_FAILED);
+                        *rec = false;
+                    }
+                }
+                break;
+
+                case VOCAB_INTERACTION_MODES:
+                {
+                    int axis = cmd.get(3).asInt();
+                    yarp::dev::InteractionModeEnum *modes;
+                    modes = new yarp::dev::InteractionModeEnum[jnts];
+
+                    *ok = iInteract->getInteractionMode(axis, modes);
+                    // create response
+                    if(*ok)
+                    {
+                        response.addVocab(VOCAB_IS);
+                        response.addVocab(VOCAB_INTERACTION_MODES);
+                        for(int i=0; i<jnts; i++)
+                            response.addVocab(modes[i]);
+                        *rec=true;
+                    }
+                    else
+                    {
+                        response.addVocab(VOCAB_FAILED);
+                        *rec = false;
+                    }
+                }
+                break;
+
+                default:
+                {
+                    fprintf(stderr, "get command not understood");
+                    *rec=false;
+                    break;
+                }
+                break;
+            }
+        }
+        break;
+        default:
+        {
+            fprintf(stderr, "type of command not understood");
+            *rec=false;
+        }
+        break;
+    }
+}
