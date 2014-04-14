@@ -1215,6 +1215,9 @@ public:
                         visuoThr->getTarget(command.get(1),command);
                         if (motorThr->powerGrasp(command))
                         {
+                            motorThr->goUp(command,0.1);
+                            motorThr->setGazeIdle();
+
                             if (!check(command,"still"))
                             {
                                 Bottle b;
