@@ -49,6 +49,7 @@
     <!--  SKINS -->
     <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm_skin_wrapper.xml" />  
+	<devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
     <devices file="wrappers/skin/torso_skin_wrapper.xml" /> 
 
     <!--  CALIBRATORS -->

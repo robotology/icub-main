@@ -8,10 +8,5 @@
       <params file="hardware/electronics/head-cfw2_can0-eln.xml" />
       <params file="hardware/mechanicals/head-cfw2_can0-mec.xml" />
   </device>
-  
-  <device name="torso_skin" type="skinprototype">
-      <params file="general.xml" />
-      <params file="hardware/analog/cfw002_skin.xml"/>
-  </device>
 </devices>
 
