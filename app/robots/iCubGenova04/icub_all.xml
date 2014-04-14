@@ -5,63 +5,63 @@
     <params file="hardware/electronics/pc104.xml" />
 
     <!-- CARTESIANS --> 
-    <devices file="cartesian/left_arm_cartesian.xml" />
-    <devices file="cartesian/right_arm_cartesian.xml" />
+    <devices file="cartesian/left_arm-cartesian.xml" />
+    <devices file="cartesian/right_arm-cartesian.xml" />
     
     <!-- HEAD -->	
     <devices file="hardware/head-cfw2_can0.xml" />
-    <devices file="wrappers/motorControl/head_mc_wrapper.xml" />
+    <devices file="wrappers/motorControl/head-mc_wrapper.xml" />
 
     <!-- TORSO -->
     <devices file="hardware/torso-ems5.xml" />
-    <devices file="wrappers/motorControl/torso_mc_wrapper.xml" />
+    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" />
 
     <!-- LEFT ARM -->
     <devices file="hardware/left_upper_arm-ems1.xml" />
     <devices file="hardware/left_lower_arm-ems2.xml" />
-    <devices file="wrappers/motorControl/left_arm_mc_wrapper.xml" /> 
+    <devices file="wrappers/motorControl/left_arm-mc_wrapper.xml" /> 
 
     <!-- RIGHT ARM -->
     <devices file="hardware/right_upper_arm-ems3.xml" />
     <devices file="hardware/right_lower_arm-ems4.xml" />
-    <devices file="wrappers/motorControl/right_arm_mc_wrapper.xml" />
+    <devices file="wrappers/motorControl/right_arm-mc_wrapper.xml" />
 
     <!-- ANALOG SENSOR WRAPPERs TORQUE -->
-    <devices file="wrappers/FT/left_arm_FT_wrapper.xml" /> 
-    <devices file="wrappers/FT/right_arm_FT_wrapper.xml" />
-    <devices file="wrappers/FT/right_leg_FT_wrapper.xml" /> 
-    <devices file="wrappers/FT/left_leg_FT_wrapper.xml" />
+    <devices file="wrappers/FT/left_arm-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/right_arm-FT_wrapper.xml" />
+    <devices file="wrappers/FT/right_leg-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/left_leg-FT_wrapper.xml" />
 
     <!-- VIRTUAL ANALOG SERVERs -->
-    <devices file="wrappers/VFT/left_arm_VFT_wrapper.xml" /> 
-    <devices file="wrappers/VFT/right_leg_VFT_wrapper.xml" /> 
-    <devices file="wrappers/VFT/left_leg_VFT_wrapper.xml" />     
-    <devices file="wrappers/VFT/right_arm_VFT_wrapper.xml" /> 
-    <devices file="wrappers/VFT/torso_VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/right_leg-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/left_leg-VFT_wrapper.xml" />     
+    <devices file="wrappers/VFT/right_arm-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/torso-VFT_wrapper.xml" /> 
 
     <!-- ANALOG SENSOR WRAPPERs MAIS -->
-    <devices file="wrappers/MAIS/left_arm_mais_wrapper.xml" /> 
-    <devices file="wrappers/MAIS/right_arm_mais_wrapper.xml" /> 
+    <devices file="wrappers/MAIS/left_arm-mais_wrapper.xml" /> 
+    <devices file="wrappers/MAIS/right_arm-mais_wrapper.xml" /> 
  
     <!-- LEFT LEG -->
     <devices file="hardware/left_upper_leg-ems6.xml" />
     <devices file="hardware/left_lower_leg-ems7.xml" />
-    <devices file="wrappers/motorControl/left_leg_mc_wrapper.xml" /> 
+    <devices file="wrappers/motorControl/left_leg-mc_wrapper.xml" /> 
  
 
     <!-- RIGHT LEG -->
     <devices file="hardware/right_upper_leg-ems8.xml" />
     <devices file="hardware/right_lower_leg-ems9.xml" />
-    <devices file="wrappers/motorControl/right_leg_mc_wrapper.xml" />	
+    <devices file="wrappers/motorControl/right_leg-mc_wrapper.xml" />	
  
     <!-- INERTIAL SENSOR -->
     <devices file="hardware/inertial.xml" />
 
     <!--  SKINS -->
-    <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
-    <devices file="wrappers/skin/right_arm_skin_wrapper.xml" />  
+    <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
+    <devices file="wrappers/skin/right_arm-skin_wrapper.xml" />  
 	<devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
-    <devices file="wrappers/skin/torso_skin_wrapper.xml" /> 
+    <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
     
     <!--  CALIBRATORS -->
     <devices file="calibrators/head-calib.xml" /> 
