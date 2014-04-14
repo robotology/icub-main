@@ -14,7 +14,7 @@
   <device name="right_upper_leg_strain" type="embObjAnalogSensor">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
-      <params file="hardware/analog/right_upper_leg-ems8-strain.xml" />
+      <params file="hardware/FT/right_upper_leg-ems8-strain.xml" />
   </device> 
 </devices>
 

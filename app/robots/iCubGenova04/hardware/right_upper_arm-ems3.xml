@@ -14,7 +14,7 @@
    <device name="right_upper_arm_strain" type="embObjAnalogSensor">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_arm-ems3-eln.xml" />
-      <params file="hardware/analog/right_upper_arm-ems3-strain.xml" />
+      <params file="hardware/FT/right_upper_arm-ems3-strain.xml" />
   </device> 
 
 </devices>

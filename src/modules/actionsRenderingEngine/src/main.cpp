@@ -79,9 +79,11 @@ The majority of commands can usually be provided with general optional parameter
 --"no_head"/"no_gaze": the action does not affect the gaze of the robot (this parameter does not influece commands that explicitly require
   to move the head like LOOK).
 
---"no_sacc": disables the saccadic movements of the gaze controller during the action.
-
-The commands:
+--"no_sacc": disables the saccadic movements of the gaze controller during the action.    
+    
+--"still": prevents the robot from bringing back home the arm after having accomplished the action.
+    
+The commands:    
 
 <b>IDLE</b> \n
 format: [idle] \n
@@ -129,15 +131,19 @@ Optional parameter "left" or "right" can be supplied to choose the orientation t
 <b>GRASP</b> \n
 format: [grasp] [target] \n
 action: the robot tries to reach the specified [target] and performs a power grasp.
-The target must be specified both in cartesian position and orientation.
+The target must be specified both in cartesian position and    
+orientation. \n    
+As further parameter user may specify the way the robot will    
+approach the target by providing the options ("approach" (dx dy
+dz wrist_pitch)), where di account for offset displacement in   
+meters wrt to the grasping reference frame and wrist_pitch is    
+the apporaching pitch of the wrist given in degrees.    
 
 <b>TOUCH</b> \n
 format: [touch] [target] "param1" "param2" \n
 action: the robot tries to reach the specified [target] and then brings the arm back to home position.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
-Optional parameter "still" can be provided to avoid the robot bring its arm back to home position after
-reaching has been achieved.
 
 <b>PUSH</b> \n
 format: [push] [target] "param1" \n
@@ -1159,9 +1165,9 @@ public:
                         motorThr->lookAtHand(command);
                         motorThr->shiftAndGrasp(command);
 
-                        if(motorThr->isHolding(command))
+                        if (motorThr->isHolding(command))
                         {
-                            if(check(command,"near"))
+                            if (check(command,"near"))
                             {
                                 motorThr->drawNear(command);
                                 motorThr->setGazeIdle();
@@ -1170,10 +1176,14 @@ public:
                             {
                                 motorThr->goUp(command,0.1);
                                 motorThr->setGazeIdle();
-                                Bottle b;
-                                b.addString("head");
-                                b.addString("arms");
-                                motorThr->goHome(b);
+
+                                if (!check(command,"still"))
+                                {
+                                    Bottle b;
+                                    b.addString("head");
+                                    b.addString("arms");
+                                    motorThr->goHome(b);
+                                }
                             }
 
                             reply.addVocab(ACK);
@@ -1182,7 +1192,10 @@ public:
                         {
                            motorThr->setGazeIdle();
                            motorThr->release(command);
-                           motorThr->goHome(command);
+
+                           if (!check(command,"still"))
+                               motorThr->goHome(command);
+
                            reply.addVocab(NACK);
                         }
                         idle = true;
@@ -1193,14 +1206,38 @@ public:
                     case CMD_GRASP:
                     {
                         idle = false;
-                        if(command.size()<2)
+                        if (command.size()<2)
                         {
                             reply.addVocab(NACK);
                             break;
                         }
 
                         visuoThr->getTarget(command.get(1),command);
-                        motorThr->powerGrasp(command)?reply.addVocab(ACK):reply.addVocab(NACK);
+                        if (motorThr->powerGrasp(command))
+                        {
+                            motorThr->goUp(command,0.1);
+                            motorThr->setGazeIdle();
+
+                            if (!check(command,"still"))
+                            {
+                                Bottle b;
+                                b.addString("head");
+                                b.addString("arms");
+                                motorThr->goHome(b);
+                            }
+
+                            reply.addVocab(ACK);
+                        }
+                        else
+                        {
+                            motorThr->setGazeIdle();
+                            motorThr->release(command);
+                            if (!check(command,"still"))
+                                motorThr->goHome(command);
+
+                            reply.addVocab(NACK);
+                        }
+
                         idle = true;
                         break;
                     }
@@ -1241,14 +1278,17 @@ public:
 
                         visuoThr->getTarget(command.get(1),command);
 
-                        if(!motorThr->push(command))
+                        if (!motorThr->push(command))
                         {
                             reply.addVocab(NACK);
                             break;
                         }
 
-                        motorThr->goHome(command);
-                        motorThr->setGazeIdle();
+                        if (!check(command,"still"))
+                        {
+                            motorThr->setGazeIdle();
+                            motorThr->goHome(command);
+                        }
 
                         reply.addVocab(ACK);
                         break;
@@ -1317,13 +1357,15 @@ public:
                     }
                     case CMD_TAKE_TOOL:
                     {
-                        if(command.size()<2)
+                        if (command.size()<2)
                         {
                             reply.addVocab(NACK);
                             break;
                         }
+
                         motorThr->takeTool(command);
                         reply.addVocab(ACK);
+
                         break;
                     }
                     default:

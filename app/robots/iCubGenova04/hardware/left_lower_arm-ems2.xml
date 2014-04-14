@@ -26,7 +26,7 @@
   <device name="left_hand_mais" type="embObjAnalogSensor">
       <params file="general.xml" />
       <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
-      <params file="hardware/analog/left_lower_arm-ems2-mais.xml" />
+      <params file="hardware/MAIS/left_lower_arm-ems2-mais.xml" />
   </device> 
 </devices>
   
