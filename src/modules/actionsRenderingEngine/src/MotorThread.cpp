@@ -1719,7 +1719,11 @@ bool MotorThread::powerGrasp(Bottle &options)
     Vector y=R.getCol(1);
     y[3]=CTRL_DEG2RAD*approach_data[3];
 
-    Vector approach_x=x+approach_data.subVector(0,2);
+    Vector dx=approach_data[0]*R.getCol(0).subVector(0,2);
+    Vector dy=approach_data[1]*R.getCol(1).subVector(0,2);
+    Vector dz=approach_data[2]*R.getCol(2).subVector(0,2);
+
+    Vector approach_x=x+dx+dy+dz;
     Vector approach_o=dcm2axis(axis2dcm(y)*R);
 
     wbdRecalibration();

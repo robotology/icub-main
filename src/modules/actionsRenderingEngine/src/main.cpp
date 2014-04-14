@@ -136,8 +136,8 @@ orientation. \n
 As further parameter user may specify the way the robot will    
 approach the target by providing the options ("approach" dx dy
 dz wrist_pitch), where di account for offset displacement in    
-meters wrt to the grasping point and wrist_pitch is the    
-apporaching pitch of the wrist given in degrees.    
+meters wrt to the grasping reference frame and wrist_pitch is    
+the apporaching pitch of the wrist given in degrees.    
 
 <b>TOUCH</b> \n
 format: [touch] [target] "param1" "param2" \n
