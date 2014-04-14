@@ -160,8 +160,6 @@ private:
     Vector                              pushAboveRelief;
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
-    double                              pwrGraspApproachAngle[2];
-    double                              pwrGraspApproachDisplacement[2];
     double                              reachingTimeout;
 
     //tool

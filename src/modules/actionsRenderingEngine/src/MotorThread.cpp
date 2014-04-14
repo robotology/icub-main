@@ -19,6 +19,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 #include <iomanip>
 
 #include <gsl/gsl_math.h>
@@ -40,7 +41,7 @@ using namespace iCub::perception;
 bool MotorThread::checkOptions(Bottle &options, const string &parameter)
 {
     bool found=false;
-    for(int i=0; i<options.size(); i++)
+    for (int i=0; i<options.size(); i++)
     {
         if(options.get(i).asString()==parameter.c_str())
         {
@@ -274,7 +275,6 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     //set the default current kinematic offsets for the arms
     currentKinematicOffset[LEFT]=defaultKinematicOffset[LEFT];
     currentKinematicOffset[RIGHT]=defaultKinematicOffset[RIGHT];
-
 
     // if the tartget's cartesian coordinates was specified, use them.
     if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>=3)
@@ -813,9 +813,6 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         return false;
 
     extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
-
-    pwrGraspApproachAngle[arm]=b.check("powergrasp_approach_angle",Value(50.0)).asDouble();
-    pwrGraspApproachDisplacement[arm]=b.check("powergrasp_approach_displacement",Value(0.02)).asDouble();
 
     if(b.check("grasp_model_file"))
     {
@@ -1691,32 +1688,38 @@ bool MotorThread::powerGrasp(Bottle &options)
     Bottle *bTarget=options.find("target").asList();
 
     Vector xd;
-    if(!targetToCartesian(bTarget,xd))
+    if (!targetToCartesian(bTarget,xd))
         return false;
     if (xd.length()<7)
         return false;
 
     arm=checkArm(arm,xd);
-
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         keepFixation(options);
         look(options);
     }
-    
+
+    Vector approach_data(4,0.0);
+    if (options.check("approach"))
+    {
+        if (Bottle *bApproach=options.find("approach").asList())
+        {
+            size_t sz=std::min(approach_data.size(),(size_t)bApproach->size()); 
+            for (size_t i=0; i<sz; i++)
+                approach_data[i]=bApproach->get(i).asDouble();
+        }
+    }
+
     Vector x=xd.subVector(0,2);
     Vector o=xd.subVector(3,6);
 
     Matrix R=axis2dcm(o);
-    Vector y=R.getCol(1);    
-    y[3]=CTRL_DEG2RAD*((arm==RIGHT)?-pwrGraspApproachAngle[arm]:pwrGraspApproachAngle[arm]);
+    Vector y=R.getCol(1);
+    y[3]=CTRL_DEG2RAD*approach_data[3];
 
-    double disp=pwrGraspApproachDisplacement[arm];
-    Vector d=((arm==RIGHT)?-disp:disp)*R.getCol(2).subVector(0,2);
-    d-=disp*R.getCol(0).subVector(0,2); // go a bit back ...
-    d[1]+=(arm==RIGHT)?disp:-disp;      // ... and a bit aside to leave space for object's volume
-    Vector approach_x=x+d;
+    Vector approach_x=x+approach_data.subVector(0,2);
     Vector approach_o=dcm2axis(axis2dcm(y)*R);
 
     wbdRecalibration();
@@ -1730,29 +1733,17 @@ bool MotorThread::powerGrasp(Bottle &options)
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
 
-    if(grasp(options))
+    if (grasp(options))
     {
         // go up straightaway
         action[arm]->getPose(x,o);
         action[arm]->pushAction(x+graspAboveRelief,o);
         action[arm]->checkActionsDone(f,true);
 
-        setGazeIdle();
-        Bottle b;
-        b.addString("head");
-        b.addString("arms");
-        goHome(b);
-
         return true;
     }
     else
-    {
-       setGazeIdle();
-       release(options);
-       goHome(options);
-
-       return false;
-    }    
+        return false; 
 }
 
 
@@ -1801,9 +1792,7 @@ bool MotorThread::push(Bottle &options)
     action[arm]->enableContactDetection();
     
     action[arm]->pushAction(xd-3*push_direction*reachSideDisp[arm],reachSideOrient[arm]);
-
     action[arm]->checkActionsDone(f,true);
-
     action[arm]->disableContactDetection();
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
@@ -1922,15 +1911,15 @@ bool MotorThread::look(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::takeTool(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
-
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         lookAtHand(options);
@@ -1948,18 +1937,19 @@ bool MotorThread::takeTool(Bottle &options)
     Vector wrench(6);
     double t=Time::now();
     
-    while(!contact_detected && Time::now()-t<5.0)
+    while (!contact_detected && (Time::now()-t<5.0))
     {
         action[arm]->getExtWrench(wrench);
-        if(norm(wrench)>force_thresh)
+        if (norm(wrench)>force_thresh)
             contact_detected=true;
+
         Time::delay(0.1);
     }
 
-    if(!contact_detected)
+    if (!contact_detected)
         fprintf(stdout,"damn!\n");
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     return true;
@@ -2792,12 +2782,9 @@ bool MotorThread::exploreHand(Bottle &options)
             Time::delay(0.05);
         }
     }
-
     
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
-    {
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
-    }
 
     //re-enable the arm control
     if(action[arm]!=NULL)
