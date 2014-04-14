@@ -4,16 +4,6 @@
  <!-- Initialization file for EMS 2 - Left Lower Arm, 12 dof plus skin-->
 
 <devices robot="iCubGenova04" build="1">
-
-  <!--  Motion Control -->
-
-  <device name="left_lower_arm_mc" type="embObjMotionControl">
-      <params file="general.xml" />
-      <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
-      <params file="hardware/mechanicals/left_lower_arm-ems2-mec.xml" />
-  </device>  
-
-  
       <!--  Skin -->
   <device name="left_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />

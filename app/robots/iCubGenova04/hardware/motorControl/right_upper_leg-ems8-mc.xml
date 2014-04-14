@@ -4,10 +4,10 @@
  <!-- Initialization file for EMS 8 - Right Upper Leg, 4 dof -->
 
 <devices robot="iCubGenova04" build="1">
-  <device name="right_upper_leg_strain" type="embObjAnalogSensor">
+  <device name="right_upper_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
-      <params file="hardware/FT/right_upper_leg-ems8-strain.xml" />
-  </device> 
+      <params file="hardware/mechanicals/right_upper_leg-ems8-mec.xml" />
+  </device>
 </devices>
 

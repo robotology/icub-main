@@ -3,11 +3,11 @@
  <!-- Initialization file for EMS 1 - Left Upper Arm, 4 dof -->
 
 <devices robot="iCubGenova04" build="1">
-  <device name="left_upper_arm_strain" type="embObjAnalogSensor">
+  <device name="left_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml"/>
       <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
-      <params file="hardware/FT/left_upper_arm-ems1-strain.xml" />
-  </device>  
+      <params file="hardware/mechanicals/left_upper_arm-ems1-mec.xml" />
+  </device>
 </devices>
 
 
