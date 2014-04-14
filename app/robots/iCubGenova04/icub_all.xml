@@ -9,7 +9,7 @@
     <devices file="cartesian/right_arm_cartesian.xml" />
     
     <!-- HEAD -->	
-    <devices file="hardware/cfw002.xml" />
+    <devices file="hardware/head-cfw2_can0.xml" />
     <devices file="wrappers/motorControl/head_mc_wrapper.xml" />
 
     <!-- TORSO -->
