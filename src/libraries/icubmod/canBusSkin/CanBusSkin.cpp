@@ -5,14 +5,17 @@
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #include <CanBusSkin.h>
+#include <CanBusSkinErrorCodes.h>
 
 #include <yarp/os/Time.h>
+
 #include <iostream>
 #include <sstream>
+#include <deque>
+
 
 const int CAN_DRIVER_BUFFER_SIZE = 2047;
 
-#define SKIN_DEBUG 0
 
 using namespace std;
 using yarp::os::Bottle;
@@ -22,7 +25,7 @@ using yarp::dev::CanMessage;
 
 bool CanBusSkin::open(yarp::os::Searchable& config) {
     bool correct=true;
-#if SKIN_DEBUG
+#ifndef NODEBUG
     fprintf(stderr, "%s\n", config.toString().c_str());
 #endif
 
@@ -45,13 +48,13 @@ bool CanBusSkin::open(yarp::os::Searchable& config) {
 
     if (ids.size()>1)
     {
-        cerr<<"Warning: CanBusSkin id list contains more than one entry -> devices will be merged. "<<endl;
+        cerr << "WARNING: CANBUSSKIN: id list contains more than one entry -> devices will be merged. "<<endl;
     }
     for (int i=0; i<ids.size(); i++)
     {
         int id = ids.get(i).asInt();
         cardId.push_back (id);
-        #if SKIN_DEBUG
+        #ifndef NODEBUG
             fprintf(stderr, "Id reading from %d\n", id);
         #endif
     }
@@ -201,50 +204,75 @@ bool CanBusSkin::threadInit() {
 }
 
 void CanBusSkin::run() {
+    using iCub::skin::diagnostics::SkinErrorCode;   // FG: Skin diagnostics error codes
+    using std::deque;
+
     mutex.wait();
 
     unsigned int canMessages = 0;
-
-    bool res=pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
+    deque<bool> errorTaxels;   // FG: Set to true if the taxel returned an error
+    bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
+    
     if (!res) {
-        std::cerr << "canRead failed \n";
-    }
+        std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
+    } else {
+        for (unsigned int i = 0; i < canMessages; i++) {
+            CanMessage &msg = inBuffer[i];
 
-    for (unsigned int i = 0; i < canMessages; i++) {
-        CanMessage &msg = inBuffer[i];
+            unsigned int msgid = msg.getId();
+            unsigned int id = (msgid & 0x00F0) >> 4;
+            unsigned int sensorId = (msgid & 0x000F);
+            unsigned int msgType = (int) msg.getData()[0];
+            int len = msg.getLen();
 
-        unsigned int msgid = msg.getId();
-        unsigned int id;
-        unsigned int sensorId;
-        id = (msgid & 0x00F0) >> 4;
-        sensorId = (msgid & 0x000F);
-
-        unsigned int msgTail = (msg.getData()[0] & 0x80);
-        int len = msg.getLen();
-
-#if SKIN_DEBUG
-        cout << "CAN message type is: " << std::showbase << std::hex << (int) msg.getData()[0] << std::noshowbase << std::dec 
-            << " with length " << len << ".\n";
-        cout << "CAN message content is: " << std::showbase << std::hex;
-        for (int k = 0; k < len; ++k) {
-            cout << (int) msg.getData()[k] << "\t";
-        }
-        cout  << "\n" << std::noshowbase << std::dec;
+#ifndef NODEBUG
+            cout << "DEBUG: CAN message type is: " << std::showbase << std::hex << (int) msg.getData()[0] 
+                << std::noshowbase << std::dec << " with length " << len << ".\n";
+            cout << "DEBUG: CAN message content is: " << std::showbase << std::hex;
+            for (int k = 0; k < len; ++k) {
+                cout << (int) msg.getData()[k] << "\t";
+            }
+            cout << "\n" << std::noshowbase << std::dec;
 #endif
 
-        for (int j = 0; j < cardId.size(); j++) {
-            if (id == cardId[j]) {
-                int index = 16*12*j + sensorId*12;
-                
-                if (msgTail) {
-                    // Message tail
-                    for(int k = 0; k < 5; k++) {
-                        data[index + k + 7] = msg.getData()[k + 1];
-                    }
-                } else {
-                    // Message head
-                    for(int k = 0; k < 7; k++) {
-                        data[index + k] = msg.getData()[k + 1];
+            for (int j = 0; j < cardId.size(); j++) {
+                if (id == cardId[j]) {
+                    int index = 16*12*j + sensorId*12;
+                    
+                    if (msgType == 0x40) {
+                        // Message head
+                        for(int k = 0; k < 7; k++) {
+                            data[index + k] = msg.getData()[k + 1];
+                        }
+                    } else if (msgType == 0xC0) {
+                        // Message tail
+                        for(int k = 0; k < 5; k++) {
+                            data[index + k + 7] = msg.getData()[k + 1];
+                        }
+
+                        // Skin diagnostics
+                        if (len == 8) {
+                            // Get error code head and tail
+                            short head = msg.getData()[6];
+                            short tail = msg.getData()[7];
+                            int fullMsg = (head << 8) | (tail & 0xFF);
+
+                            if (((head << 8) | (tail & 0xFF)) & 0xFFFF) {
+                                // An error occurred
+                                errorTaxels.resize(12, false);
+                                int errorMask = SkinErrorCode::TaxelStuck00;
+                                for (int tax = 0; tax < 12; ++tax) {
+                                    errorTaxels[i] = (fullMsg & errorMask);
+                                    errorMask = errorMask * 2;  // Increment error mask
+                                }
+                            } else {
+#ifndef NODEBUG
+                                cout << "DEBUG: CanBusSkin: Skin is working fine. \n";
+#endif
+                            }
+                        } else {
+                            cout << "WARNING: CanBusSkin: You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
+                        }
                     }
                 }
             }
@@ -252,13 +280,26 @@ void CanBusSkin::run() {
     }
 
     mutex.post();
+
+
+    // Handle skin errors
+    if (errorTaxels.size() > 0) {
+        // Errors occurred
+        cerr << "ERROR: CanBusSkin: The following taxels are stuck/faulty: \t";
+        for (size_t i = 0; i < errorTaxels.size(); ++i) {
+            if (errorTaxels[i]) {
+                cerr << i << " ";
+            }
+        }
+        cerr << "\n";
+    }
 }
 
 void CanBusSkin::threadRelease()
 {
-#if SKIN_DEBUG
-    printf("CanBusSkin Thread releasing...\n");    
-    printf("... done.\n");
+#ifndef NODEBUG
+    printf("DEBUG: CanBusSkin Thread releasing...\n");    
+    printf("DEBUG: ... done.\n");
 #endif
 }
 
@@ -283,9 +324,9 @@ void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_p
 /* ******* Sends CAN setup message type 4C.                                 ********************************************** */
 bool CanBusSkin::sendCANMessage4C(void) {
     for (size_t i = 0; i < cardId.size(); ++i) {
-#if SKIN_DEBUG
-        printf("CanBusSkin: Thread initialising board ID: %d. \n",cardId[i]);
-        printf("CanBusSkin: Sending 0x4C message to skin boards. \n");
+#ifndef NODEBUG
+        printf("DEBUG: CanBusSkin: Thread initialising board ID: %d. \n",cardId[i]);
+        printf("DEBUG: CanBusSkin: Sending 0x4C message to skin boards. \n");
 #endif 
 
         unsigned int canMessages=0;
@@ -303,13 +344,13 @@ bool CanBusSkin::sendCANMessage4C(void) {
         msg4c.getData()[7] = msg4C_TimeH.get(i).asInt();
         msg4c.setLen(8);
 
-#if SKIN_DEBUG
-        cout << "INFO: CanBusSkin: Input parameters (msg 4C) are: " << std::hex << std::showbase
+#ifndef NODEBUG
+        cout << "DEBUG: CanBusSkin: Input parameters (msg 4C) are: " << std::hex << std::showbase
             << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " "
             << msg4C_Timer.get(i).asInt() << " " << msg4C_CDCOffsetL.get(i).asInt() << " " << msg4C_CDCOffsetH.get(i).asInt() << " " 
             << msg4C_TimeL.get(i).asInt() << " " << msg4C_TimeH.get(i).asInt() << std::dec << std::noshowbase
             << ". \n";
-        cout << "INFO: CanBusSkin: Output parameters (msg 4C) are: " << std::hex << std::showbase
+        cout << "DEBUG: CanBusSkin: Output parameters (msg 4C) are: " << std::hex << std::showbase
             << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " " 
             << (int) msg4c.getData()[3] << " " << (int) msg4c.getData()[4] << " " << (int) msg4c.getData()[5] << " " 
             << (int) msg4c.getData()[6] << " " << (int) msg4c.getData()[7] << std::dec << std::noshowbase
@@ -333,7 +374,7 @@ bool CanBusSkin::sendCANMessage4E(void) {
     // Send 0x4E message to modify offset
     for (size_t i = 0; i < cardId.size(); ++i) {
         // FG: Sending 4E message to all MTBs
-#if SKIN_DEBUG
+#ifndef NODEBUG
         printf("CanBusSkin: Thread initialising board ID: %d. \n", cardId[i]);
         printf("CanBusSkin: Sending 0x4E message to skin boards. \n");
 #endif 
@@ -353,13 +394,13 @@ bool CanBusSkin::sendCANMessage4E(void) {
         msg4e.getData()[7] = 0x0A;
         msg4e.setLen(8);
             
-#if SKIN_DEBUG
-        cout << "INFO: CanBusSkin: Input parameters (msg 4E) are: " << std::hex << std::showbase
+#ifndef NODEBUG
+        cout << "DEBUG: CanBusSkin: Input parameters (msg 4E) are: " << std::hex << std::showbase
             << (int) msg4e.getData()[0] << " " << msg4E_Shift.get(i).asInt() << " " << msg4E_Shift3_1.get(i).asInt() << " " 
             << msg4E_NoLoad.get(i).asInt() << " " << msg4E_Param.get(i).asInt() << " " << msg4E_EnaL.get(i).asInt() << " " 
             << msg4E_EnaH.get(i).asInt() << " " << (int) msg4e.getData()[7] << std::dec << std::noshowbase
             << ". \n";
-        cout << "INFO: CanBusSkin: Output parameters (msg 4E) are: " << std::hex << std::showbase
+        cout << "DEBUG: CanBusSkin: Output parameters (msg 4E) are: " << std::hex << std::showbase
             << (int) msg4e.getData()[0] << " " << (int) msg4e.getData()[1] << " " << (int) msg4e.getData()[2] << " " 
             << (int) msg4e.getData()[3] << " " << (int) msg4e.getData()[4] << " " << (int) msg4e.getData()[5] << " " 
             << (int) msg4e.getData()[6] << " " << (int) msg4e.getData()[7] << std::dec << std::noshowbase
