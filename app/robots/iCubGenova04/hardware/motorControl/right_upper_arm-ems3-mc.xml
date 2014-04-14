@@ -4,9 +4,9 @@
  <!-- Initialization file for EMS 3 - Right Upper Arm, 4 dof -->
 
 <devices robot="iCubGenova04" build="1">
-   <device name="right_upper_arm_strain" type="embObjAnalogSensor">
+  <device name="right_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_arm-ems3-eln.xml" />
-      <params file="hardware/FT/right_upper_arm-ems3-strain.xml" />
-  </device> 
+      <params file="hardware/mechanicals/right_upper_arm-ems3-mec.xml" />
+  </device>
 </devices>

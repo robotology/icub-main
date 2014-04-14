@@ -9,21 +9,21 @@
     <devices file="cartesian/right_arm-cartesian.xml" />
     
     <!-- HEAD -->	
-    <devices file="hardware/head-cfw2_can0.xml" />
+    <devices file="hardware/motorControl/head-cfw2_can0-mc.xml" />
     <devices file="wrappers/motorControl/head-mc_wrapper.xml" />
 
     <!-- TORSO -->
-    <devices file="hardware/torso-ems5.xml" />
+    <devices file="hardware/motorControl/torso-ems5-mc.xml" />
     <devices file="wrappers/motorControl/torso-mc_wrapper.xml" />
 
     <!-- LEFT ARM -->
-    <devices file="hardware/left_upper_arm-ems1.xml" />
-    <devices file="hardware/left_lower_arm-ems2.xml" />
+    <devices file="hardware/motorControl/left_upper_arm-ems1-mc.xml" />
+    <devices file="hardware/motorControl/left_lower_arm-ems2-mc.xml" />
     <devices file="wrappers/motorControl/left_arm-mc_wrapper.xml" /> 
 
     <!-- RIGHT ARM -->
-    <devices file="hardware/right_upper_arm-ems3.xml" />
-    <devices file="hardware/right_lower_arm-ems4.xml" />
+    <devices file="hardware/motorControl/right_upper_arm-ems3-mc.xml" />
+    <devices file="hardware/motorControl/right_lower_arm-ems4-mc.xml" />
     <devices file="wrappers/motorControl/right_arm-mc_wrapper.xml" />
 
      <!-- ANALOG SENSOR WRAPPERs TORQUE -->
