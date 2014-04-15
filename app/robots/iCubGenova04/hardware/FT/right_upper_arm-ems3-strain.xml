@@ -2,7 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova04" build="1">
-  <device name="left_upper_arm_strain" type="embObjAnalogSensor">
+  <device name="right_upper_arm_strain" type="embObjAnalogSensor">
     <params file="general.xml"/>
     <params file="hardware/electronics/right_upper_arm-ems3-eln.xml" />
     <group name="GENERAL"> 
