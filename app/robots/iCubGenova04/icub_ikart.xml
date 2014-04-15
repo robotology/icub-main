@@ -26,19 +26,22 @@
     <devices file="hardware/motorControl/right_lower_arm-ems4-mc.xml" />
     <devices file="wrappers/motorControl/right_arm-mc_wrapper.xml" />
 
-     <!-- ANALOG SENSOR WRAPPERs TORQUE -->
+    <!-- ANALOG SENSOR FT -->
     <devices file="wrappers/FT/left_arm-FT_wrapper.xml" /> 
     <devices file="wrappers/FT/right_arm-FT_wrapper.xml" />
+    <devices file="hardware/FT/left_upper_arm-ems1-strain.xml" /> 
+    <devices file="hardware/FT/right_upper_arm-ems3-strain.xml" />
 
-
-    <!-- VIRTUAL ANALOG SERVERs -->
+    <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
     <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 
     <devices file="wrappers/VFT/right_arm-VFT_wrapper.xml" /> 
     <devices file="wrappers/VFT/torso-VFT_wrapper.xml" /> 
 
-    <!-- ANALOG SENSOR WRAPPERs MAIS -->
+    <!-- ANALOG SENSOR MAIS -->
     <devices file="wrappers/MAIS/left_arm-mais_wrapper.xml" /> 
     <devices file="wrappers/MAIS/right_arm-mais_wrapper.xml" /> 
+    <devices file="hardware/MAIS/left_hand-ems2-mais.xml" /> 
+    <devices file="hardware/MAIS/right_hand-ems4-mais.xml" />  
  
 
 
@@ -49,8 +52,10 @@
     <!--  SKINS -->
     <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm-skin_wrapper.xml" />  
-	<devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
     <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
+	<devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
+ 	<devices file="hardware/skin/left_arm-ems2-skin.xml" />
+	<devices file="hardware/skin/right_arm-ems4-skin.xml" />
 
     <!--  CALIBRATORS -->
     <devices file="calibrators/head-calib.xml" /> 
