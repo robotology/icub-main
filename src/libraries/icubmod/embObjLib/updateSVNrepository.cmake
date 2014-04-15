@@ -17,13 +17,9 @@ set(eBcode_BASE_URL "https://github.com/robotology/icub-firmware-shared/trunk/et
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
     Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR}/embObj embObj)
-    message("embObj_WC_ROOT = ${embObj_WC_ROOT}")
-    message("embObj_WC_URL = ${embObj_WC_URL}")
-    message("embObj_WC_REVISION = ${embObj_WC_REVISION}")
     if("${embObj_WC_URL}" STREQUAL "${eBcode_BASE_OLD_URL}")
         file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
     endif()
-    message("${CMAKE_CURRENT_SOURCE_DIR}/embObj folder deleted")
 endif()
 #  Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR} ICUB)
 
