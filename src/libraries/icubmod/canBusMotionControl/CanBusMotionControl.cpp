@@ -5765,7 +5765,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     }
     else
     { 
-        fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+        fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, ref,r._bcastRecvBuffer[j]._position_joint._value);
         //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,ref);
         //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
         return false;
@@ -5785,7 +5785,7 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
         }
         else
         {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, refs[j],r._bcastRecvBuffer[j]._position_joint._value);
             //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(joints[j],r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
             //_writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(saturated_cmd));
             ret = false;
@@ -5807,7 +5807,7 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
         }
         else
         {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, refs[j],r._bcastRecvBuffer[j]._position_joint._value);
             //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
             //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
             ret = false;
