@@ -19,7 +19,11 @@
 #include <embObjSkin.h>
 
 #include "EoSkin.h"
-// #include <ethManager.h>
+#warning vale metti include e togli define!!!
+//#include "iCubCanProcol.h"
+#define ICUBCANPROTO_CLASS_PERIODIC_SKIN 4
+#define ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR 3
+
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
 
@@ -87,7 +91,18 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             bcfg.cfg.period     = xtmp.get(4).asInt();
             bcfg.cfg.skintype   = xtmp.get(5).asInt();
             bcfg.cfg.noload     = xtmp.get(6).asInt();
-
+            if(!(patch >0))
+            {
+                yError() << "skin of board num " << _fId.boardNum << "patch number start from 1. (error in specialCfgBoards)";
+                return false;
+            }
+            //since in xml num of patches star from 1==> i need to remove one to index array
+            patch -= 1;
+            if(! (patch<cardIdPerPatch.size()))
+            {
+                yError() << "in specialCfgBoards, triangles belong to patch num" << patch +1 << "but I have only " << cardIdPerPatch.size();
+                return false;
+            }
 //            //VALE: solo per debug:
 //            yError() << "patch" << patch;
 //            yError() << "bcfg.addrstart" << bcfg.addrstart;
@@ -99,7 +114,6 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             //Note: here i don't check if addresses have been configured in patches list.
             //if a message is send to a board not present, it does nothing
             protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patch, eoprot_tag_sk_skin_cmd_boardscfg);
-
             if( !(EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
             {
                 yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages";
@@ -116,6 +130,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             totConfigSize += configSize;
         }
     }
+    Time::delay(0.01);
 //    else
 //    {
 //        //VALE solo per debug()
@@ -135,7 +150,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         bNumOfset = triangleCfgSpecialGroup.findGroup("numOfSets", "number of special sets of triangles");
         if(bNumOfset.isNull())
         {
-            yError() << "skin " << _fId.name << "numOfSet is missed from SpecialCfgTriangles";
+            yError() << "skin board "<< _fId.boardNum << "numOfSet is missed from SpecialCfgTriangles";
             return(false);
         }
         numOfSets =  bNumOfset.get(1).asInt();
@@ -154,7 +169,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
                 return false;
             }
 
-            int patch            = xtmp.get(1).asInt();
+            int patch           = xtmp.get(1).asInt();
             tcfg.boardaddr      = xtmp.get(2).asInt();
             tcfg.idstart        = xtmp.get(3).asInt();
             tcfg.idend          = xtmp.get(4).asInt();
@@ -162,7 +177,20 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             tcfg.cfg.shift      = xtmp.get(6).asInt();
             tcfg.cfg.CDCoffset  = xtmp.get(7).asInt();
 
+            if(!(patch >0))
+            {
+                yError() << "skin of board num " << _fId.boardNum << "patch number start from 1. (error in SpecialCfgTriangles)";
+                return false;
+            }
+            //since in xml num of patches star from 1==> i need to remove one to index array
+            patch -= 1;
+            if(! (patch<cardIdPerPatch.size()))
+            {
+                yError() << "in SpecialCfgTriangles, triangles belong to patch num" << patch +1 << "but I have only " << cardIdPerPatch.size();
+                return false;
+            }
 //            //VALE: solo per debug:
+//            yError() << "num of set: " << j;
 //            yError() << "tcfg.boardaddr" << tcfg.boardaddr;
 //            yError() << "tcfg.idstart" << tcfg.idstart;
 //            yError() << "tcfg.idend" << tcfg.idend;
@@ -173,14 +201,14 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
             //check if bcfg.boardAddr is in my patches list
            bool boardFound = false;
-           for(int k=0; k</*cardIdPerPatch[patch].size()*/15 && !boardFound; k++)
+           for(int k=0; k<cardIdPerPatch[patch].size() && !boardFound; k++)
            {
                if(cardIdPerPatch[patch][k] == tcfg.boardaddr)
                    boardFound = true;
            }
            if(!boardFound)
            {
-               yError() << "skin " << _fId.name << tmp << "with addr not configured in patches";
+               yError() << "skin board "<< _fId.boardNum << tmp << "with addr not configured in patches";
                continue;
            }
             protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patch, eoprot_tag_sk_skin_cmd_trianglescfg);
@@ -200,6 +228,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             totConfigSize += configSize;
         }
     }
+    Time::delay(0.01);
 //    else
 //    {
 //        //VALE solo per debug()
@@ -464,9 +493,14 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     for (int i=0; i < ttt; i++)
         data[i]=(double)255;
 
-    init();
-    initWithSpecialConfig(config);
-    start();
+    if(!init())
+        return false;
+
+    if(!initWithSpecialConfig(config))
+        return false;
+
+    if(!start())
+        return false;
 
     res->goToRun();
     yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
@@ -554,14 +588,24 @@ int EmbObjSkin::calibrateChannel(int ch)
 bool EmbObjSkin::start()
 {
     eOprotID32_t      protoid;
-    uint8_t           dat = 1;
+    uint8_t           dat;
     bool              ret = true;
     int               i;
-yDebug() << "sono in start";
+
+    if(_newCfg)
+    {
+        dat = eosk_sigmode_signal;
+        yWarning()<< "skin for board " << _fId.boardNum << "used new signal mode";
+    }
+    else
+    {
+        dat = eosk_sigmode_signal_oldway;
+        yWarning()<< "skin for board " << _fId.boardNum << "used old signal mode";
+    }
+
     for(i=0; i<numOfPatches && (ret);i++)
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_config_sigmode);
-        yDebug() << "start skin proto id  = " << protoid;
         ret = res->addSetMessage(protoid, &dat);
     }
 
@@ -584,7 +628,6 @@ bool EmbObjSkin::init()
     EOnv                        nvtmp;
     eOprotID32_t                protoid;
 
-yDebug() << "entro nella init";
     //
     //	config regulars
     //
@@ -610,14 +653,13 @@ yDebug() << "entro nella init";
     // Send message
     if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
     {
-        yError() << "while setting rop sig cfg";
+        yError() <<"skin board "<< _fId.boardNum << "while setting rop sig cfg";
     }
 
 
     //send default board and triangle configuration
     if(!_newCfg)
     {
-        yDebug() << "init esco";
         return true;
     }
     eOsk_cmd_boardsCfg_t  defBoardCfg;
@@ -661,6 +703,7 @@ yDebug() << "entro nella init";
         }
 
     }
+    Time::delay(0.01);
     int totConfigSize = 0;
     int configSize = sizeof(eOsk_cmd_trianglesCfg_t);
 
@@ -668,7 +711,7 @@ yDebug() << "entro nella init";
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_cmd_trianglescfg);
 
-        for(k=0; k</*cardIdPerPatch[i].size()*/15; k++)
+        for(k=0; k<cardIdPerPatch[i].size(); k++)
         {
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
             {
@@ -709,9 +752,17 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOnvID32_t id32)
         //uint8_t  j; 
         uint8_t mtbId =255; //unknown mtb card addr
         uint8_t  cardAddr, valid = 0;
+        uint8_t skinClass;
+
+        if(_newCfg)
+            skinClass = ICUBCANPROTO_CLASS_PERIODIC_SKIN;
+        else
+            skinClass = ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR;
+
 
         canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
-        valid = (((canframe->id & 0x0F00) >> 8) == 3) ? 1 : 0;
+
+        valid = (((canframe->id & 0x0F00) >> 8) == skinClass) ? 1 : 0;
 
         if(valid)
         {
