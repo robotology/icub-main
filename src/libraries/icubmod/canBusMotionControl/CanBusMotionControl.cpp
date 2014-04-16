@@ -5759,7 +5759,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);
 
-    if (fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+    if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
         return _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(ref));
     }
@@ -5781,7 +5781,7 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
 
     for(int j=0; j< n_joint; j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
         }
@@ -5805,7 +5805,7 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(refs[j]));
         }
