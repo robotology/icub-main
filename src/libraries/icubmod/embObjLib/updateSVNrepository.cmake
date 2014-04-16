@@ -5,23 +5,26 @@
 find_package(Subversion)
 if(NOT Subversion_FOUND)
     if(WIN32)
-        message(FATAL_ERROR "\nCannot find Subversion executable, maybe command line tool for subversion was not intalled?  Check wiki.icub.org for more info.\n")
+        message(FATAL_ERROR "\nCannot find Subversion executable, maybe command line tool for subversion was not installed?  Check wiki.icub.org for more info.\n")
     else(WIN32)
         message(FATAL_ERROR "Cannot find Subversion, you can do 'sudo apt-get install subversion' to install it.")
     endif(WIN32)
 endif()
 
 
+set(eBcode_BASE_OLD_URL "https://svn.code.sf.net/p/robotcub/code/trunk/iCub/firmware/emBODY/eBcode")
+set(eBcode_BASE_URL "https://github.com/robotology/icub-firmware-shared/trunk/eth")
 
-set(eBcode_BASE_URL "https://svn.code.sf.net/p/robotcub/code/trunk/iCub/firmware/emBODY/eBcode/")
-#if(EXISTS ${CMAKE_SOURCE_DIR}/.svn)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
+    Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR}/embObj embObj)
+    if("${embObj_WC_URL}" STREQUAL "${eBcode_BASE_OLD_URL}")
+        file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
+    endif()
+endif()
 #  Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR} ICUB)
-  set(eBcode_REVISION 28798 ) #${ICUB_WC_REVISION})
-  set(eBcode_REVISION_description "current iCub  28798")
-#else()
-#  set(eBcode_REVISION 27643)
-#  set(eBcode_REVISION_description ${eBcode_REVISION})
-#endif()
+
+set(eBcode_REVISION HEAD)
+set(eBcode_REVISION_description ${eBcode_REVISION})
 
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)

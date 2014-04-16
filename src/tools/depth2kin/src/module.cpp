@@ -387,7 +387,6 @@ void CalibModule::prepareRobot()
     iarm->attachTipFrame(xf,Vector(4,0.0));
 
     igaze->storeContext(&context_gaze);
-    igaze->blockEyes(block_eyes);
     igaze->getNeckPitchRange(&min,&max);
     igaze->bindNeckPitch(0.9*min,max);
     igaze->blockNeckRoll(0.0);
