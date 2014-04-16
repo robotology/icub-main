@@ -886,6 +886,14 @@ int EthReceiver::getBoardNum(ACE_INET_Addr addr)
     {
         board = 9;
     }
+    else if( addr == eb10)
+    {
+        board = 10;
+    }
+    else if( addr == eb11)
+    {
+        board = 11;
+    }
     else
     {
         board = 0;
