@@ -589,6 +589,8 @@ class axisPositionDirectHelper
         helper = 0;
     }
     
+    inline double posA2E (double ang, int j) {return helper->posA2E(ang, j);}
+    inline double posE2A (double ang, int j) {return helper->posE2A(ang, j);}
     inline double getMaxHwStep (int j) {return maxHwStep[j];}
     inline double getMaxUserStep (int j) {return maxUserStep[j];}
     inline double getSaturatedValue (int j, double curr_value, double ref_value); 
