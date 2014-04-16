@@ -226,9 +226,10 @@ void CanBusSkin::run() {
             int len = msg.getLen();
 
 #ifndef NODEBUG
-            cout << "DEBUG: CAN message type is: " << std::showbase << std::hex << (int) msg.getData()[0] 
-                << std::noshowbase << std::dec << " with length " << len << ".\n";
-            cout << "DEBUG: CAN message content is: " << std::showbase << std::hex;
+            cout << "DEBUG: CAN ID is: " << id << "\t" 
+                << "CAN message type is: " << std::showbase << std::hex << (int) msg.getData()[0] 
+                << std::noshowbase << std::dec << " with length " << len << "\t";
+            cout << "Message content is: " << std::showbase << std::hex;
             for (int k = 0; k < len; ++k) {
                 cout << (int) msg.getData()[k] << "\t";
             }
@@ -257,13 +258,34 @@ void CanBusSkin::run() {
                             short tail = msg.getData()[7];
                             int fullMsg = (head << 8) | (tail & 0xFF);
 
-                            if (((head << 8) | (tail & 0xFF)) & 0xFFFF) {
+                            if (!(fullMsg & SkinErrorCode::StatusOK)) {
                                 // An error occurred
-                                errorTaxels.resize(12, false);
-                                int errorMask = SkinErrorCode::TaxelStuck00;
-                                for (int tax = 0; tax < 12; ++tax) {
-                                    errorTaxels[i] = (fullMsg & errorMask);
-                                    errorMask = errorMask * 2;  // Increment error mask
+                                // Handle stuck taxel errors
+                                if (((head << 8) | (tail & 0xFF)) & 0xFFFF) {
+                                    errorTaxels.resize(12, false);
+                                    int errorMask = SkinErrorCode::TaxelStuck00;
+                                    for (int tax = 0; tax < 12; ++tax) {
+                                        errorTaxels[i] = (fullMsg & errorMask);
+                                        errorMask = errorMask * 2;  // Increment error mask
+                                    }
+                                }
+
+                                if (errorTaxels.size() > 0) {
+                                    // Errors occurred
+                                    cerr << "ERROR: CanBusSkin: Board ID(" << id <<"): Sensor ID (" << sensorId << "): The following taxels are stuck/faulty: \t";
+                                    for (size_t i = 0; i < errorTaxels.size(); ++i) {
+                                        if (errorTaxels[i]) {
+                                            cerr << i << " ";
+                                        }
+                                    }
+                                    cerr << "\n";
+                                }
+
+                                // Handle other errors
+                                if (fullMsg & SkinErrorCode::ErrorReading12C) {
+                                    cerr << "ERROR: CanBusSkin: Board ID(" << id <<"): Sensor ID (" << sensorId << "): Cannot read from this sensor. \n"; 
+                                } else if (fullMsg & SkinErrorCode::ErrorACK4C) {
+                                    cerr << "ERROR: CanBusSkin: Board ID(" << id <<"): Sensor ID (" << sensorId << "): This sensor does not respond to initialisation message (0x4C). \n"; 
                                 }
                             } else {
 #ifndef NODEBUG
@@ -271,7 +293,7 @@ void CanBusSkin::run() {
 #endif
                             }
                         } else {
-                            cout << "WARNING: CanBusSkin: You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
+                            cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
                         }
                     }
                 }
@@ -281,22 +303,9 @@ void CanBusSkin::run() {
 
     mutex.post();
 
-
-    // Handle skin errors
-    if (errorTaxels.size() > 0) {
-        // Errors occurred
-        cerr << "ERROR: CanBusSkin: The following taxels are stuck/faulty: \t";
-        for (size_t i = 0; i < errorTaxels.size(); ++i) {
-            if (errorTaxels[i]) {
-                cerr << i << " ";
-            }
-        }
-        cerr << "\n";
-    }
 }
 
-void CanBusSkin::threadRelease()
-{
+void CanBusSkin::threadRelease() {
 #ifndef NODEBUG
     printf("DEBUG: CanBusSkin Thread releasing...\n");    
     printf("DEBUG: ... done.\n");
