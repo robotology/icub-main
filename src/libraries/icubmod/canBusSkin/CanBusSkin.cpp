@@ -226,14 +226,14 @@ void CanBusSkin::run() {
             int len = msg.getLen();
 
 #ifndef NODEBUG
-            cout << "DEBUG: CAN ID is: " << id << "\t" 
-                << "CAN message type is: " << std::showbase << std::hex << (int) msg.getData()[0] 
-                << std::noshowbase << std::dec << " with length " << len << "\t";
-            cout << "Message content is: " << std::showbase << std::hex;
+            cout << "DEBUG: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): " 
+                << "Message type (" << std::uppercase << std::showbase << std::hex << (int) msg.getData()[0] << ") " 
+                << std::nouppercase << std::noshowbase << std::dec << " Length (" << len << "): ";
+            cout << "Content: " << std::uppercase << std::showbase << std::hex;
             for (int k = 0; k < len; ++k) {
                 cout << (int) msg.getData()[k] << "\t";
             }
-            cout << "\n" << std::noshowbase << std::dec;
+            cout << "\n" << std::nouppercase << std::noshowbase << std::dec;
 #endif
 
             for (int j = 0; j < cardId.size(); j++) {
@@ -261,7 +261,7 @@ void CanBusSkin::run() {
                             if (!(fullMsg & SkinErrorCode::StatusOK)) {
                                 // An error occurred
                                 // Handle stuck taxel errors
-                                if (((head << 8) | (tail & 0xFF)) & 0xFFFF) {
+                                if (((head << 8) | (tail & 0xFF)) & 0xFFF0) {
                                     errorTaxels.resize(12, false);
                                     int errorMask = SkinErrorCode::TaxelStuck00;
                                     for (int tax = 0; tax < 12; ++tax) {
@@ -272,7 +272,7 @@ void CanBusSkin::run() {
 
                                 if (errorTaxels.size() > 0) {
                                     // Errors occurred
-                                    cerr << "ERROR: CanBusSkin: Board ID(" << id <<"): Sensor ID (" << sensorId << "): The following taxels are stuck/faulty: \t";
+                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): The following taxels are stuck/faulty: \t";
                                     for (size_t i = 0; i < errorTaxels.size(); ++i) {
                                         if (errorTaxels[i]) {
                                             cerr << i << " ";
@@ -282,11 +282,11 @@ void CanBusSkin::run() {
                                 }
 
                                 // Handle other errors
-                                if (fullMsg & SkinErrorCode::ErrorReading12C) {
-                                    cerr << "ERROR: CanBusSkin: Board ID(" << id <<"): Sensor ID (" << sensorId << "): Cannot read from this sensor. \n"; 
-                                } else if (fullMsg & SkinErrorCode::ErrorACK4C) {
-                                    cerr << "ERROR: CanBusSkin: Board ID(" << id <<"): Sensor ID (" << sensorId << "): This sensor does not respond to initialisation message (0x4C). \n"; 
-                                }
+//                                if (fullMsg & SkinErrorCode::ErrorReading12C) {
+//                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): Cannot read from this sensor. \n"; 
+//                                } else if (fullMsg & SkinErrorCode::ErrorACK4C) {
+//                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): This sensor does not respond to the initialisation message (0x4C). \n"; 
+//                                }
                             } else {
 #ifndef NODEBUG
                                 cout << "DEBUG: CanBusSkin: Skin is working fine. \n";
