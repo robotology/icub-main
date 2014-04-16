@@ -50,7 +50,6 @@
 
 #include "EoProtocolMC_overridden_fun.h"
 #include <FeatureInterface.h>
-//#include "eOcfg_nvsEP_mc_hid.h"
 
 
 #ifdef _ICUB_CALLBACK_

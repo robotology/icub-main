@@ -35,11 +35,13 @@ ACE_INET_Addr		eb6(eb6_ip":12345");
 ACE_INET_Addr		eb7(eb7_ip":12345");
 ACE_INET_Addr		eb8(eb8_ip":12345");
 ACE_INET_Addr		eb9(eb9_ip":12345");
+ACE_INET_Addr		eb10(eb10_ip":12345");
+ACE_INET_Addr		eb11(eb11_ip":12345");
 //#endif
 
 
-#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ //if this macro is defined then ethMenager sends pkts to ems even if they are empty
-											  //ATTENTION: is importan to define also the same macro in hostTransceiver.cpp
+#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ // if this macro is defined then ethManager sends pkts to ems even if they are empty
+											  // ATTENTION: it is important to define/undefine the same macro also in hostTransceiver.cpp
 
 
 #if 0
@@ -168,7 +170,7 @@ ethResources *TheEthManager::requestResource(FEAT_ID *request)
     yTrace() << request->boardNum;
     // Check if local socket is initted, if not do it.
     ACE_TCHAR       address[64];
-    sprintf(address, "%s:%d", request->PC104ipAddr.string, request->PC104ipAddr.port);
+    snprintf(address, sizeof(address), "%s:%d", request->PC104ipAddr.string, request->PC104ipAddr.port);
 
     //ACE_INET_Addr myIP(address, AF_INET);
 
@@ -193,7 +195,7 @@ ethResources *TheEthManager::requestResource(FEAT_ID *request)
         (*iterator)->getRemoteAddress().addr_to_string(tmp_addr, 64);
        // tmpIp->addr_to_string(tmp_addr, 64);
         //(*iterator)->getRemoteAddress().addr_to_string(tmp_addr, 64);
-        if( strcmp(tmp_addr, request->EMSipAddr.string) == 0)
+        if( strcmp(tmp_addr, request->EMSipAddr.string) == 0 )
         {
             // device already exists, return the pointer.
             newRes = (*iterator);
@@ -320,21 +322,21 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
 {
     yTrace() << id->boardNum;
     //in maps use board num starts from 0 so
-    eOnvBRD_t nvBrdNum = id->boardNum; //featIdBoardNum2nvBoardNum(id->boardNum);
+    FEAT_boardnumber_t brdnum = id->boardNum; 
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     /* Defined the var addLUT_result to have the true/false result of the insert operation...It helped catching a bug.
      * It fails if the element is already present. This can happen if someone tries to read an element with
      * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
      * with zeros.
      */
-     bool addLUT_result =  boards_map.insert(std::pair< std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>(std::make_pair<eOnvBRD_t, eOnvEP8_t>(nvBrdNum, id->ep), *id)).second;
+     bool addLUT_result =  boards_map.insert(std::pair< std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, FEAT_ID>(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(brdnum, id->ep), *id)).second;
 
     // Check result of insertion
     addLUT_result ? yTrace() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
                     yError() << "NON ok add lut element for board " << id->boardNum << " and ep " << id->ep;
 
 
-    std::pair<eOnvBRD_t, eOnvEP8_t > key (nvBrdNum, id->ep);
+    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (brdnum, id->ep);
     try
         {
             // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
@@ -356,7 +358,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     yTrace() << element.boardNum;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     bool ret = false;
-    int n = (int) boards_map.erase(std::make_pair<eOnvBRD_t, eOnvEP8_t>(element.boardNum, element.ep));
+    int n = (int) boards_map.erase(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(element.boardNum, element.ep));
 
     switch(n)
     {
@@ -384,12 +386,12 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     return ret;
 }
 
-void *TheEthManager::getHandle(eOnvBRD_t boardnum, eOnvEP8_t ep)
+void *TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 {
 //     managerMutex.wait();
     void * ret = NULL;
     static int _error = 0;
-    std::pair<eOnvBRD_t, eOnvEP8_t > key (boardnum, ep);
+    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
     try
     {
@@ -412,11 +414,11 @@ void *TheEthManager::getHandle(eOnvBRD_t boardnum, eOnvEP8_t ep)
     return ret;
 }
 
-FEAT_ID TheEthManager::getFeatInfo(eOnvBRD_t boardnum, eOnvEP8_t ep)
+FEAT_ID TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 {
 //    yTrace();
     FEAT_ID ret_val;
-    std::pair<eOnvBRD_t, eOnvEP8_t > key (boardnum, ep);
+    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
 //     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run ... // nn più vero dopo le ultime ottimizzazioni
     ret_val = boards_map.at(key);
@@ -428,8 +430,8 @@ FEAT_ID TheEthManager::getFeatInfo(eOnvBRD_t boardnum, eOnvEP8_t ep)
 TheEthManager::TheEthManager()
 {
     yTrace();
-    memset(info, 0x00, SIZE_INFO);
-    sprintf(info, "TheEthManager");
+    memset(info, 0x00, sizeof(info));
+    snprintf(info, sizeof(info), "TheEthManager");
 
     UDP_initted = false;
     UDP_socket  = NULL;
@@ -586,7 +588,7 @@ TheEthManager::~TheEthManager()
 
     if(boards_map.size() != 0)
     {
-        std::map<std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>::iterator mIt;
+        std::map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, FEAT_ID>::iterator mIt;
         for(mIt = boards_map.begin(); mIt!=boards_map.end(); mIt++)
         {
             yError() << "Feature " << mIt->second.name << "was not correctly removed from map.., removing it now in the EthManager destructor.";
@@ -683,7 +685,7 @@ void EthSender::run()
 #endif
 
     /*
-        Usare un revers iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
+        Usare un reverse iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
         la lista con un iteratore anche durante la fase iniziale in cui vengono ancora aggiunti degli elementi,
         in teoria senza crashare. Al più salvarsi il puntatore alla rbegin sotto mutex prima di iniziare il ciclo,
         giusto per evitare che venga aggiunto un elemento in concomitanza con la lettura dell rbegin stesso.
@@ -817,19 +819,13 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
 bool EthReceiver::threadInit()
 {
-#define MSG020979 "WARNING-> could not find extern eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr thus i removed it. thus FIX IT !!"
-#if defined(_MSC_VER)
-    #pragma message(MSG020979)
-#else
-    #warning MSG020979
-#endif
 
     yTrace() << "Do some initialization here if needed";
     return true;
 }
 
 
-
+// marco.accame on 10 apr 2014: better not using the exact copy of a struct defined elsewhere (in EOropframe_hid.h) 
 typedef struct  // 24 bytes
 {
     uint32_t            startofframe;
@@ -845,39 +841,10 @@ uint64_t getRopFrameAge(char *pck)
     return test->ageofframe;
 }
 
-//class times_test_delay
-//{
-//public:
-//    times_test_delay();
-//
-//    bool          initted;
-//    double        prevRecvMsg_PC104;
-//    double        newRecvMsg_PC104;
-//    double        gap_EMS;
-//    uint64_t      ageofframe_EMS;
-//    double        gap_PC104;
-//    double        gap_PC104_min;
-//    double        gap_PC104_max;
-//    bool          error_PC104;
-//    bool          error_EMS;
-//};
-//
-//times_test_delay::times_test_delay()
-//{
-//    initted = false;
-//    prevRecvMsg_PC104 = 0;
-//    newRecvMsg_PC104 = 0;
-//    gap_EMS = 0;
-//    ageofframe_EMS =0;
-//    gap_PC104 = 0;
-//    gap_PC104_min = DBL_MAX;
-//    gap_PC104_max = 0;
-//    error_PC104 = false;
-//    error_EMS = false;
-//}
 
-
-
+// marco.accame on 11 apr 2014:
+// if we want to detect the board number by address, ... allow some more or think about more general rule. darmstadt robot will have 11 boards not 9
+#warning --> marco.accame: see in here to adapt to 
 int EthReceiver::getBoardNum(ACE_INET_Addr addr)
 {
     int board;
@@ -1469,5 +1436,6 @@ void EthReceiver::run()
 
 
 // eof
+
 
 

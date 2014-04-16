@@ -21,11 +21,7 @@
 #define _EOCFG_NVSEP_AS_OVERRIDDEN_H_
 
 
-// this file is to be used by the PC104, not by the EMS ...
-
-#define OVERRIDE_eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__calibratedvalues
-#define OVERRIDE_eo_cfg_nvsEP_as_hid_UPDT_Sxx_sstatus__uncalibratedvalues
-#define OVERRIDE_eo_cfg_nvsEP_as_hid_UPDT_Mxx_mstatus__the15values
+#error --> must not use it
 
 
 #endif  // include-guard

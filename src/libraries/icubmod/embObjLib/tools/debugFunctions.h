@@ -53,6 +53,8 @@
 #define eb7_ip "10.0.1.7"
 #define eb8_ip "10.0.1.8"
 #define eb9_ip "10.0.1.9"
+#define eb10_ip "10.0.1.10"
+#define eb11_ip "10.0.1.11"
 
 #define eb1_addr inet_addr(eb1_ip)
 #define eb2_addr inet_addr(eb2_ip)
@@ -63,6 +65,8 @@
 #define eb7_addr inet_addr(eb7_ip)
 #define eb8_addr inet_addr(eb8_ip)
 #define eb9_addr inet_addr(eb9_ip)
+#define eb10_addr inet_addr(eb10_ip)
+#define eb11_addr inet_addr(eb11_ip)
 
 
 

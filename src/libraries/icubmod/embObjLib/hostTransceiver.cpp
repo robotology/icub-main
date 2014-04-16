@@ -579,6 +579,13 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
 //    *pEPhash_function = EPhash_function_ep2index;
 //}
 
+
+#define OLDMODE
+
+#ifdef OLDMODE
+#include "EOconstvector_hid.h"
+#endif
+
 uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP8_t ep)
 {
 /*  marco.accame on 10 apr 2014:
@@ -590,7 +597,7 @@ uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP8_t ep)
     much better using the eoprot_endpoint_numberofvariables_get() function instead.
  */
 
-#if 1    
+#ifdef OLDMODE    
     uint16_t epi = hosttxrxcfg.nvsetdevcfg->fptr_ep2indexofepcfg(ep);
     if(EOK_uint16dummy == epi)
     {

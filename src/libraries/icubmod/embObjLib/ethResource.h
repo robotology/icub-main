@@ -72,6 +72,8 @@
 //#warning acemor-> removed EMPTY_PACKET_SIZE from here
 //#define EMPTY_PACKET_SIZE     EOK_HOSTTRANSCEIVER_emptyropframe_dimension
 //#warning acemor-> RECV_BUFFER_SIZE must be higher or equal EOK_HOSTTRANSCEIVER_capacityofrxpacket. it can safely be 1500
+
+// we see EOK_HOSTTRANSCEIVER_capacityofrxpacket by including FeatureInterface.hpp which includes EOhostTransceiver.h
 #define	RECV_BUFFER_SIZE      EOK_HOSTTRANSCEIVER_capacityofrxpacket
 #define	SIZE_INFO             128
 #define MAX_ICUB_EP           32
@@ -123,7 +125,7 @@ public:
     void printStatistics(void);
     void clearStatistics(void);
     uint64_t getSeqNum(uint8_t *packet);
-    uint64_t getAgeOfFrame(uint8_t * packet);
+    uint64_t getAgeOfFrame(uint8_t *packet);
 
     /*!   @fn       void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
      *    @brief    updates communication info statistics and checks if there is a transmission error with this ems board.In case of error print it.
@@ -250,5 +252,6 @@ public:
 #endif
 
 // eof
+
 
 
