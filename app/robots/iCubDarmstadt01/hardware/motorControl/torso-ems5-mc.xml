@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for EMS 5 - Torso, 3 dof -->
+
+<devices robot="iCubGenova04" build="1">
+  <device name="torso_mc" type="embObjMotionControl">
+      <params file="general.xml" />
+      <params file="hardware/electronics/torso-ems5-eln.xml" />
+      <params file="hardware/mechanicals/torso-ems5-mec.xml" />
+  </device>
+</devices>

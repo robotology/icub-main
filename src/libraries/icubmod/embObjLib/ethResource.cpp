@@ -13,8 +13,11 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
 
-//embobj
+// embobj
 #include "EOropframe_hid.h"
+#include "EOarray.h"
+#include "EoProtocol.h"
+#include "EoManagement.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -177,7 +180,7 @@ int  ethResources::getBufferSize()
 
 void infoOfRecvPkts::setBoardNum(int boardnum)
 {
-    board=boardnum;
+    board = boardnum;
 }
 
 void infoOfRecvPkts::printStatistics(void)
@@ -198,22 +201,22 @@ void infoOfRecvPkts::clearStatistics(void)
 }
 
 
-
 uint64_t infoOfRecvPkts::getSeqNum(uint8_t *packet)
 {
+    // marco.accame: ok, but ... it would be better to use a public method of EOropframe, which now we dont have
     EOropframeHeader_t *hdr_ptr = (EOropframeHeader_t*)packet;
     return(hdr_ptr->sequencenumber);
 }
-uint64_t infoOfRecvPkts::getAgeOfFrame(uint8_t * packet)
+
+uint64_t infoOfRecvPkts::getAgeOfFrame(uint8_t *packet)
 {
+    // marco.accame: ok, but ... it would be better to use a public method of EOropframe, which now we dont have
     EOropframeHeader_t *hdr_ptr = (EOropframeHeader_t*)packet;
     return(hdr_ptr->ageofframe);
 }
 
-
 void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime)
 {
-
     uint64_t curr_seqNum = getSeqNum(packet);
     uint64_t curr_ageOfFrame = getAgeOfFrame(packet);
     double curr_periodPkt;
@@ -229,7 +232,7 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
 
             if(curr_seqNum < (last_seqNum+1))
             {
-                yError()<< "REC PKTS not in order!!!!" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!!!!!!!" ;
+                yError()<< "REC PKTS not in order!!!!" << board << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
             }
             else
             {
@@ -239,7 +242,7 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
             currPeriodPktLost+= num_lost_pkts;
             totPktLost+= num_lost_pkts;
 
-            yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" <<board<< " seq num rec="<<curr_seqNum << " expected=" << last_seqNum+1<< "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
+            yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << board << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
         //2) check ageOfPkt
@@ -327,7 +330,6 @@ ACE_INET_Addr   ethResources::getRemoteAddress()
 bool ethResources::goToConfig(void)
 {
     yTrace() << info;
-//    EOnv tmp;
 
     // attiva il loop di controllo
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
@@ -347,7 +349,6 @@ bool ethResources::goToConfig(void)
 bool ethResources::goToRun(void)
 {
     yTrace() << info;
-//    EOnv tmp;
 
     // attiva il loop di controllo
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
@@ -379,10 +380,15 @@ bool ethResources::clearPerSigMsg(void)
     //get nvid
     eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
     //prepare data
-    ropsigcfgassign.array.head.capacity = NUMOFROPSIGCFG;
-    ropsigcfgassign.array.head.itemsize = sizeof(eOropSIGcfg_t);
-    ropsigcfgassign.array.head.size = 0;
-    ropsigcfgassign.cmmnd = ropsigcfg_cmd_clear;
+    //ropsigcfgassign.array.head.capacity = NUMOFROPSIGCFG;
+    //ropsigcfgassign.array.head.itemsize = sizeof(eOropSIGcfg_t);
+    //ropsigcfgassign.array.head.size = 0;
+    array = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign.array);    // it uses the memory ropsigcfgassign.array and resets the array
+    ropsigcfgassign.cmmnd       = ropsigcfg_cmd_clear;
+    ropsigcfgassign.plustime    = 0;
+    ropsigcfgassign.plussign    = 0;
+    ropsigcfgassign.filler01    = 0;
+    ropsigcfgassign.signature   = eo_rop_SIGNATUREdummy;
 
     //send set command
     if(!addSetMessage(protid_ropsigcfgassign, (uint8_t*) &ropsigcfgassign))
@@ -400,5 +406,6 @@ bool ethResources::isRunning(void)
 	return(isInRunningMode);
 }
 // eof
+
 
 

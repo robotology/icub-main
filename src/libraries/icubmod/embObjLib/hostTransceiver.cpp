@@ -579,17 +579,39 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
 //    *pEPhash_function = EPhash_function_ep2index;
 //}
 
+
+#define OLDMODE
+
+#ifdef OLDMODE
+#include "EOconstvector_hid.h"
+#endif
+
 uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP8_t ep)
 {
-    yTrace() << "board num=" << boardNum << " ep=" << ep;
-    if(ep < hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->size)
-    {
-        eOnvset_EPcfg_t *setcfg = (eOnvset_EPcfg_t *)hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->item_array_data;
-        return(setcfg[ep].protif->getvarsnumberof(boardNum-1, ep));
-    }
+/*  marco.accame on 10 apr 2014:
+    i had to modify it be cause it would not work in some cases (boards w/ only skin), because the ordering inside hosttxrxcfg.nvsetdevcfg->vectorof_epcfg 
+    is not guaranteed to be according to the ep value.
+    in boards of blue icub from 1 to 9 it works because the ep value also gives the index of the array.
+    but not in eb11,  where the eoprot_endpoint_skin (of value 3) is in position 1. we must use hosttxrxcfg.nvsetdevcfg->fptr_ep2indexofepcfg()
+    to compute the index ...  
+    much better using the eoprot_endpoint_numberofvariables_get() function instead.
+ */
 
-    yError() << "cfg size=" <<  hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->size << " ep=" << ep << " board num=" << boardNum;
-    return 0;
+#ifdef OLDMODE    
+    uint16_t epi = hosttxrxcfg.nvsetdevcfg->fptr_ep2indexofepcfg(ep);
+    if(EOK_uint16dummy == epi)
+    {
+        yError() << "invalid ep = " <<  ep << " for board num = " << boardNum;
+        return 0;    
+    }
+    
+
+    eOnvset_EPcfg_t *setcfg = (eOnvset_EPcfg_t *)hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->item_array_data;
+    return(setcfg[epi].protif->getvarsnumberof(boardNum-1, ep));
+
+#else
+    return(eoprot_endpoint_numberofvariables_get(protboardnumber, ep));
+#endif
 }
 
 uint32_t hostTransceiver::translate_NVid2index(int boardNum, eOprotID32_t protoid)

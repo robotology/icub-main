@@ -26,6 +26,7 @@
 #include <ethManager.h>
 #include <Debug.h>
 #include "EoAnalogSensors.h"
+#include "EOnv_hid.h"
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -214,7 +215,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str(), port);
+    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str());
     _fId.PC104ipAddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");

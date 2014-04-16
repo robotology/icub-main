@@ -17,6 +17,8 @@
 #include <ethManager.h>
 #include <FeatureInterface.h>
 
+#include "EOnv_hid.h"
+
 #ifdef _SETPOINT_TEST_
 #include "EOYtheSystem.h"
 #endif

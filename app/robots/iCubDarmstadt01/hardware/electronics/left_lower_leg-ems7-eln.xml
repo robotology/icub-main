@@ -3,12 +3,10 @@
 
 <params robot="iCubGenova04" build="1">
     <params file="hardware/electronics/pc104.xml" />
-
-   <group name="GENERAL"> 
-        <param name="CanAddress">     0x0E	</param>
-        <param name="Format">		8	</param>
-        <param name="Channels"> 	15	</param>
-        <param name="Period">		10	</param>
+    <group name="ETH">
+        <param name="IpAddress">	10.0.1.7	</param>
+        <param name="Ems">		    7		    </param>
+        <param name="CmdPort">		12345		</param>
+        <param name="SrvPort">		4444		</param>
     </group>
 </params>
-

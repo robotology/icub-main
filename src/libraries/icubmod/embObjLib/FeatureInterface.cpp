@@ -6,6 +6,7 @@
  */
 
 
+ 
 #include "FeatureInterface.h"
 #include "FeatureInterface_hid.h"
 
@@ -14,7 +15,7 @@
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
 
-#include "EoAnalogSensors.h"
+#include "EoProtocol.h"
 
 #ifdef _SETPOINT_TEST_
 #include <time.h>
@@ -82,12 +83,10 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
     return fakestdbool_true;
 }
 
-void *get_MChandler_fromEP(eOnvBRD_t boardnum, eOnvEP8_t ep)
+void *get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep)
 {
     void *h = NULL;
     h = _interface2ethManager->getHandle(boardnum, ep);
-//     FEAT_ID id = _interface2ethManager->getFeatInfoFromEP(ep);
-
     return h;
 }
 
@@ -95,7 +94,9 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
 {
     IiCubFeature *iAnalog;
 
-    eOas_arrayofupto12bytes_t *debug_tmp = (eOas_arrayofupto12bytes_t *) as_array;
+    // if the following is required ... include "EoAnalogSensors.h"
+    // eOas_arrayofupto12bytes_t *debug_tmp = (eOas_arrayofupto12bytes_t *) as_array;
+    
     // specie di view grezza, usare dynamic cast?
     embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
 
@@ -115,15 +116,14 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
     return fakestdbool_true;
 }
 
-fakestdbool_t MCmutex_post(void *p, uint32_t  prognum)
+fakestdbool_t MCmutex_post(void *p, uint32_t prognum)
 {
-    //epindex in realtà non serve.
     eoThreadEntry *th = NULL;
     embObjMotionControl *handler = (embObjMotionControl *) p;
     int threadId;
     eoThreadFifo *fuffy = handler->requestQueue->getFifo(prognum);
 
-    if( (threadId=fuffy->pop()) < 0)
+    if( (threadId = fuffy->pop()) < 0)
     {
         yError() << "Received an answer message nobody is waiting for (MCmutex_post)";
         return fakestdbool_false;
@@ -141,43 +141,25 @@ fakestdbool_t MCmutex_post(void *p, uint32_t  prognum)
 }
 
 
-uint8_t nvBoardNum2FeatIdBoardNum(eOnvBRD_t nvboardnum)
+FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum)
 {
+    if(eo_prot_BRDdummy == nvboardnum)
+    {
+        return(FEAT_boardnumber_dummy);
+    }
+    
     return(nvboardnum+1);
 }
 
-eOnvBRD_t featIdBoardNum2nvBoardNum(uint8_t fid_boardnum)
+eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
 {
+    if(FEAT_boardnumber_dummy == fid_boardnum)
+    {
+        return(eo_prot_BRDdummy);
+    }
+
     return(fid_boardnum-1);
 }
-//fakestdbool_t EP_NV_2_index(eOnvEP_t ep, eOnvID_t nvid, uint16_t *epindex, uint16_t *nvindex)
-//{
-//    // prendo la struttura che mi descrive la classe eoXXX n base all'EndPoint.
-//    FEAT_ID _fId = _interface2ethManager->getFeatInfoFromEP(ep);
-//    // prendo la hash function salvata in precedenza dentro la struttura.
-//    eOuint16_fp_uint16_t p = _fId.EPhash_function;
-//    // Ricavo l'ep index dalla funzione di hash
-//    *epindex = p(ep);
-//    // Prendo la descrizione dell'EndPoint in base all'indice (relativo alla singola EMS)
-//    eOnvscfg_EP_t  *EPcfg = eo_cfg_nvsEP_board_EPs_cfg_get(_fId.EPvector, *epindex);
-//    // Finalmente prendo l'indice della nv all'interno diu questo EndPoint
-//    *nvindex = eo_cfg_nvsEP_board_NVs_endpoint_Nvindex_get(EPcfg, nvid);
-//    // Ora ho gli indici che mi servono per accedere alla tabella dei thread
-//    return fakestdbool_true; // acemor added
-//}
-
-//vale servono???
-//void transceiver_wait(eOnvEP_t ep)
-//{
-//    embObjMotionControl *handler = (embObjMotionControl *) get_MChandler(ep);
-//    handler->res->transMutex.wait();
-//}
-//
-//void transceiver_post(eOnvEP_t ep)
-//{
-//    embObjMotionControl *handler = (embObjMotionControl *) get_MChandler_fromEP(ep);
-//    handler->res->transMutex.post();
-//}
 
 #ifdef _SETPOINT_TEST_
 //static void s_print_test_data(int jointNum, setpoint_test_data_t *test_data_ptr, uint64_t diff_ms)
@@ -323,7 +305,7 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
 ////            printf("******* LOST_PKT: IN CBK J_STATUS %s, n=%d received pos %d instead of %d\n", tmp->getFeat_id().name, jointNum, test_data_ptr->setpoint, tmp->j_debug_data[jointNum].pos);
 ////        }
 //
-//      return; //la scheda non ha più riceviuto set point
+//      return; //la scheda non ha piu' riceviuto set point
 //    }
 //    else
 //    {
@@ -355,5 +337,6 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
 #endif
 
 // eof
+
 
 

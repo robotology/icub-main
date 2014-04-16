@@ -4,19 +4,11 @@
  <!-- Initialization file for EMS 2 - Left Lower Arm, 12 dof plus skin-->
 
 <devices robot="iCubGenova04" build="1">
-      <!--  Skin -->
   <device name="left_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />
       <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
       <!--<param name="skinCanIds_canPort1"> </param> --> <!--Attention: insert can addres in decreasing order -->
       <param name="SkinCanIds_canPort2"> 14 13 12 11 10 9 8 7 </param> <!--Attention: insert can addres in decreasing order -->
   </device>
-
-   <!--  mais --> 
-  <device name="left_hand_mais" type="embObjAnalogSensor">
-      <params file="general.xml" />
-      <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
-      <params file="hardware/MAIS/left_lower_arm-ems2-mais.xml" />
-  </device> 
 </devices>
   

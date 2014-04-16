@@ -20,26 +20,9 @@
 #ifndef _EOCFG_NVSEP_MC_OVERRIDDEN_H_
 #define _EOCFG_NVSEP_MC_OVERRIDDEN_H_
 
-// this file is to be used by the PC104, not by the EMS ...
+// this file is not used anymore
 
-
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidposition
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__impedance
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__minpositionofjoint
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__maxpositionofjoint
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__controlmode
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jconfig__pidtorque
-
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jstatus__basic
-
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Jxx_jcmmnds__setpoint
-
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mconfig__maxcurrentofmotor
-
-#define OVERRIDE_eo_cfg_nvsEP_mc_hid_UPDT_Mxx_mstatus__basic
+#error --> must not use it
 
 
 

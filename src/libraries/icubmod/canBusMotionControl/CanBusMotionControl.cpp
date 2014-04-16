@@ -5759,13 +5759,15 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);
 
-    if (fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+    if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
         return _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
     { 
-        fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+        fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j,
+        _axisPositionDirectHelper->posE2A(ref, j),
+        _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
         //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,ref);
         //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
         return false;
@@ -5779,13 +5781,15 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
 
     for(int j=0; j< n_joint; j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
         }
         else
         {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
+            _axisPositionDirectHelper->posE2A(refs[j], j),
+            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
             //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(joints[j],r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
             //_writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(saturated_cmd));
             ret = false;
@@ -5801,13 +5805,15 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        if (fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j))
+        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
         {
             ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(refs[j]));
         }
         else
         {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d \n", canDevName.c_str(), r._networkN, j);
+            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
+            _axisPositionDirectHelper->posE2A(refs[j], j),
+            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
             //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
             //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
             ret = false;
