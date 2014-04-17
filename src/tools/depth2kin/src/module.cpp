@@ -707,7 +707,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_edge=abs(rf.check("roi_edge",Value(100)).asInt());
-    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
+    block_eyes=fabs(rf.check("block_eyes",Value(10.0)).asDouble());
     exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
 
     motorExplorationAsyncStop=false;
@@ -1048,7 +1048,7 @@ bool CalibModule::log(const string &type)
     if ((type=="calibrator") && !calibrated)
         return false;
 
-    mutex.lock(); 
+    mutex.lock();
     deque<Vector> p_depth, p_kin;
     calibrator->getPoints(p_depth,p_kin);
 
