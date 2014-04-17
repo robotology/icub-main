@@ -5788,8 +5788,8 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
         else
         {
             fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
-            _axisPositionDirectHelper->posE2A(refs[j], j),
-            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
+            _axisPositionDirectHelper->posE2A(refs[j], joints[j]),
+            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, joints[j]));
             //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(joints[j],r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
             //_writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(saturated_cmd));
             ret = false;
