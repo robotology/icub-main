@@ -2,6 +2,15 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
+
+if(icub_firmware_shared_embobj_FOUND)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
+        message("Deleting old embObj folder")
+        file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/embObj)
+    endif()
+    return()
+endif()
+
 find_package(Subversion)
 if(NOT Subversion_FOUND)
     if(WIN32)

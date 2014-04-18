@@ -2,7 +2,11 @@
 # This should be included by any CMakeLists.txt aiming to compile
 # source file that needs to use the protocol.
 
-set(EO_BASE_DIR         ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/embObj/)
+if(icub_firmware_shared_embobj_FOUND)
+    set(EO_BASE_DIR         ${icub_firmware_shared_embobj_INCLUDE_DIR})
+else()
+    set(EO_BASE_DIR         ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/embObj/)
+endif()
 
 set(CORE_FOLDER  		${EO_BASE_DIR}/embobj/core/core)
 set(CORE_YEE            ${EO_BASE_DIR}/embobj/core/exec/yarp/)

@@ -27,6 +27,8 @@ endmacro (checkandset_dependency)
 message(STATUS "Detecting required libraries")
 message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
+find_package(icub_firmware_shared COMPONENTS canProtocolLib embobj QUIET)
+
 find_package(GSL)
 #find_package(GtkMM)
 find_package(GLUT)
@@ -113,6 +115,7 @@ endif()
 
 message(STATUS "I have found the following libraries:")
 
+checkandset_dependency(icub_firmware_shared)
 checkandset_dependency(GSL)
 checkandset_dependency(GLUT)
 checkandset_dependency(OpenGL)
