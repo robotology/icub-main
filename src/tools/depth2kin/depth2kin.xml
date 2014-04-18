@@ -4,7 +4,7 @@
 <module>
   <name>depth2kin</name>
   <doxygen-group>icub_tools</doxygen-group>
-  <description>Stereo-Kinematics Calibration</description>
+  <description>Stereo-Kinematics Calibration.</description>
   <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
   <version>1.0</version>
   
@@ -15,21 +15,21 @@
   </description-long>
  
   <arguments>    
-    <param default="depth2kin" desc="select the current context">context</param>
-    <param default="config.ini" desc="configuration file name">from</param>
-    <param default="calibration_data.ini" desc="file containing the calibration data">calibrationFile</param>
-    <param default="dept2kin" desc="module's name; all the open ports will be tagged with the prefix /name">name</param>
-    <param default="icub" desc="name of the robot to connect to">robot</param>
-    <param default="se3+scale" desc="type of the expert selected at start-up">type</param>
+    <param default="depth2kin" desc="select the current context.">context</param>
+    <param default="config.ini" desc="configuration file name.">from</param>
+    <param default="calibration_data.ini" desc="file containing the calibration data.">calibrationFile</param>
+    <param default="dept2kin" desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
+    <param default="icub" desc="name of the robot to connect to.">robot</param>
+    <param default="se3+scale" desc="type of the expert selected at start-up.">type</param>
     <param default="0.25" desc="maximum distance in meters between the depth measurements and the
-                                kinematic predictions to accept corresponding input-output data pairs">max_dist</param>
+                                kinematic predictions to accept corresponding input-output data pairs.">max_dist</param>
     <param default="100" desc="the side in pixels of the region-of-interest (roi window) centered around the
-                               kinematic prediction of the fingertip used to segment the hand">roi_side</param>
+                               kinematic prediction of the fingertip used to segment the hand.">roi_side</param>
     <param default="10.0" desc="the vergence in degrees for blocking the eyes during the exploration,
-                                if requested by the user">block_eyes</param>
+                                if requested by the user.">block_eyes</param>
     <param default="0.5" desc="timeout in seconds applied soon afterwards the reaching of the point
                                during the exploration and right before the acquisition of the
-                               input-output data pair">exploration_wait</param>
+                               input-output data pair.">exploration_wait</param>
   </arguments>
  
   <authors>
@@ -42,16 +42,16 @@
       <port carrier="tcp">/depth2kin/depth:i</port>
       <required>no</required>
       <priority>no</priority>
-      <description>Feed depth to depth2kin using this port</description>
+      <description>feed depth to depth2kin using this port.</description>
     </input>
 
     <output>
       <type>Image</type>
       <port carrier="tcp">/depth2kin/depth:o</port>
       <description>
-        Stream out the depth image as result of the hand segmentation
+        stream out the depth image as result of the hand segmentation
         as well as useful information about actual measurement of the
-        fingertip (red dot) and its kinematic prediction (green dot)
+        fingertip (red dot) and its kinematic prediction (green dot).
       </description>
     </output>
 
@@ -61,8 +61,8 @@
       <required>no</required>
       <priority>no</priority>
       <description>
-        Receive two int representing the x-y coordinates of the pixel
-        in the left image plane where to execute a touch action
+        receive two integers representing the x-y coordinates of the pixel
+        in the left image plane where to execute a touch action.
       </description>
     </input>
   </data>
@@ -72,7 +72,7 @@
       <type>depth2kin_IDL</type>
       <idl>depth2kin.thrift</idl>
       <port>/depth2kin/rpc</port>
-      <description>Command port</description>
+      <description>service port</description>
     </server>
   </services>
  
