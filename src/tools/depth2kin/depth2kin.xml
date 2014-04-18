@@ -23,8 +23,8 @@
     <param default="se3+scale" desc="type of the expert selected at start-up">type</param>
     <param default="0.25" desc="maximum distance in meters between the depth measurements and the
                                 kinematic predictions to accept corresponding input-output data pairs">max_dist</param>
-    <param default="100" desc="the side in pixels of the ROI window centered around the kinematic
-                               prediction of the fingertip used to segment the hand">roi_side</param>
+    <param default="100" desc="the side in pixels of the region-of-interest (roi window) centered around the
+                               kinematic prediction of the fingertip used to segment the hand">roi_side</param>
     <param default="10.0" desc="the vergence in degrees for blocking the eyes during the exploration,
                                 if requested by the user">block_eyes</param>
     <param default="0.5" desc="timeout in seconds applied soon afterwards the reaching of the point
@@ -39,7 +39,7 @@
   <data>
     <input>
       <type>Image</type>
-      <port>/depth2kin/depth:i</port>
+      <port carrier="tcp">/depth2kin/depth:i</port>
       <required>no</required>
       <priority>no</priority>
       <description>Feed depth to depth2kin using this port</description>
@@ -47,7 +47,7 @@
 
     <output>
       <type>Image</type>
-      <port>/depth2kin/depth:o</port>
+      <port carrier="tcp">/depth2kin/depth:o</port>
       <description>
         Stream out the depth image as result of the hand segmentation
         as well as useful information about actual measurement of the
@@ -57,7 +57,7 @@
 
     <input>
       <type>yarp::os::Bottle</type>
-      <port>/depth2kin/touch:i</port>
+      <port carrier="tcp">/depth2kin/touch:i</port>
       <required>no</required>
       <priority>no</priority>
       <description>
