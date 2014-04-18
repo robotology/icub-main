@@ -11,6 +11,19 @@ if(icub_firmware_shared_embobj_FOUND)
     return()
 endif()
 
+
+message(WARNING "
+  embObj library can now be found in the icub-firmware-shared package that
+  can be downloaded from here:
+  .
+       https://github.com/robotology/icub-firmware-shared
+  .
+  In order not to break existing build, it will now be downloaded and built
+  automatically, but this will be disabled in the future, therefore you
+  should install it as soon as possible.
+")
+return()
+
 find_package(Subversion)
 if(NOT Subversion_FOUND)
     if(WIN32)
