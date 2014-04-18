@@ -17,11 +17,7 @@ set(PROT_FOLDER         ${EO_BASE_DIR}/embobj/plus/comm-v2/)
 
 SET(DEBUG_FOLDER        ${EO_BASE_DIR}/embobj/plus/utils)
 
-if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
-    set(ICUB_INTERFACE_CORE_FOLDER	${CMAKE_SOURCE_DIR}/src/core/iCubInterface-branch/)
-else()
-    set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface/)
-endif()
+set(ICUB_INTERFACE_CORE_FOLDER  ${CMAKE_SOURCE_DIR}/src/core/iCubInterface/)
 
 
 set(PATH_TO_CALLBACK ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/)
