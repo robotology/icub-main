@@ -14,9 +14,15 @@
    </description-long>
 
    <arguments>
-   <param default="dept2kin" desc="name of the module">name</param>
-   <param default="" desc="configuration file name">from</param>
-   <param default="" desc="select the current context">context</param>
+   <param default="dept2kin" desc="module's name; all the open ports will be tagged with the prefix /name">name</param>
+   <param default="depth2kin" desc="select the current context">context</param>
+   <param default="config.ini" desc="configuration file name">from</param>
+   <param default="calibration_data.ini" desc="file containing the calibration data">calibrationFile</param>
+   <param default="icub" desc="robot name to connect to">robot</param>
+   <param default="se3+scale" desc="expert type selected at start-up">type</param>
+   <param default="0.25" desc="maximum distance in meters between the depth measurement and the kinematic prediction
+                               to accept input-output data pair">max_dist</param>
+   <param default="100" desc="">roi_side</param>
    </arguments>
 
    <authors>

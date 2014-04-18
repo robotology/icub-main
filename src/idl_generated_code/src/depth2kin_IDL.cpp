@@ -190,15 +190,15 @@ public:
   }
 };
 
-class depth2kin_IDL_setRoiEdge : public yarp::os::Portable {
+class depth2kin_IDL_setRoi : public yarp::os::Portable {
 public:
-  int32_t roi_edge;
+  int32_t side;
   bool _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
     if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setRoiEdge",1,1)) return false;
-    if (!writer.writeI32(roi_edge)) return false;
+    if (!writer.writeTag("setRoi",1,1)) return false;
+    if (!writer.writeI32(side)) return false;
     return true;
   }
   virtual bool read(yarp::os::ConnectionReader& connection) {
@@ -212,13 +212,13 @@ public:
   }
 };
 
-class depth2kin_IDL_getRoiEdge : public yarp::os::Portable {
+class depth2kin_IDL_getRoi : public yarp::os::Portable {
 public:
   int32_t _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
     if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getRoiEdge",1,1)) return false;
+    if (!writer.writeTag("getRoi",1,1)) return false;
     return true;
   }
   virtual bool read(yarp::os::ConnectionReader& connection) {
@@ -851,21 +851,21 @@ double depth2kin_IDL::getMaxDist() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-bool depth2kin_IDL::setRoiEdge(const int32_t roi_edge) {
+bool depth2kin_IDL::setRoi(const int32_t side) {
   bool _return = false;
-  depth2kin_IDL_setRoiEdge helper;
-  helper.roi_edge = roi_edge;
+  depth2kin_IDL_setRoi helper;
+  helper.side = side;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setRoiEdge(const int32_t roi_edge)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setRoi(const int32_t side)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-int32_t depth2kin_IDL::getRoiEdge() {
+int32_t depth2kin_IDL::getRoi() {
   int32_t _return = 0;
-  depth2kin_IDL_getRoiEdge helper;
+  depth2kin_IDL_getRoi helper;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDL::getRoiEdge()");
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDL::getRoi()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1231,14 +1231,14 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "setRoiEdge") {
-      int32_t roi_edge;
-      if (!reader.readI32(roi_edge)) {
+    if (tag == "setRoi") {
+      int32_t side;
+      if (!reader.readI32(side)) {
         reader.fail();
         return false;
       }
       bool _return;
-      _return = setRoiEdge(roi_edge);
+      _return = setRoi(side);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1247,9 +1247,9 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "getRoiEdge") {
+    if (tag == "getRoi") {
       int32_t _return;
-      _return = getRoiEdge();
+      _return = getRoi();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1698,8 +1698,8 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     helpString.push_back("stop");
     helpString.push_back("setMaxDist");
     helpString.push_back("getMaxDist");
-    helpString.push_back("setRoiEdge");
-    helpString.push_back("getRoiEdge");
+    helpString.push_back("setRoi");
+    helpString.push_back("getRoi");
     helpString.push_back("setBlockEyes");
     helpString.push_back("getBlockEyes");
     helpString.push_back("blockEyes");
@@ -1786,18 +1786,18 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("kinematic prediction to enable data collection. ");
       helpString.push_back("@return the distance. ");
     }
-    if (functionName=="setRoiEdge") {
-      helpString.push_back("bool setRoiEdge(const int32_t roi_edge) ");
-      helpString.push_back("Set the edge of the squared window used to filter data ");
+    if (functionName=="setRoi") {
+      helpString.push_back("bool setRoi(const int32_t side) ");
+      helpString.push_back("Set the side of the squared window used to filter data ");
       helpString.push_back("collection in the image plane. ");
-      helpString.push_back("@param roi_edge the length of the window edge. ");
+      helpString.push_back("@param side the length of the window side. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
-    if (functionName=="getRoiEdge") {
-      helpString.push_back("int32_t getRoiEdge() ");
-      helpString.push_back("Return the edge of the squared window used to filter data ");
+    if (functionName=="getRoi") {
+      helpString.push_back("int32_t getRoi() ");
+      helpString.push_back("Return the side of the squared window used to filter data ");
       helpString.push_back("collection in the image plane. ");
-      helpString.push_back("@return the window edge. ");
+      helpString.push_back("@return the window side. ");
     }
     if (functionName=="setBlockEyes") {
       helpString.push_back("bool setBlockEyes(const double block_eyes) ");
