@@ -979,12 +979,18 @@ bool CalibModule::clearExperts()
 /************************************************************************/
 bool CalibModule::load()
 {
-    mutex.lock();
     string fileName=rf->findFile("calibrationFile").c_str();
-    Property data; data.fromConfigFile(fileName.c_str());
+    if (fileName.empty())
+    {
+        printf("calibration file not found\n");
+        return false;
+    }
+
+    Property data; data.fromConfigFile(fileName.c_str()); 
     Bottle b; b.read(data);
 
-    printf("loading models from file: %s\n",fileName.c_str());
+    mutex.lock();
+    printf("loading experts from file: %s\n",fileName.c_str());
     for (int i=0; i<b.size(); i++)
         factory(b.get(i));
     mutex.unlock();
@@ -1004,7 +1010,7 @@ bool CalibModule::save()
         string fileName=rf->find("calibrationFile").asString().c_str();
         fileName=contextPath+"/"+fileName;
         
-        printf("saving models into file: %s\n",fileName.c_str());
+        printf("saving experts into file: %s\n",fileName.c_str());
         fout.open(fileName.c_str());
         
         if (fout.is_open())
