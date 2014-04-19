@@ -231,7 +231,7 @@ void CanBusSkin::run() {
                 << std::nouppercase << std::noshowbase << std::dec << " Length (" << len << "): ";
             cout << "Content: " << std::uppercase << std::showbase << std::hex;
             for (int k = 0; k < len; ++k) {
-                cout << (int) msg.getData()[k] << "\t";
+                cout << (int) msg.getData()[k] << " ";
             }
             cout << "\n" << std::nouppercase << std::noshowbase << std::dec;
 #endif
@@ -282,18 +282,20 @@ void CanBusSkin::run() {
                                 }
 
                                 // Handle other errors
-//                                if (fullMsg & SkinErrorCode::ErrorReading12C) {
-//                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): Cannot read from this sensor. \n"; 
-//                                } else if (fullMsg & SkinErrorCode::ErrorACK4C) {
-//                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): This sensor does not respond to the initialisation message (0x4C). \n"; 
-//                                }
+                                if (fullMsg & SkinErrorCode::ErrorReading12C) {
+                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): Cannot read from this sensor. \n"; 
+                                } else if (fullMsg & SkinErrorCode::ErrorACK4C) {
+                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): This sensor does not respond to the initialisation message (0x4C). \n"; 
+                                }
                             } else {
 #ifndef NODEBUG
                                 cout << "DEBUG: CanBusSkin: Skin is working fine. \n";
 #endif
                             }
                         } else {
+#if 0
                             cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
+#endif
                         }
                     }
                 }
