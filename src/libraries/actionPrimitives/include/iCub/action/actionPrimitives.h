@@ -293,8 +293,9 @@ protected:
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
 
     virtual int  printMessage(const char *format, ...);
-    virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,
-                                const int j);
+    virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,const int j);
+    virtual void disableTorsoDof();
+    virtual void enableTorsoDof();
     virtual bool configHandSeq(yarp::os::Property &opt);
     virtual bool configGraspModel(yarp::os::Property &opt);
     virtual bool _pushAction(const bool execArm, const yarp::sig::Vector &x,
@@ -760,28 +761,6 @@ public:
     *       properly notified.
     */
     virtual bool setTorsoJoints(const yarp::sig::Vector &torso);
-
-    /**
-    * Disable the controlled joints of torso as specified by open 
-    * and setTorsoJoints methods. 
-    * @return true/false on success/fail. 
-    *  
-    * @note Unlike the arm, the torso is a part that can be shared, 
-    *       therefore the enabling/disabling of its joints must be
-    *       properly notified.
-    */
-    virtual void disableTorsoDof();
-
-    /**
-    * Enable the controlled joints of torso as specified by open and
-    * setTorsoJoints methods. 
-    * @return true/false on success/fail. 
-    *  
-    * @note Unlike the arm, the torso is a part that can be shared, 
-    *       therefore the enabling/disabling of its joints must be
-    *       properly notified.
-    */
-    virtual void enableTorsoDof();
 
     /**
     * Get the current arm pose.

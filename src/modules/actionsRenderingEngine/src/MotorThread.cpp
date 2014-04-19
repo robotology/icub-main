@@ -2400,8 +2400,6 @@ bool MotorThread::calibTable(Bottle &options)
     if(isHolding(options))
         action[arm]->pushAction("open_hand");
 
-    action[arm]->enableTorsoDof();
-
     wbdRecalibration();
     action[arm]->enableContactDetection();
 
@@ -2518,7 +2516,6 @@ bool MotorThread::avoidTable(bool avoid)
         if(action[arm]!=NULL)
         {
             action[arm]->setTrackingMode(false);
-            action[arm]->disableTorsoDof();
 
             Vector x,o;
             action[arm]->getPose(x,o);
@@ -3004,11 +3001,8 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
 
     //if the impedance control is available use it otherwise employ adimttance control
     dragger.using_impedance=setTorque(true,dragger.arm);
-    if(!dragger.using_impedance)
-    {
+    if (!dragger.using_impedance)
         fprintf(stdout,"!!! Impedance control not available. Using admittance control!\n");
-        action[dragger.arm]->enableTorsoDof();
-    }
 
     Vector x(3),o(4);
     dragger.ctrl->getPose(x,o);
@@ -3065,8 +3059,6 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
     Time::delay(0.1);
 
     dragger.ctrl=NULL;
-
-    action[dragger.arm]->disableTorsoDof();
 
     //reset the previous control mode
     setTorque(false);

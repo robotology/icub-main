@@ -399,8 +399,7 @@ int ActionPrimitives::printMessage(const char *format, ...)
 
 
 /************************************************************************/
-bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
-                                      const int j)
+bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const int j)
 {
     if (opt.check(key.c_str()))
     {

@@ -22,7 +22,7 @@
 
 // this file is to be used by the PC104, but not anymore
 
-#if 0
+#if 1
 
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config
 

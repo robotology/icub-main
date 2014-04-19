@@ -84,7 +84,7 @@ protected:
     double max_dist;
     double block_eyes;
     double exploration_wait;
-    int    roi_edge;
+    int    roi_side;
     int    nEncs;
     int    test;
     bool   enabled;
@@ -148,8 +148,8 @@ public:
     bool stop();
     bool setMaxDist(const double max_dist);
     double getMaxDist();
-    bool setRoiEdge(const int roi_edge);
-    int getRoiEdge();
+    bool setRoi(const int side);
+    int getRoi();
     bool setBlockEyes(const double block_eyes);
     double getBlockEyes();
     bool blockEyes();

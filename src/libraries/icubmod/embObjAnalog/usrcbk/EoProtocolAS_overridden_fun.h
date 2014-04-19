@@ -23,7 +23,7 @@
 
 // this file is to be used by the PC104, but not anymore
 
-#if 0
+#if 1
 	#define OVERRIDE_eoprot_fun_UPDT_as_strain_status_calibratedvalues
 	#define OVERRIDE_eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
 	#define OVERRIDE_eoprot_fun_UPDT_as_mais_status_the15values

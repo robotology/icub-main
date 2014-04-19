@@ -182,10 +182,10 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     }
 
     // saturate the top-left and bottom-right corners
-    int roi_edge2=roi_edge>>1;
+    int roi_side2=roi_side>>1;
     cv::Point ct((int)c[0],(int)c[1]);
-    cv::Point tl((int)(c[0]-roi_edge2),(int)(c[1]-roi_edge2));
-    cv::Point br((int)(c[0]+roi_edge2),(int)(c[1]+roi_edge2));
+    cv::Point tl((int)(c[0]-roi_side2),(int)(c[1]-roi_side2));
+    cv::Point br((int)(c[0]+roi_side2),(int)(c[1]+roi_side2));
     tl.x=std::max(1,tl.x); tl.x=std::min(tl.x,imgIn.width()-1);
     tl.y=std::max(1,tl.y); tl.y=std::min(tl.y,imgIn.height()-1);
     br.x=std::max(1,br.x); br.x=std::min(br.x,imgIn.width()-1);
@@ -706,8 +706,8 @@ bool CalibModule::configure(ResourceFinder &rf)
     string type=rf.check("type",Value("se3+scale")).asString().c_str();
     test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
-    roi_edge=abs(rf.check("roi_edge",Value(100)).asInt());
-    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
+    roi_side=abs(rf.check("roi_side",Value(100)).asInt());
+    block_eyes=fabs(rf.check("block_eyes",Value(10.0)).asDouble());
     exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
 
     motorExplorationAsyncStop=false;
@@ -979,12 +979,18 @@ bool CalibModule::clearExperts()
 /************************************************************************/
 bool CalibModule::load()
 {
-    mutex.lock();
     string fileName=rf->findFile("calibrationFile").c_str();
-    Property data; data.fromConfigFile(fileName.c_str());
+    if (fileName.empty())
+    {
+        printf("calibration file not found\n");
+        return false;
+    }
+
+    Property data; data.fromConfigFile(fileName.c_str()); 
     Bottle b; b.read(data);
 
-    printf("loading models from file: %s\n",fileName.c_str());
+    mutex.lock();
+    printf("loading experts from file: %s\n",fileName.c_str());
     for (int i=0; i<b.size(); i++)
         factory(b.get(i));
     mutex.unlock();
@@ -1004,7 +1010,7 @@ bool CalibModule::save()
         string fileName=rf->find("calibrationFile").asString().c_str();
         fileName=contextPath+"/"+fileName;
         
-        printf("saving models into file: %s\n",fileName.c_str());
+        printf("saving experts into file: %s\n",fileName.c_str());
         fout.open(fileName.c_str());
         
         if (fout.is_open())
@@ -1048,7 +1054,7 @@ bool CalibModule::log(const string &type)
     if ((type=="calibrator") && !calibrated)
         return false;
 
-    mutex.lock(); 
+    mutex.lock();
     deque<Vector> p_depth, p_kin;
     calibrator->getPoints(p_depth,p_kin);
 
@@ -1129,17 +1135,17 @@ double CalibModule::getMaxDist()
 
 
 /************************************************************************/
-bool CalibModule::setRoiEdge(const int roi_edge)
+bool CalibModule::setRoi(const int side)
 {
-    this->roi_edge=abs(roi_edge);
+    this->roi_side=abs(side);
     return true;
 }
 
 
 /************************************************************************/
-int CalibModule::getRoiEdge()
+int CalibModule::getRoi()
 {
-    return roi_edge;
+    return roi_side;
 }
 
 
