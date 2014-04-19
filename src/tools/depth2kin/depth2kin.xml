@@ -11,7 +11,9 @@
   <description-long>
     This module implements the calibration procedure aimed to build a map
     between the 3D information retrieved by means of stereo vision and the
-    kinematics used by the cartesian interface to perform reaching actions.
+    kinematics used by the cartesian interface to perform reaching actions. \n
+    To find out detailed instructions on how to run the calibration, visit
+    the \ref depth2kinApp "application page".
   </description-long>
  
   <arguments>    
