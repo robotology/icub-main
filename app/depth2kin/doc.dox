@@ -22,6 +22,7 @@ In order to run the application, the robot must be running with the cartesian an
 \author Ugo Pattacini
 
 Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
+
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \sa depth2kin
