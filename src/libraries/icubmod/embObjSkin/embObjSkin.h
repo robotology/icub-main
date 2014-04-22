@@ -64,11 +64,9 @@ protected:
     bool            initted;
     Semaphore       mutex;
     //std::vector < std::vector <int>  >  cardIdPerPatch;
-
+    int             totalCardsNum;
     std::vector <int> patchIdList;
     std::vector<SkinPatchInfo> patchInfoList;
-
-    int             totalCardsNum;
     size_t          sensorsNum;
     Vector          data;
     uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.

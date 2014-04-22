@@ -21,6 +21,7 @@
 #include "EoSkin.h"
 #include "canProtocolLib/iCubCanProtocol.h"
 
+
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
 
