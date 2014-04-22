@@ -50,7 +50,7 @@ protected:
 //    yarp::dev::IDebugInterface       *iDbg_rpcHandler;
 //    yarp::dev::IPositionControl      *iPos_rpcHandler;
     int controlledJoints;
-    yarp::sig::Vector vect;
+    double *tmpDoubleArray;
 
     yarp::os::Stamp lastRpcStamp;
     yarp::os::Semaphore mutex;
