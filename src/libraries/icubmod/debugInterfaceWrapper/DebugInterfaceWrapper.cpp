@@ -37,6 +37,7 @@ DriverCreator *createDebugInterfaceWrapper()
 
 DebugInterfaceWrapper::DebugInterfaceWrapper() : rpcMsgHandler(this)
 {
+    subDeviceOwned = NULL;
     controlledJoints = 0;
     _verbose = false;
 }
@@ -70,8 +71,6 @@ bool DebugInterfaceWrapper::open(Searchable& config)
 
     std::string rootName = prop.check("rootName",Value("/"), "starting '/' if needed.").asString().c_str();
     partName = prop.check("name",Value("controlboard"), "prefix for port names").asString().c_str();
-
-    // cout << " rootName " << rootName << " partName " << partName;
 
     rootName+= (partName);
 
@@ -321,6 +320,11 @@ bool DebugInterfaceWrapper::close()
 {
     // close the port connection here!
     rpc_p.close();
+    if(subDeviceOwned != NULL)
+    {
+        delete subDeviceOwned;
+        subDeviceOwned = NULL;
+    }
     return true;
 }
 
@@ -342,11 +346,7 @@ bool DebugInterfaceWrapper::getParameter(int j, unsigned int type, double *t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getParameter(subJoint, type, t);
-    }
-    return false;
+    return p->iDbg_subDev->getParameter(subJoint, type, t);
 }
 
 bool DebugInterfaceWrapper::setParameter(int j, unsigned int type, double t)
@@ -358,11 +358,7 @@ bool DebugInterfaceWrapper::setParameter(int j, unsigned int type, double t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->setParameter(subJoint, type, t);
-    }
-    return false;
+    return p->iDbg_subDev->setParameter(subJoint, type, t);
 }
 
 bool DebugInterfaceWrapper::getDebugParameter(int j, unsigned int index, double *t)
@@ -374,11 +370,7 @@ bool DebugInterfaceWrapper::getDebugParameter(int j, unsigned int index, double 
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getDebugParameter(subJoint, index, t);
-    }
-    return false;
+    return p->iDbg_subDev->getDebugParameter(subJoint, index, t);
 }
 
 bool DebugInterfaceWrapper::getDebugReferencePosition(int j, double *t)
@@ -390,11 +382,7 @@ bool DebugInterfaceWrapper::getDebugReferencePosition(int j, double *t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getDebugReferencePosition(subJoint, t);
-    }
-    return false;
+    return p->iDbg_subDev->getDebugReferencePosition(subJoint, t);
 }
 
 bool DebugInterfaceWrapper::getRotorPosition(int j, double *t)
@@ -406,29 +394,28 @@ bool DebugInterfaceWrapper::getRotorPosition(int j, double *t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getRotorPosition(subJoint, t);
-    }
-    return false;
+    return p->iDbg_subDev->getRotorPosition(subJoint, t);
 }
 
 bool DebugInterfaceWrapper::getRotorPositions(double *t)
 {
-    return false;
-    /*
-    int subIndex = device.lut[j].deviceEntry;
-    int subJoint = device.lut[j].deviceJoint;
+    bool ret=true;
 
-        SubDevice *p=device.getSubdevice(subIndex);
+    for(int j=0; j<controlledJoints; j++)
+    {
+        int subIndex = device.lut[j].deviceEntry;
+        int subJoint = device.lut[j].deviceJoint;
+
+        SubDevice *p = device.getSubdevice(subIndex);
         if (!p)
             return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-        {
-            return p->iDbg_subDev->getRotorPosition(subJoint, t);
-        }
-        return false;*/
+        ret = ret && p->iDbg_subDev->getRotorPosition(subJoint, &t[j]);
+
+        if(!ret)
+            std::cout << "getRotorPosition returned error for joint " << j << std::endl;
+    }
+    return ret;
 }
 
 bool DebugInterfaceWrapper::getRotorSpeed(int j, double *t)
@@ -440,16 +427,29 @@ bool DebugInterfaceWrapper::getRotorSpeed(int j, double *t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getRotorSpeed(subJoint, t);
-    }
-    return false;
+    return p->iDbg_subDev->getRotorSpeed(subJoint, t);
 }
 
 bool DebugInterfaceWrapper::getRotorSpeeds(double *t)
 {
-    return false;
+    bool ret=true;
+    std::cout << " \n\nDebugInterfaceWrapper::getRotorSpeeds tutti i giunti " << std::endl;
+
+    for(int j=0; j<controlledJoints; j++)
+    {
+        int subIndex = device.lut[j].deviceEntry;
+        int subJoint = device.lut[j].deviceJoint;
+
+        SubDevice *p = device.getSubdevice(subIndex);
+        if (!p)
+            return false;
+
+        ret = ret && p->iDbg_subDev->getRotorSpeed(subJoint, &t[j]);
+
+        if(!ret)
+            std::cout << "getRotorSpeeds returned error for joint " << j << std::endl;
+    }
+    return ret;
 }
 
 bool DebugInterfaceWrapper::getRotorAcceleration(int j, double *t)
@@ -461,11 +461,7 @@ bool DebugInterfaceWrapper::getRotorAcceleration(int j, double *t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getRotorAcceleration(subJoint, t);
-    }
-    return false;
+    return p->iDbg_subDev->getRotorAcceleration(subJoint, t);
 }
 
 bool DebugInterfaceWrapper::getRotorAccelerations(double *t)
@@ -482,29 +478,25 @@ bool DebugInterfaceWrapper::getJointPosition(int j, double *t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->getJointPosition(subJoint, t);
-    }
-    return false;
+    return p->iDbg_subDev->getJointPosition(subJoint, t);
 }
 
 bool DebugInterfaceWrapper::getJointPositions(double *t)
 {
-    return false;
-    /*
-    int subIndex = device.lut[j].deviceEntry;
-    int subJoint = device.lut[j].deviceJoint;
+    bool ret=true;
 
-        SubDevice *p=device.getSubdevice(subIndex);
+    for(int j=0; j<controlledJoints; j++)
+    {
+        int subIndex = device.lut[j].deviceEntry;
+        int subJoint = device.lut[j].deviceJoint;
+
+        SubDevice *p = device.getSubdevice(subIndex);
         if (!p)
             return false;
 
-        if (p->iDbg_subDev)
-        {
-            return p->iDbg_subDev->getJointPosition(subJoint, t);
-        }
-        return false;*/
+        ret = ret && p->iDbg_subDev->getJointPosition(subJoint, &t[j]);
+    }
+    return ret;
 }
 
 bool DebugInterfaceWrapper::setDebugParameter(int j, unsigned int index, double t)
@@ -516,11 +508,7 @@ bool DebugInterfaceWrapper::setDebugParameter(int j, unsigned int index, double 
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->setDebugParameter(subJoint, index, t);
-    }
-    return false;
+    return p->iDbg_subDev->setDebugParameter(subJoint, index, t);
 }
 
 bool DebugInterfaceWrapper::setDebugReferencePosition(int j, double t)
@@ -532,9 +520,5 @@ bool DebugInterfaceWrapper::setDebugReferencePosition(int j, double t)
     if (!p)
         return false;
 
-//    if (p->iDbg_subDev)  //if iDbg is not present I should not be here!!
-    {
-        return p->iDbg_subDev->setDebugReferencePosition(subJoint, t);
-    }
-    return false;
+    return p->iDbg_subDev->setDebugReferencePosition(subJoint, t);
 }

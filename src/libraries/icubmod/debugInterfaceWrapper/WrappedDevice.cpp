@@ -103,7 +103,11 @@ bool SubDevice::attach(yarp::dev::PolyDriver *device, const std::string & key)
     subdevice->view(iPos_subDev);
 
     if (iDbg_subDev == 0)
-        cerr<< "--> Warning iDebug not valid interface\n";
+    {
+        cerr << "--> Warning iDebug not valid interface\n";
+        detach();
+        return false;
+    }
 
     int deviceJoints=0;
 
