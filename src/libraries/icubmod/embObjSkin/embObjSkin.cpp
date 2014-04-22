@@ -19,10 +19,7 @@
 #include <embObjSkin.h>
 
 #include "EoSkin.h"
-#warning vale metti include e togli define!!!
-//#include "iCubCanProcol.h"
-#define ICUBCANPROTO_CLASS_PERIODIC_SKIN 4
-#define ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR 3
+#include "canProtocolLib/iCubCanProtocol.h"
 
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
@@ -47,6 +44,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     Bottle          bNumOfset;
     int             numOfSets;
     eOprotID32_t    protoid;
+    int             p;
 
     if(!_newCfg)
     {
@@ -91,18 +89,25 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             bcfg.cfg.period     = xtmp.get(4).asInt();
             bcfg.cfg.skintype   = xtmp.get(5).asInt();
             bcfg.cfg.noload     = xtmp.get(6).asInt();
-            if(!(patch >0))
+
+
+            for(p=0; p< patchInfoList.size(); p++)
             {
-                yError() << "skin of board num " << _fId.boardNum << "patch number start from 1. (error in specialCfgBoards)";
+                if(patchInfoList[p].idPatch == patch)
+                    break;
+            }
+            if(p>=patchInfoList.size())
+            {
+                yError() << "skin of board num " << _fId.boardNum << "patch not fount. (error in specialCfgBoards)";
                 return false;
             }
-            //since in xml num of patches star from 1==> i need to remove one to index array
-            patch -= 1;
-            if(! (patch<cardIdPerPatch.size()))
-            {
-                yError() << "in specialCfgBoards, triangles belong to patch num" << patch +1 << "but I have only " << cardIdPerPatch.size();
-                return false;
-            }
+//            //since in xml num of patches star from 1==> i need to remove one to index array
+//            patch -= 1;
+//            if(! (patch<cardIdPerPatch.size()))
+//            {
+//                yError() << "in specialCfgBoards, triangles belong to patch num" << patch +1 << "but I have only " << cardIdPerPatch.size();
+//                return false;
+//            }
 //            //VALE: solo per debug:
 //            yError() << "patch" << patch;
 //            yError() << "bcfg.addrstart" << bcfg.addrstart;
@@ -177,18 +182,24 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             tcfg.cfg.shift      = xtmp.get(6).asInt();
             tcfg.cfg.CDCoffset  = xtmp.get(7).asInt();
 
-            if(!(patch >0))
+
+            for(p=0; p< patchInfoList.size(); p++)
+            {
+                if(patchInfoList[p].idPatch == patch)
+                    break;
+            }
+            if(p >= patchInfoList.size())
             {
                 yError() << "skin of board num " << _fId.boardNum << "patch number start from 1. (error in SpecialCfgTriangles)";
                 return false;
             }
-            //since in xml num of patches star from 1==> i need to remove one to index array
-            patch -= 1;
-            if(! (patch<cardIdPerPatch.size()))
-            {
-                yError() << "in SpecialCfgTriangles, triangles belong to patch num" << patch +1 << "but I have only " << cardIdPerPatch.size();
-                return false;
-            }
+//            //since in xml num of patches star from 1==> i need to remove one to index array
+//            patch -= 1;
+//            if(! (patch<cardIdPerPatch.size()))
+//            {
+//                yError() << "in SpecialCfgTriangles, triangles belong to patch num" << patch +1 << "but I have only " << cardIdPerPatch.size();
+//                return false;
+//            }
 //            //VALE: solo per debug:
 //            yError() << "num of set: " << j;
 //            yError() << "tcfg.boardaddr" << tcfg.boardaddr;
@@ -201,14 +212,14 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
             //check if bcfg.boardAddr is in my patches list
            bool boardFound = false;
-           for(int k=0; k<cardIdPerPatch[patch].size() && !boardFound; k++)
+           for(int k=0; k<patchInfoList[patch].cardAddrList.size() && !boardFound; k++)
            {
-               if(cardIdPerPatch[patch][k] == tcfg.boardaddr)
+               if(patchInfoList[patch].cardAddrList[k] == tcfg.boardaddr)
                    boardFound = true;
            }
            if(!boardFound)
            {
-               yError() << "skin board "<< _fId.boardNum << tmp << "with addr not configured in patches";
+               yError() << "skin board "<< _fId.boardNum << tmp << "with addr not configured in patch num " << patch;
                continue;
            }
             protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patch, eoprot_tag_sk_skin_cmd_trianglescfg);
@@ -240,7 +251,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 }
 bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 {
-    Bottle bPatches, xtmp;
+    Bottle bPatches, bPatchList, xtmp;
     //reset total num of cards
     totalCardsNum = 0;
 
@@ -252,22 +263,37 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         return(false);
     }
 
-    xtmp = bPatches.findGroup("numOfPatches");
-    if(xtmp.isNull())
+    bPatchList = bPatches.findGroup("patchesIdList");
+    if(bPatchList.isNull())
     {
-        yError() << "skin board num " << _fId.boardNum << "numOfPatches is missed!";
+        yError() << "skin board num " << _fId.boardNum << "patchesList is missed!";
         return(false);
     }
 
-    numOfPatches = xtmp.get(1).asInt();
+    numOfPatches = bPatchList.size()-1;
 
-    cardIdPerPatch.clear();
-    cardIdPerPatch.resize(numOfPatches);
+    patchInfoList.clear();
+    patchInfoList.resize(numOfPatches);
+
+    for(int j=1; j<numOfPatches+1; j++)
+    {
+        int id = bPatchList.get(j).asInt();
+        patchInfoList[j-1].idPatch = id;
+    }
+
+    //VALE solo per debug
+    yError() << "numOfPatches=" << numOfPatches;
+    for(int j=0; j<numOfPatches; j++ )
+    {
+        yError() << " patchInfoList[" << j << "]=" << patchInfoList[j].idPatch;
+    }
+
 
     for(int i=0; i<numOfPatches; i++)
     {
         char tmp[80];
-        sprintf(tmp, "skinCanAddrsPatch%d", i+1);
+        int id = patchInfoList[i].idPatch;
+        sprintf(tmp, "skinCanAddrsPatch%d", id);
 
         xtmp = bPatches.findGroup(tmp);
         if(xtmp.isNull())
@@ -276,24 +302,25 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
             return false;
         }
 
-        cardIdPerPatch[i].resize(xtmp.size()-1);
+        patchInfoList[i].idPatch = id;
+        patchInfoList[i].cardAddrList.resize(xtmp.size()-1);
 
         for(int j=1; j<xtmp.size(); j++)
         {
             int id = xtmp.get(j).asInt();
             totalCardsNum++;
-            cardIdPerPatch[i][j-1] = id;
+            patchInfoList[i].cardAddrList[j-1] = id;
         }
     }
 
-//    yError() << "totalCardsNum=" << totalCardsNum;
-//    for(int i=0; i<cardIdPerPatch.size(); i++)
-//    {
-//        for(int j=0; j<cardIdPerPatch[i].size(); j++)
-//        {
-//            yError() << " elem num " << j << "of patch " << i << "is " << cardIdPerPatch[i][j];
-//        }
-//    }
+    yError() << "totalCardsNum=" << totalCardsNum;
+    for(int i=0; i<patchInfoList.size(); i++)
+    {
+        for(int j=0; j<patchInfoList[i].cardAddrList.size(); j++)
+        {
+            yError() << " elem num " << j << "of patch " << i << "is " << patchInfoList[i].cardAddrList[j];
+        }
+    }
 
 
     /*read skin boards default configuration*/
@@ -645,7 +672,7 @@ bool EmbObjSkin::init()
 
     for(int i=0; i<numOfPatches; i++)
     {
-        protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_status_arrayof10canframes);
+        protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, patchInfoList[i].idPatch, eoprot_tag_sk_skin_status_arrayof10canframes);
         sigcfg.id32 = protoid;
         eo_array_PushBack(array, &sigcfg);
     }
@@ -678,19 +705,19 @@ bool EmbObjSkin::init()
 
     for(i=0; i<numOfPatches;i++)
     {
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_cmd_boardscfg);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patchInfoList[i].idPatch, eoprot_tag_sk_skin_cmd_boardscfg);
 
         //get min and max address
         uint8_t minAddr = 16;
         uint8_t maxAddr = 0;
 
-        for(k=0; k<cardIdPerPatch[i].size(); k++)
+        for(k=0; k<patchInfoList[i].cardAddrList.size(); k++)
         {
-            if(cardIdPerPatch[i][k] <  minAddr)
-                minAddr = cardIdPerPatch[i][k];
+            if(patchInfoList[i].cardAddrList[k] <  minAddr)
+                minAddr = patchInfoList[i].cardAddrList[k];
 
-            if(cardIdPerPatch[i][k] >  maxAddr)
-                maxAddr = cardIdPerPatch[i][k];
+            if(patchInfoList[i].cardAddrList[k] >  maxAddr)
+                maxAddr = patchInfoList[i].cardAddrList[k];
         }
 
         defBoardCfg.addrstart = minAddr;
@@ -709,9 +736,9 @@ bool EmbObjSkin::init()
 
     for(i=0; i<numOfPatches;i++)
     {
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, i, eoprot_tag_sk_skin_cmd_trianglescfg);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patchInfoList[i].idPatch, eoprot_tag_sk_skin_cmd_trianglescfg);
 
-        for(k=0; k<cardIdPerPatch[i].size(); k++)
+        for(k=0; k<patchInfoList[i].cardAddrList.size(); k++)
         {
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
             {
@@ -719,7 +746,7 @@ bool EmbObjSkin::init()
                 Time::delay(0.01);
                 totConfigSize = 0;
             }
-            defTriangleCfg.boardaddr = cardIdPerPatch[i][k];
+            defTriangleCfg.boardaddr = patchInfoList[i].cardAddrList[k];
             if(! res->addSetMessage(protoid, (uint8_t*)&defTriangleCfg))
             {
                 yError() << "skin board "<< _fId.boardNum<< " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
@@ -740,9 +767,15 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOnvID32_t id32)
     static int error = 0;
 
     eOprotIndex_t patch = eoprot_ID2index(id32);
-    if(patch >= cardIdPerPatch.size())
+    int indexPatch = numOfPatches+1;
+    for(int i=0; i<numOfPatches; i++)
     {
-        yError() << "skin of board num " << _fId.boardNum << ": received data of patch num " << patch << "but i have only " << cardIdPerPatch.size() << " patches";
+        if(patchInfoList[i].idPatch == patch)
+            indexPatch = i;
+    }
+    if(indexPatch >= numOfPatches)
+    {
+        yError() << "skin of board num " << _fId.boardNum << ": received data of patch num " << patch;
     }
 
 
@@ -768,9 +801,9 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOnvID32_t id32)
         {
             cardAddr = (canframe->id & 0x00f0) >> 4;
             //get index of start of data of board with addr cardId.
-            for(int cId_index = 0; cId_index< cardIdPerPatch[patch].size(); cId_index++)
+            for(int cId_index = 0; cId_index< patchInfoList[indexPatch].cardAddrList.size(); cId_index++)
             {
-                if(cardIdPerPatch[patch][cId_index] == cardAddr)
+                if(patchInfoList[indexPatch].cardAddrList[cId_index] == cardAddr)
                 {
                     mtbId = cId_index;
                     break;

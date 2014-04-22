@@ -45,6 +45,13 @@ using namespace yarp::dev;
 using namespace yarp::os::impl;
 using namespace yarp::sig;
 
+class SkinPatchInfo
+{
+public:
+    int idPatch;
+    std::vector <int> cardAddrList;
+};
+
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
                     public IiCubFeature
@@ -56,7 +63,11 @@ protected:
     FEAT_ID         _fId;
     bool            initted;
     Semaphore       mutex;
-    std::vector < std::vector <int>  >  cardIdPerPatch;
+    //std::vector < std::vector <int>  >  cardIdPerPatch;
+
+    std::vector <int> patchIdList;
+    std::vector<SkinPatchInfo> patchInfoList;
+
     int             totalCardsNum;
     size_t          sensorsNum;
     Vector          data;
