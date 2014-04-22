@@ -161,7 +161,7 @@ extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, co
 
   //printf("skin iCub Callback, looking for ep %d\n", id.ep);
 //   s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(sk_array);
-    findAndFill(&id, (char *)sk_array);
+    findAndFill(&id, (char *)sk_array, rd->id32);
     }
 #endif
 }

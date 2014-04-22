@@ -47,7 +47,7 @@ fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
     return fakestdbool_false;
 }
 
-fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
+fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOnvID32_t id32)
 {
     // new with table, data stored in eoSkin;
     // specie di view grezza, usare dynamic cast?
@@ -69,7 +69,7 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
         skin = dynamic_cast<IiCubFeature *>(tmp);
         if(NULL != skin)
         {
-            skin->fillData((void *)sk_array);
+            skin->fillData((void *)sk_array, id32);
         }
         else
         {
@@ -90,7 +90,7 @@ void *get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep)
     return h;
 }
 
-fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
+fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOnvID32_t id32)
 {
     IiCubFeature *iAnalog;
 
@@ -110,7 +110,7 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
     else
     {
         iAnalog = dynamic_cast<IiCubFeature *>(tmp);
-        iAnalog->fillData(as_array);
+        iAnalog->fillData(as_array, id32);
     }
 
     return fakestdbool_true;

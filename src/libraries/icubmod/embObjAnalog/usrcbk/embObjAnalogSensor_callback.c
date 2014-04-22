@@ -130,7 +130,7 @@ static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescripto
     id.type = f_type;
     id.ep = eo_nv_GetEP8(nv);
     id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
-    handle_AS_data(&id, nv->ram);
+    handle_AS_data(&id, nv->ram, rd->id32);
 
 
     //i=0;

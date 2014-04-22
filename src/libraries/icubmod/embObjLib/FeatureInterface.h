@@ -102,8 +102,8 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
 void initCallback(void *p);
 
 fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum);
-fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array);
-fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array);
+fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOnvID32_t id32);
+fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOnvID32_t id32);
 
 // requires boardnum in range [1, max] as used by cpp objects
 void * get_MChandler_fromEP(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
