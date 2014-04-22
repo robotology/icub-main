@@ -8,5 +8,42 @@
       <params file="general.xml" />
       <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
       <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml" />
+
+    <group name="LIMITS">
+        <!--                      0             1      -->
+        <param name="Max">        39.00         22.00		</param>
+        <param name="Min">       -20.00        -22.00		</param>
+        <param name="Currents">   5000          5000		</param>
+    </group>
+
+    <group name="PIDS">
+        <param name="kp">           -5          -5         </param>       
+        <param name="kd">           0            0         </param>       
+        <param name="ki">           10           10        </param>       
+        <param name="maxPwm">       2500         2500      </param>       
+        <param name="maxInt">       5000         5000      </param>       
+        <param name="shift">        11           11        </param>       
+        <param name="ko">           0            0         </param>       
+        <param name="stictionUp">   0            0         </param>       
+        <param name="stictionDwn">  0            0         </param>       
+        </group>
+
+    <group name="IMPEDANCE">
+      <param name="stiffness">	0.0	0.0	</param>
+      <param name="damping">	0.0	0.0	</param>
+    </group>
+
+    <group name="TORQUE_PIDS">
+        <param name="kp">           -200         -200      </param>       
+        <param name="kd">           0            0         </param>       
+        <param name="ki">           0            0         </param>       
+        <param name="maxPwm">       0            0         </param>       
+        <param name="maxInt">       5000         5000      </param>       
+        <param name="shift">        10           10        </param>       
+        <param name="ko">           0            0         </param>       
+        <param name="stictionUp">   0            0         </param>       
+        <param name="stictionDwn">  0            0         </param>       
+    </group>
+
   </device>
 </devices>
