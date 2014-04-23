@@ -48,8 +48,10 @@ using namespace yarp::sig;
 class SkinPatchInfo
 {
 public:
-    int idPatch;
+    int             idPatch;
+    eOprotIndex_t   indexNv;
     std::vector <int> cardAddrList;
+    bool checkCardAddrIsInList(int cardAddr);
 };
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
@@ -65,7 +67,7 @@ protected:
     Semaphore       mutex;
     //std::vector < std::vector <int>  >  cardIdPerPatch;
     int             totalCardsNum;
-    std::vector <int> patchIdList;
+    //std::vector <int> patchIdList;
     std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;
     Vector          data;
@@ -79,6 +81,19 @@ protected:
     bool            initWithSpecialConfig(yarp::os::Searchable& config);
     bool            isEpManagedByBoard();
     bool            start();
+    eOprotIndex_t convertIdPatch2IndexNv(int idPatch)
+    {
+      /*in xml file idPatch are number of ems canPort identified with numer 1 or 2 on electronic schematics.
+      * in ethernet protocol the patch number is the index part of network variable identifier, that starts from 0 */
+        if(numOfPatches == 1)
+            return(0);
+        else
+            return(idPatch-1);
+    }
+//    static int convertIndexNv2IdPatch(uint8_t indexNv)
+//    {
+//        return(indexNv+1);
+//    }
 
 
 public:
