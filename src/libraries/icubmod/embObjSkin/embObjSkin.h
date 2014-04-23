@@ -65,9 +65,7 @@ protected:
     FEAT_ID         _fId;
     bool            initted;
     Semaphore       mutex;
-    //std::vector < std::vector <int>  >  cardIdPerPatch;
     int             totalCardsNum;
-    //std::vector <int> patchIdList;
     std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;
     Vector          data;
@@ -90,10 +88,6 @@ protected:
         else
             return(idPatch-1);
     }
-//    static int convertIndexNv2IdPatch(uint8_t indexNv)
-//    {
-//        return(indexNv+1);
-//    }
 
 
 public:

@@ -124,19 +124,16 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
                     return(false);
                 }
             }
-            //VALE: solo per debug:
-            yError() << "patch" << patch;
-            yError() << "bcfg.addrstart" << bcfg.addrstart;
-            yError() << "bcfg.addrend" << bcfg.addrend;
-            yError() << "bcfg.cfg.skintype" << bcfg.cfg.skintype;
-            yError() << "bcfg.cfg.period" << bcfg.cfg.period;
-            yError() << "bcfg.cfg.noload" << bcfg.cfg.noload;
+//            //VALE: solo per debug:
+//            yError() << "patch" << patch;
+//            yError() << "bcfg.addrstart" << bcfg.addrstart;
+//            yError() << "bcfg.addrend" << bcfg.addrend;
+//            yError() << "bcfg.cfg.skintype" << bcfg.cfg.skintype;
+//            yError() << "bcfg.cfg.period" << bcfg.cfg.period;
+//            yError() << "bcfg.cfg.noload" << bcfg.cfg.noload;
 
-            //Note: here i don't check if addresses have been configured in patches list.
-            //if a message is send to a board not present, it does nothing
             protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
 
-            yError() << "send special cfg board with protoid=" << protoid << " patchid=" << patchInfoList[p].idPatch << "index=" <<  patchInfoList[p].indexNv;
             if( !(EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
             {
                 yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages";
@@ -153,13 +150,14 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             totConfigSize += configSize;
         }
     }
-    else
-    {
-        //VALE solo per debug()
-        yDebug() << "non ho trovato specialCfgBoards";
-
-    }
+//    else
+//    {
+//        //VALE solo per debug()
+//        yDebug() << "non ho trovato specialCfgBoards";
+//
+//    }
     Time::delay(0.01);
+
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg triangle --------------------------------------------------------------
     Bottle triangleCfgSpecialGroup = config.findGroup("specialCfgTriangles", "Special configuration for skin triangles");
@@ -209,27 +207,27 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
                 yError() << "skin of board num " << _fId.boardNum << ": in "<< tmp << ": patch " << patch << "not exists";
                 return false;
             }
-            //VALE: solo per debug:
-            yError() << "num of set: " << j;
-            yError() << "tcfg.boardaddr" << tcfg.boardaddr;
-            yError() << "tcfg.idstart" << tcfg.idstart;
-            yError() << "tcfg.idend" << tcfg.idend;
-            yError() << "tcfg.cfg.enable" << tcfg.cfg.enable;
-            yError() << "tcfg.cfg.shift" << tcfg.cfg.shift;
-            yError() << "tcfg.cfg.CDCoffset" << tcfg.cfg.CDCoffset;
+//            //VALE: solo per debug:
+//            yError() << "num of set: " << j;
+//            yError() << "tcfg.boardaddr" << tcfg.boardaddr;
+//            yError() << "tcfg.idstart" << tcfg.idstart;
+//            yError() << "tcfg.idend" << tcfg.idend;
+//            yError() << "tcfg.cfg.enable" << tcfg.cfg.enable;
+//            yError() << "tcfg.cfg.shift" << tcfg.cfg.shift;
+//            yError() << "tcfg.cfg.CDCoffset" << tcfg.cfg.CDCoffset;
 
 
             //check if bcfg.boardAddr is in my patches list
-           if(!patchInfoList[p].checkCardAddrIsInList(tcfg.boardaddr))
-           {
-               yError() << "skin of board num " << _fId.boardNum << ": in "<< tmp<< " card with address " << tcfg.boardaddr << "is not present in patch " << patchInfoList[p].idPatch;
-               return(false);
-           }
-           protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
-           yError() << "send special cfg triangle with protoid=" << protoid << " patchid=" << patchInfoList[p].idPatch << "index=" <<  patchInfoList[p].indexNv;
+            if(!patchInfoList[p].checkCardAddrIsInList(tcfg.boardaddr))
+            {
+                yError() << "skin of board num " << _fId.boardNum << ": in "<< tmp<< " card with address " << tcfg.boardaddr << "is not present in patch " << patchInfoList[p].idPatch;
+                return(false);
+            }
+            protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
+
             if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
             {
-                 yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages";
+                yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages";
                 Time::delay(0.01);
                 totConfigSize = 0;
             }
@@ -242,12 +240,12 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             totConfigSize += configSize;
         }
     }
-    else
-    {
-        //VALE solo per debug()
-        yDebug() << "non ho trovato SpecialCfgTriangles";
-
-    }
+//    else
+//    {
+//        //VALE solo per debug()
+//        yDebug() << "non ho trovato SpecialCfgTriangles";
+//
+//    }
     Time::delay(0.01);
 
     return true;
@@ -290,12 +288,12 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         patchInfoList[j-1].indexNv = convertIdPatch2IndexNv(id);
     }
 
-    //VALE solo per debug
-    yError() << "numOfPatches=" << numOfPatches;
-    for(int j=0; j<numOfPatches; j++ )
-    {
-        yError() << " patchInfoList[" << j << "]: patch=" << patchInfoList[j].idPatch << "indexNv=" << patchInfoList[j].indexNv;
-    }
+//    //VALE solo per debug
+//    yError() << "numOfPatches=" << numOfPatches;
+//    for(int j=0; j<numOfPatches; j++ )
+//    {
+//        yError() << " patchInfoList[" << j << "]: patch=" << patchInfoList[j].idPatch << "indexNv=" << patchInfoList[j].indexNv;
+//    }
 
 
     for(int i=0; i<numOfPatches; i++)
@@ -321,14 +319,15 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         }
     }
 
-    yError() << "totalCardsNum=" << totalCardsNum;
-    for(int i=0; i<patchInfoList.size(); i++)
-    {
-        for(int j=0; j<patchInfoList[i].cardAddrList.size(); j++)
-        {
-            yError() << " elem num " << j << "of patch " <<patchInfoList[i].idPatch << "is " << patchInfoList[i].cardAddrList[j];
-        }
-    }
+//    //VALE solo per debug
+//    yError() << "totalCardsNum=" << totalCardsNum;
+//    for(int i=0; i<patchInfoList.size(); i++)
+//    {
+//        for(int j=0; j<patchInfoList[i].cardAddrList.size(); j++)
+//        {
+//            yError() << " elem num " << j << "of patch " <<patchInfoList[i].idPatch << "is " << patchInfoList[i].cardAddrList[j];
+//        }
+//    }
 
 
     /*read skin boards default configuration*/
@@ -419,15 +418,13 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     }
 
 
-    //VALE: stampo i valori letti per debug
-    yError() << "_brdCfg.period" << _brdCfg.period;
-    yError() << "_brdCfg.skinType" << _brdCfg.skinType;
-    yError() << "_brdCfg.noLoad" << _brdCfg.noLoad;
-    yError() << "_triangCfg.enabled"<< _triangCfg.enabled;
-    yError() << "_triangCfg.shitft"<< _triangCfg.shift;
-    yError() << "_triangCfg.cdcOffset"<< _triangCfg.cdcOffset;
-
-
+//    //VALE: stampo i valori letti per debug
+//    yError() << "_brdCfg.period" << _brdCfg.period;
+//    yError() << "_brdCfg.skinType" << _brdCfg.skinType;
+//    yError() << "_brdCfg.noLoad" << _brdCfg.noLoad;
+//    yError() << "_triangCfg.enabled"<< _triangCfg.enabled;
+//    yError() << "_triangCfg.shitft"<< _triangCfg.shift;
+//    yError() << "_triangCfg.cdcOffset"<< _triangCfg.cdcOffset;
 
     return true;
 }
@@ -669,7 +666,6 @@ bool EmbObjSkin::init()
     EOnv nvtmp_ropsigcfgassign;
     eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
 
-    yDebug() << "protoid_ropsigcfgassign=" << protoid_ropsigcfgassign;
     cnv = res->getNVhandler(protoid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
     ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->ram;
     array = (EOarray*) &ropsigcfgassign->array;
@@ -681,7 +677,6 @@ bool EmbObjSkin::init()
     for(int i=0; i<numOfPatches; i++)
     {
         protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayof10canframes);
-        yError() << "signal protoid=" << protoid;
         sigcfg.id32 = protoid;
         eo_array_PushBack(array, &sigcfg);
     }
