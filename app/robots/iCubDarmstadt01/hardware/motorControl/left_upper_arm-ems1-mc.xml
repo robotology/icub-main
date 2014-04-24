@@ -18,7 +18,7 @@
     <group name="IMPEDANCE">
       <param name="stiffness">	0.1     0.1   0.1    0.1    </param>
       <param name="damping">	0.05   0.05  0.05   0.05    </param>
-
+</group>
 	<group name="PIDS">
         <param name="kp">            -5      -5      -5      -5</param>       
         <param name="kd">             0       0       0       0</param>       
