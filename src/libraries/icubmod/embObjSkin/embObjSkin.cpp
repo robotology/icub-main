@@ -14,9 +14,11 @@
 // Ace & Yarp includes
 #include <yarp/os/Time.h>
 
-// embObj  includes
-#include "EOnv_hid.h"   // TODO needed??
 #include <embObjSkin.h>
+
+#include "EoProtocol.h"
+#include "EoProtocolMN.h"
+#include "EoProtocolSK.h"
 
 #include "EoSkin.h"
 #include "canProtocolLib/iCubCanProtocol.h"
@@ -24,6 +26,8 @@
 
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
+
+#include "EOnv.h"
 
 
 using namespace std;
@@ -47,7 +51,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
     sensorsNum  = 0;
     numOfPatches = 0;
     totalCardsNum = 0;
-    memset(info, 0x00, (size_t)SIZE_INFO);
+    memset(info, 0x00, sizeof(info));
 };
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 {
@@ -86,7 +90,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         for(int j=1;j<=numOfSets;j++)
         {
             char tmp[80];
-            sprintf(tmp, "boardSetCfg%d", j);
+            snprintf(tmp, sizeof(tmp), "boardSetCfg%d", j);
 
             Bottle &xtmp = boardCfgSpecialGroup.findGroup(tmp);
             if(xtmp.isNull())
@@ -180,7 +184,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         for(int j=1;j<=numOfSets;j++)
         {
             char tmp[80];
-            sprintf(tmp, "triangleSetCfg%d", j);
+            snprintf(tmp, sizeof(tmp), "triangleSetCfg%d", j);
 
             Bottle &xtmp = triangleCfgSpecialGroup.findGroup(tmp);
             if(xtmp.isNull())
@@ -300,7 +304,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     {
         char tmp[80];
         int id = patchInfoList[i].idPatch;
-        sprintf(tmp, "skinCanAddrsPatch%d", id);
+        snprintf(tmp, sizeof(tmp), "skinCanAddrsPatch%d", id);
 
         xtmp = bPatches.findGroup(tmp);
         if(xtmp.isNull())
@@ -446,23 +450,23 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str(), port);
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%s", parameter1.toString().c_str());
     _fId.PC104ipAddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    sprintf(_fId.EMSipAddr.string, "%s", parameter2.toString().c_str());
+    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%s", parameter2.toString().c_str());
     _fId.EMSipAddr.port = port;
 
     sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
     sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
 
-    sprintf(_fId.EMSipAddr.string,"%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
 
     // Check input parameters
     bool correct=true;
 
-    sprintf(info, "EmbObjSkin - referred to EMS: %s", _fId.EMSipAddr.string);
+    snprintf(info, sizeof(info), "EmbObjSkin - referred to EMS: %s", _fId.EMSipAddr.string);
 
     if (!correct)
     {
@@ -484,7 +488,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
     {
-        _fId.boardNum =val.asInt();
+        _fId.boardNum = val.asInt();
     }
     else
     {
@@ -541,6 +545,16 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
 bool EmbObjSkin::isEpManagedByBoard()
 {
+    // marco.accame on 23 apr 2014: there is a better method. use eObool_t eoprot_endpoint_configured_is(eOprotBRD_t brd, eOprotEndpoint_t ep)
+    // boardnumber = res->get_protBRDnumber();
+    if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_skin))
+    {
+        return true;
+    }
+    
+    return false;
+ 
+ #if 0
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
 
     EOnv nv;
@@ -549,6 +563,8 @@ bool EmbObjSkin::isEpManagedByBoard()
         return false;
     }
     return true;
+
+#endif
 }
 
 
@@ -649,7 +665,6 @@ bool EmbObjSkin::start()
 
 bool EmbObjSkin::init()
 {
-//    char str[128];
     int j = 0;
 
     EOnv                        *cnv;
@@ -657,12 +672,38 @@ bool EmbObjSkin::init()
     EOarray                     *array;
     eOropSIGcfg_t               sigcfg;
     EOnv                        *nvRoot;
-    EOnv                        nvtmp;
+  
     eOprotID32_t                protoid;
 
     //
     //	config regulars
     //
+
+    #define NEWMODE
+    
+    #if     defined(NEWMODE)
+
+    eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    
+    
+    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
+    
+    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
+    
+    ropsigcfgassign = &theropsigcfgassigncommand;    
+    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it. 
+    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
+    ropsigcfgassign->plustime   = 0;
+    ropsigcfgassign->plussign   = 0;
+    ropsigcfgassign->filler01   = 0;
+    ropsigcfgassign->signature  = 0;
+    
+    // ok, now we can fill array
+    
+    #else
+
+    EOnv                        nvtmp;
+
     EOnv nvtmp_ropsigcfgassign;
     eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
 
@@ -674,9 +715,13 @@ bool EmbObjSkin::init()
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
+    #endif
+
+
+
     for(int i=0; i<numOfPatches; i++)
     {
-        protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_sk_skin, patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayof10canframes);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayof10canframes);
         sigcfg.id32 = protoid;
         eo_array_PushBack(array, &sigcfg);
     }
@@ -765,7 +810,7 @@ bool EmbObjSkin::init()
     return true;
 }
 
-bool EmbObjSkin::fillData(void *raw_skin_data, eOnvID32_t id32)
+bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;

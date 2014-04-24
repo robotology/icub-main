@@ -33,6 +33,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
+#define EMBSK_SIZE_INFO     128
 // embObj includes
 #include <ethManager.h>
 #include <ethResource.h>
@@ -94,7 +95,7 @@ public:
     EmbObjSkin();
     ~EmbObjSkin()   { }
 
-    char            info[SIZE_INFO];
+    char            info[EMBSK_SIZE_INFO];
 
     virtual bool    open(yarp::os::Searchable& config);
 
@@ -109,9 +110,10 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    fillData(void *data, eOnvID32_t id32);
+    virtual bool    fillData(void *data, eOprotID32_t id32);
     virtual void    setId(FEAT_ID &id);
     bool            isInitted(void);
 };
 
 #endif
+

@@ -27,8 +27,7 @@ extern void eo_receiver_callback_incaseoferror_in_sequencenumberReceived(uint64_
 #include "EoCommon.h"
 #include "EoProtocol.h"
 
-// marco.accame:    there are several macros named SIZE_INFO in different .h files. it is better to rename this (and the others) so that they are different. in here use FEATINT_SIZE_INFO
-#define SIZE_INFO     128
+#define FEAT_SIZE_INFO     128
 
 #ifdef __cplusplus
 extern "C"
@@ -70,7 +69,7 @@ typedef struct
     // Following are additional and optional info for debug, DO NOT COUNT ON THEM as identifiers for searches!!
     // They may be removed very soon!
     FeatureType         type;
-    char                name[SIZE_INFO];
+    char                name[FEAT_SIZE_INFO];
 } FEAT_ID;
 
 
@@ -102,8 +101,8 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
 void initCallback(void *p);
 
 fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum);
-fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOnvID32_t id32);
-fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOnvID32_t id32);
+fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32);
+fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOprotID32_t id32);
 
 // requires boardnum in range [1, max] as used by cpp objects
 void * get_MChandler_fromEP(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
@@ -115,6 +114,8 @@ FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
 
 eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
+double feat_yarp_time_now(void);
+
 
 #ifdef __cplusplus
 }
@@ -124,6 +125,7 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 
 // eof
+
 
 
 
