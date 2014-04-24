@@ -17,61 +17,74 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 
 #headers-----------
 
-set(BASE 			$ENV{ICUB_ROOT}//main/src/libraries/icubmod/embObjLib/embObj/embobj/)
 
 
-set(CORE_FOLDER  		${BASE}/core/core/)
-set(CORE_API	  		${BASE}/core/core/)
-set(PROT_FOLDER  		${BASE}/plus/comm-v2/)
-set(UTILS_FOLDER  		${BASE}/plus/utils/)
-set(ICUB_API     		${BASE}/plus/comm-v2/icub/)
+
+FIND_PACKAGE(icub_firmware_shared)
 
 
-set(embObj_includes 	
-						${CORE_FOLDER}
-						${PROT_FOLDER}/transport/
+if(icub_firmware_shared_embobj_FOUND)
+    set(BASE         ${icub_firmware_shared_embobj_INCLUDE_DIR})
+else()
+    set(BASE         $ENV{ICUB_ROOT}/src/libraries/icubmod/embObjLib/embObj/embobj/)
+endif()
+
+message ("firmware shared dir =  " ${BASE})
+
+
+
+set(CORE_FOLDER         ${BASE}/embobj/core/core/)
+set(CORE_API            ${BASE}/embobj/core/core/)
+set(PROT_FOLDER         ${BASE}/embobj/plus/comm-v2/)
+set(UTILS_FOLDER        ${BASE}/embobj/plus/utils/)
+set(ICUB_API            ${BASE}/embobj/plus/comm-v2/icub/)
+
+
+set(embObj_includes     
+                        ${CORE_FOLDER}
+                        ${PROT_FOLDER}/transport/
                         ${PROT_FOLDER}/protocol/api
-						${UTILS_FOLDER}
-						${ICUB_API}
-						)   
+                        ${UTILS_FOLDER}
+                        ${ICUB_API}
+                        )
 
-set(ALL_INCLUDES		${embObj_includes}
-						${EXTRA_FOLDER}
-						)
+set(ALL_INCLUDES        ${embObj_includes}
+                        ${EXTRA_FOLDER}
+                        )
 
 include_directories (${ALL_INCLUDES} )
 #message(INFO "includes: ${ALL_INCLUDES}")
 
 #source code --------------
 
-set(UTILS_SOURCE		${UTILS_FOLDER}/eODeb_eoProtoParser.c
-				        ${UTILS_FOLDER}/eOtheEthLowLevelParser.c
-				        )
-
-set(UTILS_HEADER		${UTILS_FOLDER}/eODeb_eoProtoParser_hid.h
-				        ${UTILS_FOLDER}/eOtheEthLowLevelParser_hid.h
-				        )
-
-
-
-set(CORE_SOURCE 		${CORE_FOLDER}/EOarray.c
-				        ${CORE_FOLDER}/EOarray_hid.h
-						${CORE_FOLDER}/EOtheErrorManager.c
-						${CORE_FOLDER}/EOtheMemoryPool.c
-						${CORE_FOLDER}/EoCommon.c
+set(UTILS_SOURCE        ${UTILS_FOLDER}/eODeb_eoProtoParser.c
+                        ${UTILS_FOLDER}/eOtheEthLowLevelParser.c
                         )
 
-set(CORE_VEE_SOURCE			${CORE_FOLDER}/EOVmutex.c
-							${CORE_FOLDER}/EOVtask.c
-							${CORE_FOLDER}/EOVtheSystem.c	
-							)
+set(UTILS_HEADER        ${UTILS_FOLDER}/eODeb_eoProtoParser_hid.h
+                        ${UTILS_FOLDER}/eOtheEthLowLevelParser_hid.h
+                        )
+
+
+
+set(CORE_SOURCE         ${CORE_FOLDER}/EOarray.c
+                        ${CORE_FOLDER}/EOarray_hid.h
+                        ${CORE_FOLDER}/EOtheErrorManager.c
+                        ${CORE_FOLDER}/EOtheMemoryPool.c
+                        ${CORE_FOLDER}/EoCommon.c
+                        )
+
+set(CORE_VEE_SOURCE     ${CORE_FOLDER}/EOVmutex.c
+                        ${CORE_FOLDER}/EOVtask.c
+                        ${CORE_FOLDER}/EOVtheSystem.c	
+                        )
 
 #set(PROTO_SRC               ${PROT_FOLDER}/protocol/src/EoProtocol.c)
 
 set(embobj_source 
-                        ${CORE_SOURCE}						
+                        ${CORE_SOURCE}
                         ${UTILS_HEADER}
-						${UTILS_SOURCE}
+                        ${UTILS_SOURCE}
                         ${CORE_VEE_SOURCE}
 #                        ${PROTO_SRC}
                         )
@@ -91,12 +104,12 @@ message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")
 
 set(EXTRA_SOURCE 	    ${PARSER_CFG_FILE}                
                         ${EXTRA_FOLDER}/main.cpp
-						${EXTRA_FOLDER}/pcap_wrapper_linux.cpp
+                        ${EXTRA_FOLDER}/pcap_wrapper_linux.cpp
                         )
 
 set(ALL_SOURCE_CODE	    ${embobj_source}
-						${EXTRA_SOURCE}
-						)
+                        ${EXTRA_SOURCE}
+                        )
 
 add_executable(${PROJECTNAME} ${ALL_SOURCE_CODE})
 
