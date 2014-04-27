@@ -17,6 +17,8 @@
 
 #include "EoProtocol.h"
 
+#include <yarp/os/Time.h>
+
 #ifdef _SETPOINT_TEST_
 #include <time.h>
 #include <sys/time.h>
@@ -47,7 +49,7 @@ fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
     return fakestdbool_false;
 }
 
-fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
+fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32)
 {
     // new with table, data stored in eoSkin;
     // specie di view grezza, usare dynamic cast?
@@ -69,7 +71,7 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array)
         skin = dynamic_cast<IiCubFeature *>(tmp);
         if(NULL != skin)
         {
-            skin->fillData((void *)sk_array);
+            skin->fillData((void *)sk_array, id32);
         }
         else
         {
@@ -90,7 +92,7 @@ void *get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep)
     return h;
 }
 
-fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
+fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOprotID32_t id32)
 {
     IiCubFeature *iAnalog;
 
@@ -110,7 +112,7 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array)
     else
     {
         iAnalog = dynamic_cast<IiCubFeature *>(tmp);
-        iAnalog->fillData(as_array);
+        iAnalog->fillData(as_array, id32);
     }
 
     return fakestdbool_true;
@@ -159,6 +161,11 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
     }
 
     return(fid_boardnum-1);
+}
+
+double feat_yarp_time_now(void)
+{
+    return(yarp::os::Time::now());
 }
 
 #ifdef _SETPOINT_TEST_
@@ -337,6 +344,7 @@ void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *
 #endif
 
 // eof
+
 
 
 

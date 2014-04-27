@@ -1,3 +1,4 @@
+
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
@@ -79,8 +80,8 @@
 #endif
 
 
-#define EMPTY_PACKET_SIZE         EOK_HOSTTRANSCEIVER_emptyropframe_dimension
-#define SIZE_INFO                 128
+#define EMPTY_PACKET_SIZE           EOK_HOSTTRANSCEIVER_emptyropframe_dimension
+#define ETHMAN_SIZE_INFO            128
 
 
 
@@ -147,7 +148,7 @@ private:
     EthReceiver                   *receiver;          //!< class handling data coming from EMSs with a blocking recv mechanism. Derived rom Thread
 
     // Data for Debug or support
-    char                          info[SIZE_INFO];
+    char                          info[ETHMAN_SIZE_INFO];
 
     // Methods for Singleton handling#include <yarp/os/Bottle.h>
 private:
@@ -343,7 +344,6 @@ public:
 #endif
 
 // eof
-
 
 
 

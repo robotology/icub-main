@@ -19,18 +19,41 @@ using namespace std;
 
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
-#include "EOYtheSystem.h"
 
+#include "EOYtheSystem.h"
 #include "EoCommon.h"
 #include "EOnv.h"
 #include "EOnv_hid.h"
 #include "EOrop.h"
 #include "EoProtocol.h"
+
+
+#undef USE_EOPROT_ROBOT
+
+#if     defined(USE_EOPROT_ROBOT)
+
+#include "eOprot_robot.h"
+
+#else
+
+#include "eOprot_b01.h"
+#include "eOprot_b02.h"
+#include "eOprot_b03.h"
+#include "eOprot_b04.h"
+#include "eOprot_b05.h"
+#include "eOprot_b06.h"
+#include "eOprot_b07.h"
+#include "eOprot_b08.h"
+#include "eOprot_b09.h"
+#include "eOprot_b10.h"
+#include "eOprot_b11.h"
+
+#endif
+
 #include "Debug.h"
 
 #include <yarp/os/Time.h>
 
-#include "EoProtocol.h"
 
 #define _DEBUG_ON_FILE_
 #undef _DEBUG_ON_FILE_
@@ -55,14 +78,16 @@ hostTransceiver::hostTransceiver() : transMutex(1)
 {
     yTrace();
 
-    ipport 		 = 0;
-    localipaddr  = 0;
-    remoteipaddr = 0;
+    ipport 		        = 0;
+    localipaddr         = 0;
+    remoteipaddr        = 0;
 
-    p_RxPkt     = NULL;
-    hosttxrx    = NULL;
-    pc104txrx   = NULL;
-    nvset       = NULL;
+    protboardnumber     = 0;    // however, 0 is a valid board number. thus it must be changed in runtime.
+    p_RxPkt             = NULL;
+    hosttxrx            = NULL;
+    pc104txrx           = NULL;
+    nvset               = NULL;
+    memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
 }
 
 hostTransceiver::~hostTransceiver()
@@ -70,17 +95,35 @@ hostTransceiver::~hostTransceiver()
     yTrace();
 }
 
-bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, uint8_t _board_n)
+
+bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
 {
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
 
-    // 02-may13: so that the newly introduced field sizes contains the EOK_HOSTTRANSCEIVER_* values
+    // marco.accame on 10 apr 2014:
+    // eo_hosttransceiver_cfg_default contains the EOK_HOSTTRANSCEIVER_* values which are good for reception of a suitable EOframe
+    // hovever, in future it would be fine to be able loading the fields inside eOhosttransceiver_cfg_t from a common eOprot_robot.h
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
-    hosttxrxcfg.remoteboardipv4addr   = _remoteipaddr;
-    hosttxrxcfg.remoteboardipv4port   = _ipport;
+    hosttxrxcfg.remoteboardipv4addr     = _remoteipaddr;
+    hosttxrxcfg.remoteboardipv4port     = _ipport;
  
     eoy_sys_Initialise(NULL, NULL, NULL);
+
+#if     defined(USE_EOPROT_ROBOT)
+
+    // initialise the protocol for the robot. if already initted by another board it just returns ok
+    eoprot_robot_Initialise();
+    uint8_t protboardindex = featIdBoardNum2nvBoardNum(_board_n);
+    uint8_t numboards = eoprot_robot_DEVcfg_numberof();
+    if(protboardindex >= numboards)
+    {   // the robot does not have sucha a board
+        yError() << "hostTransceiver::init() called w/ invalid _board_n";
+        return false;
+    }
+    hosttxrxcfg.nvsetdevcfg = eoprot_robot_DEVcfg_get(protboardindex);
+
+#else
 
     switch(_board_n)
     {
@@ -121,50 +164,52 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
         yError() << "Got a non existing board number" << _board_n;
         return false;
     }
+#endif
 
     localipaddr  = _localipaddr;
     remoteipaddr = _remoteipaddr;
     ipport       = _ipport;
 
-    // initialise the transceiver: it creates a EOtransceiver and its nvsCfg by loading all the endpoints
-    hosttxrx     = eo_hosttransceiver_New(&hosttxrxcfg);
+    // initialise the transceiver: it creates a EOtransceiver and its EOnvSet
+    hosttxrx     = eo_hosttransceiver_New(&hosttxrxcfg);            // never returns NULL. it calls its error manager
     if(hosttxrx == NULL)
         return false;
 
-    // retrieve teh transceiver
-    pc104txrx    = eo_hosttransceiver_GetTransceiver(hosttxrx);
+    // retrieve the transceiver
+    pc104txrx    = eo_hosttransceiver_GetTransceiver(hosttxrx);     
     if(pc104txrx == NULL)
         return false;
 
-    // retrieve the nvscfg
-//    pc104nvscfg  = eo_hosttransceiver_NVsCfg(hosttxrx);
-//    if(pc104nvscfg == NULL)
-//        return false;
+    // retrieve the nvset
     nvset = eo_hosttransceiver_GetNVset(hosttxrx);
     if(NULL == nvset)
     {
         return false;
     }
 
-//    p_TxPkt = eo_packet_New(_pktsize);
-//    if(p_TxPkt == NULL)
-//        return false;
+    // retrieve the protboardnumber. the type eOprotBRD_t manages board numbers from 0 upwards.
+    protboardnumber = eo_hosttransceiver_GetBoardNumber(hosttxrx);
 
+    // build the packet used for reception.
     p_RxPkt = eo_packet_New(_pktsizerx);
     if(p_RxPkt == NULL)
         return false;
 
-//    // save board specific configs for later use (they may be needed by some callbacks)
-//    EPvector = hosttxrxcfg.vectorof_endpoint_cfg;
-//    EPhash_function_ep2index = hosttxrxcfg.hashfunction_ep2index;
+
     return true;
 }
 
 bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd)
 {
+    if((NULL == nv) || (NULL == dat))
+    {
+        yError() << "eo HostTransceiver: called nvSetData() with NULL nv or dat";
+        return false;
+    }  
+    
     transMutex.wait();
     bool ret = true;
-    if( eores_OK != eo_nv_Set(nv, dat, forceset, upd))
+    if(eores_OK != eo_nv_Set(nv, dat, forceset, upd))
     {
         yError() << "Error while setting NV data\n";
         ret = false;
@@ -173,46 +218,63 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
     return ret;
 }
 
-
-bool hostTransceiver::addSetMessage__( eOprotID32_t protid, uint8_t* data, uint32_t signature)
+// if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
+bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
-    EOnv          nv;
 
-    if(protid == EOK_uint16dummy)
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
-        yError() << "eo HostTransceiver: called addSetMessage with invalid nvid ";
+        yError() << "eo HostTransceiver: called addSetMessage__() with invalid protid";
         return false;
     }
 
-    EOnv *nv_ptr = getNVhandler(protid, &nv);
-
-    if(NULL == nv_ptr)
+    if(NULL == data)
     {
-        yError() << "addSetMessage__: Unable to get pointer to desired NV with protid" << protid;
+        yError() << "eo HostTransceiver: called addSetMessage__() with NULL data";
         return false;
     }
-
-    transMutex.wait();
-
-    if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+    
+    if(true == writelocalrxcache)
     {
-        // the nv is not writeable
-        yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+        EOnv    nv;
+        EOnv*   nv_ptr = NULL;
+
+        nv_ptr = getNVhandler(protid, &nv);
+
+        if(NULL == nv_ptr)
+        {
+            yError() << "addSetMessage__: Unable to get pointer to desired NV with protid" << protid;
+            return false;
+        }
+
+        transMutex.wait();
+
+        // marco.accame on 09 apr 2014:
+        // we write data into 
+        if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+        {
+            // the nv is not writeable
+            yError() << "Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+            transMutex.post();
+            return false;
+        }
+        
         transMutex.post();
-        return false;
     }
 
     eOropdescriptor_t ropdesc = {0};
+    
+    // marco.accame: recommend to use the following to have a basic valid descriptor which is modified later
+    memcpy(&ropdesc, &eok_ropdesc_basic, sizeof(eOropdescriptor_t));
 
-    //ropdesc.control = {0};
-    ropdesc.control.plustime = 1;
-    ropdesc.ropcode = eo_ropcode_set;
-    ropdesc.id32 = protid;
-    ropdesc.size = eo_nv_Size(&nv);
-    ropdesc.data = data;
-    ropdesc.signature = signature;
+    ropdesc.control.plustime    = 1;
+    ropdesc.control.plussign    = (eo_rop_SIGNATUREdummy == signature) ? 0 : 1;
+    ropdesc.ropcode             = eo_ropcode_set;
+    ropdesc.id32                = protid;
+    ropdesc.size                = 0;        // marco.accame: the size is internally computed from the id32
+    ropdesc.data                = data;
+    ropdesc.signature           = signature;
 
-    transMutex.post();
     bool ret = false;
 
     for(int i=0; ( (i<5) && (!ret) ); i++)
@@ -240,44 +302,41 @@ bool hostTransceiver::addSetMessage__( eOprotID32_t protid, uint8_t* data, uint3
     return ret;
 }
 
-bool hostTransceiver::addSetMessage( eOprotID32_t protid, uint8_t* data)
+bool hostTransceiver::addSetMessage(eOprotID32_t protid, uint8_t* data)
 {
-   return(hostTransceiver::addSetMessage__(protid, data, 0));
+   return(hostTransceiver::addSetMessage__(protid, data, eo_rop_SIGNATUREdummy, false));
+}
+
+bool hostTransceiver::addSetMessageAndCacheLocally(eOprotID32_t protid, uint8_t* data)
+{
+   return(hostTransceiver::addSetMessage__(protid, data, eo_rop_SIGNATUREdummy, true));
 }
 
 bool hostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig)
 {
-    return(hostTransceiver::addSetMessage__(protid, data, sig));
+    return(hostTransceiver::addSetMessage__(protid, data, sig, false));
 }
 
 
-bool hostTransceiver::addGetMessage( eOprotID32_t protid)
+bool hostTransceiver::addGetMessage(eOprotID32_t protid)
 {
-    EOnv          nv;
-
-    if(protid == EOK_uint16dummy)
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
-        yError() << "eo HostTransceiver: called addGetMessage with invalid nvid";
+        yError() << "eo HostTransceiver: called addGetMessage() with invalid protid";
         return false;
     }
 
-    EOnv *nv_ptr = getNVhandler(protid, &nv);
-
-    if(NULL == nv_ptr)
-    {
-        yError() << "addGetMessage: Unable to get pointer to desired NV with id" << protid;
-        return false;
-    }
 
     eOropdescriptor_t ropdesc = {0};
-
-    //ropdesc.control = {0};
-    ropdesc.control.plustime = 1;
-    ropdesc.ropcode = eo_ropcode_ask;
-    ropdesc.id32 = protid;
-    ropdesc.size = 0;
-    ropdesc.data = NULL;
-    ropdesc.signature = 0;
+    // marco.accame: recommend to use the following
+    memcpy(&ropdesc, &eok_ropdesc_basic, sizeof(eOropdescriptor_t));
+    ropdesc.control.plustime    = 1;
+    ropdesc.control.plussign    = 0;
+    ropdesc.ropcode             = eo_ropcode_ask;
+    ropdesc.id32                = protid;
+    ropdesc.size                = 0;
+    ropdesc.data                = NULL;
+    ropdesc.signature           = 0;
     
 
     bool ret = false;
@@ -304,78 +363,88 @@ bool hostTransceiver::addGetMessage( eOprotID32_t protid)
     return ret;
 }
 
+
 bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size)
-{
-    EOnv nv;
-    if(protid == EOK_uint16dummy)
+{      
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
-        yError() << "eo HostTransceiver: called readValue with invalid nvid";
+        yError() << "eo HostTransceiver: called readBufferedValue() with invalid protid";
         return false;
     }
-
+    
+    if((NULL == data) || (NULL == size))
+    {
+        yError() << "eo HostTransceiver: called readBufferedValue() with NULL data or size";
+        return false;
+    }       
+    
+    EOnv nv;
     EOnv *nv_ptr = getNVhandler(protid, &nv);
 
     if(NULL == nv_ptr)
     {
-        yError() << "readBufferedValue: Unable to get pointer to desired NV with id" << protid;
+        yError() << "readBufferedValue: Unable to get pointer to desired NV with id " << protid;
         return false;
     }
-    //protetion on reading data by yarp
+    // protection on reading data by yarp
     transMutex.wait();
     getNVvalue(nv_ptr, data, size);
     transMutex.post();
     return true;
 }
 
+
+// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetMessage__(protid, data, signature, bool writelocalcache = true).
+// take in mind however, that the opration is not clean.
+// the ram of EOnv is done to accept values coming from the network. if robot-interface writes data into a EOnv, then a received rop of type say<> or sig<> will
+// overwrite the same memory area. we need to re-think the mode with which someone wants to retrieve the last sent value of a EOnv.
+
 bool hostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t* size)
 {
-    EOnv nv;
-    bool ret;
-    if(protid == EOK_uint16dummy)
+    bool ret = false;
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
-        yError() << "eo HostTransceiver: called readValue with invalid nvid";
+        yError() << "eo HostTransceiver: called readSentValue() with invalid protid";
         return false;
     }
 
+    if((NULL == data) || (NULL == size))
+    {
+        yError() << "eo HostTransceiver: called readSentValue() with NULL data or size";
+        return false;
+    }    
+    
+    EOnv nv;
     EOnv *nv_ptr = getNVhandler(protid, &nv);
 
     if(NULL == nv_ptr)
     {
-        yError() << "readSentValue: Unable to get pointer to desired NV with id" << protid;
+        yError() << "readSentValue: Unable to get pointer to desired NV with id " << protid;
         return false;
     }
-    //protetion on reading data by yarp
+    // protection on reading data by yarp
     transMutex.wait();
-    (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
+    ret = (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? true : false;
     transMutex.post();
     return true;
 }
 
-#if 0 // not used, e in ogni caso identica a quella sopra!! (a parte il mutex che cmq ho aggiunto ora ed il tipo del puntatore ai dati)
-bool hostTransceiver::readValue(eOnvID_t nvid, eOnvEP_t endPoint, void* outValue, uint16_t *size)
-{
-    EOnv tmpNV;
-    EOnv *nvRoot = getNVhandler((uint16_t) endPoint, nvid, &tmpNV);
-
-    if(NULL == nvRoot)
-    {
-        yError () << "Nv pointer not found\n";
-        return false;
-    }
-
-    return getNVvalue(nvRoot, (uint8_t*) outValue, size);
-}
-#endif
 
 // somebody passes the received packet - this is used just as an interface
 void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
 {
+    if(NULL == data)
+    {
+        yError() << "eo HostTransceiver::onMsgReception() called with NULL data";
+        return;
+    } 
+    
     uint16_t numofrops;
     uint64_t txtime;
     uint16_t capacityrxpkt = 0;
 
     // protezione per la scrittura dei dati all'interno della memoria del transceiver, su ricezione di un rop.
-    // il mutex è unico per tutto il transceiver (quindi più endpoint)
+    // il mutex e' unico per tutto il transceiver
     //transMutex.wait();
     eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
     if(size > capacityrxpkt)
@@ -499,6 +568,12 @@ void checkDataForDebug(uint8_t *data, uint16_t size)
  */
 void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
 {
+    if((NULL == data) || (NULL == size))
+    {
+        yError() << "eo HostTransceiver::getTransmit() called with NULL data or size";
+        return;
+    }  
+
     uint16_t numofrops;
     EOpacket* ptrpkt = NULL;
     eOresult_t res;
@@ -507,11 +582,6 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
     *data = NULL;
 
 
-
-    //RMEOVE
-    //eo_transceiver_Transmit(pc104txrx, &ptrpkt, &numofrops);
-
-    //ADD
     res = eo_transceiver_outpacket_Prepare(pc104txrx, &numofrops);
 #ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
     if((eores_OK != res))
@@ -532,19 +602,6 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
     eo_packet_Payload_Get(ptrpkt, data, size);
 }
 
-/*
-// somebody retrieves what must be transmitted
-void hostTransceiver::getTransmit(uint8_t *_data, uint16_t *size) //**data
-{
-    uint16_t numofrops;
-    uint8_t *data; //
-    _mutex.wait();
-    eo_transceiver_Transmit(pc104txrx, &pktTx, &numofrops);
-    eo_packet_Payload_Get(pktTx, &data, size);
-    memcpy(data, _data, size);
-    _mutex.post();
-}
-*/
 
 EOnv* hostTransceiver::getNVhandler(eOprotID32_t protid, EOnv* nv)
 {
@@ -573,20 +630,13 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
 }
 
 
-//void hostTransceiver::getHostData(const EOconstvector **pEPvector, eOuint16_fp_uint16_t *pEPhash_function)
-//{
-//    *pEPvector = EPvector;
-//    *pEPhash_function = EPhash_function_ep2index;
-//}
-
-
 #define OLDMODE
 
 #ifdef OLDMODE
 #include "EOconstvector_hid.h"
 #endif
 
-uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP8_t ep)
+uint16_t hostTransceiver::getNVnumber(eOnvEP8_t ep)
 {
 /*  marco.accame on 10 apr 2014:
     i had to modify it be cause it would not work in some cases (boards w/ only skin), because the ordering inside hosttxrxcfg.nvsetdevcfg->vectorof_epcfg 
@@ -601,25 +651,31 @@ uint16_t hostTransceiver::getNVnumber(int boardNum, eOnvEP8_t ep)
     uint16_t epi = hosttxrxcfg.nvsetdevcfg->fptr_ep2indexofepcfg(ep);
     if(EOK_uint16dummy == epi)
     {
-        yError() << "invalid ep = " <<  ep << " for board num = " << boardNum;
+        yError() << "invalid ep = " <<  ep << " for prot board num = " << protboardnumber;
         return 0;    
     }
     
 
     eOnvset_EPcfg_t *setcfg = (eOnvset_EPcfg_t *)hosttxrxcfg.nvsetdevcfg->vectorof_epcfg->item_array_data;
-    return(setcfg[epi].protif->getvarsnumberof(boardNum-1, ep));
+    return(setcfg[epi].protif->getvarsnumberof(protboardnumber, ep));
 
 #else
     return(eoprot_endpoint_numberofvariables_get(protboardnumber, ep));
 #endif
 }
 
-uint32_t hostTransceiver::translate_NVid2index(int boardNum, eOprotID32_t protoid)
+uint32_t hostTransceiver::translate_NVid2index(eOprotID32_t protid)
 {
-    return(eoprot_endpoint_id2prognum(boardNum-1, protoid));
+    return(eoprot_endpoint_id2prognum(protboardnumber, protid));
+}
+
+eOprotBRD_t hostTransceiver::get_protBRDnumber(void)
+{
+    return(protboardnumber);
 }
 
 
 // eof
+
 
 

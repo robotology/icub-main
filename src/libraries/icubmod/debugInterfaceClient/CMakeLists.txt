@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(debugInterfaceClient TYPE DebugInterfaceClient INCLUDE debugInterfaceClient.h WRAPPER controlboard)
+PREPARE_DEVICE(debugInterfaceClient TYPE DebugInterfaceClient INCLUDE debugInterfaceClient.h)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 			${iCubDev_INCLUDE_DIRS}

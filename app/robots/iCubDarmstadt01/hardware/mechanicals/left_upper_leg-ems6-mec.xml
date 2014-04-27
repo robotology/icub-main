@@ -16,8 +16,6 @@
         <param name="Verbose">0</param>
     </group>
 
-
-
     <group name="VELOCITY">
         <param name="MOT_speed_estimation">	1             1             1             1	</param>
         <param name="MOT_accel_estimation">	1             1             1             1	</param>
@@ -27,33 +25,5 @@
         <param name="Timeout">             	100           100           100           100	</param>
     </group>
 
-    <group name="LIMITS">
-        <!--                                    0             1             2             3         -->
-        <param name="Max">                      90            90            78            0     </param>
-        <param name="Min">                      -30           0             -80           -120  </param>
-        <param name="Currents">                 5000          5000          5000          5000  </param>
-    </group>
-
-    <group name="IMPEDANCE">
-      <param name="Imp0">	0.2	0.05	</param>
-      <param name="Imp1">	0.2	0.05	</param>
-      <param name="Imp2">	0.2	0.05	</param>
-      <param name="Imp3">	0.2	0.05	</param>
-    </group>
-
-    <group name="PIDS">
-        <!--                 Proportional  Derivative    Integral      Integral Limit              PWM Limit     scale factor >>             offset -->
-        <param name="Pid0">      5            0             10            2500                         10000          11                          0   </param>
-        <param name="Pid1">     -5            0             10            2500                         10000          11                          0   </param>
-        <param name="Pid2">      5            0             10            2500                         10000          11                          0   </param>
-        <param name="Pid3">     -5            0             10            2500                         10000          11                          0   </param>
-    </group>
-
-    <group name="TORQUE_PIDS">
-        <param name="TPid0"> 	 500            0             0             0                      10000          10                          0    	</param>
-        <param name="TPid1">    -500            0             0             0                      10000          10                          0   	</param>
-        <param name="TPid2">     500            0             0             0                      10000          10                          0   	</param>
-        <param name="TPid3">    -500            0             0             0                      10000          10                          0  	</param>
-    </group>
 
 </params>

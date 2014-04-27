@@ -1,3 +1,4 @@
+
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
@@ -28,12 +29,16 @@
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
 
+#include "EoProtocol.h"
+#include "EoProtocolMN.h"
+#include "EoProtocolAS.h"
+
 #ifdef WIN32
 #pragma warning(once:4355)
 #endif
 
-const int REPORT_PERIOD=6; //seconds
-const double BCAST_STATUS_TIMEOUT=6; //seconds
+const int REPORT_PERIOD = 6;            // seconds
+const double BCAST_STATUS_TIMEOUT = 6;  // seconds
 
 #define NUMCHANNEL_STRAIN 6
 #define NUMCHANNEL_MAIS 15
@@ -51,7 +56,7 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
-//generic function that check is key1 is present in input bottle and that the result has size elements
+// generic function that checks is key1 is present in input bottle and that the result has size elements
 // return true/false
 static inline bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
 {
@@ -215,30 +220,30 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str());
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%s", parameter1.toString().c_str());
     _fId.PC104ipAddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    sprintf(_fId.EMSipAddr.string, "%s", parameter2.toString().c_str());
+    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%s", parameter2.toString().c_str());
     _fId.EMSipAddr.port = port;
 
     sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
     sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
 
-    sprintf(_fId.EMSipAddr.string,"%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
 
-    //   Debug info
-    memset(info, 0x00, SIZE_INFO);
-    sprintf(info, "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);
-    sprintf(_fId.name, "%s", info);       // Saving User Friendly Id
+    // debug info
+    memset(info, 0x00, sizeof(info));
+    snprintf(info, sizeof(info), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);
+    snprintf(_fId.name, sizeof(_fId.name), "%s", info);       // Saving User Friendly Id
 
     // Set dummy values
     _fId.boardNum  = 255;
 
-    Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
+    Value val = config.findGroup("ETH").check("Ems", Value(1), "Board number");
     if(val.isInt())
-        _fId.boardNum =val.asInt();
+        _fId.boardNum = val.asInt();
     else
     {
         yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.PC104ipAddr.string;
@@ -287,12 +292,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     // Tell EMS to go into config state, otherwise something doesn't work correctly.
 //#warning "go to config message before getting strain fullscale... investigate more
 
-#define MSG010979 "WARNING->go to config message before getting strain fullscale... investigate more"
-#if defined(_MSC_VER)
-    #pragma message(MSG010979)
-#else
-    #warning MSG010989
-#endif
 
 //     res->goToConfig();
     switch(_as_type)
@@ -300,11 +299,13 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         case AS_MAIS:
         {
             ret = sendConfig2Mais();
-        }break;
+        } break;
+        
         case AS_STRAIN:
         {
             ret = sendConfig2Strain();
-        }break;
+        } break;
+        
         default:
         {
             //i should not be here. if AS_NONE then i should get error in fromConfig function
@@ -327,9 +328,19 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
 bool embObjAnalogSensor::isEpManagedByBoard()
 {
-    eOprotID32_t protoid;
-    EOnv         nv;
+#if 1
+    // marco.accame on 11 apr 2014:
+    // use this code
+    if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors))
+    {   // we can extend to the entity by evaluating eoprot_entity_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors, eoprot_entity_as_xxx)
+        return true;
+    }
+    
+    return false;
 
+#else
+    eOprotID32_t protoid;
+    
     switch(_as_type)
     {
         case AS_MAIS:
@@ -347,12 +358,16 @@ bool embObjAnalogSensor::isEpManagedByBoard()
         }
     }
 
-
+    // marco.accame: 
+    // we can use:                              if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors))
+    // we can extend to the entity by doing:   ... eoprot_entity_configured_is()
+    EOnv nv;
     if(NULL == res->getNVhandler(protoid, &nv))
     {
         return false;
     }
     return true;
+#endif    
 }
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
@@ -386,9 +401,9 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 {
     uint8_t datarate  = _period;
 
-    //set mais datarate = 1millisec
+    // set mais datarate = 1millisec
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
-    if(EOK_uint16dummy == protoid)
+    if(eo_prot_ID32dummy == protoid)
     {
         yError () << " NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -402,7 +417,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     //set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-    if(EOK_uint16dummy == protoid)
+    if(eo_prot_ID32dummy == protoid)
     {
         yError () << "NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -418,7 +433,44 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
 bool embObjAnalogSensor::getFullscaleValues()
 {
-    // Check inital size of array...  it should be zero.
+    // marco.accame on 11 apr 2014:
+    // added the code under ifdef 1. the reason is that one cannot rely on validity of data structures inside the EOnv, as in protocol v2 the requirement is that
+    // the initialisation is not specialised and is ... all zeros. if the user wants to init to proper values must redefine the relevant INIT funtion.
+    // in this case, the eoprot_fun_INIT_as_strain_status_fullscale().
+    // extern void eoprot_fun_INIT_as_strain_status_fullscale(const EOnv* nv)
+    // {
+    //     eOas_arrayofupto12bytes_t fullscale_values = {0};
+    //     eo_array_New(6, 2, &fullscale_values); // itemsize = 2, capacity = 6
+    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);    
+    // }
+    // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
+    
+#if 1
+   // Check initial size of array...  it should be zero.
+    bool gotFullScaleValues = false;
+    int timeout, NVsize;
+    uint16_t tmpNVsize;
+    EOnv tmpNV;
+    EOnv *p_tmpNV = NULL;
+    eOas_arrayofupto12bytes_t fullscale_values = {0};
+    // force it to be an empty array of itemsize 2 and capacity 6. 
+    // the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
+    eo_array_New(6, 2, &fullscale_values);
+
+    eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
+    if(eo_prot_ID32dummy == protoid_fullscale)
+        yError() << "nvid not found";
+        
+    // now we impose that the value of the EOnv described by eoprot_tag_as_strain_status_fullscale is what in fullscale_values.
+    // we need to do that because the ram of the EOnv is ... of zero value unless one overrides the relevant INIT function.
+    // if of zero value, then ... capacity is not 6 and itemsize is not 2.
+    p_tmpNV = res->getNVhandler(protoid_fullscale, &tmpNV);
+    eo_nv_Set(p_tmpNV, &fullscale_values, eobool_true, eo_nv_upd_dontdo); 
+
+    // now we are sure that we have a value of the array inside the EOnv which is consistent and ... of zero size.
+
+#else
+    // Check initial size of array...  it should be zero.
     bool gotFullScaleValues = false;
     int timeout, NVsize;
     uint16_t tmpNVsize;
@@ -433,7 +485,7 @@ bool embObjAnalogSensor::getFullscaleValues()
      or better, just check that initalization has been done as expected, i.e. initial size is zero.
 */
      eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
-    if(EOK_uint16dummy == protoid_fullscale)
+    if(eo_prot_ID32dummy == protoid_fullscale)
         yError() << "nvid not found";
 
     p_tmpNV = res->getNVhandler(protoid_fullscale, &tmpNV);
@@ -441,23 +493,25 @@ bool embObjAnalogSensor::getFullscaleValues()
     // tmpNVsize is the actual dimension of the array expressed in bytes, it is NOT the number of elements the array contains
     res->readBufferedValue(protoid_fullscale, (uint8_t *)&fullscale_values, &tmpNVsize);
 
-    // when initialized, size shuold be zero... check it
+    // when initialized, size should be zero... check it
     NVsize = eo_array_Size((EOarray*) p_tmpNV->ram);
     if(0 != NVsize)
         yError() << "Initial size of array is different from zero (" << NVsize << ") for board" << _fId.boardNum;
-
-     // Prepare analog sensor
-    eOas_strain_config_t strainConfig;
-    strainConfig.datarate = _period;
-    strainConfig.mode = eoas_strainmode_acquirebutdonttx;
-    strainConfig.signaloncefullscale = eobool_true;
+     
+#endif
+        
+    // Prepare analog sensor
+    eOas_strain_config_t strainConfig = {0};
+    strainConfig.datarate               = _period;
+    strainConfig.mode                   = eoas_strainmode_acquirebutdonttx;
+    strainConfig.signaloncefullscale    = eobool_true;
 
     eOprotID32_t protoid_strain_config = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
     res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
 
     timeout = 5;
 
-    // wait for rensponse
+    // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
         Time::delay(1);
@@ -517,70 +571,83 @@ bool embObjAnalogSensor::getFullscaleValues()
     }
 
     return true;
+  
 }
 
+// marco.accame on 11 apr 2014:
+// changed the way the eOmn_ropsigcfg_command_t is prepared, as it is now in embObjMotionControl.cpp
 bool embObjAnalogSensor::init()
 {
     yTrace();
-    eOprotID32_t              protoid;
-
-    // Configure values to be sent regularly
-    eOmn_ropsigcfg_command_t  *ropsigcfgassign;           // pointer to the type, to handle content
-    EOnv                      nv_ropsigcfgassign;         // memory to hold stuff
-    EOnv                      *nv_ropsigcfgassign_ptr;    // pointer to the nv_ropsigcfgassign
-    eOropSIGcfg_t             sigcfg;                     // struct for the single element to be signalled
-    EOarray                   *array;                     // array containing nvids to be signalled
-
+    
+    // configure the ep of the internal feature-interface to be eoprot_endpoint_analogsensors
     _fId.ep = eoprot_endpoint_analogsensors;
 
-    eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
-    nv_ropsigcfgassign_ptr = res->getNVhandler(protoid_ropsigcfgassign, &nv_ropsigcfgassign);
+    // configure the remote board to regularly send some variables
+    eOmn_ropsigcfg_command_t  theramofropsigcfgassign = {0};    // the ram of the command
+    eOmn_ropsigcfg_command_t  *ropsigcfgassign;                 // pointer to the ram. we use thei variable
+    eOprotID32_t protoid_ropsigcfgassign;                       // the id 
+    eOropSIGcfg_t             sigcfg = {0};                     // struct for the single element to be signalled
+    EOarray                   *array;                           // array containing nvids to be signalled. it must point to the ram
 
-    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) nv_ropsigcfgassign_ptr->ram;
-    array = (EOarray*) &ropsigcfgassign->array;
-    eo_array_Reset(array);
-    array->head.capacity = NUMOFROPSIGCFG;
-    array->head.itemsize = sizeof(eOropSIGcfg_t);
-    ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
+
+    ropsigcfgassign = &theramofropsigcfgassign;
+
+    array = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize, and then it clears it. 
+    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
+    ropsigcfgassign->plustime   = 0;
+    ropsigcfgassign->plussign   = 0;
+    ropsigcfgassign->filler01   = 0;
+    ropsigcfgassign->signature  = 0;    
+       
+    protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
+
+    // now we prepare the sigcfg we want to configure on the remote board
+    eOprotID32_t protoid = eo_prot_ID32dummy;
     switch(_as_type)
     {
         case AS_MAIS:
         {
             protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_status_the15values);
-        }break;
+        } break;
+        
         case AS_STRAIN:
         {
             if(_useCalibration)
                 protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
             else
                 protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
-        }break;
+        } break;
+        
         default:
         {
-            protoid=EOK_uint16dummy;
+            protoid = eo_prot_ID32dummy;
         }
     }
 
-    if(EOK_uint16dummy == protoid)
+    if(eo_prot_ID32dummy == protoid)
     {
         yError () << " EmbObj Analog Sensor NVID not found for EndPoint" << _fId.ep <<" at line " << __LINE__;
         return false;
     }
-
+   
     sigcfg.id32 = protoid;
+    
+    // and we put the sigcfg inside the array
     if(eores_OK != eo_array_PushBack(array, &sigcfg))
     {
         yError () << " EmbObj Analog Sensor while loading ropSig Array  at line " << __LINE__;
         return false;
     }
 
-    // Send message
+    // send message to configure the spontaneous signalling in the remote board
     if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
     {
         yError() << "while setting rop sig cfg";
         return false;
     }
+    
     return true;
 }
 
@@ -672,7 +739,7 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-bool embObjAnalogSensor::fillData(void *as_array_raw)
+bool embObjAnalogSensor::fillData(void *as_array_raw, eOprotID32_t id32)
 {
     bool ret;
 
@@ -681,11 +748,13 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
         case AS_MAIS:
         {
             ret = fillDatOfMais(as_array_raw);
-        }break;
+        } break;
+        
         case AS_STRAIN:
         {
             ret = fillDatOfStrain(as_array_raw);
-        }break;
+        } break;
+        
         default:
         {
             //i should not be here. if AS_NONE then i should get error in fromConfig function
@@ -700,24 +769,39 @@ bool embObjAnalogSensor::fillData(void *as_array_raw)
 
 
 
+#undef as_array_raw_DBG
 bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 {
-    // Called by eoCallback.
+    // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
+    // eoprot_fun_UPDT_as_strain_status_calibratedvalues() or eoprot_fun_UPDT_as_strain_status_uncalibratedvalues() 
+    // the void* parameter inside this function is a eOas_arrayofupto12bytes_t*   
+    // and can be treated as a EOarray
+    
     mutex.wait();
-//     printf("\nembObj Analog Sensor fill_as_data\n");
-    // do the decode16 code
-    eOas_arrayofupto12bytes_t  *as_array = (eOas_arrayofupto12bytes_t*) as_array_raw;
+    
+#ifdef as_array_raw_DBG
+    printf("\nembObj Analog Sensor fill_as_data\n");
+#endif
+
+    //eOas_arrayofupto12bytes_t  *as_array = (eOas_arrayofupto12bytes_t*) as_array_raw;
+    EOarray *array = (EOarray*)as_array_raw;
+    
     uint8_t msg[2];
     double *_buffer = data->getBuffer();
 
-//     printf("_useCalibration: %d\n", _useCalibration);
+#ifdef as_array_raw_DBG
+     printf("_useCalibration: %d\n", _useCalibration);
+#endif   
+  
     for(int k=0; k<_channels; k++)
     {
         // Get the kth element of the array as a 2 bytes msg
-        memcpy(msg, (char*) eo_array_At((EOarray*) as_array, k), 2);
+        memcpy(msg, (char*) eo_array_At(array, k), 2);
         // Got from canBusMotionControl
         _buffer[k]= (short)( ( (((unsigned short)(msg[1]))<<8)+msg[0]) - (unsigned short) (0x8000) );
 
+#ifdef as_array_raw_DBG 
+        // use it for test
         uint16_t testAAA = 0;
         uint16_t testBBB = 0;
         int16_t testCCC = 0;
@@ -730,14 +814,18 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 //        printf("0x%04X(%X %X) vs 0x%04X\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
 //        printf("%d(%d %d) vs %d\n\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
 //        }
-//
+#endif
 
-        if (_useCalibration==1)
+        if (_useCalibration == 1)
         {
             _buffer[k]=_buffer[k]*scaleFactor[k]/float(0x8000);
         }
     }
-//     printf("\n");
+    
+#ifdef as_array_raw_DBG    
+     printf("\n");
+#endif
+     
     mutex.post();
     return AS_OK;
 }
@@ -748,10 +836,15 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 
 bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 {
-    // Called by eoCallback.
+    // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
+    // eoprot_fun_UPDT_as_mais_status_the15values()
+    // the void* parameter inside this function is a eOas_arrayofupto36bytes_t*   
+    // and can be treated as a EOarray
 
-    eOas_arrayofupto36bytes_t  *as_array = (eOas_arrayofupto36bytes_t*) as_array_raw;
-    uint8_t size = eo_array_Size((EOarray *)as_array);
+    //eOas_arrayofupto36bytes_t  *as_array = (eOas_arrayofupto36bytes_t*) as_array_raw;
+    EOarray *array = (EOarray*)as_array_raw;
+    uint8_t size = eo_array_Size(array);
+    uint8_t itemsize = eo_array_ItemSize(array); // marco.accame: must be 1, as the code after uses this convention
     if(0 == size)
     {
         return false;
@@ -763,9 +856,8 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     //NOTE: here i suppose that size of array is equal to num of channel or to 0 if sensor did not sent something
     //this is an agreement with firmware.
     for(int k=0; k<size; k++)
-    //for(int k=0; k<_channels; k++)
     {
-        uint8_t val = *((uint8_t*)eo_array_At((EOarray*) as_array, k));
+        uint8_t val = *((uint8_t*)eo_array_At(array, k));       // marco.accame: i see that we treat the array as if containing items of 1 byte.
         // Get the kth element of the array
         _buffer[k] = (double)val;
     }
@@ -787,5 +879,4 @@ bool embObjAnalogSensor::close()
 }
 
 // eof
-
 

@@ -34,7 +34,7 @@
     <devices file="hardware/FT/left_upper_arm-ems1-strain.xml" /> 
     <devices file="hardware/FT/right_upper_arm-ems3-strain.xml" />
     <devices file="hardware/FT/left_upper_leg-ems6-strain.xml" /> 
-    <devices file="hardware/FT/left_upper_leg-ems6-strain.xml" />
+    <devices file="hardware/FT/right_upper_leg-ems8-strain.xml" />
 	
     <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
     <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 

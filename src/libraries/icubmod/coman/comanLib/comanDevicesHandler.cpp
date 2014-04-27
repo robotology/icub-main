@@ -182,7 +182,10 @@ bool comanDevicesHandler::close()
     _board_crtl->start_stop_bc_boards(false);
 
     if(_board_crtl != NULL)
+    {
         delete _board_crtl;
+        _board_crtl = NULL;
+    }
 
     return true;
 }

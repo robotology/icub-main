@@ -100,8 +100,7 @@ void minJerkVelCtrlForIdealPlant::reset(const Vector &u0)
 /*******************************************************************************************/
 minJerkVelCtrlForIdealPlant::~minJerkVelCtrlForIdealPlant()
 {
-    if (F!=NULL)
-        delete F;
+    delete F;
 }
 
 
@@ -274,8 +273,7 @@ void minJerkVelCtrlForNonIdealPlant::getPlantParameters(Property &parameters,
 minJerkVelCtrlForNonIdealPlant::~minJerkVelCtrlForNonIdealPlant()
 {
     for (size_t i=0; i<F.size(); i++)
-        if (F[i]!=NULL)
-            delete F[i];
+        delete F[i];
 
     F.clear();
 }
@@ -320,12 +318,9 @@ minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen &z)
 /*******************************************************************************************/
 minJerkTrajGen::~minJerkTrajGen()
 {
-    if(posFilter != NULL)
-        delete posFilter;
-    if(velFilter != NULL)
-        delete velFilter;
-    if(accFilter != NULL)
-        delete accFilter;
+    delete posFilter;
+    delete velFilter;
+    delete accFilter;
 }
 
 
@@ -499,12 +494,9 @@ minJerkRefGen::minJerkRefGen(const minJerkRefGen &z)
 /*******************************************************************************************/
 minJerkRefGen::~minJerkRefGen()
 {
-    if(posFilter != NULL)
-        delete posFilter;
-    if(velFilter != NULL)
-        delete velFilter;
-    if(accFilter != NULL)
-        delete accFilter;
+    delete posFilter;
+    delete velFilter;
+    delete accFilter;
 }
 
 
