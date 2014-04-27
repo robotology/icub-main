@@ -5,7 +5,6 @@
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #include <CanBusSkin.h>
-#include <CanBusSkinErrorCodes.h>
 
 #include <yarp/os/Time.h>
 
@@ -137,12 +136,16 @@ bool CanBusSkin::open(yarp::os::Searchable& config) {
     data.resize(sensorsNum);
     data.zero();
 
+
+    /* ****** Skin diagnostics ****** */
+    useDiagnostics = false;     // FG: This flag could be set via configuration file for cleaningness sake.
+    portSkinDiagnosticsOut.open("/diagnostics/skin/errors:o");
+
     RateThread::start();
     return true;
 }
 
-bool CanBusSkin::close()
-{
+bool CanBusSkin::close() {
     RateThread::stop();
     if (pCanBufferFactory) 
     {
@@ -153,10 +156,10 @@ bool CanBusSkin::close()
     return true;
 }
 
-int CanBusSkin::read(yarp::sig::Vector &out) 
-{
+int CanBusSkin::read(yarp::sig::Vector &out) {
     mutex.wait();
     out=data;
+    diagnoseSkin();
     mutex.post();
 
     return yarp::dev::IAnalogSensor::AS_OK;
@@ -204,19 +207,19 @@ bool CanBusSkin::threadInit() {
 }
 
 void CanBusSkin::run() {
-    using iCub::skin::diagnostics::SkinErrorCode;   // FG: Skin diagnostics error codes
-    using std::deque;
 
     mutex.wait();
 
     unsigned int canMessages = 0;
-    deque<bool> errorTaxels;   // FG: Set to true if the taxel returned an error
     bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
     
     if (!res) {
         std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
     } else {
         for (unsigned int i = 0; i < canMessages; i++) {
+            // Allocate error vector
+            errors.resize(canMessages);
+
             CanMessage &msg = inBuffer[i];
 
             unsigned int msgid = msg.getId();
@@ -225,8 +228,8 @@ void CanBusSkin::run() {
             unsigned int msgType = (int) msg.getData()[0];
             int len = msg.getLen();
 
-#ifndef NODEBUG
-            cout << "DEBUG: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): " 
+#if 0
+            cout << "DEBUG: CanBusSkin: Board ID (" << id <<"): Sensor ID (" << sensorId << "): " 
                 << "Message type (" << std::uppercase << std::showbase << std::hex << (int) msg.getData()[0] << ") " 
                 << std::nouppercase << std::noshowbase << std::dec << " Length (" << len << "): ";
             cout << "Content: " << std::uppercase << std::showbase << std::hex;
@@ -253,45 +256,18 @@ void CanBusSkin::run() {
 
                         // Skin diagnostics
                         if (len == 8) {
+                            // Skin diagnostics is active
+                            useDiagnostics = true;
+
                             // Get error code head and tail
                             short head = msg.getData()[6];
                             short tail = msg.getData()[7];
                             int fullMsg = (head << 8) | (tail & 0xFF);
 
-                            if (!(fullMsg & SkinErrorCode::StatusOK)) {
-                                // An error occurred
-                                // Handle stuck taxel errors
-                                if (((head << 8) | (tail & 0xFF)) & 0xFFF0) {
-                                    errorTaxels.resize(12, false);
-                                    int errorMask = SkinErrorCode::TaxelStuck00;
-                                    for (int tax = 0; tax < 12; ++tax) {
-                                        errorTaxels[i] = (fullMsg & errorMask);
-                                        errorMask = errorMask * 2;  // Increment error mask
-                                    }
-                                }
-
-                                if (errorTaxels.size() > 0) {
-                                    // Errors occurred
-                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): The following taxels are stuck/faulty: \t";
-                                    for (size_t i = 0; i < errorTaxels.size(); ++i) {
-                                        if (errorTaxels[i]) {
-                                            cerr << i << " ";
-                                        }
-                                    }
-                                    cerr << "\n";
-                                }
-
-                                // Handle other errors
-                                if (fullMsg & SkinErrorCode::ErrorReading12C) {
-                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): Cannot read from this sensor. \n"; 
-                                } else if (fullMsg & SkinErrorCode::ErrorACK4C) {
-                                    cerr << "ERROR: CanBusSkin: Net ID (" << id << "): Board ID (" << id <<"): Sensor ID (" << sensorId << "): This sensor does not respond to the initialisation message (0x4C). \n"; 
-                                }
-                            } else {
-#ifndef NODEBUG
-                                cout << "DEBUG: CanBusSkin: Skin is working fine. \n";
-#endif
-                            }
+                            // Store error message
+                            errors[i].board = id;
+                            errors[i].sensor = sensorId;
+                            errors[i].error = fullMsg;
                         } else {
 #if 0
                             cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
@@ -303,6 +279,7 @@ void CanBusSkin::run() {
         }
     }
 
+
     mutex.post();
 
 }
@@ -313,6 +290,31 @@ void CanBusSkin::threadRelease() {
     printf("DEBUG: ... done.\n");
 #endif
 }
+
+
+/* *********************************************************************************************************************** */
+/* ******* Diagnose skin errors.                                            ********************************************** */
+bool CanBusSkin::diagnoseSkin(void) {
+    using iCub::skin::diagnostics::DetectedError;   // FG: Skin diagnostics errors
+    using yarp::sig::Vector;
+
+    if (useDiagnostics) {
+        // Write errors to port
+        for (size_t i = 0; i < errors.size(); ++i) {
+            Vector &out = portSkinDiagnosticsOut.prepare();
+            out.clear();
+            
+            out.push_back(errors[i].board);
+            out.push_back(errors[i].sensor);
+            out.push_back(errors[i].error);
+            
+            portSkinDiagnosticsOut.write(true);
+        }
+    }
+
+    return true;
+}
+/* *********************************************************************************************************************** */
 
 
 /* *********************************************************************************************************************** */
