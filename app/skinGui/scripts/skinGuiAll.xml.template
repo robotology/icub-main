@@ -85,6 +85,17 @@
     <to>/skinManagerGui/info:i</to>
     <protocol>tcp</protocol>
   </connection>
+
+  <connection>
+    <from>/diagnostics/skin/errors:o</from>
+    <to>/skinManager/diagnostics/skin/errors:i</to>
+    <protocol>tcp</protocol>
+  </connection>  
+  <connection>
+    <from>/skinManager/diagnostics/skin/errors:o</from>
+    <to>/skinManagerGui/diagnostics/skin/errors:i</to>
+    <protocol>tcp</protocol>
+  </connection>
   
   <connection>
     <from>/icub/skin/left_hand_comp</from>
