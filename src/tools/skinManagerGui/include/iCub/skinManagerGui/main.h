@@ -81,6 +81,10 @@ GtkLabel                *lblInfo;
 Port					guiRpcPort;             // to send rpc command to the module
 BufferedPort<Vector>	driftCompMonitorPort;   // for reading streaming data (frequency, drift)
 BufferedPort<Bottle>	driftCompInfoPort;      // for reading sporadic msgs (errors, warnings)
+
+/** Input port for skin diagnostics erro messages. */
+BufferedPort<Bottle>    portSkinDiagnosticsErrorsIn;
+
 //Port                    wholeBodyRpcPort;       // port connected to wholeBodyDynamics rpc port
 
 // global data
