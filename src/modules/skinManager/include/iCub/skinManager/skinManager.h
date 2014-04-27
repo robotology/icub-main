@@ -217,6 +217,7 @@ This file can be edited at ICUB_HOME/main/src/modules/skinManager/include/iCub/s
 #include <yarp/os/Vocab.h>
 
 #include "iCub/skinManager/compensationThread.h"
+#include "iCub/skinManager/SkinDiagnosticsReadThread.h"
 #include "iCub/skinDynLib/rpcSkinManager.h"
  
 namespace iCub {
@@ -255,6 +256,7 @@ namespace iCub {
 
             /* pointer to a new thread to be created and started in configure() and stopped in close() */
             CompensationThread *myThread;
+            iCub::skinManager::SkinDiagnosticsReadThread *thSkinDiagnostics;
 
             void addToBottle(yarp::os::Bottle& b, const yarp::sig::Vector& v);
             void addToBottle(yarp::os::Bottle& b, const std::vector<yarp::sig::Vector>& v);

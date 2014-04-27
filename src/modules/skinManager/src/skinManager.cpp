@@ -87,13 +87,24 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
     handlerPort.setRpcMode(true);
 
 
+    /* ****** Threads                                            ****** */
+    // Compensator thread
     /* create the thread and pass pointers to the module parameters */
     myThread = new CompensationThread(moduleName, &rf, robotName, compGain, contCompGain, addThreshold, minBaseline, 
 	    zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
     /* now start the thread to do the work */
-    return myThread->start(); // this calls threadInit() and it if returns true, it then calls run()
+    if(!myThread->start()) { // this calls threadInit() and it if returns true, it then calls run()
+        cerr << "ERROR: SkinManager: Could not start the compensator thread. \n";
+        return false;
+    }
 
-//    return true ;      // let the RFModule know everything went well so that it will then run the module
+    // Skin diagnostics thread
+    thSkinDiagnostics = new SkinDiagnosticsReadThread(20, rf);
+    if (!thSkinDiagnostics->start()) {
+        cerr << "ERROR: SkinManager: Could not start the skin diagnostics thread. \n";
+        return false;
+    }
+
 }
 
 
@@ -107,14 +118,19 @@ bool skinManager::interruptModule()
 
 bool skinManager::close()
 {
-	/* stop the thread */
-	if(myThread){
-		myThread->stop();
+    /* stop the threads */
+    if(myThread) {
+        myThread->stop();
         delete myThread;
-    }    	
-	handlerPort.close();   
+    }
+    if (thSkinDiagnostics) {
+        thSkinDiagnostics->stop();
+        delete thSkinDiagnostics;
+    }
 
-	return true;
+    handlerPort.close();   
+
+    return true;
 }
 
 
