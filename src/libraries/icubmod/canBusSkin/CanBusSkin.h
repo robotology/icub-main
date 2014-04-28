@@ -55,6 +55,9 @@ protected:
    
     yarp::os::Semaphore mutex;
 
+    /** The CAN net ID. */
+    int netID;
+
     yarp::sig::VectorOf<int> cardId;
     int sensorsNum;
 

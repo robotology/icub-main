@@ -23,11 +23,13 @@ namespace iCub {
             /**
              * The detected error.
              * Fields are:
+             *      - net: The CAN bus ID
              *      - board: The MTB board ID
              *      - sensor: The skin sensor ID (triangle/fingertip/...)
              *      - error: The full error message
              */
             struct DetectedError {
+                short net;
                 short board;
                 short sensor;
                 int error;

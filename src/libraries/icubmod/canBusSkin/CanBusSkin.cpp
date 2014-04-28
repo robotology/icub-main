@@ -43,6 +43,8 @@ bool CanBusSkin::open(yarp::os::Searchable& config) {
     int period=config.find("period").asInt();
     setRate(period);
 
+    netID = config.find("canDeviceNum").asInt(); 
+
     Bottle ids=config.findGroup("skinCanIds").tail();
 
     if (ids.size()>1)
@@ -265,10 +267,12 @@ void CanBusSkin::run() {
                             int fullMsg = (head << 8) | (tail & 0xFF);
 
                             // Store error message
+                            errors[i].net = netID;
                             errors[i].board = id;
                             errors[i].sensor = sensorId;
                             errors[i].error = fullMsg;
                         } else {
+                            useDiagnostics = false;
 #if 0
                             cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
 #endif
@@ -304,6 +308,7 @@ bool CanBusSkin::diagnoseSkin(void) {
             Vector &out = portSkinDiagnosticsOut.prepare();
             out.clear();
             
+            out.push_back(errors[i].net);
             out.push_back(errors[i].board);
             out.push_back(errors[i].sensor);
             out.push_back(errors[i].error);
