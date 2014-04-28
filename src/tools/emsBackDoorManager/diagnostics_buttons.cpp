@@ -97,11 +97,12 @@ void commands(void)
 static uint32_t s_getAddressFromUser(void)
 {
     char addrstr[20];
+    int ret;
     uint32_t ip1,ip2,ip3,ip4, address=0;
 
     printf("Insert destination host: x.x.x.x ");
-    scanf("%s", &addrstr[0]);
-    sscanf(addrstr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+    ret = scanf("%s", &addrstr[0]);
+    ret = sscanf(addrstr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     address = (ip1<<24)|(ip2<<16)|(ip3<<8)|ip4 ;
 
     return(address);
@@ -146,6 +147,7 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     uint32_t canStatistics=0;
     uint32_t ethCounters=0;
     opcprotman_res_t res;
+    int ret;
 
     if(opcMan_ptr ==  NULL)
 	{
@@ -155,16 +157,16 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 
 
     printf("enable/disable diagnostics. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &cmdena);
+    ret = scanf("%d", &cmdena);
 
     printf("enable/disable Check external fault. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &extFaultEna);
+    ret = scanf("%d", &extFaultEna);
 
     printf("enable/disable can statistics. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &canStatistics);
+    ret = scanf("%d", &canStatistics);
 
     printf("enable/disable Check eth counters. Press 0 to disable or 1 for crcError, 2 for num of rxUnicat, 4 for txtUnicast\n");
-    scanf("%d", &ethCounters);
+    ret = scanf("%d", &ethCounters);
 
     dest_addr = s_getAddressFromUser();
     printf("address is 0x %x \n", dest_addr);
@@ -207,6 +209,7 @@ uint32_t callback_button_0(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
 	uint32_t cmdena=0;
+	int ret;
 
     if(opcMan_ptr ==  NULL)
 	{
@@ -215,7 +218,7 @@ uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 	}
 
     printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &cmdena);
+    ret = scanf("%d", &cmdena);
     dgnCommands.enable = cmdena;
 
     dgnCommands.signalExtFault = 0;
@@ -231,6 +234,7 @@ uint32_t callback_button_1(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 uint32_t callback_button_2(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET_Addr *addr)
 {
 	uint32_t cmdena=0;
+	int ret;
 
     if(opcMan_ptr ==  NULL)
 	{
@@ -239,7 +243,7 @@ uint32_t callback_button_2(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 	}
 
     printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
-    scanf("%d", &cmdena);
+    ret = scanf("%d", &cmdena);
     dgnCommands.enable = cmdena;
 
     dgnCommands.signalExtFault = 1;
@@ -257,6 +261,7 @@ uint32_t callback_button_3(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     uint32_t extFaultEna=0;
     uint32_t canStatistics=0;
     uint32_t ethCounters=0;
+    int ret;
 
     if(opcMan_ptr ==  NULL)
 	{
@@ -265,19 +270,19 @@ uint32_t callback_button_3(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
 	}
 
 	printf("enable/disable diagnostics for a set of board. Press 1 to enable 0 otherwise\n");
-	scanf("%d", &cmdena);
+	ret = scanf("%d", &cmdena);
 	dgnCommands.enable = cmdena;
 
 	 if(cmdena)
 	 {
 		 printf("enable/disable Check external fault. Press 1 to enable 0 otherwise\n");
-		 scanf("%d", &extFaultEna);
+		 ret = scanf("%d", &extFaultEna);
 
 		 printf("enable/disable can statistics. Press 1 to enable 0 otherwise\n");
-		 scanf("%d", &canStatistics);
+		 ret = scanf("%d", &canStatistics);
 
 		 printf("enable/disable Check eth counters. Press 0 to disable or 1 for crcError, 2 for num of rxUnicat, 4 for txtUnicast\n");
-		 scanf("%d", &ethCounters);
+		 ret = scanf("%d", &ethCounters);
 
 	    dgnCommands.signalExtFault = extFaultEna;
 	    dgnCommands.signalEthCounters = ethCounters;
@@ -303,10 +308,11 @@ uint32_t callback_button_4(uint8_t *payload_ptr, uint32_t payload_size, ACE_INET
     uint32_t min, max, j;
     opcprotman_res_t res;
     uint32_t address=0;
+    int ret;
 
 
     printf("enable/disable diagnostics about rx setpoint (red ball demo). Press 1 to enable 0 otherwise\n");
-    scanf("%d", &cmdena_rxsetPointCheck);
+    ret = scanf("%d", &cmdena_rxsetPointCheck);
 
 }
 
@@ -350,10 +356,10 @@ static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_I
     uint32_t min, max, j;
     opcprotman_res_t res;
     uint32_t address=0;
-
+    int ret;
 
     printf("insert renge of board[1,9]: min max\n");
-    scanf("%d %d", &min, &max);
+    ret = scanf("%d %d", &min, &max);
     if(min>max)
     {
         printf("error: min > max!\n");
@@ -375,7 +381,7 @@ static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_I
 			ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
 			ACE_TCHAR     address[64];
 			addr->addr_to_string(address, 64);
-			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
+			printf("payload of size %d is sent to %s!! (sentbytes=%ld)\n",  size, address, sentBytes);
     }
 
 
@@ -402,7 +408,7 @@ static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_I
     		ssize_t sentBytes = ACE_socket->send(payload_ptr, size, *addr, 0/*flags*/);
 			ACE_TCHAR     address[64];
 			addr->addr_to_string(address, 64);
-			printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  size, address, sentBytes);
+			printf("payload of size %d is sent to %s!! (sentbytes=%ld)\n",  size, address, sentBytes);
 	}
 
 }
