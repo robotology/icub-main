@@ -21,6 +21,7 @@
 
 
 #include <iostream>
+#include <ios>
 #include <sstream>
 
 #include <yarp/os/Time.h>
@@ -84,13 +85,14 @@ void SkinDiagnosticsReadThread::run(void) {
     using iCub::skin::diagnostics::SkinErrorCode;   // FG: Skin diagnostics error codes
     using std::deque;
     using std::stringstream;
+    using std::ios;
     using yarp::sig::Vector;
     using yarp::os::Bottle;
 
     
     // Read sensor data from port
     Vector *data = portSkinDiagnosticsErrorsIn.read(false);
-    if ((data) && (data->size() == 3)) {
+    if ((data) && (data->size() == 4)) {
 #if SKINMANAGER_TH_DIAGREAD_DEBUG
         // Print out FT sensor data
         cout << dbgTag << "Skin diagnostics data: ";
@@ -106,7 +108,7 @@ void SkinDiagnosticsReadThread::run(void) {
 
         // Extract skin errors
         deque<bool> errorTaxels;   // FG: Set to true if the taxel returned an error
-        int errorCode = (*data)[2];
+        int errorCode = (*data)[3];
         if (!(errorCode & SkinErrorCode::StatusOK)) {
             // An error occurred
             // Handle stuck taxel data
@@ -122,7 +124,8 @@ void SkinDiagnosticsReadThread::run(void) {
             if (errorTaxels.size() > 0) {
                 // Errors occurred
                 stringstream ss;
-                ss << "ERROR: CanBusSkin: Board ID (" << (*data)[0] <<"): Sensor ID (" << (*data)[1] << "): The following taxels are stuck/faulty: \t";
+                ss << "ERROR: CanBusSkin: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                    << "): Sensor ID (" << (*data)[2] << "): The following taxels are stuck/faulty: \t";
                 for (size_t i = 0; i < errorTaxels.size(); ++i) {
                     if (errorTaxels[i]) {
                         ss << i << " ";
@@ -135,11 +138,18 @@ void SkinDiagnosticsReadThread::run(void) {
             // Handle other data
             stringstream ss;
             if (errorCode & SkinErrorCode::ErrorReading12C) {
-                ss << "ERROR: CanBusSkin: Board ID (" << (*data)[0] <<"): Sensor ID (" << (*data)[1] << "): Cannot read from this sensor."; 
+                ss << "ERROR: CanBusSkin: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                    << "): Sensor ID (" << (*data)[2] << "): Cannot read from this sensor."; 
             } else if (errorCode & SkinErrorCode::ErrorACK4C) {
-                ss << "ERROR: CanBusSkin: Board ID (" << (*data)[0] <<"): Sensor ID (" << (*data)[1] << "): This sensor does not respond to the initialisation message (0x4C)."; 
+                ss << "ERROR: CanBusSkin: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                    << "): Sensor ID (" << (*data)[2] << "): This sensor does not respond to the initialisation message (0x4C)."; 
             }
-            out.addString(ss.str().c_str());
+            // Check stringstream size
+            ss.seekg(0, ios::end);
+            if(ss.tellg() > 0) {
+                ss.seekg(0, ios::beg);
+                out.addString(ss.str().c_str());
+            }
         } else {
     #ifndef NODEBUG
             stringstream ss;
@@ -149,7 +159,9 @@ void SkinDiagnosticsReadThread::run(void) {
         }
 
         // Write out errors
-        portSkinManagerErrorsOut.write();
+        if (out.size() > 0) {
+            portSkinManagerErrorsOut.write();
+        }
     }
 }  
 /* *********************************************************************************************************************** */
