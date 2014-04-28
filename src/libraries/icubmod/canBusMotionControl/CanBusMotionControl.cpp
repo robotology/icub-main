@@ -3152,7 +3152,7 @@ void CanBusMotionControl:: run()
                 {
                     CanErrors errors;
                     r.iCanErrors->canGetErrors(errors);
-                    fprintf(stderr, " Can Errors --  Device Tx:%u Rx:%u TxOvf: %u RxOvf BusOff: %d -- Driver Fifo Tx:%u Rx:%u\n", 
+                    fprintf(stderr, " Can Errors --  Device Rx:%u, Device Tx:%u, RxOvf: %u, TxOvf: %u, BusOff: %d -- Driver Fifo Rx:%u, Driver Fifo Tx:%u\n", 
                             errors.rxCanErrors,
                             errors.txCanErrors,
                             errors.rxCanFifoOvr,
