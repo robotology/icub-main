@@ -124,7 +124,7 @@ void SkinDiagnosticsReadThread::run(void) {
             if (errorTaxels.size() > 0) {
                 // Errors occurred
                 stringstream ss;
-                ss << "ERROR: CanBusSkin: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
                     << "): Sensor ID (" << (*data)[2] << "): The following taxels are stuck/faulty: \t";
                 for (size_t i = 0; i < errorTaxels.size(); ++i) {
                     if (errorTaxels[i]) {
@@ -138,10 +138,10 @@ void SkinDiagnosticsReadThread::run(void) {
             // Handle other data
             stringstream ss;
             if (errorCode & SkinErrorCode::ErrorReading12C) {
-                ss << "ERROR: CanBusSkin: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
                     << "): Sensor ID (" << (*data)[2] << "): Cannot read from this sensor."; 
             } else if (errorCode & SkinErrorCode::ErrorACK4C) {
-                ss << "ERROR: CanBusSkin: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
                     << "): Sensor ID (" << (*data)[2] << "): This sensor does not respond to the initialisation message (0x4C)."; 
             }
             // Check stringstream size
@@ -153,7 +153,7 @@ void SkinDiagnosticsReadThread::run(void) {
         } else {
     #ifndef NODEBUG
             stringstream ss;
-            ss << "DEBUG: CanBusSkin: Skin is working fine.";
+            ss << "DEBUG: Skin is working fine.";
             out.addString(ss.str().c_str());
     #endif
         }
