@@ -257,10 +257,10 @@ int main(int argc, char *argv[])
 		//reset pkt
 		memset(&payload_buffer[0], 0x00, PAYLOAD_MAX_SIZE);
 		char in_cmd[10], aux[2];
-		int n_cmd;
+		int n_cmd, ret;
 		commands();
 
-		scanf("%s", in_cmd);
+		ret = scanf("%s", in_cmd);
 
 		if((strcmp("quit", in_cmd) == 0 ))
 		{
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
 					ssize_t sentBytes = ACE_socket->send(&payload_buffer[0], byte2send, remote.addr, 0/*flags*/);
 					ACE_TCHAR     address[64];					
 					remote.addr.addr_to_string(address, 64);
-					printf("payload of size %d is sent to %s!! (sentbytes=%d)\n",  byte2send, address, sentBytes);
+					printf("payload of size %d is sent to %s!! (sentbytes=%ld)\n",  byte2send, address, sentBytes);
 				}
 				else
 				{
@@ -376,7 +376,7 @@ void *recvThread(void * arg)
 		memset(&rec_payload_buffer[0], 0, PAYLOAD_MAX_SIZE);
 		rec_payload_size = ACE_socket->recv(&rec_payload_buffer[0], PAYLOAD_MAX_SIZE, src_addr, 0/*flags*/);
 		src_addr.addr_to_string(address, 64);
-		printf("\n\nReceived pkt of size = %d from %s\n",  rec_payload_size, address);
+		printf("\n\nReceived pkt of size = %ld from %s\n",  rec_payload_size, address);
 		s_check_seqNum(src_addr, opcprotman_getSeqNum(opcMan_ptr, (opcprotman_message_t*)&rec_payload_buffer[0]));
 		/*chiama qui funzione parser*/
 /*		for(int i =0; i<rec_payload_size; i++)
