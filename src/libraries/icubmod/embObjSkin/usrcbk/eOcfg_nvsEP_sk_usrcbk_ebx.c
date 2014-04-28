@@ -27,66 +27,74 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
-
-#define MSG010910 "WARNING-> linux api cannot be used... convert into ACE ones because on WIN it shant work"
-#if defined(_MSC_VER)
-    #pragma message(MSG010910)
-#else
-    #warning MSG010910
-#endif
+#define SK_USRCBK_USE_DEBUG
+#undef SK_USRCBK_USE_DEBUG
 
 #include "stdlib.h"
 #include "string.h"
 #include "stdio.h"
 
-#if !defined(_MSC_VER)
-#include <time.h>
-#endif
+#include "EoCommon.h"
+#include "EOarray.h"
+#include "EOnv.h"
 
+#include "EoSkin.h"
 
-
-#include  "errno.h"
+#include "EoProtocolSK_overridden_fun.h"
 
 #ifdef _ICUB_CALLBACK_
 #include "FeatureInterface.h"
 #endif
 
-#define faketrue    1
-#define fakefalse   0
 
-#include "EoCommon.h"
-#include "EOarray.h"
-#include "EOnv_hid.h"
+#if	defined(SK_USRCBK_USE_DEBUG)
 
-#include "EoSkin.h"
+#warning DEBUG mode for SKIN activated. this mode runs only on linux. it may be not updated, thus ... caveat emptor
 
-#include "EoProtocolSK_overridden_fun.h"
-//#include "eOcfg_nvsEP_sk_emsboard_usr_hid.h"
+#if !defined(_MSC_VER)
+#include <time.h>
+#endif
+
+#include  "errno.h"
+
+#endif//defined(SK_USRCBK_USE_DEBUG)
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
 // --------------------------------------------------------------------------------------------------------------------
+
+#if	defined(SK_USRCBK_USE_DEBUG)
+
 #define SKIN_BOARD_MAXNUM                   7  //each skin endpoint is composed by 7 skin boards (mtb3)
 #define SKIN_TRIANGLE4BOARD_MAXNUM          16 //each mtb3 manages 16 skin-triangle
 #define SKIN_POINTS4TRIANGLE_MAXNUM         12 //each triangle sends 12 point (value)
 #define SKIN_RECCANFRAME4TRIANGLE_MAXNUM    2 //each triangle sends 12 points in two can frame
 #define MAX_ACQUISITION                     10000
 
+#endif//defined(SK_USRCBK_USE_DEBUG)
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
+
+#if	defined(SK_USRCBK_USE_DEBUG)
+
 void s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(EOarray_of_10canframes *sk_array);
 void s_eo_cfg__nvsEP_sk_hid_Histogram_Print(void);
 void s_eo_cfg_nvsEP_sk_hid_Histogram_Reset(void);
 void s_eo_cfg__nvsEP_sk_hid_ParseCanFrame(EOarray_of_10canframes *sk_array);
-void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv);
+void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv, const eOropdescriptor_t* rd);
 void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void);
+
+#endif//defined(SK_USRCBK_USE_DEBUG)
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
+
+#if	defined(SK_USRCBK_USE_DEBUG)
 
 uint32_t s_skin_matrix_histogramRecCanFrame[SKIN_BOARD_MAXNUM][SKIN_TRIANGLE4BOARD_MAXNUM][SKIN_RECCANFRAME4TRIANGLE_MAXNUM];
 #if !defined(_MSC_VER)
@@ -98,7 +106,7 @@ uint8_t keepGoingOn = 1;
 uint8_t printed = 0;
 FILE *outFile1, *outFile2;
 
-
+#endif//defined(SK_USRCBK_USE_DEBUG)
 
 // --------------------------------------------------------------------------------------------------------------------
 //  CALLBACK VERA!!
@@ -106,14 +114,11 @@ FILE *outFile1, *outFile2;
 
 extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-//#warning "skin strong callback iCubInterface"
-//  printf("new callback\n");
+    EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)rd->data;
 
+#if	defined(SK_USRCBK_USE_DEBUG)
 
-    EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)nv->ram;
-//    int i;
-
-   // s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv);
+   // s_eo_cfg_nvsEP_sk_hid_Dump_Data(nv, rd);
 
     /*  Vale stats
         if(nv->ep == endpoint_sk_emsboard_rightlowerarm)
@@ -151,17 +156,18 @@ extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, co
         }
     */
 
+#endif//defined(SK_USRCBK_USE_DEBUG)
+
 #ifdef _ICUB_CALLBACK_
-    {    
-//    void *featList;
-    FEAT_ID id;
-    id.type = Skin;
-    id.ep = eo_nv_GetEP8(nv);
+    {  
+  
+    FEAT_ID id = {0};
+    id.type 	= Skin;
+    id.ep 	= eo_nv_GetEP8(nv);
     id.boardNum = nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
 
-  //printf("skin iCub Callback, looking for ep %d\n", id.ep);
-//   s_eo_cfg_nvsEP_sk_hid_print_arrayof10canframe(sk_array);
     findAndFill(&id, (char *)sk_array, rd->id32);
+
     }
 #endif
 }
@@ -170,6 +176,8 @@ extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, co
 // --------------------------------------------------------------------------------------------------------------------
 //      UTILITIES
 // --------------------------------------------------------------------------------------------------------------------
+
+#if	defined(SK_USRCBK_USE_DEBUG)
 
 #if !defined(_MSC_VER)
 static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct timeval *_y)
@@ -203,7 +211,7 @@ static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct 
 }
 #endif
 
-void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
+void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv, const eOropdescriptor_t* rd)
 {
 #if !defined(_MSC_VER)
 
@@ -214,7 +222,7 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
     int i, cardId, valid, mtbId, triangle, msgtype;
 
     EOarray_of_10canframes sk_array;
-    memcpy(&sk_array, nv->ram, sizeof(EOarray_of_10canframes));
+    memcpy(&sk_array, rd->data, sizeof(EOarray_of_10canframes));
 
     
 
@@ -280,7 +288,7 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
 
                 for(p=0; p<MAX_ACQUISITION; p++)
                 {
-                    fprintf(stdout, "%d\t\t%d%06d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
+                    fprintf(stdout, "%d\t\t%d%06d\n", dump[p], (int)tv[p].tv_sec, (int)tv[p].tv_usec);
                 }
 
 
@@ -294,7 +302,7 @@ void s_eo_cfg_nvsEP_sk_hid_Dump_Data(const EOnv *nv)
                     #warning acemor-> loop is done on 10000 and array contains 1024 ... 
                     for(p=0; p<MAX_ACQUISITION; p++)
                     {
-                        fprintf(log, "%d\t\t%d%d\n", dump[p], tv[p].tv_sec, tv[p].tv_usec);
+                        fprintf(log, "%d\t\t%d%d\n", dump[p], (int)tv[p].tv_sec, (int)tv[p].tv_usec);
                     }
 
 //                  fclose(log);
@@ -468,7 +476,7 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void)
                 for(l=0; l<MAX_ACQUISITION; l++)
                 {
 #if !defined(_MSC_VER)
-                    fprintf(outFile2,"%d:%d:%d:%d %06d.%06d\n", i,j,k,l, s_skin_matrix_histogramTV[l][i][j][k]);
+                    fprintf(outFile2,"%d:%d:%d:%d -> [sec.usec] = [%06d.%06d]\n", i,j,k,l, (int)s_skin_matrix_histogramTV[l][i][j][k].tv_sec, (int)s_skin_matrix_histogramTV[l][i][j][k].tv_usec);
 #endif
                 }
             }
@@ -479,6 +487,8 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void)
         fprintf(outFile2,"\n\n");
     }
 }
+
+#endif//defined(SK_USRCBK_USE_DEBUG)
 
 // eof
 
