@@ -166,9 +166,16 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     }
 #endif
 
+    // other configurable parameters for eOhosttransceiver_cfg_t
+    // - mutex_fn_new, transprotection, nvsetprotection are left (NULL, eo_trans_protection_none, eo_nvset_protection_none) 
+    //   as in default because we dont protect internally w/ a mutex
+    // - confmancfg is left NULL as in default because we dont use a confirmation manager.
+    // - extfn.onerrorseqnumber is assigned value ....
+
     localipaddr  = _localipaddr;
     remoteipaddr = _remoteipaddr;
     ipport       = _ipport;
+
 
     // initialise the transceiver: it creates a EOtransceiver and its EOnvSet
     hosttxrx     = eo_hosttransceiver_New(&hosttxrxcfg);            // never returns NULL. it calls its error manager
@@ -631,6 +638,7 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
 
 
 #define OLDMODE
+#undef OLDMODE
 
 #ifdef OLDMODE
 #include "EOconstvector_hid.h"
