@@ -5,24 +5,23 @@
  *  Author: Cardellino Alberto
  */
 
+
+#if 0
+// marco.accame on 29 apr 2014: we use a cpp_protocol_callback_incaseoferror_in_sequencenumberReceived() function defined inside
+//                              hostTransceiver.cpp
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 
-#include "EOreceiver.h"
+#include "EoCommon.h"
 
-#if defined(OVERRIDE_eo_receiver_callback_incaseoferror_in_sequencenumberReceived)
-extern void eo_receiver_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum)
+extern void protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum)
 {  
     long long unsigned int exp = expected_seqnum;
     long long unsigned int rec = rec_seqnum;
-#if !defined(_MSC_VER)
-    #warning marco.accame: fix the correct call of eo_receiver_callback_incaseoferror_in_sequencenumberReceived(). 
-#endif
-    // for now w/ definition of OVERRIDE_eo_receiver_callback_incaseoferror_in_sequencenumberReceived, later on w/ a function
-    // eo_receiver_error_callback_set() 
     printf("Error in sequence number from 0x%x!!!! \t Expected %llu, received %llu\n", remipv4addr, exp, rec);
 };
+
 #endif
 
 

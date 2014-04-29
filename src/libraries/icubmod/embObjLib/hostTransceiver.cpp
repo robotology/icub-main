@@ -95,6 +95,16 @@ hostTransceiver::~hostTransceiver()
     yTrace();
 }
 
+void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum)
+{  
+    long long unsigned int exp = expected_seqnum;
+    long long unsigned int rec = rec_seqnum;
+    printf("Error in sequence number from 0x%x!!!! \t Expected %llu, received %llu\n", remipv4addr, exp, rec);
+};
+
+//extern "C" {
+//extern void protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum);
+//}
 
 bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
 {
@@ -170,7 +180,10 @@ bool hostTransceiver::init(uint32_t _localipaddr, uint32_t _remoteipaddr, uint16
     // - mutex_fn_new, transprotection, nvsetprotection are left (NULL, eo_trans_protection_none, eo_nvset_protection_none) 
     //   as in default because we dont protect internally w/ a mutex
     // - confmancfg is left NULL as in default because we dont use a confirmation manager.
-    // - extfn.onerrorseqnumber is assigned value ....
+    
+    // marco.accame on 29 apr 2014: so that the EOreceiver calls this funtion in case of error in sequence number
+    hosttxrxcfg.extfn.onerrorseqnumber = cpp_protocol_callback_incaseoferror_in_sequencenumberReceived;
+
 
     localipaddr  = _localipaddr;
     remoteipaddr = _remoteipaddr;
