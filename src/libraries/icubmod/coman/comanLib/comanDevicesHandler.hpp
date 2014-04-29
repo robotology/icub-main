@@ -39,7 +39,7 @@ private:
     static comanDevicesHandler    *_handle;
     Boards_ctrl                   *_board_crtl;
     static int                    _usedBy;
-    int                           *_gravityOffsets;
+    std::vector<int>              _gravityOffsets;
     int                           _gravityOffsetsVectorSize;
 
 private:
