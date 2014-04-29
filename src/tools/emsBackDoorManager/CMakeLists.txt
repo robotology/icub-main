@@ -42,7 +42,21 @@ ENDIF ("${BUTTON_FILE}" STREQUAL "")
 
 SET(ACE_INCLUDE_DIR "/usr/include")
 
-set(BASE                 $ENV{ICUB_ROOT}/src/libraries/icubmod/embObjLib/embObj)
+FIND_PACKAGE(icub_firmware_shared)
+
+
+if(icub_firmware_shared_embobj_FOUND)
+    set(BASE         ${icub_firmware_shared_embobj_INCLUDE_DIR})
+else()
+    set(BASE         $ENV{ICUB_ROOT}/src/libraries/icubmod/embObjLib/embObj)
+endif()
+
+message ("firmware shared dir =  " ${BASE})
+
+
+
+
+
 set(COMMON_FOLDER        ${BASE}/embobj/core/core)
 set(ICUB_HEADER_FOLDER   ${BASE}/embobj/plus/comm-v2/icub/)
 set(OPC_PROTO_FOLDER     ${BASE}/embobj/plus/comm-v1/opcprot/)
@@ -64,35 +78,35 @@ message(INFO "includes: ${ALL_INCLUDES}")
 
 
 
-set(OPC_PROTO_HEADER		${OPC_PROTO_FOLDER}/OPCprotocolManager.h
-				)
+set(OPC_PROTO_HEADER        ${OPC_PROTO_FOLDER}/OPCprotocolManager.h
+                            )
 message(INFO "OPC_PROTO_HEADER: ${OPC_PROTO_HEADER}")
 
 
 set(OPC_PROTO_SOURCE
                     ${OPC_PROTO_FOLDER}/OPCprotocolManager.c
-					${OPC_PROTO_FOLDER}/OPCprotocolManager_hid.h
-					)
+                    ${OPC_PROTO_FOLDER}/OPCprotocolManager_hid.h
+                    )
 
 # configuration ------------------------
-set(OPC_PROTO_CFG_HEADER		${OPC_PROTO_FOLDER_CFG}/OPCprotocolManager_Cfg.h )
-set(OPC_PROTO_CFG_SOURCE		${OPC_PROTO_FOLDER_CFG}/OPCprotocolManager_Cfg.c )
+set(OPC_PROTO_CFG_HEADER        ${OPC_PROTO_FOLDER_CFG}/OPCprotocolManager_Cfg.h )
+set(OPC_PROTO_CFG_SOURCE        ${OPC_PROTO_FOLDER_CFG}/OPCprotocolManager_Cfg.c )
 
 
 set(embobj_source   ${OPC_PROTO_SOURCE}
-					${OPC_PROTO_CFG_SOURCE}
-					)
+                    ${OPC_PROTO_CFG_SOURCE}
+                    )
 
 
 
-set(EXTRA_SOURCE 		${EXTRA_FOLDER}/main.cpp
-						${EXTRA_FOLDER}/diagnostics_buttons.cpp
-						${EXTRA_FOLDER}/opcManager_cfg4pc104.c
-						)
+set(EXTRA_SOURCE        ${EXTRA_FOLDER}/main.cpp
+                        ${EXTRA_FOLDER}/diagnostics_buttons.cpp
+                        ${EXTRA_FOLDER}/opcManager_cfg4pc104.c
+                        )
 
-set(ALL_SOURCE_CODE		${embobj_source}
-						${EXTRA_SOURCE}
-						)
+set(ALL_SOURCE_CODE     ${embobj_source}
+                        ${EXTRA_SOURCE}
+                        )
 
 add_executable(${PROJECTNAME} ${ALL_SOURCE_CODE})
 target_link_libraries(${PROJECTNAME} ${ACE_LIBRARIES} pthread)

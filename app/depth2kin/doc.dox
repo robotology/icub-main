@@ -1,0 +1,32 @@
+/**
+\defgroup depth2kinApp Stereo-Kinematics Calibration
+\ingroup icub_applications
+
+Build online map to link the robot stereo vision to its kinematics structure.
+
+\section intro_sec Description
+This application makes use of \ref depth2kin module to allow finding online the trasformation required
+by the robot to reach with the end-effector for 3D points acquired through a stereo vision system.
+
+\section dep_sec Dependencies
+In order to run the application, the robot must be running with the cartesian and gaze interfaces available.
+
+\section int_sec Instantiated Modules
+- \ref depth2kin
+- SFM
+- yarpview 
+
+\section howto_sec How to run the Application
+...
+ 
+\author Ugo Pattacini
+
+Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
+
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\sa depth2kin
+
+This file can be edited at \link main/app/depth2kin/doc.dox
+*/
+

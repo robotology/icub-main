@@ -76,11 +76,6 @@ bool yarp::dev::DebugInterfaceClient::open(Searchable& config)
     remote = config.find("remote").asString().c_str();
     local = config.find("local").asString().c_str();
 
-    ConstString carrier = 
-        config.check("carrier",
-        Value("udp"),
-        "default carrier for streaming robot state").asString().c_str();
-
     if (local != "")
 	{
         ConstString s1 = local;
@@ -105,17 +100,7 @@ bool yarp::dev::DebugInterfaceClient::open(Searchable& config)
 			{
 				printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
 				connectionProblem = true;
-			}
-        s1 = remote;
-        s1 += "/command:i";
-        s2 = local;
-        s2 += "/command:o";
-        ok = Network::connect(s2.c_str(), s1.c_str(), carrier);
-        if (!ok) 
-			{
-				printf("Problem connecting to %s, is the remote device available?\n", s1.c_str());
-				connectionProblem = true;
-			}
+            }
     }
 
     if (connectionProblem)
@@ -126,16 +111,18 @@ bool yarp::dev::DebugInterfaceClient::open(Searchable& config)
     state_buffer.setStrict(false);
     command_buffer.attach(command_p);
 
-	bool ok=true;
-	/*
-	// @@@ check this
-	ok = get1V1I(VOCAB_AXES, nj);
-    if (nj==0) {
-        ok = false;
-    }
-	*/
+    Bottle cmd;
+    Bottle response;
+    cmd.addVocab(VOCAB_GET);
+    cmd.addVocab(VOCAB_AXES);
 
-    if (!ok) {
+    bool ok = rpc_p.write(cmd, response);
+    if (CHECK_FAIL(ok, response))
+    {
+        nj = response.get(2).asInt();
+    }
+
+    if (!ok || (nj == 0) ) {
         printf("Problems with obtaining the number of controlled axes\n");
         return false;
     }
@@ -274,7 +261,10 @@ bool yarp::dev::DebugInterfaceClient::getRotorPositions(double* t)
     {
         this->lastStamp.update(); //BEWARE: This updates the stamps of the whole interface!
         ok=ok&&true;
-        *t=resp.get(3).asDouble();
+        for(int i = 0; i < nj; i++)
+        {
+            t[i] = resp.get(2+i).asDouble();
+        }
     }
     return ok;
 }
@@ -312,7 +302,10 @@ bool yarp::dev::DebugInterfaceClient::getRotorSpeeds(double* t)
     {
         this->lastStamp.update(); //BEWARE: This updates the stamp of the whole interface!
         ok=ok&&true;
-        *t=resp.get(3).asDouble();
+        for(int i = 0; i < nj; i++)
+        {
+            t[i] = resp.get(2+i).asDouble();
+        }
     }
     return ok;
 }
@@ -350,7 +343,10 @@ bool yarp::dev::DebugInterfaceClient::getRotorAccelerations(double* t)
     {
         this->lastStamp.update(); //BEWARE: This updates the stamp of the whole interface!
         ok=ok&&true;
-        *t=resp.get(3).asDouble();
+        for(int i = 0; i < nj; i++)
+        {
+            t[i] = resp.get(2+i).asDouble();
+        }
     }
     return ok;
 }
@@ -397,8 +393,12 @@ bool yarp::dev::DebugInterfaceClient::getJointPositions(double* t)
     if (  (resp.get(0).asVocab()==VOCAB_IS)
         &&(resp.get(1).asInt()==VOCAB_DEBUG_JOINT_POSS))
     {
+        this->lastStamp.update(); //BEWARE: This updates the stamps of the whole interface!
         ok=ok&&true;
-        *t=resp.get(3).asDouble();
+        for(int i = 0; i < nj; i++)
+        {
+            t[i] = resp.get(2+i).asDouble();
+        }
     }
     return ok;
 }

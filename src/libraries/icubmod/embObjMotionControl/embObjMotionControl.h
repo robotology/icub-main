@@ -47,6 +47,8 @@
 
 using namespace std;
 
+#define EMBMC_SIZE_INFO     128
+
 /////  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
@@ -304,7 +306,7 @@ public:
     embObjMotionControl();
     ~embObjMotionControl();
 
-    char                info[SIZE_INFO];
+    char                info[EMBMC_SIZE_INFO];
     Semaphore           semaphore;
     eoRequestsQueue     *requestQueue;  // tabella che contiene la lista delle attese
 
@@ -551,3 +553,4 @@ public:
 };
 
 #endif // include guard
+

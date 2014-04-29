@@ -18,8 +18,8 @@
 
 // - include guard ----------------------------------------------------------------------------------------------------
 
-#ifndef _EOPROTOCOMN_OVERRIDDEN_FUN_H_
-#define _EOPROTOCOMN_OVERRIDDEN_FUN_H_
+#ifndef _EOPROTOCOLMN_OVERRIDDEN_FUN_H_
+#define _EOPROTOCOLMN_OVERRIDDEN_FUN_H_
 
 
 
@@ -37,12 +37,12 @@
  **/
 
 
+// this file is not needed anymore
 
 // - external dependencies --------------------------------------------------------------------------------------------
 // empty-section
 
 
- 
 
 // - public #define  --------------------------------------------------------------------------------------------------
 

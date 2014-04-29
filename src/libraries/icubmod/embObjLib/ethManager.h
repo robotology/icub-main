@@ -1,3 +1,4 @@
+
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
@@ -62,6 +63,11 @@
 // Emb Obj includes
 #include "hostTransceiver.hpp"
 #include "debugFunctions.h"
+#include "FeatureInterface.h"
+#include "EoProtocol.h"
+
+// marco.accame on 11 apr 2014:
+// really needed?
 #include "FeatureInterface_hid.h"
 
 
@@ -73,17 +79,10 @@
 #include "testStats.h"
 #endif
 
-#define MSG01098 "WARNING-> on april 16 2013 some work is ongoing to clean SIZE_INFO etc."
-#if defined(_MSC_VER)
-    #pragma message(MSG01098)
-#else
-    #warning MSG01098
-#endif
 
-#define EMPTY_PACKET_SIZE         EOK_HOSTTRANSCEIVER_emptyropframe_dimension
-//#define BUFFER_SIZE               EOK_HOSTTRANSCEIVER_capacityofpacket
-#define SIZE_INFO                 128
-//#define MAX_ICUB_EP               32
+#define EMPTY_PACKET_SIZE           EOK_HOSTTRANSCEIVER_emptyropframe_dimension
+#define ETHMAN_SIZE_INFO            128
+
 
 
 // sizes of rx and tx buffers. 
@@ -135,11 +134,9 @@ private:
     // Data for EMS handling
 public:
 //    int                           nBoards;            //!< Number of EMS instantiated
-    // Creare un metodo get!! questi devono essere usabili ma non modificabili da altri.
-    //map<eOnvEP_t, FEAT_ID>        boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
-    map<std::pair<eOnvBRD_t, eOnvEP8_t>, FEAT_ID>        boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
+    map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, FEAT_ID>  boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
     std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
-    ACE_INET_Addr                 local_addr;         // sarebbe privato.
+    ACE_INET_Addr                 local_addr;         
 
 private:
     // Data for UDP socket handling
@@ -151,8 +148,7 @@ private:
     EthReceiver                   *receiver;          //!< class handling data coming from EMSs with a blocking recv mechanism. Derived rom Thread
 
     // Data for Debug or support
-    char                          info[SIZE_INFO];
-
+    char                          info[ETHMAN_SIZE_INFO];
 
     // Methods for Singleton handling#include <yarp/os/Bottle.h>
 private:
@@ -234,17 +230,19 @@ private:
 public:
     /*! @fn     void *getHandleFromEP(eOnvEP_t ep);
      *  @brief  Get a pointer to the class handling the specified EndPoint
+     *  @param  boardnum  in range [1, max]
      *  @param  ep  The desired EndPoint
      *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
      */
-    void *getHandle(eOnvBRD_t boardnum, eOnvEP8_t ep);
+    void *getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
 
     /*! @fn     FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
      *  @brief  Get the struct of FEAT_ID type with useful information about the class handling the desired EndPoint.
+     *  @param  boardnum the board number in range [1, max]
      *  @param  ep  The desired EndPoint
      *  @return std::list<ethResources *>Struct with info
      */
-    FEAT_ID getFeatInfo(eOnvBRD_t boardnum, eOnvEP8_t ep);
+    FEAT_ID getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
 
     // Methods for UDP socket handling
 private:
@@ -307,18 +305,18 @@ class EthReceiver : public yarp::os::Thread
 #endif
 {
 private:
-    uint8_t                       recvBuffer[rxBUFFERsize];
-    ACE_SOCK_Dgram                *recv_socket;
-    TheEthManager                 *ethManager;
-    std::list<ethResources *>     *ethResList;
-    uint64_t                       seqnumList[10];
-    bool                           recFirstPkt[10];
+    uint8_t                         recvBuffer[rxBUFFERsize];
+    ACE_SOCK_Dgram                  *recv_socket;
+    TheEthManager                   *ethManager;
+    std::list<ethResources *>       *ethResList;
+    uint64_t                        seqnumList[10];
+    bool                            recFirstPkt[10];
 
 
 #ifdef ETHRECEIVER_STATISTICS_ON
-    StatExt                       *stat;
-    StatExt                       *stat_onRecFunc;
-    StatExt                       *stat_onMutex;
+    StatExt                         *stat;
+    StatExt                         *stat_onRecFunc;
+    StatExt                         *stat_onMutex;
 #endif
 
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
@@ -346,6 +344,7 @@ public:
 #endif
 
 // eof
+
 
 
 

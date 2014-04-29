@@ -44,7 +44,9 @@ namespace yarp{
     }
 }
 
-class yarp::dev::DebugInterfaceClient : public IDebugInterface, public IPreciselyTimed, public DeviceDriver 
+class yarp::dev::DebugInterfaceClient : public DeviceDriver,
+                                        public IDebugInterface,
+                                        public IPreciselyTimed
 {
 protected:
     Port rpc_p;

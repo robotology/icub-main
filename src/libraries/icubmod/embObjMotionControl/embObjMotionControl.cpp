@@ -22,6 +22,14 @@
 #endif
 #include "Debug.h"
 
+#include "EoCommon.h"
+//#include "EOnv.h"
+#include "EOarray.h"
+#include "EoProtocol.h"
+#include "EoProtocolMN.h"
+#include "EoProtocolMC.h"
+#include "EoProtocolAS.h"
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -372,8 +380,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 //    yWarning() << "useRawEncoderData is " << useRawEncoderData;
 
     // Saving User Friendly Id
-    memset(_fId.name, 0x00, SIZE_INFO);
-    sprintf(_fId.name, "%s", info);
+    memset(_fId.name, 0x00, sizeof(_fId.name));
+    snprintf(_fId.name, sizeof(_fId.name), "%s", info);
 
     _fId.boardNum  = 255;
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
@@ -445,7 +453,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    NVnumber = res->getNVnumber(_fId.boardNum, _fId.ep);
+    NVnumber = res->getNVnumber(_fId.ep);
     requestQueue = new eoRequestsQueue(NVnumber);
 
     if(!init() )
@@ -468,13 +476,22 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 bool embObjMotionControl::isEpManagedByBoard()
 {
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 0, eoprot_tag_mc_joint_config);
-    EOnv nv;
-    if(NULL == res->getNVhandler(protoid, &nv))
+    // marco.accame on 10 apr 2014: there is a better method. use eObool_t eoprot_endpoint_configured_is(eOprotBRD_t brd, eOprotEndpoint_t ep)
+    // boardnumber = res->get_protBRDnumber();
+    if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_motioncontrol))
     {
-        return false;
+        return true;
     }
-    return true;
+    
+    return false;
+
+//    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 0, eoprot_tag_mc_joint_config);
+//    EOnv nv;
+//    if(NULL == res->getNVhandler(protoid, &nv))
+//    {
+//        return false;
+//    }
+//    return true;
 }
 
 
@@ -970,7 +987,36 @@ bool embObjMotionControl::init()
     ////////////////////////////////////////////////
     // set ropsig
     ///////////////////////////////////////////////
+    
+    // marco.accame on 10 apr 2014: 
+    // the method used so far is not correct. nevertheless it works. but for a number of reasons:
+    // 1. the initial value of the ram of the EOnv is zero. only for this reason the eo_array_Reset() of ->array before setting the capacity and itemsize does not write out of memory
+    // 2. the fields of eOmn_ropsigcfg_command_t other than array and cmmnd are left initialised (plustime, plussign, signature) but fortunately are zero.
+    // 3. the send of the rop is: addSetMessage(protid_ropsigcfgassign, (uint8_t *) array) but should be addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign).
+    //    fortunately the struct eOmn_ropsigcfg_command_t has field array as its first. thus the two pointers are the same.
+    // the correct method is to build a struct eOmn_ropsigcfg_command_t, initialise it properly and then pass it to the function.    
 
+    #define NEWMODE
+    
+    #if     defined(NEWMODE)
+    
+    
+    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
+    
+    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
+    
+    ropsigcfgassign = &theropsigcfgassigncommand;    
+    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it. 
+    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
+    ropsigcfgassign->plustime   = 0;
+    ropsigcfgassign->plussign   = 0;
+    ropsigcfgassign->filler01   = 0;
+    ropsigcfgassign->signature  = 0;
+    
+    // ok, now we can fill array
+    
+    #else
+    
     eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
 
 
@@ -986,7 +1032,7 @@ bool embObjMotionControl::init()
     array->head.itemsize = sizeof(eOropSIGcfg_t);
     ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
 
-
+    #endif
 
 
 
@@ -1003,6 +1049,8 @@ bool embObjMotionControl::init()
     for(int j=0; j< _njoints; j++)
     {
         //  yDebug() << "configuring ropSig for joint " << j;
+        int sigcfgperiteration = 0; // with this variable we count the number of sigcfg put inside the array at each iteration. we assume that is always the same number.
+        sigcfgperiteration = 0;
 
         // Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
         if( ! (EMS_capacityofropframeregulars >= (totSigSize += jStatusSize)) )
@@ -1012,9 +1060,9 @@ bool embObjMotionControl::init()
         }
 
         // basterebbero jstatus__basic e jstatus__ofpid, ma la differenza tra questi due e il jstatus completo sono 4 byte, per ora non utilizzati.
-       protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
         //    printf("\njointNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-        if(EOK_uint16dummy == protid)
+        if(eo_prot_ID32dummy == protid)
         {
             yError () << " NVID jointNVindex_jstatus not found for board " << _fId.boardNum  << " joint " << j;
         }
@@ -1023,6 +1071,8 @@ bool embObjMotionControl::init()
             sigcfg.id32 = protid;
             if(eores_OK != eo_array_PushBack(array, &sigcfg))
                 yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
+            
+            sigcfgperiteration++;
         }
 
         // Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
@@ -1034,7 +1084,7 @@ bool embObjMotionControl::init()
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status);
         //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-        if(EOK_uint16dummy == protid)
+        if(eo_prot_ID32dummy == protid)
         {
             yError () << " NVID eoprot_tag_mc_motor_status not found for board " << _fId.boardNum << " joint " << j;
         }
@@ -1043,33 +1093,48 @@ bool embObjMotionControl::init()
             sigcfg.id32 = protid;
             if(eores_OK != eo_array_PushBack(array, &sigcfg))
                 yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
+                
+            sigcfgperiteration ++;
         }
 
-        if( (NUMOFROPSIGCFG - 1) <= ((j - old +1)*2))	// a ropSigCfg can store only 20 variables at time. Send 2 messages if more are needed.
+
+    #if     defined(NEWMODE)        
+        // we put sigcfgperiteration items at each iterations. we transmit if there is not space left for further sigcfgperiteration calls of eo_array_PushBack(array, &sigcfg)
+        if((eo_array_Capacity(array) - eo_array_Size(array)) < sigcfgperiteration)
+    #else    
+        if( (NUMOFROPSIGCFG - 1) <= ((j - old +1)*2))	// a ropSigCfg can store only NUMOFROPSIGCFG variables at time. Send 2 messages if more are needed.
+    #endif    
         {
-            // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (20) value. If more are needed, send another package,
+            // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (21) value. If more are needed, send another package,
             // so wait some time to let ethManager send this package and then start again.
             // yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
-            if(!res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) array))
+            if(!res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign)) // marco.accame: instead of ropsigcfgassign there was array
             {
                 yError() << "while setting rop sig cfg";
             }
 
-            Time::delay(0.01);        // Wait here, the ethManager thread will take care of sending the loaded message
-            eo_array_Reset(array);
-            array->head.capacity = NUMOFROPSIGCFG;
-            array->head.itemsize = sizeof(eOropSIGcfg_t);
-            ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+            Time::delay(0.01);          // Wait here, the ethManager thread will take care of sending the loaded message
+            eo_array_Reset(array);      // reset so that the array is able to contain new items at the following round
             old = j;
         }
  
     }
 
+#if     defined(NEWMODE)   
+    if(0 != eo_array_Size(array))
+    {   // there are still ropsigcfg to send
+        if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+        {
+            yError() << "while setting rop sig cfg";
+        }    
+    }
+#else  
     // Send remaining stuff
-    if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) array) )
+    if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) ) // marco.accame: instead of ropsigcfgassign there was array
     {
         yError() << "while setting rop sig cfg";
     }
+#endif
 
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
@@ -1079,9 +1144,6 @@ bool embObjMotionControl::init()
     int mConfigSize 	= sizeof(eOmc_motor_config_t);
     totConfigSize	= 0;
     int index 				= 0;
-
-//    EOnv *nvRoot;
-//    EOnv nvtmp;
 
 
     // 	 yDebug() << "Sending joint configuration";
@@ -1102,18 +1164,6 @@ bool embObjMotionControl::init()
             }
             protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_config);
 
-//             if(EOK_uint16dummy == nvid)
-//             {
-//                 yError () << " NVID not found\n";
-//                 continue;
-//             }
-//             nvRoot = res->getNVhandler((uint16_t)_fId.ep, nvid, &nvtmp);
-// 
-//             if(NULL == nvRoot)
-//             {
-//                 yError () << " NV pointer not found\n" << _fId.name << "board number " <<_fId.boardNum << "joint " << fisico << "at line" << __LINE__;
-//                 continue;
-//             }
 
             eOmc_joint_config_t     jconfig;
             memset(&jconfig, 0x00, sizeof(eOmc_joint_config_t));
@@ -1169,7 +1219,7 @@ bool embObjMotionControl::init()
                 totConfigSize = 0;
             }
             protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-            if(EOK_uint16dummy == protid)
+            if(eo_prot_ID32dummy == protid)
             {
                 yError () << " NVID not found\n";
                 continue;
@@ -1206,7 +1256,7 @@ bool embObjMotionControl::configure_mais(void)
     //set mais datarate = 1millisec
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-    if(EOK_uint16dummy == protid)
+    if(eo_prot_ID32dummy == protid)
     {
         yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -1220,7 +1270,7 @@ bool embObjMotionControl::configure_mais(void)
     //set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-    if(EOK_uint16dummy == protid)
+    if(eo_prot_ID32dummy == protid)
     {
         yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -1266,7 +1316,7 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
     if(!requestQueue->threadPool->getId(&req.threadId) )
         yError() << "Error: too much threads!! (embObjMotionControl)";
     req.joint = j;
-    req.nvid = res->translate_NVid2index(_fId.boardNum, protoid);
+    req.nvid = res->translate_NVid2index(protoid);
     requestQueue->append(req);
     return requestQueue->threadPool->getThreadTable(req.threadId);
 }
@@ -1289,7 +1339,6 @@ void embObjMotionControl::refreshEncoderTimeStamp(int joint)
 
 bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 {
-//    EOnv tmp;
     eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     eOmc_PID_t  outPid;
     copyPid_iCub2eo(&pid, &outPid);
@@ -1375,7 +1424,6 @@ bool embObjMotionControl::setErrorLimitsRaw(const double *limits)
 
 bool embObjMotionControl::getErrorRaw(int j, double *err)
 {
-//    EOnv tmp;
     int mycontrolMode;
     /* Values in pid.XXX fields are valid ONLY IF we are in the corresponding control mode.
     Read it from the signalled message so we are sure that mode and pid values are coherent to each other */
@@ -1407,7 +1455,6 @@ bool embObjMotionControl::getErrorsRaw(double *errs)
 
 bool embObjMotionControl::getOutputRaw(int j, double *out)
 {
-//    EOnv tmp;
     bool ret = true;
     eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
     uint16_t size;
@@ -1523,7 +1570,6 @@ bool embObjMotionControl::resetPidRaw(int j)
 
 bool embObjMotionControl::disablePidRaw(int j)
 {
-//    EOnv tmp;
     // Spegni tutto!! Setta anche Amp off
      eOprotID32_t protid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
     _enabledAmp[j ] = false;
@@ -1648,8 +1694,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
     //   There is no explicit command "go to calibration mode" but it is implicit in the calibration command
 
-    // Get calibration command NV pointer
-//    EOnv tmp_calib;
+    
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_calibration);
     eOmc_calibrator_t calib;
     memset(&calib, 0x00, sizeof(calib));
@@ -1874,7 +1919,6 @@ bool embObjMotionControl::relativeMoveRaw(const double *deltas)
 
 bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
-    EOnv tmpnv_config;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motionmonitormode);
 
 //    EOnv *nvRoot_config = res->getNVhandler(protid, &tmpnv_config);
@@ -1907,13 +1951,10 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 
 
     // Read the current value - it is signalled spontaneously every cycle, so we don't have to wait here
-//    EOnv tmpnv_status;
     protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_basic);
-//     EOnv *nvRoot_status = res->getNVhandler((uint16_t)_fId.ep, nvid_status, &tmpnv_status);
 
     uint16_t size;
     eOmc_joint_status_basic_t status;
-//     res->getNVvalue(nvRoot_status, (uint8_t *) &status, &size);
 
     res->readBufferedValue(protid,(uint8_t *) &status, &size);
     if(eomc_motionmonitorstatus_setpointisreached == status.motionmonitorstatus)
@@ -2594,9 +2635,6 @@ bool embObjMotionControl::updateMeasure(int j, double &fTorque)
 
 	if(0 != _maxTorque[j])
 	{
-	//    EOnv tmp;
-	//    if (fTorque < -1000.0 || fTorque > 1000.0) fTorque = 0.0;
-
 		if(fTorque < (- _maxTorque[j] ))
 		{
 			fTorque = (- _maxTorque[j]);
@@ -2610,7 +2648,7 @@ bool embObjMotionControl::updateMeasure(int j, double &fTorque)
 	}
 
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-    return res->addSetMessage(protoid, (uint8_t*) &meas_torque);
+    return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
 }
 
 // end  IVirtualAnalogSensor //
@@ -2767,7 +2805,6 @@ bool embObjMotionControl::getTorqueErrorsRaw(double *errs)
 
 bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
 {
-	// EOnv tmp;
     //_mutex.wait();
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
 
@@ -2826,7 +2863,7 @@ bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damp
 bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
 {
     // first set is done in the open function because the whole joint config is sent to the EMSs
-//    EOnv tmp;
+
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
 
     // Sign up for waiting the reply
@@ -3055,6 +3092,4 @@ bool embObjMotionControl::setPositionsRaw(const double *refs)
 
 
 // eof
-
-
 

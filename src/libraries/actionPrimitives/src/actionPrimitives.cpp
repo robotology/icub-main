@@ -160,31 +160,29 @@ public:
         }
 
         double t=Time::now()-t0;
+        double trajTime=checkDefaultTime(wayPoints[i].trajTime);
         double r=t/checkTime(checkDefaultTime(wayPoints[i].duration));
-        if (r<1.0)
-        {
-            const double trajTime=checkDefaultTime(wayPoints[i].trajTime);
-            Vector x=x0+r*(wayPoints[i].x-x0);
 
-            if (wayPoints[i].oEnabled)
-                cartCtrl->goToPose(x,wayPoints[i].o,trajTime);
-            else
-                cartCtrl->goToPosition(x,trajTime);
-        }
-        else if (i+1<wayPoints.size())
-        {
-            execCallback();
-            x0=wayPoints[i].x;
-
-            i++;
-            printWayPoint();
-            setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
-            t0=Time::now();
-        }
+        Vector x=(r<1.0)?(x0+r*(wayPoints[i].x-x0)):wayPoints[i].x;
+        if (wayPoints[i].oEnabled)
+            cartCtrl->goToPose(x,wayPoints[i].o,trajTime);
         else
+            cartCtrl->goToPosition(x,trajTime);
+
+        // waypoint attained
+        if (r>=1.0)
         {
             execCallback();
-            askToStop();
+            if (i<wayPoints.size()-1)
+            {
+                x0=wayPoints[i].x;
+                i++;
+                printWayPoint();
+                setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
+                t0=Time::now();
+            }
+            else
+                askToStop();
         }
     }
 
@@ -401,8 +399,7 @@ int ActionPrimitives::printMessage(const char *format, ...)
 
 
 /************************************************************************/
-bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key,
-                                      const int j)
+bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const int j)
 {
     if (opt.check(key.c_str()))
     {

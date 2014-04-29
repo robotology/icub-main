@@ -19,36 +19,27 @@
 /* @file       eOcfg_nvsEP_mngmnt_usr_ebx.c
     @brief      This file keeps the user-defined local ...
     @author     marco.accame@iit.it
-    @date       09/06/2011
+    @date       04/16/2014
 **/
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
+// empty-section
 
-#include "stdlib.h" 
-#include "string.h"
-#include "stdio.h"
-
-#include "EoCommon.h"
-
-
-#include "EOarray.h"
-#include "EOnv_hid.h"
-
-#include "EOtheBOARDtransceiver.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of extern public interface
 // --------------------------------------------------------------------------------------------------------------------
+// empty-section
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of extern hidden interface 
 // --------------------------------------------------------------------------------------------------------------------
+// empty-section
 
-//#include "eOcfg_nvsEP_mngmnt_usr_hid.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
@@ -66,31 +57,30 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
-//this function has been commented because not called in pc104
-//static void s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(EOarray* array);
+// empty-section
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
-
+// empty-section
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of extern variables
 // --------------------------------------------------------------------------------------------------------------------
-
+// empty-section
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
 // --------------------------------------------------------------------------------------------------------------------
-
+// empty-section
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern hidden functions 
 // --------------------------------------------------------------------------------------------------------------------
-
+// empty-section
 
 
 
@@ -99,43 +89,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
-//this function has been commented because not called in pc104
-//static void s_eo_cfg_nvsEP_mngmnt_usr_ebx_generic_ropsigcfgassign(EOarray* array)
-//{
-//    uint8_t size, i;
-//    eOropSIGcfg_t *sigcfg;
-//    eo_transceiver_ropinfo_t ropinfo;
-//    EOtransceiver* theems00transceiver;
-//
-//    eOresult_t res;
-//
-//    if(NULL == (theems00transceiver = eo_boardtransceiver_GetHandle()))
-//    {
-//        return;
-//    }
-//
-//    if((eo_array_ItemSize(array) != sizeof(eOropSIGcfg_t)) || (NUMOFROPSIGCFG != eo_array_Capacity(array)) || ((size = eo_array_Size(array)) > NUMOFROPSIGCFG))
-//    {
-//        return;
-//    }
-//
-//    eo_transceiver_rop_regular_Clear(theems00transceiver);
-//
-//    for(i=0; i<size; i++)
-//    {
-//        sigcfg = (eOropSIGcfg_t*)eo_array_At(array, i);
-//        //#warning --> so far the regular rops are sent with a eok_ropconfig_basic, that is to say: without time64bit
-//        ropinfo.ropcfg              = eok_ropconfig_basic;
-//        ropinfo.ropcfg.plustime     = sigcfg->plustime;
-//        ropinfo.ropcode             = eo_ropcode_sig;
-//        ropinfo.nvep                = sigcfg->ep;
-//        ropinfo.nvid                = sigcfg->id;
-//        res = eo_transceiver_rop_regular_Load(theems00transceiver, &ropinfo);
-//        res = res;
-//    }
-//
-//}
-
+// empty-section
 
 
 

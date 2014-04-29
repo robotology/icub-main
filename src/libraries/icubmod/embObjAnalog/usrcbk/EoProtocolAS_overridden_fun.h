@@ -17,17 +17,17 @@
 */
 
 // - include guard ----------------------------------------------------------------------------------------------------
-#ifndef _EOCFG_NVSEP_AS_OVERRIDDEN_H_
-#define _EOCFG_NVSEP_AS_OVERRIDDEN_H_
+#ifndef _EOPROTOCOL_AS_OVERRIDDEN_FUN_H_
+#define _EOPROTOCOL_AS_OVERRIDDEN_FUN_H_
 
 
-// this file is to be used by the PC104, not by the EMS ...
+// this file is to be used by the PC104, but not anymore
 
-
-#define OVERRIDE_eoprot_fun_UPDT_as_strain_status_calibratedvalues
-#define OVERRIDE_eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
-#define OVERRIDE_eoprot_fun_UPDT_as_mais_status_the15values
-
+#if 1
+	#define OVERRIDE_eoprot_fun_UPDT_as_strain_status_calibratedvalues
+	#define OVERRIDE_eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
+	#define OVERRIDE_eoprot_fun_UPDT_as_mais_status_the15values
+#endif
 
 #endif  // include-guard
 

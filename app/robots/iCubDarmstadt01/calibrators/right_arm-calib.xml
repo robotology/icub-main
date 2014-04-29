@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
+	<device name="right_arm_calibrator" type="parametricCalibrator">
+                <params file="general.xml" />
+
+		<group name="GENERAL">
+		    <param name="joints">16</param> <!-- the number of joints of the robot part -->
+		    <param name="deviceName"> RA Calibrator </param>
+		</group>
+
+		<group name="CALIBRATION">
+		    <param name="Joints">16</param> <!-- the number of joints of the robot part -->
+		    <!-- Joint                          0               1               2               3             4             5             6             7             8             9             10            11            12            13            14            15 -->
+		    <param name="calibrationType">      3               3               3               3             0             2             2             3             3             4             4             4             4             4             4             4   </param>
+		    
+            <param name="calibration1">         0              0               0               0    	     700           600           600           1245        3041.111111      225           20            255           20            240           10            738     </param>
+		    
+            <param name="calibration2">         0               0               0               0             -20            10           10             100           10            10            30            10            10            10            10            10     </param>
+		    
+            <!-- <param name="calibration3">       32513           61749           53800            11695           0             0             0             0             0             6000          6600          6000          -7000          6000          7000         24000  </param> -->
+		    <param name="calibration3">       33132           61640           50103            11650           0             0             0             0             0             6000          6600          6000          -7000          6000          7000         24000  </param>
+            <param name="positionZero">        -30             30              0               45              0             0             0             15           30            0             0             0             0             0             0             0      </param>
+		    
+            <param name="posZeroThreshold">     2              2                2               2              2             90             90             90            90             90            90            90            90            90            90            90      </param>
+                    
+            <param name="velocityZero">         10             10               10             10             30            30            30            100           100           100           100           100           100           100           100           100    </param>
+		    
+            <param name="maxPwm">             1200             1200            1200            1200             0            0            0               0            0                0           0          0              0               0              0            0   </param>
+		</group>
+
+		<group name="HOME">
+		    <!-- Joint                     0             1             2             3             4             5             6             7             8             9             10            11            12            13            14            15 -->
+		    <param name="positionHome">   -30           30            0             45            0             0             40            15             30            0             0             0             0             0             0             0  </param>
+		    <param name="velocityHome">    6             6             6             6            30            30            20            100           100           100           100           100           100           100           100           100  </param>
+		</group>
+
+		<param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5) (8 9 11 13) (10 12 14 15)</param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">right_arm_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">right_arm_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

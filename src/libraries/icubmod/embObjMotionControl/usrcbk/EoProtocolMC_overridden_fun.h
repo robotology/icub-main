@@ -17,31 +17,33 @@
 */
 
 // - include guard ----------------------------------------------------------------------------------------------------
-#ifndef _EOCFG_NVSEP_MC_OVERRIDDEN_H_
-#define _EOCFG_NVSEP_MC_OVERRIDDEN_H_
+#ifndef _EOPROTOCOLMC_OVERRIDDEN_FUN_H_
+#define _EOPROTOCOLMC_OVERRIDDEN_FUN_H_
 
-// this file is to be used by the PC104, not by the EMS ...
+// this file is to be used by the PC104, but not anymore
 
+#if 1
 
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config
 
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidposition
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_impedance
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_minpositionofjoint
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_maxpositionofjoint
-//#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_controlmode
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidtorque
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidposition
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_impedance
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_minpositionofjoint
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_maxpositionofjoint
+	//#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_controlmode
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidtorque
 
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status_basic
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status_basic
 
-#define OVERRIDE_eoprot_fun_UPDT_mc_joint_cmmnds_setpoint
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_cmmnds_setpoint
 
-#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config
-#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor
+	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config
+	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor
 
-#define OVERRIDE_eoprot_fun_UPDT_mc_motor_status_basic
+	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_status_basic
 
+#endif
 
 
 
@@ -49,5 +51,4 @@
 #endif  // include-guard
 
 // eof
-
 

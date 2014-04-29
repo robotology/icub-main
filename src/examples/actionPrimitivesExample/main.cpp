@@ -330,11 +330,15 @@ public:
         {
             if (!model->isCalibrated())
             {
-                Property prop("(finger all)");
+                Property prop("(finger all_parallel)");
                 model->calibrate(prop);
 
+                string fileName=rf.getHomeContextPath();
+                fileName+="/";
+                fileName+=option.find("grasp_model_file").asString().c_str();
+
                 ofstream fout;
-                fout.open(option.find("grasp_model_file").asString().c_str());
+                fout.open(fileName.c_str());
                 model->toStream(fout);
                 fout.close();
             }

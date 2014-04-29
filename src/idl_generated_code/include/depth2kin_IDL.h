@@ -80,18 +80,18 @@ public:
  */
   virtual double getMaxDist();
 /**
- * Set the edge of the squared window used to filter data
+ * Set the side of the squared window used to filter data
  * collection in the image plane.
- * @param roi_edge the length of the window edge.
+ * @param side the length of the window side.
  * @return true/false on success/failure.
  */
-  virtual bool setRoiEdge(const int32_t roi_edge);
+  virtual bool setRoi(const int32_t side);
 /**
- * Return the edge of the squared window used to filter data
+ * Return the side of the squared window used to filter data
  * collection in the image plane.
- * @return the window edge.
+ * @return the window side.
  */
-  virtual int32_t getRoiEdge();
+  virtual int32_t getRoi();
 /**
  * Set the vergence angle used to keep the gaze fixed.
  * @param block_eyes the value in degrees of the vergence. It must

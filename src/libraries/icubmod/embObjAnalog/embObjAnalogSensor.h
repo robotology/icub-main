@@ -23,9 +23,12 @@
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
 #include <hostTransceiver.hpp>
+#include <ethResource.h>
+#include <ethManager.h>
 
+#define EMBAS_SIZE_INFO     128
 
-#include "FeatureInterface_hid.h"         // Interface with embObj world (callback)
+#include "FeatureInterface.h"  
 
 #include "Debug.h"
 
@@ -101,17 +104,17 @@ public:
 
 private:
 
-    //! embObj stuff
-    TheEthManager      *ethManager;
-    ethResources    *res;
-    FEAT_ID         _fId;
+    //! eth messaging stuff
+    TheEthManager       *ethManager;
+    ethResources        *res;
+    FEAT_ID             _fId;
 
 
     //! debug messages
     unsigned int    counterSat;
     unsigned int    counterError;
     unsigned int    counterTimeout;
-    char            info[SIZE_INFO];   // debug per comodità
+    char            info[EMBAS_SIZE_INFO];   
 
     ////////////////////
     // parameters
@@ -153,7 +156,7 @@ public:
     bool open(yarp::os::Searchable &config);
     bool close();
 
-    //IAnalogSensor interface
+    // IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
     virtual int getChannels();
@@ -208,16 +211,14 @@ public:
 #endif
 
 
-
     // this method will be added in the virtualAnalogSensor, not here
     //virtual int sendVirtualData(const yarp::sig::Vector& value);
     
     // embObj interface
     bool init();
-    virtual bool fillData(void *as_array);
+    virtual bool fillData(void *as_array, eOprotID32_t id32);
 };
 
 
 #endif
-
 

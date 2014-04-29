@@ -31,17 +31,29 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/sig/Matrix.h>
 
+#define EMBSK_SIZE_INFO     128
 // embObj includes
 #include <ethManager.h>
 #include <ethResource.h>
 #include "EoUtilities.h"
 #include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
+#include "skinParams.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
 using namespace yarp::sig;
+
+class SkinPatchInfo
+{
+public:
+    int             idPatch;
+    eOprotIndex_t   indexNv;
+    std::vector <int> cardAddrList;
+    bool checkCardAddrIsInList(int cardAddr);
+};
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
@@ -54,22 +66,36 @@ protected:
     FEAT_ID         _fId;
     bool            initted;
     Semaphore       mutex;
-
-    VectorOf<int>   cardId;
+    int             totalCardsNum;
+    std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;
     Vector          data;
     uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
-
+    SkinBoardCfgParam _brdCfg;
+    SkinTriangleCfgParam _triangCfg;
+    bool            _newCfg;
 
     bool            init();
+    bool            fromConfig(yarp::os::Searchable& config);
+    bool            initWithSpecialConfig(yarp::os::Searchable& config);
     bool            isEpManagedByBoard();
+    bool            start();
+    eOprotIndex_t convertIdPatch2IndexNv(int idPatch)
+    {
+      /*in xml file idPatch are number of ems canPort identified with numer 1 or 2 on electronic schematics.
+      * in ethernet protocol the patch number is the index part of network variable identifier, that starts from 0 */
+        if(numOfPatches == 1)
+            return(0);
+        else
+            return(idPatch-1);
+    }
 
 
 public:
     EmbObjSkin();
     ~EmbObjSkin()   { }
 
-    char            info[SIZE_INFO];
+    char            info[EMBSK_SIZE_INFO];
 
     virtual bool    open(yarp::os::Searchable& config);
 
@@ -84,9 +110,10 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    fillData(void *data);
+    virtual bool    fillData(void *data, eOprotID32_t id32);
     virtual void    setId(FEAT_ID &id);
     bool            isInitted(void);
 };
 
 #endif
+

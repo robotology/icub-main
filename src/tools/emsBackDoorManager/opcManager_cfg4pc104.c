@@ -361,8 +361,8 @@ static void on_rec_emsapplcommon(opcprotman_opc_t opc, opcprotman_var_map_t* map
 static void s_print_emsapplcomm_core(eOdgn_coreapplication_t *appcore_ptr)
 {
     printf("\tRUNNING ST\n");
-        printf("\t\tnumberofperiods=%lld\n ", appcore_ptr->runst.numberofperiods);
-        printf("\t\tcumulativeabsoluteerrorinperiod=%lld\n ", appcore_ptr->runst.cumulativeabsoluteerrorinperiod);
+        printf("\t\tnumberofperiods=%ld\n ", appcore_ptr->runst.numberofperiods);
+        printf("\t\tcumulativeabsoluteerrorinperiod=%ld\n ", appcore_ptr->runst.cumulativeabsoluteerrorinperiod);
         printf("\t\tmeanofabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.meanofabsoluteerrorinperiod);
 
         printf("\t\tmovingmeanofabsoluteerrorinperiod=%d\n ", appcore_ptr->runst.movingmeanofabsoluteerrorinperiod);
@@ -437,11 +437,6 @@ static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             {
                 //if i received new data about encoders' error
                 s_print_emsapplmc_encoderserror(&(data->encreads));
-            }
-            if(data->encreads.dummy != s_emswithmc_data.encreads.dummy)
-            {
-                //if i receved new data
-                printf(">>>>>>>>>>>>>>>>>>>>>>>>> Limited current mask: 0x%x<<<<<<<<<<<<<<<<<<<<<<<\n", data->encreads.dummy);
             }
             fflush(stdout);
             memcpy(&s_emswithmc_data, data, sizeof(eOdgn_emsapplication_emswithmc_t));
