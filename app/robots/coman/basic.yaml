@@ -1,7 +1,7 @@
 #
 
 board_ctrl:
-  eth_iface: eth0
+  eth_iface: eth4
   boards_num: 35
 
 # assume boards of same type have the same policy bc_rate !!! 
