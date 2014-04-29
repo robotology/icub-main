@@ -5830,7 +5830,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
 
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
-        return _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(ref));
+        return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
     { 
@@ -5852,7 +5852,7 @@ bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
     {
         if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
         {
-            ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
+            ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
         }
         else
         {
@@ -5876,7 +5876,7 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
     {
         if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
         {
-            ret = ret && _writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(refs[j]));
+            ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(refs[j]));
         }
         else
         {

@@ -15,8 +15,8 @@
 #ifndef __canbusmessagesh__
 #define __canbusmessagesh__
 #include "stdint.h"
-#include "iCubCanProtocol.h"
-#include "iCubCanProto_types.h"
+#include "canProtocolLib/iCubCanProtocol.h"
+#include "canProtocolLib/iCubCanProto_types.h"
 
 
 #define CAN_PROTOCOL_MAJOR          1

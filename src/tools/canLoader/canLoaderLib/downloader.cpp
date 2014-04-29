@@ -14,6 +14,9 @@
 #include <stdlib.h> //added for abs
 #include <string.h>
 
+#include <canProtocolLib/iCubCanProtocol.h>
+#include <canProtocolLib/iCubCanProto_types.h>
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace std;
@@ -64,7 +67,7 @@ int axtoi(char *hexStg)
 
 int cDownloader::build_id(int source, int dest)
 {
-    return (ID_CMD << 8) + ( source << 4) + dest;
+    return (ICUBCANPROTO_CLASS_BOOTLOADER << 8) + ( source << 4) + dest;
 }
 
 int cDownloader::get_src_from_id (int id)
@@ -1186,7 +1189,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
         case icubCanProto_boardType__4dc:
         case icubCanProto_boardType__bll:
         case icubCanProto_boardType__2foc:
-        case BOARD_TYPE_JOG:
+        case icubCanProto_boardType__jog:
             txBuffer[0].setId((ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
             txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
@@ -1389,8 +1392,8 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
     case icubCanProto_boardType__mais:
     case icubCanProto_boardType__2foc:
     case icubCanProto_boardType__6sg:
-    case BOARD_TYPE_JOG:
-    case BOARD_UNKNOWN:
+    case icubCanProto_boardType__jog:
+    case icubCanProto_boardType__unknown:
         {
         // Send command
         txBuffer[0].setId(build_id(ID_MASTER,board_pid));
@@ -1425,7 +1428,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
         {
             if (rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_BOARD &&
                 (((rxBuffer[i].getId() >> 4) & 0x0F) == board_pid) &&
-                (((rxBuffer[i].getId() >> 8) & 0x07) == ID_CMD))
+                (((rxBuffer[i].getId() >> 8) & 0x07) == ICUBCANPROTO_CLASS_BOOTLOADER))
                 {
                     //received ACK from board
                     //printf ("START_CMD: ACK received from board: %d\n", board_pid);
@@ -1475,7 +1478,7 @@ int cDownloader::stopscheda(int board_pid)
         {
             if (rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_END &&
                 (((rxBuffer[i].getId() >> 4) & 0x0F) == board_pid || board_pid == 15 ) &&
-                (((rxBuffer[i].getId() >> 8) & 0x07) == ID_CMD))
+                (((rxBuffer[i].getId() >> 8) & 0x07) == ICUBCANPROTO_CLASS_BOOTLOADER))
                 {
                     //received ACK from board
                     //printf ("STOP_CMD: ACK received from board: %d\n", board_pid);
@@ -2050,12 +2053,12 @@ int cDownloader::download_file(int board_pid, int download_type, bool board_eepr
                         case icubCanProto_boardType__strain:
                         case icubCanProto_boardType__mais:
                         case icubCanProto_boardType__2foc:
-                        case BOARD_TYPE_JOG:
+                        case icubCanProto_boardType__jog:
                         case icubCanProto_boardType__6sg:
                              ret = download_hexintel_line(buffer, strlen(buffer), board_pid, board_eeprom, download_type);
 
                         break;
-                        case BOARD_UNKNOWN:
+                        case icubCanProto_boardType__unknown:
                         default:
                              ret =-1;
                         break;

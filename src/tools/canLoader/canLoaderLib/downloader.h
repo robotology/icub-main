@@ -15,8 +15,6 @@
 
 #include <fstream>
 #include "stdint.h"
-#include "iCubCanProtocol.h"
-#include "iCubCanProto_types.h"
 
 //*****************************************************************/
 
@@ -56,36 +54,9 @@ public:
 #define SPRS_TYPE_4 '4'
 #define SPRS_TYPE_7 '7'
 
-#define ID_CMD         ICUBCANPROTO_CLASS_BOOTLOADER
 #define ID_MASTER      0x00
 #define ID_BROADCAST   0x0F
 
-//#define BOARD_TYPE_DSP    icubCanProto_boardType__dsp
-//#define BOARD_TYPE_PIC    icubCanProto_boardType__pic
-//#define BOARD_TYPE_2DC    icubCanProto_boardType__2dc
-//#define BOARD_TYPE_4DC    icubCanProto_boardType__4dc
-//#define BOARD_TYPE_BLL    icubCanProto_boardType__bll
-//#define BOARD_TYPE_SKIN   icubCanProto_boardType__skin
-//#define BOARD_TYPE_STRAIN icubCanProto_boardType__strain
-//#define BOARD_TYPE_MAIS   icubCanProto_boardType__mais
-//#define BOARD_TYPE_2FOC   icubCanProto_boardType__2foc
-//#define BOARD_TYPE_6SG    icubCanProto_boardType__6sg
-#define BOARD_TYPE_JOG      0x0A
-#define BOARD_UNKNOWN       icubCanProto_boardType__unknown
-
-
-#define CMD_BOARD           ICUBCANPROTO_BL_BOARD
-#define CMD_ADDRESS         ICUBCANPROTO_BL_ADDRESS
-#define CMD_START           ICUBCANPROTO_BL_START
-#define CMD_DATA            ICUBCANPROTO_BL_DATA
-#define CMD_END             ICUBCANPROTO_BL_END
-#define CMD_ERR             ICUBCANPROTO_BL_ERROR
-#define CMD_BROADCAST       ICUBCANPROTO_BL_BROADCAST
-
-#define CAN_SET_BOARD_ID    ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID
-#define CAN_GET_BOARD_ID    ICUBCANPROTO_POL_MC_CMD__GET_BOARD_ID
-//#define CAN_GET_ADDITIONAL_INFO       ICUBCANPROTO_POL_MC_CMD__GET_ADDITIONAL_INFO
-//#define CAN_SET_ADDITIONAL_INFO		ICUBCANPROTO_POL_MC_CMD__SET_ADDITIONAL_INFO
 
 //*****************************************************************/
 

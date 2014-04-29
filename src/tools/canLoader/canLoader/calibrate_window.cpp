@@ -9,7 +9,8 @@
 
 #include "downloader.h"
 #include "calibrate_window.h"
-
+#include <canProtocolLib/iCubCanProtocol.h>
+#include <canProtocolLib/iCubCanProto_types.h>
 #include <fstream>
 
 using namespace std;
