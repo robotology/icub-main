@@ -57,26 +57,11 @@
 #include <ace/config.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-// iCub Debug class
-//#include "Debug.h"
-
-
-#define MSG010966 "WARNING-> on april 16 2013 some work is ongoing to clean SIZE_INFO etc."
-#if defined(_MSC_VER)
-    #pragma message(MSG010966)
-#else
-    #warning MSG010966
-#endif
-
-// Risky place fot those defines!!
-//#warning acemor-> removed EMPTY_PACKET_SIZE from here
-//#define EMPTY_PACKET_SIZE     EOK_HOSTTRANSCEIVER_emptyropframe_dimension
-//#warning acemor-> RECV_BUFFER_SIZE must be higher or equal EOK_HOSTTRANSCEIVER_capacityofrxpacket. it can safely be 1500
 
 // we see EOK_HOSTTRANSCEIVER_capacityofrxpacket by including FeatureInterface.hpp which includes EOhostTransceiver.h
-#define	RECV_BUFFER_SIZE      EOK_HOSTTRANSCEIVER_capacityofrxpacket
-#define	SIZE_INFO             128
-#define MAX_ICUB_EP           32
+#define	RECV_BUFFER_SIZE        EOK_HOSTTRANSCEIVER_capacityofrxpacket
+#define	ETHRES_SIZE_INFO        128
+#define MAX_ICUB_EP             32
 
 namespace yarp{
     namespace dev{
@@ -145,7 +130,7 @@ class yarp::dev::ethResources:  public DeviceDriver,
 private:
 //     static yarp::os::Semaphore  ethResMutex;
 
-    char              info[SIZE_INFO];
+    char              info[ETHRES_SIZE_INFO];
     int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
@@ -252,6 +237,7 @@ public:
 #endif
 
 // eof
+
 
 
 

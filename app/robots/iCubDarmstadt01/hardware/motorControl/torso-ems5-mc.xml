@@ -8,5 +8,38 @@
       <params file="general.xml" />
       <params file="hardware/electronics/torso-ems5-eln.xml" />
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
+
+    <group name="LIMITS">
+                                 <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
+        <param name="Max">              50            30            70          </param>
+        <param name="Min">             -50           -30           -20          </param>
+        <param name="Currents">         5000          5000          5000        </param>
+    </group>
+
+	<group name="PIDS">
+        <param name="kp">             7      10      10 </param>       
+        <param name="kd">             0       0       0 </param>       
+        <param name="ki">            10      10      10 </param>       
+        <param name="maxPwm">     10000   10000   10000 </param>       
+        <param name="maxInt">      2500    2500    2500 </param>       
+        <param name="shift">         11      11      11 </param>       
+        <param name="ko">             0       0       0 </param>       
+        <param name="stictionUp">     0       0       0 </param>       
+        <param name="stictionDwn">    0       0       0 </param>       
+    </group>
+	
+	<group name="TORQUE_PIDS">
+        <param name="kp">            300        400        400  </param>       
+        <param name="kd">              0          0          0  </param>       
+        <param name="ki">              0          0          0  </param>       
+        <param name="maxPwm">          0          0          0  </param>       
+        <param name="maxInt">      10000      10000      20000  </param>       
+        <param name="shift">          10         10         10  </param>       
+        <param name="ko">              0          0          0  </param>       
+        <param name="stictionUp">      0          0          0  </param>       
+        <param name="stictionDwn">     0          0          0  </param>       
+    </group>
+	
+	
   </device>
 </devices>

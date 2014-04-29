@@ -843,8 +843,7 @@ uint64_t getRopFrameAge(char *pck)
 
 
 // marco.accame on 11 apr 2014:
-// if we want to detect the board number by address, ... allow some more or think about more general rule. darmstadt robot will have 11 boards not 9
-#warning --> marco.accame: see in here to adapt to 
+// if we want to detect the board number by address, ... allow some more or think about a more general rule.
 int EthReceiver::getBoardNum(ACE_INET_Addr addr)
 {
     int board;

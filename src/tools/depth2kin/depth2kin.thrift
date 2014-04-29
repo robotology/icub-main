@@ -121,19 +121,19 @@ service depth2kin_IDL
    double getMaxDist();
 
    /**
-   * Set the edge of the squared window used to filter data
+   * Set the side of the squared window used to filter data
    * collection in the image plane.
-   * @param roi_edge the length of the window edge.
+   * @param side the length of the window side.
    * @return true/false on success/failure.
    */
-   bool setRoiEdge(1:i32 roi_edge);
+   bool setRoi(1:i32 side);
 
    /**
-   * Return the edge of the squared window used to filter data
+   * Return the side of the squared window used to filter data
    * collection in the image plane.
-   * @return the window edge.
+   * @return the window side.
    */
-   i32 getRoiEdge();
+   i32 getRoi();
 
    /**
    * Set the vergence angle used to keep the gaze fixed.

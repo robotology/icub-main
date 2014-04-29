@@ -18,6 +18,7 @@
 #include "EOarray.h"
 #include "EoProtocol.h"
 #include "EoManagement.h"
+#include "EoProtocolMN.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -406,6 +407,7 @@ bool ethResources::isRunning(void)
 	return(isInRunningMode);
 }
 // eof
+
 
 
 

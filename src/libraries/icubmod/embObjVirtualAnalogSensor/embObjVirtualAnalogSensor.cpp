@@ -1,3 +1,4 @@
+
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
@@ -26,6 +27,10 @@
 #include <embObjVirtualAnalogSensor.h>
 #include <ethManager.h>
 #include <Debug.h>
+
+#include "EoProtocol.h"
+#include "EoMotionControl.h"
+#include "EoProtocolMC.h"
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -190,25 +195,25 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    sprintf(_fId.PC104ipAddr.string, "%s", parameter1.toString().c_str(), port);
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%s", parameter1.toString().c_str());
     _fId.PC104ipAddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    sprintf(_fId.EMSipAddr.string, "%s", parameter2.toString().c_str());
+    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%s", parameter2.toString().c_str());
     _fId.EMSipAddr.port = port;
 
     sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
     sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
 
-    sprintf(_fId.EMSipAddr.string,"%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
 
     //   Debug info
-    sprintf(_fId.name, "%s", "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);       // Saving User Friendly Id
+    snprintf(_fId.name, sizeof(_fId.name), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);       // Saving User Friendly Id
 
     // Set dummy values
-    _fId.boardNum  = 255;
-    _fId.ep = 255;
+    _fId.boardNum   = FEAT_boardnumber_dummy;
+    _fId.ep         = eoprot_endpoint_none;
 
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
@@ -279,12 +284,6 @@ bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
 
     for(int ch=0; ch< _channels; ch++)
     {
-        if (measure[ch] < ( - _fullscale[ch]) )
-            measure[ch] =  (-_fullscale[ch]);
-
-        if (measure[ch] > _fullscale[ch] )
-            measure[ch] = _fullscale[ch];
-
         ret &= updateMeasure(ch, measure[ch]);
     }
     return true;
@@ -292,12 +291,18 @@ bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
 
 bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
 {
+    if (measure < ( - _fullscale[ch]) )
+        measure =  (-_fullscale[ch]);
+
+    if (measure > _fullscale[ch] )
+        measure = _fullscale[ch];
+
     // Here measure is supposed to be a Torque
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, ch, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
                 //    example measure * 32768.0/12.0;
     // measure should to saturated to resolution -2.0 to avoid casting problem.
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
-    return res->addSetMessage(protid, (uint8_t*) &meas_torque);
+    return res->addSetMessageAndCacheLocally(protid, (uint8_t*) &meas_torque);
 }
 
 bool embObjVirtualAnalogSensor::close()

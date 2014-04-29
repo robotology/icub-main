@@ -23,7 +23,7 @@ class IiCubFeature
         virtual ~IiCubFeature() {};
 //         virtual void setId(FEAT_ID &id) { };
 // None of the following is a "MUST" because each module need just one of them
-        virtual bool fillData(void *data )  =0;         //skin data
+        virtual bool fillData(void *data, eOnvID32_t id32 )  =0;         //skin data
 //         virtual bool fill_AS_data(void *as_array) =0;   // analogSensor data
 };
 
