@@ -18,8 +18,8 @@
 
 
 // - include guard ----------------------------------------------------------------------------------------------------
-#ifndef _EOCFG_NVSEP_SK_OVERRIDDEN_H_
-#define _EOCFG_NVSEP_SK_OVERRIDDEN_H_
+#ifndef _EOPROTOCOLSK_OVERRIDDEN_FUN_H_
+#define _EOPROTOCOLSK_OVERRIDDEN_FUN_H_
 
 
 // this file is to be used by the PC104, not by the EMS ...
