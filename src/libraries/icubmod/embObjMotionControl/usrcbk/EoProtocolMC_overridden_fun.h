@@ -28,7 +28,7 @@
 
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidposition
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_impedance
-	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_limitsofjoin
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_limitsofjoint
 	//#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_controlmode
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidtorque
 
