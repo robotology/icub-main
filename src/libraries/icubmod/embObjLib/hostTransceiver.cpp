@@ -28,7 +28,7 @@ using namespace std;
 #include "EoProtocol.h"
 
 
-#undef USE_EOPROT_ROBOT
+
 
 #if     defined(USE_EOPROT_ROBOT)
 
