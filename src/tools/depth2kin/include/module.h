@@ -80,6 +80,7 @@ protected:
     EyeAligner alignerL,alignerR;
 
     string arm;
+    bool   useArmL,useArmR;
     bool   selectArmEnabled;
     double max_dist;
     double block_eyes;
@@ -123,6 +124,8 @@ protected:
     bool pushExtrinsics(const string &eye, const Matrix &H);
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);
     bool getDepthAveraged(const Vector &px, Vector &x, Vector &pxr, const int maxSamples=5);
+    void openHand(IPositionControl *ipos);
+    void postureHelper(const Vector &gaze_x, const Matrix &targetL, const Matrix &targetR);
     void prepareRobot();
     int removeOutliers();
     void doMotorExploration();
@@ -175,6 +178,7 @@ public:
                                   const double da, const double db);
     Property getExplorationData();
     bool clearExplorationData();
+    bool posture(const string &type);
     bool quit();
 };
 

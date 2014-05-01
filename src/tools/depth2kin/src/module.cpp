@@ -328,6 +328,124 @@ bool CalibModule::getDepthAveraged(const Vector &px, Vector &x, Vector &pxr,
 
 
 /************************************************************************/
+void CalibModule::openHand(IPositionControl *ipos)
+{
+    Vector poss(9,0.0);
+    Vector vels(9,0.0);
+
+    poss[0]=0.0; vels[0]=50.0;
+    poss[1]=0.0; vels[1]=50.0;
+    poss[2]=0.0; vels[2]=50.0;
+    poss[3]=0.0; vels[3]=50.0;
+    poss[4]=0.0; vels[4]=50.0;
+    poss[5]=0.0; vels[5]=50.0;
+    poss[6]=0.0; vels[6]=50.0;
+    poss[7]=0.0; vels[7]=50.0;
+    poss[8]=0.0; vels[8]=100.0;
+
+    printf("opening hand\n");
+    int i0=nEncs-poss.length();
+    for (int i=i0; i<nEncs; i++)
+    {
+        ipos->setRefAcceleration(i,1e9);
+        ipos->setRefSpeed(i,vels[i-i0]);
+        ipos->positionMove(i,poss[i-i0]);
+    }
+}
+
+
+/************************************************************************/
+void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
+                                const Matrix &targetR)
+{
+    IPositionControl  *ipos;
+    ICartesianControl *icart;
+    int ctxtL,ctxtR;
+    Vector dof;
+
+    igaze->lookAtFixationPoint(gaze_x);
+
+    if (useArmL)
+    {
+        drvArmL.view(ipos);
+        openHand(ipos);
+
+        drvCartL.view(icart);
+        icart->storeContext(&ctxtL);
+        icart->getDOF(dof);
+        dof[0]=dof[1]=dof[2]=0.0;
+        icart->setDOF(dof,dof);
+        icart->goToPoseSync(targetL.getCol(3),dcm2axis(targetL));
+    }
+
+    if (useArmR)
+    {
+        drvArmR.view(ipos);
+        openHand(ipos);
+
+        drvCartR.view(icart);
+        icart->storeContext(&ctxtR);
+        icart->getDOF(dof);
+        dof[0]=dof[1]=dof[2]=0.0;
+        icart->setDOF(dof,dof);
+        icart->goToPoseSync(targetR.getCol(3),dcm2axis(targetR));
+        icart->waitMotionDone();
+    }
+
+    if (useArmL)
+    {
+        drvCartL.view(icart);
+        icart->waitMotionDone();
+        icart->restoreContext(ctxtL);
+    }
+
+    if (useArmR)
+    {
+        drvCartR.view(icart);
+        icart->restoreContext(ctxtR);
+    }
+}
+
+
+/************************************************************************/
+bool CalibModule::posture(const string &type)
+{
+    Vector gaze_x(3,0.0);
+    Matrix targetL=zeros(4,4);
+    Matrix targetR=zeros(4,4);
+    targetL(3,3)=targetR(3,3)=1.0;
+
+    if (type=="home")
+    {
+        gaze_x[0]=-1.0;
+        gaze_x[2]=0.35;
+
+        targetL(0,0)=targetR(0,0)=-1.0;
+        targetL(2,1)=targetR(2,1)=-1.0;
+        targetL(1,2)=targetR(1,2)=-1.0;
+    }
+    else if (type=="look_hands")
+    {
+        gaze_x[0]=-1.0;
+        gaze_x[2]=0.15;
+
+        targetL(2,0)=1.0;
+        targetL(1,1)=-1.0;
+        targetL(0,2)=1.0;
+
+        targetR(2,0)=1.0;
+        targetR(1,1)=1.0;
+        targetR(0,2)=-1.0;
+    }
+    else
+        return false;
+
+    postureHelper(gaze_x,targetL,targetR);
+    return true;
+}
+
+
+/************************************************************************/
 void CalibModule::prepareRobot()
 {
     // drive the hand in pointing pose
@@ -787,17 +905,17 @@ bool CalibModule::configure(ResourceFinder &rf)
         printf("Gaze controller not available!\n");
 
     // quitting conditions
-    bool andArmL=drvArmL.isValid()==drvCartL.isValid();
-    bool andArmR=drvArmR.isValid()==drvCartR.isValid();
-    if (!drvGaze.isValid() || (!andArmL && !andArmR))
+    useArmL=drvArmL.isValid()==drvCartL.isValid();
+    useArmR=drvArmR.isValid()==drvCartR.isValid();
+    if (!drvGaze.isValid() || (!useArmL && !useArmR))
     {
         printf("Something wrong occured while configuring drivers... quitting!\n");
         terminate();
         return false;
     }
 
-    arm=(andArmL?"left":"right");
-    selectArmEnabled=(andArmL && andArmR);
+    arm=(useArmL?"left":"right");
+    selectArmEnabled=(useArmL && useArmR);
 
     IControlLimits *ilim;
     (arm=="left")?drvArmL.view(iencs):drvArmR.view(iencs);

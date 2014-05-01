@@ -323,6 +323,14 @@ service depth2kin_IDL
    bool clearExplorationData();
 
    /**
+   * Make the robot reach a predefined posture.
+   * @param type can be one of the following: \n
+   * "home", "look_hands".
+   * @return true/false on success/failure.
+   */
+   bool posture(1:string type);
+
+   /**
    * Quit the module.
    * @return true/false on success/failure.
    */
