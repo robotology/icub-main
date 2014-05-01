@@ -397,12 +397,14 @@ void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
         drvCartL.view(icart);
         icart->waitMotionDone();
         icart->restoreContext(ctxtL);
+        icart->deleteContext(ctxtL);
     }
 
     if (useArmR)
     {
         drvCartR.view(icart);
         icart->restoreContext(ctxtR);
+        icart->deleteContext(ctxtR);
     }
 }
 
@@ -423,19 +425,31 @@ bool CalibModule::posture(const string &type)
         targetL(0,0)=targetR(0,0)=-1.0;
         targetL(2,1)=targetR(2,1)=-1.0;
         targetL(1,2)=targetR(1,2)=-1.0;
+
+        targetL(0,3)=targetR(0,3)=-0.25;
+        targetL(2,3)=targetR(2,3)=0.0;
+
+        targetL(1,3)=-0.15;
+        targetR(1,3)=0.15;
     }
     else if (type=="look_hands")
     {
         gaze_x[0]=-1.0;
-        gaze_x[2]=0.15;
+        gaze_x[2]=0.0;
 
         targetL(2,0)=1.0;
         targetL(1,1)=-1.0;
         targetL(0,2)=1.0;
+        targetL(0,3)=-0.25;
+        targetL(1,3)=-0.05;
+        targetL(2,3)=0.25;
 
         targetR(2,0)=1.0;
         targetR(1,1)=1.0;
         targetR(0,2)=-1.0;
+        targetR(0,3)=-0.33;
+        targetR(1,3)=0.05;
+        targetR(2,3)=0.25;
     }
     else
         return false;
