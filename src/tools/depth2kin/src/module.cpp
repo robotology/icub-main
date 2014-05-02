@@ -333,15 +333,15 @@ void CalibModule::openHand(IPositionControl *ipos)
     Vector poss(9,0.0);
     Vector vels(9,0.0);
 
-    poss[0]=0.0; vels[0]=50.0;
-    poss[1]=0.0; vels[1]=50.0;
-    poss[2]=0.0; vels[2]=50.0;
-    poss[3]=0.0; vels[3]=50.0;
-    poss[4]=0.0; vels[4]=50.0;
-    poss[5]=0.0; vels[5]=50.0;
-    poss[6]=0.0; vels[6]=50.0;
-    poss[7]=0.0; vels[7]=50.0;
-    poss[8]=0.0; vels[8]=100.0;
+    poss[0]=0.0;  vels[0]=50.0;
+    poss[1]=90.0; vels[1]=50.0;
+    poss[2]=0.0;  vels[2]=50.0;
+    poss[3]=0.0;  vels[3]=50.0;
+    poss[4]=0.0;  vels[4]=50.0;
+    poss[5]=0.0;  vels[5]=50.0;
+    poss[6]=0.0;  vels[6]=50.0;
+    poss[7]=0.0;  vels[7]=50.0;
+    poss[8]=0.0;  vels[8]=100.0;
 
     printf("opening hand\n");
     int i0=nEncs-poss.length();
@@ -451,15 +451,15 @@ bool CalibModule::posture(const string &type)
         targetL(2,0)=1.0;
         targetL(1,1)=-1.0;
         targetL(0,2)=1.0;
-        targetL(0,3)=-0.3;
-        targetL(1,3)=-0.05;
+        targetL(0,3)=-0.25;
+        targetL(1,3)=-0.04;
         targetL(2,3)=0.25;
 
         targetR(2,0)=1.0;
         targetR(1,1)=1.0;
         targetR(0,2)=-1.0;
-        targetR(0,3)=-0.35;
-        targetR(1,3)=0.05;
+        targetR(0,3)=-0.32;
+        targetR(1,3)=0.04;
         targetR(2,3)=0.25;
     }
     else
@@ -476,7 +476,8 @@ bool CalibModule::calibrateDepth()
     if (depthRpcPort.getOutputCount()>0)
     {
         posture("look_hands");
-        
+        igaze->stopControl();
+
         Bottle cmd,reply;
         cmd.addString("recalibrate");
         depthRpcPort.write(cmd,reply);
