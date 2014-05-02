@@ -1614,7 +1614,7 @@ void CartesianSolver::run()
         latchUncontrolledJoints(unctrlJoints);
     
         // detect movements of uncontrolled joints
-        double distExtMoves=norm(CTRL_RAD2DEG*(unctrlJoints-unctrlJointsOld));
+        double distExtMoves=CTRL_RAD2DEG*norm(unctrlJoints-unctrlJointsOld);
         unctrlJointsOld=unctrlJoints;
     
         // run the solver if movements of uncontrolled joints
