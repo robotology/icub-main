@@ -218,9 +218,9 @@ service depth2kin_IDL
    string getTouchWithExperts();
 
    /**
-   * Yield a <i>touch</i> action with the finger on a stereo point.
-   * @param u the u-coordinate of the stereo point in the image plane.
-   * @param v the v-coordinate of the stereo point in the image plane.
+   * Yield a <i>touch</i> action with the finger on a depth point.
+   * @param u the u-coordinate of the depth point in the image plane.
+   * @param v the v-coordinate of the depth point in the image plane.
    * @return true/false on success/failure.
    */
    bool touch(1:i32 u, 2:i32 v);
@@ -329,6 +329,13 @@ service depth2kin_IDL
    * @return true/false on success/failure.
    */
    bool posture(1:string type);
+
+   /**
+   * Put the robot in a suitable predefined posture
+   * and then execute depth calibration.
+   * @return true/false on success/failure.
+   */
+   bool calibrateDepth();
 
    /**
    * Quit the module.

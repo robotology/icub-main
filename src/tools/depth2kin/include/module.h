@@ -125,7 +125,7 @@ protected:
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);
     bool getDepthAveraged(const Vector &px, Vector &x, Vector &pxr, const int maxSamples=5);
     void openHand(IPositionControl *ipos);
-    void postureHelper(const Vector &gaze_x, const Matrix &targetL, const Matrix &targetR);
+    void postureHelper(const Vector &gaze_ang, const Matrix &targetL, const Matrix &targetR);
     void prepareRobot();
     int removeOutliers();
     void doMotorExploration();
@@ -179,6 +179,7 @@ public:
     Property getExplorationData();
     bool clearExplorationData();
     bool posture(const string &type);
+    bool calibrateDepth();
     bool quit();
 };
 

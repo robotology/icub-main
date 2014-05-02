@@ -355,7 +355,7 @@ void CalibModule::openHand(IPositionControl *ipos)
 
 
 /************************************************************************/
-void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
+void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
                                 const Matrix &targetR)
 {
     IPositionControl  *ipos;
@@ -363,7 +363,8 @@ void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
     int ctxtL,ctxtR;
     Vector dof;
 
-    igaze->lookAtFixationPoint(gaze_x);
+    printf("looking at target\n");
+    igaze->lookAtAbsAngles(gaze_ang);
 
     if (useArmL)
     {
@@ -375,6 +376,9 @@ void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
         icart->getDOF(dof);
         dof[0]=dof[1]=dof[2]=0.0;
         icart->setDOF(dof,dof);
+        icart->setTrajTime(1.0);
+
+        printf("reaching for left target\n");
         icart->goToPoseSync(targetL.getCol(3),dcm2axis(targetL));
     }
 
@@ -388,14 +392,24 @@ void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
         icart->getDOF(dof);
         dof[0]=dof[1]=dof[2]=0.0;
         icart->setDOF(dof,dof);
+        icart->setTrajTime(1.0);
+
+        printf("reaching for right target\n");
         icart->goToPoseSync(targetR.getCol(3),dcm2axis(targetR));
+
+        printf("waiting for right arm... ");
         icart->waitMotionDone();
+        printf("done\n");
     }
 
     if (useArmL)
     {
         drvCartL.view(icart);
+
+        printf("waiting for left arm... ");
         icart->waitMotionDone();
+        printf("done\n");
+
         icart->restoreContext(ctxtL);
         icart->deleteContext(ctxtL);
     }
@@ -412,16 +426,13 @@ void CalibModule::postureHelper(const Vector &gaze_x, const Matrix &targetL,
 /************************************************************************/
 bool CalibModule::posture(const string &type)
 {
-    Vector gaze_x(3,0.0);
+    Vector gaze_ang(3,0.0);
     Matrix targetL=zeros(4,4);
     Matrix targetR=zeros(4,4);
     targetL(3,3)=targetR(3,3)=1.0;
 
     if (type=="home")
     {
-        gaze_x[0]=-1.0;
-        gaze_x[2]=0.35;
-
         targetL(0,0)=targetR(0,0)=-1.0;
         targetL(2,1)=targetR(2,1)=-1.0;
         targetL(1,2)=targetR(1,2)=-1.0;
@@ -434,8 +445,8 @@ bool CalibModule::posture(const string &type)
     }
     else if (type=="look_hands")
     {
-        gaze_x[0]=-1.0;
-        gaze_x[2]=0.0;
+        gaze_ang[1]=-20.0;
+        gaze_ang[2]=8.0;
 
         targetL(2,0)=1.0;
         targetL(1,1)=-1.0;
@@ -454,8 +465,32 @@ bool CalibModule::posture(const string &type)
     else
         return false;
 
-    postureHelper(gaze_x,targetL,targetR);
+    postureHelper(gaze_ang,targetL,targetR);
     return true;
+}
+
+
+/************************************************************************/
+bool CalibModule::calibrateDepth()
+{
+    if (depthRpcPort.getOutputCount()>0)
+    {
+        posture("look_hands");
+        
+        Bottle cmd,reply;
+        cmd.addString("recalibrate");
+        depthRpcPort.write(cmd,reply);
+        if (reply.get(0).asString()=="ACK")
+        {
+            cmd.clear();
+            cmd.addString("saveCurrentCalib");
+            depthRpcPort.write(cmd,reply);
+            if (reply.get(0).asString()=="ACK")
+                return true;
+        }
+    }
+
+    return false;
 }
 
 

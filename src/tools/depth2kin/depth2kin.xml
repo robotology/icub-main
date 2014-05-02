@@ -67,6 +67,15 @@
         in the left image plane where to execute a touch action.
       </description>
     </input>
+
+    <output>
+      <type>yarp::os::Bottle</type>
+      <port carrier="tcp">/depth2kin/depth:rpc</port>
+      <description>
+        send requests to stereo vision module for retrieving 3D info so
+        as performing stereo calibration.
+      </description>
+    </output>
   </data>
   
   <services>
