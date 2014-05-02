@@ -333,7 +333,7 @@ void CalibModule::openHand(IPositionControl *ipos)
     Vector poss(9,0.0);
     Vector vels(9,0.0);
 
-    poss[0]=0.0;  vels[0]=50.0;
+    poss[0]=20.0; vels[0]=50.0;
     poss[1]=90.0; vels[1]=50.0;
     poss[2]=0.0;  vels[2]=50.0;
     poss[3]=0.0;  vels[3]=50.0;
@@ -445,22 +445,22 @@ bool CalibModule::posture(const string &type)
     }
     else if (type=="look_hands")
     {
-        gaze_ang[1]=-20.0;
-        gaze_ang[2]=8.0;
+        gaze_ang[1]=-35.0;
+        gaze_ang[2]=block_eyes;
 
         targetL(2,0)=1.0;
         targetL(1,1)=-1.0;
         targetL(0,2)=1.0;
         targetL(0,3)=-0.25;
         targetL(1,3)=-0.04;
-        targetL(2,3)=0.25;
+        targetL(2,3)=0.12;
 
         targetR(2,0)=1.0;
         targetR(1,1)=1.0;
         targetR(0,2)=-1.0;
         targetR(0,3)=-0.32;
         targetR(1,3)=0.04;
-        targetR(2,3)=0.25;
+        targetR(2,3)=0.12;
     }
     else
         return false;
@@ -477,6 +477,7 @@ bool CalibModule::calibrateDepth()
     {
         posture("look_hands");
         igaze->stopControl();
+        Time::delay(1.0);
 
         Bottle cmd,reply;
         cmd.addString("recalibrate");
@@ -701,7 +702,7 @@ void CalibModule::doTouch(const Vector &xd)
     iarm->goToPoseSync(xd,od);
     iarm->waitMotionDone(0.1,5.0);
 
-    Time::delay(4.0);
+    Time::delay(2.0);
 
     printf("moving to xd=(%s); od=(%s)\n",x.toString(3,3).c_str(),od.toString(3,3).c_str());
     iarm->goToPoseSync(x,od);
