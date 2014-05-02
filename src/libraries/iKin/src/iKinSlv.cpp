@@ -424,7 +424,7 @@ void CartesianSolver::countUncontrolledJoints()
 /************************************************************************/
 void CartesianSolver::latchUncontrolledJoints(Vector &joints)
 {
-    if (unctrlJointsNum)
+    if (unctrlJointsNum>0)
     {
         joints.resize(unctrlJointsNum);
         int j=0;
