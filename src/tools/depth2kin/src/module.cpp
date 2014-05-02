@@ -374,9 +374,12 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
         drvCartL.view(icart);
         icart->storeContext(&ctxtL);
         icart->getDOF(dof);
-        dof[0]=dof[1]=dof[2]=0.0;
+        dof=1.0;
         icart->setDOF(dof,dof);
-        icart->setTrajTime(1.0);
+        icart->setLimits(0,0.0,0.0);
+        icart->setLimits(1,0.0,0.0);
+        icart->setLimits(2,0.0,0.0);
+        icart->setTrajTime(2.0);
 
         printf("reaching for left target\n");
         icart->goToPoseSync(targetL.getCol(3),dcm2axis(targetL));
@@ -390,9 +393,11 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
         drvCartR.view(icart);
         icart->storeContext(&ctxtR);
         icart->getDOF(dof);
+        dof=1.0;
         dof[0]=dof[1]=dof[2]=0.0;
         icart->setDOF(dof,dof);
-        icart->setTrajTime(1.0);
+        icart->setTrackingMode(true);
+        icart->setTrajTime(2.0);
 
         printf("reaching for right target\n");
         icart->goToPoseSync(targetR.getCol(3),dcm2axis(targetR));
@@ -543,7 +548,7 @@ void CalibModule::prepareRobot()
     
     Vector dof;
     iarm->getDOF(dof);
-    dof[0]=dof[2]=1.0;
+    dof=1.0;
     dof[1]=0.0;
     iarm->setDOF(dof,dof);
 
