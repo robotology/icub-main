@@ -451,14 +451,14 @@ bool CalibModule::posture(const string &type)
         targetL(2,0)=1.0;
         targetL(1,1)=-1.0;
         targetL(0,2)=1.0;
-        targetL(0,3)=-0.25;
+        targetL(0,3)=-0.3;
         targetL(1,3)=-0.05;
         targetL(2,3)=0.25;
 
         targetR(2,0)=1.0;
         targetR(1,1)=1.0;
         targetR(0,2)=-1.0;
-        targetR(0,3)=-0.33;
+        targetR(0,3)=-0.35;
         targetR(1,3)=0.05;
         targetR(2,3)=0.25;
     }
