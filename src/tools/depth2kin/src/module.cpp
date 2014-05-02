@@ -954,10 +954,13 @@ bool CalibModule::configure(ResourceFinder &rf)
     optionGaze.put("local",("/"+name+"/gaze").c_str());
     if (!drvGaze.open(optionGaze))
         printf("Gaze controller not available!\n");
+    
+    // set up some global vars
+    useArmL=(drvArmL.isValid()==drvCartL.isValid());
+    useArmR=(drvArmR.isValid()==drvCartR.isValid());
+    selectArmEnabled=(useArmL && useArmR);
 
-    // quitting conditions
-    useArmL=drvArmL.isValid()==drvCartL.isValid();
-    useArmR=drvArmR.isValid()==drvCartR.isValid();
+    // quitting condition
     if (!drvGaze.isValid() || (!useArmL && !useArmR))
     {
         printf("Something wrong occured while configuring drivers... quitting!\n");
@@ -965,19 +968,18 @@ bool CalibModule::configure(ResourceFinder &rf)
         return false;
     }
 
+    // set up initial arm and experts
     arm=(useArmL?"left":"right");
-    selectArmEnabled=(useArmL && useArmR);
+    experts=&(arm=="left"?expertsL:expertsR);
 
+    // open devices views
     IControlLimits *ilim;
     (arm=="left")?drvArmL.view(iencs):drvArmR.view(iencs);
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
     (arm=="left")?drvArmL.view(ilim):drvArmR.view(ilim);
-    iencs->getAxes(&nEncs);
-
-    (arm=="left")?drvCartL.view(iarm):drvCartR.view(iarm);
+    (arm=="left")?drvCartL.view(iarm):drvCartR.view(iarm);    
     drvGaze.view(igaze);
-
-    experts=&(arm=="left"?expertsL:expertsR);
+    iencs->getAxes(&nEncs);
 
     Matrix Prj;
     if (!getGazeParams("left","intrinsics",Prj))
