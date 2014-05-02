@@ -379,7 +379,7 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
         icart->setLimits(0,0.0,0.0);
         icart->setLimits(1,0.0,0.0);
         icart->setLimits(2,0.0,0.0);
-        icart->setTrajTime(2.0);
+        icart->setTrajTime(1.0);
 
         printf("reaching for left target\n");
         icart->goToPoseSync(targetL.getCol(3),dcm2axis(targetL));
@@ -397,7 +397,7 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
         dof[0]=dof[1]=dof[2]=0.0;
         icart->setDOF(dof,dof);
         icart->setTrackingMode(true);
-        icart->setTrajTime(2.0);
+        icart->setTrajTime(1.0);
 
         printf("reaching for right target\n");
         icart->goToPoseSync(targetR.getCol(3),dcm2axis(targetR));
