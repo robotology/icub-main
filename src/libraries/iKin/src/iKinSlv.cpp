@@ -1601,14 +1601,13 @@ void CartesianSolver::run()
     getFeedback();
 
     // acquire uncontrolled joints configuration
+    Vector unctrlJoints;
     if (!fullDOF)
     {
-        Vector unctrlJoints;
         latchUncontrolledJoints(unctrlJoints);
     
         // detect movements of uncontrolled joints
-        double distExtMoves=CTRL_RAD2DEG*norm(unctrlJoints-unctrlJointsOld);
-        unctrlJointsOld=unctrlJoints;
+        double distExtMoves=CTRL_RAD2DEG*norm(unctrlJoints-unctrlJointsOld);        
     
         // run the solver if movements of uncontrolled joints
         // are detected and mode==continuous
@@ -1627,10 +1626,10 @@ void CartesianSolver::run()
 
     // solver part
     if (doSolve)
-    {        
+    {
         // point to the desired pose
         Vector xd=inPort->get_xd();
-        if (inPort->get_tokenPtr()) // latch the token
+        if (inPort->get_tokenPtr()) // latch token
         {
             token=*inPort->get_tokenPtr();
             pToken=&token;
@@ -1664,6 +1663,10 @@ void CartesianSolver::run()
         // dump on screen
         if (verbosity)
             printInfo(xd,x,q,t1-t0);
+
+        // save the values of uncontrolled joints
+        if (!fullDOF)
+            unctrlJointsOld=unctrlJoints; 
     }
 
     unlock();
