@@ -341,6 +341,7 @@ protected:
     unsigned int  period;
     unsigned int  ctrlPose;
     bool          fullDOF;
+    bool          contModeOld;
     bool          configured;
     bool          closing;
     bool          closed;

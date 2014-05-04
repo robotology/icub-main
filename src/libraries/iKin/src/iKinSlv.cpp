@@ -182,7 +182,6 @@ bool InputPort::handlePose(const int newPose)
             isNew=true;
 
         pose=IKINCTRL_POSE_FULL;
-
         return true;
     }
     else if (newPose==IKINSLV_VOCAB_VAL_POSE_XYZ)
@@ -191,7 +190,6 @@ bool InputPort::handlePose(const int newPose)
             isNew=true;
 
         pose=IKINCTRL_POSE_XYZ;
-
         return true;
     }
     else
@@ -204,12 +202,16 @@ bool InputPort::handleMode(const int newMode)
 {
     if (newMode==IKINSLV_VOCAB_VAL_MODE_TRACK)
     {
+        slv->lock();
         contMode=true;
+        slv->unlock();
         return true;
     }
     else if (newMode==IKINSLV_VOCAB_VAL_MODE_SINGLE)
     {
+        slv->lock();
         contMode=false;
+        slv->unlock();
         return true;
     }
     else
@@ -1377,7 +1379,7 @@ bool CartesianSolver::open(Searchable &options)
     // init input port data
     inPort->set_dof(dof);
     inPort->get_pose()=ctrlPose;
-    inPort->get_contMode()=mode;
+    inPort->get_contMode()=contModeOld=mode;
 
     // define output port
     outPort=new BufferedPort<Bottle>;    
@@ -1605,12 +1607,18 @@ void CartesianSolver::run()
     if (!fullDOF)
     {
         latchUncontrolledJoints(unctrlJoints);
-    
+
+        // upon setting the mode to continuous,
+        // latch the old state so that we skip any
+        // adjustment
+        if (inPort->get_contMode() && !contModeOld)
+            unctrlJointsOld=unctrlJoints;
+
         // detect movements of uncontrolled joints
         double distExtMoves=CTRL_RAD2DEG*norm(unctrlJoints-unctrlJointsOld);        
-    
+
         // run the solver if movements of uncontrolled joints
-        // are detected and mode==continuous
+        // are detected and we are in continuous mode
         doSolve|=inPort->get_contMode() && (distExtMoves>CARTSLV_UNCTRLEDJNTS_THRES);
         if (doSolve && verbosity)
             printf("%s: detected movements on uncontrolled joints (norm=%g>%g deg)\n",
@@ -1668,6 +1676,8 @@ void CartesianSolver::run()
         if (!fullDOF)
             unctrlJointsOld=unctrlJoints; 
     }
+
+    contModeOld=inPort->get_contMode();
 
     unlock();
 }
