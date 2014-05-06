@@ -1223,6 +1223,7 @@ protected:
         inportIMDTargetRight.interrupt();
         inportIMDTargetRight.close();
 
+        setFace(FACE_HAPPY);
         outportCmdFace.interrupt();
         outportCmdFace.close();      
 
