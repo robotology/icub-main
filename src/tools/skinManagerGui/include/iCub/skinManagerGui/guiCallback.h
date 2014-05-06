@@ -474,7 +474,9 @@ static gint periodic_timeout(gpointer data) {
     Bottle* skinErrors = portSkinDiagnosticsErrorsIn.read(false);
     while (skinErrors) {
         // Extract errors and print them out
-        printLog(skinErrors->toString().c_str());
+        for (int i = 0; i < skinErrors.size(); ++i) {
+            printLog(skinErrors->get(i).asString().c_str());
+        }
         skinErrors = driftCompInfoPort.read(false);
     }
             
