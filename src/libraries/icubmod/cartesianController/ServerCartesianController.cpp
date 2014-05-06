@@ -1365,7 +1365,7 @@ void ServerCartesianController::run()
 
         // iff in position then update just chainState
         // and make the chainPlan evolve freely without
-        // constraining it to the feedback values
+        // constraining it with the feedback
         if (posDirectEnabled)
             chainState->setAng(fb);
         else

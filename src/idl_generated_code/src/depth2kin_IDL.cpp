@@ -748,6 +748,48 @@ public:
   }
 };
 
+class depth2kin_IDL_posture : public yarp::os::Portable {
+public:
+  std::string type;
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(2)) return false;
+    if (!writer.writeTag("posture",1,1)) return false;
+    if (!writer.writeString(type)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
+class depth2kin_IDL_calibrateDepth : public yarp::os::Portable {
+public:
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("calibrateDepth",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
 class depth2kin_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
@@ -1101,6 +1143,25 @@ bool depth2kin_IDL::clearExplorationData() {
   depth2kin_IDL_clearExplorationData helper;
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearExplorationData()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDL::posture(const std::string& type) {
+  bool _return = false;
+  depth2kin_IDL_posture helper;
+  helper.type = type;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::posture(const std::string& type)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDL::calibrateDepth() {
+  bool _return = false;
+  depth2kin_IDL_calibrateDepth helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::calibrateDepth()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -1644,6 +1705,33 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "posture") {
+      std::string type;
+      if (!reader.readString(type)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = posture(type);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "calibrateDepth") {
+      bool _return;
+      _return = calibrateDepth();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "quit") {
       bool _return;
       _return = quit();
@@ -1723,6 +1811,8 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     helpString.push_back("setExplorationSpaceDelta");
     helpString.push_back("getExplorationData");
     helpString.push_back("clearExplorationData");
+    helpString.push_back("posture");
+    helpString.push_back("calibrateDepth");
     helpString.push_back("quit");
     helpString.push_back("help");
   }
@@ -1871,9 +1961,9 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     }
     if (functionName=="touch") {
       helpString.push_back("bool touch(const int32_t u, const int32_t v) ");
-      helpString.push_back("Yield a <i>touch</i> action with the finger on a stereo point. ");
-      helpString.push_back("@param u the u-coordinate of the stereo point in the image plane. ");
-      helpString.push_back("@param v the v-coordinate of the stereo point in the image plane. ");
+      helpString.push_back("Yield a <i>touch</i> action with the finger on a depth point. ");
+      helpString.push_back("@param u the u-coordinate of the depth point in the image plane. ");
+      helpString.push_back("@param v the v-coordinate of the depth point in the image plane. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="getPoint") {
@@ -1959,6 +2049,19 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     if (functionName=="clearExplorationData") {
       helpString.push_back("bool clearExplorationData() ");
       helpString.push_back("Clean up the internal list of explored points pairs. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="posture") {
+      helpString.push_back("bool posture(const std::string& type) ");
+      helpString.push_back("Make the robot reach a predefined posture. ");
+      helpString.push_back("@param type can be one of the following: \n ");
+      helpString.push_back("\"home\", \"look_hands\". ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="calibrateDepth") {
+      helpString.push_back("bool calibrateDepth() ");
+      helpString.push_back("Put the robot in a suitable predefined posture ");
+      helpString.push_back("and then execute depth calibration. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="quit") {

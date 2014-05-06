@@ -163,9 +163,9 @@ public:
  */
   virtual std::string getTouchWithExperts();
 /**
- * Yield a <i>touch</i> action with the finger on a stereo point.
- * @param u the u-coordinate of the stereo point in the image plane.
- * @param v the v-coordinate of the stereo point in the image plane.
+ * Yield a <i>touch</i> action with the finger on a depth point.
+ * @param u the u-coordinate of the depth point in the image plane.
+ * @param v the v-coordinate of the depth point in the image plane.
  * @return true/false on success/failure.
  */
   virtual bool touch(const int32_t u, const int32_t v);
@@ -254,6 +254,19 @@ public:
  * @return true/false on success/failure.
  */
   virtual bool clearExplorationData();
+/**
+ * Make the robot reach a predefined posture.
+ * @param type can be one of the following: \n
+ * "home", "look_hands".
+ * @return true/false on success/failure.
+ */
+  virtual bool posture(const std::string& type);
+/**
+ * Put the robot in a suitable predefined posture
+ * and then execute depth calibration.
+ * @return true/false on success/failure.
+ */
+  virtual bool calibrateDepth();
 /**
  * Quit the module.
  * @return true/false on success/failure.

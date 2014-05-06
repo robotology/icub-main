@@ -35,13 +35,18 @@
         <param name="stictionDwn">     0       0       0       0 </param>       
     </group>
 	
-    <group name="TORQUE_PIDS">
-        <param name="TPid0"> 	 500            0             0             0                      10000          10                          0    	</param>
-        <param name="TPid1">    -500            0             0             0                      10000          10                          0   	</param>
-        <param name="TPid2">     500            0             0             0                      10000          10                          0   	</param>
-        <param name="TPid3">    -500            0             0             0                      10000          10                          0  	</param>
+	<group name="TORQUE_PIDS">
+        <param name="kp">            500       -500        500       -500     </param>       
+        <param name="kd">              0          0          0          0     </param>       
+        <param name="ki">              0          0          0          0     </param>       
+        <param name="maxPwm">          0          0          0          0     </param>       
+        <param name="maxInt">      10000      10000      10000      10000     </param>       
+        <param name="shift">          10         10         10         10     </param>       
+        <param name="ko">              0          0          0          0     </param>       
+        <param name="stictionUp">      0          0          0          0     </param>       
+        <param name="stictionDwn">     0          0          0          0     </param>       
     </group>
-/
+	
   </device>
 </devices>
 

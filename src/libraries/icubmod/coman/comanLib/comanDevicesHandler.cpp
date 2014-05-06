@@ -147,6 +147,7 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
    // tell to ALL dps to start broadcast data
     _board_crtl->start_stop_bc_boards(true);
 
+    initGravityWorkAround();
     _initted = true;
     comanDevicesHandler_mutex.post();
     return true;
@@ -154,10 +155,9 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
 
 void comanDevicesHandler::initGravityWorkAround()
 {
-    _gravityOffsets = new int [_board_crtl->getActiveNum()];
     for(int i=0; i<_board_crtl->getActiveNum(); i++)
     {
-        _gravityOffsets = 0;
+        _gravityOffsets.push_back(0);
     }
     _gravityOffsetsVectorSize = sizeof(int) * _board_crtl->getActiveNum();
 }
@@ -165,7 +165,7 @@ void comanDevicesHandler::initGravityWorkAround()
 bool comanDevicesHandler::setGravityOffset(int bId, int offset)
 {
     _gravityOffsets[bId] = offset;
-    return !_board_crtl->set_gravity_compensation(_gravityOffsets, _gravityOffsetsVectorSize);
+    return !_board_crtl->set_gravity_compensation(_gravityOffsets.data(), _gravityOffsetsVectorSize);
 }
 
 Boards_ctrl *comanDevicesHandler::getBoard_ctrl_p()

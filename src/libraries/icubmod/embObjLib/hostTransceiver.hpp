@@ -46,7 +46,7 @@
 
 // Boards configurations
 
-#undef USE_EOPROT_ROBOT
+
 
 
 #include <yarp/os/Semaphore.h>

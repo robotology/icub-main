@@ -29,21 +29,17 @@
         <param name="stictionDwn">     0      0      0      0      0       0      0       0      0       0      0      0    </param>       
     </group>
 	
-	
-    <group name="TORQUE_PIDS">
-        <param name="TPid0"> 50  0   0   1333    1333    10  0 </param>
-        <param name="TPid1">  0  0   0   0    0    0  0 </param>
-        <param name="TPid2">  0  0   0   0    0    0  0 </param>
-        <param name="TPid3">  0  0   0   0    0    0  0 </param>
-        <param name="TPid4">  0  0   0   0    0    0  0</param>
-        <param name="TPid5">  0  0   0   0    0    0  0</param>
-        <param name="TPid6">  0  0   0   0    0    0  0</param>
-        <param name="TPid7">  0  0   0   0    0    0  0 </param>
-        <param name="TPid8">  0  0   0   0    0    0  0 </param>
-        <param name="TPid9">  0  0   0   0    0    0  0 </param>
-        <param name="TPid10"> 0  0   0   0    0    0  0 </param>
-        <param name="TPid11"> 0  0   0   0    0    0  0</param>
+	<group name="TORQUE_PIDS">
+        <param name="kp">             50      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="kd">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="ki">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="maxPwm">       1333      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="maxInt">       1333      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="shift">          10      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="ko">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="stictionUp">      0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="stictionDwn">     0      0      0      0      0      0      0      0      0      0      0      0    </param>       
     </group>
-
+	
   </device>
 </devices>

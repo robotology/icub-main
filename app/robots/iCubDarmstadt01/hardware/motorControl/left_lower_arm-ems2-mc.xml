@@ -41,6 +41,7 @@
         <param name="stictionUp">      0      0      0      0      0      0      0      0      0      0      0      0    </param>       
         <param name="stictionDwn">     0      0      0      0      0      0      0      0      0      0      0      0    </param>       
     </group>
+	
   </device>
 </devices>
   
