@@ -32,11 +32,9 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
  
-This module relies on the <a 
-href="http://wiki.icub.org/iCub/main/dox/html/icub_cartesian_interface.html">Cartesian
-Interface</a> to provide a kind of easy-to-use port-based 
-front-end for controlling the iCub's arm in the operational 
-space. 
+This module relies on \ref icub_cartesian_interface to provide a
+kind of easy-to-use port-based front-end for controlling the 
+iCub's arm in the operational space. 
  
 \section lib_sec Libraries 
 - YARP libraries. 
