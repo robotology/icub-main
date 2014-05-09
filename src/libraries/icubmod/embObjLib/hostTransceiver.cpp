@@ -586,6 +586,7 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &config)
 	    alreadyinitted = true;
     }
 
+    return(true);
 }
 
 
