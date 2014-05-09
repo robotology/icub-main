@@ -79,7 +79,7 @@ ethResources::~ethResources()
 }
 
 
-bool ethResources::open(FEAT_ID request)
+bool ethResources::open(yarp::os::Searchable &config, FEAT_ID request)
 {
    // ACE_TCHAR remoteIp_string[64], localIp_string[64];
 
@@ -102,7 +102,7 @@ bool ethResources::open(FEAT_ID request)
     bool ret;
     eOipv4addr_t eo_locIp = eo_common_ipv4addr(request.PC104ipAddr.ip1, request.PC104ipAddr.ip2, request.PC104ipAddr.ip3, request.PC104ipAddr.ip4);
     eOipv4addr_t eo_remIp = eo_common_ipv4addr(request.EMSipAddr.ip1, request.EMSipAddr.ip2, request.EMSipAddr.ip3, request.EMSipAddr.ip4);
-    if(!init(eo_locIp, eo_remIp, request.EMSipAddr.port, rxBUFFERsize, request.boardNum))
+    if(!init(config, eo_locIp, eo_remIp, request.EMSipAddr.port, rxBUFFERsize, request.boardNum))
     {
         ret = false;
         yError() << "cannot init transceiver... maybe wrong board number... check log and config file.";

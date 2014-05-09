@@ -215,6 +215,12 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     ACE_UINT16      port;
     bool            ret;
 
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjAnalogSensor: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
 
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
@@ -266,7 +272,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -403,7 +409,8 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     // set mais datarate = 1millisec
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
-    if(eo_prot_ID32dummy == protoid)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
         yError () << " NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -417,7 +424,8 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     //set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-    if(eo_prot_ID32dummy == protoid)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
         yError () << "NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -458,7 +466,8 @@ bool embObjAnalogSensor::getFullscaleValues()
     eo_array_New(6, 2, &fullscale_values);
 
     eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
-    if(eo_prot_ID32dummy == protoid_fullscale)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
         yError() << "nvid not found";
         
     // now we impose that the value of the EOnv described by eoprot_tag_as_strain_status_fullscale is what in fullscale_values.
@@ -485,7 +494,8 @@ bool embObjAnalogSensor::getFullscaleValues()
      or better, just check that initalization has been done as expected, i.e. initial size is zero.
 */
      eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
-    if(eo_prot_ID32dummy == protoid_fullscale)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
         yError() << "nvid not found";
 
     p_tmpNV = res->getNVhandler(protoid_fullscale, &tmpNV);
@@ -626,7 +636,7 @@ bool embObjAnalogSensor::init()
         }
     }
 
-    if(eo_prot_ID32dummy == protoid)
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
         yError () << " EmbObj Analog Sensor NVID not found for EndPoint" << _fId.ep <<" at line " << __LINE__;
         return false;
