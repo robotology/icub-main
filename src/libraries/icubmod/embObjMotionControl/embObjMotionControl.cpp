@@ -323,6 +323,13 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     Bottle          groupEth;
     ACE_UINT16      port;
 
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjMotionControl: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
+
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
     if(groupEth.isNull())
@@ -440,7 +447,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     _fId.handle  = (this);
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -1062,7 +1069,8 @@ bool embObjMotionControl::init()
         // basterebbero jstatus__basic e jstatus__ofpid, ma la differenza tra questi due e il jstatus completo sono 4 byte, per ora non utilizzati.
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
         //    printf("\njointNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-        if(eo_prot_ID32dummy == protid)
+
+        if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
         {
             yError () << " NVID jointNVindex_jstatus not found for board " << _fId.boardNum  << " joint " << j;
         }
@@ -1084,7 +1092,8 @@ bool embObjMotionControl::init()
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status);
         //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-        if(eo_prot_ID32dummy == protid)
+
+        if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
         {
             yError () << " NVID eoprot_tag_mc_motor_status not found for board " << _fId.boardNum << " joint " << j;
         }
@@ -1219,7 +1228,8 @@ bool embObjMotionControl::init()
                 totConfigSize = 0;
             }
             protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-            if(eo_prot_ID32dummy == protid)
+
+            if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
             {
                 yError () << " NVID not found\n";
                 continue;
@@ -1247,16 +1257,20 @@ bool embObjMotionControl::configure_mais(void)
 
     uint8_t               maisnum   = 0;
     uint8_t               datarate  = 10;    //10 milli (like in icub_right_arm_safe.ini)  // type ok
-
+    
+    #warning --> marcoaccame on 08may14: the control about mais being only in boards 2 and 4 is ... to be avoided. much better using the PROTOCOL section and see if mais is present.
 
     if((_fId.boardNum != 2) && (_fId.boardNum != 4))
     {
-        return true;//only board 2 and 4 have mais connected
+        return true; // only board 2 and 4 have mais connected
     }
     //set mais datarate = 1millisec
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-    if(eo_prot_ID32dummy == protid)
+    // marcoaccame on 08may14: eoprot_ID_get() does not verify if id is valid. use eoprot_id_isvalid() instead.
+
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
     {
         yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -1270,7 +1284,8 @@ bool embObjMotionControl::configure_mais(void)
     //set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-    if(eo_prot_ID32dummy == protid)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
     {
         yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;

@@ -446,6 +446,13 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     int      port;
 
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjSkin: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
+
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
@@ -504,7 +511,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";

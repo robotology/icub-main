@@ -190,6 +190,13 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     ACE_TCHAR       address[64];
     ACE_UINT16      port;
 
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjVirtualAnalogSensor: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
+
 
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
@@ -239,7 +246,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";

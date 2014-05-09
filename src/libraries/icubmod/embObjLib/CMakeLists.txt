@@ -9,7 +9,23 @@ PROJECT(${PROJECTNAME})
 
 
 # defined in porting.h  -- update: now seems that the porting file doen not exists anymore....
+
+# marco.accame: to activate new mode of eoprot configuration: 
+# 1. define USE_EOPROT_XML and EOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME 
+# 2. remove eOprot_b0x.c from compilation
+# you can do taht by setting ICUB_EOPROT_DEFINED_BY_XML ON (or OFF to deactivate and stay w/ old mode)
+
+set(ICUB_EOPROT_DEFINED_BY_XML OFF)
+
+if(ICUB_EOPROT_DEFINED_BY_XML)
+
+add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
+
+else(ICUB_EOPROT_DEFINED_BY_XML)
+
 add_definitions( -D_ICUB_CALLBACK_)
+
+endif(ICUB_EOPROT_DEFINED_BY_XML)
 
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
@@ -37,6 +53,13 @@ include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
 
 set(ICUB_INTERFACE_SOURCE   ${EXTRA_FOLDER}/FeatureInterface.cpp)
 
+if(ICUB_EOPROT_DEFINED_BY_XML)
+
+set(NVS_EB_SOURCE           
+                            )
+
+else(ICUB_EOPROT_DEFINED_BY_XML)
+
 set(NVS_EB_SOURCE           ${NVS_EB_SRC_FOLDER}eOprot_b01.c  
                             ${NVS_EB_SRC_FOLDER}eOprot_b02.c
                             ${NVS_EB_SRC_FOLDER}eOprot_b03.c  
@@ -49,6 +72,8 @@ set(NVS_EB_SOURCE           ${NVS_EB_SRC_FOLDER}eOprot_b01.c
                             ${NVS_EB_SRC_FOLDER}eOprot_b10.c  
                             ${NVS_EB_SRC_FOLDER}eOprot_b11.c  
                             )
+
+endif(ICUB_EOPROT_DEFINED_BY_XML)
 
 set(NVS_SOURCE              ${NVS_MC_SRC_FOLDER}/EoProtocol.c
                             ${NVS_MC_SRC_FOLDER}/EoProtocolEPs.c
@@ -152,6 +177,8 @@ set(PROT_SOURCE
                             ${PROT_FOLDER}/transport/EOhostTransceiver.c
                             ${PROT_FOLDER}/transport/EOconfirmationManager.c
                             ${PROT_FOLDER}/transport/EOproxy.c
+                            ${PROT_FOLDER}/transport/EOprotocolConfigurator.c
+                            ${PROT_FOLDER}/transport/EOnvsetDEVbuilder.c
                             ${NVS_MNGMNT_CBK_FOLDER}/protocol_callback.c
                             )
 
@@ -166,6 +193,7 @@ set(PROT_HEADER             ${PROT_FOLDER}/transport/EOhostTransceiver_hid.h
                             ${PROT_FOLDER}/transport/EOtransceiver_hid.h
                             ${PROT_FOLDER}/transport/EOtransmitter_hid.h
                             ${PROT_FOLDER}/transport/EOtransmitter_hid.h
+                            ${PROT_FOLDER}/transport/EOprotocolConfigurator_hid.h
                             )
 
 

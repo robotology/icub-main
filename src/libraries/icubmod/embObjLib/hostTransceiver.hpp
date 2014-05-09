@@ -78,7 +78,7 @@ public:
 
     yarp::os::Semaphore   transMutex;
 
-    bool init(uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
+    bool init(yarp::os::Searchable &config, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
     /*! This method add a Set type rop in the next ropframe.
         Parameters are:
@@ -123,6 +123,18 @@ protected:
 private:
     bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
 
+    bool initProtocol(yarp::os::Searchable &config);
+
+    void eoprot_override_mn(void);
+    void eoprot_override_mc(void);
+    void eoprot_override_as(void);
+    void eoprot_override_sk(void); 
+
+    bool prepareTransceiverConfig(yarp::os::Searchable &config);
+
+
+    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &config);  
+
 public:
     bool getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size);
     EOnv* getNVhandler(eOprotID32_t protid, EOnv* nv);
@@ -133,7 +145,7 @@ public:
     // progressive index on the endpoint of the variable described by protid. EOK_uint32dummy if the id does not exist on that board.
     uint32_t translate_NVid2index(eOprotID32_t protid);
     
-    eOprotBRD_t get_protBRDnumber(void);    // the number in range [1, max-1]
+    eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
 };
 
 #endif  // include-guard
