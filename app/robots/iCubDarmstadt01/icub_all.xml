@@ -71,14 +71,14 @@
 	<devices file="hardware/skin/right_arm-ems4-skin.xml" />
 	
     <!--  CALIBRATORS -->
+
+    <devices file="calibrators/left_leg-calib.xml" />
+</robot> 
+
+    <devices file="calibrators/left_arm-calib.xml" /> 
+    <devices file="calibrators/right_arm-calib.xml" />
     <devices file="calibrators/head-calib.xml" /> 
     <devices file="calibrators/torso-calib.xml" /> 
     <devices file="calibrators/right_leg-calib.xml" />
-    <devices file="calibrators/left_leg-calib.xml" />
-    <devices file="calibrators/left_arm-calib.xml" /> 
-    <devices file="calibrators/right_arm-calib.xml" />
-
-
-</robot> 
 
 
