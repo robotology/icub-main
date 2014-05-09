@@ -69,7 +69,9 @@ public:
         {
             fm=mForceGain*f-20.0;
             if (fm<0.0) fm=0.0;
-            
+
+            nFSec=2+int(0.005*fm);
+
             double a=fx*fx+fy*fy;
             
             if (a>0.0)
@@ -98,6 +100,8 @@ public:
             mx/=m; my/=m; mz/=m;
             mm=mTorqueGain*m-20.0;
             if (mm<0.0) mm=0.0;
+
+            nTSec=2+int(0.005*mm);
 
             double a=mx*mx+my*my;
 
@@ -131,7 +135,7 @@ public:
             glTranslated(0.0,0.0,-20.0); // cone base
             glutSolidCone(5.0,20.0,16,4);
             glTranslated(0.0,0.0,-fm);
-            gluCylinder(cyl,2.5,2.5,fm,16,4);
+            gluCylinder(cyl,2.5,2.5,fm,16,nFSec);
             glPopMatrix();
         }
 
@@ -144,7 +148,7 @@ public:
             glTranslated(0.0,0.0,-20.0); // cone base
             glutSolidCone(5.0,20.0,16,4);
             glTranslated(0.0,0.0,-mm);
-            gluCylinder(cyl,2.5,2.5,mm,16,4);
+            gluCylinder(cyl,2.5,2.5,mm,16,nTSec);
             glPopMatrix();
         }
     }
@@ -159,6 +163,9 @@ public:
 
 protected:
     GLUquadricObj *cyl;
+
+    int nFSec,nTSec;
+
     double px,py,pz;
 
     double fm,fth,fax,fay,faz;
