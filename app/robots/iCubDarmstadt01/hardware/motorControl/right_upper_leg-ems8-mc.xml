@@ -23,33 +23,25 @@
       <param name="Imp3">	0.2	0.05	</param>
     </group>
 
-    <group name="PIDS">
-        <!--                 Proportional  Derivative    Integral      Integral Limit              PWM Limit     scale factor >>             offset -->
-        <param name="Pid0">    -5            0            10           2500                          10000             11                   0    </param>
-        <param name="Pid1">     5            0            10           2500                          10000             11                   0    </param>
-        <param name="Pid2">    -5            0            10           2500                          10000             11                   0    </param>
-        <param name="Pid3">     5            0            10           2500                          10000             11                   0    </param>
-    </group>
-	
-	<group name="PIDS">
-        <param name="kp">            -5       5      -5       5</param>       
-        <param name="kd">             0       0       0       0</param>       
-        <param name="ki">           -10      10     -10      10</param>       
-        <param name="maxPwm">     10000   10000   10000   10000</param>       
-        <param name="maxInt">      2500    2500    2500    2500</param>       
-        <param name="shift">         11      11      11      11</param>       
-        <param name="ko">             0       0       0       0</param>       
-        <param name="stictionUp">     0       0       0       0</param>       
-        <param name="stictionDwn">    0       0       0       0</param>       
+    <group name="POS_PIDS">
+        <param name="kp">              -1500        1500      -1000      -1280 </param>       
+        <param name="kd">                  0           0          0          0 </param>       
+        <param name="ki">             -15000       20000     -10000     -15000 </param>       
+        <param name="maxPwm">           2000        2000       2000       2000 </param>       
+        <param name="maxInt">           1500        1500        750       1000 </param>       
+        <param name="shift">               8           8          8          8 </param>       
+        <param name="ko">                  0           0          0          0 </param>       
+        <param name="stictionUp">          0           0          0          0 </param>       
+        <param name="stictionDwn">         0           0          0          0 </param>      
     </group>
 
-	<group name="TORQUE_PIDS">
+	<group name="TRQ_PIDS">
         <param name="kp">           -500        500       -500        500     </param>       
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>       
         <param name="maxPwm">          0          0          0          0     </param>       
-        <param name="maxInt">      10000      10000      10000      10000     </param>       
-        <param name="shift">          10         10         10         10     </param>       
+        <param name="maxInt">          0          0          0          0     </param>       
+        <param name="shift">           0          0          0          0     </param>       
         <param name="ko">              0          0          0          0     </param>       
         <param name="stictionUp">      0          0          0          0     </param>       
         <param name="stictionDwn">     0          0          0          0     </param>       
