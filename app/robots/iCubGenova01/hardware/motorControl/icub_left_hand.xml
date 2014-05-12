@@ -42,18 +42,30 @@
 <param name="Currents">     485           485           485           485           485           485           485           485           </param>       
 </group>       
  
- 
-<group name="PIDS">          
-<param name="Pid0">         -8000         -32000        -5            1333          1333          10            0             </param>       
-<param name="Pid1">         -8000         -32000        -5            1333          1333          8             0             </param>       
-<param name="Pid2">         8000          32000         5             1333          1333          8             0             </param>       
-<param name="Pid3">         -8000         -32000        -5            1333          1333          8             0             </param>       
-<param name="Pid4">         8000          32000         5             1333          1333          8             0             </param>       
-<param name="Pid5">         -8000         -32000        -5            1333          1333          8             0             </param>       
-<param name="Pid6">         -8000         -32000        -5            1333          1333          8             0             </param>       
-<param name="Pid7">         -120          -1250         0             1333          1333          5             0             </param>       
+ <group name="POS_PIDS">      
+<param name="kp">           -8000         -8000         8000          -8000         8000          -8000         -8000         -120           </param>       
+<param name="kd">           -32000        -32000        32000         -32000        32000         -32000        -32000        -1250          </param>       
+<param name="ki">           -5            -5            5             -5            5             -5            -5            0             </param>       
+<param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="shift">        10            8             8             8             8             8             8             5             </param>       
+<param name="ko">           0             0             0             0             0             0             0             0             </param>       
+<param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
+<param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
 </group>       
  
+<group name="TRQ_PIDS">      
+<param name="kp">           0             0             0             0             0             0             0             0             </param>       
+<param name="kd">           0             0             0             0             0             0             0             0             </param>       
+<param name="ki">           0             0             0             0             0             0             0             0             </param>       
+<param name="maxPwm">       0             0             0             0             0             0             0             0             </param>       
+<param name="maxInt">       0             0             0             0             0             0             0             0             </param>       
+<param name="shift">        0             0             0             0             0             0             0             0             </param>       
+<param name="ko">           0             0             0             0             0             0             0             0             </param>       
+<param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
+<param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
+</group>   
+
   </device>    
 </devices>     
  
