@@ -13,6 +13,8 @@
 #include <yarp/os/impl/PlatformTime.h>
 #include <errno.h>
 
+#include "EOYtheSystem.h"
+
 
 #include <stdexcept>      // std::out_of_range
 #include <yarp/os/Network.h>
@@ -426,6 +428,20 @@ FEAT_ID TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t
     return ret_val;
 }
 
+void embOBJerror(eOerrmanErrorType_t errtype, eOid08_t taskid, const char *eobjstr, const char *info)
+{
+    static const char* theerrors[] = { "eo_errortype_info", "eo_errortype_warning", "eo_errortype_weak", "eo_errortype_fatal" }; 
+
+    yError() << "embOBJerror(): errtype = " << theerrors[errtype] << "from EOobject = " << eobjstr << " w/ message = " << info;
+
+    if(errtype == eo_errortype_fatal)
+    {
+        yError() << "embOBJerror(): FATAL ERROR: the calling thread shall now be stopped in a forever loop here inside";
+        for(;;);
+    }
+
+}
+
 
 TheEthManager::TheEthManager()
 {
@@ -436,7 +452,16 @@ TheEthManager::TheEthManager()
     UDP_initted = false;
     UDP_socket  = NULL;
     emsAlreadyClosed = false;
+
+    // marco.accame: in here we init the embOBJ system for YARP.
+    eOerrman_cfg_t errmanconfig = {0};
+    errmanconfig.extfn.usr_on_error        = embOBJerror;
+    const eOysystem_cfg_t *syscfg       = NULL;
+    const eOmempool_cfg_t *mpoolcfg     = NULL;     // uses standard mode 
+    //const eOerrman_cfg_t *errmancf      = NULL;     // uses default mode
+    eoy_sys_Initialise(syscfg, mpoolcfg, &errmanconfig);
 }
+
 
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 {
@@ -1233,6 +1258,7 @@ void EthReceiver::run()
         {
             recError=false;
         }
+
 
 #ifdef ETHRECEIVER_STATISTICS_ON
         if(isFirst)
