@@ -227,7 +227,8 @@ embObjMotionControl::embObjMotionControl() :
     ImplementPositionControl2(this),
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
     ImplementVelocityControl2(this),
-    ImplementControlMode2(this),
+    ImplementControlMode(this),
+//    ImplementControlMode2(this),
     ImplementImpedanceControl(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
@@ -448,7 +449,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-    ImplementControlMode2::initialize(_njoints, _axisMap);
+    ImplementControlMode::initialize(_njoints, _axisMap);
+//    ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 #ifdef IMPLEMENT_DEBUG_INTERFACE
@@ -1337,7 +1339,8 @@ bool embObjMotionControl::configure_mais(void)
 
 bool embObjMotionControl::close()
 {
-    ImplementControlMode2::uninitialize();
+    ImplementControlMode::uninitialize();
+//    ImplementControlMode2::uninitialize();
     ImplementEncodersTimed::uninitialize();
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
