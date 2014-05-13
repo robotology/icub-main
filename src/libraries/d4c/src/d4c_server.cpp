@@ -416,6 +416,7 @@ void D4CServer::close()
 
         if (isRunning())
             stop();
+
         if (!offlineMode)
         {
             if ((part=="right_arm") || (part=="both_arms"))

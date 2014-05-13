@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
+    <params file="hardware/electronics/pc104.xml" />
+    
+    <group name="ETH">
+        <param name="IpAddress">	10.0.1.10	</param>
+        <param name="Ems">	    	10	    	</param>
+        <param name="CmdPort">		12345		</param>
+        <param name="SrvPort">		4444		</param>
+    </group>
+
+    <group name="PROTOCOL">
+        <param name="endpointManagementIsSupported">	        1   </param> 
+            <param name="entityMNcommunicationNumberOf">            1	</param> 
+            <param name="entityMNapplicationNumberOf">              1	</param>          
+        <param name="endpointSkinIsSupported">                  1   </param> 
+            <param name="entitySKskinNumberOf">                     2	</param>        
+    </group>    
+    
+</params>
