@@ -24,7 +24,7 @@
         <param name="endpointAnalogSensorsIsSupported">         1   </param> 
             <param name="entityASstrainNumberOf">                   0	</param> 
             <param name="entityASmaisNumberOf">                     0	</param>
-            <param name="entityASextorqueNumberOf">                 3	</param>   
+            <param name="entityASextorqueNumberOf">                 1	</param>   
             
         <param name="endpointSkinIsSupported">                  0   </param> 
             <param name="entitySKskinNumberOf">                     0	</param>        
