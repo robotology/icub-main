@@ -52,7 +52,7 @@ namespace optimization
 * @param points the set of N d-dimensional data points. 
 * @param tol the tolerance of the algorithm given in the points 
 *            metrics.
-* @param A the dxd matrix of the ellispoid equation in the 
+* @param A the dxd matrix of the ellipsoid equation in the 
 *          center form: (x-c)'*A*(x-c)=1.
 * @param c the d-dimensional vector representing the ellipsoid's 
 *          center.
