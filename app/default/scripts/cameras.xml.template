@@ -4,13 +4,13 @@
 </dependencies> 
 <module>
       <name>icubmoddev</name>
-      <parameters> --from dragonfly2_config_left.ini</parameters>
+      <parameters> --from camera/dragonfly2_config_left.ini</parameters>
 	  <node>pc104</node>
 	<tag>camera_left</tag>
    </module>
    <module>
       <name>icubmoddev</name>
-      <parameters> --from dragonfly2_config_right.ini</parameters>
+      <parameters> --from camera/dragonfly2_config_right.ini</parameters>
       <node>pc104</node>
 	<tag>camera_right</tag>
    </module>
