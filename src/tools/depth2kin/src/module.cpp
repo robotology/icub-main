@@ -485,12 +485,12 @@ bool CalibModule::calibrateDepth()
         Time::delay(1.0);
 
         Bottle cmd,reply;
-        cmd.addString("recalibrate");
+        cmd.addString("calibrate");
         depthRpcPort.write(cmd,reply);
         if (reply.get(0).asString()=="ACK")
         {
             cmd.clear();
-            cmd.addString("saveCurrentCalib");
+            cmd.addString("save");
             depthRpcPort.write(cmd,reply);
             if (reply.get(0).asString()=="ACK")
                 return true;
