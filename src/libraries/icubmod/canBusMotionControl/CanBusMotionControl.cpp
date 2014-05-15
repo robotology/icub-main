@@ -1106,6 +1106,31 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         "Number of degrees of freedom").asInt();
     alloc(nj);
 
+    // Check useRawEncoderData = do not use calibration data!
+    bool useRawEncoderData = false;
+    Value use_raw = p.findGroup("GENERAL").find("useRawEncoderData");
+
+    if(use_raw.isNull())
+    {
+        useRawEncoderData = false;
+    }
+    else
+    {
+        if(!use_raw.isBool())
+        {
+            fprintf(stderr, " useRawEncoderData bool param is different from accepted values (true / false). Assuming false\n");
+            useRawEncoderData = false;
+        }
+        else
+        {
+            useRawEncoderData = use_raw.asBool();
+            if(useRawEncoderData)
+            {
+                fprintf(stderr, "canBusMotionControl using raw data from encoders! Be careful. \n DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! See 'useRawEncoderData' param in config file\n");
+            }
+        }
+    }
+
     ///// CAN PARAMETERS
     Bottle& canGroup = p.findGroup("CAN");
 
@@ -1193,7 +1218,20 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     for (i = 1; i < xtmp.size(); i++) 
         _zeros[i-1] = xtmp.get(i).asDouble();
-    
+
+    if (useRawEncoderData)
+    {
+        for(i=1;i<nj+1; i++)
+        {
+            if (_angleToEncoder[i-1] > 0)
+                _angleToEncoder[i-1] = 1;
+            else
+                _angleToEncoder[i-1] = -1;
+
+            _zeros[i-1] = 0;
+        }
+    }
+
     if (!validate(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", nj+1))
     {
         fprintf(stderr, "Using default value = 0 (disabled)\n");

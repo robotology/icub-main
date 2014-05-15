@@ -15,7 +15,7 @@ PROJECT(${PROJECTNAME})
 # 2. remove eOprot_b0x.c from compilation
 # you can do taht by setting ICUB_EOPROT_DEFINED_BY_XML ON (or OFF to deactivate and stay w/ old mode)
 
-set(ICUB_EOPROT_DEFINED_BY_XML OFF)
+set(ICUB_EOPROT_DEFINED_BY_XML ON)
 
 if(ICUB_EOPROT_DEFINED_BY_XML)
 
