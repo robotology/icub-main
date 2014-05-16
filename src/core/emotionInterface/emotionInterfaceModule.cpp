@@ -264,7 +264,7 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
     _semaphore.post();
 
     if (!rec)
-        ok = respond(command,reply);
+        ok = false;
     
     if (!ok) {
         reply.clear();
