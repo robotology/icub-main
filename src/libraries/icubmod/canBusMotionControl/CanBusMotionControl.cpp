@@ -1126,7 +1126,10 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
             {
-                fprintf(stderr, "canBusMotionControl using raw data from encoders! Be careful. \n DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! See 'useRawEncoderData' param in config file\n");
+                fprintf(stderr,  "canBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file \n");
+                fprintf(stderr, "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! \n");
+                fprintf(stderr, "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue \n");
+                getchar(); 
             }
         }
     }
