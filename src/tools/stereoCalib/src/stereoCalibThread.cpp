@@ -869,11 +869,6 @@ void stereoCalibThread::calcChessboardCorners(Size boardSize, float squareSize, 
 
 bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupname)
 {
-    yarp::sig::Vector eyes(3);
-    posHead->getEncoder(0,&eyes[0]);
-    posHead->getEncoder(1,&eyes[1]);
-    posHead->getEncoder(2,&eyes[2]);
-
     std::vector<string> lines;
     bool append = false;
 
@@ -900,9 +895,6 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
             // if we are in calibration section (or no section/group specified)
             if (sectionFound == true && sectionClosed == false){
                 // replace w line
-                if (line.find("eyes",0) != string::npos){
-                    line = "eyes (" + string(eyes.toString().c_str()) + ")";
-                }
                 if (line.find("HN",0) != string::npos){
                     stringstream ss;
                     ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
@@ -955,7 +947,6 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
         if (out.is_open()){
             out << endl;
             out << string("[") + groupname + string("]") << endl;
-            out << "eyes (" << eyes.toString().c_str() << ")" << endl;
             out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
                           << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
                           << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
