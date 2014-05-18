@@ -37,6 +37,7 @@ private:
     IplImage * imgL;
     IplImage * imgR;
 
+    string moduleName;
     string robotName;
     yarp::sig::Vector qL;
     yarp::sig::Vector qR;

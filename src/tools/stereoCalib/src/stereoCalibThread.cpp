@@ -3,21 +3,20 @@
 
 stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const char *imageDir)
 {
-
-    string moduleName=rf.check("name", Value("stereoCalib"),"module name (string)").asString().c_str();
-    robotName = rf.check("robotName",Value("icub"), "module name (string)").asString().c_str();
+    moduleName=rf.check("name", Value("stereoCalib"),"module name (string)").asString().c_str();
+    robotName=rf.check("robotName",Value("icub"), "module name (string)").asString().c_str();
 
     this->inputLeftPortName         = "/"+moduleName;
-    this->inputLeftPortName        +=rf.check("imgLeft",Value("/cam/left:i"),"Input image port (string)").asString();
+    this->inputLeftPortName        +=rf.check("imgLeft",Value("/cam/left:i"),"Input image port (string)").asString().c_str();
    
     this->inputRightPortName        = "/"+moduleName;
-    this->inputRightPortName       += rf.check("imgRight", Value("/cam/right:i"),"Input image port (string)").asString();
+    this->inputRightPortName       += rf.check("imgRight", Value("/cam/right:i"),"Input image port (string)").asString().c_str();
 
     this->outNameRight        = "/"+moduleName;
-    this->outNameRight       += rf.check("outRight",Value("/cam/right:o"),"Output image port (string)").asString();
+    this->outNameRight       += rf.check("outRight",Value("/cam/right:o"),"Output image port (string)").asString().c_str();
 
     this->outNameLeft        = "/"+moduleName;
-    this->outNameLeft       +=rf.check("outLeft",Value("/cam/left:o"),"Output image port (string)").asString();
+    this->outNameLeft       +=rf.check("outLeft",Value("/cam/left:o"),"Output image port (string)").asString().c_str();
 
     Bottle stereoCalibOpts=rf.findGroup("STEREO_CALIBRATION_CONFIGURATION");
     this->boardWidth=  stereoCalibOpts.check("boardWidth", Value(8)).asInt();
@@ -66,7 +65,7 @@ bool stereoCalibThread::threadInit()
     Property option;
     option.put("device","gazecontrollerclient");
     option.put("remote","/iKinGazeCtrl");
-    option.put("local","/client/calibClient");
+    option.put("local","/"+moduleName+"/client/gaze");
     gazeCtrl=new PolyDriver(option);
     if (gazeCtrl->isValid()) {
         gazeCtrl->view(igaze);
@@ -88,7 +87,7 @@ bool stereoCalibThread::threadInit()
     Property optHead;
     optHead.put("device","remote_controlboard");
     optHead.put("remote",("/"+robotName+"/head").c_str());
-    optHead.put("local","/disparityClient/head/position");
+    optHead.put("local","/"+moduleName+"/client/head");
     if (polyHead.open(optHead))
     {
         polyHead.view(posHead);
@@ -102,7 +101,7 @@ bool stereoCalibThread::threadInit()
     Property optTorso;
     optTorso.put("device","remote_controlboard");
     optTorso.put("remote",("/"+robotName+"/torso").c_str());
-    optTorso.put("local","/disparityClient/torso/position");
+    optTorso.put("local","/"+moduleName+"/client/torso");
 
     bool useTorso=true;
 
@@ -249,9 +248,6 @@ void stereoCalibThread::stereoCalibRun()
 
                     Mat Rot=Mat::eye(3,3,CV_64FC1);
                     Mat Tr=Mat::zeros(3,1,CV_64FC1);
-
-                    //updateExtrinsics(Rot,Tr,"ALIGN_KIN_LEFT");
-                    //updateExtrinsics(this->R,Tr,"ALIGN_KIN_RIGHT");
 
                     updateExtrinsics(this->R,this->T,"STEREO_DISPARITY");
 
@@ -870,11 +866,15 @@ void stereoCalibThread::calcChessboardCorners(Size boardSize, float squareSize, 
             corners.push_back(Point3f(float(j*squareSize),
                                       float(i*squareSize), 0));
 }
+
 bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupname)
 {
+    yarp::sig::Vector eyes(3);
+    posHead->getEncoder(0,&eyes[0]);
+    posHead->getEncoder(1,&eyes[1]);
+    posHead->getEncoder(2,&eyes[2]);
 
     std::vector<string> lines;
-
     bool append = false;
 
     ifstream in;
@@ -900,6 +900,9 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
             // if we are in calibration section (or no section/group specified)
             if (sectionFound == true && sectionClosed == false){
                 // replace w line
+                if (line.find("eyes",0) != string::npos){
+                    line = "eyes (" + string(eyes.toString().c_str()) + ")";
+                }
                 if (line.find("HN",0) != string::npos){
                     stringstream ss;
                     ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
@@ -910,10 +913,10 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                 }
 
                 if (line.find("QL",0) != string::npos){
-                    line = "QL (" + string(qL.toString()) + ")";
+                    line = "QL (" + string(qL.toString().c_str()) + ")";
                 }
                 if (line.find("QR",0) != string::npos){
-                    line = "QR (" + string(qR.toString())+ ")";
+                    line = "QR (" + string(qR.toString().c_str())+ ")";
                 }
             }
             // buffer line
@@ -952,13 +955,14 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
         if (out.is_open()){
             out << endl;
             out << string("[") + groupname + string("]") << endl;
+            out << "eyes (" << eyes.toString().c_str() << ")" << endl;
             out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
                           << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
                           << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
                           << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
             out << endl;
-            out << "QL (" << qL.toString() << ")" << endl;
-            out << "QR (" << qR.toString() << ")" << endl;
+            out << "QL (" << qL.toString().c_str() << ")" << endl;
+            out << "QR (" << qR.toString().c_str() << ")" << endl;
             out.close();
         }
         else
