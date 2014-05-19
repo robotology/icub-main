@@ -22,7 +22,7 @@
             <param name="entityMCcontrollerNumberOf">               1	</param> 
             
         <param name="endpointAnalogSensorsIsSupported">         1   </param> 
-            <param name="entityASstrainNumberOf">                   0	</param> 
+            <param name="entityASstrainNumberOf">                   1	</param> 
             <param name="entityASmaisNumberOf">                     0	</param>
             <param name="entityASextorqueNumberOf">                 1	</param>   
             
