@@ -41,6 +41,7 @@ void Kalman::initialize()
     P.resize(n,n); P.zero();
     K.resize(n,m); K.zero();
     S.resize(m,m); S.zero();
+    validationGate=0.0;
 }
 
 
@@ -88,9 +89,12 @@ Vector Kalman::predict(const Vector &u)
 /**********************************************************************/
 Vector Kalman::correct(const Vector &z)
 {
-    K=P*Ht*pinv(S);
-    x+=K*(z-H*x);
+    Matrix invS=pinv(S);
+    K=P*Ht*invS;
+    Vector e=z-H*x;
+    x+=K*e;
     P=(I-K*H)*P;
+    validationGate=yarp::math::dot(e,invS*e);
     return x;
 }
 

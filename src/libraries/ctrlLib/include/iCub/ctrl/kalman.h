@@ -60,6 +60,7 @@ protected:
     yarp::sig::Matrix P;
     yarp::sig::Matrix K;
     yarp::sig::Matrix S;
+    double validationGate;
 
     size_t n;
     size_t m;
@@ -165,6 +166,13 @@ public:
      * @return Estimated measurement covariance.
      */
     yarp::sig::Matrix get_S() const { return S; }
+
+    /**
+     * Returns the validation gate.
+     * 
+     * @return validation gate.
+     */
+    double get_ValidationGate() const { return validationGate; }
 
     /**
      * Returns the Kalman gain matrix.
