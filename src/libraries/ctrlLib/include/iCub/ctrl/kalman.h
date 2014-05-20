@@ -59,6 +59,7 @@ protected:
     yarp::sig::Vector x;
     yarp::sig::Matrix P;
     yarp::sig::Matrix K;
+    yarp::sig::Matrix S;
 
     size_t n;
     size_t m;
@@ -152,11 +153,18 @@ public:
     yarp::sig::Vector get_x() const { return x; }
 
     /**
-     * Returns the estimated error covariance.
+     * Returns the estimated state covariance.
      * 
-     * @return Estimated error covariance.
+     * @return Estimated state covariance.
      */
     yarp::sig::Matrix get_P() const { return P; }
+
+    /**
+     * Returns the estimated measurement covariance.
+     * 
+     * @return Estimated measurement covariance.
+     */
+    yarp::sig::Matrix get_S() const { return S; }
 
     /**
      * Returns the Kalman gain matrix.

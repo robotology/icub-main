@@ -40,6 +40,7 @@ void Kalman::initialize()
     x.resize(n,0.0);
     P.resize(n,n); P.zero();
     K.resize(n,m); K.zero();
+    S.resize(m,m); S.zero();
 }
 
 
@@ -79,6 +80,7 @@ Vector Kalman::predict(const Vector &u)
 {
     x=A*x+B*u;
     P=A*P*At+Q;
+    S=H*P*Ht+R;
     return x;
 }
 
