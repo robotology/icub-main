@@ -88,7 +88,7 @@ Vector Kalman::predict(const Vector &u)
 /**********************************************************************/
 Vector Kalman::correct(const Vector &z)
 {
-    K=P*Ht*pinv(H*P*Ht+R);
+    K=P*Ht*pinv(S);
     x+=K*(z-H*x);
     P=(I-K*H)*P;
     return x;
