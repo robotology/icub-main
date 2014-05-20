@@ -80,9 +80,10 @@
     <devices file="calibrators/left_leg-calib.xml" />
     <devices file="calibrators/right_leg-calib.xml" />
     <devices file="calibrators/torso-calib.xml" /> 
-</robot> 
-
     <devices file="calibrators/head-calib.xml" /> 
+    </robot> 
+
+
 
 
 
