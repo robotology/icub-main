@@ -2,12 +2,12 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova04" build="1">
-	<device name="head_calibrator" type="icubheadcalibratorV2">
+	<device name="head_calibrator" type="parametricCalibrator">
                 <params file="general.xml" />
 
 		<group name="GENERAL">
-		  <param name="Joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
-		    <param name="DeviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
+		  <param name="joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
+		    <param name="deviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
 <group name="HOME">
