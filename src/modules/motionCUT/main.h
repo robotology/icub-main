@@ -95,7 +95,7 @@ YARP libraries and OpenCV
   independent moving node. Importantly, this parameter is also
   significantly affected by how well the matching is performed;
   as result, for increasing OpenCV versions, the threshold needs
-  to be reduced.
+  to be reduced (e.g. 0.01%).
  
 --adjNodesThres \e min 
 - This parameter allows filtering out the \e salt-and-pepper 
@@ -120,9 +120,10 @@ YARP libraries and OpenCV
   then sent out through the corresponding port.
  
 --fixedRadius \e flag 
-- If the \e flag is true (as per default), then the current 
-  cropping radius will never go under the value specified for
-  the \e cropRadius parameter.
+- If the \e flag is true (as per default), then the cropped 
+  region is guaranteed to be of the given size specified by the
+  \e cropRadius parameter; otherwise, because of the image
+     borders effect, the size might be smaller.
  
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
