@@ -123,7 +123,7 @@ YARP libraries and OpenCV
 - If the \e flag is true (as per default), then the cropped 
   region is guaranteed to be of the given size specified by the
   \e cropRadius parameter; otherwise, because of the image
-     borders effect, the size might be smaller.
+  borders effect, the final size might be smaller.
  
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
