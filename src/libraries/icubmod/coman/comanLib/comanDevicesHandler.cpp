@@ -8,15 +8,17 @@
 #include <yarp/os/Time.h>
 #include "comanDevicesHandler.hpp"
 //#include "Boards_iface.h"
-
+#include <Boards_exception.h>
 using namespace yarp::os;
 using namespace yarp::dev;
+
+#define MAX_MILLIAMPERE 25000
 
 comanDevicesHandler* comanDevicesHandler::_handle = NULL;
 int comanDevicesHandler::_usedBy = 0;
 yarp::os::Semaphore comanDevicesHandler::comanDevicesHandler_mutex = 1;
 
-comanDevicesHandler::comanDevicesHandler()
+comanDevicesHandler::comanDevicesHandler():RateThread(500)
 {
     _handle = this;
     _initted = false;
@@ -150,6 +152,7 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
     initGravityWorkAround();
     _initted = true;
     comanDevicesHandler_mutex.post();
+    this->start();
     return true;
 }
 
@@ -172,6 +175,79 @@ Boards_ctrl *comanDevicesHandler::getBoard_ctrl_p()
 {
     return _board_crtl;
 }
+
+
+void comanDevicesHandler::run()
+{
+    Dsp_Board * b;
+    std::vector<Dsp_Board*> crashed_boards;
+    std::vector<int> faulted_boards;
+    std::vector<int> currents;
+    _board_crtl->get_bc_data(_ts_bc_data);
+    int sumCurrent=0; //mA
+    for (std::map<int, McBoard*>::iterator it = _board_crtl->get_mcs_map().begin(); it !=    _board_crtl->get_mcs_map().end(); ++it) {
+        try {
+            b = it->second;
+            if ( ! b->stopped) {
+                b->check_bc_data_rx();
+            }
+            mc_bc_data_t& data = _ts_bc_data[b->bId-1].raw_bc_data.mc_bc_data;
+            if (data.Faults_0)
+                faulted_boards.push_back(b->bId);
+            sumCurrent +=data.Current;
+            currents.push_back(data.Current);
+        } catch ( boards_error &e ) {
+            printf("FATAL ERROR in %s ... %s\n", __FUNCTION__, e.what());
+            crashed_boards.push_back(b);
+        } catch ( boards_warn &e ) {
+            printf("WARNING in %s ... %s\n", __FUNCTION__, e.what());
+        }
+    }
+
+    int total_connected_boards=_board_crtl->scan4active();
+
+    if (faulted_boards.size()>0)
+    {
+        std::cout<<"faulted boards:";
+        for (int i=0;i<faulted_boards.size();i++)
+        {
+            std::cout<<" "<<faulted_boards[i];
+        }
+        std::cout<<std::endl;
+    }
+    if (crashed_boards.size()>0)
+    {
+        std::cout<<"crashed boards:";
+        for (int i=0;i<crashed_boards.size();i++)
+        {
+            std::cout<<" "<<crashed_boards[i];
+        }
+        std::cout<<std::endl;
+    }
+    if (total_connected_boards=_board_crtl->get_mcs_map().size())
+    {
+        std::cout<<"the boards connected are less than the starting ones"<<std::endl;
+    }
+    if (currents.size()>0)
+    {
+        std::cout<<"boards currents";
+        for (int i=0;i<currents.size();i++)
+        {
+            std::cout<<" "<<currents[i];
+        }
+        std::cout<<std::endl;
+    }
+    if (sumCurrent>MAX_MILLIAMPERE)
+    {
+        std::cout<<"the total current: "<<sumCurrent<< " was higher than "<<MAX_MILLIAMPERE<<std::endl;
+
+    }
+
+
+}
+
+
+
 
 bool comanDevicesHandler::close()
 {
