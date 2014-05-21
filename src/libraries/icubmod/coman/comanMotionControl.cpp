@@ -1754,7 +1754,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             setPidRaw(j, pid[j]);
             setTorquePidRaw(j, pidTorque[j]);
 
-            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
@@ -1784,28 +1784,26 @@ bool comanMotionControl::setPositionModeRaw(int j)
             setTorquePidRaw(j, pidTorque[j]);
 
 //            	ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
-            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
 
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
                 std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-
             break;
 
         default:
-            yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... stop everything and then enable position\n";
+        yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... " << yarp::os::Vocab::decode(_controlMode[j]) <<  " stop everything and then enable position\n";
             disablePidRaw(j);
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
                 std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-            yDebug() << "joint "<< j << "already in position mode";
             return true;
             break;
     }
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));            yDebug() << "joint "<< j << "already in position mode";
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
     if(ret)
         _controlMode[j] = VOCAB_CM_POSITION;
@@ -1999,11 +1997,10 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
 
     if( NULL == joint_p)
     {
-        yError() << "Calling setImpedancePositionModeRaw on a non-existing joint j" << j;
+        yError() << "Calling getControlModeRaw on a non-existing joint j" << j;
         return false;
     }
 
-    double initialPosition;
     ts_bc_data_t bc_data;
     mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
 
@@ -2020,13 +2017,6 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
     else
     {
         *v = _controlMode[j];
-            yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... stop everything and then enable position\n";
-            if(getEncoder(j, &initialPosition) )
-                positionMove(j, initialPosition);
-            else
-                std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-
-            disablePidRaw(j);
     }
     return true;
 }
