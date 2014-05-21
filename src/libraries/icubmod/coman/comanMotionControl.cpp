@@ -2012,7 +2012,7 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
     if (faults)
     {
         *v = VOCAB3('e','r','r');
-        std::cout << "Joint " << j << " returned error code " << (int)faults;
+        //std::cout << "Joint " << j << " returned error code " << (int)faults;
     }
     else
     {

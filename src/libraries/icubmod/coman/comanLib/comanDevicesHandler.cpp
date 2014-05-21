@@ -180,25 +180,26 @@ Boards_ctrl *comanDevicesHandler::getBoard_ctrl_p()
 void comanDevicesHandler::run()
 {
     Dsp_Board * b;
-    std::vector<Dsp_Board*> crashed_boards;
-    std::vector<int> faulted_boards;
+    std::vector<int> crashed_boards;
+    std::vector<std::pair<int,int>> faulted_boards;
     std::vector<int> currents;
     _board_crtl->get_bc_data(_ts_bc_data);
+    Boards_ctrl::mcs_map_t boards=_board_crtl->get_mcs_map();
     int sumCurrent=0; //mA
-    for (std::map<int, McBoard*>::iterator it = _board_crtl->get_mcs_map().begin(); it !=    _board_crtl->get_mcs_map().end(); ++it) {
+    for (std::map<int, McBoard*>::iterator it = boards.begin(); it !=boards.end(); ++it) {
         try {
             b = it->second;
             if ( ! b->stopped) {
                 b->check_bc_data_rx();
             }
             mc_bc_data_t& data = _ts_bc_data[b->bId-1].raw_bc_data.mc_bc_data;
-            if (data.Faults_0)
-                faulted_boards.push_back(b->bId);
-            sumCurrent +=data.Current;
+            if (data.faults())
+                faulted_boards.push_back(std::make_pair(b->bId,data.faults()));
+            sumCurrent +=abs(data.Current);
             currents.push_back(data.Current);
         } catch ( boards_error &e ) {
             printf("FATAL ERROR in %s ... %s\n", __FUNCTION__, e.what());
-            crashed_boards.push_back(b);
+            crashed_boards.push_back(b->bId);
         } catch ( boards_warn &e ) {
             printf("WARNING in %s ... %s\n", __FUNCTION__, e.what());
         }
@@ -211,7 +212,12 @@ void comanDevicesHandler::run()
         std::cout<<"faulted boards:";
         for (int i=0;i<faulted_boards.size();i++)
         {
-            std::cout<<" "<<faulted_boards[i];
+            std::cout<<" "<<faulted_boards[i].first<<
+            ((faulted_boards[i].second & 1)?"Current too high":"")<<
+            ((faulted_boards[i].second & 2)?"Temperature too high":"")<<
+            ((faulted_boards[i].second & 4)?"DC Supply too high":"")<<
+            ((faulted_boards[i].second & 8)?"Motor Stalled":"")<<
+            ((faulted_boards[i].second & 16)?"Emergency Stop":"")<<", ";
         }
         std::cout<<std::endl;
     }
@@ -224,18 +230,18 @@ void comanDevicesHandler::run()
         }
         std::cout<<std::endl;
     }
-    if (total_connected_boards=_board_crtl->get_mcs_map().size())
+    if (total_connected_boards-_board_crtl->get_fts_map().size() !=boards.size())
     {
-        std::cout<<"the boards connected are less than the starting ones"<<std::endl;
+        std::cout<<"the boards connected"<< total_connected_boards-_board_crtl->get_fts_map().size()<<" are less than the starting ones "<<boards.size()<<std::endl;
     }
     if (currents.size()>0)
     {
-        std::cout<<"boards currents";
+        //std::cout<<"boards currents";
         for (int i=0;i<currents.size();i++)
         {
-            std::cout<<" "<<currents[i];
+            //std::cout<<" "<<currents[i]<<",";
         }
-        std::cout<<std::endl;
+        //std::cout<<std::endl;
     }
     if (sumCurrent>MAX_MILLIAMPERE)
     {
