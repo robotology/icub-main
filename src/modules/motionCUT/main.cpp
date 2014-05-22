@@ -117,9 +117,9 @@ YARP libraries and OpenCV
 --cropSize \e d 
 - If \e d is positive, it allows keeping fixed the size of a 
   squared cropping window around the center of the largest blob
-  detected. The value specifies the side of the square. the By
-  default, \e d is 0, that means the cropping windows will adapt
-  to the size of the blob.
+  detected. The value specifies the side of the square. By
+  default, \e d is "auto", meaning that the cropping windows
+  will adapt to the size of the blob.
 
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
@@ -343,12 +343,19 @@ public:
         recogThres=rf.check("recogThres",Value(0.01)).asDouble();
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
-        framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
-        cropSize=rf.check("cropSize",Value(0)).asInt();
+        framesPersistence=rf.check("framesPersistence",Value(3)).asInt();        
         verbosity=rf.check("verbosity");
-        inhibition=false;
+
+        cropSize=0;
+        if (rf.check("cropSize"))
+        {
+            Value &vCropSize=rf.find("cropSize");
+            if (vCropSize.isInt())
+                cropSize=vCropSize.asInt();
+        }
 
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
+        inhibition=false;
 
         // thresholding
         coverXratio=std::min(coverXratio,1.0);
@@ -396,7 +403,10 @@ public:
             printf("adjNodesThres     = %d\n",adjNodesThres);
             printf("blobMinSizeThres  = %d\n",blobMinSizeThres);
             printf("framesPersistence = %d\n",framesPersistence);
-            printf("cropSize          = %d\n",cropSize);
+            if (cropSize>0)
+                printf("cropSize          = %d\n",cropSize);
+            else
+                printf("cropSize          = auto\n");
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             printf("numThreads        = %d\n",numThreads);
@@ -817,7 +827,12 @@ public:
                 }
                 else if (subcmd=="cropSize")
                 {
-                    cropSize=req.get(2).asInt();
+                    Value &vCropSize=req.get(2);
+                    if (vCropSize.isInt())
+                        cropSize=vCropSize.asInt();
+                    else
+                        cropSize=0;
+                    
                     reply.addString("ack");
                 }
                 else
@@ -851,7 +866,12 @@ public:
                 else if (subcmd=="inhibition")
                     reply.addString(inhibition?"on":"off");
                 else if (subcmd=="cropSize")
-                    reply.addInt(cropSize);
+                {
+                    if (cropSize>0)
+                        reply.addInt(cropSize);
+                    else
+                        reply.addString("auto");
+                }
                 else
                     return false;
             }
@@ -960,7 +980,7 @@ int main(int argc, char *argv[])
         printf("\t--adjNodesThres     <int>\n");
         printf("\t--blobMinSizeThres  <int>\n");
         printf("\t--framesPersistence <int>\n");
-        printf("\t--cropSize          <int>\n");
+        printf("\t--cropSize          \"auto\" or <int>\n");
     #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
         printf("\t--numThreads        <int>\n");
     #endif
