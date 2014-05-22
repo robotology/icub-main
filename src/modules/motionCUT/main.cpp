@@ -640,16 +640,14 @@ public:
                 int r=(cropSize>0)?cropSize:
                       (int)(sqrt((double)(blob.get(2).asInt()*nodesStep*nodesStep))/2.0);
 
-                r=std::min(r,x);
-                r=std::min(r,y);
-                r=std::min(r,pImgBgrIn->width()-x-1);
-                r=std::min(r,pImgBgrIn->height()-y-1);
-                int r2=r<<1;
+                CvPoint tl=cvPoint(std::max(x-r,0),std::max(y-r,0));
+                CvPoint br=cvPoint(std::min(x+r,pImgBgrIn->width()-1),std::min(y+r,pImgBgrIn->height()-1));
+                CvPoint cropSize=cvPoint(br.x-tl.x,br.y-tl.y);
 
                 ImageOf<PixelBgr> cropImg;
-                cropImg.resize(r2,r2);
+                cropImg.resize(cropSize.x,cropSize.y);
                 
-                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(x-r,y-r,r2,r2));
+                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(tl.x,tl.y,cropSize.x,cropSize.y));
                 cvCopy((IplImage*)pImgBgrIn->getIplImage(),(IplImage*)cropImg.getIplImage());
                 cvResetImageROI((IplImage*)pImgBgrIn->getIplImage());
                             
