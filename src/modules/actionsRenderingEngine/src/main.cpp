@@ -40,7 +40,6 @@ estimate of the 2D target.
 -- network: which uses a previously trained neural network structure to predict the
 3D cartesian coordinate from the stereo input.
 
-
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
@@ -60,7 +59,7 @@ the action required. In these cases the parameter [target] can be expressed as f
 
 --[raw] when the target is provided as a raw couple of camera plane coordinates to one of the two 'raw:i' ports.
 
---(<camera> u v) when the target is a 2D couple of camera plane coordinates. If not specified, the camera used is assumed to be the left one.
+--("left"|"right" u v) when the target is a 2D couple of camera plane coordinates. If not specified, camera is assumed to be "left".
 
 --("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.    
     
