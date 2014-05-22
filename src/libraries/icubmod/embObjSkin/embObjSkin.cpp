@@ -537,6 +537,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     if(!init())
         return false;
+    /*Following delay is necessary in order to give enough time to skin boards to configure all its triangles*/
+    Time::delay(0.5);
 
     if(!initWithSpecialConfig(config))
         return false;
