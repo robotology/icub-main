@@ -1737,6 +1737,8 @@ bool comanMotionControl::setPositionModeRaw(int j)
             break;
 
         case VOCAB_CM_VELOCITY:
+        yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
             // now firmware is able to do a smooth transition from pos to vel, so nothing to do here
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
@@ -1745,6 +1747,8 @@ bool comanMotionControl::setPositionModeRaw(int j)
             break;
 
         case VOCAB_CM_TORQUE:
+            yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
             yDebug() << "joint "<< j << "stopping torque mode";
             ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)));   // setItem returns 0 if ok, 2 if error
 
@@ -1767,6 +1771,9 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
         case VOCAB_CM_IMPEDANCE_POS:
         case VOCAB_CM_IMPEDANCE_VEL:
+            yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
+
 //            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
 //            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
 //            ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
@@ -1958,6 +1965,10 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
         ret = ret && setTorquePidRaw(j, _trqPids[j]);   yarp::os::Time::delay(0.01);
         if(!ret)
             yError()<<"setTorquePidRaw returned error!";
+        if(getEncoder(j, &initialPosition) )
+            positionMove(j, initialPosition);
+        else
+            std::cout << "Coman MC: error! Not able to read initial positions";
         ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
         if(!ret)
             yError()<<"setItem() TORQUE_ON_OFF returned error!";
