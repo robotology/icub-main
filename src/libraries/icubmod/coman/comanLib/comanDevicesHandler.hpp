@@ -25,8 +25,8 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/RateThread.h>
-#include <Boards_iface.h>
-#include <DSP_board.h>
+#include <robolli/Boards_iface.h>
+#include <robolli/DSP_board.h>
 
 // No need to include this class into yarp::dev namespace.
 class comanDevicesHandler: public yarp::dev::DeviceDriver, public yarp::os::RateThread

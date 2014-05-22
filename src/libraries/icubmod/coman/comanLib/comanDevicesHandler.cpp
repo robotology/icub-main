@@ -8,7 +8,7 @@
 #include <yarp/os/Time.h>
 #include "comanDevicesHandler.hpp"
 //#include "Boards_iface.h"
-#include <Boards_exception.h>
+#include <robolli/Boards_exception.h>
 using namespace yarp::os;
 using namespace yarp::dev;
 
