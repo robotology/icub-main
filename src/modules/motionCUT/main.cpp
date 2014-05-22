@@ -114,11 +114,12 @@ YARP libraries and OpenCV
   value \e frames specifies the number of consecutive frames for
   which if a node gets active it is kept on.
  
---cropSize \e r 
-- If \e r is positive, it allows keeping fixed the size of 
-  the cropping window around the center of the largest blob
-  detected. By default, \e r is 0, that means the cropping
-  windows will adapt to the size of the blob.
+--cropSize \e d 
+- If \e d is positive, it allows keeping fixed the size of a 
+  squared cropping window around the center of the largest blob
+  detected. The value specifies the side of the square. the By
+  default, \e d is 0, that means the cropping windows will adapt
+  to the size of the blob.
 
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
@@ -637,11 +638,12 @@ public:
                 Bottle &blob=*blobsBottle.get(0).asList();
                 int x=blob.get(0).asInt();
                 int y=blob.get(1).asInt();
-                int r=(cropSize>0)?cropSize:
-                      (int)(sqrt((double)(blob.get(2).asInt()*nodesStep*nodesStep))/2.0);
+                int d=(cropSize>0)?cropSize:
+                      (int)sqrt((double)(blob.get(2).asInt()*nodesStep*nodesStep));
+                int d2=d>>1;
 
-                CvPoint tl=cvPoint(std::max(x-r,0),std::max(y-r,0));
-                CvPoint br=cvPoint(std::min(x+r,pImgBgrIn->width()-1),std::min(y+r,pImgBgrIn->height()-1));
+                CvPoint tl=cvPoint(std::max(x-d2,0),std::max(y-d2,0));
+                CvPoint br=cvPoint(std::min(x+d2,pImgBgrIn->width()-1),std::min(y+d2,pImgBgrIn->height()-1));
                 CvPoint cropSize=cvPoint(br.x-tl.x,br.y-tl.y);
 
                 ImageOf<PixelBgr> cropImg;
