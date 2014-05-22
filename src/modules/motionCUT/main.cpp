@@ -114,17 +114,12 @@ YARP libraries and OpenCV
   value \e frames specifies the number of consecutive frames for
   which if a node gets active it is kept on.
  
---cropRadius \e radius 
-- This parameter allows changing the size of a cropping window
-  around the center of the largest blob detected, which will be
-  then sent out through the corresponding port.
- 
---fixedRadius \e flag 
-- If the \e flag is true (as per default), then the cropped 
-  region is guaranteed to be of the given size specified by the
-  \e cropRadius parameter; otherwise, because of the image
-  borders effect, the final size might be smaller.
- 
+--cropSize \e r 
+- If \e r is positive, it allows keeping fixed the size of 
+  the cropping window around the center of the largest blob
+  detected. By default, \e r is 0, that means the cropping
+  windows will adapt to the size of the blob.
+
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 
   threads allocated by parallelized OpenCV functions. This
@@ -162,8 +157,8 @@ None.
   order). This port propagates the time-stamp carried
   by the input image.
 
-- <i> /<stemName>/crop:o </i> outputs a window of fixed size obtained from
-  a ROI around the center of mass of the largest blob detected.
+- <i> /<stemName>/crop:o </i> outputs a window containing a ROI 
+  around the center of mass of the largest blob detected.
  
 - <i> /<stemName>/opt:o </i> outputs monochrome images 
   containing just the grid nodes signalling independent
@@ -202,6 +197,7 @@ Linux and Windows.
 #include <algorithm>
 
 #include <cv.h>
+#include <math.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -259,8 +255,7 @@ protected:
     int adjNodesThres;
     int blobMinSizeThres;
     int framesPersistence;
-    int cropRadius;
-    bool fixedRadius;
+    int cropSize;
     bool verbosity;
     bool inhibition;
     int nodesNum;
@@ -348,8 +343,7 @@ public:
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
         framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
-        cropRadius=rf.check("cropRadius",Value(40)).asInt();
-        fixedRadius=rf.check("fixedRadius",Value("true")).asString()=="true";
+        cropSize=rf.check("cropSize",Value(0)).asInt();
         verbosity=rf.check("verbosity");
         inhibition=false;
 
@@ -391,20 +385,17 @@ public:
             printf("Process started successfully\n");
             printf("\n");
             printf("Using ...\n");
-            printf("name               = %s\n",name.c_str());
-            printf("coverXratio        = %g\n",coverXratio);
-            printf("coverYratio        = %g\n",coverYratio);
-            printf("nodesStep          = %d\n",nodesStep);
-            printf("winSize            = %d\n",winSize);
-            printf("recogThres         = %g\n",recogThres);
-            printf("recogThresAbs      = %g\n",recogThresAbs);
-            printf("adjNodesThres      = %d\n",adjNodesThres);
-            printf("blobMinSizeThres   = %d\n",blobMinSizeThres);
-            printf("framesPersistence  = %d\n",framesPersistence);
-            if (fixedRadius)
-                printf("cropRadius (fixed) = %d\n",cropRadius);
-            else               
-                printf("cropRadius (var)   = %d\n",cropRadius);
+            printf("name              = %s\n",name.c_str());
+            printf("coverXratio       = %g\n",coverXratio);
+            printf("coverYratio       = %g\n",coverYratio);
+            printf("nodesStep         = %d\n",nodesStep);
+            printf("winSize           = %d\n",winSize);
+            printf("recogThres        = %g\n",recogThres);
+            printf("recogThresAbs     = %g\n",recogThresAbs);
+            printf("adjNodesThres     = %d\n",adjNodesThres);
+            printf("blobMinSizeThres  = %d\n",blobMinSizeThres);
+            printf("framesPersistence = %d\n",framesPersistence);
+            printf("cropSize          = %d\n",cropSize);
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             printf("numThreads        = %d\n",numThreads);
@@ -643,29 +634,22 @@ public:
             
             if ((cropPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
-                int x=cvRound(blobsBottle.get(0).asList()->get(0).asDouble());
-                int y=cvRound(blobsBottle.get(0).asList()->get(1).asDouble());
-                
-                int radius=std::min(cropRadius,x);
-                radius=std::min(radius,y);
-                radius=std::min(radius,pImgBgrIn->width()-x-1);
-                radius=std::min(radius,pImgBgrIn->height()-y-1);
+                Bottle &blob=*blobsBottle.get(0).asList();
+                int x=blob.get(0).asInt();
+                int y=blob.get(1).asInt();
+                int r=(cropSize>0)?cropSize:
+                      (int)(sqrt((double)(blob.get(2).asInt()*nodesStep*nodesStep))/2.0);
 
-                if (fixedRadius && (radius<cropRadius))
-                {
-                    radius=cropRadius;
-                    x=std::min(x,cropRadius);
-                    x=std::min(x,pImgBgrIn->width()-cropRadius-1);
-                    y=std::min(y,cropRadius);
-                    y=std::min(y,pImgBgrIn->height()-cropRadius-1);
-                }
-
-                int radius2=radius<<1;
+                r=std::min(r,x);
+                r=std::min(r,y);
+                r=std::min(r,pImgBgrIn->width()-x-1);
+                r=std::min(r,pImgBgrIn->height()-y-1);
+                int r2=r<<1;
 
                 ImageOf<PixelBgr> cropImg;
-                cropImg.resize(radius2,radius2);
+                cropImg.resize(r2,r2);
                 
-                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(x-radius,y-radius,radius2,radius2));
+                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(x-r,y-r,r2,r2));
                 cvCopy((IplImage*)pImgBgrIn->getIplImage(),(IplImage*)cropImg.getIplImage());
                 cvResetImageROI((IplImage*)pImgBgrIn->getIplImage());
                             
@@ -832,9 +816,9 @@ public:
                     inhibition=req.get(2).asString()=="on";
                     reply.addString("ack");
                 }
-                else if (subcmd=="cropRadius")
+                else if (subcmd=="cropSize")
                 {
-                    cropRadius=req.get(2).asInt();
+                    cropSize=req.get(2).asInt();
                     reply.addString("ack");
                 }
                 else
@@ -867,8 +851,8 @@ public:
                     reply.addString(verbosity?"on":"off");
                 else if (subcmd=="inhibition")
                     reply.addString(inhibition?"on":"off");
-                else if (subcmd=="cropRadius")
-                    reply.addInt(cropRadius);
+                else if (subcmd=="cropSize")
+                    reply.addInt(cropSize);
                 else
                     return false;
             }
@@ -977,7 +961,7 @@ int main(int argc, char *argv[])
         printf("\t--adjNodesThres     <int>\n");
         printf("\t--blobMinSizeThres  <int>\n");
         printf("\t--framesPersistence <int>\n");
-        printf("\t--cropRadius        <int>\n");
+        printf("\t--cropSize          <int>\n");
     #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
         printf("\t--numThreads        <int>\n");
     #endif
