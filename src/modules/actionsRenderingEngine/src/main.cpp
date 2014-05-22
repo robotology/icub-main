@@ -122,21 +122,31 @@ format: [take] [target] "param1" \n
 action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
-
+    
+<b>CLOSE</b> \n
+format: [close] "param1" \n
+action: close the hand (predefined or specified).
+    
 <b>TAKE_TOOL</b> \n
-format: [take_tool] "param1" \n
-action: the robot will reach a specified position to take the tool from a user.
-Optional parameter "left" or "right" can be supplied to choose the orientation the robot
+format: [tato] "param1" \n    
+action: the robot will reach a specified position to take the 
+tool from a user. Optional parameter "left" or "right" can be    
+supplied to choose the orientation the robot    
 
-<b>GRASP</b> \n
-format: [grasp] [target] \n
-action: the robot tries to reach the specified [target] and performs a power grasp.
-The target must be specified both in cartesian position and    
-orientation. \n    
-As further parameter user may specify the way the robot will    
-approach the target by providing the options ("approach" (dx dy
-dz wrist_pitch)), where dx/dy/dz account for offset displacement
-in meters wrt to the grasping reference frame and wrist_pitch is
+<b>CLOSE_TOOL</b> \n
+format: [clto] "param1" \n
+action: close the hand (predefined or specified) for grabbing    
+the tool.    
+    
+<b>GRASP</b> \n    
+format: [grasp] [target] \n    
+action: the robot tries to reach the specified [target] and 
+performs a power grasp. The target must be specified both in    
+cartesian position and orientation. \n    
+As further parameter user may specify the way the robot will 
+approach the target by providing the options ("approach" (dx dy    
+dz wrist_pitch)), where dx/dy/dz account for offset displacement    
+in meters wrt to the grasping reference frame and wrist_pitch is    
 the apporaching pitch of the wrist given in degrees.    
 
 <b>TOUCH</b> \n
