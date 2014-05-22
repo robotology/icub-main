@@ -82,6 +82,7 @@ Vector Kalman::predict(const Vector &u)
     x=A*x+B*u;
     P=A*P*At+Q;
     S=H*P*Ht+R;
+    validationGate=0.0;
     return x;
 }
 
