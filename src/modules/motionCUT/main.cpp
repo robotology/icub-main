@@ -350,7 +350,7 @@ public:
         if (rf.check("cropSize"))
         {
             Value &vCropSize=rf.find("cropSize");
-            if (vCropSize.isInt())
+            if (!vCropSize.isString())
                 cropSize=vCropSize.asInt();
         }
 
@@ -828,7 +828,7 @@ public:
                 else if (subcmd=="cropSize")
                 {
                     Value &vCropSize=req.get(2);
-                    if (vCropSize.isInt())
+                    if (!vCropSize.isString())
                         cropSize=vCropSize.asInt();
                     else
                         cropSize=0;
