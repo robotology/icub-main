@@ -638,8 +638,7 @@ public:
                 Bottle &blob=*blobsBottle.get(0).asList();
                 int x=blob.get(0).asInt();
                 int y=blob.get(1).asInt();
-                int d=(cropSize>0)?cropSize:
-                      (int)sqrt((double)(blob.get(2).asInt()*nodesStep*nodesStep));
+                int d=(cropSize>0)?cropSize:(int)(nodesStep*sqrt((double)blob.get(2).asInt()));
                 int d2=d>>1;
 
                 CvPoint tl=cvPoint(std::max(x-d2,0),std::max(y-d2,0));
