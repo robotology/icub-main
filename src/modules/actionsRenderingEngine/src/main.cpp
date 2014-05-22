@@ -1046,7 +1046,7 @@ public:
                         if(!motorThr->isHolding(command))
                         {
                             reply.addVocab(NACK);
-                            reply.addString("Nothing to drop. Not holding anything");
+                            reply.addString("Nothing to observe. Not holding anything");
                             motorThr->release(command);
                             motorThr->goHome(command);
                             break;
