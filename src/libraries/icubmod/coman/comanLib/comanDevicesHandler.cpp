@@ -213,11 +213,11 @@ void comanDevicesHandler::run()
         for (int i=0;i<faulted_boards.size();i++)
         {
             std::cout<<" "<<faulted_boards[i].first<<
-            ((faulted_boards[i].second & 1)?"Current too high":"")<<
-            ((faulted_boards[i].second & 2)?"Temperature too high":"")<<
-            ((faulted_boards[i].second & 4)?"DC Supply too high":"")<<
-            ((faulted_boards[i].second & 8)?"Motor Stalled":"")<<
-            ((faulted_boards[i].second & 16)?"Emergency Stop":"")<<", ";
+            ((faulted_boards[i].second == 1)?"Current too high":"")<<
+            ((faulted_boards[i].second == 2)?"Temperature too high":"")<<
+            ((faulted_boards[i].second == 4)?"DC Supply too high":"")<<
+            ((faulted_boards[i].second == 8)?"Motor Stalled":"")<<
+            ((faulted_boards[i].second == 16)?"Emergency Stop":"")<<", ";
         }
         std::cout<<std::endl;
     }
