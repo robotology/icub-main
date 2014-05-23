@@ -932,25 +932,25 @@ bool CalibModule::configure(ResourceFinder &rf)
     // open drivers
     Property optionArmL("(device remote_controlboard)");
     optionArmL.put("remote",("/"+robot+"/left_arm").c_str());
-    optionArmL.put("local",("/"+name+"/arm/left").c_str());
+    optionArmL.put("local",("/"+name+"/joint/left").c_str());
     if (!drvArmL.open(optionArmL))
         printf("Position left_arm controller not available!\n");
 
     Property optionArmR("(device remote_controlboard)");
     optionArmR.put("remote",("/"+robot+"/right_arm").c_str());
-    optionArmR.put("local",("/"+name+"/arm/right").c_str());
+    optionArmR.put("local",("/"+name+"/joint/right").c_str());
     if (!drvArmR.open(optionArmR))
         printf("Position right_arm controller not available!\n");
 
     Property optionCartL("(device cartesiancontrollerclient)");
     optionCartL.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
-    optionCartL.put("local",("/"+name+"/cart/left").c_str());
+    optionCartL.put("local",("/"+name+"/cartesian/left").c_str());
     if (!drvCartL.open(optionCartL))
         printf("Cartesian left_arm controller not available!\n");
 
     Property optionCartR("(device cartesiancontrollerclient)");
     optionCartR.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
-    optionCartR.put("local",("/"+name+"/cart/right").c_str());
+    optionCartR.put("local",("/"+name+"/cartesian/right").c_str());
     if (!drvCartR.open(optionCartR))
         printf("Cartesian right_arm controller not available!\n");
 
