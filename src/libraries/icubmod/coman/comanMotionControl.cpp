@@ -1315,7 +1315,7 @@ bool comanMotionControl::relativeMoveRaw(const double *deltas)
 
 bool comanMotionControl::checkMotionDoneRaw(bool *flag)
 {
-    // loop su _mcs, non sul numero dei giunti!!
+    //TODO: loop su _mcs, non sul numero dei giunti!!
     bool ret = true;
     for(int i=0; i<_njoints; i++)
     {
@@ -2842,6 +2842,7 @@ bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *dampi
 
 bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
 {
+    //TODO: check for coerency between control mode and this function call
     uint8_t bId = jointTobId(j);
     int tmp_stiff = (int) stiffness;
     int tmp_damp  = (int) damping;
