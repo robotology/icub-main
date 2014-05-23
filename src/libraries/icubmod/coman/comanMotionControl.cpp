@@ -67,7 +67,8 @@ Prendere l'indice corretto dell'array per il giunto j
 
 inline McBoard * comanMotionControl::getMCpointer(int j)
 {
-    return _mcs[jointTobId(j)];
+   // return _mcs[jointTobId(j)];
+    return (McBoard*)(_boards_ctrl->get_board(jointTobId(j)));
 }
 
 inline int comanMotionControl::bId2Joint(int j)
@@ -2071,7 +2072,7 @@ bool comanMotionControl::getEncoderRaw(int j, double *enc)
 //    clock_gettime(CLOCK_REALTIME, &t_start);
 
     bool ret = true;
-    McBoard *joint_p = getMCpointer(j);   //  -> giusto
+    McBoard *joint_p = getMCpointer(j);   //  -> giusto // -> forse no (Mirko)
 
     if( NULL == joint_p)
     {

@@ -9,6 +9,7 @@
 #include "comanDevicesHandler.hpp"
 //#include "Boards_iface.h"
 #include <robolli/Boards_exception.h>
+#include <drc_shared/yarp_msgs/robotInterfaceStatus.h>
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -23,6 +24,8 @@ comanDevicesHandler::comanDevicesHandler():RateThread(500)
     _handle = this;
     _initted = false;
     _board_crtl = NULL;
+    receiveReset.open("/robotInterface/command:i");
+    sendStatus.open("/robotInterface/status:o");
 }
 
 comanDevicesHandler::~comanDevicesHandler()
@@ -152,6 +155,7 @@ bool comanDevicesHandler::open(yarp::os::Searchable& config)
     initGravityWorkAround();
     _initted = true;
     comanDevicesHandler_mutex.post();
+    
     this->start();
     return true;
 }
@@ -204,20 +208,31 @@ void comanDevicesHandler::run()
             printf("WARNING in %s ... %s\n", __FUNCTION__, e.what());
         }
     }
-
-    int total_connected_boards=_board_crtl->scan4active();
-
+    
+    yarp::os::Bottle status;
+    yarp::os::Bottle* bot_start = receiveReset.read(false);
+    std::string command="";
+    if(bot_start!=NULL) {
+        command = bot_start->get(0).asString();
+    }
+    
+    //int total_connected_boards=_board_crtl->scan4active();
+    robotInterfaceStatusMsg log;
+    
     if (faulted_boards.size()>0)
     {
         std::cout<<"faulted boards:";
         for (int i=0;i<faulted_boards.size();i++)
         {
-            std::cout<<" "<<faulted_boards[i].first<<
-            ((faulted_boards[i].second == 1)?"Current too high":"")<<
-            ((faulted_boards[i].second == 2)?"Temperature too high":"")<<
-            ((faulted_boards[i].second == 4)?"DC Supply too high":"")<<
-            ((faulted_boards[i].second == 8)?"Motor Stalled":"")<<
-            ((faulted_boards[i].second == 16)?"Emergency Stop":"")<<", ";
+            log.faulted_boards.push_back(std::make_pair(faulted_boards[i].first,
+                                                        (faulted_boards[i].second == 1)?"Current too high":
+                                                        (faulted_boards[i].second == 2)?"Temperature too high":
+                                                        (faulted_boards[i].second == 4)?"DC Supply too high":
+                                                        (faulted_boards[i].second == 8)?"Motor Stalled":
+                                                        (faulted_boards[i].second == 16)?"Emergency Stop":
+                                                        (faulted_boards[i].second == 32)?"Torque required every ms or so":""    
+            ));
+            std::cout<<" "<<faulted_boards[i].first<<log.faulted_boards.back().second<<", ";
         }
         std::cout<<std::endl;
     }
@@ -230,10 +245,11 @@ void comanDevicesHandler::run()
         }
         std::cout<<std::endl;
     }
-    if (total_connected_boards-_board_crtl->get_fts_map().size() !=boards.size())
-    {
-        std::cout<<"the boards connected"<< total_connected_boards-_board_crtl->get_fts_map().size()<<" are less than the starting ones "<<boards.size()<<std::endl;
-    }
+    
+//     if (total_connected_boards-_board_crtl->get_fts_map().size() !=boards.size())
+//     {
+//         std::cout<<"the boards connected"<< total_connected_boards-_board_crtl->get_fts_map().size()<<" are less than the starting ones "<<boards.size()<<std::endl;
+//     }
     if (currents.size()>0)
     {
         //std::cout<<"boards currents";
@@ -248,7 +264,22 @@ void comanDevicesHandler::run()
         std::cout<<"the total current: "<<sumCurrent<< " was higher than "<<MAX_MILLIAMPERE<<std::endl;
 
     }
-
+    if (crashed_boards.size()>0)
+    {
+        if (command=="reset")
+        {
+            std::cout<<"attempting to recover crashed boards:";
+            for (int i=0;i<crashed_boards.size();i++)
+            {
+                std::cout<<" "<<crashed_boards[i];
+                _board_crtl->resetBoard(crashed_boards[i]);
+            }
+            std::cout<<std::endl;
+        }
+    }
+    log.crashed_boards=crashed_boards;log.currents=currents;//log.total_connected_boards=total_connected_boards;
+    status=log.toBottle();
+    sendStatus.write(status);
 
 }
 

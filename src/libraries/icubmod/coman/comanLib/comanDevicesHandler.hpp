@@ -43,6 +43,9 @@ private:
     std::vector<int>              _gravityOffsets;
     int                           _gravityOffsetsVectorSize;
     ts_bc_data_t                  _ts_bc_data[MAX_DSP_BOARDS];
+    yarp::os::BufferedPort<yarp::os::Bottle> receiveReset;
+    yarp::os::Port sendStatus;
+    
 private:
     comanDevicesHandler();                      // Singletons have private constructor
     ~comanDevicesHandler();
