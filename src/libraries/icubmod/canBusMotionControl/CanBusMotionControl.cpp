@@ -3599,6 +3599,80 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     return true;
 }
 
+int from_modevocab_to_modeint (int modevocab)
+{
+    switch (modevocab)
+    {
+    case VOCAB_CM_IDLE:
+        return MODE_IDLE;
+        break;
+    case VOCAB_CM_POSITION:
+        return MODE_POSITION;
+        break;
+    /*case VOCAB_CM_MIXED:
+        return MODE_MIXED;
+        break;
+    case VOCAB_CM_POSITION_DIRECT:
+        return MODE_DIRECT;
+        break;*/
+    case VOCAB_CM_VELOCITY:
+        return MODE_VELOCITY;
+        break;
+    case VOCAB_CM_TORQUE:
+        return MODE_TORQUE;
+        break;
+    case VOCAB_CM_IMPEDANCE_POS:
+        return MODE_IMPEDANCE_POS;
+        break;
+    case VOCAB_CM_IMPEDANCE_VEL:
+        return MODE_IMPEDANCE_VEL;
+        break;
+    case VOCAB_CM_OPENLOOP:
+        return  MODE_OPENLOOP;
+        break;
+    default:
+        return VOCAB_CM_UNKNOWN;
+        break;
+    }
+}
+
+int from_modeint_to_modevocab (int modeint)
+{
+    switch (modeint)
+    {
+    case icubCanProto_controlmode_idle:
+        return VOCAB_CM_IDLE;
+        break;
+    case icubCanProto_controlmode_position:
+        return VOCAB_CM_POSITION;
+        break;
+    /*case MODE_MIXED:
+        return VOCAB_CM_MIXED;
+        break;
+    case MODE_DIRECT:
+        return VOCAB_CM_POSITION_DIRECT;
+        break;*/
+    case MODE_VELOCITY:
+        return VOCAB_CM_VELOCITY;
+        break;
+    case icubCanProto_controlmode_torque:
+        return VOCAB_CM_TORQUE;
+        break;
+    case icubCanProto_controlmode_impedance_pos:
+        return VOCAB_CM_IMPEDANCE_POS;
+        break;
+    case icubCanProto_controlmode_impedance_vel:
+        return VOCAB_CM_IMPEDANCE_VEL;
+        break;
+    case icubCanProto_controlmode_openloop:
+        return VOCAB_CM_OPENLOOP;
+        break;
+    default:
+        return VOCAB_CM_UNKNOWN;
+        break;
+    }
+}
+
 bool CanBusMotionControl::getControlModeRaw(int j, int *v)
 {
     CanBusResources& r = RES(system_resources);
@@ -3611,38 +3685,13 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     short s;
 
     DEBUG_FUNC("Calling GET_CONTROL_MODE\n");
-    //_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_CONTROL_MODE, j, s);
+    //_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
 
     _mutex.wait();
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
-    switch (s)
-    {
-    case icubCanProto_controlmode_idle:
-        *v=VOCAB_CM_IDLE;
-        break;
-    case icubCanProto_controlmode_position:
-        *v=VOCAB_CM_POSITION;
-        break;
-    case icubCanProto_controlmode_velocity:
-        *v=VOCAB_CM_VELOCITY;
-        break;
-    case icubCanProto_controlmode_torque:
-        *v=VOCAB_CM_TORQUE;
-        break;
-    case icubCanProto_controlmode_impedance_pos:
-        *v=VOCAB_CM_IMPEDANCE_POS;
-        break;
-    case icubCanProto_controlmode_impedance_vel:
-        *v=VOCAB_CM_IMPEDANCE_VEL;
-        break;
-    case icubCanProto_controlmode_openloop:
-        *v=VOCAB_CM_OPENLOOP;
-        break;
-    default:
-        *v=VOCAB_CM_UNKNOWN;
-        break;
-    }
+    *v=from_modeint_to_modevocab(s);
+
     _mutex.post();
 
     return true;
@@ -3656,7 +3705,27 @@ bool CanBusMotionControl::getControlModesRaw(const int n_joint, const int *joint
 
 bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
 {
-    return NOT_YET_IMPLEMENTED("setControlModeRaw single joint");
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG_FUNC("Calling SET_CONTROL_MODE RAW\n");
+
+    if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
+    {
+        disablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        disableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+    }
+    else
+    {
+        enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        int v = from_modevocab_to_modeint(mode);
+
+        if (v==VOCAB_CM_UNKNOWN) return false;
+        _writeByte8(CAN_SET_CONTROL_MODE,j,v);
+    }
+
+    return true;
 }
 
 bool CanBusMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
