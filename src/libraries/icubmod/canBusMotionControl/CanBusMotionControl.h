@@ -180,6 +180,7 @@ public:
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
+    bool _pwmIsLimited;                         /** set to true if pwm is limited */
     bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     DebugParameters *_debug_params;             /** debug parameters */

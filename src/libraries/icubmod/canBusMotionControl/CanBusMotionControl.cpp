@@ -1056,7 +1056,16 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
     xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
 
-    //optional
+    //optional PWM limit 
+    xtmp = pidsGroup.findGroup("limPwm");
+    if (!xtmp.isNull() && _pwmIsLimited)
+    {
+        fprintf(stderr,  "canBusMotionControl using LIMITED PWM!! \n");
+        for (j=0;j<nj;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    }
+
+    return true;
+    //optional kff
     xtmp = pidsGroup.findGroup("kff");         
     if (!xtmp.isNull())
     {
@@ -1131,6 +1140,24 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 fprintf(stderr, "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue \n");
                 getchar(); 
             }
+        }
+    }
+
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_limitedPWM = p.findGroup("GENERAL").find("useLimitedPWM");
+    if(use_limitedPWM.isNull())
+    {
+        _pwmIsLimited = false;
+    }
+    else
+    {
+        if(!use_limitedPWM.isBool())
+        {
+            _pwmIsLimited = false;
+        }
+        else
+        {
+            _pwmIsLimited = use_limitedPWM.asBool();
         }
     }
 
@@ -1626,6 +1653,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _pids=0;
     _tpids=0;
     _tpidsEnabled=false;
+    _pwmIsLimited=false;
     _limitsMax=0;
     _limitsMin=0;
     _currentLimits=0;
