@@ -20,7 +20,8 @@
         <param name="kp">           -1000        -1000         </param>       
         <param name="kd">               0            0         </param>       
         <param name="ki">          -10000       -10000         </param>       
-        <param name="maxPwm">        2500         2500         </param>       
+        <param name="limPwm">        2500         2500         </param>       
+        <param name="maxPwm">        8000         8000         </param>       
         <param name="maxInt">         750          750         </param>       
         <param name="shift">            8            8         </param>       
         <param name="ko">               0            0         </param>       
