@@ -118,7 +118,10 @@
  *    [pose].
  *  
  * \b pose priority request: example [set] [prio] [xyz]/[ang], 
- *    [get] [prio].
+ *    [get] [prio]. For example, setting priority to [ang]
+ *    allows considering the reaching in orientation as a
+ *    constraint while reaching in position is handled as an
+ *    objective.
  *  
  * \b mode request: example [set] [mode] [cont]/[shot], [get] 
  *    [mode].
