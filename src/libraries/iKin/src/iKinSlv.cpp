@@ -577,6 +577,20 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         }
                     
                         //-----------------
+                        case IKINSLV_VOCAB_OPT_PRIO:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+
+                            string priority=slv->get_posePriority();
+                            if (priority=="position")
+                                reply.addVocab(IKINSLV_VOCAB_VAL_PRIO_XYZ);
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_VAL_PRIO_ANG);
+
+                            break;
+                        }
+
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -696,6 +710,26 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
                     
+                        //-----------------
+                        case IKINSLV_VOCAB_OPT_PRIO:
+                        {
+                            int type=command.get(2).asVocab();
+                            if (type==IKINSLV_VOCAB_VAL_PRIO_XYZ)
+                            {
+                                slv->set_posePriority("position");
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            }
+                            else if (type==IKINSLV_VOCAB_VAL_PRIO_ANG)
+                            {
+                                slv->set_posePriority("orientation");
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK); 
+
+                            break;
+                        }
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_MODE:
                         {

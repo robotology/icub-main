@@ -1,3 +1,6 @@
+2014-05-24 Ugo Pattacini <ugo.pattacini@iit.it>
+    * cartesian interface: added methods to set/get pose priority
+
 2014-02-27 Ugo Pattacini <ugo.pattacini@iit.it>
     * Added tool depth2kin
 

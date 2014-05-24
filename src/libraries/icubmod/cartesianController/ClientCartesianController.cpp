@@ -30,7 +30,7 @@
 
 #include <iCub/iKin/iKinInv.h>
 
-#define CARTCTRL_CLIENT_VER     1.0
+#define CARTCTRL_CLIENT_VER     1.1
 #define CARTCTRL_DEFAULT_TMO    0.1 // [s]
 
 using namespace std;
@@ -310,6 +310,53 @@ bool ClientCartesianController::getReferenceMode(bool *f)
         else
             return false;
 
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::setPosePriority(const ConstString &p)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_PRIO);
+    command.addString(p);
+
+    if (!portRpc.write(command,reply))
+    {
+        printf("Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+}
+
+
+/************************************************************************/
+bool ClientCartesianController::getPosePriority(ConstString &p)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab(IKINCARTCTRL_VOCAB_OPT_PRIO);
+
+    if (!portRpc.write(command,reply))
+    {
+        printf("Error: unable to get reply from server!\n");
+        return false;
+    }
+
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        p=reply.get(1).asString();
         return true;
     }
     else

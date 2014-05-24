@@ -117,6 +117,9 @@
  * \b pose request: example [set] [pose] [full]/[xyz], [get] 
  *    [pose].
  *  
+ * \b pose priority request: example [set] [prio] [xyz]/[ang], 
+ *    [get] [prio].
+ *  
  * \b mode request: example [set] [mode] [cont]/[shot], [get] 
  *    [mode].
  *  

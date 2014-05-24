@@ -181,18 +181,19 @@ protected:
 
     struct Context
     {
-        yarp::sig::Vector dof;
-        yarp::sig::Vector restPos;
-        yarp::sig::Vector restWeights;
-        yarp::sig::Vector tip_x;
-        yarp::sig::Vector tip_o;
-        yarp::sig::Matrix limits;
-        double            trajTime;
-        double            tol;
-        bool              mode;
-        bool              useReferences;
-        double            straightness;
-        yarp::os::Value   task_2;
+        yarp::sig::Vector     dof;
+        yarp::sig::Vector     restPos;
+        yarp::sig::Vector     restWeights;
+        yarp::sig::Vector     tip_x;
+        yarp::sig::Vector     tip_o;
+        yarp::sig::Matrix     limits;
+        double                trajTime;
+        double                tol;
+        bool                  mode;
+        bool                  useReferences;
+        double                straightness;
+        yarp::os::ConstString posePriority;
+        yarp::os::Value       task_2;
     };
 
     int contextIdCnt;
@@ -255,6 +256,8 @@ public:
     bool getTrackingMode(bool *f);
     bool setReferenceMode(const bool f);
     bool getReferenceMode(bool *f);
+    bool setPosePriority(const yarp::os::ConstString &p);
+    bool getPosePriority(yarp::os::ConstString &p);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

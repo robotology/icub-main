@@ -31,7 +31,7 @@
 
 #include <iCub/iKin/iKinVocabs.h>
 
-#define CARTCTRL_SERVER_VER                 1.0
+#define CARTCTRL_SERVER_VER                 1.1
 #define CARTCTRL_DEFAULT_PER                10      // [ms]
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
 #define CARTCTRL_DEFAULT_TOL                1e-2
@@ -408,6 +408,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         }
 
                         //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_PRIO:
+                        {
+                            ConstString priority;
+                            if (getPosePriority(priority))
+                            {   
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addString(priority);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
                             double time;
@@ -738,6 +753,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 ret=setReferenceMode(false);
 
                             if (ret)
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_PRIO:
+                        {
+                            ConstString priority=command.get(2).asString();
+                            if (setPosePriority(priority))
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -2134,6 +2161,53 @@ bool ServerCartesianController::getReferenceMode(bool *f)
 
 
 /************************************************************************/
+bool ServerCartesianController::setPosePriority(const ConstString &p)
+{
+    bool ret=false;
+    if (connected && ((p=="position") || (p=="orientation")))
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
+        command.add(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+        else
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getPosePriority(ConstString &p)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+        {
+            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+                p=(reply.get(1).asVocab()==IKINSLV_VOCAB_VAL_PRIO_XYZ)?
+                  "position":"orientation";
+        }
+        else
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (attached)
@@ -2308,8 +2382,8 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
     
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
@@ -2342,9 +2416,9 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
 
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
@@ -2369,8 +2443,8 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     mutex.lock();
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,xd);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
@@ -2395,9 +2469,9 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     mutex.lock();
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,xd);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
@@ -3040,6 +3114,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.mode=_mode;
         context.useReferences=_useReference;
         context.straightness=ctrl->get_gamma();
+        getPosePriority(context.posePriority);
         getTask2ndOptions(context.task_2);
 
         *id=contextIdCnt++;
@@ -3082,6 +3157,7 @@ bool ServerCartesianController::restoreContext(const int id)
             setTrajTime(context.trajTime);
             setInTargetTol(context.tol);
             ctrl->set_gamma(context.straightness);
+            setPosePriority(context.posePriority);
             setTask2ndOptions(context.task_2);
 
             return true;
