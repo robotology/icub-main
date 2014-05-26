@@ -25,8 +25,8 @@
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
 
-#include <DSP_board.h>
-#include <Boards_iface.h>
+#include <robolli/DSP_board.h>
+#include <robolli/Boards_iface.h>
 
 #include <comanDevicesHandler.hpp>
 #include <Debug.h>

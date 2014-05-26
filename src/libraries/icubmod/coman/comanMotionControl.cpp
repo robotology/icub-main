@@ -67,7 +67,8 @@ Prendere l'indice corretto dell'array per il giunto j
 
 inline McBoard * comanMotionControl::getMCpointer(int j)
 {
-    return _mcs[jointTobId(j)];
+   // return _mcs[jointTobId(j)];
+    return (McBoard*)(_boards_ctrl->get_board(jointTobId(j)));
 }
 
 inline int comanMotionControl::bId2Joint(int j)
@@ -1314,7 +1315,7 @@ bool comanMotionControl::relativeMoveRaw(const double *deltas)
 
 bool comanMotionControl::checkMotionDoneRaw(bool *flag)
 {
-    // loop su _mcs, non sul numero dei giunti!!
+    //TODO: loop su _mcs, non sul numero dei giunti!!
     bool ret = true;
     for(int i=0; i<_njoints; i++)
     {
@@ -1737,6 +1738,8 @@ bool comanMotionControl::setPositionModeRaw(int j)
             break;
 
         case VOCAB_CM_VELOCITY:
+        yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
             // now firmware is able to do a smooth transition from pos to vel, so nothing to do here
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
@@ -1745,6 +1748,8 @@ bool comanMotionControl::setPositionModeRaw(int j)
             break;
 
         case VOCAB_CM_TORQUE:
+            yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
             yDebug() << "joint "<< j << "stopping torque mode";
             ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)));   // setItem returns 0 if ok, 2 if error
 
@@ -1754,7 +1759,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             setPidRaw(j, pid[j]);
             setTorquePidRaw(j, pidTorque[j]);
 
-            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
@@ -1767,6 +1772,9 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
         case VOCAB_CM_IMPEDANCE_POS:
         case VOCAB_CM_IMPEDANCE_VEL:
+            yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
+
 //            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
 //            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
 //            ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
@@ -1784,28 +1792,26 @@ bool comanMotionControl::setPositionModeRaw(int j)
             setTorquePidRaw(j, pidTorque[j]);
 
 //            	ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
-            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
 
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
                 std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-
             break;
 
         default:
-            yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... stop everything and then enable position\n";
+        yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... " << yarp::os::Vocab::decode(_controlMode[j]) <<  " stop everything and then enable position\n";
             disablePidRaw(j);
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
                 std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-            yDebug() << "joint "<< j << "already in position mode";
             return true;
             break;
     }
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));            yDebug() << "joint "<< j << "already in position mode";
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
     if(ret)
         _controlMode[j] = VOCAB_CM_POSITION;
@@ -1960,6 +1966,10 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
         ret = ret && setTorquePidRaw(j, _trqPids[j]);   yarp::os::Time::delay(0.01);
         if(!ret)
             yError()<<"setTorquePidRaw returned error!";
+        if(getEncoder(j, &initialPosition) )
+            positionMove(j, initialPosition);
+        else
+            std::cout << "Coman MC: error! Not able to read initial positions";
         ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
         if(!ret)
             yError()<<"setItem() TORQUE_ON_OFF returned error!";
@@ -1999,11 +2009,10 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
 
     if( NULL == joint_p)
     {
-        yError() << "Calling setImpedancePositionModeRaw on a non-existing joint j" << j;
+        yError() << "Calling getControlModeRaw on a non-existing joint j" << j;
         return false;
     }
 
-    double initialPosition;
     ts_bc_data_t bc_data;
     mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
 
@@ -2015,18 +2024,11 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
     if (faults)
     {
         *v = VOCAB3('e','r','r');
-        std::cout << "Joint " << j << " returned error code " << (int)faults;
+        //std::cout << "Joint " << j << " returned error code " << (int)faults;
     }
     else
     {
         *v = _controlMode[j];
-            yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... stop everything and then enable position\n";
-            if(getEncoder(j, &initialPosition) )
-                positionMove(j, initialPosition);
-            else
-                std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-
-            disablePidRaw(j);
     }
     return true;
 }
@@ -2070,7 +2072,7 @@ bool comanMotionControl::getEncoderRaw(int j, double *enc)
 //    clock_gettime(CLOCK_REALTIME, &t_start);
 
     bool ret = true;
-    McBoard *joint_p = getMCpointer(j);   //  -> giusto
+    McBoard *joint_p = getMCpointer(j);   //  -> giusto // -> forse no (Mirko)
 
     if( NULL == joint_p)
     {
@@ -2840,6 +2842,7 @@ bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *dampi
 
 bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
 {
+    //TODO: check for coerency between control mode and this function call
     uint8_t bId = jointTobId(j);
     int tmp_stiff = (int) stiffness;
     int tmp_damp  = (int) damping;

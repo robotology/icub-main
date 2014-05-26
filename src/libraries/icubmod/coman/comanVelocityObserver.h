@@ -61,8 +61,8 @@ using namespace yarp::os;
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
 
-#include <DSP_board.h>
-#include <Boards_iface.h>
+#include <robolli/DSP_board.h>
+#include <robolli/Boards_iface.h>
 
 #include <comanDevicesHandler.hpp>
 

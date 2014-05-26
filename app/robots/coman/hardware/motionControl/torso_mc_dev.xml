@@ -13,9 +13,9 @@
 
 <!--     
     <group name="POS_PIDS">      
-        <param name="kp">           32000         32000         -32000             </param>       
-        <param name="kd">           50            50            -50                </param>       
-        <param name="ki">           60            60            -60                </param>       
+        <param name="kp">           32000         32000         32000             </param>       
+        <param name="kd">           50            50            50                </param>       
+        <param name="ki">           60            60            60                </param>       
         <param name="maxPwm">       800           800           800                </param>       
         <param name="maxInt">       800           800           800                </param>       
         <param name="shift">        13            13            13                 </param>       
@@ -26,8 +26,8 @@
 -->    
 
     <group name="IMP_POS_PIDS">
-        <param name="kp">    50000         100000         50000             </param>   <!-- [mNm/rad] -->
-        <param name="kd">     5000          10000          5000             </param>   <!-- [mNm/(rad*sec)] -->  
+        <param name="kp">    70000         100000         70000             </param>   <!-- [mNm/rad] -->
+        <param name="kd">     7000          10000          7000             </param>   <!-- [mNm/(rad*sec)] -->  
         <param name="ki">        0              0             0             </param>
         <param name="maxPwm">       800           800           800                </param>       
         <param name="maxInt">       800           800           800                </param>       

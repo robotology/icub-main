@@ -16,7 +16,7 @@ IF(NOT ROBOLLI_FOUND)
     #         By default COMAN_shared installs in COMAN_ROOT, therefore
     #         try ${COMAN_ROOT}/include as well
     find_path(   robolli_INCLUDE_DIRS
-                 NAMES broadcast_data.h
+                 NAMES robolli/broadcast_data.h
                  PATHS $ENV{COMAN_DIR}
                        $ENV{COMAN_ROOT}
                  PATH_SUFFIXES include)

@@ -24,11 +24,12 @@
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
-
-#include <Boards_iface.h>
+#include <yarp/os/RateThread.h>
+#include <robolli/Boards_iface.h>
+#include <robolli/DSP_board.h>
 
 // No need to include this class into yarp::dev namespace.
-class comanDevicesHandler: public yarp::dev::DeviceDriver
+class comanDevicesHandler: public yarp::dev::DeviceDriver, public yarp::os::RateThread
 {
 public:
     static yarp::os::Semaphore    comanDevicesHandler_mutex;
@@ -41,7 +42,10 @@ private:
     static int                    _usedBy;
     std::vector<int>              _gravityOffsets;
     int                           _gravityOffsetsVectorSize;
-
+    ts_bc_data_t                  _ts_bc_data[MAX_DSP_BOARDS];
+    yarp::os::BufferedPort<yarp::os::Bottle> receiveReset;
+    yarp::os::Port sendStatus;
+    
 private:
     comanDevicesHandler();                      // Singletons have private constructor
     ~comanDevicesHandler();
@@ -69,6 +73,7 @@ public:
     bool close();
     Boards_ctrl *getBoard_ctrl_p();
 
+    void run();
     void initGravityWorkAround();
     bool setGravityOffset(int bId, int offset);
 };
