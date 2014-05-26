@@ -173,7 +173,7 @@ set(PROT_SOURCE
                             ${PROT_FOLDER}/transport/EOtheParser.c
                             ${PROT_FOLDER}/transport/EOtransceiver.c
                             ${PROT_FOLDER}/transport/EOtransmitter.c
-                            ${PROT_FOLDER}/transport/EOtheBOARDtransceiver.c
+                            ${PROT_FOLDER}/transport/EOdeviceTransceiver.c
                             ${PROT_FOLDER}/transport/EOhostTransceiver.c
                             ${PROT_FOLDER}/transport/EOconfirmationManager.c
                             ${PROT_FOLDER}/transport/EOproxy.c

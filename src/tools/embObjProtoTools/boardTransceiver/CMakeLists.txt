@@ -49,10 +49,11 @@ include(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/embObjLib.cmake)
 # Common, architecture independent
 
 
-set(NVS_CBK_SOURCE          ${NVS_MNGMNT_CBK_FOLDER}embObjLib_mngmnt_callback.c
-                            ${NVS_MC_CBK_FOLDER}embObjMotionControl_callback.c
-                            ${NVS_SENSORS_CBK_FOLDER}embObjAnalogSensor_callback.c
-                            ${NVS_SKIN_CBK_FOLDER}/eOcfg_nvsEP_sk_usrcbk_ebx.c 
+set(NVS_CBK_SOURCE          
+                            board_protocol_callback.c
+                            
+                            
+                            
                             )
 
 
@@ -80,6 +81,7 @@ include_directories(
                             )
   
 add_executable(${PROJECTNAME}       ${DEMO_BOARD_SOURCE}
+                                    ${embobj_source}
                                     #${NVS_CBK_SOURCE}
                                     ${DEMO_BOARD_HEADER})
 
