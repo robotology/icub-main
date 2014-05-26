@@ -3668,7 +3668,7 @@ int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
         break;
 
     default:
-        return VOCAB_CM_UNKNOWN;
+        return MODE_UNKNOWN_ERROR;
         break;
     }
 }
@@ -3769,7 +3769,7 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    DEBUG_FUNC("Calling SET_CONTROL_MODE RAW\n");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
 
     if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
     {
@@ -3780,9 +3780,9 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     {
         enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
         enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        
         int v = from_modevocab_to_modeint(mode);
-
-        if (v==VOCAB_CM_UNKNOWN) return false;
+        if (v==MODE_UNKNOWN_ERROR) return false;
         _writeByte8(CAN_SET_CONTROL_MODE,j,v);
     }
 
@@ -3796,7 +3796,28 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joint, const int *joint
 
 bool CanBusMotionControl::setControlModesRaw(int *modes)
 {
-    return NOT_YET_IMPLEMENTED("setControlModesRaw all joints");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
+    CanBusResources& r = RES(system_resources);
+
+    for (int i = 0; i < r.getJoints(); i++)
+    {
+        if (modes[i] == VOCAB_CM_IDLE || modes[i] == VOCAB_CM_FORCE_IDLE)
+        {
+            disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        }
+    else
+        {
+            enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            
+            int v = from_modevocab_to_modeint(modes[i]);
+            if (v==MODE_UNKNOWN_ERROR) return false;
+            _writeByte8(CAN_SET_CONTROL_MODE,i,v);
+        }
+    }
+
+    return true;
 }
 
 // return the number of controlled axes.
@@ -6681,10 +6702,18 @@ bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
     return false;
 }
 
-bool CanBusMotionControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
+bool CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum mode)
 {
-    std::cout << "setInteractionModeRaw single NOT YET IMPLEMENTED" << std::endl;
-    return false;
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG_FUNC("Calling SET_INTERACTION_MODE RAW\n");
+
+    int v = from_interactionvocab_to_interactionint(mode);
+    if (v==icubCanProto_interactionmode_unknownError) return false;
+    _writeByte8(CAN_SET_INTERACTION_MODE,j,v);
+
+    return true;
 }
 
 bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
@@ -6695,6 +6724,15 @@ bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
 bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "setInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
-    return false;
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
+    CanBusResources& r = RES(system_resources);
+
+    for (int i = 0; i < r.getJoints(); i++)
+    {
+       int v = from_interactionvocab_to_interactionint(modes[i]);
+       if (v==icubCanProto_interactionmode_unknownError) return false;
+       _writeByte8(CAN_SET_INTERACTION_MODE,i,v);
+    }
+
+    return true;
 }

@@ -163,6 +163,8 @@
 //
 //#define CAN_SET_OPENLOOP_PARAMS     114
 //#define CAN_GET_OPENLOOP_PARAMS		115
+#define CAN_SET_INTERACTION_MODE    116
+#define CAN_GET_INTERACTION_MODE    117
 
 //#define NUM_OF_MESSAGES             116
 
