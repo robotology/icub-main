@@ -3573,6 +3573,15 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     return true;
 }
 
+//@@@ TO BE REMOVED LATER (AFTER INCLUDING FIRMWARE_SHARED)
+#ifndef icubCanProto_controlmode_calibration
+#define icubCanProto_controlmode_calibration 0x060
+#endif
+
+#ifndef icubCanProto_controlmode_forceIdle
+#define icubCanProto_controlmode_forceIdle 0x09
+#endif
+
 int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
 {
     switch (modevocab)
@@ -3583,12 +3592,12 @@ int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
     case VOCAB_CM_POSITION:
         return MODE_POSITION;
         break;
-    /*case VOCAB_CM_MIXED:
+    case VOCAB_CM_MIXED:
         return MODE_MIXED;
         break;
     case VOCAB_CM_POSITION_DIRECT:
         return MODE_DIRECT;
-        break;*/
+        break;
     case VOCAB_CM_VELOCITY:
         return MODE_VELOCITY;
         break;
@@ -3604,6 +3613,11 @@ int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
     case VOCAB_CM_OPENLOOP:
         return  MODE_OPENLOOP;
         break;
+
+    case VOCAB_CM_FORCE_IDLE: 
+        return icubCanProto_controlmode_forceIdle;
+        break;
+
     default:
         return VOCAB_CM_UNKNOWN;
         break;
@@ -3620,12 +3634,12 @@ int CanBusMotionControl::from_modeint_to_modevocab (int modeint)
     case MODE_POSITION:
         return VOCAB_CM_POSITION;
         break;
-    /*case MODE_MIXED:
+    case MODE_MIXED:
         return VOCAB_CM_MIXED;
         break;
     case MODE_DIRECT:
         return VOCAB_CM_POSITION_DIRECT;
-        break;*/
+        break;
     case MODE_VELOCITY:
         return VOCAB_CM_VELOCITY;
         break;
@@ -3641,6 +3655,30 @@ int CanBusMotionControl::from_modeint_to_modevocab (int modeint)
     case MODE_OPENLOOP:
         return VOCAB_CM_OPENLOOP;
         break;
+
+    //internal status
+    case  MODE_HW_FAULT:
+        return VOCAB_CM_HW_FAULT;
+        break;
+    case  MODE_NOT_CONFIGURED:
+        return VOCAB_CM_NOT_CONFIGURED;
+        break;
+    case  MODE_CONFIGURED:
+        return VOCAB_CM_CONFIGURED;
+        break;
+    case  MODE_UNKNOWN_ERROR:
+        return VOCAB_CM_UNKNOWN;
+        break;
+
+    case  icubCanProto_controlmode_calibration:
+    case  MODE_CALIB_ABS_POS_SENS:
+    case  MODE_CALIB_HARD_STOPS:
+    case  MODE_HANDLE_HARD_STOPS:
+    case  MODE_MARGIN_REACHED: 
+    case  MODE_CALIB_ABS_AND_INCREMENTAL:
+        return VOCAB_CM_CALIBRATING;
+        break;
+
     default:
         return VOCAB_CM_UNKNOWN;
         break;
