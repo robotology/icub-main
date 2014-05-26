@@ -1075,6 +1075,9 @@ protected:
     speedEstimationHelper *_speedEstimationHelper;
     axisPositionDirectHelper  *_axisPositionDirectHelper;
 
+    inline int from_modevocab_to_modeint (int modevocab);
+    inline int from_modeint_to_modevocab (int modeint);
+
     // internal stuff.
     double *_ref_speeds;        // used for position control.
     double *_command_speeds;    // used for velocity control.

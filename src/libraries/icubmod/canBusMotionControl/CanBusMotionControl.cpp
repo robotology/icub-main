@@ -3567,39 +3567,13 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
-        switch (temp)
-        {
-            case icubCanProto_controlmode_idle:
-                v[i]=VOCAB_CM_IDLE;
-                break;
-            case icubCanProto_controlmode_position:
-                v[i]=VOCAB_CM_POSITION;
-                break;
-            case icubCanProto_controlmode_velocity:
-                v[i]=VOCAB_CM_VELOCITY;
-                break;
-            case icubCanProto_controlmode_torque:
-                *v=VOCAB_CM_TORQUE;
-                break;
-            case icubCanProto_controlmode_impedance_pos:
-                v[i]=VOCAB_CM_IMPEDANCE_POS;
-                break;
-            case icubCanProto_controlmode_impedance_vel:
-                v[i]=VOCAB_CM_IMPEDANCE_VEL;
-                break;
-            case icubCanProto_controlmode_openloop:
-                v[i]=VOCAB_CM_OPENLOOP;
-                break;
-            default:
-                v[i]=VOCAB_CM_UNKNOWN;
-                break;
-        }
+        *v=from_modeint_to_modevocab(temp);
     }
     _mutex.post();
     return true;
 }
 
-int from_modevocab_to_modeint (int modevocab)
+int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
 {
     switch (modevocab)
     {
@@ -3636,14 +3610,14 @@ int from_modevocab_to_modeint (int modevocab)
     }
 }
 
-int from_modeint_to_modevocab (int modeint)
+int CanBusMotionControl::from_modeint_to_modevocab (int modeint)
 {
     switch (modeint)
     {
-    case icubCanProto_controlmode_idle:
+    case MODE_IDLE:
         return VOCAB_CM_IDLE;
         break;
-    case icubCanProto_controlmode_position:
+    case MODE_POSITION:
         return VOCAB_CM_POSITION;
         break;
     /*case MODE_MIXED:
@@ -3655,16 +3629,16 @@ int from_modeint_to_modevocab (int modeint)
     case MODE_VELOCITY:
         return VOCAB_CM_VELOCITY;
         break;
-    case icubCanProto_controlmode_torque:
+    case MODE_TORQUE:
         return VOCAB_CM_TORQUE;
         break;
-    case icubCanProto_controlmode_impedance_pos:
+    case MODE_IMPEDANCE_POS:
         return VOCAB_CM_IMPEDANCE_POS;
         break;
-    case icubCanProto_controlmode_impedance_vel:
+    case MODE_IMPEDANCE_VEL:
         return VOCAB_CM_IMPEDANCE_VEL;
         break;
-    case icubCanProto_controlmode_openloop:
+    case MODE_OPENLOOP:
         return VOCAB_CM_OPENLOOP;
         break;
     default:
