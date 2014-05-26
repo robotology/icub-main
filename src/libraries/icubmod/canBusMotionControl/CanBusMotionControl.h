@@ -1077,6 +1077,8 @@ protected:
 
     inline int from_modevocab_to_modeint (int modevocab);
     inline int from_modeint_to_modevocab (int modeint);
+    inline int from_interactionvocab_to_interactionint (int interactionvocab);
+    inline int from_interactionint_to_interactionvocab (int interactionint);
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.

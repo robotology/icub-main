@@ -3582,6 +3582,55 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
 #define icubCanProto_controlmode_forceIdle 0x09
 #endif
 
+#ifndef icubCanProto_interactionmode_stiff
+#define icubCanProto_interactionmode_stiff 0x00
+#endif 
+
+#ifndef icubCanProto_interactionmode_compliant
+#define icubCanProto_interactionmode_compliant 0x01
+#endif
+
+#ifndef icubCanProto_interactionmode_unknownError
+#define icubCanProto_interactionmode_unknownError 0xFF
+#endif
+
+//---------------------------------------------------------
+
+int CanBusMotionControl::from_interactionvocab_to_interactionint (int interactionvocab)
+{
+    switch (interactionvocab)
+    {
+    case VOCAB_IM_STIFF:
+        return icubCanProto_interactionmode_stiff;
+        break;
+    case VOCAB_IM_COMPLIANT:
+        return icubCanProto_interactionmode_compliant;
+        break;
+    case VOCAB_IM_UNKNOWN:
+        default:
+        return icubCanProto_interactionmode_unknownError;
+        break;
+    }
+}
+
+int CanBusMotionControl::from_interactionint_to_interactionvocab (int interactionint)
+{
+    switch (interactionint)
+    {
+    case icubCanProto_interactionmode_stiff:
+        return VOCAB_IM_STIFF;
+        break;
+    case icubCanProto_interactionmode_compliant:
+        return VOCAB_IM_COMPLIANT;
+        break;
+    case icubCanProto_interactionmode_unknownError:
+        default:
+        return icubCanProto_interactionmode_unknownError;
+        break;
+    }
+}
+
+
 int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
 {
     switch (modevocab)
