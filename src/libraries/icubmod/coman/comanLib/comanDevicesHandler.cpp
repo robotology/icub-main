@@ -9,7 +9,7 @@
 #include "comanDevicesHandler.hpp"
 //#include "Boards_iface.h"
 #include <robolli/Boards_exception.h>
-#include <drc_shared/yarp_msgs/robotInterfaceStatus.h>
+#include <robotInterfaceStatus.h>
 using namespace yarp::os;
 using namespace yarp::dev;
 
