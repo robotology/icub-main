@@ -161,6 +161,13 @@ public:
     yarp::sig::Vector get_x() const { return x; }
 
     /**
+     * Returns the estimated output.
+     * 
+     * @return Estimated output.
+     */
+    yarp::sig::Vector get_y() const;
+
+    /**
      * Returns the estimated state covariance.
      * 
      * @return Estimated state covariance.

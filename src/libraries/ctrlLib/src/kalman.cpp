@@ -99,7 +99,7 @@ Vector Kalman::correct(const Vector &z)
 {
     Matrix invS=pinv(S);
     K=P*Ht*invS;
-    Vector e=z-H*x;
+    Vector e=z-get_y();
     x+=K*e;
     P=(I-K*H)*P;
     validationGate=yarp::math::dot(e,invS*e);
@@ -120,6 +120,13 @@ Vector Kalman::filt(const Vector &u, const Vector &z)
 Vector Kalman::filt(const Vector &z)
 {
     return filt(Vector(n,0.0),z);
+}
+
+
+/**********************************************************************/
+Vector Kalman::get_y() const
+{
+    return H*x;
 }
 
 
