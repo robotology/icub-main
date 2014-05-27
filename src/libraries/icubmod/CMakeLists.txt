@@ -7,6 +7,7 @@
 
 include(YarpPlugin)
 
+
 #unset(ICUB_COMPILE_EMBOBJ_LIBRARY\)
 set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE)
 
@@ -17,6 +18,17 @@ add_subdirectory(debugStream)
 option (ICUB_PARAM_CALIB_WIP "use ParametricCalibratorWip")
 mark_as_advanced (ICUB_PARAM_CALIB_WIP)
 set(ICUB_PARAM_CALIB_WIP FALSE CACHE BOOL " ")
+
+
+option (ICUB_EOPROT_MN_VERSION_1_0 "use ON until further notice" ON)
+mark_as_advanced (ICUB_EOPROT_MN_VERSION_1_0)
+
+
+if(ICUB_EOPROT_MN_VERSION_1_0)
+add_definitions(-DEOPROT_USE_MN_VERSION_1_0)
+else(ICUB_EOPROT_MN_VERSION_1_0)
+add_definitions(-DEOPROT_USE_MN_VERSION_2_0)
+endif(ICUB_EOPROT_MN_VERSION_1_0)
 
 BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
