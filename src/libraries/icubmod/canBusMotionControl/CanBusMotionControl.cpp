@@ -198,6 +198,10 @@ public:
     char  _controlmodeStatus;
     double _update_e;
 
+    // msg 3b
+    char  _interactionmodeStatus;
+    double _update_e2;
+
     // msg 4
     short _current;
     double _update_c;
@@ -288,6 +292,7 @@ public:
         _canStatus=0;
         _boardStatus=0;
         _controlmodeStatus=0;
+        _interactionmodeStatus=0;
         _position_error = 0;
         _torque_error = 0;
         _speed_joint = 0;
@@ -298,6 +303,7 @@ public:
 
         _update_v = .0;
         _update_e = .0;
+        _update_e2= .0;
         _update_c = .0;
         _update_r = .0;
         _update_s = .0;
@@ -3070,8 +3076,18 @@ void CanBusMotionControl::handleBroadcasts()
 
                         break;
 
-                    case ICUBCANPROTO_PER_MC_MSG__CURRENT:
-                        // also receives the control values.
+                    case CAN_BCAST_ADDITIONAL_STATUS:
+                        r._bcastRecvBuffer[j]._interactionmodeStatus=*((char *)(data+1)) & 0x0F;
+                        r._bcastRecvBuffer[j]._update_e2 = before;
+                        j++;
+                        if (j < r.getJoints())
+                        {
+                            r._bcastRecvBuffer[j]._interactionmodeStatus=(*((char *)(data+1)) >> 4) & 0x0F;
+                            r._bcastRecvBuffer[j]._update_e2 = before;
+                        }
+                        break;
+
+	 		case ICUBCANPROTO_PER_MC_MSG__CURRENT:
                         r._bcastRecvBuffer[j]._current = *((short *)(data));
                         r._bcastRecvBuffer[j]._update_c = before;
                         j++;
@@ -3083,7 +3099,6 @@ void CanBusMotionControl::handleBroadcasts()
                         break;
 
                     case ICUBCANPROTO_PER_MC_MSG__PID_ERROR:
-                        // also receives the control values.
                         r._bcastRecvBuffer[j]._position_error = *((short *)(data));
                         r._bcastRecvBuffer[j]._torque_error =   *((short *)(data+4));
                         r._bcastRecvBuffer[j]._update_r = before;
@@ -3098,7 +3113,6 @@ void CanBusMotionControl::handleBroadcasts()
 
                     case ICUBCANPROTO_PER_MC_MSG__VELOCITY:
                         // also receives the acceleration values.
-
                         r._bcastRecvBuffer[j]._speed_joint = *((short *)(data));
                         r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+4));
                         r._bcastRecvBuffer[j]._update_s = before;
@@ -3567,7 +3581,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
-        *v=from_modeint_to_modevocab(temp);
+        v[i]=from_modeint_to_modevocab(temp);
     }
     _mutex.post();
     return true;
@@ -6686,7 +6700,16 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
 // IInteractionMode
 bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
 {
-    std::cout << "getInteractionModeRaw single joint NOT YET IMPLEMENTED" << std::endl;
+    DEBUG_FUNC("Calling GET_INTERACTION_MODE SINGLE JOINT\n");
+    CanBusResources& r = RES(system_resources);
+    int temp;
+    _mutex.wait();
+
+    temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
+    *mode=(yarp::dev::InteractionModeEnum)from_modeint_to_modevocab(temp);
+    
+    _mutex.post();
+    return true;
     return false;
 }
 
@@ -6698,7 +6721,17 @@ bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
 
 bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "getInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    DEBUG_FUNC("Calling GET_INTERACTION_MODE ALL JOINTS \n");
+    CanBusResources& r = RES(system_resources);
+    int i;
+    int temp;
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        temp = int(r._bcastRecvBuffer[i]._interactionmodeStatus);
+        modes[i]=(yarp::dev::InteractionModeEnum)from_modeint_to_modevocab(temp);
+    }
+    _mutex.post();
     return false;
 }
 
