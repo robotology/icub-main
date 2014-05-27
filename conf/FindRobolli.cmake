@@ -19,12 +19,15 @@ IF(NOT ROBOLLI_FOUND)
                  NAMES robolli/broadcast_data.h
                  PATHS $ENV{COMAN_DIR}
                        $ENV{COMAN_ROOT}
-                 PATH_SUFFIXES include)
+                 PATH_SUFFIXES include
+                               include/COMAN_shared)
 
     if(NOT robolli_INCLUDE_DIRS)
-        message(ERROR " robolli includes were not found into $ENV{COMAN_DIR} subfolders")
+        message(ERROR "robolli includes were not found into $ENV{COMAN_ROOT} subfolders")
         set(ROBOLLI_FOUND false)
         return()
+    else(NOT robolli_INCLUDE_DIRS)
+        message(STATUS "found robolli includes in ${robolli_INCLUDE_DIRS}" )
     endif(NOT robolli_INCLUDE_DIRS)
 
     find_library(robolli_LIB
@@ -34,10 +37,10 @@ IF(NOT ROBOLLI_FOUND)
                  PATH_SUFFIXES lib)
 
     if(robolli_LIB)
-        message(STATUS " found robolli" )
+        message(STATUS "found robolli in ${robolli_LIB}" )
         set(ROBOLLI_FOUND true)
     else(robolli_LIB)
-        message(ERROR " robolli library was not found into $ENV{COMAN_DIR} subfolders")
+        message(ERROR "robolli library was not found into $ENV{COMAN_ROOT} subfolders")
         set(ROBOLLI_FOUND false)
         return()
     endif(robolli_LIB)
@@ -45,7 +48,7 @@ IF(NOT ROBOLLI_FOUND)
     endif(UNIX)
 
     IF(WIN32)
-        message(ERROR " Sorry, Robolli is not available for Windows right now. Disable coman devices!")
+        message(ERROR "Sorry, Robolli is not available for Windows right now. Disable coman devices!")
         set(ROBOLLI_FOUND FALSE force)
         SET(ROBOLLI_INC_DIRS)
         SET(ROBOLLI_LIB )
