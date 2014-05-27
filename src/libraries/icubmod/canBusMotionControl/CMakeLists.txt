@@ -3,7 +3,12 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 
+
+FIND_PACKAGE(icub_firmware_shared)
+set(FIRMWARE_SHARED_INC         ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
+
 IF (ICUB_CONTROLWRAPPER_WIP)
+
    PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
 		INCLUDE CanBusMotionControlwip.h 
 		WRAPPER controlboard)
@@ -22,8 +27,11 @@ IF (ICUB_CONTROLWRAPPER_WIP)
 
    ADD_DEFINITIONS(-D_REENTRANT)
 
+
    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
-                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}
+                       ${FIRMWARE_SHARED_INC}
+                       )
 
    SET(folder_source CanBusMotionControlwip.cpp ThreadTable2.cpp ThreadPool2.cpp)
    SET(folder_header CanBusMotionControlwip.h ThreadTable2.h ThreadPool2.h)
@@ -55,7 +63,9 @@ else()
    ADD_DEFINITIONS(-D_REENTRANT)
 
    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
-                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}
+                       ${FIRMWARE_SHARED_INC}
+                       )
 
    SET(folder_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
    SET(folder_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)
