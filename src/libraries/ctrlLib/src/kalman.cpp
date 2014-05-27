@@ -88,6 +88,13 @@ Vector Kalman::predict(const Vector &u)
 
 
 /**********************************************************************/
+Vector Kalman::predict()
+{
+    return predict(Vector(n,0.0));
+}
+
+
+/**********************************************************************/
 Vector Kalman::correct(const Vector &z)
 {
     Matrix invS=pinv(S);

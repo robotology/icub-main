@@ -114,6 +114,13 @@ public:
     yarp::sig::Vector predict(const yarp::sig::Vector &u);
 
     /**
+     * Predicts the next state vector. 
+     * 
+     * @return Estimated state vector.
+     */
+    yarp::sig::Vector predict();
+
+    /**
      * Corrects the current estimation of the state vector given the
      * current measurement. 
      * 
@@ -122,17 +129,6 @@ public:
      * @return Estimated state vector.
      */
     yarp::sig::Vector correct(const yarp::sig::Vector &z);
-
-    /**
-     * Returns the estimated state vector given the current 
-     * measurement by performing a prediction and then correcting 
-     * the result. 
-     * 
-     * @param z Current measurement.
-     * 
-     * @return Estimated state vector.
-     */
-    yarp::sig::Vector filt(const yarp::sig::Vector &z);
 
     /**
      * Returns the estimated state vector given the current 
@@ -145,6 +141,17 @@ public:
      * @return Estimated state vector.
      */
     yarp::sig::Vector filt(const yarp::sig::Vector &u, const yarp::sig::Vector &z);
+
+    /**
+     * Returns the estimated state vector given the current 
+     * measurement by performing a prediction and then correcting 
+     * the result. 
+     * 
+     * @param z Current measurement.
+     * 
+     * @return Estimated state vector.
+     */
+    yarp::sig::Vector filt(const yarp::sig::Vector &z);
 
     /**
      * Returns the estimated state.
