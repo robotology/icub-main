@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<robot name="SkinTableTop" prefix="SkinTableTop">
+<robot name="SkinFingertipDemo" prefix="SkinFingertipDemo">
     <!-- SKIN -->
     <devices file="wrappers/skin/fingertip_wrapper.xml" />
     <devices file="hardware/skin/fingertip.xml" />

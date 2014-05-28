@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- La skin ha bisogno delle info presenti nella parte eln e di info per il suo wrapper, qui sotto -->
-<devices robot="skinFingertipDemo">
+<devices robot="SkinFingertipDemo">
 	<device name="fingertip_wrapper" type="skinWrapper">
 		<param name="period">       20  				</param>
 		<param name="total_taxels"> 48				</param>
