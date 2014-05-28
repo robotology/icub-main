@@ -1047,20 +1047,20 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     int j=0;
     Bottle xtmp;
 
-    if (!validate(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
 
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
-        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
+        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints+1))
         {
             std::cout << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
             return false;
@@ -1088,8 +1088,8 @@ bool CanBusMotionControlParameters::parseImpedanceGroup_NewFormat(Bottle& pidsGr
 {
     int j=0;
     Bottle xtmp;
-    if (!validate(pidsGroup, xtmp, "stiffness", "Pid stiffness parameter", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].stiffness = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "damping", "Pid damping parameter", _njoints))           return false; for (j=0; j<_njoints; j++) vals[j].damping   = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "stiffness", "Pid stiffness parameter", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].stiffness = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "damping", "Pid damping parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) vals[j].damping   = xtmp.get(j+1).asDouble();
     return true;
 }
 
@@ -1098,14 +1098,14 @@ bool CanBusMotionControlParameters::parseDebugGroup_NewFormat(Bottle& pidsGroup,
     int j=0;
     Bottle xtmp;
 
-    if (!validate(pidsGroup, xtmp, "debug0", "debug0", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug1", "debug1", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug2", "debug2", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[2] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug3", "debug3", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[3] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug4", "debug4", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[4] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug5", "debug5", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[5] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug6", "debug6", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[6] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug7", "debug7", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[7] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug0", "debug0", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug1", "debug1", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug2", "debug2", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[2] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug3", "debug3", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[3] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug4", "debug4", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[4] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug5", "debug5", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[5] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug6", "debug6", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[6] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug7", "debug7", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[7] = xtmp.get(j+1).asDouble();
 
     return true;
 }

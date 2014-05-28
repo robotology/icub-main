@@ -2,30 +2,30 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova04" build="1">
-	<device name="head_calibrator" type="icubheadcalibratorV2">
+	<device name="head_calibrator" type="parametricCalibratorEth">
                 <params file="general.xml" />
 
 		<group name="GENERAL">
-		  <param name="Joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
-		    <param name="DeviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
+		  <param name="joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
+		    <param name="deviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
 		<group name="HOME">
 		    <!-- Joint                     0             1             2           	3	           4		     5-->
-            <param name="PositionHome">   -30            0             0             0             0             0             </param>       
-            <param name="VelocityHome">    10            10            10            10            10            10            </param>     
+            <param name="positionHome">   -30            0             0             0             0             0             </param>       
+            <param name="velocityHome">    10            10            10            10            10            10            </param>     
 		</group>
 
 		<group name="CALIBRATION">
 		    <param name="Joints"> 6 </param>  <!-- the number of joints of the robot part -->
 		    <!-- Joint                       0             1             2           -->
-            <param name="CalibrationType">            3             3             3             3             0             0             </param>       
-            <param name="Calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
-            <param name="Calibration2">               10            10            10            10            20            20            </param>       
-            <param name="Calibration3">               1765.4        3280.55       466.375       546           0             0             </param>       
-            <param name="PositionZero">               0             0             0             0             0             0             </param>       
-            <param name="VelocityZero">               10            10            10            10            10            10            </param>       
-            <param name="MaxPwm">                     120           120           120           0             0             0             </param>       
+            <param name="calibrationType">            3             3             3             3             0             0             </param>       
+            <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
+            <param name="calibration2">               10            10            10            10            20            20            </param>       
+            <param name="calibration3">               1765.4        3280.55       466.375       546           0             0             </param>       
+            <param name="positionZero">               0             0             0             0             0             0             </param>       
+            <param name="velocityZero">               10            10            10            10            10            10            </param>       
+            <param name="maxPwm">                     120           120           120           0             0             0             </param>       
             <param name="posZeroThreshold">           2             2             2             2             2             2             </param>   
 		</group>
 
