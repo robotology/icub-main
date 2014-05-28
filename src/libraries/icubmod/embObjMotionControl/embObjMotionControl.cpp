@@ -288,6 +288,8 @@ embObjMotionControl::embObjMotionControl() :
     NVnumber          = 0;
 
     useRawEncoderData = false;
+    _pwmIsLimited     = false;
+
 }
 
 embObjMotionControl::~embObjMotionControl()
@@ -379,12 +381,33 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         {
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
-                yWarning() << "eo MotionControl using raw data from encoders! Be careful. \n" <<
-                              "\t  DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! See 'useRawEncoderData' param in config file";
+            {
+                yWarning() << "embObjBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                getchar();
+            }
         }
     }
 
-//    yWarning() << "useRawEncoderData is " << useRawEncoderData;
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_limitedPWM = config.findGroup("GENERAL").find("useLimitedPWM");
+    if(use_limitedPWM.isNull())
+    {
+        _pwmIsLimited = false;
+    }
+    else
+    {
+        if(!use_limitedPWM.isBool())
+        {
+            _pwmIsLimited = false;
+        }
+        else
+        {
+            _pwmIsLimited = use_limitedPWM.asBool();
+        }
+    }
+
 
     // Saving User Friendly Id
     memset(_fId.name, 0x00, sizeof(_fId.name));
@@ -502,10 +525,10 @@ bool embObjMotionControl::isEpManagedByBoard()
 }
 
 
-bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
-    for(j=0;j<njoints;j++)
+    for(j=0; j<_njoints; j++)
     {
         char tmp[80];
         sprintf(tmp, "Pid%d", j);
@@ -530,10 +553,10 @@ bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njo
     return true;
 }
 
-bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
-    for(j=0;j<njoints;j++)
+    for(j=0; j<_njoints; j++)
     {
         char tmp[80];
         sprintf(tmp, "TPid%d", j);
@@ -557,19 +580,48 @@ bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njo
     }
     return true;
 }
-bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
     Bottle xtmp;
-    xtmp = pidsGroup.findGroup("kp");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("kd");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("ki");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("maxInt");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("maxPwm");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("shift");       if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+
+    //optional PWM limit
+    if(_pwmIsLimited)
+    {   // check for value in the file
+        if (!extractGroup(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
+        {
+            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
+            return false;
+        }
+
+        fprintf(stderr,  "embObjMotionControl using LIMITED PWM!! \n");
+        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    }
+
+    //optional kff
+    xtmp = pidsGroup.findGroup("kff");
+    if (!xtmp.isNull())
+    {
+        if(xtmp.size() != _njoints+1)
+        {
+            printf("Found Pid kff parameter, but with icorrect number of entries, expected %d, got %d\n", _njoints, xtmp.size() -1);
+            return false;
+        }
+        for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+    }
+    else
+    {
+         for (j=0; j<_njoints; j++) myPid[j].kff = 0;
+    }
     return true;
 }
 
@@ -695,7 +747,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         if (posPidsGroup.isNull()==false)
         {
            yDebug()<< "Position Pids section found, new format";
-           if (!parsePidsGroup_NewFormat (posPidsGroup, _njoints, _pids))
+           if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
                yError() << "Position Pids section: error detected in parameters syntax";
                return false;
@@ -711,7 +763,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if (posPidsGroup2.isNull()==false)
             {
                 yDebug() << "Position Pids section found, old format";
-                parsePosPidsGroup_OldFormat (posPidsGroup2, _njoints, _pids);
+                parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
             }
             else
             {
@@ -719,7 +771,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 return false;
             }
         }
-
     }
 
 
@@ -730,7 +781,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         if (trqPidsGroup.isNull()==false)
         {
            yDebug()<<"Torque Pids section found, new format";
-           if (!parsePidsGroup_NewFormat (trqPidsGroup, _njoints, _tpids))
+           if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
                yError() << "Torque Pids section: error detected in parameters syntax";
                return false;
@@ -747,7 +798,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if (trqPidsGroup2.isNull()==false)
             {
                 yDebug() << "Torque Pids section found, old format";
-                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _njoints, _tpids))
+                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
                 {
                      yError() << "Torque Pids section: error detected in parameters syntax";
                      return false;
