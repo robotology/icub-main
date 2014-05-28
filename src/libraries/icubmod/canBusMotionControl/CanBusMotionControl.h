@@ -152,8 +152,8 @@ public:
 
     bool parsePosPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
     bool parseTrqPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
-    bool parsePidsGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
-    bool parseImpedanceGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, ImpedanceParameters vals[]);
+    bool parsePidsGroup_NewFormat(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+    bool parseImpedanceGroup_NewFormat(yarp::os::Bottle& pidsGroup, ImpedanceParameters vals[]);
     bool parseDebugGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, DebugParameters vals[]);
 
     bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
