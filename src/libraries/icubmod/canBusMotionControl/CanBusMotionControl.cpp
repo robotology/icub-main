@@ -3077,12 +3077,12 @@ void CanBusMotionControl::handleBroadcasts()
                         break;
 
                     case CAN_BCAST_ADDITIONAL_STATUS:
-                        r._bcastRecvBuffer[j]._interactionmodeStatus=*((char *)(data+1)) & 0x0F;
+                        r._bcastRecvBuffer[j]._interactionmodeStatus=*((char *)(data)) & 0x0F;
                         r._bcastRecvBuffer[j]._update_e2 = before;
                         j++;
                         if (j < r.getJoints())
                         {
-                            r._bcastRecvBuffer[j]._interactionmodeStatus=(*((char *)(data+1)) >> 4) & 0x0F;
+                            r._bcastRecvBuffer[j]._interactionmodeStatus=(*((char *)(data)) >> 4) & 0x0F;
                             r._bcastRecvBuffer[j]._update_e2 = before;
                         }
                         break;
@@ -6706,7 +6706,7 @@ bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::Interaction
     _mutex.wait();
 
     temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
-    *mode=(yarp::dev::InteractionModeEnum)from_modeint_to_modevocab(temp);
+    *mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
     
     _mutex.post();
     return true;
@@ -6729,7 +6729,7 @@ bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._interactionmodeStatus);
-        modes[i]=(yarp::dev::InteractionModeEnum)from_modeint_to_modevocab(temp);
+        modes[i]=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
     }
     _mutex.post();
     return false;
