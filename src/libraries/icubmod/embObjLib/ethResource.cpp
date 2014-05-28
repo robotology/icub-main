@@ -374,25 +374,42 @@ bool ethResources::clearPerSigMsg(void)
 {
     yTrace() << info;
 
-    // Configure values to be sent regularly
-    eOmn_ropsigcfg_command_t  ropsigcfgassign;
-    EOarray                   *array;                     // array containing nvids to be signalled
+// remove values to be sent regularly
 
-    //get nvid
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
-    //prepare data
-    //ropsigcfgassign.array.head.capacity = NUMOFROPSIGCFG;
-    //ropsigcfgassign.array.head.itemsize = sizeof(eOropSIGcfg_t);
-    //ropsigcfgassign.array.head.size = 0;
-    array = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign.array);    // it uses the memory ropsigcfgassign.array and resets the array
-    ropsigcfgassign.cmmnd       = ropsigcfg_cmd_clear;
-    ropsigcfgassign.plustime    = 0;
-    ropsigcfgassign.plussign    = 0;
-    ropsigcfgassign.filler01    = 0;
-    ropsigcfgassign.signature   = eo_rop_SIGNATUREdummy;
 
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
+
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
+
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_clear;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;   
+
+#else
+
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_clear;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;       
+
+#endif     
+
+
+ 
     //send set command
-    if(!addSetMessage(protid_ropsigcfgassign, (uint8_t*) &ropsigcfgassign))
+    if(!addSetMessage(IDcmdconfig, (uint8_t*) &cmdconfig))
     {
         yError() << "in clearing periodic signal msg";
         return false;

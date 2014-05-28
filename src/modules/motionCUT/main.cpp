@@ -115,11 +115,10 @@ YARP libraries and OpenCV
   which if a node gets active it is kept on.
  
 --cropSize \e d 
-- If \e d is positive, it allows keeping fixed the size of a 
-  squared cropping window around the center of the largest blob
-  detected. The value specifies the side of the square. By
-  default, \e d is "auto", meaning that the cropping windows
-  will adapt to the size of the blob.
+- If \e d is a positive integer, it specifies the side of a 
+  squared cropping window placed on the center of the largest
+  blob detected. By default, \e d is "auto", meaning that the
+  cropping window will adapt to the size of the blob.
 
 --numThreads \e threads
 - This parameter allows controlling the maximum number of 

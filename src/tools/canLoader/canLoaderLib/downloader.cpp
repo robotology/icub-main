@@ -14,6 +14,9 @@
 #include <stdlib.h> //added for abs
 #include <string.h>
 
+#include <canProtocolLib/iCubCanProtocol.h>
+#include <canProtocolLib/iCubCanProto_types.h>
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace std;
@@ -64,7 +67,7 @@ int axtoi(char *hexStg)
 
 int cDownloader::build_id(int source, int dest)
 {
-    return (ID_CMD << 8) + ( source << 4) + dest;
+    return (ICUBCANPROTO_CLASS_BOOTLOADER << 8) + ( source << 4) + dest;
 }
 
 int cDownloader::get_src_from_id (int id)
@@ -1019,7 +1022,7 @@ int cDownloader::get_serial_no       (int target_id, char* serial_no)
     for (i=0; i<board_list_size; i++)
     {
         if (board_list[i].pid==target_id &&
-            board_list[i].type==BOARD_TYPE_STRAIN)
+            board_list[i].type==icubCanProto_boardType__strain)
         {
             this->strain_get_serial_number(target_id,serial_no);
         }
@@ -1049,7 +1052,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
     // Send command
     txBuffer[0].setId(build_id(ID_MASTER, target_id));
     txBuffer[0].setLen(1);
-    txBuffer[0].getData()[0]= CAN_GET_ADDITIONAL_INFO;
+    txBuffer[0].getData()[0]= ICUBCANPROTO_BL_GET_ADDITIONAL_INFO;
     int ret = m_candriver->send_message(txBuffer, 1);
 //    ret=0;
     // check if send_message was successful
@@ -1077,7 +1080,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
         {
 
 #if 0
-            if (rxBuffer[i].getData()[0]==CAN_GET_ADDITIONAL_INFO)
+            if (rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_GET_ADDITIONAL_INFO)
                 {
                     fprintf(stderr, "%.4x ", rxBuffer[i].getId());
                     fprintf(stderr, "%.2x ", rxBuffer[i].getData()[0]);
@@ -1091,7 +1094,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
                 }
 #endif
 
-            if (rxBuffer[i].getData()[0]==CAN_GET_ADDITIONAL_INFO && rxBuffer[i].getLen()==6)
+            if (rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_GET_ADDITIONAL_INFO && rxBuffer[i].getLen()==6)
                 {
                     int part = rxBuffer[i].getData()[1];
                     for (j = 0; j< 4; j++)
@@ -1130,7 +1133,7 @@ int cDownloader::change_board_info(int target_id, char* board_info)
             //do {}
             //while (CAN1_getStateTX () == 0) ;
             {
-                txBuffer[0].getData()[0]= CAN_SET_ADDITIONAL_INFO;
+                txBuffer[0].getData()[0]= ICUBCANPROTO_BL_SET_ADDITIONAL_INFO;
                 txBuffer[0].getData()[1]= counter;
                 txBuffer[0].setId(build_id(ID_MASTER, target_id));
                 txBuffer[0].setLen(6);
@@ -1170,26 +1173,26 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
 
     switch (board_type)
     {
-        case BOARD_TYPE_STRAIN:
-        case BOARD_TYPE_SKIN:
-        case BOARD_TYPE_MAIS:
-        case BOARD_TYPE_6SG:
+        case icubCanProto_boardType__strain:
+        case icubCanProto_boardType__skin:
+        case icubCanProto_boardType__mais:
+        case icubCanProto_boardType__6sg:
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
-            txBuffer[0].getData()[0]= CAN_SET_BOARD_ID;
+            txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
             txBuffer[0].getData()[1]= new_id;
         break;
 
-        case BOARD_TYPE_DSP:
-        case BOARD_TYPE_PIC:
-        case BOARD_TYPE_2DC:
-        case BOARD_TYPE_4DC:
-        case BOARD_TYPE_BLL:
-        case BOARD_TYPE_2FOC:
-        case BOARD_TYPE_JOG:
+        case icubCanProto_boardType__dsp:
+        case icubCanProto_boardType__pic:
+        case icubCanProto_boardType__2dc:
+        case icubCanProto_boardType__4dc:
+        case icubCanProto_boardType__bll:
+        case icubCanProto_boardType__2foc:
+        case icubCanProto_boardType__jog:
             txBuffer[0].setId((ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
-            txBuffer[0].getData()[0]= CAN_SET_BOARD_ID;
+            txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
             txBuffer[0].getData()[1]= new_id;
         break;
 
@@ -1230,7 +1233,7 @@ int cDownloader::initschede()
     // Send command
     txBuffer[0].setId(build_id(ID_MASTER,ID_BROADCAST));
     txBuffer[0].setLen(1);
-    txBuffer[0].getData()[0]= CMD_BROADCAST;
+    txBuffer[0].getData()[0]= ICUBCANPROTO_BL_BROADCAST;
     int ret = m_candriver->send_message(txBuffer, 1);
 
     // check if send_message was successful
@@ -1274,7 +1277,7 @@ int cDownloader::initschede()
                     fprintf(stderr, "%.2x\n", rxBuffer[i].getData()[7]);
 #endif
                     ////////////////
-                    if ((rxBuffer[i].getData()[0]==CMD_BROADCAST) &&
+                    if ((rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_BROADCAST) &&
                         ((rxBuffer[i].getLen()==4)||(rxBuffer[i].getLen()==5)))
                         board_list_size++;
                 }
@@ -1306,7 +1309,7 @@ int cDownloader::initschede()
     int j = 0;
     for (i=0; i<read_messages; i++)
         {
-            if ((rxBuffer[i].getData()[0]==CMD_BROADCAST) &&
+            if ((rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_BROADCAST) &&
                 ((rxBuffer[i].getLen()==4)||(rxBuffer[i].getLen()==5)))   //old board firmware (backward compatibility)
                 {
                     board_list[j].pid     = (rxBuffer[i].getId() >> 4) & 0x0F;
@@ -1368,34 +1371,34 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
 
     switch (board_type)
     {
-    case BOARD_TYPE_DSP:
-    case BOARD_TYPE_PIC:
-    case BOARD_TYPE_2DC:
-    case BOARD_TYPE_4DC:
-    case BOARD_TYPE_BLL:
+    case icubCanProto_boardType__dsp:
+    case icubCanProto_boardType__pic:
+    case icubCanProto_boardType__2dc:
+    case icubCanProto_boardType__4dc:
+    case icubCanProto_boardType__bll:
         {
         // Send command
         txBuffer[0].setId(build_id(ID_MASTER,board_pid));
         txBuffer[0].setLen(1);
-        txBuffer[0].getData()[0]= CMD_BOARD;
+        txBuffer[0].getData()[0]= ICUBCANPROTO_BL_BOARD;
 
         //makes the first jump
         m_candriver->send_message(txBuffer, 1);
         drv_sleep(250);
         }
         break;
-    case BOARD_TYPE_SKIN:
-    case BOARD_TYPE_STRAIN:
-    case BOARD_TYPE_MAIS:
-    case BOARD_TYPE_2FOC:
-    case BOARD_TYPE_6SG:
-    case BOARD_TYPE_JOG:
-    case BOARD_UNKNOWN:
+    case icubCanProto_boardType__skin:
+    case icubCanProto_boardType__strain:
+    case icubCanProto_boardType__mais:
+    case icubCanProto_boardType__2foc:
+    case icubCanProto_boardType__6sg:
+    case icubCanProto_boardType__jog:
+    case icubCanProto_boardType__unknown:
         {
         // Send command
         txBuffer[0].setId(build_id(ID_MASTER,board_pid));
         txBuffer[0].setLen(2);
-        txBuffer[0].getData()[0]= CMD_BOARD;
+        txBuffer[0].getData()[0]= ICUBCANPROTO_BL_BOARD;
         txBuffer[0].getData()[1]= (int) board_eeprom;
 
         //makes the first jump
@@ -1423,9 +1426,9 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
     //One (or more) answers received
     for (int i=0; i<read_messages; i++)
         {
-            if (rxBuffer[i].getData()[0]==CMD_BOARD &&
+            if (rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_BOARD &&
                 (((rxBuffer[i].getId() >> 4) & 0x0F) == board_pid) &&
-                (((rxBuffer[i].getId() >> 8) & 0x07) == ID_CMD))
+                (((rxBuffer[i].getId() >> 8) & 0x07) == ICUBCANPROTO_CLASS_BOOTLOADER))
                 {
                     //received ACK from board
                     //printf ("START_CMD: ACK received from board: %d\n", board_pid);
@@ -1454,7 +1457,7 @@ int cDownloader::stopscheda(int board_pid)
     // Send command
     txBuffer[0].setId(build_id(ID_MASTER,board_pid));
     txBuffer[0].setLen(1);
-    txBuffer[0].getData()[0]= CMD_END;
+    txBuffer[0].getData()[0]= ICUBCANPROTO_BL_END;
     int ret = m_candriver->send_message(txBuffer, 1);
 
     // check if send_message was successful
@@ -1473,9 +1476,9 @@ int cDownloader::stopscheda(int board_pid)
     //One (or more) answers received
     for (int i=0; i<read_messages; i++)
         {
-            if (rxBuffer[i].getData()[0]==CMD_END &&
+            if (rxBuffer[i].getData()[0]==ICUBCANPROTO_BL_END &&
                 (((rxBuffer[i].getId() >> 4) & 0x0F) == board_pid || board_pid == 15 ) &&
-                (((rxBuffer[i].getId() >> 8) & 0x07) == ID_CMD))
+                (((rxBuffer[i].getId() >> 8) & 0x07) == ICUBCANPROTO_CLASS_BOOTLOADER))
                 {
                     //received ACK from board
                     //printf ("STOP_CMD: ACK received from board: %d\n", board_pid);
@@ -1631,7 +1634,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
             //state: SEND
             txBuffer[0].setId(build_id(ID_MASTER,board_pid));
             txBuffer[0].setLen(5);
-            txBuffer[0].getData()[0]= CMD_ADDRESS;
+            txBuffer[0].getData()[0]= ICUBCANPROTO_BL_ADDRESS;
             txBuffer[0].getData()[1]= sprsLength;
             txBuffer[0].getData()[2]= (unsigned char) ((sprsAddress) & 0x00FF);
             txBuffer[0].getData()[3]= (unsigned char) ((sprsAddress>>8) & 0x00FF);
@@ -1665,7 +1668,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
 
             for (j=1; j<= tmp; j++)
                 {
-                    txBuffer[0].getData()[0]=CMD_DATA;
+                    txBuffer[0].getData()[0]=ICUBCANPROTO_BL_DATA;
                     if (j<tmp) txBuffer[0].setLen(7);
                     else txBuffer[0].setLen(rest+1);
 
@@ -1698,7 +1701,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
             read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards);
             // fprintf(stderr, "%u\n", read_messages);
             //   fprintf(stderr, "Skipping ack\n");
-            //return verify_ack(CMD_DATA, rxBuffer, read_messages);
+            //return verify_ack(ICUBCANPROTO_BL_DATA, rxBuffer, read_messages);
             return 0;
             break;
         case SPRS_TYPE_7:
@@ -1706,7 +1709,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
             //state: SEND
             txBuffer[0].setId(build_id(ID_MASTER,board_pid));
             txBuffer[0].setLen(5);
-            txBuffer[0].getData()[0]= CMD_START;
+            txBuffer[0].getData()[0]= ICUBCANPROTO_BL_START;
             txBuffer[0].getData()[4]= getvalue(line+i,2); i+=2;
             txBuffer[0].getData()[3]= getvalue(line+i,2); i+=2;
             txBuffer[0].getData()[2]= getvalue(line+i,2); i+=2;
@@ -1727,7 +1730,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
 
             // riceve la risposta
             read_messages = m_candriver->receive_message(rxBuffer);
-            verify_ack(CMD_START, rxBuffer, read_messages);
+            verify_ack(ICUBCANPROTO_BL_START, rxBuffer, read_messages);
             return 0;
 
             break;
@@ -1856,7 +1859,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
                         //SEND
                         txBuffer[0].setId(build_id(ID_MASTER,board_pid));
                         txBuffer[0].setLen(7);
-                        txBuffer[0].getData()[0]= CMD_ADDRESS;
+                        txBuffer[0].getData()[0]= ICUBCANPROTO_BL_ADDRESS;
                         txBuffer[0].getData()[1]= sprsLength;
                         txBuffer[0].getData()[2]= (unsigned char) ((sprsAddress) & 0x00FF);
                         txBuffer[0].getData()[3]= (unsigned char) ((sprsAddress>>8) & 0x00FF);
@@ -1892,7 +1895,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 
                     for (j=1; j<= tmp; j++)
                     {
-                        txBuffer[0].getData()[0]=CMD_DATA;
+                        txBuffer[0].getData()[0]=ICUBCANPROTO_BL_DATA;
                         if (j<tmp) txBuffer[0].setLen(7);
                         else txBuffer[0].setLen(rest+1);
 
@@ -1915,7 +1918,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
                     }
                     //receive one ack for the whole line
                     read_messages = m_candriver->receive_message(rxBuffer,nSelectedBoards, 10);
-                    ret=verify_ack(CMD_DATA, rxBuffer, read_messages);
+                    ret=verify_ack(ICUBCANPROTO_BL_DATA, rxBuffer, read_messages);
                     //DEBUG
 
     //                return 0;
@@ -1927,7 +1930,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
                     //SEND
                     txBuffer[0].setId(build_id(ID_MASTER,board_pid));
                     txBuffer[0].setLen(5);
-                    txBuffer[0].getData()[0]= CMD_START;
+                    txBuffer[0].getData()[0]= ICUBCANPROTO_BL_START;
                     txBuffer[0].getData()[1]= 0;
                     txBuffer[0].getData()[2]= 0;
                     txBuffer[0].getData()[3]= 0;
@@ -1945,7 +1948,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
                     drv_sleep(5);
                     //receive the ack from the board
                     read_messages = m_candriver->receive_message(rxBuffer);
-                    ret=verify_ack(CMD_START, rxBuffer, read_messages);
+                    ret=verify_ack(ICUBCANPROTO_BL_START, rxBuffer, read_messages);
                     //DEBUG
                     //return 0;
                     return ret;
@@ -2039,23 +2042,23 @@ int cDownloader::download_file(int board_pid, int download_type, bool board_eepr
                 {
                     switch (download_type)
                     {
-                        case BOARD_TYPE_DSP:
-                        case BOARD_TYPE_2DC:
-                        case BOARD_TYPE_4DC:
-                        case BOARD_TYPE_BLL:
+                        case icubCanProto_boardType__dsp:
+                        case icubCanProto_boardType__2dc:
+                        case icubCanProto_boardType__4dc:
+                        case icubCanProto_boardType__bll:
                              ret = download_motorola_line(buffer, strlen(buffer), board_pid);
                         break;
-                        case BOARD_TYPE_PIC:
-                        case BOARD_TYPE_SKIN:
-                        case BOARD_TYPE_STRAIN:
-                        case BOARD_TYPE_MAIS:
-                        case BOARD_TYPE_2FOC:
-                        case BOARD_TYPE_JOG:
-                        case BOARD_TYPE_6SG:
+                        case icubCanProto_boardType__pic:
+                        case icubCanProto_boardType__skin:
+                        case icubCanProto_boardType__strain:
+                        case icubCanProto_boardType__mais:
+                        case icubCanProto_boardType__2foc:
+                        case icubCanProto_boardType__jog:
+                        case icubCanProto_boardType__6sg:
                              ret = download_hexintel_line(buffer, strlen(buffer), board_pid, board_eeprom, download_type);
 
                         break;
-                        case BOARD_UNKNOWN:
+                        case icubCanProto_boardType__unknown:
                         default:
                              ret =-1;
                         break;

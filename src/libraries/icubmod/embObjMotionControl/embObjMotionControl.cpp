@@ -948,21 +948,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
 bool embObjMotionControl::init()
 {
-    eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
-    EOarray                     *array;
-    eOropSIGcfg_t               sigcfg;
+
     int                         old = 0;
     eOprotID32_t                protid;
 
-#ifdef _SETPOINT_TEST_
-    eoy_sys_Initialise(NULL, NULL, NULL);
-    int j, i;
-    //init mutex
-    for(j=0, i =0; j<  _njoints; j++, i++)
-    {
-        j_debug_data[i].mutex = Semaphore(1);
-    }
-#endif
 
 
 
@@ -1003,43 +992,38 @@ bool embObjMotionControl::init()
     //    fortunately the struct eOmn_ropsigcfg_command_t has field array as its first. thus the two pointers are the same.
     // the correct method is to build a struct eOmn_ropsigcfg_command_t, initialise it properly and then pass it to the function.    
 
-    #define NEWMODE
-    
-    #if     defined(NEWMODE)
-    
-    
-    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
-    
-    ropsigcfgassign = &theropsigcfgassigncommand;    
-    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it. 
-    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-    ropsigcfgassign->plustime   = 0;
-    ropsigcfgassign->plussign   = 0;
-    ropsigcfgassign->filler01   = 0;
-    ropsigcfgassign->signature  = 0;
-    
-    // ok, now we can fill array
-    
-    #else
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+#define NEWMODE
 
 
-    EOnv *nvRoot_ropsigcfgassign;
-    EOnv nv_ropsigcfgassign;
-    nvRoot_ropsigcfgassign = res->getNVhandler(protid_ropsigcfgassign, &nv_ropsigcfgassign);
 
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
 
-    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) nvRoot_ropsigcfgassign->ram;
-    array = (EOarray*) &ropsigcfgassign->array;
-    eo_array_Reset(array);
-    array->head.capacity = NUMOFROPSIGCFG;
-    array->head.itemsize = sizeof(eOropSIGcfg_t);
-    ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
 
-    #endif
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
+
+#else
+
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;       
+
+#endif    
 
 
 
@@ -1117,7 +1101,7 @@ bool embObjMotionControl::init()
             // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (21) value. If more are needed, send another package,
             // so wait some time to let ethManager send this package and then start again.
             // yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
-            if(!res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign)) // marco.accame: instead of ropsigcfgassign there was array
+            if(!res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig)) // marco.accame: instead of ropsigcfgassign there was array
             {
                 yError() << "while setting rop sig cfg";
             }
@@ -1132,7 +1116,7 @@ bool embObjMotionControl::init()
 #if     defined(NEWMODE)   
     if(0 != eo_array_Size(array))
     {   // there are still ropsigcfg to send
-        if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+        if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
         {
             yError() << "while setting rop sig cfg";
         }    
