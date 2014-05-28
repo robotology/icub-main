@@ -2,7 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova04" build="1">
-	<device name="right_leg_calibrator" type="parametricCalibrator">
+	<device name="right_leg_calibrator" type="parametricCalibratorEth">
                 <params file="general.xml" />
                 
 		<group name="GENERAL">
