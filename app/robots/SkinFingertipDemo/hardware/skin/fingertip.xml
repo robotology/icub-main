@@ -1,0 +1,26 @@
+<devices robot="SkinFingertipDemo">
+    <device name="fingertip" type="canBusSkin">
+        <param name="canbusDevice"> "socketcan" </param>
+        <param name="physDevice"> "socketcan" </param>
+        <param name="canDeviceNum"> 0 </param>
+        <param name="skinCanIds"> 14 </param>
+        <param name="period"> 10 </param>
+
+        <!-- 4C Message is the CMD_TACT_SETUP initialisation message. 
+             It is sent to all boards. -->
+        <param name="4C_Timer">         0x03 </param>
+        <param name="4C_CDCOffsetL">    0x00 </param>
+        <param name="4C_CDCOffsetH">    0x20 </param>
+        <param name="4C_TimeL">         0x00 </param>
+        <param name="4C_TimeH">         0x35 </param>
+
+        <!-- 4E Message is the CMD_TACT_SETUP2 initialisation message. 
+             So far it is sent only to the hand board (14) to double the gain for the new (V2) fingertips. -->
+        <param name="4E_Shift">     0x00 </param>
+        <param name="4E_Shift3_1">  0x22 </param>
+        <param name="4E_NoLoad">    0xF0 </param>
+        <param name="4E_Param">     0x00 </param>
+        <param name="4E_EnaL">      0xFF </param>
+        <param name="4E_EnaH">      0xFF </param>
+    </device>  
+</devices>
