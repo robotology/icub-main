@@ -63,7 +63,6 @@ static void wake(const EOnv* nv)
 
 extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#warning "compiling strong status basic"
     eOprotIndex_t xx = eoprot_ID2index(rd->id32);
     
     if(eo_ropcode_say == rd->ropcode)
