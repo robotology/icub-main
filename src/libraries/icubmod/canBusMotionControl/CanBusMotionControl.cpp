@@ -1093,18 +1093,10 @@ bool CanBusMotionControlParameters::parseImpedanceGroup_NewFormat(Bottle& pidsGr
     return true;
 }
 
-bool CanBusMotionControlParameters::parseDebugGroup_NewFormat(Bottle& pidsGroup, int nj, DebugParameters vals[])
+bool CanBusMotionControlParameters::parseDebugGroup_NewFormat(Bottle& pidsGroup, DebugParameters vals[])
 {
     int j=0;
     Bottle xtmp;
-    xtmp = pidsGroup.findGroup("debug0"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug1"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug2"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[2] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug3"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[3] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug4"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[4] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug5"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[5] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug6"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[6] = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("debug7"); if (xtmp.isNull()) return false; for (j=0;j<nj;j++) vals[j].data[7] = xtmp.get(j+1).asDouble();
 
     if (!validate(pidsGroup, xtmp, "debug0", "debug0", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "debug1", "debug1", _njoints))       return false; for (j=0; j<_njoints; j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
@@ -1394,7 +1386,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         if (debugGroup.isNull()==false)
         {
            printf("DEBUG parameters section found\n");
-           if (!parseDebugGroup_NewFormat (debugGroup, nj, _debug_params))
+           if (!parseDebugGroup_NewFormat (debugGroup, _debug_params))
            {
                printf("DEBUG section: error detected in parameters syntax\n");
                return false;
