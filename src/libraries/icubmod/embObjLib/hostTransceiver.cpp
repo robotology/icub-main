@@ -403,8 +403,9 @@ bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
     }
     // protection on reading data by yarp
     transMutex.wait();
-    getNVvalue(nv_ptr, data, size);
+    bool ret = getNVvalue(nv_ptr, data, size);
     transMutex.post();
+
     return true;
 }
 
@@ -694,6 +695,13 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.tag)           eoprot_tag_mc_joint_config_limitsofjoint,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_limitsofjoint
+        },
+        {   // joint_status_interactionmodestatus
+            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
+            EO_INIT(.entity)        eoprot_entity_mc_joint,
+            EO_INIT(.tag)           eoprot_tag_mc_joint_status_interactionmodestatus,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_interactionmodestatus
         },
         // motor
         {   // motor_config

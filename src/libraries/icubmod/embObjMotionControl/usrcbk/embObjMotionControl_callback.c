@@ -63,10 +63,26 @@ static void wake(const EOnv* nv)
 
 extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+#warning "compiling strong status basic"
     eOprotIndex_t xx = eoprot_ID2index(rd->id32);
     
+    if(eo_ropcode_say == rd->ropcode)
+    {
+        // This is an answer to a specific question, so wake up someone!
+        wake(nv);
+    }
+
+    // callback - do the update anyway, both if broadcasted and if reply:
+    FEAT_ID id;
+    id.ep = eo_nv_GetEP8(nv);
+    id.type = MotionControl;
+    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
+    int jointNum = (int) xx;
+    addEncoderTimeStamp(&id, jointNum);
+
+
     // debug:
-#define _debug_jstatus_basic_
+#undef _debug_jstatus_basic_
 #ifdef _debug_jstatus_basic_
     static int i = 0;
     static uint8_t print = 0;
@@ -85,7 +101,7 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
         print = 1;
     }
 
-  //  if(print)
+    if(print)
     {
         eOmc_joint_status_basic_t *jstatus_b = (eOmc_joint_status_basic_t*)rd->data;
         printf("\njstatus__basic for Joint num = %d\n", xx);
@@ -98,15 +114,6 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
         printf("jstatus_b->velocity = 0x%X\n", jstatus_b->velocity);
     }
 #endif
-
-
-    // callback:
-    FEAT_ID id;
-    id.ep = eo_nv_GetEP8(nv);
-    id.type = MotionControl;
-    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
-    int jointNum = (int) xx;
-    addEncoderTimeStamp(&id, jointNum);
 }
 
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
@@ -258,6 +265,17 @@ extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOro
 {
     wake(nv);
 }
+
+
+extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_say == rd->ropcode)
+    {
+        // This is an answer to a specific question, so wake up someone!
+        wake(nv);
+    }
+}
+
 
 // eof
 
