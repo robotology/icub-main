@@ -1075,10 +1075,10 @@ protected:
     speedEstimationHelper *_speedEstimationHelper;
     axisPositionDirectHelper  *_axisPositionDirectHelper;
 
-    inline int from_modevocab_to_modeint (int modevocab);
-    inline int from_modeint_to_modevocab (int modeint);
-    inline int from_interactionvocab_to_interactionint (int interactionvocab);
-    inline int from_interactionint_to_interactionvocab (int interactionint);
+    inline unsigned char from_modevocab_to_modeint (int modevocab);
+    inline int from_modeint_to_modevocab (unsigned char modeint);
+    inline unsigned char from_interactionvocab_to_interactionint (int interactionvocab);
+    inline int from_interactionint_to_interactionvocab (unsigned char interactionint);
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.

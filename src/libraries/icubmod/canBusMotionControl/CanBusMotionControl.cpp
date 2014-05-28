@@ -195,11 +195,11 @@ public:
     short _axisStatus;
     char  _canStatus;
     char  _boardStatus;
-    char  _controlmodeStatus;
+    unsigned char _controlmodeStatus;
     double _update_e;
 
     // msg 3b
-    char  _interactionmodeStatus;
+    unsigned char _interactionmodeStatus;
     double _update_e2;
 
     // msg 4
@@ -3610,7 +3610,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
 
 //---------------------------------------------------------
 
-int CanBusMotionControl::from_interactionvocab_to_interactionint (int interactionvocab)
+unsigned char  CanBusMotionControl::from_interactionvocab_to_interactionint (int interactionvocab)
 {
     switch (interactionvocab)
     {
@@ -3627,7 +3627,7 @@ int CanBusMotionControl::from_interactionvocab_to_interactionint (int interactio
     }
 }
 
-int CanBusMotionControl::from_interactionint_to_interactionvocab (int interactionint)
+int CanBusMotionControl::from_interactionint_to_interactionvocab (unsigned char interactionint)
 {
     switch (interactionint)
     {
@@ -3645,7 +3645,7 @@ int CanBusMotionControl::from_interactionint_to_interactionvocab (int interactio
 }
 
 
-int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
+unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
 {
     switch (modevocab)
     {
@@ -3687,7 +3687,7 @@ int CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
     }
 }
 
-int CanBusMotionControl::from_modeint_to_modevocab (int modeint)
+int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
 {
     switch (modeint)
     {
