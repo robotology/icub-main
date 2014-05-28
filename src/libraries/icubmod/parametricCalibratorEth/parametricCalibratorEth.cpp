@@ -479,6 +479,8 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
                 type[*lit] != 2 &&
                 type[*lit] != 4 )
             {
+                iAmps->enableAmp((*lit));
+                iPids->enablePid((*lit));
                 iControlMode->setPositionMode((*lit));
             }
         }
