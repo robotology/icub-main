@@ -2712,9 +2712,9 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
     return ret;
 }
 
-bool embObjMotionControl::updateMeasure(int j, double &fTorque)
+bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorque)
 {
-
+    int j = _axisMap[userLevel_jointNumber];
 	double NEWTON2SCALE=32767.0/_maxTorque[j];
 
 	eOmeas_torque_t meas_torque = 0;
@@ -2755,7 +2755,7 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-    double NEWTON2SCALE=32768.0/_maxTorque[j];
+    double NEWTON2SCALE=32767.0/_maxTorque[j];
     eOmeas_torque_t meas_torque;
     uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
