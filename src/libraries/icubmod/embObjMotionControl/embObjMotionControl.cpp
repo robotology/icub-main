@@ -2454,16 +2454,14 @@ bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
     bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
     ret = setControlModeRaw(j, VOCAB_CM_POSITION) && ret;
-
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    return ret;
 }
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
     bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
     ret = setControlModeRaw(j, VOCAB_CM_VELOCITY) && ret;
-
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    return ret;
 }
 
 bool embObjMotionControl::setOpenLoopModeRaw(int j)
