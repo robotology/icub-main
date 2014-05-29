@@ -1125,7 +1125,7 @@ bool embObjMotionControl::init()
             break;
         }
 
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eOmc_motor_status_basic_t);
         //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
 
         if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
@@ -2570,10 +2570,46 @@ bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double
 bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { }
 bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         { }
 bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        { }
-bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)        { }
-bool embObjMotionControl::getRotorPositionsRaw        (double* value)               { }
-bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)        { }
-bool embObjMotionControl::getRotorSpeedsRaw           (double* value)               { }
+
+bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+    uint16_t size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+
+    *value = (double) tmpMotorStatus.position;
+    return true;
+}
+
+bool embObjMotionControl::getRotorPositionsRaw        (double* value)
+{
+    bool ret = true;
+    for(int j=0; j< _joints; j++)
+        ret = getRotorPositionRaw(j, &value[j]) && ret;
+
+    return ret;
+}
+
+bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+    uint16_t size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+
+    *value = (double) tmpMotorStatus.velocity;
+    return true;
+}
+
+bool embObjMotionControl::getRotorSpeedsRaw           (double* value)
+{
+    bool ret = true;
+     for(int j=0; j< _joints; j++)
+         ret = getRotorSpeedRaw(j, &value[j]) && ret;
+
+     return ret;
+}
 bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { }
 bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { }
 bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { }
