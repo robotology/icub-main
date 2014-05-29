@@ -2448,22 +2448,21 @@ bool embObjMotionControl::setTorqueModeRaw(int j)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
 
     return res->addSetMessage(protid, (uint8_t*) &val);
-
 }
 
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
-    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_pos;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
+    bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
+    ret = setControlModeRaw(j, VOCAB_CM_POSITION) && ret;
 
     return res->addSetMessage(protid, (uint8_t*) &val);
 }
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_vel;
+    bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
+    ret = setControlModeRaw(j, VOCAB_CM_VELOCITY) && ret;
 
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
     return res->addSetMessage(protid, (uint8_t*) &val);
 }
 
