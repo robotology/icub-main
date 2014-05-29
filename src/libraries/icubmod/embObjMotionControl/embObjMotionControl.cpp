@@ -1125,7 +1125,7 @@ bool embObjMotionControl::init()
             break;
         }
 
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eOmc_motor_status_basic_t);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
         //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
 
         if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
