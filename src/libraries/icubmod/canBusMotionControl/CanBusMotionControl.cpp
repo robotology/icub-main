@@ -3794,11 +3794,11 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     {
         enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
         enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        
-        int v = from_modevocab_to_modeint(mode);
-        if (v==MODE_UNKNOWN_ERROR) return false;
-        _writeByte8(CAN_SET_CONTROL_MODE,j,v);
     }
+
+    int v = from_modevocab_to_modeint(mode);
+    if (v==MODE_UNKNOWN_ERROR) return false;
+    _writeByte8(CAN_SET_CONTROL_MODE,j,v);
 
     return true;
 }
@@ -3820,15 +3820,14 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
             disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
             disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
         }
-    else
+        else
         {
             enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
             enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            
-            int v = from_modevocab_to_modeint(modes[i]);
-            if (v==MODE_UNKNOWN_ERROR) return false;
-            _writeByte8(CAN_SET_CONTROL_MODE,i,v);
         }
+        int v = from_modevocab_to_modeint(modes[i]);
+        if (v==MODE_UNKNOWN_ERROR) return false;
+        _writeByte8(CAN_SET_CONTROL_MODE,i,v);
     }
 
     return true;
