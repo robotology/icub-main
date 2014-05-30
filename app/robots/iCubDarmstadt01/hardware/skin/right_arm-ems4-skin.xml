@@ -11,5 +11,6 @@
             <param name="patchesIdList"> 2  </param>
             <param name="skinCanAddrsPatch2"> 14 13 12 11 10 9 8 7 </param> 
       </group>
+      <params file="hardware/skin/right_arm-ems4-skinSpec.xml" />
   </device>  
 </devices>

@@ -6,6 +6,8 @@ PREPARE_DEVICE(canBusVirtualAnalogSensor TYPE CanBusVirtualAnalogSensor INCLUDE 
 
 if (NOT SKIP_canBusVirtualAnalogSensor)
 
+if(ICUB_HAS_icub_firmware_shared)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ${YARP_INCLUDE_DIRS})
 
@@ -13,5 +15,14 @@ yarp_add_plugin(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirt
 target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})
 
 icub_export_library(canBusVirtualAnalogSensor)
+
+else(ICUB_HAS_icub_firmware_shared)
+  message(ERROR " canBusVirtualAnalogSensor: cannot find icub_firmware_shared library, turn off device
+  embObj library can now be found in the icub-firmware-shared package that
+  can be downloaded from here:
+  .
+       https://github.com/robotology/icub-firmware-shared
+  .    ")
+endif(ICUB_HAS_icub_firmware_shared)
 
 endif (NOT SKIP_canBusVirtualAnalogSensor)
