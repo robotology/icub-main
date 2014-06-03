@@ -179,10 +179,10 @@ bool DebugInterfaceWrapper::openDeferredAttach(Property& prop)
             return false;
         }
 
-        for(int j = wBase; j <= wTop; j++)
+        for(int wj = wBase, devj=base_device; wj <= wTop; wj++, devj++)
         {
-            device.lut[j].deviceEntry = k;
-            device.lut[j].deviceJoint = base_device + j;
+            device.lut[wj].deviceEntry = k;
+            device.lut[wj].deviceJoint = devj;
         }
 
         totalJ += axes;
