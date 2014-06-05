@@ -434,16 +434,10 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
                 }
 
                 Matrix K=eye(3,3);
-                Matrix Pi=zeros(3,4);
-
                 K(0,0)=fx; K(1,1)=fy;
-                K(0,2)=cx; K(1,2)=cy; 
-                
-                Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
+                K(0,2)=cx; K(1,2)=cy;
 
-                *Prj=new Matrix;
-                **Prj=K*Pi;
-
+                *Prj=new Matrix(K*eye(3,4));
                 return true;
             }
         }
