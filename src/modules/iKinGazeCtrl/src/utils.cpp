@@ -433,11 +433,11 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
                     printf("cy = %g\n",cy);
                 }
 
-                Matrix K=eye(3,3);
+                Matrix K=eye(3,4);
                 K(0,0)=fx; K(1,1)=fy;
                 K(0,2)=cx; K(1,2)=cy;
 
-                *Prj=new Matrix(K*eye(3,4));
+                *Prj=new Matrix(K);
                 return true;
             }
         }
