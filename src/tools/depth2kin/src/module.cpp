@@ -917,15 +917,11 @@ bool CalibModule::configure(ResourceFinder &rf)
 
     if (test>=0)
     {
-        Matrix K=eye(3,3);
+        Matrix K=eye(3,4);
         K(0,0)=257.34; K(1,1)=257.34;
         K(0,2)=160.0;  K(1,2)=120.0; 
 
-        Matrix Pi=zeros(3,4);
-        Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
-
-        alignerL.setProjection(K*Pi);
-
+        alignerL.setProjection(K);
         return true;
     }
 
