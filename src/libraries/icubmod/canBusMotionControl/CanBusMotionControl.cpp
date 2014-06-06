@@ -3076,7 +3076,7 @@ void CanBusMotionControl::handleBroadcasts()
 
                         break;
 
-                    case CAN_BCAST_ADDITIONAL_STATUS:
+                    case ICUBCANPROTO_PER_MC_MSG__ADDITIONAL_STATUS:
                         r._bcastRecvBuffer[j]._interactionmodeStatus=*((char *)(data)) & 0x0F;
                         r._bcastRecvBuffer[j]._update_e2 = before;
                         j++;
@@ -3087,7 +3087,7 @@ void CanBusMotionControl::handleBroadcasts()
                         }
                         break;
 
-	 		case ICUBCANPROTO_PER_MC_MSG__CURRENT:
+                    case ICUBCANPROTO_PER_MC_MSG__CURRENT:
                         r._bcastRecvBuffer[j]._current = *((short *)(data));
                         r._bcastRecvBuffer[j]._update_c = before;
                         j++;
@@ -3586,7 +3586,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     _mutex.post();
     return true;
 }
-
+/*
 //@@@ TO BE REMOVED LATER (AFTER INCLUDING FIRMWARE_SHARED)
 #ifndef icubCanProto_controlmode_calibration
 #define icubCanProto_controlmode_calibration 0x060
@@ -3607,7 +3607,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
 #ifndef icubCanProto_interactionmode_unknownError
 #define icubCanProto_interactionmode_unknownError 0xFF
 #endif
-
+*/
 //---------------------------------------------------------
 
 unsigned char  CanBusMotionControl::from_interactionvocab_to_interactionint (int interactionvocab)
@@ -3650,31 +3650,31 @@ unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
     switch (modevocab)
     {
     case VOCAB_CM_IDLE:
-        return MODE_IDLE;
+        return icubCanProto_controlmode_idle;
         break;
     case VOCAB_CM_POSITION:
-        return MODE_POSITION;
+        return icubCanProto_controlmode_position;
         break;
     case VOCAB_CM_MIXED:
-        return MODE_MIXED;
+        return icubCanProto_controlmode_mixed;
         break;
     case VOCAB_CM_POSITION_DIRECT:
-        return MODE_DIRECT;
+        return icubCanProto_controlmode_direct;
         break;
     case VOCAB_CM_VELOCITY:
-        return MODE_VELOCITY;
+        return icubCanProto_controlmode_velocity;
         break;
     case VOCAB_CM_TORQUE:
-        return MODE_TORQUE;
+        return icubCanProto_controlmode_torque;
         break;
     case VOCAB_CM_IMPEDANCE_POS:
-        return MODE_IMPEDANCE_POS;
+        return icubCanProto_controlmode_impedance_pos;
         break;
     case VOCAB_CM_IMPEDANCE_VEL:
-        return MODE_IMPEDANCE_VEL;
+        return icubCanProto_controlmode_impedance_vel;
         break;
     case VOCAB_CM_OPENLOOP:
-        return  MODE_OPENLOOP;
+        return  icubCanProto_controlmode_openloop;
         break;
 
     case VOCAB_CM_FORCE_IDLE: 
@@ -3682,7 +3682,7 @@ unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
         break;
 
     default:
-        return MODE_UNKNOWN_ERROR;
+        return VOCAB_CM_UNKNOWN;
         break;
     }
 }
@@ -3691,54 +3691,57 @@ int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
 {
     switch (modeint)
     {
-    case MODE_IDLE:
+    case icubCanProto_controlmode_idle:
         return VOCAB_CM_IDLE;
         break;
-    case MODE_POSITION:
+    case icubCanProto_controlmode_position:
         return VOCAB_CM_POSITION;
         break;
-    case MODE_MIXED:
+    case icubCanProto_controlmode_mixed:
         return VOCAB_CM_MIXED;
         break;
-    case MODE_DIRECT:
+    case icubCanProto_controlmode_direct:
         return VOCAB_CM_POSITION_DIRECT;
         break;
-    case MODE_VELOCITY:
+    case icubCanProto_controlmode_velocity:
         return VOCAB_CM_VELOCITY;
         break;
-    case MODE_TORQUE:
+    case icubCanProto_controlmode_torque:
         return VOCAB_CM_TORQUE;
         break;
-    case MODE_IMPEDANCE_POS:
+    case icubCanProto_controlmode_impedance_pos:
         return VOCAB_CM_IMPEDANCE_POS;
         break;
-    case MODE_IMPEDANCE_VEL:
+    case icubCanProto_controlmode_impedance_vel:
         return VOCAB_CM_IMPEDANCE_VEL;
         break;
-    case MODE_OPENLOOP:
+    case icubCanProto_controlmode_openloop:
         return VOCAB_CM_OPENLOOP;
         break;
 
     //internal status
-    case  MODE_HW_FAULT:
+    case  icubCanProto_controlmode_hwFault:
         return VOCAB_CM_HW_FAULT;
         break;
-    case  MODE_NOT_CONFIGURED:
+    case  icubCanProto_controlmode_notConfigured:
         return VOCAB_CM_NOT_CONFIGURED;
         break;
-    case  MODE_CONFIGURED:
+    case  icubCanProto_controlmode_configured:
         return VOCAB_CM_CONFIGURED;
         break;
-    case  MODE_UNKNOWN_ERROR:
+    case  icubCanProto_controlmode_unknownError:
         return VOCAB_CM_UNKNOWN;
         break;
 
     case  icubCanProto_controlmode_calibration:
-    case  MODE_CALIB_ABS_POS_SENS:
-    case  MODE_CALIB_HARD_STOPS:
-    case  MODE_HANDLE_HARD_STOPS:
-    case  MODE_MARGIN_REACHED: 
-    case  MODE_CALIB_ABS_AND_INCREMENTAL:
+/*  Commented out because generate duplicate case in switch, the previous one should be enough
+ *  with this new version of protocol... ask RANDAZZ
+    case  icubCanProto_calibration_type0_hard_stops:
+    case  icubCanProto_calibration_type1_abs_sens_analog:
+    case  icubCanProto_calibration_type2_hard_stops_diff:
+    case  icubCanProto_calibration_type3_abs_sens_digital:
+    case  icubCanProto_calibration_type4_abs_and_incremental:
+*/
         return VOCAB_CM_CALIBRATING;
         break;
 
@@ -3797,8 +3800,8 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     }
 
     int v = from_modevocab_to_modeint(mode);
-    if (v==MODE_UNKNOWN_ERROR) return false;
-    _writeByte8(CAN_SET_CONTROL_MODE,j,v);
+    if (v==VOCAB_CM_UNKNOWN) return false;
+    _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
 
     return true;
 }
@@ -3826,8 +3829,8 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
             enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
         }
         int v = from_modevocab_to_modeint(modes[i]);
-        if (v==MODE_UNKNOWN_ERROR) return false;
-        _writeByte8(CAN_SET_CONTROL_MODE,i,v);
+        if (v==VOCAB_CM_UNKNOWN) return false;
+        _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
     }
 
     return true;

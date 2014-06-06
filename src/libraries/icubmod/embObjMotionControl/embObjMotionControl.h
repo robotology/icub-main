@@ -208,7 +208,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPositionDirectRaw,
     public ImplementPositionDirect,
     public IInteractionModeRaw,
-    public ImplementInteractionMode
+    public ImplementInteractionMode,
+    public IDebugInterfaceRaw,
+    public ImplementDebugInterface
 {
 private:
     int           tot_packet_recv, errors;
