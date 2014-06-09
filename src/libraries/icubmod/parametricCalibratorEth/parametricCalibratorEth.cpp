@@ -476,8 +476,8 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
             // if the joint han not been enabled at point 1, now i enable it 
             //iAmps->enableAmp((*lit));
             if (type[*lit]!=0 &&
-                type[*lit] != 2 &&
-                type[*lit] != 4 )
+                type[*lit]!=2 &&
+                type[*lit]!=4 ) 
             {
                 iAmps->enableAmp((*lit));
                 iPids->enablePid((*lit));
@@ -524,10 +524,9 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
                 iPids->setPid((*lit),original_pid[(*lit)]);
             }
         }
-        else
+        else          // keep pid safe and go on
         {
-            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
-
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position... disabling this set of axes\n";
             for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
                 iAmps->disableAmp((*lit));
