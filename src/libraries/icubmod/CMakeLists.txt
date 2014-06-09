@@ -15,7 +15,7 @@ project(icubmod)
 
 add_subdirectory(debugStream)
 
-option (ICUB_EOPROT_MN_VERSION_1_0 "use ON until further notice" ON)
+option (ICUB_EOPROT_MN_VERSION_1_0 "use OFF unless you want test old mode" OFF)
 mark_as_advanced (ICUB_EOPROT_MN_VERSION_1_0)
 
 
