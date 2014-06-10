@@ -108,7 +108,9 @@ Factors</a>.
 
 --torso \e name 
 - The parameter \e name selects the robot's torso port to 
-  connect to; if not specified, \e torso is assumed.
+  connect to; if not specified, \e torso is assumed. The special
+  string \e disabled can be used to skip opening the torso
+  device.
  
 --Tneck \e time
 - Specify the neck trajectory execution time in point-to-point 
@@ -1035,17 +1037,25 @@ public:
             // to send two packets per control slot
             optHead.put("writeStrict","on");
 
-            if (ping_robot_tmo>0.0)
-                drvTorso=waitPart(optTorso,ping_robot_tmo);
-            else
-                drvTorso=new PolyDriver(optTorso);
-
-            if (!drvTorso->isValid())
+            if (torsoName!="disabled")
             {
-                printf("Torso device driver not available!\n");
-                printf("Perhaps only the head is running; trying to continue ...\n");
+                if (ping_robot_tmo>0.0)
+                    drvTorso=waitPart(optTorso,ping_robot_tmo);
+                else
+                    drvTorso=new PolyDriver(optTorso);
 
-                delete drvTorso;
+                if (!drvTorso->isValid())
+                {
+                    printf("Torso device driver not available!\n");
+                    printf("Perhaps only the head is running; trying to continue ...\n");
+
+                    delete drvTorso;
+                    drvTorso=NULL;
+                }
+            }
+            else
+            {
+                printf("Torso device disabled!\n");
                 drvTorso=NULL;
             }
 
