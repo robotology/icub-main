@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
     
     rf.configure(argc, argv);
     rf.setVerbose(true);
-    mod.configure(rf);
+    if (mod.configure(rf)==false) return -1;
     mod.runModule();
     fprintf(stderr, "Main returning\n");
     return 0;
