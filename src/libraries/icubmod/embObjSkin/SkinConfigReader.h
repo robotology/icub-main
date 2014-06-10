@@ -17,11 +17,23 @@
  * Public License for more details
  */
 
+#ifndef SKIN_CONFIG_READER
+#define SKIN_CONFIG_READER
 
-#ifndef __SKIN_PARAMS_H__
-#define __SKIN_PARAMS_H__
+#include <string>
 
-#include <stdio.h>
+
+#include <ace/ACE.h>
+
+
+
+
+
+#include <yarp/sig/Vector.h>
+#include <yarp/sig/Matrix.h>
+
+//#include "skinParams.h"
+
 
 //default values for SkinBoardCfgParam
 #define sk_period_default                40 //millisec
@@ -37,14 +49,15 @@ public:
 
 public:
     void setDefaultValues(void)
-    { 
+    {
         period                  = sk_period_default;
         noLoad                  = sk_noLoad_default;
         skinType                = sk_skintype_default;
-
-
     };
 };
+
+
+
 
 //default values for triangles
 #define skT_enabled_default      true
@@ -65,5 +78,41 @@ public:
     }
 };
 
-#endif
 
+class SpecialSkinBoardCfgParam
+{
+public:
+    int                 patch; //in eth version it means number of patch where board is connected to, while in can means canDeviceNumber
+    int                 boardAddrStart;
+    int                 boardAddrEnd; //in eth version it means number of patch where board is connected to, while in can means canDeviceNumber
+    SkinBoardCfgParam   cfg;
+};
+
+class SpecialSkinTriangleCfgParam
+{
+public:
+    int                  patch; //in eth version it means number of patch where board is connected to, while in can means canDeviceNumber
+    int                  boardAddr;
+    int                  triangleStart;
+    int                  triangleEnd;
+    SkinTriangleCfgParam cfg;
+};
+
+#define CONFIG_READER_NAME_LEN 30
+class SkinConfigReader
+{
+private:
+    char                _name[CONFIG_READER_NAME_LEN];
+    
+public:
+    SkinConfigReader(char *name);
+    SkinConfigReader();
+    bool isDefaultBoardCfgPresent(yarp::os::Searchable& config);
+    bool readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoardCfgParam *boardCfg);
+    bool isDefaultTriangleCfgPresent(yarp::os::Searchable& config);
+    bool readDefaultTriangleCfg(yarp::os::Searchable& config, SkinTriangleCfgParam *triangCfg);
+    bool readSpecialBoardCfg(yarp::os::Searchable& config, SpecialSkinBoardCfgParam *boardCfg, int *numofcfg);
+    bool readSpecialTriangleCfg(yarp::os::Searchable& config, SpecialSkinTriangleCfgParam *triangleCfg, int *numofcfg);
+};
+
+#endif

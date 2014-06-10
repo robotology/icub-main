@@ -13,7 +13,7 @@ if (NOT SKIP_embObjSkin)
                    ${iCubDev_INCLUDE_DIRS}
                    ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
-    yarp_add_plugin(embObjSkin embObjSkin.h embObjSkin.cpp)
+    yarp_add_plugin(embObjSkin embObjSkin.h embObjSkin.cpp SkinConfigReader.h SkinConfigReader.cpp) 
     target_link_libraries(embObjSkin ethResources ${YARP_LIBRARIES})
     icub_export_library(embObjSkin)
 endif (NOT SKIP_embObjSkin)
