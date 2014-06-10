@@ -1282,12 +1282,10 @@ bool CartesianSolver::open(Searchable &options)
         printf("Allocating device driver for %s ...\n",
                prt->prp[i].find("part").asString().c_str());
 
-        PolyDriver *pDrv;
-        if (ping_robot_tmo>0.0)
-            pDrv=waitPart(prt->prp[i]);
-        else
-            pDrv=new PolyDriver(prt->prp[i]);
-        
+        PolyDriver *pDrv=(ping_robot_tmo>0.0)?
+                         waitPart(prt->prp[i]):
+                         new PolyDriver(prt->prp[i]);
+
         if (!pDrv->isValid())
         {
             delete pDrv;

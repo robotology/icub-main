@@ -1039,10 +1039,9 @@ public:
 
             if (torsoName!="disabled")
             {
-                if (ping_robot_tmo>0.0)
-                    drvTorso=waitPart(optTorso,ping_robot_tmo);
-                else
-                    drvTorso=new PolyDriver(optTorso);
+                drvTorso=(ping_robot_tmo>0.0)?
+                         waitPart(optTorso,ping_robot_tmo):
+                         new PolyDriver(optTorso);
 
                 if (!drvTorso->isValid())
                 {
@@ -1059,10 +1058,9 @@ public:
                 drvTorso=NULL;
             }
 
-            if (ping_robot_tmo>0.0)
-                drvHead=waitPart(optHead,ping_robot_tmo);
-            else
-                drvHead=new PolyDriver(optHead);
+            drvHead=(ping_robot_tmo>0.0)?
+                    waitPart(optHead,ping_robot_tmo):
+                    new PolyDriver(optHead);
 
             if (!drvHead->isValid())
             {
