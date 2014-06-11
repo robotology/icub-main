@@ -31,7 +31,8 @@ using yarp::os::Time;
 //    snprintf();
 //    _cfgReader = new SkinConfigReader(char *name);
 //}
-bool CanBusSkin::open(yarp::os::Searchable& config) {
+bool CanBusSkin::open(yarp::os::Searchable& config)
+{
     bool ret=true;
 #if SKIN_DEBUG
     fprintf(stderr, "%s\n", config.toString().c_str());
@@ -76,20 +77,6 @@ bool CanBusSkin::open(yarp::os::Searchable& config) {
         #endif
     }
 
-    if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
-    {
-        _newCfg = true;
-        yWarning() << "skin configuration uses new version!!!";
-        readNewConfiguration(config);
-    }
-    else
-    {
-        _newCfg = false;
-        yWarning() << "skin configuration uses old version!!!";
-        readOldConfiguration(config);
-    }
-    
-
     Property prop;
     prop.put("device", config.find("canbusDevice").asString().c_str());
     prop.put("physDevice", config.find("physDevice").asString().c_str());
@@ -121,19 +108,69 @@ bool CanBusSkin::open(yarp::os::Searchable& config) {
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-    for (unsigned int i=0; i<cardId.size(); i++)
-        for (unsigned int id=0; id<16; ++id)
-        {
-            pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
-        }
 
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
+
+    if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
+    {
+        _newCfg = true;
+        yWarning() << "skin configuration uses new version!!!";
+        ret = readNewConfiguration(config);
+    }
+    else
+    {
+        _newCfg = false;
+        yWarning() << "skin configuration uses old version!!!";
+        ret = readOldConfiguration(config);
+    }
+
+    if(!ret)
+    {
+        yError() << "error reading config";
+        if (pCanBufferFactory)
+        {
+            pCanBufferFactory->destroyBuffer(inBuffer);
+            pCanBufferFactory->destroyBuffer(outBuffer);
+        }
+        driver.close();
+        return false;
+    }
+
+    //set filter
+    uint8_t can_msg_class = 0;
+    if(_newCfg)
+    {
+        can_msg_class = ICUBCANPROTO_CLASS_PERIODIC_SKIN;
+    }
+    else
+    {
+        can_msg_class = ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR;
+    }
+    for (unsigned int i=0; i<cardId.size(); i++)
+            for (unsigned int id=0; id<16; ++id)
+            {
+                //yDebug() << "---------- aggiungo id = " << (can_msg_class << 8)+(cardId[i]<<4)+id;
+                pCanBus->canIdAdd((can_msg_class << 8)+(cardId[i]<<4)+id);
+            }
 
     //elements are:
     sensorsNum=16*12*cardId.size();
     data.resize(sensorsNum);
     data.zero();
+
+    //if I 'm here, config is ok ==> send message to enable transmission
+    //(only in case of new configuration, skin boards need of explicit message in order to enable tx.)
+    Time::delay(0.01);
+    if(_newCfg)
+    {
+        uint8_t txmode = 1;
+        for(int i=0; i< cardId.size(); i++)
+        {
+            if(! sendCANMessage(cardId[i], ICUBCANPROTO_POL_AS_CMD__SET_TXMODE, &txmode))
+                return false;
+        }
+    }
 
 
     RateThread::start();
@@ -146,10 +183,12 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
     unsigned int msgSent = 0;
     CanMessage &msg = outBuffer[0];
     unsigned int id = 0;
-    id= ((ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR << 8 ) | (destAddr & 0x0f));
+    id= ((ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR << 8 ) | (destAddr & 0x0f));
 
+    msg.setId(id);
     //set command in message
     msg.getData()[0] = command;
+    yDebug() << "voglio inviare un messaggio col comando " << command;
 
     switch(command)
     {
@@ -198,11 +237,15 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
         }
     };
 
-    if(len = 0)
+
+
+    if(0==len)
     {
         yWarning() << "skin on can bus " << _canBusNum << ":try to send a unknown message(command id=" <<command << ")";
     }
     msg.setLen(len);
+
+    yDebug()<< "sto per inviare un messaggio lungo " << len << "getLen()="<< msg.getLen();
 
    if (!pCanBus->canWrite(outBuffer, 1, &msgSent))
    {
@@ -238,7 +281,8 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         //check if patch exist
         if(_canBusNum != boardCfgList[j].patch)
         {
-            yError() << "Skin on can bus %d" << _canBusNum << "configured SpecialBoardConfig on patch with a different id from my can bus";
+            yError() << "Skin on can bus " << _canBusNum << "configured SpecialBoardConfig on patch with a different id from my can bus";
+            return false;
         }
 
         //check if card address are in patch
@@ -256,6 +300,10 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                 return(false);
             }
         }
+        //VALE: solo per debug
+        yDebug() << "\n special cfg board: num " << j;
+        boardCfgList[j].debugPrint();
+
         //send special board cfg
         for(int k=boardCfgList[j].boardAddrStart; k<= boardCfgList[j].boardAddrEnd; k++)
         {
@@ -276,9 +324,10 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         for(j=0; j<numofcfg; j++)
         {
             //check if patch exist
-            if(_canBusNum != boardCfgList[j].patch)
+            if(_canBusNum != triangleCfg[j].patch)
             {
-                yError() << "Skin on can bus %d" << _canBusNum << "configured SpecialBoardConfig on patch with a different id from my can bus";
+                yError() << "Skin on can bus " << _canBusNum << "configured SpecialTriangleConfig on patch with a different id from my can bus";
+                return false;
             }
 
             for(int i=0; i<cardId.size(); i++)
@@ -293,11 +342,13 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                 }
 
             }
+            yDebug() << "\n Special triangle cfg num " << j;
+            triangleCfg[j].debugPrint();
+
             //send traingle cfg
-            if(!sendCANMessage(triangleCfg[j].boardAddr, ICUBCANPROTO_POL_SK_CMD__SET_BRD_CFG, (void*)&triangleCfg[j]))
+            if(!sendCANMessage(triangleCfg[j].boardAddr, ICUBCANPROTO_POL_SK_CMD__SET_TRIANG_CFG, (void*)&triangleCfg[j]))
                     return false;
         }
-
 
     return true;
 }
@@ -323,7 +374,8 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
     SpecialSkinTriangleCfgParam spTrCfg;
     spTrCfg.cfg = _triangCfg;
     spTrCfg.triangleStart = 0;
-    spTrCfg.triangleEnd = 0x16;
+    spTrCfg.triangleEnd = 0x0f; //max number of triangle in a board
+#warning VALE fai macro max num triangoli
     //send default board and triangle configuration (new configuration style)
     for(int i=0; i<cardId.size(); i++)
     {
@@ -332,9 +384,12 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
             return false;
     }
 
+    Time::delay(0.5);
 
     /*read and send special cfg for board and triangle */
-    readNewSpecialConfiguration(config);
+    if(!readNewSpecialConfiguration(config))
+        return false;
+
     return true;
 }
 
@@ -388,6 +443,16 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
 }
 bool CanBusSkin::close()
 {
+
+    if(_newCfg)
+    {
+        uint8_t txmode = 0;
+        for(int i=0; i< cardId.size(); i++)
+        {
+            sendCANMessage(cardId[i], ICUBCANPROTO_POL_AS_CMD__SET_TXMODE, &txmode);
+        }
+    }
+
     RateThread::stop();
     if (pCanBufferFactory) 
     {

@@ -24,6 +24,7 @@
 
 
 #include <ace/ACE.h>
+#include <Debug.h>
 
 
 
@@ -54,6 +55,11 @@ public:
         noLoad                  = sk_noLoad_default;
         skinType                = sk_skintype_default;
     };
+    void debugPrint(void)
+    {
+        yDebug() << "period=" << period << "; noLoad=" << noLoad << "; skinType=" << skinType;
+    }
+
 };
 
 
@@ -76,6 +82,11 @@ public:
         shift                     = skT_shift_default;
         cdcOffset                 = skT_cdcOffset_default;
     }
+
+    void debugPrint(void)
+    {
+        yDebug() << "enabled=" << enabled << "; shift=" << shift << "; cdcOffset=" << cdcOffset;
+    }
 };
 
 
@@ -86,6 +97,12 @@ public:
     int                 boardAddrStart;
     int                 boardAddrEnd; //in eth version it means number of patch where board is connected to, while in can means canDeviceNumber
     SkinBoardCfgParam   cfg;
+
+    void debugPrint(void)
+    {
+        yDebug() << "patch num " << patch << ": startAddr=" << boardAddrStart << "endAddr=" << boardAddrEnd << "with cfg:";
+        cfg.debugPrint();
+    }
 };
 
 class SpecialSkinTriangleCfgParam
@@ -96,6 +113,12 @@ public:
     int                  triangleStart;
     int                  triangleEnd;
     SkinTriangleCfgParam cfg;
+
+    void debugPrint(void)
+    {
+        yDebug() << "boardAddr " << boardAddr<< " on patch num " << patch << ": trisngleStart=" << triangleStart << "endAddr=" << triangleEnd << "with cfg:";
+        cfg.debugPrint();
+    }
 };
 
 #define CONFIG_READER_NAME_LEN 30
