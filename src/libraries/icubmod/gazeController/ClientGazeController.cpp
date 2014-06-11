@@ -297,9 +297,7 @@ bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
     cmd.addDouble(fp[0]);
     cmd.addDouble(fp[1]);
     cmd.addDouble(fp[2]);
-    portCmdFp.write(cmd);
-
-    return true;
+    return portCmdFp.write(cmd);
 }
 
 
@@ -314,9 +312,7 @@ bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
     cmd.addDouble(ang[0]);
     cmd.addDouble(ang[1]);
     cmd.addDouble(ang[2]);
-    portCmdAng.write(cmd);
-
-    return true;
+    return portCmdAng.write(cmd);
 }
 
 
@@ -331,9 +327,7 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
     cmd.addDouble(ang[0]);
     cmd.addDouble(ang[1]);
     cmd.addDouble(ang[2]);
-    portCmdAng.write(cmd);
-
-    return true;
+    return portCmdAng.write(cmd);
 }
 
 
@@ -349,9 +343,7 @@ bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px,
     cmd.addDouble(px[0]);
     cmd.addDouble(px[1]);
     cmd.addDouble(z);
-    portCmdMono.write(cmd);
-
-    return true;
+    return portCmdMono.write(cmd);
 }
 
 
@@ -369,9 +361,7 @@ bool ClientGazeController::lookAtMonoPixelWithVergence(const int camSel,
     cmd.addDouble(px[1]);
     cmd.addString("ver");
     cmd.addDouble(ver);
-    portCmdMono.write(cmd);
-
-    return true;
+    return portCmdMono.write(cmd);
 }
 
 
@@ -386,9 +376,7 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
     cmd.addDouble(pxl[1]);
     cmd.addDouble(pxr[0]);
     cmd.addDouble(pxr[1]);
-    portCmdStereo.write(cmd);
-
-    return true;
+    return portCmdStereo.write(cmd);
 }
 
 
