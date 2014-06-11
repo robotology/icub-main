@@ -14,6 +14,7 @@
 const int CAN_DRIVER_BUFFER_SIZE = 2047;
 
 #define SPECIAL_TRIANGLE_CFG_MAX_NUM    20
+#define TRIANGLE_MAX_NUM_IN_BOARD       16
 
 #define SKIN_DEBUG 0
 
@@ -25,12 +26,7 @@ using yarp::dev::CanMessage;
 using yarp::os::Time;
 
 
-//CanBusSkin::CanBusSkin(int period)
-//{
-//    char name[30];
-//    snprintf();
-//    _cfgReader = new SkinConfigReader(char *name);
-//}
+
 bool CanBusSkin::open(yarp::os::Searchable& config)
 {
     bool ret=true;
@@ -188,7 +184,6 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
     msg.setId(id);
     //set command in message
     msg.getData()[0] = command;
-    yDebug() << "voglio inviare un messaggio col comando " << command;
 
     switch(command)
     {
@@ -196,7 +191,6 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
         {
             SkinBoardCfgParam *brdCfg = (SkinBoardCfgParam *)data;
             msg.getData()[1] = 0;
-            #warning vale verifica che skintype sia compatibile con quella prevista dal messaggio can
             msg.getData()[1] = brdCfg->skinType & 0x0f;
             msg.getData()[2] = brdCfg->period;
             msg.getData()[3] = brdCfg->noLoad;
@@ -244,8 +238,6 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
         yWarning() << "skin on can bus " << _canBusNum << ":try to send a unknown message(command id=" <<command << ")";
     }
     msg.setLen(len);
-
-    yDebug()<< "sto per inviare un messaggio lungo " << len << "getLen()="<< msg.getLen();
 
    if (!pCanBus->canWrite(outBuffer, 1, &msgSent))
    {
@@ -300,9 +292,9 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                 return(false);
             }
         }
-        //VALE: solo per debug
-        yDebug() << "\n special cfg board: num " << j;
-        boardCfgList[j].debugPrint();
+//        //uncomment  for debug only
+//        yDebug() << "\n special cfg board: num " << j;
+//        boardCfgList[j].debugPrint();
 
         //send special board cfg
         for(int k=boardCfgList[j].boardAddrStart; k<= boardCfgList[j].boardAddrEnd; k++)
@@ -342,10 +334,11 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                 }
 
             }
-            yDebug() << "\n Special triangle cfg num " << j;
-            triangleCfg[j].debugPrint();
+//            //uncomment  for debug only
+//            yDebug() << "\n Special triangle cfg num " << j;
+//            triangleCfg[j].debugPrint();
 
-            //send traingle cfg
+            //send triangle cfg
             if(!sendCANMessage(triangleCfg[j].boardAddr, ICUBCANPROTO_POL_SK_CMD__SET_TRIANG_CFG, (void*)&triangleCfg[j]))
                     return false;
         }
@@ -374,8 +367,8 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
     SpecialSkinTriangleCfgParam spTrCfg;
     spTrCfg.cfg = _triangCfg;
     spTrCfg.triangleStart = 0;
-    spTrCfg.triangleEnd = 0x0f; //max number of triangle in a board
-#warning VALE fai macro max num triangoli
+    spTrCfg.triangleEnd = TRIANGLE_MAX_NUM_IN_BOARD-1; //in each board there are 16 triagle max, their id goes from 0 to TRIANGLE_MAX_NUM_IN_BOARD-1;
+
     //send default board and triangle configuration (new configuration style)
     for(int i=0; i<cardId.size(); i++)
     {

@@ -74,44 +74,6 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg board --------------------------------------------------------------
 
-
-//    Bottle boardCfgSpecialGroup = config.findGroup("specialCfgBoards", "Special configuration for skin boards");
-//    if(!boardCfgSpecialGroup.isNull()) //not mandatory field
-//    {
-//        eOsk_cmd_boardsCfg_t bcfg;
-//        totConfigSize = 0;
-//        configSize = sizeof(eOsk_cmd_boardsCfg_t);
-//
-//        bNumOfset = boardCfgSpecialGroup.findGroup("numOfSets", "number of special sets of triangles");
-//        if(bNumOfset.isNull())
-//        {
-//            yError() << "skin " << _fId.name << "numOfSet is missed from specialCfgBoards";
-//            return(false);
-//        }
-//        numOfSets =  bNumOfset.get(1).asInt();
-//        //verifico se i triangoli appertengono ad una board nella mia lista
-//        //leggo i dati da cfg e li metto in triangCfgSpecial
-//        //iniviali a ems
-//        for(int j=1;j<=numOfSets;j++)
-//        {
-//            char tmp[80];
-//            snprintf(tmp, sizeof(tmp), "boardSetCfg%d", j);
-//
-//            Bottle &xtmp = boardCfgSpecialGroup.findGroup(tmp);
-//            if(xtmp.isNull())
-//            {
-//                yError() << "skin of board num " << _fId.boardNum << "doesn't find " << tmp << "in specialCfgBoards group in xml file";
-//                return false;
-//            }
-//
-//            int patch           = xtmp.get(1).asInt();
-//            bcfg.addrstart      = xtmp.get(2).asInt();
-//            bcfg.addrend        = xtmp.get(3).asInt();
-//            bcfg.cfg.period     = xtmp.get(4).asInt();
-//            bcfg.cfg.skintype   = xtmp.get(5).asInt();
-//            bcfg.cfg.noload     = xtmp.get(6).asInt();
-
-    /*l'ho sostituito con:*/
     numofcfg = _skCfg.totalCardsNum;//set size of my vector boardCfgList;
     //in output the function return number of special board cfg are in file xml
     bool ret = _cfgReader->readSpecialBoardCfg(config, boardCfgList, &numofcfg);
@@ -136,103 +98,53 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         //now p is the index of patch.
 
-            //check if card address are in patch
-            for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
+        //check if card address are in patch
+        for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
+        {
+            if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(a))
             {
-                if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(a))
-                {
-                    yError() << "skin of board num " << _fId.boardNum << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
-                    return(false);
-                }
+                yError() << "skin of board num " << _fId.boardNum << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+                return(false);
             }
-            eOsk_cmd_boardsCfg_t bcfg;
-            bcfg.addrstart = boardCfgList[j].boardAddrStart;
-            bcfg.addrend = boardCfgList[j].boardAddrEnd;
-            bcfg.cfg.skintype = boardCfgList[j].cfg.skinType;
-            bcfg.cfg.period = boardCfgList[j].cfg.period;
-            bcfg.cfg.noload = boardCfgList[j].cfg.noLoad;
+        }
+        //prepare data to send to ems
+        eOsk_cmd_boardsCfg_t bcfg;
+        bcfg.addrstart = boardCfgList[j].boardAddrStart;
+        bcfg.addrend = boardCfgList[j].boardAddrEnd;
+        bcfg.cfg.skintype = boardCfgList[j].cfg.skinType;
+        bcfg.cfg.period = boardCfgList[j].cfg.period;
+        bcfg.cfg.noload = boardCfgList[j].cfg.noLoad;
 
-//            //VALE: solo per debug:
-//            yError() << "valori speciali per board:";
-//            yError() << "patch" << boardCfgList[j].patch;
-//            yError() << "bcfg.addrstart" << bcfg.addrstart;
-//            yError() << "bcfg.addrend" << bcfg.addrend;
-//            yError() << "bcfg.cfg.skintype" << bcfg.cfg.skintype;
-//            yError() << "bcfg.cfg.period" << bcfg.cfg.period;
-//            yError() << "bcfg.cfg.noload" << bcfg.cfg.noload;
+//        //uncomment for debug only
+//        yDebug() << "\n Special board cfg num " << j;
+//        boardCfgList[j].debugPrint();
 
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
 
-            protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
+        if( !(EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
+        {
+            yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages BOARD";
+            Time::delay(0.01);
+            totConfigSize = 0;
+        }
 
-            if( !(EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
-            {
-                yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages BOARD";
-                Time::delay(0.01);
-                totConfigSize = 0;
-            }
-
-            if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
-            {
-                yError() << "skin board "<< _fId.boardNum << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
-                return false;
-            }
+        if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
+        {
+            yError() << "skin board "<< _fId.boardNum << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
+            return false;
+        }
 
             totConfigSize += configSize;
-        } //end for for each special cfg
+    } //end for for each special board cfg
 
-//    else
-//    {
-//        //VALE solo per debug()
-//        yDebug() << "non ho trovato specialCfgBoards";
-//
-//    }
     Time::delay(0.01);
 
-//    //-----------------------------------------------------------------------------------------------------
-//    //------------ read special cfg triangle --------------------------------------------------------------
-//    Bottle triangleCfgSpecialGroup = config.findGroup("specialCfgTriangles", "Special configuration for skin triangles");
-//    if(!triangleCfgSpecialGroup.isNull()) //not mandatory field
-//    {
-//        eOsk_cmd_trianglesCfg_t tcfg;
-//        totConfigSize = 0;
-//        configSize = sizeof(eOsk_cmd_trianglesCfg_t);
-//
-//        bNumOfset = triangleCfgSpecialGroup.findGroup("numOfSets", "number of special sets of triangles");
-//        if(bNumOfset.isNull())
-//        {
-//            yError() << "skin board "<< _fId.boardNum << "numOfSet is missed from SpecialCfgTriangles";
-//            return(false);
-//        }
-//        numOfSets =  bNumOfset.get(1).asInt();
-//        //verifico se i triangoli appertengono ad una board nella mia lista
-//        //leggo i dati da cfg e li metto in triangCfgSpecial
-//        //iniviali a ems
-//        for(int j=1;j<=numOfSets;j++)
-//        {
-//            char tmp[80];
-//            snprintf(tmp, sizeof(tmp), "triangleSetCfg%d", j);
-//
-//            Bottle &xtmp = triangleCfgSpecialGroup.findGroup(tmp);
-//            if(xtmp.isNull())
-//            {
-//                yError() << "skin of board num " << _fId.boardNum << "doesn't find " << tmp << "in SpecialCfgTriangles group in xml file";
-//                return false;
-//            }
-//
-//            int patch           = xtmp.get(1).asInt();
-//            tcfg.boardaddr      = xtmp.get(2).asInt();
-//            tcfg.idstart        = xtmp.get(3).asInt();
-//            tcfg.idend          = xtmp.get(4).asInt();
-//            tcfg.cfg.enable     = xtmp.get(5).asInt();
-//            tcfg.cfg.shift      = xtmp.get(6).asInt();
-//            tcfg.cfg.CDCoffset  = xtmp.get(7).asInt();
-    /*Lo sostituito con */
-
+    //-----------------------------------------------------------------------------------------------------
+    //------------ read special cfg triangle --------------------------------------------------------------
     SpecialSkinTriangleCfgParam triangleCfg[SPECIAL_TRIANGLE_CFG_MAX_NUM];
-    numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM; //set size of my vector boardCfgList;
-    //in output the function return number of special board cfg are in file xml
+    numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM;    //set size of my vector boardCfgList;
+                                                //in output the function return number of special board cfg are in file xml
     ret =  _cfgReader->readSpecialTriangleCfg(config, triangleCfg, &numofcfg);
-
     if(!ret)
         return false;
 
@@ -251,62 +163,51 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             yError() << "skin of board num " << _fId.boardNum << ": patch " << triangleCfg[j].patch << "not exists";
             return false;
         }
+        //now p is index patch
 
-
-            //check if bcfg.boardAddr is in my patches list
-            if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
-            {
-                yError() << "skin of board num " << _fId.boardNum <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
-                return(false);
-            }
-            protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
-
-            if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
-            {
-                yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages TRIANGLE";
-                Time::delay(0.01);
-                totConfigSize = 0;
-            }
-
-            eOsk_cmd_trianglesCfg_t tcfg;
-            tcfg.boardaddr = triangleCfg[j].boardAddr;
-            tcfg.idstart = triangleCfg[j].triangleStart;
-            tcfg.idend = triangleCfg[j].triangleEnd;
-            tcfg.cfg.CDCoffset = triangleCfg[j].cfg.cdcOffset;
-            tcfg.cfg.enable = triangleCfg[j].cfg.enabled;
-            tcfg.cfg.shift = triangleCfg[j].cfg.shift;
-
-//            //VALE: solo per debug:
-//            yError() << "num of set: " << j;
-//            yError() << "tcfg.boardaddr" << tcfg.boardaddr;
-//            yError() << "tcfg.idstart" << tcfg.idstart;
-//            yError() << "tcfg.idend" << tcfg.idend;
-//            yError() << "tcfg.cfg.enable" << tcfg.cfg.enable;
-//            yError() << "tcfg.cfg.shift" << tcfg.cfg.shift;
-//            yError() << "tcfg.cfg.CDCoffset" << tcfg.cfg.CDCoffset;
-
-            yError() << "punto A";
-            if(! res->addSetMessage(protoid, (uint8_t*)&tcfg))
-            {
-                yError() << "skin board "<< _fId.boardNum << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
-                return false;
-            }
-            yError() << "punto B";
-            totConfigSize += configSize;
-            yError() << "punto c";
+        //check if bcfg.boardAddr is in my patches list
+        if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
+        {
+            yError() << "skin of board num " << _fId.boardNum <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+            return(false);
         }
 
-    yError() << "end func special";
-//    else
-//    {
-//        //VALE solo per debug()
-//        yDebug() << "non ho trovato SpecialCfgTriangles";
-//
-//    }
+        //prepare data to send to ems
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
+
+        if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
+        {
+            yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages TRIANGLE";
+            Time::delay(0.01);
+            totConfigSize = 0;
+        }
+
+        eOsk_cmd_trianglesCfg_t tcfg;
+        tcfg.boardaddr = triangleCfg[j].boardAddr;
+        tcfg.idstart = triangleCfg[j].triangleStart;
+        tcfg.idend = triangleCfg[j].triangleEnd;
+        tcfg.cfg.CDCoffset = triangleCfg[j].cfg.cdcOffset;
+        tcfg.cfg.enable = triangleCfg[j].cfg.enabled;
+        tcfg.cfg.shift = triangleCfg[j].cfg.shift;
+
+
+//        //uncomment for debug only
+//        yDebug() << "\n Special triangle cfg num " << j;
+//        boardCfgList[j].debugPrint();
+
+        if(! res->addSetMessage(protoid, (uint8_t*)&tcfg))
+        {
+            yError() << "skin board "<< _fId.boardNum << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
+            return false;
+        }
+        totConfigSize += configSize;
+    }
+
     Time::delay(0.01);
 
     return true;
 }
+
 bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 {
     Bottle bPatches, bPatchList, xtmp;
@@ -344,7 +245,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         _skCfg.patchInfoList[j-1].indexNv = convertIdPatch2IndexNv(id);
     }
 
-//    //VALE solo per debug
+//    //uncomment for debug only
 //    yError() << "numOfPatches=" << _skCfg.numOfPatches;
 //    for(int j=0; j<_skCfg.numOfPatches; j++ )
 //    {
@@ -375,7 +276,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         }
     }
 
-//    //VALE solo per debug
+//    //uncomment for debug only
 //    yError() << "totalCardsNum=" << _skCfg.totalCardsNum;
 //    for(int i=0; i<_skCfg.patchInfoList.size(); i++)
 //    {
@@ -409,17 +310,6 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     _triangCfg.setDefaultValues();
     if(! _cfgReader->readDefaultTriangleCfg(config, &_triangCfg))
         return false;
-
-
-
-//    //VALE: stampo i valori letti per debug
-//    yError() << " valori di default per board e triangoli:";
-//    yError() << "_brdCfg.period" << _brdCfg.period;
-//    yError() << "_brdCfg.skinType" << _brdCfg.skinType;
-//    yError() << "_brdCfg.noLoad" << _brdCfg.noLoad;
-//    yError() << "_triangCfg.enabled"<< _triangCfg.enabled;
-//    yError() << "_triangCfg.shitft"<< _triangCfg.shift;
-//    yError() << "_triangCfg.cdcOffset"<< _triangCfg.cdcOffset;
 
     return true;
 }
@@ -536,14 +426,13 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     if(!initWithSpecialConfig(config))
         return false;
 
-    yError() << "ho finito di inizializzare...sto per fare start!";
     //resize data vector with number of triangle found in config file
     if(!configPeriodicMessage())
         return false;
 
     if(!start())
         return false;
-    yError() << "ho fatto start!";
+
     res->goToRun();
     yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
     return true;
@@ -727,50 +616,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
 bool EmbObjSkin::init()
 {
     int j = 0;
-
-//    EOnv                        *cnv;
-//    eOmn_ropsigcfg_command_t    *ropsigcfgassign;
-//    EOarray                     *array;
-//    eOropSIGcfg_t               sigcfg;
-//    EOnv                        *nvRoot;
-//
     eOprotID32_t                protoid;
-//
-//    //
-//    //	config regulars
-//    //
-//
-//    eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
-//
-//
-//    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
-//
-//    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
-//
-//    ropsigcfgassign = &theropsigcfgassigncommand;
-//    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it.
-//    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-//    ropsigcfgassign->plustime   = 0;
-//    ropsigcfgassign->plussign   = 0;
-//    ropsigcfgassign->filler01   = 0;
-//    ropsigcfgassign->signature  = 0;
-//
-//
-//    // ok, now we can fill array
-//
-//    for(int i=0; i<_skCfg.numOfPatches; i++)
-//    {
-//        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayof10canframes);
-//        sigcfg.id32 = protoid;
-//        eo_array_PushBack(array, &sigcfg);
-//    }
-//
-//    // Send message
-//    if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
-//    {
-//        yError() <<"skin board "<< _fId.boardNum << "while setting rop sig cfg";
-//    }
-
 
    //if old configuration style returns
     if(!_newCfg)

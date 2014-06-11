@@ -125,7 +125,7 @@ private:
     bool readNewConfiguration(yarp::os::Searchable& config);
 
     /**
-     * Read special new configuration. it is used to configure board and/or triangles with values different from others
+     * Read special new configuration. It is used to configure board and/or triangles with values different from others
      */
     bool readNewSpecialConfiguration(yarp::os::Searchable& config);
 };
