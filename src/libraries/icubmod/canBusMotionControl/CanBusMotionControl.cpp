@@ -3788,16 +3788,24 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
 
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
 
+    #if CAN_PROTOCOL_MINOR == 1
+    #warning using old CAN_PROTOCOL_MINOR == 1 
     if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
     {
         disablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
         disableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
+        return true;      //@@@ TO BE REMOVED 
     }
     else
     {
-        enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
         enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
+        enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
     }
+    #endif
 
     int v = from_modevocab_to_modeint(mode);
     if (v==VOCAB_CM_UNKNOWN) return false;
@@ -3818,16 +3826,24 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 
     for (int i = 0; i < r.getJoints(); i++)
     {
+        #if CAN_PROTOCOL_MINOR == 1
+        #warning using old CAN_PROTOCOL_MINOR == 1 
         if (modes[i] == VOCAB_CM_IDLE || modes[i] == VOCAB_CM_FORCE_IDLE)
         {
             disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
             disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
+            return true;      //@@@ TO BE REMOVED 
         }
         else
         {
-            enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
             enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
+            enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
         }
+        #endif
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
