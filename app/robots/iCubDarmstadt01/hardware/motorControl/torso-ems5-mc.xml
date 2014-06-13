@@ -21,7 +21,7 @@
         <param name="kd">                 0       0       0 </param>       
         <param name="ki">             10000   15000   20000 </param>       
         <param name="limPwm">          4000    4000    8000 </param>       
-        <param name="maxPwm">          8000    8000   16000 </param>  
+        <param name="maxPwm">          4000    4000    8000 </param>  
         <param name="maxInt">           750    1000    2000 </param>       
         <param name="shift">              8       8       8 </param>       
         <param name="ko">                 0       0       0 </param>       
@@ -30,12 +30,12 @@
     </group>
 	
 	<group name="TRQ_PIDS">
-        <param name="kp">            300        400        400  </param>       
+        <param name="kp">             50         50         50  </param>       
         <param name="kd">              0          0          0  </param>       
-        <param name="ki">              0          0          0  </param>       
-        <param name="maxPwm">          0          0          0  </param>       
-        <param name="maxInt">          0          0          0  </param>       
-        <param name="shift">           0          0          0  </param>       
+        <param name="ki">           1000       1000       1000  </param>       
+        <param name="maxPwm">       8000       8000      16000  </param>       
+        <param name="maxInt">        500        500        500  </param>       
+        <param name="shift">           6          6          6  </param>       
         <param name="ko">              0          0          0  </param>       
         <param name="stictionUp">      0          0          0  </param>       
         <param name="stictionDwn">     0          0          0  </param>       
