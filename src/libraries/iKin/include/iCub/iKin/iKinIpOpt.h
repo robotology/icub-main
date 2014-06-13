@@ -296,7 +296,7 @@ public:
     * Attach a iKinLinIneqConstr object in order to impose 
     * constraints of the form lB <= C*q <= uB.
     * @param lic is the iKinLinIneqConstr object to attach.
-    * @see iKinLinIneqConstr()
+    * @see iKinLinIneqConstr
     */
     void attachLIC(iKinLinIneqConstr &lic) { pLIC=&lic; }
 
@@ -304,7 +304,7 @@ public:
     * Returns a reference to the attached Linear Inequality 
     * Constraints object.
     * @return Linear Inequality Constraints pLIC. 
-    * @see iKinLinIneqConstr()
+    * @see iKinLinIneqConstr
     */
     iKinLinIneqConstr &getLIC() { return *pLIC; }
 
