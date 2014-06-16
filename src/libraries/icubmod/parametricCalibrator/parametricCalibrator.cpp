@@ -557,6 +557,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     double angj = 0;
 //    double pwm[4];
     double delta=0;
+    int mode=0;
     bool done = false;
 
     double start_time = yarp::os::Time::now();
@@ -564,9 +565,10 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     {
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
+        iControlMode->getControlMode(j, &mode);
 
         delta = fabs(angj-zeroPos[j]);
-        yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
+        yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold: " << zeroPosThreshold[j] << "mode: " << yarp::os::Vocab::decode(mode).c_str();
 
         if (delta < zeroPosThreshold[j] && done)
         {
