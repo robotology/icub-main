@@ -3518,56 +3518,38 @@ void CanBusMotionControl:: run()
     // ControlMode
 bool CanBusMotionControl::setPositionModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (position)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_position);
+    fprintf(stderr, "WARNING: calling DEPRECATED setPositionModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_POSITION);
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (open loop)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_openloop);
+    fprintf(stderr, "WARNING: calling DEPRECATED setOpenLoopModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_OPENLOOP);
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (velocity)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_velocity);
+    fprintf(stderr, "WARNING: calling DEPRECATED setVelocityModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_VELOCITY);
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (torque)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_torque);
+    fprintf(stderr, "WARNING: calling DEPRECATED setTorqueModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_TORQUE);
 }
 
 bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (impedance pos)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_impedance_pos);
+    fprintf(stderr, "WARNING: calling DEPRECATED setImpedancePositionModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_POS);
 }
 
 bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (impedance vel)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_impedance_vel);
+    fprintf(stderr, "WARNING: calling DEPRECATED setImpedanceVelocityModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_VEL);
 }
 
 bool CanBusMotionControl::getControlModesRaw(int *v)
