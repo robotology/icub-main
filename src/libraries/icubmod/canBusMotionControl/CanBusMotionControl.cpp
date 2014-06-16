@@ -3776,7 +3776,6 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
         yarp::os::Time::delay(0.001);
         disableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
         yarp::os::Time::delay(0.001);
-        return true;      //@@@ TO BE REMOVED 
     }
     else
     {
@@ -3813,7 +3812,6 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
             yarp::os::Time::delay(0.001);
             disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
             yarp::os::Time::delay(0.001);
-            return true;      //@@@ TO BE REMOVED 
         }
         else
         {
