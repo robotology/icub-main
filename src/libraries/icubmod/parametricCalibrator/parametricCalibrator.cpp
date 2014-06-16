@@ -270,14 +270,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
     p->view(iCalibrate);
-    p->view(iAmps);
     p->view(iEncoders);
     p->view(iPosition);
     p->view(iPids);
     p->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
-        yError() << deviceName << ": interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
+    if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
+        yError() << deviceName << ": interface not found" << iCalibrate << iPosition << iPids << iControlMode;
         return false;
     }
 
@@ -393,8 +392,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 type[*lit]==4 ) 
             {
                 yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
-                iAmps->enableAmp(*lit); 
-                iPids->enablePid(*lit);
+                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
         }
         //------------------------------------------------
@@ -426,7 +424,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             yError() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
             for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
-                iAmps->disableAmp((*lit));
+                iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
         }
         //------------------------------------------------
@@ -439,8 +437,6 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 type[*lit]!=2 &&
                 type[*lit]!=4 ) 
             {
-                iAmps->enableAmp((*lit));
-                iPids->enablePid((*lit));
                 iControlMode->setPositionMode((*lit));
             }
         }
@@ -484,7 +480,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
             yError() <<  deviceName  << " set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position... disabling this set of axes\n";
             for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
-                iAmps->disableAmp((*lit));
+                iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
         }
 
@@ -660,8 +656,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     yError() << "PARKING-timeout "<< deviceName.c_str() << " : "<< timeout;
     for(int j=0; j < nj; j++)
     {
-    	iAmps->disableAmp(j);
-    	iPids->disablePid(j);
+         iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
     }
 // iCubInterface is already shutting down here... so even if errors occour, what else can I do?
 
