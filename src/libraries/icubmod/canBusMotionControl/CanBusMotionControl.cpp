@@ -2349,8 +2349,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for (i = 0; i < p._njoints; i++)
     {
         yarp::os::Time::delay(0.001);
-        disablePid(i);
-        disableAmp(i);
+        setControlMode(i, VOCAB_CM_IDLE);
     }
     const Bottle &analogList=config.findGroup("analog").tail();
     //    if (analogList!=0)
@@ -2673,9 +2672,9 @@ bool CanBusMotionControl::close (void)
     if (_opened) {
         // disable the controller, pid controller & pwm off
         int i;
-        for (i = 0; i < res._njoints; i++) {
-            disablePid(i);
-            disableAmp(i);
+        for (i = 0; i < res._njoints; i++)
+        {
+            setControlMode(i, VOCAB_CM_IDLE);
         }
 
         if (isRunning())
@@ -3789,7 +3788,6 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
 
     #if CAN_PROTOCOL_MINOR == 1
-    #warning using old CAN_PROTOCOL_MINOR == 1 
     if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
     {
         disablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
@@ -3827,7 +3825,6 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
     for (int i = 0; i < r.getJoints(); i++)
     {
         #if CAN_PROTOCOL_MINOR == 1
-        #warning using old CAN_PROTOCOL_MINOR == 1 
         if (modes[i] == VOCAB_CM_IDLE || modes[i] == VOCAB_CM_FORCE_IDLE)
         {
             disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
