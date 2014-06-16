@@ -143,13 +143,12 @@ bool DFKI_hand_calibrator::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    if (!(iCalibrate&&iPosition&&iPids&&iControlMode))
         return false;
 
     // ok we have all interfaces
@@ -173,10 +172,7 @@ bool DFKI_hand_calibrator::calibrate(DeviceDriver *dd)
 */
     for (k = 0; k < nj; k++) 
     {
-        fprintf(stderr, "ARMCALIB::Calling enable amp for joint %d\n", k);
-        iAmps->enableAmp(k);
-        fprintf(stderr, "ARMCALIB::Calling enable pid for joint %d\n", k);
-        iPids->enablePid(k);
+        iControlMode->setControlMode((k), VOCAB_CM_POSITION);
     }
 
     ret = true;

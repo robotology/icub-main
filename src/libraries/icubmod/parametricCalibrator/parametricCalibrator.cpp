@@ -656,7 +656,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     yError() << "PARKING-timeout "<< deviceName.c_str() << " : "<< timeout;
     for(int j=0; j < nj; j++)
     {
-         iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
+         iControlMode->setControlMode((j),VOCAB_CM_IDLE);
     }
 // iCubInterface is already shutting down here... so even if errors occour, what else can I do?
 

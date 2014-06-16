@@ -179,13 +179,12 @@ bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
+    if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
         fprintf(logfile, "TORSOCALIB[%d]: Error. This device cannot be calibrated\n", canID);
         return false;
     }
@@ -228,10 +227,7 @@ bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
     /////////////////////////////////////
     for (k = 0; k < 3; k++)
     {
-        fprintf(logfile, "TORSOCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
-        iAmps->enableAmp(k);
-        fprintf(logfile, "TORSOCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
-        iPids->enablePid(k);
+        iControlMode->setControlMode((k), VOCAB_CM_POSITION);
     }
 
     int torsoSetOfJoints[] = {0, 1, 2}; // these are BLL motors
@@ -262,7 +258,7 @@ bool iCubTorsoOnlyCalibrator::calibrate(DeviceDriver *dd)
         {
             fprintf(logfile, "TORSOCALIB[%d]: Calibration failed!\n", canID);
             for (k = 0; k < 3; k++)
-                iAmps->disableAmp(torsoSetOfJoints[k]);
+            iControlMode->setControlMode((torsoSetOfJoints[k]), VOCAB_CM_IDLE);
         }
     }
     /////////////////////////////////////

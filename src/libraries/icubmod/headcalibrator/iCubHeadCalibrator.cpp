@@ -245,13 +245,12 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
+    if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
         fprintf(logfile, "HEADCALIB[%d]: Error. This device cannot be calibrated\n", canID);
         return false;
     }
@@ -288,8 +287,7 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
 
     for (k = 0; k < nj; k++) 
     {
-        iAmps->enableAmp(k);
-        iPids->enablePid(k);
+        iControlMode->setControlMode((k), VOCAB_CM_POSITION);
     }
     /////////////////////////////////////
 	//calibrate the first set of joints//
@@ -298,7 +296,7 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
 	int secondSetOfJoints[] = {1, 3};
 	for (k =0; k < 6; k++)
         if (firstSetOfJoints[k]<nj)
-            calibrateJoint(firstSetOfJoints[k]); //LATER: calibrateJoint will be removed after enableAmp
+            calibrateJoint(firstSetOfJoints[k]);
 	for (k =0; k < 6; k++)
     {
         if (firstSetOfJoints[k]<nj)
@@ -328,7 +326,7 @@ bool iCubHeadCalibrator::calibrate(DeviceDriver *dd)
     /////////////////////////////////////
 	for (k =0; k < 2; k++)
         if (secondSetOfJoints[k]<nj)
-            calibrateJoint(secondSetOfJoints[k]); //LATER: calibrateJoint will be removed after enableAmp
+            calibrateJoint(secondSetOfJoints[k]);
 	for (k =0; k < 2; k++)
     {
         if (secondSetOfJoints[k]<nj)

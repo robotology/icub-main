@@ -188,13 +188,12 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    if (!(iCalibrate&&iPosition&&iPids&&iControlMode))
         return false;
 
     // ok we have all interfaces
@@ -274,10 +273,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     /////////////////////////////////////
     for (k = 0; k < nj; k++) 
     {
-        fprintf(logfile, "TALKINGHEADCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
-        iAmps->enableAmp(k);
-        fprintf(logfile, "TALKINGHEADCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
-        iPids->enablePid(k);
+        iControlMode->setControlMode((k), VOCAB_CM_POSITION);
     }
 
     /////////////////////////////////////
@@ -313,7 +309,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         {
             fprintf(logfile, "TORSOCALIB[%d]: Calibration failed!\n", canID);
             for (k = 0; k < 3; k++)
-                iAmps->disableAmp(torsoSetOfJoints[k]);
+                iControlMode->setControlMode((torsoSetOfJoints[k]), VOCAB_CM_IDLE);
         }
     }
     /////////////////////////////////////
@@ -340,7 +336,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
     {
         fprintf(logfile, "HEADCALIB[%d]: headSetOfJoints Calibration failed!\n", canID);
         for (k = 0; k < 3; k++)
-            iAmps->disableAmp(headSetOfJoints[k]);
+            iControlMode->setControlMode((headSetOfJoints[k]), VOCAB_CM_IDLE);
     }
 
     //////////////////////////////////////
@@ -367,7 +363,7 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         else
         {
             fprintf(logfile, "HEADCALIB[%d]: eyeSetOfJoints Calibration failed!\n", canID);
-                iAmps->disableAmp(eyeSetOfJoints[4]);
+            iControlMode->setControlMode((eyeSetOfJoints[4]), VOCAB_CM_IDLE);
         }
 		
 	//////////////////////////////////////
@@ -382,24 +378,6 @@ bool iCubTalkingHeadCalibrator::calibrate(DeviceDriver *dd)
         checkGoneToZero(lipsSetOfJoints[k]);
         Time::delay(0.010);
     }
-
-/*
-JOINT 4 is bugged, maybe JOINT3 ???
-            fprintf(logfile, "HEADCALIB::Waiting for joint %d movement\n", k);
-            calibration_ok &= checkGoneToZeroThreshold(lipsSetOfJoints[4]);
-        
-        if (calibration_ok)
-        {
-            fprintf(logfile, "HEADCALIB[%d]: lipsSetOfJoints Calibration done!\n", canID);
- 
-            iPids->setPid(lipsSetOfJoints[4],original_pid[lipsSetOfJoints[4]]);
-        }
-        else
-        {
-            fprintf(logfile, "HEADCALIB[%d]: lipsSetOfJoints Calibration failed!\n", canID);
-                iAmps->disableAmp(lipsSetOfJoints[4]);
-        }
-*/
 
     /////////////////////////////////////
     //finished!                        //

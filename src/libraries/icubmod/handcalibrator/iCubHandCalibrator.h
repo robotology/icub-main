@@ -87,11 +87,10 @@ private:
     void checkGoneToZero(int j);
 
     IControlCalibration2 *iCalibrate;
-    IAmplifierControl *iAmps;
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;
-	IControlMode *iControlMode;
+	IControlMode2 *iControlMode;
 
     unsigned char *type;
 	double *param1;
