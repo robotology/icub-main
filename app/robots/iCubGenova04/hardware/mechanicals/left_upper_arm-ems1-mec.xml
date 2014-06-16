@@ -7,7 +7,7 @@
         <!--                   		0             1             2             3 -->
         <param name="AxisMap"> 		0             1             2             3	</param>
         <param name="Encoder">     -182.044      -182.044      -182.044      -182.044	</param>
-        <param name="Zeros">       -180          -326           13.2         -187	</param>
+        <param name="Zeros">       -184          -315           19.2         -187	</param>
         <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C	</param>
         <param name="TorqueChan">	0             1             2             3	</param>
         <param name="TorqueMax"> 	8             8             8             8	</param>
@@ -41,17 +41,17 @@
 
     <group name="PIDS">
         <!--                 Proportional  Derivative     Integral   Integral Limit      PWM Limit     scale factor   offset 	-->
-        <param name="Pid0">  -5             0               10             2500            10000             11          0          </param>
-        <param name="Pid1">  -5             0               10             2500            10000             11          0          </param>
-        <param name="Pid2">  -5             0               10             2500            10000             11          0          </param>
-        <param name="Pid3">  -5             0               10             2500            10000             11          0          </param>
+        <param name="Pid0">  -1280             0             -1250        750            8000             8          0          </param>
+        <param name="Pid1">  -1280             0             -1250        750            8000             8          0          </param>
+        <param name="Pid2">  -1280             0             -1250        750            8000             8          0          </param>
+        <param name="Pid3">  -1280             0             -1250        750            8000             8          0          </param>
     </group>
 
     <group name="TORQUE_PIDS">
-        <param name="TPid0"> -200  	        0   	    	0	          0        		  10000    	        10  	    0          </param>
-        <param name="TPid1"> -200  	        0	            0		      0		          10000    	        10  	    0 	       </param>
-        <param name="TPid2"> -200 	        0   		    0   		  0    		      10000    	        10  	    0 	       </param>
-        <param name="TPid3"> -500           0   		    0   		  0    		      10000    	        10  	    0 	       </param>
+        <param name="TPid0"> -13  	        0   	    	0	          0        		  8000    	       6  	    0          </param>
+        <param name="TPid1"> -13  	        0	            0		      0		          8000    	       6  	    0 	       </param>
+        <param name="TPid2"> -13 	        0   		    0   		  0    		      8000    	       6  	    0 	       </param>
+        <param name="TPid3"> -32            0   		    0   		  0    		      8000    	       6  	    0 	       </param>
     </group>
 
 </params>

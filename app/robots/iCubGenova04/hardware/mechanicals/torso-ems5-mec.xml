@@ -8,7 +8,7 @@
                              <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
 	<param name="AxisMap">          2             0             1           </param>   <!-- hardware axis number  (EMS) -->
         <param name="Encoder">   	182.044       182.044       182.044     </param>
-        <param name="Zeros">     	180.00        179.00        180.00      </param>
+        <param name="Zeros">     	180.00        180.00        180.00      </param>
         <param name="TorqueId">  	0x0C          0x0C          0x0C  	</param>
         <param name="TorqueChan">	0             1             2		</param>
         <param name="TorqueMax"> 	18            18            18		</param>
@@ -39,15 +39,15 @@
 
     <group name="PIDS">
         <!--                 Proportional  Derivative    Integral      Integral Limit     PWM Limit     scale factor    offset -->
-        <param name="Pid0">     7          0             10             2500                10000          11            0    </param>
-        <param name="Pid1">     10         0             10             2500                10000          11            0    </param>
-        <param name="Pid2">     10         0             10             5000                20000          11            0    </param>
+        <param name="Pid0">     1792          0             6250            750              8000          8            0    </param>
+        <param name="Pid1">     2560          0             6250            750              8000          8            0    </param>
+        <param name="Pid2">     2560          0             6250           1500             16000          8            0    </param>
     </group>
 
     <group name="TORQUE_PIDS">
-        <param name="TPid0">      300             0             0          0          	  10000          10            0  </param>
-        <param name="TPid1">      400             0             0          0          	  10000          10            0  </param>
-        <param name="TPid2">      400             0             0          0              20000          10            0  </param>
+        <param name="TPid0">      19             0             0          0          	     8000          6            0  </param>
+        <param name="TPid1">      26             0             0          0          	     8000          6            0  </param>
+        <param name="TPid2">      26             0             0          0                  8000          6            0  </param>
     </group>
 
 </params>
