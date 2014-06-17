@@ -158,6 +158,12 @@ service depth2kin_IDL
    bool blockEyes();
 
    /**
+   * Remove the block on the eyes.
+   * @return true/false on success/failure.
+   */
+   bool clearEyes();
+
+   /**
    * Select the arm to deal with.
    * @param arm is "left" or "right".
    * @return true/false on success/failure.

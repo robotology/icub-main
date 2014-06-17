@@ -881,7 +881,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_side=abs(rf.check("roi_side",Value(100)).asInt());
-    block_eyes=fabs(rf.check("block_eyes",Value(10.0)).asDouble());
+    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
     exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
 
     motorExplorationAsyncStop=false;
@@ -1344,8 +1344,14 @@ double CalibModule::getBlockEyes()
 /************************************************************************/
 bool CalibModule::blockEyes()
 {
-    igaze->blockEyes(block_eyes);
-    return true;
+    return igaze->blockEyes(block_eyes);
+}
+
+
+/************************************************************************/
+bool CalibModule::clearEyes()
+{
+    return igaze->clearEyes();
 }
 
 
