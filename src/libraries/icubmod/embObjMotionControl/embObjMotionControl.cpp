@@ -71,7 +71,7 @@ static double convertA2I(double angle_in_degrees, double zero, double factor)
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    yError() << txt << "is not yet implemented for embObjMotionControl";
+    yError() << txt << " is not yet implemented for embObjMotionControl";
     return true;
 }
 
@@ -411,6 +411,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementTorqueControl(this),
     ImplementControlLimits2(this),
     ImplementPositionDirect(this),
+    ImplementOpenLoopControl(this),
     ImplementInteractionMode(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
@@ -627,6 +628,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
     /*
@@ -1518,6 +1520,7 @@ bool embObjMotionControl::close()
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();
     ImplementPositionDirect::uninitialize();
+    ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
     int ret = ethManager->releaseResource(_fId);
     res = NULL;
@@ -1671,35 +1674,6 @@ bool embObjMotionControl::getErrorsRaw(double *errs)
     for(int j=0; j< _njoints; j++)
     {
         ret &= getErrorRaw(j, &errs[j]);
-    }
-    return ret;
-}
-
-bool embObjMotionControl::getOutputRaw(int j, double *out)
-{
-    bool ret = true;
-    eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
-    uint16_t size;
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
-    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
-    {
-        *out = (double) tmpJointStatus.output;
-    }
-    else
-    {
-        *out = 0;
-        ret = false;
-    }
-    return ret;
-}
-
-bool embObjMotionControl::getOutputsRaw(double *outs)
-{
-    bool ret = true;
-
-    for(int j=0; j< _njoints; j++)
-    {
-        ret &= getOutputRaw(j, &outs[j]);
     }
     return ret;
 }
@@ -3554,7 +3528,7 @@ bool embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionMod
 {
     uint16_t     size;
     eOenum08_t   interactionmodestatus;
-    std::cout << "eoMC getInteractionModeRaw SINGLE joint " << j << std::endl;
+//    std::cout << "eoMC getInteractionModeRaw SINGLE joint " << j << std::endl;
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_interactionmodestatus);
     if(! res->readBufferedValue(protid, (uint8_t *)&interactionmodestatus, &size)) // it is broadcasted toghether with the jointStatus full
@@ -3570,7 +3544,7 @@ bool embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionMod
 
 bool embObjMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "eoMC getInteractionModeRaw GROUP joints" << std::endl;
+//    std::cout << "eoMC getInteractionModeRaw GROUP joints" << std::endl;
     bool ret = true;
     for(int idx=0; idx<n_joints; idx++)
     {
@@ -3582,7 +3556,7 @@ bool embObjMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
 
 bool embObjMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "eoMC getInteractionModeRaw ALL joints" << std::endl;
+//    std::cout << "eoMC getInteractionModeRaw ALL joints" << std::endl;
     bool ret = true;
     for(int j=0; j<_njoints; j++)
         ret = ret && getInteractionModeRaw(j, &modes[j]);
@@ -3594,7 +3568,7 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
     eOenum08_t      valSet;
     eOenum08_t      valGot;
 
-    yDebug() << "received setInteractionModeRaw command (SINGLE) for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+//    yDebug() << "received setInteractionModeRaw command (SINGLE) for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
 
     if(!interactionModeCommandConvert_yarp2embObj(_mode, valSet) )
     {
@@ -3623,7 +3597,7 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
 bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "setInteractionModeRaw GROUP " << std::endl;
+//    std::cout << "setInteractionModeRaw GROUP " << std::endl;
 
     int  *jointVector = new int[n_joints];
 
@@ -3671,7 +3645,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
 bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "setInteractionModeRaw all " << std::endl;
+//    std::cout << "setInteractionModeRaw all " << std::endl;
 
     int  *jointVector = new int[_njoints];
 
@@ -3717,5 +3691,63 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //    }
 }
 
-// eof
+//
+// OPENLOOP interface
+//
 
+
+bool embObjMotionControl::setOpenLoopModeRaw()
+{
+    NOT_YET_IMPLEMENTED("setOpenLoopMode() all joints");
+}
+
+bool embObjMotionControl::setRefOutputRaw(int j, double v)
+{
+    NOT_YET_IMPLEMENTED("setRefOutputRaw() all joints");
+}
+
+bool embObjMotionControl::setRefOutputsRaw(const double *v)
+{
+    NOT_YET_IMPLEMENTED("setRefOutputsRaw() all joints");
+}
+
+bool embObjMotionControl::getRefOutputRaw(int j, double *out)
+{
+    NOT_YET_IMPLEMENTED("getRefOutputRaw() all joints");
+}
+
+bool embObjMotionControl::getRefOutputsRaw(double *outs)
+{
+    NOT_YET_IMPLEMENTED("getRefOutputsRaw() all joints");
+}
+
+bool embObjMotionControl::getOutputRaw(int j, double *out)
+{
+    bool ret = true;
+    eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
+    uint16_t size;
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
+    {
+        *out = (double) tmpJointStatus.output;
+    }
+    else
+    {
+        *out = 0;
+        ret = false;
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getOutputsRaw(double *outs)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getOutputRaw(j, &outs[j]);
+    }
+    return ret;
+}
+
+
+// eof

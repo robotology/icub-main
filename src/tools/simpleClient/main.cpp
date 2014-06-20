@@ -630,7 +630,7 @@ int main(int argc, char *argv[])
                 case VOCAB_OUTPUT: {
                     int j=p.get(2).asInt();
                     double v=p.get(3).asDouble();
-                    iopenloop->setOutput(j,v);
+                    iopenloop->setRefOutput(j,v);
                     printf("%s: setting output for axis %d to %f\n", Vocab::decode(VOCAB_OUTPUT).c_str(), j, v);            
                 }
                 break;

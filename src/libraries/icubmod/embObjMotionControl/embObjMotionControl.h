@@ -209,6 +209,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementPositionDirect,
     public IInteractionModeRaw,
     public ImplementInteractionMode,
+    public IOpenLoopControlRaw,
+    public ImplementOpenLoopControl,
     public IDebugInterfaceRaw,
     public ImplementDebugInterface
 {
@@ -310,7 +312,6 @@ private:
     bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
     int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
 
-
 public:
     embObjMotionControl();
     ~embObjMotionControl();
@@ -343,8 +344,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // uses iOpenLoop interface
+//    virtual bool getOutputsRaw(double *outs);         // uses iOpenLoop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -574,6 +575,15 @@ public:
     bool setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode);
     bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
     bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+
+    // OPENLOOP interface
+    bool setRefOutputRaw(int j, double v);
+    bool setRefOutputsRaw(const double *v);
+    bool getRefOutputRaw(int j, double *out);
+    bool getRefOutputsRaw(double *outs);
+    bool getOutputRaw(int j, double *out);
+    bool getOutputsRaw(double *outs);
+    bool setOpenLoopModeRaw();
 };
 
 #endif // include guard

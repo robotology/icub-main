@@ -4578,17 +4578,6 @@ bool CanBusMotionControl::getErrorsRaw(double *errs)
     return true;
 }
 
-bool CanBusMotionControl::getOutputRaw(int axis, double *out)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
-    _mutex.wait();
-    *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
-    _mutex.post();
-    return true;
-}
-
 bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* value)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
@@ -4868,21 +4857,6 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     return true;
 }
 
-bool CanBusMotionControl::getOutputsRaw(double *outs)
-{
-    CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        outs[i] = double(r._bcastRecvBuffer[i]._pid_value);
-    }
-
-    _mutex.post();
-    return true;
-}
-
 bool CanBusMotionControl::getReferenceRaw(int j, double *ref)
 {
     const int axis = j;
@@ -4990,27 +4964,63 @@ bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(value));
 }
 
-bool CanBusMotionControl::setOutputsRaw(const double *v)
+bool CanBusMotionControl::setRefOutputsRaw(const double *v)
 {
     CanBusResources& r = RES(system_resources);
 
     int i;
     for (i = 0; i < r.getJoints(); i++) {
-        setOutputRaw(i,v[i]);
+        setRefOutputRaw(i,v[i]);
     }
 
     return true;
 }
 
-bool CanBusMotionControl::setOutputRaw(int axis, double v)
+bool CanBusMotionControl::setRefOutputRaw(int axis, double v)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, axis, S_16(v));
-
 }
 
+bool CanBusMotionControl::getRefOutputRaw(int j, double *out)
+{
+    std::cout << "canBusMotionControl::getRefOutputRaw(" << j << "," << out << ")" << std::endl;
+    return true;
+}
+
+bool CanBusMotionControl::getRefOutputsRaw(double *outs)
+{
+    std::cout << "canBusMotionControl::getRefOutputsRaw() - ALL joints" << std::endl;
+    return true;
+}
+
+bool CanBusMotionControl::getOutputRaw(int axis, double *out)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return false;
+    _mutex.wait();
+    *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getOutputsRaw(double *outs)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        outs[i] = double(r._bcastRecvBuffer[i]._pid_value);
+    }
+
+    _mutex.post();
+    return true;
+}
 bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 {
     return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");

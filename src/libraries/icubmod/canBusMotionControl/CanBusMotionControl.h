@@ -792,8 +792,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // also in the openloop interface
+//    virtual bool getOutputsRaw(double *outs);         // also in the openloop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -897,12 +897,13 @@ public:
     ///////////// OpenLoop control interface raw
     ///
     virtual bool setOpenLoopModeRaw();
-    virtual bool setOutputRaw(int axis, double v);
-    virtual bool setOutputsRaw(const double *v);
-    //virtual bool getOutputRaw(int j, double *out); //already in PID interface
-    //virtual bool getOutputsRaw(double *outs);      //already in PID interface
-    //
-    /////////////////////////////// END Velocity Control INTERFACE
+    virtual bool setRefOutputRaw(int axis, double v);
+    virtual bool setRefOutputsRaw(const double *v);
+    virtual bool getRefOutputRaw(int j, double *out);
+    virtual bool getRefOutputsRaw(double *outs);
+    virtual bool getOutputRaw(int j, double *out);
+    virtual bool getOutputsRaw(double *outs);
+    /////////////////////////////// END OpenLoop Control INTERFACE
 
     ///////////// Velocity control interface raw
     ///

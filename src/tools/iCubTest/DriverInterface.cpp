@@ -159,7 +159,7 @@ iCubDriver::ResultCode iCubDriver::startOpenloopCmd(int part,int joint,double pw
         return IOPL_OPLSTART_FAILED;
     }
 
-    if (!m_apOpl[part]->setOutput(joint,pwm))
+//    if (!m_apOpl[part]->setOutput(joint,pwm))
     {
         return IOPL_OPLSTART_FAILED;
     }
@@ -179,7 +179,7 @@ iCubDriver::ResultCode iCubDriver::stopOpenloopCmd(int part,int joint)
         return IOPL_OPLSTOP_FAILED;
     }
 
-    if (!m_apOpl[part]->setOutput(joint,0.0))
+    if (!m_apOpl[part]->setRefOutput(joint,0.0))
     {
         return IOPL_OPLSTOP_FAILED;
     }
