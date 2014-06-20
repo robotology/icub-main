@@ -65,6 +65,8 @@ public:
   bool write(yarp::os::idl::WireWriter& writer);
   bool write(yarp::os::ConnectionWriter& connection);
   
+  yarp::os::ConstString toString();
+  
   // if you want to serialize this class without nesting, use this helper
   typedef yarp::os::idl::Unwrapped<PointReq > unwrapped;
 };
