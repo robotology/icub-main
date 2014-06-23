@@ -93,6 +93,7 @@ protected:
     double neckTime;
     double eyesTime;
     double minAbsVel;
+    double startupMinVer;
     double q_stamp;
     double Ts;
 
