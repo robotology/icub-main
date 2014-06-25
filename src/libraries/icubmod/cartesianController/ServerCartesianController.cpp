@@ -37,6 +37,7 @@
 #define CARTCTRL_DEFAULT_TOL                1e-2
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
 #define CARTCTRL_DEFAULT_POSCTRL            "on"
+#define CARTCTRL_DEFAULT_MULJNTCTRL         "on"
 #define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
 #define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
@@ -1269,17 +1270,16 @@ bool ServerCartesianController::areJointsHealthy()
 
 
 /************************************************************************/
-void ServerCartesianController::sendControlCommands()
+void ServerCartesianController::sendControlCommandsMultipleJoints()
 {
-    int j=0;
-    int k=0;
+    VectorOf<int> joints;
+    Vector refs;
     int cnt=0;
+    int j=0;
+    int k=0;    
 
     if (posDirectEnabled)
-    {        
-        VectorOf<int> joints;
-        Vector refs;
-
+    {
         Vector q=ctrl->get_q();
         for (unsigned int i=0; i<chainState->getN(); i++)
         {
@@ -1303,7 +1303,62 @@ void ServerCartesianController::sendControlCommands()
     else
     {
         Vector v=ctrl->get_qdot();
-        for (unsigned int i=0; i<chainState->getN(); i++) 
+        for (unsigned int i=0; i<chainState->getN(); i++)
+        {
+            if (!(*chainState)[i].isBlocked())
+            {
+                double v_cnt=CTRL_RAD2DEG*v[cnt];
+                double thres=lDsc[j].minAbsVels[k];
+
+                // apply bang-bang control to compensate for unachievable low velocities
+                if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
+                    v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+
+                joints.push_back(lRmp[j][k]);
+                refs.push_back(v_cnt);
+                velCmd[cnt]=v_cnt;
+                cnt++;
+            }
+
+            if (++k>=lJnt[j])
+            {
+                lVel[j]->velocityMove(joints.size(),joints.getFirst(),refs.data());
+                joints.clear();
+                refs.clear();
+                j++;
+                k=0;
+            }
+        }
+    }
+}
+
+
+/************************************************************************/
+void ServerCartesianController::sendControlCommandsSingleJoint()
+{
+    int cnt=0;
+    int j=0;
+    int k=0;    
+
+    if (posDirectEnabled)
+    {
+        Vector q=ctrl->get_q();
+        for (unsigned int i=0; i<chainState->getN(); i++)
+        {
+            if (!(*chainState)[i].isBlocked())
+                lPos[j]->setPosition(lRmp[j][k],CTRL_RAD2DEG*q[cnt++]);                
+
+            if (++k>=lJnt[j])
+            {
+                j++;
+                k=0;
+            }
+        }
+    }
+    else
+    {
+        Vector v=ctrl->get_qdot();
+        for (unsigned int i=0; i<chainState->getN(); i++)
         {
             if (!(*chainState)[i].isBlocked())
             {
@@ -1455,9 +1510,11 @@ void ServerCartesianController::run()
                 if (!trackingMode && (rxToken==txToken))
                     setTrackingModeHelper(false);
             }
+            // send commands to the robot
+            else if (multipleJointsControlEnabled)
+                sendControlCommandsMultipleJoints();
             else
-                // send commands to the robot
-                sendControlCommands();
+                sendControlCommandsSingleJoint();
         }
 
         mutex.unlock();
@@ -1620,6 +1677,9 @@ bool ServerCartesianController::open(Searchable &config)
 
     posDirectEnabled=optGeneral.check("PositionControl",
                                       Value(CARTCTRL_DEFAULT_POSCTRL)).asString()=="on";
+
+    multipleJointsControlEnabled=optGeneral.check("MultipleJointsControl",
+                                                  Value(CARTCTRL_DEFAULT_MULJNTCTRL)).asString()=="on";
 
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
@@ -1831,15 +1891,15 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         {
             printf("ok\n");
 
-            IControlMode     *mod;
-            IEncoders        *enc;
-            IEncodersTimed   *ent;
-            IPidControl      *pid;
-            IControlLimits   *lim;
-            IVelocityControl *vel;
-            IPositionDirect  *pos;
-            IPositionControl *stp;
-            int               joints;
+            IControlMode      *mod;
+            IEncoders         *enc;
+            IEncodersTimed    *ent;
+            IPidControl       *pid;
+            IControlLimits    *lim;
+            IVelocityControl2 *vel;
+            IPositionDirect   *pos;
+            IPositionControl  *stp;
+            int                joints;
 
             drivers[j]->poly->view(mod);
             drivers[j]->poly->view(enc);
@@ -1909,6 +1969,9 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     posDirectEnabled&=posDirectAvailable;
     printf("%s: %s interface will be used\n",ctrlName.c_str(),
            posDirectEnabled?"IPositionDirect":"IVelocityControl");
+
+    printf("%s: %s control will be used\n",ctrlName.c_str(),
+           multipleJointsControlEnabled?"multiple joints":"single joint");
 
     alignJointsBounds();
 

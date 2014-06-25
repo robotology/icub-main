@@ -111,6 +111,7 @@ protected:
     bool encTimedEnabled;
     bool posDirectEnabled;
     bool posDirectAvailable;
+    bool multipleJointsControlEnabled;
     bool pidAvailable;
     bool useReferences;
     bool jointsHealthy;
@@ -128,18 +129,18 @@ protected:
 
     yarp::os::Property plantModelProperties;
     SmithPredictor     smithPredictor;
-    
-    std::deque<DriverDescriptor>             lDsc;
-    std::deque<yarp::dev::IControlMode*>     lMod;
-    std::deque<yarp::dev::IEncoders*>        lEnc;
-    std::deque<yarp::dev::IEncodersTimed*>   lEnt;
-    std::deque<yarp::dev::IPidControl*>      lPid;
-    std::deque<yarp::dev::IControlLimits*>   lLim;
-    std::deque<yarp::dev::IVelocityControl*> lVel;
-    std::deque<yarp::dev::IPositionDirect*>  lPos;
-    std::deque<yarp::dev::IPositionControl*> lStp;
-    std::deque<int>                          lJnt;
-    std::deque<int*>                         lRmp;
+
+    std::deque<DriverDescriptor>              lDsc;
+    std::deque<yarp::dev::IControlMode*>      lMod;
+    std::deque<yarp::dev::IEncoders*>         lEnc;
+    std::deque<yarp::dev::IEncodersTimed*>    lEnt;
+    std::deque<yarp::dev::IPidControl*>       lPid;
+    std::deque<yarp::dev::IControlLimits*>    lLim;
+    std::deque<yarp::dev::IVelocityControl2*> lVel;
+    std::deque<yarp::dev::IPositionDirect*>   lPos;
+    std::deque<yarp::dev::IPositionControl*>  lStp;
+    std::deque<int>                           lJnt;
+    std::deque<int*>                          lRmp;
 
     unsigned int connectCnt;
     unsigned int ctrlPose;
@@ -212,7 +213,8 @@ protected:
     void   createController();
     bool   getNewTarget();
     bool   areJointsHealthy();
-    void   sendControlCommands();
+    void   sendControlCommandsMultipleJoints();
+    void   sendControlCommandsSingleJoint();
     void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
