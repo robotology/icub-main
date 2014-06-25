@@ -1598,7 +1598,6 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
     eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint;
-    uint16_t *prog = (uint16_t*) &setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
     setpoint.to.position.value = (eOmeas_position_t) ref;
@@ -2041,12 +2040,9 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
 #endif
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-
-
     _ref_positions[j] = ref;   // save internally the new value of pos.
 
     eOmc_setpoint_t setpoint;
-    uint16_t *prog = (uint16_t*) &setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
     setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[j];
@@ -3645,8 +3641,6 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
 bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
-//    std::cout << "setInteractionModeRaw all " << std::endl;
-
     int  *jointVector = new int[_njoints];
 
     eOenum08_t     *valSet = new eOenum08_t [_njoints];
@@ -3691,34 +3685,67 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //    }
 }
 
+
 //
 // OPENLOOP interface
 //
-
-
 bool embObjMotionControl::setOpenLoopModeRaw()
 {
-    NOT_YET_IMPLEMENTED("setOpenLoopMode() all joints");
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+        ret = setOpenLoopModeRaw(j) && ret;
+
+    return ret;
 }
 
 bool embObjMotionControl::setRefOutputRaw(int j, double v)
 {
-    NOT_YET_IMPLEMENTED("setRefOutputRaw() all joints");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
+
+    eOmc_setpoint_t setpoint;
+
+    setpoint.type = (eOenum08_t) eomc_setpoint_openloop;
+    setpoint.to.openloop.value =  (eOmeas_openloop_t) v;
+
+    return res->addSetMessage(protid, (uint8_t*) &setpoint);
 }
 
 bool embObjMotionControl::setRefOutputsRaw(const double *v)
 {
-    NOT_YET_IMPLEMENTED("setRefOutputsRaw() all joints");
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+    {
+        ret = ret && setRefOutputRaw(j, v[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getRefOutputRaw(int j, double *out)
 {
-    NOT_YET_IMPLEMENTED("getRefOutputRaw() all joints");
+    bool ret = true;
+    eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
+    uint16_t size;
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
+    {
+        *out = (double) tmpJointStatus.reference;
+    }
+    else
+    {
+        *out = 0;
+        ret = false;
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getRefOutputsRaw(double *outs)
 {
-    NOT_YET_IMPLEMENTED("getRefOutputsRaw() all joints");
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+    {
+        ret = ret && getRefOutputRaw(j, &outs[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getOutputRaw(int j, double *out)
