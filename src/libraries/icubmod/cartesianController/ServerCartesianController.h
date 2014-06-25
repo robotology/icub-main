@@ -204,6 +204,8 @@ protected:
     std::multiset<double> motionOngoingEvents;
     std::multiset<double> motionOngoingEventsCurrent;
 
+    void (ServerCartesianController::*sendControlCommands)();
+
     void   init();
     void   openPorts();
     void   closePorts();

@@ -1509,12 +1509,10 @@ void ServerCartesianController::run()
                 // if that's the case
                 if (!trackingMode && (rxToken==txToken))
                     setTrackingModeHelper(false);
-            }
-            // send commands to the robot
-            else if (multipleJointsControlEnabled)
-                sendControlCommandsMultipleJoints();
+            }            
             else
-                sendControlCommandsSingleJoint();
+                // send commands to the robot
+                (this->*sendControlCommands)();
         }
 
         mutex.unlock();
@@ -1807,6 +1805,11 @@ bool ServerCartesianController::open(Searchable &config)
 
     chainState=limbState->asChain();
     chainPlan=limbPlan->asChain();
+
+    if (multipleJointsControlEnabled)
+        sendControlCommands=&ServerCartesianController::sendControlCommandsMultipleJoints;
+    else
+        sendControlCommands=&ServerCartesianController::sendControlCommandsSingleJoint;
 
     openPorts();
 
