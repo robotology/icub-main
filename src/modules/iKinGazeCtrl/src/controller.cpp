@@ -133,6 +133,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     copyJointsBounds(chainEyeL,chainEyeR);
 
     // find minimum allowed vergence
+    startupMinVer=lim(nJointsHead-1,0);
     findMinimumAllowedVergence();
 
     // reinforce vergence min bound
@@ -189,7 +190,7 @@ void Controller::findMinimumAllowedVergence()
     Vector zeros(cl.getDOF(),0.0);
     cl.setAng(zeros); cr.setAng(zeros);
 
-    double minVer=lim(nJointsHead-1,0);
+    double minVer=startupMinVer;
     double maxVer=lim(nJointsHead-1,1);
     for (double ver=minVer; ver<maxVer; ver+=0.5*CTRL_DEG2RAD)
     {
