@@ -3704,8 +3704,8 @@ bool embObjMotionControl::setRefOutputRaw(int j, double v)
 
     eOmc_setpoint_t setpoint;
 
-    setpoint.type = (eOenum08_t) eomc_setpoint_openloop;
-    setpoint.to.openloop.value =  (eOmeas_openloop_t) v;
+    setpoint.type = (eOenum08_t) eomc_setpoint_current;
+    setpoint.to.current.value =  (eOmeas_current_t) v;
 
     return res->addSetMessage(protid, (uint8_t*) &setpoint);
 }
