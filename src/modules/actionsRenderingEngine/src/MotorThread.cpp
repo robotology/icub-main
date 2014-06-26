@@ -1739,12 +1739,12 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     // increase reaching precision
     ICartesianControl *ctrl; double tol;
-    action[arm]->getCartesianIF(ctrl);    
+    action[arm]->getCartesianIF(ctrl);
     ctrl->getInTargetTol(&tol);
-    ctrl->setInTargetTol(0.001);
+    ctrl->setInTargetTol(0.002);
 
     // give time for precise reaching
-    action[arm]->enableReachingTimeout(3.0*reachingTimeout);
+    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
 
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
