@@ -1743,10 +1743,15 @@ bool MotorThread::powerGrasp(Bottle &options)
     ctrl->getInTargetTol(&tol);
     ctrl->setInTargetTol(0.001);
 
+    // give time for precise reaching
+    action[arm]->enableReachingTimeout(3.0*reachingTimeout);
+
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
     action[arm]->disableContactDetection();
+
     ctrl->setInTargetTol(tol);
+    action[arm]->enableReachingTimeout(reachingTimeout);
 
     return grasp(options);
 }
