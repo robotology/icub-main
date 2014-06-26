@@ -66,7 +66,7 @@ public:
     * @param d is the element data vector.
     * @param t is time instant of sampled data.
     */ 
-    AWPolyElement(const yarp::sig::Vector &d, const double t): data(d), time(t) {}
+    AWPolyElement(const yarp::sig::Vector &d, const double t): time(t), data(d) {}
 };
 
 
