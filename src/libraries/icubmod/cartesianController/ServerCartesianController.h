@@ -204,7 +204,7 @@ protected:
     std::multiset<double> motionOngoingEvents;
     std::multiset<double> motionOngoingEventsCurrent;
 
-    void (ServerCartesianController::*sendControlCommands)();
+    void (ServerCartesianController::*sendCtrlCmd)();
 
     void   init();
     void   openPorts();
@@ -215,8 +215,10 @@ protected:
     void   createController();
     bool   getNewTarget();
     bool   areJointsHealthy();
-    void   sendControlCommandsMultipleJoints();
-    void   sendControlCommandsSingleJoint();
+    void   sendCtrlCmdMultipleJointsPosition();
+    void   sendCtrlCmdMultipleJointsVelocity();
+    void   sendCtrlCmdSingleJointPosition();
+    void   sendCtrlCmdSingleJointVelocity();
     void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
