@@ -1735,11 +1735,18 @@ bool MotorThread::powerGrasp(Bottle &options)
     action[arm]->pushAction(approach_x,approach_o,"pregrasp_hand");
 
     bool f;
-    action[arm]->checkActionsDone(f,true);    
+    action[arm]->checkActionsDone(f,true);
+
+    // increase reaching precision
+    ICartesianControl *ctrl; double tol;
+    action[arm]->getCartesianIF(ctrl);    
+    ctrl->getInTargetTol(&tol);
+    ctrl->setInTargetTol(0.001);
 
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
     action[arm]->disableContactDetection();
+    ctrl->setInTargetTol(tol);
 
     return grasp(options);
 }
@@ -2932,7 +2939,6 @@ bool MotorThread::imitateAction(Bottle &options)
 
     ICartesianControl *ctrl;
     action[arm]->getCartesianIF(ctrl);
-
 
     double currTrajTime;
     ctrl->getTrajTime(&currTrajTime);
