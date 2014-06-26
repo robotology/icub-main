@@ -1735,11 +1735,11 @@ bool MotorThread::powerGrasp(Bottle &options)
     action[arm]->pushAction(approach_x,approach_o,"pregrasp_hand");
 
     bool f;
-    action[arm]->checkActionsDone(f,true);
-    action[arm]->disableContactDetection();
+    action[arm]->checkActionsDone(f,true);    
 
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
+    action[arm]->disableContactDetection();
 
     return grasp(options);
 }
