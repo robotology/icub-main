@@ -230,7 +230,7 @@ private:
 
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
-    int checkArm(int arm, Vector &xd);
+    int checkArm(int arm, Vector &xd, const bool applyOffset=true);
     bool checkOptions(Bottle &options, const string &parameter);
     Vector eye2root(const Vector &out,bool forehead);
     bool stereoToCartesianHomography(const Vector &stereo, Vector &xd);
