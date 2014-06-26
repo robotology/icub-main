@@ -83,7 +83,7 @@ int MotorThread::checkArm(int arm)
 }
 
 
-int MotorThread::checkArm(int arm, Vector &xd)
+int MotorThread::checkArm(int arm, Vector &xd, const bool applyOffset)
 {
     if(arm==ARM_MOST_SUITED)
         arm=xd[1]<0.0?LEFT:RIGHT;
@@ -91,9 +91,12 @@ int MotorThread::checkArm(int arm, Vector &xd)
     if(arm!=ARM_IN_USE && arm!=ARM_MOST_SUITED && action[arm]!=NULL)
         armInUse=arm;
 
-    xd[0]+=currentKinematicOffset[armInUse][0];
-    xd[1]+=currentKinematicOffset[armInUse][1];
-    xd[2]+=currentKinematicOffset[armInUse][2];
+    if (applyOffset)
+    {
+        xd[0]+=currentKinematicOffset[armInUse][0]; 
+        xd[1]+=currentKinematicOffset[armInUse][1];
+        xd[2]+=currentKinematicOffset[armInUse][2];
+    }
 
     return checkArm(arm);
 }
@@ -272,7 +275,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 {
     bool found=false;
 
-    //set the default current kinematic offsets for the arms
+    // set the default current kinematic offsets for the arms
     currentKinematicOffset[LEFT]=defaultKinematicOffset[LEFT];
     currentKinematicOffset[RIGHT]=defaultKinematicOffset[RIGHT];
 
@@ -289,11 +292,11 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     }
 
     // if an object was specified check for its 3D position associated to the object
-    if(!found && bTarget!=NULL &&  bTarget->check("name"))
+    if(!found && bTarget!=NULL && bTarget->check("name"))
         if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
             found=true;
 
-    if(!found &&  bTarget!=NULL &&  bTarget->check("stereo"))
+    if(!found && bTarget!=NULL && bTarget->check("stereo"))
     {
         Bottle *bStereo=bTarget->find("stereo").asList();
 
@@ -307,11 +310,12 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         }
     }
 
-    if(found && bTarget!=NULL &&  bTarget->check("name"))
+    if(found && bTarget!=NULL && bTarget->check("name"))
         opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
 
     return found;
 }
+
 
 bool MotorThread::stereoToCartesian(const Vector &stereo, Vector &xd)
 {
@@ -1693,7 +1697,7 @@ bool MotorThread::powerGrasp(Bottle &options)
     if (xd.length()<7)
         return false;
 
-    arm=checkArm(arm,xd);
+    arm=checkArm(arm,xd,false);
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
@@ -1732,10 +1736,17 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-    action[arm]->disableContactDetection();
+
+    // increase reaching precision
+    ICartesianControl *ctrl; double tol;
+    action[arm]->getCartesianIF(ctrl);    
+    ctrl->getInTargetTol(&tol);
+    ctrl->setInTargetTol(0.001);
 
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
+    action[arm]->disableContactDetection();
+    ctrl->setInTargetTol(tol);
 
     return grasp(options);
 }
@@ -2928,7 +2939,6 @@ bool MotorThread::imitateAction(Bottle &options)
 
     ICartesianControl *ctrl;
     action[arm]->getCartesianIF(ctrl);
-
 
     double currTrajTime;
     ctrl->getTrajTime(&currTrajTime);
