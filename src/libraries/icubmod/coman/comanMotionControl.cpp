@@ -2855,6 +2855,7 @@ bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping
     }
 
     bool ret = (!_boards_ctrl->set_stiffness_damping_group(&bId, &tmp_stiff, &tmp_damp, 1));
+    yarp::os::Time::delay(0.0001);
 
     if(!ret)
     {

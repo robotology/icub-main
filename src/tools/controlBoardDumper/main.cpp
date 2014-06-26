@@ -417,11 +417,14 @@ public:
         ddDebugOptions.put("local", localDebugPortName.c_str());
 
         ConstString remotePortName = "/";
+        ConstString remoteDebugPortName;
         remotePortName = remotePortName + robot.asString();
         remotePortName = remotePortName + "/";
         remotePortName = remotePortName + part.asString();
         ddBoardOptions.put("remote", remotePortName.c_str());
-        ddDebugOptions.put("remote", remotePortName.c_str());
+
+        remoteDebugPortName = remotePortName + "/debug";
+        ddDebugOptions.put("remote", remoteDebugPortName.c_str());
     
         fprintf(stderr, "%s", ddBoardOptions.toString().c_str());    
         // create a device 
@@ -743,7 +746,7 @@ int main(int argc, char *argv[])
     if (!p.check("joints"))
     {
         Value v;
-        v.fromString("(0 1)");
+        v.fromString("(0)");
         p.put("joints", v);
     }
     if (!p.check("dataToDump"))

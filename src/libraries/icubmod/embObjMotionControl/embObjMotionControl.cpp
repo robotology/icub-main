@@ -2585,7 +2585,7 @@ bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
 bool embObjMotionControl::getRotorPositionsRaw        (double* value)
 {
     bool ret = true;
-    for(int j=0; j< _joints; j++)
+    for(int j=0; j< _njoints; j++)
         ret = getRotorPositionRaw(j, &value[j]) && ret;
 
     return ret;
@@ -2605,7 +2605,7 @@ bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)
 bool embObjMotionControl::getRotorSpeedsRaw           (double* value)
 {
     bool ret = true;
-     for(int j=0; j< _joints; j++)
+     for(int j=0; j< _njoints; j++)
          ret = getRotorSpeedRaw(j, &value[j]) && ret;
 
      return ret;

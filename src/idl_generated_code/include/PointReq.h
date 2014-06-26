@@ -16,9 +16,7 @@ class PointReq;
  */
 class PointReq : public yarp::os::idl::WirePortable {
 public:
-  // if you want to serialize this class without nesting, use this helper
-  typedef yarp::os::idl::Unwrapped<PointReq > unwrapped;
-  
+  // Fields
 /**
  * contain [ok]/[fail] on success/failure.
  */
@@ -35,14 +33,42 @@ public:
  * the z-coordinate.
  */
   double z;
+  
+  // Default constructor
   PointReq() : result(""), x(0), y(0), z(0) {
   }
+  
+  // Constructor with field values
   PointReq(const std::string& result,const double x,const double y,const double z) : result(result), x(x), y(y), z(z) {
   }
+  
+  // Copy constructor
+  PointReq(const PointReq& __alt) {
+    this->result = __alt.result;
+    this->x = __alt.x;
+    this->y = __alt.y;
+    this->z = __alt.z;
+  }
+  
+  // Assignment operator
+  const PointReq& operator = (const PointReq& __alt) {
+    this->result = __alt.result;
+    this->x = __alt.x;
+    this->y = __alt.y;
+    this->z = __alt.z;
+    return *this;
+  }
+  
+  // read and write structure on a connection
   bool read(yarp::os::idl::WireReader& reader);
   bool read(yarp::os::ConnectionReader& connection);
   bool write(yarp::os::idl::WireWriter& writer);
   bool write(yarp::os::ConnectionWriter& connection);
+  
+  yarp::os::ConstString toString();
+  
+  // if you want to serialize this class without nesting, use this helper
+  typedef yarp::os::idl::Unwrapped<PointReq > unwrapped;
 };
 
 #endif

@@ -184,7 +184,8 @@ public:
     /**
      * Returns the validation gate.
      * @note The validation gate is meaningful only after 
-     *       correction (@see correct).
+     *       correction.
+     * @see correct
      * @return validation gate.
      */
     double get_ValidationGate() const { return validationGate; }

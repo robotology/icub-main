@@ -281,10 +281,10 @@ public:
 
     /**
     * Same as getH() with specification of new joint angle position. 
-    * @see getH()
     * @param _Ang is the new joint angle position. 
     * @param c_override.
-    * @return a reference to H.
+    * @return a reference to H. 
+    * @see getH 
     */
     yarp::sig::Matrix getH(double _Ang, bool c_override=false);
 
@@ -449,7 +449,7 @@ public:
     /**
     * Adds a Link at the bottom of the Chain.
     * @param l is the Link to be added. 
-    * @see operator<<()
+    * @see operator<<
     */
     void pushLink(iKinLink &l);
 
@@ -771,7 +771,7 @@ public:
     /**
     * Prepares computation for a successive call to 
     * fastHessian_ij(). 
-    * @see fastHessian_ij()
+    * @see fastHessian_ij
     */
     void prepareForHessian();
 
@@ -782,14 +782,14 @@ public:
     * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
     * <i>Fast Version</i>: to be used in conjunction with 
     * prepareForHessian(). 
-    * @note It is advisable to use this version when successive 
-    * computations with different indexes values are needed. 
-    * @see prepareForHessian()
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
     * @return the 6x1 vector \f$ 
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
+    * @note It is advisable to use this version when successive 
+    * computations with different indexes values are needed. 
+    * @see prepareForHessian
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j);
 
@@ -813,9 +813,9 @@ public:
     /**
     * Prepares computation for a successive call to 
     * fastHessian_ij() (link version). 
-    * @see fastHessian_ij(lnk,...) 
     * @param lnk is the Link number up to which consider the 
     *            computation.
+    * @see fastHessian_ij 
     */
     void prepareForHessian(const unsigned int lnk);
 
@@ -827,9 +827,6 @@ public:
     * links. 
     * <i>Fast Version</i>: to be used in conjunction with 
     * prepareForHessian(lnk). 
-    * @note It is advisable to use this version when successive 
-    * computations with different indexes values are needed. 
-    * @see prepareForHessian() 
     * @param lnk is the Link number up to which consider the 
     *            computation. 
     * @param i is the index of the first link. 
@@ -837,6 +834,9 @@ public:
     * @return the 6x1 vector \f$ 
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
+    * @note It is advisable to use this version when successive 
+    * computations with different indexes values are needed. 
+    * @see prepareForHessian
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int lnk, const unsigned int i,
                                      const unsigned int j);
@@ -927,7 +927,7 @@ public:
     * Creates a new Limb from a list of properties wherein links 
     * parameters are specified. 
     * @param options is the list of links properties. 
-    * @see fromLinksProperties()
+    * @see fromLinksProperties
     */
     iKinLimb(const yarp::os::Property &options);
 

@@ -27,8 +27,8 @@
                                 kinematic predictions to accept corresponding input-output data pairs.">max_dist</param>
     <param default="100" desc="the side in pixels of the region-of-interest (roi window) centered around the
                                kinematic prediction of the fingertip used to segment the hand.">roi_side</param>
-    <param default="10.0" desc="the vergence in degrees for blocking the eyes during the exploration,
-                                if requested by the user.">block_eyes</param>
+    <param default="5.0" desc="the vergence in degrees for blocking the eyes during the exploration,
+                               if requested by the user.">block_eyes</param>
     <param default="0.5" desc="timeout in seconds applied soon afterwards the reaching of the point
                                during the exploration and right before the acquisition of the
                                input-output data pair.">exploration_wait</param>

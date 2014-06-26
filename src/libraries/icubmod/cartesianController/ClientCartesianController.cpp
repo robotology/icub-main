@@ -465,9 +465,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
         xdesPart.addDouble(od[i]);    
 
     // send command
-    portCmd.write(command);
-
-    return true;
+    return portCmd.write(command);
 }
 
 
@@ -487,9 +485,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
         xdesPart.addDouble(xd[i]);    
 
     // send command
-    portCmd.write(command);
-
-    return true;
+    return portCmd.write(command);
 }
 
 
@@ -1126,9 +1122,7 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         xdotPart.addDouble(odot[i]);
 
     // send command
-    portCmd.write(command);
-
-    return true;
+    return portCmd.write(command);
 }
 
 

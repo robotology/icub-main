@@ -553,13 +553,13 @@ bool LocallyWeightedExperts::retrieve(const Vector &in, Vector &out)
     // consider experts first
     if (sumExperts!=0.0)
     {
-        out=(1.0/sumExperts)*outExperts;
+        out=outExperts/sumExperts;
         return true;
     }
     // then extrapolators
     else if (sumExtrapolators!=0.0)
     {
-        out=(1.0/sumExtrapolators)*outExtrapolators;
+        out=outExtrapolators/sumExtrapolators;
         return true;
     }
     // no models found

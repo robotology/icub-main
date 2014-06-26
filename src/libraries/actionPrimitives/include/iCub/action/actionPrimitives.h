@@ -659,7 +659,7 @@ public:
     * Define an hand motion sequence from a configuration bottle.
     * @param handSeqKey the hand sequence key. 
     * @param sequence the configuration bottle. 
-    * @see open() method for the format. 
+    * @see open
     * @return true/false on success/fail. 
     */
     virtual bool addHandSequence(const std::string &handSeqKey,
@@ -739,8 +739,8 @@ public:
     /**
     * Return the control status of torso joints.
     * @param torso the vector containing the control status of torso 
-    *              joints
-    * @see getDOF method of the cartesian interface.
+    *              joints.
+    * @see getDOF
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -752,8 +752,8 @@ public:
     /**
     * Change the control status of torso joints.
     * @param torso the vector containing the control status of torso
-    *              joints
-    * @see setDOF method of the cartesian interface.
+    *              joints.
+    * @see setDOF
     * @return true/false on success/fail. 
     *  
     * @note Unlike the arm, the torso is a part that can be shared, 
@@ -868,7 +868,7 @@ public:
     * @param disable disable the blocking feature for future 
     * calls with sync switch on; useful to allow a graceful stop of 
     * the application. 
-    * @see syncCheckReinstate() method to reinstate it.
+    * @see syncCheckReinstate
     * @return true/false on success/fail. 
     */
     virtual bool syncCheckInterrupt(const bool disable=false);

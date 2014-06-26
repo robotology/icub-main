@@ -992,7 +992,7 @@ protected:
                 limitRange(x);
                 x=R*x;
     
-                cartArm->goToPose(x,*armHandOrien);
+                cartArm->goToPoseSync(x,*armHandOrien);
             }
         }
     }
@@ -1014,6 +1014,7 @@ protected:
                     x=R*x;
 
                     fprintf(stdout,"--- Hand in position AND Target still => GRASPING\n");
+                    fprintf(stdout,"--- Target in %s\n",targetPos.toString().c_str());
                     fprintf(stdout,"*** Grasping x=%s\n",x.toString().c_str());
 
                     cartArm->goToPoseSync(x,*armHandOrien);

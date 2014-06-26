@@ -53,8 +53,8 @@ namespace ctrl
 class AWPolyElement
 {
 public:
-    double time;
     yarp::sig::Vector data;
+    double time;
 
     /**
     * Default constructor.
@@ -66,7 +66,7 @@ public:
     * @param d is the element data vector.
     * @param t is time instant of sampled data.
     */ 
-    AWPolyElement(const yarp::sig::Vector &d, const double t): data(d), time(t) {}
+    AWPolyElement(const yarp::sig::Vector &d, const double t): data(d), time(t) { }
 };
 
 
