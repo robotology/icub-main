@@ -279,7 +279,6 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
     patchInfoList.clear();
     patchInfoList.resize(numOfPatches);
-
     for(int j=1; j<numOfPatches+1; j++)
     {
         int id = bPatchList.get(j).asInt();
@@ -327,6 +326,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 //    yError() << "totalCardsNum=" << totalCardsNum;
 //    for(int i=0; i<patchInfoList.size(); i++)
 //    {
+//        yError() << "*patchInfoList[" << i << "]: patch=" << patchInfoList[i].idPatch << "indexNv=" << patchInfoList[i].indexNv;
 //        for(int j=0; j<patchInfoList[i].cardAddrList.size(); j++)
 //        {
 //            yError() << " elem num " << j << "of patch " <<patchInfoList[i].idPatch << "is " << patchInfoList[i].cardAddrList[j];
@@ -861,6 +861,8 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
                 if(patchInfoList[p].cardAddrList[cId_index] == cardAddr)
                 {
                     mtbId = cId_index;
+                    if(numOfPatches==2 && p==0)
+                        mtbId +=  patchInfoList[1].cardAddrList.size(); //add max num of boards on patch number 2 because they are sorted in decreasing order by can addr
                     break;
                 }
             }
