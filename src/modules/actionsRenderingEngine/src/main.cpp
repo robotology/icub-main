@@ -165,11 +165,16 @@ format: [point] [target] \n
 action: the robot tries to point the specified [target] with its index finger.
 
 <b>LOOK</b> \n
-format: [look] [target] "param1" \n
+format: [look] [target] "param1" (block_eyes ver) \n
 action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
-keep the gaze fixating the requested target also when other commands are issued to the torso.
-Note: the special target [hand] (with optional parameter 'left'/'right') can be provided to have the robot look
-at its own hand. The robot will keep looking at its own hand until an idle command.
+keep the gaze fixating the requested target also when other    
+commands are issued to the torso. \n    
+If provided, the option (block_eyes ver) serves to block the    
+eyes at the specified vergence while gazing. \n    
+Note: the special target [hand] (with optional parameter 
+'left'/'right') can be provided to have the robot look at its    
+own hand. The robot will keep looking at its own hand until an    
+idle command.    
 
 <b>EXPECT</b> \n
 format: [expect] \n
@@ -797,7 +802,7 @@ public:
 
                         break;
                     }
-                     case CMD_CLOSE_TOOL:
+                    case CMD_CLOSE_TOOL:
                     {
                         motorThr->grasp_tool(command);
                         reply.addVocab(ACK);

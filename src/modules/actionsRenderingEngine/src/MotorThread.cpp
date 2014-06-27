@@ -1907,15 +1907,15 @@ bool MotorThread::look(Bottle &options)
     setGazeIdle();
     ctrl_gaze->restoreContext(default_gaze_context);
 
+    if (options.check("block_eyes"))
+        ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
+
     if(checkOptions(options,"fixate"))
     {
         gaze_fix_point=xd;
-        //head_mode=HEAD_MODE_TRACK_FIX;
-        //ctrl_gaze->setTrackingMode(true);
         keepFixation(options);
     }
-    
-    
+        
     ctrl_gaze->lookAtFixationPoint(xd);
 
     return true;
