@@ -1163,7 +1163,7 @@ public:
                         }
 
                         visuoThr->getTarget(command.get(1),command);
-                        motorThr->preGraspHand(command);
+                        motorThr->preTakeHand(command);
 
                         if(!motorThr->reach(command))
                         {

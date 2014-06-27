@@ -1566,7 +1566,7 @@ void MotorThread::onStop()
 }
 
 
-bool MotorThread::preGraspHand(Bottle &options)
+bool MotorThread::preTakeHand(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
@@ -1581,7 +1581,7 @@ bool MotorThread::preGraspHand(Bottle &options)
     arm=checkArm(arm,xd);
 
     bool f;
-    action[arm]->pushAction("pregrasp_hand");
+    action[arm]->pushAction("pretake_hand");
     action[arm]->checkActionsDone(f,true);
 
     return true;
@@ -2097,7 +2097,7 @@ bool MotorThread::release(Bottle &options)
 
     arm=checkArm(arm);
 
-    action[arm]->pushAction("pregrasp_hand");
+    action[arm]->pushAction("release_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);
