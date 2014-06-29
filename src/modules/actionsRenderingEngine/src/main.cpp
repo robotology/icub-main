@@ -124,7 +124,7 @@ should try to mantain while performing the action (default: "above").
     
 <b>CLOSE</b> \n
 format: [close] "param1" \n
-action: close the hand (predefined or specified).
+action: close the hand ("left"/"right" option can be given).
     
 <b>TAKE_TOOL</b> \n
 format: [tato] "param1" \n    
@@ -172,7 +172,7 @@ commands are issued to the torso. \n
 If provided, the option (block_eyes ver) serves to block the    
 eyes at the specified vergence while gazing. \n    
 Note: the special target [hand] (with optional parameter 
-'left'/'right') can be provided to have the robot look at its    
+"left"/"right") can be provided to have the robot look at its   
 own hand. The robot will keep looking at its own hand until an    
 idle command.    
 
