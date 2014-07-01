@@ -139,7 +139,7 @@ int CanBusInertialMTB::read(yarp::sig::Vector &out)
     tmp=status;
     mutex.post();
 
-    return status;
+    return tmp;
 }
 
 int CanBusInertialMTB::getState(int ch)

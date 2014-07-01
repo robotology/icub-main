@@ -19,15 +19,6 @@ using namespace yarp::dev;
 
 class CanBusInertialMTB : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver 
 {
-    enum SensorStatus
-    {
-        ANALOG_IDLE=0,
-        ANALOG_OK=1,
-        ANALOG_NOT_RESPONDING=-1,
-        ANALOG_SATURATION=-2,
-        ANALOG_ERROR=-3,
-    };
-
 protected:
     PolyDriver         driver;
     ICanBus            *pCanBus;
