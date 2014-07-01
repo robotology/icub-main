@@ -2303,6 +2303,39 @@ void iCubEyeNeckRef::allocate(const string &_type)
 
 
 /************************************************************************/
+iCubHeadCenter::iCubHeadCenter()
+{
+    allocate("right");
+}
+
+
+/************************************************************************/
+iCubHeadCenter::iCubHeadCenter(const string &_type)
+{
+    allocate(_type);
+}
+
+
+/************************************************************************/
+iCubHeadCenter::iCubHeadCenter(const iCubHeadCenter &head)
+{
+    clone(head);
+}
+
+
+/************************************************************************/
+void iCubHeadCenter::allocate(const string &_type)
+{
+    // change DH parameters
+    (*this)[getN()-2].setD(0.0);
+
+    // block last two links
+    blockLink(getN()-2,0.0);
+    blockLink(getN()-1,0.0);
+}
+
+
+/************************************************************************/
 iCubInertialSensor::iCubInertialSensor()
 {
     allocate("v1");

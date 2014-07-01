@@ -27,18 +27,6 @@
 #include <iCub/utils.h>
 
 
-/************************************************************************/
-void iCubHeadCenter::allocate(const string &_type)
-{
-    // change DH parameters
-    (*this)[getN()-2].setD(0.0);
-
-    // block last two links
-    blockLink(getN()-2,0.0);
-    blockLink(getN()-1,0.0);
-}
-
-
 // Describe the nonlinear problem of aligning two vectors
 // in counterphase for controlling neck movements.
 class HeadCenter_NLP : public Ipopt::TNLP
