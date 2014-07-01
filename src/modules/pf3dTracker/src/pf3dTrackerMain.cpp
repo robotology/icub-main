@@ -25,7 +25,9 @@ You can watch a video of the tracker in action <A HREF="http://www.youtube.com/w
 - OpenCv
  
 \section parameters_sec Parameters
-Configuration is done through an initialization file (See for instance $ICUB_ROOT/main/app/pf3dTracker/conf/pf3dTracker.ini) Here is an example, with comments: 
+Configuration is done through an initialization file (See for 
+instance icub-main/app/pf3dTracker/conf/pf3dTracker.ini) Here is
+an example, with comments: 
  \code 
  ####################################
  #configuration file for pf3dTracker#
