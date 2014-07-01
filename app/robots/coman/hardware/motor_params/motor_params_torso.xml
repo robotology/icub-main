@@ -11,5 +11,6 @@
         <param name="zeros">            0         0         0           </param>
         <param name="maxTorque">        50        50        50          </param>
         <param name="newtonsToSensor">  1000      1000      1000        </param> 
+        <param name="torqueSign">      -1        -1        -1           </param>
     </group>
 </params>

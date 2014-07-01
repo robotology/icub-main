@@ -449,7 +449,7 @@ void EyePinvRefGen::run()
         chainEyeL->setAng(nJointsTorso+4,qd[1]+qd[2]/2.0); chainEyeR->setAng(nJointsTorso+4,qd[1]-qd[2]/2.0);
 
         // converge on target
-        if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+        if (CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
         {
             Vector v=EYEPINVREFGEN_GAIN*(pinv(eyesJ)*(xd-fp));
 
@@ -458,7 +458,7 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
             // compensate neck rotation at eyes level
-            if ((eyesBoundVer>=0.0) || !computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+            if ((eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
                 commData->set_counterv(zeros(3));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
@@ -851,7 +851,7 @@ Vector Solver::computeTargetUserTolerance(const Vector &xd)
     Vector xdh3=xdh; xdh3.pop_back();
     Vector rot=cross(xdh3,z);
     double r=norm(rot);
-    if (r<ALMOST_ZERO)
+    if (r<IKIN_ALMOST_ZERO)
         return xd;
 
     rot=rot/r;
@@ -872,7 +872,7 @@ bool Solver::threadInit()
     // Initialization
     Vector fp(3);
     Matrix J(3,3);
-    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // init commData structure
     commData->set_xd(fp);
@@ -1056,7 +1056,7 @@ void Solver::resume()
     // compute fixation point
     Vector fp(3);
     Matrix J(3,3);
-    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // update latched quantities
     fbTorsoOld=fbTorso;

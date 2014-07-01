@@ -32,8 +32,12 @@
 #ifndef __IKINHLP_H__
 #define __IKINHLP_H__
 
+#define IKIN_ALMOST_ZERO    1e-6
+
 #include <yarp/os/Bottle.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/sig/all.h>
+
+#include <iCub/iKin/iKinFwd.h>
 
 
 namespace iCub
@@ -145,6 +149,34 @@ public:
     *         bottle b
     */
     static bool getTokenOption(yarp::os::Bottle &b, double *token);
+
+    /**
+    * Retrieves current fixation point given the current kinematics
+    * configuration of the eyes. 
+    * @param eyeL the current configuration of the left eye. 
+    * @param eyeR the current configuration of the right eye. 
+    * @param fp the Vector where to store the fixation point 
+    *           coordinates.
+    * @return true iff the computation of the quantities went well, 
+    *         false otherwise.
+    */
+    static bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR,
+                                         yarp::sig::Vector &fp);
+
+    /**
+    * Retrieves current fixation point and its Jacobian wrt eyes 
+    * tilt-pan-vergence dofs given the current kinematics 
+    * configuration of the eyes. 
+    * @param eyeL the current configuration of the left eye. 
+    * @param eyeR the current configuration of the right eye. 
+    * @param fp the Vector where to store the fixation point 
+    *           coordinates.
+    * @param J the fixation point Jacobian wrt eyes configuration. 
+    * @return true iff the computation of the quantities went well, 
+    *         false otherwise.
+    */
+    static bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR,
+                                         yarp::sig::Vector &fp, yarp::sig::Matrix &J);
 };
 
 }

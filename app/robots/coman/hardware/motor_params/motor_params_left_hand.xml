@@ -10,7 +10,8 @@
         <param name="bIdMap">           33          </param>
         <param name="axisMap">          0           </param> 
         <param name="zeros">            0           </param>
-        <param name="maxTorque">        5          </param>
-        <param name="newtonsToSensor">  1000        </param>  
+        <param name="maxTorque">        5           </param>
+        <param name="newtonsToSensor">  1000        </param>
+        <param name="torqueSign">      -1           </param>    
     </group>
 </params>

@@ -1,7 +1,8 @@
+ 
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
     <device name="torso_calibrator" type="parametricCalibrator">       
-                             
+<params file="general.xml" />              
         <group name="GENERAL">             
             <param name="joints"> 4 </param>             
             <param name="deviceName"> Torso_Calibrator </param>        
@@ -12,7 +13,7 @@
 <param name="calibrationType">            3             3             3             0             </param>       
 <param name="calibration1">               2047.5        2047.5        2047.5        0             </param>       
 <param name="calibration2">               10            10            10            0             </param>       
-<param name="calibration3">               2650.375      2634.45       2932.475      0             </param>       
+<param name="calibration3">               3787.875      3464.825      1622.075      0             </param>       
 <param name="positionZero">               0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            0             </param>       
 <param name="maxPwm">                     120           120           120           0             </param>       
@@ -38,7 +39,6 @@
  
     </device>  
 </devices>     
- 
  
  
  

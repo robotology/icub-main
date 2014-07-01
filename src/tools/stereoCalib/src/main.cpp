@@ -34,8 +34,8 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 \section intro_sec Description
 The module performs the stereo calibration (both intrinsic and extrinsic parameters).
 A chessboard pattern is required, for convenience, a chessboard calibration image is provided in the 
-$ICUB_ROOT/main/app/cameraCalibration/data directory. In the config file calibrationConf.ini
-you should have the following group:
+icub-main/app/cameraCalibration/data directory. In the config 
+file calibrationConf.ini you should have the following group: 
 
 \code
 [STEREO_CALIBRATION_CONFIGURATION]

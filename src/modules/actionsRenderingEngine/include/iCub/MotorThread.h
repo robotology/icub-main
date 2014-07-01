@@ -230,7 +230,7 @@ private:
 
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
-    int checkArm(int arm, Vector &xd);
+    int checkArm(int arm, Vector &xd, const bool applyOffset=true);
     bool checkOptions(Bottle &options, const string &parameter);
     Vector eye2root(const Vector &out,bool forehead);
     bool stereoToCartesianHomography(const Vector &stereo, Vector &xd);
@@ -365,7 +365,7 @@ public:
     bool targetToCartesian(Bottle *target, Vector &xd);
 
     // basic commands
-    bool preGraspHand(Bottle &options);
+    bool preTakeHand(Bottle &options);
     bool goUp(Bottle &options, const double h);
     bool goHome(Bottle &options);
     bool reach(Bottle &options);

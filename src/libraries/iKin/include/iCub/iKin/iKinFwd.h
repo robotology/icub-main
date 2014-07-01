@@ -1282,6 +1282,40 @@ public:
 /**
 * \ingroup iKinFwd
 *
+* A class for describing the kinematic of the straight line
+* coming out from the point located between the eyes. 
+*/
+class iCubHeadCenter : public iCubEye
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubHeadCenter();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" eye. Further available options are
+    *              "[left|right]_v[1|2]".
+    */
+    iCubHeadCenter(const std::string &_type);
+
+    /**
+    * Creates a new iCubHeadCenter from an already existing 
+    * iCubHeadCenter object. 
+    * @param head is the iCubHeadCenter object to be copied.
+    */
+    iCubHeadCenter(const iCubHeadCenter &head);
+};
+
+
+/**
+* \ingroup iKinFwd
+*
 * A class for defining the Inertia Sensor Kinematics of the
 * iCub. 
 */

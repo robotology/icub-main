@@ -238,7 +238,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     fp[3]=1.0;  // impose homogeneous coordinates
 
     // compute new fp due to changed vergence
-    computeFixationPointOnly(*(eyeL->asChain()),*(eyeR->asChain()),fp);
+    CartesianHelper::computeFixationPointData(*(eyeL->asChain()),*(eyeR->asChain()),fp);
 
     mutex.unlock();
 
