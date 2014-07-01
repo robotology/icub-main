@@ -24,6 +24,7 @@
 #include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
 
+#include <iCub/iKin/iKinHlp.h>
 #include <iCub/iKin/iKinInv.h>
 #include <iCub/iKin/iKinIpOpt.h>
 
@@ -32,16 +33,6 @@ using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
-
-
-// Compute fixation point position and Jacobian wrt eyes (tilt,pan,vergence)
-// Return true if division by zero is detected
-bool computeFixationPointData(iKinChain &eyeL, iKinChain &eyeR, Vector &fp, Matrix &J);
-
-
-// Compute fixation point position wrt eyes (tilt,pan,vergence)
-// Return true if division by zero is detected
-bool computeFixationPointOnly(iKinChain &eyeL, iKinChain &eyeR, Vector &fp);
 
 
 // Describe the kinematic of the straight line
