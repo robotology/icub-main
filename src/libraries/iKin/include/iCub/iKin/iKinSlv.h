@@ -405,8 +405,8 @@ protected:
     void   fillDOFInfo(yarp::os::Bottle &reply);
     double getNorm(const yarp::sig::Vector &v, const std::string &typ);    
     void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
-    void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
-                     const double t);    
+    void   printInfo(const std::string &typ, const yarp::sig::Vector &xd, const yarp::sig::Vector &x,
+                     const yarp::sig::Vector &q, const double t);    
 
     virtual void prepareJointsRestTask();
     virtual void respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
