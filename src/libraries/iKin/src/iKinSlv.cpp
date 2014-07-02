@@ -984,7 +984,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             
                 // dump on screen
                 if (verbosity)
-                    printInfo("Ask",xd,x,q,t1-t0);
+                    printInfo("ask",xd,x,q,t1-t0);
             
                 unlock();
             
@@ -1704,7 +1704,7 @@ void CartesianSolver::run()
 
         // dump on screen
         if (verbosity)
-            printInfo("Go",xd,x,q,t1-t0);
+            printInfo("go",xd,x,q,t1-t0);
 
         // save the values of uncontrolled joints
         if (!fullDOF)

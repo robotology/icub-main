@@ -40,9 +40,10 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
     eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
     eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
+    inertialSensor=new iCubInertialSensor(commData->head_version>1.0?"v2":"v1");
 
     // remove constraints on the links: logging purpose
-    inertialSensor.setAllConstraints(false);
+    inertialSensor->setAllConstraints(false);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -268,14 +269,14 @@ void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp)
 {
     // ********** implement VOR
-    Vector q(inertialSensor.getDOF());
+    Vector q(inertialSensor->getDOF());
     q[0]=fbTorso[0];
     q[1]=fbTorso[1];
     q[2]=fbTorso[2];
     q[3]=fbHead[0];
     q[4]=fbHead[1];
     q[5]=fbHead[2];
-    Matrix H=inertialSensor.getH(q);
+    Matrix H=inertialSensor->getH(q);
 
     H(0,3)=fp[0]-H(0,3);
     H(1,3)=fp[1]-H(1,3);
@@ -507,6 +508,7 @@ void EyePinvRefGen::threadRelease()
     delete neck;
     delete eyeL;
     delete eyeR;
+    delete inertialSensor;
     delete I;
 }
 
@@ -541,9 +543,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
     eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
     eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
+    inertialSensor=new iCubInertialSensor(commData->head_version>1.0?"v2":"v1");
 
     // remove constraints on the links: logging purpose
-    inertialSensor.setAllConstraints(false);
+    inertialSensor->setAllConstraints(false);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -812,14 +815,14 @@ Vector Solver::getGravityDirection(const Vector &gyro)
     x[3]=roll;   y[3]=pitch;   
     Matrix R=axis2dcm(y)*axis2dcm(x);
 
-    Vector q(inertialSensor.getDOF());
+    Vector q(inertialSensor->getDOF());
     q[0]=fbTorso[0];
     q[1]=fbTorso[1];
     q[2]=fbTorso[2];
     q[3]=fbHead[0];
     q[4]=fbHead[1];
     q[5]=fbHead[2];
-    Matrix H=inertialSensor.getH(q)*R.transposed();
+    Matrix H=inertialSensor->getH(q)*R.transposed();
 
     // gravity is aligned along the z-axis
     Vector gDir=H.getCol(2);
@@ -1017,6 +1020,7 @@ void Solver::threadRelease()
     delete neck;
     delete eyeL;
     delete eyeR;
+    delete inertialSensor;
 }
 
 

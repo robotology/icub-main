@@ -2433,5 +2433,3 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
 }
 
 
-
-
