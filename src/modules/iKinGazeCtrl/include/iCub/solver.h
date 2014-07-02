@@ -58,9 +58,9 @@ class EyePinvRefGen : public GazeComponent, public RateThread
 {
 protected:
     iCubHeadCenter       *neck;
-    iKinChain            *chainNeck, *chainEyeL, *chainEyeR;
-    iCubInertialSensor   *inertialSensor;
-    PolyDriver           *drvTorso,  *drvHead;
+    iCubInertialSensor   *imu;
+    iKinChain            *chainNeck, *chainEyeL, *chainEyeR;    
+    PolyDriver           *drvTorso, *drvHead;
     exchangeData         *commData;
     Controller           *ctrl;
     xdPort               *port_xd;
@@ -136,11 +136,11 @@ public:
 class Solver : public GazeComponent, public RateThread
 {
 protected:    
-    iCubHeadCenter     *neck;    
-    iKinChain          *chainNeck, *chainEyeL, *chainEyeR;
-    iCubInertialSensor *inertialSensor;
+    iCubHeadCenter     *neck;
+    iCubInertialSensor *imu;
+    iKinChain          *chainNeck, *chainEyeL, *chainEyeR;    
     GazeIpOptMin       *invNeck;
-    PolyDriver         *drvTorso,  *drvHead;
+    PolyDriver         *drvTorso, *drvHead;
     exchangeData       *commData;
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;
