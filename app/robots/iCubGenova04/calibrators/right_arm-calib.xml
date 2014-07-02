@@ -15,7 +15,7 @@
 		    <!-- Joint                          0               1               2               3             4             5             6             7             8             9             10            11            12            13            14            15 -->
 		    <param name="calibrationType">      3               3               3               3             0             2             2             3             3             4             4             4             4             4             4             4   </param>
 		    
-            <param name="calibration1">         0              0               0               0    	     700           600           600           1245        3041.111111      225           20            255           20            240           10            738     </param>
+            <param name="calibration1">         0              0               0               0    	     700           600           600           1245        2644.888889     255           20            255           20            240           10            738     </param>
 		    
             <param name="calibration2">         0               0               0               0             -20            10           10             100           10            10            30            10            10            10            10            10     </param>
 		    
