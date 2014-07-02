@@ -984,7 +984,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             
                 // dump on screen
                 if (verbosity)
-                    printInfo(xd,x,q,t1-t0);
+                    printInfo("Ask",xd,x,q,t1-t0);
             
                 unlock();
             
@@ -1125,13 +1125,15 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
 
 
 /************************************************************************/
-void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector &q,
+void CartesianSolver::printInfo(const string &typ, const Vector &xd,
+                                const Vector &x, const Vector &q,
                                 const double t)
 {
     // compute error
     Vector e=xd-x;
     
     printf("\n");
+    printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
     printf("  Target txPose   [m] = %s\n",const_cast<Vector&>(x).toString().c_str());
     printf("Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
@@ -1702,7 +1704,7 @@ void CartesianSolver::run()
 
         // dump on screen
         if (verbosity)
-            printInfo(xd,x,q,t1-t0);
+            printInfo("Go",xd,x,q,t1-t0);
 
         // save the values of uncontrolled joints
         if (!fullDOF)
