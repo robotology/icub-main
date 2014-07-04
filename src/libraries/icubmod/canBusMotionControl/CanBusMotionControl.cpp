@@ -4805,10 +4805,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     r.addMessage (id, axis, ICUBCANPROTO_POL_MC_CMD__GET_FIRMWARE_VERSION);
     *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(icub_interface_protocol.major & 0xFF);
     *((unsigned char *)(r._writeBuffer[0].getData()+2)) = (unsigned char)(icub_interface_protocol.minor & 0xFF);
-    *((unsigned char *)(r._writeBuffer[0].getData()+3)) = 0;
-    *((short *)(r._writeBuffer[0].getData()+4)) = 0;
-    *((short *)(r._writeBuffer[0].getData()+6)) = 0;
-    r._writeBuffer[0].setLen(8);
+    r._writeBuffer[0].setLen(3);
     r.writePacket();
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
