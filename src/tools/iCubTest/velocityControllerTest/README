@@ -1,4 +1,0 @@
-The aim of tool(s) in this folder is to have a collection of test cases for objectively verify if all the different software layers,
-controllers and so on are working correctly on the iCub.
-Ideally this will include a nice and user friedly GUI that will handle tests and fire up all executable needed... but this in the future.
-First tool implemented is about the velocity control. It is able to connect to the robot and starts the velocity controller send velocityMove command with a sinusoidal profile. Command sent to the robot are also written through a yarp port for logging or plot with yarpscope. This has to be used in conjunction with velocityObserver so that the velocity actually realized by the robot has to be compared with the commands.
