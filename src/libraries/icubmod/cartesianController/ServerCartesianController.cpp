@@ -1279,6 +1279,7 @@ void ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
     int k=0;    
 
     Vector q=ctrl->get_q();
+    velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
@@ -1347,6 +1348,7 @@ void ServerCartesianController::sendCtrlCmdSingleJointPosition()
     int k=0;    
 
     Vector q=ctrl->get_q();
+    velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())

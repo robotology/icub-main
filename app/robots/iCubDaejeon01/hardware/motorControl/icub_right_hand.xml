@@ -3,6 +3,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
   <device name="right_hand_mc" type="canmotioncontrol">  
+<params file="general.xml" />              
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
@@ -29,8 +30,8 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      17.69         -2.10         -2.36         -2.58         -2.32         -2.11         -2.57         -1.84         </param>       
-<param name="Zeros">        21.20         -113.33       -204.62       -97.76        -201.53       -108.95       -183.89       -396.74       </param>       
+<param name="Encoder">      16.61         -2.44         -2.69         -2.50         -2.39         -2.22         -2.42         -2.02         </param>       
+<param name="Zeros">        37.32         -98.18        -189.28       -98.00        -200.93       -112.50       -208.97       -378.71       </param>       
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
@@ -80,4 +81,3 @@
  
   </device>    
 </devices>     
- 

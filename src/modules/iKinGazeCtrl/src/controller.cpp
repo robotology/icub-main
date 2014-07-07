@@ -199,7 +199,7 @@ void Controller::findMinimumAllowedVergence()
 
         Vector fp(4);
         fp[3]=1.0;  // impose homogeneous coordinates
-        if (computeFixationPointOnly(cl,cr,fp))
+        if (CartesianHelper::computeFixationPointData(cl,cr,fp))
         {
             // if the component along eye's z-axis is positive
             // then this means that the fixation point is ok,
@@ -250,7 +250,7 @@ void Controller::motionOngoingEventsHandling()
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
         double dist=norm(qddeg-q0deg);
-        double checkPoint=(dist>ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
+        double checkPoint=(dist>IKIN_ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
         checkPoint=std::min(std::max(checkPoint,0.0),1.0);
 
         if (checkPoint>=curCheckPoint)

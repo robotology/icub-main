@@ -169,10 +169,11 @@ None.
  
 \section rpcProto_sec RPC protocol 
 The parameters <i> winSize, recogThres, adjNodesThres, 
-framesPersistence, numThreads, verbosity </i> can be changed/retrieved 
-through the commands set/get. Moreover the further switch \e 
-inhibition can be accessed in order to enable/disable the motion 
-detection at run-time. 
+blobMinSizeThres, framesPersistence, cropSize, numThreads, 
+verbosity </i> can be changed/retrieved through the commands 
+set/get. Moreover the further switch \e inhibition can be 
+accessed in order to enable/disable the motion detection at 
+run-time. 
  
 \section in_files_sec Input Data Files
 None.
@@ -805,6 +806,16 @@ public:
                     framesPersistence=req.get(2).asInt();
                     reply.addString("ack");
                 }
+                else if (subcmd=="cropSize")
+                {
+                    Value &vCropSize=req.get(2);
+                    if (!vCropSize.isString())
+                        cropSize=vCropSize.asInt();
+                    else
+                        cropSize=0;
+
+                    reply.addString("ack");
+                }
                 else if (subcmd=="numThreads")
                 {
                 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
@@ -822,16 +833,6 @@ public:
                 else if (subcmd=="inhibition")
                 {
                     inhibition=req.get(2).asString()=="on";
-                    reply.addString("ack");
-                }
-                else if (subcmd=="cropSize")
-                {
-                    Value &vCropSize=req.get(2);
-                    if (!vCropSize.isString())
-                        cropSize=vCropSize.asInt();
-                    else
-                        cropSize=0;
-                    
                     reply.addString("ack");
                 }
                 else
@@ -854,6 +855,13 @@ public:
                     reply.addInt(blobMinSizeThres);
                 else if (subcmd=="framesPersistence")
                     reply.addInt(framesPersistence);
+                else if (subcmd=="cropSize")
+                {
+                    if (cropSize>0)
+                        reply.addInt(cropSize);
+                    else
+                        reply.addString("auto");
+                }
                 else if (subcmd=="numThreads")
                 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
                     reply.addInt(numThreads);
@@ -864,13 +872,6 @@ public:
                     reply.addString(verbosity?"on":"off");
                 else if (subcmd=="inhibition")
                     reply.addString(inhibition?"on":"off");
-                else if (subcmd=="cropSize")
-                {
-                    if (cropSize>0)
-                        reply.addInt(cropSize);
-                    else
-                        reply.addString("auto");
-                }
                 else
                     return false;
             }
