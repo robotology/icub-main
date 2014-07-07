@@ -3765,7 +3765,6 @@ bool CanBusMotionControl::getControlModesRaw(const int n_joints, const int *join
 
     CanBusResources& r = RES(system_resources);
     int i;
-    int temp;
     _mutex.wait();
     for (i = 0; i < n_joints; i++)
     {
@@ -3806,9 +3805,16 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     return true;
 }
 
-bool CanBusMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
+bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *joints, int *modes)
 {
-    return NOT_YET_IMPLEMENTED("setControlModesRaw group of joints");
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW MULTIPLE JOINTS\n");
+    if (n_joints==0) return false;
+    if (joints==0) return false;
+    for (int i=0;i<n_joints; i++)
+    {
+        setControlModeRaw(joints[i],modes[i]);
+    }
+    return true;
 }
 
 bool CanBusMotionControl::setControlModesRaw(int *modes)
@@ -6735,7 +6741,6 @@ bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
 
     CanBusResources& r = RES(system_resources);
     int i;
-    int temp;
     _mutex.wait();
     for (i = 0; i < n_joints; i++)
     {
@@ -6777,8 +6782,14 @@ bool CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
 bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
 {
-    std::cout << "setInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
-    return false;
+    DEBUG_FUNC("Calling SET_INTERACTION_MODE_RAW MULTIPLE JOINTS\n");
+    if (n_joints==0) return false;
+    if (joints==0) return false;
+    for (int i=0;i<n_joints; i++)
+    {
+        setInteractionModeRaw(joints[i],modes[i]);
+    }
+    return true;
 }
 
 bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
