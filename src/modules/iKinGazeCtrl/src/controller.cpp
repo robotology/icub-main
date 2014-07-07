@@ -274,19 +274,18 @@ void Controller::motionOngoingEventsFlush()
 void Controller::stopLimb(const bool execStopPosition)
 {
     if (Robotable)
-    {
-        // note: vel==0.0 is always achievable
+    {        
         if (neckPosCtrlOn)
         {
             if (execStopPosition)
-                for (size_t i=0; i<neckJoints.size(); i++) 
-                    posHead->stop(neckJoints[i]);
+                posHead->stop(neckJoints.size(),neckJoints.getFirst());
 
-            for (size_t i=0; i<eyesJoints.size(); i++)
-                velHead->velocityMove(eyesJoints[i],0.0);
+            // note: vel==0.0 is always achievable
+            velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),
+                                  Vector(eyesJoints.size(),0.0).data());
         }
-        else for (int i=0; i<nJointsHead; i++)
-            velHead->velocityMove(i,0.0);        
+        else
+            velHead->velocityMove(Vector(nJointsHead,0.0).data());        
     }
 
     commData->get_isCtrlActive()=false;
