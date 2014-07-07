@@ -81,8 +81,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         if (neckPosCtrlOn)
         {
             neckPosCtrlOn=drvHead->view(posNeck);
-            printf("### neck control - requested POSITION mode: IPositionDirect [%s] => [%s]\n",
-                   neckPosCtrlOn?"yes":"no",neckPosCtrlOn?"POSITION":"VELOCITY");
+            printf("### neck control - requested POSITION mode: IPositionDirect [%s] => %s mode selected\n",
+                   neckPosCtrlOn?"available":"not available",neckPosCtrlOn?"POSITION":"VELOCITY");
         }
         else
             printf("### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
