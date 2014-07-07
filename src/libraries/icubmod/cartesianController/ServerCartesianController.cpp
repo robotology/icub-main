@@ -1263,8 +1263,11 @@ bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSe
             {
                 if ((modes[j]==VOCAB_CM_HW_FAULT) || (modes[j]==VOCAB_CM_IDLE))
                     return false;
-                else if (posDirectEnabled && (modes[j]!=VOCAB_CM_POSITION_DIRECT))
-                    jointsToSet.push_back(chainCnt);
+                else if (posDirectEnabled)
+                {
+                    if (modes[j]!=VOCAB_CM_POSITION_DIRECT)
+                        jointsToSet.push_back(chainCnt);
+                }
                 else if (modes[j]!=VOCAB_CM_VELOCITY)
                     jointsToSet.push_back(chainCnt);
             }

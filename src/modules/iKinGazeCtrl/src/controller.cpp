@@ -404,8 +404,11 @@ bool Controller::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
             return false;
         else if (i<3)
         {
-            if (neckPosCtrlOn && (modes[i]!=VOCAB_CM_POSITION_DIRECT))
-                jointsToSet.push_back(i);
+            if (neckPosCtrlOn)
+            {
+                if (modes[i]!=VOCAB_CM_POSITION_DIRECT)
+                    jointsToSet.push_back(i);
+            }
             else if (modes[i]!=VOCAB_CM_VELOCITY)
                 jointsToSet.push_back(i);
         }
