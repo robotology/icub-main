@@ -131,7 +131,7 @@ protected:
     SmithPredictor     smithPredictor;
 
     std::deque<DriverDescriptor>              lDsc;
-    std::deque<yarp::dev::IControlMode*>      lMod;
+    std::deque<yarp::dev::IControlMode2*>     lMod;
     std::deque<yarp::dev::IEncoders*>         lEnc;
     std::deque<yarp::dev::IEncodersTimed*>    lEnt;
     std::deque<yarp::dev::IPidControl*>       lPid;
@@ -214,7 +214,8 @@ protected:
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
     bool   getNewTarget();
-    bool   areJointsHealthy();
+    bool   areJointsHealthyAndSet(yarp::sig::VectorOf<int> &jointsToSet);
+    void   setJointsCtrlMode(const yarp::sig::VectorOf<int> &jointsToSet);
     void   sendCtrlCmdMultipleJointsPosition();
     void   sendCtrlCmdMultipleJointsVelocity();
     void   sendCtrlCmdSingleJointPosition();

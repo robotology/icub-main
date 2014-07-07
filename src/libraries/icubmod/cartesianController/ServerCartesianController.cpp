@@ -1248,24 +1248,65 @@ bool ServerCartesianController::getNewTarget()
 
 
 /************************************************************************/
-bool ServerCartesianController::areJointsHealthy()
-{
+bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
+{    
     VectorOf<int> modes(maxPartJoints);
     int chainCnt=0;
 
+    jointsToSet.clear();
     for (int i=0; i<numDrv; i++)
     {
         lMod[i]->getControlModes(modes.getFirst());
         for (int j=0; j<lJnt[i]; j++)
         {
-            if (!(*chainState)[chainCnt].isBlocked() && (modes[j]==VOCAB_CM_IDLE))
-                return false;
+            if (!(*chainState)[chainCnt].isBlocked())
+            {
+                if ((modes[j]==VOCAB_CM_HW_FAULT) || (modes[j]==VOCAB_CM_IDLE))
+                    return false;
+                else if (posDirectEnabled && (modes[j]!=VOCAB_CM_POSITION_DIRECT))
+                    jointsToSet.push_back(chainCnt);
+                else if (modes[j]!=VOCAB_CM_VELOCITY)
+                    jointsToSet.push_back(chainCnt);
+            }
 
             chainCnt++;
         }
     }
 
     return true;
+}
+
+
+/************************************************************************/
+void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
+{
+    if (jointsToSet.size()==0)
+        return;
+
+    int chainCnt=0;
+    int k=0;
+
+    for (int i=0; i<numDrv; i++)
+    {
+        VectorOf<int> joints;
+        VectorOf<int> modes;
+        for (int j=0; j<lJnt[i]; j++)
+        {
+            if (chainCnt==jointsToSet[k])
+            {       
+                joints.push_back(j);
+                modes.push_back(posDirectEnabled?VOCAB_CM_POSITION_DIRECT:
+                                                 VOCAB_CM_VELOCITY);
+                k++;
+            }
+
+            chainCnt++;
+        }
+
+        if (joints.size()>0)
+            lMod[i]->setControlModes(joints.size(),joints.getFirst(),
+                                     modes.getFirst());
+    }
 }
 
 
@@ -1443,7 +1484,8 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
-        jointsHealthy=areJointsHealthy();
+        VectorOf<int> jointsToSet;
+        jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
         {
             stopControl();
@@ -1477,6 +1519,7 @@ void ServerCartesianController::run()
         // get the current target pose
         if (getNewTarget())
         {
+            setJointsCtrlMode(jointsToSet);
             if (!executingTraj)
             {
                 ctrl->restart(fb);
@@ -1901,7 +1944,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         {
             printf("ok\n");
 
-            IControlMode      *mod;
+            IControlMode2     *mod;
             IEncoders         *enc;
             IEncodersTimed    *ent;
             IPidControl       *pid;
@@ -1988,7 +2031,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         if (posDirectEnabled)
             sendCtrlCmd=&ServerCartesianController::sendCtrlCmdMultipleJointsPosition;
         else
-            sendCtrlCmd=&ServerCartesianController::sendCtrlCmdMultipleJointsVelocity; 
+            sendCtrlCmd=&ServerCartesianController::sendCtrlCmdMultipleJointsVelocity;
     }
     else if (posDirectEnabled)
         sendCtrlCmd=&ServerCartesianController::sendCtrlCmdSingleJointPosition;
