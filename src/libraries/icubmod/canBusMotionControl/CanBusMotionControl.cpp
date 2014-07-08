@@ -4413,7 +4413,7 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT)
         {
-            yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT";
+            yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             yarp::os::Time::delay(0.001);
         }
@@ -5157,7 +5157,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_MIXED    &&
         mode != VOCAB_CM_IMPEDANCE_POS)
     {
-        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION";
+        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_POSITION);
         yarp::os::Time::delay(0.001);
     }
@@ -5540,7 +5540,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_MIXED    &&
         mode != VOCAB_CM_IMPEDANCE_VEL)
     {
-        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY";
+        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_VELOCITY);
         yarp::os::Time::delay(0.001);
     }
@@ -6073,7 +6073,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT)
         {
-            yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT";
+            yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             yarp::os::Time::delay(0.001);
         }
