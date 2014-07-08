@@ -31,10 +31,10 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              const unsigned int _period) :
                              RateThread(_period),     drvTorso(_drvTorso), drvHead(_drvHead),
                              commData(_commData),     ctrl(_ctrl),         eyesBoundVer(-1.0),
-                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0)
+                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0),
+                             counterRotGain(_counterRotGain)
 {
     Robotable=(drvHead!=NULL);
-    counterRotGain=_counterRotGain;
 
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
@@ -319,7 +319,11 @@ bool EyePinvRefGen::threadInit()
     string robotPortInertial=("/"+commData->robotName+"/inertial");
     port_inertial.open((commData->localStemName+"/inertial:i").c_str());
     if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
-        printf("Unable to connect to %s\n",robotPortInertial.c_str());
+    {
+        counterRotGain[0]=0.0; counterRotGain[1]=1.0;
+        printf("Unable to connect to %s => (vor,ocr) gains = (%s)\n",
+               robotPortInertial.c_str(),counterRotGain.toString(3,3).c_str());
+    }
 
     printf("Starting Pseudoinverse Reference Generator at %d ms\n",period);
 
