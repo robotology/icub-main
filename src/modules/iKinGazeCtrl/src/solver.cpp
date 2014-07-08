@@ -298,19 +298,15 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
         vor_fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
 
     // ********** implement OCR
-    Matrix H0=chainNeck->getH(2,true);
-    Matrix H1=chainNeck->getH(3,true);
-    Matrix H2=chainNeck->getH(4,true);
+    Matrix HN=eye(4,4);
+    HN(0,3)=fp[0];
+    HN(1,3)=fp[1];
+    HN(2,3)=fp[2];
 
-    for (int i=0; i<3; i++)
-    {
-        H0(i,3)=fp[i]-H0(i,3);
-        H1(i,3)=fp[i]-H1(i,3);
-        H2(i,3)=fp[i]-H2(i,3);
-    }
-
-    Vector v=commData->get_v();
-    Vector ocr_fprelv=v[0]*cross(H0,2,H0,3)+v[1]*cross(H1,2,H1,3)+v[2]*cross(H2,2,H2,3);
+    chainNeck->setHN(HN);
+    Vector ocr_fprelv=chainNeck->GeoJacobian()*commData->get_v().subVector(0,2);
+    ocr_fprelv=ocr_fprelv.subVector(0,2);
+    chainNeck->setHN(eye(4,4));
 
     // ********** blend the contributions
     return -1.0*(pinv(eyesJ)*(counterRotGain[0]*vor_fprelv+counterRotGain[1]*ocr_fprelv));
