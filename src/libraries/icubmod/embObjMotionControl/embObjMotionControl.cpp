@@ -39,6 +39,9 @@ using namespace yarp::os::impl;
 
 #define MAXNUMOFJOINTS 16
 
+//temporary fix to emulate behaviour pre-controlMode2
+#define AUTOMATIC_MODE_SWITCHING
+
 // Utilities
 
 static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
@@ -1596,11 +1599,16 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
+    #ifdef AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
     if( mode != VOCAB_CM_POSITION_DIRECT )
+    {
+        yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION_DIRECT);
+    }
+    #endif
 
     eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint;
@@ -1837,11 +1845,16 @@ bool embObjMotionControl::setVelocityModeRaw()
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
+    #ifdef AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) )
+    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_VEL))
+    {
+        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_VELOCITY);
+    }
+    #endif
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
 
@@ -2050,11 +2063,16 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     */
 #endif
 
+    #ifdef AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) )
+    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_POS))
+    {
+        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION);
+    }
+    #endif
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     _ref_positions[j] = ref;   // save internally the new value of pos.
