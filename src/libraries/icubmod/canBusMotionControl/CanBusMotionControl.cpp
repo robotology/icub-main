@@ -3810,11 +3810,12 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW MULTIPLE JOINTS\n");
     if (n_joints==0) return false;
     if (joints==0) return false;
+    bool ret = true;
     for (int i=0;i<n_joints; i++)
     {
-        setControlModeRaw(joints[i],modes[i]);
+        ret = ret && setControlModeRaw(joints[i],modes[i]);
     }
-    return true;
+    return ret;
 }
 
 bool CanBusMotionControl::setControlModesRaw(int *modes)
@@ -6785,11 +6786,12 @@ bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
     DEBUG_FUNC("Calling SET_INTERACTION_MODE_RAW MULTIPLE JOINTS\n");
     if (n_joints==0) return false;
     if (joints==0) return false;
+    bool ret = true;
     for (int i=0;i<n_joints; i++)
     {
-        setInteractionModeRaw(joints[i],modes[i]);
+        ret = ret && setInteractionModeRaw(joints[i],modes[i]);
     }
-    return true;
+    return ret;
 }
 
 bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
