@@ -421,7 +421,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         //VALE: i can add this cycle for calib on eth because it does nothing,
         //     because enablePid doesn't send command because joints are not calibrated
 
-        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+        /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             if (type[*lit]==0 ||
                 type[*lit]==2 ||
@@ -430,7 +430,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
                 yDebug() << "In calibration " <<  deviceName  << ": enabling joint " << *lit << " to test hardware limit";
                 iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
-        }
+        }*/
         if(abortCalib)
         {
             continue; //exit
@@ -469,7 +469,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         }
 
         // 5) if calibration finish with success enable disabled joints in order to move them to zero
-        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+        /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             // if the joint han not been enabled at point 1, now i enable it 
             //iAmps->enableAmp((*lit));
@@ -479,7 +479,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
             {
                 iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
-        }
+        }*/
 
         if(abortCalib)
         {
