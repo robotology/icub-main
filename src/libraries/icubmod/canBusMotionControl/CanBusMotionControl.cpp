@@ -5008,8 +5008,8 @@ bool CanBusMotionControl::getRefOutputRaw(int j, double *out)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    int value = 0;
-    if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
+    short int value = 0;
+    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
         *out = double (value);
     else
         return false;
