@@ -1335,7 +1335,9 @@ void ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
 
         if (++k>=lJnt[j])
         {
-            lPos[j]->setPositions(joints.size(),joints.getFirst(),refs.data());
+            if (joints.size()>0)
+                lPos[j]->setPositions(joints.size(),joints.getFirst(),refs.data());
+
             joints.clear();
             refs.clear();
             j++;
@@ -1374,7 +1376,9 @@ void ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
 
         if (++k>=lJnt[j])
         {
-            lVel[j]->velocityMove(joints.size(),joints.getFirst(),vels.data());
+            if (joints.size()>0)
+                lVel[j]->velocityMove(joints.size(),joints.getFirst(),vels.data());
+
             joints.clear();
             vels.clear();
             j++;
