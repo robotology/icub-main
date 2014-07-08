@@ -1596,6 +1596,12 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
+    // fix to emulate behaviour pre-controlMode2
+    int mode;
+    getControlModeRaw(j, &mode);
+    if( mode != VOCAB_CM_POSITION_DIRECT )
+        setControlModeRaw(j, VOCAB_CM_POSITION_DIRECT);
+
     eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint;
 
@@ -1831,15 +1837,20 @@ bool embObjMotionControl::setVelocityModeRaw()
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    int index = j ;
+    // fix to emulate behaviour pre-controlMode2
+    int mode;
+    getControlModeRaw(j, &mode);
+    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) )
+        setControlModeRaw(j, VOCAB_CM_VELOCITY);
+
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
 
     _command_speeds[j] = sp ;   // save internally the new value of speed.
 
     eOmc_setpoint_t setpoint;
     setpoint.type = eomc_setpoint_velocity;
-    setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[index];
-    setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[index];
+    setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[j];
+    setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[j];
 
 
     if(! res->addSetMessage(protid, (uint8_t *) &setpoint))
@@ -1857,7 +1868,7 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 
     setpoint.type = eomc_setpoint_velocity;
 
-    for(int j=0; j< _njoints; j++)
+    for(int j=0; j<_njoints; j++)
     {
         ret = velocityMoveRaw(j, sp[j]) && ret;
     }
@@ -2038,6 +2049,12 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     }
     */
 #endif
+
+    // fix to emulate behaviour pre-controlMode2
+    int mode;
+    getControlModeRaw(j, &mode);
+    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) )
+        setControlModeRaw(j, VOCAB_CM_POSITION);
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     _ref_positions[j] = ref;   // save internally the new value of pos.
