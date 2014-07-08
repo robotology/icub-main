@@ -12,9 +12,11 @@
     </group>
 
     <group name="PROTOCOL">
-        <param name="endpointManagementIsSupported">	        1   </param> 
-            <param name="entityMNcommunicationNumberOf">            1	</param> 
-            <param name="entityMNapplicationNumberOf">              1	</param>          
+        <param name="endpointManagementIsSupported">	        1   </param>
+            <param name="entityMNcommunicationNumberOf">            1	</param>
+            <param name="entityMNapplicationNumberOf">              1	</param>
+            <param name="entityMNinformationNumberOf">              1	</param>
+
         <param name="endpointSkinIsSupported">                  1   </param> 
             <param name="entitySKskinNumberOf">                     2	</param>        
     </group>    
