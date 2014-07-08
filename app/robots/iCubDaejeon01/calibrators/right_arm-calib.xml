@@ -4,7 +4,7 @@
     <device name="right_arm_calibrator" type="parametricCalibrator">   
 <params file="general.xml" />              
         <group name="GENERAL">             
-            <param name="joints"> 8 </param>             
+            <param name="joints"> 16 </param>             
             <param name="deviceName"> Right_Arm_Calibrator </param>    
         </group>             
  
@@ -25,14 +25,14 @@
 <param name="velocityHome"> 10            10            10            10            30            10            10            100           </param>       
 </group>       
  
-       <param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5)</param>         
+		<param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5) (8 9 11 13) (10 12 14 15) </param>
                
         <action phase="startup" level="10" type="calibrate">           
-            <param name="target">right_arm_mc</param>    
+            <param name="target">right_arm_mc_wrapper</param>
         </action>            
  
         <action phase="interrupt1" level="1" type="park">              
-            <param name="target">right_arm_mc</param>    
+            <param name="target">right_arm_mc_wrapper</param>
         </action>            
  
         <action phase="interrupt3" level="1" type="abort" />           
