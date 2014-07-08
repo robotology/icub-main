@@ -4986,7 +4986,8 @@ bool CanBusMotionControl::setRefOutputsRaw(const double *v)
     CanBusResources& r = RES(system_resources);
 
     int i;
-    for (i = 0; i < r.getJoints(); i++) {
+    for (i = 0; i < r.getJoints(); i++)
+    {
         setRefOutputRaw(i,v[i]);
     }
 
@@ -5003,14 +5004,30 @@ bool CanBusMotionControl::setRefOutputRaw(int axis, double v)
 
 bool CanBusMotionControl::getRefOutputRaw(int j, double *out)
 {
-    std::cout << "canBusMotionControl::getRefOutputRaw(" << j << "," << out << ")" << std::endl;
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    int value = 0;
+    if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
+        *out = double (value);
+    else
+        return false;
+
     return true;
 }
 
 bool CanBusMotionControl::getRefOutputsRaw(double *outs)
 {
-    std::cout << "canBusMotionControl::getRefOutputsRaw() - ALL joints" << std::endl;
-    return true;
+    CanBusResources& r = RES(system_resources);
+    if (outs==0) return false;
+    int i = 0;
+    bool ret = true;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        ret = ret & getRefOutputRaw(i,&outs[i]);
+    }
+    return ret;
 }
 
 bool CanBusMotionControl::getOutputRaw(int axis, double *out)
