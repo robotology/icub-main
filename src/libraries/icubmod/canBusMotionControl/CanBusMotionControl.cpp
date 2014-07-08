@@ -38,7 +38,7 @@
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
 #include "messages.h"
-
+#include "Debug.h"
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "canControlConstants.h"
@@ -56,7 +56,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-#define __ENABLE_TORQUE__
+#define AUTOMATIC_MODE_SWITCHING
 
 inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 {
@@ -4408,6 +4408,17 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
+    #ifdef AUTOMATIC_MODE_SWITCHING
+        int mode = 0;
+        getControlModeRaw(j, &mode);
+        if (mode != VOCAB_CM_POSITION_DIRECT)
+        {
+            yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT";
+            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            yarp::os::Time::delay(0.001);
+        }
+    #endif
+
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(ref));
 }
 
@@ -4415,15 +4426,16 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
 bool CanBusMotionControl::setReferencesRaw (const double *refs)
 {
     CanBusResources& r = RES(system_resources);
+    if (refs==0) return false;
 
-    int i;
+    int i=0;
+    bool ret = true;
     for (i = 0; i < r.getJoints(); i++)
     {
-        if (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, i, S_32(refs[i])) != true)
-            return false;
+        ret = ret & setReferenceRaw(i,refs[i]);
     }
 
-    return true;
+    return ret;
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
@@ -5140,6 +5152,19 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
 
     _mutex.wait();
 
+#ifdef AUTOMATIC_MODE_SWITCHING
+    int mode = 0;
+    getControlModeRaw(axis, &mode);
+    if (mode != VOCAB_CM_POSITION &&
+        mode != VOCAB_CM_MIXED    &&
+        mode != VOCAB_CM_IMPEDANCE_POS)
+    {
+        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION";
+        setControlModeRaw(axis,VOCAB_CM_POSITION);
+        yarp::os::Time::delay(0.001);
+    }
+#endif
+
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, axis);
 
@@ -5158,33 +5183,15 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
 bool CanBusMotionControl::positionMoveRaw(const double *refs)
 {
     CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    r.startPacket();
-
+    int i = 0;
+    if (refs == 0) return false;
+    bool ret = true;
     for (i = 0; i < r.getJoints (); i++)
     {
-        if (ENABLED(i))
-        {
-            r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, i);
-            const int j = r._writeMessages - 1;
-            _ref_positions[i] = refs[i];
-            *((int*)(r._writeBuffer[j].getData()+1)) = S_32(_ref_positions[i]);/// pos
-            *((short*)(r._writeBuffer[j].getData()+5)) = S_16(_ref_speeds[i]);/// speed
-            r._writeBuffer[j].setLen(7);
-        }
-        else
-        {
-            _ref_positions[i] = refs[i];
-        }
+        ret = ret & positionMoveRaw(i, refs[i]);
     }
 
-    r.writePacket();
-
-    _mutex.post();
-
-    return true;   
+    return ret;
 }
 
 bool CanBusMotionControl::relativeMoveRaw(int j, double delta)
@@ -5527,6 +5534,20 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     CanBusResources& r = RES(system_resources);
 
     _mutex.wait();
+
+#ifdef AUTOMATIC_MODE_SWITCHING
+    int mode = 0;
+    getControlModeRaw(axis, &mode);
+    if (mode != VOCAB_CM_VELOCITY &&
+        mode != VOCAB_CM_MIXED    &&
+        mode != VOCAB_CM_IMPEDANCE_VEL)
+    {
+        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY";
+        setControlModeRaw(axis,VOCAB_CM_VELOCITY);
+        yarp::os::Time::delay(0.001);
+    }
+#endif
+
     r.startPacket();
 
     if (ENABLED (axis))
@@ -5560,39 +5581,15 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
 /// for each axis
 bool CanBusMotionControl::velocityMoveRaw (const double *sp)
 {
-    /// prepare can message.
+    if (sp==0) return false;
     CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    r.startPacket();
-
-    for (i = 0; i < r.getJoints(); i++)
+    bool ret = true;
+    int j=0;
+    for(j=0; j< r.getJoints(); j++)
     {
-        if (ENABLED (i))
-        {
-            r.addMessage (ICUBCANPROTO_POL_MC_CMD__VELOCITY_MOVE, i);
-            const int j = r._writeMessages - 1;
-            _command_speeds[i] = sp[i] / 1000.0;
-
-            *((short*)(r._writeBuffer[j].getData()+1)) = S_16(r._velShifts[i]*_command_speeds[i]);/// speed
-
-            if (r._velShifts[i]*_ref_accs[i]>1)
-                *((short*)(r._writeBuffer[j].getData()+3)) = S_16(r._velShifts[i]*_ref_accs[i]);/// accel
-            else
-                *((short*)(r._writeBuffer[j].getData()+3)) = S_16(1);
-
-            r._writeBuffer[j].setLen(5);
-        }
-        else
-        {
-            _command_speeds[i] = sp[i] / 1000.0;
-        }
+        ret = ret && velocityMoveRaw(j, sp[j]);
     }
-
-    r.writePacket();
-    _mutex.post();
-    return true;
+    return ret;
 }
 
 bool CanBusMotionControl::setEncoderRaw(int j, double val)
@@ -6070,6 +6067,18 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
 
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
+
+    #ifdef AUTOMATIC_MODE_SWITCHING
+        int mode = 0;
+        getControlModeRaw(j, &mode);
+        if (mode != VOCAB_CM_POSITION_DIRECT)
+        {
+            yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT";
+            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            yarp::os::Time::delay(0.001);
+        }
+    #endif
+
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
@@ -6085,48 +6094,26 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
 
 bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
 {
-    CanBusResources& r = RES(system_resources);
+    if (refs == 0) return false;
+    if (joints == 0) return false;
     bool ret = true;
 
-    for(int j=0; j< n_joint; j++)
+    for (int j = 0; j < n_joint; j++)
     {
-        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
-        {
-            ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
-        }
-        else
-        {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
-            _axisPositionDirectHelper->posE2A(refs[j], joints[j]),
-            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, joints[j]));
-            //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(joints[j],r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
-            //_writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(saturated_cmd));
-            ret = false;
-        }
+        ret = ret & setPositionRaw(joints[j],refs[j]);
     }
     return ret;
 }
 
 bool CanBusMotionControl::setPositionsRaw(const double *refs)
 {
+    if (refs == 0) return false;
     CanBusResources& r = RES(system_resources);
     bool ret = true;
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
-        {
-            ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(refs[j]));
-        }
-        else
-        {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
-            _axisPositionDirectHelper->posE2A(refs[j], j),
-            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
-            //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
-            //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
-            ret = false;
-        }
+        ret = ret & setPositionRaw(j,refs[j]);
     }
     return ret;
 }
