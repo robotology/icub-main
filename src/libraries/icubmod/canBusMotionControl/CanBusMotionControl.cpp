@@ -6073,7 +6073,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT)
         {
-            yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+            yDebug() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             yarp::os::Time::delay(0.001);
         }
