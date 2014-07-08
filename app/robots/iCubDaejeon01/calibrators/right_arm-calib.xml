@@ -8,21 +8,21 @@
             <param name="deviceName"> Right_Arm_Calibrator </param>    
         </group>             
  
-<group name="CALIBRATION">   
- 
-<param name="calibrationType">            3             3             3             3             0             2             2             3             </param>       
-<param name="calibration1">               1706.25       853.13        2795.32       2559.38       900.00        750.00        750.00        1700.00       </param>       
-<param name="calibration2">               10.00         10.00         10.00         10.00         -20.00        10.00         10.00         100.00        </param>       
-<param name="calibration3">               3584.26       309.40        2265.62       779.19        0.00          0.00          0.00          0.00          </param>       
-<param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
-<param name="velocityZero">               10            10            10            10            30            10            10            100           </param>       
-<param name="maxPwm">                     120           120           120           120           0             0             0             0             </param>       
-<param name="posZeroThreshold">           2             2             2             2             2             2             90            90            </param>       
+<group name="HOME">
+<param name="positionHome">                       -30        30      30      45      0       0       40      15      30      0       0       0       0       0       0       0       </param>
+<param name="velocityHome">                       10         10      10      10      30      30      30      100     10      10      10      10      10      10      10      10      </param>
 </group>       
  
-<group name="HOME">          
-<param name="positionHome"> -30           30            0             45            0             0             40            15            </param>       
-<param name="velocityHome"> 10            10            10            10            30            10            10            100           </param>       
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3          3       3       3       0       3       3       3       3       4       4       4       4       4       4       4       </param>
+<param name="calibration1">                       27306.6   13653.3   27306.6   40959.9   500.0     2047.5    2047.5    1664.0    626.3     255.0     20.0      255.0     107.0     255.0     28.0      750.0     </param>
+<param name="calibration2">                       10.0       10.0    10.0    10.0    -20.0   10.0    10.0    100.0   10.0    10.0    30.0    10.0    10.0    10.0    10.0    10.0    </param>
+<param name="calibration3">                       20079.5   64911.4   63999.4   55519.8   0.0       2002.5    1952.5    0.0       0.0       6000.0    6600.0    6000.0    -7000.0   6000.0    7000.0    14000.0   </param>
+<param name="positionZero">                       -30.0      30.0    30.0    45.0    0.0     0.0     0.0     15.0    30.0    0.0     0.0     0.0     0.0     0.0     0.0     0.0     </param>
+<param name="velocityZero">                       10.0       10.0    10.0    10.0    30.0    30.0    30.0    100.0   100.0   100.0   100.0   100.0   100.0   100.0   100.0   100.0   </param>
+<param name="maxPwm">                             1200       1200    1200    1200    0       0       0       0       0       0       0       0       0       0       0       0       </param>
+<param name="posZeroThreshold">                   2          2       2       2       2       2       90      90      1000    1000    1000    1000    1000    1000    1000    1000    </param>
 </group>       
  
 		<param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5) (8 9 11 13) (10 12 14 15) </param>
