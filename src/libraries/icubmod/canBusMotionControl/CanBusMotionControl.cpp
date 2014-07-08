@@ -5150,8 +5150,6 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-    _mutex.wait();
-
 #ifdef AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
@@ -5164,6 +5162,8 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         yarp::os::Time::delay(0.001);
     }
 #endif
+
+    _mutex.wait();
 
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, axis);
@@ -5533,8 +5533,6 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
 
-    _mutex.wait();
-
 #ifdef AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
@@ -5547,6 +5545,8 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         yarp::os::Time::delay(0.001);
     }
 #endif
+
+    _mutex.wait();
 
     r.startPacket();
 
