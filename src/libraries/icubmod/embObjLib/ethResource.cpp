@@ -396,7 +396,7 @@ bool ethResources::clearPerSigMsg(void)
     eOropSIGcfg_t sigcfg            = {0};
     eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
     uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
-    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+    EOarray *array                  = eo_array_New((uint8_t)targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array); // targetcapacity is never more than an uint8_t
 
     cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_clear;
     cmdconfig.opcpar.plustime       = 0;

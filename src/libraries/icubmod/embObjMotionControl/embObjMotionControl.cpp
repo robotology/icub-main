@@ -142,12 +142,15 @@ bool embObjMotionControl::controlModeCommandConvert_yarp2embObj(int vocabMode, e
 
 int embObjMotionControl::controlModeCommandConvert_embObj2yarp(eOmc_controlmode_command_t embObjMode)
 {
+    yError() << "embObjMotionControl::controlModeCommandConvert_embObj2yarp" << " is not yet implemented for embObjMotionControl";
+    return 0;
 
 }
 
 bool embObjMotionControl::controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut)
 {
-
+    yError() << "controlModeStatusConvert_yarp2embObj" << " is not yet implemented for embObjMotionControl";
+    return false;
 }
 
 int embObjMotionControl::controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode)
@@ -1242,7 +1245,7 @@ bool embObjMotionControl::init()
     eOropSIGcfg_t sigcfg            = {0};
     eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
     uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
-    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+    EOarray *array                  = eo_array_New((uint8_t)targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array); // reduction to uint8_t is ok
 
     cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
     cmdconfig.opcpar.plustime       = 0;
@@ -1469,7 +1472,7 @@ bool embObjMotionControl::configure_mais(void)
     uint8_t               maisnum   = 0;
     uint8_t               datarate  = 10;    //10 milli (like in icub_right_arm_safe.ini)  // type ok
     
-    #warning --> marcoaccame on 08may14: the control about mais being only in boards 2 and 4 is ... to be avoided. much better using the PROTOCOL section and see if mais is present.
+    //#warning --> marcoaccame on 08may14: the control about mais being only in boards 2 and 4 is ... to be avoided. much better using the PROTOCOL section and see if mais is present.
 
     if((_fId.boardNum != 2) && (_fId.boardNum != 4))
     {
@@ -2872,12 +2875,12 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 //	Debug interface
 //----------------------------------------------\\
 
-bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   { }
-bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)  { }
-bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)  { }
-bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { }
-bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         { }
-bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        { }
+bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   {       return NOT_YET_IMPLEMENTED("setParameterRaw"); }
+bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)  {       return NOT_YET_IMPLEMENTED("getParameterRaw"); }
+bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)  { return NOT_YET_IMPLEMENTED("getDebugParameterRaw"); }
+bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { return NOT_YET_IMPLEMENTED("setDebugParameterRaw"); }
+bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         {       return NOT_YET_IMPLEMENTED("setDebugReferencePositionRaw"); }
+bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        {       return NOT_YET_IMPLEMENTED("getDebugReferencePositionRaw");}
 
 bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
 {
@@ -2918,10 +2921,10 @@ bool embObjMotionControl::getRotorSpeedsRaw           (double* value)
 
      return ret;
 }
-bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { }
-bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { }
-bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { }
-bool embObjMotionControl::getJointPositionsRaw        (double* value)               { }
+bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { return NOT_YET_IMPLEMENTED("getRotorAccelerationRaw");  }
+bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");  }
+bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { return NOT_YET_IMPLEMENTED("getJointPositionRaw");  }
+bool embObjMotionControl::getJointPositionsRaw        (double* value)               { return NOT_YET_IMPLEMENTED("getJointPositionsRaw");  }
 #endif
 
 // Limit interface
@@ -3672,6 +3675,9 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 //            return false;
 //        }
 //    }
+
+
+    return true;
 }
 
 bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
@@ -3718,6 +3724,8 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //                         << Vocab::decode(modes[j]) << " Got an unknown value!";            return false;
 //        }
 //    }
+
+    return true;
 }
 
 
