@@ -3801,7 +3801,7 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     int v = from_modevocab_to_modeint(mode);
     if (v==VOCAB_CM_UNKNOWN) return false;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
-
+    yarp::os::Time::delay(0.010);
     return true;
 }
 
@@ -3815,6 +3815,7 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     {
         ret = ret && setControlModeRaw(joints[i],modes[i]);
     }
+    yarp::os::Time::delay(0.010);
     return ret;
 }
 
@@ -3845,7 +3846,7 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
     }
-
+    yarp::os::Time::delay(0.010);
     return true;
 }
 
