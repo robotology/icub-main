@@ -1606,7 +1606,8 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
-    if( mode != VOCAB_CM_POSITION_DIRECT )
+    if( mode != VOCAB_CM_POSITION_DIRECT &&
+        mode != VOCAB_CM_IDLE)
     {
         yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION_DIRECT);
@@ -1852,7 +1853,7 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_VEL))
+    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_VEL) && (mode != VOCAB_CM_IDLE))
     {
         yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_VELOCITY);
@@ -2070,7 +2071,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_POS))
+    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_POS) && (mode != VOCAB_CM_IDLE))
     {
         yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION);
