@@ -4412,7 +4412,8 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
     #ifdef AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
-        if (mode != VOCAB_CM_POSITION_DIRECT)
+        if (mode != VOCAB_CM_POSITION_DIRECT &&
+            mode != VOCAB_CM_IDLE)
         {
             yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
@@ -5156,7 +5157,8 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_POSITION &&
         mode != VOCAB_CM_MIXED    &&
-        mode != VOCAB_CM_IMPEDANCE_POS)
+        mode != VOCAB_CM_IMPEDANCE_POS &&
+        mode != VOCAB_CM_IDLE)
     {
         yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_POSITION);
@@ -5539,7 +5541,8 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_VELOCITY &&
         mode != VOCAB_CM_MIXED    &&
-        mode != VOCAB_CM_IMPEDANCE_VEL)
+        mode != VOCAB_CM_IMPEDANCE_VEL && 
+        mode != VOCAB_CM_IDLE)
     {
         yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_VELOCITY);
@@ -6072,7 +6075,8 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     #ifdef AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
-        if (mode != VOCAB_CM_POSITION_DIRECT)
+        if (mode != VOCAB_CM_POSITION_DIRECT &&
+            mode != VOCAB_CM_IDLE)
         {
             yDebug() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
