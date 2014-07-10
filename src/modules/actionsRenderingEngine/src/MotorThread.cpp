@@ -104,46 +104,34 @@ int MotorThread::checkArm(int arm, Vector &xd, const bool applyOffset)
 
 bool MotorThread::setImpedance(bool turn_on)
 {
-
-    bool done=false;
-
-    //if the system is asked to turn on impedance control
+    bool done=true;
     if(turn_on)
     {
-    
-        done=true;
-
         for(int i=0; i<5; i++)
         {
             if(action[LEFT]!=NULL)
-                done=done && ctrl_mode_arm[LEFT]->setImpedanceVelocityMode(i);
+                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
             if(action[RIGHT]!=NULL)
-                done=done && ctrl_mode_arm[RIGHT]->setImpedanceVelocityMode(i);
+                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
         }
         
-        done=done && ctrl_mode_torso->setVelocityMode(0);
-        done=done && ctrl_mode_torso->setVelocityMode(2);
+        for(int i=0; i<3; i++)
+            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
 
-        //update the system status
         status_impedance_on=done;
     }
-
-    //if the system is asked to turn off impedance control
-    if(!turn_on)
+    else
     {
-        done=true;
-
         for(int i=0; i<5; i++)
         {
             if(action[LEFT]!=NULL)
-                done=done && ctrl_mode_arm[LEFT]->setVelocityMode(i);
+                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_STIFF);
             if(action[RIGHT]!=NULL)
-                done=done && ctrl_mode_arm[RIGHT]->setVelocityMode(i);
+                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_STIFF);
         }
 
         for(int i=0; i<3; i++)
-            if(ctrl_mode_torso!=NULL)
-                done=done && ctrl_mode_torso->setVelocityMode(i);
+            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
 
         status_impedance_on=!done;
     }
@@ -158,25 +146,19 @@ bool MotorThread::setTorque(bool turn_on, int arm)
     if(action[arm]==NULL)
         return false;
 
-    bool done=false;
+    bool done=true;
 
     //if the system is asked to turn on impedance control
     if(turn_on)
     {
-        done=true;
-
         for(int i=0; i<4; i++)
             done=done && ctrl_mode_arm[arm]->setTorqueMode(i);
 
         done=done && ctrl_mode_torso->setTorqueMode(0);
-        done=done && ctrl_mode_torso->setImpedanceVelocityMode(2);
+        done=done && int_mode_torso->setInteractionMode(2,VOCAB_IM_COMPLIANT);
     }
-
-    //if the system is asked to turn off impedance control
-    if(!turn_on)
-    {
+    else
         done=setImpedance(status_impedance_on);
-    }
 
     return done;
 }
@@ -970,6 +952,7 @@ bool MotorThread::threadInit()
     drv_torso->view(pos_torso);
     drv_torso->view(vel_torso);
     drv_torso->view(ctrl_mode_torso);
+    drv_torso->view(int_mode_torso);
     drv_torso->view(ctrl_impedance_torso);
 
     if(partUsed=="both_arms" || partUsed=="left_arm")
@@ -982,6 +965,7 @@ bool MotorThread::threadInit()
         }        
 
         drv_arm[LEFT]->view(ctrl_mode_arm[LEFT]);
+        drv_arm[LEFT]->view(int_mode_arm[LEFT]);
         drv_arm[LEFT]->view(ctrl_impedance_arm[LEFT]);
         drv_arm[LEFT]->view(pos_arm[LEFT]);
         drv_arm[LEFT]->view(enc_arm[LEFT]);
@@ -1002,6 +986,7 @@ bool MotorThread::threadInit()
         }        
 
         drv_arm[RIGHT]->view(ctrl_mode_arm[RIGHT]);
+        drv_arm[RIGHT]->view(int_mode_arm[RIGHT]);
         drv_arm[RIGHT]->view(ctrl_impedance_arm[RIGHT]);
         drv_arm[RIGHT]->view(pos_arm[RIGHT]);
         drv_arm[RIGHT]->view(enc_arm[RIGHT]);

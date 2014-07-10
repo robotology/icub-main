@@ -134,10 +134,11 @@ private:
     IPositionControl                    *pos_torso;
     IVelocityControl                    *vel_torso;
     IControlMode                        *ctrl_mode_torso;
+    IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
 
-
     IControlMode                        *ctrl_mode_arm[2];
+    IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
     int                                 initial_gaze_context;
@@ -252,10 +253,12 @@ public:
     {
         ctrl_gaze=NULL;
         ctrl_mode_torso=NULL;
+        int_mode_torso=NULL;
         drv_head=drv_torso=drv_ctrl_gaze=NULL;
         drv_arm[LEFT]=drv_arm[RIGHT]=NULL;
         drv_car_arm[LEFT]=drv_car_arm[RIGHT]=NULL;
         ctrl_mode_arm[LEFT]=ctrl_mode_arm[RIGHT]=NULL;
+        int_mode_arm[LEFT]=int_mode_arm[RIGHT]=NULL;
         action[LEFT]=action[RIGHT]=NULL;
         closed=false;
     }
