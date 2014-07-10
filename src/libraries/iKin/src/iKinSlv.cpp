@@ -1108,7 +1108,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
 
 /************************************************************************/
-void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, double *tok)
+void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q,
+                           double *tok)
 {       
     Bottle &b=outPort->prepare();
     b.clear();
@@ -1117,7 +1118,7 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
     addVectorOption(b,IKINSLV_VOCAB_OPT_X,x);
     addVectorOption(b,IKINSLV_VOCAB_OPT_Q,q);
 
-    if (tok)
+    if (tok!=NULL)
         addTokenOption(b,*tok);
 
     outPort->writeStrict();
