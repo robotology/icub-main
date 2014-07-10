@@ -11,14 +11,14 @@
 		</group>
 
 <group name="HOME">
-<param name="positionHome">                       -30        30         30         45         0          0          40         15         30         0          0          0          0          0          0          0          </param>
+<param name="positionHome">                       -30        30          0         45         0          0          40         15         30         0          0          0          0          0          0          0          </param>
 <param name="velocityHome">                       10         10         10         10         30         30         30         100        10         10         10         10         10         10         10         10         </param>
 </group>
 
 
 <group name="CALIBRATION">
 <param name="calibrationType">                    3          3          3          3          0          3          3          3          3          4          4          4          4          4          4          4          </param>
-<param name="calibration1">                       38229.2    51882.5    38229.2    24575.9    500.0      2047.5     2047.5     1506.0     570.6      247.0      250.0      255.0      106.0      232.0      83.0       754.0      </param>
+<param name="calibration1">                       38229.2    51882.5    38229.2    24575.9    500.0      2047.5     2047.5     1506.0     536.0      241.0      24.0     255.0      106.0      232.0      83.0       754.0      </param>
 <param name="calibration2">                       10.0       10.0       10.0       10.0       20.0       10.0       10.0       100.0      10.0       10.0       30.0       10.0       10.0       10.0       10.0       10.0       </param>
 <param name="calibration3">                       13615.1    45030.4    57686.1    52647.1    0.0        3281.5     3423.5     0.0        0.0        6000.0     -6600.0    6000.0     7000.0     6000.0     -7000.0    -14000.0   </param>
 <param name="positionZero">                       -30.0      30.0       0.0        45.0       0.0        0.0        0.0        15.0       30.0       0.0        0.0        0.0        0.0        0.0        0.0        0.0        </param>
