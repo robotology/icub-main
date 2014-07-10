@@ -53,13 +53,12 @@
     <devices file="hardware/skin/left_hand-inertial_mtb.xml" />  
     <devices file="hardware/skin/right_hand-inertial_mtb.xml" />  
     -->
-
+	
     <!-- CALIBRATORS -->
-    <devices file="calibrators/head_calib.xml" /> 
-    <devices file="calibrators/torso_calib.xml" />
-    <devices file="calibrators/left_arm_calib.xml" /> 
-    <devices file="calibrators/right_arm_calib.xml" />
-    <devices file="calibrators/left_hand_calib.xml" /> 
-    <devices file="calibrators/right_hand_calib.xml" />
+    <devices file="calibrators/head-calib.xml" /> 
+    <devices file="calibrators/torso-calib.xml" />
+    <devices file="calibrators/left_arm-calib.xml" /> 
+    <devices file="calibrators/right_arm-calib.xml" />
+
 </robot> 
 
