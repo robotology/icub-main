@@ -1595,14 +1595,14 @@ public:
 
             if (rightArmImpVelMode)
             {
-                IControlMode *imode;
+                IInteractionMode *imode;
                 drvRightArm->view(imode);
 
                 int len=rightArmJointsStiffness.length()<rightArmJointsDamping.length()?
                         rightArmJointsStiffness.length():rightArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                    imode->setVelocityMode(j);
+                    imode->setInteractionMode(j,VOCAB_IM_STIFF);
             }
         }
 
