@@ -27,7 +27,7 @@ endmacro (checkandset_dependency)
 message(STATUS "Detecting required libraries")
 message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
-find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib embobj QUIET)
+find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib QUIET)
 
 find_package(GSL)
 #find_package(GtkMM)

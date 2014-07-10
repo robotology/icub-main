@@ -22,7 +22,7 @@ case $2 in
                         -DENABLE_icubmod_logpolargrabber:BOOL=TRUE \
                         -DENABLE_icubmod_skinprototype:BOOL=TRUE \
                         -DENABLE_icubmod_fakecan:BOOL=TRUE \
-                        -DENABLE_icubmod_canmotioncontrol:BOOL=TRUE\
+                        -DENABLE_icubmod_canmotioncontrol:BOOL=FALSE\
                         -DENABLE_icubmod_debugInterfaceClient:BOOL=TRUE\
                         -DICUB_DASHBOARD_SUBMIT:BOOL=TRUE"
 esac
