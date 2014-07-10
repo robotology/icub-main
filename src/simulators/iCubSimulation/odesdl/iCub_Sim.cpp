@@ -1022,7 +1022,8 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     OdeInit& odeinit = OdeInit::get();
     const dReal *pos;
     const dReal *rot;
-    glViewport(0,0,320,240);
+       
+    glViewport(0,0,sceneSize.get(0).asInt(), sceneSize.get(1).asInt());
     glMatrixMode (GL_PROJECTION);
     
     if (left){
@@ -1063,7 +1064,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     }	
     if (wide){
         glLoadIdentity();
-        gluPerspective( 55.8, (float) 320/240, 0.04, 100.0 );//here nothing to do with cameras
+        gluPerspective( 55.8, (float) sceneSize.get(0).asInt()/sceneSize.get(1).asInt(), 0.04, 100.0 );//here nothing to do with cameras
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -1141,6 +1142,11 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     fov_right=2*atan2((double)height_right,2*focal_length_right)*180.0/M_PI;
     //--------------------------------------//
 
+    // set the scene size
+    sceneSize.clear();
+    sceneSize.addInt((width_left>width_right) ? width_left : width_right);
+    sceneSize.addInt((height_left>height_right) ? height_left : height_right);
+
 
     ConstString videoconf = robot_config->getFinder().findFile("video");
     options.fromConfigFile(videoconf.c_str());
@@ -1179,16 +1185,15 @@ bool OdeSdlSimulation::getTrqData(Bottle data) {
 
 
 bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
-    int w = 320;
-    int h = 240;
-    int p = 3;//320 240
+    int w = sceneSize.get(0).asInt();
+    int h = sceneSize.get(1).asInt();
+    int p = 3;
 
-    char buf[ 320 * 240 * 3 ];
+    char* buf = (char*) malloc( w * h * 3);
     glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
     ImageOf<PixelRgb> img;
     img.setQuantum(1);
     img.setExternal(buf,w,h);
-
     // inefficient flip!
     target.resize(img);
     int ww = img.width();
@@ -1199,5 +1204,7 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
         }
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    free(buf);
     return true;
 }
+

@@ -19,7 +19,8 @@ public:
 	virtual void drawView(bool left, bool right, bool wide) {}
 
     virtual bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& img) {
-        img.resize(320,240);
+        //img.resize(320,240);
+        img.resize(640,480);
         img.zero();
         return true;
     }

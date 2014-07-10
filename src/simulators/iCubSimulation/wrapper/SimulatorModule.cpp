@@ -50,8 +50,8 @@ bool viewParam1 = false, viewParam2 = false;
 bool noCam;
 
 const int ifovea = 128;
-const int baseWidth = 320;
-const int baseHeight = 240;
+//const int baseWidth = 320;
+//const int baseHeight = 240;
 
 SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config, 
                                  Simulation *sim) : 
