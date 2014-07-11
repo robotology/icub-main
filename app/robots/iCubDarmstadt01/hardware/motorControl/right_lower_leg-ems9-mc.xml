@@ -11,8 +11,8 @@
 
     <group name="LIMITS">
         <!--                                    0             1      -->
-        <param name="Max">                      39            22        </param>
-        <param name="Min">                     -20           -22        </param>
+        <param name="Max">                      30            20        </param>
+        <param name="Min">                     -20           -20        </param>
         <param name="Currents">                 5000          5000      </param>
     </group>
 
