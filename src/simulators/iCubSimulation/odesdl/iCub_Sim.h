@@ -151,6 +151,8 @@ private:
     //////////////////////////////
     //////////////////////////////
 
+private:
+    yarp::os::Bottle sceneSize;
 };
 
 #endif
