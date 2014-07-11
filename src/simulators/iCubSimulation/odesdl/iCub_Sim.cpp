@@ -95,7 +95,7 @@ static double fov_right;
 
 
 static int cameraSizeWidth;
-static int cameraSizeHeight
+static int cameraSizeHeight;
 
 
 // # of touch sensors
@@ -1190,7 +1190,7 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
     int h = cameraSizeHeight;
     int p = 3;
 
-    char buf[ w * h * 3 ];
+    char *buf=new char[w * h * p];
     glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
     ImageOf<PixelRgb> img;
     img.setQuantum(1);
@@ -1206,5 +1206,6 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
         }
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    delete[] buf;
     return true;
 }
