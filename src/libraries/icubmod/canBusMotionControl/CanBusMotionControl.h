@@ -658,7 +658,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
             public IOpenLoopControlRaw,
-            public IControlModeRaw,
+            public IControlMode2Raw,
             public IPreciselyTimed,
             public ImplementPositionControl2,
             public ImplementPositionDirect,
@@ -673,8 +673,10 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
             public ImplementOpenLoopControl,
-            public ImplementControlMode,
+            public ImplementControlMode2,
             public ImplementDebugInterface,
+            public IInteractionModeRaw,
+            public ImplementInteractionMode,
             public IFactoryInterface,
             public IClientLogger
 {
@@ -790,8 +792,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // also in the openloop interface
+//    virtual bool getOutputsRaw(double *outs);         // also in the openloop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -885,15 +887,23 @@ public:
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
 
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
+
+
     ///////////// OpenLoop control interface raw
     ///
     virtual bool setOpenLoopModeRaw();
-    virtual bool setOutputRaw(int axis, double v);
-    virtual bool setOutputsRaw(const double *v);
-    //virtual bool getOutputRaw(int j, double *out); //already in PID interface
-    //virtual bool getOutputsRaw(double *outs);      //already in PID interface
-    //
-    /////////////////////////////// END Velocity Control INTERFACE
+    virtual bool setRefOutputRaw(int axis, double v);
+    virtual bool setRefOutputsRaw(const double *v);
+    virtual bool getRefOutputRaw(int j, double *out);
+    virtual bool getRefOutputsRaw(double *outs);
+    virtual bool getOutputRaw(int j, double *out);
+    virtual bool getOutputsRaw(double *outs);
+    /////////////////////////////// END OpenLoop Control INTERFACE
 
     ///////////// Velocity control interface raw
     ///
@@ -1004,9 +1014,18 @@ public:
     bool setTorqueSource (int axis, char board_id, char board_chan );
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
+
+    // InteractionMode interface
+    bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
+    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
+    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
@@ -1056,6 +1075,11 @@ protected:
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
     axisPositionDirectHelper  *_axisPositionDirectHelper;
+
+    inline unsigned char from_modevocab_to_modeint (int modevocab);
+    inline int from_modeint_to_modevocab (unsigned char modeint);
+    inline unsigned char from_interactionvocab_to_interactionint (int interactionvocab);
+    inline int from_interactionint_to_interactionvocab (unsigned char interactionint);
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.

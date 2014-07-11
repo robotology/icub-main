@@ -17,7 +17,7 @@ project(iCub)
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
 set(ICUB_REQYARP_VERSION_PATCH "62")
-set(ICUB_REQYARP_VERSION_TWEAK "2")
+set(ICUB_REQYARP_VERSION_TWEAK "3")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -128,7 +128,6 @@ yarp_configure_external_installation(iCub)
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
 set(ICUB_CANMASKS_STRICT_FILTER FALSE CACHE BOOL "Enable strict filtering on can address. Needed with sharedcan.")
-set(ENABLE_icubmod_controlboardwrapper2 TRUE CACHE BOOL "enable controlboardWrapper2")
 
 ###################### End options and definitions
 

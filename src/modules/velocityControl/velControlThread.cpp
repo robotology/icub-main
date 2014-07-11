@@ -270,8 +270,6 @@ void velControlThread::halt()
 {
     suspended=true;
     ivel->stop();
-    for(int k = 0; k < nJoints; k++)
-        imod->setPositionMode(k);
     fprintf(stderr, "Suspended\n");
     targets=encoders;
     ffVelocities = 0;
@@ -280,8 +278,16 @@ void velControlThread::halt()
 void velControlThread::go()
 {
     suspended=false;
+    int mode=0;
     for(int k = 0; k < nJoints; k++)
-        imod->setPositionMode(k);
+    {
+        imod->getControlMode(k, &mode);
+        if (mode!=VOCAB_CM_MIXED && mode!=VOCAB_CM_VELOCITY)
+        {
+            yarp::os::ConstString s = yarp::os::Vocab::decode(mode);
+            fprintf(stderr, "WARNING: Joint (%d) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
+        }
+    }
     fprintf(stderr, "Run\n");
     targets=encoders;
     ffVelocities = 0;

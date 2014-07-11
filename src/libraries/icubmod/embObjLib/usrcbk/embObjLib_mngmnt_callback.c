@@ -26,13 +26,19 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
-// empty-section
+
+#include "EoCommon.h"
+
+#include "string.h"
+#include "stdint.h"
+#include "stdlib.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of extern public interface
 // --------------------------------------------------------------------------------------------------------------------
-// empty-section
+
+#include "EoProtocolMN.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -74,8 +80,39 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
 // --------------------------------------------------------------------------------------------------------------------
-// empty-section
 
+void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    static const char* states[] =
+    {
+        "applstate_config",
+        "applstate_running",
+        "applstate_error",
+        "not initted"
+    };
+
+    char str[128] = {0};
+
+    eOmn_appl_status_t* appstatus = (eOmn_appl_status_t*) rd->data;
+
+    const char* state = (appstatus->currstate > 2) ? (states[3]) : (states[appstatus->currstate]);
+
+    snprintf(str, sizeof(str), "MANAGEMENT-appl-status: sign = 0x%x, board EB%d -> state = %s, msg = %s ", rd->signature, eo_nv_GetBRD(nv)+1, state, appstatus->filler06);
+
+    printf("%s\n", str);
+}
+
+
+extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    char str[128] = {0};
+
+    eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
+
+    snprintf(str, sizeof(str), "MANAGEMENT-info: sign = 0x%x, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+
+    printf("%s\n", str);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern hidden functions 

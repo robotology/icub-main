@@ -12,10 +12,11 @@
     </group>
 
     <group name="PROTOCOL">
-        <param name="endpointManagementIsSupported">	        1   </param> 
-            <param name="entityMNcommunicationNumberOf">                     1	</param> 
-            <param name="entityMNapplicationNumberOf">                     1	</param> 
-            
+    <param name="endpointManagementIsSupported">	        1   </param>
+        <param name="entityMNcommunicationNumberOf">            1	</param>
+        <param name="entityMNapplicationNumberOf">              1	</param>
+        <param name="entityMNinformationNumberOf">              1	</param>
+
         <param name="endpointMotionControlIsSupported">         1   </param> 
             <param name="entityMCjointNumberOf">                    3	</param> 
             <param name="entityMCmotorNumberOf">                    3	</param>

@@ -182,7 +182,6 @@ using namespace yarp::dev;
 static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
 static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
-
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
     public IControlCalibration2Raw,
@@ -191,12 +190,12 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementEncodersTimed,
     public IPositionControl2Raw,
     public IVelocityControl2Raw,
-    public IControlModeRaw,
+    public IControlMode2Raw,
+    public ImplementControlMode2,
     public IControlLimits2Raw,
     public IImpedanceControlRaw,
     public ImplementImpedanceControl,
     public ImplementControlLimits2,
-    public ImplementControlMode,
     public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
     public ImplementPositionControl2,
     public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
@@ -207,13 +206,13 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementTorqueControl,
     public IVirtualAnalogSensor,
     public IPositionDirectRaw,
-    public ImplementPositionDirect
-
-#ifdef IMPLEMENT_DEBUG_INTERFACE
-, public ImplementDebugInterface,
-public IDebugInterfaceRaw
-#endif
-
+    public ImplementPositionDirect,
+    public IInteractionModeRaw,
+    public ImplementInteractionMode,
+    public IOpenLoopControlRaw,
+    public ImplementOpenLoopControl,
+    public IDebugInterfaceRaw,
+    public ImplementDebugInterface
 {
 private:
     int           tot_packet_recv, errors;
@@ -302,6 +301,16 @@ private:
     bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
     bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
     bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);             // helper function
+    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
+    bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
+    bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
+
+    bool controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
+    int  controlModeCommandConvert_embObj2yarp(eOmc_controlmode_command_t embObjMode);
+
+    bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
+    int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
 
 public:
     embObjMotionControl();
@@ -335,8 +344,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // uses iOpenLoop interface
+//    virtual bool getOutputsRaw(double *outs);         // uses iOpenLoop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -400,6 +409,12 @@ public:
     virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int *v);
+
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
 
     //////////////////////// BEGIN EncoderInterface
     virtual bool resetEncoderRaw(int j);
@@ -548,9 +563,27 @@ public:
     bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
+
+    // InteractionMode interface
+    bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode);
+    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode);
+    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+
+    // OPENLOOP interface
+    bool setRefOutputRaw(int j, double v);
+    bool setRefOutputsRaw(const double *v);
+    bool getRefOutputRaw(int j, double *out);
+    bool getRefOutputsRaw(double *outs);
+    bool getOutputRaw(int j, double *out);
+    bool getOutputsRaw(double *outs);
+    bool setOpenLoopModeRaw();
 };
 
 #endif // include guard

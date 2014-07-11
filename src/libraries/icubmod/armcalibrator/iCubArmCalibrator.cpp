@@ -184,13 +184,12 @@ bool iCubArmCalibrator::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    if (!(iCalibrate&&iPosition&&iPids&&iControlMode))
         return false;
 
     // ok we have all interfaces
@@ -223,18 +222,14 @@ bool iCubArmCalibrator::calibrate(DeviceDriver *dd)
 
     for (k = 0; k < nj; k++) 
     {
-        fprintf(logfile, "ARMCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
-        iAmps->enableAmp(k);
-        fprintf(logfile, "ARMCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
-        iPids->enablePid(k);
+        iControlMode->setControlMode(k, VOCAB_CM_POSITION);
     }
 
     ret = true;
     bool x;
 
 	////////////////////////////////////////////
-    iPids->disablePid(2);
-    iAmps->disableAmp(2);
+    iControlMode->setControlMode((2), VOCAB_CM_IDLE);
 
 	int firstSetOfJoints[] = {0, 1 , 3, 4, 6, 7, 8, 9, 11, 13};
     for (k =0; k < 10; k++)
@@ -249,8 +244,8 @@ bool iCubArmCalibrator::calibrate(DeviceDriver *dd)
 	for (k = 0; k < 10; k++)
 		checkGoneToZero(firstSetOfJoints[k]);
 	//////////////////////////////////////////
-    iAmps->enableAmp(2);
-    iPids->enablePid(2);
+    iControlMode->setControlMode((2), VOCAB_CM_POSITION);
+
 	int secondSetOfJoints[] = {2, 5, 10, 12, 14, 15};
 	for (k =0; k < 6; k++)
 		calibrateJoint(secondSetOfJoints[k]);

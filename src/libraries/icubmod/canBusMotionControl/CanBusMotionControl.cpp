@@ -38,7 +38,7 @@
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
 #include "messages.h"
-
+#include "Debug.h"
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "canControlConstants.h"
@@ -56,7 +56,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-#define __ENABLE_TORQUE__
+#define AUTOMATIC_MODE_SWITCHING
 
 inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 {
@@ -195,8 +195,12 @@ public:
     short _axisStatus;
     char  _canStatus;
     char  _boardStatus;
-    char  _controlmodeStatus;
+    unsigned char _controlmodeStatus;
     double _update_e;
+
+    // msg 3b
+    unsigned char _interactionmodeStatus;
+    double _update_e2;
 
     // msg 4
     short _current;
@@ -288,6 +292,7 @@ public:
         _canStatus=0;
         _boardStatus=0;
         _controlmodeStatus=0;
+        _interactionmodeStatus=0;
         _position_error = 0;
         _torque_error = 0;
         _speed_joint = 0;
@@ -298,6 +303,7 @@ public:
 
         _update_v = .0;
         _update_e = .0;
+        _update_e2= .0;
         _update_c = .0;
         _update_r = .0;
         _update_s = .0;
@@ -2146,9 +2152,10 @@ ImplementControlLimits2(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
-ImplementControlMode(this),
+ImplementControlMode2(this),
 ImplementDebugInterface(this),
 ImplementPositionDirect(this),
+ImplementInteractionMode(this),
 _mutex(1),
 _done(0)
 {
@@ -2243,7 +2250,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlMode::initialize(p._njoints, p._axisMap);
+    ImplementControlMode2::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
@@ -2251,6 +2258,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
 
     // temporary variables used by the ddriver.
@@ -2341,8 +2349,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for (i = 0; i < p._njoints; i++)
     {
         yarp::os::Time::delay(0.001);
-        disablePid(i);
-        disableAmp(i);
+        setControlMode(i, VOCAB_CM_IDLE);
     }
     const Bottle &analogList=config.findGroup("analog").tail();
     //    if (analogList!=0)
@@ -2665,9 +2672,9 @@ bool CanBusMotionControl::close (void)
     if (_opened) {
         // disable the controller, pid controller & pwm off
         int i;
-        for (i = 0; i < res._njoints; i++) {
-            disablePid(i);
-            disableAmp(i);
+        for (i = 0; i < res._njoints; i++)
+        {
+            setControlMode(i, VOCAB_CM_IDLE);
         }
 
         if (isRunning())
@@ -2693,11 +2700,12 @@ bool CanBusMotionControl::close (void)
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
 
-        ImplementControlMode::uninitialize();
+        ImplementControlMode2::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
         ImplementOpenLoopControl::uninitialize();
         ImplementPositionDirect::uninitialize();
+        ImplementInteractionMode::uninitialize();
 
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
@@ -3067,8 +3075,18 @@ void CanBusMotionControl::handleBroadcasts()
 
                         break;
 
+                    case ICUBCANPROTO_PER_MC_MSG__ADDITIONAL_STATUS:
+                        r._bcastRecvBuffer[j]._interactionmodeStatus=*((char *)(data)) & 0x0F;
+                        r._bcastRecvBuffer[j]._update_e2 = before;
+                        j++;
+                        if (j < r.getJoints())
+                        {
+                            r._bcastRecvBuffer[j]._interactionmodeStatus=(*((char *)(data)) >> 4) & 0x0F;
+                            r._bcastRecvBuffer[j]._update_e2 = before;
+                        }
+                        break;
+
                     case ICUBCANPROTO_PER_MC_MSG__CURRENT:
-                        // also receives the control values.
                         r._bcastRecvBuffer[j]._current = *((short *)(data));
                         r._bcastRecvBuffer[j]._update_c = before;
                         j++;
@@ -3080,7 +3098,6 @@ void CanBusMotionControl::handleBroadcasts()
                         break;
 
                     case ICUBCANPROTO_PER_MC_MSG__PID_ERROR:
-                        // also receives the control values.
                         r._bcastRecvBuffer[j]._position_error = *((short *)(data));
                         r._bcastRecvBuffer[j]._torque_error =   *((short *)(data+4));
                         r._bcastRecvBuffer[j]._update_r = before;
@@ -3095,7 +3112,6 @@ void CanBusMotionControl::handleBroadcasts()
 
                     case ICUBCANPROTO_PER_MC_MSG__VELOCITY:
                         // also receives the acceleration values.
-
                         r._bcastRecvBuffer[j]._speed_joint = *((short *)(data));
                         r._bcastRecvBuffer[j]._accel_joint = *((short *)(data+4));
                         r._bcastRecvBuffer[j]._update_s = before;
@@ -3502,56 +3518,38 @@ void CanBusMotionControl:: run()
     // ControlMode
 bool CanBusMotionControl::setPositionModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (position)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_position);
+    fprintf(stderr, "WARNING: calling DEPRECATED setPositionModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_POSITION);
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (open loop)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_openloop);
+    fprintf(stderr, "WARNING: calling DEPRECATED setOpenLoopModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_OPENLOOP);
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (velocity)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_velocity);
+    fprintf(stderr, "WARNING: calling DEPRECATED setVelocityModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_VELOCITY);
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (torque)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_torque);
+    fprintf(stderr, "WARNING: calling DEPRECATED setTorqueModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_TORQUE);
 }
 
 bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (impedance pos)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_impedance_pos);
+    fprintf(stderr, "WARNING: calling DEPRECATED setImpedancePositionModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_POS);
 }
 
 bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    DEBUG_FUNC("Calling SET_CONTROL_MODE (impedance vel)\n");
-    return _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,icubCanProto_controlmode_impedance_vel);
+    fprintf(stderr, "WARNING: calling DEPRECATED setImpedanceVelocityModeRaw\n");
+    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_VEL);
 }
 
 bool CanBusMotionControl::getControlModesRaw(int *v)
@@ -3564,36 +3562,174 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
-        switch (temp)
-        {
-            case icubCanProto_controlmode_idle:
-                v[i]=VOCAB_CM_IDLE;
-                break;
-            case icubCanProto_controlmode_position:
-                v[i]=VOCAB_CM_POSITION;
-                break;
-            case icubCanProto_controlmode_velocity:
-                v[i]=VOCAB_CM_VELOCITY;
-                break;
-            case icubCanProto_controlmode_torque:
-                *v=VOCAB_CM_TORQUE;
-                break;
-            case icubCanProto_controlmode_impedance_pos:
-                v[i]=VOCAB_CM_IMPEDANCE_POS;
-                break;
-            case icubCanProto_controlmode_impedance_vel:
-                v[i]=VOCAB_CM_IMPEDANCE_VEL;
-                break;
-            case icubCanProto_controlmode_openloop:
-                v[i]=VOCAB_CM_OPENLOOP;
-                break;
-            default:
-                v[i]=VOCAB_CM_UNKNOWN;
-                break;
-        }
+        v[i]=from_modeint_to_modevocab(temp);
     }
     _mutex.post();
     return true;
+}
+/*
+//@@@ TO BE REMOVED LATER (AFTER INCLUDING FIRMWARE_SHARED)
+#ifndef icubCanProto_controlmode_calibration
+#define icubCanProto_controlmode_calibration 0x060
+#endif
+
+#ifndef icubCanProto_controlmode_forceIdle
+#define icubCanProto_controlmode_forceIdle 0x09
+#endif
+
+#ifndef icubCanProto_interactionmode_stiff
+#define icubCanProto_interactionmode_stiff 0x00
+#endif 
+
+#ifndef icubCanProto_interactionmode_compliant
+#define icubCanProto_interactionmode_compliant 0x01
+#endif
+
+#ifndef icubCanProto_interactionmode_unknownError
+#define icubCanProto_interactionmode_unknownError 0xFF
+#endif
+*/
+//---------------------------------------------------------
+
+unsigned char  CanBusMotionControl::from_interactionvocab_to_interactionint (int interactionvocab)
+{
+    switch (interactionvocab)
+    {
+    case VOCAB_IM_STIFF:
+        return icubCanProto_interactionmode_stiff;
+        break;
+    case VOCAB_IM_COMPLIANT:
+        return icubCanProto_interactionmode_compliant;
+        break;
+    case VOCAB_IM_UNKNOWN:
+        default:
+        return icubCanProto_interactionmode_unknownError;
+        break;
+    }
+}
+
+int CanBusMotionControl::from_interactionint_to_interactionvocab (unsigned char interactionint)
+{
+    switch (interactionint)
+    {
+    case icubCanProto_interactionmode_stiff:
+        return VOCAB_IM_STIFF;
+        break;
+    case icubCanProto_interactionmode_compliant:
+        return VOCAB_IM_COMPLIANT;
+        break;
+    case icubCanProto_interactionmode_unknownError:
+        default:
+        return icubCanProto_interactionmode_unknownError;
+        break;
+    }
+}
+
+
+unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
+{
+    switch (modevocab)
+    {
+    case VOCAB_CM_IDLE:
+        return icubCanProto_controlmode_idle;
+        break;
+    case VOCAB_CM_POSITION:
+        return icubCanProto_controlmode_position;
+        break;
+    case VOCAB_CM_MIXED:
+        return icubCanProto_controlmode_mixed;
+        break;
+    case VOCAB_CM_POSITION_DIRECT:
+        return icubCanProto_controlmode_direct;
+        break;
+    case VOCAB_CM_VELOCITY:
+        return icubCanProto_controlmode_velocity;
+        break;
+    case VOCAB_CM_TORQUE:
+        return icubCanProto_controlmode_torque;
+        break;
+    case VOCAB_CM_IMPEDANCE_POS:
+        return icubCanProto_controlmode_impedance_pos;
+        break;
+    case VOCAB_CM_IMPEDANCE_VEL:
+        return icubCanProto_controlmode_impedance_vel;
+        break;
+    case VOCAB_CM_OPENLOOP:
+        return  icubCanProto_controlmode_openloop;
+        break;
+
+    case VOCAB_CM_FORCE_IDLE: 
+        return icubCanProto_controlmode_forceIdle;
+        break;
+
+    default:
+        return VOCAB_CM_UNKNOWN;
+        break;
+    }
+}
+
+int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
+{
+    switch (modeint)
+    {
+    case icubCanProto_controlmode_idle:
+        return VOCAB_CM_IDLE;
+        break;
+    case icubCanProto_controlmode_position:
+        return VOCAB_CM_POSITION;
+        break;
+    case icubCanProto_controlmode_mixed:
+        return VOCAB_CM_MIXED;
+        break;
+    case icubCanProto_controlmode_direct:
+        return VOCAB_CM_POSITION_DIRECT;
+        break;
+    case icubCanProto_controlmode_velocity:
+        return VOCAB_CM_VELOCITY;
+        break;
+    case icubCanProto_controlmode_torque:
+        return VOCAB_CM_TORQUE;
+        break;
+    case icubCanProto_controlmode_impedance_pos:
+        return VOCAB_CM_IMPEDANCE_POS;
+        break;
+    case icubCanProto_controlmode_impedance_vel:
+        return VOCAB_CM_IMPEDANCE_VEL;
+        break;
+    case icubCanProto_controlmode_openloop:
+        return VOCAB_CM_OPENLOOP;
+        break;
+
+    //internal status
+    case  icubCanProto_controlmode_hwFault:
+        return VOCAB_CM_HW_FAULT;
+        break;
+    case  icubCanProto_controlmode_notConfigured:
+        return VOCAB_CM_NOT_CONFIGURED;
+        break;
+    case  icubCanProto_controlmode_configured:
+        return VOCAB_CM_CONFIGURED;
+        break;
+    case  icubCanProto_controlmode_unknownError:
+        return VOCAB_CM_UNKNOWN;
+        break;
+
+    case  icubCanProto_controlmode_calibration:
+/*  Commented out because generate duplicate case in switch, the previous one should be enough
+ *  with this new version of protocol... ask RANDAZZ
+    case  icubCanProto_calibration_type0_hard_stops:
+    case  icubCanProto_calibration_type1_abs_sens_analog:
+    case  icubCanProto_calibration_type2_hard_stops_diff:
+    case  icubCanProto_calibration_type3_abs_sens_digital:
+    case  icubCanProto_calibration_type4_abs_and_incremental:
+*/
+        return VOCAB_CM_CALIBRATING;
+        break;
+
+    default:
+        return VOCAB_CM_UNKNOWN;
+        break;
+    }
 }
 
 bool CanBusMotionControl::getControlModeRaw(int j, int *v)
@@ -3608,40 +3744,109 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     short s;
 
     DEBUG_FUNC("Calling GET_CONTROL_MODE\n");
-    //_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_CONTROL_MODE, j, s);
+    //_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
 
     _mutex.wait();
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
-    switch (s)
-    {
-    case icubCanProto_controlmode_idle:
-        *v=VOCAB_CM_IDLE;
-        break;
-    case icubCanProto_controlmode_position:
-        *v=VOCAB_CM_POSITION;
-        break;
-    case icubCanProto_controlmode_velocity:
-        *v=VOCAB_CM_VELOCITY;
-        break;
-    case icubCanProto_controlmode_torque:
-        *v=VOCAB_CM_TORQUE;
-        break;
-    case icubCanProto_controlmode_impedance_pos:
-        *v=VOCAB_CM_IMPEDANCE_POS;
-        break;
-    case icubCanProto_controlmode_impedance_vel:
-        *v=VOCAB_CM_IMPEDANCE_VEL;
-        break;
-    case icubCanProto_controlmode_openloop:
-        *v=VOCAB_CM_OPENLOOP;
-        break;
-    default:
-        *v=VOCAB_CM_UNKNOWN;
-        break;
-    }
+    *v=from_modeint_to_modevocab(s);
+
     _mutex.post();
 
+    return true;
+}
+
+// IControl Mode 2
+bool CanBusMotionControl::getControlModesRaw(const int n_joints, const int *joints, int *modes)
+{
+    DEBUG_FUNC("Calling GET_CONTROL_MODE MULTIPLE JOINTS \n");
+    if (joints==0) return false;
+    if (modes==0) return false;
+
+    CanBusResources& r = RES(system_resources);
+    int i;
+    _mutex.wait();
+    for (i = 0; i < n_joints; i++)
+    {
+        getControlModeRaw(joints[i], &modes[i]);
+    }
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
+{
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
+
+    #if CAN_PROTOCOL_MINOR == 1
+    if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
+    {
+        disablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
+        disableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
+    }
+    else
+    {
+        enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
+        enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+        yarp::os::Time::delay(0.001);
+    }
+    #endif
+
+    int v = from_modevocab_to_modeint(mode);
+    if (v==VOCAB_CM_UNKNOWN) return false;
+    _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
+    yarp::os::Time::delay(0.010);
+    return true;
+}
+
+bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *joints, int *modes)
+{
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW MULTIPLE JOINTS\n");
+    if (n_joints==0) return false;
+    if (joints==0) return false;
+    bool ret = true;
+    for (int i=0;i<n_joints; i++)
+    {
+        ret = ret && setControlModeRaw(joints[i],modes[i]);
+    }
+    yarp::os::Time::delay(0.010);
+    return ret;
+}
+
+bool CanBusMotionControl::setControlModesRaw(int *modes)
+{
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
+    CanBusResources& r = RES(system_resources);
+
+    for (int i = 0; i < r.getJoints(); i++)
+    {
+        #if CAN_PROTOCOL_MINOR == 1
+        if (modes[i] == VOCAB_CM_IDLE || modes[i] == VOCAB_CM_FORCE_IDLE)
+        {
+            disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
+            disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
+        }
+        else
+        {
+            enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
+            enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
+            yarp::os::Time::delay(0.001);
+        }
+        #endif
+        int v = from_modevocab_to_modeint(modes[i]);
+        if (v==VOCAB_CM_UNKNOWN) return false;
+        _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
+    }
+    yarp::os::Time::delay(0.010);
     return true;
 }
 
@@ -4204,6 +4409,18 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
+    #ifdef AUTOMATIC_MODE_SWITCHING
+        int mode = 0;
+        getControlModeRaw(j, &mode);
+        if (mode != VOCAB_CM_POSITION_DIRECT &&
+            mode != VOCAB_CM_IDLE)
+        {
+            yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
+            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            yarp::os::Time::delay(0.001);
+        }
+    #endif
+
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(ref));
 }
 
@@ -4211,15 +4428,16 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
 bool CanBusMotionControl::setReferencesRaw (const double *refs)
 {
     CanBusResources& r = RES(system_resources);
+    if (refs==0) return false;
 
-    int i;
+    int i=0;
+    bool ret = true;
     for (i = 0; i < r.getJoints(); i++)
     {
-        if (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, i, S_32(refs[i])) != true)
-            return false;
+        ret = ret & setReferenceRaw(i,refs[i]);
     }
 
-    return true;
+    return ret;
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
@@ -4390,17 +4608,6 @@ bool CanBusMotionControl::getErrorsRaw(double *errs)
     {
         errs[i] = double(r._bcastRecvBuffer[i]._position_error);
     }
-    _mutex.post();
-    return true;
-}
-
-bool CanBusMotionControl::getOutputRaw(int axis, double *out)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
-    _mutex.wait();
-    *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
     _mutex.post();
     return true;
 }
@@ -4632,10 +4839,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     r.addMessage (id, axis, ICUBCANPROTO_POL_MC_CMD__GET_FIRMWARE_VERSION);
     *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(icub_interface_protocol.major & 0xFF);
     *((unsigned char *)(r._writeBuffer[0].getData()+2)) = (unsigned char)(icub_interface_protocol.minor & 0xFF);
-    *((unsigned char *)(r._writeBuffer[0].getData()+3)) = 0;
-    *((short *)(r._writeBuffer[0].getData()+4)) = 0;
-    *((short *)(r._writeBuffer[0].getData()+6)) = 0;
-    r._writeBuffer[0].setLen(8);
+    r._writeBuffer[0].setLen(3);
     r.writePacket();
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
@@ -4681,21 +4885,6 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     fw_info->ack = *((char *)(data));
     t->clear();
 
-    return true;
-}
-
-bool CanBusMotionControl::getOutputsRaw(double *outs)
-{
-    CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        outs[i] = double(r._bcastRecvBuffer[i]._pid_value);
-    }
-
-    _mutex.post();
     return true;
 }
 
@@ -4806,27 +4995,80 @@ bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(value));
 }
 
-bool CanBusMotionControl::setOutputsRaw(const double *v)
+bool CanBusMotionControl::setRefOutputsRaw(const double *v)
 {
     CanBusResources& r = RES(system_resources);
 
     int i;
-    for (i = 0; i < r.getJoints(); i++) {
-        setOutputRaw(i,v[i]);
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        setRefOutputRaw(i,v[i]);
     }
 
     return true;
 }
 
-bool CanBusMotionControl::setOutputRaw(int axis, double v)
+bool CanBusMotionControl::setRefOutputRaw(int axis, double v)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, axis, S_16(v));
-
 }
 
+bool CanBusMotionControl::getRefOutputRaw(int j, double *out)
+{
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    short int value = 0;
+    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
+        *out = double (value);
+    else
+        return false;
+
+    return true;
+}
+
+bool CanBusMotionControl::getRefOutputsRaw(double *outs)
+{
+    CanBusResources& r = RES(system_resources);
+    if (outs==0) return false;
+    int i = 0;
+    bool ret = true;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        ret = ret & getRefOutputRaw(i,&outs[i]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getOutputRaw(int axis, double *out)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return false;
+    _mutex.wait();
+    *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getOutputsRaw(double *outs)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        outs[i] = double(r._bcastRecvBuffer[i]._pid_value);
+    }
+
+    _mutex.post();
+    return true;
+}
 bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 {
     return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
@@ -4910,6 +5152,20 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
+#ifdef AUTOMATIC_MODE_SWITCHING
+    int mode = 0;
+    getControlModeRaw(axis, &mode);
+    if (mode != VOCAB_CM_POSITION &&
+        mode != VOCAB_CM_MIXED    &&
+        mode != VOCAB_CM_IMPEDANCE_POS &&
+        mode != VOCAB_CM_IDLE)
+    {
+        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
+        setControlModeRaw(axis,VOCAB_CM_POSITION);
+        yarp::os::Time::delay(0.001);
+    }
+#endif
+
     _mutex.wait();
 
     r.startPacket();
@@ -4930,33 +5186,15 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
 bool CanBusMotionControl::positionMoveRaw(const double *refs)
 {
     CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    r.startPacket();
-
+    int i = 0;
+    if (refs == 0) return false;
+    bool ret = true;
     for (i = 0; i < r.getJoints (); i++)
     {
-        if (ENABLED(i))
-        {
-            r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, i);
-            const int j = r._writeMessages - 1;
-            _ref_positions[i] = refs[i];
-            *((int*)(r._writeBuffer[j].getData()+1)) = S_32(_ref_positions[i]);/// pos
-            *((short*)(r._writeBuffer[j].getData()+5)) = S_16(_ref_speeds[i]);/// speed
-            r._writeBuffer[j].setLen(7);
-        }
-        else
-        {
-            _ref_positions[i] = refs[i];
-        }
+        ret = ret & positionMoveRaw(i, refs[i]);
     }
 
-    r.writePacket();
-
-    _mutex.post();
-
-    return true;   
+    return ret;
 }
 
 bool CanBusMotionControl::relativeMoveRaw(int j, double delta)
@@ -5298,7 +5536,22 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
 
+#ifdef AUTOMATIC_MODE_SWITCHING
+    int mode = 0;
+    getControlModeRaw(axis, &mode);
+    if (mode != VOCAB_CM_VELOCITY &&
+        mode != VOCAB_CM_MIXED    &&
+        mode != VOCAB_CM_IMPEDANCE_VEL && 
+        mode != VOCAB_CM_IDLE)
+    {
+        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
+        setControlModeRaw(axis,VOCAB_CM_VELOCITY);
+        yarp::os::Time::delay(0.001);
+    }
+#endif
+
     _mutex.wait();
+
     r.startPacket();
 
     if (ENABLED (axis))
@@ -5332,39 +5585,15 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
 /// for each axis
 bool CanBusMotionControl::velocityMoveRaw (const double *sp)
 {
-    /// prepare can message.
+    if (sp==0) return false;
     CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    r.startPacket();
-
-    for (i = 0; i < r.getJoints(); i++)
+    bool ret = true;
+    int j=0;
+    for(j=0; j< r.getJoints(); j++)
     {
-        if (ENABLED (i))
-        {
-            r.addMessage (ICUBCANPROTO_POL_MC_CMD__VELOCITY_MOVE, i);
-            const int j = r._writeMessages - 1;
-            _command_speeds[i] = sp[i] / 1000.0;
-
-            *((short*)(r._writeBuffer[j].getData()+1)) = S_16(r._velShifts[i]*_command_speeds[i]);/// speed
-
-            if (r._velShifts[i]*_ref_accs[i]>1)
-                *((short*)(r._writeBuffer[j].getData()+3)) = S_16(r._velShifts[i]*_ref_accs[i]);/// accel
-            else
-                *((short*)(r._writeBuffer[j].getData()+3)) = S_16(1);
-
-            r._writeBuffer[j].setLen(5);
-        }
-        else
-        {
-            _command_speeds[i] = sp[i] / 1000.0;
-        }
+        ret = ret && velocityMoveRaw(j, sp[j]);
     }
-
-    r.writePacket();
-    _mutex.post();
-    return true;
+    return ret;
 }
 
 bool CanBusMotionControl::setEncoderRaw(int j, double val)
@@ -5831,12 +6060,30 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 
 
 // PositionDirect Interface
+bool CanBusMotionControl::setPositionDirectModeRaw()
+{
+    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+}
+
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);
 
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
+
+    #ifdef AUTOMATIC_MODE_SWITCHING
+        int mode = 0;
+        getControlModeRaw(j, &mode);
+        if (mode != VOCAB_CM_POSITION_DIRECT &&
+            mode != VOCAB_CM_IDLE)
+        {
+            yDebug() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            yarp::os::Time::delay(0.001);
+        }
+    #endif
+
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
@@ -5852,48 +6099,26 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
 
 bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
 {
-    CanBusResources& r = RES(system_resources);
+    if (refs == 0) return false;
+    if (joints == 0) return false;
     bool ret = true;
 
-    for(int j=0; j< n_joint; j++)
+    for (int j = 0; j < n_joint; j++)
     {
-        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
-        {
-            ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, joints[j], S_32(refs[j]));
-        }
-        else
-        {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
-            _axisPositionDirectHelper->posE2A(refs[j], joints[j]),
-            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, joints[j]));
-            //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(joints[j],r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
-            //_writeDWord (CAN_SET_COMMAND_POSITION, joints[j], S_32(saturated_cmd));
-            ret = false;
-        }
+        ret = ret & setPositionRaw(joints[j],refs[j]);
     }
     return ret;
 }
 
 bool CanBusMotionControl::setPositionsRaw(const double *refs)
 {
+    if (refs == 0) return false;
     CanBusResources& r = RES(system_resources);
     bool ret = true;
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        if (1/*fabs(refs[j]-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
-        {
-            ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(refs[j]));
-        }
-        else
-        {
-            fprintf(stderr, "WARN: skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j, 
-            _axisPositionDirectHelper->posE2A(refs[j], j),
-            _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
-            //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,refs[j]);
-            //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
-            ret = false;
-        }
+        ret = ret & setPositionRaw(j,refs[j]);
     }
     return ret;
 }
@@ -6503,3 +6728,92 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
 }
 
 
+// IInteractionMode
+bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+{
+    DEBUG_FUNC("Calling GET_INTERACTION_MODE SINGLE JOINT\n");
+    CanBusResources& r = RES(system_resources);
+    int temp;
+    _mutex.wait();
+
+    temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
+    *mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
+    
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    DEBUG_FUNC("Calling GET_INTERACTION_MODE MULTIPLE JOINTS \n");
+    if (joints==0) return false;
+    if (modes==0) return false;
+
+    CanBusResources& r = RES(system_resources);
+    int i;
+    _mutex.wait();
+    for (i = 0; i < n_joints; i++)
+    {
+        getInteractionModeRaw(joints[i], &modes[i]);
+    }
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    DEBUG_FUNC("Calling GET_INTERACTION_MODE ALL JOINTS \n");
+    CanBusResources& r = RES(system_resources);
+    int i;
+    int temp;
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        temp = int(r._bcastRecvBuffer[i]._interactionmodeStatus);
+        modes[i]=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
+    }
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum mode)
+{
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    DEBUG_FUNC("Calling SET_INTERACTION_MODE RAW\n");
+
+    int v = from_interactionvocab_to_interactionint(mode);
+    if (v==icubCanProto_interactionmode_unknownError) return false;
+    _writeByte8(CAN_SET_INTERACTION_MODE,j,v);
+
+    return true;
+}
+
+bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    DEBUG_FUNC("Calling SET_INTERACTION_MODE_RAW MULTIPLE JOINTS\n");
+    if (n_joints==0) return false;
+    if (joints==0) return false;
+    bool ret = true;
+    for (int i=0;i<n_joints; i++)
+    {
+        ret = ret && setInteractionModeRaw(joints[i],modes[i]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
+    CanBusResources& r = RES(system_resources);
+
+    for (int i = 0; i < r.getJoints(); i++)
+    {
+       int v = from_interactionvocab_to_interactionint(modes[i]);
+       if (v==icubCanProto_interactionmode_unknownError) return false;
+       _writeByte8(CAN_SET_INTERACTION_MODE,i,v);
+    }
+
+    return true;
+}

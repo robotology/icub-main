@@ -139,13 +139,12 @@ bool iCubHandCalibrator::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    if (!(iCalibrate&&iPosition&&iPids&&iControlMode))
         return false;
 
     // ok we have all interfaces
@@ -169,11 +168,7 @@ bool iCubHandCalibrator::calibrate(DeviceDriver *dd)
 	int firstSetOfJoints[] = {0, 1, 3, 5};
     for (k =0; k < 4; k++)
         {
-            fprintf(stderr, "HANDCALIB::Calling enable amp for joint %d\n", firstSetOfJoints[k]);
-            iAmps->enableAmp(firstSetOfJoints[k]);
-            Time::delay(0.1);
-            fprintf(stderr, "HANDCALIB::Calling enable pid for joint %d\n", firstSetOfJoints[k]);
-            iPids->enablePid(firstSetOfJoints[k]);
+            iControlMode->setControlMode((firstSetOfJoints[k]), VOCAB_CM_POSITION);
             calibrateJoint(firstSetOfJoints[k]);
         }
 
@@ -192,11 +187,7 @@ bool iCubHandCalibrator::calibrate(DeviceDriver *dd)
 	int secondSetOfJoints[] = {2, 4, 6, 7};
     for (k =0; k < 4; k++)
         {
-            fprintf(stderr, "HANDCALIB::Calling enable amp for joint %d\n", secondSetOfJoints[k]);
-            iAmps->enableAmp(secondSetOfJoints[k]);
-            Time::delay(0.1);
-            fprintf(stderr, "HANDCALIB::Calling enable pid for joint %d\n", secondSetOfJoints[k]);
-            iPids->enablePid(secondSetOfJoints[k]);
+            iControlMode->setControlMode((secondSetOfJoints[k]), VOCAB_CM_POSITION);
             calibrateJoint(secondSetOfJoints[k]);
         }
 	for (k =0; k < 4; k++)

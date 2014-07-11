@@ -94,11 +94,10 @@ private:
     bool checkGoneToZeroThreshold(int j);
 
     IControlCalibration2 *iCalibrate;
-    IAmplifierControl *iAmps;
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;
-    IControlMode *iControlMode;
+    IControlMode2 *iControlMode;
 
     std::list<std::list<int> > joints;
 

@@ -55,21 +55,6 @@ void iCubDriver::open (std::string robotName)
             {
                 m_apEnc[part]->getAxes(&m_aiCubPartNumJoints[part]);
             }
-
-            /*
-            for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
-            {
-                if (m_apPid[part])
-                {
-                    m_apPid[part]->enablePid(j);
-                }
-
-                if (m_apAmp[part])
-                {
-                    m_apAmp[part]->enableAmp(j);
-                }
-            }
-            */
         }
     }
 }
@@ -97,12 +82,6 @@ void iCubDriver::close()
 {
     for (int part=0; part<NUM_ICUB_PARTS; ++part)
     {
-        /*for (int j=0; j<m_aiCubPartNumJoints[part]; ++j)
-        {
-            m_apPid[part]->disablePid(j);
-            m_apAmp[part]->disableAmp(j);
-        }*/
-        
         if (m_apDriver[part] && m_apDriver[part]->isValid())
         {
             m_apDriver[part]->close();
@@ -180,7 +159,7 @@ iCubDriver::ResultCode iCubDriver::startOpenloopCmd(int part,int joint,double pw
         return IOPL_OPLSTART_FAILED;
     }
 
-    if (!m_apOpl[part]->setOutput(joint,pwm))
+//    if (!m_apOpl[part]->setOutput(joint,pwm))
     {
         return IOPL_OPLSTART_FAILED;
     }
@@ -200,7 +179,7 @@ iCubDriver::ResultCode iCubDriver::stopOpenloopCmd(int part,int joint)
         return IOPL_OPLSTOP_FAILED;
     }
 
-    if (!m_apOpl[part]->setOutput(joint,0.0))
+    if (!m_apOpl[part]->setRefOutput(joint,0.0))
     {
         return IOPL_OPLSTOP_FAILED;
     }

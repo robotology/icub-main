@@ -39,6 +39,7 @@
 #include <yarp/os/Semaphore.h>
 #include <list>
 #include "ace/Semaphore.h"
+#include "stdint.h"
 
 
 #define EO_THREADARRAY_MAX_THREADS 500

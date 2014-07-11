@@ -187,13 +187,12 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
+    if (!(iCalibrate  && iEncoders && iPosition && iPids && iControlMode)) {
         fprintf(logfile, "HEADCALIB[%d]: Error. This device cannot be calibrated\n", canID);
         return false;
     }
@@ -250,10 +249,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     /////////////////////////////////////
     for (k = 0; k < nj; k++)
     {
-        fprintf(logfile, "HEADCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
-        iAmps->enableAmp(k);
-        fprintf(logfile, "HEADCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
-        iPids->enablePid(k);
+        iControlMode->setControlMode((k), VOCAB_CM_POSITION);
     }
 
     /////////////////////////////////////
@@ -289,7 +285,7 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
         {
             fprintf(logfile, "TORSOCALIB[%d]: Calibration failed!\n", canID);
             for (k = 0; k < 3; k++)
-                iAmps->disableAmp(torsoSetOfJoints[k]);
+                iControlMode->setControlMode((torsoSetOfJoints[k]), VOCAB_CM_IDLE);
         }
     }
     /////////////////////////////////////
@@ -316,31 +312,12 @@ bool iCubHeadCalibratorV2::calibrate(DeviceDriver *dd)
     {
         fprintf(logfile, "HEADCALIB[%d]: Calibration failed!\n", canID);
         for (k = 0; k < 3; k++)
-            iAmps->disableAmp(headSetOfJoints[k]);
+            iControlMode->setControlMode((headSetOfJoints[k]), VOCAB_CM_IDLE);
     }
 
     //////////////////////////////////////
     //calibrate the eye set of joints   //
     //////////////////////////////////////
-/* for (k =0; k < 3; k++)
-    {
-        //LATER: calibrateJoint will be removed after enableAmp
-        calibrateJoint(eyeSetOfJoints[k]);
-    }
-    Time::delay(0.010);
-    for (k =0; k < 3; k++)
-    {
-        checkCalibrateJointEnded(eyeSetOfJoints[k]);
-    }
-    for (k = 0; k < 3; k++)
-    {
-        goToZero(eyeSetOfJoints[k]);
-    }
-    for (k = 0; k < 3; k++)
-    {
-        checkGoneToZero(eyeSetOfJoints[k]);
-    }
-*/
     for (k =0; k < 3; k++)
     {
         calibrateJoint(eyeSetOfJoints[k]);

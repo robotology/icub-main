@@ -6,7 +6,7 @@
     <params file="general.xml"/>
     <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
     <group name="GENERAL"> 
-        <param name="CanAddress">       0x0D    </param>    <!-- currently embedded in EMS firmware, kept for future use -->
+        <param name="CanAddress">       0x01    </param>    <!-- currently embedded in EMS firmware, kept for future use -->
         <param name="Format">           16      </param>
         <param name="Channels">         6       </param>
         <param name="Period">           1       </param>

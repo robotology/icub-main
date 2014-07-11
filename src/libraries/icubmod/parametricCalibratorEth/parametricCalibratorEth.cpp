@@ -321,14 +321,13 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
     p->view(iCalibrate);
-    p->view(iAmps);
     p->view(iEncoders);
     p->view(iPosition);
     p->view(iPids);
     p->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
-        yError() << deviceName << ": interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
+    if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
+        yError() << deviceName << ": interface not found" << iCalibrate << iPosition << iPids << iControlMode;
         return false;
     }
 
@@ -422,17 +421,16 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         //VALE: i can add this cycle for calib on eth because it does nothing,
         //     because enablePid doesn't send command because joints are not calibrated
 
-        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+        /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             if (type[*lit]==0 ||
                 type[*lit]==2 ||
                 type[*lit]==4 ) 
             {
                 yDebug() << "In calibration " <<  deviceName  << ": enabling joint " << *lit << " to test hardware limit";
-                iAmps->enableAmp(*lit); 
-                iPids->enablePid(*lit);
+                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
-        }
+        }*/
         if(abortCalib)
         {
             continue; //exit
@@ -464,26 +462,24 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
 
             for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
-                iAmps->disableAmp((*lit));
+               iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
             Bit++;
             continue; //go to next set
         }
 
         // 5) if calibration finish with success enable disabled joints in order to move them to zero
-        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+        /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             // if the joint han not been enabled at point 1, now i enable it 
             //iAmps->enableAmp((*lit));
             if (type[*lit]!=0 &&
-                type[*lit] != 2 &&
-                type[*lit] != 4 )
+                type[*lit]!=2 &&
+                type[*lit]!=4 ) 
             {
-                iAmps->enableAmp((*lit));
-                iPids->enablePid((*lit));
-                iControlMode->setPositionMode((*lit));
+                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
-        }
+        }*/
 
         if(abortCalib)
         {
@@ -524,13 +520,12 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
                 iPids->setPid((*lit),original_pid[(*lit)]);
             }
         }
-        else
+        else          // keep pid safe and go on
         {
-            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand why it is wrong.\n";
-
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position... disabling this set of axes\n";
             for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
-                iAmps->disableAmp((*lit));
+                iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
         }
         
@@ -545,7 +540,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         yError() << deviceName << "calibration has been aborted!I'm going to disable all joints..." ;
         for(int i=0; i<nj; i++) //for each joint of set
         {
-            iAmps->disableAmp((i));
+            iControlMode->setControlMode(i,VOCAB_CM_IDLE);
         }
         return false;
     }
@@ -639,6 +634,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
     double angj = 0;
 //    double pwm[4];
     double delta=0;
+    int mode=0;
     bool done = false;
 
     double start_time = yarp::os::Time::now();
@@ -646,9 +642,10 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
     {
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
+        iControlMode->getControlMode(j, &mode);
         
         delta = fabs(angj-zeroPos[j]);
-        yDebug() << "In calib: checkGoneToZero "<< deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
+        yDebug() << "In calib: checkGoneToZero "<< deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold: " << zeroPosThreshold[j]  << "mode: " << yarp::os::Vocab::decode(mode).c_str();;
 
          if (delta < zeroPosThreshold[j] && done)
         {
@@ -706,9 +703,10 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 
     for(int i=0; i<nj; i++)
     {
-        if(currentControlModes[i] != VOCAB_CM_IDLE)
+        if(currentControlModes[i] != VOCAB_CM_IDLE 
+           /* && currentControlModes[i] != VOCAB_HW_FAULT */)
         {
-            iControlMode->setPositionMode(i);
+            iControlMode->setControlMode(i,VOCAB_CM_POSITION);
         }
     }
 
@@ -753,8 +751,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     yError() << "PARKING-timeout "<< deviceName.c_str() << " : "<< timeout;
     for(int j=0; j < nj; j++)
     {
-    	iAmps->disableAmp(j);
-    	iPids->disablePid(j);
+        iControlMode->setControlMode(j,VOCAB_CM_IDLE);
     }
 // iCubInterface is already shutting down here... so even if errors occour, what else can I do?
 
