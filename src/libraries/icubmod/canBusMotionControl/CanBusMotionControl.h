@@ -508,8 +508,8 @@ class firmwareVersionHelper
         fprintf(stderr,"###################################################################################\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
-        fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
-        fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
+        fprintf(stderr,"  available firmware version, although it is still compatible with it.\n");
+        fprintf(stderr,"  Upgrading your iCub firmware to build %d is highly recommended.\n", LAST_BLL_BUILD);
         fprintf(stderr,"  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"###################################################################################\n");
@@ -523,7 +523,7 @@ class firmwareVersionHelper
         fprintf(stderr,"#################################################################################################\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
-        fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
+        fprintf(stderr,"  which is newer than the recommended version (build %d), although it is still compatible with it.\n", LAST_BLL_BUILD);
         fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
         fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
         fprintf(stderr,"\n");
