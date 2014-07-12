@@ -2569,7 +2569,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
     eOenum08_t      valSet;
     eOenum08_t      valGot;
 
-    yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+    //yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
 
     if(!controlModeCommandConvert_yarp2embObj(_mode, valSet) )
     {
@@ -2606,7 +2606,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
     eOenum08_t          *valSet = new eOenum08_t[n_joint];
     eOenum08_t          *valGot = new eOenum08_t[n_joint];
 
-    yError() << "SetControlMode: received setControlMode (GROUP) command for board " << _fId.boardNum << " mode " << Vocab::decode(modes[0]);
+    //yDebug() << "SetControlMode: received setControlMode (GROUP) command for board " << _fId.boardNum << " mode " << Vocab::decode(modes[0]);
 
     for(int idx=0; idx<n_joint; idx++)
     {
