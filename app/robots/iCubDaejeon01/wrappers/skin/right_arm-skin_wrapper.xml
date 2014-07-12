@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 <!-- La skin ha bisogno delle info presenti nella parte eln e di info per il suo wrapper, qui sotto -->
-<devices robot="iCubHertfordshire01" build="0">
+<devices robot="iCubDaejeon01" build="0">
 	<device name="right_arm_skin_wrapper" type="skinWrapper">
 		<param name="period">       20  				</param>
 		<param name="total_taxels"> 1344				</param>
