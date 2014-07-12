@@ -590,6 +590,8 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
 
     if(timeout > CALIBRATE_JOINT_TIMEOUT)
         yError() << deviceName << ":Timeout while calibrating " << (*lit) << "\n";
+    else
+        yDebug() << deviceName << "calib joint ended";
 
     return calibration_ok;
 }
@@ -628,6 +630,9 @@ bool parametricCalibratorEth::checkGoneToZero(int j)
 
 bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 {
+
+    if (skipCalibration) return false;
+
     // wait.
     bool finished = false;
 //    double ang[4];

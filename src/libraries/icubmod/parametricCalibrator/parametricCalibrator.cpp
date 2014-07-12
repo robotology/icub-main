@@ -548,9 +548,11 @@ void parametricCalibrator::goToZero(int j)
     iPosition->positionMove(j, zeroPos[j]);
 }
 
-// Not used anymore... EMS knows wath to do. Just ask if motion is done!! ^_^
+
 bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 {
+    if (skipCalibration) return false;
+
     // wait.
     bool finished = false;
 //    double ang[4];
@@ -616,7 +618,23 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     int timeout = 0;
 
-    iPosition->setPositionMode();
+    int * currentControlModes = new int[nj];
+
+    bool res = iControlMode->getControlModes(currentControlModes);
+    if(!res)
+    {
+        yError() << deviceName << ": error getting control mode during parking";
+    }
+
+    for(int i=0; i<nj; i++)
+    {
+        if(currentControlModes[i] != VOCAB_CM_IDLE 
+           /* && currentControlModes[i] != VOCAB_HW_FAULT */)
+        {
+            iControlMode->setControlMode(i,VOCAB_CM_POSITION);
+        }
+    }
+
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);     // all joints together????
     //TODO fix checkMotionDone in such a way that does not depend on timing!
