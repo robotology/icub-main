@@ -2597,6 +2597,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 //        return false;
 //    }
 
+    yarp::os::Time::delay(0.010);
     return true;
 }
 
@@ -2638,6 +2639,8 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 //            return false;
 //        }
 //    }
+
+    yarp::os::Time::delay(0.010);
     return true;
 }
 
@@ -2680,6 +2683,8 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 //            return false;
 //        }
 //    }
+
+    yarp::os::Time::delay(0.010);
     return true;
 }
 
