@@ -56,15 +56,16 @@
 </group>       
  
 <group name="POS_PIDS">      
-<param name="kp">           -8000         -8000         8000          -8000         -8000         -8000         8000          -120          </param>       
-<param name="kd">           -32000        -32000        32000         -32000        -32000        -32000        32000         -1250         </param>       
-<param name="ki">           -5            -5            5             -5            -5            -5            5             0             </param>       
-<param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
-<param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
-<param name="shift">        10            10            10            10            10            10            10            4             </param>       
-<param name="ko">           0             0             0             0             0             0             0             0             </param>       
-<param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
-<param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
+<param name="kp">           -500          -8000         8000          -8000         -8000         -8000         8000          -1200          </param>       
+<param name="kd">           -32000        -32000        32000         -32000        -32000        -32000        32000         -12500         </param>       
+<param name="ki">           -1            -5            5             -5            -5            -5            5             -1             </param>       
+<param name="limPwm">        1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="maxPwm">        1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="maxInt">        1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="shift">         6             8             8             8             8             8             8             6             </param>       
+<param name="ko">            0             0             0             0             0             0             0             0             </param>       
+<param name="stictionUp">    0             0             0             0             0             0             0             0             </param>       
+<param name="stictionDwn">   0             0             0             0             0             0             0             0             </param>       
 </group>       
  
 <group name="TRQ_PIDS">      
