@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 2 - Left Lower Arm, 12 dof plus skin-->
 
-<devices robot="iCubGenova04" build="1">
+<devices robot="iCubDarmstadt01" build="1">
   <device name="left_leg_skin" type="embObjSkin">
       <params file="general.xml" />
 <params file="hardware/electronics/left_lower_leg-ems10-eln.xml" />

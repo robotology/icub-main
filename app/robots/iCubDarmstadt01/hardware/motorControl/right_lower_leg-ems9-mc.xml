@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 9 - Right Lower Leg, 2 dof -->
 
-<devices robot="iCubGenova04" build="1">
+<devices robot="iCubDarmstadt01" build="1">
   <device name="right_lower_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_lower_leg-ems9-eln.xml" />

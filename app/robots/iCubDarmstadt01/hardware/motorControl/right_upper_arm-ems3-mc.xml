@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 3 - Right Upper Arm, 4 dof -->
 
-<devices robot="iCubGenova04" build="1">
+<devices robot="iCubDarmstadt01" build="1">
   <device name="right_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_arm-ems3-eln.xml" />
