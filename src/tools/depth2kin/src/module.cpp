@@ -531,7 +531,7 @@ void CalibModule::prepareRobot()
     while (!done)
     {
         Time::delay(1.0);
-        iposs->checkMotionDone(4,&done);
+        iposs->checkMotionDone(i0+4,&done);
     }    
     printf("done\n");
 
