@@ -33,7 +33,11 @@
  *   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
  *  
  * \note <b>If you're going to use iKin for your work, please
- *       quote it within any resulting publication</b>.
+ *       quote it within any resulting publication</b>: <i>
+ *       Pattacini U., Modular Cartesian Controllers for
+ *       Humanoid Robots: Design and Implementation on the iCub,
+ *       Ph.D. Dissertation, RBCS, Istituto Italiano di
+ *       Tecnologia, 2011.</i>.
  *  
  * \author Ugo Pattacini 
  *  
