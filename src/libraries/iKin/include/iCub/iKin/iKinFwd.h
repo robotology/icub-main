@@ -37,7 +37,7 @@
  *       Pattacini U., Modular Cartesian Controllers for
  *       Humanoid Robots: Design and Implementation on the iCub,
  *       Ph.D. Dissertation, RBCS, Istituto Italiano di
- *       Tecnologia, 2011.</i>.
+ *       Tecnologia, 2011</i>.
  *  
  * \author Ugo Pattacini 
  *  

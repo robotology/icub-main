@@ -61,7 +61,7 @@ interface, please go \ref icub_gaze_interface "here".
       Pattacini U., Modular Cartesian Controllers for
       Humanoid Robots: Design and Implementation on the iCub,
       Ph.D. Dissertation, RBCS, Istituto Italiano di
-      Tecnologia, 2011.</i>.
+      Tecnologia, 2011</i>.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
