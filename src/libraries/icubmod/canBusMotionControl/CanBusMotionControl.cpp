@@ -56,8 +56,6 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-#define AUTOMATIC_MODE_SWITCHING
-
 inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 {
 #ifdef CANBUSMC_DEBUG
@@ -4409,7 +4407,7 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    #ifdef AUTOMATIC_MODE_SWITCHING
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&
@@ -5152,7 +5150,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-#ifdef AUTOMATIC_MODE_SWITCHING
+#ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_POSITION &&
@@ -5536,7 +5534,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
 
-#ifdef AUTOMATIC_MODE_SWITCHING
+#ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_VELOCITY &&
@@ -6072,7 +6070,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
 
-    #ifdef AUTOMATIC_MODE_SWITCHING
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&

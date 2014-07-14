@@ -39,9 +39,6 @@ using namespace yarp::os::impl;
 
 #define MAXNUMOFJOINTS 16
 
-//temporary fix to emulate behaviour pre-controlMode2
-#define AUTOMATIC_MODE_SWITCHING
-
 // Utilities
 
 static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
@@ -1602,7 +1599,7 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
-    #ifdef AUTOMATIC_MODE_SWITCHING
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
@@ -1849,7 +1846,7 @@ bool embObjMotionControl::setVelocityModeRaw()
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    #ifdef AUTOMATIC_MODE_SWITCHING
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
@@ -2067,7 +2064,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     */
 #endif
 
-    #ifdef AUTOMATIC_MODE_SWITCHING
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
     int mode;
     getControlModeRaw(j, &mode);
