@@ -49,7 +49,7 @@ static bool NOT_YET_IMPLEMENTED(const char *txt)
 iCubSimulationControl::iCubSimulationControl() : 
     //RateThread(10),
     ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
-    ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
+    ImplementVelocityControl2(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncodersTimed(this),
     ImplementTorqueControl(this),
@@ -208,8 +208,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     ImplementPositionControl<iCubSimulationControl, IPositionControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl<iCubSimulationControl, IPidControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
@@ -260,7 +259,7 @@ bool iCubSimulationControl::close (void)
         //RateThread::stop();/// stops the thread first (joins too).
         
         ImplementPositionControl<iCubSimulationControl, IPositionControl>::uninitialize ();
-        ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::uninitialize();
+        ImplementVelocityControl2::uninitialize();
         ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::uninitialize();
@@ -992,6 +991,66 @@ bool iCubSimulationControl::setVelLimitsRaw(int axis, double min, double max)
 bool iCubSimulationControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
     return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+}
+
+bool iCubSimulationControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && velocityMoveRaw(joints[j], spds[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && setRefAccelerationRaw(joints[j], accs[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && getRefAccelerationRaw(joints[j], &accs[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::stopRaw(const int n_joint, const int *joints)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && stopRaw(joints[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setVelPidRaw(int j, const yarp::dev::Pid &pid)
+{
+    return NOT_YET_IMPLEMENTED("setVelPidRaw");
+}
+
+bool iCubSimulationControl::setVelPidsRaw(const yarp::dev::Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("setVelPidsRaw");
+}
+
+bool iCubSimulationControl::getVelPidRaw(int j, yarp::dev::Pid *pid)
+{
+    return NOT_YET_IMPLEMENTED("getVelPidRaw");
+}
+
+bool iCubSimulationControl::getVelPidsRaw(yarp::dev::Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("getVelPidsRaw");
 }
 
 

@@ -63,7 +63,8 @@ class yarp::dev::iCubSimulationControl :
     //public yarp::os::RateThread, 
     public IPidControlRaw, 
     public IPositionControlRaw, 
-    public IVelocityControlRaw, 
+//    public IVelocityControlRaw,
+    public IVelocityControl2Raw,
     public ITorqueControlRaw,
 //    public IEncodersRaw,
     public IAmplifierControlRaw,
@@ -73,7 +74,8 @@ class yarp::dev::iCubSimulationControl :
     public ImplementTorqueControl,
     public ImplementControlMode,
     public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
-    public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
+//    public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
+    public ImplementVelocityControl2,//<iCubSimulationControl, IVelocityControl>,
     public ImplementPidControl<iCubSimulationControl, IPidControl>,
 //    public ImplementEncoders<iCubSimulationControl, IEncoders>,
     public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
@@ -161,16 +163,29 @@ class yarp::dev::iCubSimulationControl :
   virtual bool stopRaw();/**/
 
   //
-  /////////////////////////////// END Position Control INTERFACE
+  //////////////////////// END Position Control INTERFACE
 
-    ///////////// Velocity control interface raw
+  //////////////////////// BEGIN Velocity control interface raw
   ///
   virtual bool setVelocityModeRaw();
   virtual bool velocityMoveRaw(int j, double sp);
   virtual bool velocityMoveRaw(const double *sp);
   //
-  /////////////////////////////// END Velocity Control INTERFACE
+  //////////////////////// END Velocity Control INTERFACE
   
+  //////////////////////// BEGIN Velocity control 2 interface raw
+
+  virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+  virtual bool stopRaw(const int n_joint, const int *joints);
+  virtual bool setVelPidRaw(int j, const yarp::dev::Pid &pid);
+  virtual bool setVelPidsRaw(const yarp::dev::Pid *pids);
+  virtual bool getVelPidRaw(int j, yarp::dev::Pid *pid);
+  virtual bool getVelPidsRaw(yarp::dev::Pid *pids);
+  //////////////////////// END Velocity Control INTERFACE
+
+
   //////////////////////// BEGIN EncoderInterface
   //
   virtual bool resetEncoderRaw(int j);
