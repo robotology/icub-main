@@ -188,14 +188,9 @@ bool CanBusInertialMTB::threadInit()
     CanMessage &msg=outBuffer[0];
     msg.setId(id);
     msg.getData()[0]=0x4F; // message type
-    msg.getData()[1]=0x06; // = enable digital accelerometer and gyroscope
+    msg.getData()[1]=0x02; // = enable digital accelerometer and gyroscope
     msg.getData()[2]=0x01; // period (ms)
-    msg.getData()[3]=0;
-    msg.getData()[4]=0;
-    msg.getData()[5]=0;
-    msg.getData()[6]=0;
-    msg.getData()[7]=0;
-    msg.setLen(8);
+    msg.setLen(3);
     canMessages=0;
     pCanBus->canWrite(outBuffer, 1, &canMessages);
 
@@ -220,6 +215,10 @@ void CanBusInertialMTB::run()
     //static double prev = yarp::os::Time::now();
     //fprintf(stderr, "period %f delta %f canMessages %d\n",this->getRate(), yarp::os::Time::now()-prev, canMessages );
     //prev = yarp::os::Time::now();
+    if(canMessages <=0)
+    {
+        fprintf(stderr, "CanBusInertialMTB::run() ERROR: get %d canMessages\n", canMessages);
+    }
     for (unsigned int i=0; i<canMessages; i++)
     {
         CanMessage &msg=inBuffer[i];
@@ -232,12 +231,12 @@ void CanBusInertialMTB::run()
         unsigned char   mtype   = ((msgid & 0x000f));
 
         //parse data here
-        if (mclass==CAN_MSG_CLASS_ACCELEROMETER && id==boardId && (mtype == 1 || mtype == 0))
+        if (mclass==CAN_MSG_CLASS_ACCELEROMETER && id==boardId && mtype == 1)
         {
             stampAcc=Time::now();
-            privateData[0]=(buff[1]<<8)+buff[0];
-            privateData[1]=(buff[3]<<8)+buff[2];
-            privateData[2]=(buff[5]<<8)+buff[4];
+            privateData[0]= (signed short) ((buff[1]<<8) + buff[0]);
+            privateData[1]= (signed short) ((buff[3]<<8) + buff[2]);
+            privateData[2]= (signed short) ((buff[5]<<8) + buff[4]);
         }
         
         if (mclass==CAN_MSG_CLASS_ACCELEROMETER && id==boardId && mtype == 2)
