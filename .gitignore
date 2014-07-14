@@ -10,3 +10,12 @@
 *.orig
 /src/idl_generated_code/*.cmake
 /src/examples/rpcIdl/*.cmake
+/package-tmp/
+*.swp
+*~
+licenses-all.txt
+licenses-authors-compact.txt
+licenses-authors.txt
+licenses-bad.txt
+licenses-copyright-compact.txt
+licenses-good.txt
