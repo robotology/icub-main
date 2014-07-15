@@ -74,6 +74,14 @@
     <devices file="hardware/skin/right_hand_inertial_mtb.xml" />  
     -->
 
+    <!-- FOOT MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR -->
+    <devices file="wrappers/skin/right_foot_inertial_wrapper.xml" />  
+    <devices file="hardware/skin/right_foot_inertial_mtb.xml" />  
+    <!--
+    <devices file="wrappers/skin/left_foot_inertial_wrapper.xml" />  
+    <devices file="hardware/skin/left_foot_inertial_mtb.xml" />  -->
+
+
     <!-- CALIBRATORS -->
     <devices file="calibrators/head_calib.xml" /> 
     <devices file="calibrators/torso_calib.xml" />
