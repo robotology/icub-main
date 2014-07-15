@@ -12,7 +12,3 @@ up to date source of information.
 Direct link to installation instructions: 
 
 http://wiki.icub.org/wiki/ICub_Software_Installation
-
-#### CI Build
-- Linux: [![Build Status](https://travis-ci.org/robotology/icub-main.png?branch=master)](https://travis-ci.org/robotology/icub-main)
-
