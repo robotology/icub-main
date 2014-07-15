@@ -12,5 +12,3 @@ up to date source of information.
 Direct link to installation instructions: 
 
 http://wiki.icub.org/wiki/ICub_Software_Installation
-
-
