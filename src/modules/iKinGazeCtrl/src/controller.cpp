@@ -450,11 +450,11 @@ void Controller::run()
     LockGuard guard(mutexRun);
 
     VectorOf<int> jointsToSet;
-    if (!areJointsHealthyAndSet(jointsToSet))
+    bool jointsHealthy=areJointsHealthyAndSet(jointsToSet);
+    if (!jointsHealthy)
     {
         stopControl();
         port_xd->get_new()=false;
-        return;
     }
 
     string event="none";
@@ -527,7 +527,7 @@ void Controller::run()
 
         port_xd->get_new()=false;
     }
-    else
+    else if (jointsHealthy)
     {
         // inhibition is cleared upon new target arrival
         if (ctrlInhibited)

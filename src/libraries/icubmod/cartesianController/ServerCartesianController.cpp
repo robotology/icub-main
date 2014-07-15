@@ -1491,15 +1491,12 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
+        mutex.lock();
+
         VectorOf<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
-        {
-            stopControl();
-            return;
-        }
-
-        mutex.lock();
+            stopControlHelper();        
 
         string event="none";
 
@@ -1516,7 +1513,7 @@ void ServerCartesianController::run()
 
         // manage the virtual target yielded by a
         // request for a task-space reference velocity
-        if (taskVelModeOn && (++taskRefVelPeriodCnt>=taskRefVelPeriodFactor))
+        if (jointsHealthy && taskVelModeOn && (++taskRefVelPeriodCnt>=taskRefVelPeriodFactor))
         {
             Vector xdot_set_int=taskRefVelTargetGen->integrate(xdot_set);
             goTo(IKINCTRL_POSE_FULL,xdot_set_int,0.0);
@@ -1526,19 +1523,22 @@ void ServerCartesianController::run()
         // get the current target pose
         if (getNewTarget())
         {
-            setJointsCtrlMode(jointsToSet);
-            if (!executingTraj)
+            if (jointsHealthy)
             {
-                ctrl->restart(fb);
-                smithPredictor.restart(fb);
+                setJointsCtrlMode(jointsToSet); 
+                if (!executingTraj)
+                {
+                    ctrl->restart(fb);
+                    smithPredictor.restart(fb);
+                }
+
+                // onset of new trajectory
+                executingTraj=true;
+                event="motion-onset";
+
+                motionOngoingEventsCurrent=motionOngoingEvents;
+                q0=fb;
             }
-
-            // onset of new trajectory
-            executingTraj=true;
-            event="motion-onset";
-
-            motionOngoingEventsCurrent=motionOngoingEvents;
-            q0=fb;
         }
 
         // update the stamp anyway
@@ -1575,11 +1575,9 @@ void ServerCartesianController::run()
             else
                 // send commands to the robot
                 (this->*sendCtrlCmd)();
-        }
+        }        
 
-        mutex.unlock();
-
-        // streams out the end-effector pose
+        // stream out the end-effector pose
         if (portState.getOutputCount()>0)
         {
             portState.prepare()=chainState->EndEffPose();
@@ -1597,6 +1595,8 @@ void ServerCartesianController::run()
             motionOngoingEventsFlush();
             notifyEvent(event);
         }
+
+        mutex.unlock();
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
