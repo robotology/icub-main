@@ -30,8 +30,8 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">     7.000    -2.444   -2.529   -2.611   -2.529   -2.722   -2.441   -2.340   </param>
-<param name="Zeros">     160.71   -104.32  -201.63  -97.66   -201.63  -93.67   -208.92  -326.92  </param>      
+<param name="Encoder">      7.000    -2.444   -2.529   -2.722   -2.529   -2.722   -2.441   -2.340   </param>
+<param name="Zeros">        160.71   -104.32  -201.63  -93.67   -201.63  -93.67   -208.92  -326.92  </param>   
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
@@ -56,9 +56,9 @@
 </group>       
  
 <group name="POS_PIDS">      
-<param name="kp">           -500          -8000         -8000         -8000         8000          -8000         -8000         1200                 </param>       
-<param name="kd">           -32000        -32000        -32000        -32000        32000         -32000        -32000        12500                </param>       
-<param name="ki">           -1            -5            -5            -5            5             -5            -5            1                    </param>       
+<param name="kp">           -500          -8000         -8000         8000         8000          -8000         -8000         1200                 </param>       
+<param name="kd">           -32000        -32000        -32000        32000        32000         -32000        -32000        12500                </param>       
+<param name="ki">           -1            -5            -5            5            5             -5            -5            1                    </param>       
 <param name="limPwm">       1333          1333          1333          1333          1333          1333          1333          1333                 </param>       
 <param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333                 </param>       
 <param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333                 </param>       
