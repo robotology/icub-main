@@ -30,6 +30,7 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap homebrew/science; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --with-qt3support qt; fi
+  #use the same set of cmake options used in the dashboard build
   - source ./admin/scripts/generate-cmake-options.sh
   #install yarp from master
   - git clone https://github.com/robotology/yarp
