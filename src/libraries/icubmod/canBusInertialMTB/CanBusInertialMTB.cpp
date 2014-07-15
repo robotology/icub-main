@@ -189,7 +189,7 @@ bool CanBusInertialMTB::threadInit()
     msg.setId(id);
     msg.getData()[0]=0x4F; // message type
     msg.getData()[1]=0x02; // = enable digital accelerometer and gyroscope
-    msg.getData()[2]=0x01; // period (ms)
+    msg.getData()[2]=0x05; // period (ms)
     msg.setLen(3);
     canMessages=0;
     pCanBus->canWrite(outBuffer, 1, &canMessages);
