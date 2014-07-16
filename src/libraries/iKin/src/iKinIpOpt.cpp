@@ -24,6 +24,7 @@
 #define CAST_IPOPTAPP(x)                    (static_cast<IpoptApplication*>(x))
 #define IKINIPOPT_SHOULDER_MAXABDUCTION     (100.0*CTRL_DEG2RAD)
 
+using namespace std;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -305,6 +306,8 @@ protected:
 
     yarp::sig::Vector *e_1st;
     yarp::sig::Matrix *J_1st;
+    yarp::sig::Vector *e_cst;
+    yarp::sig::Matrix *J_cst;
 
     yarp::sig::Vector linC;
 
@@ -449,6 +452,9 @@ public:
             J_1st=&J_zero;
         }
 
+        e_cst=&e_xyz;
+        J_cst=&J_xyz;
+
         firstGo=true;
 
         __obj_scaling=1.0;
@@ -485,6 +491,31 @@ public:
 
     /************************************************************************/
     void set_translational_tol(double tol) { translationalTol=tol; }
+
+    /************************************************************************/
+    bool set_posePriority(const string &priority)
+    {
+        if (priority=="position")
+        {
+            e_1st=&e_ang;
+            J_1st=&J_ang;
+
+            e_cst=&e_xyz;
+            J_cst=&J_xyz;
+        }
+        else if (priority=="orientation")
+        {
+            e_1st=&e_xyz;
+            J_1st=&J_xyz;
+
+            e_cst=&e_ang;
+            J_cst=&J_ang;
+        }
+        else 
+            return false;
+
+        return true;
+    }
 
     /************************************************************************/
     bool get_nlp_info(Index& n, Index& m, Index& nnz_jac_g, Index& nnz_h_lag,
@@ -531,7 +562,7 @@ public:
             if (i==0)
             {
                 g_l[0]=lowerBoundInf;
-                g_u[0]=translationalTol;        
+                g_u[0]=translationalTol;
                 offs=1;
             }
             else
@@ -601,7 +632,7 @@ public:
         {
             if (i==0)
             {
-                g[0]=norm2(e_xyz);
+                g[0]=norm2(*e_cst);
                 offs=1;
             }
             else
@@ -635,7 +666,7 @@ public:
             {
                 computeQuantities(x);
             
-                yarp::sig::Vector grad=-2.0*(J_xyz.transposed()*e_xyz);
+                yarp::sig::Vector grad=-2.0*(J_cst->transposed() * *e_cst);
 
                 Index idx =0;
                 Index offs=0;
@@ -711,9 +742,11 @@ public:
                         h_1st=&h_ang;
                     else
                         h_1st=&h_zero;
+
+                    yarp::sig::Vector *h_cst=(e_cst==&e_xyz)?&h_xyz:&h_ang;
                 
                     values[idx]=2.0*(obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st))+
-                                     lambda[0]*(dot(J_xyz,row,J_xyz,col)-dot(h_xyz,e_xyz)));
+                                     lambda[0]*(dot(*J_cst,row,*J_cst,col)-dot(*h_cst,*e_cst)));
                 
                     if ((weight2ndTask!=0.0) && (row<(int)dim_2nd) && (col<(int)dim_2nd))
                     {    
@@ -793,6 +826,7 @@ iKinIpOptMin::iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose, const dou
                            chain(c)
 {
     ctrlPose=_ctrlPose;
+    posePriority="position";
     pLIC=&noLIC;
 
     if (ctrlPose>IKINCTRL_POSE_ANG)
@@ -831,6 +865,19 @@ void iKinIpOptMin::set_ctrlPose(const unsigned int _ctrlPose)
 
     if (ctrlPose>IKINCTRL_POSE_ANG)
         ctrlPose=IKINCTRL_POSE_ANG;
+}
+
+
+/************************************************************************/
+bool iKinIpOptMin::set_posePriority(const string &priority)
+{
+    if ((priority=="position") || (priority=="orientation"))
+    {
+        posePriority=priority;
+        return true;
+    }
+    else 
+        return false;
 }
 
 
@@ -969,10 +1016,11 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
                                         weight2ndTask,chain2ndTask,xd_2nd,w_2nd,
                                         weight3rdTask,qd_3rd,w_3rd,
                                         *pLIC,exhalt);
-
+    
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
     nlp->set_translational_tol(translationalTol);
+    nlp->set_posePriority(posePriority);
     nlp->set_callback(iterate);
 
     ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));

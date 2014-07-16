@@ -270,14 +270,13 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
     p->view(iCalibrate);
-    p->view(iAmps);
     p->view(iEncoders);
     p->view(iPosition);
     p->view(iPids);
     p->view(iControlMode);
 
-    if (!(iCalibrate && iAmps && iEncoders && iPosition && iPids && iControlMode)) {
-        yError() << deviceName << ": interface not found" << iCalibrate << iAmps << iPosition << iPids << iControlMode;
+    if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
+        yError() << deviceName << ": interface not found" << iCalibrate << iPosition << iPids << iControlMode;
         return false;
     }
 
@@ -393,8 +392,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 type[*lit]==4 ) 
             {
                 yDebug() <<  deviceName  << "Enabling joint " << *lit << " to test hardware limit";
-                iAmps->enableAmp(*lit); 
-                iPids->enablePid(*lit);
+                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
         }
         //------------------------------------------------
@@ -423,10 +421,10 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
         else    // keep pid safe  and go on
         {
-            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
             for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
-                iAmps->disableAmp((*lit));
+                iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
         }
         //------------------------------------------------
@@ -439,8 +437,6 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
                 type[*lit]!=2 &&
                 type[*lit]!=4 ) 
             {
-                iAmps->enableAmp((*lit));
-                iPids->enablePid((*lit));
                 iControlMode->setPositionMode((*lit));
             }
         }
@@ -481,12 +477,10 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)  // dd dovrebbe essere il
         }
         else          // keep pid safe and go on
         {
-            //The following line causes segfault and it has been commented out. Please fix it.
-            //yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << (*lit) << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand ` it is wrong.\n";
-            yError() <<  deviceName  << " set" << setOfJoint_idx  << "j" << "(*lit)" << ": some axis got timeout while reaching zero position... disabling this set of axes (*here joint number is wrong, it's quite harmless and useless to print but I want understand ` it is wrong.\n";
+            yError() <<  deviceName  << " set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position... disabling this set of axes\n";
             for(lit  = tmp.begin(); lit != tmp.end() && !abortCalib; lit++)   // per ogni giunto del set
             {
-                iAmps->disableAmp((*lit));
+                iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
         }
 
@@ -554,15 +548,18 @@ void parametricCalibrator::goToZero(int j)
     iPosition->positionMove(j, zeroPos[j]);
 }
 
-// Not used anymore... EMS knows wath to do. Just ask if motion is done!! ^_^
+
 bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 {
+    if (skipCalibration) return false;
+
     // wait.
     bool finished = false;
 //    double ang[4];
     double angj = 0;
 //    double pwm[4];
     double delta=0;
+    int mode=0;
     bool done = false;
 
     double start_time = yarp::os::Time::now();
@@ -570,9 +567,10 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     {
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
+        iControlMode->getControlMode(j, &mode);
 
         delta = fabs(angj-zeroPos[j]);
-        yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold " << zeroPosThreshold[j];
+        yDebug() << deviceName << "joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold: " << zeroPosThreshold[j] << "mode: " << yarp::os::Vocab::decode(mode).c_str();
 
         if (delta < zeroPosThreshold[j] && done)
         {
@@ -620,7 +618,23 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     int timeout = 0;
 
-    iPosition->setPositionMode();
+    int * currentControlModes = new int[nj];
+
+    bool res = iControlMode->getControlModes(currentControlModes);
+    if(!res)
+    {
+        yError() << deviceName << ": error getting control mode during parking";
+    }
+
+    for(int i=0; i<nj; i++)
+    {
+        if(currentControlModes[i] != VOCAB_CM_IDLE 
+           /* && currentControlModes[i] != VOCAB_HW_FAULT */)
+        {
+            iControlMode->setControlMode(i,VOCAB_CM_POSITION);
+        }
+    }
+
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);     // all joints together????
     //TODO fix checkMotionDone in such a way that does not depend on timing!
@@ -662,8 +676,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     yError() << "PARKING-timeout "<< deviceName.c_str() << " : "<< timeout;
     for(int j=0; j < nj; j++)
     {
-    	iAmps->disableAmp(j);
-    	iPids->disablePid(j);
+         iControlMode->setControlMode((j),VOCAB_CM_IDLE);
     }
 // iCubInterface is already shutting down here... so even if errors occour, what else can I do?
 

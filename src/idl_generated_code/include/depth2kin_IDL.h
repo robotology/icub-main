@@ -112,6 +112,11 @@ public:
  */
   virtual bool blockEyes();
 /**
+ * Remove the block on the eyes.
+ * @return true/false on success/failure.
+ */
+  virtual bool clearEyes();
+/**
  * Select the arm to deal with.
  * @param arm is "left" or "right".
  * @return true/false on success/failure.

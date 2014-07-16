@@ -101,7 +101,7 @@ public:
     * Create and configure the network.
     * @param options contains the parameters to configure the 
     *               network.
-    * @see configure() 
+    * @see configure
     */ 
     ff2LayNN(const yarp::os::Property &options);
 
@@ -167,8 +167,7 @@ public:
     * Retrieve the network structure as a Property object.
     * @param options is the output stream. 
     * @return true/false on success/fail. 
-    *  
-    * @see configure for the options format.
+    * @see configure 
     */ 
     virtual bool getStructure(yarp::os::Property &options) const;
 
@@ -279,7 +278,7 @@ public:
     * Create and configure the network.
     * @param options contains the parameters to configure the 
     *               network.
-    * @see configure() 
+    * @see configure
     */ 
     ff2LayNN_tansig_purelin(const yarp::os::Property &options);
 

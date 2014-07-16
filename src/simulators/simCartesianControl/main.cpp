@@ -47,8 +47,7 @@ Follow this steps:
 -# Launch the \ref iKinCartesianSolver "Cartesian Solvers" for 
    the required limbs: have a look to the template located in
    the directory <i>
-   $ICUB_ROOT/main/app/simCartesianControl/scripts
-   </i>.
+   icub-main/app/simCartesianControl/scripts </i>.
 
 \section parameters_sec Parameters
 --robot \e name 
@@ -116,6 +115,12 @@ public:
         optArmL.put("local",("/"+local+"/left_arm").c_str());
         optLegR.put("local",("/"+local+"/right_leg").c_str());
         optLegL.put("local",("/"+local+"/left_leg").c_str());
+
+        optTorso.put("writeStrict","on");
+        optArmR.put("writeStrict","on");
+        optArmL.put("writeStrict","on");
+        optLegR.put("writeStrict","on");
+        optLegL.put("writeStrict","on");
 
         if (!torso.open(optTorso) || !armR.open(optArmR) || !armL.open(optArmL))
         {

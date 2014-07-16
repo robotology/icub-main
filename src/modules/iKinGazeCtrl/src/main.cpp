@@ -57,11 +57,11 @@ interface, please go \ref icub_gaze_interface "here".
       try to keep on working with just the head part.
  
 \note <b>If you're going to use this controller for your work, 
-      please quote it within any resulting publication</b>: U.
-      Pattacini, "Modular Cartesian Controllers for Humanoid
-      Robots: Design and Implementation on the iCub," <i>Ph.D.
-      dissertation</i>, RBCS, Istituto Italiano di Tecnologia,
-      Genova, 2010.
+      please quote it within any resulting publication</b>: <i>
+      Pattacini U., Modular Cartesian Controllers for
+      Humanoid Robots: Design and Implementation on the iCub,
+      Ph.D. Dissertation, RBCS, Istituto Italiano di
+      Tecnologia, 2011</i>.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -108,7 +108,9 @@ Factors</a>.
 
 --torso \e name 
 - The parameter \e name selects the robot's torso port to 
-  connect to; if not specified, \e torso is assumed.
+  connect to; if not specified, \e torso is assumed. The special
+  string \e disabled can be used to skip opening the torso
+  device.
  
 --Tneck \e time
 - Specify the neck trajectory execution time in point-to-point 
@@ -1035,24 +1037,30 @@ public:
             // to send two packets per control slot
             optHead.put("writeStrict","on");
 
-            if (ping_robot_tmo>0.0)
-                drvTorso=waitPart(optTorso,ping_robot_tmo);
-            else
-                drvTorso=new PolyDriver(optTorso);
-
-            if (!drvTorso->isValid())
+            if (torsoName!="disabled")
             {
-                printf("Torso device driver not available!\n");
-                printf("Perhaps only the head is running; trying to continue ...\n");
+                drvTorso=(ping_robot_tmo>0.0)?
+                         waitPart(optTorso,ping_robot_tmo):
+                         new PolyDriver(optTorso);
 
-                delete drvTorso;
+                if (!drvTorso->isValid())
+                {
+                    printf("Torso device driver not available!\n");
+                    printf("Perhaps only the head is running; trying to continue ...\n");
+
+                    delete drvTorso;
+                    drvTorso=NULL;
+                }
+            }
+            else
+            {
+                printf("Torso device disabled!\n");
                 drvTorso=NULL;
             }
 
-            if (ping_robot_tmo>0.0)
-                drvHead=waitPart(optHead,ping_robot_tmo);
-            else
-                drvHead=new PolyDriver(optHead);
+            drvHead=(ping_robot_tmo>0.0)?
+                    waitPart(optHead,ping_robot_tmo):
+                    new PolyDriver(optHead);
 
             if (!drvHead->isValid())
             {

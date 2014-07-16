@@ -151,7 +151,7 @@ public:
     ACE_UINT16      recv_size;                    // size of the incoming message
 
     ethResources *  already_exists(yarp::os::Searchable &config);
-    bool            open(FEAT_ID request);
+    bool            open(yarp::os::Searchable &config, FEAT_ID request);
     bool            close();
 
     /*!   @fn       registerFeature(void);

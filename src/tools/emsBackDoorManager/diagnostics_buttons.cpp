@@ -358,7 +358,7 @@ static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_I
     uint32_t address=0;
     int ret;
 
-    printf("insert renge of board[1,9]: min max\n");
+    printf("insert renge of board[1,11]: min max\n");
     ret = scanf("%d %d", &min, &max);
     if(min>max)
     {
@@ -389,9 +389,9 @@ static void enaDisaDiagnostic(uint8_t *payload_ptr, uint32_t payload_size, ACE_I
     {
         min = 1;
     }
-    if(max>9)
+    if(max>11)
     {
-        max = 9;
+        max = 11;
     }
 
     for(j=min; j<=max; j++)

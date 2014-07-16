@@ -1,15 +1,24 @@
 == Instructions for release == 
 
+* Checkout latest master and make sure that there are no local modifications
+
+  git checkout -f master
+  git fetch origin
+  git reset --hard origin/master
+  git status 
+  (check that there are no uncommitted modifications or new files)
+
 * Update conf/iCubVersion.cmake
 
 * Update yarp version info inside admin/scripts/current_dependencies.txt 
 
 * Update licensing info
-  Run ./admin/scripts/update-license.sh
+  rm -rf license_check
+  ./admin/scripts/update-license.sh
   Check COPYING_new
   Check AUTHORS_new
-  cp COPYING_new COPYING
-  cp AUTHORS_new AUTHORS
+  mv COPYING_new COPYING
+  mv AUTHORS_new AUTHORS
 
 * Update ChangeLog with tag notice
 
@@ -23,17 +32,22 @@
     
     (twk should be zero since we do not release YARP versions with twk != 0)
 
-* Update src/doc/download.dox
-
-* Commit and push current version:
-  git commit -m "release 1.1.14"
-  git push origin master
+* Commit :
+  git commit -a -m "iCub x.y.x"
 
 * Tag:
-  git tag -a -m "release 1.1.14" v1.1.14
-  git push origin v1.1.14
+  git tag -a -m "iCub release x.y.z" vx.y.z HEAD
+
+* Further checks :
+  git log --oneline --graph --decorate origin/master...HEAD
+ (Check that the only commit is like "* xxxxxxx (tag: v2.3.21, HEAD, master) YARP 2.3.21)
+
+* Push your modifications
+  git push origin master
+  git push origin v2.3.21
+
 
 * Build source packages:
-  ./admin/scripts/icub-package.sh 1.1.14
+  ./admin/scripts/icub-package.sh x.y.z
 
 * Upload to sourceforge

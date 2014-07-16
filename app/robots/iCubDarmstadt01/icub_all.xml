@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<robot name="iCubGenova04" build="1" portprefix="icub">
+<robot name="iCubDarmstadt01" build="1" portprefix="icub">
     <params file="hardware/electronics/pc104.xml" />
 
     <!-- CARTESIANS --> 
@@ -31,10 +31,14 @@
     <devices file="wrappers/FT/right_arm-FT_wrapper.xml" />
     <devices file="wrappers/FT/right_leg-FT_wrapper.xml" /> 
     <devices file="wrappers/FT/left_leg-FT_wrapper.xml" />
+    <devices file="wrappers/FT/right_foot-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/left_foot-FT_wrapper.xml" />
     <devices file="hardware/FT/left_upper_arm-ems1-strain.xml" /> 
     <devices file="hardware/FT/right_upper_arm-ems3-strain.xml" />
     <devices file="hardware/FT/left_upper_leg-ems6-strain.xml" /> 
     <devices file="hardware/FT/right_upper_leg-ems8-strain.xml" />
+    <devices file="hardware/FT/left_lower_leg-ems7-strain.xml" /> 
+    <devices file="hardware/FT/right_lower_leg-ems9-strain.xml" />
 	
     <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
     <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 
@@ -66,19 +70,25 @@
     <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm-skin_wrapper.xml" />  
     <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
-	<devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
- 	<devices file="hardware/skin/left_arm-ems2-skin.xml" />
-	<devices file="hardware/skin/right_arm-ems4-skin.xml" />
+    <devices file="wrappers/skin/left_leg-skin_wrapper.xml" />
+    <devices file="wrappers/skin/right_leg-skin_wrapper.xml" />
+    <devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
+    <devices file="hardware/skin/left_arm-ems2-skin.xml" />
+    <devices file="hardware/skin/right_arm-ems4-skin.xml" />
+    <devices file="hardware/skin/left_leg-ems10-skin.xml" />
+    <devices file="hardware/skin/right_leg-ems11-skin.xml" />
 	
     <!--  CALIBRATORS -->
-    <devices file="calibrators/head-calib.xml" /> 
-    <devices file="calibrators/torso-calib.xml" /> 
-    <devices file="calibrators/right_leg-calib.xml" />
+    <devices file="calibrators/left_arm-calib.xml" />
+    <devices file="calibrators/right_arm-calib.xml" /> 
     <devices file="calibrators/left_leg-calib.xml" />
-    <devices file="calibrators/left_arm-calib.xml" /> 
-    <devices file="calibrators/right_arm-calib.xml" />
+    <devices file="calibrators/right_leg-calib.xml" />
+    <devices file="calibrators/torso-calib.xml" /> 
+    <devices file="calibrators/head-calib.xml" /> 
+    </robot> 
 
 
-</robot> 
+
+
 
 

@@ -40,7 +40,6 @@ estimate of the 2D target.
 -- network: which uses a previously trained neural network structure to predict the
 3D cartesian coordinate from the stereo input.
 
-
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
@@ -60,7 +59,7 @@ the action required. In these cases the parameter [target] can be expressed as f
 
 --[raw] when the target is provided as a raw couple of camera plane coordinates to one of the two 'raw:i' ports.
 
---(<camera> u v) when the target is a 2D couple of camera plane coordinates. If not specified, the camera used is assumed to be the left one.
+--("left"|"right" u v) when the target is a 2D couple of camera plane coordinates. If not specified, camera is assumed to be "left".
 
 --("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.    
     
@@ -122,21 +121,31 @@ format: [take] [target] "param1" \n
 action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
-
+    
+<b>CLOSE</b> \n
+format: [close] "param1" \n
+action: close the hand ("left"/"right" option can be given).
+    
 <b>TAKE_TOOL</b> \n
-format: [take_tool] "param1" \n
-action: the robot will reach a specified position to take the tool from a user.
-Optional parameter "left" or "right" can be supplied to choose the orientation the robot
+format: [tato] "param1" \n    
+action: the robot will reach a specified position to take the 
+tool from a user. Optional parameter "left" or "right" can be    
+supplied to choose the orientation the robot    
 
-<b>GRASP</b> \n
-format: [grasp] [target] \n
-action: the robot tries to reach the specified [target] and performs a power grasp.
-The target must be specified both in cartesian position and    
-orientation. \n    
-As further parameter user may specify the way the robot will    
-approach the target by providing the options ("approach" (dx dy
-dz wrist_pitch)), where dx/dy/dz account for offset displacement
-in meters wrt to the grasping reference frame and wrist_pitch is
+<b>CLOSE_TOOL</b> \n
+format: [clto] "param1" \n
+action: close the hand (predefined or specified) for grabbing    
+the tool.    
+    
+<b>GRASP</b> \n    
+format: [grasp] [target] \n    
+action: the robot tries to reach the specified [target] and 
+performs a power grasp. The target must be specified both in    
+cartesian position and orientation. \n    
+As further parameter user may specify the way the robot will 
+approach the target by providing the options ("approach" (dx dy    
+dz wrist_pitch)), where dx/dy/dz account for offset displacement    
+in meters wrt to the grasping reference frame and wrist_pitch is    
 the apporaching pitch of the wrist given in degrees.    
 
 <b>TOUCH</b> \n
@@ -156,11 +165,16 @@ format: [point] [target] \n
 action: the robot tries to point the specified [target] with its index finger.
 
 <b>LOOK</b> \n
-format: [look] [target] "param1" \n
+format: [look] [target] "param1" (block_eyes ver) \n
 action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
-keep the gaze fixating the requested target also when other commands are issued to the torso.
-Note: the special target [hand] (with optional parameter 'left'/'right') can be provided to have the robot look
-at its own hand. The robot will keep looking at its own hand until an idle command.
+keep the gaze fixating the requested target also when other    
+commands are issued to the torso. \n    
+If provided, the option (block_eyes ver) serves to block the    
+eyes at the specified vergence while gazing. \n    
+Note: the special target [hand] (with optional parameter 
+"left"/"right") can be provided to have the robot look at its   
+own hand. The robot will keep looking at its own hand until an    
+idle command.    
 
 <b>EXPECT</b> \n
 format: [expect] \n
@@ -788,7 +802,7 @@ public:
 
                         break;
                     }
-                     case CMD_CLOSE_TOOL:
+                    case CMD_CLOSE_TOOL:
                     {
                         motorThr->grasp_tool(command);
                         reply.addVocab(ACK);
@@ -1036,7 +1050,7 @@ public:
                         if(!motorThr->isHolding(command))
                         {
                             reply.addVocab(NACK);
-                            reply.addString("Nothing to drop. Not holding anything");
+                            reply.addString("Nothing to observe. Not holding anything");
                             motorThr->release(command);
                             motorThr->goHome(command);
                             break;
@@ -1154,7 +1168,7 @@ public:
                         }
 
                         visuoThr->getTarget(command.get(1),command);
-                        motorThr->preGraspHand(command);
+                        motorThr->preTakeHand(command);
 
                         if(!motorThr->reach(command))
                         {

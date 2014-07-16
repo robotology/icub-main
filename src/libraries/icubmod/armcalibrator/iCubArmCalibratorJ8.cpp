@@ -187,13 +187,12 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     abortCalib=false;
 
     dd->view(iCalibrate);
-    dd->view(iAmps);
     dd->view(iEncoders);
     dd->view(iPosition);
     dd->view(iPids);
     dd->view(iControlMode);
 
-    if (!(iCalibrate&&iAmps&&iPosition&&iPids&&iControlMode))
+    if (!(iCalibrate&&iPosition&&iPids&&iControlMode))
         return false;
 
     // ok we have all interfaces
@@ -232,12 +231,7 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
         limited_pid[k].max_output=maxPWM[k];
         if (k<4) iPids->setPid(k,limited_pid[k]);
 
-        fprintf(logfile, "ARMCALIB[%d]: Calling enable amp for joint %d\n", canID, k);
-        iAmps->enableAmp(k);
-        Time::delay(0.005);
-        fprintf(logfile, "ARMCALIB[%d]: Calling enable pid for joint %d\n", canID, k);
-        iPids->enablePid(k);
-        Time::delay(0.005);
+        iControlMode->setControlMode((k), VOCAB_CM_POSITION);
     }
 
     for (k = 0; k < 4; k++)
@@ -260,7 +254,7 @@ bool iCubArmCalibratorJ8::calibrate(DeviceDriver *dd)
     {
         fprintf(logfile, "ARMCALIB[%d]: Calibration failed!\n", canID);
         for (k = 0; k < 4; k++)
-            iAmps->disableAmp(k);
+            iControlMode->setControlMode((k), VOCAB_CM_IDLE);
     }
 
     ret = true;

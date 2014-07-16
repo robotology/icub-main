@@ -294,6 +294,26 @@ public:
   }
 };
 
+class depth2kin_IDL_clearEyes : public yarp::os::Portable {
+public:
+  bool _return;
+  virtual bool write(yarp::os::ConnectionWriter& connection) {
+    yarp::os::idl::WireWriter writer(connection);
+    if (!writer.writeListHeader(1)) return false;
+    if (!writer.writeTag("clearEyes",1,1)) return false;
+    return true;
+  }
+  virtual bool read(yarp::os::ConnectionReader& connection) {
+    yarp::os::idl::WireReader reader(connection);
+    if (!reader.readListReturn()) return false;
+    if (!reader.readBool(_return)) {
+      reader.fail();
+      return false;
+    }
+    return true;
+  }
+};
+
 class depth2kin_IDL_setArm : public yarp::os::Portable {
 public:
   std::string arm;
@@ -940,6 +960,15 @@ bool depth2kin_IDL::blockEyes() {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
+bool depth2kin_IDL::clearEyes() {
+  bool _return = false;
+  depth2kin_IDL_clearEyes helper;
+  if (!yarp().canWrite()) {
+    fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearEyes()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
 bool depth2kin_IDL::setArm(const std::string& arm) {
   bool _return = false;
   depth2kin_IDL_setArm helper;
@@ -1349,6 +1378,17 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
     if (tag == "blockEyes") {
       bool _return;
       _return = blockEyes();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "clearEyes") {
+      bool _return;
+      _return = clearEyes();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -1791,6 +1831,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     helpString.push_back("setBlockEyes");
     helpString.push_back("getBlockEyes");
     helpString.push_back("blockEyes");
+    helpString.push_back("clearEyes");
     helpString.push_back("setArm");
     helpString.push_back("getArm");
     helpString.push_back("setCalibrationType");
@@ -1906,6 +1947,11 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("bool blockEyes() ");
       helpString.push_back("Tell the gaze to immediately steer the eyes to the stored ");
       helpString.push_back("vergence angle and stay still. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="clearEyes") {
+      helpString.push_back("bool clearEyes() ");
+      helpString.push_back("Remove the block on the eyes. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
     if (functionName=="setArm") {

@@ -48,6 +48,7 @@ static void wake(const EOnv* nv);
 static void wake(const EOnv* nv)
 {
     eOprotID32_t protoid;
+    eOprotProgNumber_t prognum;
     void *handler = (void*) get_MChandler_fromEP(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetEP8(nv));
     if(NULL == handler)
     {
@@ -56,17 +57,33 @@ static void wake(const EOnv* nv)
     }
     
     protoid = eo_nv_GetID32(nv);
-    eOprotProgNumber_t  prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), protoid);
+    prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), protoid);
     MCmutex_post(handler, prognum);
 }
 
 
 extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    FEAT_ID id;
+    int jointNum;
     eOprotIndex_t xx = eoprot_ID2index(rd->id32);
     
+    if(eo_ropcode_say == rd->ropcode)
+    {
+        // This is an answer to a specific question, so wake up someone!
+        wake(nv);
+    }
+
+    // callback - do the update anyway, both if broadcasted and if reply:
+    id.ep = eo_nv_GetEP8(nv);
+    id.type = MotionControl;
+    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
+    jointNum = (int) xx;
+    addEncoderTimeStamp(&id, jointNum);
+
+
     // debug:
-#define _debug_jstatus_basic_
+#undef _debug_jstatus_basic_
 #ifdef _debug_jstatus_basic_
     static int i = 0;
     static uint8_t print = 0;
@@ -85,7 +102,7 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
         print = 1;
     }
 
-  //  if(print)
+    if(print)
     {
         eOmc_joint_status_basic_t *jstatus_b = (eOmc_joint_status_basic_t*)rd->data;
         printf("\njstatus__basic for Joint num = %d\n", xx);
@@ -98,19 +115,11 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
         printf("jstatus_b->velocity = 0x%X\n", jstatus_b->velocity);
     }
 #endif
-
-
-    // callback:
-    FEAT_ID id;
-    id.ep = eo_nv_GetEP8(nv);
-    id.type = MotionControl;
-    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
-    int jointNum = (int) xx;
-    addEncoderTimeStamp(&id, jointNum);
 }
 
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    int jointNum;
     eOprotIndex_t xx = eoprot_ID2index(rd->id32);
 
 
@@ -120,16 +129,18 @@ extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescripto
     id.ep = eo_nv_GetEP8(nv);
     id.type = MotionControl;
     id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
-    int jointNum = (int) xx;
+    jointNum = (int) xx;
     addEncoderTimeStamp(&id,  jointNum);
 
 #ifdef _SETPOINT_TEST_
+    {
     // per test
     static setpoint_test_data_t *rec_test_data_ptr;
     eOmc_joint_status_t *jstatus = (eOmc_joint_status_t*)rd->data;
     uint8_t *aux = (uint8_t*)jstatus;
     rec_test_data_ptr = (setpoint_test_data_t *)&aux[16];
     check_received_debug_data(&id, jointNum, rec_test_data_ptr);
+    }
 #endif
 }
 
@@ -258,6 +269,17 @@ extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOro
 {
     wake(nv);
 }
+
+
+extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_say == rd->ropcode)
+    {
+        // This is an answer to a specific question, so wake up someone!
+        wake(nv);
+    }
+}
+
 
 // eof
 

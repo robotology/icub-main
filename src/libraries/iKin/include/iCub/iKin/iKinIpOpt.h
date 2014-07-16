@@ -236,6 +236,7 @@ protected:
     double lowerBoundInf;
     double upperBoundInf;
     double translationalTol;
+    std::string posePriority;
 
 public:
     /**
@@ -275,13 +276,27 @@ public:
     * Returns the state of Pose control settings.
     * @return Pose control settings.
     */
-    unsigned int get_ctrlPose() { return ctrlPose; }
+    unsigned int get_ctrlPose() const { return ctrlPose; }
+
+    /**
+    * Sets the Pose priority for weighting more either position or 
+    * orientation while reaching in full pose. 
+    * @param priority can be "position" or "orientation". 
+    * @return true/false on success/failure. 
+    */
+    bool set_posePriority(const std::string &priority);
+
+    /**
+    * Returns the Pose priority settings.
+    * @return pose priority.
+    */
+    std::string get_posePriority() const { return posePriority; }
 
     /**
     * Attach a iKinLinIneqConstr object in order to impose 
     * constraints of the form lB <= C*q <= uB.
     * @param lic is the iKinLinIneqConstr object to attach.
-    * @see iKinLinIneqConstr()
+    * @see iKinLinIneqConstr
     */
     void attachLIC(iKinLinIneqConstr &lic) { pLIC=&lic; }
 
@@ -289,7 +304,7 @@ public:
     * Returns a reference to the attached Linear Inequality 
     * Constraints object.
     * @return Linear Inequality Constraints pLIC. 
-    * @see iKinLinIneqConstr()
+    * @see iKinLinIneqConstr
     */
     iKinLinIneqConstr &getLIC() { return *pLIC; }
 

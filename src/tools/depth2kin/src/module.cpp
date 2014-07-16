@@ -485,12 +485,12 @@ bool CalibModule::calibrateDepth()
         Time::delay(1.0);
 
         Bottle cmd,reply;
-        cmd.addString("recalibrate");
+        cmd.addString("calibrate");
         depthRpcPort.write(cmd,reply);
         if (reply.get(0).asString()=="ACK")
         {
             cmd.clear();
-            cmd.addString("saveCurrentCalib");
+            cmd.addString("save");
             depthRpcPort.write(cmd,reply);
             if (reply.get(0).asString()=="ACK")
                 return true;
@@ -531,7 +531,7 @@ void CalibModule::prepareRobot()
     while (!done)
     {
         Time::delay(1.0);
-        iposs->checkMotionDone(4,&done);
+        iposs->checkMotionDone(i0+4,&done);
     }    
     printf("done\n");
 
@@ -881,7 +881,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_side=abs(rf.check("roi_side",Value(100)).asInt());
-    block_eyes=fabs(rf.check("block_eyes",Value(10.0)).asDouble());
+    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
     exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
 
     motorExplorationAsyncStop=false;
@@ -917,40 +917,36 @@ bool CalibModule::configure(ResourceFinder &rf)
 
     if (test>=0)
     {
-        Matrix K=eye(3,3);
+        Matrix K=eye(3,4);
         K(0,0)=257.34; K(1,1)=257.34;
         K(0,2)=160.0;  K(1,2)=120.0; 
 
-        Matrix Pi=zeros(3,4);
-        Pi(0,0)=Pi(1,1)=Pi(2,2)=1.0; 
-
-        alignerL.setProjection(K*Pi);
-
+        alignerL.setProjection(K);
         return true;
     }
 
     // open drivers
     Property optionArmL("(device remote_controlboard)");
     optionArmL.put("remote",("/"+robot+"/left_arm").c_str());
-    optionArmL.put("local",("/"+name+"/arm/left").c_str());
+    optionArmL.put("local",("/"+name+"/joint/left").c_str());
     if (!drvArmL.open(optionArmL))
         printf("Position left_arm controller not available!\n");
 
     Property optionArmR("(device remote_controlboard)");
     optionArmR.put("remote",("/"+robot+"/right_arm").c_str());
-    optionArmR.put("local",("/"+name+"/arm/right").c_str());
+    optionArmR.put("local",("/"+name+"/joint/right").c_str());
     if (!drvArmR.open(optionArmR))
         printf("Position right_arm controller not available!\n");
 
     Property optionCartL("(device cartesiancontrollerclient)");
     optionCartL.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
-    optionCartL.put("local",("/"+name+"/cart/left").c_str());
+    optionCartL.put("local",("/"+name+"/cartesian/left").c_str());
     if (!drvCartL.open(optionCartL))
         printf("Cartesian left_arm controller not available!\n");
 
     Property optionCartR("(device cartesiancontrollerclient)");
     optionCartR.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
-    optionCartR.put("local",("/"+name+"/cart/right").c_str());
+    optionCartR.put("local",("/"+name+"/cartesian/right").c_str());
     if (!drvCartR.open(optionCartR))
         printf("Cartesian right_arm controller not available!\n");
 
@@ -1348,8 +1344,14 @@ double CalibModule::getBlockEyes()
 /************************************************************************/
 bool CalibModule::blockEyes()
 {
-    igaze->blockEyes(block_eyes);
-    return true;
+    return igaze->blockEyes(block_eyes);
+}
+
+
+/************************************************************************/
+bool CalibModule::clearEyes()
+{
+    return igaze->clearEyes();
 }
 
 

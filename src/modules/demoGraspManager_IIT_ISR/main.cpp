@@ -992,7 +992,7 @@ protected:
                 limitRange(x);
                 x=R*x;
     
-                cartArm->goToPose(x,*armHandOrien);
+                cartArm->goToPoseSync(x,*armHandOrien);
             }
         }
     }
@@ -1014,6 +1014,7 @@ protected:
                     x=R*x;
 
                     fprintf(stdout,"--- Hand in position AND Target still => GRASPING\n");
+                    fprintf(stdout,"--- Target in %s\n",targetPos.toString().c_str());
                     fprintf(stdout,"*** Grasping x=%s\n",x.toString().c_str());
 
                     cartArm->goToPoseSync(x,*armHandOrien);
@@ -1223,6 +1224,7 @@ protected:
         inportIMDTargetRight.interrupt();
         inportIMDTargetRight.close();
 
+        setFace(FACE_HAPPY);
         outportCmdFace.interrupt();
         outportCmdFace.close();      
 
@@ -1412,7 +1414,7 @@ public:
 
             if (leftArmImpVelMode)
             {
-                IControlMode      *imode;
+                IInteractionMode  *imode;
                 IImpedanceControl *iimp;
 
                 drvLeftArm->view(imode);
@@ -1422,9 +1424,9 @@ public:
                         leftArmJointsStiffness.length():leftArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                {
-                    imode->setImpedanceVelocityMode(j);
+                {                    
                     iimp->setImpedance(j,leftArmJointsStiffness[j],leftArmJointsDamping[j]);
+                    imode->setInteractionMode(j,VOCAB_IM_COMPLIANT);
                 }
             }
         }
@@ -1440,7 +1442,7 @@ public:
 
             if (rightArmImpVelMode)
             {
-                IControlMode      *imode;
+                IInteractionMode  *imode;
                 IImpedanceControl *iimp;
 
                 drvRightArm->view(imode);
@@ -1451,8 +1453,8 @@ public:
 
                 for (int j=0; j<len; j++)
                 {
-                    imode->setImpedanceVelocityMode(j);
                     iimp->setImpedance(j,rightArmJointsStiffness[j],rightArmJointsDamping[j]);
+                    imode->setInteractionMode(j,VOCAB_IM_COMPLIANT);
                 }
             }
         }
@@ -1574,14 +1576,14 @@ public:
 
             if (leftArmImpVelMode)
             {
-                IControlMode *imode;
+                IInteractionMode *imode;
                 drvLeftArm->view(imode);
 
                 int len=leftArmJointsStiffness.length()<leftArmJointsDamping.length()?
                         leftArmJointsStiffness.length():leftArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                    imode->setVelocityMode(j);
+                    imode->setInteractionMode(j,VOCAB_IM_STIFF);
             }
         }
 
@@ -1593,14 +1595,14 @@ public:
 
             if (rightArmImpVelMode)
             {
-                IControlMode *imode;
+                IInteractionMode *imode;
                 drvRightArm->view(imode);
 
                 int len=rightArmJointsStiffness.length()<rightArmJointsDamping.length()?
                         rightArmJointsStiffness.length():rightArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                    imode->setVelocityMode(j);
+                    imode->setInteractionMode(j,VOCAB_IM_STIFF);
             }
         }
 

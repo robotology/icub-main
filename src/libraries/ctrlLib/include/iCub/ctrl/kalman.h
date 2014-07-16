@@ -59,6 +59,8 @@ protected:
     yarp::sig::Vector x;
     yarp::sig::Matrix P;
     yarp::sig::Matrix K;
+    yarp::sig::Matrix S;
+    double validationGate;
 
     size_t n;
     size_t m;
@@ -112,6 +114,13 @@ public:
     yarp::sig::Vector predict(const yarp::sig::Vector &u);
 
     /**
+     * Predicts the next state vector. 
+     * 
+     * @return Estimated state vector.
+     */
+    yarp::sig::Vector predict();
+
+    /**
      * Corrects the current estimation of the state vector given the
      * current measurement. 
      * 
@@ -120,17 +129,6 @@ public:
      * @return Estimated state vector.
      */
     yarp::sig::Vector correct(const yarp::sig::Vector &z);
-
-    /**
-     * Returns the estimated state vector given the current 
-     * measurement by performing a prediction and then correcting 
-     * the result. 
-     * 
-     * @param z Current measurement.
-     * 
-     * @return Estimated state vector.
-     */
-    yarp::sig::Vector filt(const yarp::sig::Vector &z);
 
     /**
      * Returns the estimated state vector given the current 
@@ -145,6 +143,17 @@ public:
     yarp::sig::Vector filt(const yarp::sig::Vector &u, const yarp::sig::Vector &z);
 
     /**
+     * Returns the estimated state vector given the current 
+     * measurement by performing a prediction and then correcting 
+     * the result. 
+     * 
+     * @param z Current measurement.
+     * 
+     * @return Estimated state vector.
+     */
+    yarp::sig::Vector filt(const yarp::sig::Vector &z);
+
+    /**
      * Returns the estimated state.
      * 
      * @return Estimated state.
@@ -152,11 +161,34 @@ public:
     yarp::sig::Vector get_x() const { return x; }
 
     /**
-     * Returns the estimated error covariance.
+     * Returns the estimated output.
      * 
-     * @return Estimated error covariance.
+     * @return Estimated output.
+     */
+    yarp::sig::Vector get_y() const;
+
+    /**
+     * Returns the estimated state covariance.
+     * 
+     * @return Estimated state covariance.
      */
     yarp::sig::Matrix get_P() const { return P; }
+
+    /**
+     * Returns the estimated measurement covariance.
+     * 
+     * @return Estimated measurement covariance.
+     */
+    yarp::sig::Matrix get_S() const { return S; }
+
+    /**
+     * Returns the validation gate.
+     * @note The validation gate is meaningful only after 
+     *       correction.
+     * @see correct
+     * @return validation gate.
+     */
+    double get_ValidationGate() const { return validationGate; }
 
     /**
      * Returns the Kalman gain matrix.

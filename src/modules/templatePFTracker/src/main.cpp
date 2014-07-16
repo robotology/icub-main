@@ -79,6 +79,10 @@ The value part can be changed to suit your needs; the default values are shown b
 - \c outputPortNameTarget \c /templatePFTracker/target:o \n  
   specifies the output port name (this string will be prefixed by \c /templatePFTracker 
   or whatever else is specifed by the name parameter
+  Sends a Bottle list containing info on the tracking process:
+  cog.x + cog.y + boundingBox.topLeft.x + boundingBox.topLeft.y
+  + boundingBox.BottomRight.x + boundingBox.BottomRight.y eg:
+  (180.0 116.0 167.0 102.0 193.0 130.0)
 
 \section portsa_sec Ports Accessed
 

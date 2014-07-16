@@ -111,6 +111,7 @@ protected:
     bool encTimedEnabled;
     bool posDirectEnabled;
     bool posDirectAvailable;
+    bool multipleJointsControlEnabled;
     bool pidAvailable;
     bool useReferences;
     bool jointsHealthy;
@@ -128,18 +129,18 @@ protected:
 
     yarp::os::Property plantModelProperties;
     SmithPredictor     smithPredictor;
-    
-    std::deque<DriverDescriptor>             lDsc;
-    std::deque<yarp::dev::IControlMode*>     lMod;
-    std::deque<yarp::dev::IEncoders*>        lEnc;
-    std::deque<yarp::dev::IEncodersTimed*>   lEnt;
-    std::deque<yarp::dev::IPidControl*>      lPid;
-    std::deque<yarp::dev::IControlLimits*>   lLim;
-    std::deque<yarp::dev::IVelocityControl*> lVel;
-    std::deque<yarp::dev::IPositionDirect*>  lPos;
-    std::deque<yarp::dev::IPositionControl*> lStp;
-    std::deque<int>                          lJnt;
-    std::deque<int*>                         lRmp;
+
+    std::deque<DriverDescriptor>              lDsc;
+    std::deque<yarp::dev::IControlMode2*>     lMod;
+    std::deque<yarp::dev::IEncoders*>         lEnc;
+    std::deque<yarp::dev::IEncodersTimed*>    lEnt;
+    std::deque<yarp::dev::IPidControl*>       lPid;
+    std::deque<yarp::dev::IControlLimits*>    lLim;
+    std::deque<yarp::dev::IVelocityControl2*> lVel;
+    std::deque<yarp::dev::IPositionDirect*>   lPos;
+    std::deque<yarp::dev::IPositionControl*>  lStp;
+    std::deque<int>                           lJnt;
+    std::deque<int*>                          lRmp;
 
     unsigned int connectCnt;
     unsigned int ctrlPose;
@@ -181,18 +182,19 @@ protected:
 
     struct Context
     {
-        yarp::sig::Vector dof;
-        yarp::sig::Vector restPos;
-        yarp::sig::Vector restWeights;
-        yarp::sig::Vector tip_x;
-        yarp::sig::Vector tip_o;
-        yarp::sig::Matrix limits;
-        double            trajTime;
-        double            tol;
-        bool              mode;
-        bool              useReferences;
-        double            straightness;
-        yarp::os::Value   task_2;
+        yarp::sig::Vector     dof;
+        yarp::sig::Vector     restPos;
+        yarp::sig::Vector     restWeights;
+        yarp::sig::Vector     tip_x;
+        yarp::sig::Vector     tip_o;
+        yarp::sig::Matrix     limits;
+        double                trajTime;
+        double                tol;
+        bool                  mode;
+        bool                  useReferences;
+        double                straightness;
+        yarp::os::ConstString posePriority;
+        yarp::os::Value       task_2;
     };
 
     int contextIdCnt;
@@ -202,6 +204,8 @@ protected:
     std::multiset<double> motionOngoingEvents;
     std::multiset<double> motionOngoingEventsCurrent;
 
+    void (ServerCartesianController::*sendCtrlCmd)();
+
     void   init();
     void   openPorts();
     void   closePorts();
@@ -210,8 +214,12 @@ protected:
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
     bool   getNewTarget();
-    bool   areJointsHealthy();
-    void   sendControlCommands();
+    bool   areJointsHealthyAndSet(yarp::sig::VectorOf<int> &jointsToSet);
+    void   setJointsCtrlMode(const yarp::sig::VectorOf<int> &jointsToSet);
+    void   sendCtrlCmdMultipleJointsPosition();
+    void   sendCtrlCmdMultipleJointsVelocity();
+    void   sendCtrlCmdSingleJointPosition();
+    void   sendCtrlCmdSingleJointVelocity();
     void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
@@ -255,6 +263,8 @@ public:
     bool getTrackingMode(bool *f);
     bool setReferenceMode(const bool f);
     bool getReferenceMode(bool *f);
+    bool setPosePriority(const yarp::os::ConstString &p);
+    bool getPosePriority(yarp::os::ConstString &p);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

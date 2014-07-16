@@ -27,7 +27,7 @@ endmacro (checkandset_dependency)
 message(STATUS "Detecting required libraries")
 message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
-find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib embobj QUIET)
+find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib QUIET)
 
 find_package(GSL)
 #find_package(GtkMM)
@@ -39,7 +39,7 @@ find_package(ODE)
 find_package(SDL)
 
 find_package(GTK2 COMPONENTS gtk gtkmm)
-if(WIN32)
+if(WIN32 AND GTK2_FOUND)
     list(REMOVE_ITEM GTK2_LIBRARIES ${FREETYPE_LIBRARY} ${GTK2_PANGOXFT_LIBRARY})
 endif()
 #find_package(GtkPlus)

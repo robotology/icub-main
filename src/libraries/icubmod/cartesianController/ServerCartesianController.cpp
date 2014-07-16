@@ -31,12 +31,13 @@
 
 #include <iCub/iKin/iKinVocabs.h>
 
-#define CARTCTRL_SERVER_VER                 1.0
+#define CARTCTRL_SERVER_VER                 1.1
 #define CARTCTRL_DEFAULT_PER                10      // [ms]
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
 #define CARTCTRL_DEFAULT_TOL                1e-2
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
 #define CARTCTRL_DEFAULT_POSCTRL            "on"
+#define CARTCTRL_DEFAULT_MULJNTCTRL         "on"
 #define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
 #define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
@@ -408,6 +409,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         }
 
                         //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_PRIO:
+                        {
+                            ConstString priority;
+                            if (getPosePriority(priority))
+                            {   
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addString(priority);
+                            }
+                            else
+                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
                             double time;
@@ -738,6 +754,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 ret=setReferenceMode(false);
 
                             if (ret)
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
+                        //-----------------
+                        case IKINCARTCTRL_VOCAB_OPT_PRIO:
+                        {
+                            ConstString priority=command.get(2).asString();
+                            if (setPosePriority(priority))
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -1220,18 +1248,29 @@ bool ServerCartesianController::getNewTarget()
 
 
 /************************************************************************/
-bool ServerCartesianController::areJointsHealthy()
-{
+bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
+{    
     VectorOf<int> modes(maxPartJoints);
     int chainCnt=0;
 
+    jointsToSet.clear();
     for (int i=0; i<numDrv; i++)
     {
         lMod[i]->getControlModes(modes.getFirst());
         for (int j=0; j<lJnt[i]; j++)
         {
-            if (!(*chainState)[chainCnt].isBlocked() && (modes[j]==VOCAB_CM_IDLE))
-                return false;
+            if (!(*chainState)[chainCnt].isBlocked())
+            {
+                if ((modes[j]==VOCAB_CM_HW_FAULT) || (modes[j]==VOCAB_CM_IDLE))
+                    return false;
+                else if (posDirectEnabled)
+                {
+                    if (modes[j]!=VOCAB_CM_POSITION_DIRECT)
+                        jointsToSet.push_back(chainCnt);
+                }
+                else if (modes[j]!=VOCAB_CM_VELOCITY)
+                    jointsToSet.push_back(chainCnt);
+            }
 
             chainCnt++;
         }
@@ -1242,61 +1281,164 @@ bool ServerCartesianController::areJointsHealthy()
 
 
 /************************************************************************/
-void ServerCartesianController::sendControlCommands()
+void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
 {
-    int j=0;
+    if (jointsToSet.size()==0)
+        return;
+
+    int chainCnt=0;
     int k=0;
-    int cnt=0;
 
-    if (posDirectEnabled)
-    {        
+    for (int i=0; i<numDrv; i++)
+    {
         VectorOf<int> joints;
-        Vector refs;
-
-        Vector q=ctrl->get_q();
-        for (unsigned int i=0; i<chainState->getN(); i++)
+        VectorOf<int> modes;
+        for (int j=0; j<lJnt[i]; j++)
         {
-            if (!(*chainState)[i].isBlocked())
-            {
-                joints.push_back(lRmp[j][k]);
-                refs.push_back(CTRL_RAD2DEG*q[cnt]);
-                cnt++;
+            if (chainCnt==jointsToSet[k])
+            {       
+                joints.push_back(j);
+                modes.push_back(posDirectEnabled?VOCAB_CM_POSITION_DIRECT:
+                                                 VOCAB_CM_VELOCITY);
+                k++;
             }
 
-            if (++k>=lJnt[j])
-            {
+            chainCnt++;
+        }
+
+        if (joints.size()>0)
+            lMod[i]->setControlModes(joints.size(),joints.getFirst(),
+                                     modes.getFirst());
+    }
+}
+
+
+/************************************************************************/
+void ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
+{
+    VectorOf<int> joints;
+    Vector refs;
+    int cnt=0;
+    int j=0;
+    int k=0;    
+
+    Vector q=ctrl->get_q();
+    velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
+    for (unsigned int i=0; i<chainState->getN(); i++)
+    {
+        if (!(*chainState)[i].isBlocked())
+        {
+            joints.push_back(lRmp[j][k]);
+            refs.push_back(CTRL_RAD2DEG*q[cnt]);
+            cnt++;
+        }
+
+        if (++k>=lJnt[j])
+        {
+            if (joints.size()>0)
                 lPos[j]->setPositions(joints.size(),joints.getFirst(),refs.data());
-                joints.clear();
-                refs.clear();
-                j++;
-                k=0;
-            }
+
+            joints.clear();
+            refs.clear();
+            j++;
+            k=0;
         }
     }
-    else
+}
+
+
+/************************************************************************/
+void ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
+{
+    VectorOf<int> joints;
+    Vector vels;
+    int cnt=0;
+    int j=0;
+    int k=0;    
+
+    Vector v=ctrl->get_qdot();
+    for (unsigned int i=0; i<chainState->getN(); i++)
     {
-        Vector v=ctrl->get_qdot();
-        for (unsigned int i=0; i<chainState->getN(); i++) 
+        if (!(*chainState)[i].isBlocked())
         {
-            if (!(*chainState)[i].isBlocked())
-            {
-                double v_cnt=CTRL_RAD2DEG*v[cnt];
-                double thres=lDsc[j].minAbsVels[k];
+            double v_cnt=CTRL_RAD2DEG*v[cnt];
+            double thres=lDsc[j].minAbsVels[k];
 
-                // apply bang-bang control to compensate for unachievable low velocities
-                if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
-                    v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+            // apply bang-bang control to compensate for unachievable low velocities
+            if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
+                v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
 
-                lVel[j]->velocityMove(lRmp[j][k],v_cnt);
-                velCmd[cnt]=v_cnt;
-                cnt++;
-            }
+            joints.push_back(lRmp[j][k]);
+            vels.push_back(v_cnt);
+            velCmd[cnt]=v_cnt;
+            cnt++;
+        }
 
-            if (++k>=lJnt[j])
-            {
-                j++;
-                k=0;
-            }
+        if (++k>=lJnt[j])
+        {
+            if (joints.size()>0)
+                lVel[j]->velocityMove(joints.size(),joints.getFirst(),vels.data());
+
+            joints.clear();
+            vels.clear();
+            j++;
+            k=0;
+        }
+    }
+}
+
+
+/************************************************************************/
+void ServerCartesianController::sendCtrlCmdSingleJointPosition()
+{
+    int cnt=0;
+    int j=0;
+    int k=0;    
+
+    Vector q=ctrl->get_q();
+    velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
+    for (unsigned int i=0; i<chainState->getN(); i++)
+    {
+        if (!(*chainState)[i].isBlocked())
+            lPos[j]->setPosition(lRmp[j][k],CTRL_RAD2DEG*q[cnt++]);                
+
+        if (++k>=lJnt[j])
+        {
+            j++;
+            k=0;
+        }
+    }
+}
+
+
+/************************************************************************/
+void ServerCartesianController::sendCtrlCmdSingleJointVelocity()
+{
+    int cnt=0;
+    int j=0;
+    int k=0;    
+
+    Vector v=ctrl->get_qdot();
+    for (unsigned int i=0; i<chainState->getN(); i++)
+    {
+        if (!(*chainState)[i].isBlocked())
+        {
+            double v_cnt=CTRL_RAD2DEG*v[cnt];
+            double thres=lDsc[j].minAbsVels[k];
+
+            // apply bang-bang control to compensate for unachievable low velocities
+            if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
+                v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+
+            lVel[j]->velocityMove(lRmp[j][k],v_cnt);
+            velCmd[cnt]=v_cnt;
+            cnt++;
+        }
+
+        if (++k>=lJnt[j])
+        {
+            j++;
+            k=0;
         }
     }
 }
@@ -1349,14 +1491,12 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
-        jointsHealthy=areJointsHealthy();
-        if (!jointsHealthy)
-        {
-            stopControl();
-            return;
-        }
-
         mutex.lock();
+
+        VectorOf<int> jointsToSet;
+        jointsHealthy=areJointsHealthyAndSet(jointsToSet);
+        if (!jointsHealthy)
+            stopControlHelper();        
 
         string event="none";
 
@@ -1373,7 +1513,7 @@ void ServerCartesianController::run()
 
         // manage the virtual target yielded by a
         // request for a task-space reference velocity
-        if (taskVelModeOn && (++taskRefVelPeriodCnt>=taskRefVelPeriodFactor))
+        if (jointsHealthy && taskVelModeOn && (++taskRefVelPeriodCnt>=taskRefVelPeriodFactor))
         {
             Vector xdot_set_int=taskRefVelTargetGen->integrate(xdot_set);
             goTo(IKINCTRL_POSE_FULL,xdot_set_int,0.0);
@@ -1383,18 +1523,22 @@ void ServerCartesianController::run()
         // get the current target pose
         if (getNewTarget())
         {
-            if (!executingTraj)
+            if (jointsHealthy)
             {
-                ctrl->restart(fb);
-                smithPredictor.restart(fb);
+                setJointsCtrlMode(jointsToSet); 
+                if (!executingTraj)
+                {
+                    ctrl->restart(fb);
+                    smithPredictor.restart(fb);
+                }
+
+                // onset of new trajectory
+                executingTraj=true;
+                event="motion-onset";
+
+                motionOngoingEventsCurrent=motionOngoingEvents;
+                q0=fb;
             }
-
-            // onset of new trajectory
-            executingTraj=true;
-            event="motion-onset";
-
-            motionOngoingEventsCurrent=motionOngoingEvents;
-            q0=fb;
         }
 
         // update the stamp anyway
@@ -1427,15 +1571,13 @@ void ServerCartesianController::run()
                 // if that's the case
                 if (!trackingMode && (rxToken==txToken))
                     setTrackingModeHelper(false);
-            }
+            }            
             else
                 // send commands to the robot
-                sendControlCommands();
-        }
+                (this->*sendCtrlCmd)();
+        }        
 
-        mutex.unlock();
-
-        // streams out the end-effector pose
+        // stream out the end-effector pose
         if (portState.getOutputCount()>0)
         {
             portState.prepare()=chainState->EndEffPose();
@@ -1453,6 +1595,8 @@ void ServerCartesianController::run()
             motionOngoingEventsFlush();
             notifyEvent(event);
         }
+
+        mutex.unlock();
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
@@ -1593,6 +1737,9 @@ bool ServerCartesianController::open(Searchable &config)
 
     posDirectEnabled=optGeneral.check("PositionControl",
                                       Value(CARTCTRL_DEFAULT_POSCTRL)).asString()=="on";
+
+    multipleJointsControlEnabled=optGeneral.check("MultipleJointsControl",
+                                                  Value(CARTCTRL_DEFAULT_MULJNTCTRL)).asString()=="on";
 
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
@@ -1804,15 +1951,15 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         {
             printf("ok\n");
 
-            IControlMode     *mod;
-            IEncoders        *enc;
-            IEncodersTimed   *ent;
-            IPidControl      *pid;
-            IControlLimits   *lim;
-            IVelocityControl *vel;
-            IPositionDirect  *pos;
-            IPositionControl *stp;
-            int               joints;
+            IControlMode2     *mod;
+            IEncoders         *enc;
+            IEncodersTimed    *ent;
+            IPidControl       *pid;
+            IControlLimits    *lim;
+            IVelocityControl2 *vel;
+            IPositionDirect   *pos;
+            IPositionControl  *stp;
+            int                joints;
 
             drivers[j]->poly->view(mod);
             drivers[j]->poly->view(enc);
@@ -1882,6 +2029,21 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     posDirectEnabled&=posDirectAvailable;
     printf("%s: %s interface will be used\n",ctrlName.c_str(),
            posDirectEnabled?"IPositionDirect":"IVelocityControl");
+
+    printf("%s: %s control will be used\n",ctrlName.c_str(),
+           multipleJointsControlEnabled?"multiple joints":"single joint");
+
+    if (multipleJointsControlEnabled)
+    {
+        if (posDirectEnabled)
+            sendCtrlCmd=&ServerCartesianController::sendCtrlCmdMultipleJointsPosition;
+        else
+            sendCtrlCmd=&ServerCartesianController::sendCtrlCmdMultipleJointsVelocity;
+    }
+    else if (posDirectEnabled)
+        sendCtrlCmd=&ServerCartesianController::sendCtrlCmdSingleJointPosition;
+    else
+        sendCtrlCmd=&ServerCartesianController::sendCtrlCmdSingleJointVelocity;
 
     alignJointsBounds();
 
@@ -2134,6 +2296,53 @@ bool ServerCartesianController::getReferenceMode(bool *f)
 
 
 /************************************************************************/
+bool ServerCartesianController::setPosePriority(const ConstString &p)
+{
+    bool ret=false;
+    if (connected && ((p=="position") || (p=="orientation")))
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
+        command.add(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+        else
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getPosePriority(ConstString &p)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+        {
+            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+                p=(reply.get(1).asVocab()==IKINSLV_VOCAB_VAL_PRIO_XYZ)?
+                  "position":"orientation";
+        }
+        else
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (attached)
@@ -2308,8 +2517,8 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
     
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
@@ -2342,9 +2551,9 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
 
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
     // send command and wait for reply
@@ -2369,8 +2578,8 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     mutex.lock();
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,xd);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
@@ -2395,9 +2604,9 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     mutex.lock();
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
-    addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
+    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_XD,xd);
+    addVectorOption(command,IKINSLV_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
     // send command and wait for reply
@@ -3040,6 +3249,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.mode=_mode;
         context.useReferences=_useReference;
         context.straightness=ctrl->get_gamma();
+        getPosePriority(context.posePriority);
         getTask2ndOptions(context.task_2);
 
         *id=contextIdCnt++;
@@ -3082,6 +3292,7 @@ bool ServerCartesianController::restoreContext(const int id)
             setTrajTime(context.trajTime);
             setInTargetTol(context.tol);
             ctrl->set_gamma(context.straightness);
+            setPosePriority(context.posePriority);
             setTask2ndOptions(context.task_2);
 
             return true;

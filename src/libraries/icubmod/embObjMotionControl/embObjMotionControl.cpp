@@ -1,4 +1,4 @@
-	// -*- Mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+    // -*- Mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
 * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
@@ -71,7 +71,7 @@ static double convertA2I(double angle_in_degrees, double zero, double factor)
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    yError() << txt << "is not yet implemented for embObjMotionControl";
+    yError() << txt << " is not yet implemented for embObjMotionControl";
     return true;
 }
 
@@ -81,6 +81,185 @@ static bool nv_not_found(void)
 {
     yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
     return false;
+}
+
+
+bool embObjMotionControl::controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
+{
+    bool ret = true;
+
+    switch(vocabMode)
+    {
+    case VOCAB_CM_IDLE:
+        embOut = eomc_controlmode_cmd_idle;
+        break;
+
+    case VOCAB_CM_POSITION:
+        embOut = eomc_controlmode_cmd_position;
+        break;
+
+    case VOCAB_CM_POSITION_DIRECT:
+        embOut = eomc_controlmode_cmd_direct;
+        break;
+
+    case VOCAB_CM_VELOCITY:
+        embOut = eomc_controlmode_cmd_velocity;
+        break;
+
+    case VOCAB_CM_MIXED:
+        embOut = eomc_controlmode_cmd_mixed;
+        break;
+
+    case VOCAB_CM_TORQUE:
+        embOut = eomc_controlmode_cmd_torque;
+        break;
+
+    case VOCAB_CM_IMPEDANCE_POS:
+        embOut = eomc_controlmode_cmd_impedance_pos;
+        break;
+
+    case VOCAB_CM_IMPEDANCE_VEL:
+        embOut = eomc_controlmode_cmd_impedance_vel;
+        break;
+
+    case VOCAB_CM_OPENLOOP:
+        embOut = eomc_controlmode_cmd_openloop;
+        break;
+
+    case VOCAB_CM_FORCE_IDLE:
+        embOut = eomc_controlmode_cmd_force_idle;
+        break;
+
+    default:
+        ret = false;
+        break;
+    }
+    return ret;
+}
+
+int embObjMotionControl::controlModeCommandConvert_embObj2yarp(eOmc_controlmode_command_t embObjMode)
+{
+    yError() << "embObjMotionControl::controlModeCommandConvert_embObj2yarp" << " is not yet implemented for embObjMotionControl";
+    return 0;
+
+}
+
+bool embObjMotionControl::controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut)
+{
+    yError() << "controlModeStatusConvert_yarp2embObj" << " is not yet implemented for embObjMotionControl";
+    return false;
+}
+
+int embObjMotionControl::controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode)
+{
+    int vocabOut;
+    switch(embObjMode)
+    {
+    case eomc_controlmode_idle:
+        vocabOut = VOCAB_CM_IDLE;
+        break;
+
+    case eomc_controlmode_position:
+        vocabOut = VOCAB_CM_POSITION;
+        break;
+
+    case eomc_controlmode_velocity:
+        vocabOut = VOCAB_CM_VELOCITY;
+        break;
+
+    case eomc_controlmode_direct:
+        vocabOut = VOCAB_CM_POSITION_DIRECT;
+        break;
+
+    case eomc_controlmode_mixed:
+    case eomc_controlmode_velocity_pos:      // they are the same, this will probably removed in the future
+        vocabOut = VOCAB_CM_MIXED;
+        break;
+
+    case eomc_controlmode_torque:
+        vocabOut = VOCAB_CM_TORQUE;
+        break;
+
+    case eomc_controlmode_calib:
+        vocabOut = VOCAB_CM_CALIBRATING;
+        break;
+
+    case eomc_controlmode_impedance_pos:
+        vocabOut = VOCAB_CM_IMPEDANCE_POS;
+        break;
+
+    case eomc_controlmode_impedance_vel:
+        vocabOut = VOCAB_CM_IMPEDANCE_VEL;
+        break;
+
+    case eomc_controlmode_openloop:
+    case eomc_controlmode_current:          // for the high level they are the same
+        vocabOut = VOCAB_CM_OPENLOOP;
+        break;
+
+    case eomc_controlmode_hwFault:
+        vocabOut = VOCAB_CM_HW_FAULT;
+        break;
+
+    case eomc_controlmode_notConfigured:
+        vocabOut = VOCAB_CM_NOT_CONFIGURED;
+        break;
+
+    case eomc_controlmode_configured:
+        vocabOut = VOCAB_CM_CONFIGURED;
+        break;
+
+    default:
+        printf("embObj to yarp unknown controlmode %d\n", embObjMode);
+        vocabOut = VOCAB_CM_UNKNOWN;
+        break;
+    }
+    return vocabOut;
+}
+
+
+bool embObjMotionControl::interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
+{
+    bool ret = true;
+
+    switch(vocabMode)
+    {
+    case VOCAB_IM_STIFF:
+        embOut = eOmc_interactionmode_stiff;
+        break;
+
+    case VOCAB_IM_COMPLIANT:
+        embOut = eOmc_interactionmode_compliant;
+        break;
+
+    default:
+        ret = false;
+        break;
+    }
+    return ret;
+}
+
+
+bool embObjMotionControl::interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut)
+{
+    bool ret = true;
+    switch(embObjMode)
+    {
+    case eOmc_interactionmode_stiff:
+        vocabOut = VOCAB_IM_STIFF;
+        break;
+
+    case eOmc_interactionmode_compliant:
+        vocabOut = VOCAB_IM_COMPLIANT;
+        break;
+
+    default:
+        vocabOut = 666; //VOCAB_CM_UNKNOWN;
+        yError() << "Received an unknown interactionMode from the EMS boards with value " << embObjMode;
+//        ret = false;
+        break;
+    }
+    return ret;
 }
 
 
@@ -227,7 +406,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementPositionControl2(this),
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
     ImplementVelocityControl2(this),
-    ImplementControlMode(this),
+    ImplementControlMode2(this),
     ImplementImpedanceControl(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
@@ -235,6 +414,8 @@ embObjMotionControl::embObjMotionControl() :
     ImplementTorqueControl(this),
     ImplementControlLimits2(this),
     ImplementPositionDirect(this),
+    ImplementOpenLoopControl(this),
+    ImplementInteractionMode(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
@@ -288,18 +469,13 @@ embObjMotionControl::embObjMotionControl() :
     NVnumber          = 0;
 
     useRawEncoderData = false;
+    _pwmIsLimited     = false;
+
 }
 
 embObjMotionControl::~embObjMotionControl()
 {
     dealloc();
-    //YARP_INFO(Logger::get(),"embObjMotionControl::~embObjMotionControl()", Logger::get().log_files.f3);
-    /*if (handle!=0)
-    {
-    	sprintf(tmp, "embObjMotionControl::~embObjMotionControl() 2 handle= 0x%06X", handle);
-    	//YARP_DEBUG(Logger::get(),tmp); //, Logger::get().log_files.f3);
-    		delete handle;
-    }*/
 }
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
@@ -322,6 +498,13 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     // Tmp variables
     Bottle          groupEth;
     ACE_UINT16      port;
+
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjMotionControl: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
 
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
@@ -372,12 +555,33 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         {
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
-                yWarning() << "eo MotionControl using raw data from encoders! Be careful. \n" <<
-                              "\t  DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! See 'useRawEncoderData' param in config file";
+            {
+                yWarning() << "embObjBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                getchar();
+            }
         }
     }
 
-//    yWarning() << "useRawEncoderData is " << useRawEncoderData;
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_limitedPWM = config.findGroup("GENERAL").find("useLimitedPWM");
+    if(use_limitedPWM.isNull())
+    {
+        _pwmIsLimited = false;
+    }
+    else
+    {
+        if(!use_limitedPWM.isBool())
+        {
+            _pwmIsLimited = false;
+        }
+        else
+        {
+            _pwmIsLimited = use_limitedPWM.asBool();
+        }
+    }
+
 
     // Saving User Friendly Id
     memset(_fId.name, 0x00, sizeof(_fId.name));
@@ -417,7 +621,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-    ImplementControlMode::initialize(_njoints, _axisMap);
+    ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 #ifdef IMPLEMENT_DEBUG_INTERFACE
@@ -427,6 +631,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementOpenLoopControl::initialize(_njoints, _axisMap);
+    ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -440,7 +646,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     _fId.handle  = (this);
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -495,10 +701,10 @@ bool embObjMotionControl::isEpManagedByBoard()
 }
 
 
-bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
-    for(j=0;j<njoints;j++)
+    for(j=0; j<_njoints; j++)
     {
         char tmp[80];
         sprintf(tmp, "Pid%d", j);
@@ -523,10 +729,10 @@ bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, int njo
     return true;
 }
 
-bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
-    for(j=0;j<njoints;j++)
+    for(j=0; j<_njoints; j++)
     {
         char tmp[80];
         sprintf(tmp, "TPid%d", j);
@@ -550,19 +756,48 @@ bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, int njo
     }
     return true;
 }
-bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, int njoints, Pid myPid[])
+bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
     Bottle xtmp;
-    xtmp = pidsGroup.findGroup("kp");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("kd");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("ki");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("maxInt");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("maxPwm");      if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("shift");       if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("ko");          if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("stictionUp");  if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    xtmp = pidsGroup.findGroup("stictionDwn"); if (xtmp.isNull()) return false; for (j=0;j<njoints;j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+
+    //optional PWM limit
+    if(_pwmIsLimited)
+    {   // check for value in the file
+        if (!extractGroup(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
+        {
+            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
+            return false;
+        }
+
+        fprintf(stderr,  "embObjMotionControl using LIMITED PWM!! \n");
+        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    }
+
+    //optional kff
+    xtmp = pidsGroup.findGroup("kff");
+    if (!xtmp.isNull())
+    {
+        if(xtmp.size() != _njoints+1)
+        {
+            printf("Found Pid kff parameter, but with icorrect number of entries, expected %d, got %d\n", _njoints, xtmp.size() -1);
+            return false;
+        }
+        for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+    }
+    else
+    {
+         for (j=0; j<_njoints; j++) myPid[j].kff = 0;
+    }
     return true;
 }
 
@@ -688,7 +923,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         if (posPidsGroup.isNull()==false)
         {
            yDebug()<< "Position Pids section found, new format";
-           if (!parsePidsGroup_NewFormat (posPidsGroup, _njoints, _pids))
+           if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
                yError() << "Position Pids section: error detected in parameters syntax";
                return false;
@@ -704,7 +939,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if (posPidsGroup2.isNull()==false)
             {
                 yDebug() << "Position Pids section found, old format";
-                parsePosPidsGroup_OldFormat (posPidsGroup2, _njoints, _pids);
+                parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
             }
             else
             {
@@ -712,7 +947,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 return false;
             }
         }
-
     }
 
 
@@ -723,7 +957,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         if (trqPidsGroup.isNull()==false)
         {
            yDebug()<<"Torque Pids section found, new format";
-           if (!parsePidsGroup_NewFormat (trqPidsGroup, _njoints, _tpids))
+           if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
                yError() << "Torque Pids section: error detected in parameters syntax";
                return false;
@@ -740,7 +974,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if (trqPidsGroup2.isNull()==false)
             {
                 yDebug() << "Torque Pids section found, old format";
-                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _njoints, _tpids))
+                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
                 {
                      yError() << "Torque Pids section: error detected in parameters syntax";
                      return false;
@@ -941,21 +1175,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
 bool embObjMotionControl::init()
 {
-    eOmn_ropsigcfg_command_t 	*ropsigcfgassign;
-    EOarray                     *array;
-    eOropSIGcfg_t               sigcfg;
+
     int                         old = 0;
     eOprotID32_t                protid;
 
-#ifdef _SETPOINT_TEST_
-    eoy_sys_Initialise(NULL, NULL, NULL);
-    int j, i;
-    //init mutex
-    for(j=0, i =0; j<  _njoints; j++, i++)
-    {
-        j_debug_data[i].mutex = Semaphore(1);
-    }
-#endif
 
 
 
@@ -996,43 +1219,38 @@ bool embObjMotionControl::init()
     //    fortunately the struct eOmn_ropsigcfg_command_t has field array as its first. thus the two pointers are the same.
     // the correct method is to build a struct eOmn_ropsigcfg_command_t, initialise it properly and then pass it to the function.    
 
-    #define NEWMODE
-    
-    #if     defined(NEWMODE)
-    
-    
-    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
-    
-    ropsigcfgassign = &theropsigcfgassigncommand;    
-    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it. 
-    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-    ropsigcfgassign->plustime   = 0;
-    ropsigcfgassign->plussign   = 0;
-    ropsigcfgassign->filler01   = 0;
-    ropsigcfgassign->signature  = 0;
-    
-    // ok, now we can fill array
-    
-    #else
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+#define NEWMODE
 
 
-    EOnv *nvRoot_ropsigcfgassign;
-    EOnv nv_ropsigcfgassign;
-    nvRoot_ropsigcfgassign = res->getNVhandler(protid_ropsigcfgassign, &nv_ropsigcfgassign);
 
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
 
-    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) nvRoot_ropsigcfgassign->ram;
-    array = (EOarray*) &ropsigcfgassign->array;
-    eo_array_Reset(array);
-    array->head.capacity = NUMOFROPSIGCFG;
-    array->head.itemsize = sizeof(eOropSIGcfg_t);
-    ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
 
-    #endif
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
+
+#else
+
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New((uint8_t)targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array); // reduction to uint8_t is ok
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;       
+
+#endif    
 
 
 
@@ -1062,7 +1280,8 @@ bool embObjMotionControl::init()
         // basterebbero jstatus__basic e jstatus__ofpid, ma la differenza tra questi due e il jstatus completo sono 4 byte, per ora non utilizzati.
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
         //    printf("\njointNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-        if(eo_prot_ID32dummy == protid)
+
+        if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
         {
             yError () << " NVID jointNVindex_jstatus not found for board " << _fId.boardNum  << " joint " << j;
         }
@@ -1082,9 +1301,10 @@ bool embObjMotionControl::init()
             break;
         }
 
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
         //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-        if(eo_prot_ID32dummy == protid)
+
+        if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
         {
             yError () << " NVID eoprot_tag_mc_motor_status not found for board " << _fId.boardNum << " joint " << j;
         }
@@ -1108,7 +1328,7 @@ bool embObjMotionControl::init()
             // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (21) value. If more are needed, send another package,
             // so wait some time to let ethManager send this package and then start again.
             // yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
-            if(!res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign)) // marco.accame: instead of ropsigcfgassign there was array
+            if(!res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig)) // marco.accame: instead of ropsigcfgassign there was array
             {
                 yError() << "while setting rop sig cfg";
             }
@@ -1123,7 +1343,7 @@ bool embObjMotionControl::init()
 #if     defined(NEWMODE)   
     if(0 != eo_array_Size(array))
     {   // there are still ropsigcfg to send
-        if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+        if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
         {
             yError() << "while setting rop sig cfg";
         }    
@@ -1219,7 +1439,8 @@ bool embObjMotionControl::init()
                 totConfigSize = 0;
             }
             protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-            if(eo_prot_ID32dummy == protid)
+
+            if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
             {
                 yError () << " NVID not found\n";
                 continue;
@@ -1247,16 +1468,20 @@ bool embObjMotionControl::configure_mais(void)
 
     uint8_t               maisnum   = 0;
     uint8_t               datarate  = 10;    //10 milli (like in icub_right_arm_safe.ini)  // type ok
-
+    
+    //#warning --> marcoaccame on 08may14: the control about mais being only in boards 2 and 4 is ... to be avoided. much better using the PROTOCOL section and see if mais is present.
 
     if((_fId.boardNum != 2) && (_fId.boardNum != 4))
     {
-        return true;//only board 2 and 4 have mais connected
+        return true; // only board 2 and 4 have mais connected
     }
     //set mais datarate = 1millisec
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-    if(eo_prot_ID32dummy == protid)
+    // marcoaccame on 08may14: eoprot_ID_get() does not verify if id is valid. use eoprot_id_isvalid() instead.
+
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
     {
         yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -1270,7 +1495,8 @@ bool embObjMotionControl::configure_mais(void)
     //set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-    if(eo_prot_ID32dummy == protid)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
     {
         yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -1286,7 +1512,7 @@ bool embObjMotionControl::configure_mais(void)
 
 bool embObjMotionControl::close()
 {
-    ImplementControlMode::uninitialize();
+    ImplementControlMode2::uninitialize();
     ImplementEncodersTimed::uninitialize();
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
@@ -1297,6 +1523,8 @@ bool embObjMotionControl::close()
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();
     ImplementPositionDirect::uninitialize();
+    ImplementOpenLoopControl::uninitialize();
+    ImplementInteractionMode::uninitialize();
     int ret = ethManager->releaseResource(_fId);
     res = NULL;
     if(ret == -1)
@@ -1371,9 +1599,20 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+    // fix to emulate behaviour pre-controlMode2
+    int mode;
+    getControlModeRaw(j, &mode);
+    if( mode != VOCAB_CM_POSITION_DIRECT &&
+        mode != VOCAB_CM_IDLE)
+    {
+        yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        setControlModeRaw(j, VOCAB_CM_POSITION_DIRECT);
+    }
+    #endif
+
     eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint;
-    uint16_t *prog = (uint16_t*) &setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
     setpoint.to.position.value = (eOmeas_position_t) ref;
@@ -1449,35 +1688,6 @@ bool embObjMotionControl::getErrorsRaw(double *errs)
     for(int j=0; j< _njoints; j++)
     {
         ret &= getErrorRaw(j, &errs[j]);
-    }
-    return ret;
-}
-
-bool embObjMotionControl::getOutputRaw(int j, double *out)
-{
-    bool ret = true;
-    eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
-    uint16_t size;
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
-    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
-    {
-        *out = (double) tmpJointStatus.output;
-    }
-    else
-    {
-        *out = 0;
-        ret = false;
-    }
-    return ret;
-}
-
-bool embObjMotionControl::getOutputsRaw(double *outs)
-{
-    bool ret = true;
-
-    for(int j=0; j< _njoints; j++)
-    {
-        ret &= getOutputRaw(j, &outs[j]);
     }
     return ret;
 }
@@ -1636,15 +1846,25 @@ bool embObjMotionControl::setVelocityModeRaw()
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    int index = j ;
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+    // fix to emulate behaviour pre-controlMode2
+    int mode;
+    getControlModeRaw(j, &mode);
+    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_VEL) && (mode != VOCAB_CM_IDLE))
+    {
+        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
+        setControlModeRaw(j, VOCAB_CM_VELOCITY);
+    }
+    #endif
+
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
 
     _command_speeds[j] = sp ;   // save internally the new value of speed.
 
     eOmc_setpoint_t setpoint;
     setpoint.type = eomc_setpoint_velocity;
-    setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[index];
-    setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[index];
+    setpoint.to.velocity.value =  (eOmeas_velocity_t) _command_speeds[j];
+    setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) _ref_accs[j];
 
 
     if(! res->addSetMessage(protid, (uint8_t *) &setpoint))
@@ -1662,7 +1882,7 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 
     setpoint.type = eomc_setpoint_velocity;
 
-    for(int j=0; j< _njoints; j++)
+    for(int j=0; j<_njoints; j++)
     {
         ret = velocityMoveRaw(j, sp[j]) && ret;
     }
@@ -1844,13 +2064,21 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     */
 #endif
 
+    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+    // fix to emulate behaviour pre-controlMode2
+    int mode;
+    getControlModeRaw(j, &mode);
+    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_POS) && (mode != VOCAB_CM_IDLE))
+    {
+        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << j;
+        setControlModeRaw(j, VOCAB_CM_POSITION);
+    }
+    #endif
+
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-
-
     _ref_positions[j] = ref;   // save internally the new value of pos.
 
     eOmc_setpoint_t setpoint;
-    uint16_t *prog = (uint16_t*) &setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
     setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[j];
@@ -2211,6 +2439,7 @@ bool embObjMotionControl::setPositionModeRaw(int j)
 
 bool embObjMotionControl::setVelocityModeRaw(int j)
 {
+    yTrace() << j;
     eOmc_controlmode_command_t    val = eomc_controlmode_cmd_velocity;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
 
@@ -2225,23 +2454,20 @@ bool embObjMotionControl::setTorqueModeRaw(int j)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
 
     return res->addSetMessage(protid, (uint8_t*) &val);
-
 }
 
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
-    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_pos;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
+    ret = setControlModeRaw(j, VOCAB_CM_POSITION) && ret;
+    return ret;
 }
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_impedance_vel;
-
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
+    ret = setControlModeRaw(j, VOCAB_CM_VELOCITY) && ret;
+    return ret;
 }
 
 bool embObjMotionControl::setOpenLoopModeRaw(int j)
@@ -2258,69 +2484,207 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
     eOmc_joint_status_basic_t     status;
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_basic);
-    bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
+    if(! res->readBufferedValue(protid, (uint8_t *)&status, &size))
+        return false;
 
     eOmc_controlmode_t type = (eOmc_controlmode_t) status.controlmodestatus;
 
-    switch(type)
+    *v = controlModeStatusConvert_embObj2yarp(type);
+    return true;
+}
+
+// IControl Mode 2
+bool embObjMotionControl::getControlModesRaw(int* v)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
     {
-    case eomc_controlmode_idle:
-        *v=VOCAB_CM_IDLE;
-        //	        printf("IDLE\n");
-        break;
+        ret = ret && getControlModeRaw(j, &v[j]);
+    }
+    return ret;
+}
 
-    case eomc_controlmode_position:
-        *v=VOCAB_CM_POSITION;
-        //	        printf("POSITION\n");
-        break;
+bool embObjMotionControl::getControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    bool ret = true;
+    for(int j=0; j< n_joint; j++)
+    {
+        ret = ret && getControlModeRaw(joints[j], &modes[j]);
+    }
+    return ret;
+}
 
-    case eomc_controlmode_velocity:
-        *v=VOCAB_CM_VELOCITY;
-        //	        printf("VELOCITY\n");
-        break;
+bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes)
+{
+    std::vector<eoThreadEntry *>  tt;
+    eOmc_joint_status_basic_t     status;
+    tt.resize(n_joint);
 
-    case eomc_controlmode_torque:
-        *v=VOCAB_CM_TORQUE;
-        //	        printf("TORQUE\n");
-        break;
+    eOprotID32_t *protid = new eOprotID32_t[n_joint];
 
-    case eomc_controlmode_calib:
-        *v=VOCAB_CM_UNKNOWN;
-        //			printf("CALIBRATING\n");
-        break;
+    // Sign up for waiting the replies
+    for(int idx=0; idx<n_joint; idx++)
+    {
+        protid[idx] = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, joints[idx], eoprot_tag_mc_joint_status_basic);
+        tt[idx] = appendWaitRequest(joints[idx], protid[idx]);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+        tt[idx]->setPending(1);  // 1 (not n_joint) because it is related to the specific variable
 
-    case eomc_controlmode_impedance_pos:
-        *v=VOCAB_CM_IMPEDANCE_POS;
-        //	        printf("IMPEDANCE_POS\n");
-        break;
+        if(!res->addGetMessage(protid[idx]) )
+        {
+            yError() << "Can't send getStatusBasic_withWait request for board " << _fId.boardNum << "joint " << joints[idx];
+            return false;
+        }
+    }
 
-    case eomc_controlmode_impedance_vel:
-        *v=VOCAB_CM_IMPEDANCE_VEL;
-        //	        printf("IMPEDANCE_VEL\n");
-        break;
+    // wait for data to arrive and read it when available
+    for(int idx=0; idx<n_joint; idx++)
+    {
+        // wait here
+        if(-1 == tt[idx]->synch() )
+        {
+            int threadId;
+            yError () << "getStatusBasic_withWait timed out for board "<< _fId.boardNum << " joint " << joints[idx];
 
-    case eomc_controlmode_openloop:
-        *v=VOCAB_CM_OPENLOOP;
-        //	        printf("VOCAB_CM_OPENLOOP\n");
-        break;
-
-    default:
-        *v=VOCAB_CM_UNKNOWN;
-        //	        printf("UNKNOWN (0x%04X)\n", status.controlmodestatus);
-        break;
+            if(requestQueue->threadPool->getId(&threadId))
+                requestQueue->cleanTimeouts(threadId);
+            return false;
+        }
+        else
+        {
+            // Get the value
+            uint16_t size;
+            res->readBufferedValue(protid[idx], (uint8_t*)&status, &size);
+            _modes[idx] = status.controlmodestatus;
+        }
     }
     return true;
 }
 
-bool embObjMotionControl::getControlModesRaw(int* v)
+
+bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 {
-    bool ret = true;
-    for(int j=0, index=0; j< _njoints; j++, index++)
+    eOenum08_t      valSet;
+    eOenum08_t      valGot;
+
+    //yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+
+    if(!controlModeCommandConvert_yarp2embObj(_mode, valSet) )
     {
-        ret &= getControlModeRaw(j, &v[index]);
+        yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+        return false;
     }
-    return ret;
+
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
+    if(! res->addSetMessage(protid, (uint8_t*) &valSet) )
+    {
+        yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+        return false;
+    }
+
+//    // ask back the controlMode to verify everithing went correctly (boards can be in fault)
+//    yarp::os::Time::delay(0.1);
+//    bool ret = getStatusBasic_withWait(1, &j, &valGot);
+
+//    printf("Got %s  (%d)\n", Vocab::decode(controlModeStatusConvert_embObj2yarp(valGot)).c_str(), controlModeStatusConvert_embObj2yarp(valGot) );
+//    printf("***********************************************************************\n");
+
+//    if( (!ret) || (valGot != valSet) )
+//    {
+//        yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+//        return false;
+//    }
+
+    yarp::os::Time::delay(0.010);
+    return true;
 }
+
+bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    eOenum08_t          *valSet = new eOenum08_t[n_joint];
+    eOenum08_t          *valGot = new eOenum08_t[n_joint];
+
+    //yDebug() << "SetControlMode: received setControlMode (GROUP) command for board " << _fId.boardNum << " mode " << Vocab::decode(modes[0]);
+
+    for(int idx=0; idx<n_joint; idx++)
+    {
+        if(!controlModeCommandConvert_yarp2embObj(modes[idx], valSet[idx]) )
+        {
+            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            return false;
+        }
+
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[idx], eoprot_tag_mc_joint_cmmnds_controlmode);
+        if(! res->addSetMessage(protid, (uint8_t*) &valSet[idx]) )
+        {
+            yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            return false;
+        }
+    }
+
+//    // ask back the controlMode to verify everithing went correctly (boards can be in fault)
+//    if(!getStatusBasic_withWait(n_joint, joints, valGot) )
+//    {
+//        yError() << "setControlModeRaw failed while checking if the new controlmode was correctly set";
+//        return false;
+//    }
+
+//    for(int idx=0; idx<n_joint; idx++)
+//    {
+//        if( valGot[idx] != (eOmc_controlmode_t) valSet[idx])
+//        {
+//            yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << joints[idx] << " because of mode mismatching \n\tSet " << Vocab::decode(modes[idx]) << " Got " << Vocab::decode(controlModeStatusConvert_embObj2yarp(valGot[idx]));
+//            return false;
+//        }
+//    }
+
+    yarp::os::Time::delay(0.010);
+    return true;
+}
+
+bool embObjMotionControl::setControlModesRaw(int *modes)
+{
+    int  *jointVector = new int[_njoints];
+
+    eOenum08_t          *valSet = new eOenum08_t[_njoints];
+    eOenum08_t          *valGot = new eOenum08_t[_njoints];
+
+    for(int j=0; j<_njoints; j++)
+    {
+        jointVector[j] = j;
+        if(!controlModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
+        {
+            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            return false;
+        }
+
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
+        if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
+        {
+            yError() << "setControlModesRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            return false;
+        }
+    }
+
+//    // ask back the controlMode to verify everything went correctly (boards can be in fault)
+//    if(!getStatusBasic_withWait(_njoints, jointVector, valGot) )
+//    {
+//        yError() << "setControlModeRaw failed while checking if the new controlmode was correctly set";
+//        return false;
+//    }
+
+//    for(int j=0; j<_njoints; j++)
+//    {
+//        if( valGot[j] != (eOmc_controlmode_t)valSet[j])
+//        {
+//            yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << j << " because of mode mismatching \n\tSet " << Vocab::decode(modes[j]) << " Got " << Vocab::decode(controlModeStatusConvert_embObj2yarp(valGot[j]));
+//            return false;
+//        }
+//    }
+
+    yarp::os::Time::delay(0.010);
+    return true;
+}
+
 
 //////////////////////// BEGIN EncoderInterface
 
@@ -2514,20 +2878,56 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 //	Debug interface
 //----------------------------------------------\\
 
-bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   { }
-bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)  { }
-bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)  { }
-bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { }
-bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         { }
-bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        { }
-bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)        { }
-bool embObjMotionControl::getRotorPositionsRaw        (double* value)               { }
-bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)        { }
-bool embObjMotionControl::getRotorSpeedsRaw           (double* value)               { }
-bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { }
-bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { }
-bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { }
-bool embObjMotionControl::getJointPositionsRaw        (double* value)               { }
+bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   {       return NOT_YET_IMPLEMENTED("setParameterRaw"); }
+bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)  {       return NOT_YET_IMPLEMENTED("getParameterRaw"); }
+bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)  { return NOT_YET_IMPLEMENTED("getDebugParameterRaw"); }
+bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { return NOT_YET_IMPLEMENTED("setDebugParameterRaw"); }
+bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         {       return NOT_YET_IMPLEMENTED("setDebugReferencePositionRaw"); }
+bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        {       return NOT_YET_IMPLEMENTED("getDebugReferencePositionRaw");}
+
+bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+    uint16_t size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+
+    *value = (double) tmpMotorStatus.position;
+    return true;
+}
+
+bool embObjMotionControl::getRotorPositionsRaw        (double* value)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+        ret = getRotorPositionRaw(j, &value[j]) && ret;
+
+    return ret;
+}
+
+bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+    uint16_t size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+
+    *value = (double) tmpMotorStatus.velocity;
+    return true;
+}
+
+bool embObjMotionControl::getRotorSpeedsRaw           (double* value)
+{
+    bool ret = true;
+     for(int j=0; j< _njoints; j++)
+         ret = getRotorSpeedRaw(j, &value[j]) && ret;
+
+     return ret;
+}
+bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { return NOT_YET_IMPLEMENTED("getRotorAccelerationRaw");  }
+bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");  }
+bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { return NOT_YET_IMPLEMENTED("getJointPositionRaw");  }
+bool embObjMotionControl::getJointPositionsRaw        (double* value)               { return NOT_YET_IMPLEMENTED("getJointPositionsRaw");  }
 #endif
 
 // Limit interface
@@ -2626,9 +3026,9 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
     return ret;
 }
 
-bool embObjMotionControl::updateMeasure(int j, double &fTorque)
+bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorque)
 {
-
+    int j = _axisMap[userLevel_jointNumber];
 	double NEWTON2SCALE=32767.0/_maxTorque[j];
 
 	eOmeas_torque_t meas_torque = 0;
@@ -2669,7 +3069,7 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-    double NEWTON2SCALE=32768.0/_maxTorque[j];
+    double NEWTON2SCALE=32767.0/_maxTorque[j];
     eOmeas_torque_t meas_torque;
     uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
@@ -3064,8 +3464,28 @@ bool embObjMotionControl::getVelPidsRaw(Pid *pids)
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
-
 // PositionDirect Interface
+bool embObjMotionControl::setPositionDirectModeRaw()
+{
+    bool ret = true;
+
+    eOmc_controlmode_command_t val = eomc_controlmode_cmd_direct;
+    for(int j=0; j< _njoints; j++)
+    {
+       if(!_calibrated[j])
+       {
+            yWarning() << "called position direct mode on a non calibrated axes... skipping";
+            return false;
+       }
+
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
+
+        ret &= res->addSetMessage(protid, (uint8_t*) &val);
+    }
+
+    return ret;
+}
+
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocit as well as positionMove
@@ -3091,5 +3511,316 @@ bool embObjMotionControl::setPositionsRaw(const double *refs)
 }
 
 
-// eof
 
+// InteractionMode
+
+
+bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes)
+{
+    std::vector<eoThreadEntry *>tt;
+    tt.resize(n_joint);
+
+    eOprotID32_t *protid = new eOprotID32_t[n_joint];
+
+    // Sign up for waiting the replies
+    for(int idx=0; idx<n_joint; idx++)
+    {
+        protid[idx] = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, joints[idx], eoprot_tag_mc_joint_status_interactionmodestatus);
+        tt[idx] = appendWaitRequest(joints[idx], protid[idx]);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+        tt[idx]->setPending(1);  // 1 (not n_joint) because it is related to the specific variable
+
+        if(!res->addGetMessage(protid[idx]) )
+        {
+            yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNum << "joint " << joints[idx];
+            return false;
+        }
+    }
+
+    // wait for data to arrive and read it when available
+    for(int idx=0; idx<n_joint; idx++)
+    {
+        // wait here
+        if(-1 == tt[idx]->synch() )
+        {
+            int threadId;
+            yError () << "getInteractionMode_withWait timed out for board "<< _fId.boardNum << " joint " << joints[idx];
+
+            if(requestQueue->threadPool->getId(&threadId))
+                requestQueue->cleanTimeouts(threadId);
+            return false;
+        }
+        else
+        {
+            yWarning () << "getInteractionMode_withWait happily got reply board "<< _fId.boardNum << " joint " << joints[idx];
+
+            // Get the value
+            uint16_t size;
+            res->readBufferedValue(protid[idx], (uint8_t*)&_modes[idx], &size);
+        }
+    }
+    return true;
+}
+
+bool embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode)
+{
+    uint16_t     size;
+    eOenum08_t   interactionmodestatus;
+//    std::cout << "eoMC getInteractionModeRaw SINGLE joint " << j << std::endl;
+
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_interactionmodestatus);
+    if(! res->readBufferedValue(protid, (uint8_t *)&interactionmodestatus, &size)) // it is broadcasted toghether with the jointStatus full
+        return false;
+
+    int tmp = (int) *_mode;
+    if(!interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
+        return false;
+
+    *_mode = (yarp::dev::InteractionModeEnum) tmp;
+    return true;
+}
+
+bool embObjMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+//    std::cout << "eoMC getInteractionModeRaw GROUP joints" << std::endl;
+    bool ret = true;
+    for(int idx=0; idx<n_joints; idx++)
+    {
+        ret =  getInteractionModeRaw(joints[idx], &modes[idx]);
+        std::cout << " joint " <<  joints[idx] << " says " << yarp::os::Vocab::decode(modes[idx]) << std::endl;
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+//    std::cout << "eoMC getInteractionModeRaw ALL joints" << std::endl;
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+        ret = ret && getInteractionModeRaw(j, &modes[j]);
+    return ret;
+}
+
+bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode)
+{
+    eOenum08_t      valSet;
+    eOenum08_t      valGot;
+
+//    yDebug() << "received setInteractionModeRaw command (SINGLE) for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+
+    if(!interactionModeCommandConvert_yarp2embObj(_mode, valSet) )
+    {
+        yError() << "setInteractionModeRaw: received unknown mode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+    }
+
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
+
+    if(! res->addSetMessage(protid, (uint8_t*) &valSet) )
+    {
+        yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+        return false;
+    }
+
+//    // ask back the controlMode to verify everything went correctly (some board could not support compliant mode)
+//    yarp::os::Time::delay(0.1);
+//    bool ret = getInteractionMode_withWait(1, &j, &valGot);
+
+//    if( (!ret) || (valGot != valSet))
+//    {
+//        yError() << "check of setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(_mode);
+//        return false;
+//    }
+    return true;
+}
+
+bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+//    std::cout << "setInteractionModeRaw GROUP " << std::endl;
+
+    int  *jointVector = new int[n_joints];
+
+    eOenum08_t  *valSet = new eOenum08_t [n_joints];
+    eOenum08_t  *valGot = new eOenum08_t [n_joints];
+
+    for(int j=0; j<n_joints; j++)
+    {
+        if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
+        {
+            yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
+            return false;
+        }
+
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
+        if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
+        {
+            yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            return false;
+        }
+    }
+
+//    // ask back the controlMode to verify everything went correctly (some board could not support compliant mode)
+//    if(!getInteractionMode_withWait(n_joints, joints, valGot) )
+//    {
+//        yError() << "setInteractionModeRaw failed while checking if the new interactionMode was correctly set";
+//        return false;
+//    }
+
+//    for(int j=0; j<n_joints; j++)
+//    {
+//        if( valGot[j] != valSet[j])
+//        {
+//            int tmp;
+//            if(interactionModeStatusConvert_embObj2yarp(valGot[j], tmp) )
+//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+//                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
+//            else
+//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+//                         << Vocab::decode(modes[j]) << " Got an unknown value!";
+//            return false;
+//        }
+//    }
+
+
+    return true;
+}
+
+bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    int  *jointVector = new int[_njoints];
+
+    eOenum08_t     *valSet = new eOenum08_t [_njoints];
+    eOenum08_t     *valGot = new eOenum08_t [_njoints];
+
+    for(int j=0; j<_njoints; j++)
+    {
+        jointVector[j] = j;
+        if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
+        {
+            yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            return false;
+        }
+
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
+        if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
+        {
+            yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            return false;
+        }
+    }
+
+//    // ask back the controlMode to verify everything went correctly (some board could not support compliant mode)
+//    if(!getInteractionMode_withWait(_njoints, jointVector, valGot) )
+//    {
+//        yError() << "setInteractionModeRaw failed while checking if the new interactionMode was correctly set";
+//        return false;
+//    }
+
+//    for(int j=0; j<_njoints; j++)
+//    {
+//        if( valGot[j] != valSet[j])
+//        {
+//            int tmp;
+//            if(interactionModeStatusConvert_embObj2yarp(valGot[j], tmp) )
+//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+//                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
+//            else
+//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+//                         << Vocab::decode(modes[j]) << " Got an unknown value!";            return false;
+//        }
+//    }
+
+    return true;
+}
+
+
+//
+// OPENLOOP interface
+//
+bool embObjMotionControl::setOpenLoopModeRaw()
+{
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+        ret = setOpenLoopModeRaw(j) && ret;
+
+    return ret;
+}
+
+bool embObjMotionControl::setRefOutputRaw(int j, double v)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
+
+    eOmc_setpoint_t setpoint;
+
+    setpoint.type = (eOenum08_t) eomc_setpoint_current;
+    setpoint.to.current.value =  (eOmeas_current_t) v;
+
+    return res->addSetMessage(protid, (uint8_t*) &setpoint);
+}
+
+bool embObjMotionControl::setRefOutputsRaw(const double *v)
+{
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+    {
+        ret = ret && setRefOutputRaw(j, v[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefOutputRaw(int j, double *out)
+{
+    bool ret = true;
+    eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
+    uint16_t size;
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
+    {
+        *out = (double) tmpJointStatus.reference;
+    }
+    else
+    {
+        *out = 0;
+        ret = false;
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefOutputsRaw(double *outs)
+{
+    bool ret = true;
+    for(int j=0; j<_njoints; j++)
+    {
+        ret = ret && getRefOutputRaw(j, &outs[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getOutputRaw(int j, double *out)
+{
+    bool ret = true;
+    eOprotID32_t protoId = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
+    uint16_t size;
+    eOmc_joint_status_ofpid_t  tmpJointStatus;
+    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
+    {
+        *out = (double) tmpJointStatus.output;
+    }
+    else
+    {
+        *out = 0;
+        ret = false;
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getOutputsRaw(double *outs)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getOutputRaw(j, &outs[j]);
+    }
+    return ret;
+}
+
+
+// eof

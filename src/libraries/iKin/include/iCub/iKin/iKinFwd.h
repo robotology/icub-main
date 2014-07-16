@@ -33,7 +33,11 @@
  *   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
  *  
  * \note <b>If you're going to use iKin for your work, please
- *       quote it within any resulting publication</b>.
+ *       quote it within any resulting publication</b>: <i>
+ *       Pattacini U., Modular Cartesian Controllers for
+ *       Humanoid Robots: Design and Implementation on the iCub,
+ *       Ph.D. Dissertation, RBCS, Istituto Italiano di
+ *       Tecnologia, 2011</i>.
  *  
  * \author Ugo Pattacini 
  *  
@@ -281,10 +285,10 @@ public:
 
     /**
     * Same as getH() with specification of new joint angle position. 
-    * @see getH()
     * @param _Ang is the new joint angle position. 
     * @param c_override.
-    * @return a reference to H.
+    * @return a reference to H. 
+    * @see getH 
     */
     yarp::sig::Matrix getH(double _Ang, bool c_override=false);
 
@@ -449,7 +453,7 @@ public:
     /**
     * Adds a Link at the bottom of the Chain.
     * @param l is the Link to be added. 
-    * @see operator<<()
+    * @see operator<<
     */
     void pushLink(iKinLink &l);
 
@@ -771,7 +775,7 @@ public:
     /**
     * Prepares computation for a successive call to 
     * fastHessian_ij(). 
-    * @see fastHessian_ij()
+    * @see fastHessian_ij
     */
     void prepareForHessian();
 
@@ -782,14 +786,14 @@ public:
     * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
     * <i>Fast Version</i>: to be used in conjunction with 
     * prepareForHessian(). 
-    * @note It is advisable to use this version when successive 
-    * computations with different indexes values are needed. 
-    * @see prepareForHessian()
     * @param i is the index of the first DOF. 
     * @param j is the index of the second DOF.
     * @return the 6x1 vector \f$ 
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
+    * @note It is advisable to use this version when successive 
+    * computations with different indexes values are needed. 
+    * @see prepareForHessian
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j);
 
@@ -813,9 +817,9 @@ public:
     /**
     * Prepares computation for a successive call to 
     * fastHessian_ij() (link version). 
-    * @see fastHessian_ij(lnk,...) 
     * @param lnk is the Link number up to which consider the 
     *            computation.
+    * @see fastHessian_ij 
     */
     void prepareForHessian(const unsigned int lnk);
 
@@ -827,9 +831,6 @@ public:
     * links. 
     * <i>Fast Version</i>: to be used in conjunction with 
     * prepareForHessian(lnk). 
-    * @note It is advisable to use this version when successive 
-    * computations with different indexes values are needed. 
-    * @see prepareForHessian() 
     * @param lnk is the Link number up to which consider the 
     *            computation. 
     * @param i is the index of the first link. 
@@ -837,6 +838,9 @@ public:
     * @return the 6x1 vector \f$ 
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
+    * @note It is advisable to use this version when successive 
+    * computations with different indexes values are needed. 
+    * @see prepareForHessian
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int lnk, const unsigned int i,
                                      const unsigned int j);
@@ -927,7 +931,7 @@ public:
     * Creates a new Limb from a list of properties wherein links 
     * parameters are specified. 
     * @param options is the list of links properties. 
-    * @see fromLinksProperties()
+    * @see fromLinksProperties
     */
     iKinLimb(const yarp::os::Property &options);
 
@@ -1276,6 +1280,40 @@ public:
     * @param eye is the Eye to be copied.
     */
     iCubEyeNeckRef(const iCubEyeNeckRef &eye);
+};
+
+
+/**
+* \ingroup iKinFwd
+*
+* A class for describing the kinematic of the straight line
+* coming out from the point located between the eyes. 
+*/
+class iCubHeadCenter : public iCubEye
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubHeadCenter();
+
+    /**
+    * Constructor. 
+    * @param _type is a string to discriminate between "left" and 
+    *              "right" eye. Further available options are
+    *              "[left|right]_v[1|2]".
+    */
+    iCubHeadCenter(const std::string &_type);
+
+    /**
+    * Creates a new iCubHeadCenter from an already existing 
+    * iCubHeadCenter object. 
+    * @param head is the iCubHeadCenter object to be copied.
+    */
+    iCubHeadCenter(const iCubHeadCenter &head);
 };
 
 

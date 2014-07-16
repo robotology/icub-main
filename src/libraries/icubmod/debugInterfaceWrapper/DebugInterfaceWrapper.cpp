@@ -47,12 +47,12 @@ bool DebugInterfaceWrapper::open(Searchable& config)
     Property prop;
     prop.fromString(config.toString().c_str());
 
-    std::cout << "DebugInterface Wrapper params are \n\t" << config.toString().c_str();
+//    std::cout << "DebugInterface Wrapper params are \n\t" << config.toString().c_str();
     _verbose = (prop.check("verbose","if present, give detailed output"));
     if (_verbose)
         cout<<"running with verbose output\n";
 
-    std::cout<<"Using DebugInterfaceWrapper\n";
+//    std::cout<<"Using DebugInterfaceWrapper\n";
     if (prop.check("subdevice", "Do I need one?"))
     {
         std::cout << "\nFound " << prop.find("subdevice").asString() << " subdevice, opening it\n";
@@ -179,10 +179,10 @@ bool DebugInterfaceWrapper::openDeferredAttach(Property& prop)
             return false;
         }
 
-        for(int j = wBase; j <= wTop; j++)
+        for(int wj = wBase, devj=base_device; wj <= wTop; wj++, devj++)
         {
-            device.lut[j].deviceEntry = k;
-            device.lut[j].deviceJoint = base_device + j;
+            device.lut[wj].deviceEntry = k;
+            device.lut[wj].deviceJoint = devj;
         }
 
         totalJ += axes;
@@ -433,7 +433,6 @@ bool DebugInterfaceWrapper::getRotorSpeed(int j, double *t)
 bool DebugInterfaceWrapper::getRotorSpeeds(double *t)
 {
     bool ret=true;
-    std::cout << " \n\nDebugInterfaceWrapper::getRotorSpeeds tutti i giunti " << std::endl;
 
     for(int j=0; j<controlledJoints; j++)
     {

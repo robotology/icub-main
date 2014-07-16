@@ -33,7 +33,7 @@
  * The task to be solved is:
  *
  * \f[
- * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\frac{1}{2}\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\frac{1}{2}\left(\mathbf{q}_r-\mathbf{q}\right)^{\top}\mathit{W}_r\left(\mathbf{q}_r-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
+ * \mathbf{q}=\arg\min_{\mathbf{q}\in R^{n} }\left(\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\left(\mathbf{q}_r-\mathbf{q}\right)^{\top}\mathit{W}_r\left(\mathbf{q}_r-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
  * \f]
  *
  * Where the solution \f$ \mathbf{q} \f$ is the joints vector with n components (depending
@@ -116,6 +116,12 @@
  *  
  * \b pose request: example [set] [pose] [full]/[xyz], [get] 
  *    [pose].
+ *  
+ * \b pose priority request: example [set] [prio] [xyz]/[ang], 
+ *    [get] [prio]. For example, setting priority to [ang]
+ *    allows considering the reaching in orientation as a
+ *    constraint while reaching in position is handled as an
+ *    objective.
  *  
  * \b mode request: example [set] [mode] [cont]/[shot], [get] 
  *    [mode].
@@ -399,8 +405,8 @@ protected:
     void   fillDOFInfo(yarp::os::Bottle &reply);
     double getNorm(const yarp::sig::Vector &v, const std::string &typ);    
     void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
-    void   printInfo(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q,
-                     const double t);    
+    void   printInfo(const std::string &typ, const yarp::sig::Vector &xd, const yarp::sig::Vector &x,
+                     const yarp::sig::Vector &q, const double t);    
 
     virtual void prepareJointsRestTask();
     virtual void respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);

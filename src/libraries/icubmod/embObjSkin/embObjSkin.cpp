@@ -279,7 +279,6 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
     patchInfoList.clear();
     patchInfoList.resize(numOfPatches);
-
     for(int j=1; j<numOfPatches+1; j++)
     {
         int id = bPatchList.get(j).asInt();
@@ -327,6 +326,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 //    yError() << "totalCardsNum=" << totalCardsNum;
 //    for(int i=0; i<patchInfoList.size(); i++)
 //    {
+//        yError() << "*patchInfoList[" << i << "]: patch=" << patchInfoList[i].idPatch << "indexNv=" << patchInfoList[i].indexNv;
 //        for(int j=0; j<patchInfoList[i].cardAddrList.size(); j++)
 //        {
 //            yError() << " elem num " << j << "of patch " <<patchInfoList[i].idPatch << "is " << patchInfoList[i].cardAddrList[j];
@@ -446,6 +446,13 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     int      port;
 
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjSkin: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
+
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
@@ -504,7 +511,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -530,6 +537,8 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     if(!init())
         return false;
+    /*Following delay is necessary in order to give enough time to skin boards to configure all its triangles*/
+    Time::delay(0.5);
 
     if(!initWithSpecialConfig(config))
         return false;
@@ -668,10 +677,7 @@ bool EmbObjSkin::init()
     int j = 0;
 
     EOnv                        *cnv;
-    eOmn_ropsigcfg_command_t    *ropsigcfgassign;
-    EOarray                     *array;
-    eOropSIGcfg_t               sigcfg;
-    EOnv                        *nvRoot;
+    
   
     eOprotID32_t                protoid;
 
@@ -679,43 +685,38 @@ bool EmbObjSkin::init()
     //	config regulars
     //
 
-    #define NEWMODE
+#define NEWMODE
     
-    #if     defined(NEWMODE)
 
-    eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
-    
-    
-    eOmn_ropsigcfg_command_t 	theropsigcfgassigncommand;      // the ram to use.
-    
-    eOprotID32_t protid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);     // the id
-    
-    ropsigcfgassign = &theropsigcfgassigncommand;    
-    array           = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize. it clears it. 
-    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-    ropsigcfgassign->plustime   = 0;
-    ropsigcfgassign->plussign   = 0;
-    ropsigcfgassign->filler01   = 0;
-    ropsigcfgassign->signature  = 0;
-    
-    // ok, now we can fill array
-    
-    #else
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
 
-    EOnv                        nvtmp;
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
 
-    EOnv nvtmp_ropsigcfgassign;
-    eOprotID32_t protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;         
 
-    cnv = res->getNVhandler(protoid_ropsigcfgassign, &nvtmp_ropsigcfgassign);
-    ropsigcfgassign = (eOmn_ropsigcfg_command_t*) cnv->ram;
-    array = (EOarray*) &ropsigcfgassign->array;
-    eo_array_Reset(array);
-    array->head.capacity = NUMOFROPSIGCFG;
-    array->head.itemsize = sizeof(eOropSIGcfg_t);
-    ropsigcfgassign->cmmnd = ropsigcfg_cmd_append;
+#else
 
-    #endif
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;
+
+#endif    
+
 
 
 
@@ -727,7 +728,7 @@ bool EmbObjSkin::init()
     }
 
     // Send message
-    if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+    if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
     {
         yError() <<"skin board "<< _fId.boardNum << "while setting rop sig cfg";
     }
@@ -860,6 +861,8 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
                 if(patchInfoList[p].cardAddrList[cId_index] == cardAddr)
                 {
                     mtbId = cId_index;
+                    if(numOfPatches==2 && p==0)
+                        mtbId +=  patchInfoList[1].cardAddrList.size(); //add max num of boards on patch number 2 because they are sorted in decreasing order by can addr
                     break;
                 }
             }

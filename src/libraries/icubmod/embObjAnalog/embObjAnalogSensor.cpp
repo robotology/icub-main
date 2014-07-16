@@ -215,6 +215,12 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     ACE_UINT16      port;
     bool            ret;
 
+    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
+    if(groupProtocol.isNull())
+    {
+        yWarning() << "embObjAnalogSensor: Can't find PROTOCOL group in config files ... using max capabilities";
+        //return false;
+    }
 
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
@@ -266,7 +272,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(&_fId);
+    res = ethManager->requestResource(groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -403,7 +409,8 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     // set mais datarate = 1millisec
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
-    if(eo_prot_ID32dummy == protoid)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
         yError () << " NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -417,7 +424,8 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     //set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-    if(eo_prot_ID32dummy == protoid)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
         yError () << "NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
         return false;
@@ -458,7 +466,8 @@ bool embObjAnalogSensor::getFullscaleValues()
     eo_array_New(6, 2, &fullscale_values);
 
     eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
-    if(eo_prot_ID32dummy == protoid_fullscale)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
         yError() << "nvid not found";
         
     // now we impose that the value of the EOnv described by eoprot_tag_as_strain_status_fullscale is what in fullscale_values.
@@ -485,7 +494,8 @@ bool embObjAnalogSensor::getFullscaleValues()
      or better, just check that initalization has been done as expected, i.e. initial size is zero.
 */
      eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
-    if(eo_prot_ID32dummy == protoid_fullscale)
+
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
         yError() << "nvid not found";
 
     p_tmpNV = res->getNVhandler(protoid_fullscale, &tmpNV);
@@ -584,24 +594,38 @@ bool embObjAnalogSensor::init()
     _fId.ep = eoprot_endpoint_analogsensors;
 
     // configure the remote board to regularly send some variables
-    eOmn_ropsigcfg_command_t  theramofropsigcfgassign = {0};    // the ram of the command
-    eOmn_ropsigcfg_command_t  *ropsigcfgassign;                 // pointer to the ram. we use thei variable
-    eOprotID32_t protoid_ropsigcfgassign;                       // the id 
-    eOropSIGcfg_t             sigcfg = {0};                     // struct for the single element to be signalled
-    EOarray                   *array;                           // array containing nvids to be signalled. it must point to the ram
 
+#define NEW_MN_COMMANDS
 
+#if     defined(EOPROT_USE_MN_VERSION_1_0)
 
-    ropsigcfgassign = &theramofropsigcfgassign;
+    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
+    eOropSIGcfg_t sigcfg                = {0};  
+    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
+    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
 
-    array = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &ropsigcfgassign->array);   // it uses memory from &ropsigcfgassign->array. it sets capacity, itemsize, and then it clears it. 
-    ropsigcfgassign->cmmnd      = ropsigcfg_cmd_append;
-    ropsigcfgassign->plustime   = 0;
-    ropsigcfgassign->plussign   = 0;
-    ropsigcfgassign->filler01   = 0;
-    ropsigcfgassign->signature  = 0;    
-       
-    protoid_ropsigcfgassign = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg );
+    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
+    cmdconfig.plustime              = 0;
+    cmdconfig.plussign              = 0;
+    cmdconfig.filler01              = 0;
+    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
+
+#else
+
+    eOmn_cmd_config_t cmdconfig     = {0};
+    eOropSIGcfg_t sigcfg            = {0};
+    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
+    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
+
+    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
+    cmdconfig.opcpar.plustime       = 0;
+    cmdconfig.opcpar.plussign       = 0;
+    cmdconfig.opcpar.dummy01        = 0;
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;
+
+#endif     
+
 
     // now we prepare the sigcfg we want to configure on the remote board
     eOprotID32_t protoid = eo_prot_ID32dummy;
@@ -626,7 +650,7 @@ bool embObjAnalogSensor::init()
         }
     }
 
-    if(eo_prot_ID32dummy == protoid)
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
         yError () << " EmbObj Analog Sensor NVID not found for EndPoint" << _fId.ep <<" at line " << __LINE__;
         return false;
@@ -642,7 +666,7 @@ bool embObjAnalogSensor::init()
     }
 
     // send message to configure the spontaneous signalling in the remote board
-    if( !res->addSetMessage(protoid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) )
+    if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
     {
         yError() << "while setting rop sig cfg";
         return false;

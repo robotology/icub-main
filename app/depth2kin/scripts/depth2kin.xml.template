@@ -12,7 +12,7 @@
         <module>
                 <name>SFM</name>
                 <parameters></parameters>
-                <node>cuda-node</node>
+                <node>gpu-node</node>
                 <tag>structFromMotion</tag>
         </module>
 

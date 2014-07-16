@@ -21,15 +21,6 @@
 #include "comanMotionControl.h"
 #include "Debug.h"
 
-//#undef yDebug()
-//#define yDebug() cout
-//
-//#undef yWarning()
-//#define yWarning() cout
-//
-//#undef yError()
-//#define yError() cout
-
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -67,7 +58,8 @@ Prendere l'indice corretto dell'array per il giunto j
 
 inline McBoard * comanMotionControl::getMCpointer(int j)
 {
-    return _mcs[jointTobId(j)];
+   // return _mcs[jointTobId(j)];
+    return (McBoard*)(_boards_ctrl->get_board(jointTobId(j)));
 }
 
 inline int comanMotionControl::bId2Joint(int j)
@@ -144,6 +136,7 @@ bool comanMotionControl::alloc(int nj)
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
     _controlMode = allocAndCheck<int>(nj);  // Cache the controlMode because boards doesn´t know
+    _interactionMode = allocAndCheck<int>(nj);  // Cache the interaction because boards doesn´t know
 
     // Store internal values of the boards so that we can change between different configuration
     motor_config_mask   = allocAndCheck<uint16_t>(nj);
@@ -162,12 +155,13 @@ bool comanMotionControl::alloc(int nj)
     ImplementEncodersTimed(this),
     ImplementPositionControl2(this),
     ImplementVelocityControl2(this),
-    ImplementControlMode(this),
+    ImplementControlMode2(this),
     ImplementDebugInterface(this),
     ImplementControlLimits2(this),
     ImplementTorqueControl(this),
     ImplementPositionDirect(this),
     ImplementImpedanceControl(this),
+    ImplementInteractionMode(this),
      _initialPidConfigFound(false),
     _mutex(1)
 {
@@ -205,6 +199,7 @@ bool comanMotionControl::alloc(int nj)
     // debug connection
 
     _controlMode = NULL;
+    _interactionMode = NULL;
 
     // Check status of joints
     _enabledPid		= NULL;
@@ -251,6 +246,7 @@ comanMotionControl::~comanMotionControl()
     checkAndDestroy<bool>(_calibrated);
 
     checkAndDestroy<int>(_controlMode);
+    checkAndDestroy<int>(_interactionMode);
 }
 
 
@@ -269,6 +265,7 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     for(int i=0; i< _njoints; i++)
     {
         _controlMode[i] = VOCAB_CM_IDLE;
+        _interactionMode[i] = VOCAB_IM_STIFF;
     }
 
 
@@ -280,7 +277,7 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<comanMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
-    ImplementControlMode::initialize(_njoints, _axisMap);
+    ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
@@ -291,7 +288,8 @@ bool comanMotionControl::open(yarp::os::Searchable &config)
         _encoderToAngle[i] = M_PI/180.0; //Conversion from [mNm/rad] to [Nm/deg]
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _encoderToAngle, _zeros, _newtonsToSensor);
     delete [] _encoderToAngle;
-
+   
+     ImplementInteractionMode::initialize(_njoints, _axisMap);
     _comanHandler = comanDevicesHandler::instance();
 
     if(_comanHandler == NULL)
@@ -420,6 +418,10 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
        else
        {
            yDebug() << "Position Pids successfully loaded\n";
+           std::cout  << "Using the following values for Position PID (joint 0)" << std::endl;
+           std::cout  << "\tkp is " << _trqPids[0].kp << std::endl;
+           std::cout  << "\tki is " << _trqPids[0].ki << std::endl;
+           std::cout  << "\tkd is " << _trqPids[0].kd << "\n" << std::endl;
            _initialPidConfigFound = true;
        }
     }
@@ -453,6 +455,8 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
             _trqPids[i].ki = 22.0;
             _trqPids[i].kd = 0.0;
         }
+        // Cannot send the values to the boards because they are not capable of storing paramerters for different configurations
+        std::cout  << "Using the following values for Torque Position PID (joint 0)" << std::endl;
         std::cout  << "\tkp is " << _trqPids[0].kp << std::endl;
         std::cout  << "\tki is " << _trqPids[0].ki << std::endl;
         std::cout  << "\tkd is " << _trqPids[0].kd << "\n" << std::endl;
@@ -483,6 +487,8 @@ bool comanMotionControl::fromConfig(yarp::os::Searchable &config)
             _impPosPids[i].ki = 0.0;
             _impPosPids[i].kd = 5000.0;
         }
+        // Cannot send the values to the boards because they are not capable of storing paramerters for different configurations
+        std::cout  << "Using the following values for Impedance Position PID (joint 0)" << std::endl;
         std::cout  << "\tkp is " << _impPosPids[0].kp << std::endl;
         std::cout  << "\tki is " << _impPosPids[0].ki << std::endl;
         std::cout  << "\tkd is " << _impPosPids[0].kd << "\n"  << std::endl;
@@ -581,6 +587,7 @@ bool comanMotionControl::init()
     for(int i=0; i< _njoints; i++)
     {
         _controlMode[i] = VOCAB_CM_IDLE;
+        _interactionMode[i] = VOCAB_IM_STIFF;
     }
 
     if(_initialPidConfigFound)
@@ -647,12 +654,13 @@ bool comanMotionControl::close()
     ImplementEncodersTimed::uninitialize();
     ImplementPositionControl2::uninitialize();
     ImplementPidControl<comanMotionControl, IPidControl>::uninitialize();
-    ImplementControlMode::uninitialize();
+    ImplementControlMode2::uninitialize();
     ImplementVelocityControl2::uninitialize();
     ImplementDebugInterface::uninitialize();
     ImplementControlLimits2::uninitialize();
     ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
+    ImplementInteractionMode::uninitialize();
     return _comanHandler->deInstance();
 }
 
@@ -1073,7 +1081,11 @@ bool comanMotionControl::getVelPidsRaw(Pid *pids)
 
 bool comanMotionControl::setVelocityModeRaw(int j)
 {
-    yTrace();
+#ifdef _DEBUG_INTERFACE_
+    _controlMode[j] = VOCAB_CM_VELOCITY;
+return true;
+#endif
+
     bool ret = true;
     uint8_t bId = jointTobId(j);
     McBoard *joint_p = getMCpointer(j);
@@ -1106,6 +1118,14 @@ bool comanMotionControl::setVelocityModeRaw(int j)
 bool comanMotionControl::setVelocityModeRaw(const int n_joint, const int *joints)
 {
     yTrace();
+#ifdef _DEBUG_INTERFACE_
+    for(int idx=0; idx < n_joint; idx++)
+    {
+        _controlMode[joints[idx]] = VOCAB_CM_VELOCITY;
+    }
+    return true;
+#endif
+
     int start = 0x03;
     std::vector<int> bId_set;
     bId_set.resize(n_joint);
@@ -1230,13 +1250,20 @@ bool comanMotionControl::getAxes(int *ax)
 
 bool comanMotionControl::setPositionModeRaw()
 {
+#ifdef _DEBUG_INTERFACE_
+      for(int i =0; i<_njoints; i++)
+        _controlMode[i] = VOCAB_CM_POSITION;
+return true;
+#endif
+
     yTrace();
     bool ret = true;
 
     for(int i =0; i<_njoints; i++)
     {
-    	ret = ret && setPositionModeRaw(i);
+        ret = ret && setPositionModeRaw(i);
     }
+
     return ret;
 /*
     int start = 1;
@@ -1258,7 +1285,6 @@ bool comanMotionControl::positionMoveRaw(int j, double ref)
 {
 //    struct timespec t_start, t_end;
 //    clock_gettime(CLOCK_REALTIME, &t_start);
-
 
     yTrace();
     uint8_t bId = jointTobId(j);
@@ -1305,7 +1331,7 @@ bool comanMotionControl::relativeMoveRaw(const double *deltas)
 
 bool comanMotionControl::checkMotionDoneRaw(bool *flag)
 {
-    // loop su _mcs, non sul numero dei giunti!!
+    //TODO: loop su _mcs, non sul numero dei giunti!!
     bool ret = true;
     for(int i=0; i<_njoints; i++)
     {
@@ -1530,6 +1556,11 @@ bool comanMotionControl::stopRaw(int j)
     McBoard *joint_p = NULL;
     uint8_t bId = jointTobId(j);
 
+#ifdef _DEBUG_INTERFACE_
+    _controlMode[j] = VOCAB_CM_IDLE;
+return true;
+#endif
+
     switch(_controlMode[j])
     {
         case VOCAB_CM_POSITION:
@@ -1558,6 +1589,14 @@ bool comanMotionControl::stopRaw(int j)
 
 bool comanMotionControl::stopRaw(const int n_joint, const int *joints)
 {
+#ifdef _DEBUG_INTERFACE_
+    for(int idx=0; idx < n_joint; idx++)
+    {
+        _controlMode[joints[idx]] = VOCAB_CM_IDLE;
+    }
+return true;
+#endif
+
     yTrace();
     bool ret = true;
     uint8_t stop = 0;
@@ -1619,7 +1658,6 @@ bool comanMotionControl::setPositionModeRaw(const int n_joint, const int *joints
 //        board_set[idx] = jointTobId(joints[idx]);
     }
     return ret;
-    //return (!_boards_ctrl->start_stop_set_control(board_set, start, POSITION_MOVE));
 }
 
 bool comanMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
@@ -1694,6 +1732,11 @@ bool comanMotionControl::getRefSpeedsRaw(const int n_joint, const int *joints, d
 // ControlMode
 bool comanMotionControl::setPositionModeRaw(int j)
 {
+#ifdef _DEBUG_INTERFACE_
+    _controlMode[j] = VOCAB_CM_POSITION;
+return true;
+#endif
+
     yTrace();
     McBoard *joint_p = getMCpointer(j);
     uint8_t bId = jointTobId(j);
@@ -1728,6 +1771,8 @@ bool comanMotionControl::setPositionModeRaw(int j)
             break;
 
         case VOCAB_CM_VELOCITY:
+        yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
             // now firmware is able to do a smooth transition from pos to vel, so nothing to do here
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
@@ -1736,6 +1781,8 @@ bool comanMotionControl::setPositionModeRaw(int j)
             break;
 
         case VOCAB_CM_TORQUE:
+            yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
             yDebug() << "joint "<< j << "stopping torque mode";
             ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)));   // setItem returns 0 if ok, 2 if error
 
@@ -1745,7 +1792,7 @@ bool comanMotionControl::setPositionModeRaw(int j)
             setPidRaw(j, pid[j]);
             setTorquePidRaw(j, pidTorque[j]);
 
-            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
@@ -1758,6 +1805,9 @@ bool comanMotionControl::setPositionModeRaw(int j)
 
         case VOCAB_CM_IMPEDANCE_POS:
         case VOCAB_CM_IMPEDANCE_VEL:
+            yDebug() << "joint "<< j << "cannot go back into position mode";
+            return false;
+
 //            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
 //            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
 //            ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
@@ -1775,27 +1825,26 @@ bool comanMotionControl::setPositionModeRaw(int j)
             setTorquePidRaw(j, pidTorque[j]);
 
 //            	ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
-            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+//            ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
 
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
                 std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-
             break;
 
         default:
-            yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... stop everything and then enable position\n";
+        yWarning() << "joint "<< j << "set position mode coming from unknown controlmode... " << yarp::os::Vocab::decode(_controlMode[j]) <<  " stop everything and then enable position\n";
+            disablePidRaw(j);
             if(getEncoder(j, &initialPosition) )
                 positionMove(j, initialPosition);
             else
                 std::cout << "Coman setPositionModeRaw failed! Not able to read encoder";
-
-            disablePidRaw(j);
+            return true;
             break;
     }
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));      //  1 = ON
+    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
 
     if(ret)
         _controlMode[j] = VOCAB_CM_POSITION;
@@ -1805,9 +1854,14 @@ bool comanMotionControl::setPositionModeRaw(int j)
 }
 
 
-
 bool comanMotionControl::setTorqueModeRaw(int j)
 {
+//#ifdef _DEBUG_INTERFACE_
+    _controlMode[j] = VOCAB_CM_TORQUE;
+    std::cout << "Coman setTorqueModeRaw j " << j << " mode " << Vocab::decode(_controlMode[j]).c_str() << std::endl << " input " << Vocab::decode(VOCAB_CM_TORQUE).c_str() << std::endl;
+
+    return true;
+//#endif
     // Chiedere info
     McBoard *joint_p = getMCpointer(j);
     uint8_t bId = jointTobId(j);
@@ -1822,38 +1876,57 @@ bool comanMotionControl::setTorqueModeRaw(int j)
     uint8_t stop = 0;
     uint16_t motor_config_mask = 0;
 
-    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
+    // stop what is running
+    switch(_controlMode[j])
+    {
+    case VOCAB_CM_TORQUE:
+        yDebug() << "joint "<< j << "already in torque mode";
+        return true;
+        break;
 
-    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
-    printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
+    case VOCAB_CM_IMPEDANCE_POS:
+    case VOCAB_CM_IMPEDANCE_VEL:
+        ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) );
 
-    motor_config_mask |= 0x4803;   // add bit about impedance control.??? needed here???
+    default:
+    case VOCAB_CM_POSITION:
+    case VOCAB_CM_VELOCITY:
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE));
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE));
+    // no break statement on purpose
 
-    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
-    printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
-/*
-    uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
-    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
-*/
-    // set pids
-    Pid pid;
-    pid.kp = 0;
-    pid.ki = 0;
-    pid.kd = 0;
+    case VOCAB_CM_IDLE:
+        ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) );
+        printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
 
-    ret = ret && setPidRaw(j, pid);                     yarp::os::Time::delay(0.01);
-    ret = ret && setTorquePidRaw(j, _trqPids[j]);       yarp::os::Time::delay(0.01);
+        motor_config_mask |= 0x4803;   // add bit about impedance control.??? needed here???
 
-    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+        ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) );
+        printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
+    /*CAB_CM_VEL
+        uint16_t motor_config_mask2 = 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
 
-    printf("setTorqueModeRaw joint [%d]: message was sent with %s\n", j, ret? "SUCCESS" : "FAILURE");
+        ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
+    */
+        // set pids
+        Pid pid;
+        pid.kp = 0;
+        pid.ki = 0;
+        pid.kd = 0;
 
-    if(ret)
-        _controlMode[j] = VOCAB_CM_TORQUE;    
-    return (ret);
+        ret = ret && setPidRaw(j, pid);                     yarp::os::Time::delay(0.01);
+        ret = ret && setTorquePidRaw(j, _trqPids[j]);       yarp::os::Time::delay(0.01);
+
+        ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+
+        printf("setTorqueModeRaw joint [%d]: message was sent with %s\n", j, ret? "SUCCESS" : "FAILURE");
+
+        if(ret)
+            _controlMode[j] = VOCAB_CM_TORQUE;
+        return (ret);
+        break;
+    }
 }
 
 bool comanMotionControl::setTorqueModeRaw( )
@@ -1867,10 +1940,15 @@ bool comanMotionControl::setTorqueModeRaw( )
 
 bool comanMotionControl::setImpedancePositionModeRaw(int j)
 {
+#ifdef _DEBUG_INTERFACE_
+    _controlMode[j] = VOCAB_CM_IMPEDANCE_POS;
+    return true;
+#endif
     // Chiedere info
     double initialPosition;
     McBoard *joint_p = getMCpointer(j);
     uint8_t bId = jointTobId(j);
+
     if( NULL == joint_p)
     {
         yError() << "Calling setImpedancePositionModeRaw on a non-existing joint j" << j;
@@ -1883,56 +1961,80 @@ bool comanMotionControl::setImpedancePositionModeRaw(int j)
     uint16_t motor_config_mask = 0;
 //    uint16_t motor_config_mask2 = 0;
 
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE)); yarp::os::Time::delay(0.01);
-    if(!ret)
-        yError()<<"start_stop_single_control() POSITION_MOVE returned error!";
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE)); yarp::os::Time::delay(0.01);
-    if(!ret)
-        yError()<<"start_stop_single_control() VELOCITY_MOVE returned error!";
-    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) ); yarp::os::Time::delay(0.01);
-    if(!ret)
-        yError()<<"setItem() SET_TORQUE_ON_OFF returned error!";
+    switch(_controlMode[j])
+    {
+        case VOCAB_CM_IMPEDANCE_POS:
+            yDebug() << "joint "<< j << "already in impedance position mode";
+            return true;   // nothing to do here
+        break;
 
-    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) ); yarp::os::Time::delay(0.01);
-    printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
-    if(!ret)
-        yError()<<"getItem() GET_MOTOR_CONFIG returned error!";
+        case VOCAB_CM_VELOCITY:
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, VELOCITY_MOVE)); yarp::os::Time::delay(0.01);
+        if(!ret)
+            yError()<<"start_stop_single_control() VELOCITY_MOVE returned error!";
+        // no break statement on purpose ... the following instruction has to be done also in this case
 
-    motor_config_mask |= 0x4803;   // add bit about impedance control.
+        case VOCAB_CM_POSITION:
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, stop, POSITION_MOVE)); yarp::os::Time::delay(0.01);
+        if(!ret)
+            yError()<<"start_stop_single_control() POSITION_MOVE returned error!";
+        // no break statement on purpose ... the following instruction has to be done also in this case
 
-    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) ); yarp::os::Time::delay(0.01);
-    if(!ret)
-        yError()<<"setItem() SET_MOTOR_CONFIG returned error!";
-    printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
-/*
-    ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2, 2) );
-    uint16_t motor_config_mask2 |= 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
-    ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
-*/
-    // set impedance position pids
-    ret = ret && setPidRaw(j, _impPosPids[j]);      yarp::os::Time::delay(0.01);
-    if(!ret)
-        yError()<<"setPidRaw returned error!";
-    ret = ret && setTorquePidRaw(j, _trqPids[j]);   yarp::os::Time::delay(0.01);
-    if(!ret)
-        yError()<<"setTorquePidRaw returned error!";
-    ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
-    if(!ret)
-        yError()<<"setItem() TORQUE_ON_OFF returned error!";
-    ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
-    if(!ret)
-        yError()<<"start_stop_single_control() returned error!";
+        case VOCAB_CM_TORQUE:
+        ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &stop, sizeof(stop)) ); yarp::os::Time::delay(0.01);
+        if(!ret)
+            yError()<<"setItem() SET_TORQUE_ON_OFF returned error!";
+        // no break statement on purpose ... the following instruction has to be done also in this case
 
-    if(getEncoder(j, &initialPosition) )
-        positionMove(j, initialPosition);
-    else
-        std::cout << "Coman MC: error! Not able to read initial positions";
+        case VOCAB_CM_IDLE:
+        ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG, NULL, 0, REPLY_MOTOR_CONFIG, &motor_config_mask, 2) ); yarp::os::Time::delay(0.01);
+        printf("joint %d got motor config 0x%0X\n", j, motor_config_mask);
+        if(!ret)
+            yError()<<"getItem() GET_MOTOR_CONFIG returned error!";
+
+        motor_config_mask |= 0x4803;   // add bit about impedance control.
+
+        ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG, &motor_config_mask, sizeof(motor_config_mask)) ); yarp::os::Time::delay(0.01);
+        if(!ret)
+            yError()<<"setItem() SET_MOTOR_CONFIG returned error!";
+        printf("joint %d set motor config 0x%0X\n", j, motor_config_mask);
+    /*
+        ret = ret && (!joint_p->getItem(GET_MOTOR_CONFIG2, NULL, 0, REPLY_MOTOR_CONFIG2, &motor_config_mask2, 2) );
+        uint16_t motor_config_mask2 |= 0x0;       //0 Moving Average 1 ButterWorth 2 Least Square 3 Jerry Pratt -- TODO cambiano a runtime/configurazione??
+        ret = ret && (!joint_p->setItem(SET_MOTOR_CONFIG2, &motor_config_mask2, sizeof(motor_config_mask2)) );
+    */
+        // set impedance position pids
+        ret = ret && setPidRaw(j, _impPosPids[j]);      yarp::os::Time::delay(0.01);
+        if(!ret)
+            yError()<<"setPidRaw returned error!";
+        ret = ret && setTorquePidRaw(j, _trqPids[j]);   yarp::os::Time::delay(0.01);
+        if(!ret)
+            yError()<<"setTorquePidRaw returned error!";
+        if(getEncoder(j, &initialPosition) )
+            positionMove(j, initialPosition);
+        else
+            std::cout << "Coman MC: error! Not able to read initial positions";
+        ret = ret && (!joint_p->setItem(SET_TORQUE_ON_OFF, &start, sizeof(start)) );
+        if(!ret)
+            yError()<<"setItem() TORQUE_ON_OFF returned error!";
+        ret = ret && (!_boards_ctrl->start_stop_single_control(bId, start, POSITION_MOVE));
+        if(!ret)
+            yError()<<"start_stop_single_control() returned error!";
+
+        if(getEncoder(j, &initialPosition) )
+            positionMove(j, initialPosition);
+        else
+            std::cout << "Coman MC: error! Not able to read initial positions";
 
 
-    if(ret)
-        _controlMode[j] = VOCAB_CM_IMPEDANCE_POS;
-    printf("setImpedancePositionModeRaw ret value is %d\n", ret);
-    return ret;
+        if(ret)
+    {
+            _controlMode[j] = VOCAB_CM_IMPEDANCE_POS;
+        _interactionMode[j] = VOCAB_IM_COMPLIANT;
+    }
+        printf("setImpedancePositionModeRaw ret value is %d\n", ret);
+        return ret;
+    }
 }
 
 bool comanMotionControl::setImpedanceVelocityModeRaw(int j)
@@ -1943,6 +2045,10 @@ bool comanMotionControl::setImpedanceVelocityModeRaw(int j)
 
 bool comanMotionControl::setOpenLoopModeRaw(int j)
 {
+#ifdef _DEBUG_INTERFACE_
+    _controlMode[j] = VOCAB_CM_OPENLOOP;
+    return true;
+#endif
     yTrace();
     return NOT_YET_IMPLEMENTED("setOpenLoopModeRaw");
 }
@@ -1950,12 +2056,16 @@ bool comanMotionControl::setOpenLoopModeRaw(int j)
 bool comanMotionControl::getControlModeRaw(int j, int *v)
 {
     // cached value must be correct!!
-
-    bool ret = true;
+#ifdef _DEBUG_INTERFACE_
+	std::cout << "coman getControlModeRaw j " << j << " mode " << Vocab::decode(_controlMode[j]).c_str() << std::endl << " int " << _controlMode[j];
+    *v = _controlMode[j];
+    return true;
+#endif
     McBoard *joint_p = getMCpointer(j);   //  -> giusto
 
     if( NULL == joint_p)
     {
+        yError() << "Calling getControlModeRaw on a non-existing joint j" << j;
         return false;
     }
 
@@ -1963,7 +2073,6 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
     mc_bc_data_t &data = bc_data.raw_bc_data.mc_bc_data;
 
     joint_p->get_bc_data(bc_data);
-
     uint8_t faults = data.faults();
 
     //    *v= ((bool)faults *  VOCAB3('e','r','r')) + ((1 - (bool)faults ) *_controlMode[j]);
@@ -1971,7 +2080,7 @@ bool comanMotionControl::getControlModeRaw(int j, int *v)
     if (faults)
     {
         *v = VOCAB3('e','r','r');
-        std::cout << "Joint " << j << " returned error code " << (int)faults;
+        //std::cout << "Joint " << j << " returned error code " << (int)faults;
     }
     else
     {
@@ -1985,6 +2094,50 @@ bool comanMotionControl::getControlModesRaw(int* v)
     for(int j=0; j<_njoints; j++)
         getControlModeRaw(j, &v[j]);
     return true;
+}
+
+// Control Mode 2
+
+bool comanMotionControl::getControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    return NOT_YET_IMPLEMENTED("getControlModes group of joints");
+}
+
+bool comanMotionControl::setControlModeRaw(const int j, const int mode)
+{
+#ifdef _DEBUG_INTERFACE_
+    std::cout << "coman setControlModeRaw j " << j << " mode " << Vocab::decode(mode).c_str() << std::endl;
+    _controlMode[j] = mode;
+    return true;
+#endif
+    return NOT_YET_IMPLEMENTED("setControlMode single joint");
+}
+
+bool comanMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+#ifdef _DEBUG_INTERFACE_
+    std::cout << "setControlModeRaw group" << std::endl;
+    for(int i=0; i<n_joint; i++)
+    {
+        std::cout << "j " << joints[i] << " mode " << Vocab::decode(modes[i]).c_str() << std::endl;
+        _controlMode[i] = modes[i];
+    }
+    return true;
+#endif
+    return NOT_YET_IMPLEMENTED("setControlModes group of joints");
+}
+
+bool comanMotionControl::setControlModesRaw(int *modes)
+{
+#ifdef _DEBUG_INTERFACE_
+    for(int i=0; i<_njoints; i++)
+    {
+        std::cout << "j " << i << " mode " << Vocab::decode(modes[i]).c_str() << std::endl;
+        _controlMode[i] = modes[i];
+    }
+    return true;
+#endif
+    return NOT_YET_IMPLEMENTED("setControlModes all joints");
 }
 
 //////////////////////// BEGIN EncoderInterface
@@ -2019,7 +2172,7 @@ bool comanMotionControl::getEncoderRaw(int j, double *enc)
 //    clock_gettime(CLOCK_REALTIME, &t_start);
 
     bool ret = true;
-    McBoard *joint_p = getMCpointer(j);   //  -> giusto
+    McBoard *joint_p = getMCpointer(j);   //  -> giusto // -> forse no (Mirko)
 
     if( NULL == joint_p)
     {
@@ -2729,8 +2882,17 @@ bool comanMotionControl::getVelLimitsRaw(int j, double *min, double *max)
     return true;
 }
 
-
 // PositionDirect Interface
+bool comanMotionControl::setPositionDirectModeRaw()
+{
+#ifdef _DEBUG_INTERFACE_
+    for(int i=0; i<_njoints; i++)
+        _controlMode[i] = VOCAB_CM_POSITION_DIRECT;
+return true;
+#endif
+    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+}
+
 bool comanMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocity as well as positionMove
@@ -2772,6 +2934,53 @@ bool comanMotionControl::setPositionsRaw(const double *refs)
     return (!_boards_ctrl->set_position_velocity(_ref_positions, _ref_speeds, _njoints) );
 }
 
+// IInteractionMode
+bool comanMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+{
+    std::cout << "getInteractionModeRaw single joint (j " << axis << ")NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "getInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
+{
+#ifdef _DEBUG_INTERFACE_
+    std::cout << "interaction j " << axis << " mode " << Vocab::decode(mode).c_str() << std::endl;
+    return true;
+#endif
+    std::cout << "setInteractionModeRaw single NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+{
+#ifdef _DEBUG_INTERFACE_
+    std::cout << "interaction group" << std::endl;
+    for(int i=0; i<n_joints; i++)
+        std::cout << "\t j " << joints[i] << " mode " << Vocab::decode(modes[i]).c_str()  << std::endl;
+    return true;
+#endif
+    std::cout << "setInteractionModeRaw group NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
+bool comanMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    std::cout << "setInteractionModeRaw all NOT YET IMPLEMENTED" << std::endl;
+    return false;
+}
+
 bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
 {
     Pid pid;
@@ -2789,6 +2998,7 @@ bool comanMotionControl::getImpedanceRaw(int j, double *stiffness, double *dampi
 
 bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping)
 {
+    //TODO: check for coerency between control mode and this function call
     uint8_t bId = jointTobId(j);
     int tmp_stiff = (int) stiffness;
     int tmp_damp  = (int) damping;
@@ -2801,6 +3011,7 @@ bool comanMotionControl::setImpedanceRaw(int j, double stiffness, double damping
     }
 
     bool ret = (!_boards_ctrl->set_stiffness_damping_group(&bId, &tmp_stiff, &tmp_damp, 1));
+    yarp::os::Time::delay(0.0001);
 
     if(!ret)
     {
@@ -2827,3 +3038,4 @@ bool comanMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, d
     // Command not present in firmware
     return NOT_YET_IMPLEMENTED("getCurrentImpedanceLimitRaw");
 }
+

@@ -152,9 +152,9 @@ public:
 
     bool parsePosPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
     bool parseTrqPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
-    bool parsePidsGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);
-    bool parseImpedanceGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, ImpedanceParameters vals[]);
-    bool parseDebugGroup_NewFormat(yarp::os::Bottle& pidsGroup, int nj, DebugParameters vals[]);
+    bool parsePidsGroup_NewFormat(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+    bool parseImpedanceGroup_NewFormat(yarp::os::Bottle& pidsGroup, ImpedanceParameters vals[]);
+    bool parseDebugGroup_NewFormat(yarp::os::Bottle& pidsGroup, DebugParameters vals[]);
 
     bool setBroadCastMask(yarp::os::Bottle &list, int MASK);
 
@@ -180,6 +180,7 @@ public:
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
+    bool _pwmIsLimited;                         /** set to true if pwm is limited */
     bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     DebugParameters *_debug_params;             /** debug parameters */
@@ -507,8 +508,8 @@ class firmwareVersionHelper
         fprintf(stderr,"###################################################################################\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
-        fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
-        fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
+        fprintf(stderr,"  available firmware version, although it is still compatible with it.\n");
+        fprintf(stderr,"  Upgrading your iCub firmware to build %d is highly recommended.\n", LAST_BLL_BUILD);
         fprintf(stderr,"  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"###################################################################################\n");
@@ -522,7 +523,7 @@ class firmwareVersionHelper
         fprintf(stderr,"#################################################################################################\n");
         fprintf(stderr,"\n");
         fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
-        fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
+        fprintf(stderr,"  which is newer than the recommended version (build %d), although it is still compatible with it.\n", LAST_BLL_BUILD);
         fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
         fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
         fprintf(stderr,"\n");
@@ -657,7 +658,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
             public IOpenLoopControlRaw,
-            public IControlModeRaw,
+            public IControlMode2Raw,
             public IPreciselyTimed,
             public ImplementPositionControl2,
             public ImplementPositionDirect,
@@ -672,8 +673,10 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
             public ImplementOpenLoopControl,
-            public ImplementControlMode,
+            public ImplementControlMode2,
             public ImplementDebugInterface,
+            public IInteractionModeRaw,
+            public ImplementInteractionMode,
             public IFactoryInterface,
             public IClientLogger
 {
@@ -789,8 +792,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // also in the openloop interface
+//    virtual bool getOutputsRaw(double *outs);         // also in the openloop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -884,15 +887,23 @@ public:
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
 
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
+
+
     ///////////// OpenLoop control interface raw
     ///
     virtual bool setOpenLoopModeRaw();
-    virtual bool setOutputRaw(int axis, double v);
-    virtual bool setOutputsRaw(const double *v);
-    //virtual bool getOutputRaw(int j, double *out); //already in PID interface
-    //virtual bool getOutputsRaw(double *outs);      //already in PID interface
-    //
-    /////////////////////////////// END Velocity Control INTERFACE
+    virtual bool setRefOutputRaw(int axis, double v);
+    virtual bool setRefOutputsRaw(const double *v);
+    virtual bool getRefOutputRaw(int j, double *out);
+    virtual bool getRefOutputsRaw(double *outs);
+    virtual bool getOutputRaw(int j, double *out);
+    virtual bool getOutputsRaw(double *outs);
+    /////////////////////////////// END OpenLoop Control INTERFACE
 
     ///////////// Velocity control interface raw
     ///
@@ -1003,9 +1014,18 @@ public:
     bool setTorqueSource (int axis, char board_id, char board_chan );
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
+
+    // InteractionMode interface
+    bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
+    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
+    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
@@ -1055,6 +1075,11 @@ protected:
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
     axisPositionDirectHelper  *_axisPositionDirectHelper;
+
+    inline unsigned char from_modevocab_to_modeint (int modevocab);
+    inline int from_modeint_to_modevocab (unsigned char modeint);
+    inline unsigned char from_interactionvocab_to_interactionint (int interactionvocab);
+    inline int from_interactionint_to_interactionvocab (unsigned char interactionint);
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.

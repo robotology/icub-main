@@ -4,25 +4,25 @@
 </dependencies>
 <module>
       <name>icubmoddev</name>
-      <parameters> --from dragonfly2_config_left_bayer_320_240.ini</parameters>
+      <parameters> --from camera/dragonfly2_config_left_bayer_320_240.ini</parameters>
 	  <node>pc104</node>
 	<tag>camera_left</tag>
    </module>
    <module>
       <name>icubmoddev</name>
-      <parameters> --from dragonfly2_config_left_bayer_320_240.ini</parameters>
+      <parameters> --from camera/dragonfly2_config_left_bayer_320_240.ini</parameters>
       <node>pc104</node>
 	<tag>camera_right</tag>
    </module>
     <module>
         <name>camCalib</name>
-        <parameters>--from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
+        <parameters>--context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
         <node>icubsrv</node>
         <tag>camcalib_left</tag>
     </module> 
     <module>
         <name>camCalib</name>
-        <parameters>--from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
+        <parameters>--context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
         <node>icubsrv</node>
         <tag>camcalib_right</tag> 
     </module> 

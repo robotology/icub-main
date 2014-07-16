@@ -6,42 +6,36 @@
 
 bool stereoCalibModule::configure(yarp::os::ResourceFinder &rf)
 {
-    moduleName            = rf.check("name", 
-                           Value("stereoCalib"), 
-                           "module name (string)").asString();
-
+    moduleName=rf.check("name",Value("stereoCalib"),"module name (string)").asString().c_str();
     setName(moduleName.c_str());
 
-    handlerPortName        = "/";
-    handlerPortName       += getName(
-                           rf.check("CommandPort", 
-                           Value("/cmd"),
-                           "Output image port (string)").asString()
-                           );
+    handlerPortName="/";
+    handlerPortName+=getName(rf.check("CommandPort",Value("/cmd"),"Output image port (string)").asString());
+
     char dirName[255];
     bool proceed=true;
-    string dir = rf.getHomeContextPath().c_str();
+    string dir=rf.getHomeContextPath().c_str();
 
     for (int i=1; proceed; i++)
     {
-           sprintf(dirName,"%s/%s_%.5d",dir.c_str(),"calibImg",i);
-           proceed=!yarp::os::stat(dirName);
-           sprintf(dirName,"%s/%s_%.5d/",dir.c_str(),"calibImg",i);
-     }
+        sprintf(dirName,"%s/%s_%.5d",dir.c_str(),"calibImg",i);
+        proceed=!yarp::os::stat(dirName);
+        sprintf(dirName,"%s/%s_%.5d/",dir.c_str(),"calibImg",i);
+    }
     
     createFullPath(dirName);
 
-    if (!handlerPort.open(handlerPortName.c_str())) {
-      cout << ": unable to open port " << handlerPortName << endl;
-      return false;
+    if (!handlerPort.open(handlerPortName.c_str()))
+    {
+        cout << ": unable to open port " << handlerPortName << endl;
+        return false;
     }
     attach(handlerPort);
 
-    calibThread = new stereoCalibThread(rf,&handlerPort, dirName);
+    calibThread=new stereoCalibThread(rf,&handlerPort,dirName);
     calibThread->start();
 
     return true;
-
 }
 
 
@@ -71,17 +65,18 @@ bool stereoCalibModule::respond(const Bottle& command, Bottle& reply)
     return true;
 }
 
+
 bool stereoCalibModule::updateModule()
 {
     return true;
 }
 
 
-
 double stereoCalibModule::getPeriod()
 {    
    return 0.1;
 }
+
 
 void stereoCalibModule::createFullPath(const char* path)
 {

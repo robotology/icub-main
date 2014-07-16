@@ -53,11 +53,10 @@ protected:
     iCubHeadCenter    *neck;
     iKinChain         *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver        *drvTorso,  *drvHead;
-    IControlMode      *modHead;
-    IPositionControl  *posHead;
-    IVelocityControl  *velHead;
-    IPositionDirect   *posNeck;
-    IVelocityControl2 *velEyes;
+    IControlMode2     *modHead;
+    IPositionControl2 *posHead;
+    IVelocityControl2 *velHead;
+    IPositionDirect   *posNeck;    
     exchangeData      *commData;
     xdPort            *port_xd;
 
@@ -78,9 +77,6 @@ protected:
     Mutex mutexCtrl;
     Mutex mutexData;
     unsigned int period;
-    bool tiltDone;
-    bool panDone;
-    bool verDone;
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
     bool ctrlInhibited;
@@ -93,6 +89,7 @@ protected:
     double neckTime;
     double eyesTime;
     double minAbsVel;
+    double startupMinVer;
     double q_stamp;
     double Ts;
 
@@ -106,7 +103,8 @@ protected:
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
 
-    bool areJointsHealthy();
+    bool areJointsHealthyAndSet(VectorOf<int> &jointsToSet);
+    void setJointsCtrlMode(const VectorOf<int> &jointsToSet);
     void stopLimb(const bool execStopPosition=true);
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
@@ -120,7 +118,7 @@ public:
     void   findMinimumAllowedVergence();
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
-    void   doSaccade(Vector &ang, Vector &vel);    
+    void   doSaccade(const Vector &ang, const Vector &vel);    
     void   stopControl();
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);

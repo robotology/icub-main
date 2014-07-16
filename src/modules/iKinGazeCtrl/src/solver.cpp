@@ -31,18 +31,19 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              const unsigned int _period) :
                              RateThread(_period),     drvTorso(_drvTorso), drvHead(_drvHead),
                              commData(_commData),     ctrl(_ctrl),         eyesBoundVer(-1.0),
-                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0)
+                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0),
+                             counterRotGain(_counterRotGain)
 {
     Robotable=(drvHead!=NULL);
-    counterRotGain=_counterRotGain;
 
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
     eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
     eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
+    imu=new iCubInertialSensor(commData->head_version>1.0?"v2":"v1");
 
     // remove constraints on the links: logging purpose
-    inertialSensor.setAllConstraints(false);
+    imu->setAllConstraints(false);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -268,14 +269,14 @@ void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp)
 {
     // ********** implement VOR
-    Vector q(inertialSensor.getDOF());
+    Vector q(imu->getDOF());
     q[0]=fbTorso[0];
     q[1]=fbTorso[1];
     q[2]=fbTorso[2];
     q[3]=fbHead[0];
     q[4]=fbHead[1];
     q[5]=fbHead[2];
-    Matrix H=inertialSensor.getH(q);
+    Matrix H=imu->getH(q);
 
     H(0,3)=fp[0]-H(0,3);
     H(1,3)=fp[1]-H(1,3);
@@ -297,19 +298,16 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
         vor_fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
 
     // ********** implement OCR
-    Matrix H0=chainNeck->getH(2,true);
-    Matrix H1=chainNeck->getH(3,true);
-    Matrix H2=chainNeck->getH(4,true);
+    H=chainNeck->getH();
+    Matrix HN=eye(4,4);
+    HN(0,3)=fp[0]-H(0,3);
+    HN(1,3)=fp[1]-H(1,3);
+    HN(2,3)=fp[2]-H(2,3);
 
-    for (int i=0; i<3; i++)
-    {
-        H0(i,3)=fp[i]-H0(i,3);
-        H1(i,3)=fp[i]-H1(i,3);
-        H2(i,3)=fp[i]-H2(i,3);
-    }
-
-    Vector v=commData->get_v();
-    Vector ocr_fprelv=v[0]*cross(H0,2,H0,3)+v[1]*cross(H1,2,H1,3)+v[2]*cross(H2,2,H2,3);
+    chainNeck->setHN(HN);
+    Vector ocr_fprelv=chainNeck->GeoJacobian()*commData->get_v().subVector(0,2);
+    ocr_fprelv=ocr_fprelv.subVector(0,2);
+    chainNeck->setHN(eye(4,4));
 
     // ********** blend the contributions
     return -1.0*(pinv(eyesJ)*(counterRotGain[0]*vor_fprelv+counterRotGain[1]*ocr_fprelv));
@@ -322,7 +320,11 @@ bool EyePinvRefGen::threadInit()
     string robotPortInertial=("/"+commData->robotName+"/inertial");
     port_inertial.open((commData->localStemName+"/inertial:i").c_str());
     if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
-        printf("Unable to connect to %s\n",robotPortInertial.c_str());
+    {
+        counterRotGain[0]=0.0; counterRotGain[1]=1.0;
+        printf("Unable to connect to %s => (vor,ocr) gains = (%s)\n",
+               robotPortInertial.c_str(),counterRotGain.toString(3,3).c_str());
+    }
 
     printf("Starting Pseudoinverse Reference Generator at %d ms\n",period);
 
@@ -449,7 +451,7 @@ void EyePinvRefGen::run()
         chainEyeL->setAng(nJointsTorso+4,qd[1]+qd[2]/2.0); chainEyeR->setAng(nJointsTorso+4,qd[1]-qd[2]/2.0);
 
         // converge on target
-        if (computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+        if (CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
         {
             Vector v=EYEPINVREFGEN_GAIN*(pinv(eyesJ)*(xd-fp));
 
@@ -458,7 +460,7 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
             // compensate neck rotation at eyes level
-            if ((eyesBoundVer>=0.0) || !computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+            if ((eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
                 commData->set_counterv(zeros(3));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
@@ -507,6 +509,7 @@ void EyePinvRefGen::threadRelease()
     delete neck;
     delete eyeL;
     delete eyeR;
+    delete imu;
     delete I;
 }
 
@@ -541,9 +544,10 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
     eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
     eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
+    imu=new iCubInertialSensor(commData->head_version>1.0?"v2":"v1");
 
     // remove constraints on the links: logging purpose
-    inertialSensor.setAllConstraints(false);
+    imu->setAllConstraints(false);
 
     // block neck dofs
     eyeL->blockLink(3,0.0); eyeR->blockLink(3,0.0);
@@ -812,14 +816,14 @@ Vector Solver::getGravityDirection(const Vector &gyro)
     x[3]=roll;   y[3]=pitch;   
     Matrix R=axis2dcm(y)*axis2dcm(x);
 
-    Vector q(inertialSensor.getDOF());
+    Vector q(imu->getDOF());
     q[0]=fbTorso[0];
     q[1]=fbTorso[1];
     q[2]=fbTorso[2];
     q[3]=fbHead[0];
     q[4]=fbHead[1];
     q[5]=fbHead[2];
-    Matrix H=inertialSensor.getH(q)*R.transposed();
+    Matrix H=imu->getH(q)*R.transposed();
 
     // gravity is aligned along the z-axis
     Vector gDir=H.getCol(2);
@@ -851,7 +855,7 @@ Vector Solver::computeTargetUserTolerance(const Vector &xd)
     Vector xdh3=xdh; xdh3.pop_back();
     Vector rot=cross(xdh3,z);
     double r=norm(rot);
-    if (r<ALMOST_ZERO)
+    if (r<IKIN_ALMOST_ZERO)
         return xd;
 
     rot=rot/r;
@@ -872,7 +876,7 @@ bool Solver::threadInit()
     // Initialization
     Vector fp(3);
     Matrix J(3,3);
-    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // init commData structure
     commData->set_xd(fp);
@@ -1017,6 +1021,7 @@ void Solver::threadRelease()
     delete neck;
     delete eyeL;
     delete eyeR;
+    delete imu;
 }
 
 
@@ -1056,7 +1061,7 @@ void Solver::resume()
     // compute fixation point
     Vector fp(3);
     Matrix J(3,3);
-    computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // update latched quantities
     fbTorsoOld=fbTorso;

@@ -40,6 +40,8 @@ void Kalman::initialize()
     x.resize(n,0.0);
     P.resize(n,n); P.zero();
     K.resize(n,m); K.zero();
+    S.resize(m,m); S.zero();
+    validationGate=0.0;
 }
 
 
@@ -79,16 +81,28 @@ Vector Kalman::predict(const Vector &u)
 {
     x=A*x+B*u;
     P=A*P*At+Q;
+    S=H*P*Ht+R;
+    validationGate=0.0;
     return x;
+}
+
+
+/**********************************************************************/
+Vector Kalman::predict()
+{
+    return predict(Vector(n,0.0));
 }
 
 
 /**********************************************************************/
 Vector Kalman::correct(const Vector &z)
 {
-    K=P*Ht*pinv(H*P*Ht+R);
-    x+=K*(z-H*x);
+    Matrix invS=pinv(S);
+    K=P*Ht*invS;
+    Vector e=z-get_y();
+    x+=K*e;
     P=(I-K*H)*P;
+    validationGate=yarp::math::dot(e,invS*e);
     return x;
 }
 
@@ -106,6 +120,13 @@ Vector Kalman::filt(const Vector &u, const Vector &z)
 Vector Kalman::filt(const Vector &z)
 {
     return filt(Vector(n,0.0),z);
+}
+
+
+/**********************************************************************/
+Vector Kalman::get_y() const
+{
+    return H*x;
 }
 
 

@@ -2303,6 +2303,39 @@ void iCubEyeNeckRef::allocate(const string &_type)
 
 
 /************************************************************************/
+iCubHeadCenter::iCubHeadCenter()
+{
+    allocate("right");
+}
+
+
+/************************************************************************/
+iCubHeadCenter::iCubHeadCenter(const string &_type)
+{
+    allocate(_type);
+}
+
+
+/************************************************************************/
+iCubHeadCenter::iCubHeadCenter(const iCubHeadCenter &head)
+{
+    clone(head);
+}
+
+
+/************************************************************************/
+void iCubHeadCenter::allocate(const string &_type)
+{
+    // change DH parameters
+    (*this)[getN()-2].setD(0.0);
+
+    // block last two links
+    blockLink(getN()-2,0.0);
+    blockLink(getN()-1,0.0);
+}
+
+
+/************************************************************************/
 iCubInertialSensor::iCubInertialSensor()
 {
     allocate("v1");
@@ -2343,8 +2376,7 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink(    0.0, -0.2233, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
         pushLink(new iKinLink( 0.0095,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,     0.0, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink( 0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
-    
+        pushLink(new iKinLink( 0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));    
     }
     else
     {
@@ -2399,7 +2431,5 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     return true;
 }
-
-
 
 

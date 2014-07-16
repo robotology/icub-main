@@ -9,6 +9,7 @@ add_subdirectory(testStereoMatch)
 add_subdirectory(iCubTest)
 add_subdirectory(fingersTuner)
 add_subdirectory(iCubLogger)
+add_subdirectory(embObjProtoTools/boardTransceiver)
 
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)

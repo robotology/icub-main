@@ -42,3 +42,9 @@ bool PointReq::write(yarp::os::ConnectionWriter& connection) {
   if (!writer.writeListHeader(4)) return false;
   return write(writer);
 }
+yarp::os::ConstString PointReq::toString() {
+  yarp::os::idl::UnwrappedView<PointReq > v(*this);
+  yarp::os::Bottle b;
+  b.read(v);
+  return b.toString();
+}

@@ -577,6 +577,20 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         }
                     
                         //-----------------
+                        case IKINSLV_VOCAB_OPT_PRIO:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+
+                            string priority=slv->get_posePriority();
+                            if (priority=="position")
+                                reply.addVocab(IKINSLV_VOCAB_VAL_PRIO_XYZ);
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_VAL_PRIO_ANG);
+
+                            break;
+                        }
+
+                        //-----------------
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -696,6 +710,26 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             break;
                         }
                     
+                        //-----------------
+                        case IKINSLV_VOCAB_OPT_PRIO:
+                        {
+                            int type=command.get(2).asVocab();
+                            if (type==IKINSLV_VOCAB_VAL_PRIO_XYZ)
+                            {
+                                slv->set_posePriority("position");
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            }
+                            else if (type==IKINSLV_VOCAB_VAL_PRIO_ANG)
+                            {
+                                slv->set_posePriority("orientation");
+                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK); 
+
+                            break;
+                        }
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
@@ -950,7 +984,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             
                 // dump on screen
                 if (verbosity)
-                    printInfo(xd,x,q,t1-t0);
+                    printInfo("ask",xd,x,q,t1-t0);
             
                 unlock();
             
@@ -1074,7 +1108,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
 
 /************************************************************************/
-void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, double *tok)
+void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q,
+                           double *tok)
 {       
     Bottle &b=outPort->prepare();
     b.clear();
@@ -1083,7 +1118,7 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
     addVectorOption(b,IKINSLV_VOCAB_OPT_X,x);
     addVectorOption(b,IKINSLV_VOCAB_OPT_Q,q);
 
-    if (tok)
+    if (tok!=NULL)
         addTokenOption(b,*tok);
 
     outPort->writeStrict();
@@ -1091,13 +1126,15 @@ void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q, d
 
 
 /************************************************************************/
-void CartesianSolver::printInfo(const Vector &xd, const Vector &x, const Vector &q,
+void CartesianSolver::printInfo(const string &typ, const Vector &xd,
+                                const Vector &x, const Vector &q,
                                 const double t)
 {
     // compute error
     Vector e=xd-x;
     
     printf("\n");
+    printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
     printf("  Target txPose   [m] = %s\n",const_cast<Vector&>(x).toString().c_str());
     printf("Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
@@ -1248,12 +1285,10 @@ bool CartesianSolver::open(Searchable &options)
         printf("Allocating device driver for %s ...\n",
                prt->prp[i].find("part").asString().c_str());
 
-        PolyDriver *pDrv;
-        if (ping_robot_tmo>0.0)
-            pDrv=waitPart(prt->prp[i]);
-        else
-            pDrv=new PolyDriver(prt->prp[i]);
-        
+        PolyDriver *pDrv=(ping_robot_tmo>0.0)?
+                         waitPart(prt->prp[i]):
+                         new PolyDriver(prt->prp[i]);
+
         if (!pDrv->isValid())
         {
             delete pDrv;
@@ -1670,7 +1705,7 @@ void CartesianSolver::run()
 
         // dump on screen
         if (verbosity)
-            printInfo(xd,x,q,t1-t0);
+            printInfo("go",xd,x,q,t1-t0);
 
         // save the values of uncontrolled joints
         if (!fullDOF)
