@@ -668,7 +668,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(!configure_mais())
+    if(!configure_mais(groupProtocol))
     {
         yError() << "while configuring mais for board " << _fId.boardNum;
         return false;
@@ -1461,20 +1461,54 @@ bool embObjMotionControl::init()
 }
 
 
-bool embObjMotionControl::configure_mais(void)
+bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 {
     // Mais per lettura posizioni dita, c'e' solo sulle mani per ora
 
-
-    uint8_t               maisnum   = 0;
-    uint8_t               datarate  = 10;    //10 milli (like in icub_right_arm_safe.ini)  // type ok
+    uint8_t               datarate  = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
     
     //#warning --> marcoaccame on 08may14: the control about mais being only in boards 2 and 4 is ... to be avoided. much better using the PROTOCOL section and see if mais is present.
 
+#if 1
     if((_fId.boardNum != 2) && (_fId.boardNum != 4))
     {
         return true; // only board 2 and 4 have mais connected
     }
+#else
+
+    bool thereisamais = false;
+
+    if(config.isNull())
+    {
+        yWarning() << "embObjMotionControl-> board " << _fId.boardNum << " cannot find group PROTOCOL, thus the mais shall not be initialised. Possible misbehaviours";
+    }
+    else if(false == config.check("endpointAnalogSensorsIsSupported"))
+    {
+        yWarning() << "embObjMotionControl-> board " << _fId.boardNum << " cannot find param PROTOCOL.endpointAnalogSensorsIsSupported, thus the mais shall not be initialised. Possible misbehaviours";
+    }
+    else if(false == config.check("entityASmaisNumberOf"))
+    {
+        yWarning() << "embObjMotionControl-> board " << _fId.boardNum << " cannot find param PROTOCOL.entityASmaisNumberOf, thus the mais shall not be initialised. Possible misbehaviours";
+    }
+    else
+    {
+        int number  = config.find("endpointAnalogSensorsIsSupported").asInt();
+        if(0 != number)
+        {
+            int nmais = config.find("entityASmaisNumberOf").asInt();
+            thereisamais = (0 == nmais) ? (false) : true;
+        }
+    }
+
+    // ok, if there is not any mais i return
+    if(false == thereisamais)
+    {
+        return true;
+    }
+
+#endif
+
+
     //set mais datarate = 1millisec
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 

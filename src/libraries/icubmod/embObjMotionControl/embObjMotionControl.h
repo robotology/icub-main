@@ -295,7 +295,7 @@ private:
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 private:
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-    bool configure_mais(void);
+    bool configure_mais(yarp::os::Searchable &config);
     bool dealloc();
     bool isEpManagedByBoard();
     bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
