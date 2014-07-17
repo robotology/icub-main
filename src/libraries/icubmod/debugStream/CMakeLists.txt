@@ -6,6 +6,6 @@ SET(PROJECTNAME debugStream)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
 add_library(${PROJECTNAME} Debug.h Debug.cpp)
-#TARGET_LINK_LIBRARIES(${PROJECTNAME}  ${ACE_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
 icub_export_library(${PROJECTNAME})
 

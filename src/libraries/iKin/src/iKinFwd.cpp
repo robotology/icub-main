@@ -788,11 +788,16 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
 
         if (cumulHN)
             H*=HN;
-    }
-    else if (verbose)
-        fprintf(stderr,"getH() failed due to out of range index: %d>=%d\n",i,n);
 
-    return H;
+        return H;
+    }
+    else
+    {
+        if (verbose)
+            fprintf(stderr,"getH() failed due to out of range index: %d>=%d\n",i,n);
+
+        return Matrix(0,0);
+    }    
 }
 
 
