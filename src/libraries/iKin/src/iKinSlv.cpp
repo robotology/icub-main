@@ -1130,13 +1130,15 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
                                 const Vector &x, const Vector &q,
                                 const double t)
 {
+    Vector _x=x.subVector(0,xd.length()-1);
+
     // compute error
-    Vector e=xd-x;
-    
+    Vector e=xd-_x;
+
     printf("\n");
     printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
-    printf("  Target txPose   [m] = %s\n",const_cast<Vector&>(x).toString().c_str());
+    printf("  Target txPose   [m] = %s\n",const_cast<Vector&>(_x).toString().c_str());
     printf("Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
     printf("  norm(rxPose-txPose) = pos [m]: %g\n",getNorm(e,"pos"));
     if (ctrlPose==IKINCTRL_POSE_FULL)
