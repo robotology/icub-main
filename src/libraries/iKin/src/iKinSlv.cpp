@@ -1130,6 +1130,7 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
                                 const Vector &x, const Vector &q,
                                 const double t)
 {
+    // ensure same lenghts of vectors
     Vector _x=x.subVector(0,xd.length()-1);
 
     // compute error
