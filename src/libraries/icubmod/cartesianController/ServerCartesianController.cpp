@@ -3251,6 +3251,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.straightness=ctrl->get_gamma();
         getPosePriority(context.posePriority);
         getTask2ndOptions(context.task_2);
+        getSolverConvergenceOptions(context.solverConvergence);
 
         *id=contextIdCnt++;
 
@@ -3294,6 +3295,7 @@ bool ServerCartesianController::restoreContext(const int id)
             ctrl->set_gamma(context.straightness);
             setPosePriority(context.posePriority);
             setTask2ndOptions(context.task_2);
+            setSolverConvergenceOptions(context.solverConvergence);
 
             return true;
         }
@@ -3611,6 +3613,52 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
 
 
 /************************************************************************/
+bool ServerCartesianController::getSolverConvergenceOptions(Bottle &options)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+        {
+            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+                options=*reply.get(1).asList();
+        }
+        else
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &options)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
+        command.addList()=options;
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+        else
+            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
     Bottle &opt=const_cast<Bottle&>(options);
@@ -3625,6 +3673,10 @@ bool ServerCartesianController::tweakSet(const Bottle &options)
     // secondary task
     if (opt.check("task_2"))
         ret&=setTask2ndOptions(opt.find("task_2"));
+
+    // solver convergence options
+    if (opt.check("max_iter") || opt.check("tol") || opt.check("translationalTol"))
+        ret&=setSolverConvergenceOptions(options);
 
     mutex.unlock();
     return ret;
@@ -3655,6 +3707,12 @@ bool ServerCartesianController::tweakGet(Bottle &options)
             task2.addString("task_2");
             task2.add(v);
         }
+
+        // solver convergence options
+        Bottle b;
+        ret&=getSolverConvergenceOptions(b);
+        if (ret)
+            options.append(b);
 
         mutex.unlock();
         return ret;

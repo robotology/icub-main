@@ -195,6 +195,7 @@ protected:
         double                straightness;
         yarp::os::ConstString posePriority;
         yarp::os::Value       task_2;
+        yarp::os::Bottle      solverConvergence;
     };
 
     int contextIdCnt;
@@ -245,6 +246,8 @@ protected:
 
     bool getTask2ndOptions(yarp::os::Value &v);
     bool setTask2ndOptions(const yarp::os::Value &v);
+    bool getSolverConvergenceOptions(yarp::os::Bottle &options);
+    bool setSolverConvergenceOptions(const yarp::os::Bottle &options);
 
 public:
     ServerCartesianController();

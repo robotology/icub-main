@@ -682,6 +682,27 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         }
             
                         //-----------------
+                        case IKINSLV_VOCAB_OPT_CONVERGENCE:
+                        {
+                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            Bottle &payLoad=reply.addList();
+
+                            Bottle &maxIter=payLoad.addList();
+                            maxIter.addString("max_iter");
+                            maxIter.addInt(slv->getMaxIter());
+
+                            Bottle &tol=payLoad.addList();
+                            tol.addString("tol");
+                            tol.addDouble(slv->getTol());
+
+                            Bottle &ttol=payLoad.addList();
+                            ttol.addString("translationalTol");
+                            ttol.addDouble(slv->getTranslationalTol());
+
+                            break;
+                        }
+
+                        //-----------------
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     }
@@ -902,11 +923,43 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                     }
                                 }
                             }
-            
+           
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             break;
                         }
-            
+
+                        //-----------------
+                        case IKINSLV_VOCAB_OPT_CONVERGENCE:
+                        {
+                            if (Bottle *payLoad=command.get(2).asList())
+                            {
+                                int cnt=0;
+                                if (payLoad->check("max_iter"))
+                                {
+                                    slv->setMaxIter(payLoad->find("max_iter").asInt());
+                                    cnt++;
+                                }
+
+                                if (payLoad->check("tol"))
+                                {
+                                    slv->setTol(payLoad->find("tol").asDouble());
+                                    cnt++;
+                                }
+
+                                if (payLoad->check("translationalTol"))
+                                {
+                                    slv->setTranslationalTol(payLoad->find("translationalTol").asDouble());
+                                    cnt++;
+                                }
+
+                                reply.addVocab(cnt>0?IKINSLV_VOCAB_REP_ACK:IKINSLV_VOCAB_REP_NACK);
+                            }
+                            else
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+
+                            break;
+                        }
+
                         //-----------------
                         default:
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
