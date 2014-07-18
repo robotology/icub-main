@@ -39,20 +39,31 @@
 #include <ethResource.h>
 #include "EoUtilities.h"
 #include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
-#include "skinParams.h"
+//#include "skinParams.h"
+#include "SkinConfigReader.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
 using namespace yarp::sig;
 
+
+
 class SkinPatchInfo
 {
 public:
-    int             idPatch;
-    eOprotIndex_t   indexNv;
-    std::vector <int> cardAddrList;
+    int                     idPatch;
+    eOprotIndex_t           indexNv;
+    std::vector <int>       cardAddrList;
     bool checkCardAddrIsInList(int cardAddr);
+};
+
+class SkinConfig
+{
+   public:
+   int                             totalCardsNum;
+   std::vector<SkinPatchInfo>      patchInfoList;
+   uint8_t                         numOfPatches;
 };
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
@@ -66,25 +77,28 @@ protected:
     FEAT_ID         _fId;
     bool            initted;
     Semaphore       mutex;
-    int             totalCardsNum;
-    std::vector<SkinPatchInfo> patchInfoList;
+    //int             totalCardsNum;
+    //std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;
     Vector          data;
-    uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
+    //uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
     SkinBoardCfgParam _brdCfg;
     SkinTriangleCfgParam _triangCfg;
     bool            _newCfg;
+    SkinConfigReader *_cfgReader;
+    SkinConfig        _skCfg;
 
     bool            init();
     bool            fromConfig(yarp::os::Searchable& config);
     bool            initWithSpecialConfig(yarp::os::Searchable& config);
     bool            isEpManagedByBoard();
     bool            start();
+    bool            configPeriodicMessage(void);
     eOprotIndex_t convertIdPatch2IndexNv(int idPatch)
     {
       /*in xml file idPatch are number of ems canPort identified with numer 1 or 2 on electronic schematics.
       * in ethernet protocol the patch number is the index part of network variable identifier, that starts from 0 */
-        if(numOfPatches == 1)
+        if(_skCfg.numOfPatches == 1)
             return(0);
         else
             return(idPatch-1);

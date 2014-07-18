@@ -18,10 +18,13 @@
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
 
+#include "SkinConfigReader.h"
+
 
 class CanBusSkin : public yarp::os::RateThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
 {
 private:
+
     /* *************************************************************************************** */
     // CAN Message parameters
     // 4C Message
@@ -40,12 +43,21 @@ private:
     yarp::os::Bottle msg4E_EnaH;
     /* *************************************************************************************** */
     
+    /****************** new cfg **********************************/
+    SkinBoardCfgParam       _brdCfg;
+    SkinTriangleCfgParam    _triangCfg;
+    bool                    _newCfg;
+    SkinConfigReader        *_cfgReader;
+    int                     _canBusNum;
+    /*************************************************************/
+
 protected:
     yarp::dev::PolyDriver driver;
     yarp::dev::ICanBus *pCanBus;
     yarp::dev::ICanBufferFactory *pCanBufferFactory;
     yarp::dev::CanBuffer inBuffer;
     yarp::dev::CanBuffer outBuffer;
+
    
     yarp::os::Semaphore mutex;
 
@@ -96,6 +108,26 @@ private:
      * Sends the CMD_TACT_SETUP2 0x4E CAN message to the MTB boards.
      */
     bool sendCANMessage4E(void);
+
+    /**
+     * Sends the message of class polling with command @command and data @data.
+     */
+    bool sendCANMessage(uint8_t destAddr, uint8_t command, void *data);
+
+    /**
+     * Read configuration old style.
+     */
+    bool readOldConfiguration(yarp::os::Searchable& config);
+
+    /**
+     * Read configuration new style.
+     */
+    bool readNewConfiguration(yarp::os::Searchable& config);
+
+    /**
+     * Read special new configuration. It is used to configure board and/or triangles with values different from others
+     */
+    bool readNewSpecialConfiguration(yarp::os::Searchable& config);
 };
 
 #endif
