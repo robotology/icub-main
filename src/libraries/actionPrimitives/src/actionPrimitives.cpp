@@ -621,7 +621,8 @@ bool ActionPrimitives::open(Property &opt)
     }
 
     // open views
-    polyHand.view(encCtrl);
+    polyHand.view(modCtrl);
+    polyHand.view(encCtrl);    
     polyHand.view(posCtrl);
     polyCart.view(cartCtrl);
 
@@ -658,7 +659,10 @@ bool ActionPrimitives::open(Property &opt)
 
     // hand joints set
     for (int j=jHandMin; j<jHandMax; j++)
+    {
+        fingersJnts.push_back(j);
         fingersJntsSet.insert(j);
+    }
 
     // map from hand joints to fingers
     fingers2JntsMap.insert(pair<int,int>(0,8));
@@ -772,7 +776,7 @@ bool ActionPrimitives::isHandSeqEnded()
                         printMessage("contact detected on finger %d: (%g>%g) => stopping joint %d\n",
                                      fng,val,thres,jnt);
 
-                        stopJntTraj(jnt);
+                        posCtrl->stop(jnt);
                         tmpSet.erase(jnt);
                     }
                 }                
@@ -787,7 +791,7 @@ bool ActionPrimitives::isHandSeqEnded()
 
         for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
         {
-            stopJntTraj(*i);
+            posCtrl->stop(*i);
             tmpSet.erase(*i);
         }
     }
@@ -1360,18 +1364,6 @@ ActionPrimitives::~ActionPrimitives()
 
 
 /************************************************************************/
-bool ActionPrimitives::stopJntTraj(const int jnt)
-{
-    double fb;
-
-    if (encCtrl->getEncoder(jnt,&fb))
-        return posCtrl->positionMove(jnt,fb);
-    else
-        return false;
-}
-
-
-/************************************************************************/
 bool ActionPrimitives::handCheckMotionDone(const int jnt)
 {
     double fb;
@@ -1511,15 +1503,15 @@ bool ActionPrimitives::cmdHand(const Action &action)
         curGraspDetectionThres=thres;
         curHandTmo=tmo;
 
-        for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
+        size_t sz=std::min(fingersJnts.size(),std::min(poss.length(),vels.length()));
+        for (size_t i=0; i<sz; i++)
         {
-            size_t j=*itr-jHandMin;
-            if ((j>=poss.length()) || (j>=vels.length()))
-                break;
-
-            posCtrl->setRefSpeed(*itr,vels[j]);
-            posCtrl->positionMove(*itr,poss[j]);
+            size_t j=fingersJnts[i];
+            modCtrl->setControlMode(j,VOCAB_CM_POSITION);
+            posCtrl->setRefSpeed(j,vels[j-jHandMin]);
         }
+        
+        posCtrl->positionMove(sz,fingersJnts.getFirst(),poss.data());
 
         latchHandMoveDone=handMoveDone=false;
         handSeqTerminator=action.handSeqTerminator;
@@ -1871,9 +1863,7 @@ bool ActionPrimitives::stopControl()
         clearActionsQueue();
 
         cartCtrl->stopControl();
-
-        for (set<int>::iterator itr=fingersJntsSet.begin(); itr!=fingersJntsSet.end(); ++itr)
-            stopJntTraj(*itr);
+        posCtrl->stop(fingersJnts.size(),fingersJnts.getFirst());
 
         armMoveDone =latchArmMoveDone =true;
         handMoveDone=latchHandMoveDone=true;
