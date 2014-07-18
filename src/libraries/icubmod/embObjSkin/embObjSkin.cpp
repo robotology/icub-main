@@ -292,12 +292,10 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
     {
         _newCfg = true;
-        yWarning() << "skin configuration uses new version!!!";
     }
     else
     {
         _newCfg = false;
-        yWarning() << "skin configuration uses old version!!!";
         return true;
     }
 
@@ -411,7 +409,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     }
     //resize data vector with number of triangle found in config file
     sensorsNum=16*12*_skCfg.totalCardsNum;     // max num of card
-   yError() << "sensorNum = " << sensorsNum << "  totalCardsNum=" << _skCfg.totalCardsNum;
    data.resize(sensorsNum);
    int ttt = data.size();
    for (int i=0; i < ttt; i++)
@@ -538,12 +535,12 @@ bool EmbObjSkin::start()
     if(_newCfg)
     {
         dat = eosk_sigmode_signal;
-        yWarning()<< "skin for board " << _fId.boardNum << "used new signal mode";
+        yDebug()<< "skin for board " << _fId.boardNum << "used new signal mode";
     }
     else
     {
         dat = eosk_sigmode_signal_oldway;
-        yWarning()<< "skin for board " << _fId.boardNum << "used old signal mode";
+        yDebug()<< "skin for board " << _fId.boardNum << "used old signal mode";
     }
 
     for(i=0; i<_skCfg.numOfPatches;i++)
