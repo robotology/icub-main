@@ -48,7 +48,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
      }
 
 
-    _canBusNum = config.find("canbusDevice").asInt();
+    _canBusNum = config.find("canDeviceNum").asInt();
     char name[20];
     snprintf(name, sizeof(name), "canSkin on bus %d", _canBusNum);
     _cfgReader = new SkinConfigReader(name);
@@ -111,13 +111,13 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
     {
         _newCfg = true;
-        yWarning() << "skin configuration uses new version!!!";
+        yWarning() << "Skin on can bus " << _canBusNum << " uses new configuration version!!!";
         ret = readNewConfiguration(config);
     }
     else
     {
         _newCfg = false;
-        yWarning() << "skin configuration uses old version!!!";
+        yWarning() << "Skin on can bus " << _canBusNum << " uses old configuration version!!!";
         ret = readOldConfiguration(config);
     }
 
@@ -273,7 +273,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         //check if patch exist
         if(_canBusNum != boardCfgList[j].patch)
         {
-            yError() << "Skin on can bus " << _canBusNum << "configured SpecialBoardConfig on patch with a different id from my can bus";
+            yError() << "Skin on can bus " << _canBusNum << "configured SpecialBoardConfig on patch with a different id from my can bus " <<  _canBusNum << "patch=" <<boardCfgList[j].patch ;
             return false;
         }
 
@@ -302,7 +302,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
             if(!sendCANMessage(k, ICUBCANPROTO_POL_SK_CMD__SET_BRD_CFG, (void*)&boardCfgList[j].cfg))
                 return false;
         }
-       }
+    }
 
         Time::delay(0.01);
         /* Read special traingle configuration */
@@ -310,15 +310,17 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                                     //in output the function return number of special board cfg are in file xml
         SpecialSkinTriangleCfgParam triangleCfg[numofcfg];
 
-        if(! _cfgReader->readSpecialTriangleCfg(config, triangleCfg, &numofcfg))
+        if(! _cfgReader->readSpecialTriangleCfg(config, &triangleCfg[0], &numofcfg))
             return false;
 
         for(j=0; j<numofcfg; j++)
         {
+            yError() << "special traingle cfg: " << numofcfg;
+
             //check if patch exist
             if(_canBusNum != triangleCfg[j].patch)
             {
-                yError() << "Skin on can bus " << _canBusNum << "configured SpecialTriangleConfig on patch with a different id from my can bus";
+                yError() << "Skin on can bus " << _canBusNum << "configured SpecialTriangleConfig on patch with a different id from my can bus" <<  _canBusNum << "patch=" <<triangleCfg[j].patch ;
                 return false;
             }
 
