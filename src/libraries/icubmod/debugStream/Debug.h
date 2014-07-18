@@ -207,7 +207,7 @@ inline std::ostringstream& operator<<(std::ostringstream &oss, const std::vector
 }
 
 
-#define YFIXME_NOTIMPLEMENTED yError() << "FIXME: NOT IMPLEMENTED";
+#define YFIXME_NOTIMPLEMENTED(what) yWarning() << "FIXME:" << what << "not yet implemented()";
 
 
 #endif // DebugStream_DEBUG_H
