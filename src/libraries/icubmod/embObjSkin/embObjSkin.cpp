@@ -745,8 +745,8 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
                 if(_skCfg.patchInfoList[p].cardAddrList[cId_index] == cardAddr)
                 {
                     mtbId = cId_index;
-                    if(numOfPatches==2 && p==0)
-                        mtbId +=  patchInfoList[1].cardAddrList.size(); //add max num of boards on patch number 2 because they are sorted in decreasing order by can addr
+                    if(_skCfg.numOfPatches==2 && p==0)
+                        mtbId +=  _skCfg.patchInfoList[1].cardAddrList.size(); //add max num of boards on patch number 2 because they are sorted in decreasing order by can addr
                     break;
                 }
             }
