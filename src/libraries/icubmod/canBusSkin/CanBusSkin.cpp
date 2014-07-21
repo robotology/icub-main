@@ -49,8 +49,8 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
 
     _canBusNum = config.find("canDeviceNum").asInt();
-    char name[20];
-    snprintf(name, sizeof(name), "canSkin on bus %d", _canBusNum);
+    char name[80];
+    sprintf(name, "canSkin on bus %d", _canBusNum);
     _cfgReader = new SkinConfigReader(name);
 
     int period=config.find("period").asInt();
@@ -161,7 +161,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     if(_newCfg)
     {
         uint8_t txmode = 1;
-        for(int i=0; i< cardId.size(); i++)
+        for(size_t i=0; i< cardId.size(); i++)
         {
             if(! sendCANMessage(cardId[i], ICUBCANPROTO_POL_AS_CMD__SET_TXMODE, &txmode))
                 return false;
@@ -256,14 +256,14 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 {
     Bottle          bNumOfset;
     int             numOfSets;
-    int             p, j;
+    int             j;
     int             numofcfg;
 
 
     /* Read special board configuration */
     numofcfg = cardId.size();   //set size of my vector boardCfgList;
                                 //in output the function returns number of special board cfg are in file xml
-    SpecialSkinBoardCfgParam boardCfgList[numofcfg];
+    SpecialSkinBoardCfgParam* boardCfgList = new SpecialSkinBoardCfgParam[numofcfg];
 
     if(!_cfgReader->readSpecialBoardCfg(config, boardCfgList, &numofcfg))
         return false;
@@ -280,7 +280,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         //check if card address are in patch
         for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
         {
-            int i;
+            size_t i;
             for(i=0; i<cardId.size(); i++)
             {
                 if(cardId[i]==a)//card address is in my patch
@@ -308,7 +308,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         /* Read special traingle configuration */
         numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM; //set size of my vector boardCfgList;
                                     //in output the function return number of special board cfg are in file xml
-        SpecialSkinTriangleCfgParam triangleCfg[numofcfg];
+        SpecialSkinTriangleCfgParam* triangleCfg = new SpecialSkinTriangleCfgParam[numofcfg];
 
         if(! _cfgReader->readSpecialTriangleCfg(config, &triangleCfg[0], &numofcfg))
             return false;
@@ -324,7 +324,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                 return false;
             }
 
-            for(int i=0; i<cardId.size(); i++)
+            for(size_t i=0; i<cardId.size(); i++)
             {
                 if(cardId[i]==triangleCfg[j].boardAddr)//card address is in my patch
                     break;
@@ -356,7 +356,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
         return false;
 
     /* send default board configuration (new configuration style)*/
-    for(int i=0; i<cardId.size(); i++)
+    for(size_t i=0; i<cardId.size(); i++)
     {
         if(!sendCANMessage(cardId[i], ICUBCANPROTO_POL_SK_CMD__SET_BRD_CFG, (void*)&_brdCfg))
             return false;
@@ -372,7 +372,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
     spTrCfg.triangleEnd = TRIANGLE_MAX_NUM_IN_BOARD-1; //in each board there are 16 triagle max, their id goes from 0 to TRIANGLE_MAX_NUM_IN_BOARD-1;
 
     //send default board and triangle configuration (new configuration style)
-    for(int i=0; i<cardId.size(); i++)
+    for(size_t i=0; i<cardId.size(); i++)
     {
         spTrCfg.boardAddr = cardId[i];
         if(!sendCANMessage(cardId[i], ICUBCANPROTO_POL_SK_CMD__SET_TRIANG_CFG, (void*)&spTrCfg))
@@ -442,7 +442,7 @@ bool CanBusSkin::close()
     if(_newCfg)
     {
         uint8_t txmode = 0;
-        for(int i=0; i< cardId.size(); i++)
+        for(size_t i=0; i< cardId.size(); i++)
         {
             sendCANMessage(cardId[i], ICUBCANPROTO_POL_AS_CMD__SET_TXMODE, &txmode);
         }
@@ -505,6 +505,7 @@ bool CanBusSkin::threadInit() {
 //    } else {
 //        return false;
 //    }
+    return true;
 }
 
 void CanBusSkin::run() {    
@@ -531,7 +532,7 @@ void CanBusSkin::run() {
         unsigned int type=msg.getData()[0]&0x80;
         int len=msg.getLen();
 
-        for (int i=0; i<cardId.size(); i++)
+        for (size_t i=0; i<cardId.size(); i++)
         {
             if (id==cardId[i])
             {
@@ -574,8 +575,8 @@ void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_p
         cout << "WARNING: CanBusSkin: The number of " << i_paramName << " parameters provided is different than the number of CAN IDs for this BUS. Check your parameters. \n";
         cout << "WARNING: CanBusSkin: Using default values for " << i_paramName << " parameters. \n";
 
-        size_t i = i_paramList.size();
-        for (i ; i <= i_length; ++i) {
+        size_t i;
+        for (i= i_paramList.size() ; i <= i_length; ++i) {
             i_paramList.add(i_defaultValue);
         }
     }
