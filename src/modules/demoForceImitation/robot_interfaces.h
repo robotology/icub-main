@@ -31,7 +31,8 @@ class robot_interfaces
     std::map<iCub::skinDynLib::BodyPart, yarp::dev::IPositionControl*>     ipos;
     std::map<iCub::skinDynLib::BodyPart, yarp::dev::ITorqueControl*>       itrq;
     std::map<iCub::skinDynLib::BodyPart, yarp::dev::IImpedanceControl*>    iimp;
-    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IControlMode*>         icmd;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IControlMode2*>        icmd;
+    std::map<iCub::skinDynLib::BodyPart, yarp::dev::IInteractionMode*>     iint;
     std::map<iCub::skinDynLib::BodyPart, yarp::dev::IEncoders*>            ienc;
     std::map<iCub::skinDynLib::BodyPart, yarp::dev::IPidControl*>          ipid;
     std::map<iCub::skinDynLib::BodyPart, yarp::dev::IVelocityControl*>     ivel;

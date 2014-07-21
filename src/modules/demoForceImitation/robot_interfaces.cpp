@@ -103,6 +103,7 @@ bool robot_interfaces::init()
         ipid[i]=0;
         ivel[i]=0;
         iamp[i]=0;
+        iint[i]=0;
         dd[i]=0;
 
         part = BodyPart_s[i];
@@ -128,6 +129,7 @@ bool robot_interfaces::init()
         ok = ok & dd[i]->view(ienc[i]);
         ok = ok & dd[i]->view(ipid[i]);
         ok = ok & dd[i]->view(iamp[i]);
+        ok = ok & dd[i]->view(iint[i]);
     }
     return ok;
 }
