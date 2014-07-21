@@ -77,6 +77,7 @@ void put_everything_in_position()
         for (int j=0; j<jmax; j++)
         {
             if (robot->icmd[i]) robot->icmd[i]->setPositionMode(j);
+            if (robot->iint[i]) robot->iint[i]->setInteractionMode(j,VOCAB_IM_STIFF);
         }
     }
 }
@@ -102,9 +103,11 @@ void update_radio_buttons()
         }
         for (int j=0; j<jmax; j++)
         {
-            int mode=0;
-            if (robot->icmd[i]) robot->icmd[i]->getControlMode(j,&mode);
-            switch (mode)
+            int c_mode=0;
+            yarp::dev::InteractionModeEnum i_mode;
+            if (robot->icmd[i]) robot->icmd[i]->getControlMode(j,&c_mode);
+            if (robot->iint[i]) robot->iint[i]->getInteractionMode(j,&i_mode);
+            switch (c_mode)
             {
                 case VOCAB_CM_POSITION:
                     //gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radiobutton_mode_pos[i]),true);
@@ -180,6 +183,11 @@ void radio_click_p( GtkWidget *widget, void* r)
                 robot->icmd[rd->id]->setPositionMode(2);
                 robot->icmd[rd->id]->setPositionMode(3);
                 robot->icmd[rd->id]->setPositionMode(4);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_STIFF);
             break;
             case LEFT_LEG:
             case RIGHT_LEG:
@@ -187,13 +195,22 @@ void radio_click_p( GtkWidget *widget, void* r)
                 robot->icmd[rd->id]->setPositionMode(1);
                 robot->icmd[rd->id]->setPositionMode(2);
                 robot->icmd[rd->id]->setPositionMode(3);
-                robot->icmd[rd->id]->setPositionMode(4);    
+                robot->icmd[rd->id]->setPositionMode(4);
                 robot->icmd[rd->id]->setPositionMode(5);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(5, VOCAB_IM_STIFF);
             break;
             case TORSO:
                 robot->icmd[rd->id]->setPositionMode(0);
                 robot->icmd[rd->id]->setPositionMode(1);
                 robot->icmd[rd->id]->setPositionMode(2);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_STIFF);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_STIFF);
             break;
         }
         update_labels();
@@ -239,11 +256,12 @@ void radio_click_t( GtkWidget *widget, void* r)
             case TORSO:
                 robot->iimp[rd->id]->setImpedance(0,0.0,0.0);
                 robot->iimp[rd->id]->setImpedance(1,0.0,0.0);
+                robot->iimp[rd->id]->setImpedance(2,0.1,0.0);
                 robot->icmd[rd->id]->setTorqueMode(0);
                 robot->icmd[rd->id]->setTorqueMode(1);
                 //robot->icmd[rd->id]->setTorqueMode(2);
-                robot->iimp[rd->id]->setImpedance(2,0.1,0.0);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->iint[rd->id]->setInteractionMode(2,VOCAB_IM_COMPLIANT);
             break;
         }
         update_labels();
@@ -265,11 +283,16 @@ void radio_click_is( GtkWidget *widget, void* r)
                 robot->iimp[rd->id]->setImpedance(2,0.2,0.0);
                 robot->iimp[rd->id]->setImpedance(3,0.2,0.0);
                 robot->iimp[rd->id]->setImpedance(4,0.1,0.0);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
-                robot->icmd[rd->id]->setImpedancePositionMode(3);
-                robot->icmd[rd->id]->setImpedancePositionMode(4);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(3);
+                robot->icmd[rd->id]->setPositionMode(4);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_COMPLIANT);
             break;
             case LEFT_LEG:
             case RIGHT_LEG:
@@ -279,20 +302,29 @@ void radio_click_is( GtkWidget *widget, void* r)
                 robot->iimp[rd->id]->setImpedance(3,0.2,0.0);
                 robot->iimp[rd->id]->setImpedance(4,0.2,0.0);
                 robot->iimp[rd->id]->setImpedance(5,0.2,0.0);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
-                robot->icmd[rd->id]->setImpedancePositionMode(3);
-                robot->icmd[rd->id]->setImpedancePositionMode(4);    
-                robot->icmd[rd->id]->setImpedancePositionMode(5);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(3);
+                robot->icmd[rd->id]->setPositionMode(4);
+                robot->icmd[rd->id]->setPositionMode(5);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(5, VOCAB_IM_COMPLIANT);
             break;
             case TORSO:
                 robot->iimp[rd->id]->setImpedance(0,0.1,0.0);
                 robot->iimp[rd->id]->setImpedance(1,0.1,0.0);
                 robot->iimp[rd->id]->setImpedance(2,0.1,0.0);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
             break;
         }
         update_labels();
@@ -314,11 +346,16 @@ void radio_click_im( GtkWidget *widget, void* r)
                 robot->iimp[rd->id]->setImpedance(2,0.4,0.03);
                 robot->iimp[rd->id]->setImpedance(3,0.2,0.01);
                 robot->iimp[rd->id]->setImpedance(4,0.2,0.00);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
-                robot->icmd[rd->id]->setImpedancePositionMode(3);
-                robot->icmd[rd->id]->setImpedancePositionMode(4);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(3);
+                robot->icmd[rd->id]->setPositionMode(4);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_COMPLIANT);
             break;
             case LEFT_LEG:
             case RIGHT_LEG:
@@ -328,20 +365,29 @@ void radio_click_im( GtkWidget *widget, void* r)
                 robot->iimp[rd->id]->setImpedance(3,0.4,0.01);
                 robot->iimp[rd->id]->setImpedance(4,0.4,0.01);
                 robot->iimp[rd->id]->setImpedance(5,0.4,0.01);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
-                robot->icmd[rd->id]->setImpedancePositionMode(3);
-                robot->icmd[rd->id]->setImpedancePositionMode(4);    
-                robot->icmd[rd->id]->setImpedancePositionMode(5);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(3);
+                robot->icmd[rd->id]->setPositionMode(4);
+                robot->icmd[rd->id]->setPositionMode(5);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(5, VOCAB_IM_COMPLIANT);
             break;
             case TORSO:
                 robot->iimp[rd->id]->setImpedance(0,0.3,0.0);
                 robot->iimp[rd->id]->setImpedance(1,0.3,0.0);
                 robot->iimp[rd->id]->setImpedance(2,0.3,0.0);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
             break;
         }
         update_labels();
@@ -363,11 +409,16 @@ void radio_click_ih( GtkWidget *widget, void* r)
                 robot->iimp[rd->id]->setImpedance(2,0.6,0.06);
                 robot->iimp[rd->id]->setImpedance(3,0.3,0.02);
                 robot->iimp[rd->id]->setImpedance(4,0.2,0.00);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
-                robot->icmd[rd->id]->setImpedancePositionMode(3);
-                robot->icmd[rd->id]->setImpedancePositionMode(4);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(3);
+                robot->icmd[rd->id]->setPositionMode(4);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_COMPLIANT);
             break;
             case LEFT_LEG:
             case RIGHT_LEG:
@@ -377,20 +428,29 @@ void radio_click_ih( GtkWidget *widget, void* r)
                 robot->iimp[rd->id]->setImpedance(3,0.6,0.02);
                 robot->iimp[rd->id]->setImpedance(4,0.6,0.02);
                 robot->iimp[rd->id]->setImpedance(5,0.6,0.02);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
-                robot->icmd[rd->id]->setImpedancePositionMode(3);
-                robot->icmd[rd->id]->setImpedancePositionMode(4);    
-                robot->icmd[rd->id]->setImpedancePositionMode(5);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(3);
+                robot->icmd[rd->id]->setPositionMode(4);
+                robot->icmd[rd->id]->setPositionMode(5);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(3, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(4, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(5, VOCAB_IM_COMPLIANT);
             break;
             case TORSO:
                 robot->iimp[rd->id]->setImpedance(0,0.7,0.015);
                 robot->iimp[rd->id]->setImpedance(1,0.7,0.015);
                 robot->iimp[rd->id]->setImpedance(2,0.7,0.015);
-                robot->icmd[rd->id]->setImpedancePositionMode(0);
-                robot->icmd[rd->id]->setImpedancePositionMode(1);
-                robot->icmd[rd->id]->setImpedancePositionMode(2);
+                robot->icmd[rd->id]->setPositionMode(0);
+                robot->icmd[rd->id]->setPositionMode(1);
+                robot->icmd[rd->id]->setPositionMode(2);
+                robot->iint[rd->id]->setInteractionMode(0, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(1, VOCAB_IM_COMPLIANT);
+                robot->iint[rd->id]->setInteractionMode(2, VOCAB_IM_COMPLIANT);
             break;
         }
         update_labels();

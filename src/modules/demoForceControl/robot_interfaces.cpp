@@ -33,6 +33,7 @@ robot_interfaces::robot_interfaces()
         ipid[i]=0;
         ivel[i]=0;
         iamp[i]=0;
+        iint[i]=0;
         dd[i]=0;
     }
 }
@@ -78,6 +79,7 @@ void robot_interfaces::init(std::string robot)
         ok = ok & dd[i]->view(ienc[i]);
         ok = ok & dd[i]->view(ipid[i]);
         ok = ok & dd[i]->view(iamp[i]);
+        ok = ok & dd[i]->view(iint[i]);
     }
 }
 
