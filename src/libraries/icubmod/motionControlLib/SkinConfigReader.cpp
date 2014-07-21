@@ -252,7 +252,7 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
     for(int j=1;j<=*numofcfg;j++)
     {
         char tmp[80];
-        snprintf(tmp, sizeof(tmp), "boardSetCfg%d", j);
+        sprintf(tmp, "boardSetCfg%d", j);
 
         Bottle &xtmp = boardCfgSpecialGroup.findGroup(tmp);
         if(xtmp.isNull())
@@ -307,7 +307,7 @@ bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, Spec
     for(int j=1;j<=*numofcfg;j++)
     {
         char tmp[80];
-        snprintf(tmp, sizeof(tmp), "triangleSetCfg%d", j);
+        sprintf(tmp, "triangleSetCfg%d", j);
 
         Bottle &xtmp = triangleCfgSpecialGroup.findGroup(tmp);
         if(xtmp.isNull())
