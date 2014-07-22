@@ -1285,6 +1285,7 @@ int iCubSimulationControl::ControlModes_yarp2iCubSIM(int yarpMode)
     std::cout << "yarpmode is " << yarp::os::Vocab::decode(yarpMode);
     switch(yarpMode)
     {
+        case VOCAB_CM_FORCE_IDLE:
         case VOCAB_CM_IDLE:
             ret = MODE_IDLE;
             break;
@@ -1309,7 +1310,6 @@ int iCubSimulationControl::ControlModes_yarp2iCubSIM(int yarpMode)
 
         // for new modes I´ll use directly the vocabs, so they are the same
         case VOCAB_CM_MIXED:
-        case VOCAB_CM_FORCE_IDLE:
         case VOCAB_CM_HW_FAULT:
         case VOCAB_CM_CALIBRATING:
         case VOCAB_CM_CALIB_DONE:
@@ -1354,7 +1354,6 @@ int iCubSimulationControl::ControlModes_iCubSIM2yarp(int iCubMode)
 
         // for new modes I´ll use directly the vocabs, so they are the same
         case MODE_MIXED:
-        case MODE_FORCE_IDLE:
         case MODE_HW_FAULT:
         case MODE_CALIBRATING:
         case MODE_CALIB_DONE:
