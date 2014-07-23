@@ -11,6 +11,18 @@
         <param name="SrvPort">		4444		</param>
     </group>
     
+    <group name="TRANSCEIVER">
+        <param name="listeningPort">	            12345	</param> 
+        <param name="destinationPort">              12345   </param>
+        <param name="maxSizeRXpacket">		        768		</param>
+        <param name="maxSizeTXpacket">		        1408	</param>
+        <param name="maxSizeROPframeRegulars">      1024    </param>
+        <param name="maxSizeROPframeReplies">  	    128     </param>
+        <param name="maxSizeROPframeOccasionals">   256	    </param>
+        <param name="maxSizeROP">  		            256     </param>
+        <param name="maxNumberRegularROPs">  		32      </param>
+    </group>
+    
     <group name="PROTOCOL">
         <param name="endpointManagementIsSupported">	        1   </param>
             <param name="entityMNcommunicationNumberOf">            1	</param>
