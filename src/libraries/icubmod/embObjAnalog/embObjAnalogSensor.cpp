@@ -517,13 +517,13 @@ bool embObjAnalogSensor::getFullscaleValues()
     strainConfig.signaloncefullscale    = eobool_true;
 
     eOprotID32_t protoid_strain_config = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-    res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
-
+    //res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
     timeout = 5;
 
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
+        res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
         Time::delay(1);
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
@@ -537,7 +537,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         }
 
         timeout--;
-        yDebug() << "full scale val not arrived yet... retrying in 1 sec";
+        yDebug() << "board " << _fId.boardNum << ": full scale val not arrived yet... retrying in 1 sec";
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
