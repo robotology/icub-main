@@ -32,6 +32,8 @@
 #include "string.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include <math.h>
+#include "FeatureInterface.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -124,10 +126,110 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
         sec =  msec = usec = 0;
     }
 
-    snprintf(str, sizeof(str), "MANAGEMENT-info: sign = 0x%x, time = %0.4ds+%0.3dms+%0.3dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+    snprintf(str, sizeof(str), "MANAGEMENT-info: sign = 0x%x, time = %04ds+%03dms+%03dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
 
     printf("%s\n", str);
     fflush(stdout);
+}
+
+
+
+extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    double yt = 0.0;
+    void* sem = NULL;
+
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+
+    if(NULL == sem)
+    {
+        return;
+    }
+
+    yt = feat_yarp_time_now();
+#if 0
+    int ss = floor(yt);
+    double r = 1000.0*(yt - ss);
+    int mm = floor(r);
+    double rr = 1000.0*(r-mm);
+    int uu = floor(rr);
+#endif
+
+
+    printf("reply_numof arrived at yarp time %f\n", yt);
+
+    feat_Semaphore_post(sem);
+#endif
+}
+
+extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    double yt = 0.0;
+    void* sem = NULL;
+
+    eOmn_command_t* command = (eOmn_command_t*)rd->data;
+
+    eOmn_opc_t opc = (eOmn_opc_t)command->cmd.opc;
+
+
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+    
+    if(NULL == sem)
+    {
+        return;
+    }
+
+
+yt = feat_yarp_time_now();
+#if 0
+    int ss = floor(yt);
+    double r = 1000.0*(yt - ss);
+    int mm = floor(r);
+    double rr = 1000.0*(r-mm);
+    int uu = floor(rr);
+#endif
+
+
+    printf("reply_numof arrived at yarp time %f\n", yt);
+
+    feat_Semaphore_post(sem);
+#endif
+}
+
+extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    double yt = 0.0;
+    void* sem = NULL;
+
+    eOmn_command_t* command = (eOmn_command_t*)rd->data;
+
+    eOmn_opc_t opc = (eOmn_opc_t)command->cmd.opc;
+
+
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+    
+    if(NULL == sem)
+    {
+        return;
+    }
+
+    yt = feat_yarp_time_now();
+#if 0
+    int ss = floor(yt);
+    double r = 1000.0*(yt - ss);
+    int mm = floor(r);
+    double rr = 1000.0*(r-mm);
+    int uu = floor(rr);
+#endif
+
+
+    printf("reply arrayarrived at yarp time %f\n", yt);
+
+    feat_Semaphore_post(sem);
+#endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------

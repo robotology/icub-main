@@ -167,7 +167,7 @@ bool TheEthManager::removeResource(ethResources* to_be_removed)
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
-ethResources *TheEthManager::requestResource(yarp::os::Searchable &config, FEAT_ID *request)
+ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request)
 {
     yTrace() << request->boardNum;
     // Check if local socket is initted, if not do it.
@@ -213,7 +213,7 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &config, FEAT_
         // device doesn't exist yet, create it
         yTrace() << "Creating EMS device with IP " << request->EMSipAddr.string;
         newRes = new ethResources;
-        if(!newRes->open(config, *request))
+        if(!newRes->open(cfgtransceiver, cfgprotocol, *request))
         {
             yError() << "Error creating new EMS!!";
             if(NULL != newRes)
@@ -629,6 +629,33 @@ int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
     return ret;
 }
 
+ethResources* TheEthManager::GetEthResource(FEAT_boardnumber_t boardnum)
+{
+    ethResources *res = NULL;
+
+    managerMutex.wait();
+
+    ethResIt iterator = EMS_list.begin();
+
+    eOprotBRD_t targetbrd = featIdBoardNum2nvBoardNum(boardnum);
+    while(iterator != EMS_list.end())
+    {
+        eOprotBRD_t brdn = (*iterator)->get_protBRDnumber();
+
+        if(brdn == targetbrd)
+        {
+            res = *iterator;
+            break;
+        }
+        iterator++;
+    }
+
+
+    managerMutex.post();
+
+    return(res);
+}
+
 // Probably useless
 bool TheEthManager::open()
 {
@@ -685,6 +712,7 @@ void EthSender::run()
 {
     ethResources  *ethRes;
     uint16_t      bytes_to_send = 0;
+    uint16_t      numofrops = 0;
     ethResIt      iterator;
     ethResRIt    riterator, _rBegin, _rEnd;
 
@@ -735,6 +763,7 @@ void EthSender::run()
     {
         p_sendData = NULL;
         bytes_to_send = 0;
+        numofrops = 0;
         if(NULL == *riterator)
         {
             yError() << "EthManager::run, iterator==NULL";
@@ -744,12 +773,12 @@ void EthSender::run()
         ethRes = (*riterator);
 
         // This uses directly the pointer of the transceiver
-        ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send);
+        ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send, &numofrops);
 
 #ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
         if((NULL != p_sendData))
 #else
-        if((bytes_to_send > EMPTY_PACKET_SIZE) && (NULL != p_sendData))
+        if((numofrops > 0) && (NULL != p_sendData) && (bytes_to_send > 0))
 #endif
         {
             ACE_INET_Addr addr = ethRes->getRemoteAddress();

@@ -71,6 +71,9 @@ protected:
     uint32_t                remoteipaddr;
     uint16_t                ipport;
     EOpacket                *p_RxPkt;
+    uint16_t                 pktsizerx;
+    eOmn_transceiver_properties_t localTransceiverProperties;
+    eOmn_transceiver_properties_t remoteTransceiverProperties;
 
 public:
     hostTransceiver();
@@ -78,7 +81,7 @@ public:
 
     yarp::os::Semaphore   transMutex;
 
-    bool init(yarp::os::Searchable &config, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
+    bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
     /*! This method add a Set type rop in the next ropframe.
         Parameters are:
@@ -119,21 +122,22 @@ protected:
     /* Ask the transceiver to get the ropframe to be sent
      * This pointer will be modified by the getPack function to point to the TX buffer.
      * No need to allocate memory here */
-    void getTransmit(uint8_t **data, uint16_t *size);
+    void getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 private:
     bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
 
-    bool initProtocol(yarp::os::Searchable &config);
+    bool initProtocol(yarp::os::Searchable &cfgprotocol);
 
     void eoprot_override_mn(void);
     void eoprot_override_mc(void);
     void eoprot_override_as(void);
     void eoprot_override_sk(void); 
 
-    bool prepareTransceiverConfig(yarp::os::Searchable &config);
+    bool prepareTransceiverConfig(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
 
+    bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
 
-    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &config);  
+    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol);
 
 public:
     bool getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size);

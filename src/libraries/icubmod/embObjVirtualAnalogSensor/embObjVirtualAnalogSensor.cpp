@@ -190,11 +190,18 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     ACE_TCHAR       address[64];
     ACE_UINT16      port;
 
+    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
+    if(groupTransceiver.isNull())
+    {
+        yError() << "embObjVirtualAnalogSensor: Can't find TRANSCEIVER group in config files";
+        return false;
+    }
+
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yWarning() << "embObjVirtualAnalogSensor: Can't find PROTOCOL group in config files ... using max capabilities";
-        //return false;
+        yError() << "embObjVirtualAnalogSensor: Can't find PROTOCOL group in config files";
+        return false;
     }
 
 
@@ -246,7 +253,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(groupProtocol, &_fId);
+    res = ethManager->requestResource(groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -259,7 +266,11 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 //        yError() << "EMS "<< _fId.boardNum << "is not connected to virtual analog sensor";
 //        return false;
 //    }
-
+//    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_???))
+//    {
+//        yError() << "embObjVirtualAnalogSensor and board "<< _fId.boardNum << "dont not have the same eoprot_endpoint_??? protocol version: DO A FW UPGRADE";
+//        return false;
+//    }
 
     yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNum << "instantiated correctly";
     return true;

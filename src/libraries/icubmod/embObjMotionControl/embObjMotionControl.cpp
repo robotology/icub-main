@@ -499,11 +499,18 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     Bottle          groupEth;
     ACE_UINT16      port;
 
+    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
+    if(groupTransceiver.isNull())
+    {
+        yError() << "embObjMotionControl: Can't find TRANSCEIVER group in xml config files";
+        return false;
+    }
+
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yWarning() << "embObjMotionControl: Can't find PROTOCOL group in config files ... using max capabilities";
-        //return false;
+        yError() << "embObjMotionControl: Can't find PROTOCOL group in xml config files";
+        return false;
     }
 
     // Get both PC104 and EMS ip addresses and port from config file
@@ -535,7 +542,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
 
     // Check input parameters
-    sprintf(info, "embObjMotionControl - referred to EMS: %s", _fId.EMSipAddr.string);
+    snprintf(info, sizeof(info), "embObjMotionControl - referred to EMS: %s", _fId.EMSipAddr.string);
 
     // Check useRawEncoderData = do not use calibration data!
     Value use_raw = config.findGroup("GENERAL").find("useRawEncoderData");
@@ -646,7 +653,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     _fId.handle  = (this);
-    res = ethManager->requestResource(groupProtocol, &_fId);
+    res = ethManager->requestResource(groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -658,6 +665,20 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << "EMS "<< _fId.boardNum << "is not connected to joints";
         return false;
     }
+
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_motioncontrol))
+    {
+        yError() << "embObjMotionControl::init() fails in function verifyProtocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
+        return false;
+    }
+    else
+    {
+        yError() << "stop here";
+    }
+
+    for(;;);
+#endif
 
     NVnumber = res->getNVnumber(_fId.ep);
     requestQueue = new eoRequestsQueue(NVnumber);

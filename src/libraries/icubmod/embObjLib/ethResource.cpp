@@ -64,11 +64,14 @@ infoOfRecvPkts::infoOfRecvPkts()
 ethResources::ethResources()
 {
     yTrace();
-    how_many_features     = 0;
-    ethManager            = NULL;
-    lastRecvMsgTimestamp  = -1.0;
-    isInRunningMode       = false;
-    infoPkts              = new infoOfRecvPkts();
+    how_many_features           = 0;
+    ethManager                  = NULL;
+    lastRecvMsgTimestamp        = -1.0;
+    isInRunningMode             = false;
+    infoPkts                    = new infoOfRecvPkts();
+    ethResSem                   = new Semaphore(0);
+    verifiedRemoteTransceiver   = false;
+    boardEPsNumber              = 0;
 }
 
 ethResources::~ethResources()
@@ -76,24 +79,20 @@ ethResources::~ethResources()
     yTrace() << info;
     how_many_features   = 0;
     ethManager          = NULL;
+
+    delete ethResSem;
 }
 
 
-bool ethResources::open(yarp::os::Searchable &config, FEAT_ID request)
+bool ethResources::open(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request)
 {
-   // ACE_TCHAR remoteIp_string[64], localIp_string[64];
-
-    //uint16_t loc_port, rem_port;
-//    uint8_t   loc_ip1,loc_ip2,loc_ip3,loc_ip4;
-//    uint8_t   rem_ip1,rem_ip2,rem_ip3,rem_ip4;
-
     // Get the pointer to the actual Singleton ethManager
     ethManager = TheEthManager::instance();
 
     transMutex.wait();
 
     // Fill 'info' field with human friendly string
-    sprintf(info, "ethResources - referred to EMS: %s:%d",request.EMSipAddr.string, request.EMSipAddr.port);
+    snprintf(info, sizeof(info), "ethResources - referred to EMS: %s:%d", request.EMSipAddr.string, request.EMSipAddr.port);
     yTrace() << "Ems ip address " << info;
 
     //
@@ -102,7 +101,7 @@ bool ethResources::open(yarp::os::Searchable &config, FEAT_ID request)
     bool ret;
     eOipv4addr_t eo_locIp = eo_common_ipv4addr(request.PC104ipAddr.ip1, request.PC104ipAddr.ip2, request.PC104ipAddr.ip3, request.PC104ipAddr.ip4);
     eOipv4addr_t eo_remIp = eo_common_ipv4addr(request.EMSipAddr.ip1, request.EMSipAddr.ip2, request.EMSipAddr.ip3, request.EMSipAddr.ip4);
-    if(!init(config, eo_locIp, eo_remIp, request.EMSipAddr.port, rxBUFFERsize, request.boardNum))
+    if(!init(cfgtransceiver, cfgprotocol, eo_locIp, eo_remIp, request.EMSipAddr.port, rxBUFFERsize, request.boardNum))
     {
         ret = false;
         yError() << "cannot init transceiver... maybe wrong board number... check log and config file.";
@@ -158,10 +157,10 @@ int ethResources::deregisterFeature(FEAT_ID request)
 // }
 
 
-void ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size)
+void ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
 {
     transMutex.wait();
-    getTransmit(pack, size);
+    getTransmit(pack, size, numofrops);
     transMutex.post();
 }
 
@@ -176,7 +175,7 @@ void ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size)
 
 int  ethResources::getBufferSize()
 {
-    return (int) RECV_BUFFER_SIZE;
+    return sizeof(recv_msg);
 }
 
 void infoOfRecvPkts::setBoardNum(int boardnum)
@@ -204,16 +203,12 @@ void infoOfRecvPkts::clearStatistics(void)
 
 uint64_t infoOfRecvPkts::getSeqNum(uint8_t *packet)
 {
-    // marco.accame: ok, but ... it would be better to use a public method of EOropframe, which now we dont have
-    EOropframeHeader_t *hdr_ptr = (EOropframeHeader_t*)packet;
-    return(hdr_ptr->sequencenumber);
+    return(eo_ropframe_seqnum_Get((EOropframe*)packet));
 }
 
 uint64_t infoOfRecvPkts::getAgeOfFrame(uint8_t *packet)
 {
-    // marco.accame: ok, but ... it would be better to use a public method of EOropframe, which now we dont have
-    EOropframeHeader_t *hdr_ptr = (EOropframeHeader_t*)packet;
-    return(hdr_ptr->ageofframe);
+    return(eo_ropframe_age_Get((EOropframe*)packet));
 }
 
 void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime)
@@ -419,10 +414,335 @@ bool ethResources::clearPerSigMsg(void)
 
 }
 
+
 bool ethResources::isRunning(void)
 {
 	return(isInRunningMode);
 }
+
+Semaphore* ethResources::GetSemaphore(eOprotEndpoint_t ep, uint32_t signature)
+{
+    return(ethResSem);
+}
+
+// marco.accame on 23 july 2014: i am with wip, thus in commit keep it defined until i have tested it well enough. 
+
+
+bool ethResources::verifyRemoteTransceiver(yarp::os::Searchable &config)
+{
+#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    return true;
+#else
+    if(verifiedRemoteTransceiver)
+    {
+        return(true);
+    }
+
+    // step 1: we ask the remote board the eoprot_tag_mn_comm_status variable and then we verify vs transceiver properties and .. mn protocol version
+
+    const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
+    const double timeout = 0.100;
+
+    eOprotID32_t id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOmn_comm_status_t brdstatus = {0};
+    uint16_t size = 0;
+    // the semaphore used for waiting for replies from the board
+    yarp::os::Semaphore* sem = GetSemaphore(eoprot_endpoint_management, 0);
+
+
+    // send ask message
+    if(false == addGetMessage(id))
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() cannot transmit a request about the communication status to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_comm_status() function shall release the waiting semaphore
+    if(false == sem->waitWithTimeout(timeout))
+    {
+        yError() << "ethResources::verifyProtocol() had a timeout of" << timeout << "secs when asking the comm status to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "ethResources::verifyProtocol() asks: can you ping the board? if so, is the MN version of board equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
+        return(false);
+    }
+
+    // get the reply
+    if(false == readBufferedValue(id, (uint8_t*)&brdstatus, &size))
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() cannot read the comm status of board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+
+    // now i must verify that there is the same mn protocol version
+    const eoprot_version_t * brdversionMN = pc104versionMN; // at the moment we cannot get it from remote board
+    //const eoprot_version_t * brdversionMN = &brdstatus.mnprotocolversion;
+
+    if(pc104versionMN->major != brdversionMN->major)
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further. FW upgrade is required";
+        return(false);
+    }
+
+
+    if(pc104versionMN->minor != brdversionMN->minor)
+    {
+        yWarning() << "ethResources::verifyRemoteTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
+    }
+
+    yWarning() << "ethResources::verifyRemoteTransceiver() detected that it is working with MN protocol version = (" << pc104versionMN->major << pc104versionMN->minor << ")";
+
+
+    // now i must check brdstatus.transceiver vs hostTransceiver::localTransceiverProperties
+
+    if(localTransceiverProperties.listeningPort != brdstatus.transceiver.destinationPort)
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() detected different ports: local listening =" << localTransceiverProperties.listeningPort << ", remote destination=" << brdstatus.transceiver.destinationPort << ": cannot proceed any further";
+        return(false);
+    }
+
+    if(localTransceiverProperties.destinationPort != brdstatus.transceiver.listeningPort)
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() detected different ports: local destination =" << localTransceiverProperties.destinationPort << ", remote listeing=" << brdstatus.transceiver.listeningPort << ": cannot proceed any further";
+        return(false);
+    }
+
+    if(localTransceiverProperties.maxsizeRXpacket < brdstatus.transceiver.maxsizeTXpacket)
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() detected too small rx packet: local rx =" << localTransceiverProperties.maxsizeRXpacket << ", remote tx=" << brdstatus.transceiver.maxsizeTXpacket << ": cannot proceed any further";
+        return(false);
+    }
+
+    yWarning() << "ethResources::verifyRemoteTransceiver() detected that local max rx size of packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept max board tx size of packet = " << brdstatus.transceiver.maxsizeTXpacket;
+
+    if(localTransceiverProperties.maxsizeTXpacket > brdstatus.transceiver.maxsizeRXpacket)
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() detected too big tx packet: local tx =" << localTransceiverProperties.maxsizeTXpacket << ", remote rx=" << brdstatus.transceiver.maxsizeRXpacket << ": verify";
+        //return(false);
+    }
+
+    yWarning() << "ethResources::verifyRemoteTransceiver() detected that local max tx size of packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
+
+
+//    if(localTransceiverProperties.maxsizeROPframeRegulars != brdstatus.transceiver. )
+//    {
+//        yError() << "ethResources::verifyRemoteTransceiver() detected different xxx: local =" << localTransceiverProperties. << ", remote=" << brdstatus.transceiver. << ": cannot proceed any further";
+//        return(false);
+//    }
+
+
+//    if(localTransceiverProperties.maxsizeROPframeReplies != brdstatus.transceiver.maxsizeROPframeReplies )
+//    {
+//        yError() << "ethResources::verifyRemoteTransceiver() detected different xxx: local =" << localTransceiverProperties. << ", remote=" << brdstatus.transceiver. << ": cannot proceed any further";
+//        return(false);
+//    }
+
+
+
+//    if(localTransceiverProperties.maxsizeROPframeOccasionals != brdstatus.transceiver.maxsizeROPframeOccasionals )
+//    {
+//        yError() << "ethResources::verifyRemoteTransceiver() detected different xxx: local =" << localTransceiverProperties. << ", remote=" << brdstatus.transceiver. << ": cannot proceed any further";
+//        return(false);
+//    }
+
+
+    if(localTransceiverProperties.maxsizeROP != brdstatus.transceiver.maxsizeROP )
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() detected different maxsizeROP: local =" << localTransceiverProperties.maxsizeROP << ", remote=" << brdstatus.transceiver.maxsizeROP << ": cannot proceed any further";
+        return(false);
+    }
+
+
+
+//    if(localTransceiverProperties.maxnumberRegularROPs != brdstatus.transceiver.maxnumberRegularROPs )
+//    {
+//        yError() << "ethResources::verifyRemoteTransceiver() detected different xxx: local =" << localTransceiverProperties. << ", remote=" << brdstatus.transceiver. << ": cannot proceed any further";
+//        return(false);
+//    }
+
+
+
+    // step 2: we ask the number of endpoints in the board. it is useful to verify that their number is not too high
+    eOmn_command_t command = {0};
+    // prepare message to send. we send a set<> with request of number of endpoints
+    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_querynumof);
+    memset(&command, 0, sizeof(command));
+    command.cmd.opc                             = eomn_opc_query_numof_EPs;
+    command.cmd.querynumof.opcpar.opc           = eomn_opc_query_numof_EPs;
+    command.cmd.querynumof.opcpar.endpoint      = eoprot_endpoint_all;
+
+    // send set message
+    if(false == addSetMessage(id, (uint8_t*)&command))
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() cannot transmit a request about the number of owned endpoints to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // wait for a sig message arriving from the board. the eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() function shall release the waiting semaphore
+    if(false == sem->waitWithTimeout(timeout))
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // get the data of variable containing the reply about the number of endpoints
+    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
+    memset(&command, 0, sizeof(command));
+
+    if(false == readBufferedValue(id, (uint8_t*)&command, &size))
+    {
+        yError() << "ethResources::verifyRemoteTransceiver() cannot read the number of endpoints of board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    boardEPsNumber = command.cmd.replynumof.opcpar.numberof;
+
+    yWarning() << "ethResources::verifyRemoteTransceiver() detected" << boardEPsNumber << "endpoints in board" << get_protBRDnumber()+1;
+
+
+
+    yWarning() << "ethResources::verifyRemoteTransceiver() has validated the transceiver of remote board " << get_protBRDnumber()+1;
+
+    verifiedRemoteTransceiver = true;
+    return(true);
+
+#endif//_WIP_CHECK_PROTOCOL_VERSION_
+}
+
+bool ethResources::verifyProtocol(yarp::os::Searchable &config, eOprot_endpoint_t ep)
+{
+#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    return true;
+#else
+    if(false == verifyRemoteTransceiver(config))
+    {
+        yError() << "ethResources::verifyProtocol() cannot verify transceiver in board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
+    //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
+    // 2. the resulting array will contains a eoprot_endpoint_descriptor_t item for the specifeid ep with the protocol version of the ems.
+
+
+
+    const int capacityOfArrayOfEPDES = (EOMANAGEMENT_COMMAND_DATA_SIZE - sizeof(eOarray_head_t)) / sizeof(eoprot_endpoint_descriptor_t);
+    const double timeout = 0.100;
+
+    eOprotID32_t id = eo_prot_ID32dummy;
+    eOmn_command_t command = {0};
+    uint16_t size = 0;
+
+    bool res = false;
+
+
+    uint16_t numOfEPsInXML = 0;
+
+    // the semaphore used for waiting for replies from the board
+    yarp::os::Semaphore* sem = GetSemaphore(ep, 0);
+
+
+    // then we compare with
+
+    const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
+    const eoprot_version_t * pc104versionEP = eoprot_version_of_endpoint_get(ep);
+
+    uint16_t pc104entitiesinside = eoprot_entities_in_endpoint_numberof_get(get_protBRDnumber(), ep);
+
+
+    if(boardEPsNumber > capacityOfArrayOfEPDES)
+    {   // to support more than capacityOfArrayOfEPDES (= 16 on date of jul 22 2014) endpoints: just send two (or more) eoprot_tag_mn_comm_cmmnds_command_queryarray messages with setnumbers 0 and 1 (or more)
+        yError() << "ethResources::verifyProtocol() detected that board" << get_protBRDnumber()+1 << "has" << boardEPsNumber << "endpoints and at most" << capacityOfArrayOfEPDES << "are supported: cannot proceed any further (review the code to support them all)";
+        return(false);
+    }
+
+    // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
+    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
+    memset(&command, 0, sizeof(command));
+    command.cmd.opc                             = eomn_opc_query_array_EPdes;
+    command.cmd.queryarray.opcpar.opc           = eomn_opc_query_array_EPdes;
+    command.cmd.queryarray.opcpar.endpoint      = eoprot_endpoint_all;
+    command.cmd.queryarray.opcpar.setnumber     = 0;
+    command.cmd.queryarray.opcpar.setsize       = 0;
+
+    if(false == addSetMessage(id, (uint8_t*)&command))
+    {
+        yError() << "ethResources::verifyProtocol() cannot transmit a request about the endpoint descriptors to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+
+    if(false == sem->waitWithTimeout(timeout))
+    {
+        yError() << "ethResources::verifyProtocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // now i get the array of descriptors
+    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
+    memset(&command, 0, sizeof(command));
+    if(false == readBufferedValue(id, (uint8_t*)&command, &size))
+    {
+        yError() << "ethResources::verifyProtocol() cannot retrieve the endpoint descriptors of board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // the array is ...
+    eOmn_cmd_replyarray_t* cmdreplyarray = (eOmn_cmd_replyarray_t*)&command.cmd.replyarray;
+    EOarray* array = (EOarray*)cmdreplyarray->array;
+
+    yWarning() << "ethResources::verifyProtocol() -> xxx-debug head.capacity, itemsize, size" << array->head.capacity << array->head.itemsize << array->head.size;
+
+    uint8_t sizeofarray = eo_array_Size(array);
+
+    if(sizeofarray != boardEPsNumber)
+    {
+        yWarning() << "ethResources::verifyProtocol() retrieved from board" << get_protBRDnumber()+1 << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
+    }
+
+
+    for(int i=0; i<sizeofarray; i++)
+    {
+        eoprot_endpoint_descriptor_t *epd = (eoprot_endpoint_descriptor_t*)eo_array_At(array, i);
+        if(epd->endpoint == eoprot_endpoint_management)
+        {
+            const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
+            if(pc104versionMN->major != epd->version.major)
+            {
+                yError() << "ethResources::verifyProtocol() detected mismatching protocol version.major in board " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: cannot proceed any further. FW upgrade is required";
+                return(false);
+            }
+            if(pc104versionMN->minor != epd->version.minor)
+            {
+                yWarning() << "ethResources::verifyProtocol() detected mismatching protocol version.minor board " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: FW upgrade is advised";
+            }
+        }
+        if(epd->endpoint == ep)
+        {
+            const eoprot_version_t * pc104versionEP = eoprot_version_of_endpoint_get(ep);
+            if(pc104versionEP->major != epd->version.major)
+            {
+                yError() << "ethResources::verifyProtocol() detected mismatching protocol version.major in board " << get_protBRDnumber()+1 << " for" << eoprot_EP2string(ep) << ": cannot proceed any further. FW upgrade is required";
+                return(false);
+            }
+            if(pc104versionEP->minor != epd->version.minor)
+            {
+                yError() << "ethResources::verifyProtocol() detected mismatching protocol version.minor in board " << get_protBRDnumber()+1 << " for" << eoprot_EP2string(ep) << ": FW upgrade is advised";
+                return(false);
+            }
+        }
+        //yWarning() << "EP =" << epd->endpoint;
+        //yWarning() << "entities inside = " << epd->entitiesinside;
+        //yWarning() << "version.major =" << epd->version.major << "version.minor = " << epd->version.minor;
+    }
+
+    yWarning() << "ethResources::verifyProtocol() -> enters in a forever loop for(;;);";
+
+    for(;;);
+
+    return(true);
+#endif//_WIP_CHECK_PROTOCOL_VERSION_
+}
+
 // eof
 
 

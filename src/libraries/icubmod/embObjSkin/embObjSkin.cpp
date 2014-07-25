@@ -325,11 +325,18 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     int      port;
 
+    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
+    if(groupTransceiver.isNull())
+    {
+        yError() << "embObjSkin: Can't find TRANSCEIVER group in xml config files";
+        return false;
+    }
+
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yWarning() << "embObjSkin: Can't find PROTOCOL group in config files ... using max capabilities";
-        //return false;
+        yError() << "embObjSkin: Can't find PROTOCOL group in config files";
+        return false;
     }
 
     // Get both PC104 and EMS ip addresses and port from config file
@@ -371,7 +378,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     _fId.type = Skin;
 
     _fId.boardNum  = 255;
-    Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
+    Value val = config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
     {
         _fId.boardNum = val.asInt();
@@ -390,7 +397,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(groupProtocol, &_fId);
+    res = ethManager->requestResource(groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -402,6 +409,14 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         yError() << "EMS "<< _fId.boardNum << "is not connected to skin";
         return false;
     }
+
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_skin))
+    {
+        yError() << "embObjSkin::init() fails in function verifyProtocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_skin protocol version: DO A FW UPGRADE";
+        return false;
+    }
+#endif
 
     if(!this->fromConfig(config))
     {

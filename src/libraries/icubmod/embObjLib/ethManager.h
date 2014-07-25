@@ -80,7 +80,6 @@
 #endif
 
 
-#define EMPTY_PACKET_SIZE           EOK_HOSTTRANSCEIVER_emptyropframe_dimension
 #define ETHMAN_SIZE_INFO            128
 
 
@@ -89,10 +88,15 @@
 // the rx buffer must be able to accepts udp packets of max size (1500), so that we are safe against changes 
 // of tx size done inside the ems boards. 
 // the tx buffer must be able to contain the maximum payload size managed in reception inside the ems board.
-// this value is EOK_HOSTTRANSCEIVER_capacityofpacket. however, 1500 is good enough.
+// this value is EOK_HOSTTRANSCEIVER_capacityofpacket. however, 1500 is good enough, as
 
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+// new one will be: 
+enum {rxBUFFERsize = 1500, txBUFFERsize = 1500};
+#else
+// current one is:
 enum {rxBUFFERsize = EOK_HOSTTRANSCEIVER_capacityofrxpacket, txBUFFERsize = EOK_HOSTTRANSCEIVER_capacityoftxpacket};
-
+#endif
 
 // Actually there sould be no need to include this class into yarp::dev namespace.
 namespace yarp {
@@ -203,7 +207,7 @@ public:
      *  @param  config  Description and parameter for the identifying the requested class
      *  @return Pointer to the requested EMS, NULL if errors arise in the creation.
      */
-    ethResources* requestResource(yarp::os::Searchable &config, FEAT_ID *request);
+    ethResources* requestResource(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request);
 
     /*! @fn     bool releaseResource(FEAT_ID resouce);
      *  @brief  Tells the manager the specified resource is not used anymore by the caller,
@@ -262,6 +266,8 @@ public:
      *  @return Number of bytes actually sent
      */
     int send(void *data, size_t len, ACE_INET_Addr remote_addr);
+
+    ethResources* GetEthResource(FEAT_boardnumber_t boardnum);
 
     // Methods for Debug or support
 

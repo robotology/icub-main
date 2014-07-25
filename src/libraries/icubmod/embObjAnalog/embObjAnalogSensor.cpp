@@ -215,11 +215,18 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     ACE_UINT16      port;
     bool            ret;
 
+    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
+    if(groupTransceiver.isNull())
+    {
+        yError() << "embObjAnalogSensor: Can't find TRANSCEIVER group in xml config files";
+        return false;
+    }
+
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yWarning() << "embObjAnalogSensor: Can't find PROTOCOL group in config files ... using max capabilities";
-        //return false;
+        yError() << "embObjAnalogSensor: Can't find PROTOCOL group in xml config files";
+        return false;
     }
 
     // Get both PC104 and EMS ip addresses and port from config file
@@ -272,7 +279,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(groupProtocol, &_fId);
+    res = ethManager->requestResource(groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -284,6 +291,14 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         yError() << "EMS "<< _fId.boardNum << "is not connected to a analog sensor";
         return false;
     }
+
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_analogsensors))
+    {
+        yError() << "embObjAnalogSensor::init() fails in function verifyProtocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+        return false;
+    }
+#endif
 
     data=new AnalogData(_channels, _channels+1);
     scaleFactor=new double[_channels];
@@ -528,6 +543,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
+        #warning --> marco.accame says: are we sure that this assumption is correct? why wait for 1 sec? better using the callback to alert
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
 
         if(0 != NVsize)

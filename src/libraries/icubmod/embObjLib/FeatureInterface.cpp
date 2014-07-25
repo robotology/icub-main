@@ -18,6 +18,7 @@
 #include "EoProtocol.h"
 
 #include <yarp/os/Time.h>
+#include <yarp/os/Semaphore.h>
 
 #ifdef _SETPOINT_TEST_
 #include <time.h>
@@ -166,6 +167,36 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
 double feat_yarp_time_now(void)
 {
     return(yarp::os::Time::now());
+}
+
+
+void* feat_GetSemaphore(eOprotBRD_t brd, eOprotEndpoint_t ep, uint32_t signature)
+{
+    // we ask the ethmanager to retrieve the pointer to a semaphore associated to a specific board
+    // and with a given endpoint and signature
+
+
+    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
+
+    if(NULL == ethres)
+    {
+        return(NULL);
+    }
+
+    yarp::os::Semaphore* sem = ethres->GetSemaphore(ep, signature);
+
+    return(sem);
+}
+
+
+void feat_Semaphore_post(void* s)
+{
+    if(NULL == s)
+    {
+        return;
+    }
+    yarp::os::Semaphore* sem = (yarp::os::Semaphore*)s;
+    sem->post();
 }
 
 #ifdef _SETPOINT_TEST_

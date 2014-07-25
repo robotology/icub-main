@@ -50,6 +50,7 @@
 #include "hostTransceiver.hpp"
 #include "debugFunctions.h"
 #include "FeatureInterface.h"
+#include "EoProtocol.h"
 
 
 // ACE stuff
@@ -58,8 +59,15 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 
-// we see EOK_HOSTTRANSCEIVER_capacityofrxpacket by including FeatureInterface.hpp which includes EOhostTransceiver.h
+// the ethresource must be able to manage a standard udp packet as sent by eth boards whcih has max size 1500
+// marco.accame: it will be:
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+#define	RECV_BUFFER_SIZE        1500
+#else
+// so far it is:
 #define	RECV_BUFFER_SIZE        EOK_HOSTTRANSCEIVER_capacityofrxpacket
+#endif
+
 #define	ETHRES_SIZE_INFO        128
 #define MAX_ICUB_EP             32
 
@@ -137,7 +145,10 @@ private:
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     infoOfRecvPkts    *infoPkts;
 
+    yarp::os::Semaphore*  ethResSem;
 
+    bool                verifiedRemoteTransceiver;// transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    uint8_t             boardEPsNumber;
 
 public:
 //     hostTransceiver   *transceiver;         //!< Pointer to the protocol handler   non più usato. ora c'è derivazione diretta.
@@ -151,7 +162,7 @@ public:
     ACE_UINT16      recv_size;                    // size of the incoming message
 
     ethResources *  already_exists(yarp::os::Searchable &config);
-    bool            open(yarp::os::Searchable &config, FEAT_ID request);
+    bool            open(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request);
     bool            close();
 
     /*!   @fn       registerFeature(void);
@@ -174,7 +185,7 @@ public:
      *                    with it, just a pointer.
      *    @param    size  retutn the dimension of the packet.
      */
-    void            getPointer2TxPack(uint8_t **pack, uint16_t *size);
+    void            getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops);
 
     /*!   @fn       void getPack(uint8_t *pack, uint16_t *size);
      *    @brief    Create the new packet to be sent with all requests collected so far, and copy it in data. External memory
@@ -224,6 +235,11 @@ public:
      *    @return
      */
     void checkIsAlive(double curr_time);
+
+    bool verifyRemoteTransceiver(yarp::os::Searchable &config);
+    bool verifyProtocol(yarp::os::Searchable &config, eOprot_endpoint_t ep);
+
+    Semaphore* GetSemaphore(eOprotEndpoint_t ep, uint32_t signature);
 
 
 

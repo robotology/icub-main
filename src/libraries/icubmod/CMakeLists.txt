@@ -25,6 +25,15 @@ else(ICUB_EOPROT_MN_VERSION_1_0)
 add_definitions(-DEOPROT_USE_MN_VERSION_2_0)
 endif(ICUB_EOPROT_MN_VERSION_1_0)
 
+
+option (WIP_FEATURE_CHECK_PROTOCOL_VERSION "use OFF until this feature is tested well enough" OFF)
+mark_as_advanced (WIP_FEATURE_CHECK_PROTOCOL_VERSION)
+
+if(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
+add_definitions(-D_WIP_CHECK_PROTOCOL_VERSION_)
+else(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
+endif(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
+
 BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
   add_subdirectory(canBusMotionControl)
