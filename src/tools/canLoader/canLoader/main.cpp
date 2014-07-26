@@ -1622,9 +1622,9 @@ int myMain( int   argc, char *argv[] )
                 printf("./canLoader --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
                 printf("./canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId <y> --firmware myFirmware.out.S --boardIPAddr <aaa.aaa.aaa.aaa>\n");
                 printf("parameter <t> is the name of the CAN bus driver. It can be 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'\n");
-                printf("parameter <x> is the number of the CAN bus (0-3)\n");
-                printf("parameter <y> is the CAN address of the board (0-15)\n");
-                printf("parameter <aaa.aaa.aaa.aaa> id the IP address of the board\n");
+                printf("parameter <x> is the number of the CAN bus (0-9)\n");
+                printf("parameter <y> is the CAN address of the board (0-14)\n");
+                printf("parameter <aaa.aaa.aaa.aaa> IP address of the board (EMS ethernet boards only)\n");
                 ::exit(0);
         }
         if        (argc==9 || argc==11)
