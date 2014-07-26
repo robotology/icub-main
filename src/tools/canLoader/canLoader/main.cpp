@@ -332,9 +332,9 @@ static GtkTreeModel * refresh_board_list_model (void)
 
         strncpy  (board_add_info, downloader.board_list[i].add_info,32);
         sprintf (board_version,"%d",downloader.board_list[i].version);
-        sprintf (board_release,"%X",downloader.board_list[i].release,downloader.board_list[i].release);
-        sprintf (board_build,"%d",downloader.board_list[i].build,downloader.board_list[i].build);
-        sprintf (board_serial,"%s",downloader.board_list[i].serial,downloader.board_list[i].serial);
+        sprintf (board_release,"%X",downloader.board_list[i].release);
+        sprintf (board_build,"%d",downloader.board_list[i].build);
+        sprintf (board_serial,"%s",downloader.board_list[i].serial);
 
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter,
