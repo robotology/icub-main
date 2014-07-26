@@ -2639,6 +2639,11 @@ bool MotorThread::exploreTorso(Bottle &options)
             else if (q_dot_mag>q_dot_saturation)
                 q_dot=(q_dot_saturation/q_dot_mag)*q_dot;
 
+            // account for reversed order
+            double tmp_swap=q_dot[0];
+            q_dot[0]=q_dot[2];
+            q_dot[2]=tmp_swap;
+
             vel_torso->velocityMove(q_dot.data());
             Time::delay(0.01);
         }
