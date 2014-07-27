@@ -2583,6 +2583,10 @@ bool MotorThread::exploreTorso(Bottle &options)
     double kp_pos_torso=0.6;
     double kp_ang_torso=0.6;
 
+    VectorOf<int> modes(3);
+    modes[0]=modes[1]=modes[2]=VOCAB_CM_VELOCITY;
+    ctrl_mode_torso->setControlModes(modes.getFirst());
+
     double init_walking_time=Time::now();
 
     //random walk!
@@ -2650,6 +2654,8 @@ bool MotorThread::exploreTorso(Bottle &options)
     }
 
     //go back to torso initial position
+    modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
+    ctrl_mode_torso->setControlModes(modes.getFirst());
     pos_torso->positionMove(torso_init_joints.data());
     bool done=false;
     while(isRunning() && !done)
@@ -2715,11 +2721,19 @@ bool MotorThread::exploreHand(Bottle &options)
 
     double max_step_time=2.0;
 
+    int nJnts;
+    enc_arm[arm]->getAxes(&nJnts);
+
+    VectorOf<int> modes(nJnts);
+    for (int i=0; i<nJnts; i++)
+        modes[i]=VOCAB_CM_POSITION; 
+    ctrl_mode_arm[arm]->setControlModes(modes.getFirst());
+
     //start exploration
-    Vector destination(16);
+    Vector destination(nJnts);
     for(unsigned int pose_idx=0; pose_idx<handPoses.size(); pose_idx++)
     {
-        Vector current_position(16);
+        Vector current_position(nJnts);
         enc_arm[arm]->getEncoders(current_position.data());
 
         //copy the arm configuration in the destination vector
@@ -2727,7 +2741,7 @@ bool MotorThread::exploreHand(Bottle &options)
             destination[i]=handPoses[pose_idx][i];
 
         //do not change the fingers angles
-        for(int i=handPoses[pose_idx].size(); i<16; i++)
+        for(int i=handPoses[pose_idx].size(); i<nJnts; i++)
             destination[i]=current_position[i];
 
         pos_arm[arm]->positionMove(destination.data());

@@ -129,15 +129,15 @@ private:
     IEncoders                           *enc_head;
     IEncoders                           *enc_torso;
     IGazeControl                        *ctrl_gaze;
-
-    IPositionControl                    *pos_arm[2];
+        
     IPositionControl                    *pos_torso;
     IVelocityControl                    *vel_torso;
-    IControlMode                        *ctrl_mode_torso;
+    IControlMode2                       *ctrl_mode_torso;
     IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
 
-    IControlMode                        *ctrl_mode_arm[2];
+    IControlMode2                       *ctrl_mode_arm[2];
+    IPositionControl                    *pos_arm[2];
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
