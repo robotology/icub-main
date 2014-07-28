@@ -274,7 +274,7 @@ bool OnlineStictionEstimator::threadInit()
     double x_range=x_max-x_min;
     x_min+=0.1*x_range;
     x_max-=0.1*x_range;
-    imod->setOpenLoopMode(joint);
+    imod->setControlMode(joint,VOCAB_CM_OPENLOOP);
 
     ienc->getEncoder(joint,&x_pos);
     x_vel=0.0;
@@ -388,7 +388,7 @@ void OnlineStictionEstimator::run()
 void OnlineStictionEstimator::threadRelease()
 {
     ipid->setOffset(joint,0.0);
-    imod->setPositionMode(joint);
+    imod->setControlMode(joint,VOCAB_CM_POSITION);
     delete pid;
 
     doneEvent.signal();
@@ -557,7 +557,7 @@ bool OnlineCompensatorDesign::threadInit()
         // -----
         case plant_estimation:
         {
-            imod->setOpenLoopMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_OPENLOOP);
             ienc->getEncoder(joint,&x0[0]);
             plant.init(P0,x0);
             meanParams=0.0;
@@ -572,7 +572,7 @@ bool OnlineCompensatorDesign::threadInit()
         case plant_validation:
         {
             Vector _x0(2,0.0);
-            imod->setOpenLoopMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_OPENLOOP);
             ienc->getEncoder(joint,&_x0[0]);
             predictor.init(_x0,predictor.get_P());
             measure_update_cnt=0;
@@ -593,7 +593,7 @@ bool OnlineCompensatorDesign::threadInit()
         case controller_validation:
         {
             pidCur=&pidOld;
-            imod->setPositionMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_POSITION);
             x_tg=x_max;
             if (controller_validation_ref_square)
                 ipid->setReference(joint,x_tg);
@@ -764,12 +764,8 @@ void OnlineCompensatorDesign::run()
                 }
 
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
-                {
-                    if (x_tg==x_max)
-                        ipid->setOffset(joint,controller_validation_stiction_up);
-                    else
-                        ipid->setOffset(joint,controller_validation_stiction_down);
-                }
+                    ipid->setOffset(joint,(x_tg==x_max)?controller_validation_stiction_up:
+                                                        controller_validation_stiction_down);
 
                 if (controller_validation_ref_square)
                     ipid->setReference(joint,x_tg);
@@ -808,7 +804,7 @@ void OnlineCompensatorDesign::threadRelease()
         case plant_validation:
         {
             ipid->setOffset(joint,0.0);
-            imod->setPositionMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_POSITION);
             break;
         }
 

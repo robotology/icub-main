@@ -522,6 +522,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
 {
     if (configured)
     {
+        IControlMode2    *imod; driver.view(imod);
         IControlLimits   *ilim; driver.view(ilim);
         IEncoders        *ienc; driver.view(ienc);
         IPositionControl *ipos; driver.view(ipos);
@@ -531,12 +532,13 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         printMessage(1,"steering the hand to a suitable starting configuration\n");
         for (int j=7; j<nAxes; j++)
-        {            
-            ilim->getLimits(j,&qmin[j],&qmax[j]);
+        {
+            imod->setControlMode(j,VOCAB_CM_POSITION);
+            ilim->getLimits(j,&qmin[j],&qmax[j]);            
 
             ipos->getRefAcceleration(j,&acc[j]);
             ipos->getRefSpeed(j,&vel[j]);
-
+            
             ipos->setRefAcceleration(j,1e9);
             ipos->setRefSpeed(j,60.0);
             ipos->positionMove(j,(j==8)?qmax[j]:qmin[j]);   // thumb in opposition
@@ -661,6 +663,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     double timeout=2.0*(_max-_min)/finger.getCalibVel();
 
     mutex.lock();
+    IControlMode2    *imod; driver.view(imod);
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
     mutex.unlock();
@@ -681,6 +684,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     finger.calibrate(reset);
 
     mutex.lock();
+    imod->setControlMode(joint,VOCAB_CM_POSITION);
     ipos->setRefSpeed(joint,finger.getCalibVel());
     mutex.unlock();
 
