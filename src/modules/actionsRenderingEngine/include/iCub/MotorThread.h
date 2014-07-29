@@ -20,14 +20,9 @@
 #ifndef __MOTOR_THREAD__
 #define __MOTOR_THREAD__
 
-#include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RpcClient.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/dev/GazeControl.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 #include <yarp/math/SVD.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
@@ -131,7 +126,7 @@ private:
     IGazeControl                        *ctrl_gaze;
         
     IPositionControl                    *pos_torso;
-    IVelocityControl                    *vel_torso;
+    IVelocityControl2                   *vel_torso;
     IControlMode2                       *ctrl_mode_torso;
     IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
