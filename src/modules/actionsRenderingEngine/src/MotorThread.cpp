@@ -2564,7 +2564,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     iKinTorso.setAng(tmp_joints);
     iKinTorso.setBlockingValue(2,CTRL_DEG2RAD*torso_init_joints[0]);
 
-    Matrix H=iKinTorso.getH(3);
+    Matrix H=iKinTorso.getH(3,true);
     Vector cart_init_pos(3);
     cart_init_pos[0]=H[0][3];
     cart_init_pos[1]=H[1][3];
@@ -2615,14 +2615,14 @@ bool MotorThread::exploreTorso(Bottle &options)
             //set the current torso joints to the iKinTorso
             Vector torso_joints(3);
             enc_torso->getEncoders(torso_joints.data());
-            
+
             Vector tmp_joints(2,0.0);
             tmp_joints[0]=CTRL_DEG2RAD*torso_joints[2];
             tmp_joints[1]=CTRL_DEG2RAD*torso_joints[1];
             iKinTorso.setAng(tmp_joints);
             iKinTorso.setBlockingValue(2,CTRL_DEG2RAD*torso_joints[0]);
 
-            Matrix H=iKinTorso.getH(3);
+            Matrix H=iKinTorso.getH(3,true);
             Vector curr_pos(3);
             curr_pos[0]=H[0][3];
             curr_pos[1]=H[1][3];
