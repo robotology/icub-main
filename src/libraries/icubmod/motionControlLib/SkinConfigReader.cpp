@@ -7,8 +7,9 @@
  *
  */
 
-#include <yarp/os/Bottle.h>
+#include <stdio.h>
 #include <Debug.h>
+#include <yarp/os/Bottle.h>
 #include "SkinConfigReader.h"
 
 using namespace yarp::os;

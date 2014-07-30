@@ -23,7 +23,7 @@
 #include <string>
 
 
-#include <ace/ACE.h>
+//#include <ace/ACE.h>
 #include <Debug.h>
 #include <stdint.h>
 

@@ -29,9 +29,9 @@ else()
     set(BASE         $ENV{ICUB_ROOT}/src/libraries/icubmod/embObjLib/embObj/embobj/)
 endif()
 
-message ("firmware shared dir =  " ${BASE})
+set(EOPROT_USE_MN_VERSION_2_0 ON)
 
-
+add_definitions(-DEOPROT_USE_MN_VERSION_2_0)
 
 set(CORE_FOLDER         ${BASE}/embobj/core/core/)
 set(CORE_API            ${BASE}/embobj/core/core/)
@@ -42,10 +42,10 @@ set(ICUB_API            ${BASE}/embobj/plus/comm-v2/icub/)
 
 set(embObj_includes     
                         ${CORE_FOLDER}
+			${ICUB_API}
                         ${PROT_FOLDER}/transport/
                         ${PROT_FOLDER}/protocol/api
                         ${UTILS_FOLDER}
-                        ${ICUB_API}
                         )
 
 set(ALL_INCLUDES        ${embObj_includes}
@@ -96,8 +96,8 @@ set(embobj_source
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint.cpp )
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_enaDisaJoints.cpp)
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_startupConfig.cpp)
-#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_FullScale.cpp)
-set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_seqNum.cpp)
+set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_fullscale.cpp)
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_seqNum.cpp)
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_posleftlegj0.cpp)
 
 message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")

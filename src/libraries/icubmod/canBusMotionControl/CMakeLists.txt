@@ -44,7 +44,7 @@ if(ICUB_HAS_icub_firmware_shared)
    SOURCE_GROUP("Header Files" FILES ${folder_header})
 
    yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
-   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
+   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES} debugStream)
 
    icub_export_library(canmotioncontrol)
 

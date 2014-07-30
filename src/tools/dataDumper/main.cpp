@@ -70,7 +70,7 @@ by the \ref dataDumper.
 \section lib_sec Libraries 
 - YARP libraries 
 - To record videos: OpenCV 2.0 and the <a 
-  href="http://neuron2.net/www.math.berkeley.edu/benrg/huffyuv.html">huffyuv</a>
+  href="http://wiki.team-mediaportal.com/9_Glossary/Huffyuv">huffyuv</a>
   codec for lossless data compression.
  
 \section codec_installation Codec Installation 
@@ -165,9 +165,10 @@ None.
 
 \section out_data_sec Output Data Files
 Within the directory \e ./<portname> the file \e data.log is 
-created containing the acquisitions report. Beside this, if \e 
-image type has been selected, all the acquired images are also 
-stored. 
+created containing the acquisitions. Besides, if \e image type
+has been selected, all the acquired images are also stored. A 
+further file called \e info.log is also produced containing 
+meta-data relevant for the logging. 
  
 Note that in case an acquisition with the same \e <portname> was
 previously carried out, an increasing suffix will be appended 
