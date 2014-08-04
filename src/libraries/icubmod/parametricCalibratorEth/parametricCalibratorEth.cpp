@@ -1,10 +1,11 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
-* Copyright (C) 2006 Giorgio Metta, Lorenzo Natale
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-*/
+ * Copyright (C) 2014 iCub Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino, Marco Randazzo, Valentina Gaggero
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ *
+ */
 
 #include <yarp/os/Time.h>
 #include <yarp/dev/PolyDriver.h>
