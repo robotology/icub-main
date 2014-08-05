@@ -315,11 +315,12 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
     std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
+    if(config.findGroup("GENERAL").find("verbose").asBool())
         str=config.toString().c_str();
     else
         str="\n";
     yTrace() << str;
+
 
     Bottle          groupEth, parameter;
 
@@ -390,7 +391,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(groupProtocol, &_fId);
+    res = ethManager->requestResource(config, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";

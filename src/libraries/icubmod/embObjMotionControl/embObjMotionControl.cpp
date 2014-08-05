@@ -474,7 +474,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     std::string str;
     if(!config.findGroup("GENERAL").find("verbose").isBool())
     {
-        yWarning() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
+        yError() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
         str=" ";
     }
     else
@@ -484,7 +484,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         else
             str=" ";
     }
-    yTrace() << str;
+    yTrace() <<str;
 
     // Tmp variables
     Bottle          groupEth;
@@ -637,7 +637,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     _fId.handle  = (this);
-    res = ethManager->requestResource(groupProtocol, &_fId);
+    res = ethManager->requestResource(config, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";

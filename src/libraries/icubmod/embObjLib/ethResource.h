@@ -104,7 +104,7 @@ public:
     StatExt       *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
     StatExt       *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
     StatExt       *stat_precessPktTime; //values are stored in sec
-
+    bool          _verbose;
 
     infoOfRecvPkts();
     void printStatistics(void);
