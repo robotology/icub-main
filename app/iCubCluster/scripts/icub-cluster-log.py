@@ -318,7 +318,7 @@ class App:
 
             if running==0 and selected==1:
                 #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run2.sh', ' start ']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
 
                 if node.display:
                     if (node.displayValue == ""):
@@ -355,7 +355,7 @@ class App:
 
             if running==1 and selected==1 :
                 #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run2.sh', ' stop']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' stop']
                 print 'Running',
                 print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
@@ -373,7 +373,7 @@ class App:
             selected=iS.next().get()
             if (selected):
                 #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run2.sh', ' kill']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' kill']
                 print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
 
