@@ -1,6 +1,6 @@
 set(appname iCubCluster)
 
-file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster.py)
+file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.template ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster.py ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster-log.py)
 set(conf ${CMAKE_CURRENT_SOURCE_DIR}/conf/cluster-config.xml)
 yarp_install(FILES ${conf} DESTINATION ${ICUB_CONTEXTS_INSTALL_DIR}/${appname})
 
