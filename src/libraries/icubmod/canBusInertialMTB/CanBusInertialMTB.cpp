@@ -211,14 +211,17 @@ void CanBusInertialMTB::run()
     double stampGyro=0.0;
     double stampAcc=0.0;
 
-    int st=IAnalogSensor::AS_ERROR;
+    int st=IAnalogSensor::AS_OK;   // reading 0 messages is considered ok
     //static double prev = yarp::os::Time::now();
     //fprintf(stderr, "period %f delta %f canMessages %d\n",this->getRate(), yarp::os::Time::now()-prev, canMessages );
     //prev = yarp::os::Time::now();
-    if(canMessages <=0)
+    if(canMessages <0)
     {
         fprintf(stderr, "CanBusInertialMTB::run() ERROR: get %d canMessages\n", canMessages);
+        st=IAnalogSensor::AS_ERROR;
+        return;
     }
+
     for (unsigned int i=0; i<canMessages; i++)
     {
         CanMessage &msg=inBuffer[i];
