@@ -11,6 +11,7 @@ install(PROGRAMS scripts/icub-cluster.py COMPONENT Core DESTINATION bin)
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cluster-scripts-cmd
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster-log.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster-server.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/scripts/icub-cluster-run.sh ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
       COMMENT "Copying icub-cluster scripts to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
