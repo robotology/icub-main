@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubSheffield01" build="1">
+  <device name="right_hand_mais" type="embObjAnalogSensor">
+    <params file="general.xml" />
+    <params file="hardware/electronics/pc104.xml" />
+    <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
+    <group name="GENERAL"> 
+       <param name="CanAddress">     0x0E	</param>
+       <param name="Format">		8	</param>
+       <param name="Channels"> 	15	</param>
+       <param name="Period">		10	</param>
+    </group>
+  </device> 
+</devices>

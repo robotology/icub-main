@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubSheffield01" build="1">
+
+ <!--  chissà se funge??? -->
+    <param name="canbusdevice">  cfw2can </param>
+    <group name="CAN">
+        <param name="CanDeviceNum">         0       </param>
+        <param name="CanMyAddress">         0       </param>
+        <param name="CanPollingInterval">   10      </param>
+        <param name="CanTimeout">           300     </param>
+        <param name="CanTxTimeout">         500     </param>
+        <param name="CanRxTimeout">         500     </param>
+
+        <param name="CanAddresses">         1 2 3 </param>
+        <param name="broadcast_pos">		    1             1             1             1             1             1     </param>
+        <param name="broadcast_pid">		    0             0             0             0             0             0     </param>
+        <param name="broadcast_fault">		    1             1             1             1             1             1     </param>
+        <param name="broadcast_current">	    0             0             0             0             0             0     </param>
+        <param name="broadcast_overflow">	    1             1             1             1             1             1     </param>
+        <param name="broadcast_canprint">	    1             1             1             1             1             1     </param>
+        <param name="broadcast_vel_acc">	    0             0             0             0             0             0     </param>
+        <param name="broadcast_pid_err">	    0             0             0             0             0             0     </param>
+        <param name="broadcast_rotor_pos">	    0             0             0             0             0             0     </param>
+        <param name="broadcast_rotor_vel_acc">	0             0             0             0             0             0     </param>
+    </group>
+
+</params>
