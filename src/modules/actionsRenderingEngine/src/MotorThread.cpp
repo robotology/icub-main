@@ -1830,7 +1830,11 @@ bool MotorThread::point(Bottle &options)
     // set the new orientation
     Vector z_o(3,0.0);
     z_o[2]=(arm==LEFT)?1.0:-1.0;
+
     Vector y_o=cross(z_o,x_o);
+    y_o/=norm(y_o);
+
+    z_o=cross(x_o,y_o);
 
     Matrix R(3,3);
     R.setCol(0,x_o);
