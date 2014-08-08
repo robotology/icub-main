@@ -1160,11 +1160,11 @@ bool MotorThread::threadInit()
 
     option.put("local",name.c_str());
 
-    reachingTimeout=2.0*option.check("default_exec_time",Value("3.0")).asDouble();
+    default_exec_time=option.check("default_exec_time",Value("3.0")).asDouble();
+    reachingTimeout=2.0*default_exec_time;
 
     string arm_name[]={"left_arm","right_arm"};
-
-    for(int arm=0; arm<2; arm++)
+    for (int arm=0; arm<2; arm++)
     {
         if (partUsed=="both_arms" || (partUsed=="left_arm" && arm==LEFT)
                                   || (partUsed=="right_arm" && arm==RIGHT))
@@ -1809,7 +1809,6 @@ bool MotorThread::point(Bottle &options)
     if(!targetToCartesian(bTarget,target))
         return false;
 
-
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
@@ -2121,6 +2120,8 @@ void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, cons
     ctrl->setLimits(0,0.0,0.0);
     ctrl->setLimits(1,0.0,0.0);
     ctrl->setLimits(2,0.0,0.0);
+
+    ctrl->setTrajTime(default_exec_time);
 
     ctrl->goToPoseSync(xin,oin);
     ctrl->waitMotionDone();

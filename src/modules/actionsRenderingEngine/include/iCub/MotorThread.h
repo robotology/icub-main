@@ -156,6 +156,7 @@ private:
     Vector                              pushAboveRelief;
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
+    double                              default_exec_time;
     double                              reachingTimeout;
 
     //tool
