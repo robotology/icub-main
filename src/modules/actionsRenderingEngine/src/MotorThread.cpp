@@ -1823,25 +1823,15 @@ bool MotorThread::point(Bottle &options)
     Vector x,o;
     action[arm]->getPose(x,o);
 
-    //set the new position
-    Vector d=0.6*(target-x);
-    xd=x+d;
+    // set the new position
+    Vector x_o=(target-x);
+    x_o/=norm(x_o);
+    xd=target-0.15*x_o;
 
-    //set the new orientation
-    Vector x_o(3),y_o(3),z_o(3);
-    x_o=(1/norm(d))*d;
-    
-    z_o=0.0;
-    if(arm==LEFT)
-        z_o[2]=1.0;
-    else
-        z_o[2]=-1.0;
-
-    y_o=cross(z_o,x_o);
-    y_o=(1/norm(y_o))*y_o;
-
-    z_o=cross(x_o,y_o);
-    z_o=(1/norm(z_o))*z_o;
+    // set the new orientation
+    Vector z_o(3,0.0);
+    z_o[2]=(arm==LEFT)?1.0:-1.0;
+    Vector y_o=cross(z_o,x_o);
 
     Matrix R(3,3);
     R.setCol(0,x_o);
@@ -1849,12 +1839,10 @@ bool MotorThread::point(Bottle &options)
     R.setCol(2,z_o);
 
     Vector od=dcm2axis(R);
-
     action[arm]->pushAction(xd,od,"pointing_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
