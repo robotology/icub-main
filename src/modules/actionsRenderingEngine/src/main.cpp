@@ -43,8 +43,8 @@ estimate of the 2D target.
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
-are described in the following. The response to any command consists in the voca [ack]/[nack] in case of
-success/faliure.
+are described in the following. The response to any command    
+consists in the vocab [ack]/[nack] in case of success/failure. 
 
 Some commands require to specify a visual target for 
 the action required. In these cases the parameter [target] can be expressed as follows:
