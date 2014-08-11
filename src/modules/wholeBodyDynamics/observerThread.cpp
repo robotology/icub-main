@@ -179,27 +179,27 @@ void inverseDynamics::setStiffMode()
      if (iint_arm_left)
      {
          for (int i=0; i<7; i++)
-            iint_arm_left->setInteractionMode(i,yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF);
+            iint_arm_left->setInteractionMode(i,VOCAB_IM_STIFF);
      }
      if (iint_arm_right)
      {
          for (int i=0; i<7; i++)
-            iint_arm_right->setInteractionMode(i,yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF);
+            iint_arm_right->setInteractionMode(i,VOCAB_IM_STIFF);
      }
      if (iint_leg_left)
      {
          for (int i=0; i<6; i++)
-            iint_leg_left->setInteractionMode(i,yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF);
+            iint_leg_left->setInteractionMode(i,VOCAB_IM_STIFF);
      }
      if (iint_leg_right)
      {
          for (int i=0; i<6; i++)
-             iint_leg_right->setInteractionMode(i,yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF);
+             iint_leg_right->setInteractionMode(i,VOCAB_IM_STIFF);
      }
      if (iint_torso)
      {
          for (int i=0; i<3; i++)
-            iint_torso->setInteractionMode(i,yarp::dev::InteractionModeEnum::VOCAB_IM_STIFF);
+            iint_torso->setInteractionMode(i,VOCAB_IM_STIFF);
      }
 
      if (icmd_arm_left)
