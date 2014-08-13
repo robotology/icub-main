@@ -5,7 +5,7 @@
 
 PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
     INCLUDE CanBusMotionControl.h
-    WRAPPER controlboard)
+    WRAPPER controlboardwrapper2)
 
 if (ENABLE_icubmod_canmotioncontrol)
 
