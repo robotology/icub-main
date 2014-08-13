@@ -11,12 +11,14 @@ RpcMsgHandler::RpcMsgHandler(DebugInterfaceWrapper *x)
     //    iPos_rpcHandler  = dynamic_cast<yarp::dev::IPositionControl *> (caller);
     //    iDbg_rpcHandler  = dynamic_cast<yarp::dev::IDebugInterface *> (caller);
     controlledJoints = 0;
+    tmpDoubleArray = NULL;
 }
 
 
 RpcMsgHandler::~RpcMsgHandler()
 {
-    delete [] tmpDoubleArray;
+    caller = NULL;
+    checkAndDestroyDebug<double> (tmpDoubleArray);
 }
 
 
