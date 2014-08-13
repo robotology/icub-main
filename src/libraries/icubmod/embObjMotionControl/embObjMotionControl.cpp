@@ -419,7 +419,7 @@ embObjMotionControl::embObjMotionControl() :
     _njoints      = 0;
     _axisMap      = NULL;
     _zeros        = NULL;
-
+    _encodersStamp = NULL;
     _encoderconversionfactor = NULL;
     _encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
