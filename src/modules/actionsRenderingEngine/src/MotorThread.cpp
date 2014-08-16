@@ -2782,7 +2782,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     if(action_name=="")
     {
-        fprintf(stdout,"Error! action name not specified!\n",action_name.c_str());
+        fprintf(stdout,"Error! action name not specified!\n");
         return false;
     }
 
