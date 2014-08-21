@@ -35,9 +35,9 @@
     </group>
 
     <group name="TRQ_PIDS">
-        <param name="kp">             25         25         25         50     </param>       
+        <param name="kp">            -25        -25        -25        -50     </param>       
         <param name="kd">              0          0          0          0     </param>       
-        <param name="ki">           1000       1000       1000       1000     </param>       
+        <param name="ki">          -1000      -1000      -1000      -1000     </param>       
         <param name="maxPwm">       8000       8000       8000       8000     </param>       
         <param name="maxInt">        500        500        500        500     </param>       
         <param name="shift">           6          6          6          6     </param>       
