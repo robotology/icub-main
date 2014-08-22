@@ -10,7 +10,6 @@
 
 <param name="Encoder">                                                                706.670  -11.375  11.375   2.550    16.800   -2.556   -2.865   -2.833   -2.853   -2.833   -2.853   -2.260   </param>
 <param name="Zeros">                                                                  -75.00   -180.00  180.00   527.45   7.92     -99.78   -176.98  -90.00   -178.76  -90.00   -178.76  -338.50  </param>
-
         <param name="TorqueId">  0x0C          0             0             0             0             0             0             0             0             0             0             0 </param>
         <param name="TorqueChan">4             0             0             0             0             0             0             0             0             0             0             0 </param>
         <param name="TorqueMax"> 2             2             2             2             2             2             2             2             2             2             2             2 </param>
