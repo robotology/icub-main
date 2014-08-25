@@ -550,6 +550,7 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_
             case VOCAB_CM_OPENLOOP:
             case VOCAB_CM_IDLE:
             case VOCAB_CM_UNKNOWN:
+            case VOCAB_CM_HW_FAULT:
                 break;
 
             case VOCAB_CM_TORQUE:    
