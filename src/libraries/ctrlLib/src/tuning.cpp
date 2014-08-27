@@ -670,13 +670,16 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(3);
+                Vector &info=port.prepare();
+                info.resize(3);
+
                 info[0]=0.0;
                 info[1]=u;
                 info[2]=enc;
                 info=cat(info,plant.get_x());
                 info=cat(info,meanParams);
-                port.write(info);
+
+                port.write();
             }
 
             break;
@@ -701,13 +704,16 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(3);
+                Vector &info=port.prepare();
+                info.resize(3);
+
                 info[0]=1.0;
                 info[1]=u;
                 info[2]=enc;
                 info=cat(info,predictor.get_x());
                 info=cat(info,Vector(4,0.0));   // zero-padding
-                port.write(info);
+
+                port.write();
             }
 
             break;
@@ -724,7 +730,9 @@ void OnlineCompensatorDesign::run()
                 Property stiction_info;
                 stiction.getInfo(stiction_info);
 
-                Vector info(4);
+                Vector &info=port.prepare();
+                info.resize(4);
+
                 info[0]=2.0;
                 info[1]=stiction_info.find("voltage").asDouble();
                 info[2]=stiction_info.find("position").asDouble();
@@ -735,7 +743,7 @@ void OnlineCompensatorDesign::run()
                 info=cat(info,results);
                 info=cat(info,Vector(3,0.0));   // zero-padding
 
-                port.write(info);
+                port.write();
             }
 
             break;
@@ -775,7 +783,9 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(5);
+                Vector &info=port.prepare();
+                info.resize(5);
+
                 info[0]=3.0;
                 ipid->getOutput(joint,&info[1]);
                 ienc->getEncoder(joint,&info[2]);
@@ -783,7 +793,7 @@ void OnlineCompensatorDesign::run()
                 info[4]=(pidCur==&pidOld?0.0:1.0);
                 info=cat(info,Vector(4,0.0));   // zero-padding
 
-                port.write(info);
+                port.write();
             }
 
             break;

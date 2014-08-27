@@ -19,9 +19,9 @@
 #define __D4C_HELPERS_H__
 
 #include <string>
-#include <yarp/os/Vocab.h>
-#include <yarp/os/Property.h>
-#include <yarp/sig/Vector.h>
+
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
 
 #define D4C_VOCAB_CMD_PING                 VOCAB4('p','i','n','g')
 #define D4C_VOCAB_CMD_ADD                  VOCAB3('a','d','d')

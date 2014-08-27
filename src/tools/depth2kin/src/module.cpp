@@ -1117,7 +1117,8 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
     
     if (depthOutPort.getOutputCount()>0)
     {
-        depthOutPort.write(imgOut);
+        depthOutPort.prepare()=imgOut;
+        depthOutPort.write();
         if (holdImg)
             Time::delay(0.5);
     }

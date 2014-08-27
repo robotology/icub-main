@@ -23,11 +23,7 @@
 #include <algorithm>
 #include <sstream>
 
-#include <yarp/os/Network.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Vocab.h>
 #include <yarp/math/Math.h>
-
 #include "ClientGazeController.h"
 
 #define GAZECTRL_CLIENT_VER     1.1

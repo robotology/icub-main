@@ -65,9 +65,9 @@ protected:
     Integrator        *IntState;
     Integrator        *IntPlan;
 
-    Port  port_x;
-    Port  port_q;
-    Port  port_event;
+    BufferedPort<Vector> port_x;
+    BufferedPort<Vector> port_q;
+    Port                 port_event;
     Stamp txInfo_x;
     Stamp txInfo_q;
     Stamp txInfo_pose;

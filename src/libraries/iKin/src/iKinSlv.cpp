@@ -48,12 +48,10 @@ bool RpcProcessor::read(ConnectionReader &connection)
     if (!slv->isClosed())
     {
         Bottle cmd, reply;
-    
         if (!cmd.read(connection))
             return false;
     
         slv->respond(cmd,reply);
-
         if (ConnectionWriter *writer=connection.getWriter())
             reply.write(*writer);
     

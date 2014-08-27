@@ -85,7 +85,7 @@ protected:
 
     yarp::os::BufferedPort<yarp::sig::Vector> portState;
     yarp::os::Port                            portCmd;
-    yarp::os::Port                            portRpc;    
+    yarp::os::RpcClient                       portRpc;
 
     std::set<int> contextIdList;    
     std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;    

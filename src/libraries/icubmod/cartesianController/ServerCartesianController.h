@@ -171,11 +171,11 @@ protected:
 
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvIn;
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvOut;
-    yarp::os::Port                             portSlvRpc;
+    yarp::os::RpcClient                        portSlvRpc;
 
     yarp::os::BufferedPort<yarp::sig::Vector>  portState;
     yarp::os::Port                             portEvent;
-    yarp::os::Port                             portRpc;
+    yarp::os::RpcServer                        portRpc;
 
     CartesianCtrlCommandPort                  *portCmd;
     CartesianCtrlRpcProcessor                 *rpcProcessor;

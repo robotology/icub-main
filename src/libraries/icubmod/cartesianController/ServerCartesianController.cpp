@@ -77,6 +77,7 @@ bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
 CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *server)
 {
     this->server=server;
+    useCallback();
 }
 
 
@@ -196,8 +197,6 @@ void ServerCartesianController::openPorts()
 {
     portCmd     =new CartesianCtrlCommandPort(this);
     rpcProcessor=new CartesianCtrlRpcProcessor(this);
-
-    portCmd->useCallback();
     portRpc.setReader(*rpcProcessor);
 
     ConstString prefixName="/";
@@ -2203,12 +2202,10 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
         addTokenOption(b,txToken=Time::now());
 
         skipSlvRes=false;
-
         if (latchToken)
             txTokenLatchedGoToRpc=txToken;
 
         portSlvOut.writeStrict();
-
         return true;
     }
     else
@@ -3387,14 +3384,13 @@ void ServerCartesianController::notifyEvent(const string &event,
 
     if (portEvent.getOutputCount()>0)
     {
-        Bottle bottle;
-        bottle.addString(event.c_str());
-        bottle.addDouble(time);
-
+        Bottle ev;
+        ev.addString(event.c_str());
+        ev.addDouble(time);
         if (checkPoint>=0.0)
-            bottle.addDouble(checkPoint);
+            ev.addDouble(checkPoint);
 
-        portEvent.write(bottle);
+        portEvent.write(ev);
     }
 
     // rise the all-events callback

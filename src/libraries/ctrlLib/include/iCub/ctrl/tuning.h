@@ -363,7 +363,7 @@ protected:
 
     yarp::os::Mutex mutex;
     yarp::os::Event doneEvent;
-    yarp::os::Port  port;
+    yarp::os::BufferedPort<yarp::sig::Vector> port;
 
     yarp::sig::Vector x0;
     yarp::sig::Vector meanParams;
