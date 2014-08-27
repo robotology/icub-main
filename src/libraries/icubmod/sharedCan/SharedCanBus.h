@@ -79,7 +79,7 @@ public:
         if (nRecv>=mBufferSize)
         {
             synchroMutex.post();
-            fprintf(stderr, "Error: recv buffer overrun (%4d > %4d) \n", nRecv, mBufferSize);
+            fprintf(stderr, "[ERROR] recv buffer overrun (%4d > %4d) \n", nRecv, mBufferSize);
             return false;
         }
 
@@ -100,7 +100,7 @@ public:
     virtual bool canGetBaudRate(unsigned int *rate);
     virtual bool canSetBaudRate(unsigned int rate)
     {
-        fprintf(stderr, "Warning: set baud rate not allowed from CanBusAccessPoint implementation\n");
+        fprintf(stderr, "[WARNING] set baud rate not allowed from CanBusAccessPoint implementation\n");
         return false;
     }
 
