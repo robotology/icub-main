@@ -115,6 +115,11 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     {
         nj = p.findGroup("GENERAL").find("joints").asInt();
     }
+    else if(p.findGroup("GENERAL").check("Joints"))
+    {
+        // This is needed to be backward compatibile with old iCubInterface
+        nj = p.findGroup("GENERAL").find("Joints").asInt();
+    }
     else
     {
         yError() << deviceName.c_str() <<  ": missing joints parameter" ;
