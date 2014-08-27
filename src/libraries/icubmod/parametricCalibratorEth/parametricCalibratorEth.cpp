@@ -232,7 +232,10 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
     xtmp = p.findGroup("CALIB_ORDER");
-//    yDebug() << "Group size " << xtmp.size() << "\nvalues: " << xtmp.toString().c_str();
+    int calib_order_size = xtmp.size();
+    if (calib_order_size <= 1) {yError() << "invalid number CALIB_ORDER params"; return false;}
+    //yDebug() << "CALIB_ORDER: group size: " << xtmp.size() << " values: " << xtmp.toString().c_str();
+
     std::list<int>  tmp;
     for(int i=1; i<xtmp.size(); i++)
     {
@@ -322,12 +325,34 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
     int nj=0;
     int totJointsToCalibrate = 0;
 
+    if (dd==0)
+    {
+        yError() << deviceName << ": invalid device driver";
+        return false;
+    }
+
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
-    p->view(iCalibrate);
-    p->view(iEncoders);
-    p->view(iPosition);
-    p->view(iPids);
-    p->view(iControlMode);
+    if (p!=0)
+    {
+        p->view(iCalibrate);
+        p->view(iEncoders);
+        p->view(iPosition);
+        p->view(iPids);
+        p->view(iControlMode);
+    }
+    else
+    {
+        //yError() << deviceName << ": invalid dynamic cast to yarp::dev::PolyDriver";
+        //return false;
+        
+        //This is to ensure backward-compatibility with iCubInterface
+        yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended."; 
+        dd->view(iCalibrate);
+        dd->view(iEncoders);
+        dd->view(iPosition);
+        dd->view(iPids);
+        dd->view(iControlMode);
+    }
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
         yError() << deviceName << ": interface not found" << iCalibrate << iPosition << iPids << iControlMode;
@@ -345,23 +370,27 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
     std::list<std::list<int> >::iterator Bend=joints.end();
 
     // count how many joints are there in the list of things to be calibrated
+    std::string joints_string;
     while(Bit != Bend)
     {
+        joints_string += "( ";
         currentSetList.clear();
         currentSetList = (*Bit);
         std::list<int>::iterator lit  = currentSetList.begin();
         std::list<int>::iterator lend = currentSetList.end();
         totJointsToCalibrate += currentSetList.size();
 
-        printf("Joints calibration order :\n");
+        char joints_buff [10];
         while(lit != lend)
         {
-            printf("%d,", (*lit));
+            sprintf(joints_buff, "%d ", (*lit));
+            joints_string += joints_buff;
             lit++;
         }
-        printf("\n");
         Bit++;
+        joints_string += ") ";
     }
+    yDebug() << deviceName <<("Joints calibration order:") << joints_string;
 
     if (totJointsToCalibrate > nj)
     {
