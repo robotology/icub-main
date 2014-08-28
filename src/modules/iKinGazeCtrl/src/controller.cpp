@@ -227,13 +227,15 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
 {
     if (port_event.getOutputCount()>0)
     {
-        Bottle ev;
+        Bottle &ev=port_event.prepare();
+        ev.clear();
+
         ev.addString(event.c_str());
         ev.addDouble(q_stamp);
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
 
-        port_event.write(ev);
+        port_event.writeStrict();
     }
 }
 

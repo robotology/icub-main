@@ -3384,13 +3384,15 @@ void ServerCartesianController::notifyEvent(const string &event,
 
     if (portEvent.getOutputCount()>0)
     {
-        Bottle ev;
+        Bottle &ev=portEvent.prepare();
+        ev.clear();
+
         ev.addString(event.c_str());
         ev.addDouble(time);
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
 
-        portEvent.write(ev);
+        portEvent.writeStrict();
     }
 
     // rise the all-events callback

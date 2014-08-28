@@ -88,11 +88,11 @@ protected:
     yarp::os::BufferedPort<yarp::sig::Vector> portStateAng;
     yarp::os::BufferedPort<yarp::sig::Vector> portStateHead;
 
-    yarp::os::Port      portCmdFp;
-    yarp::os::Port      portCmdAng;
-    yarp::os::Port      portCmdMono;
-    yarp::os::Port      portCmdStereo;
-    yarp::os::RpcClient portRpc;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdFp;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdAng;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdMono;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdStereo;
+    yarp::os::RpcClient                       portRpc;
 
     std::set<int> contextIdList;
     std::map<std::string,yarp::dev::GazeEvent*> eventsMap;

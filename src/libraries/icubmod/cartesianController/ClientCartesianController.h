@@ -84,7 +84,7 @@ protected:
     yarp::os::Stamp   poseStamp;
 
     yarp::os::BufferedPort<yarp::sig::Vector> portState;
-    yarp::os::Port                            portCmd;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmd;
     yarp::os::RpcClient                       portRpc;
 
     std::set<int> contextIdList;    

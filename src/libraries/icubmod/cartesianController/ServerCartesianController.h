@@ -174,7 +174,7 @@ protected:
     yarp::os::RpcClient                        portSlvRpc;
 
     yarp::os::BufferedPort<yarp::sig::Vector>  portState;
-    yarp::os::Port                             portEvent;
+    yarp::os::BufferedPort<yarp::os::Bottle>   portEvent;
     yarp::os::RpcServer                        portRpc;
 
     CartesianCtrlCommandPort                  *portCmd;
