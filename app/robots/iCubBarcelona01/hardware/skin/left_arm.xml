@@ -1,0 +1,28 @@
+<devices>
+    <device name="left_arm_skin" type="canBusSkin">
+        <param name="canbusDevice"> "sharedcan" </param>
+        <param name="physDevice"> "cfw2can" </param>
+        <param name="canDeviceNum"> 7 </param>
+        <param name="skinCanIds"> 14 13 12 11 10 9 8 </param>
+        <param name="period"> 10 </param>
+
+        <!-- 4C Message is the CMD_TACT_SETUP initialisation message. 
+             It is sent to all boards. -->
+        <!--            Board ID:        14   13   12   11   10    9    8   -->
+        <param name="4C_Timer">         0x03 0x01 0x01 0x01 0x01 0x01 0x01 </param>
+        <param name="4C_CDCOffsetL">    0x00 0x00 0x00 0x00 0x00 0x00 0x00 </param>
+        <param name="4C_CDCOffsetH">    0x20 0x20 0x20 0x20 0x20 0x20 0x20 </param>
+        <param name="4C_TimeL">         0x00 0x00 0x00 0x00 0x00 0x00 0x00 </param>
+        <param name="4C_TimeH">         0x35 0x00 0x00 0x00 0x00 0x00 0x00 </param>
+
+        <!-- 4E Message is the CMD_TACT_SETUP2 initialisation message. 
+             So far it is sent only to the hand board (14) to double the gain for the new (V2) fingertips. -->
+        <!--            Board ID:    14   13   12   11   10    9    8   -->
+        <param name="4E_Shift">     0x02 0x02 0x02 0x02 0x02 0x02 0x02 </param>
+        <param name="4E_Shift3_1">  0x22 0x22 0x22 0x22 0x22 0x22 0x22 </param>
+        <param name="4E_NoLoad">    0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 </param>
+        <param name="4E_Param">     0x00 0x00 0x00 0x00 0x00 0x00 0x00 </param>
+        <param name="4E_EnaL">      0x1F 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF </param>
+        <param name="4E_EnaH">      0x0F 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF </param>
+    </device>  
+</devices>

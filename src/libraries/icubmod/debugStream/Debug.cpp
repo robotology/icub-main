@@ -83,7 +83,7 @@ void DebugStream::Debug::print_output(MsgType t,
             if (verbose_output) {
                 std::cout << BLUE << "D" << CLEAR << ": " << file << ":" << line << " " << BLUE << func << CLEAR << ": " << s.str() << std::endl;
             } else {
-                std::cout << BLUE << "DEBUG" << CLEAR << ": " << s.str() << std::endl;
+                std::cout << "[" << BLUE << "DEBUG" << CLEAR << "]" << s.str() << std::endl;
             }
         }
         break;
@@ -99,7 +99,7 @@ void DebugStream::Debug::print_output(MsgType t,
         if (verbose_output) {
             std::cerr << YELLOW << "W" << CLEAR << ": " << file << ":" << line << " " << YELLOW << func << CLEAR << ": " << s.str() << std::endl;
         } else {
-            std::cerr << YELLOW << "WARNING" << CLEAR << ": " << s.str() << std::endl;
+            std::cerr << "[" << YELLOW << "WARNING" << CLEAR << "]" << s.str() << std::endl;
         }
         break;
     case ErrorType:
@@ -113,7 +113,7 @@ void DebugStream::Debug::print_output(MsgType t,
         if (verbose_output) {
             std::cerr << RED << "E" << CLEAR << ": " << file << ":" << line << " " << RED << func << CLEAR << ": " << s.str() << std::endl;
         } else {
-            std::cerr << RED << "ERROR" << CLEAR << ": " << s.str() << std::endl;
+            std::cerr << "[" << RED << "ERROR" << CLEAR << "]" << s.str() << std::endl;
         }
         break;
     case FatalType:

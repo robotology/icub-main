@@ -16,6 +16,7 @@
 */
 
 #include <stdio.h>
+
 #include <iCub/d4c/private/d4c_helpers.h>
 
 using namespace std;

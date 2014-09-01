@@ -186,7 +186,7 @@ private:
     //stereo 2 cartesian mode
     int                                 modeS2C;
     bool                                neuralNetworkAvailable;
-    Port                                disparityPort;
+    RpcClient                           disparityPort;
 
     vector<Vector>                      pos_torsoes;
     vector<Vector>                      handPoses;

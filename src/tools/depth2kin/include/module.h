@@ -106,11 +106,11 @@ protected:
     int context_arm;
     int context_gaze;
 
-    BufferedPort<Bottle> touchInPort;
-    DisparityProcessor   depthInPort;
-    Port                 depthOutPort;
-    RpcClient            depthRpcPort;
-    RpcServer            rpcPort;
+    BufferedPort<Bottle>             touchInPort;
+    DisparityProcessor               depthInPort;
+    BufferedPort<ImageOf<PixelBgr> > depthOutPort;
+    RpcClient                        depthRpcPort;
+    RpcServer                        rpcPort;
 
     bool attach(RpcServer &source);
     bool createTargets(const Vector &c, const Vector &size);

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+  <device name="right_leg_mc_wrapper" type="controlboardwrapper2">
+      <param name="threadrate">  10  </param>
+      <paramlist name="networks">
+         <elem name="right_joints">  0  5  0  5 </elem>
+      </paramlist>
+
+      <param name="period"> 10 			</param>
+      <param name="name">   icub/right_leg	</param>
+      <param name="ports">  right_leg		</param>
+      <param name="joints"> 6			</param>
+
+      <action phase="startup" level="5" type="attach">
+	  <paramlist name="networks">
+            <elem name="right_joints">  right_leg_mc </elem>
+	  </paramlist>
+      </action>
+
+      <action phase="shutdown" level="5" type="detach" />
+  </device>
+</devices>

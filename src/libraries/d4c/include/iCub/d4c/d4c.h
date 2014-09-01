@@ -35,8 +35,9 @@
 #define __D4C_H__
 
 #include <deque>
-#include <yarp/os/Property.h>
-#include <yarp/sig/Vector.h>
+
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
 
 #define D4C_DEFAULT_MAXITERATIONS       1000
 #define D4C_DEFAULT_TS_DISABLED         0.0

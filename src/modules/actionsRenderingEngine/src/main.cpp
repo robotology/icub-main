@@ -1427,7 +1427,6 @@ protected:
     bool read(ConnectionReader &connection)
     {
         Bottle command, reply;
-
         if (!command.read(connection))
             return false;
 

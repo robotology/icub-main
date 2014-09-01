@@ -452,7 +452,9 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
     if (!connected || (xd.length()<3) || (od.length()<4))
         return false;
 
-    Bottle command;
+    Bottle &command=portCmd.prepare();
+    command.clear();
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
     command.addDouble(t);
@@ -465,7 +467,8 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
         xdesPart.addDouble(od[i]);    
 
     // send command
-    return portCmd.write(command);
+    portCmd.writeStrict();
+    return true;
 }
 
 
@@ -475,7 +478,9 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
     if (!connected || (xd.length()<3))
         return false;
 
-    Bottle command;
+    Bottle &command=portCmd.prepare();
+    command.clear();
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
     command.addDouble(t);
@@ -485,7 +490,8 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
         xdesPart.addDouble(xd[i]);    
 
     // send command
-    return portCmd.write(command);
+    portCmd.writeStrict();
+    return true;
 }
 
 
@@ -1111,7 +1117,9 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
     if (!connected || (xdot.length()<3) || (odot.length()<4))
         return false;
 
-    Bottle command;
+    Bottle &command=portCmd.prepare();
+    command.clear();
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_TASKVEL);
     Bottle &xdotPart=command.addList();
 
@@ -1122,7 +1130,8 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         xdotPart.addDouble(odot[i]);
 
     // send command
-    return portCmd.write(command);
+    portCmd.writeStrict();
+    return true;
 }
 
 

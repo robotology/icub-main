@@ -163,7 +163,12 @@ as (cond1) && ((cond2) || (cond3)) are not handled; however,
 this is not a real limitation since nested conditions can be 
 properly expanded: indeed, the previous example can be cast back 
 to (cond1)&&(cond2) || (cond1)&&(cond3). 
-
+ 
+<b>quit</b> \n 
+<i>Format</i>: [quit] \n 
+<i>Reply</i>: [ack] \n 
+<i>Action</i>: quit the module.
+ 
 \section lib_sec Libraries 
 - YARP libraries. 
 
@@ -277,6 +282,8 @@ using namespace yarp::os;
 #define CMD_ASK                         VOCAB3('a','s','k')
 #define CMD_SYNC                        VOCAB4('s','y','n','c')
 #define CMD_ASYNC                       VOCAB4('a','s','y','n')
+#define CMD_QUIT                        VOCAB4('q','u','i','t')
+#define CMD_BYE                         VOCAB3('b','y','e')
                                         
 #define REP_ACK                         VOCAB3('a','c','k')
 #define REP_NACK                        VOCAB4('n','a','c','k')
@@ -422,6 +429,7 @@ protected:
     bool initialized;
     bool nosave;
     bool verbose;
+    bool quitting;
 
     BufferedPort<Bottle> *pBroadcastPort;
     bool asyncBroadcast;
@@ -530,6 +538,7 @@ public:
         initialized=false;
         nosave=false;
         verbose=false;
+        quitting=false;
         idCnt=0;
     }
 
@@ -1198,6 +1207,12 @@ public:
     }
 
     /************************************************************************/
+    bool isQuitting() const
+    {
+        return quitting;
+    }
+
+    /************************************************************************/
     void respond(ConnectionReader &connection, const Bottle &command, Bottle &reply)
     {
         string agent=connection.getRemoteContact().getName().c_str();
@@ -1482,6 +1497,15 @@ public:
             }
 
             //-----------------
+            case CMD_QUIT:
+            case CMD_BYE:
+            {
+                quitting=true;
+                reply.addVocab(REP_ACK);
+                break;
+            }
+
+            //-----------------
             default:
             {
                 printMessage("received unknown command!\n");
@@ -1624,7 +1648,7 @@ private:
     DataBase             dataBase;
     RpcProcessor         rpcProcessor;
     DataBaseModifyPort   modifyPort;
-    Port                 rpcPort;
+    RpcServer            rpcPort;
     BufferedPort<Bottle> bcPort;
 
     int cnt;
@@ -1674,7 +1698,7 @@ public:
 
     /************************************************************************/
     bool updateModule()
-    {        
+    {
         dataBase.periodicHandler(getPeriod());
 
         // back-up straightaway the database each 15 minutes
@@ -1698,7 +1722,7 @@ public:
             cumTimeOld=cumTime;
         }
 
-        return true;
+        return !dataBase.isQuitting();
     }
 
     /************************************************************************/
