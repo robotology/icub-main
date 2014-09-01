@@ -350,49 +350,40 @@ bool embObjMotionControl::alloc(int nj)
 
 bool embObjMotionControl::dealloc()
 {
-    delete _axisMap;
-    delete _angleToEncoder;
-    delete _encodersStamp;
-    delete _encoderconversionoffset;
-    delete _encoderconversionfactor;
-
-    delete _rotToEncoder;
-    delete _zeros;
-    delete _torqueSensorId;
-    delete _torqueSensorChan;
-    delete _maxTorque;
-    delete _newtonsToSensor;
-
-//    if(NULL != _pids);
-//        delete _pids;
-//    delete _tpids;
-
-    delete _impedance_params;
-    delete _impedance_limits;
-    delete _estim_params;
-
-    delete _limitsMax;
-    delete _limitsMin;
-    delete _currentLimits;
-    delete checking_motiondone;
-
-    delete _velocityShifts;
-    delete _velocityTimeout;
-
-    // Reserve space for data stored locally. values are initialize to 0
-    delete _ref_positions;
-    delete _command_speeds;
-    delete _ref_speeds;
-    delete _ref_accs;
-    delete _ref_torques;
-    delete _enabledAmp;
-    delete _enabledPid;
-    delete _calibrated;
+    checkAndDestroy(_axisMap);
+    checkAndDestroy(_angleToEncoder);
+    checkAndDestroy(_encodersStamp);
+    checkAndDestroy(_encoderconversionoffset);
+    checkAndDestroy(_encoderconversionfactor);
+    checkAndDestroy(_rotToEncoder);
+    checkAndDestroy(_zeros);
+    checkAndDestroy(_torqueSensorId);
+    checkAndDestroy(_torqueSensorChan);
+    checkAndDestroy(_maxTorque);
+    checkAndDestroy(_newtonsToSensor);
+    checkAndDestroy(_pids);
+    checkAndDestroy(_tpids);
+    checkAndDestroy(_impedance_params);
+    checkAndDestroy(_impedance_limits);
+    checkAndDestroy(_estim_params);
+    checkAndDestroy(_limitsMax);
+    checkAndDestroy(_limitsMin);
+    checkAndDestroy(_currentLimits);
+    checkAndDestroy(checking_motiondone);
+    checkAndDestroy(_velocityShifts);
+    checkAndDestroy(_velocityTimeout);
+    checkAndDestroy(_ref_positions);
+    checkAndDestroy(_command_speeds);
+    checkAndDestroy(_ref_speeds);
+    checkAndDestroy(_ref_accs);
+    checkAndDestroy(_ref_torques);
+    checkAndDestroy(_enabledAmp);
+    checkAndDestroy(_enabledPid);
+    checkAndDestroy(_calibrated);
 
 #ifdef _SETPOINT_TEST_
     delete j_debug_data;
 #endif
-    //  _debug_params=allocAndCheck<DebugParameters>(nj);
 
 
     return true;
@@ -428,7 +419,7 @@ embObjMotionControl::embObjMotionControl() :
     _njoints      = 0;
     _axisMap      = NULL;
     _zeros        = NULL;
-
+    _encodersStamp = NULL;
     _encoderconversionfactor = NULL;
     _encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
@@ -483,7 +474,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     std::string str;
     if(!config.findGroup("GENERAL").find("verbose").isBool())
     {
-        yWarning() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
+        yError() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
         str=" ";
     }
     else

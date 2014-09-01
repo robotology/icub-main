@@ -4,7 +4,7 @@
 
 PREPARE_DEVICE(embObjMotionControl TYPE embObjMotionControl
     INCLUDE embObjMotionControl.h
-    WRAPPER controlboard)
+    WRAPPER controlboardwrapper2)
 
  IF (NOT SKIP_embObjMotionControl)
 

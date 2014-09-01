@@ -315,11 +315,12 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
     std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
+    if(config.findGroup("GENERAL").find("verbose").asBool())
         str=config.toString().c_str();
     else
         str="\n";
     yTrace() << str;
+
 
     Bottle          groupEth, parameter;
 

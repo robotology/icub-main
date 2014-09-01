@@ -168,13 +168,13 @@ embObjVirtualAnalogSensor::~embObjVirtualAnalogSensor()
 bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 {
     std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
-        _verbose = true;
-
-    if(_verbose)
+    if(config.findGroup("GENERAL").find("verbose").asBool())
+    {
         str=config.toString().c_str();
+        _verbose = true;
+    }
     else
-        str="\n";
+        str=" ";
 
     yTrace() << str;
 

@@ -196,7 +196,7 @@ embObjAnalogSensor::~embObjAnalogSensor()
 bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 {
     std::string str;
-    if(config.findGroup("GENERAL").find("Verbose").asInt())
+    if(config.findGroup("GENERAL").find("verbose").asBool())
         str=config.toString().c_str();
     else
         str="\n";

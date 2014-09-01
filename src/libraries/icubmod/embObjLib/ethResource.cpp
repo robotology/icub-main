@@ -34,6 +34,7 @@ infoOfRecvPkts::infoOfRecvPkts()
     count = 0;
     max_count = DEFAULT_MAX_COUNT_STAT;
     timeout = DEFAULT_TIMEOUT_STAT;
+    _verbose = false;
 
     last_seqNum = 0;
     last_ageOfFrame = 0;
@@ -228,7 +229,8 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
 
             if(curr_seqNum < (last_seqNum+1))
             {
-                yError()<< "REC PKTS not in order!!!!" << board << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
+                if(_verbose)
+                    yError()<< "REC PKTS not in order!!!!" << board << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
             }
             else
             {
@@ -238,7 +240,8 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
             currPeriodPktLost+= num_lost_pkts;
             totPktLost+= num_lost_pkts;
 
-            yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << board << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
+            if(_verbose)
+                yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << board << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
         //2) check ageOfPkt
@@ -246,14 +249,16 @@ void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double 
         diff_ageofframe = (double)(diff/1000); //age of frame is expressed in microsec
         if( diff_ageofframe > (timeout*1000))
         {
-            yError() << "Board " << board << ": EMS time(ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe << "ms diff="<< diff;
+            if(_verbose)
+                yError() << "Board " << board << ": EMS time(ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe << "ms diff="<< diff;
         }
 
         //3) check rec time
         curr_periodPkt = reckPktTime - last_recvPktTime;
         if(curr_periodPkt > timeout)
         {
-            yError() << "Board " << board << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
+            if(_verbose)
+                yError() << "Board " << board << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
         }
 
         stat_ageOfFrame->add(diff_ageofframe);
