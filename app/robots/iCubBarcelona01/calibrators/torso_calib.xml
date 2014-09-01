@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+    <device name="torso_calibrator" type="parametricCalibrator">
+                
+        <group name="GENERAL">
+            <param name="joints"> 4 </param> 
+            <param name="deviceName"> Torso_Calibrator </param>
+        </group>
+
+        <group name="CALIBRATION">   
+            <param name="calibrationType">            3             3             3             3             </param>       
+            <param name="calibration1">               2047.5        2047.5        2047.5        0             </param>       
+            <param name="calibration2">               10            10            10            0             </param>       
+            <param name="calibration3">               1820          3196.375      2741.375      0             </param>       
+            <param name="positionZero">               0             0             0             0             </param>       
+            <param name="velocityZero">               10            10            10            0             </param>           
+            <param name="maxPwm">                     120           120           120           0             </param>       
+            <param name="posZeroThreshold">           2             2             2             2             </param>       
+        </group>       
+         
+        <group name="HOME">          
+            <param name="positionHome">           0             0              0            0             </param>       
+            <param name="velocityHome">          10            10             10            0             </param>       
+        </group>       
+
+        <param name="CALIB_ORDER"> (0 1 2) </param>
+        
+        <action phase="startup" level="10" type="calibrate">
+            <param name="target">torso_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt1" level="1" type="park">
+            <param name="target">torso_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt3" level="1" type="abort" />
+
+    </device>
+</devices>
