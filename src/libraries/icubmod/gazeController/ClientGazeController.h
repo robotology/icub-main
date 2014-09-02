@@ -44,13 +44,9 @@
 #include <set>
 #include <map>
 
-#include <yarp/os/Bottle.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
-
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/GazeControl.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/dev/all.h>
 
 
 // forward declaration
@@ -92,11 +88,11 @@ protected:
     yarp::os::BufferedPort<yarp::sig::Vector> portStateAng;
     yarp::os::BufferedPort<yarp::sig::Vector> portStateHead;
 
-    yarp::os::Port portCmdFp;
-    yarp::os::Port portCmdAng;
-    yarp::os::Port portCmdMono;
-    yarp::os::Port portCmdStereo;
-    yarp::os::Port portRpc;    
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdFp;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdAng;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdMono;
+    yarp::os::BufferedPort<yarp::os::Bottle>  portCmdStereo;
+    yarp::os::RpcClient                       portRpc;
 
     std::set<int> contextIdList;
     std::map<std::string,yarp::dev::GazeEvent*> eventsMap;

@@ -274,7 +274,7 @@ bool OnlineStictionEstimator::threadInit()
     double x_range=x_max-x_min;
     x_min+=0.1*x_range;
     x_max-=0.1*x_range;
-    imod->setOpenLoopMode(joint);
+    imod->setControlMode(joint,VOCAB_CM_OPENLOOP);
 
     ienc->getEncoder(joint,&x_pos);
     x_vel=0.0;
@@ -388,7 +388,7 @@ void OnlineStictionEstimator::run()
 void OnlineStictionEstimator::threadRelease()
 {
     ipid->setOffset(joint,0.0);
-    imod->setPositionMode(joint);
+    imod->setControlMode(joint,VOCAB_CM_POSITION);
     delete pid;
 
     doneEvent.signal();
@@ -557,7 +557,7 @@ bool OnlineCompensatorDesign::threadInit()
         // -----
         case plant_estimation:
         {
-            imod->setOpenLoopMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_OPENLOOP);
             ienc->getEncoder(joint,&x0[0]);
             plant.init(P0,x0);
             meanParams=0.0;
@@ -572,7 +572,7 @@ bool OnlineCompensatorDesign::threadInit()
         case plant_validation:
         {
             Vector _x0(2,0.0);
-            imod->setOpenLoopMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_OPENLOOP);
             ienc->getEncoder(joint,&_x0[0]);
             predictor.init(_x0,predictor.get_P());
             measure_update_cnt=0;
@@ -593,7 +593,7 @@ bool OnlineCompensatorDesign::threadInit()
         case controller_validation:
         {
             pidCur=&pidOld;
-            imod->setPositionMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_POSITION);
             x_tg=x_max;
             if (controller_validation_ref_square)
                 ipid->setReference(joint,x_tg);
@@ -670,13 +670,16 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(3);
+                Vector &info=port.prepare();
+                info.resize(3);
+
                 info[0]=0.0;
                 info[1]=u;
                 info[2]=enc;
                 info=cat(info,plant.get_x());
                 info=cat(info,meanParams);
-                port.write(info);
+
+                port.write();
             }
 
             break;
@@ -701,13 +704,16 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(3);
+                Vector &info=port.prepare();
+                info.resize(3);
+
                 info[0]=1.0;
                 info[1]=u;
                 info[2]=enc;
                 info=cat(info,predictor.get_x());
                 info=cat(info,Vector(4,0.0));   // zero-padding
-                port.write(info);
+
+                port.write();
             }
 
             break;
@@ -724,7 +730,9 @@ void OnlineCompensatorDesign::run()
                 Property stiction_info;
                 stiction.getInfo(stiction_info);
 
-                Vector info(4);
+                Vector &info=port.prepare();
+                info.resize(4);
+
                 info[0]=2.0;
                 info[1]=stiction_info.find("voltage").asDouble();
                 info[2]=stiction_info.find("position").asDouble();
@@ -735,7 +743,7 @@ void OnlineCompensatorDesign::run()
                 info=cat(info,results);
                 info=cat(info,Vector(3,0.0));   // zero-padding
 
-                port.write(info);
+                port.write();
             }
 
             break;
@@ -764,12 +772,8 @@ void OnlineCompensatorDesign::run()
                 }
 
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
-                {
-                    if (x_tg==x_max)
-                        ipid->setOffset(joint,controller_validation_stiction_up);
-                    else
-                        ipid->setOffset(joint,controller_validation_stiction_down);
-                }
+                    ipid->setOffset(joint,(x_tg==x_max)?controller_validation_stiction_up:
+                                                        controller_validation_stiction_down);
 
                 if (controller_validation_ref_square)
                     ipid->setReference(joint,x_tg);
@@ -779,7 +783,9 @@ void OnlineCompensatorDesign::run()
 
             if (port.getOutputCount()>0)
             {
-                Vector info(5);
+                Vector &info=port.prepare();
+                info.resize(5);
+
                 info[0]=3.0;
                 ipid->getOutput(joint,&info[1]);
                 ienc->getEncoder(joint,&info[2]);
@@ -787,7 +793,7 @@ void OnlineCompensatorDesign::run()
                 info[4]=(pidCur==&pidOld?0.0:1.0);
                 info=cat(info,Vector(4,0.0));   // zero-padding
 
-                port.write(info);
+                port.write();
             }
 
             break;
@@ -808,7 +814,7 @@ void OnlineCompensatorDesign::threadRelease()
         case plant_validation:
         {
             ipid->setOffset(joint,0.0);
-            imod->setPositionMode(joint);
+            imod->setControlMode(joint,VOCAB_CM_POSITION);
             break;
         }
 

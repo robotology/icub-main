@@ -227,14 +227,15 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
 {
     if (port_event.getOutputCount()>0)
     {
-        Bottle bottle;
-        bottle.addString(event.c_str());
-        bottle.addDouble(q_stamp);
+        Bottle &ev=port_event.prepare();
+        ev.clear();
 
+        ev.addString(event.c_str());
+        ev.addDouble(q_stamp);
         if (checkPoint>=0.0)
-            bottle.addDouble(checkPoint);
+            ev.addDouble(checkPoint);
 
-        port_event.write(bottle);
+        port_event.writeStrict();
     }
 }
 
@@ -637,16 +638,18 @@ void Controller::run()
 
     txInfo_x.update(x_stamp);
     if (port_x.getOutputCount()>0)
-    {        
+    {
+        port_x.prepare()=x;
         port_x.setEnvelope(txInfo_x);
-        port_x.write(x);
+        port_x.write();
     }
 
     txInfo_q.update(q_stamp);
     if (port_q.getOutputCount()>0)
-    {        
+    {
+        port_q.prepare()=q;
         port_q.setEnvelope(txInfo_q);
-        port_q.write(q);
+        port_q.write();
     }
 
     // update pose information

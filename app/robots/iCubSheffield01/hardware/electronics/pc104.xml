@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubSheffield01" build="1">
+  <group name="ETH">
+     <param name="PC104IpAddress"> 10.0.1.104 </param> 
+  </group>
+</params>
+

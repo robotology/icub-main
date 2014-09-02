@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubSheffield01" build="1">
+    <params file="hardware/electronics/pc104.xml" />
+
+    <group name="ETH">
+        <param name="IpAddress">	10.0.1.4	</param>
+        <param name="Ems">		    4		    </param>
+        <param name="CmdPort">		12345		</param>
+        <param name="SrvPort">		4444		</param>
+    </group>
+    
+    <group name="TRANSCEIVER">
+        <param name="listeningPort">	            12345	</param> 
+        <param name="destinationPort">              12345   </param>
+        <param name="maxSizeRXpacket">		        768		</param>
+        <param name="maxSizeTXpacket">		        1408	</param>
+        <param name="maxSizeROPframeRegulars">      1024    </param>
+        <param name="maxSizeROPframeReplies">  	    128     </param>
+        <param name="maxSizeROPframeOccasionals">   256	    </param>
+        <param name="maxSizeROP">  		            256     </param>
+        <param name="maxNumberRegularROPs">  		32      </param>
+    </group>
+    
+    <group name="PROTOCOL">
+        <param name="endpointManagementIsSupported">	        1   </param>
+            <param name="entityMNcommunicationNumberOf">            1	</param>
+            <param name="entityMNapplicationNumberOf">              1	</param>
+            <param name="entityMNinformationNumberOf">              1	</param>
+            
+        <param name="endpointMotionControlIsSupported">         1   </param> 
+            <param name="entityMCjointNumberOf">                    12	</param> 
+            <param name="entityMCmotorNumberOf">                    12	</param>
+            <param name="entityMCcontrollerNumberOf">               1	</param> 
+            
+        <param name="endpointAnalogSensorsIsSupported">         1   </param> 
+            <param name="entityASstrainNumberOf">                   0	</param> 
+            <param name="entityASmaisNumberOf">                     1	</param>
+            <param name="entityASextorqueNumberOf">                 1	</param>   
+            
+        <param name="endpointSkinIsSupported">                  1   </param> 
+            <param name="entitySKskinNumberOf">                     1	</param>        
+    </group>
+    
+</params>

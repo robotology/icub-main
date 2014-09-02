@@ -23,11 +23,7 @@
 #include <algorithm>
 #include <sstream>
 
-#include <yarp/os/Network.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Vocab.h>
 #include <yarp/math/Math.h>
-
 #include "ClientGazeController.h"
 
 #define GAZECTRL_CLIENT_VER     1.1
@@ -293,11 +289,15 @@ bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
     if (!connected || (fp.length()<3))
         return false;
 
-    Bottle cmd;
+    Bottle &cmd=portCmdFp.prepare();
+    cmd.clear();
+
     cmd.addDouble(fp[0]);
     cmd.addDouble(fp[1]);
     cmd.addDouble(fp[2]);
-    return portCmdFp.write(cmd);
+
+    portCmdFp.writeStrict();
+    return true;
 }
 
 
@@ -307,12 +307,16 @@ bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
     if (!connected || (ang.length()<3))
         return false;
 
-    Bottle cmd;
+    Bottle &cmd=portCmdAng.prepare();
+    cmd.clear();
+
     cmd.addString("abs");
     cmd.addDouble(ang[0]);
     cmd.addDouble(ang[1]);
     cmd.addDouble(ang[2]);
-    return portCmdAng.write(cmd);
+
+    portCmdAng.writeStrict();
+    return true;
 }
 
 
@@ -322,12 +326,16 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
     if (!connected || (ang.length()<3))
         return false;
 
-    Bottle cmd;
+    Bottle &cmd=portCmdAng.prepare();
+    cmd.clear();
+
     cmd.addString("rel");
     cmd.addDouble(ang[0]);
     cmd.addDouble(ang[1]);
     cmd.addDouble(ang[2]);
-    return portCmdAng.write(cmd);
+
+    portCmdAng.writeStrict();
+    return true;
 }
 
 
@@ -338,12 +346,16 @@ bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px,
     if (!connected || (px.length()<2))
         return false;
 
-    Bottle cmd;
+    Bottle &cmd=portCmdMono.prepare();
+    cmd.clear();
+
     cmd.addString((camSel==0)?"left":"right");
     cmd.addDouble(px[0]);
     cmd.addDouble(px[1]);
     cmd.addDouble(z);
-    return portCmdMono.write(cmd);
+
+    portCmdMono.writeStrict();
+    return true;
 }
 
 
@@ -355,13 +367,17 @@ bool ClientGazeController::lookAtMonoPixelWithVergence(const int camSel,
     if (!connected || (px.length()<2))
         return false;
 
-    Bottle cmd;
+    Bottle &cmd=portCmdMono.prepare();
+    cmd.clear();
+
     cmd.addString((camSel==0)?"left":"right");
     cmd.addDouble(px[0]);
     cmd.addDouble(px[1]);
     cmd.addString("ver");
     cmd.addDouble(ver);
-    return portCmdMono.write(cmd);
+
+    portCmdMono.writeStrict();
+    return true;
 }
 
 
@@ -371,12 +387,16 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
     if (!connected || (pxl.length()<2) || (pxr.length()<2))
         return false;
 
-    Bottle cmd;
+    Bottle &cmd=portCmdStereo.prepare();
+    cmd.clear();
+
     cmd.addDouble(pxl[0]);
     cmd.addDouble(pxl[1]);
     cmd.addDouble(pxr[0]);
     cmd.addDouble(pxr[1]);
-    return portCmdStereo.write(cmd);
+
+    portCmdStereo.writeStrict();
+    return true;
 }
 
 

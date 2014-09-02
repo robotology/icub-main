@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubSheffield01" build="1">
+	<device name="torso_calibrator" type="parametricCalibratorEth">
+                <params file="general.xml" />
+                
+		<group name="GENERAL">
+		    <param name="joints"> 3 </param> <!-- the number of joints of the robot part -->
+		    <param name="deviceName"> Torso Calibrator </param>
+		</group>
+
+<group name="HOME">
+<param name="positionHome">                       0        0       -20     </param>
+<param name="velocityHome">                       10       10      10      </param>
+</group>
+
+
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3        3       3       </param>
+<param name="calibration1">                       32767.9  32767.9 32767.9 </param>
+<param name="calibration2">                       10.0     10.0    10.0    </param>
+<param name="calibration3">                       20528.1  29864.1 5968.1  </param>
+<param name="positionZero">                       0.0      0.0     0.0     </param>
+<param name="velocityZero">                       10.0     10.0    10.0    </param>
+<param name="maxPwm">                             2000     2000    2000    </param>
+<param name="posZeroThreshold">                   2        2       2       </param>
+</group>
+
+
+ <!-- check old calibrator for the correct sequence, then ask to Randazz -->
+		<param name="CALIB_ORDER"> (0 1 2) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">torso_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">torso_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

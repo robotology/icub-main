@@ -2,9 +2,8 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(fakecan TYPE FakeCan
-    INCLUDE fakeCan.h 
-    WRAPPER "")
+PREPARE_DEVICE(fakecan  TYPE FakeCan
+                        INCLUDE fakeCan.h)
 
 
 IF (NOT SKIP_fakecan)

@@ -199,15 +199,12 @@ int main(int argc, char *argv[])
                 Vocab::decode(VOCAB_CM_CONTROL_MODE).c_str());
 
             printf("ITorqueControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_TORQUE).c_str());
-            printf("	[set] [%s] <int> <float>\n", 
-                Vocab::decode(VOCAB_TRQ).c_str());
-            printf("	[set] [%s] <int>  <float list>\n\n", 
-                Vocab::decode(VOCAB_TRQS).c_str());
-
-            printf("	[get] [%s] <int>\n", 
-                Vocab::decode(VOCAB_TRQ).c_str());
-            printf("	[get] [%s]\n\n", 
-                Vocab::decode(VOCAB_TRQS).c_str());
+            printf("	[get] [%s] <int> to read the measured torque for a single axis\n",                  Vocab::decode(VOCAB_TRQ).c_str());
+            printf("	[get] [%s]  to read the measured torque for all axes\n",                      Vocab::decode(VOCAB_TRQS).c_str());
+            printf("	[set] [%s] <int> <float> to set the reference torque for a single axis\n",          Vocab::decode(VOCAB_REF).c_str());
+            printf("	[set] [%s] <float list> to set the reference torque for all axes\n",        Vocab::decode(VOCAB_REFS).c_str());
+            printf("	[get] [%s] <int> to read the reference torque for a single axis\n",                  Vocab::decode(VOCAB_REF).c_str());
+            printf("	[get] [%s] to read the reference torque for all axes\n\n",                      Vocab::decode(VOCAB_REFS).c_str());
 
 			printf("IImpedanceControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IMPEDANCE).c_str());
             printf("	[set] [%s] <int> <float> <float> \n", 

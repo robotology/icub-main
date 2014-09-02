@@ -48,44 +48,53 @@ class gravityCompensatorThread: public yarp::os::RateThread
 {
 private:
 
-	std::string				  wholeBodyName;
-	BufferedPort<Vector> *port_inertial;
-	BufferedPort<Vector> *additional_offset;
-	BufferedPort<Vector> *left_arm_torques;
-	BufferedPort<Vector> *right_arm_torques;
-	BufferedPort<Vector> *left_leg_torques;
-	BufferedPort<Vector> *right_leg_torques;
-	BufferedPort<Vector> *torso_torques;
+    std::string           wholeBodyName;
+    BufferedPort<Vector> *port_inertial;
+    BufferedPort<Vector> *left_arm_additional_offset;
+    BufferedPort<Vector> *right_arm_additional_offset;
+    BufferedPort<Vector> *left_leg_additional_offset;
+    BufferedPort<Vector> *right_leg_additional_offset;
+    BufferedPort<Vector> *torso_additional_offset;
+    BufferedPort<Vector> *left_arm_torques;
+    BufferedPort<Vector> *right_arm_torques;
+    BufferedPort<Vector> *left_leg_torques;
+    BufferedPort<Vector> *right_leg_torques;
+    BufferedPort<Vector> *torso_torques;
 
-	PolyDriver   *ddLA;
+    PolyDriver   *ddLA;
     PolyDriver   *ddRA;
     PolyDriver   *ddH;
     IEncoders    *iencs_arm_left;
     IEncoders    *iencs_arm_right;
     IEncoders    *iencs_head;
-	IControlMode *iCtrlMode_arm_left;
-	IControlMode *iCtrlMode_arm_right;
-	IControlMode *iCtrlMode_torso;
-	IImpedanceControl *iImp_arm_left;
-	ITorqueControl    *iTqs_arm_left;
-	IImpedanceControl *iImp_arm_right;
-	ITorqueControl    *iTqs_arm_right;
-	IImpedanceControl *iImp_torso;
-	ITorqueControl    *iTqs_torso;
-	thread_status_enum thread_status;	
-	
+    IControlMode2     *iCtrlMode_arm_left;
+    IControlMode2     *iCtrlMode_arm_right;
+    IControlMode2     *iCtrlMode_torso;
+    IInteractionMode  *iIntMode_arm_left;
+    IInteractionMode  *iIntMode_arm_right;
+    IInteractionMode  *iIntMode_torso;
+    IImpedanceControl *iImp_arm_left;
+    ITorqueControl    *iTqs_arm_left;
+    IImpedanceControl *iImp_arm_right;
+    ITorqueControl    *iTqs_arm_right;
+    IImpedanceControl *iImp_torso;
+    ITorqueControl    *iTqs_torso;
+    thread_status_enum thread_status;
+
     PolyDriver   *ddLL;
     PolyDriver   *ddRL;
     PolyDriver   *ddT;
     IEncoders    *iencs_leg_left;
     IEncoders    *iencs_leg_right;
     IEncoders    *iencs_torso;
-	IControlMode *iCtrlMode_leg_left;
-	IControlMode *iCtrlMode_leg_right;
-	IImpedanceControl *iImp_leg_left;
-	ITorqueControl    *iTqs_leg_left;
-	IImpedanceControl *iImp_leg_right;
-	ITorqueControl    *iTqs_leg_right;
+    IControlMode2     *iCtrlMode_leg_left;
+    IControlMode2     *iCtrlMode_leg_right;
+    IInteractionMode  *iIntMode_leg_left;
+    IInteractionMode  *iIntMode_leg_right;
+    IImpedanceControl *iImp_leg_left;
+    ITorqueControl    *iTqs_leg_left;
+    IImpedanceControl *iImp_leg_right;
+    ITorqueControl    *iTqs_leg_right;
 
 	Vector encoders_arm_left;
     Vector encoders_arm_right;
@@ -96,15 +105,18 @@ private:
     Vector encoders_torso;
 
     Vector *inertial;
-    Vector *offset_input;
 
     AWLinEstimator  *linEstUp;
     AWQuadEstimator *quadEstUp;
     AWLinEstimator  *linEstLow;
     AWQuadEstimator *quadEstLow;
 
-    int ctrlJnt;
-	int allJnt;
+    int left_arm_ctrlJnt;
+    int right_arm_ctrlJnt;
+    int left_leg_ctrlJnt;
+    int right_leg_ctrlJnt;
+    int torso_ctrlJnt;
+    int allJnt;
 
 	iCubWholeBody* icub;
 
@@ -123,12 +135,12 @@ private:
     Vector F_LLeg, F_RLeg, F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
 	Matrix F_ext_up, F_ext_low;
 	Vector inertial_measurements;
-	Vector torque_offset;
 
 	std::string side;
 	std::string part;
 
 	Vector torques_LA,torques_RA,torques_LL,torques_RL, torques_TO;
+	Vector offset_torques_LA,offset_torques_RA,offset_torques_LL,offset_torques_RL, offset_torques_TO;
 	Vector ampli_larm, ampli_rarm, ampli_lleg, ampli_rleg, ampli_torso;
 	bool isCalibrated;
 	
@@ -153,7 +165,7 @@ public:
 	bool getLowerEncodersSpeedAndAcceleration();
 	bool getUpperEncodersSpeedAndAcceleration();
     bool threadInit();
-	void feedFwdGravityControl(std::string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp,const Vector &G, const Vector &ampli, bool releasing=false);
+	void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &G, const Vector &ampli, bool releasing=false);
     void run();
     void threadRelease();
 	void closePort(Contactable *_port);

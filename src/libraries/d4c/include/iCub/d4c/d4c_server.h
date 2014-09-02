@@ -22,16 +22,11 @@
 #include <string>
 #include <map>
 #include <deque>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/PortReader.h>
-#include <yarp/os/Port.h>
-#include <yarp/os/PortReport.h>
-#include <yarp/os/Mutex.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/dev/CartesianControl.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
+
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
+
 #include <iCub/ctrl/pids.h>
 #include <iCub/d4c/d4c.h>
 
@@ -151,9 +146,9 @@ protected:
     yarp::dev::ICartesianControl *iCtrlRight;
     yarp::dev::ICartesianControl *iCtrlActive;
 
-    yarp::os::Port data;
-    yarp::os::Port gui;
-    yarp::os::Port rpc;
+    yarp::os::BufferedPort<yarp::os::Property> data;
+    yarp::os::BufferedPort<yarp::os::Bottle> gui;
+    yarp::os::RpcServer rpc;
 
     friend class GuiReporter;
     GuiReporter reporter;

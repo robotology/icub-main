@@ -43,7 +43,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     if (!correct)
     {
-        yError()<< "Error: insufficient parameters to CanBusSkin.";
+         yError()<< "Insufficient parameters to CanBusSkin.";
          return false;
      }
 
@@ -69,7 +69,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
         int id = ids.get(i).asInt();
         cardId.push_back (id);
         #if SKIN_DEBUG
-            fprintf(stderr, "Id reading from %d\n", id);
+            yDebug<< "Id reading from: " << id;
         #endif
     }
 
@@ -89,7 +89,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     driver.open(prop);
     if (!driver.isValid())
     {
-        fprintf(stderr, "Error opening PolyDriver check parameters\n");
+        yError()<< "Error opening PolyDriver check parameters";
         return false;
     }
 
@@ -97,7 +97,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     
     if (!pCanBus)
     {
-        fprintf(stderr, "Error opening /ecan device not available\n");
+        yError()<< "Error opening /ecan device not available";
         return false;
     }
 
@@ -123,7 +123,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     if(!ret)
     {
-        yError() << "error reading config";
+        yError() << "Error reading config";
         if (pCanBufferFactory)
         {
             pCanBufferFactory->destroyBuffer(inBuffer);
@@ -550,7 +550,7 @@ void CanBusSkin::run() {
                     }
           //    else
           //        {
-          //            std::cerr<<"Error: skin received malformed message\n";
+          //            yError()<< "Error: skin received malformed message\n";
           //        }
             }
         }
@@ -562,8 +562,8 @@ void CanBusSkin::run() {
 void CanBusSkin::threadRelease()
 {
 #if SKIN_DEBUG
-    printf("CanBusSkin Thread releasing...\n");    
-    printf("... done.\n");
+    yDebug<<"CanBusSkin Thread releasing...";    
+    yDebug<<"... done.";
 #endif
 }
 
@@ -572,8 +572,8 @@ void CanBusSkin::threadRelease()
 /* ******* Converts input parameter bottle into a std vector.               ********************************************** */
 void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_paramList, const int &i_length, const Value &i_defaultValue) {
     if ((i_paramList.isNull()) || (i_paramList.size() != i_length)) {
-        cout << "WARNING: CanBusSkin: The number of " << i_paramName << " parameters provided is different than the number of CAN IDs for this BUS. Check your parameters. \n";
-        cout << "WARNING: CanBusSkin: Using default values for " << i_paramName << " parameters. \n";
+        yWarning() << "CanBusSkin: The number of " << i_paramName << " parameters provided is different than the number of CAN IDs for this BUS. Check your parameters.";
+        yWarning() << "CanBusSkin: Using default values for " << i_paramName << " parameters.";
 
         size_t i;
         for (i= i_paramList.size() ; i <= i_length; ++i) {
@@ -609,12 +609,12 @@ bool CanBusSkin::sendCANMessage4C(void) {
         msg4c.setLen(8);
 
 #if SKIN_DEBUG
-        cout << "INFO: CanBusSkin: Input parameters (msg 4C) are: " << std::hex << std::showbase
+        yDebug << "CanBusSkin: Input parameters (msg 4C) are: " << std::hex << std::showbase
             << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " "
             << msg4C_Timer.get(i).asInt() << " " << msg4C_CDCOffsetL.get(i).asInt() << " " << msg4C_CDCOffsetH.get(i).asInt() << " " 
             << msg4C_TimeL.get(i).asInt() << " " << msg4C_TimeH.get(i).asInt()
             << ". \n";
-        cout << "INFO: CanBusSkin: Output parameters (msg 4C) are: " << std::hex << std::showbase
+        yDebug << "CanBusSkin: Output parameters (msg 4C) are: " << std::hex << std::showbase
             << (int) msg4c.getData()[0] << " " << (int) msg4c.getData()[1] << " " << (int) msg4c.getData()[2] << " " 
             << (int) msg4c.getData()[3] << " " << (int) msg4c.getData()[4] << " " << (int) msg4c.getData()[5] << " " 
             << (int) msg4c.getData()[6] << " " << (int) msg4c.getData()[7]
@@ -622,7 +622,7 @@ bool CanBusSkin::sendCANMessage4C(void) {
 #endif
 
         if (!pCanBus->canWrite(outBuffer, 1, &canMessages)) {
-            cerr << "ERROR: CanBusSkin: Could not write to the CAN interface. \n";
+            yError() << "CanBusSkin: Could not write to the CAN interface. \n";
             return false;
         }
     }
@@ -659,12 +659,12 @@ bool CanBusSkin::sendCANMessage4E(void) {
         msg4e.setLen(8);
             
 #if SKIN_DEBUG
-        cout << "INFO: CanBusSkin: Input parameters (msg 4E) are: " << std::hex << std::showbase
+            yDebug << "CanBusSkin: Input parameters (msg 4E) are: " << std::hex << std::showbase
             << (int) msg4e.getData()[0] << " " << msg4E_Shift.get(i).asInt() << " " << msg4E_Shift3_1.get(i).asInt() << " " 
             << msg4E_NoLoad.get(i).asInt() << " " << msg4E_Param.get(i).asInt() << " " << msg4E_EnaL.get(i).asInt() << " " 
             << msg4E_EnaH.get(i).asInt() << " " << (int) msg4e.getData()[7]
             << ". \n";
-        cout << "INFO: CanBusSkin: Output parameters (msg 4E) are: " << std::hex << std::showbase
+            yDebug << "CanBusSkin: Output parameters (msg 4E) are: " << std::hex << std::showbase
             << (int) msg4e.getData()[0] << " " << (int) msg4e.getData()[1] << " " << (int) msg4e.getData()[2] << " " 
             << (int) msg4e.getData()[3] << " " << (int) msg4e.getData()[4] << " " << (int) msg4e.getData()[5] << " " 
             << (int) msg4e.getData()[6] << " " << (int) msg4e.getData()[7]
@@ -672,7 +672,7 @@ bool CanBusSkin::sendCANMessage4E(void) {
 #endif
 
         if (!pCanBus->canWrite(outBuffer, 1, &canMessages)) {
-            cerr << "ERROR: CanBusSkin: Could not write to the CAN interface. \n";
+            yError() <<  "CanBusSkin: Could not write to the CAN interface.";
             return false;
         }
     }

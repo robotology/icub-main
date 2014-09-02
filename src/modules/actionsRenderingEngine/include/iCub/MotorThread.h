@@ -20,14 +20,9 @@
 #ifndef __MOTOR_THREAD__
 #define __MOTOR_THREAD__
 
-#include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RpcClient.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/dev/GazeControl.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 #include <yarp/math/SVD.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
@@ -129,15 +124,15 @@ private:
     IEncoders                           *enc_head;
     IEncoders                           *enc_torso;
     IGazeControl                        *ctrl_gaze;
-
-    IPositionControl                    *pos_arm[2];
+        
     IPositionControl                    *pos_torso;
-    IVelocityControl                    *vel_torso;
-    IControlMode                        *ctrl_mode_torso;
+    IVelocityControl2                   *vel_torso;
+    IControlMode2                       *ctrl_mode_torso;
     IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
 
-    IControlMode                        *ctrl_mode_arm[2];
+    IControlMode2                       *ctrl_mode_arm[2];
+    IPositionControl                    *pos_arm[2];
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
@@ -161,6 +156,7 @@ private:
     Vector                              pushAboveRelief;
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
+    double                              default_exec_time;
     double                              reachingTimeout;
 
     //tool
@@ -190,7 +186,7 @@ private:
     //stereo 2 cartesian mode
     int                                 modeS2C;
     bool                                neuralNetworkAvailable;
-    Port                                disparityPort;
+    RpcClient                           disparityPort;
 
     vector<Vector>                      pos_torsoes;
     vector<Vector>                      handPoses;

@@ -539,7 +539,7 @@ protected:
     Controller     *ctrl;
     PolyDriver     *drvTorso, *drvHead;
     exchangeData    commData;
-    Port            rpcPort;
+    RpcServer       rpcPort;
     bool            interrupting;
     bool            doSaveTweakFile;
     Mutex           savingTweakFile;

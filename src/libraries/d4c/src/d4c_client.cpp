@@ -17,7 +17,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <yarp/os/Network.h>
+
 #include <iCub/d4c/d4c_client.h>
 #include <iCub/d4c/private/d4c_helpers.h>
 

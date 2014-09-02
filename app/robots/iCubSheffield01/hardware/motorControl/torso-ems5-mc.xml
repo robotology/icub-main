@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for EMS 5 - Torso, 3 dof -->
+
+<devices robot="iCubSheffield01" build="1">
+  <device name="torso_mc" type="embObjMotionControl">
+      <params file="general.xml" />
+      <params file="hardware/electronics/torso-ems5-eln.xml" />
+      <params file="hardware/mechanicals/torso-ems5-mec.xml" />
+
+    <group name="LIMITS">
+                                 <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
+        <param name="Max">              50            30            70          </param>
+        <param name="Min">             -50           -30           -20          </param>
+        <param name="Currents">         5000          5000          5000        </param>
+    </group>
+
+	<group name="POS_PIDS">
+        <param name="kp">              2000   -1500    -1500 </param>       
+        <param name="kd">                 0       0       0 </param>       
+        <param name="ki">             10000   -15000   -20000 </param>       
+        <param name="limPwm">          4000    4000    4000 </param>       
+        <param name="maxPwm">          8000    8000    8000 </param>  
+        <param name="maxInt">           200    1000    2000 </param>       
+        <param name="shift">              8       8       8 </param>       
+        <param name="ko">                 0       0       0 </param>       
+        <param name="stictionUp">         0       0       0 </param>       
+        <param name="stictionDwn">        0       0       0 </param>       
+    </group>
+	
+	<group name="TRQ_PIDS">
+        <param name="kp">             50         50         50  </param>       
+        <param name="kd">              0          0          0  </param>       
+        <param name="ki">           1000       1000       1000  </param>       
+        <param name="maxPwm">       8000       8000      16000  </param>       
+        <param name="maxInt">        500        500        500  </param>       
+        <param name="shift">           6          6          6  </param>       
+        <param name="ko">              0          0          0  </param>       
+        <param name="stictionUp">      0          0          0  </param>       
+        <param name="stictionDwn">     0          0          0  </param>       
+    </group>
+	
+	
+  </device>
+</devices>

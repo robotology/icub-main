@@ -21,9 +21,8 @@
 
 #include <gsl/gsl_math.h>
 
-#include <yarp/os/PortInfo.h>
-#include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
+
 #include <iCub/ctrl/math.h>
 #include <iCub/d4c/d4c_server.h>
 #include <iCub/d4c/private/d4c_helpers.h>
@@ -1995,7 +1994,9 @@ void D4CServer::initGuiTrajectory()
 {
     if (gui.getOutputCount()>0)
     {
-        Bottle obj;
+        Bottle &obj=gui.prepare();
+        obj.clear();
+
         obj.addString("trajectory");
         obj.addString(part.c_str());    // trajectory identifier
         obj.addString(part.c_str());    // trajectory name
@@ -2007,7 +2008,7 @@ void D4CServer::initGuiTrajectory()
         obj.addDouble(0.5);             // alpha [0,1]
         obj.addDouble(5.0);             // line width
 
-        gui.write(obj);
+        gui.writeStrict();
         printMessage(4,"initializing gui trajectory point\n");
     }
 }
@@ -2018,14 +2019,16 @@ void D4CServer::updateGuiTrajectory()
 {
     if (gui.getOutputCount()>0)
     {
-        Bottle obj;
+        Bottle &obj=gui.prepare();
+        obj.clear();
+
         obj.addString("addpoint");
         obj.addString(part.c_str());    // trajectory identifier
         obj.addDouble(1000.0*x[0]);     // posX [mm]
         obj.addDouble(1000.0*x[1]);     // posY [mm]
         obj.addDouble(1000.0*x[2]);     // posZ [mm]
 
-        gui.write(obj);
+        gui.writeStrict();
         printMessage(4,"updating gui trajectory point\n");
     }
 }
@@ -2036,11 +2039,13 @@ void D4CServer::eraseGuiTrajectory()
 {
     if (gui.getOutputCount()>0)
     {
-        Bottle obj;
+        Bottle &obj=gui.prepare();
+        obj.clear();
+
         obj.addString("delete");
         obj.addString(part.c_str());
 
-        gui.write(obj);
+        gui.writeStrict();
         printMessage(4,"erasing gui tracjectory point\n");
     }
 }
@@ -2058,7 +2063,9 @@ void D4CServer::updateGuiItem(const GuiRequest &req)
 
         Vector rpy=CTRL_RAD2DEG*dcm2rpy(axis2dcm(pItem->orientation));
 
-        Bottle obj;
+        Bottle &obj=gui.prepare();
+        obj.clear();
+
         obj.addString("object");        
         obj.addString(name.c_str());
         obj.addDouble(1000.0*pItem->radius[0]);     // dimX [mm]
@@ -2075,7 +2082,7 @@ void D4CServer::updateGuiItem(const GuiRequest &req)
         obj.addInt((int)pItem->color[2]);           // col B
         obj.addDouble(pItem->active?1.0:0.25);      // alpha [0,1]
 
-        gui.write(obj);
+        gui.writeStrict();
         printMessage(4,"updating gui item %s\n",name.c_str());
     }
 }
@@ -2086,11 +2093,13 @@ void D4CServer::eraseGuiItem(const GuiRequest &req)
 {
     if (gui.getOutputCount()>0)
     {
-        Bottle obj;
+        Bottle &obj=gui.prepare();
+        obj.clear();
+
         obj.addString("delete");
         obj.addString(req.getName().c_str());
 
-        gui.write(obj);
+        gui.write();
         printMessage(1,"erasing gui item %s\n",name.c_str());
     }
 }
@@ -2354,8 +2363,8 @@ void D4CServer::run()
 
     if (data.getOutputCount()>0)
     {
-        Property out=prepareData();
-        data.write(out);
+        data.prepare()=prepareData();
+        data.write();
     }    
 
     // avoid running faster than what is necessary

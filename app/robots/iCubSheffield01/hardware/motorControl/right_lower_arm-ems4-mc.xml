@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for EMS 4 - Right Lower Arm, 12 dof plus skin  -->
+
+<devices robot="iCubSheffield01" build="1">
+  <device name="right_lower_arm_mc" type="embObjMotionControl">
+      <params file="general.xml" />
+      <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
+      <params file="hardware/mechanicals/right_lower_arm-ems4-mec.xml" />
+
+    <group name="LIMITS">
+        <!--                      0             1             2             3             4             5             6             7             8             9             10            11-->
+        <param name="Max">         60            25            25            60            90            90            180           90            180           90            180           270    	</param>
+        <param name="Min">        -60           -80           -20           0             10            0             0             0             0             0             0             0  	</param>
+        <param name="Currents">   500           800           800           485           485           485           485           485           485           485           485           485   	</param>
+    </group>
+
+    
+	<group name="POS_PIDS">
+        <param name="kp">           -200          1000          -1000         200   -500          -8000         8000          -8000         -8000         -8000         8000          -1200    </param>       
+        <param name="kd">           -1000         10000         -10000        200   -32000        -32000        32000         -32000        -32000        -32000        32000         -12500   </param>       
+        <param name="ki">           -1            1             -1            1     -1            -5            5             -5            -5            -5            5             -1       </param>       
+        <param name="limPwm">       1333          1333          1333          1333   1333          1333          1333          1333          1333          1333          1333          1333     </param>       
+        <param name="maxPwm">       1333          1333          1333          1333   1333          1333          1333          1333          1333          1333          1333          1333     </param>       
+        <param name="maxInt">       1333          1333          1333          1333   1333          1333          1333          1333          1333          1333          1333          1333     </param>       
+        <param name="shift">        6             7             7             4      6             8             8             8             8             8             8             6        </param>       
+        <param name="ko">           0             0             0             0      0             0             0             0             0             0             0             0        </param>       
+        <param name="stictionUp">   0             0             0             0      0             0             0             0             0             0             0             0        </param>       
+        <param name="stictionDwn">  0             0             0             0      0             0             0             0             0             0             0             0        </param>       
+    </group>
+	
+	<group name="TRQ_PIDS">
+        <param name="kp">             80      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="kd">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="ki">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="maxPwm">       1333      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="maxInt">       1333      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="shift">          10      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="ko">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="stictionUp">      0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="stictionDwn">     0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+    </group>
+	
+  </device>
+</devices>

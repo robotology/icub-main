@@ -1837,6 +1837,10 @@ void iCubFinger::allocate(const string &_type)
         }
     }
 
+    // reinforce hand info
+    if (hand!="left")
+        hand="right";
+
     Matrix H0(4,4);
     if (finger=="thumb")
     {
@@ -1892,12 +1896,11 @@ void iCubFinger::allocate(const string &_type)
             H0(2,1)=-H0(2,1);
             H0(1,2)=-H0(1,2);
             H0(2,3)=-H0(2,3);
-        }
 
-        if (hand=="right")
-            pushLink(new iKinLink(0.0148, 0.0,  M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
-        else
             pushLink(new iKinLink(0.0148, 0.0, -M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
+        }
+        else
+            pushLink(new iKinLink(0.0148, 0.0, M_PI/2.0, 0.0, 0.0, 20.0*CTRL_DEG2RAD));
 
         pushLink(new iKinLink(0.0259, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
@@ -1923,10 +1926,6 @@ void iCubFinger::allocate(const string &_type)
     }
 
     setH0(H0);
-
-    // reinforce hand info
-    if (hand!="left")
-        hand="right";
 }
 
 

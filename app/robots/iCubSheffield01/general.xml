@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubSheffield01" build="1">
+  
+  <group name="GENERAL">
+      <param name="skipCalibration">    false  </param>
+      <param name="useRawEncoderData">  false  </param>
+      <param name="useLimitedPWM">      false  </param>
+      <param name="verbose">            false  </param>
+  </group>
+</params>

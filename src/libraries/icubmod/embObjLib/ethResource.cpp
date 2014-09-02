@@ -95,7 +95,14 @@ bool ethResources::open(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchab
     // Fill 'info' field with human friendly string
     snprintf(info, sizeof(info), "ethResources - referred to EMS: %s:%d", request.EMSipAddr.string, request.EMSipAddr.port);
     yTrace() << "Ems ip address " << info;
-
+    if(config.findGroup("GENERAL").find("verbose").asBool())
+    {
+        infoPkts->_verbose = true;
+    }
+    else
+    {
+        infoPkts->_verbose = false;
+    }
     //
     //  EMBOBJ INIT
     //

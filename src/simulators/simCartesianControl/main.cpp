@@ -158,7 +158,15 @@ public:
         optServerLegR.fromConfigFile(rf.findFile("right_leg_file"),false);
         optServerLegL.fromConfigFile(rf.findFile("left_leg_file"),false);
 
+        IMultipleWrapper *wrapperArmR, *wrapperArmL, *wrapperLegR, *wrapperLegL;
         if (!serverArmR.open(optServerArmR) || !serverArmL.open(optServerArmL))
+        {
+            close();
+            return false;
+        }
+
+        serverArmR.view(wrapperArmR); serverArmL.view(wrapperArmL);
+        if (!wrapperArmR->attachAll(listArmR) || !wrapperArmL->attachAll(listArmL))
         {
             close();    
             return false;
@@ -168,25 +176,11 @@ public:
         {
             if (!serverLegR.open(optServerLegR) || !serverLegL.open(optServerLegL))
             {
-                close();    
+                close();
                 return false;
             }
-        }
 
-        IMultipleWrapper *wrapperArmR, *wrapperArmL, *wrapperLegR, *wrapperLegL;
-        serverArmR.view(wrapperArmR);
-        serverArmL.view(wrapperArmL);
-        serverLegR.view(wrapperLegR);
-        serverLegL.view(wrapperLegL);
-
-        if (!wrapperArmR->attachAll(listArmR) || !wrapperArmL->attachAll(listArmL))
-        {
-            close();    
-            return false;
-        }
-
-        if (!noLegs)
-        {
+            serverLegR.view(wrapperLegR); serverLegL.view(wrapperLegL);
             if (!wrapperLegR->attachAll(listLegR) || !wrapperLegL->attachAll(listLegL))
             {
                 close();    

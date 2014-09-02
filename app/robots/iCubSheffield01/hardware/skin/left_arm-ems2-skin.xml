@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for EMS 2 - Left Lower Arm, 12 dof plus skin-->
+
+<devices robot="iCubSheffield01" build="1">
+  <device name="left_lower_arm_skin" type="embObjSkin">
+      <params file="general.xml" />
+      <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
+	<group name="patches">
+            <param name="patchesIdList"> 2  </param>
+            <param name="skinCanAddrsPatch2"> 14 13 12 11 10 9 8</param> 
+      </group>
+      <params file="hardware/skin/left_arm-ems2-skinSpec.xml" /> 
+  </device>
+</devices>
+  

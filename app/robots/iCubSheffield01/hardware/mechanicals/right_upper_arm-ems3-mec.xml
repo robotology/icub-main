@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubSheffield01" build="1">
+    <group name="GENERAL">
+        <param name="Joints"> 4 	</param> <!-- the number of joints of the robot part -->
+
+        <!--                   		0		1		2		3          -->
+        <param name="AxisMap"> 		0		1		2		3               </param>
+	
+<param name="Encoder">                               182.044   182.044  -182.044   182.044</param>
+<param name="Zeros">                                  177.00     37.00   -197.00    179.00</param>
+        <param name="TorqueId">  	0x0C		0x0C		0x0C		0x0C		</param>
+        <param name="TorqueChan">	0		1		2		3		</param>
+        <param name="TorqueMax"> 	8		8		8		8		</param>
+        <param name="Rotor">     	1.00		1.00		1.00		1.00		</param>
+        <param name="Gearbox">   	0.00		0.00		0.00		0.00		</param>
+        <param name="Verbose">	0	</param>
+    </group>
+
+    <group name="VELOCITY">
+        <param name="MOT_speed_estimation">	1	1	1	1	</param>
+        <param name="MOT_accel_estimation">	1	1	1	1	</param>
+        <param name="JNT_accel_estimation">	5	5	5	5	</param>
+        <param name="JNT_speed_estimation">	5	5	5	5	</param>
+        <param name="Shifts">              	8	8	8	8	</param>
+        <param name="Timeout">             	100	100	100	100	</param>
+    </group>
+
+
+</params>

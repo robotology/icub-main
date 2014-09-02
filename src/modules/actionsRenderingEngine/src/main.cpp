@@ -43,8 +43,8 @@ estimate of the 2D target.
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
-are described in the following. The response to any command consists in the voca [ack]/[nack] in case of
-success/faliure.
+are described in the following. The response to any command    
+consists in the vocab [ack]/[nack] in case of success/failure. 
 
 Some commands require to specify a visual target for 
 the action required. In these cases the parameter [target] can be expressed as follows:
@@ -247,18 +247,25 @@ the following data:
  
 <b>GET</b> 
 format: [get] <request>
-action: the system returns the requested element. <request> can be of the form:
+action: the system returns the requested element.    
+    
+<request> can be of the form:
  
---[s2c] [target_1] ... [target_n]: returns the current cartesian coordinates of the n visual 
-targets wrt to the robot root reference frame. The number of targets is not predefined.
+--[s2c] [target_1] ... [target_n]: returns the current cartesian    
+coordinates of the n visual targets wrt to the robot root    
+reference frame. The number of targets is not predefined.    
  
---[table] : returns the current height of the table in front of the robot
+--[table]: returns the current height of the table in front of    
+  the robot  
  
---[holding] : returns true if the robot is holding an object in its active hand
-.
---[hand] [image] : returns a vector of the form (u_left v_left u_right v_right hand-head-distance) that reports
-the projection of the end-effector of the active arm in both the robot cameras together with the distance
-(in meters) between the robot forehead and its hand.
+--[holding]: returns true if the robot is holding an object in  
+its active hand.    
+    
+--[hand] [image]: returns a vector of the form (u_left v_left    
+u_right v_right hand-head-distance) that reports the projection    
+of the end-effector of the active arm in both the robot cameras    
+together with the distance (in meters) between the robot    
+forehead and its hand.    
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -280,14 +287,15 @@ library, we also have:
     Recognized remote commands:\n
     -[help]: returns the list of available rpc commands.\n
     -[get]: get requests\n
-        * [status]:returns the bottle (gaze <status>) (left_arm <status>) (right_arm <status>) where\n
-                   <status> can be equal to "idle", "busy" or "unavailable".\n
+    -[status]: returns the bottle (gaze <status>)
+     (left_arm <status>) (right_arm <status>) where 
+     <status> can be equal to "idle", "busy" or "unavailable".\n
     -[impedance] [on]/[off]: enable/disable (if available) impedance velocity control.\n
     -[waveing] [on]/[off]: enable/disable the iCub arm(s) waving.\n
     -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.\n
-    -[interrupt] : interrupts any action deleting also the action queue for both arms.\n
-    -[reinstate] : if the module was interrupted reinstate it.\n
-    -[elbow] "left"|"right"|"both" <height> <weight> : to change
+    -[interrupt]: interrupts any action deleting also the action queue for both arms.\n
+    -[reinstate]: if the module was interrupted reinstate it.\n
+    -[elbow] "left"|"right"|"both" <height> <weight>: to change
      elbow parameters.
  
 \section parameters_sec Parameters 
@@ -1419,7 +1427,6 @@ protected:
     bool read(ConnectionReader &connection)
     {
         Bottle command, reply;
-
         if (!command.read(connection))
             return false;
 

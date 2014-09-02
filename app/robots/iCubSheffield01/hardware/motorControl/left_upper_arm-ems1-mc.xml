@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+ <!-- Initialization file for EMS 1 - Left Upper Arm, 4 dof -->
+
+<devices robot="iCubSheffield01" build="1">
+  <device name="left_upper_arm_mc" type="embObjMotionControl">
+      <params file="general.xml"/>
+      <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
+      <params file="hardware/mechanicals/left_upper_arm-ems1-mec.xml" />
+
+    <group name="LIMITS">
+        <!--                            0               1               2             3 -->
+        <param name="Max">              10              160.8            80           106       </param>  
+        <param name="Min">              -95.5           0               -37           15        </param>
+        <param name="Currents">         5000            5000            5000          5000      </param>
+    </group>
+
+    <group name="IMPEDANCE">
+      <param name="stiffness">	0.1     0.1   0.1    0.1    </param>
+      <param name="damping">	0.05   0.05  0.05   0.05    </param>
+</group>
+
+    <group name="POS_PIDS">
+        <param name="kp">             1000       1500       1000       1500 </param>       
+        <param name="kd">                0          0          0          0 </param>       
+        <param name="ki">            10000      15000      10000      15000 </param>       
+        <param name="limPwm">         3000       3000       3000       3000 </param>       
+        <param name="maxPwm">         8000       8000       8000       8000 </param>    
+        <param name="maxInt">         200       200       200       1000 </param>       
+        <param name="shift">             8          8          8          8 </param>       
+        <param name="ko">                0          0          0          0 </param>       
+        <param name="stictionUp">        0          0          0          0 </param>       
+        <param name="stictionDwn">       0          0          0          0 </param>       
+    </group>
+
+    <group name="TRQ_PIDS">
+        <param name="kp">            25          25         25         50     </param>       
+        <param name="kd">              0          0          0          0     </param>       
+        <param name="ki">          1000        1000       1000       1000     </param>       
+        <param name="maxPwm">       8000       8000       8000       8000     </param>       
+        <param name="maxInt">        500        500        500        500     </param>       
+        <param name="shift">           6          6          6          6     </param>       
+        <param name="ko">              0          0          0          0     </param>       
+        <param name="stictionUp">      0          0          0          0     </param>       
+        <param name="stictionDwn">     0          0          0          0     </param>       
+    </group>
+	
+  </device>
+</devices>
+
+

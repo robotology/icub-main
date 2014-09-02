@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for cfw002  motor contol for the head - 6 joints -->
+<devices robot="iCubSheffield01" build="1">
+  <device name="head_mc" type="canmotioncontrol">
+      <params file="general.xml" />
+      <params file="hardware/electronics/head-cfw2_can0-eln.xml" />
+      <params file="hardware/mechanicals/head-cfw2_can0-mec.xml" />
+  </device>
+</devices>
+

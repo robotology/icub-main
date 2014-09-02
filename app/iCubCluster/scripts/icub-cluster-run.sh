@@ -1,3 +1,4 @@
+
 #!/bin/bash -l
 
 ### Simple startup script for "yarp run".
@@ -38,10 +39,27 @@ case "$1" in
 			echo "Display set to: $DISPLAY"
 		fi
 		
-		
+        if [ "k$2" == "klog" ];
+        then
+            echo "enabling logger on $ID"
+            log=1
+        fi
+
+		if [ "k$4" == "klog" ];
+        then
+            echo "enabling logger on $ID"
+            log=1
+        fi
+
+        
 		echo "Starting up yarp run for $ID"
 		cp -f $YARP_DIR/bin/yarprun /tmp/yarprun
-		cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &
+        if [ $log == 1 ]
+        then        
+            cd /tmp;./yarprun --server $ID --log 2>&1 2>/tmp/yarprunserver.log &
+        else
+		    cd /tmp;./yarprun --server $ID 2>&1 2>/tmp/yarprunserver.log &
+        fi
 		echo \"`date` starting yarprun\" >> /tmp/yarprun.log
 		echo "done!"
 		;;

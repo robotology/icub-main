@@ -2196,6 +2196,7 @@ bool CanBusMotionControl::open (Searchable &config)
     prop.fromString(str.c_str());
     canDevName=config.find("canbusdevice").asString(); //for backward compatibility
     if (canDevName=="") canDevName=config.findGroup("CAN").find("canbusdevice").asString();
+    if(canDevName=="") { std::cout << "\nERROR: cannot find parameter 'canbusdevice'\n" << std::endl; return false;}
     prop.unput("device");
     prop.unput("subdevice");
     prop.put("device", canDevName.c_str());

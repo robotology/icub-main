@@ -150,6 +150,12 @@ private:
     IEncoders  *iencs_arm_left;
     IEncoders  *iencs_arm_right;
     IEncoders  *iencs_head;
+    IInteractionMode *iint_arm_left;
+    IInteractionMode *iint_arm_right;
+    IInteractionMode *iint_head;
+    IControlMode2 *icmd_arm_left;
+    IControlMode2 *icmd_arm_right;
+    IControlMode2 *icmd_head;
 
     PolyDriver *ddLL;
     PolyDriver *ddLR;
@@ -157,6 +163,12 @@ private:
     IEncoders  *iencs_leg_left;
     IEncoders  *iencs_leg_right;
     IEncoders  *iencs_torso;
+    IInteractionMode *iint_leg_left;
+    IInteractionMode *iint_leg_right;
+    IInteractionMode *iint_torso;
+    IControlMode2 *icmd_leg_left;
+    IControlMode2 *icmd_leg_right;
+    IControlMode2 *icmd_torso;
 
     string part;
 
@@ -299,6 +311,7 @@ private:
 public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag icub_type, bool _autoconnect=false );
     bool threadInit();
+    void setStiffMode();
     inline thread_status_enum getThreadStatus() 
     {
         return thread_status;

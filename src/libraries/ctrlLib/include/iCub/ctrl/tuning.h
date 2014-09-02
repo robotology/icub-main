@@ -159,7 +159,7 @@ public:
 class OnlineStictionEstimator : public yarp::os::RateThread
 {
 protected:
-    yarp::dev::IControlMode   *imod;
+    yarp::dev::IControlMode2  *imod;
     yarp::dev::IControlLimits *ilim;
     yarp::dev::IEncoders      *ienc;
     yarp::dev::IPidControl    *ipid;
@@ -352,7 +352,7 @@ protected:
     OnlineStictionEstimator stiction;
     Kalman                  predictor;
 
-    yarp::dev::IControlMode     *imod;
+    yarp::dev::IControlMode2    *imod;
     yarp::dev::IControlLimits   *ilim;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPositionControl *ipos;
@@ -363,7 +363,7 @@ protected:
 
     yarp::os::Mutex mutex;
     yarp::os::Event doneEvent;
-    yarp::os::Port  port;
+    yarp::os::BufferedPort<yarp::sig::Vector> port;
 
     yarp::sig::Vector x0;
     yarp::sig::Vector meanParams;
