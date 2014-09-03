@@ -10,7 +10,7 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            3             4             4             4             4             4             4             4             </param>       
-<param name="calibration1">               1970.00       235           55            230           10            240           20            710           </param>       
+<param name="calibration1">               2036.00       235           55            230           10            240           20            710           </param>       
 <param name="calibration2">               10            10            30            10            10            10            10            10            </param>       
 <param name="calibration3">               0             6000          6600          6000          7400          6000          -7400         -14000        </param>       
 <param name="positionZero">               30            3             0             0             0             0             0             0             </param>       
@@ -20,7 +20,7 @@
 </group>       
  
 <group name="HOME">          
-<param name="positionHome"> 90            3             0             0             0             0             0             0             </param>       
+<param name="positionHome"> 30            0             0             0             0             0             0             0             </param>       
 <param name="velocityHome"> 10            10            10            10            10            10            10            10            </param>       
 </group>       
  
