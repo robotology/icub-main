@@ -61,6 +61,35 @@ extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOr
     handle_data(AnalogMais, nv, rd);
 }
 
+extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    double yt = 0.0;
+    void* sem = NULL;
+
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+
+    if(NULL == sem)
+    {
+        return;
+    }
+
+    yt = feat_yarp_time_now();
+#if 0
+    int ss = floor(yt);
+    double r = 1000.0*(yt - ss);
+    int mm = floor(r);
+    double rr = 1000.0*(r-mm);
+    int uu = floor(rr);
+#endif
+
+
+    printf("reply_numof arrived at yarp time %f\n", yt);
+
+    feat_Semaphore_post(sem);
+#endif
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------

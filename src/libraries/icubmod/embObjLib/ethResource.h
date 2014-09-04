@@ -147,8 +147,13 @@ private:
 
     yarp::os::Semaphore*  ethResSem;
 
-    bool                verifiedRemoteTransceiver;// transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    bool                verifiedEPprotocol[eoprot_endpoints_numberof];
+    bool                verifiedBoardPresence;
+    bool                verifiedBoardTransceiver;// transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     uint8_t             boardEPsNumber;
+    eOmn_comm_status_t  boardCommStatus;
+    uint16_t            usedNumberOfRegularROPs;
+    uint16_t            usedSizeOfRegularROPframe;
 
 public:
 //     hostTransceiver   *transceiver;         //!< Pointer to the protocol handler   non più usato. ora c'è derivazione diretta.
@@ -162,7 +167,7 @@ public:
     ACE_UINT16      recv_size;                    // size of the incoming message
 
     ethResources *  already_exists(yarp::os::Searchable &config);
-    bool            open(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request);
+    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request);
     bool            close();
 
     /*!   @fn       registerFeature(void);
@@ -236,12 +241,18 @@ public:
      */
     void checkIsAlive(double curr_time);
 
-    bool verifyRemoteTransceiver(yarp::os::Searchable &config);
-    bool verifyProtocol(yarp::os::Searchable &config, eOprot_endpoint_t ep);
+    bool verifyBoard(yarp::os::Searchable &protconfig);
+    bool verifyBoardPresence(yarp::os::Searchable &protconfig);
+    bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);
+
+    bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
+    bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
     Semaphore* GetSemaphore(eOprotEndpoint_t ep, uint32_t signature);
 
+    bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
 
+    bool numberofRegulars(uint16_t &numberofregulars);
 
 
 

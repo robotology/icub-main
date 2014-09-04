@@ -253,6 +253,7 @@ private:
 
     bool         useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
+    int         numberofmaisboards;
 
     //debug purpose
     

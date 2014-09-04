@@ -207,7 +207,7 @@ public:
      *  @param  config  Description and parameter for the identifying the requested class
      *  @return Pointer to the requested EMS, NULL if errors arise in the creation.
      */
-    ethResources* requestResource(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request);
+    ethResources* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request);
 
     /*! @fn     bool releaseResource(FEAT_ID resouce);
      *  @brief  Tells the manager the specified resource is not used anymore by the caller,

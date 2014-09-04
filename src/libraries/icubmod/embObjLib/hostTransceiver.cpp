@@ -15,15 +15,6 @@
 
 
 
-#if defined(USE_EOPROT_OLD) | defined(USE_EOPROT_XML)
-    //#warning --> keeping USE_EOPROT_xxx from cmakelist
-#else
-    //#warning --> specifying USE_EOPROT_xxx by hand 
-    #define USE_EOPROT_OLD
-    //#define USE_EOPROT_XML
-#endif
-
-
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
@@ -48,25 +39,7 @@ using namespace std;
 
 
 
-#if defined(USE_EOPROT_OLD)
 
-//#warning --> using USE_EOPROT_OLD
-
-#include "eOprot_b01.h"
-#include "eOprot_b02.h"
-#include "eOprot_b03.h"
-#include "eOprot_b04.h"
-#include "eOprot_b05.h"
-#include "eOprot_b06.h"
-#include "eOprot_b07.h"
-#include "eOprot_b08.h"
-#include "eOprot_b09.h"
-#include "eOprot_b10.h"
-#include "eOprot_b11.h"
-
-#elif   defined(USE_EOPROT_XML)
-
-//#warning --> using USE_EOPROT_XML
 
 #include "EOprotocolConfigurator.h"
 
@@ -76,9 +49,6 @@ using namespace std;
 #include "EoProtocolAS.h"
 #include "EoProtocolSK.h"
 
-#else
-    #error --> chose a USE_EOPROT_xxx amongst: USE_EOPROT_OLD, USE_EOPROT_XML
-#endif
 
 #include "Debug.h"
 
@@ -130,11 +100,6 @@ bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searc
     ipport          = _ipport; 
     pktsizerx       = _pktsizerx;
 
-#if     defined(USE_EOPROT_OLD)
-        yWarning() << "hostTransceiver::init() -> using USE_EOPROT_OLD";
-#elif   defined(USE_EOPROT_XML)
-        yWarning() << "hostTransceiver::init() -> using USE_EOPROT_XML";
-#endif
 
     if(!initProtocol(cfgprotocol))
     {
@@ -630,12 +595,6 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &cfgprotocol)
             return(false);
         }
 
-#if     defined(USE_EOPROT_OLD)
-    
-        // nothing to initialise
-
-#elif   defined(USE_EOPROT_XML)
-
 	
 	    // configure all the callbacks of all endpoints.
 	
@@ -643,7 +602,7 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &cfgprotocol)
 	    eoprot_override_mc();
 	    eoprot_override_as();
 	    eoprot_override_sk();
-#endif
+
         // ok. all is done correctly
 	    alreadyinitted = true;
 
@@ -661,9 +620,6 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &cfgprotocol)
 
 void hostTransceiver::eoprot_override_mn(void)
 {
-#if     defined(USE_EOPROT_OLD)
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
     static const eOprot_callbacks_endpoint_descriptor_t mn_callbacks_descriptor_endp =
     {
         EO_INIT(.endpoint)          eoprot_endpoint_management,
@@ -729,16 +685,11 @@ void hostTransceiver::eoprot_override_mn(void)
     {
         eoprot_config_callbacks_variable_set(&mn_callbacks_descriptors_vars[i]);
     }
-#endif
 
 }
 
 void hostTransceiver::eoprot_override_mc(void)
 {
-#if     defined(USE_EOPROT_OLD)    
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
-
     static const eOprot_callbacks_endpoint_descriptor_t mc_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_motioncontrol, 
@@ -854,15 +805,11 @@ void hostTransceiver::eoprot_override_mc(void)
     {
         eoprot_config_callbacks_variable_set(&mc_callbacks_descriptors_vars[i]);
     }
-#endif
 }
 
 
 void hostTransceiver::eoprot_override_as(void)
 {
-#if     defined(USE_EOPROT_OLD)    
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
     static const eOprot_callbacks_endpoint_descriptor_t as_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_analogsensors, 
@@ -886,7 +833,14 @@ void hostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
         },
-        // mais
+        // mais        
+        {   // mais_config
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_mais,
+            EO_INIT(.tag)           eoprot_tag_as_mais_config,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config
+        },
         {   // mais_status_the15values
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_mais,
@@ -916,15 +870,13 @@ void hostTransceiver::eoprot_override_as(void)
     {
         eoprot_config_callbacks_variable_set(&as_callbacks_descriptors_vars[i]);
     }
-#endif   
+
 }
 
 
 void hostTransceiver::eoprot_override_sk(void)
 {
-#if     defined(USE_EOPROT_OLD)    
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
+
     static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_skin, 
@@ -934,7 +886,7 @@ void hostTransceiver::eoprot_override_sk(void)
     static const eOprot_callbacks_variable_descriptor_t sk_callbacks_descriptors_vars[] = 
     { 
         // skin
-        {   // strain_status_calibratedvalues
+        {   // skin_status_arrayof10canframes
             EO_INIT(.endpoint)      eoprot_endpoint_skin,
             EO_INIT(.entity)        eoprot_entity_sk_skin,
             EO_INIT(.tag)           eoprot_tag_sk_skin_status_arrayof10canframes,
@@ -962,7 +914,7 @@ void hostTransceiver::eoprot_override_sk(void)
     {
         eoprot_config_callbacks_variable_set(&sk_callbacks_descriptors_vars[i]);
     }
-#endif
+
 }
 
 
@@ -971,7 +923,7 @@ void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remi
     long long unsigned int exp = expected_seqnum;
     long long unsigned int rec = rec_seqnum;
     printf("Error in sequence number from 0x%x!!!! \t Expected %llu, received %llu\n", remipv4addr, exp, rec);
-};
+}
 
 //extern "C" {
 //extern void protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum);
@@ -984,7 +936,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
 
     // marco.accame on 10 apr 2014:
     // eo_hosttransceiver_cfg_default contains the EOK_HOSTTRANSCEIVER_* values which are good for reception of a suitable EOframe
-    // hovever, in future it would be fine to be able loading the fields inside eOhosttransceiver_cfg_t from a common eOprot_robot.h
+    // hovever, in future it would be fine to be able loading the fields inside eOhosttransceiver_cfg_t from an xml file
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;    
@@ -996,24 +948,19 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
         return(false);
     }
 
-#if 0
+    // we build the hosttransceiver so that:
+    // 1. it can send a packet which can always be received by the board (max tx size = max rx size of board)
+    // 2. it has the same maxsize of rop
+    // 3. it has no regulars, no space for replies, and maximum space for occasionals.
+
     hosttxrxcfg.sizes.capacityoftxpacket            = remoteTransceiverProperties.maxsizeRXpacket;
     hosttxrxcfg.sizes.capacityofrop                 = remoteTransceiverProperties.maxsizeROP;
-    hosttxrxcfg.sizes.capacityofropframeregulars
-    hosttxrxcfg.sizes.
+    hosttxrxcfg.sizes.capacityofropframeregulars    = eo_ropframe_sizeforZEROrops;
+    hosttxrxcfg.sizes.capacityofropframereplies     = eo_ropframe_sizeforZEROrops;
+    hosttxrxcfg.sizes.capacityofropframeoccasionals = (hosttxrxcfg.sizes.capacityoftxpacket - eo_ropframe_sizeforZEROrops) - hosttxrxcfg.sizes.capacityofropframeregulars - hosttxrxcfg.sizes.capacityofropframereplies;
+    hosttxrxcfg.sizes.maxnumberofregularrops        = 0;
 
-    remoteTransceiverProperties.listeningPort               = cfgtransceiver.find("listeningPort").asInt();
-    remoteTransceiverProperties.destinationPort             = cfgtransceiver.find("destinationPort").asInt();
-    remoteTransceiverProperties.maxsizeRXpacket             = cfgtransceiver.find("maxSizeRXpacket").asInt();
-    remoteTransceiverProperties.maxsizeTXpacket             = cfgtransceiver.find("maxSizeTXpacket").asInt();
-    remoteTransceiverProperties.maxsizeROPframeRegulars     = cfgtransceiver.find("maxSizeROPframeRegulars").asInt();
-    remoteTransceiverProperties.maxsizeROPframeReplies      = cfgtransceiver.find("maxSizeROPframeReplies").asInt();
-    remoteTransceiverProperties.maxsizeROPframeOccasionals  = cfgtransceiver.find("maxSizeROPframeOccasionals").asInt();
-    remoteTransceiverProperties.maxsizeROP                  = cfgtransceiver.find("maxSizeROP").asInt();
-    remoteTransceiverProperties.maxnumberRegularROPs        = cfgtransceiver.find("maxNumberRegularROPs").asInt();
-#endif
-        // mettere a posto i valori del remotetrans
-        #warning --> vedere sopra
+
 #endif//_WIP_CHECK_PROTOCOL_VERSION_
 
 
@@ -1139,55 +1086,6 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
 {
 
     const eOnvset_DEVcfg_t* nvsetdevcfg = NULL;
-
-#if     defined(USE_EOPROT_OLD)
-
-    int _board_n = nvBoardNum2FeatIdBoardNum(get_protBRDnumber());
-
-    switch(_board_n)
-    {
-    case 1:
-        nvsetdevcfg = &eoprot_b01_nvsetDEVcfg;
-        break;
-    case 2:
-        nvsetdevcfg = &eoprot_b02_nvsetDEVcfg;
-        break;
-    case 3:
-        nvsetdevcfg = &eoprot_b03_nvsetDEVcfg;
-        break;
-    case 4:
-        nvsetdevcfg = &eoprot_b04_nvsetDEVcfg;
-        break;
-    case 5:
-        nvsetdevcfg = &eoprot_b05_nvsetDEVcfg;
-        break;
-    case 6:
-        nvsetdevcfg = &eoprot_b06_nvsetDEVcfg;
-        break;
-    case 7:
-        nvsetdevcfg = &eoprot_b07_nvsetDEVcfg;
-        break;
-    case 8:
-        nvsetdevcfg = &eoprot_b08_nvsetDEVcfg;
-        break;
-    case 9:
-        nvsetdevcfg = &eoprot_b09_nvsetDEVcfg;
-        break;
-    case 10:
-        nvsetdevcfg = &eoprot_b10_nvsetDEVcfg;
-        break;
-    case 11:
-        nvsetdevcfg = &eoprot_b11_nvsetDEVcfg;
-        break;
-    default:
-        yError() << "Got a non existing board number" << _board_n;
-        //return NULL;
-        break;
-    }
-
-#elif   defined(USE_EOPROT_XML)
-
-    nvsetdevcfg = NULL;
 
     eOprotconfig_cfg_t protcfg;
     memcpy(&protcfg, &eo_protconfig_cfg_default, sizeof(eOprotconfig_cfg_t));
@@ -1386,9 +1284,6 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
     nvsetdevcfg = eo_protconfig_DEVcfg_Get(eo_protconfig_New(&protcfg));
 
 
-#else
-    #error --> define a USE_EOPROT_xxx
-#endif
 
 
     if(NULL == nvsetdevcfg)

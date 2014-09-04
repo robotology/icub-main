@@ -253,7 +253,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(groupTransceiver, groupProtocol, &_fId);
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";

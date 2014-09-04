@@ -72,8 +72,10 @@ protected:
     uint16_t                ipport;
     EOpacket                *p_RxPkt;
     uint16_t                 pktsizerx;
-    eOmn_transceiver_properties_t localTransceiverProperties;
-    eOmn_transceiver_properties_t remoteTransceiverProperties;
+
+    eOmn_transceiver_properties_t remoteTransceiverProperties;  // contains properties of the transceiver of the remote board as read from xml file
+    eOmn_transceiver_properties_t localTransceiverProperties;   // contains properties of the transceiver here instantiated.
+                                                                // properties derive from remoteTransceiverProperties, from hosttxrxcfg and from elsewhere
 
 public:
     hostTransceiver();

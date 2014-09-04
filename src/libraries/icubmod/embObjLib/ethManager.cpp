@@ -167,7 +167,7 @@ bool TheEthManager::removeResource(ethResources* to_be_removed)
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
-ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request)
+ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request)
 {
     yTrace() << request->boardNum;
     // Check if local socket is initted, if not do it.
@@ -213,7 +213,7 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtransceive
         // device doesn't exist yet, create it
         yTrace() << "Creating EMS device with IP " << request->EMSipAddr.string;
         newRes = new ethResources;
-        if(!newRes->open(cfgtransceiver, cfgprotocol, *request))
+        if(!newRes->open(cfgtotal, cfgtransceiver, cfgprotocol, *request))
         {
             yError() << "Error creating new EMS!!";
             if(NULL != newRes)

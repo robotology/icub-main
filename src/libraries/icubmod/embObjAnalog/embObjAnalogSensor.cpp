@@ -276,10 +276,9 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     _fId.handle = (this);
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
-    *  and boradNum to the ethManagerin order to create the ethResource requested.
-    * I'll Get back the very same sturct filled with other data useful for future handling
-    * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(groupTransceiver, groupProtocol, &_fId);
+    *  and boardNum to the ethManager in order to create the ethResource requested.
+    */
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -293,11 +292,34 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 #if defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_analogsensors))
+
+    if(false == res->verifyBoard(groupProtocol))
     {
-        yError() << "embObjAnalogSensor::init() fails in function verifyProtocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+        yError() << "embObjAnalogSensor::init() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
+
+    if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
+    {
+        yError() << "embObjAnalogSensor::init() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+        return false;
+    }
+
+//    // marco.accame on 04 sept 2014: we could add a verification about the entities of analog ... MAYBE in the future
+//
+//    uint8_t numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
+//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais, numberofmaisboards))
+//    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE MAIS.
+//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
+//        return false;
+//    }
+//    uint8_t numberofstrainboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_strain);
+//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_strain, numberofstrainboards))
+//    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE STRAIN.
+//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_as_strain: VERIFY their number in board, and in XML files";
+//        return false;
+//    }
+
 #endif
 
     data=new AnalogData(_channels, _channels+1);
@@ -314,6 +336,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 //#warning "go to config message before getting strain fullscale... investigate more
 
 
+#warning --> marco.accame on 04sept14: both embObjAnalogSensors and embObjMotionControl initialises the mais board. but potentially w/ different params (mc uses: datarate = 10 and mode = eoas_maismode_txdatacontinuously).
 //     res->goToConfig();
     switch(_as_type)
     {
@@ -349,46 +372,13 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
 bool embObjAnalogSensor::isEpManagedByBoard()
 {
-#if 1
-    // marco.accame on 11 apr 2014:
-    // use this code
+
     if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors))
     {   // we can extend to the entity by evaluating eoprot_entity_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors, eoprot_entity_as_xxx)
         return true;
     }
     
     return false;
-
-#else
-    eOprotID32_t protoid;
-    
-    switch(_as_type)
-    {
-        case AS_MAIS:
-        {
-            protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config);
-        }break;
-        case AS_STRAIN:
-        {
-            protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-        }break;
-        default:
-        {
-            //never i should be here, because if analos sensor type is unknown, then function fromConfig should be retrun with error!
-            return false;
-        }
-    }
-
-    // marco.accame: 
-    // we can use:                              if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors))
-    // we can extend to the entity by doing:   ... eoprot_entity_configured_is()
-    EOnv nv;
-    if(NULL == res->getNVhandler(protoid, &nv))
-    {
-        return false;
-    }
-    return true;
-#endif    
 }
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
@@ -418,6 +408,7 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
     return true;
 
 }
+
 bool embObjAnalogSensor::sendConfig2Mais(void)
 {
     uint8_t datarate  = _period;
@@ -425,11 +416,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     // set mais datarate = 1millisec
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
-    {
-        yError () << " NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
-        return false;
-    }
+
 
     if(!res->addSetMessage(protoid, &datarate))
     {
@@ -440,11 +427,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
 
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
-    {
-        yError () << "NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
-        return false;
-    }
+
 
     if(!res->addSetMessage(protoid, (uint8_t *) &maismode))
     {
@@ -483,7 +466,10 @@ bool embObjAnalogSensor::getFullscaleValues()
     eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
     if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
+    {
         yError() << "nvid not found";
+        return false;
+    }
         
     // now we impose that the value of the EOnv described by eoprot_tag_as_strain_status_fullscale is what in fullscale_values.
     // we need to do that because the ram of the EOnv is ... of zero value unless one overrides the relevant INIT function.
@@ -543,7 +529,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
-        #warning --> marco.accame says: are we sure that this assumption is correct? why wait for 1 sec? better using the callback to alert
+        #warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
 
         if(0 != NVsize)
@@ -600,64 +586,35 @@ bool embObjAnalogSensor::getFullscaleValues()
   
 }
 
-// marco.accame on 11 apr 2014:
-// changed the way the eOmn_ropsigcfg_command_t is prepared, as it is now in embObjMotionControl.cpp
+
 bool embObjAnalogSensor::init()
 {
     yTrace();
     
-    // configure the ep of the internal feature-interface to be eoprot_endpoint_analogsensors
+    // - configure the ep of the internal feature-interface to be eoprot_endpoint_analogsensors
     _fId.ep = eoprot_endpoint_analogsensors;
 
-    // configure the remote board to regularly send some variables
 
-#define NEW_MN_COMMANDS
+    // - configure regular rops
 
-#if     defined(EOPROT_USE_MN_VERSION_1_0)
-
-    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
-    eOropSIGcfg_t sigcfg                = {0};  
-    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
-    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
-
-    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
-    cmdconfig.plustime              = 0;
-    cmdconfig.plussign              = 0;
-    cmdconfig.filler01              = 0;
-    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
-
-#else
-
-    eOmn_cmd_config_t cmdconfig     = {0};
-    eOropSIGcfg_t sigcfg            = {0};
-    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
-    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
-    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
-
-    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
-    cmdconfig.opcpar.plustime       = 0;
-    cmdconfig.opcpar.plussign       = 0;
-    cmdconfig.opcpar.dummy01        = 0;
-    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;
-
-#endif     
-
-
-    // now we prepare the sigcfg we want to configure on the remote board
+    vector<eOprotID32_t> id32v(0);
     eOprotID32_t protoid = eo_prot_ID32dummy;
+
+    // we need to choose the protoid to put inside the vector
+
     switch(_as_type)
     {
         case AS_MAIS:
         {
-            protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_status_the15values);
+            protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_status_the15values);
         } break;
         
         case AS_STRAIN:
         {
             if(_useCalibration)
-                protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
+                protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
             else
-                protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
+                protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
         } break;
         
         default:
@@ -671,23 +628,20 @@ bool embObjAnalogSensor::init()
         yError () << " EmbObj Analog Sensor NVID not found for EndPoint" << _fId.ep <<" at line " << __LINE__;
         return false;
     }
-   
-    sigcfg.id32 = protoid;
-    
-    // and we put the sigcfg inside the array
-    if(eores_OK != eo_array_PushBack(array, &sigcfg))
-    {
-        yError () << " EmbObj Analog Sensor while loading ropSig Array  at line " << __LINE__;
-        return false;
-    }
 
-    // send message to configure the spontaneous signalling in the remote board
-    if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
+    // put it inside vector
+
+    id32v.push_back(protoid);
+
+    // configure the regulars
+    if(false == res->addRegulars(id32v, true))
     {
-        yError() << "while setting rop sig cfg";
+        yError() << "embObjAnalogSensor::init() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
-    
+    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+   
+
     return true;
 }
 
