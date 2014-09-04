@@ -1408,35 +1408,32 @@ Property CalibModule::calibrate(const bool rm_outliers)
         reply.put("aligner",error);
 
         Matrix HL,HR;
-        if (getGazeParams("left","extrinsics",HL))
-        {            
-            if (getGazeParams("right","extrinsics",HR))
-            {            
-                Bottle cmd,reply;
-                cmd.addString("getH");
-                depthRpcPort.write(cmd,reply);
-                Matrix HRL; reply.write(HRL);
-                Matrix HLR=SE3inv(HRL);
+        if (getGazeParams("left","extrinsics",HL) && getGazeParams("right","extrinsics",HR))
+        {
+            Bottle cmd,reply;
+            cmd.addString("getH");
+            depthRpcPort.write(cmd,reply);
+            Matrix HRL; reply.write(HRL);
+            Matrix HLR=SE3inv(HRL);
 
-                Vector x,o;
-                igaze->getLeftEyePose(x,o);
-                Matrix TL=axis2dcm(o);
-                TL(0,3)=x[0];
-                TL(1,3)=x[1];
-                TL(2,3)=x[2];
+            Vector x,o;
+            igaze->getLeftEyePose(x,o);
+            Matrix TL=axis2dcm(o);
+            TL(0,3)=x[0];
+            TL(1,3)=x[1];
+            TL(2,3)=x[2];
 
-                igaze->getRightEyePose(x,o);
-                Matrix TR=axis2dcm(o);
-                TR(0,3)=x[0];
-                TR(1,3)=x[1];
-                TR(2,3)=x[2];
+            igaze->getRightEyePose(x,o);
+            Matrix TR=axis2dcm(o);
+            TR(0,3)=x[0];
+            TR(1,3)=x[1];
+            TR(2,3)=x[2];
 
-                HL=HL*H;
-                HR=HR*SE3inv(TR*HR)*(TL*HL*HLR);
+            HL=HL*H;
+            HR=SE3inv(TR)*(TL*HL*HLR);
 
-                pushExtrinsics("left",HL);
-                pushExtrinsics("right",HR);
-            }        
+            pushExtrinsics("left",HL);
+            pushExtrinsics("right",HR);
         }
     }
 
