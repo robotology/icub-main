@@ -197,7 +197,7 @@ service depth2kin_IDL
    * Ask the current calibrator to carry out the calibration.
    * @param rm_outliers if true outliers removal is performed.
    * @return a property containing the output in terms of
-   * calibration errors for each subsystem: "calibrator", "alignerL", "alignerR".
+   * calibration errors for each subsystem: "calibrator", "aligner".
    */
    Property calibrate(1:bool rm_outliers=true);
 
@@ -318,7 +318,7 @@ service depth2kin_IDL
    * Return some progress about the ongoing exploration.
    * @return a property that looks like
    * ("status" ["idle"|"ongoing"]) ("total_points" <int>) ("remaining_points" <int>)
-   * ("calibrator_points" <int>) ("alignerL_points" <int>) ("alignerR_points" <int>)
+   * ("calibrator_points" <int>) ("aligner_points" <int>)
    */
    Property getExplorationData();
 
