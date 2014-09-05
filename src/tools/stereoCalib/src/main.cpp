@@ -49,7 +49,10 @@ MonoCalib value
 This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in the specified context (default is: $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini). You should replace your old calibration file (e.g. icubEyes.ini) with this new one.
 
 \note If you are using low resolution images (320x240) you should use a big chessboard pattern (i.e. with square side length of ~4cm). 
-\note Make sure to show the pattern horizontally.
+\note Make sure to show the pattern horizontally. 
+\note Further information can be found in the <a 
+      href="http://wiki.icub.org/wiki/Stereo_calibration">wiki</a>.
+ 
 \section lib_sec Libraries 
 YARP libraries and OpenCV
 
@@ -80,7 +83,6 @@ YARP libraries and OpenCV
  Recognized remote commands:
     - [start]: Starts the calibration procedure, you have to show the chessboard image in different positions and orientations. After N times (N specified in the config file, see above). the module will run the stereo calibration
 
- 
 \section in_files_sec Input Data Files
 None.
 
