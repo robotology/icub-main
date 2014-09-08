@@ -763,9 +763,9 @@ void CalibModule::doTest()
 
             Vector p2d(2); p2d[0]=160.0; p2d[1]=120.0;
             Vector p3d(4); p3d[0]=-0.5;  p3d[1]=0.0; p3d[2]=0.34; p3d[3]=1.0;
-            alignerL.addPoints(p2d,p3d);
+            aligner.addPoints(p2d,p3d);
             Matrix T; double error;
-            alignerL.calibrate(T,error,ALIGN_IPOPT_MAX_ITER,5,"first-order");
+            aligner.calibrate(T,error,ALIGN_IPOPT_MAX_ITER,5,"first-order");
             ok=true;
 
             break;
@@ -777,7 +777,7 @@ void CalibModule::doTest()
             printf("#1a \"check solver's functionality\"\n");
 
             // generate synthetic data
-            Matrix Prj=alignerL.getProjection();
+            Matrix Prj=aligner.getProjection();
             for (int i=0; i<100; i++)
             {
                 Vector p3d(4);
@@ -791,11 +791,11 @@ void CalibModule::doTest()
                 p2d.pop_back();
                 p2d+=NormRand::vector(2,0.0,5.0);   // add up some noise
 
-                alignerL.addPoints(p2d,p3d);
+                aligner.addPoints(p2d,p3d);
             }   
 
             Matrix H1; double error;
-            ok=alignerL.calibrate(H1,error);
+            ok=aligner.calibrate(H1,error);
             Vector x1=cat(H1.getCol(3).subVector(0,2),
                           CTRL_RAD2DEG*dcm2rpy(H1));
 
@@ -910,10 +910,8 @@ bool CalibModule::configure(ResourceFinder &rf)
     min[3]=-CTRL_DEG2RAD*15.0; max[3]=CTRL_DEG2RAD*15.0;    // roll
     min[4]=-CTRL_DEG2RAD*15.0; max[4]=CTRL_DEG2RAD*15.0;    // pitch
     min[5]=-CTRL_DEG2RAD*15.0; max[5]=CTRL_DEG2RAD*15.0;    // yaw
-    alignerL.setBounds(min,max);
-    alignerR.setBounds(min,max);
-    alignerL.setInitialGuess(eye(4,4));
-    alignerR.setInitialGuess(eye(4,4));
+    aligner.setBounds(min,max);
+    aligner.setInitialGuess(eye(4,4));
 
     if (test>=0)
     {
@@ -921,7 +919,7 @@ bool CalibModule::configure(ResourceFinder &rf)
         K(0,0)=257.34; K(1,1)=257.34;
         K(0,2)=160.0;  K(1,2)=120.0; 
 
-        alignerL.setProjection(K);
+        aligner.setProjection(K);
         return true;
     }
 
@@ -989,15 +987,7 @@ bool CalibModule::configure(ResourceFinder &rf)
         terminate();
         return false;
     }
-    alignerL.setProjection(Prj);
-
-    if (!getGazeParams("right","intrinsics",Prj))
-    {
-        printf("Intrinsic parameters for right camera not available!\n");
-        terminate();
-        return false;
-    }
-    alignerR.setProjection(Prj);
+    aligner.setProjection(Prj);
 
     finger=iCubFinger(arm+"_index");
     deque<IControlLimits*> lim;
@@ -1083,19 +1073,9 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
                         He.setCol(3,xe);
                         kinPoint_e=SE3inv(He)*kinPoint4;
 
-                        alignerL.addPoints(tipl,kinPoint_e);
-                        printf("collecting points for aligning left eye: tip=(%s); p_kin=(%s);\n",
+                        aligner.addPoints(tipl,kinPoint_e);
+                        printf("collecting points for aligning eye: tip=(%s); p_kin=(%s);\n",
                                tipl.toString(3,3).c_str(),kinPoint_e.toString(3,3).c_str());
-
-                        igaze->getRightEyePose(xe,oe);
-                        He=axis2dcm(oe);
-                        xe.push_back(1.0);
-                        He.setCol(3,xe);
-                        kinPoint_e=SE3inv(He)*kinPoint4;
-
-                        alignerR.addPoints(tipr,kinPoint_e);
-                        printf("collecting points for aligning right eye: tip=(%s); p_kin=(%s);\n",
-                               tipr.toString(3,3).c_str(),kinPoint_e.toString(3,3).c_str());
 
                         tag="acquired";
                     }
@@ -1424,17 +1404,37 @@ Property CalibModule::calibrate(const bool rm_outliers)
 
     if (exp_aligneyes)
     {
-        Matrix HN;
+        aligner.calibrate(H,error);
+        reply.put("aligner",error);
 
-        alignerL.calibrate(H,error);
-        if (getGazeParams("left","extrinsics",HN))
-            pushExtrinsics("left",HN*H);
-        reply.put("alignerL",error);
+        Matrix HL,HR;
+        if (getGazeParams("left","extrinsics",HL) && getGazeParams("right","extrinsics",HR))
+        {
+            Bottle cmd,reply;
+            cmd.addString("getH");
+            depthRpcPort.write(cmd,reply);
+            Matrix HRL; reply.write(HRL);
+            Matrix HLR=SE3inv(HRL);
 
-        alignerR.calibrate(H,error);
-        if (getGazeParams("right","extrinsics",HN))
-            pushExtrinsics("right",HN*H);
-        reply.put("alignerR",error);
+            Vector x,o;
+            igaze->getLeftEyePose(x,o);
+            Matrix TL=axis2dcm(o);
+            TL(0,3)=x[0];
+            TL(1,3)=x[1];
+            TL(2,3)=x[2];
+
+            igaze->getRightEyePose(x,o);
+            Matrix TR=axis2dcm(o);
+            TR(0,3)=x[0];
+            TR(1,3)=x[1];
+            TR(2,3)=x[2];
+
+            HL=HL*H;
+            HR=SE3inv(TR)*(TL*HL*HLR);
+
+            pushExtrinsics("left",HL);
+            pushExtrinsics("right",HR);
+        }
     }
 
     mutex.unlock();
@@ -1650,8 +1650,7 @@ Property CalibModule::getExplorationData()
     reply.put("total_points",(int)targets.size());
     reply.put("remaining_points",(int)targetsConsumed.size());
     reply.put("calibrator_points",(int)calibrator->getNumPoints());
-    reply.put("alignerL_points",(int)alignerL.getNumPoints());
-    reply.put("alignerR_points",(int)alignerR.getNumPoints());
+    reply.put("aligner_points",(int)aligner.getNumPoints());
 
     mutex.unlock();
     return reply;
@@ -1666,10 +1665,7 @@ bool CalibModule::clearExplorationData()
         calibrator->clearPoints(); 
 
     if (exp_aligneyes)
-    {
-        alignerL.clearPoints();
-        alignerR.clearPoints();
-    }
+        aligner.clearPoints();
 
     mutex.unlock();
     return true;

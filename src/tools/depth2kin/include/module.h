@@ -77,7 +77,7 @@ protected:
 
     Calibrator *calibrator;
     LocallyWeightedExperts expertsL,expertsR,*experts;
-    EyeAligner alignerL,alignerR;
+    EyeAligner aligner;
 
     string arm;
     bool   useArmL,useArmR;
