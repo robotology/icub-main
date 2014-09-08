@@ -84,7 +84,7 @@ extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor
 #endif
 
 
-    printf("reply_numof arrived at yarp time %f\n", yt);
+    printf("DEBUGHELP: eoprot_fun_UPDT_as_mais_config() received msg at yarp time %f\n", yt);
 
     feat_Semaphore_post(sem);
 #endif

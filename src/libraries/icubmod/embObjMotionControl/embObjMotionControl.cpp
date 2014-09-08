@@ -493,14 +493,14 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
     if(groupTransceiver.isNull())
     {
-        yError() << "embObjMotionControl: Can't find TRANSCEIVER group in xml config files";
+        yError() << "embObjMotionControl::open() cannot find TRANSCEIVER group in xml config files";
         return false;
     }
 
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yError() << "embObjMotionControl: Can't find PROTOCOL group in xml config files";
+        yError() << "embObjMotionControl::open() cannot find PROTOCOL group in xml config files";
         return false;
     }
 
@@ -508,7 +508,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     groupEth  = Bottle(config.findGroup("ETH"));
     if(groupEth.isNull())
     {
-        yError() << "Can't find ETH group in config files";
+        yError() << "embObjMotionControl::open() cannot find ETH group in config files";
         return false;
     }
     Value *PC104IpAddress_p;
@@ -688,9 +688,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-
-
 #endif
+
 
     NVnumber = res->getNVnumber(_fId.ep);
     requestQueue = new eoRequestsQueue(NVnumber);
@@ -701,7 +700,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    yWarning() << "BOARD INITTED";
+
 
 
     // now if this device has a mais ... we configure it
@@ -719,7 +718,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
         else
         {
-            yError() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNum;
+            yWarning() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNum;
         }
 
 
@@ -731,7 +730,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
 
 
-        yError() << "mais is verified";
 
         if(false == configure_mais(groupProtocol))
         {
@@ -739,12 +737,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
             return false;
         }
 
-        yError() << "mais is configured";
+        yWarning() << "mais attached to board" << _fId.boardNum << "is configured";
     }
-
-    yError() << "ENTERING FOREVER LOOP";
-
-    //for(;;);
 
     initted = true;
 
@@ -752,6 +746,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         yError() << "EMS " << _fId.boardNum << "did not start control loop: cannot continue";
         return false;
+    }
+    else
+    {
+        yWarning() << "remote board " << _fId.boardNum << "correctly starts its control loop";
     }
 
     return true;
@@ -1282,12 +1280,18 @@ bool embObjMotionControl::init()
         yError() << "embObjMotionControl::init() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
+    else
+    {
+            yWarning() << "DEBUGHELP: embObjMotionControl::init() added" << id32v.size() << "regular rops to board" << res->get_protBRDnumber()+1;
+            for(int r=0; r<id32v.size(); r++)
+            {
+                uint32_t id32 = id32v.at(r);
+                yWarning() << "DEBUGHELP: regular rop for tag = " << eoprot_ID2stringOfTag(id32) << "and index =" << eoprot_ID2index(id32);
+            } 
+    }   
 
     Time::delay(0.005);  // 5 ms
 
-//    yError() << "STOP HERE";
-//    for(;;);
-    
 
 
     //////////////////////////////////////////
@@ -1326,6 +1330,9 @@ bool embObjMotionControl::init()
         {
             yError() << "while setting joint config";
         }
+
+
+        #warning --> marco.accame on 08sept14: it would be nice reading them back and verify
 
         // Debugging... to much information can overload can queue on EMS
         Time::delay(0.010); // (m.a.a-delay: before it was 0.01)
@@ -1376,14 +1383,6 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     // set mais datarate = 1millisec
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-#if 0
-    // marco.accame: the addSetMessage already does this check in its internal, this i remove it
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
-    {
-        yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
-        return false;
-    }
-#endif
 
     if(!res->addSetMessage(protid, &datarate))
     {
@@ -1439,6 +1438,10 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
                 yError() << "embObjMotionControl::configure_mais() retrieved wrong mais config values";
                 yError() << "retrived: datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
                 return false;
+            }
+            else
+            {
+                yWarning() << "embObjMotionControl::configure_mais() verified that mais wa configured w/ datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
             }
         }
     }

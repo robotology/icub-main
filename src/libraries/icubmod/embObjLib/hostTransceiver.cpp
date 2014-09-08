@@ -941,7 +941,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;    
 
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
 
     if(false == fillRemoteProperties(cfgtransceiver))
     {
@@ -961,7 +961,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     hosttxrxcfg.sizes.maxnumberofregularrops        = 0;
 
 
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
+//#endif//_WIP_CHECK_PROTOCOL_VERSION_
 
 
     // the nvsetcfg of the board ...
@@ -972,7 +972,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
         return(false);
     }
 
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
     // the one of pc104
 #warning -> localTransceiverProperties.listeningPort must be initted with proper value .... so far it is equal to destinationPort
     localTransceiverProperties.listeningPort               = hosttxrxcfg.remoteboardipv4port;
@@ -984,7 +984,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     localTransceiverProperties.maxsizeROPframeOccasionals  = hosttxrxcfg.sizes.capacityofropframeoccasionals;
     localTransceiverProperties.maxsizeROP                  = hosttxrxcfg.sizes.capacityofrop;
     localTransceiverProperties.maxnumberRegularROPs        = hosttxrxcfg.sizes.maxnumberofregularrops;
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
+//#endif//_WIP_CHECK_PROTOCOL_VERSION_
 
 
 
@@ -1006,11 +1006,11 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
 {
     //in here i give values to remoteTransceiverProperties from XML file
 
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
 
     return true;
 
-#else
+//#else
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
 
     if(cfgtransceiver.isNull())
@@ -1079,7 +1079,7 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
 
     return(true);
 
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
+//#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol)
@@ -1266,7 +1266,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             }
 
         }
-
+#if 0
         printf("\nprotcfg --> bdr %d, mn = %d, mc = %d, as = %d, sk = %d ... co = %d, ap = %d, in = %d; jn = %d, mt = %d, ct = %d; st = %d, ma = %d, ex = %d; sk = %d\n",
                         protcfg.board,
                         protcfg.ep_management_is_present,   protcfg.ep_motioncontrol_is_present, protcfg.ep_analogsensors_is_present, protcfg.ep_skin_is_present,
@@ -1275,7 +1275,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
                         protcfg.en_as_entity_strain_numberof, protcfg.en_as_entity_mais_numberof, protcfg.en_as_entity_extorque_numberof,
                         protcfg.en_sk_entity_skin_numberof
             );
-
+#endif
 
     }
 

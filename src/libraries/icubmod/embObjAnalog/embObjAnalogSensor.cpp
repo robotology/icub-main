@@ -295,14 +295,21 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     if(false == res->verifyBoard(groupProtocol))
     {
-        yError() << "embObjAnalogSensor::init() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
+        yError() << "embObjAnalogSensor::open() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
         return false;
+    }
+    else
+    {
+        yWarning() << "DEBUGHELP: embObjAnalogSensor::open() has verified presence of board" << res->get_protBRDnumber()+1;
     }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
     {
-        yError() << "embObjAnalogSensor::init() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+        yError() << "embObjAnalogSensor::open() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
         return false;
+    }
+    {
+        yWarning() << "DEBUGHELP: embObjAnalogSensor::open() has verified correct EP eoprot_endpoint_analogsensors of board" << res->get_protBRDnumber()+1;
     }
 
 //    // marco.accame on 04 sept 2014: we could add a verification about the entities of analog ... MAYBE in the future
@@ -336,7 +343,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 //#warning "go to config message before getting strain fullscale... investigate more
 
 
-#warning --> marco.accame on 04sept14: both embObjAnalogSensors and embObjMotionControl initialises the mais board. but potentially w/ different params (mc uses: datarate = 10 and mode = eoas_maismode_txdatacontinuously).
+//#warning --> marco.accame on 04sept14: both embObjAnalogSensors and embObjMotionControl initialises the mais board. but potentially w/ different params (mc uses: datarate = 10 and mode = eoas_maismode_txdatacontinuously).
 //     res->goToConfig();
     switch(_as_type)
     {
@@ -529,7 +536,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
-        #warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
+        //#warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
 
         if(0 != NVsize)
@@ -639,6 +646,16 @@ bool embObjAnalogSensor::init()
         yError() << "embObjAnalogSensor::init() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
+    else
+    {
+        yWarning() << "DEBUGHELP: embObjAnalogSensor::init() added" << id32v.size() << "regular rops to board" << res->get_protBRDnumber()+1;
+        for(int r=0; r<id32v.size(); r++)
+        {
+            uint32_t id32 = id32v.at(r);
+            yWarning() << "DEBUGHELP: regular rop for tag = " << eoprot_ID2stringOfTag(id32) << "and index =" << eoprot_ID2index(id32);
+        }    
+    }
+
     Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
    
 

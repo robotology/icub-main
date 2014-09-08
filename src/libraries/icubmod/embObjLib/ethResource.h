@@ -61,12 +61,12 @@
 
 // the ethresource must be able to manage a standard udp packet as sent by eth boards whcih has max size 1500
 // marco.accame: it will be:
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
 #define	RECV_BUFFER_SIZE        1500
-#else
+//#else
 // so far it is:
-#define	RECV_BUFFER_SIZE        EOK_HOSTTRANSCEIVER_capacityofrxpacket
-#endif
+//#define	RECV_BUFFER_SIZE        EOK_HOSTTRANSCEIVER_capacityofrxpacket
+//#endif
 
 #define	ETHRES_SIZE_INFO        128
 #define MAX_ICUB_EP             32

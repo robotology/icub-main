@@ -136,7 +136,7 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
 
 extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
     double yt = 0.0;
     void* sem = NULL;
 
@@ -144,6 +144,7 @@ extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor
 
     if(NULL == sem)
     {
+        printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_status() fails in getting a semaphore\n");
         return;
     }
 
@@ -160,12 +161,12 @@ extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor
     printf("reply_numof arrived at yarp time %f\n", yt);
 
     feat_Semaphore_post(sem);
-#endif
+//#endif
 }
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
     double yt = 0.0;
     void* sem = NULL;
 
@@ -178,11 +179,13 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
     
     if(NULL == sem)
     {
+        printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() fails in getting a semaphore\n");        
         return;
     }
 
 
 yt = feat_yarp_time_now();
+
 #if 0
     int ss = floor(yt);
     double r = 1000.0*(yt - ss);
@@ -195,12 +198,12 @@ yt = feat_yarp_time_now();
     printf("reply_numof arrived at yarp time %f\n", yt);
 
     feat_Semaphore_post(sem);
-#endif
+//#endif
 }
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
     double yt = 0.0;
     void* sem = NULL;
 
@@ -213,6 +216,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
     
     if(NULL == sem)
     {
+        printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() fails in getting a semaphore\n");        
         return;
     }
 
@@ -229,7 +233,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
     printf("reply arrayarrived at yarp time %f\n", yt);
 
     feat_Semaphore_post(sem);
-#endif
+//#endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -413,6 +413,8 @@ bool ethResources::clearPerSigMsg(void)
         return false;
     }
 
+    #warning --> marco.accame on 08sept14: i would read the number of regulars to verify success of operation
+
     return true;
 
 }
@@ -427,8 +429,6 @@ Semaphore* ethResources::GetSemaphore(eOprotEndpoint_t ep, uint32_t signature)
 {
     return(ethResSem);
 }
-
-#warning ----------> marco.accame on sept 2014: i am with wip, thus in commit keep it defined until i have tested it well enough.
 
 
 bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
@@ -496,9 +496,6 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
         yWarning() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
     }
 
-    yWarning() << "ethResources::verifyBoardTransceiver() detected that it is working with MN protocol version = (" << pc104versionMN->major << pc104versionMN->minor << ")";
-
-
     // now i must check brdstatus.transceiver vs hostTransceiver::localTransceiverProperties
 
     if(localTransceiverProperties.listeningPort != brdstatus.transceiver.destinationPort)
@@ -520,8 +517,10 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
         yError() << "ethResources::verifyBoardTransceiver() detected that max size of rx packet is too small: max size local rx =" << localTransceiverProperties.maxsizeRXpacket << ", max size remote tx=" << brdstatus.transceiver.maxsizeTXpacket << ": cannot proceed any further";
         return(false);
     }
-
-    yWarning() << "ethResources::verifyBoardTransceiver() detected that local max size of rx packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept board tx packet of max size = " << brdstatus.transceiver.maxsizeTXpacket;
+    else
+ //   {
+ //       yWarning() << "ethResources::verifyBoardTransceiver() detected that local max size of rx packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept board tx packet of max size = " << brdstatus.transceiver.maxsizeTXpacket;
+ //   }
 
     if(localTransceiverProperties.maxsizeTXpacket > brdstatus.transceiver.maxsizeRXpacket)
     {
@@ -529,7 +528,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
         return(false);
     }
 
-    yWarning() << "ethResources::verifyBoardTransceiver() detected that local max size of tx packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
+  //  yWarning() << "ethResources::verifyBoardTransceiver() detected that local max size of tx packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
 
 
     if(remoteTransceiverProperties.maxsizeROPframeRegulars != brdstatus.transceiver.maxsizeROPframeRegulars)
@@ -564,7 +563,6 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
         yWarning() << "ethResources::verifyBoardTransceiver() detected different maxnumberRegularROPs: from xml =" << remoteTransceiverProperties.maxnumberRegularROPs << ", board=" << brdstatus.transceiver.maxnumberRegularROPs << ": correct xml file";
         //return(false); // it is not a fatal error because for this value we use what we have received from the board
     }
-
 
 
 
@@ -1050,10 +1048,10 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
         eOprotID32_t id32 = id32vector.at(i);
         uint16_t ss = eoprot_variable_sizeof_get(get_protBRDnumber(), id32); // sizeof data assocaited to id32
         uint16_t ropsize = eo_rop_compute_size(ropctrl ,eo_ropcode_sig, ss);
-        yWarning() << "size = " << ss << "ropsize = " << ropsize;
+        //yWarning() << "size = " << ss << "ropsize = " << ropsize;
         extrasize += ropsize;
     }
-    yWarning() << "(ropframemax, ropframenow, extrabytes) = " << boardCommStatus.transceiver.maxsizeROPframeRegulars << usedSizeOfRegularROPframe << extrasize;
+    //yWarning() << "(ropframemax, ropframenow, extrabytes) = " << boardCommStatus.transceiver.maxsizeROPframeRegulars << usedSizeOfRegularROPframe << extrasize;
 
     // second check: verify if the data occupied by extra rops is compatible with remote board
     if((usedSizeOfRegularROPframe+extrasize) > boardCommStatus.transceiver.maxsizeROPframeRegulars)
@@ -1080,13 +1078,11 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
                 // the array is full: send it to board
                 // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (21) value. If more are needed, send another packet,
                 // so wait some time to let ethManager send this packet and then start again.
-#if 1
                 if(false == addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig))
                 {
                     yError() << "ethResource::addRegulars() fails at adding a set message";
                     return false;
                 }
-#endif
                 Time::delay(delaybetweentransmissions);         // wait here, the ethManager thread will take care of sending the loaded message
                 eo_array_Reset(array);      // reset so that the array is able to contain new items at the following iteration
             }
@@ -1097,13 +1093,11 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
     // if there are items in the array we must send them now
     if(0 != eo_array_Size(array))
     {   // there are still ropsigcfg to send
-#if 1
         if(false == addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
         {
             yError() << "ethResource::addRegulars() fails at adding a set message";
             return false;
         }
-#endif
     }
 
 
@@ -1128,7 +1122,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
             return false;
         }
 
-        yError() << "ethResource::addRegulars() checks regulars: (expected, number in board) =" << usedNumberOfRegularROPs << numberofregulars;
+        yWarning() << "ethResource::addRegulars() has correctly checked regulars: (expected, number in board) =" << usedNumberOfRegularROPs << numberofregulars;
 
     }
 

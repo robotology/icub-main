@@ -90,13 +90,13 @@
 // the tx buffer must be able to contain the maximum payload size managed in reception inside the ems board.
 // this value is EOK_HOSTTRANSCEIVER_capacityofpacket. however, 1500 is good enough, as
 
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
+//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
 // new one will be: 
 enum {rxBUFFERsize = 1500, txBUFFERsize = 1500};
-#else
+//#else
 // current one is:
-enum {rxBUFFERsize = EOK_HOSTTRANSCEIVER_capacityofrxpacket, txBUFFERsize = EOK_HOSTTRANSCEIVER_capacityoftxpacket};
-#endif
+//enum {rxBUFFERsize = EOK_HOSTTRANSCEIVER_capacityofrxpacket, txBUFFERsize = EOK_HOSTTRANSCEIVER_capacityoftxpacket};
+//#endif
 
 // Actually there sould be no need to include this class into yarp::dev namespace.
 namespace yarp {
