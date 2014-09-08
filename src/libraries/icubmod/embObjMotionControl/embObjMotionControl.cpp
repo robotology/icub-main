@@ -744,7 +744,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     yError() << "ENTERING FOREVER LOOP";
 
-    for(;;);
+    //for(;;);
 
     initted = true;
 
