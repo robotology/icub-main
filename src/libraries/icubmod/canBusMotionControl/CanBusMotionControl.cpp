@@ -1323,7 +1323,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            printf("Position Pids section found, new format\n");
            if (!parsePidsGroup_NewFormat(posPidsGroup, _pids))
            {
-               printf("Position Pids section: error detected in parameters syntax\n");
+               yError() << "Position Pids section: error detected in parameters syntax";
                return false;
            }
            else
@@ -1341,7 +1341,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
             {   
-                fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
+                yError () << "Error: no PIDS group found in config file, returning";
                 return false;
             }
         }
@@ -1356,7 +1356,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            printf("Torque Pids section found, new format\n");
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
-               printf("Torque Pids section: error detected in parameters syntax\n");
+               yError () << "Torque Pids section: error detected in parameters syntax";
                return false;
            }
            else
@@ -1458,7 +1458,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             _maxStep[i-1]=xtmp.get(i).asDouble();
             if (_maxStep[i-1]<0)
             {
-                fprintf(stderr,"ERROR: Invalid MaxPosStep parameter <0\n");
+                yError () << "Invalid MaxPosStep parameter <0\n";
                 return false;
             }
         }
@@ -2381,7 +2381,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
-        if (b==false) fprintf(stderr,"Error reading firmware version\n");
+        if (b==false) yError() << "Error reading firmware version";
     }
     _firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info, icub_interface_protocol);
     _firmwareVersionHelper->printFirmwareVersions();
@@ -2392,7 +2392,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         RateThread::stop();
         _opened = false;
-        fprintf(stderr,"checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
+        yError() << "checkFirmwareVersions() failed. CanBusMotionControl::open returning false,";
         return false;
     }
     /////////////////////////////////
@@ -2403,7 +2403,7 @@ bool CanBusMotionControl::open (Searchable &config)
 #endif
 
     _opened = true;
-    fprintf(stderr,"CanBusMotionControl::open returned true\n");
+    yDebug() << "CanBusMotionControl::open returned true\n";
     return true;
 }
 
@@ -2447,7 +2447,7 @@ bool CanBusMotionControl::readFullScaleAnalog(int analog_address, int ch, double
 
     if (full_scale_read==false) 
         {                            
-            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
+            yError() << "Trying to get fullscale data from sensor: no answer received or message lost (ch:" << ch <<")";
             return false;
         }
 
