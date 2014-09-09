@@ -628,10 +628,14 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
             yError() << "In calib: checkGoneToZeroThreshold " <<  deviceName.c_str() << "joint " << j << " Timeout while going to zero!";
             break;
         }
-        if (mode == VOCAB_CM_IDLE ||
-            mode == VOCAB_CM_HW_FAULT)
+        if (mode == VOCAB_CM_IDLE)
         {
-            yError() << "In calib: checkGoneToZeroThreshold " <<  deviceName.c_str() << "joint " << j << " is idle/faulted, skipping!";
+            yError() << "In calib: checkGoneToZeroThreshold " <<  deviceName.c_str() << "joint " << j << " is idle, skipping!";
+            break;
+        }
+        if (mode == VOCAB_CM_HW_FAULT)
+        {
+            yError() << "In calib: checkGoneToZeroThreshold " <<  deviceName.c_str() << "hardware fault on joint " << j << ", skipping!";
             break;
         }
         if (abortCalib)
