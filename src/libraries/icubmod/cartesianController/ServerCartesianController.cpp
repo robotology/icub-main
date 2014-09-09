@@ -1346,7 +1346,9 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
             joints.push_back(joint);
             refs.push_back(ref);
 
-            info.addInt(joint);
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
             info.addDouble(ref);
 
             cnt++;
@@ -1397,7 +1399,9 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
             joints.push_back(joint);
             vels.push_back(v_cnt);
 
-            info.addInt(joint);
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
             info.addDouble(v_cnt);
 
             velCmd[cnt]=v_cnt;
@@ -1441,7 +1445,9 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointPosition()
             double ref=CTRL_RAD2DEG*q[cnt++];
             lPos[j]->setPosition(joint,ref);
 
-            info.addInt(joint);
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
             info.addDouble(ref);
         }
 
@@ -1482,7 +1488,9 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointVelocity()
 
             lVel[j]->velocityMove(joint,v_cnt);
 
-            info.addInt(joint);
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
             info.addDouble(v_cnt);
 
             velCmd[cnt]=v_cnt;
