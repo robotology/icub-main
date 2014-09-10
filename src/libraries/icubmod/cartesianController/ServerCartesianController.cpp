@@ -1334,14 +1334,14 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
     info.addString("position");
     info.addString("multiple");
 
-    Vector q=ctrl->get_q();
+    Vector q=CTRL_RAD2DEG*ctrl->get_q();
     velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
         {
             int joint=lRmp[j][k];
-            double ref=CTRL_RAD2DEG*q[cnt];
+            double ref=q[cnt];
 
             joints.push_back(joint);
             refs.push_back(ref);
@@ -1383,28 +1383,28 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
     info.addString("velocity");
     info.addString("multiple");
 
-    Vector v=ctrl->get_qdot();
+    Vector v=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
         {
             int joint=lRmp[j][k];
-            double v_cnt=CTRL_RAD2DEG*v[cnt];
+            double vel=v[cnt];
             double thres=lDsc[j].minAbsVels[k];
 
             // apply bang-bang control to compensate for unachievable low velocities
-            if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
-                v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+            if ((vel!=0.0) && (fabs(vel)<thres))
+                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
 
             joints.push_back(joint);
-            vels.push_back(v_cnt);
+            vels.push_back(vel);
 
             ostringstream ss;
             ss<<lDsc[j].key.c_str()<<"_"<<joint;
             info.addString(ss.str().c_str());
-            info.addDouble(v_cnt);
+            info.addDouble(vel);
 
-            velCmd[cnt]=v_cnt;
+            velCmd[cnt]=vel;
             cnt++;
         }
 
@@ -1435,20 +1435,22 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointPosition()
     info.addString("position");
     info.addString("single");
 
-    Vector q=ctrl->get_q();
+    Vector q=CTRL_RAD2DEG*ctrl->get_q();
     velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
         {
             int joint=lRmp[j][k];
-            double ref=CTRL_RAD2DEG*q[cnt++];
+            double ref=q[cnt];
             lPos[j]->setPosition(joint,ref);
 
             ostringstream ss;
             ss<<lDsc[j].key.c_str()<<"_"<<joint;
             info.addString(ss.str().c_str());
             info.addDouble(ref);
+
+            cnt++;
         }
 
         if (++k>=lJnt[j])
@@ -1473,27 +1475,27 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointVelocity()
     info.addString("velocity");
     info.addString("single");
 
-    Vector v=ctrl->get_qdot();
+    Vector v=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
         {
             int joint=lRmp[j][k];
-            double v_cnt=CTRL_RAD2DEG*v[cnt];
+            double vel=v[cnt];
             double thres=lDsc[j].minAbsVels[k];
 
             // apply bang-bang control to compensate for unachievable low velocities
-            if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
-                v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+            if ((vel!=0.0) && (fabs(vel)<thres))
+                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
 
-            lVel[j]->velocityMove(joint,v_cnt);
+            lVel[j]->velocityMove(joint,vel);
 
             ostringstream ss;
             ss<<lDsc[j].key.c_str()<<"_"<<joint;
             info.addString(ss.str().c_str());
-            info.addDouble(v_cnt);
+            info.addDouble(vel);
 
-            velCmd[cnt]=v_cnt;
+            velCmd[cnt]=vel;
             cnt++;
         }
 
