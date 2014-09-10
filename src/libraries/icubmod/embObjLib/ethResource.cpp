@@ -214,20 +214,21 @@ void infoOfRecvPkts::clearStatistics(void)
 }
 
 
-uint64_t infoOfRecvPkts::getSeqNum(uint8_t *packet)
+uint64_t infoOfRecvPkts::getSeqNum(uint64_t *packet, uint16_t size)
 {
-    return(eo_ropframe_seqnum_Get((EOropframe*)packet));
+    return(eo_ropframedata_seqnum_Get((EOropframeData*)packet));
 }
 
-uint64_t infoOfRecvPkts::getAgeOfFrame(uint8_t *packet)
+
+uint64_t infoOfRecvPkts::getAgeOfFrame(uint64_t *packet, uint16_t size)
 {
-    return(eo_ropframe_age_Get((EOropframe*)packet));
+    return(eo_ropframedata_age_Get((EOropframeData*)packet));
 }
 
-void infoOfRecvPkts::updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime)
+void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime)
 {
-    uint64_t curr_seqNum = getSeqNum(packet);
-    uint64_t curr_ageOfFrame = getAgeOfFrame(packet);
+    uint64_t curr_seqNum = getSeqNum(packet, size);;
+    uint64_t curr_ageOfFrame = getAgeOfFrame(packet, size);
     double curr_periodPkt;
     double diff_ageofframe;
     int diff;
@@ -318,7 +319,7 @@ void ethResources::checkIsAlive(double curr_time)
 
 // I could Call directly the hostTransceiver method instead of this one, I do it here in order to add the mutex
 // at EMS level
-void ethResources::onMsgReception(uint8_t *data, uint16_t size)
+void ethResources::onMsgReception(uint64_t *data, uint16_t size)
 {
      double curr_timeBeforeParsing = yarp::os::Time::now();
 
@@ -331,7 +332,7 @@ void ethResources::onMsgReception(uint8_t *data, uint16_t size)
 
      if(isInRunningMode)
      {
-         infoPkts->updateAndCheck(data, curr_timeBeforeParsing, (curr_timeAfetrParsing-curr_timeBeforeParsing));
+         infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfetrParsing-curr_timeBeforeParsing));
      }
 }
 
@@ -343,13 +344,11 @@ ACE_INET_Addr   ethResources::getRemoteAddress()
 
 bool ethResources::goToConfig(void)
 {
-    yTrace() << info;
-
     // stop the control loop (if running) and force the board to enter config mode
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
-    eOmn_appl_state_t  desired  = applstate_config;
-    if(!addSetMessage(protid, (uint8_t*) &desired))
+    eOenum08_t command_go2state = applstate_config;
+    if(!addSetMessage(protid, (uint8_t*) &command_go2state))
     {
         yError() << "for var goToConfig";
         return false;
@@ -364,13 +363,11 @@ bool ethResources::goToConfig(void)
 
 bool ethResources::goToRun(void)
 {
-    yTrace() << info;
-
     // start the control loop by sending a proper message to the board
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
-    eOmn_appl_state_t  desired  = applstate_running;
-    if(!addSetMessage(protid, (uint8_t*) &desired))
+    eOenum08_t command_go2state = applstate_running;
+    if(!addSetMessage(protid, (uint8_t*) &command_go2state))
     {
         yError() << " ethResources::goToRun() fails to add a command go2state running to transceiver";
         return false;

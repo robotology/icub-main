@@ -59,14 +59,8 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 
-// the ethresource must be able to manage a standard udp packet as sent by eth boards whcih has max size 1500
-// marco.accame: it will be:
-//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
-#define	RECV_BUFFER_SIZE        1500
-//#else
-// so far it is:
-//#define	RECV_BUFFER_SIZE        EOK_HOSTTRANSCEIVER_capacityofrxpacket
-//#endif
+enum {rxBUFFERsize = 1496, txBUFFERsize = 1496};
+
 
 #define	ETHRES_SIZE_INFO        128
 #define MAX_ICUB_EP             32
@@ -117,8 +111,8 @@ public:
     infoOfRecvPkts();
     void printStatistics(void);
     void clearStatistics(void);
-    uint64_t getSeqNum(uint8_t *packet);
-    uint64_t getAgeOfFrame(uint8_t *packet);
+    uint64_t getSeqNum(uint64_t *packet, uint16_t size);
+    uint64_t getAgeOfFrame(uint64_t *packet, uint16_t size);
 
     /*!   @fn       void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
      *    @brief    updates communication info statistics and checks if there is a transmission error with this ems board.In case of error print it.
@@ -126,7 +120,7 @@ public:
      *    @param    reckPktTime      sys time on rec pkt (expressed in seconds)
      *    @param    processPktTime   time needed to process this packet (expressed in seconds)
      */
-    void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
+    void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime);
 
     void setBoardNum(int board);
 };
@@ -163,7 +157,7 @@ public:
     ethResources();
     ~ethResources();
 
-    uint8_t         recv_msg[RECV_BUFFER_SIZE];   // buffer for the reveived messages
+    uint64_t        recv_msg[rxBUFFERsize/8];   // buffer for the reveived messages
     ACE_UINT16      recv_size;                    // size of the incoming message
 
     ethResources *  already_exists(yarp::os::Searchable &config);
@@ -202,7 +196,7 @@ public:
     //! Return the dimension of the receiving buffer.
     int             getBufferSize();
 
-    void            onMsgReception(uint8_t *data, uint16_t size);
+    void            onMsgReception(uint64_t *data, uint16_t size);
 
 
     /*!   @fn       goToRun(void);

@@ -580,6 +580,15 @@ bool EmbObjSkin::configPeriodicMessage(void)
         yError() << "EmbObjSkin::configPeriodicMessage() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
+    else
+    {
+        yWarning() << "DEBUGHELP: embObjSkin::init() added" << id32v.size() << "regular rops to board" << res->get_protBRDnumber()+1;
+        for(int r=0; r<id32v.size(); r++)
+        {
+            uint32_t id32 = id32v.at(r);
+            yWarning() << "DEBUGHELP: regular rop for index =" << eoprot_ID2index(id32) << " and tag = " << eoprot_ID2stringOfTag(id32);
+        }
+    }
     Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
 
     return true;

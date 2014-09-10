@@ -445,7 +445,7 @@ bool hostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t
 
 
 // somebody passes the received packet - this is used just as an interface
-void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
+void hostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
 {
     if(NULL == data)
     {
@@ -467,7 +467,7 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
         return;
     } 
 
-    eo_packet_Payload_Set(p_RxPkt, data, size);
+    eo_packet_Payload_Set(p_RxPkt, (uint8_t*)data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
     //transMutex.post();
@@ -1007,9 +1007,7 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
     //in here i give values to remoteTransceiverProperties from XML file
 
 //#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-
-    return true;
-
+//    return true;
 //#else
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
 

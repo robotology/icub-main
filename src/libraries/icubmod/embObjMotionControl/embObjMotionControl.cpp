@@ -680,6 +680,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << "embObjMotionControl::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
         return false;
     }
+    else
+    {
+        yWarning() << "embObjMotionControl::init() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
+    }
 
 
     if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
@@ -687,6 +691,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << "embObjMotionControl::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
         return false;
     }
+    else
+    {
+        yWarning() << "embObjMotionControl::init() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
+    }
+
 
 #endif
 
@@ -699,9 +708,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << "embObjMotionControl::open() has an error in call of embObjMotionControl::init() for board" << _fId.boardNum;
         return false;
     }
-
-
-
+    else
+    {
+        yWarning() << "embObjMotionControl::init() has succesfully initted board "<< _fId.boardNum;
+    }
 
     // now if this device has a mais ... we configure it
 
@@ -751,6 +761,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         yWarning() << "remote board " << _fId.boardNum << "correctly starts its control loop";
     }
+
+//    yError() << "STOP WITH FOREVER LOOP inside embObjMotionControl::open()";
+//    for(;;);
 
     return true;
 }
@@ -1286,7 +1299,7 @@ bool embObjMotionControl::init()
             for(int r=0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
-                yWarning() << "DEBUGHELP: regular rop for tag = " << eoprot_ID2stringOfTag(id32) << "and index =" << eoprot_ID2index(id32);
+                yWarning() << "DEBUGHELP: regular rop for index =" << eoprot_ID2index(id32) << " and tag = " << eoprot_ID2stringOfTag(id32);
             } 
     }   
 

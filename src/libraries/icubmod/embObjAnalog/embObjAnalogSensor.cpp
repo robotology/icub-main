@@ -652,7 +652,7 @@ bool embObjAnalogSensor::init()
         for(int r=0; r<id32v.size(); r++)
         {
             uint32_t id32 = id32v.at(r);
-            yWarning() << "DEBUGHELP: regular rop for tag = " << eoprot_ID2stringOfTag(id32) << "and index =" << eoprot_ID2index(id32);
+            yWarning() << "DEBUGHELP: regular rop for index =" << eoprot_ID2index(id32) << " and tag = " << eoprot_ID2stringOfTag(id32);
         }    
     }
 

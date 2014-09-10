@@ -83,21 +83,6 @@
 #define ETHMAN_SIZE_INFO            128
 
 
-
-// sizes of rx and tx buffers. 
-// the rx buffer must be able to accepts udp packets of max size (1500), so that we are safe against changes 
-// of tx size done inside the ems boards. 
-// the tx buffer must be able to contain the maximum payload size managed in reception inside the ems board.
-// this value is EOK_HOSTTRANSCEIVER_capacityofpacket. however, 1500 is good enough, as
-
-//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
-// new one will be: 
-enum {rxBUFFERsize = 1500, txBUFFERsize = 1500};
-//#else
-// current one is:
-//enum {rxBUFFERsize = EOK_HOSTTRANSCEIVER_capacityofrxpacket, txBUFFERsize = EOK_HOSTTRANSCEIVER_capacityoftxpacket};
-//#endif
-
 // Actually there sould be no need to include this class into yarp::dev namespace.
 namespace yarp {
     namespace dev {
@@ -311,7 +296,7 @@ class EthReceiver : public yarp::os::Thread
 #endif
 {
 private:
-    uint8_t                         recvBuffer[rxBUFFERsize];
+    uint64_t                        recvBuffer[rxBUFFERsize/8];
     ACE_SOCK_Dgram                  *recv_socket;
     TheEthManager                   *ethManager;
     std::list<ethResources *>       *ethResList;

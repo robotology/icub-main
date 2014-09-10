@@ -118,7 +118,7 @@ public:
     // somebody passes the received packet
     void SetReceived(uint8_t *data, uint16_t size);
     // and Processes it
-    virtual void onMsgReception(uint8_t *data, uint16_t size);
+    virtual void onMsgReception(uint64_t *data, uint16_t size);
 
 protected:
     /* Ask the transceiver to get the ropframe to be sent

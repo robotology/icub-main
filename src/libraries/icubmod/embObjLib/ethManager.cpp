@@ -15,6 +15,7 @@
 
 #include "EOYtheSystem.h"
 
+#include "EOropframe.h"
 
 #include <stdexcept>      // std::out_of_range
 #include <yarp/os/Network.h>
@@ -879,24 +880,13 @@ bool EthReceiver::threadInit()
 }
 
 
-// marco.accame on 10 apr 2014: better not using the exact copy of a struct defined elsewhere (in EOropframe_hid.h) 
-typedef struct  // 24 bytes
-{
-    uint32_t            startofframe;
-    uint16_t            ropssizeof;
-    uint16_t            ropsnumberof;
-    uint64_t            ageofframe;
-    uint64_t            sequencenumber;
-} EOropframeHeader_TEST_t;
-
 uint64_t getRopFrameAge(char *pck)
 {
-    EOropframeHeader_TEST_t *test = (EOropframeHeader_TEST_t *) pck;
-    return test->ageofframe;
+    return(eo_ropframedata_age_Get((EOropframeData*)pck));
 }
 
 
-// marco.accame on 11 apr 2014:
+#warning --> marco.accame on 11 apr 2014:
 // if we want to detect the board number by address, ... allow some more or think about a more general rule.
 int EthReceiver::getBoardNum(ACE_INET_Addr addr)
 {
@@ -961,7 +951,8 @@ void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
 {
     int board = getBoardNum(addr);
     //check seq num
-    uint64_t seqnum = *((uint64_t*)(&pktpayload[16]));
+    //uint64_t seqnum = *((uint64_t*)(&pktpayload[16]));
+    uint64_t seqnum = eo_ropframedata_seqnum_Get((EOropframeData*)pktpayload));
     if(recFirstPkt[board]==false)
     {
         seqnumList[board] = seqnum;
@@ -1203,7 +1194,7 @@ void EthReceiver::run()
     ethResources  *ethRes;
     ssize_t       recv_size;
     ACE_INET_Addr sender_addr;
-    char          incoming_msg[RECV_BUFFER_SIZE];
+    uint64_t      incoming_msg[rxBUFFERsize/8];
     bool recError = false;
     bool allEmsInConfigstate = true; //if true means all ems are in config state
 
@@ -1227,7 +1218,7 @@ void EthReceiver::run()
         before_rec = yarp::os::Time::now();
 #endif
         //get pkt from socket: blocking call with timeout
-        recv_size = recv_socket->recv((void *) incoming_msg, RECV_BUFFER_SIZE, sender_addr, 0, &recvTimeOut);
+        recv_size = recv_socket->recv((void *) incoming_msg, rxBUFFERsize, sender_addr, 0, &recvTimeOut);
 #ifdef ETHRECEIVER_STATISTICS_ON
         after_rec =  yarp::os::Time::now();
         diff_onRec = after_rec - before_rec;
