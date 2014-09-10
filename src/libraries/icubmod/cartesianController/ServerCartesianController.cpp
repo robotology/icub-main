@@ -1642,7 +1642,9 @@ void ServerCartesianController::run()
                 if (debugInfoEnabled && (portDebugInfo.getOutputCount()>0))
                 {
                     portDebugInfo.prepare()=(this->*sendCtrlCmd)();
-                    portDebugInfo.writeStrict();
+                    debugInfo.update(txInfo.getTime());
+                    portDebugInfo.setEnvelope(debugInfo);
+                    portDebugInfo.write();
                 }
                 else
                     (this->*sendCtrlCmd)();
