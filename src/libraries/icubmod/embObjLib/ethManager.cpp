@@ -952,7 +952,7 @@ void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
     int board = getBoardNum(addr);
     //check seq num
     //uint64_t seqnum = *((uint64_t*)(&pktpayload[16]));
-    uint64_t seqnum = eo_ropframedata_seqnum_Get((EOropframeData*)pktpayload));
+    uint64_t seqnum = eo_ropframedata_seqnum_Get((EOropframeData*)pktpayload);
     if(recFirstPkt[board]==false)
     {
         seqnumList[board] = seqnum;
