@@ -1029,7 +1029,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
     Vector c,tipl(2,0.0),tipr(2,0.0);
     igaze->get2DPixel(0,kinPoint,c);
 
-    ImageOf<PixelBgr> &imgOut=depthOutPort.prepare();
+    ImageOf<PixelBgr> imgOut;
     cv::Rect rect=extractFingerTip(imgIn,imgOut,c,tipl);
     
     bool holdImg=false;
@@ -1097,12 +1097,11 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
     
     if (depthOutPort.getOutputCount()>0)
     {
+        depthOutPort.prepare()=imgOut;
         depthOutPort.write();
         if (holdImg)
             Time::delay(0.5);
     }
-    else
-        depthOutPort.unprepare();
 
     mutex.unlock();
 }
