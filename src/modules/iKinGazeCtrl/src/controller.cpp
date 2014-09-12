@@ -297,6 +297,14 @@ void Controller::stopLimb(const bool execStopPosition)
 void Controller::stopControl()
 {
     mutexRun.lock();
+    stopControlHelper();
+    mutexRun.unlock();
+}
+
+
+/************************************************************************/
+void Controller::stopControlHelper()
+{
     mutexCtrl.lock();
 
     if (commData->get_isCtrlActive())
@@ -308,7 +316,6 @@ void Controller::stopControl()
     }
 
     mutexCtrl.unlock();
-    mutexRun.unlock();
 }
 
 
@@ -454,7 +461,7 @@ void Controller::run()
     bool jointsHealthy=areJointsHealthyAndSet(jointsToSet);
     if (!jointsHealthy)
     {
-        stopControl();
+        stopControlHelper();
         port_xd->get_new()=false;
     }
 
