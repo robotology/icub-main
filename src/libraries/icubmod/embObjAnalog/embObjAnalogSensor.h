@@ -13,7 +13,6 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-// #include <yarp/dev/PreciselyTimed.h>
 #include <iCub/DebugInterfaces.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
@@ -26,9 +25,10 @@
 #include <ethResource.h>
 #include <ethManager.h>
 
-#define EMBAS_SIZE_INFO     128
 
 #include "FeatureInterface.h"  
+
+#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
 
 #include "Debug.h"
 
@@ -78,13 +78,12 @@ class yarp::dev::embObjAnalogSensor:    public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
                                         public IiCubFeature
 {
+
 public:
-//    enum AnalogDataFormat
-//    {
-//        ANALOG_FORMAT_NONE=0,
-//        ANALOG_FORMAT_8=8,
-//        ANALOG_FORMAT_16=16,
-//    };
+
+    enum { EMBAS_SIZE_INFO  = 128 };
+
+    enum { NUMCHANNEL_STRAIN = 6, NUMCHANNEL_MAIS = 15, FORMATDATA_STRAIN = 16, FORMATDATA_MAIS = 8 };
 
     enum SensorStatus
     {
@@ -131,11 +130,6 @@ private:
     double* scaleFactor;
     yarp::os::Semaphore mutex;
 
-//     yarp::os::Bottle initMsg;
-//     yarp::os::Bottle speedMsg;
-//     yarp::os::Bottle closeMsg;
-//     std::string deviceIdentifier;
-
 
     // Read useful data from config and check for correctness
     bool fromConfig(yarp::os::Searchable &config);
@@ -145,6 +139,7 @@ private:
     bool fillDatOfStrain(void *as_array_raw);
     bool fillDatOfMais(void *as_array_raw);
     bool isEpManagedByBoard();
+
 public:
 
     embObjAnalogSensor();

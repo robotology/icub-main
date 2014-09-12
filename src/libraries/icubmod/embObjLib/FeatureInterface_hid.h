@@ -27,5 +27,6 @@ class IiCubFeature
 //         virtual bool fill_AS_data(void *as_array) =0;   // analogSensor data
 };
 
+
 #endif /* FEATUREINTERFACE_HID_H_ */
 

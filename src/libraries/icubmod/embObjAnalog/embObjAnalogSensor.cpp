@@ -37,18 +37,12 @@
 #pragma warning(once:4355)
 #endif
 
-const int REPORT_PERIOD = 6;            // seconds
-const double BCAST_STATUS_TIMEOUT = 6;  // seconds
-
-#define NUMCHANNEL_STRAIN 6
-#define NUMCHANNEL_MAIS 15
-#define FORMATDATA_STRAIN 16
-#define FORMATDATA_MAIS 8
 
 
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
+
 
 inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
@@ -106,7 +100,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     else
     {
         _period = xtmp.get(1).asInt();
-        yDebug() << "embObjAnalogSensor Using value of" << _period;
+        yDebug() << "  (!!)-> embObjAnalogSensor::fromConfig() detects embObjAnalogSensor Using value of" << _period;
     }
 
     if (!extractGroup(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
@@ -218,14 +212,14 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
     if(groupTransceiver.isNull())
     {
-        yError() << "embObjAnalogSensor: Can't find TRANSCEIVER group in xml config files";
+        yError() << "embObjAnalogSensor::open(): Can't find TRANSCEIVER group in xml config files";
         return false;
     }
 
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yError() << "embObjAnalogSensor: Can't find PROTOCOL group in xml config files";
+        yError() << "embObjAnalogSensor::open(): Can't find PROTOCOL group in xml config files";
         return false;
     }
 
@@ -268,7 +262,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "Unable to instantiate ethManager";
+        yFatal() << "embObjAnalogSensor::open() cannot instantiate ethManager";
         return false;
     }
 
@@ -281,13 +275,13 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
-        yError() << "EMS device not instantiated... unable to continue";
+        yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource board" << _fId.boardNum << " ... unable to continue";
         return false;
     }
 
-    if(!isEpManagedByBoard())
+    if(false == res->isEPmanaged(eoprot_endpoint_analogsensors))
     {
-        yError() << "EMS "<< _fId.boardNum << "is not connected to a analog sensor";
+        yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNum << " does not support analog sensors";
         return false;
     }
 
@@ -300,7 +294,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "DEBUGHELP: embObjAnalogSensor::open() has verified presence of board" << res->get_protBRDnumber()+1;
+        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNum << " is communicating correctly";
     }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
@@ -309,7 +303,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
     {
-        yWarning() << "DEBUGHELP: embObjAnalogSensor::open() has verified correct EP eoprot_endpoint_analogsensors of board" << res->get_protBRDnumber()+1;
+        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNum << " has same protocol version for analogsensors as robotInterface";
     }
 
 //    // marco.accame on 04 sept 2014: we could add a verification about the entities of analog ... MAYBE in the future
@@ -329,8 +323,8 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
 #endif
 
-    data=new AnalogData(_channels, _channels+1);
-    scaleFactor=new double[_channels];
+    data = new AnalogData(_channels, _channels+1);
+    scaleFactor = new double[_channels];
     int i=0;
     for (i=0; i<_channels; i++) scaleFactor[i]=1;
 
@@ -371,9 +365,17 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     if(! init())
         return false;
 
-    res->goToRun();
 
-    yTrace()<< "EmbObj Analog Sensor for board"<< _fId.boardNum << "instantiated correctly";
+    if(false == res->goToRun())
+    {
+        yError() << "embObjAnalogSensor::open() fails to start control loop of board" << _fId.boardNum << ": cannot continue";
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNum;
+    }
+
     return true;
 }
 
@@ -398,7 +400,7 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
     {
         if( ! getFullscaleValues() )
         {
-//             yError() << "EmbObj AnalogSensor, problem while getting fullscale values!";
+            yError() << "embObjAnalogSensor::sendConfig2Strain() has failed in calling  embObjAnalogSensor::getFullscaleValues()";
             return false;
         }
         strainConfig.mode = eoas_strainmode_txcalibrateddatacontinuously;
@@ -410,10 +412,12 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 
 
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-    res->addSetMessage(protoid, (uint8_t *) &strainConfig);
+    if(!res->addSetMessage(protoid, (uint8_t *) &strainConfig))
+    {
+        yError() << "embObjAnalogSensor::sendConfig2Strain() could not send a set message for eoprot_tag_as_strain_config";
+    }
 
     return true;
-
 }
 
 bool embObjAnalogSensor::sendConfig2Mais(void)
@@ -424,22 +428,24 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
 
-
     if(!res->addSetMessage(protoid, &datarate))
     {
-        yError() << "while setting mais datarate";
+        yError() << "embObjAnalogSensor::sendConfig2Mais() could not send a set message fot datarate";
+        yError() << "embObjAnalogSensor::sendConfig2Mais() however did not return false. IS CORRECT?";
     }
 
-    //set tx mode continuosly
+    // set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
     protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
 
 
-
     if(!res->addSetMessage(protoid, (uint8_t *) &maismode))
     {
-        yError() << "while setting mais maismode";
+        yError() << "embObjAnalogSensor::sendConfig2Mais() could not send a set message fot maismode";
+        yError() << "embObjAnalogSensor::sendConfig2Mais() however did not return false. IS CORRECT?";
     }
+
+#warning --> marco.accame: maybe we can add a readback of the datarate and maismode to be sure of successful operation
 
     return true;
 }
@@ -470,11 +476,13 @@ bool embObjAnalogSensor::getFullscaleValues()
     // the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
     eo_array_New(6, 2, &fullscale_values);
 
-    eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
+    eOprotID32_t protoid_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
     if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
     {
-        yError() << "nvid not found";
+        char str[128];
+        eoprot_ID2information(protoid_fullscale, str, sizeof(str));
+        yError() << "embObjAnalogSensor::getFullscaleValues() detected that is not valid this ID32:" << str;
         return false;
     }
         
@@ -525,14 +533,14 @@ bool embObjAnalogSensor::getFullscaleValues()
     strainConfig.signaloncefullscale    = eobool_true;
 
     eOprotID32_t protoid_strain_config = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-    //res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
+
     timeout = 5;
 
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
         res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
-        Time::delay(1);
+        Time::delay(1.0);
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
@@ -546,12 +554,12 @@ bool embObjAnalogSensor::getFullscaleValues()
         }
 
         timeout--;
-        yDebug() << "board " << _fId.boardNum << ": full scale val not arrived yet... retrying in 1 sec";
+        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNum << ": full scale val not arrived yet... retrying in 1 sec";
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
     {
-        yError() << "ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNum;
+        yError() << "embObjAnalogSensor::getFullscaleValues(): ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNum;
         return false;
     }
 
@@ -566,9 +574,9 @@ bool embObjAnalogSensor::getFullscaleValues()
 
     if(gotFullScaleValues)
     {
-        yWarning() << "GOT full scale values for board" << _fId.boardNum;
+        yWarning() << "(!!)-> embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNum;
 
-        yDebug() << "Fullscale values for board " << _fId.boardNum << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
+        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNum << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
 
 
         for(int i=0; i<_channels; i++)
@@ -585,7 +593,7 @@ bool embObjAnalogSensor::getFullscaleValues()
             scaleFactor[i]= ((uint16_t)(msg[0]<<8) | msg[1]);
             //scaleFactor[i]=i;
             //yError() << " scale factor[" << i << "] = " << scaleFactor[i];
-            yDebug() << "channel " << i << "full scale value " << scaleFactor[i];
+            yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): channel " << i << "full scale value " << scaleFactor[i];
         }
     }
 
@@ -597,11 +605,8 @@ bool embObjAnalogSensor::getFullscaleValues()
 bool embObjAnalogSensor::init()
 {
     yTrace();
+
     
-    // - configure the ep of the internal feature-interface to be eoprot_endpoint_analogsensors
-    _fId.ep = eoprot_endpoint_analogsensors;
-
-
     // - configure regular rops
 
     vector<eOprotID32_t> id32v(0);
@@ -632,7 +637,9 @@ bool embObjAnalogSensor::init()
 
     if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
     {
-        yError () << " EmbObj Analog Sensor NVID not found for EndPoint" << _fId.ep <<" at line " << __LINE__;
+        char str[128];
+        eoprot_ID2information(protoid, str, sizeof(str));
+        yError () << "embObjAnalogSensor::init() recognised invalid ID to put in regulars: " << str;
         return false;
     }
 
@@ -648,12 +655,14 @@ bool embObjAnalogSensor::init()
     }
     else
     {
-        yWarning() << "DEBUGHELP: embObjAnalogSensor::init() added" << id32v.size() << "regular rops to board" << res->get_protBRDnumber()+1;
+        yWarning() << "(OK)-> embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+        char nvinfo[128];
         for(int r=0; r<id32v.size(); r++)
         {
             uint32_t id32 = id32v.at(r);
-            yWarning() << "DEBUGHELP: regular rop for index =" << eoprot_ID2index(id32) << " and tag = " << eoprot_ID2stringOfTag(id32);
-        }    
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+        }
     }
 
     Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
@@ -794,7 +803,6 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
     printf("\nembObj Analog Sensor fill_as_data\n");
 #endif
 
-    //eOas_arrayofupto12bytes_t  *as_array = (eOas_arrayofupto12bytes_t*) as_array_raw;
     EOarray *array = (EOarray*)as_array_raw;
     
     uint8_t msg[2];
@@ -852,7 +860,6 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     // the void* parameter inside this function is a eOas_arrayofupto36bytes_t*   
     // and can be treated as a EOarray
 
-    //eOas_arrayofupto36bytes_t  *as_array = (eOas_arrayofupto36bytes_t*) as_array_raw;
     EOarray *array = (EOarray*)as_array_raw;
     uint8_t size = eo_array_Size(array);
     uint8_t itemsize = eo_array_ItemSize(array); // marco.accame: must be 1, as the code after uses this convention

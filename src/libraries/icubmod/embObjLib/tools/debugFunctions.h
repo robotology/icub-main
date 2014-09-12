@@ -19,6 +19,11 @@
 #ifndef __debugfunctions__
 #define __debugfunctions__
 
+#error it seems that file debugFunctions.h is not used anymore
+
+#if 0
+// marco.accame: it seems that we dont need it
+
 // usual includes
 #include "stdint.h"
 #include "stdlib.h"
@@ -33,16 +38,15 @@
 #include "ace/Addr.h"
 #include "ace/Thread.h"
 
-// EO includes
-//#include "EOnv_hid.h"
-//#include "EOropframe_hid.h"
-//#include "embObjLibInterface.h"
 
 #define _LINUX_UDP_SOCKET_
 //#undef _LINUX_UDP_SOCKET_
 
 
 #define _DEEP_DEBUG_
+
+#if 0
+// marco.accame: i remove these as they depend on the number of boards that we have on the specific robot
 
 #define eb1_ip "10.0.1.1"
 #define eb2_ip "10.0.1.2"
@@ -74,6 +78,7 @@
 #define SOGLIA						1700
 #define MAX_ACQUISITION 			100*1000
 
+#endif
 
 bool check_received_pkt(ACE_INET_Addr *sender_addr, void * pkt, ACE_UINT16 pkt_size);
 bool check_received_pkt(sockaddr *sender_addr, void * pkt, ACE_UINT16 pkt_size);
@@ -127,5 +132,5 @@ static int timeval_subtract(struct timeval *_result, struct timeval *_x, struct 
 }
 
 
-
+#endif
 #endif  // __debugfunctions__

@@ -17,13 +17,10 @@
 #include <ethManager.h>
 #include <FeatureInterface.h>
 
-#ifdef _SETPOINT_TEST_
-#include "EOYtheSystem.h"
-#endif
+
 #include "Debug.h"
 
 #include "EoCommon.h"
-//#include "EOnv.h"
 #include "EOarray.h"
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
@@ -34,14 +31,12 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-//#warning "Macro EMS_capacityofropframeregulars defined by hand!! Find a way to have this number synchronized with EMS!!"
-#define EMS_capacityofropframeregulars 1204
-
 
 // Utilities
 
 static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
+    memset(out, 0, sizeof(eOmc_PID_t));     // marco.accame: it is good thing to clear the out struct before copying. this prevent future members of struct not yet managed to be dirty.
     out->kp = (int16_t)in->kp;
     out->ki = (int16_t)in->ki;
     out->kd = (int16_t)in->kd;
@@ -53,6 +48,7 @@ static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 
 static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
 {
+    // marco.accame: in here i dont clear the out class because there is not a clear() method
     out->kp = in->kp;
     out->ki = in->ki;
     out->kd = in->kd;
@@ -60,6 +56,9 @@ static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
     out->max_output = in->limitonoutput;
     out->offset = in->offset;
     out->scale = in->scale;
+#warning --> marco.accame: once protocol version of mc gets 1.1 and has stiction value .... change code in here
+    out->setStictionValues(0, 0);
+    out->setKff(0);
 }
 
 // This will be moved in the ImplXXXInterface
@@ -338,9 +337,6 @@ bool embObjMotionControl::alloc(int nj)
     sendingDirects = allocAndCheck<bool>(nj);
 #endif
 
-#ifdef _SETPOINT_TEST_
-    j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
-#endif
     //	_debug_params=allocAndCheck<DebugParameters>(nj);
 
 
@@ -380,10 +376,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
 
-#ifdef _SETPOINT_TEST_
-    delete j_debug_data;
-#endif
-
+    delete requestQueue;
 
     return true;
 }
@@ -474,7 +467,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     std::string str;
     if(!config.findGroup("GENERAL").find("verbose").isBool())
     {
-        yError() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
+        yError() << "embObjMotionControl::open() detects that general->verbose bool param is different from accepted values (true / false). Assuming false";
         str=" ";
     }
     else
@@ -486,7 +479,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     yTrace() << str;
 
-    // Tmp variables
+
     Bottle          groupEth;
     ACE_UINT16      port;
 
@@ -546,7 +539,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(!use_raw.isBool())
         {
-            yWarning() << " useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
+            yWarning() << "(OK)-> embObjMotionControl::open() detected that useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
             useRawEncoderData = false;
         }
         else
@@ -554,9 +547,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
             {
-                yWarning() << "embObjMotionControl is using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
-                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
-                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                yWarning() << "(!!)-> embObjMotionControl::open() detected that it is using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "(!!)-> DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "(!!)-> CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
                 getchar();
             }
         }
@@ -641,7 +634,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "Unable to instantiate ethManager";
+        yFatal() << "embObjMotionControl::open() fails to instantiate ethManager";
         return false;
     }
 
@@ -649,13 +642,13 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
-        yError() << "embObjMotionControl::open() fails because could not instantiate the EMS transceiver for board" << _fId.boardNum << " ... unable to continue";
+        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for board" << _fId.boardNum << " ... unable to continue";
         return false;
     }
 
-    if(!isEpManagedByBoard())
+    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
     {
-        yError() << "EMS "<< _fId.boardNum << " does not support motion control";
+        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNum << " does not support motion control";
         return false;
     }
 
@@ -663,38 +656,44 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     if(false == res->verifyBoard(groupProtocol))
     {
-        yError() << "embObjMotionControl::init() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
-        return false;
-    }
-
-
-    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
-    {
-        yError() << "embObjMotionControl::init() fails in function verifyProtocol() for board "<< _fId.boardNum << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
-        return false;
-    }
-
-
-    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
-    {
-        yError() << "embObjMotionControl::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
+        yError() << "embObjMotionControl::open() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
     else
     {
-        yWarning() << "embObjMotionControl::init() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
+        yWarning() << "(OK)-> embObjMotionControl::open() has verified that BOARD "<< _fId.boardNum << " is communicating correctly";
     }
+
+    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyProtocol() for BOARD "<< _fId.boardNum << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNum << " has same protocol version for motioncontrol as robotInterface";
+    }
+
+    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNum << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
+        return false;
+    }
+//    else
+//    {
+//        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
+//    }
 
 
     if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
     {
-        yError() << "embObjMotionControl::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
+        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
         return false;
     }
-    else
-    {
-        yWarning() << "embObjMotionControl::init() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
-    }
+//    else
+//    {
+//        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
+//    }
 
 
 #endif
@@ -710,7 +709,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "embObjMotionControl::init() has succesfully initted board "<< _fId.boardNum;
+        yWarning() << "(OK)-> embObjMotionControl::init() has succesfully initted board "<< _fId.boardNum;
     }
 
     // now if this device has a mais ... we configure it
@@ -723,12 +722,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
         if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
         {
-            yError() << "embObjMotionControl::open() fails in function verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNum << ": probably it does not have the same eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+            yError() << "embObjMotionControl::open() fails in function verifyProtocol() of eoprot_endpoint_analogsensors for BOARD "<< _fId.boardNum << ": probably it does not have the same eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
             return false;
         }
         else
         {
-            yWarning() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNum;
+            yWarning() << "(!!)-> embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNum;
         }
 
 
@@ -740,26 +739,27 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
 
 
-
         if(false == configure_mais(groupProtocol))
         {
-            yError() << "while configuring mais for board " << _fId.boardNum;
+            yError() << "embObjMotionControl::open() had an error while configuring mais for board " << _fId.boardNum;
             return false;
         }
-
-        yWarning() << "mais attached to board" << _fId.boardNum << "is configured";
+        else
+        {
+            yWarning() << "(OK)-> embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNum;
+        }
     }
 
     initted = true;
 
     if(false == res->goToRun())
     {
-        yError() << "EMS " << _fId.boardNum << "did not start control loop: cannot continue";
+        yError() << "embObjMotionControl::open() fails to start control loop of board" << _fId.boardNum << ": cannot continue";
         return false;
     }
     else
     {
-        yWarning() << "remote board " << _fId.boardNum << "correctly starts its control loop";
+        yWarning() << "(OK)-> embObjMotionControl::open() correctly activated control loop of BOARD" << _fId.boardNum;
     }
 
 //    yError() << "STOP WITH FOREVER LOOP inside embObjMotionControl::open()";
@@ -1000,15 +1000,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yDebug()<< "Position Pids section found, new format";
+           yDebug()<< "  (!!)-> embObjMotionControl::fromConfig() did not find Position Pids new format";
            if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
-               yError() << "Position Pids section: error detected in parameters syntax";
+               yError() << "embObjMotionControl::fromConfig(): Position Pids section: error detected in parameters syntax";
                return false;
            }
            else
            {
-               yDebug() << "Position Pids successfully loaded";
+               yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Position Pids successfully loaded";
            }
         }
         else
@@ -1016,12 +1016,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             Bottle posPidsGroup2=config.findGroup("PIDS", "Position Pid parameters old format");
             if (posPidsGroup2.isNull()==false)
             {
-                yDebug() << "Position Pids section found, old format";
+                yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Position Pids section found, old format";
                 parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
             }
             else
             {
-                yError() <<"Error: no PIDS group found in config file, returning";
+                yError() <<"embObjMotionControl::fromConfig(): Error: no PIDS group found in config file, returning";
                 return false;
             }
         }
@@ -1034,15 +1034,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           yDebug()<<"Torque Pids section found, new format";
+           yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Torque Pids section found, new format";
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
-               yError() << "Torque Pids section: error detected in parameters syntax";
+               yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
                return false;
            }
            else
            {
-                yDebug() << "Torque Pids new format successfully loaded";
+                yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
                _tpidsEnabled = true;
            }
         }
@@ -1051,21 +1051,21 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             Bottle trqPidsGroup2=config.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
             if (trqPidsGroup2.isNull()==false)
             {
-                yDebug() << "Torque Pids section found, old format";
+                yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Torque Pids section found, old format";
                 if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
                 {
-                     yError() << "Torque Pids section: error detected in parameters syntax";
+                     yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
                      return false;
                 }
                 else
                {
-                    yDebug() << "Torque Pids new format successfully loaded";
+                    yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
                    _tpidsEnabled = true;
                }
             }
             else
             {
-                yWarning() << "Torque Pids section NOT enabled, skipping...";
+                yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that TORQUE_PIDS section is NOT enabled, skipping...";
             }
         }
     }
@@ -1073,7 +1073,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
     {
-        yWarning() <<  "Using default value = 0 (disabled)";
+        yWarning() <<  "(!!)-> embObjMotionControl::fromConfig() detected that TorqueChan is not present: sing default value = 0 (disabled)";
         for(i=1; i<_njoints+1; i++)
             _torqueSensorChan[i-1] = 0;
     }
@@ -1084,7 +1084,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
     {
-        yWarning() << "IMPEDANCE parameters section found";
+        yWarning() << "(OK)-> embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
         for(j=0; j<_njoints; j++)
         {
             char str2[80];
@@ -1100,7 +1100,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "Impedance section NOT enabled, skipping.";
+        yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that IMPEDANCE section is NOT enabled: skipping.";
     }
 
     ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
@@ -1120,7 +1120,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
     {
-        yWarning() << "Group LIMITS not found in configuration file";
+        yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that Group LIMITS is not found in configuration file";
         return false;
     }
     // current limit
@@ -1251,6 +1251,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     return true;
 }
 
+
 bool embObjMotionControl::init()
 {
     eOprotID32_t protid = 0;
@@ -1267,7 +1268,7 @@ bool embObjMotionControl::init()
 
         if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
         {
-            yError() << "while setting eomc_controlmode_cmd_switch_everything_off in init";
+            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_switch_everything_off in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 
@@ -1290,21 +1291,22 @@ bool embObjMotionControl::init()
 
     if(false == res->addRegulars(id32v, true))
     {
-        yError() << "embObjMotionControl::init() fails to add its variables to regulars: cannot proceed any further";
+        yError() << "embObjMotionControl::init() fails to add its variables to regulars in BOARD" << res->get_protBRDnumber()+1 << ": cannot proceed any further";
         return false;
     }
     else
     {
-            yWarning() << "DEBUGHELP: embObjMotionControl::init() added" << id32v.size() << "regular rops to board" << res->get_protBRDnumber()+1;
-            for(int r=0; r<id32v.size(); r++)
-            {
-                uint32_t id32 = id32v.at(r);
-                yWarning() << "DEBUGHELP: regular rop for index =" << eoprot_ID2index(id32) << " and tag = " << eoprot_ID2stringOfTag(id32);
-            } 
+        yWarning() << "(OK)-> embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+        char nvinfo[128];
+        for(int r=0; r<id32v.size(); r++)
+        {
+            uint32_t id32 = id32v.at(r);
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+        }
     }   
 
     Time::delay(0.005);  // 5 ms
-
 
 
     //////////////////////////////////////////
@@ -1341,7 +1343,7 @@ bool embObjMotionControl::init()
 
         if(!res->addSetMessage(protid, (uint8_t *) &jconfig))
         {
-            yError() << "while setting joint config";
+            yError() << "embObjMotionControl::init() had an error while configuring joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
         }
 
 
@@ -1367,8 +1369,9 @@ bool embObjMotionControl::init()
 
         if(!res->addSetMessage(protid, (uint8_t *) &current))
         {
-            yError() << "while setting motor config";
+            yError() << "embObjMotionControl::init() had an error while configuring motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
         }
+
         // Debugging... to much information can overload can queue on EMS
         Time::delay(0.010);  // (m.a.a-delay: before it was 0.01)
     }
@@ -1399,7 +1402,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 
     if(!res->addSetMessage(protid, &datarate))
     {
-        yError() << "while setting mais datarate";
+        yError() << "embObjMotionControl::configure_mais() had send error while setting mais datarate";
         return false;
     }
 
@@ -1408,7 +1411,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 
     if(!res->addSetMessage(protid, (uint8_t *) &maismode))
     {
-        yError() << "while setting mais maismode";
+        yError() << "embObjMotionControl::configure_mais() had send error while setting mais maismode";
         return false;
     }
 
@@ -1425,14 +1428,14 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     // send ask message
     if(false == res->addGetMessage(id))
     {
-        yError() << "embObjMotionControl::configure_mais() cannot transmit a request about the mais config to board" << res->get_protBRDnumber()+1;
+        yError() << "embObjMotionControl::configure_mais() cannot transmit a request about the mais config to BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
 
     // wait for a say message arriving from the board. the eoprot_fun_UPDT_as_xxx() function shall release the waiting semaphore
     if(false == sem->waitWithTimeout(timeout))
     {
-        yError() << "embObjMotionControl::configure_mais() had a timeout of" << timeout << "secs when asking a variable to board" << res->get_protBRDnumber()+1;
+        yError() << "embObjMotionControl::configure_mais() had a timeout of" << timeout << "secs when asking a variable to BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
     else
@@ -1440,7 +1443,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
         // get the reply
         if(false == res->readBufferedValue(id, (uint8_t*)&maisconfig, &size))
         {
-            yError() << "embObjMotionControl::configure_mais() received a reply from board" << res->get_protBRDnumber()+1 << "but cannot read it";
+            yError() << "embObjMotionControl::configure_mais() received a reply from BOARD" << res->get_protBRDnumber()+1 << "but cannot read it";
             return false;
         }
         else
@@ -1454,7 +1457,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
             }
             else
             {
-                yWarning() << "embObjMotionControl::configure_mais() verified that mais wa configured w/ datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
+                yWarning() << "(OK)-> embObjMotionControl::configure_mais() verified that mais wa configured w/ datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
             }
         }
     }
@@ -1943,6 +1946,7 @@ bool embObjMotionControl::doneRaw(int axis)
     // in parametricCalibrator::checkCalibrateJointEnded() just before calling doneRaw().
 
     Time::delay(0.1);   // EO_WARNING()
+#warning --> marco.accame: review this thing about removing delay of 100 ms in embObjMotionControl::doneRaw()
 
     res->readBufferedValue(protid, (uint8_t*) &status, &size);
     type = (eOmc_controlmode_t) status.controlmodestatus;
@@ -1990,32 +1994,6 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
-#ifdef _SETPOINT_TEST_
-    /*
-    static eOnvID_t nvid_aux_6 = 0, nvid_aux_8=0;
-
-    if((nvid_aux_6 == 0) && (_fId.ep == 22))
-    {
-        int j, i;
-        for(j=0, i =0; j<  _njoints; j++, i++)
-    	{
-        	eOnvID_t nvid_aux_6 = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) i, jointNVindex_jcmmnds__setpoint );
-        	yError() << "++++++++++++++++++++++++ board num 6"<<  "joint" << i << "ep = " << _fId.ep << "nvid = " << nvid_aux_6;
-    	}
-
-    }
-
-    if((nvid_aux_8 == 0) && (_fId.ep == 24))
-    {
-        int j, i;
-        for(j=0, i =0; j<  _njoints; j++, i++)
-    	{
-			eOnvID_t nvid_aux_8 = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) i, jointNVindex_jcmmnds__setpoint );
-			yError() << "++++++++++++++++++++++++ board num 8"<<  "joint" << i << "ep = " << _fId.ep << "nvid = " << nvid_aux_8;
-    	}
-    }
-    */
-#endif
 
     #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
@@ -2036,26 +2014,6 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
     setpoint.to.position.value =  (eOmeas_position_t) _ref_positions[j];
     setpoint.to.position.withvelocity = (eOmeas_velocity_t) _ref_speeds[j];
-#ifdef _SETPOINT_TEST_
-    if( (_fId.boardNum == 6) || (_fId.boardNum==8 ) )
-    {
-    	j_debug_data[j].mutex.wait();
-    	if(!j_debug_data[j].gotIt)
-    	{
-    		struct  timeval 	err_time;
-		    gettimeofday(&err_time, NULL);
-    		yError() << "[" << err_time.tv_sec <<"." <<err_time.tv_usec << "] for EMS" << _fId.boardNum << "joint " << j << "Trying to send a new setpoint wihout ACK!!!!!!";
-    	}
-
-    	j_debug_data[j].gotIt = false;
-    	j_debug_data[j].last_pos = j_debug_data[j].pos;
-    	j_debug_data[j].pos = setpoint.to.position.value;
-    	j_debug_data[j].wtf = false;
-	    j_debug_data[j].count_old = 0;
-
-    	j_debug_data[j].mutex.post();
-    }
-#endif
 
 #ifdef VERIFY_ROP_SETPOSITIONRAW
     switch(_fId.boardNum)
@@ -2563,6 +2521,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         if(!controlModeCommandConvert_yarp2embObj(modes[idx], valSet[idx]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            delete valSet; delete valGot;
             return false;
         }
 
@@ -2570,6 +2529,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[idx]) )
         {
             yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            delete valSet; delete valGot;
             return false;
         }
     }
@@ -2591,6 +2551,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 //    }
 
     yarp::os::Time::delay(0.010);
+    delete valSet; delete valGot;
     return true;
 }
 
@@ -2607,6 +2568,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         if(!controlModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
@@ -2614,6 +2576,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setControlModesRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
     }
@@ -2635,6 +2598,8 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 //    }
 
     yarp::os::Time::delay(0.010);
+
+    delete jointVector; delete valSet; delete valGot;
     return true;
 }
 
@@ -3485,6 +3450,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
         if(!res->addGetMessage(protid[idx]) )
         {
             yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNum << "joint " << joints[idx];
+            delete protid;
             return false;
         }
     }
@@ -3500,6 +3466,8 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
 
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);
+
+            delete protid;
             return false;
         }
         else
@@ -3511,6 +3479,8 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
             res->readBufferedValue(protid[idx], (uint8_t*)&_modes[idx], &size);
         }
     }
+
+    delete protid;
     return true;
 }
 
@@ -3599,6 +3569,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
@@ -3606,6 +3577,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
     }
@@ -3632,7 +3604,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 //        }
 //    }
 
-
+    delete jointVector; delete valSet; delete valGot;
     return true;
 }
 
@@ -3649,6 +3621,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
@@ -3656,6 +3629,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
     }
@@ -3681,6 +3655,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //        }
 //    }
 
+    delete jointVector; delete valSet; delete valGot;
     return true;
 }
 
