@@ -687,8 +687,7 @@ public:
             if (pBroadcastPort->getOutputCount()>0)
             {
                 mutex.lock();
-                Bottle &bottle=pBroadcastPort->prepare();
-                bottle.clear();
+                Bottle bottle;
 
                 bottle.addString(type.c_str());
                 if (itemsMap.empty())
@@ -702,7 +701,8 @@ public:
                     item.read(*it->second.prop);
                 }
 
-                pBroadcastPort->write();
+                pBroadcastPort->prepare()=bottle;
+                pBroadcastPort->writeStrict();
                 mutex.unlock();
             }
         }
