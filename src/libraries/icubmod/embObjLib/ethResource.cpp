@@ -38,6 +38,7 @@ ethResources::ethResources()
     ethResSem                   = new Semaphore(0);
     verifiedBoardPresence       = false;
     verifiedBoardTransceiver    = false;
+    cleanedBoardBehaviour       = false;
     boardEPsNumber              = 0;
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
     usedNumberOfRegularROPs     = 0;
@@ -196,7 +197,7 @@ void ethResources::processRXpacket(uint64_t *data, uint16_t size)
 }
 
 
-ACE_INET_Addr   ethResources::getRemoteAddress()
+ACE_INET_Addr ethResources::getRemoteAddress()
 {
     return  remote_dev;
 }
@@ -246,7 +247,7 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 }
 
 
-bool ethResources::clearRegulars(void)
+bool ethResources::clearRegulars(bool verify)
 {
     yTrace() << info;
 
@@ -271,10 +272,33 @@ bool ethResources::clearRegulars(void)
         return false;
     }
 
-    #warning --> marco.accame on 08sept14: i would read the number of regulars to verify success of operation
+
+    // set number of used rops and size to zero.
+    usedNumberOfRegularROPs     = 0;
+    usedSizeOfRegularROPframe   = 0;
+
+    if(true == verify)
+    {
+        // must read back the remote board to verify if the regulars have been successfully loaded
+        uint16_t numberofregulars = 0;
+        if(false == numberofRegulars(numberofregulars))
+        {
+            yError() << "ethResource::clearRegulars() fails at asking the number of regulars";
+            return false;
+        }
+
+        if(usedNumberOfRegularROPs != numberofregulars)
+        {
+            yError() << "ethResource::clearRegulars() detects something wrong in regulars: (expected, number in board) =" << usedNumberOfRegularROPs << numberofregulars;
+            return false;
+        }
+
+        yWarning() << "(OK)-> ethResources::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+
+    }
+
 
     return true;
-
 }
 
 
@@ -284,11 +308,16 @@ bool ethResources::isRunning(void)
 }
 
 
-Semaphore* ethResources::GetSemaphore(eOprotEndpoint_t ep, uint32_t signature)
+Semaphore* ethResources::getSemaphore(eOprotID32_t id32, uint32_t signature)
 {
     return(ethResSem);
 }
 
+
+bool ethResources::releaseSemaphore(Semaphore* sem, eOprotID32_t id32, uint32_t signature)
+{
+    return(true);
+}
 
 bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 {
@@ -305,15 +334,16 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
     const double timeout = 0.100;   // now the timeout can be reduced because the board is already connected.
 
-    eOprotID32_t id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOprotID32_t id2wait = id2send;
     eOmn_comm_status_t brdstatus = {0};
     uint16_t size = 0;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = GetSemaphore(eoprot_endpoint_management, 0);
+    yarp::os::Semaphore* sem = getSemaphore(id2wait, 0);
 
 
     // send ask message
-    if(false == addGetMessage(id))
+    if(false == addGetMessage(id2send))
     {
         yError() << "ethResources::verifyBoardTransceiver() cannot transmit a request about the communication status to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -322,13 +352,18 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_comm_status() function shall release the waiting semaphore
     if(false == sem->waitWithTimeout(timeout))
     {
+        // must release the semaphore
+        releaseSemaphore(sem, id2wait, 0);
         yError() << "ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         yError() << "ethResources::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
         return(false);
     }
 
+    // must release the semaphore
+    releaseSemaphore(sem, id2wait, 0);
+
     // get the reply
-    if(false == readBufferedValue(id, (uint8_t*)&brdstatus, &size))
+    if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
     {
         yError() << "ethResources::verifyBoardTransceiver() cannot read the comm status of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -429,14 +464,16 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     // step 2: we ask the number of endpoints in the board. it is useful to verify that their number is not too high
     eOmn_command_t command = {0};
     // prepare message to send. we send a set<> with request of number of endpoints
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_querynumof);
+    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_querynumof);
     memset(&command, 0, sizeof(command));
     command.cmd.opc                             = eomn_opc_query_numof_EPs;
     command.cmd.querynumof.opcpar.opc           = eomn_opc_query_numof_EPs;
     command.cmd.querynumof.opcpar.endpoint      = eoprot_endpoint_all;
 
+    id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);;
+    sem = getSemaphore(id2wait, 0);
     // send set message
-    if(false == addSetMessage(id, (uint8_t*)&command))
+    if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
         yError() << "ethResources::verifyBoardTransceiver() cannot transmit a request about the number of owned endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -445,15 +482,19 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     // wait for a sig message arriving from the board. the eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() function shall release the waiting semaphore
     if(false == sem->waitWithTimeout(timeout))
     {
+        // must release the semaphore
+        releaseSemaphore(sem, id2wait, 0);
         yError() << "ethResources::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
+    // must release the semaphore
+    releaseSemaphore(sem, id2wait, 0);
+
     // get the data of variable containing the reply about the number of endpoints
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
     memset(&command, 0, sizeof(command));
 
-    if(false == readBufferedValue(id, (uint8_t*)&command, &size))
+    if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
         yError() << "ethResources::verifyBoardTransceiver() cannot read the number of endpoints of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -464,10 +505,46 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 //    yDebug() << "ethResources::verifyBoardTransceiver() detected" << boardEPsNumber << "endpoints in BOARD" << get_protBRDnumber()+1;
 
 
-
     yWarning() << "(OK)-> ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
 
     verifiedBoardTransceiver = true;
+
+
+    return(true);
+
+#endif//_WIP_CHECK_PROTOCOL_VERSION_
+}
+
+
+bool ethResources::cleanBoardBehaviour(void)
+{
+#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
+    return true;
+#else
+    if(cleanedBoardBehaviour)
+    {
+        return(true);
+    }
+
+
+    // step 1: go to config mode
+    if(false == goToConfig())
+    {
+        yError() << "ethResources::cleanBoardBehaviour() cannot send to config mode BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    // step 2: clear the regulars
+    if(false == clearRegulars(true))
+    {
+        yError() << "ethResources::cleanBoardBehaviour() cannot clear the regulars of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    yWarning() << "(OK)-> ethResources::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
+
+    cleanedBoardBehaviour = true;
+
     return(true);
 
 #endif//_WIP_CHECK_PROTOCOL_VERSION_
@@ -480,7 +557,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     return true;
 #else
 
-    if(ep >= eoprot_endpoints_numberof)
+    if((uint8_t)ep >= eoprot_endpoints_numberof)
     {
         yError() << "ethResources::verifyEPprotocol() called with wrong ep = " << ep << ": cannot proceed any further";
         return(false);
@@ -506,7 +583,8 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     const int capacityOfArrayOfEPDES = (EOMANAGEMENT_COMMAND_DATA_SIZE - sizeof(eOarray_head_t)) / sizeof(eoprot_endpoint_descriptor_t);
     const double timeout = 0.100;
 
-    eOprotID32_t id = eo_prot_ID32dummy;
+    eOprotID32_t id2send = eo_prot_ID32dummy;
+    eOprotID32_t id2wait = eo_prot_ID32dummy;
     eOmn_command_t command = {0};
     uint16_t size = 0;
 
@@ -516,7 +594,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     uint16_t numOfEPsInXML = 0;
 
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = GetSemaphore(ep, 0);
+    yarp::os::Semaphore* sem = NULL;
 
 
     // then we compare with
@@ -534,7 +612,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     }
 
     // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
+    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
     memset(&command, 0, sizeof(command));
     command.cmd.opc                             = eomn_opc_query_array_EPdes;
     command.cmd.queryarray.opcpar.opc           = eomn_opc_query_array_EPdes;
@@ -542,7 +620,11 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     command.cmd.queryarray.opcpar.setnumber     = 0;
     command.cmd.queryarray.opcpar.setsize       = 0;
 
-    if(false == addSetMessage(id, (uint8_t*)&command))
+    // the semaphore must be retrieved using the id of the variable which is waited. in this case, it is the array of descriptors
+    id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
+    sem = getSemaphore(id2wait, 0);
+
+    if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
         yError() << "ethResources::verifyEPprotocol() cannot transmit a request about the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -551,14 +633,17 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     if(false == sem->waitWithTimeout(timeout))
     {
+        // must release the semaphore
+        releaseSemaphore(sem, id2wait, 0);
         yError() << "ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
+    // must release the semaphore
+    releaseSemaphore(sem, id2wait, 0);
 
     // now i get the array of descriptors
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
     memset(&command, 0, sizeof(command));
-    if(false == readBufferedValue(id, (uint8_t*)&command, &size))
+    if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
         yError() << "ethResources::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -638,7 +723,7 @@ bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
 #if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
     return(true);
 #else
-    if((true == verifyBoardPresence(protconfig)) && (true == verifyBoardTransceiver(protconfig)))
+    if((true == verifyBoardPresence(protconfig)) && (true == verifyBoardTransceiver(protconfig)) && (true == cleanBoardBehaviour()))
     {
         return(true);
     }
@@ -664,11 +749,12 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a godd time to wait
     const int retries = 120;         // the number of retries depends on the above timeout and on link-up time of the EMS.
 
-    eOprotID32_t id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOprotID32_t id2wait = id2send;
     eOmn_comm_status_t brdstatus = {0};
     uint16_t size = 0;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = GetSemaphore(eoprot_endpoint_management, 0);
+    yarp::os::Semaphore* sem = getSemaphore(id2wait, 0);
 
     bool pinged = false;
     int i; // kept in here because i want to see it also outside of the loop
@@ -680,7 +766,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         // attempt the request until either a reply arrives or the max retries are reached
 
         // send ask message
-        if(false == addGetMessage(id))
+        if(false == addGetMessage(id2send))
         {
             yWarning() << "(!!)-> ethResources::verifyBoardPresence() cannot transmit a request about the communication status to BOARD" << get_protBRDnumber()+1;
         }
@@ -694,7 +780,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         else
         {
             // get the reply
-            if(false == readBufferedValue(id, (uint8_t*)&brdstatus, &size))
+            if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
             {
                 yWarning() << "(OK)-> ethResources::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             }
@@ -713,6 +799,9 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         }
 
     }
+
+    // must release the semaphore
+    releaseSemaphore(sem, id2wait, 0);
 
     double end_time = yarp::os::Time::now();
     if(pinged)
@@ -776,14 +865,15 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
     const int capacityOfArrayOfENDES = (EOMANAGEMENT_COMMAND_DATA_SIZE - sizeof(eOarray_head_t)) / sizeof(eoprot_entity_descriptor_t);
     const double timeout = 0.100;
 
-    eOprotID32_t id = eo_prot_ID32dummy;
+    eOprotID32_t id2send = eo_prot_ID32dummy;
+    eOprotID32_t id2wait = eo_prot_ID32dummy;
     eOmn_command_t command = {0};
     uint16_t size = 0;
 
 
 
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = GetSemaphore(ep, 0);
+    yarp::os::Semaphore* sem = getSemaphore(ep, 0);
 
 
     if(entities_in_endpoint > capacityOfArrayOfENDES)
@@ -794,7 +884,7 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 
 
     // step 1: ask all the EN descriptors. from them we can extract the number of target en
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
+    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
     memset(&command, 0, sizeof(command));
     command.cmd.opc                             = eomn_opc_query_array_ENdes;
     command.cmd.queryarray.opcpar.opc           = eomn_opc_query_array_ENdes;
@@ -802,7 +892,10 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
     command.cmd.queryarray.opcpar.setnumber     = 0;
     command.cmd.queryarray.opcpar.setsize       = 0;
 
-    if(false == addSetMessage(id, (uint8_t*)&command))
+    id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
+    sem = getSemaphore(id2wait, 0);
+
+    if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
         yError() << "ethResources::verifyENTITYnumber() cannot transmit a request about the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -811,14 +904,17 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 
     if(false == sem->waitWithTimeout(timeout))
     {
+        // must release the semaphore
+        releaseSemaphore(sem, id2wait, 0);
         yError() << "ethResources::verifyENTITYnumber() had a timeout of" << timeout << "secs when asking the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
+    // must release the semaphore
+    releaseSemaphore(sem, id2wait, 0);
 
     // now i get the array of descriptors
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
     memset(&command, 0, sizeof(command));
-    if(false == readBufferedValue(id, (uint8_t*)&command, &size))
+    if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
         yError() << "ethResources::verifyENTITYnumber() cannot retrieve the entity descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -927,7 +1023,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
     // second check: verify if the data occupied by extra rops is compatible with remote board
     if((usedSizeOfRegularROPframe+extrasize) > boardCommStatus.transceiver.maxsizeROPframeRegulars)
     {
-        yError() << "ethResource::addRegulars() cannot load the requested regular ROPs because they need too space: (max, sofar, rqst) = " << boardCommStatus.transceiver.maxsizeROPframeRegulars << usedSizeOfRegularROPframe << extrasize;
+        yError() << "ethResource::addRegulars() cannot load the requested regular ROPs because they need too much space: (max, sofar, rqst) = " << boardCommStatus.transceiver.maxsizeROPframeRegulars << usedSizeOfRegularROPframe << extrasize;
         return false;
     }
 
@@ -1008,17 +1104,18 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     uint16_t size = 0;
     eOmn_command_t command = {0};
     // prepare message to send. we send a set<> with request of number of endpoints
-    eOprotID32_t id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_querynumof);
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_querynumof);
     memset(&command, 0, sizeof(command));
     command.cmd.opc                             = eomn_opc_query_numof_REGROPs;
     command.cmd.querynumof.opcpar.opc           = eomn_opc_query_numof_REGROPs;
     command.cmd.querynumof.opcpar.endpoint      = eoprot_endpoint_all;
 
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = GetSemaphore(eoprot_endpoint_management, 0);
+    eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
+    yarp::os::Semaphore* sem = getSemaphore(id2wait, 0);
 
     // send set message
-    if(false == addSetMessage(id, (uint8_t*)&command))
+    if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
         yError() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -1027,21 +1124,111 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     // wait for a sig message arriving from the board. the eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() function shall release the waiting semaphore
     if(false == sem->waitWithTimeout(timeout))
     {
+        // must release the semaphore
+        releaseSemaphore(sem, id2wait, 0);
         yError() << "ethResources::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
+    releaseSemaphore(sem, id2wait, 0);
 
     // get the data of variable containing the reply about the number of endpoints
-    id = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
     memset(&command, 0, sizeof(command));
 
-    if(false == readBufferedValue(id, (uint8_t*)&command, &size))
+    if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
         yError() << "ethResources::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
     numberofregulars = command.cmd.replynumof.opcpar.numberof;
+
+    return true;
+}
+
+
+// must: 1. be sure we have the callback written and configured, 2. that the callback releases the sem (maybe if a suitable signature is found).
+bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size)
+{
+    eOprotBRD_t brd = get_protBRDnumber();
+    char nvinfo[128];
+    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+    uint32_t signature = 0xaa000000;
+
+    if(eobool_false == eoprot_id_isvalid(brd, id32))
+    {
+        yError() << "ethResources::verifyRemoteValue() detected an invalid" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        return false;
+    }
+
+    if((NULL == value) || (0 == size))
+    {
+        yError() << "ethResources::verifyRemoteValue() detected an value or size" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        return false;
+    }
+
+    uint8_t *datainside = (uint8_t*)calloc(size, 1);
+    uint16_t sizeinside = 0;
+
+
+    eOprotID32_t id2send = id32;
+    eOprotID32_t id2wait = id32;
+    const double timeout = 0.100;
+    // the semaphore used for waiting for replies from the board
+    yarp::os::Semaphore* sem = getSemaphore(id2wait, signature);
+
+    // send ask message
+    if(false == addGetMessageWithSignature(id2send, signature))
+    {
+        free(datainside);
+        releaseSemaphore(sem, id2wait, signature);
+        yError() << "ethResources::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+        return false;
+    }
+
+    // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
+    if(false == sem->waitWithTimeout(timeout))
+    {
+        free(datainside);
+        releaseSemaphore(sem, id2wait, signature);
+        yError() << "ethResources::verifyRemoteValue()  had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        // get the reply
+        if(false == readBufferedValue(id2wait, datainside, &sizeinside))
+        {
+            free(datainside);
+            releaseSemaphore(sem, id2wait, signature);
+            yError() << "ethResources::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+            return false;
+        }
+        else
+        {
+            releaseSemaphore(sem, id2wait, signature);
+            // ok: i have a reply: compare it with a memcmp
+
+            if(size != sizeinside)
+            {
+                free(datainside);
+                yError() << "ethResources::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
+                return false;
+            }
+            else if(0 != memcmp(datainside, value, size))
+            {
+                free(datainside);
+                yError() << "ethResources::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+                return false;
+            }
+            else
+            {
+                yWarning() << "(OK)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+            }
+        }
+    }
+
+
+    free(datainside);
 
     return true;
 }

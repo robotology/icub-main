@@ -102,6 +102,9 @@ public:
         */
     bool addGetMessage(eOprotID32_t protid);
 
+    bool addGetMessageWithSignature(eOprotID32_t protid, uint32_t signature);
+
+
     /*! Read data from the transceiver internal memory.
         Parameters are:
         protid: unique network variable identifier given the board
@@ -130,6 +133,7 @@ protected:
 private:
 
     bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
+    bool addGetMessage__(eOprotID32_t protid, uint32_t signature);
 
     bool initProtocol(yarp::os::Searchable &cfgprotocol);
 

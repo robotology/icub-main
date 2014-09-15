@@ -291,12 +291,11 @@ bool hostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* d
     return(hostTransceiver::addSetMessage__(protid, data, sig, false));
 }
 
-
-bool hostTransceiver::addGetMessage(eOprotID32_t protid)
+bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 {
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
-        yError() << "hostTransceiver::addGetMessage() called w/ invalid protid: protboard = " << protboardnumber <<
+        yError() << "hostTransceiver::addGetMessage__() called w/ invalid protid: protboard = " << protboardnumber <<
                     ", ep = " << eoprot_ID2endpoint(protid) << ", entity = " << eoprot_ID2entity(protid) << "index = " << eoprot_ID2index(protid) <<
                     ", tag = " << eoprot_ID2tag(protid);
         return false;
@@ -306,13 +305,13 @@ bool hostTransceiver::addGetMessage(eOprotID32_t protid)
     // marco.accame: recommend to use eok_ropdesc_basic
     memcpy(&ropdesc, &eok_ropdesc_basic, sizeof(eOropdescriptor_t));
     ropdesc.control.plustime    = 1;
-    ropdesc.control.plussign    = 0;
+    ropdesc.control.plussign    = (eo_rop_SIGNATUREdummy == signature) ? 0 : 1;
     ropdesc.ropcode             = eo_ropcode_ask;
     ropdesc.id32                = protid;
     ropdesc.size                = 0;
     ropdesc.data                = NULL;
-    ropdesc.signature           = 0;
-    
+    ropdesc.signature           = signature;
+
 
     bool ret = false;
 
@@ -333,9 +332,9 @@ bool hostTransceiver::addGetMessage(eOprotID32_t protid)
             if(i!=0)
             {
                 yWarning() << "(OK)-> hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() succesful ONLY at attempt num " << i+1 <<
-                              " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  << 
+                              " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  <<
                               ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
-                
+
             }
             transMutex.post();
             ret = true;
@@ -351,6 +350,17 @@ bool hostTransceiver::addGetMessage(eOprotID32_t protid)
     return ret;
 }
 
+
+bool hostTransceiver::addGetMessage(eOprotID32_t protid)
+{
+    return(hostTransceiver::addGetMessage__(protid, eo_rop_SIGNATUREdummy));
+}
+
+
+bool hostTransceiver::addGetMessageWithSignature(eOprotID32_t protid, uint32_t signature)
+{
+    return(hostTransceiver::addGetMessage__(protid, signature));
+}
 
 bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size)
 {      

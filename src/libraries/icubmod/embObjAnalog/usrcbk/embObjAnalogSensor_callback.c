@@ -65,7 +65,7 @@ extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor
 {
     void* sem = NULL;
 
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
 
     if(NULL == sem)
     {

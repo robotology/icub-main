@@ -116,7 +116,7 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 double feat_yarp_time_now(void);
 
-void* feat_GetSemaphore(eOprotBRD_t brd, eOprotEndpoint_t ep, uint32_t signature);
+void* feat_GetSemaphore(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature);
 
 void feat_Semaphore_post(void* s);
 

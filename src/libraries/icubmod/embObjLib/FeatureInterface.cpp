@@ -170,7 +170,7 @@ double feat_yarp_time_now(void)
 }
 
 
-void* feat_GetSemaphore(eOprotBRD_t brd, eOprotEndpoint_t ep, uint32_t signature)
+void* feat_GetSemaphore(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature)
 {
     // we ask the ethmanager to retrieve the pointer to a semaphore associated to a specific board
     // and with a given endpoint and signature
@@ -183,7 +183,7 @@ void* feat_GetSemaphore(eOprotBRD_t brd, eOprotEndpoint_t ep, uint32_t signature
         return(NULL);
     }
 
-    yarp::os::Semaphore* sem = ethres->GetSemaphore(ep, signature);
+    yarp::os::Semaphore* sem = ethres->getSemaphore(id32, signature);
 
     return(sem);
 }

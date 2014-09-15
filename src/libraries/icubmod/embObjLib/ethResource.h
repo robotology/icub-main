@@ -153,6 +153,7 @@ private:
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
     uint8_t             boardEPsNumber;
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
@@ -216,11 +217,13 @@ public:
      *    @brief    clears periodic signal message of EMS
      *    @return   true on success else false
      */
-    bool            clearRegulars(void);
+    bool            clearRegulars(bool verify = false);
 
     bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
 
     bool numberofRegulars(uint16_t &numberofregulars);
+
+    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size);
 
 
     /*!   @fn       isRunning(void);
@@ -239,15 +242,17 @@ public:
 
     bool verifyBoard(yarp::os::Searchable &protconfig);
     bool verifyBoardPresence(yarp::os::Searchable &protconfig);
-    bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);
+    bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
+    bool cleanBoardBehaviour(void);
 
     bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
     bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
-    // it gets the locking semaphore associated to the specified endpoint and signature.
+    // it gets the locking semaphore associated to the specified id32 and signature.
     // it is used to make the caller thread wait until some other thread unblocks
-    Semaphore* GetSemaphore(eOprotEndpoint_t ep, uint32_t signature);
+    Semaphore* getSemaphore(eOprotID32_t id32, uint32_t signature);
 
+    bool releaseSemaphore(Semaphore* sem, eOprotID32_t id32, uint32_t signature);
 
 private:
     uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket

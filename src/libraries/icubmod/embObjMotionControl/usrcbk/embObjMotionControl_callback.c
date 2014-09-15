@@ -198,6 +198,22 @@ extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescripto
     printf("jConfig->controlmode			= 0x%X\n",	jConfig->motionmonitormode);
     printf("ep = 0x%X\n", eoprot_ID2endpoint(rd->id32));
 #endif
+
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        // process the reception
+        void* sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
+
+        if(NULL == sem)
+        {
+            printf("FATAL ERROR: eoprot_fun_UPDT_mc_joint_config() fails in getting a semaphore\n");
+            return;
+        }
+
+        feat_Semaphore_post(sem);
+    }
+
+
 }
 
 extern void eoprot_fun_UPDT_mc_motor_config(const EOnv* nv, const eOropdescriptor_t* rd)
@@ -231,6 +247,20 @@ extern void eoprot_fun_UPDT_mc_joint_config_limitsofjoint(const EOnv* nv, const 
 extern void eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     // eOmeas_current_t *jMaxCurrent_b = (eOmeas_current_t*)rd->data;
+
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        // process the reception
+        void* sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
+
+        if(NULL == sem)
+        {
+            printf("FATAL ERROR: eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor() fails in getting a semaphore\n");
+            return;
+        }
+
+        feat_Semaphore_post(sem);
+    }
 }
 
 extern void eoprot_fun_UPDT_mc_joint_config_pidposition(const EOnv* nv, const eOropdescriptor_t* rd)

@@ -1351,6 +1351,11 @@ bool embObjMotionControl::init()
 
         // Debugging... to much information can overload can queue on EMS
         Time::delay(0.010); // (m.a.a-delay: before it was 0.01)
+
+        if(false == res->verifyRemoteValue(protid, (uint8_t *) &jconfig, sizeof(jconfig)))
+        {
+            yError() << "embObjMotionControl::init() had an error while verifying joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+        }
     }
 
 
@@ -1374,6 +1379,12 @@ bool embObjMotionControl::init()
 
         // Debugging... to much information can overload can queue on EMS
         Time::delay(0.010);  // (m.a.a-delay: before it was 0.01)
+
+        if(false == res->verifyRemoteValue(protid, (uint8_t *) &current, sizeof(current)))
+        {
+            yError() << "embObjMotionControl::init() had an error while verifying motor max current fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+        }
+
     }
 
     yTrace() << "EmbObj Motion Control for board " << _fId.boardNum << " istantiated correctly\n";
@@ -1417,17 +1428,19 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 
 
     // now i get the eoprot_tag_as_mais_config to verify ...
-    eOprotID32_t id = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config);
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config);
+    eOprotID32_t id2wait = id2send;
     eOas_mais_config_t maisconfig = {0};
     uint16_t size = 0;
     const double timeout = 0.100;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = res->GetSemaphore(eoprot_endpoint_analogsensors, 0);
+    yarp::os::Semaphore* sem = res->getSemaphore(id2wait, 0);
 
 
     // send ask message
-    if(false == res->addGetMessage(id))
+    if(false == res->addGetMessage(id2send))
     {
+        res->releaseSemaphore(sem, id2wait, 0);
         yError() << "embObjMotionControl::configure_mais() cannot transmit a request about the mais config to BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
@@ -1435,14 +1448,16 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     // wait for a say message arriving from the board. the eoprot_fun_UPDT_as_xxx() function shall release the waiting semaphore
     if(false == sem->waitWithTimeout(timeout))
     {
+        res->releaseSemaphore(sem, id2wait, 0);
         yError() << "embObjMotionControl::configure_mais() had a timeout of" << timeout << "secs when asking a variable to BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
     else
     {
         // get the reply
-        if(false == res->readBufferedValue(id, (uint8_t*)&maisconfig, &size))
+        if(false == res->readBufferedValue(id2wait, (uint8_t*)&maisconfig, &size))
         {
+            res->releaseSemaphore(sem, id2wait, 0);
             yError() << "embObjMotionControl::configure_mais() received a reply from BOARD" << res->get_protBRDnumber()+1 << "but cannot read it";
             return false;
         }
@@ -1451,6 +1466,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
             // ok: i have a reply
             if((maisconfig.datarate != datarate) || (maisconfig.mode != maismode))
             {
+                res->releaseSemaphore(sem, id2wait, 0);
                 yError() << "embObjMotionControl::configure_mais() retrieved wrong mais config values";
                 yError() << "retrived: datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
                 return false;
@@ -1461,6 +1477,8 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
             }
         }
     }
+
+    res->releaseSemaphore(sem, id2wait, 0);
 
 
     return true;

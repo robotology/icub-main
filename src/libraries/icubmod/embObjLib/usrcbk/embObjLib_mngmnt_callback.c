@@ -137,9 +137,8 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
 extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     void* sem = NULL;
-    //double yt = 0.0;
 
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
 
     if(NULL == sem)
     {
@@ -147,21 +146,14 @@ extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor
         return;
     }
 
-    //yt = feat_yarp_time_now();
-    //printf("reply_numof arrived at yarp time %f\n", yt);
-
     feat_Semaphore_post(sem);
 }
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     void* sem = NULL;
-    //double yt = 0.0;
-    //eOmn_command_t* command = (eOmn_command_t*)rd->data;
-    //eOmn_opc_t opc = (eOmn_opc_t)command->cmd.opc;
 
-
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
     
     if(NULL == sem)
     {
@@ -170,9 +162,6 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
     }
 
 
-    //yt = feat_yarp_time_now();
-    //printf("reply_numof arrived at yarp time %f\n", yt);
-
     feat_Semaphore_post(sem);
 }
 
@@ -180,21 +169,13 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
 {
     void* sem = NULL;
 
-    //double yt = 0.0;
-    //eOmn_command_t* command = (eOmn_command_t*)rd->data;
-    //eOmn_opc_t opc = (eOmn_opc_t)command->cmd.opc;
-
-
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), eoprot_ID2endpoint(rd->id32), rd->signature);
+    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
     
     if(NULL == sem)
     {
         printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() fails in getting a semaphore\n");        
         return;
     }
-
-    //yt = feat_yarp_time_now();
-    //printf("reply arrayarrived at yarp time %f\n", yt);
 
     feat_Semaphore_post(sem);
 }
