@@ -251,6 +251,20 @@ bool ethResources::clearRegulars(bool verify)
 {
     yTrace() << info;
 
+    uint16_t numberofregulars = 0;
+    if(true == verify)
+    {
+        if(false == numberofRegulars(numberofregulars))
+        {
+            yError() << "ethResource::clearRegulars() fails at asking the number of regulars";
+            return false;
+        }
+        else
+        {
+             yWarning() << "(OK)-> ethResources::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
+        }
+    }
+
 
     // we send a command which clears the regular rops
 
@@ -279,8 +293,10 @@ bool ethResources::clearRegulars(bool verify)
 
     if(true == verify)
     {
+        Time::delay(0.010); // waiting some time before command is surely executed
+
         // must read back the remote board to verify if the regulars have been successfully loaded
-        uint16_t numberofregulars = 0;
+
         if(false == numberofRegulars(numberofregulars))
         {
             yError() << "ethResource::clearRegulars() fails at asking the number of regulars";

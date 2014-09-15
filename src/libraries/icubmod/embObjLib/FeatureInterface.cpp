@@ -61,8 +61,10 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32)
 
     if(NULL == tmp)
     {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         if(0 == (error%1000) )
-            yError() << "Got a SKIN message from EMS with EP " << id->ep << "board number " << id->boardNum << "but no class was instatiated for it";
+            yError() << "Got a message from BOARD" << id->boardNum << "with ID:" << nvinfo << "but no class was instatiated for it";
 
         error++;
         return fakestdbool_false;
