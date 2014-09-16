@@ -511,7 +511,7 @@ Vector MotorThread::randomDeployOffset()
 }
 
 
-bool MotorThread::loadKinematicOffsets(string _kinematics_path)
+bool MotorThread::loadKinematicOffsets(const string &_kinematics_path)
 {
     kinematics_path=_kinematics_path;
 
@@ -543,7 +543,6 @@ bool MotorThread::loadKinematicOffsets(string _kinematics_path)
 
     //adjust the table height accordingly to a specified tolerance
     table_height+=table_height_tolerance;
-
 
     if(!bKinOffsets.check("left"))
     {
