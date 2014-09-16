@@ -20,6 +20,11 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
 
+#ifdef ICUB_USE_REALTIME_LINUX
+#include <pthread.h>
+#include <unistd.h>
+#endif //ICUB_USE_REALTIME_LINUX
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -678,6 +683,18 @@ bool EthSender::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 bool EthSender::threadInit()
 {
     yTrace() << "Do some initialization here if needed";
+
+#ifdef ICUB_USE_REALTIME_LINUX
+    /**
+     * Make it realtime (works on both RT and Standard linux kernels)
+     * - increase the priority upto the system IRQ's priorities (< 50)
+     * - set the scheduler to FIFO
+     */
+    struct sched_param thread_param;
+    thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2; // = 49
+    pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
+#endif //ICUB_USE_REALTIME_LINUX
+
     return true;
 }
 
@@ -844,8 +861,19 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
 bool EthReceiver::threadInit()
 {
-
     yTrace() << "Do some initialization here if needed";
+
+#ifdef ICUB_USE_REALTIME_LINUX
+    /**
+     * Make it realtime (works on both RT and Standard linux kernels)
+     * - increase the priority upto the system IRQ's priorities (< 50)
+     * - set the scheduler to FIFO
+     */
+    struct sched_param thread_param;
+    thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2; // = 49
+    pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
+#endif //ICUB_USE_REALTIME_LINUX
+
     return true;
 }
 
