@@ -282,9 +282,7 @@ bool ObjectPropertiesCollectorPort::getTableHeight(double &table_height)
 }
 
 
-
-
-bool ObjectPropertiesCollectorPort::setTableHeight(const double &table_height)
+bool ObjectPropertiesCollectorPort::setTableHeight(const double table_height)
 {
     //if the object property collector port is connected use it to obtain the object 2D position
     if(this->getOutputCount()==0)
@@ -339,6 +337,7 @@ bool ObjectPropertiesCollectorPort::setTableHeight(const double &table_height)
 
     return bReply.get(0).asVocab()==Vocab::encode("ack");
 }
+
 
 bool ObjectPropertiesCollectorPort::setAction(const string &act_name, const Bottle *trajectory)
 {
