@@ -35,7 +35,9 @@ ethResources::ethResources()
     lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
     infoPkts                    = new infoOfRecvPkts();
-    ethResSem                   = new Semaphore(0);
+    networkQuerySem             = new Semaphore(0);
+    isbusyNQsem                 = new Semaphore(1);
+    iswaitingNQsem              = new Semaphore(0);
     verifiedBoardPresence       = false;
     verifiedBoardTransceiver    = false;
     cleanedBoardBehaviour       = false;
@@ -57,7 +59,9 @@ ethResources::~ethResources()
     // marco.accame on 11sept14: in here we must surely deinit/delete what we have created/initted in teh constructor and in open() or init()
 
     delete infoPkts;
-    delete ethResSem;
+    delete networkQuerySem;
+    delete isbusyNQsem;
+    delete iswaitingNQsem;
 }
 
 
@@ -323,16 +327,63 @@ bool ethResources::isRunning(void)
 	return(isInRunningMode);
 }
 
-
-Semaphore* ethResources::getSemaphore(eOprotID32_t id32, uint32_t signature)
+Semaphore* ethResources::startNetworkQuerySession(eOprotID32_t id32, uint32_t signature)
 {
-    return(ethResSem);
+#if 0
+    return(networkQuerySem);
+#else
+    // i wait until the busy semaphore is released ... in this way no other thread is able to manage the networkQuerySem
+    isbusyNQsem->wait();
+    // i also enable someone else (e.g., the network callback functions to retrieve networkQuerySem and increment it
+    iswaitingNQsem->post();
+
+    return(networkQuerySem);
+#endif
 }
 
 
-bool ethResources::releaseSemaphore(Semaphore* sem, eOprotID32_t id32, uint32_t signature)
+bool ethResources::waitForNetworkQueryReply(Semaphore* sem, double timeout)
 {
+    return(sem->waitWithTimeout(timeout));
+}
+
+
+
+bool ethResources::aNetworkQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
+{
+    Semaphore* sem = NULL;
+#if 0
+    sem = networkQuerySem;
+#else
+    if(true == iswaitingNQsem->check())
+    {   // i give the sempahore to the function whcih will unblock only if someone is really waiting
+        sem = networkQuerySem;
+    }
+#endif
+
+    if(NULL == sem)
+    {
+        return false;
+    }
+
+    sem->post();
+
+    return true;
+}
+
+bool ethResources::stopNetworkQuerySession(Semaphore* sem)
+{
+#if 0
     return(true);
+#else
+    // make sure that the control semaphores have zero value. i use check() because if value is already zero it does not harm.
+    iswaitingNQsem->check();
+    networkQuerySem->check();
+
+    // release the network query semaphore for another call
+    isbusyNQsem->post();
+    return(true);
+#endif
 }
 
 bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
@@ -355,7 +406,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     eOmn_comm_status_t brdstatus = {0};
     uint16_t size = 0;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = getSemaphore(id2wait, 0);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
 
 
     // send ask message
@@ -366,17 +417,17 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     }
 
     // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_comm_status() function shall release the waiting semaphore
-    if(false == sem->waitWithTimeout(timeout))
+    if(false == waitForNetworkQueryReply(sem, timeout))
     {
         // must release the semaphore
-        releaseSemaphore(sem, id2wait, 0);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         yError() << "ethResources::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
         return(false);
     }
 
     // must release the semaphore
-    releaseSemaphore(sem, id2wait, 0);
+    stopNetworkQuerySession(sem);
 
     // get the reply
     if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
@@ -487,7 +538,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     command.cmd.querynumof.opcpar.endpoint      = eoprot_endpoint_all;
 
     id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);;
-    sem = getSemaphore(id2wait, 0);
+    sem = startNetworkQuerySession(id2wait, 0);
     // send set message
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
@@ -496,16 +547,16 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     }
 
     // wait for a sig message arriving from the board. the eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() function shall release the waiting semaphore
-    if(false == sem->waitWithTimeout(timeout))
+    if(false == waitForNetworkQueryReply(sem, timeout))
     {
         // must release the semaphore
-        releaseSemaphore(sem, id2wait, 0);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
     // must release the semaphore
-    releaseSemaphore(sem, id2wait, 0);
+    stopNetworkQuerySession(sem);
 
     // get the data of variable containing the reply about the number of endpoints
     memset(&command, 0, sizeof(command));
@@ -638,7 +689,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     // the semaphore must be retrieved using the id of the variable which is waited. in this case, it is the array of descriptors
     id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
-    sem = getSemaphore(id2wait, 0);
+    sem = startNetworkQuerySession(id2wait, 0);
 
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
@@ -647,15 +698,15 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     }
 
 
-    if(false == sem->waitWithTimeout(timeout))
+    if(false == waitForNetworkQueryReply(sem, timeout))
     {
         // must release the semaphore
-        releaseSemaphore(sem, id2wait, 0);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
     // must release the semaphore
-    releaseSemaphore(sem, id2wait, 0);
+    stopNetworkQuerySession(sem);
 
     // now i get the array of descriptors
     memset(&command, 0, sizeof(command));
@@ -770,7 +821,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     eOmn_comm_status_t brdstatus = {0};
     uint16_t size = 0;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = getSemaphore(id2wait, 0);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
 
     bool pinged = false;
     int i; // kept in here because i want to see it also outside of the loop
@@ -788,7 +839,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         }
 
         // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
-        if(false == sem->waitWithTimeout(timeout))
+        if(false == waitForNetworkQueryReply(sem, timeout))
         {
             //yWarning() << "ethResources::verifyBoardPresence() had a timeout of" << timeout << "secs when asking a variable to BOARD" << get_protBRDnumber()+1;
             //yError() << "ethResources::verifyBoardPresence() asks: can you ping the board?";
@@ -817,7 +868,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     }
 
     // must release the semaphore
-    releaseSemaphore(sem, id2wait, 0);
+    stopNetworkQuerySession(sem);
 
     double end_time = yarp::os::Time::now();
     if(pinged)
@@ -889,7 +940,7 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 
 
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = getSemaphore(ep, 0);
+    yarp::os::Semaphore* sem = NULL;
 
 
     if(entities_in_endpoint > capacityOfArrayOfENDES)
@@ -909,7 +960,7 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
     command.cmd.queryarray.opcpar.setsize       = 0;
 
     id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
-    sem = getSemaphore(id2wait, 0);
+    sem = startNetworkQuerySession(id2wait, 0);
 
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
@@ -918,15 +969,15 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
     }
 
 
-    if(false == sem->waitWithTimeout(timeout))
+    if(false == waitForNetworkQueryReply(sem, timeout))
     {
         // must release the semaphore
-        releaseSemaphore(sem, id2wait, 0);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::verifyENTITYnumber() had a timeout of" << timeout << "secs when asking the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
     // must release the semaphore
-    releaseSemaphore(sem, id2wait, 0);
+    stopNetworkQuerySession(sem);
 
     // now i get the array of descriptors
     memset(&command, 0, sizeof(command));
@@ -1128,7 +1179,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 
     // the semaphore used for waiting for replies from the board
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
-    yarp::os::Semaphore* sem = getSemaphore(id2wait, 0);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
 
     // send set message
     if(false == addSetMessage(id2send, (uint8_t*)&command))
@@ -1138,14 +1189,14 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     }
 
     // wait for a sig message arriving from the board. the eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() function shall release the waiting semaphore
-    if(false == sem->waitWithTimeout(timeout))
+    if(false == waitForNetworkQueryReply(sem, timeout))
     {
         // must release the semaphore
-        releaseSemaphore(sem, id2wait, 0);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
-    releaseSemaphore(sem, id2wait, 0);
+    stopNetworkQuerySession(sem);
 
     // get the data of variable containing the reply about the number of endpoints
     memset(&command, 0, sizeof(command));
@@ -1190,22 +1241,22 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
     eOprotID32_t id2wait = id32;
     const double timeout = 0.100;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = getSemaphore(id2wait, signature);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, signature);
 
     // send ask message
     if(false == addGetMessageWithSignature(id2send, signature))
     {
         free(datainside);
-        releaseSemaphore(sem, id2wait, signature);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
         return false;
     }
 
     // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
-    if(false == sem->waitWithTimeout(timeout))
+    if(false == waitForNetworkQueryReply(sem, timeout))
     {
         free(datainside);
-        releaseSemaphore(sem, id2wait, signature);
+        stopNetworkQuerySession(sem);
         yError() << "ethResources::verifyRemoteValue()  had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
         return false;
     }
@@ -1215,13 +1266,13 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
         if(false == readBufferedValue(id2wait, datainside, &sizeinside))
         {
             free(datainside);
-            releaseSemaphore(sem, id2wait, signature);
+            stopNetworkQuerySession(sem);
             yError() << "ethResources::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             return false;
         }
         else
         {
-            releaseSemaphore(sem, id2wait, signature);
+            stopNetworkQuerySession(sem);
             // ok: i have a reply: compare it with a memcmp
 
             if(size != sizeinside)

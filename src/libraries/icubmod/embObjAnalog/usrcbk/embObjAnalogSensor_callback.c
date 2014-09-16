@@ -63,17 +63,35 @@ extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOr
 
 extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    void* sem = NULL;
-
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
-
-    if(NULL == sem)
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
     {
+        printf("ERROR: eoprot_fun_UPDT_as_mais_config() has received an unexpected message\n");
         return;
     }
+}
 
-    feat_Semaphore_post(sem);
+extern void eoprot_fun_UPDT_as_mais_config_datarate(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_as_mais_config_datarate() has received an unexpected message\n");
+            return;
+        }
+    }
+}
 
+extern void eoprot_fun_UPDT_as_mais_config_mode(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_as_mais_config_mode() has received an unexpected message\n");
+            return;
+        }
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------

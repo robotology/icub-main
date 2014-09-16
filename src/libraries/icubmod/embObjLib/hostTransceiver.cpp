@@ -838,6 +838,20 @@ void hostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config
         },
+        {   // mais_config_datarate
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_mais,
+            EO_INIT(.tag)           eoprot_tag_as_mais_config_datarate,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config_datarate
+        },
+        {   // mais_config_mode
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_mais,
+            EO_INIT(.tag)           eoprot_tag_as_mais_config_mode,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config_mode
+        },
         {   // mais_status_the15values
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_mais,

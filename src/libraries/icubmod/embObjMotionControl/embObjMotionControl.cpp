@@ -1347,8 +1347,6 @@ bool embObjMotionControl::init()
         }
 
 
-        #warning --> marco.accame on 08sept14: it would be nice reading them back and verify
-
         // Debugging... to much information can overload can queue on EMS
         Time::delay(0.010); // (m.a.a-delay: before it was 0.01)
 
@@ -1397,7 +1395,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     // Mais per lettura posizioni dita, c'e' solo sulle mani per ora
 
     uint8_t datarate = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
-    eOas_maismode_t maismode  = eoas_maismode_txdatacontinuously;
+    eOenum08_t maismode  = eoas_maismode_txdatacontinuously;
     
     if(0 == eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
     {
@@ -1410,11 +1408,17 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     // set mais datarate = 1millisec
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-
     if(!res->addSetMessage(protid, &datarate))
     {
         yError() << "embObjMotionControl::configure_mais() had send error while setting mais datarate";
         return false;
+    }
+
+    Time::delay(0.010);
+
+    if(false == res->verifyRemoteValue(protid, (uint8_t *) &datarate, sizeof(datarate)))
+    {
+        yError() << "embObjMotionControl::configure_mais() had an error while verifying datarate =" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
     }
 
     // set tx mode continuosly
@@ -1426,59 +1430,13 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
         return false;
     }
 
+    Time::delay(0.010);  // (m.a.a-delay: before it was 0.01)
 
-    // now i get the eoprot_tag_as_mais_config to verify ...
-    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config);
-    eOprotID32_t id2wait = id2send;
-    eOas_mais_config_t maisconfig = {0};
-    uint16_t size = 0;
-    const double timeout = 0.100;
-    // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = res->getSemaphore(id2wait, 0);
-
-
-    // send ask message
-    if(false == res->addGetMessage(id2send))
+    if(false == res->verifyRemoteValue(protid, (uint8_t *) &maismode, sizeof(maismode)))
     {
-        res->releaseSemaphore(sem, id2wait, 0);
-        yError() << "embObjMotionControl::configure_mais() cannot transmit a request about the mais config to BOARD" << res->get_protBRDnumber()+1;
+        yError() << "embObjMotionControl::configure_mais() had an error while verifying maismode =" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
-
-    // wait for a say message arriving from the board. the eoprot_fun_UPDT_as_xxx() function shall release the waiting semaphore
-    if(false == sem->waitWithTimeout(timeout))
-    {
-        res->releaseSemaphore(sem, id2wait, 0);
-        yError() << "embObjMotionControl::configure_mais() had a timeout of" << timeout << "secs when asking a variable to BOARD" << res->get_protBRDnumber()+1;
-        return false;
-    }
-    else
-    {
-        // get the reply
-        if(false == res->readBufferedValue(id2wait, (uint8_t*)&maisconfig, &size))
-        {
-            res->releaseSemaphore(sem, id2wait, 0);
-            yError() << "embObjMotionControl::configure_mais() received a reply from BOARD" << res->get_protBRDnumber()+1 << "but cannot read it";
-            return false;
-        }
-        else
-        {
-            // ok: i have a reply
-            if((maisconfig.datarate != datarate) || (maisconfig.mode != maismode))
-            {
-                res->releaseSemaphore(sem, id2wait, 0);
-                yError() << "embObjMotionControl::configure_mais() retrieved wrong mais config values";
-                yError() << "retrived: datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
-                return false;
-            }
-            else
-            {
-                yWarning() << "(OK)-> embObjMotionControl::configure_mais() verified that mais wa configured w/ datarate (10) =" << maisconfig.datarate << "and mode (" << eoas_maismode_txdatacontinuously << ") =" << maisconfig.mode;
-            }
-        }
-    }
-
-    res->releaseSemaphore(sem, id2wait, 0);
 
 
     return true;

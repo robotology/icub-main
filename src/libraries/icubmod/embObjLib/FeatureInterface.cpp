@@ -171,35 +171,18 @@ double feat_yarp_time_now(void)
     return(yarp::os::Time::now());
 }
 
-
-void* feat_GetSemaphore(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature)
+fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature)
 {
-    // we ask the ethmanager to retrieve the pointer to a semaphore associated to a specific board
-    // and with a given endpoint and signature
-
-
     ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
 
     if(NULL == ethres)
     {
-        return(NULL);
+        return(fakestdbool_false);
     }
 
-    yarp::os::Semaphore* sem = ethres->getSemaphore(id32, signature);
-
-    return(sem);
+    return(ethres->aNetworkQueryReplyHasArrived(id32, signature));
 }
 
-
-void feat_Semaphore_post(void* s)
-{
-    if(NULL == s)
-    {
-        return;
-    }
-    yarp::os::Semaphore* sem = (yarp::os::Semaphore*)s;
-    sem->post();
-}
 
 #ifdef _SETPOINT_TEST_
 //static void s_print_test_data(int jointNum, setpoint_test_data_t *test_data_ptr, uint64_t diff_ms)

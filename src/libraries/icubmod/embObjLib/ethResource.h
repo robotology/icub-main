@@ -148,7 +148,9 @@ private:
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     infoOfRecvPkts    *infoPkts;
 
-    yarp::os::Semaphore*  ethResSem;
+    yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
+    yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
+    yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
 
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
@@ -248,11 +250,12 @@ public:
     bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
     bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
-    // it gets the locking semaphore associated to the specified id32 and signature.
-    // it is used to make the caller thread wait until some other thread unblocks
-    Semaphore* getSemaphore(eOprotID32_t id32, uint32_t signature);
 
-    bool releaseSemaphore(Semaphore* sem, eOprotID32_t id32, uint32_t signature);
+    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
+    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
+    bool aNetworkQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
+    bool stopNetworkQuerySession(Semaphore* sem);
+
 
 private:
     uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket

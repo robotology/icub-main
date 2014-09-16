@@ -136,48 +136,30 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
 
 extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    void* sem = NULL;
 
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
-
-    if(NULL == sem)
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
     {
-        printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_status() fails in getting a semaphore\n");
+        printf("ERROR: eoprot_fun_UPDT_mn_comm_status() has received an unexpected message\n");
         return;
     }
-
-    feat_Semaphore_post(sem);
 }
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    void* sem = NULL;
-
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
-    
-    if(NULL == sem)
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
     {
-        printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() fails in getting a semaphore\n");        
+        printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message\n");
         return;
     }
-
-
-    feat_Semaphore_post(sem);
 }
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    void* sem = NULL;
-
-    sem = feat_GetSemaphore(eo_nv_GetBRD(nv), rd->id32, rd->signature);
-    
-    if(NULL == sem)
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
     {
-        printf("FATAL ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() fails in getting a semaphore\n");        
+        printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message\n");
         return;
     }
-
-    feat_Semaphore_post(sem);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
