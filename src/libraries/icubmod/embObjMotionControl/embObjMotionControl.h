@@ -179,8 +179,8 @@ namespace yarp {
 }
 using namespace yarp::dev;
 
-static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
-static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
+enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
+enum { CAN_SKIP_ADDR = 0x80 };
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
@@ -270,10 +270,6 @@ private:
 #endif
     
     
-    
-    
-    
-
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 
@@ -311,6 +307,65 @@ private:
 
     bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
     int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
+
+    void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
+    void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
+
+
+    // saturation check and rounding for 16 bit unsigned integer
+    int U_16(double x) const
+    {
+        if (x <= double(MIN_U16) )
+            return MIN_U16;
+        else
+            if (x >= double(MAX_U16))
+                return MAX_U16;
+        else
+            return int(x + .5);
+    }
+
+    // saturation check and rounding for 16 bit signed integer
+    short S_16(double x)
+    {
+        if (x <= double(-(MAX_SHORT))-1)
+            return MIN_SHORT;
+        else
+            if (x >= double(MAX_SHORT))
+                return MAX_SHORT;
+        else
+            if  (x>0)
+                return short(x + .5);
+            else
+                return short(x - .5);
+    }
+
+    // saturation check and rounding for 32 bit unsigned integer
+    int U_32(double x) const
+    {
+        if (x <= double(MIN_U32) )
+            return MIN_U32;
+        else
+            if (x >= double(MAX_U32))
+                return MAX_U32;
+        else
+            return int(x + .5);
+    }
+
+    // saturation check and rounding for 32 bit signed integer
+    int S_32(double x) const
+    {
+        if (x <= double(-(MAX_INT))-1.0)
+            return MIN_INT;
+        else
+            if (x >= double(MAX_INT))
+                return MAX_INT;
+        else
+            if  (x>0)
+                return int(x + .5);
+            else
+                return int(x - .5);
+    }
+
 
 public:
     embObjMotionControl();
