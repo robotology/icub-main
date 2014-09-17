@@ -1386,8 +1386,8 @@ bool embObjMotionControl::init()
             jconfig.impedance.stiffness	= (eOmeas_stiffness_t) _impedance_params[logico].stiffness * 1000;
             jconfig.impedance.offset	= 0; //impedance_params[j];
 
-            _cacheImpedance[logico].stiffness = jconfig.impedance.damping;
-        	_cacheImpedance[logico].damping   = jconfig.impedance.stiffness;
+            _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
+            _cacheImpedance[logico].damping   = jconfig.impedance.damping;
         	_cacheImpedance[logico].offset = 0;
 
             jconfig.limitsofjoint.max = (eOmeas_position_t) convertA2I(_limitsMax[logico], _zeros[logico], _angleToEncoder[logico]);
@@ -3312,6 +3312,11 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
     // Get the value
     uint16_t size;
     res->readBufferedValue(protoid, (uint8_t *)&imped, &size);
+
+    // refresh cached value when reading data from the EMS
+    _cacheImpedance->damping   = (double) imped.damping;
+    _cacheImpedance->stiffness = (double) imped.stiffness;
+    _cacheImpedance->offset    = (double) imped.offset;
     return true;
 }
 
