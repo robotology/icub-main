@@ -22,7 +22,7 @@
 	<group name="specialCfgTriangles">
         <param name="numOfSets">         0x01  </param> <!-- id starts from 1 for triangleSetCfg-->
         <!--                                 patch       boardAddr    idStart       idEnd        enabled          shift       cdcOffset      -->
-           <param name="triangleSetCfg1">      2            0xE        0             6             1              0           0x2000      </param>
+           <param name="triangleSetCfg1">      7            0xE        0             6             1              0           0x2000      </param>
         </group> 
 
         
