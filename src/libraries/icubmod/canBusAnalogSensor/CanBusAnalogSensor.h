@@ -25,7 +25,7 @@ using namespace yarp::dev;
 * |:--------------:|:-------:|:-------------:|:--------:|:-----------:|
 * | canbusDevice | string | - | Yes | Yarp device name of CAN Bus wrapper |
 * | physDevice | string | | Yes | Yarp device name for the low level CAN device driver |
-* | canDeviceNum | int | - | Yes | CAN Bus Address for the sensor board |
+* | canDeviceNum | int | - | Yes | ID of the CAN Bus line |
 * | canAddress | int | - | Yes | CAN Bus Address for the sensor board |
 * | format | int | - | Yes | Format (i.e. number of bits) of analog data transmitted on the CAN bus (16 for STRAIN board, 8 for MAIS board) |
 * | period | int | - | Yes | Publication period (in ms) of the sensor reading on the Can Bus |
