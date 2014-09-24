@@ -495,11 +495,10 @@ public:
             cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
 
             // copy input image into output image
-            ImageOf<PixelBgr> &imgBgrOut=outPort.prepare();
-            imgBgrOut=*pImgBgrIn;
+            ImageOf<PixelBgr> imgBgrOut=*pImgBgrIn;
 
             // get optFlow image
-            ImageOf<PixelMono> &imgMonoOpt=optPort.prepare();
+            ImageOf<PixelMono> imgMonoOpt;
             imgMonoOpt.resize(imgBgrOut);
             imgMonoOpt.zero();
 
@@ -616,19 +615,17 @@ public:
             // send out images, propagating the time-stamp
             if (outPort.getOutputCount()>0)
             {
+                outPort.prepare()=imgBgrOut;
                 outPort.setEnvelope(stamp);
                 outPort.write();
             }
-            else
-                outPort.unprepare();
 
             if (optPort.getOutputCount()>0)
             {
+                optPort.prepare()=imgMonoOpt;
                 optPort.setEnvelope(stamp);
                 optPort.write();
             }
-            else
-                optPort.unprepare();
 
             // send out data bottles, propagating the time-stamp
             if ((nodesPort.getOutputCount()>0) && (nodesBottle.size()>1))

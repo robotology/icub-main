@@ -99,6 +99,9 @@ public:
     int           max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
     double        timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
 
+    double        reportperiod;
+    double        timeoflastreport;
+
     uint64_t      last_seqNum;      //last seqNum rec
     uint64_t      last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
     double        last_recvPktTime; //time of last recv pkt

@@ -1,7 +1,8 @@
+ 
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
     <device name="left_hand_calibrator" type="parametricCalibrator">   
- 
+<params file="general.xml" />              
         <group name="GENERAL">             
             <param name="joints"> 8 </param>             
             <param name="deviceName"> Left_Hand_Calibrator </param>    
@@ -10,9 +11,9 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            3             4             4             4             4             4             4             4             </param>       
-<param name="calibration1">               2036.00       235           55            230           10            240           20            710           </param>       
+<param name="calibration1">               1970.00       235           55            230           10            240           20            710           </param>       
 <param name="calibration2">               10            10            30            10            10            10            10            10            </param>       
-<param name="calibration3">               0             6000          6600          6000          7400          6000          -7400         -14000        </param>       
+<param name="calibration3">               0             6000          6600          6000          7400          6000          -7400         14000         </param>       
 <param name="positionZero">               30            3             0             0             0             0             0             0             </param>       
 <param name="velocityZero">               100           100           100           100           100           100           100           100           </param>       
 <param name="maxPwm">                     0             0             0             0             0             0             0             0             </param>       
@@ -20,7 +21,7 @@
 </group>       
  
 <group name="HOME">          
-<param name="positionHome"> 30            0             0             0             0             0             0             0             </param>       
+<param name="positionHome"> 90            3             0             0             0             0             0             0             </param>       
 <param name="velocityHome"> 10            10            10            10            10            10            10            10            </param>       
 </group>       
  
@@ -38,7 +39,6 @@
  
     </device>  
 </devices>     
- 
  
  
  

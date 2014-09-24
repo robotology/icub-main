@@ -421,8 +421,8 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     {
         // must release the semaphore
         stopNetworkQuerySession(sem);
-        yError() << "ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        yError() << "ethResources::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
+        yError() << "  FATAL: ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "         ethResources::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
         return(false);
     }
 
@@ -551,7 +551,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     {
         // must release the semaphore
         stopNetworkQuerySession(sem);
-        yError() << "ethResources::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: ethResources::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -563,7 +563,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
     if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
-        yError() << "ethResources::verifyBoardTransceiver() cannot read the number of endpoints of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: ethResources::verifyBoardTransceiver() cannot read the number of endpoints of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -702,7 +702,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     {
         // must release the semaphore
         stopNetworkQuerySession(sem);
-        yError() << "ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
     // must release the semaphore
@@ -712,7 +712,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     memset(&command, 0, sizeof(command));
     if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
-        yError() << "ethResources::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: ethResources::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -1023,8 +1023,8 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 
     if(numofentities_brd != numofentities_prot)
     {
-        yError() << "ethResources::verifyENTITYnumber() has detected a mismatching number of " << eoprot_EN2string(ep, en) << " between the PC104 and remote board: cannot proceed any further";
-        yError() << " pc014 uses =" << numofentities_prot << "but remote board has" << numofentities_brd;
+        yError() << "  FATAL: ethResources::verifyENTITYnumber() has detected a mismatching number of " << eoprot_EN2string(ep, en) << " between the PC104 and remote BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "         pc014 uses =" << numofentities_prot << "but remote board has" << numofentities_brd;
         return false;
     }
 
@@ -1177,6 +1177,9 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     command.cmd.querynumof.opcpar.opc           = eomn_opc_query_numof_REGROPs;
     command.cmd.querynumof.opcpar.endpoint      = eoprot_endpoint_all;
 
+
+#if 0
+
     // the semaphore used for waiting for replies from the board
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
     yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
@@ -1210,6 +1213,98 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     numberofregulars = command.cmd.replynumof.opcpar.numberof;
 
     return true;
+
+#else
+
+    const int retries = 10;
+    bool replied = false;
+    bool numberisreceived = false;
+    int i = 0; // must be in here because it count the number of attempts
+    // the semaphore used for waiting for replies from the board
+    eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
+
+
+    double start_time = yarp::os::Time::now();
+
+    for(i=0; i<retries; i++)
+    {
+        // attempt the request until either a reply arrives or the max retries are reached
+
+        // send set message
+        if(false == addSetMessage(id2send, (uint8_t*)&command))
+        {
+            yWarning() << "(!!)-> ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1;
+            //yError() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+            //return(false);
+        }
+
+        // wait for a sig message arriving from the board. the eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() function shall release the waiting semaphore
+        if(false == waitForNetworkQueryReply(sem, timeout))
+        {
+            // must release the semaphore
+            //stopNetworkQuerySession(sem);
+            //yError() << "ethResources::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+            //return(false);
+        }
+        else
+        {
+            // get the data of variable containing the reply about the number of endpoints
+            memset(&command, 0, sizeof(command));
+
+            if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
+            {
+                yWarning() << "(!!)-> ethResources::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1;
+            }
+            else
+            {
+                // ok: i have a reply: i have just read it ...
+                replied = true;
+                // stop attempts
+                break;
+            }
+
+        }
+
+        if(!replied)
+        {
+            yWarning() << "(!!)-> ethResources::numberofRegulars() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+        }
+
+    }
+
+
+    // must release the semaphore
+    stopNetworkQuerySession(sem);
+
+    double end_time = yarp::os::Time::now();
+
+    if(replied)
+    {
+        numberofregulars = command.cmd.replynumof.opcpar.numberof;
+        numberisreceived = true;
+        if(0 == i)
+        {
+            yWarning() << "(OK)-> ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+        }
+        else
+        {
+            yWarning() << "(!!)-> ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+        }
+
+    }
+    else
+    {
+        yError() << "  FATAL: ethResources::numberofRegulars() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        numberisreceived = false;
+    }
+
+
+
+    return numberisreceived;
+
+
+#endif
 }
 
 
@@ -1237,9 +1332,13 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
     uint16_t sizeinside = 0;
 
 
+
+#if 0
+
     eOprotID32_t id2send = id32;
     eOprotID32_t id2wait = id32;
     const double timeout = 0.100;
+
     // the semaphore used for waiting for replies from the board
     yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, signature);
 
@@ -1257,7 +1356,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
     {
         free(datainside);
         stopNetworkQuerySession(sem);
-        yError() << "ethResources::verifyRemoteValue()  had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+        yError() << "  FATAL: ethResources::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
         return false;
     }
     else
@@ -1298,6 +1397,124 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
     free(datainside);
 
     return true;
+
+#else
+
+
+        eOprotID32_t id2send = id32;
+        eOprotID32_t id2wait = id32;
+        const double timeout = 0.100;
+        const int retries = 10;
+        bool replied = false;
+        bool valueisverified = false;
+        int i = 0; // must be in here because it count the number of attempts
+        // the semaphore used for waiting for replies from the board
+        yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, signature);
+
+
+        double start_time = yarp::os::Time::now();
+
+        for(i=0; i<retries; i++)
+        {
+            // attempt the request until either a reply arrives or the max retries are reached
+
+
+            // send ask message
+            if(false == addGetMessageWithSignature(id2send, signature))
+            {
+                yWarning() << "(!!)-> ethResources::verifyRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
+            //    free(datainside);
+            //    stopNetworkQuerySession(sem);
+            //    yError() << "ethResources::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+            //    return false;
+            }
+
+            // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
+            if(false == waitForNetworkQueryReply(sem, timeout))
+            {
+            //    free(datainside);
+            //    stopNetworkQuerySession(sem);
+            //    yError() << "  FATAL: ethResources::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+            //    return false;
+            }
+            else
+            {
+                // get the reply
+                if(false == readBufferedValue(id2wait, datainside, &sizeinside))
+                {
+                //    free(datainside);
+                //    stopNetworkQuerySession(sem);
+                //    yError() << "ethResources::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                //    return false;
+                    yWarning() << "(!!)-> ethResources::verifyRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                }
+                else
+                {
+                    // ok: i have a reply: i just done read it ...
+                    replied = true;
+                    // stop attempts
+                    break;
+                }
+
+            }
+
+            if(!replied)
+            {
+                yWarning() << "(!!)-> ethResources::verifyRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            }
+
+        }
+
+
+        // must release the semaphore
+        stopNetworkQuerySession(sem);
+
+        double end_time = yarp::os::Time::now();
+
+        if(replied)
+        {
+            // ok: i have a reply: compare it with a memcmp
+
+            if(size != sizeinside)
+            {
+                yError() << "  FATAL: ethResources::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
+                valueisverified = false;
+            }
+            else if(0 != memcmp(datainside, value, size))
+            {
+                yError() << "  FATAL: ethResources::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+                valueisverified = false;
+            }
+            else
+            {
+                if(0 == i)
+                {
+                    yWarning() << "(OK)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                }
+                else
+                {
+                    yWarning() << "(!!)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                }
+                valueisverified = true;
+            }
+
+
+        }
+        else
+        {
+            yError() << "  FATAL: ethResources::verifyRemoteValue() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+            valueisverified = false;
+        }
+
+
+        // muest release allocated buffer
+        free(datainside);
+
+        // return result
+        return valueisverified;
+
+#endif
+
 }
 
 
@@ -1314,6 +1531,8 @@ infoOfRecvPkts::infoOfRecvPkts()
     max_count = DEFAULT_MAX_COUNT_STAT;
     timeout = DEFAULT_TIMEOUT_STAT;
     _verbose = false;
+    timeoflastreport = yarp::os::Time::now();
+    reportperiod = 30.0;
 
     last_seqNum = 0;
     last_ageOfFrame = 0;
@@ -1357,10 +1576,10 @@ void infoOfRecvPkts::setBoardNum(int boardnum)
 
 void infoOfRecvPkts::printStatistics(void)
 {
-    yDebug() << "  (STATS-RX)-> board " << board << " curr pkt lost = " << currPeriodPktLost<< "   tot pkt lost = " << totPktLost;
-    yDebug() << "  (STATS-RX)-> board " << board << " age of frame: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
-    yDebug() << "  (STATS-RX)-> board " << board << " period of pkt: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
-    yDebug() << "  (STATS-RX)-> board " << board << " pkt proccess time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values\n";
+    yDebug() << "  (STATS-RX)-> BOARD " << board << " curr pkt lost = " << currPeriodPktLost<< "   tot pkt lost = " << totPktLost;
+    yDebug() << "  (STATS-RX)-> BOARD " << board << " age of frame: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
+    yDebug() << "  (STATS-RX)-> BOARD " << board << " period of pkt: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
+    yDebug() << "  (STATS-RX)-> BOARD " << board << " pkt proccess time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values\n";
 }
 
 void infoOfRecvPkts::clearStatistics(void)
@@ -1391,6 +1610,9 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     double curr_periodPkt;
     double diff_ageofframe;
     int diff;
+
+    double timenow = yarp::os::Time::now();
+
 
     if(initted)
     {
@@ -1450,10 +1672,12 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     count++;
 
     if(count == max_count)
+//    if((timenow - timeoflastreport) > reportperiod)
     {
         printStatistics();
         clearStatistics();
         count = 0;
+        timeoflastreport = timenow;
     }
 
 }

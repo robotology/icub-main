@@ -171,7 +171,15 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     int off_x=checkInt(config,"xoff");
     int off_y=checkInt(config,"yoff");
     int format=checkInt(config,"video_type");
-    mUseHardwareTimestamp = !checkInt(config,"use_network_time");
+
+    if (!config.check("use_network_time"))
+    {
+        mUseHardwareTimestamp = false;
+    }
+    else
+    {
+        mUseHardwareTimestamp = !checkInt(config,"use_network_time");
+    }
 
     unsigned int idCamera=0;
 

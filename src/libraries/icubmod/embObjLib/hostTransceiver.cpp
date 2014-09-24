@@ -934,7 +934,9 @@ void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remi
     long long unsigned int exp = expected_seqnum;
     long long unsigned int rec = rec_seqnum;
     char *ipaddr = (char*)&remipv4addr;
-    printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
+    //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
+    char errmsg[256] = {0};
+    snprintf(errmsg, sizeof(errmsg), "\nhostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
 }
 
 //extern "C" {
