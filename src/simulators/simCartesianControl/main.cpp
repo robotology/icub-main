@@ -241,6 +241,15 @@ public:
 /************************************************************************/
 int main(int argc, char *argv[])
 {
+    Network yarp;
+    if (!yarp.checkNetwork())
+    {
+        cout<<"YARP server not available!"<<endl;
+        return -1;
+    }
+
+    YARP_REGISTER_DEVICES(icubmod)
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("simCartesianControl");
@@ -251,15 +260,6 @@ int main(int argc, char *argv[])
     rf.setDefault("right_leg_file","cartesianRightLeg.ini");
     rf.setDefault("left_leg_file","cartesianLeftLeg.ini");
     rf.configure(argc,argv);
-
-    Network yarp;
-    if (!yarp.checkNetwork())
-    {
-        cout<<"YARP server not available!"<<endl;
-        return -1;
-    }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     SimCartCtrlModule mod;
     return mod.runModule(rf);
