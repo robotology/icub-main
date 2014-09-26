@@ -632,14 +632,14 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dGeomGetPosition(larm2_geom),dGeomGetRotation(larm2_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[4][2] - jP_leftArm[2][2]));
             DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
             glPopMatrix();
 
             //draw texture
             glPushMatrix();
             LDEsetM(dGeomGetPosition(larm3_geom),dGeomGetRotation(larm3_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
             DrawX( model_trimesh["lowerArm"], modelTexture[0]);
             glPopMatrix();
         }
@@ -669,7 +669,7 @@ void ICubSim::draw(){
             //draw texture
             glPushMatrix();
             LDEsetM(dBodyGetPosition(body[8]),dBodyGetRotation(body[8]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
             DrawX( model_trimesh["lowerArm"], modelTexture[0]);
             glPopMatrix();
         }
@@ -700,14 +700,14 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dGeomGetPosition(rarm2_geom),dGeomGetRotation(rarm2_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[4][2]));
+            glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[4][2] - jP_rightArm[2][2]));
             DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
             glPopMatrix();
 
             //draw texture
             glPushMatrix();
             LDEsetM(dGeomGetPosition(rarm3_geom),dGeomGetRotation(rarm3_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
             DrawX( model_trimesh["lowerArm"], modelTexture[0]);
             glPopMatrix();
         }
@@ -730,13 +730,12 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dBodyGetPosition(body[7]),dBodyGetRotation(body[5]));     //DRAW THE MODEL
-            //glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[4][2]));
             DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
             glPopMatrix();
 
             glPushMatrix();
             LDEsetM(dBodyGetPosition(body[9]),dBodyGetRotation(body[9]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[4][2]));
+            glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[3][2]));
             DrawX( model_trimesh["lowerArm"], modelTexture[0]);
             glPopMatrix();
         }
@@ -768,7 +767,7 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[6][2] - jP_rightArm[7][2]), 0.0);
+            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
             DrawX( model_trimesh["leftPalm"], modelTexture[0]);
             glPopMatrix();
 
@@ -799,7 +798,7 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dBodyGetPosition(body[10]),dBodyGetRotation(body[10]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[6][2] - jP_rightArm[7][2]), 0.0);
+            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
             DrawX( model_trimesh["leftPalm"], modelTexture[0]);
             glPopMatrix();
 
@@ -873,7 +872,7 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dGeomGetPosition(r_hand0_geom),dGeomGetRotation(r_hand0_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[6][2] - jP_rightArm[7][2]), 0.0);
+            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
             DrawX( model_trimesh["rightPalm"], modelTexture[0]);
             glPopMatrix();
 
@@ -905,7 +904,7 @@ void ICubSim::draw(){
         {
             glPushMatrix();
             LDEsetM(dBodyGetPosition(body[11]),dBodyGetRotation(body[11]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[6][2] - jP_rightArm[7][2]), 0.0);
+            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
             DrawX( model_trimesh["rightPalm"], modelTexture[0]);
             glPopMatrix();
 
