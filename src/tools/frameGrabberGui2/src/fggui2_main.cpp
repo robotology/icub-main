@@ -48,69 +48,69 @@
 
 int main(int argc, char *argv[])
 {
-	yarp::os::Network yarp;
+    yarp::os::Network yarp;
 
     Gtk::Main kit(argc, argv);
 
-	if (argc == 3)
-	{
-		FrameGrabberGUIControl2 window(argv[1],argv[2]);
-		Gtk::Main::run(window);
-	}
-	else if (argc<3)
-	{
-		//FrameGrabberGUIControl window("","");
-		//Gtk::Main::run(window);
-		printf("usage:\n");
-		printf("%s --local <localportname> --remote <grabberport> [--width <gui width>] [--height <gui height>] [--x <gui x pos>] [--y <gui y pos>]\n",argv[0]);
-	}
-	else if (argc>3)
-	{
-		yarp::os::Property options;
+    if (argc == 3)
+    {
+        FrameGrabberGUIControl2 window(argv[1],argv[2]);
+        Gtk::Main::run(window);
+    }
+    else if (argc<3)
+    {
+        //FrameGrabberGUIControl window("","");
+        //Gtk::Main::run(window);
+        printf("usage:\n");
+        printf("%s --local <localportname> --remote <grabberport> [--width <gui width>] [--height <gui height>] [--x <gui x pos>] [--y <gui y pos>]\n",argv[0]);
+    }
+    else if (argc>3)
+    {
+        yarp::os::Property options;
         options.fromCommand(argc,argv);
     
-		printf("%s\n",options.toString().c_str());
+        printf("%s\n",options.toString().c_str());
 
-		// switch to subsections if available
-		yarp::os::Searchable *Network = &options.findGroup("NETWORK");
-		yarp::os::Searchable *Window = &options.findGroup("WINDOW");
-		//yarp::os::Searchable *Program = &options.findGroup("PROGRAM");
+        // switch to subsections if available
+        yarp::os::Searchable *Network = &options.findGroup("NETWORK");
+        yarp::os::Searchable *Window = &options.findGroup("WINDOW");
+        //yarp::os::Searchable *Program = &options.findGroup("PROGRAM");
 
-		if (Network->isNull()) { Network = &options; }
-		if (Window->isNull()) { Window = &options; }
-		//if (Program->isNull()) { Program = &options; }
+        if (Network->isNull()) { Network = &options; }
+        if (Window->isNull()) { Window = &options; }
+        //if (Program->isNull()) { Program = &options; }
 
-		yarp::os::Value *val;
+        yarp::os::Value *val;
     
-		char portName[256]="",outPortName[256]="";
+        char portName[256]="",outPortName[256]="";
 
-		if (Network->check("PortName",val)||Network->check("local",val)) 
-		{
-			strcpy(portName, val->asString().c_str());
-		}
+        if (Network->check("PortName",val)||Network->check("local",val)) 
+        {
+            strcpy(portName, val->asString().c_str());
+        }
 
-		if (Network->check("OutPortName",val)||Network->check("remote",val)) 
-		{
-			strcpy(outPortName, val->asString().c_str());
-		}
+        if (Network->check("OutPortName",val)||Network->check("remote",val)) 
+        {
+            strcpy(outPortName, val->asString().c_str());
+        }
 
-		//printf("using local=%s remote=%s x=%d y=%d\n",portName,outPortName,posX,posY);
-		//fflush(stdout);
+        //printf("using local=%s remote=%s x=%d y=%d\n",portName,outPortName,posX,posY);
+        //fflush(stdout);
 
-		FrameGrabberGUIControl2 window(portName,outPortName);
-		int posX=0,posY=0;
-		int width,height;
-		window.get_size(width,height);
+        FrameGrabberGUIControl2 window(portName,outPortName);
+        int posX=0,posY=0;
+        int width,height;
+        window.get_size(width,height);
 
-		if (Window->check("PosX",val)||Window->check("x",val)) posX = val->asInt();
-		if (Window->check("PosY",val)||Window->check("y",val)) posY = val->asInt();
-		if (Window->check("width",val)) width = val->asInt();
-		if (Window->check("height",val)) height = val->asInt();
+        if (Window->check("PosX",val)||Window->check("x",val)) posX = val->asInt();
+        if (Window->check("PosY",val)||Window->check("y",val)) posY = val->asInt();
+        if (Window->check("width",val)) width = val->asInt();
+        if (Window->check("height",val)) height = val->asInt();
 
-		window.set_size_request(width,height);
-		window.move(posX,posY);
-		Gtk::Main::run(window);
-	}
+        window.set_size_request(width,height);
+        window.move(posX,posY);
+        Gtk::Main::run(window);
+    }
 
     return 0;
 }
