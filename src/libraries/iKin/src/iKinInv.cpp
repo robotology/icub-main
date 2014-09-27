@@ -865,8 +865,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
 
         computeWeight();
 
-        _qdot+=W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
-        qdot=checkVelocity(_qdot,Ts);
+        qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));        
         xdot=J*qdot;
         q=chain.setAng(I->integrate(qdot));
         x=chain.EndEffPose();
