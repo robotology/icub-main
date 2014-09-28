@@ -3470,6 +3470,8 @@ void ServerCartesianController::notifyEvent(const string &event,
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
 
+        eventInfo.update(time);
+        portEvent.setEnvelope(eventInfo);
         portEvent.writeStrict();
     }
 

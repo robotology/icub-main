@@ -162,6 +162,7 @@ protected:
     yarp::os::Event syncEvent;
     yarp::os::Stamp txInfo;
     yarp::os::Stamp poseInfo;
+    yarp::os::Stamp eventInfo;
     yarp::os::Stamp debugInfo;
 
     yarp::sig::Vector xdes;

@@ -200,6 +200,8 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
 
+        txInfo_event.update(q_stamp);
+        port_event.setEnvelope(txInfo_event);
         port_event.writeStrict();
     }
 }

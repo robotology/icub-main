@@ -71,6 +71,7 @@ protected:
     Stamp txInfo_x;
     Stamp txInfo_q;
     Stamp txInfo_pose;
+    Stamp txInfo_event;
 
     Mutex mutexRun;
     Mutex mutexChain;
