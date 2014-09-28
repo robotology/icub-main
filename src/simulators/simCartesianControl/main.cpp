@@ -255,10 +255,10 @@ int main(int argc, char *argv[])
     rf.setDefaultContext("simCartesianControl");
     rf.setDefault("robot","icubSim");
     rf.setDefault("local","simCartesianControl");
-    rf.setDefault("right_arm_file","cartesianRightArm.ini");
-    rf.setDefault("left_arm_file","cartesianLeftArm.ini");
-    rf.setDefault("right_leg_file","cartesianRightLeg.ini");
-    rf.setDefault("left_leg_file","cartesianLeftLeg.ini");
+    rf.setDefault("right_arm_file","simCartesianRightArm.ini");
+    rf.setDefault("left_arm_file","simCartesianLeftArm.ini");
+    rf.setDefault("right_leg_file","simCartesianRightLeg.ini");
+    rf.setDefault("left_leg_file","simCartesianLeftLeg.ini");
     rf.configure(argc,argv);
 
     SimCartCtrlModule mod;
