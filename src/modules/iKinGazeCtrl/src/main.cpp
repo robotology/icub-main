@@ -191,6 +191,9 @@ Factors</a>.
 - When this options is specified then the kinematic structure of
   the hardware v2 of the head is referred.
  
+--verbose
+- Enable some output print-out.
+ 
 --tweakFile \e file 
 - The parameter \e file specifies the file name (located in 
   module context) used to read/write options that are tweakable
@@ -991,6 +994,7 @@ public:
         commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
+        commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
 
         // minAbsVel is given in absolute form

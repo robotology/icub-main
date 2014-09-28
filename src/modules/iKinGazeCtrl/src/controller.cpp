@@ -633,7 +633,8 @@ void Controller::run()
     }
 
     // print info
-    printIter(xd,x,qddeg,qdeg,vdeg,1.0);
+    if (commData->verbose)
+        printIter(xd,x,qddeg,qdeg,vdeg,1.0); 
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);

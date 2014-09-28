@@ -61,7 +61,6 @@ CartesianCtrlRpcProcessor::CartesianCtrlRpcProcessor(ServerCartesianController *
 bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
 {
     Bottle cmd, reply;
-
     if (!cmd.read(connection))
         return false;
 
