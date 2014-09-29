@@ -18,6 +18,10 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 /**
+*  @ingroup icub_hardware_modules
+*  \defgroup canbusanalogsensor canbusanalogsensor
+*
+* 
 * Driver for CAN communication with analog sensors.
 *
 * Parameters accepted in the config argument of the open method:
