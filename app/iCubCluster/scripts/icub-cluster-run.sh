@@ -54,7 +54,7 @@ case "$1" in
         
 		echo "Starting up yarp run for $ID"
 		cp -f $YARP_DIR/bin/yarprun /tmp/yarprun
-        if [ $log == 1 ]
+        if [ "$log" == 1 ]
         then        
             cd /tmp;./yarprun --server $ID --log 2>&1 2>/tmp/yarprunserver.log &
         else

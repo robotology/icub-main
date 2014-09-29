@@ -199,13 +199,16 @@ class App:
         Label(tmpFrame, text="Display").grid(row=0, column=2)
         Label(tmpFrame, text="User").grid(row=0, column=3)
         Label(tmpFrame, text="On/Off").grid(row=0, column=4)
-        Label(tmpFrame, text="Select").grid(row=0, column=5)
+        Label(tmpFrame, text="Log").grid(row=0, column=5)
+        Label(tmpFrame, text="Select").grid(row=0, column=6)
+        
 
         tmpFrame.grid(row=1, column=0)
         self.clusterNodes=[]
         self.values=[]
         self.dispFlag=[]
         self.selected=[]
+        self.logged=[]
 
         r=1
         for node in cluster.nodes:
@@ -254,8 +257,16 @@ class App:
 
             check=Checkbutton(tmpFrame, variable=v)
 #           check.config(state=ENABLED, disabledforeground="#00A000")
-            self.selected.append(v)
+            self.logged.append(v)
             check.grid(row=r, column=5)
+
+            v=IntVar()
+            v.set(1)
+
+            check=Checkbutton(tmpFrame, variable=v)
+#           check.config(state=ENABLED, disabledforeground="#00A000")
+            self.selected.append(v)
+            check.grid(row=r, column=6)
 
 
 
@@ -299,9 +310,11 @@ class App:
         self.checkNodes()
         i=iter(self.values)
         iS=iter(self.selected)
+        iSS=iter(self.logged)
         for node in self.cluster.nodes:
             selected=iS.next().get()
             running=i.next().get()
+            logged=iSS.next().get()
 
             if running==0 and selected==1:
                 #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
@@ -313,8 +326,11 @@ class App:
                     else:
                         cmd.append('display ')
                         cmd.append(node.displayValue)
-                else:
-                    cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
+
+                if logged==1:
+                    cmd.append('log')
+                #else:
+                    #cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
 #                   cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
 
                 print 'Running',

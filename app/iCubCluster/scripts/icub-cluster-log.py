@@ -253,7 +253,7 @@ class App:
             check.grid(row=r, column=4)
 
             v=IntVar()
-            v.set(0)
+            v.set(1)
 
             check=Checkbutton(tmpFrame, variable=v)
 #           check.config(state=ENABLED, disabledforeground="#00A000")
