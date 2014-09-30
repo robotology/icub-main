@@ -1671,11 +1671,12 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
 {
     uint64_t curr_seqNum = getSeqNum(packet, size);;
     uint64_t curr_ageOfFrame = getAgeOfFrame(packet, size); // in usec
-    double curr_periodPkt;
+    double curr_periodPkt; // in usec: it is the delta time between two consecutive processed packets
     double diff_ageofframe_ms; // in ms
     long long diff;
 
     double timenow = yarp::os::Time::now();
+    bool local_verbose = true; //_verbose;
 
 
     if(initted)
@@ -1687,7 +1688,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
 
             if(curr_seqNum < (last_seqNum+1))
             {
-                if(_verbose)
+                if(local_verbose)
                     yError()<< "REC PKTS not in order!!!!" << board << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
             }
             else
@@ -1698,7 +1699,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
             currPeriodPktLost+= num_lost_pkts;
             totPktLost+= num_lost_pkts;
 
-            if(_verbose)
+            if(local_verbose)
                 yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << board << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
@@ -1707,15 +1708,15 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
         diff_ageofframe_ms = (double)(diff) / 1000.0; // age of frame is expressed in msec but in floating point
         if( diff_ageofframe_ms > (timeout*1000))
         {
-            if(_verbose)
-                yError() << "Board " << board << ": EMS time(ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
+            if(local_verbose)
+                yError() << "Board " << board << ": EMS time (ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
         }
 
         //3) check rec time
         curr_periodPkt = reckPktTime - last_recvPktTime;
         if(curr_periodPkt > timeout)
         {
-            if(_verbose)
+            if(local_verbose)
                 yError() << "Board " << board << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
         }
 
