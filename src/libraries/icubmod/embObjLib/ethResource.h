@@ -231,6 +231,7 @@ public:
 
     bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
 
+    // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
     bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
 
 

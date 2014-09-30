@@ -45,6 +45,18 @@
 
 static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescriptor_t* rd);
 
+extern void eoprot_fun_UPDT_as_strain_config(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_as_strain_config() has received an unexpected message\n");
+            return;
+        }
+    }
+}
+
 extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     handle_data(AnalogStrain, nv, rd);
