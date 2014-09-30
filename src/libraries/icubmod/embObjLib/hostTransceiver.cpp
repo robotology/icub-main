@@ -477,12 +477,12 @@ void hostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
  * The memory holding this ropframe will be written ONLY in case of a new call of eo_transceiver_Transmit function,
  * therefore it is safe to use it. No concurrency is involved here.
  */
-void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops)
+bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops)
 {
     if((NULL == data) || (NULL == size) || (NULL == numofrops))
     {
         yError() << "eo HostTransceiver::getTransmit() called with NULL data or zero size or zero numofrops";
-        return;
+        return false;
     }  
 
     EOpacket* ptrpkt = NULL;
@@ -505,17 +505,22 @@ void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     if((eores_OK != res) || (0 == tmpnumofrops)) // transmit only if res is ok and there is at least one rop to send
 #endif
     {
-    	return;
+        return false;
     }
     res = eo_transceiver_outpacket_Get(pc104txrx, &ptrpkt);
     if(eores_OK != res)
     {
-    	return;
+        return false;
     }
 
     // after these two lines, in data, size and numofrops we have what we need
     eo_packet_Payload_Get(ptrpkt, data, size);
     *numofrops = tmpnumofrops;
+
+    if(tmpnumofrops > 0)
+        return true;
+    else
+        return false;
 }
 
 
@@ -936,7 +941,8 @@ void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remi
     char *ipaddr = (char*)&remipv4addr;
     //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
     char errmsg[256] = {0};
-    snprintf(errmsg, sizeof(errmsg), "\nhostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t Received: \t%llu \t Missing: \t%llu \n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec, rec-exp);
+    yError() << errmsg;
 }
 
 //extern "C" {

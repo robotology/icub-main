@@ -1255,6 +1255,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 bool embObjMotionControl::init()
 {
     eOprotID32_t protid = 0;
+    bool result = true;
 
     /////////////////////////////////////////////////
     //SEND DISABLE TO ALL JOINTS
@@ -1269,7 +1270,10 @@ bool embObjMotionControl::init()
         if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
         {
             yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_switch_everything_off in BOARD" << res->get_protBRDnumber()+1;
+            // return(false); i dont return false. because even if a failure, that is not a severe error.
+            // MOREOVER: to verify we must read the status of the joint and NOT the command ... THINK OF IT
         }
+        //Time::delay(0.001);
     }
 
     Time::delay(0.010);  // 10 ms (m.a.a-delay: before it was 0.01)
@@ -1341,20 +1345,20 @@ bool embObjMotionControl::init()
         jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
         jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
-        if(!res->addSetMessage(protid, (uint8_t *) &jconfig))
+
+        if(false == res->setRemoteValueUntilVerified(protid, &jconfig, sizeof(jconfig), 10, 0.010, 0.050, 2))
         {
-            yError() << "embObjMotionControl::init() had an error while configuring joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
+        }
+        else
+        {
+            yWarning() << "(OK)-> embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
         }
 
 
-        // Debugging... to much information can overload can queue on EMS
-        Time::delay(0.010); // (m.a.a-delay: before it was 0.01)
-
-        if(false == res->verifyRemoteValue(protid, (uint8_t *) &jconfig, sizeof(jconfig)))
-        {
-            yError() << "embObjMotionControl::init() had an error while verifying joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
-        }
     }
+
 
 
     //////////////////////////////////////////
@@ -1370,17 +1374,14 @@ bool embObjMotionControl::init()
 
         eOmeas_current_t	current = (eOmeas_current_t) S_16(_currentLimits[logico]);
 
-        if(!res->addSetMessage(protid, (uint8_t *) &current))
+        if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
         {
-            yError() << "embObjMotionControl::init() had an error while configuring motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
         }
-
-        // Debugging... to much information can overload can queue on EMS
-        Time::delay(0.010);  // (m.a.a-delay: before it was 0.01)
-
-        if(false == res->verifyRemoteValue(protid, (uint8_t *) &current, sizeof(current)))
+        else
         {
-            yError() << "embObjMotionControl::init() had an error while verifying motor max current fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            yWarning() << "(OK)-> embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
         }
 
     }
@@ -1393,6 +1394,56 @@ bool embObjMotionControl::init()
 bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 {
     // Mais per lettura posizioni dita, c'e' solo sulle mani per ora
+
+#if 1
+    // version with read-back
+
+    uint8_t datarate = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
+    eOenum08_t maismode  = eoas_maismode_txdatacontinuously; // use eOas_maismode_t for value BUT USE   for type (their sizes can be different !!)
+
+    eOprotID32_t id32 = eo_prot_ID32dummy;
+
+
+    if(0 == eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
+    {
+        return false;
+    }
+
+    // ok, we have a mais
+
+
+    // -- mais datarate
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjMotionControl::configure_mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::configure_mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+    }
+
+    // -- mais tx mode
+
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjMotionControl::configure_mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::configure_mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+    }
+
+    return true;
+
+#else
 
     uint8_t datarate = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
     eOenum08_t maismode  = eoas_maismode_txdatacontinuously;
@@ -1440,6 +1491,8 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 
 
     return true;
+
+#endif
 }
 
 bool embObjMotionControl::close()

@@ -392,7 +392,8 @@ bool embObjAnalogSensor::isEpManagedByBoard()
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
 {
-    eOas_strain_config_t strainConfig;
+    eOas_strain_config_t strainConfig = {0};
+
     strainConfig.datarate = _period;
     strainConfig.signaloncefullscale = eobool_false;
 
@@ -411,6 +412,25 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
     }
 
 
+#if 1
+    // version with read-back
+
+    eOprotID32_t id32 =  eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &strainConfig, sizeof(strainConfig), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setRemoteValueUntilVerified() for strain config in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->get_protBRDnumber()+1;
+    }
+
+    return true;
+
+#else
+
     eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
     if(!res->addSetMessage(protoid, (uint8_t *) &strainConfig))
     {
@@ -418,10 +438,50 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
     }
 
     return true;
+#endif
+
 }
 
 bool embObjAnalogSensor::sendConfig2Mais(void)
 {
+#if 1
+    // version with read-back
+
+    eOprotID32_t id32 = eo_prot_ID32dummy;
+
+    // -- mais datarate
+
+    uint8_t datarate  = _period;  // set mais datarate = 1millisec
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+    }
+
+    // -- mais tx mode
+
+    eOenum08_t maismode  = eoas_maismode_txdatacontinuously; // use eOas_maismode_t for value BUT USE   for type (their sizes can be different !!)
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+    }
+
+    return true;
+
+#else
     uint8_t datarate  = _period;
 
     // set mais datarate = 1millisec
@@ -448,8 +508,10 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #warning --> marco.accame: maybe we can add a readback of the datarate and maismode to be sure of successful operation
 
     return true;
+#endif
 }
 
+#warning --> marco.accame: it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<>
 bool embObjAnalogSensor::getFullscaleValues()
 {
     // marco.accame on 11 apr 2014:

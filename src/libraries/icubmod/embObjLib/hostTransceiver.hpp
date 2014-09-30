@@ -128,7 +128,11 @@ protected:
     /* Ask the transceiver to get the ropframe to be sent
      * This pointer will be modified by the getPack function to point to the TX buffer.
      * No need to allocate memory here */
-    void getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
+    // the function returns true if the packet can be transmitted, false if not.
+    // if _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ is undefined, the function returns false also if there are no rops
+    // inside the ropframe. in such a way the macro _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ can have
+    // a scope that is local only to hostTransceiver.cpp
+    bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
 private:
 

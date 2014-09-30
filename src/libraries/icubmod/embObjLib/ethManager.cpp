@@ -674,13 +674,14 @@ void EthSender::run()
         ethRes = (*riterator);
 
         // This uses directly the pointer of the transceiver
-        ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send, &numofrops);
+        bool transmitthepacket = ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send, &numofrops);
 
-#ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
-        if((NULL != p_sendData))
-#else
-        if((numofrops > 0) && (NULL != p_sendData) && (bytes_to_send > 0))
-#endif
+//#ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
+//        if((NULL != p_sendData))
+//#else
+//        if((numofrops > 0) && (NULL != p_sendData) && (bytes_to_send > 0))
+//#endif
+        if(true == transmitthepacket)
         {
             ACE_INET_Addr addr = ethRes->getRemoteAddress();
             int ret = ethManager->send(p_sendData, (size_t)bytes_to_send, addr);

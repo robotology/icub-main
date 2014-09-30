@@ -188,8 +188,9 @@ public:
 
     ACE_INET_Addr   getRemoteAddress(void);
 
-
-    void            getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops);
+    // the function returns true if the packet can be transmitted. 
+    // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
+    bool            getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops);
 
 
     // returns the capacity of the receiving buffer.
@@ -228,7 +229,9 @@ public:
 
     bool numberofRegulars(uint16_t &numberofregulars);
 
-    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size);
+    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
+
+    bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
 
 
     /*!   @fn       isRunning(void);

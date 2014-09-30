@@ -136,11 +136,12 @@ int ethResources::deregisterFeature(FEAT_ID request)
 }
 
 
-void ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
+bool ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
 {
     transMutex.wait();
-    getTransmit(pack, size, numofrops);
+    bool res = getTransmit(pack, size, numofrops);
     transMutex.post();
+    return res;
 }
 
 int ethResources::getRXpacketCapacity()
@@ -158,7 +159,7 @@ void ethResources::checkIsAlive(double curr_time)
 
     if((curr_time - infoPkts->last_recvPktTime) > infoPkts->timeout)
     {
-        yError() << "ethResources::checkIsAlive() detected that board " << boardNum << " has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
+        yError() << "ethResources::checkIsAlive() detected that board " << boardNum << " @ time" << int(floor(curr_time)) << "secs," << curr_time - floor(curr_time) << "has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
         infoPkts->isInError =true;
         infoPkts->printStatistics();
         infoPkts->clearStatistics();
@@ -1307,9 +1308,64 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 #endif
 }
 
+bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)
+{
+    int attempt = 0;
+    bool done = false;
+
+    int maxattempts = retries + 1;
+
+    for(attempt=0; (attempt<maxattempts) && (false == done); attempt++)
+    {
+
+        if(!addSetMessage(id32, (uint8_t *) value))
+        {
+            yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified() had an error while calling addSetMessage() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
+            continue;
+        }
+
+        // ok, now i wait some time before asking the value back for verification
+        Time::delay(waitbeforeverification);
+
+        if(false == verifyRemoteValue(id32, (uint8_t *) value, size, verificationtimeout, verificationretries))
+        {
+            yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified() had an error while calling verifyRemoteValue() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
+        }
+        else
+        {
+            done = true;
+        }
+
+    }
+
+    char nvinfo[128];
+    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+
+    if(done)
+    {
+        if(attempt > 1)
+        {
+            yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+        }
+        else
+        {
+            yWarning() << "(OK)-> ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+
+        }
+    }
+    else
+    {
+        yError() << "FATAL: ethResources::setRemoteValueUntilVerified could not set and verify ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << " even after " << attempt << "attempts";
+    }
+
+
+    return(done);
+}
+
+
 
 // must: 1. be sure we have the callback written and configured, 2. that the callback releases the sem (maybe if a suitable signature is found).
-bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size)
+bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout, int retries)
 {
     eOprotBRD_t brd = get_protBRDnumber();
     char nvinfo[128];
@@ -1403,8 +1459,8 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
         eOprotID32_t id2send = id32;
         eOprotID32_t id2wait = id32;
-        const double timeout = 0.100;
-        const int retries = 10;
+//        const double timeout = 0.100;
+//        const int retries = 10;
         bool replied = false;
         bool valueisverified = false;
         int i = 0; // must be in here because it count the number of attempts
@@ -1576,6 +1632,14 @@ void infoOfRecvPkts::setBoardNum(int boardnum)
 
 void infoOfRecvPkts::printStatistics(void)
 {
+    if(0 != currPeriodPktLost)
+    {
+        yDebug() << "  (STATS-RX)-> BOARD " << board << "has packet losses in this period:" << currPeriodPktLost << "---------------------";
+    }
+    else
+    {
+        yDebug() << "  (STATS-RX)-> BOARD " << board << "does not have packet loss in this period";
+    }
     yDebug() << "  (STATS-RX)-> BOARD " << board << " curr pkt lost = " << currPeriodPktLost<< "   tot pkt lost = " << totPktLost;
     yDebug() << "  (STATS-RX)-> BOARD " << board << " age of frame: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
     yDebug() << "  (STATS-RX)-> BOARD " << board << " period of pkt: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
@@ -1671,8 +1735,8 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     last_recvPktTime = reckPktTime;
     count++;
 
-    if(count == max_count)
-//    if((timenow - timeoflastreport) > reportperiod)
+//    if(count == max_count)
+    if((timenow - timeoflastreport) > reportperiod)
     {
         printStatistics();
         clearStatistics();
