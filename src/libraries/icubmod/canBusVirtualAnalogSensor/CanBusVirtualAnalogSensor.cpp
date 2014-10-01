@@ -75,6 +75,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     //set the internal configuration
     //this->isVirtualSensor   = false;
     this->boardId           = config.find("canAddress").asInt();
+    this->canId             = config.find("canDeviceNum").asInt();
     this->channelsNum       = config.find("channels").asInt();
     this->useCalibration    = (config.find("useCalibration").asInt()==1);
     unsigned int tmpFormat  = config.find("format").asInt();
@@ -131,7 +132,8 @@ bool CanBusVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &dval)
         {
             if (Time::now() - curr_time > 2)
                 {
-                    fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", deviceName.c_str(), i, dval[i], count_saturation);
+//                    fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", deviceName.c_str(), i, dval[i], count_saturation);
+                    fprintf(stderr, "[WARNING] VIRTUAL FT SENSOR can:%d id:%d SATURATED CH:%d : %+4.4f COUNT: %d \n",this->canId,this->boardId, i, dval[i], count_saturation);
                     curr_time = Time::now();
                 }
             dval[i] =  fullScale;
@@ -141,7 +143,8 @@ bool CanBusVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &dval)
         {
             if (Time::now() - curr_time > 2)
                 {
-                    fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", deviceName.c_str(), i, dval[i], count_saturation);
+//                    fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", deviceName.c_str(), i, dval[i], count_saturation);
+                    fprintf(stderr, "[WARNING] VIRTUAL FT SENSOR can:%d id:%d SATURATED CH:%d : %+4.4f COUNT: %d \n",this->canId, this->boardId, i, dval[i], count_saturation);
                     curr_time = Time::now();
                 }
             dval[i] = -fullScale;
@@ -533,7 +536,7 @@ void CanBusVirtualAnalogSensor::run()
                         unsigned id = 0x200 + (boardId << 4);
                         CanMessage &msg=outBuffer[0];
                         msg.setId(id);
-                        int tmp_fullscale = scaleFactor[channel];
+                        int tmp_fullscale = (int) scaleFactor[channel];
                         unsigned char h_scale = (tmp_fullscale >> 8) & 0xff;
                         unsigned char l_scale = tmp_fullscale & 0xff;
                         msg.getData()[0]=0x18;
