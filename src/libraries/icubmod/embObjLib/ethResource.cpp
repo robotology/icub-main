@@ -1654,6 +1654,7 @@ void infoOfRecvPkts::clearStatistics(void)
     stat_ageOfFrame->clear();
     stat_periodPkt->clear();
     stat_precessPktTime->clear();
+    stat_pktSize->clear();
     currPeriodPktLost = 0;
     initted = false;
 }
