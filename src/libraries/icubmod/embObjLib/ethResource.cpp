@@ -1599,6 +1599,7 @@ infoOfRecvPkts::infoOfRecvPkts()
     stat_ageOfFrame = new StatExt();
     stat_periodPkt = new StatExt();
     stat_precessPktTime = new StatExt();
+    stat_pktSize = new StatExt();
 
 
     ConstString statistcs_count_max = NetworkBase::getEnvironment("ETHREC_STATISTICS_COUNT_RECPKT_MAX");
@@ -1623,6 +1624,7 @@ infoOfRecvPkts::~infoOfRecvPkts()
     delete stat_ageOfFrame;
     delete stat_periodPkt;
     delete stat_precessPktTime;
+    delete stat_pktSize;
 }
 
 void infoOfRecvPkts::setBoardNum(int boardnum)
@@ -1643,7 +1645,8 @@ void infoOfRecvPkts::printStatistics(void)
     yDebug() << "  (STATS-RX)-> BOARD " << board << " curr pkt lost = " << currPeriodPktLost<< "   tot pkt lost = " << totPktLost;
     yDebug() << "  (STATS-RX)-> BOARD " << board << " age of frame: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
     yDebug() << "  (STATS-RX)-> BOARD " << board << " period of pkt: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " pkt proccess time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values\n";
+    yDebug() << "  (STATS-RX)-> BOARD " << board << " pkt process time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values\n";
+    yDebug() << "  (STATS-RX)-> BOARD " << board << " pkt size time: avg=" << stat_pktSize->mean() << "bytes std=" << stat_pktSize->deviation() << "min=" << stat_pktSize->getMin() << "max=" << stat_pktSize->getMax() << " on " << stat_pktSize->count() << "values\n";
 }
 
 void infoOfRecvPkts::clearStatistics(void)
@@ -1723,6 +1726,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
         stat_ageOfFrame->add(diff_ageofframe_ms);
         stat_periodPkt->add(curr_periodPkt);
         stat_precessPktTime->add(processPktTime);
+        stat_pktSize->add(size);
     }
     else
     {
