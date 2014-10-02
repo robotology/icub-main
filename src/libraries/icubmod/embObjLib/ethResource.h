@@ -127,7 +127,7 @@ public:
      *    @param    reckPktTime      sys time on rec pkt (expressed in seconds)
      *    @param    processPktTime   time needed to process this packet (expressed in seconds)
      */
-    void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime);
+    void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport = false);
 
     void setBoardNum(int board);
 };
@@ -263,6 +263,8 @@ public:
     bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
     bool aNetworkQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
     bool stopNetworkQuerySession(Semaphore* sem);
+
+    bool printRXstatistics(void);
 
 
 private:

@@ -848,6 +848,134 @@ void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
 
 
 #ifndef ETHRECEIVER_ISPERIODICTHREAD
+
+#if 1
+// version simplified by marco.accame on 02 oct 2014
+
+void EthReceiver::run()
+{
+    yTrace();
+
+    ACE_TCHAR     address[64];
+    ethResources  *ethRes;
+    ssize_t       incoming_msg_size;
+    ACE_INET_Addr sender_addr;
+    uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
+    const int     incoming_msg_capacity = ethResources::maxRXpacketsize;
+
+    ethResRIt riterator;
+    ethResRIt _rBegin, _rEnd;
+    double statLastTime = yarp::os::Time::now();
+    const double statPrintInterval = 30.0;
+
+
+    ACE_Time_Value recvTimeOut;
+    fromDouble(recvTimeOut, 0.010); // timeout of socket reception is 10 milliseconds
+
+    while(!isStopping())
+    {   // forever loop... almost
+
+        // get pkt from socket: blocking call with timeout
+        incoming_msg_size = recv_socket->recv((void *) incoming_msg_data, incoming_msg_capacity, sender_addr, 0, &recvTimeOut);
+
+        if(!isRunning())
+        {
+            continue;  // i go to recv a new pkt and wait someone to stop me
+        }
+
+        // at every loop we take pointers to the ethresources list. we do so because it may change in time as a new device is added
+        // we use reverse iterators.
+        ethManager->managerMutex.wait();
+        _rBegin = ethResList->rbegin();
+        _rEnd = ethResList->rend();
+        ethManager->managerMutex.post();
+
+
+        if(incoming_msg_size > 0)
+        {   // process a valid packet
+
+            sender_addr.addr_to_string(address, 64);
+            riterator = _rBegin;
+
+            // look for the ethresource associated to the ip address
+            while(riterator != _rEnd)
+            {
+                ethRes = (*riterator);
+
+                if(ethRes->getRemoteAddress() == sender_addr)
+                {   // ok: i have found the relevant ethresource
+
+                    if(false == ethRes->canProcessRXpacket(incoming_msg_data, incoming_msg_size))
+                    {   // cannot give packet to ethresource
+                        yError() << "EthReceiver::run() cannot give a received packet of size" << incoming_msg_size << "to ethResources because ethResources::canProcessRXpacket() returns false.";
+                    }
+                    else
+                    {
+                        ethRes->processRXpacket(incoming_msg_data, incoming_msg_size);
+                    }
+
+                    break;  // ok ... exit loop as i have found the correct ethresource
+                }
+                riterator++;
+            }
+        }
+        else
+        {   // a timeout. do nothing. because we must execute what is after
+
+        }
+
+        // now before repeating the loop we evaluate if a print of stats is required.
+
+
+#if 1
+        double currTime = yarp::os::Time::now();
+
+        if( (currTime - statLastTime) > statPrintInterval )
+        {
+            statLastTime = currTime;
+
+            // now for every ethresource i print the stats ... but only if it is running
+            riterator = _rBegin;
+            while(riterator != _rEnd)
+            {
+                ethRes = (*riterator);
+                if(ethRes->isRunning())
+                {
+                    ethRes->printRXstatistics();
+                }
+                riterator++;
+            }
+        }
+
+#else
+
+
+
+
+        // 1. old mode:  i check if all boards are alive.
+        riterator = _rBegin;
+        double curr_time = yarp::os::Time::now();
+
+        while(riterator != _rEnd)
+        {
+            ethRes = (*riterator);
+            if(ethRes->isRunning())
+            {
+                ethRes->checkIsAlive(curr_time);
+            }
+            riterator++;
+        }
+#endif
+
+    }   // end of while(!isStopping())
+
+
+    return;
+}
+
+#else
+
+
 void EthReceiver::run()
 {
     yTrace();
@@ -890,7 +1018,7 @@ void EthReceiver::run()
 #endif
         if(!isRunning())
         {
-            continue; //i go to recv a new pkt and wait someone to stop me
+            continue;  // i go to recv a new pkt and wait someone to stop me
         }
 
 #ifdef ETHRECEIVER_STATISTICS_ON
@@ -914,7 +1042,7 @@ void EthReceiver::run()
         // i get here because of timeout or because i have just received a packet
         // in both cases i check if all boards are alive. In the meanwhile i check if all ems are in config state.
          riterator = _rBegin;
-         bool allEmsInConfigstate = true;
+// xxx-rem         bool allEmsInConfigstate = true;
          double curr_time = yarp::os::Time::now();
          while(riterator != _rEnd)
          {
@@ -922,16 +1050,18 @@ void EthReceiver::run()
              if(ethRes->isRunning())
              {
                  ethRes->checkIsAlive(curr_time);
-                 allEmsInConfigstate = true;
+// xxx-rem                allEmsInConfigstate = true;
              }
              riterator++;
          }
 
-        #warning --> marco.accame says: allEmsInConfigstate is always true ...
+        #warning --> marco.accame says: allEmsInConfigstate is always true ... thus i removed some code tagged with xxx-rem
 
         if(incoming_msg_size < 1)
         {
 
+#if 0
+// xxx-rem
             // print error if have not already done and if one or more ems boards are in running state , so thy should sent pkt every 1 msec
             if((!recError) && (!allEmsInConfigstate))
             {
@@ -939,6 +1069,7 @@ void EthReceiver::run()
                 yError() << "EthReceiver: passed " << recvTimeOut.msec() << " ms without receive a pkt!!";
                 recError = true;
             }
+#endif
 
             continue; // try to receive again
         }
@@ -1006,6 +1137,9 @@ void EthReceiver::run()
 
     return;
 }
+
+#endif
+
 #endif
 
 

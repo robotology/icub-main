@@ -149,6 +149,12 @@ int ethResources::getRXpacketCapacity()
     return hostTransceiver::getCapacityOfRXpacket();
 }
 
+bool ethResources::printRXstatistics(void)
+{
+    infoPkts->printStatistics();
+    infoPkts->clearStatistics();
+}
+
 
 void ethResources::checkIsAlive(double curr_time)
 {
@@ -197,7 +203,7 @@ void ethResources::processRXpacket(uint64_t *data, uint16_t size)
 
     if(isInRunningMode)
     {
-        infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing));
+        infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing), false);
     }
 }
 
@@ -1671,7 +1677,7 @@ uint64_t infoOfRecvPkts::getAgeOfFrame(uint64_t *packet, uint16_t size)
     return(eo_ropframedata_age_Get((EOropframeData*)packet));
 }
 
-void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime)
+void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport)
 {
     uint64_t curr_seqNum = getSeqNum(packet, size);;
     uint64_t curr_ageOfFrame = getAgeOfFrame(packet, size); // in usec
@@ -1741,13 +1747,17 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     last_recvPktTime = reckPktTime;
     count++;
 
-//    if(count == max_count)
-    if((timenow - timeoflastreport) > reportperiod)
+    // i evaluate a possible report
+    if(true == evalreport)
     {
-        printStatistics();
-        clearStatistics();
-        count = 0;
-        timeoflastreport = timenow;
+    //    if(count == max_count)
+        if((timenow - timeoflastreport) > reportperiod)
+        {
+            printStatistics();
+            clearStatistics();
+            count = 0;
+            timeoflastreport = timenow;
+        }
     }
 
 }
