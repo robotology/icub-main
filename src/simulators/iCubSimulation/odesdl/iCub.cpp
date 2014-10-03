@@ -1340,8 +1340,10 @@ void ICubSim::activateiCubParts(RobotConfig& config) {
     FLAGIFY(flags,actRHand);
     FLAGIFY(flags,actHead);
     FLAGIFY(flags,actfixedHip);
+    FLAGIFY(flags,actSelfCol);
     FLAGIFY(flags,actVision);
     FLAGIFY(flags,actPressure);
+    FLAGIFY(flags,actSkinEmul);
     FLAGIFY(flags,actWorld);
     FLAGIFY(flags,actHeadCover);
     FLAGIFY(flags,actLegsCovers);

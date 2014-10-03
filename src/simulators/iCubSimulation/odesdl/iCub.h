@@ -66,7 +66,7 @@ public:
 
     EyeLids *eyeLids;
     static const bool textured = true;
-    ConstString actElevation, actStartHomePos, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers;
+    ConstString actElevation, actStartHomePos, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers, actSelfCol, actSkinEmul;
     double elev;
 
     dGeomID screenGeom;
