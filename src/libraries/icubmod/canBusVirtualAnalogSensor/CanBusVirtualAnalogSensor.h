@@ -52,7 +52,8 @@ protected:
 
     unsigned int       channelsNum;
     unsigned short     boardId;
-    std::string        deviceName;
+    unsigned short     canId;
+    //std::string        deviceName;
     short              status;
     double             timeStamp;
     AnalogDataFormat   dataFormat;
