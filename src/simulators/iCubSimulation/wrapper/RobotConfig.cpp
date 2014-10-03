@@ -82,10 +82,14 @@ void RobotConfig::setFlags() {
 	if (actfixedHip.length()<1 ) stopConfig("actfixedHip");//, proceed);
     FLAGIFY(flags,actfixedHip);
     
-    ConstString actSelfCol = options.findGroup("PARTS").check("self_collisions",Value(1),"what did the user select?").asString();
+    ConstString actSelfCol = options.findGroup("COLLISIONS").check("self_collisions",Value(1),"what did the user select?").asString();
     if (actSelfCol.length()<1 ) stopConfig("actSelfCol");//, proceed);
     FLAGIFY(flags,actSelfCol);
 
+    ConstString actCoversCol = options.findGroup("COLLISIONS").check("covers_collisions",Value(1),"what did the user select?").asString();
+    if (actCoversCol.length()<1 ) stopConfig("actCoversCol");//, proceed);
+    FLAGIFY(flags,actCoversCol);
+    
     ConstString actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
 	if (actVision.length()<1 ) stopConfig("actVision");//, proceed);
     FLAGIFY(flags,actVision);
@@ -141,8 +145,9 @@ void RobotConfig::setFlags() {
         "Right arm : " << actRArm << endl <<
         "Right hand : " << actRHand << endl <<
         "Head : " << actHead << endl <<
-        "Fixed Hip : " << actfixedHip << endl <<  
-        "Self-collisions : " << actSelfCol << endl << endl << 
+        "Fixed Hip : " << actfixedHip << endl << endl <<
+        "Self-collisions : " << actSelfCol << endl <<
+        "Collisions for covers : " << actCoversCol << endl << endl <<
         "Pressure sensors: " << actPressure << endl <<
         "Whole body skin emulation: " << actSkinEmul << endl <<
         "Cameras :" << actVision << endl  <<
