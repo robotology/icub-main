@@ -86,7 +86,7 @@ double getTouchSensorValue (dJointFeedback* fb) {
     return forceOnBody;
 }
 
-//function to check the activation of the sensor on the selected body...
+//function to check the activation of the sensor on the selected body... - this is for the case of the respective hand body part off 
 double ICubSim::checkTouchSensor_continuousValued(dBodyID id){
     dJointID j;
     double result = 0;
@@ -102,6 +102,7 @@ double ICubSim::checkTouchSensor_continuousValued(dBodyID id){
     return result;
 }
 
+//function to check the activation of the sensor on the selected body... - this is for the case of the respective hand body part on 
 double ICubSim::checkTouchSensor_continuousValued(int bodyToCheck) {
     dJointID j;
     double result = 0;
@@ -324,16 +325,17 @@ void ICubSim::draw(){
             bottomEyeLidModel->reloadTextures();
         }
 
-        if (model_ThreeD_obj.size())
+        if (model_ThreeD_obj.size()){
             model_ThreeD_obj[(*model_ThreeD_obj.begin()).first].reloadTexture(textureName[0], modelTexture[0]);
-
+        }
         reinitialized = false; 
     }
 
     if (actScreen == "on")
     {
         glColor3d(1.0,1.0,1.0);
-        glPushMatrix();LDEsetM(dGeomGetPosition(screenGeom),dGeomGetRotation(screenGeom));
+        glPushMatrix(); //opengl: glPushMatrix pushes the current matrix stack down by one, duplicating the current matrix. That is, after a glPushMatrix call, the matrix on top of the stack is identical to the one below it.
+        LDEsetM(dGeomGetPosition(screenGeom),dGeomGetRotation(screenGeom)); //this makes a homo transformation matrix out of the pos and ori and multiplies the opengl "current" matrix with it and sets the current matrix to the new one
         DrawBox(1.0,1.0,0.001,false,textured,15);glPopMatrix();
     }
 
@@ -345,43 +347,87 @@ void ICubSim::draw(){
         if (actLegsCovers == "on")
         {
             glPushMatrix();
-            LDEsetM(dGeomGetPosition(l_leg1_geom),dGeomGetRotation(l_leg1_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["leftFoot"], modelTexture[0]);
-            glPopMatrix();
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates
+                //left leg
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["leftFoot"].geom),dGeomGetRotation(model_ThreeD_obj["leftFoot"].geom));    
+                DrawX( model_trimesh["leftFoot"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(l_leg3_geom),dGeomGetRotation(l_leg3_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["lowerLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerLeftLeg"].geom),dGeomGetRotation(model_ThreeD_obj["lowerLeftLeg"].geom));    
+                DrawX( model_trimesh["lowerLeftLeg"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(l_leg6_geom),dGeomGetRotation(l_leg5_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["upperLeftLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperLeftLeg"].geom),dGeomGetRotation(model_ThreeD_obj["upperLeftLeg"].geom));    
+                DrawX( model_trimesh["upperLeftLeg"], modelTexture[0]);
+                glPopMatrix();
 
-            //right leg
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(r_leg1_geom),dGeomGetRotation(r_leg1_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["rightFoot"], modelTexture[0]);
-            glPopMatrix();
+                //right leg
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["rightFoot"].geom),dGeomGetRotation(model_ThreeD_obj["rightFoot"].geom));   
+                DrawX( model_trimesh["rightFoot"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(r_leg3_geom),dGeomGetRotation(r_leg3_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["lowerLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerRightLeg"].geom),dGeomGetRotation(model_ThreeD_obj["lowerRightLeg"].geom));   
+                DrawX( model_trimesh["lowerRightLeg"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(r_leg6_geom),dGeomGetRotation(r_leg5_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["upperRightLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperRightLeg"].geom),dGeomGetRotation(model_ThreeD_obj["upperRightLeg"].geom));     
+                DrawX( model_trimesh["upperRightLeg"], modelTexture[0]);
+                glPopMatrix();
+            } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                //left leg
+                LDEsetM(dGeomGetPosition(l_leg1_geom),dGeomGetRotation(l_leg1_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["leftFoot"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(l_leg3_geom),dGeomGetRotation(l_leg3_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerLeftLeg"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(l_leg6_geom),dGeomGetRotation(l_leg5_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperLeftLeg"], modelTexture[0]);
+                glPopMatrix();
+
+                //right leg
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(r_leg1_geom),dGeomGetRotation(r_leg1_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["rightFoot"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(r_leg3_geom),dGeomGetRotation(r_leg3_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerRightLeg"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(r_leg6_geom),dGeomGetRotation(r_leg5_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperRightLeg"], modelTexture[0]);
+                glPopMatrix();
+           }
+        } //leg covers on
+        
+        // left leg
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the foot "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
+             glColor3d(0.9,0.9,0.9);
+             glPushMatrix();LDEsetM(dGeomGetPosition(l_leg0_geom),dGeomGetRotation(l_leg0_geom));
+             DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
-        if (actLegsCovers == "off")
-        {
-            glColor3d(0.9,0.9,0.9);
-            glPushMatrix();LDEsetM(dGeomGetPosition(l_leg0_geom),dGeomGetRotation(l_leg0_geom));
-            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
+        else {
+            if (actLegsCovers == "off") //if covers are off, the foot "box" is drawn; if they are on, it is not drawn as it is slightly longer and is visually not ideal
+            {
+                glColor3d(0.9,0.9,0.9);
+                glPushMatrix();LDEsetM(dGeomGetPosition(l_leg0_geom),dGeomGetRotation(l_leg0_geom));
+                DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
+            }
         }
-
+      
+        //the rest is drawn irrespective whether covers are on
         glColor3d(0.5,0.5,0.5);
         glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg1_geom),dGeomGetRotation(l_leg1_geom));
         DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
@@ -407,13 +453,22 @@ void ICubSim::draw(){
         glPushMatrix(); LDEsetM(dGeomGetPosition(l_leg7_geom),dGeomGetRotation(l_leg7_geom));
         DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
 
-        //////////RIGHT LEG
-        if (actLegsCovers == "off")
-        {
-            glColor3d(0.9,0.9,0.9);
-            glPushMatrix();LDEsetM(dGeomGetPosition(r_leg0_geom),dGeomGetRotation(r_leg0_geom));
-            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
+       
+        // right leg
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the foot "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
+             glColor3d(0.9,0.9,0.9);
+             glPushMatrix();LDEsetM(dGeomGetPosition(r_leg0_geom),dGeomGetRotation(r_leg0_geom));
+             DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
+        else {
+            if (actLegsCovers == "off") //if covers are off, the foot "box" is drawn; if they are on, it is not drawn as it is slightly longer and is visually not ideal
+            {
+                glColor3d(0.9,0.9,0.9);
+                glPushMatrix();LDEsetM(dGeomGetPosition(r_leg0_geom),dGeomGetRotation(r_leg0_geom));
+                DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
+            }
+        }
+        //the rest is drawn irrespective whether covers are on              
         glColor3d(0.5,0.5,0.5);
         glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg1_geom),dGeomGetRotation(r_leg1_geom));
         DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
@@ -441,46 +496,93 @@ void ICubSim::draw(){
         glPushMatrix(); LDEsetM(dGeomGetPosition(r_leg7_geom),dGeomGetRotation(r_leg7_geom));
         DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
 
-    }else{
-        if (actLegsCovers == "off")
-        {
-            glColor3d(1.0,1.0,1.0);
-            glPushMatrix();LDEsetM(dBodyGetPosition(leftLeg[0]),dBodyGetRotation(leftLeg[0]));
-            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();                                               //foot
+    }else{ //(actLegs == "on")
+             
+        // left leg
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the foot "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
+             glColor3d(1.0,1.0,1.0);
+             glPushMatrix();LDEsetM(dGeomGetPosition(leftLeg[0]),dGeomGetRotation(leftLeg[0]));
+             DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
+        else {
+            if (actLegsCovers == "off") //if covers are off, the foot "box" is drawn; if they are on, it is not drawn as it is slightly longer and is visually not ideal
+            {
+                glColor3d(1.0,1.0,1.0);
+                glPushMatrix();LDEsetM(dGeomGetPosition(leftLeg[0]),dGeomGetRotation(leftLeg[0]));
+                DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
+            }
+        }      
+              
         if (actLegsCovers == "on")
-        {   glColor3d(1.0,1.0,1.0);
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(leftLeg[1]),dBodyGetRotation(leftLeg[0]));     //DRAW THE MODEL
-            DrawX( model_trimesh["leftFoot"], modelTexture[0]);
-            glPopMatrix();
+        {  
+            glColor3d(1.0,1.0,1.0);
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates
+               
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["leftFoot"].geom),dGeomGetRotation(model_ThreeD_obj["leftFoot"].geom));    
+                DrawX( model_trimesh["leftFoot"], modelTexture[0]);
+                glPopMatrix();
+                           
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerLeftLeg"].geom),dGeomGetRotation(model_ThreeD_obj["lowerLeftLeg"].geom));    
+                DrawX( model_trimesh["lowerLeftLeg"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(leftLeg_2_2),dGeomGetRotation(leftLeg_2_2));     //DRAW THE MODEL
-            DrawX( model_trimesh["lowerLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperLeftLeg"].geom),dGeomGetRotation(model_ThreeD_obj["upperLeftLeg"].geom));    
+                DrawX( model_trimesh["upperLeftLeg"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(leftLeg_4_2),dGeomGetRotation(leftLeg_3_2));     //DRAW THE MODEL
-            DrawX( model_trimesh["upperLeftLeg"], modelTexture[0]);
-            glPopMatrix();
-            //right leg
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(rightLeg[1]),dBodyGetRotation(rightLeg[0]));     //DRAW THE MODEL
-            DrawX( model_trimesh["rightFoot"], modelTexture[0]);
-            glPopMatrix();
+                //right leg
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["rightFoot"].geom),dGeomGetRotation(model_ThreeD_obj["rightFoot"].geom));  
+                DrawX( model_trimesh["rightFoot"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(rightLeg_2_2),dGeomGetRotation(rightLeg_2_2));     //DRAW THE MODEL
-            //glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
-            DrawX( model_trimesh["lowerLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerRightLeg"].geom),dGeomGetRotation(model_ThreeD_obj["lowerRightLeg"].geom));   
+                DrawX( model_trimesh["lowerRightLeg"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(rightLeg_4_2),dGeomGetRotation(rightLeg_3_2));     //DRAW THE MODEL
-            //glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
-            DrawX( model_trimesh["upperRightLeg"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperRightLeg"].geom),dGeomGetRotation(model_ThreeD_obj["upperRightLeg"].geom));     
+                DrawX( model_trimesh["upperRightLeg"], modelTexture[0]);
+                glPopMatrix();
+            } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+              
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(leftLeg[1]),dBodyGetRotation(leftLeg[0]));     //DRAW THE MODEL
+                DrawX( model_trimesh["leftFoot"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(leftLeg_2_2),dGeomGetRotation(leftLeg_2_2));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerLeftLeg"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(leftLeg_4_2),dGeomGetRotation(leftLeg_3_2));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperLeftLeg"], modelTexture[0]);
+                glPopMatrix();
+                  
+                //right leg
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(rightLeg[1]),dBodyGetRotation(rightLeg[0]));     //DRAW THE MODEL
+                DrawX( model_trimesh["rightFoot"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(rightLeg_2_2),dGeomGetRotation(rightLeg_2_2));     //DRAW THE MODEL
+                //glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+                DrawX( model_trimesh["lowerRightLeg"], modelTexture[0]);
+                glPopMatrix();
+
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(rightLeg_4_2),dGeomGetRotation(rightLeg_3_2));     //DRAW THE MODEL
+                //glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+                DrawX( model_trimesh["upperRightLeg"], modelTexture[0]);
+                glPopMatrix();
+            }
         }
 
         glColor3d(0.5,0.5,0.5);
@@ -509,14 +611,23 @@ void ICubSim::draw(){
         glColor3d(1.0,1.0,1.0);
         glPushMatrix(); LDEsetM(dBodyGetPosition(leftLeg[5]),dBodyGetRotation(leftLeg[5]));
         DrawCylinder(0.038,0.013,false,textured,2);glPopMatrix();
-        //////////RIGHT LEG
-        if (actLegsCovers == "off")
-        {
-            glColor3d(0.9,0.9,0.9);
-            glPushMatrix();LDEsetM(dBodyGetPosition(rightLeg[0]),dBodyGetRotation(rightLeg[0]));
-            DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();
+       
+        
+        //right leg
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the foot "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
+             glColor3d(0.9,0.9,0.9);
+             glPushMatrix();LDEsetM(dGeomGetPosition(rightLeg[0]),dGeomGetRotation(rightLeg[0]));
+             DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
-
+        else {
+            if (actLegsCovers == "off") //if covers are off, the foot "box" is drawn; if they are on, it is not drawn as it is slightly longer and is visually not ideal
+            {
+                glColor3d(0.9,0.9,0.9);
+                glPushMatrix();LDEsetM(dGeomGetPosition(rightLeg[0]),dGeomGetRotation(rightLeg[0]));
+                DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
+            }
+        }      
+                  
         glColor3d(0.5,0.5,0.5);
         glPushMatrix(); LDEsetM(dBodyGetPosition(rightLeg[1]),dBodyGetRotation(rightLeg[1]));
         DrawCylinder(0.027,0.095,false,textured,2);glPopMatrix();
@@ -546,19 +657,31 @@ void ICubSim::draw(){
         glColor3d(1.0,1.0,1.0);
         if (actTorsoCovers == "on")
         {
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(torso1_geom),dGeomGetRotation(torso1_geom));     //DRAW THE MODEL
-            DrawX( model_trimesh["waist"], modelTexture[0]);
-            glPopMatrix();
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["waist"].geom),dGeomGetRotation(model_ThreeD_obj["waist"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["waist"], modelTexture[0]);
+                glPopMatrix();
+            
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["torso"].geom),dGeomGetRotation(model_ThreeD_obj["torso"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["torso"], modelTexture[0]);
+                glPopMatrix();
+            } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(torso1_geom),dGeomGetRotation(torso1_geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["waist"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            if (actHead == "on")
-                LDEsetM(dBodyGetPosition(neck[0]),dGeomGetRotation(torso3_geom));     //DRAW THE MODEL
-            else
-                LDEsetM(dGeomGetPosition(neck0_geom),dGeomGetRotation(torso3_geom));
+                glPushMatrix();
+                if (actHead == "on")
+                    LDEsetM(dBodyGetPosition(neck[0]),dGeomGetRotation(torso3_geom));     //DRAW THE MODEL
+                else
+                    LDEsetM(dGeomGetPosition(neck0_geom),dGeomGetRotation(torso3_geom));
 
-            DrawX( model_trimesh["torso"], modelTexture[0]);
-            glPopMatrix();
+                DrawX( model_trimesh["torso"], modelTexture[0]);
+                glPopMatrix();
+            }
         }
         glColor3d(1.0,1.0,1.0);
         glPushMatrix(); LDEsetM(dGeomGetPosition(torso0_geom),dGeomGetRotation(torso0_geom));
@@ -574,31 +697,59 @@ void ICubSim::draw(){
         glPushMatrix(); LDEsetM(dGeomGetPosition(torso3_geom),dGeomGetRotation(torso3_geom));
         DrawCylinder(0.04,0.0274,false,textured,2);glPopMatrix();
         glColor3d(1.0,1.0,1.0);
-
-        if (actTorsoCovers == "off"){
+        
+    
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the torso "boxes" are drawn - in this regime, we want to draw all objects that are relevant for the simulation
             glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
             DrawBox(fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);glPopMatrix();
 
             glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
             DrawBox(fabs(jP_rightArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);glPopMatrix();
         }
-     }else{
+        else {
+            if (actTorsoCovers == "off") //if covers are off, the torso "boxes" are drawn; if they are on, they are not drawn as the cover visually fills up the space
+            {
+                glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
+                DrawBox(fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);glPopMatrix();
+
+                glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
+                DrawBox(fabs(jP_rightArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);glPopMatrix();
+             }
+        } 
+             
+        
+    } // if (actTorso == "off")
+      else // (actTorso == "on")
+      {
         glColor3d(1.0,1.0,1.0);
         if (actTorsoCovers == "on")
         {
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(torso[1]),dBodyGetRotation(torso[0]));     //DRAW THE MODEL
-            DrawX( model_trimesh["waist"], modelTexture[0]);
-            glPopMatrix();
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix(); 
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["waist"].geom),dGeomGetRotation(model_ThreeD_obj["waist"].geom));  
+                DrawX( model_trimesh["waist"], modelTexture[0]);
+                glPopMatrix(); //takes the current matrix back out
+            
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["torso"].geom),dGeomGetRotation(model_ThreeD_obj["torso"].geom));    
+                DrawX( model_trimesh["torso"], modelTexture[0]);
+                glPopMatrix();
+             } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(torso[1]),dBodyGetRotation(torso[0]));     //DRAW THE MODEL
+                DrawX( model_trimesh["waist"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            if (actHead == "on")
-                LDEsetM(dBodyGetPosition(neck[0]),dBodyGetRotation(torso[3]));     //DRAW THE MODEL
-            else
-                LDEsetM(dGeomGetPosition(neck0_geom),dBodyGetRotation(torso[3]));
+                glPushMatrix();
+                if (actHead == "on")
+                    LDEsetM(dBodyGetPosition(neck[0]),dBodyGetRotation(torso[3]));     //DRAW THE MODEL
+                else
+                    LDEsetM(dGeomGetPosition(neck0_geom),dBodyGetRotation(torso[3]));
 
-            DrawX( model_trimesh["torso"], modelTexture[0]);
-            glPopMatrix();
+                DrawX( model_trimesh["torso"], modelTexture[0]);
+                glPopMatrix();
+             }
+            
         }
         //////TORSO
         glColor3d(1.0,1.0,1.0);
@@ -616,33 +767,60 @@ void ICubSim::draw(){
         DrawCylinder(0.04,0.0274,false,textured,2);glPopMatrix();
         glColor3d(1.0,1.0,1.0);
 
-        if (actTorsoCovers == "off"){
-            glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
-            DrawBox(fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);
-            glPopMatrix();
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the torso "boxes" are drawn - in this regime, we want to draw all objects that are relevant for the simulation
+              glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
+              DrawBox(fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);
+              glPopMatrix();
 
-            glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
-            DrawBox(fabs(jP_rightArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);
-            glPopMatrix();
+              glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
+              DrawBox(fabs(jP_rightArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);
+              glPopMatrix();
+             
         }
-    }
+        else {
+            if (actTorsoCovers == "off") //if covers are off, the torso "boxes" are drawn; if they are on, they are not drawn as the cover visually fills up the space
+            {
+                glPushMatrix();LDEsetM(dBodyGetPosition(torso[4]),dBodyGetRotation(torso[4]));
+                DrawBox(fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059 /*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);
+                glPopMatrix();
+
+                glPushMatrix();LDEsetM(dBodyGetPosition(torso[5]),dBodyGetRotation(torso[5]));
+                DrawBox(fabs(jP_rightArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/))/*0.118*/,0.109,false,textured,2);
+                glPopMatrix();
+                
+            }
+        } 
+    } // (actTorso == "on")
+ 
     if (actLArm == "off"){
         glColor3d(1.0,1.0,1.0);
         if (actLeftArmCovers == "on")
         {
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(larm2_geom),dGeomGetRotation(larm2_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[4][2] - jP_leftArm[2][2]));
-            DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
-            glPopMatrix();
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperLeftArm"].geom),dGeomGetRotation(model_ThreeD_obj["upperLeftArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
+                glPopMatrix();
+            
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerLeftArm"].geom),dGeomGetRotation(model_ThreeD_obj["lowerLeftArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerLeftArm"], modelTexture[0]);
+                glPopMatrix();
+            } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(larm2_geom),dGeomGetRotation(larm2_geom));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[4][2] - jP_leftArm[2][2]));
+                DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
+                glPopMatrix();
 
-            //draw texture
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(larm3_geom),dGeomGetRotation(larm3_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
-            DrawX( model_trimesh["lowerArm"], modelTexture[0]);
-            glPopMatrix();
-        }
+                //draw texture
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(larm3_geom),dGeomGetRotation(larm3_geom));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2])); 
+                DrawX( model_trimesh["lowerLeftArm"], modelTexture[0]);
+                glPopMatrix();
+            }
+       }
         glColor3d(1.0,1.0,1.0);
         glPushMatrix(); LDEsetM(dGeomGetPosition(larm0_geom),dGeomGetRotation(larm0_geom));
         DrawCylinder(0.031,0.011,false,textured,2);glPopMatrix();
@@ -657,21 +835,34 @@ void ICubSim::draw(){
         DrawCylinder(0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]),false,textured,2);glPopMatrix();
 
     }else{
-        //LEFT ARM
+       
         glColor3d(1.0,1.0,1.0);
         if (actLeftArmCovers == "on")
         {
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(body[6]),dBodyGetRotation(body[4]));     //DRAW THE MODEL
-            DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
-            glPopMatrix();
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperLeftArm"].geom),dGeomGetRotation(model_ThreeD_obj["upperLeftArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
+                glPopMatrix();
+            
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerLeftArm"].geom),dGeomGetRotation(model_ThreeD_obj["lowerLeftArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerLeftArm"], modelTexture[0]);
+                glPopMatrix();
+             } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(body[6]),dBodyGetRotation(body[4]));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperLeftArm"], modelTexture[0]);
+                glPopMatrix();
 
-            //draw texture
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(body[8]),dBodyGetRotation(body[8]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
-            DrawX( model_trimesh["lowerArm"], modelTexture[0]);
-            glPopMatrix();
+                //draw texture
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(body[8]),dBodyGetRotation(body[8]));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2])); //for consinstency with initLeftArm
+                //glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[4][2]));
+                DrawX( model_trimesh["lowerLeftArm"], modelTexture[0]);
+                glPopMatrix();
+             }
         }
 
         glColor3d(1.0,1.0,1.0);
@@ -698,18 +889,30 @@ void ICubSim::draw(){
         glColor3d(1.0,1.0,1.0);
         if (actRightArmCovers == "on")
         {
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(rarm2_geom),dGeomGetRotation(rarm2_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[4][2] - jP_rightArm[2][2]));
-            DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
-            glPopMatrix();
+             if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperRightArm"].geom),dGeomGetRotation(model_ThreeD_obj["upperRightArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
+                glPopMatrix();
+            
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerRightArm"].geom),dGeomGetRotation(model_ThreeD_obj["lowerRightArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerRightArm"], modelTexture[0]);
+                glPopMatrix();
+             } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(rarm2_geom),dGeomGetRotation(rarm2_geom));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[4][2] - jP_rightArm[2][2]));  //Matej fix
+                DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
+                glPopMatrix();
 
-            //draw texture
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(rarm3_geom),dGeomGetRotation(rarm3_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
-            DrawX( model_trimesh["lowerArm"], modelTexture[0]);
-            glPopMatrix();
+                //draw texture
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(rarm3_geom),dGeomGetRotation(rarm3_geom));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[3][2])); //Matej fix
+                DrawX( model_trimesh["lowerRightArm"], modelTexture[0]); //Matej fix
+                glPopMatrix();
+             }
         }
         glColor3d(1.0,1.0,1.0);
         glPushMatrix(); LDEsetM(dGeomGetPosition(rarm0_geom),dGeomGetRotation(rarm0_geom));
@@ -725,19 +928,32 @@ void ICubSim::draw(){
         DrawCylinder(0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]),false,textured,2);glPopMatrix();
 
     }else{
-        //RIGHT ARM
+       
         if (actRightArmCovers == "on")
         {
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(body[7]),dBodyGetRotation(body[5]));     //DRAW THE MODEL
-            DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
-            glPopMatrix();
+             if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["upperRightArm"].geom),dGeomGetRotation(model_ThreeD_obj["upperRightArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
+                glPopMatrix();
+            
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["lowerRightArm"].geom),dGeomGetRotation(model_ThreeD_obj["lowerRightArm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["lowerRightArm"], modelTexture[0]);
+                glPopMatrix();
+             } else { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(body[7]),dBodyGetRotation(body[5]));     //DRAW THE MODEL
+                //glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[4][2] - jP_rightArm[2][2]));
+                DrawX( model_trimesh["upperRightArm"], modelTexture[0]);
+                glPopMatrix();
 
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(body[9]),dBodyGetRotation(body[9]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[3][2]));
-            DrawX( model_trimesh["lowerArm"], modelTexture[0]);
-            glPopMatrix();
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(body[9]),dBodyGetRotation(body[9]));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[3][2])); //Matej fix
+                DrawX( model_trimesh["lowerRightArm"], modelTexture[0]);
+                glPopMatrix();
+             }    
         }
         glColor3d(1.0,1.0,1.0);
         glPushMatrix(); LDEsetM(dBodyGetPosition(body[1]),dBodyGetRotation(body[1]));
@@ -759,20 +975,32 @@ void ICubSim::draw(){
     }
     if (actLHand == "off"){
         glColor3d(1.0,1.0,1.0);
-        if (actLeftArmCovers == "off")
-        {
-            glPushMatrix();LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));
-            DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
-        }else
-        {
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
-            DrawX( model_trimesh["leftPalm"], modelTexture[0]);
-            glPopMatrix();
-
+                
+        if (actLeftArmCovers == "on"){
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["leftPalm"].geom),dGeomGetRotation(model_ThreeD_obj["leftPalm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["leftPalm"], modelTexture[0]);
+                glPopMatrix();
+            }  else  { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));    L
+                glTranslatef(0.0, 0.5*fabs(jP_leftArm[7][2] - jP_leftArm[6][2]), 0.0); 
+                DrawX( model_trimesh["leftPalm"], modelTexture[0]);
+                glPopMatrix();
+            }
         }
-
+       
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the palm "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
+              glPushMatrix();LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));
+              DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
+        } else {
+            if (actLeftArmCovers == "off") //if covers are off, the palm "box" is drawn; if they are on, it is not drawn as the cover visually fills up the space
+            {
+              glPushMatrix();LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));
+              DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
+            }
+        } 
         glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand1_geom),dGeomGetRotation(l_hand1_geom));
         DrawCylinder(0.0065,0.08,false,textured,2);glPopMatrix();
 
@@ -788,22 +1016,33 @@ void ICubSim::draw(){
         glPushMatrix(); LDEsetM(dGeomGetPosition(l_hand5_geom),dGeomGetRotation(l_hand5_geom));
         DrawCylinder(0.0065,0.064,false,textured,2);glPopMatrix();
 
-    }else{
-
-        if (actLeftArmCovers == "off")
-        {
+    }else{ //(actLHand == "on")
+        if (actLeftArmCovers == "on"){
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["leftPalm"].geom),dGeomGetRotation(model_ThreeD_obj["leftPalm"].geom));     //DRAW THE MODEL
+                DrawX( model_trimesh["leftPalm"], modelTexture[0]);
+                glPopMatrix();
+            }  else  { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(body[10]),dBodyGetRotation(body[10]));    
+                glTranslatef(0.0, 0.5*fabs(jP_leftArm[7][2] - jP_leftArm[6][2]), 0.0); 
+                DrawX( model_trimesh["leftPalm"], modelTexture[0]);
+                glPopMatrix();
+            }
+        }
+       
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the palm "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
             glPushMatrix();LDEsetM(dBodyGetPosition(body[10]),dBodyGetRotation(body[10]));
             DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, Xs
-        }else
-        {
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(body[10]),dBodyGetRotation(body[10]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
-            DrawX( model_trimesh["leftPalm"], modelTexture[0]);
-            glPopMatrix();
-
-        }
-
+        } else {
+            if (actLeftArmCovers == "off") //if covers are off, the palm "box" is drawn; if they are on, it is not drawn as the cover visually fills up the space
+            {
+                glPushMatrix();LDEsetM(dBodyGetPosition(body[10]),dBodyGetRotation(body[10]));
+                DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, Xs
+            }
+        } 
+        
         //LEFT HAND + FINGERS
         glPushMatrix(); LDEsetM(dBodyGetPosition(body[12]),dBodyGetRotation(body[12]));
         DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
@@ -863,22 +1102,34 @@ void ICubSim::draw(){
         DrawCylinder(0.0065,0.016,false,textured,2);glPopMatrix();
     }
     if (actRHand == "off"){
+       
         glColor3d(1.0,1.0,1.0);
-        if (actRightArmCovers == "off")
-        {
+        if (actRightArmCovers == "on"){
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["rightPalm"].geom),dGeomGetRotation(model_ThreeD_obj["rightPalm"].geom));     
+                DrawX( model_trimesh["rightPalm"], modelTexture[0]);
+                glPopMatrix();
+            }  else  { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(r_hand0_geom),dGeomGetRotation(r_hand0_geom));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
+                DrawX( model_trimesh["rightPalm"], modelTexture[0]);
+                glPopMatrix();
+            }
+        }
+       
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the palm "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
             glPushMatrix();LDEsetM(dGeomGetPosition(r_hand0_geom),dGeomGetRotation(r_hand0_geom));
             DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
-        }else
-        {
-            glPushMatrix();
-            LDEsetM(dGeomGetPosition(r_hand0_geom),dGeomGetRotation(r_hand0_geom));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
-            DrawX( model_trimesh["rightPalm"], modelTexture[0]);
-            glPopMatrix();
-
+        } else {
+            if (actRightArmCovers == "off") //if covers are off, the palm "box" is drawn; if they are on, it is not drawn as the cover visually fills up the space
+            {
+               glPushMatrix();LDEsetM(dGeomGetPosition(r_hand0_geom),dGeomGetRotation(r_hand0_geom));
+               DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();
+            }
         }
-        
-        glColor3d(1.0,1.0,1.0);
+         
         glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand1_geom),dGeomGetRotation(r_hand1_geom));
         DrawCylinder(0.0065,0.08,false,textured,2);glPopMatrix();
 
@@ -894,23 +1145,34 @@ void ICubSim::draw(){
         glPushMatrix(); LDEsetM(dGeomGetPosition(r_hand5_geom),dGeomGetRotation(r_hand5_geom));
         DrawCylinder(0.0065,0.064,false,textured,2);glPopMatrix();
 
-
-    }else{
-        if (actRightArmCovers == "off")
-        {
+    }else{ //(actRHand == "on")
+         if (actRightArmCovers == "on"){
+            if (actCoversCol == "on"){ //in this case, the covers are placeable geoms initialized in initCovers() - we can retrieve their coordinates 
+                glPushMatrix();
+                LDEsetM(dGeomGetPosition(model_ThreeD_obj["rightPalm"].geom),dGeomGetRotation(model_ThreeD_obj["rightPalm"].geom));     
+                DrawX( model_trimesh["rightPalm"], modelTexture[0]);
+                glPopMatrix();
+            }  else  { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
+                glPushMatrix();
+                LDEsetM(dBodyGetPosition(body[11]),dBodyGetRotation(body[11]));     //DRAW THE MODEL
+                glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
+                DrawX( model_trimesh["rightPalm"], modelTexture[0]);
+                glPopMatrix();
+            }
+        }
+       
+        if ((actSelfCol == "on") || (actCoversCol == "on")){ //the palm "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
             glPushMatrix();LDEsetM(dBodyGetPosition(body[11]),dBodyGetRotation(body[11]));
             DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, Xs
-        }else
-        {
-            glPushMatrix();
-            LDEsetM(dBodyGetPosition(body[11]),dBodyGetRotation(body[11]));     //DRAW THE MODEL
-            glTranslatef(0.0, 0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]), 0.0);
-            DrawX( model_trimesh["rightPalm"], modelTexture[0]);
-            glPopMatrix();
-
-        }
+        } else {
+            if (actRightArmCovers == "off") //if covers are off, the palm "box" is drawn; if they are on, it is not drawn as the cover visually fills up the space
+            {
+                glPushMatrix();LDEsetM(dBodyGetPosition(body[11]),dBodyGetRotation(body[11]));
+                DrawBox(0.022,0.069,0.065,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, Xs
+            }
+        }    
+         
         //RIGHT HAND FINGERS
-        
         glPushMatrix(); LDEsetM(dBodyGetPosition(body[31]),dBodyGetRotation(body[31]));
         DrawCylinder(0.0065,0.012,false,textured,2);glPopMatrix();
 
@@ -1102,24 +1364,9 @@ bool ICubSim::loadJointPosition(const char *joints_path){
     }
 
     // Del Prete: read parameters from iKin (for arms and torso only)
-    iCubArm iKinLeftArm("left");
-    iCubArm iKinRightArm("right");
-    iKinLeftArm.releaseLink(0); iKinLeftArm.releaseLink(1); iKinLeftArm.releaseLink(2);
-    iKinRightArm.releaseLink(0); iKinRightArm.releaseLink(1); iKinRightArm.releaseLink(2);
-    iKinLeftArm.setAllConstraints(false);   // disable joint limits
-    iKinRightArm.setAllConstraints(false);
-    iKinLeftArm.setAng(zeros(10));  // set all ang to zero
-    iKinRightArm.setAng(zeros(10));
     Matrix Hl(4,4), Hr(4,4);  // rototranslation matrix
     Vector tl(3), tr(3), z(3);
-    // rototranslation form robot root to simulation world reference frame
-    Matrix H_r2w(4,4), H_w2r(4,4);
-    H_r2w(0,2) = -1.0;  H_r2w(0,3) = -0.026;
-    H_r2w(1,0) = -1.0;
-    H_r2w(2,1) =  1.0;  H_r2w(2,3) = -0.5976; //-elev;
-    H_r2w(3,3) = 1.0;
-    H_w2r = SE3inv(H_r2w);
-    
+      
     /*---- torso ----*/
     for(int i=0; i<3; i++)
     {
@@ -1341,6 +1588,7 @@ void ICubSim::activateiCubParts(RobotConfig& config) {
     FLAGIFY(flags,actHead);
     FLAGIFY(flags,actfixedHip);
     FLAGIFY(flags,actSelfCol);
+    FLAGIFY(flags,actCoversCol);
     FLAGIFY(flags,actVision);
     FLAGIFY(flags,actPressure);
     FLAGIFY(flags,actSkinEmul);
@@ -1368,6 +1616,7 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z, R
     for (int x =0; x<100; x++)
         torqueData[x] = 0.0;
 
+    init_iKin();
     //load joint positions from file and from iKin
     loadJointPosition(finder.findFile(finder.find("joints").asString().c_str()).c_str());
 
@@ -1375,55 +1624,92 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z, R
     OdeParams odeParameters = config.getOdeParameters();
         
     //init
-    iCub = dSimpleSpaceCreate(space);
-    dSpaceSetCleanup(iCub,0);
-
-    initCovers(finder);
+    if (actSelfCol == "off"){
+        iCub = dSimpleSpaceCreate(space);
+        dSpaceSetCleanup(iCub,0);
+        iCubHeadSpace =  iCubTorsoSpace = iCubLeftArmSpace =  iCubRightArmSpace = iCubLegsSpace = iCub; //there will be only iCub space within the "space" and hence no self-collisions
+    } else {
+        // We create subspace for individual body parts within the space  - this will allow for their collisions 
+        // see part 9.7 of ODE manual - http://ode-wiki.org/wiki/index.php?title=Manual:_All
+        iCub = dSimpleSpaceCreate(space);
+        dSpaceSetCleanup(iCub,0); 
+        dSpaceSetSublevel(iCub, 1);
+     
+        iCubHeadSpace=dSimpleSpaceCreate(iCub);
+        dSpaceSetCleanup(iCubHeadSpace,0);
+        dSpaceSetSublevel(iCubHeadSpace, 2);
+     
+        iCubTorsoSpace=dSimpleSpaceCreate(iCub);
+        dSpaceSetCleanup(iCubTorsoSpace,0);
+        dSpaceSetSublevel(iCubTorsoSpace, 2);
+     
+        iCubLeftArmSpace=dSimpleSpaceCreate(iCub);
+        dSpaceSetCleanup(iCubLeftArmSpace,0);
+        dSpaceSetSublevel(iCubLeftArmSpace, 2);
+     
+        iCubRightArmSpace=dSimpleSpaceCreate(iCub);
+        dSpaceSetCleanup(iCubRightArmSpace,0);
+        dSpaceSetSublevel(iCubRightArmSpace, 2);
+     
+        iCubLegsSpace=dSimpleSpaceCreate(iCub);
+        dSpaceSetCleanup(iCubLegsSpace,0);
+        dSpaceSetSublevel(iCubLegsSpace, 2);        
+    }  
+     //For debugging purposes
+     dSpaceNames[space]="space (top level)";
+     dSpaceNames[iCub] = "iCub - top iCub space";
+     dSpaceNames[iCubHeadSpace] = "iCubHeadSpace";
+     dSpaceNames[iCubTorsoSpace] = "iCubTorsoSpace";
+     dSpaceNames[iCubLeftArmSpace] = "iCubLeftArmSpace";
+     dSpaceNames[iCubRightArmSpace] = "iCubRightArmSpace";
+     dSpaceNames[iCubLegsSpace] = "iCubLegsSpace";
+     
+    // initCovers(finder); //This had to be moved lower down - in order to be able to attach the covers to bodies in the actSelfCol, the bodies need to be created first
 
     if (actScreen == "on")
         screenGeom = dCreateBox(space,1.0,1.0,0.01); //this will create a thin screen of width 1m height 1m and depth 0.01m
 
     if (actLegs == "off"){
-        initLegsOff(world); //here we create legs as one body
+        initLegsOff(world,iCubLegsSpace); 
     }else{
-        initLegsOn(world);
+        initLegsOn(world,iCubLegsSpace);
     }
     if (actTorso == "off"){
-        initTorsoOff(world);
+      initTorsoOff(world,iCubTorsoSpace);
     }else{
-        initTorsoOn(world);
+       initTorsoOn(world,iCubTorsoSpace);
     }
     if (actLArm == "off"){
-        initLeftArmOff(world);
+        initLeftArmOff(world,iCubLeftArmSpace);
     }else{
-        initLeftArmOn(world);
+        initLeftArmOn(world,iCubLeftArmSpace);
     }
     if (actRArm == "off"){
-        initRightArmOff(world);
+        initRightArmOff(world,iCubRightArmSpace);
     }else{
-        initRightArmOn(world);
+        initRightArmOn(world,iCubRightArmSpace);
     }
     if (actLHand == "off"){
-        initLeftHandOff(world);
+        initLeftHandOff(world,iCubLeftArmSpace);
     }else{
-        initLeftHandOn(world);
+        initLeftHandOn(world,iCubLeftArmSpace);
     }
 
     if (actRHand == "off"){
-        initRightHandOff(world);
+        initRightHandOff(world,iCubRightArmSpace);
     }else{
-        initRightHandOn(world);
+        initRightHandOn(world,iCubRightArmSpace);
     }
 
-    initHead(world);
+    initHead(world,iCubHeadSpace);
 
-    initEyes(world);
+    initEyes(world,iCubHeadSpace);
 
     // inertial sensor box
     dMass m;
     inertialBody = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.0001,0.03,0.02,0.05);
     dBodySetMass(inertialBody,&m);
-    inertialGeom = dCreateBox (iCub,0.03,0.02,0.05);dGeomSetBody (inertialGeom,inertialBody);
+    inertialGeom = dCreateBox (iCubHeadSpace,0.03,0.02,0.05);dGeomSetBody (inertialGeom,inertialBody);
 
     setPosition( X, Y, Z);
 
@@ -1556,57 +1842,71 @@ void ICubSim::init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z, R
     inertialJoint = dJointCreateFixed(world, 0);
     dJointAttach (inertialJoint,inertialBody,head);
     dJointSetFixed (inertialJoint);
+    
+    initCovers(finder); //Moved this here - in order to be able to attach the covers to bodies, the bodies need to be created first; also to get the positions of 
+    // the cover geoms right, the bodies and geoms already have to be in right positions and also the joints are needed for some transforms (like in draw() )
+    
+    initSkinActivationBottles(); //these will be necessary for the skin emulation - output to ports - empty or full activations
+    
 }
 
-void ICubSim::initLegsOff(dWorldID world)
+void ICubSim::initLegsOff(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
 
     legs = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    l_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
+    l_leg0_geom = dCreateBox (subspace,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
+    dGeomNames[l_leg0_geom] = "l_leg0_geom"; 
     dGeomSetBody (l_leg0_geom,legs);
     dGeomSetOffsetPosition(l_leg0_geom,-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_leg1_geom = dCreateCylinder (iCub,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
+    l_leg1_geom = dCreateCylinder (subspace,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
+    dGeomNames[l_leg1_geom] = "l_leg1_geom"; 
     dGeomSetBody (l_leg1_geom,legs);
     dGeomSetOffsetPosition(l_leg1_geom,-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_leg2_geom = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    l_leg2_geom = dCreateCylinder (subspace,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dGeomNames[l_leg2_geom] = "l_leg2_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (l_leg2_geom,legs);
     dGeomSetOffsetRotation(l_leg2_geom,Rtx);
     dGeomSetOffsetPosition(l_leg2_geom,-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_leg3_geom = dCreateCylinder (iCub,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    l_leg3_geom = dCreateCylinder (subspace,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dGeomNames[l_leg3_geom] = "l_leg3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (l_leg3_geom,legs);
     dGeomSetOffsetRotation(l_leg3_geom,Rtx);
     dGeomSetOffsetPosition(l_leg3_geom,-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]+jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_leg4_geom = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    l_leg4_geom = dCreateCylinder (subspace,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dGeomNames[l_leg4_geom] = "l_leg4_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (l_leg4_geom,legs);
     dGeomSetOffsetRotation(l_leg4_geom,Rtx);
     dGeomSetOffsetPosition(l_leg4_geom,-m2.c[0], jP_leftLeg[2][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_leg5_geom = dCreateCylinder (iCub,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    l_leg5_geom = dCreateCylinder (subspace,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dGeomNames[l_leg5_geom] = "l_leg5_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (l_leg5_geom,legs);
     dGeomSetOffsetRotation(l_leg5_geom,Rtx);
     dGeomSetOffsetPosition(l_leg5_geom,-m2.c[0], 0.5*fabs(jP_leftLeg[3][2]+jP_leftLeg[2][2])-m2.c[0],-m2.c[0]);
 
-    l_leg6_geom = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    l_leg6_geom = dCreateCylinder (subspace,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomNames[l_leg6_geom] = "l_leg6_geom"; 
     dGeomSetBody (l_leg6_geom,legs);
     dGeomSetOffsetPosition(l_leg6_geom,-m2.c[0], jP_leftLeg[4][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_leg7_geom = dCreateCylinder (iCub,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
+    l_leg7_geom = dCreateCylinder (subspace,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
+    dGeomNames[l_leg7_geom] = "l_leg7_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (l_leg7_geom,legs);
     dGeomSetOffsetRotation(l_leg7_geom,Rtx);
@@ -1615,49 +1915,57 @@ void ICubSim::initLegsOff(dWorldID world)
 
     double r_foot_y=fabs(jP_leftLeg[0][1]-jP_rightLeg[0][1]);
 
-    r_leg0_geom = dCreateBox (iCub,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
+    r_leg0_geom = dCreateBox (subspace,0.054,0.004,0.13);dMassSetBoxTotal(&m2,0.08185,0.054,0.004,0.13);
+    dGeomNames[r_leg0_geom] = "r_leg0_geom"; 
     dGeomSetBody (r_leg0_geom,legs);
     dGeomSetOffsetPosition(r_leg0_geom,-r_foot_y-m2.c[0], 0.0021-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_leg1_geom = dCreateCylinder (iCub,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
+    r_leg1_geom = dCreateCylinder (subspace,0.027,0.095);dMassSetCylinderTotal(&m2,0.59285,3,0.027,0.095);
+    dGeomNames[r_leg1_geom] = "r_leg1_geom"; 
     dGeomSetBody (r_leg1_geom,legs);
     dGeomSetOffsetPosition(r_leg1_geom,-r_foot_y-m2.c[0],jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_leg2_geom = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    r_leg2_geom = dCreateCylinder (subspace,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dGeomNames[r_leg2_geom] = "r_leg2_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (r_leg2_geom,legs);
     dGeomSetOffsetRotation(r_leg2_geom,Rtx);
     dGeomSetOffsetPosition(r_leg2_geom,-r_foot_y-m2.c[0], jP_leftLeg[1][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_leg3_geom = dCreateCylinder (iCub,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    r_leg3_geom = dCreateCylinder (subspace,0.0315,0.213);dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dGeomNames[r_leg3_geom] = "r_leg3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (r_leg3_geom,legs);
     dGeomSetOffsetRotation(r_leg3_geom,Rtx);
     dGeomSetOffsetPosition(r_leg3_geom,-r_foot_y-m2.c[0], 0.5*fabs(jP_leftLeg[2][2]+jP_leftLeg[1][2])-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_leg4_geom = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    r_leg4_geom = dCreateCylinder (subspace,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dGeomNames[r_leg4_geom] = "r_leg4_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (r_leg4_geom,legs);
     dGeomSetOffsetRotation(r_leg4_geom,Rtx);
     dGeomSetOffsetPosition(r_leg4_geom,-r_foot_y-m2.c[0], jP_rightLeg[2][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_leg5_geom = dCreateCylinder (iCub,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    r_leg5_geom = dCreateCylinder (subspace,0.034,0.224);dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dGeomNames[r_leg5_geom] = "r_leg5_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (r_leg5_geom,legs);
     dGeomSetOffsetRotation(r_leg5_geom,Rtx);
     dGeomSetOffsetPosition(r_leg5_geom,-r_foot_y-m2.c[0],0.5*fabs(jP_leftLeg[3][2]+jP_leftLeg[2][2])-m2.c[0], -m2.c[0]);
 
-    r_leg6_geom = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    r_leg6_geom = dCreateCylinder (subspace,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomNames[r_leg6_geom] = "r_leg6_geom"; 
     dGeomSetBody (r_leg6_geom,legs);
     dGeomSetOffsetPosition(r_leg6_geom,-r_foot_y-m2.c[0], jP_rightLeg[4][2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_leg7_geom = dCreateCylinder (iCub,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
+    r_leg7_geom = dCreateCylinder (subspace,0.038,0.013);dMassSetCylinderTotal(&m2,0.32708,3,0.038,0.013);
+    dGeomNames[r_leg7_geom] = "r_leg7_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (r_leg7_geom,legs);
     dGeomSetOffsetRotation(r_leg7_geom,Rtx);
@@ -1668,7 +1976,7 @@ void ICubSim::initLegsOff(dWorldID world)
     dBodySetMass(legs,&m);
 }
 
-void ICubSim::initLegsOn(dWorldID world)
+void ICubSim::initLegsOn(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
@@ -1679,22 +1987,25 @@ void ICubSim::initLegsOn(dWorldID world)
     //left lower parts
     leftLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
     dBodySetMass(leftLeg[0],&m);
-    leftLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (leftLegGeom[0],leftLeg[0]);
-
+    leftLegGeom[0] = dCreateBox (subspace,0.054,0.004,0.13);dGeomSetBody (leftLegGeom[0],leftLeg[0]);
+    dGeomNames[leftLegGeom[0]] = "leftLegGeom[0]"; 
+    
     leftLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
     dBodySetMass(leftLeg[1],&m);
-    leftLegGeom[1] = dCreateCylinder (iCub,0.027,0.095);dGeomSetBody(leftLegGeom[1],leftLeg[1]);
-
+    leftLegGeom[1] = dCreateCylinder (subspace,0.027,0.095);dGeomSetBody(leftLegGeom[1],leftLeg[1]);
+    dGeomNames[leftLegGeom[1]] = "leftLegGeom[1]"; 
     //----------------------------------------------------------ankle encapsulated objects
     leftLeg[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    leftLeg_2_1 = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    leftLeg_2_1 = dCreateCylinder (subspace,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dGeomNames[leftLeg_2_1] = "leftLeg_2_1"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (leftLeg_2_1,leftLeg[2]);
     dGeomSetOffsetRotation(leftLeg_2_1,Rtx);//dGeomSetPosition (leftLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(leftLeg_2_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    leftLeg_2_2 = dCreateCylinder (iCub,0.0315,fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    leftLeg_2_2 = dCreateCylinder (subspace,0.0315,fabs(jP_leftLeg[2][2]-jP_leftLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dGeomNames[leftLeg_2_2] = "leftLeg_2_2"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (leftLeg_2_2,leftLeg[2]);
     dGeomSetOffsetRotation(leftLeg_2_2,Rtx);
@@ -1707,14 +2018,16 @@ void ICubSim::initLegsOn(dWorldID world)
     dBodySetMass(leftLeg[2],&m);
     //----------------------------------
     leftLeg[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    leftLeg_3_1 = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    leftLeg_3_1 = dCreateCylinder (subspace,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dGeomNames[leftLeg_3_1] = "leftLeg_3_1"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (leftLeg_3_1,leftLeg[3]);
     dGeomSetOffsetRotation(leftLeg_3_1,Rtx);//dGeomSetPosition (leftLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(leftLeg_3_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    leftLeg_3_2 = dCreateCylinder (iCub,0.034,fabs(jP_leftLeg[3][2]-jP_leftLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    leftLeg_3_2 = dCreateCylinder (subspace,0.034,fabs(jP_leftLeg[3][2]-jP_leftLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dGeomNames[leftLeg_3_2] = "leftLeg_3_2"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (leftLeg_3_2,Rtx);
     dGeomSetBody (leftLeg_3_2,leftLeg[3]);
@@ -1728,12 +2041,14 @@ void ICubSim::initLegsOn(dWorldID world)
     dBodySetMass(leftLeg[3],&m);
     //---------------------------------------------------
     leftLeg[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    leftLeg_4_1 = dCreateSphere(iCub,0.017);dMassSetSphereTotal(&m,0.01,0.017);
+    leftLeg_4_1 = dCreateSphere(subspace,0.017);dMassSetSphereTotal(&m,0.01,0.017);
+    dGeomNames[leftLeg_4_1] = "leftLeg_4_1"; 
     dGeomSetBody (leftLeg_4_1,leftLeg[4]);
     dGeomSetOffsetPosition(leftLeg_4_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    leftLeg_4_2 = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    leftLeg_4_2 = dCreateCylinder (subspace,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomNames[leftLeg_4_2] = "leftLeg_4_2"; 
     dGeomSetBody (leftLeg_4_2,leftLeg[4]);
     dGeomSetOffsetPosition(leftLeg_4_2,-m2.c[0], -m2.c[0], -m2.c[0]);//dGeomSetPosition (leftLeg_2 , 0.0, 1, 0.0);
     //add mass accumulated
@@ -1746,28 +2061,33 @@ void ICubSim::initLegsOn(dWorldID world)
     leftLeg[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.32708,3,0.038,0.013);
     dBodySetMass(leftLeg[5],&m);
     dBodySetQuaternion(leftLeg[5],q1);
-    leftLegGeom[5] = dCreateCylinder (iCub,0.038,0.013);dGeomSetBody(leftLegGeom[5],leftLeg[5]);
+    leftLegGeom[5] = dCreateCylinder (subspace,0.038,0.013);dGeomSetBody(leftLegGeom[5],leftLeg[5]);
+    dGeomNames[leftLegGeom[5]] = "leftLegGeom[5]"; 
     //--------------------------------------------------------
     //RIGHT LEG
     //--------------------------------------------------------
     //right lower parts
     rightLeg[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.08185,0.054,0.004,0.13); //Y, Z, X
     dBodySetMass(rightLeg[0],&m);
-    rightLegGeom[0] = dCreateBox (iCub,0.054,0.004,0.13);dGeomSetBody (rightLegGeom[0],rightLeg[0]);
-
+    rightLegGeom[0] = dCreateBox (subspace,0.054,0.004,0.13);dGeomSetBody (rightLegGeom[0],rightLeg[0]);
+    dGeomNames[rightLegGeom[0]] = "rightLegGeom[0]"; 
+    
     rightLeg[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.59285,3,0.027,0.095);
     dBodySetMass(rightLeg[1],&m);
-    rightLegGeom[1] = dCreateCylinder (iCub,0.027,0.095);dGeomSetBody(rightLegGeom[1],rightLeg[1]);
+    rightLegGeom[1] = dCreateCylinder (subspace,0.027,0.095);dGeomSetBody(rightLegGeom[1],rightLeg[1]);
+    dGeomNames[rightLegGeom[1]] = "rightLegGeom[1]"; 
     //----------------------------------------------------------ankle encapsulated objects
     rightLeg[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    rightLeg_2_1 = dCreateCylinder (iCub,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    rightLeg_2_1 = dCreateCylinder (subspace,0.0245,0.063);dMassSetCylinderTotal(&m2,0.14801,3,0.0245,0.063);
+    dGeomNames[rightLeg_2_1] = "rightLeg_2_1"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (rightLeg_2_1,rightLeg[2]);
     dGeomSetOffsetRotation(rightLeg_2_1,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rightLeg_2_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rightLeg_2_2 = dCreateCylinder (iCub,0.0315,fabs(jP_rightLeg[2][2]-jP_rightLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    rightLeg_2_2 = dCreateCylinder (subspace,0.0315,fabs(jP_rightLeg[2][2]-jP_rightLeg[1][2]));dMassSetCylinderTotal(&m2,0.95262,3,0.0315,0.213);
+    dGeomNames[rightLeg_2_2] = "rightLeg_2_2"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rightLeg_2_2,Rtx);
     dGeomSetBody (rightLeg_2_2,rightLeg[2]);
@@ -1781,14 +2101,16 @@ void ICubSim::initLegsOn(dWorldID world)
     dBodySetMass(rightLeg[2],&m);
     //----------------------------------
     rightLeg[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    rightLeg_3_1 = dCreateCylinder (iCub,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    rightLeg_3_1 = dCreateCylinder (subspace,0.0315,0.077);dMassSetCylinderTotal(&m2,0.79206,3,0.0315,0.077);
+    dGeomNames[rightLeg_3_1] = "rightLeg_3_1"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (rightLeg_3_1,rightLeg[3]);
     dGeomSetOffsetRotation(rightLeg_3_1,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rightLeg_3_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rightLeg_3_2 = dCreateCylinder (iCub,0.034,fabs(jP_rightLeg[3][2]-jP_rightLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    rightLeg_3_2 = dCreateCylinder (subspace,0.034,fabs(jP_rightLeg[3][2]-jP_rightLeg[2][2]));dMassSetCylinderTotal(&m2,1.5304,3,0.034,0.224);
+    dGeomNames[rightLeg_3_2] = "rightLeg_3_2"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rightLeg_3_2,Rtx);
     dGeomSetBody (rightLeg_3_2,rightLeg[3]);
@@ -1802,12 +2124,14 @@ void ICubSim::initLegsOn(dWorldID world)
     dBodySetMass(rightLeg[3],&m);
     //---------------------------------------------------
     rightLeg[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    rightLeg_4_1 = dCreateSphere(iCub,0.017);dMassSetSphereTotal(&m,0.01,0.017);
+    rightLeg_4_1 = dCreateSphere(subspace,0.017);dMassSetSphereTotal(&m,0.01,0.017);
+    dGeomNames[rightLeg_4_1] = "rightLeg_4_1"; 
     dGeomSetBody (rightLeg_4_1,rightLeg[4]);
     dGeomSetOffsetPosition(rightLeg_4_1,-m2.c[0], -m2.c[0], -m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rightLeg_4_2 = dCreateCylinder (iCub,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    rightLeg_4_2 = dCreateCylinder (subspace,0.031,0.075);dMassSetCylinderTotal(&m2,1.5304,3,0.031,0.075);
+    dGeomNames[rightLeg_4_2] = "rightLeg_4_2"; 
     dGeomSetBody (rightLeg_4_2,rightLeg[4]);
     dGeomSetOffsetPosition(rightLeg_4_2,-m2.c[0], -m2.c[0], -m2.c[0]);//dGeomSetPosition (rightLeg_2 , 0.0, 1, 0.0);
     //add mass accumulated
@@ -1820,45 +2144,50 @@ void ICubSim::initLegsOn(dWorldID world)
     rightLeg[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.32708,3,0.038,0.013);
     dBodySetMass(rightLeg[5],&m);
     dBodySetQuaternion(rightLeg[5],q1);
-    rightLegGeom[5] = dCreateCylinder (iCub,0.038,0.013);dGeomSetBody(rightLegGeom[5],rightLeg[5]);
+    rightLegGeom[5] = dCreateCylinder (subspace,0.038,0.013);dGeomSetBody(rightLegGeom[5],rightLeg[5]);
+    dGeomNames[rightLegGeom[5]] = "rightLegGeom[5]"; 
 }
 
-void ICubSim::initTorsoOff(dWorldID world)
+void ICubSim::initTorsoOff(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
 
     body_torso = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    torso0_geom = dCreateBox (iCub,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dMassSetBoxTotal(&m2,0.20297,0.004,0.13,0.054);
+    torso0_geom = dCreateBox (subspace,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dMassSetBoxTotal(&m2,0.20297,0.004,0.13,0.054);
+    dGeomNames[torso0_geom] = "torso0_geom"; 
     dGeomSetBody (torso0_geom,body_torso);
     dGeomSetOffsetPosition(torso0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
     double z_offset=0.5*fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)+(jP_leftLeg[5][2]-0.031/*leg cyl rad*/));
 
-    //torso1_geom = dCreateBox (iCub,0.176,0.063,0.127);dMassSetBoxTotal(&m2,3.623,0.176,0.063,0.127);
-    torso1_geom = dCreateCylinder (iCub,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dMassSetCylinderTotal(&m2,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));
+    //torso1_geom = dCreateBox (subspace,0.176,0.063,0.127);dMassSetBoxTotal(&m2,3.623,0.176,0.063,0.127);
+    torso1_geom = dCreateCylinder (subspace,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dMassSetCylinderTotal(&m2,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));
+    dGeomNames[torso1_geom] = "torso1_geom"; 
     //dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (torso1_geom,body_torso);
     //dGeomSetOffsetRotation(torso3_geom,Rtx);
     dGeomSetOffsetPosition(torso1_geom,-m2.c[0], jP_torso[0][2]-z_offset-m2.c[0], -0.006-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    torso2_geom = dCreateCylinder (iCub,0.031,0.097);dMassSetCylinderTotal(&m2,0.91179,3,0.031,0.097);
+    torso2_geom = dCreateCylinder (subspace,0.031,0.097);dMassSetCylinderTotal(&m2,0.91179,3,0.031,0.097);
+    dGeomNames[torso2_geom] = "torso2_geom"; 
     //dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (torso2_geom,body_torso);
     //dGeomSetOffsetRotation(torso2_geom,Rtx);
     dGeomSetOffsetPosition(torso2_geom,jP_torso[1][1]-jP_torso[0][1]-m2.c[0], jP_torso[1][2]-z_offset-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    /*torso3_geom = dCreateCylinder (iCub,0.04,0.0274);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
+    /*torso3_geom = dCreateCylinder (subspace,0.04,0.0274);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (torso3_geom,body_torso);
     dGeomSetOffsetRotation(torso3_geom,Rtx);
     dGeomSetOffsetPosition(torso3_geom,-m2.c[0], 0.029-m2.c[0], -0.034-m2.c[0]);
     dMassAdd (&m, &m2);*/
 
-    torso3_geom = dCreateCylinder (iCub,0.04,0.0274);dMassSetCylinderTotal(&m2,0.45165,3,0.04,0.0274);
+    torso3_geom = dCreateCylinder (subspace,0.04,0.0274);dMassSetCylinderTotal(&m2,0.45165,3,0.04,0.0274);
+    dGeomNames[torso3_geom] = "torso3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (torso3_geom,body_torso);
     dGeomSetOffsetRotation(torso3_geom,Rtx);
@@ -1870,14 +2199,17 @@ void ICubSim::initTorsoOff(dWorldID world)
 
     torso[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,0.076,0.118,0.109);
     dBodySetMass(torso[4],&m);
-    torsoGeom[4] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[4],torso[4]);
-
+    torsoGeom[4] = dCreateBox (subspace,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[4],torso[4]);
+    dGeomNames[torsoGeom[4]] = "torsoGeom[4]"; 
+    
     torso[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,0.076,0.118,0.109);
     dBodySetMass(torso[5],&m);
-    torsoGeom[5] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+    torsoGeom[5] = dCreateBox (subspace,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,0.118,0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+    dGeomNames[torsoGeom[5]] = "torsoGeom[5]"; 
+    
 }
 
-void ICubSim::initTorsoOn(dWorldID world)
+void ICubSim::initTorsoOn(dWorldID world, dSpaceID subspace)
 {
     dMass m;
     dQuaternion q, q1;
@@ -1887,32 +2219,40 @@ void ICubSim::initTorsoOn(dWorldID world)
     //TORSO CREATION
     torso[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.20297,0.004,0.13,0.054); //Y, Z, X
     dBodySetMass(torso[0],&m);
-    torsoGeom[0] = dCreateBox (iCub,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dGeomSetBody (torsoGeom[0],torso[0]);
-
+    torsoGeom[0] = dCreateBox (subspace,0.0470,fabs((jP_torso[0][2]-0.031/*torso pitch cyl rad*/)-(jP_leftLeg[5][2]-0.031/*leg cyl rad*/)),0.064);dGeomSetBody (torsoGeom[0],torso[0]);
+    dGeomNames[torsoGeom[0]] = "torsoGeom[0]"; 
+    
     torso[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.91179,3,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));//dMassSetBoxTotal(&m,3.623,0.176,0.063,0.127); //Y, Z, X
     dBodySetMass(torso[1],&m);
     dBodySetQuaternion(torso[1],q1);
-    torsoGeom[1] = dCreateCylinder (iCub,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dGeomSetBody (torsoGeom[1],torso[1]);//dCreateBox (iCub,0.176,0.063,0.127);
-
+    torsoGeom[1] = dCreateCylinder (subspace,0.031,fabs(jP_leftLeg[3][1]-jP_rightLeg[3][1]));dGeomSetBody (torsoGeom[1],torso[1]);//dCreateBox (subspace,0.176,0.063,0.127);
+    dGeomNames[torsoGeom[1]] = "torsoGeom[1]"; 
+    
     torso[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.91179,3,0.031,0.097);
     dBodySetMass(torso[2],&m);
-    torsoGeom[2] = dCreateCylinder (iCub,0.031,0.097);dGeomSetBody(torsoGeom[2],torso[2]);
-
+    torsoGeom[2] = dCreateCylinder (subspace,0.031,0.097);dGeomSetBody(torsoGeom[2],torso[2]);
+    dGeomNames[torsoGeom[2]] = "torsoGeom[2]"; 
+    
     torso[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.45165,3,0.04,0.0274);
     dBodySetMass(torso[3],&m);
     dBodySetQuaternion(torso[3],q);
-    torsoGeom[3] = dCreateCylinder (iCub,0.04,0.0274);dGeomSetBody(torsoGeom[3],torso[3]);
-
+    torsoGeom[3] = dCreateCylinder (subspace,0.04,0.0274);dGeomSetBody(torsoGeom[3],torso[3]);
+    dGeomNames[torsoGeom[3]] = "torsoGeom[3]"; 
+    
     torso[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);
     dBodySetMass(torso[4],&m);
-    torsoGeom[4] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[4],torso[4]);
-
+    torsoGeom[4] = dCreateBox (subspace,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059,fabs((jP_head[0][2]-0.015)-(jP_torso[2][2]+0.031+0.0274)),0.109);
+    dGeomSetBody (torsoGeom[4],torso[4]);
+    dGeomNames[torsoGeom[4]] = "torsoGeom[4]"; 
+    
     torso[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,1.8388,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);
     dBodySetMass(torso[5],&m);
-    torsoGeom[5] = dCreateBox (iCub,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+    torsoGeom[5] = dCreateBox (subspace,fabs(jP_leftArm[1][1]-jP_torso[2][1])-0.011-0.5*0.059/*clavicule height + half shoulder height*/,fabs((jP_head[0][2]-0.015/*head pitch cyl rad*/)-(jP_torso[2][2]+0.031+0.0274/*torso roll cyl rad + torso yaw cyl height*/)),0.109);dGeomSetBody (torsoGeom[5],torso[5]);
+    dGeomNames[torsoGeom[5]] = "torsoGeom[5]"; 
+  
 }
 
-void ICubSim::initLeftArmOff(dWorldID world)
+void ICubSim::initLeftArmOff(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
@@ -1923,26 +2263,31 @@ void ICubSim::initLeftArmOff(dWorldID world)
     offset[2]=jP_leftArm[1][2];
 
     larm = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    larm0_geom = dCreateCylinder (iCub,0.031,0.011);dMassSetCylinderTotal(&m2,0.48278,3,0.031,0.011);
+    larm0_geom = dCreateCylinder (subspace,0.031,0.011);dMassSetCylinderTotal(&m2,0.48278,3,0.031,0.011);
+    dGeomNames[larm0_geom] = "larm0_geom"; 
+    
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (larm0_geom,larm);
     dGeomSetOffsetRotation(larm0_geom,Rtx);
     dGeomSetOffsetPosition(larm0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    larm1_geom = dCreateCylinder (iCub,0.03,0.059);dMassSetCylinderTotal(&m2,0.20779,3,0.03,0.059);
+    larm1_geom = dCreateCylinder (subspace,0.03,0.059);dMassSetCylinderTotal(&m2,0.20779,3,0.03,0.059);
+    dGeomNames[larm1_geom] = "larm1_geom"; 
     dGeomSetBody (larm1_geom,larm);
     dGeomSetOffsetPosition(larm1_geom,jP_leftArm[2][1]-offset[1]-m2.c[0], jP_leftArm[2][2]-offset[2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    larm2_geom = dCreateCylinder (iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m2,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
+    larm2_geom = dCreateCylinder (subspace, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m2,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
+    dGeomNames[larm2_geom] = "larm2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (larm2_geom,larm);
     dGeomSetOffsetRotation(larm2_geom,Rtx);
     dGeomSetOffsetPosition(larm2_geom,jP_leftArm[4][1]-offset[1]-m2.c[0], 0.5*(jP_leftArm[4][2]+jP_leftArm[2][2])-offset[2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    larm3_geom = dCreateCylinder (iCub, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dMassSetCylinderTotal(&m2,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
+    larm3_geom = dCreateCylinder (subspace, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dMassSetCylinderTotal(&m2,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
+    dGeomNames[larm3_geom] = "larm3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (larm3_geom,larm);
     dGeomSetOffsetRotation(larm3_geom,Rtx);
@@ -1953,7 +2298,7 @@ void ICubSim::initLeftArmOff(dWorldID world)
     dBodySetMass(larm,&m);
 }
 
-void ICubSim::initLeftArmOn(dWorldID world)
+void ICubSim::initLeftArmOn(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     //rotation matrises
@@ -1965,28 +2310,33 @@ void ICubSim::initLeftArmOn(dWorldID world)
     body[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
     dBodySetMass(body[0],&m);
     dBodySetQuaternion(body[0],q1);
-    geom[0] = dCreateCylinder (iCub,0.031,0.011);dGeomSetBody(geom[0],body[0]);
-
+    geom[0] = dCreateCylinder (subspace,0.031,0.011);dGeomSetBody(geom[0],body[0]);
+    dGeomNames[geom[0]] = "geom[0]"; 
+    
     body[2] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
     dBodySetMass(body[2],&m);
-    geom[2] = dCreateCylinder (iCub,0.03,0.059);dGeomSetBody(geom[2],body[2]);
-
+    geom[2] = dCreateCylinder (subspace,0.03,0.059);dGeomSetBody(geom[2],body[2]);
+    dGeomNames[geom[2]] = "geom[2]"; 
+    
     body[4] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));
     dBodySetMass(body[4],&m);
     dBodySetQuaternion(body[4],q);
-    geom[4] = dCreateCylinder(iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dGeomSetBody(geom[4],body[4]);
-
+    geom[4] = dCreateCylinder(subspace, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dGeomSetBody(geom[4],body[4]);
+    dGeomNames[geom[4]] = "geom[4]"; 
+    
     body[6] = dBodyCreate (world);dMassSetZero(&m);dMassSetSphereTotal(&m,0.050798,0.01);
     dBodySetMass(body[6],&m);
-    geom[6] = dCreateSphere(iCub,0.01) ;dGeomSetBody(geom[6],body[6]);
+    geom[6] = dCreateSphere(subspace,0.01) ;dGeomSetBody(geom[6],body[6]);
+    dGeomNames[geom[6]] = "geom[6]"; 
     //left lower arm
     body[8] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));
     dBodySetMass(body[8],&m);
     dBodySetQuaternion(body[8],q);
-    geom[8] = dCreateCylinder(iCub, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dGeomSetBody(geom[8],body[8]);
+    geom[8] = dCreateCylinder(subspace, 0.02 ,fabs(jP_leftArm[5][2]-jP_leftArm[3][2]));dGeomSetBody(geom[8],body[8]);
+    dGeomNames[geom[8]] = "geom[8]"; 
 }
 
-void ICubSim::initRightArmOff(dWorldID world)
+void ICubSim::initRightArmOff(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
@@ -1997,26 +2347,30 @@ void ICubSim::initRightArmOff(dWorldID world)
     offset[2]=jP_rightArm[1][2];
 
     rarm = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    rarm0_geom = dCreateCylinder (iCub,0.031,0.011);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
+    rarm0_geom = dCreateCylinder (subspace,0.031,0.011);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
+    dGeomNames[rarm0_geom] = "rarm0_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (rarm0_geom,rarm);
     dGeomSetOffsetRotation(rarm0_geom,Rtx);
     dGeomSetOffsetPosition(rarm0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    rarm1_geom = dCreateCylinder (iCub,0.03,0.059);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
+    rarm1_geom = dCreateCylinder (subspace,0.03,0.059);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
+    dGeomNames[rarm1_geom] = "rarm1_geom"; 
     dGeomSetBody (rarm1_geom,rarm);
     dGeomSetOffsetPosition(rarm1_geom,jP_rightArm[2][1]-offset[1]-m2.c[0], jP_rightArm[2][2]-offset[2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    rarm2_geom = dCreateCylinder (iCub, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
+    rarm2_geom = dCreateCylinder (subspace, 0.026 ,fabs(jP_leftArm[4][2]-jP_leftArm[2][2]));dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
+    dGeomNames[rarm2_geom] = "rarm2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rarm2_geom,rarm);
     dGeomSetOffsetRotation(rarm2_geom,Rtx);
     dGeomSetOffsetPosition(rarm2_geom,jP_rightArm[4][1]-offset[1]-m2.c[0], 0.5*(jP_rightArm[4][2]+jP_rightArm[2][2])-offset[2]-m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    rarm3_geom = dCreateCylinder (iCub, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
+    rarm3_geom = dCreateCylinder (subspace, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
+    dGeomNames[rarm3_geom] = "rarm3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rarm3_geom,rarm);
     dGeomSetOffsetRotation(rarm3_geom,Rtx);
@@ -2027,7 +2381,7 @@ void ICubSim::initRightArmOff(dWorldID world)
     dBodySetMass(rarm,&m);
 }
 
-void ICubSim::initRightArmOn(dWorldID world)
+void ICubSim::initRightArmOn(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     //rotation matrises
@@ -2039,67 +2393,79 @@ void ICubSim::initRightArmOn(dWorldID world)
     body[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48278,3,0.031,0.011);
     dBodySetMass(body[1],&m);
     dBodySetQuaternion(body[1],q1);
-    geom[1] = dCreateCylinder (iCub,0.031,0.011);dGeomSetBody(geom[1],body[1]);
-
+    geom[1] = dCreateCylinder (subspace,0.031,0.011);dGeomSetBody(geom[1],body[1]);
+    dGeomNames[geom[1]] = "geom[1]"; 
+    
     body[3] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.20779,3,0.03,0.059);
     dBodySetMass(body[3],&m);
-    geom[3] = dCreateCylinder (iCub,0.03,0.059);dGeomSetBody(geom[3],body[3]);
-
+    geom[3] = dCreateCylinder (subspace,0.03,0.059);dGeomSetBody(geom[3],body[3]);
+    dGeomNames[geom[3]] = "geom[3]"; 
+    
     body[5] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,1.1584,3,0.026,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));
     dBodySetMass(body[5],&m);
     dBodySetQuaternion(body[5],q);
-    geom[5] = dCreateCylinder(iCub, 0.026 ,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));dGeomSetBody(geom[5],body[5]);
-
+    geom[5] = dCreateCylinder(subspace, 0.026 ,fabs(jP_rightArm[4][2]-jP_rightArm[2][2]));dGeomSetBody(geom[5],body[5]);
+    dGeomNames[geom[5]] = "geom[5]"; 
+    
     body[7] = dBodyCreate (world);dMassSetZero(&m);dMassSetSphereTotal(&m,0.050798,0.01);
     dBodySetMass(body[7],&m);
-    geom[7] = dCreateSphere(iCub,0.01) ;dGeomSetBody(geom[7],body[7]);
+    geom[7] = dCreateSphere(subspace,0.01) ;dGeomSetBody(geom[7],body[7]);
+    dGeomNames[geom[7]] = "geom[7]";     
     //left lower arm
     body[9] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.48774,3,0.02,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));
     dBodySetMass(body[9],&m);
     dBodySetQuaternion(body[9],q);
-    geom[9] = dCreateCylinder(iCub, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dGeomSetBody(geom[9],body[9]);
+    geom[9] = dCreateCylinder(subspace, 0.02 ,fabs(jP_rightArm[5][2]-jP_rightArm[3][2]));dGeomSetBody(geom[9],body[9]);
+    dGeomNames[geom[9]] = "geom[9]"; 
+    
 }
 
-void ICubSim::initLeftHandOff(dWorldID world)
+void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
 
     l_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    l_hand0_geom = dCreateBox (iCub,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    l_hand0_geom = dCreateBox (subspace,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    dGeomNames[l_hand0_geom] = "l_hand0_geom"; 
     dGeomSetBody (l_hand0_geom,l_hand);
     dGeomSetOffsetPosition(l_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_hand1_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    l_hand1_geom = dCreateCylinder (subspace,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dGeomNames[l_hand1_geom] = "l_hand1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(l_hand1_geom,l_hand);
     dGeomSetOffsetRotation(l_hand1_geom,Rtx);
     dGeomSetOffsetPosition(l_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_hand2_geom = dCreateCylinder (iCub,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
+    l_hand2_geom = dCreateCylinder (subspace,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
+    dGeomNames[l_hand2_geom] = "l_hand2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(l_hand2_geom,l_hand);
     dGeomSetOffsetRotation(l_hand2_geom,Rtx);
     dGeomSetOffsetPosition(l_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_hand3_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    l_hand3_geom = dCreateCylinder (subspace,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dGeomNames[l_hand3_geom] = "l_hand3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(l_hand3_geom,l_hand);
     dGeomSetOffsetRotation(l_hand3_geom,Rtx);
     dGeomSetOffsetPosition(l_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_hand4_geom = dCreateCylinder (iCub,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
+    l_hand4_geom = dCreateCylinder (subspace,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
+    dGeomNames[l_hand4_geom] = "l_hand4_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(l_hand4_geom,l_hand);
     dGeomSetOffsetRotation(l_hand4_geom,Rtx);
     dGeomSetOffsetPosition(l_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    l_hand5_geom = dCreateCylinder (iCub,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
+    l_hand5_geom = dCreateCylinder (subspace,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
+    dGeomNames[l_hand5_geom] = "l_hand5_geom"; 
     dGeomSetBody(l_hand5_geom,l_hand);
     dGeomSetOffsetPosition(l_hand5_geom,-m2.c[0], 0.016-m2.c[0], 0.0645-m2.c[0]);
     dMassAdd (&m, &m2);
@@ -2108,7 +2474,7 @@ void ICubSim::initLeftHandOff(dWorldID world)
     dBodySetMass(l_hand,&m);
 }
 
-void ICubSim::initLeftHandOn(dWorldID world)
+void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
@@ -2117,29 +2483,35 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
 
     //Create all left fingers
+    //this is the palm
     body[10] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
     dBodySetMass(body[10],&m);
-    geom[10] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[10],body[10]);
-
+    geom[10] = dCreateBox (subspace,0.022,0.069,0.065);dGeomSetBody (geom[10],body[10]);
+    dGeomNames[geom[10]] = "geom[10]"; 
+    
     body[12] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[12],&m);
     dBodySetQuaternion(body[12],q);
-    geom[12] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[12],body[12]);
-
+    geom[12] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[12],body[12]);
+    dGeomNames[geom[12]] = "geom[12]"; 
+    
     body[13] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[13],&m);
     dBodySetQuaternion(body[13],q);
-    geom[13] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[13],body[13]);
-
+    geom[13] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[13],body[13]);
+    dGeomNames[geom[13]] = "geom[13]"; 
+    
     lhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    lhandfings0_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    dGeomNames[lhandfings0_geom] = "lhandfings0_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings0_geom,lhandfingers0);
     dGeomSetOffsetRotation(lhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    lhandfings1_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    dGeomNames[lhandfings1_geom] = "lhandfings1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings1_geom,Rtx);
     dGeomSetBody (lhandfings1_geom,lhandfingers0);
@@ -2155,22 +2527,26 @@ void ICubSim::initLeftHandOn(dWorldID world)
     body[16] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[16],&m);
     dBodySetQuaternion(body[16],q);
-    geom[16] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[16],body[16]);
-
+    geom[16] = dCreateCylinder (subspace,0.0065,0.026);dGeomSetBody(geom[16],body[16]);
+    dGeomNames[geom[16]] = "geom[16]"; 
+    
     body[17] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.028);
     dBodySetMass(body[17],&m);
     dBodySetQuaternion(body[17],q);
-    geom[17] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[17],body[17]);
-
+    geom[17] = dCreateCylinder (subspace,0.0065,0.028);dGeomSetBody(geom[17],body[17]);
+    dGeomNames[geom[17]] = "geom[17]"; 
+    
     lhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
+    lhandfings2_geom = dCreateCylinder (subspace,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
+    dGeomNames[lhandfings2_geom] = "lhandfings2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings2_geom,lhandfingers1);
     dGeomSetOffsetRotation(lhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    lhandfings3_geom = dCreateCylinder (subspace,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    dGeomNames[lhandfings3_geom] = "lhandfings3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings3_geom,Rtx);
     dGeomSetBody (lhandfings3_geom,lhandfingers1);
@@ -2180,19 +2556,23 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers1,&m);
 
     body[20] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);dBodySetMass(body[20],&m);
-    dBodySetQuaternion(body[20],q);geom[20] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[20],body[20]);
+    dBodySetQuaternion(body[20],q);geom[20] = dCreateCylinder(subspace, 0.0065,0.022);dGeomSetBody(geom[20],body[20]);
+    dGeomNames[geom[20]] = "geom[20]"; 
     body[21] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.024);dBodySetMass(body[21],&m);
-    dBodySetQuaternion(body[21],q);geom[21] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[21],body[21]);
+    dBodySetQuaternion(body[21],q);geom[21] = dCreateCylinder(subspace, 0.0065,0.024);dGeomSetBody(geom[21],body[21]);
+    dGeomNames[geom[21]] = "geom[21]"; 
 
     lhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    lhandfings4_geom = dCreateCylinder (subspace,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    dGeomNames[lhandfings4_geom] = "lhandfings4_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings4_geom,lhandfingers2);
     dGeomSetOffsetRotation(lhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.019);
+    lhandfings5_geom = dCreateCylinder (subspace,0.0065,0.019);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.019);
+    dGeomNames[lhandfings5_geom] = "lhandfings5_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings5_geom,Rtx);
     dGeomSetBody (lhandfings5_geom,lhandfingers2);
@@ -2202,19 +2582,23 @@ void ICubSim::initLeftHandOn(dWorldID world)
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers2,&m);
 
     body[24] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[24],&m);
-    dBodySetQuaternion(body[24],q);geom[24] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[24],body[24]);
+    dBodySetQuaternion(body[24],q);geom[24] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[24],body[24]);
+    dGeomNames[geom[24]] = "geom[24]"; 
     body[25] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[25],&m);
-    dBodySetQuaternion(body[25],q);geom[25] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[25],body[25]);
+    dBodySetQuaternion(body[25],q);geom[25] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[25],body[25]);
+    dGeomNames[geom[25]] = "geom[25]"; 
 
     lhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    lhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    lhandfings6_geom = dCreateCylinder (subspace,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    dGeomNames[lhandfings6_geom] = "lhandfings6_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (lhandfings6_geom,lhandfingers3);
     dGeomSetOffsetRotation(lhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    lhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    lhandfings7_geom = dCreateCylinder (subspace,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    dGeomNames[lhandfings7_geom] = "lhandfings7_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (lhandfings7_geom,Rtx);
     dGeomSetBody (lhandfings7_geom,lhandfingers3);
@@ -2225,57 +2609,66 @@ void ICubSim::initLeftHandOn(dWorldID world)
 
     body[28] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[28],&m);//dBodySetQuaternion(body[28],q1);
-    geom[28] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[28],body[28]);
+    geom[28] = dCreateCylinder(subspace,0.0065,0.026);dGeomSetBody(geom[28],body[28]);
+    dGeomNames[geom[28]] = "geom[28]"; 
 
     body[29] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);
     dBodySetMass(body[29],&m);//dBodySetQuaternion(body[29],q1);
-    geom[29] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[29],body[29]);
-
+    geom[29] = dCreateCylinder(subspace,0.0065,0.022);dGeomSetBody(geom[29],body[29]);
+    dGeomNames[geom[29]] = "geom[29]"; 
+    
     body[30] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.016);
     dBodySetMass(body[30],&m);//dBodySetQuaternion(body[30],q1);
-    geom[30] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[30],body[30]);
+    geom[30] = dCreateCylinder(subspace,0.0065,0.016);dGeomSetBody(geom[30],body[30]);
+    dGeomNames[geom[30]] = "geom[30]"; 
 }
 
-void ICubSim::initRightHandOff(dWorldID world)
+void ICubSim::initRightHandOff(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
 
     r_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
-    r_hand0_geom = dCreateBox (iCub,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    r_hand0_geom = dCreateBox (subspace,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
+    dGeomNames[r_hand0_geom] = "r_hand0_geom"; 
     dGeomSetBody (r_hand0_geom,r_hand);
     dGeomSetOffsetPosition(r_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_hand1_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    r_hand1_geom = dCreateCylinder (subspace,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dGeomNames[r_hand1_geom] = "r_hand1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(r_hand1_geom,r_hand);
     dGeomSetOffsetRotation(r_hand1_geom,Rtx);
     dGeomSetOffsetPosition(r_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_hand2_geom = dCreateCylinder (iCub,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
+    r_hand2_geom = dCreateCylinder (subspace,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
+    dGeomNames[r_hand2_geom] = "r_hand2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(r_hand2_geom,r_hand);
     dGeomSetOffsetRotation(r_hand2_geom,Rtx);
     dGeomSetOffsetPosition(r_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_hand3_geom = dCreateCylinder (iCub,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    r_hand3_geom = dCreateCylinder (subspace,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
+    dGeomNames[r_hand3_geom] = "r_hand3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(r_hand3_geom,r_hand);
     dGeomSetOffsetRotation(r_hand3_geom,Rtx);
     dGeomSetOffsetPosition(r_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_hand4_geom = dCreateCylinder (iCub,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
+    r_hand4_geom = dCreateCylinder (subspace,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
+    dGeomNames[r_hand4_geom] = "r_hand4_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody(r_hand4_geom,r_hand);
     dGeomSetOffsetRotation(r_hand4_geom,Rtx);
     dGeomSetOffsetPosition(r_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    r_hand5_geom = dCreateCylinder (iCub,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
+    r_hand5_geom = dCreateCylinder (subspace,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
+    dGeomNames[r_hand5_geom] = "r_hand5_geom"; 
     dGeomSetBody(r_hand5_geom,r_hand);
     dGeomSetOffsetPosition(r_hand5_geom,-m2.c[0], 0.016-m2.c[0], 0.0645-m2.c[0]);
     dMassAdd (&m, &m2);
@@ -2284,7 +2677,7 @@ void ICubSim::initRightHandOff(dWorldID world)
     dBodySetMass(r_hand,&m);
 }
 
-void ICubSim::initRightHandOn(dWorldID world)
+void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
@@ -2295,27 +2688,32 @@ void ICubSim::initRightHandOn(dWorldID world)
     //Create all right fingers
     body[11] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
     dBodySetMass(body[11],&m);
-    geom[11] = dCreateBox (iCub,0.022,0.069,0.065);dGeomSetBody (geom[11],body[11]);
-
+    geom[11] = dCreateBox (subspace,0.022,0.069,0.065);dGeomSetBody (geom[11],body[11]);
+    dGeomNames[geom[11]] = "geom[11]"; 
+    
     body[31] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[31],&m);
     dBodySetQuaternion(body[31],q);
-    geom[31] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[31],body[31]);
-
+    geom[31] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[31],body[31]);
+    dGeomNames[geom[31]] = "geom[31]"; 
+    
     body[32] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[32],&m);
     dBodySetQuaternion(body[32],q);
-    geom[32] = dCreateCylinder (iCub,0.0065,0.012);dGeomSetBody(geom[32],body[32]);
-
+    geom[32] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[32],body[32]);
+    dGeomNames[geom[32]] = "geom[32]"; 
+    
     rhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings0_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    rhandfings0_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    dGeomNames[rhandfings0_geom] = "rhandfings0_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings0_geom,rhandfingers0);
     dGeomSetOffsetRotation(rhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings1_geom = dCreateCylinder (iCub,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    rhandfings1_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
+    dGeomNames[rhandfings1_geom] = "rhandfings1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings1_geom,Rtx);
     dGeomSetBody (rhandfings1_geom,rhandfingers0);
@@ -2331,22 +2729,26 @@ void ICubSim::initRightHandOn(dWorldID world)
     body[35] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[35],&m);
     dBodySetQuaternion(body[35],q);
-    geom[35] = dCreateCylinder (iCub,0.0065,0.026);dGeomSetBody(geom[35],body[35]);
-
+    geom[35] = dCreateCylinder (subspace,0.0065,0.026);dGeomSetBody(geom[35],body[35]);
+    dGeomNames[geom[35]] = "geom[35]"; 
+    
     body[36] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.028);
     dBodySetMass(body[36],&m);
     dBodySetQuaternion(body[36],q);
-    geom[36] = dCreateCylinder (iCub,0.0065,0.028);dGeomSetBody(geom[36],body[36]);
-
+    geom[36] = dCreateCylinder (subspace,0.0065,0.028);dGeomSetBody(geom[36],body[36]);
+    dGeomNames[geom[36]] = "geom[36]"; 
+        
     rhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings2_geom = dCreateCylinder (iCub,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
+    rhandfings2_geom = dCreateCylinder (subspace,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
+    dGeomNames[rhandfings2_geom] = "rhandfings2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings2_geom,rhandfingers1);
     dGeomSetOffsetRotation(rhandfings2_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings2_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings3_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    rhandfings3_geom = dCreateCylinder (subspace,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    dGeomNames[rhandfings3_geom] = "rhandfings3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings3_geom,Rtx);
     dGeomSetBody (rhandfings3_geom,rhandfingers1);
@@ -2356,19 +2758,23 @@ void ICubSim::initRightHandOn(dWorldID world)
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers1,&m);
 
     body[39] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);dBodySetMass(body[39],&m);
-    dBodySetQuaternion(body[39],q);geom[39] = dCreateCylinder(iCub, 0.0065,0.022);dGeomSetBody(geom[39],body[39]);
+    dBodySetQuaternion(body[39],q);geom[39] = dCreateCylinder(subspace, 0.0065,0.022);dGeomSetBody(geom[39],body[39]);
+    dGeomNames[geom[39]] = "geom[39]"; 
     body[40] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.024);dBodySetMass(body[40],&m);
-    dBodySetQuaternion(body[40],q);geom[40] = dCreateCylinder(iCub, 0.0065,0.024);dGeomSetBody(geom[40],body[40]);
-
+    dBodySetQuaternion(body[40],q);geom[40] = dCreateCylinder(subspace, 0.0065,0.024);dGeomSetBody(geom[40],body[40]);
+    dGeomNames[geom[40]] = "geom[40]";     
+    
     rhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings4_geom = dCreateCylinder (iCub,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    rhandfings4_geom = dCreateCylinder (subspace,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
+    dGeomNames[rhandfings4_geom] = "rhandfings4_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings4_geom,rhandfingers2);
     dGeomSetOffsetRotation(rhandfings4_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings4_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings5_geom = dCreateCylinder (iCub,0.0065,0.019);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.019);
+    rhandfings5_geom = dCreateCylinder (subspace,0.0065,0.019);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.019);
+    dGeomNames[rhandfings5_geom] = "rhandfings5_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings5_geom,Rtx);
     dGeomSetBody (rhandfings5_geom,rhandfingers2);
@@ -2378,19 +2784,23 @@ void ICubSim::initRightHandOn(dWorldID world)
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers2,&m);
 
     body[43] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[43],&m);
-    dBodySetQuaternion(body[43],q);geom[43] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[43],body[43]);
+    dBodySetQuaternion(body[43],q);geom[43] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[43],body[43]);
+    dGeomNames[geom[43]] = "geom[43]"; 
     body[44] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[44],&m);
-    dBodySetQuaternion(body[44],q);geom[44] = dCreateCylinder(iCub, 0.0065,0.02);dGeomSetBody(geom[44],body[44]);
-
+    dBodySetQuaternion(body[44],q);geom[44] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[44],body[44]);
+    dGeomNames[geom[44]] = "geom[44]"; 
+    
     rhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
-    rhandfings6_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    rhandfings6_geom = dCreateCylinder (subspace,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    dGeomNames[rhandfings6_geom] = "rhandfings6_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (rhandfings6_geom,rhandfingers3);
     dGeomSetOffsetRotation(rhandfings6_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings6_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);
     dMassAdd (&m, &m2);
     //second object
-    rhandfings7_geom = dCreateCylinder (iCub,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    rhandfings7_geom = dCreateCylinder (subspace,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
+    dGeomNames[rhandfings7_geom] = "rhandfings7_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetRotation (rhandfings7_geom,Rtx);
     dGeomSetBody (rhandfings7_geom,rhandfingers3);
@@ -2401,18 +2811,21 @@ void ICubSim::initRightHandOn(dWorldID world)
 
     body[47] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[47],&m);//dBodySetQuaternion(body[28],q1);
-    geom[47] = dCreateCylinder(iCub,0.0065,0.026);dGeomSetBody(geom[47],body[47]);
-
+    geom[47] = dCreateCylinder(subspace,0.0065,0.026);dGeomSetBody(geom[47],body[47]);
+    dGeomNames[geom[47]] = "geom[47]"; 
+    
     body[48] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);
     dBodySetMass(body[48],&m);//dBodySetQuaternion(body[29],q1);
-    geom[48] = dCreateCylinder(iCub,0.0065,0.022);dGeomSetBody(geom[48],body[48]);
-
+    geom[48] = dCreateCylinder(subspace,0.0065,0.022);dGeomSetBody(geom[48],body[48]);
+    dGeomNames[geom[48]] = "geom[48]"; 
+    
     body[49] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.016);
     dBodySetMass(body[49],&m);//dBodySetQuaternion(body[30],q1);
-    geom[49] = dCreateCylinder(iCub,0.0065,0.016);dGeomSetBody(geom[49],body[49]);
+    geom[49] = dCreateCylinder(subspace,0.0065,0.016);dGeomSetBody(geom[49],body[49]);
+    dGeomNames[geom[49]] = "geom[49]"; 
 }
 
-void ICubSim::initHead(dWorldID world)
+void ICubSim::initHead(dWorldID world, dSpaceID subspace)
 {
     dMass m, m2;
     dMatrix3 Rtx;
@@ -2424,14 +2837,16 @@ void ICubSim::initHead(dWorldID world)
     if (actHead == "off")
     {
         dMassSetZero(&m);dMassSetZero(&m2);
-        neck0_geom = dCreateCylinder (iCub,0.015,0.077);dMassSetCylinderTotal(&m2,0.28252,3,0.015,0.077);
+        neck0_geom = dCreateCylinder (subspace,0.015,0.077);dMassSetCylinderTotal(&m2,0.28252,3,0.015,0.077);
+        dGeomNames[neck0_geom] = "neck0_geom"; 
         dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
         dGeomSetBody (neck0_geom,head);
         dGeomSetOffsetRotation(neck0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
         dGeomSetOffsetPosition(neck0_geom, -fabs(jP_head[2][1]-jP_head[0][1])-m2.c[0], -fabs(jP_head[2][2]-jP_head[0][2])-0.03-m2.c[0],  -fabs(jP_head[2][0]-jP_head[0][0])-m2.c[0]);
         dMassAdd (&m, &m2);
 
-        neck1_geom = dCreateCylinder (iCub,0.015,0.077);dMassSetCylinderTotal(&m2,0.1,3,0.015,0.077);
+        neck1_geom = dCreateCylinder (subspace,0.015,0.077);dMassSetCylinderTotal(&m2,0.1,3,0.015,0.077);
+        dGeomNames[neck1_geom] = "neck1_geom"; 
         dRFromAxisAndAngle(Rtx,0,0,1,M_PI * 0.5);
         dGeomSetBody (neck1_geom,head);
         dGeomSetOffsetRotation(neck1_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
@@ -2442,12 +2857,14 @@ void ICubSim::initHead(dWorldID world)
     }else{
         neck[0] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.28252,3,0.015,0.077);
         dBodySetMass(neck[0],&m);dBodySetQuaternion(neck[0],q1);
-        neckgeom[0] = dCreateCylinder(iCub, 0.015,0.077);dGeomSetBody(neckgeom[0],neck[0]);
-
+        neckgeom[0] = dCreateCylinder(subspace, 0.015,0.077);dGeomSetBody(neckgeom[0],neck[0]);
+        dGeomNames[neckgeom[0]] = "neckgeom[0]"; 
+        
         neck[1] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.1,3,0.015,0.077);
         dBodySetMass(neck[1],&m);
-        neckgeom[1] = dCreateCylinder(iCub, 0.015,0.077);dGeomSetBody(neckgeom[1],neck[1]);
-
+        neckgeom[1] = dCreateCylinder(subspace, 0.015,0.077);dGeomSetBody(neckgeom[1],neck[1]);
+        dGeomNames[neckgeom[1]] = "neckgeom[1]"; 
+        
         eye = dBodyCreate (world);//left eye
         leye = dBodyCreate (world);//left eye
         reye = dBodyCreate (world);//right eye
@@ -2461,7 +2878,8 @@ void ICubSim::initHead(dWorldID world)
     //Head encapsulated object to save computation on the joints....
 
     //head yaw cyl
-    head0_geom = dCreateCylinder (iCub,0.015,0.06);dMassSetCylinderTotal (&m2,0.13913,3,0.015,0.06);
+    head0_geom = dCreateCylinder (subspace,0.015,0.06);dMassSetCylinderTotal (&m2,0.13913,3,0.015,0.06);
+    dGeomNames[head0_geom] = "head0_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (head0_geom,head);
     dGeomSetOffsetRotation(head0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
@@ -2470,37 +2888,43 @@ void ICubSim::initHead(dWorldID world)
 
         
     //larger horizontal plate
-    head1_geom = dCreateBox (iCub,0.104, 0.002,0.052);dMassSetBoxTotal (&m2,0.1562,0.104,0.002,0.052);
+    head1_geom = dCreateBox (subspace,0.104, 0.002,0.052);dMassSetBoxTotal (&m2,0.1562,0.104,0.002,0.052);
+    dGeomNames[head1_geom] = "head1_geom"; 
     dGeomSetBody (head1_geom,head);
     dGeomSetOffsetPosition(head1_geom,-m2.c[0], /*-0.011-*/0.03/*half neck yaw*/-m2.c[0], -0.0125-m2.c[0]);
     dMassAdd (&m, &m2);
 
     //left vertical plate
-    head2_geom = dCreateBox (iCub,0.002, 0.093,0.052);dMassSetBoxTotal (&m2,0.1562,0.002, 0.093,0.052);
+    head2_geom = dCreateBox (subspace,0.002, 0.093,0.052);dMassSetBoxTotal (&m2,0.1562,0.002, 0.093,0.052);
+    dGeomNames[head2_geom] = "head2_geom"; 
     dGeomSetBody (head2_geom,head);
     dGeomSetOffsetPosition(head2_geom ,0.052-m2.c[0], /*0.0355-*/0.03/*half neck yaw*/-m2.c[0], -0.0125-m2.c[0]);
     dMassAdd (&m, &m2);
 
     //right vertical plate
-    head3_geom = dCreateBox (iCub,0.002, 0.093,0.052);dMassSetBoxTotal (&m2,0.1562,0.002, 0.093,0.032);
+    head3_geom = dCreateBox (subspace,0.002, 0.093,0.052);dMassSetBoxTotal (&m2,0.1562,0.002, 0.093,0.032);
+    dGeomNames[head3_geom] = "head3_geom"; 
     dGeomSetBody (head3_geom,head);
     dGeomSetOffsetPosition(head3_geom,-0.052-m2.c[0], /*0.0355-*/0.03/*half neck yaw*/-m2.c[0], -0.0125-m2.c[0]);
     dMassAdd (&m, &m2);
 
     //smaller horizontal plate (hidden)
-    head4_geom = dCreateBox (iCub, 0.104, 0.002,0.032);dMassSetBoxTotal (&m2,0.01,0.104, 0.002,0.032);
+    head4_geom = dCreateBox (subspace, 0.104, 0.002,0.032);dMassSetBoxTotal (&m2,0.01,0.104, 0.002,0.032);
+    dGeomNames[head4_geom] = "head4_geom"; 
     dGeomSetBody (head4_geom,head);
     dGeomSetOffsetPosition(head4_geom,-m2.c[0], /*0.0355-*/0.03/*half neck yaw*/-m2.c[0], -0.0125-m2.c[0]);
     dMassAdd (&m, &m2);
 
     //nose initial box
-    head5_geom = dCreateBox (iCub, 0.011, 0.026, 0.025);dMassSetBoxTotal (&m2,0.0278,0.011, 0.026,0.025);
+    head5_geom = dCreateBox (subspace, 0.011, 0.026, 0.025);dMassSetBoxTotal (&m2,0.0278,0.011, 0.026,0.025);
+    dGeomNames[head5_geom] = "head5_geom"; 
     dGeomSetBody (head5_geom,head);
     dGeomSetOffsetPosition(head5_geom,-m2.c[0], /*-0.01-*/m2.c[0],  jP_head[3][0]-jP_head[2][0]-0.04-m2.c[0]);
     dMassAdd (&m, &m2);
 
     //nose diagonal box
-    head6_geom = dCreateBox (iCub, 0.011, 0.051, 0.012);dMassSetBoxTotal (&m2,0.0278,0.011, 0.051,0.012);
+    head6_geom = dCreateBox (subspace, 0.011, 0.051, 0.012);dMassSetBoxTotal (&m2,0.0278,0.011, 0.051,0.012);
+    dGeomNames[head6_geom] = "head6_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.2);
     dGeomSetBody (head6_geom,head);
     dGeomSetOffsetRotation(head6_geom,Rtx);
@@ -2508,7 +2932,8 @@ void ICubSim::initHead(dWorldID world)
     dMassAdd (&m, &m2);
 
     //nose end box
-    head7_geom = dCreateBox (iCub, 0.02, 0.022, 0.012);dMassSetBox (&m2,0.0278,0.02, 0.022,0.012);
+    head7_geom = dCreateBox (subspace, 0.02, 0.022, 0.012);dMassSetBox (&m2,0.0278,0.02, 0.022,0.012);
+    dGeomNames[head7_geom] = "head7_geom"; 
     dGeomSetBody (head7_geom,head);
     dGeomSetOffsetPosition(head7_geom,-m2.c[0], /*0.028-*/jP_head[3][2]-jP_head[2][2]-0.03/*half neck yaw*/-m2.c[0], jP_head[3][0]-jP_head[2][0]-m2.c[0]);
     dMassAdd (&m, &m2);
@@ -2516,7 +2941,7 @@ void ICubSim::initHead(dWorldID world)
     //dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(head,&m);
 }
 
-void ICubSim::initEyes(dWorldID world)
+void ICubSim::initEyes(dWorldID world, dSpaceID subspace)
 {
     dBodyID select[3];
     double offset[3];
@@ -2540,35 +2965,40 @@ void ICubSim::initEyes(dWorldID world)
 
     //eyes pitch cylinder
     dMassSetZero(&m);dMassSetZero(&m2);
-    eye1_geom = dCreateCylinder (iCub,0.002,0.068);dMassSetCylinderTotal (&m2,0.0059678,3,0.002,0.068);
+    eye1_geom = dCreateCylinder (subspace,0.002,0.068);dMassSetCylinderTotal (&m2,0.0059678,3,0.002,0.068);
+    dGeomNames[eye1_geom] = "eye1_geom"; 
     dRFromAxisAndAngle(Rtx,0,1,0,M_PI * 0.5);
     dGeomSetBody (eye1_geom,select[0]);
     dGeomSetOffsetRotation(eye1_geom,Rtx);
     dGeomSetOffsetPosition(eye1_geom,offset[1]-m2.c[0], /*0.037-*/+offset[2]-m2.c[0], +offset[0]-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    eye2_geom = dCreateCylinder (iCub,0.006,0.030);dMassSetCylinderTotal (&m2,0.11,3,0.006,0.030);
+    eye2_geom = dCreateCylinder (subspace,0.006,0.030);dMassSetCylinderTotal (&m2,0.11,3,0.006,0.030);
+    dGeomNames[eye2_geom] = "eye2_geom"; 
     //dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (eye2_geom,select[0]);
     //dGeomSetOffsetRotation(eye2_geom,Rtx);
     dGeomSetOffsetPosition(eye2_geom,0.034+offset[1]-m2.c[0], /*0.037-*/+offset[2]-m2.c[0], -0.015+offset[0]-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    eye3_geom = dCreateCylinder (iCub,0.006,0.05);dMassSetCylinderTotal (&m2,0.0387,3,0.006,0.05);
+    eye3_geom = dCreateCylinder (subspace,0.006,0.05);dMassSetCylinderTotal (&m2,0.0387,3,0.006,0.05);
+    dGeomNames[eye3_geom] = "eye3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (eye3_geom,select[0]);
     dGeomSetOffsetRotation(eye3_geom,Rtx);
     dGeomSetOffsetPosition(eye3_geom,0.034+offset[1]-m2.c[0], /*0.037-*/+offset[2]-m2.c[0], -0.03+offset[0]-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    eye4_geom = dCreateCylinder (iCub,0.006,0.030);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.030);
+    eye4_geom = dCreateCylinder (subspace,0.006,0.030);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.030);
+    dGeomNames[eye4_geom] = "eye4_geom"; 
     //dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (eye4_geom,select[0]);
     //dGeomSetOffsetRotation(eye4_geom,Rtx);
     dGeomSetOffsetPosition(eye4_geom,-0.034+offset[1]-m2.c[0], /*0.037-*/+offset[2]-m2.c[0], -0.015+offset[0]-m2.c[0]);
     dMassAdd (&m, &m2);
 
-    eye5_geom = dCreateCylinder (iCub,0.006,0.05);dMassSetCylinderTotal (&m2,0.0387,3,0.006,0.05);
+    eye5_geom = dCreateCylinder (subspace,0.006,0.05);dMassSetCylinderTotal (&m2,0.0387,3,0.006,0.05);
+    dGeomNames[eye5_geom] = "eye5_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
     dGeomSetBody (eye5_geom,select[0]);
     dGeomSetOffsetRotation(eye5_geom,Rtx);
@@ -2577,10 +3007,12 @@ void ICubSim::initEyes(dWorldID world)
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);
 
     //eyeLids
-    topEyeLid_geom = dCreateCylinder (iCub,0.01,0.01);
+    topEyeLid_geom = dCreateCylinder (subspace,0.01,0.01);
+    dGeomNames[topEyeLid_geom] = "topEyeLid_geom"; 
     dGeomSetBody (topEyeLid_geom,topEyeLid);
 
-    bottomEyeLid_geom = dCreateCylinder (iCub,0.01,0.01);
+    bottomEyeLid_geom = dCreateCylinder (subspace,0.01,0.01);
+    dGeomNames[bottomEyeLid_geom] = "bottomEyeLid_geom"; 
     dGeomSetBody (bottomEyeLid_geom,bottomEyeLid);
 
     if (actHead == "on"){
@@ -2603,7 +3035,8 @@ void ICubSim::initEyes(dWorldID world)
         offset[2]=0.0;
     }
 
-    Leye1_geom = dCreateCylinder (iCub,0.006,0.011);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.011);
+    Leye1_geom = dCreateCylinder (subspace,0.006,0.011);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.011);
+    dGeomNames[Leye1_geom] = "Leye1_geom"; 
     dGeomSetBody (Leye1_geom,select[1]);
     dGeomSetOffsetPosition(Leye1_geom,offset[1]-m2.c[0], /*0.037*/+offset[2]-m2.c[0], +offset[0]-m2.c[0]);
     dMassAdd (&m, &m2);
@@ -2630,7 +3063,8 @@ void ICubSim::initEyes(dWorldID world)
     }
 
 
-    Reye1_geom = dCreateCylinder (iCub,0.006,0.011);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.011);
+    Reye1_geom = dCreateCylinder (subspace,0.006,0.011);dMassSetCylinderTotal (&m2,0.0234,3,0.006,0.011);
+    dGeomNames[Reye1_geom] = "Reye1_geom"; 
     dGeomSetBody (Reye1_geom,select[2]);
     dGeomSetOffsetPosition(Reye1_geom,offset[1]-m2.c[0], /*0.037*/+offset[2]-m2.c[0], +offset[0]-m2.c[0]);
     dMassAdd (&m, &m2);
@@ -2659,15 +3093,17 @@ void ICubSim::initCovers(ResourceFinder& finder)
 
     if (actLegsCovers == "on")
     {
-        model["lowerLeg"] = finder.findFile("lowerLegCover");//also used for left
+        model["lowerLeftLeg"] = finder.findFile("lowerLegCover"); //used for both legs
+        model["lowerRightLeg"] = finder.findFile("lowerLegCover");
         model["upperRightLeg"] = finder.findFile("upperRightLegCover");
         model["upperLeftLeg"] = finder.findFile("upperLeftLegCover");
         model["rightFoot"] = finder.findFile("rightFootCover");
         model["leftFoot"] = finder.findFile("leftFootCover");
     }
-    if(actLeftArmCovers == "on" || actRightArmCovers == "on")
-        model["lowerArm"] = finder.findFile("lowerArmCover");//used for both arms
-
+    if(actLeftArmCovers == "on" || actRightArmCovers == "on"){
+        model["lowerLeftArm"] = finder.findFile("lowerArmCover");//used for both arms
+        model["lowerRightArm"] = finder.findFile("lowerArmCover");//used for both arms
+    }
     if (actLeftArmCovers == "on")
     {
         model["upperLeftArm"] = finder.findFile("leftUpperArmCover");
@@ -2689,20 +3125,250 @@ void ICubSim::initCovers(ResourceFinder& finder)
     textureName[0] = finder.findFile("lowerArmTexture");//texture used for all covers
 
     cout << "\nCreating 3D Model of the icub.......\n" << endl;
-    for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++)
+    for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++) //iterating through all the cover names
     {
         model_TriData[(*itr).first] = dGeomTriMeshDataCreate();
         model_trimesh[(*itr).first] = dLoadMeshFromX(model[(*itr).first].c_str());
         if (!model_trimesh[(*itr).first])
         {
             cout << "Check spelling/location of file" << endl;
-        }else
+        }
+        else
         {
             dGeomTriMeshDataBuildSingle(model_TriData[(*itr).first], model_trimesh[(*itr).first]->Vertices, 3 * sizeof(float), model_trimesh[(*itr).first]->VertexCount, model_trimesh[(*itr).first]->Indices, model_trimesh[(*itr).first]->IndexCount, 3 * sizeof(int));
-            model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCub, model_TriData[(*itr).first], 0, 0, 0);
+            if (actSelfCol == "off"){ //all covers geoms will go to the top-level iCub space
+                model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCub, model_TriData[(*itr).first], 0, 0, 0);
+            } else { //if self-collisions are on, we need to create it in the right collision space - torso / left arm / right arm / legs 
+                if ( (*itr).first.compare("torso")==0 || (*itr).first.compare("waist")==0){
+                    model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCubTorsoSpace, model_TriData[(*itr).first], 0, 0, 0);
+                }
+                else if ( (*itr).first.compare("upperLeftArm")==0 || (*itr).first.compare("lowerLeftArm")==0 || (*itr).first.compare("leftPalm")==0){
+                    model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCubLeftArmSpace, model_TriData[(*itr).first], 0, 0, 0);
+                }
+                else if ((*itr).first.compare("upperRightArm")==0 || (*itr).first.compare("lowerRightArm")==0 || (*itr).first.compare("rightPalm")==0){
+                    model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCubRightArmSpace, model_TriData[(*itr).first], 0, 0, 0);
+                }
+                else if ((*itr).first.compare("upperLeftLeg")==0 || (*itr).first.compare("lowerLeftLeg")==0 || (*itr).first.compare("leftFoot")==0 || (*itr).first.compare("upperRightLeg")==0 || (*itr).first.compare("lowerRightLeg")==0 || (*itr).first.compare("rightFoot")==0){
+                    model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCubLegsSpace, model_TriData[(*itr).first], 0, 0, 0);
+                } 
+                else 
+                printf("ERROR: ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
+            }
             dGeomSetData(model_ThreeD_obj[(*itr).first].geom,model_TriData[(*itr).first]);
             //dGeomSetPosition(model_ThreeD_obj[(*itr).first].geom,0.0,0.5,0.5);
-        }
+            
+            if(actCoversCol=="on") {  // the covers need to become placeable geoms with bodies associated to them
+                //leaving the head out for the moment as this cover is somehow a special "model"
+                if ( (*itr).first.compare("torso")==0){
+                      dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "torso cover"; 
+                      if (actTorso == "off"){   
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body_torso);// this is the body that unites all the torso joints and their masses
+                        // it may be better to attach it to the upper body, but that is split into right and left part - torso[4], torso[5], so that would be weird to attach it to 1
+                        if (actHead == "on"){
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(neck[0])[0]-dBodyGetPosition(body_torso)[0],dBodyGetPosition(neck[0])[1]-dBodyGetPosition(body_torso)[1],dBodyGetPosition(neck[0])[2]-dBodyGetPosition(body_torso)[2]);
+                        }
+                        else{ //actHead == "off"
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(neck0_geom)[0]-dBodyGetPosition(body_torso)[0],dGeomGetPosition(neck0_geom)[1]-dBodyGetPosition(body_torso)[1],dGeomGetPosition(neck0_geom)[2]-dBodyGetPosition(body_torso)[2]);  
+                        }
+                        dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(torso3_geom)); //importantly, we do GetOffsetRotation, rather than GetRotation
+                        // setOffset is expecting a dReal dMatrix3[4*3] as an argument, getOffset gives pointer to the matrix, so it should work fine like that
+                      }
+                      else { //(actTorso == "on")
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,torso[3]);// let's pick the last, upmost torso joint
+                        if (actHead == "on"){
+                            dGeomSetOffsetWorldPosition (model_ThreeD_obj[(*itr).first].geom, dBodyGetPosition(neck[0])[0], dBodyGetPosition(neck[0])[1],dBodyGetPosition(neck[0])[2]);
+                            //Sets the geom's positional offset to move it to the new world coordinates. After this call, the geom will be at the world position passed in, and the offset will be the difference from the current body position
+                        }
+                        else{ //actHead == "off"
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(neck0_geom)[0]-dBodyGetPosition(torso[3])[0],dGeomGetPosition(neck0_geom)[1]-dBodyGetPosition(torso[3])[1],dGeomGetPosition(neck0_geom)[2]-dBodyGetPosition(torso[3])[2]);
+                        }
+                        // rotation is already fine - same as torso[3] 
+                    }
+                    //printf("The coordinates of the trimesh torso geom (after setting offset) are: ");
+                    //printPositionOfGeom(model_ThreeD_obj[(*itr).first].geom); 
+                }
+                else if ((*itr).first.compare("waist")==0){
+                    dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "waist cover"; 
+                    if (actTorso == "off"){   
+                        //in draw(), there is:  //LDEsetM(dGeomGetPosition(torso1_geom),dGeomGetRotation(torso1_geom));  
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body_torso);// this is the body that unites all the torso joints and their masses
+                        dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(torso1_geom)[0],dGeomGetOffsetPosition(torso1_geom)[1],dGeomGetOffsetPosition(torso1_geom)[2]);  
+                        dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(torso1_geom)); 
+                    }
+                    else{ //(actTorso == "on")
+                        //in draw(), there is:  // LDEsetM(dBodyGetPosition(torso[1]),dBodyGetRotation(torso[0]));     //DRAW THE MODEL
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,torso[0]);
+                        dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(torso[1])[0]-dBodyGetPosition(torso[0])[0],dBodyGetPosition(torso[1])[1]-dBodyGetPosition(torso[0])[1],dBodyGetPosition(torso[1])[2]-dBodyGetPosition(torso[0])[2]);
+                    }
+                }
+                else if ( (*itr).first.compare("upperLeftArm")==0 || (*itr).first.compare("lowerLeftArm")==0 || (*itr).first.compare("leftPalm")==0){
+                    if((*itr).first.compare("upperLeftArm")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper left arm cover";  
+                        if (actLArm == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,larm);
+                            //guessing from the draw() function: LDEsetM(dGeomGetPosition(larm2_geom),dGeomGetRotation(larm2_geom));     
+                            //glTranslatef(0.0, 0.0,0.5*fabs(jP_leftArm[4][2] - jP_leftArm[2][2])); //after fix
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(larm2_geom)[0],dGeomGetPosition(larm2_geom)[1]-0.5*fabs(jP_leftArm[4][2] - jP_leftArm[2][2]),dGeomGetPosition(larm2_geom)[2]);//+0.5*fabs(jP_leftArm[4][2] - jP_leftArm[2][2]));
+                            dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(larm2_geom));
+                        }
+                        else{ //(actLArm == "on")
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body[4]);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(body[6])[0],dBodyGetPosition(body[6])[1],dBodyGetPosition(body[6])[2]);
+                            //rotation is already fine - same as body[4]
+                        }
+                    }
+                    else if((*itr).first.compare("lowerLeftArm")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower left arm cover";  
+                        if (actLArm == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,larm);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(larm3_geom)[0],dGeomGetPosition(larm3_geom)[1]-0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]),dGeomGetPosition(larm3_geom)[2]);
+                            dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(larm3_geom));
+                        }
+                        else{ //(actLArm == "on")
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body[8]);
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,0,0,0.5*fabs(jP_leftArm[5][2] - jP_leftArm[3][2]));
+                            //rotation is already fine - same as body[8]
+                        }
+                    }
+                    else if((*itr).first.compare("leftPalm")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "left palm cover"; 
+                        if (actLHand == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,l_hand);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(l_hand0_geom)[0]-0.01,dGeomGetPosition(l_hand0_geom)[1]+0.5*fabs(jP_leftArm[7][2] - jP_leftArm[6][2]),dGeomGetPosition(l_hand0_geom)[2]);
+                        }
+                        else { //(actLHand == "on")
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body[10]);
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,-0.01,0.5*fabs(jP_leftArm[7][2] - jP_leftArm[6][2]),0.0);
+                            // the -0.01 on the x is to shift the mesh slightly into the palm, such that we get the touch there - otherwise it seems to be hidden by the geom 
+                            //note the coordinate axes where the shift occurs may be somewhat arbitrary - depending on the orientation of the mesh in the source file
+                   }
+               } //left arm
+               else if ((*itr).first.compare("upperRightArm")==0 || (*itr).first.compare("lowerRightArm")==0 || (*itr).first.compare("rightPalm")==0){
+                    if((*itr).first.compare("upperRightArm")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper right arm cover";     
+                        if (actRArm == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rarm);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(rarm2_geom)[0],dGeomGetPosition(rarm2_geom)[1]-0.5*fabs(jP_rightArm[4][2] - jP_rightArm[2][2]),dGeomGetOffsetPosition(rarm2_geom)[2]);
+                            dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(rarm2_geom));
+                        }
+                        else{ //(actRArm == "on")
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body[5]);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(body[7])[0],dBodyGetPosition(body[7])[1],dBodyGetPosition(body[7])[2]);
+                           //rotation is already fine - same as body[5]
+                        }
+                    }
+                    else if((*itr).first.compare("lowerRightArm")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower right arm cover";     
+                        if (actRArm == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rarm);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(rarm3_geom)[0],dGeomGetPosition(rarm3_geom)[1]-0.5*fabs(jP_rightArm[5][2] - jP_rightArm[3][2]),dGeomGetPosition(rarm3_geom)[2]);
+                            dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(rarm3_geom));
+                        }
+                        else{ //(actRArm == "on")
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body[9]);
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,0,0,0.5*fabs(jP_rightArm[5][2] - jP_rightArm[3][2]));
+                            //rotation is already fine - same as body[9]
+                        }
+                    }
+                    else if((*itr).first.compare("rightPalm")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "right palm cover";     
+                        if (actRHand == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,r_hand);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(r_hand0_geom)[0]+0.01,dGeomGetPosition(r_hand0_geom)[1]+0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]),dGeomGetPosition(r_hand0_geom)[2]);
+                            
+                        }
+                        else{ //(actRHand == "on")
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,body[11]);
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,0.01,0.5*fabs(jP_rightArm[7][2] - jP_rightArm[6][2]),0.0);
+                             // the 0.01 on the x is to shift the mesh slightly into the palm, such that we get the touch there - otherwise it seems to be hidden by the geom 
+                            //note the coordinate axes where the shift occurs are somewhat arbitrary - depending on the orientation of the mesh in the source file
+                        }
+                    }
+            }
+            else if ((*itr).first.compare("upperLeftLeg")==0 || (*itr).first.compare("lowerLeftLeg")==0 || (*itr).first.compare("leftFoot")==0 || (*itr).first.compare("upperRightLeg")==0 || (*itr).first.compare("lowerRightLeg")==0 || (*itr).first.compare("rightFoot")==0){
+                if ((*itr).first.compare("upperLeftLeg")==0){
+                    dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper left leg cover";     
+                    if (actLegs == "off"){
+                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg6_geom)[0],dGeomGetOffsetPosition(l_leg6_geom)[1],dGeomGetOffsetPosition(l_leg6_geom)[2]);
+                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(l_leg5_geom));   
+                    }
+                    else{ // actLegs == "on"
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[3]);
+                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(leftLeg_4_2)[0],dGeomGetPosition(leftLeg_4_2)[1],dGeomGetPosition(leftLeg_4_2)[2]);
+                        dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(leftLeg_3_2));   
+                    }
+               }
+               else if ((*itr).first.compare("lowerLeftLeg")==0){
+                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower left leg cover"; 
+                   if (actLegs == "off"){
+                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg3_geom)[0],dGeomGetOffsetPosition(l_leg3_geom)[1],dGeomGetOffsetPosition(l_leg3_geom)[2]);
+                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(l_leg3_geom));  
+                   }
+                   else{ // actLegs == "on"
+                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[2]);
+                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(leftLeg_2_2)[0],dGeomGetOffsetPosition(leftLeg_2_2)[1],dGeomGetOffsetPosition(leftLeg_2_2)[2]);
+                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(leftLeg_2_2));   
+                   }
+               }
+               else if ((*itr).first.compare("leftFoot")==0){
+                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "left foot cover"; 
+                   if (actLegs == "off"){
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                        dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg1_geom)[0],dGeomGetOffsetPosition(l_leg1_geom)[1],dGeomGetOffsetPosition(l_leg1_geom)[2]);
+                   } 
+                   else{ // actLegs == "on"
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[0]);
+                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(leftLeg[1])[0],dBodyGetPosition(leftLeg[1])[1],dBodyGetPosition(leftLeg[1])[2]);
+                   }                   
+               }
+               else if ((*itr).first.compare("upperRightLeg")==0){
+                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper right leg cover"; 
+                   if (actLegs == "off"){
+                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg6_geom)[0],dGeomGetOffsetPosition(r_leg6_geom)[1],dGeomGetOffsetPosition(r_leg6_geom)[2]);
+                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(r_leg5_geom));   
+                   }
+                   else{ // actLegs == "on"
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[3]);
+                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(rightLeg_4_2)[0],dGeomGetPosition(rightLeg_4_2)[1],dGeomGetPosition(rightLeg_4_2)[2]);
+                        dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(rightLeg_3_2)); 
+                   }                   
+               }
+               else if ((*itr).first.compare("lowerRightLeg")==0){
+                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower right leg cover"; 
+                   if (actLegs == "off"){
+                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg3_geom)[0],dGeomGetOffsetPosition(r_leg3_geom)[1],dGeomGetOffsetPosition(r_leg3_geom)[2]);
+                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(r_leg3_geom));  
+                   }
+                   else{ // actLegs == "on"
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[2]);
+                        dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(rightLeg_2_2)[0],dGeomGetOffsetPosition(rightLeg_2_2)[1],dGeomGetOffsetPosition(rightLeg_2_2)[2]);
+                        dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(rightLeg_2_2));   
+                   }                   
+               }
+               else if ((*itr).first.compare("rightFoot")==0){
+                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "right foot cover"; 
+                   if (actLegs == "off"){
+                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg1_geom)[0],dGeomGetOffsetPosition(r_leg1_geom)[1],dGeomGetOffsetPosition(r_leg1_geom)[2]);
+                        // no offset rotation of r_leg1_geom w.r.t. legs dBodyID     
+                   }
+                   else{ // actLegs == "on"
+                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[0]);
+                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(rightLeg[1])[0],dBodyGetPosition(rightLeg[1])[1],dBodyGetPosition(rightLeg[1])[2]);
+                   }
+               }
+         } 
+		 else{ 
+	 	   printf("ERROR: ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
+         }
+       }  //  if(actSelfCol=="on")
+	   //otherwise we don't create placeable geoms for the covers 
+           
+        } //else - trimesh exists
     }
     modelTextureIndex++;
     modelTexture[0] = modelTextureIndex;
@@ -2879,7 +3545,7 @@ void ICubSim::initLeftArmJoints(OdeParams &p)
         dJointAttach (LAjoints[0], torso[4], larm);
         dJointSetHingeAnchor (LAjoints[0],   jP_leftArm[0][1], elev + jP_leftArm[0][2], jP_leftArm[0][0]);
         dJointSetHingeAxis (LAjoints[0], jA_leftArm[0][0], jA_leftArm[0][1], jA_leftArm[0][2]);
-        //the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        //the angle has to be less than PI (180?) in order to be effective.....230? can not be reached 
         dJointSetHingeParam(LAjoints[0],dParamLoStop, -0.0);
         dJointSetHingeParam(LAjoints[0],dParamHiStop, 0.0);
         return;
@@ -3044,7 +3710,7 @@ void ICubSim::initRightArmJoints(OdeParams &p)
         dJointAttach (RAjoints[0], torso[5], rarm);
         dJointSetHingeAnchor (RAjoints[0],   jP_rightArm[0][1], elev + jP_rightArm[0][2], jP_rightArm[0][0]);
         dJointSetHingeAxis (RAjoints[0], jA_rightArm[0][0], jA_rightArm[0][1], jA_rightArm[0][2]);
-        //the angle has to be less than PI (180°) in order to be effective.....230° can not be reached 
+        //the angle has to be less than PI (180?) in order to be effective.....230? can not be reached 
         dJointSetHingeParam(RAjoints[0],dParamLoStop, -0.0);
         dJointSetHingeParam(RAjoints[0],dParamHiStop, 0.0);
         return;
@@ -3068,10 +3734,10 @@ void ICubSim::initRightArmJoints(OdeParams &p)
     dJointSetHingeParam(RAjoints[0],dParamLoStop, -10.0*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(RAjoints[0],dParamHiStop, 95.0*CTRL_DEG2RAD+safetyMargin);
     dJointSetHingeParam(RAjoints[1],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin); // the lower limit should be 0 but it gives problem
-    dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180° cannot be fully reached have to make with 179.4°
+    dJointSetHingeParam(RAjoints[1],dParamHiStop, 160.8*CTRL_DEG2RAD+safetyMargin);//180? cannot be fully reached have to make with 179.4?
     dJointSetHingeParam(RAjoints[2],dParamLoStop,  -80.0*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(RAjoints[2],dParamHiStop, 52.0*CTRL_DEG2RAD+safetyMargin);
-    dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin); // lower limit should be 15° but it gives problem
+    dJointSetHingeParam(RAjoints[3],dParamLoStop, -1.0*CTRL_DEG2RAD-safetyMargin); // lower limit should be 15? but it gives problem
     dJointSetHingeParam(RAjoints[3],dParamHiStop, 106.0*CTRL_DEG2RAD+safetyMargin);
     dJointSetHingeParam(RAjoints[4],dParamLoStop, -90.5*CTRL_DEG2RAD-safetyMargin);
     dJointSetHingeParam(RAjoints[4],dParamHiStop, 90.0*CTRL_DEG2RAD+safetyMargin);
@@ -3267,6 +3933,116 @@ void ICubSim::initHeadJoints()
     }
 }
 
+void ICubSim::init_iKin()
+{
+    // Matej Hoffmann - moved these init things from loadJointPosition() to here and made the iKin variables class variables -
+    //besides joint position initialization (loadJointPosition()), they will be used repeatedly in the self-collision mode in ODE_process  
+    
+    iKinLeftArm = iCubArm("left");
+    iKinRightArm = iCubArm("right");
+    iKinLeftArm.releaseLink(0); iKinLeftArm.releaseLink(1); iKinLeftArm.releaseLink(2);
+    iKinRightArm.releaseLink(0); iKinRightArm.releaseLink(1); iKinRightArm.releaseLink(2);
+    iKinLeftArm.setAllConstraints(false);   // disable joint limits
+    iKinRightArm.setAllConstraints(false);
+    iKinLeftArm.setAng(zeros(10));  // set all ang to zero
+    iKinRightArm.setAng(zeros(10));
+    
+    iKinInertialSensor = iCubInertialSensor(); // by default, it creates the "v1" - which matches the DH params used in skeleton.ini of the iCubGui
+    iKinInertialSensor.setAllConstraints(false);
+    iKinInertialSensor.setAng(zeros(6));
+     
+    // rototranslation from robot root to simulation world reference frame
+    H_r2w.resize(4,4); H_r2w.zero();
+    H_w2r.resize(4,4); H_w2r.zero();
+    H_r2w(0,2) = -1.0;  H_r2w(0,3) = -0.026;
+    H_r2w(1,0) = -1.0;
+    H_r2w(2,1) =  1.0;  H_r2w(2,3) = -0.5976; //-elev;
+    H_r2w(3,3) = 1.0;
+    H_w2r = SE3inv(H_r2w);
+    
+    //TODO fingers, legs, head
+}
+
+void ICubSim::initSkinActivationBottles()
+{
+    const int COUNT_HAND = 192;
+    double hand_empty[COUNT_HAND];
+    const int COUNT_FOREARM = 384;
+    double forearm_empty[COUNT_FOREARM]; 
+    double forearm_full[COUNT_FOREARM]; 
+    const int COUNT_UPPER_ARM = 768;
+    double upper_arm_empty[COUNT_UPPER_ARM];
+    double upper_arm_full[COUNT_UPPER_ARM];
+    const int COUNT_TORSO = 768;
+    double torso_empty[COUNT_TORSO] = {0.0}; //this should initialize the whole array to 0
+    double torso_full[COUNT_TORSO] = {255.0}; //this should initialize the whole array to 255
+    int i = 0;
+   
+     for(i=0;i<COUNT_HAND;i++){
+        hand_empty[i] = 0.0;
+     }
+     emptySkinActivationHand.clear(); //clear the bottle
+     for(i=0;i<COUNT_HAND;i++){
+        emptySkinActivationHand.addDouble(hand_empty[i]);
+     }  
+    
+    //init forearm
+    for(i=0;i<COUNT_FOREARM;i++){
+        forearm_empty[i] = 0.0;
+        if ( ((i % 6) == 0) || ((i % 10) == 0)){ //the 7th and 11th taxel of every triangular modules are 0
+          forearm_full[i]=0.0;
+        }
+        else{
+          forearm_full[i]=255.0;
+        }
+    }
+    //the second patch is incomplete - zero the missing modules
+    for(i=192;i<204;i++){
+         forearm_full[i]=0.0;
+    }
+    for(i=216;i<252;i++){
+         forearm_full[i]=0.0;
+    }
+    for(i=264;i<288;i++){
+         forearm_full[i]=0.0;
+    }
+    for(i=324;i<336;i++){
+         forearm_full[i]=0.0;
+    }
+    for(i=360;i<384;i++){
+         forearm_full[i]=0.0;
+    }
+    emptySkinActivationForearm.clear();
+    fullSkinActivationForearm.clear(); //clear the bottle
+    for(i=0;i<COUNT_FOREARM;i++){
+        emptySkinActivationForearm.addDouble(forearm_empty[i]);
+        fullSkinActivationForearm.addDouble(forearm_full[i]);
+    }
+    //printf("fullSkinActivationForearm: %s \n",fullSkinActivationForearm.toString().c_str());
+    
+   //for the upper arm and torso, we keep the full all set to 255 for now - I haven't tested which taxels are 0s yet
+    //init arm
+    for(i=0;i<COUNT_UPPER_ARM;i++){
+        upper_arm_empty[i] = 0.0;
+        upper_arm_full[i]=255.0;
+    }
+    fullSkinActivationUpperArm.clear(); //clear the bottle
+    for(i=0;i<COUNT_UPPER_ARM;i++){
+        emptySkinActivationUpperArm.addDouble(upper_arm_empty[i]);
+        fullSkinActivationUpperArm.addDouble(upper_arm_full[i]);
+    } 
+    
+    for(i=0;i<COUNT_TORSO;i++){
+        torso_empty[i] = 0.0;
+        torso_full[i]=255.0;
+    }
+    fullSkinActivationTorso.clear(); //clear the bottle
+    for(i=0;i<COUNT_TORSO;i++){
+        emptySkinActivationTorso.addDouble(torso_empty[i]);
+        fullSkinActivationTorso.addDouble(torso_full[i]);
+    } 
+}    
+
 ICubSim::~ICubSim() {
 
     //destroy all geoms 
@@ -3352,14 +4128,22 @@ ICubSim::~ICubSim() {
     if (eyeLids!=0)
         delete eyeLids;
 
-    if (model_ThreeD_obj.size()){
+    if (model_ThreeD_obj.size()){ //destroying the cover geoms
         for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++)
         {
             dGeomDestroy(model_ThreeD_obj[(*itr).first].geom);
         }
     }
-    dSpaceDestroy (iCub);
-    
+        
+    if (actSelfCol == "off"){
+      dSpaceDestroy (iCub);
+    } else{
+      dSpaceDestroy(iCubHeadSpace); dSpaceDestroy(iCubTorsoSpace); 
+      dSpaceDestroy(iCubLeftArmSpace); dSpaceDestroy(iCubRightArmSpace);
+      dSpaceDestroy(iCubLegsSpace); dSpaceDestroy(iCub);  
+    }
+    dGeomNames.clear(); 
+    dSpaceNames.clear(); 
 }
 
 ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
@@ -3370,3 +4154,201 @@ ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
     reinitialized = true;
     eyeLids = 0;
 }
+
+//Auxiliary function to print info 
+// Matej Hoffmann, 10.6.2013
+void ICubSim::printPositionOfGeom(dGeomID geomID)
+{
+    const dReal * pos = dGeomGetPosition(geomID);
+    printf("%f %f %f \n",pos[0],pos[1],pos[2]);
+}
+
+void ICubSim::printPositionOfBody(dBodyID bodyID)
+{
+    const dReal * pos = dBodyGetPosition(bodyID);
+    printf("%f %f %f \n",pos[0],pos[1],pos[2]);
+}
+
+
+
+
+void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart, BodyPart& bodyPart, bool& skinCoverFlag)
+{
+   OdeInit& odeinit = OdeInit::get();
+      
+  if (geomSpaceID ==  odeinit._iCub->iCubTorsoSpace){
+     skinPart = SKIN_FRONT_TORSO;
+     bodyPart = TORSO;
+     if(actTorsoCovers == "on"){
+        if(geomID == model_ThreeD_obj["torso"].geom){
+            skinCoverFlag = true; 
+        }
+     }
+     //no neeed to check further which geom it was - skinPart and bodyPart is the same; 
+     //:KLUDGE for the "waist" cover, we don't signal the cover flag, because the waist does not have skin 
+     return;
+  }
+  else if (geomSpaceID == odeinit._iCub->iCubLeftArmSpace){
+    if (odeinit._iCub->actLHand == "off"){
+      if ((geomID == l_hand0_geom) || (geomID == l_hand1_geom) || (geomID == l_hand2_geom) || (geomID == l_hand3_geom) || (geomID == l_hand4_geom)
+	|| (geomID == l_hand5_geom)){
+        skinPart = SKIN_LEFT_HAND;
+        bodyPart = LEFT_ARM;
+        return;
+      }
+    }
+    else{ // (odeinit._iCub->actLHand == "on")
+      if((geomID == geom[10]) || (geomID == geom[12]) || (geomID == geom[13]) || (geomID == geom[16]) || (geomID == geom[17])
+	|| (geomID == geom[20]) || (geomID == geom[21]) || (geomID == geom[24]) || (geomID == geom[25]) 
+	|| (geomID == geom[28]) || (geomID == geom[29]) || (geomID == geom[30]) 
+        || (geomID == lhandfings0_geom) || (geomID == lhandfings1_geom) || (geomID == lhandfings2_geom) || (geomID == lhandfings3_geom)
+	|| (geomID == lhandfings4_geom) || (geomID == lhandfings5_geom) || (geomID == lhandfings6_geom) || (geomID == lhandfings7_geom)){
+	skinPart = SKIN_LEFT_HAND;
+	bodyPart = LEFT_ARM;
+	return; 
+      }   
+    }
+       
+    if(odeinit._iCub->actLArm == "off"){
+       if( (geomID == larm0_geom) || (geomID == larm1_geom) || (geomID == larm2_geom)){
+	 skinPart = SKIN_LEFT_UPPER_ARM;
+	 bodyPart = LEFT_ARM;
+	 return;
+       }
+       else if(geomID == larm3_geom){
+	 skinPart = SKIN_LEFT_FOREARM;
+	 bodyPart = LEFT_ARM;
+	 return;
+       }
+    }
+    else{ // odeinit._iCub->actLArm == "on"
+      if ( (geomID == geom[0]) || (geomID == geom[2]) || (geomID == geom[4]) || (geomID == geom[6])){
+	 skinPart = SKIN_LEFT_UPPER_ARM;
+	 bodyPart = LEFT_ARM;
+	 return;
+      }
+      else if (geomID == geom[8]){
+	  skinPart = SKIN_LEFT_FOREARM;
+	  bodyPart = LEFT_ARM;
+	  return;
+      }
+    }
+    //covers
+    if(actLeftArmCovers == "on"){
+        if(geomID == model_ThreeD_obj["leftPalm"].geom){
+            skinPart = SKIN_LEFT_HAND;
+            bodyPart = LEFT_ARM;
+            skinCoverFlag = true; 
+            return;
+        }
+        else if(geomID == model_ThreeD_obj["lowerLeftArm"].geom){
+            skinPart = SKIN_LEFT_FOREARM;
+            bodyPart = LEFT_ARM;
+            skinCoverFlag = true; 
+            return;
+        }
+        else if(geomID == model_ThreeD_obj["upperLeftArm"].geom){
+            skinPart = SKIN_LEFT_UPPER_ARM;
+            bodyPart = LEFT_ARM;
+            skinCoverFlag = true; 
+            return;
+        }
+    }
+       
+    printf("ERROR: ICubSim::getSkinAndBodyPartFromSpaceAndGeomID: Unknown skin part and body part on collision in left arm space.\n");
+    skinPart =  SKIN_PART_UNKNOWN; 
+    bodyPart =  BODY_PART_UNKNOWN;
+    return;
+  }
+  else if (geomSpaceID == odeinit._iCub->iCubRightArmSpace){
+     if (odeinit._iCub->actRHand == "off"){
+        if ((geomID == r_hand0_geom) || (geomID == r_hand1_geom) || (geomID == r_hand2_geom) || (geomID == r_hand3_geom) || (geomID == r_hand4_geom)
+        || (geomID == r_hand5_geom)){
+            skinPart = SKIN_RIGHT_HAND;
+            bodyPart = RIGHT_ARM;
+            return;
+        }
+     }
+     else{ // (odeinit._iCub->actRHand == "on")
+        if((geomID == geom[11]) || (geomID == geom[31]) || (geomID == geom[32]) || (geomID == geom[35]) || (geomID == geom[36])
+            || (geomID == geom[39]) || (geomID == geom[40]) || (geomID == geom[43]) || (geomID == geom[44]) 
+            || (geomID == geom[47]) || (geomID == geom[48]) || (geomID == geom[49]) 
+            || (geomID == rhandfings0_geom) || (geomID == rhandfings1_geom) || (geomID == rhandfings2_geom) || (geomID == rhandfings3_geom)
+            || (geomID == rhandfings4_geom) || (geomID == rhandfings5_geom) || (geomID == rhandfings6_geom) || (geomID == rhandfings7_geom)){
+                skinPart = SKIN_RIGHT_HAND;
+                bodyPart = RIGHT_ARM;
+                return; 
+        }   
+     }
+    
+     if(odeinit._iCub->actRArm == "off"){
+       if( (geomID == rarm0_geom) || (geomID == rarm1_geom) || (geomID == rarm2_geom)){
+        skinPart = SKIN_RIGHT_UPPER_ARM;
+        bodyPart = RIGHT_ARM;
+        return;
+       }
+       else if(geomID == rarm3_geom){
+        skinPart = SKIN_RIGHT_FOREARM;
+        bodyPart = RIGHT_ARM;
+        return;
+       }
+     }
+     else{ // odeinit._iCub->actRArm == "on"
+      if ( (geomID == geom[1]) || (geomID == geom[3]) || (geomID == geom[5]) || (geomID == geom[7])){
+        skinPart = SKIN_RIGHT_UPPER_ARM;
+        bodyPart = RIGHT_ARM;
+        return;
+      }
+      else if (geomID == geom[9]){
+        skinPart = SKIN_RIGHT_FOREARM;
+        bodyPart = RIGHT_ARM;
+        return;
+      }
+    }
+    
+    //covers
+    if(actRightArmCovers == "on"){
+        if(geomID == model_ThreeD_obj["rightPalm"].geom){
+            skinPart = SKIN_RIGHT_HAND;
+            bodyPart = RIGHT_ARM;
+            skinCoverFlag = true; 
+            return;
+        }
+        else if(geomID == model_ThreeD_obj["lowerRightArm"].geom){
+            skinPart = SKIN_RIGHT_FOREARM;
+            bodyPart = RIGHT_ARM;
+            skinCoverFlag = true; 
+            return;
+        }
+        else if(geomID == model_ThreeD_obj["upperRightArm"].geom){
+            skinPart = SKIN_RIGHT_UPPER_ARM;
+            bodyPart = RIGHT_ARM;
+            skinCoverFlag = true; 
+            return;
+        }
+    }
+    
+    printf("ERROR: ICubSim::getSkinAndBodyPartFromSpaceAndGeomID: Unknown skin part and body part on collision in right arm space.\n");
+    skinPart =  SKIN_PART_UNKNOWN; 
+    bodyPart =  BODY_PART_UNKNOWN;
+    return;
+  }
+  else if (geomSpaceID == odeinit._iCub->iCubHeadSpace){
+    skinPart =  SKIN_PART_UNKNOWN; //need to extend the skin parts
+    bodyPart =  HEAD;
+    return;
+  }
+  else if (geomSpaceID == odeinit._iCub->iCubLegsSpace){
+    skinPart =  SKIN_PART_UNKNOWN; //need to extend the skin parts
+    bodyPart =  BODY_PART_UNKNOWN; // through checking the geoms, we could find out if it is left or right leg
+    return;
+  }
+  else {
+    printf("ERROR:ICubSim::getSkinAndBodyPartFromSpaceAndGeomID:unknown iCub space.");
+    skinPart =  SKIN_PART_UNKNOWN; 
+    bodyPart =  BODY_PART_UNKNOWN;
+    return; 
+   
+  }
+}
+
