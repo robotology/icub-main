@@ -501,14 +501,14 @@ void ICubSim::draw(){
         // left leg
         if ((actSelfCol == "on") || (actCoversCol == "on")){ //the foot "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
              glColor3d(1.0,1.0,1.0);
-             glPushMatrix();LDEsetM(dGeomGetPosition(leftLeg[0]),dGeomGetRotation(leftLeg[0]));
+             glPushMatrix();LDEsetM(dBodyGetPosition(leftLeg[0]),dBodyGetRotation(leftLeg[0]));
              DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
         else {
             if (actLegsCovers == "off") //if covers are off, the foot "box" is drawn; if they are on, it is not drawn as it is slightly longer and is visually not ideal
             {
                 glColor3d(1.0,1.0,1.0);
-                glPushMatrix();LDEsetM(dGeomGetPosition(leftLeg[0]),dGeomGetRotation(leftLeg[0]));
+                glPushMatrix();LDEsetM(dBodyGetPosition(leftLeg[0]),dBodyGetRotation(leftLeg[0]));
                 DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
             }
         }      
@@ -616,14 +616,14 @@ void ICubSim::draw(){
         //right leg
         if ((actSelfCol == "on") || (actCoversCol == "on")){ //the foot "box" is drawn - in this regime, we want to draw all objects that are relevant for the simulation
              glColor3d(0.9,0.9,0.9);
-             glPushMatrix();LDEsetM(dGeomGetPosition(rightLeg[0]),dGeomGetRotation(rightLeg[0]));
+             glPushMatrix();LDEsetM(dBodyGetPosition(rightLeg[0]),dBodyGetRotation(rightLeg[0]));
              DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
         }
         else {
             if (actLegsCovers == "off") //if covers are off, the foot "box" is drawn; if they are on, it is not drawn as it is slightly longer and is visually not ideal
             {
                 glColor3d(0.9,0.9,0.9);
-                glPushMatrix();LDEsetM(dGeomGetPosition(rightLeg[0]),dGeomGetRotation(rightLeg[0]));
+                glPushMatrix();LDEsetM(dBodyGetPosition(rightLeg[0]),dBodyGetRotation(rightLeg[0]));
                 DrawBox(0.054,0.004,0.13,false,textured,2);glPopMatrix();//Taken from ODE use Y, Z, X
             }
         }      
@@ -984,7 +984,7 @@ void ICubSim::draw(){
                 glPopMatrix();
             }  else  { // covers are not placeable geoms but only "eye-candy" - coordinates need to be retrieved from other geoms
                 glPushMatrix();
-                LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));    L
+                LDEsetM(dGeomGetPosition(l_hand0_geom),dGeomGetRotation(l_hand0_geom));  
                 glTranslatef(0.0, 0.5*fabs(jP_leftArm[7][2] - jP_leftArm[6][2]), 0.0); 
                 DrawX( model_trimesh["leftPalm"], modelTexture[0]);
                 glPopMatrix();
@@ -3138,7 +3138,9 @@ void ICubSim::initCovers(ResourceFinder& finder)
             dGeomTriMeshDataBuildSingle(model_TriData[(*itr).first], model_trimesh[(*itr).first]->Vertices, 3 * sizeof(float), model_trimesh[(*itr).first]->VertexCount, model_trimesh[(*itr).first]->Indices, model_trimesh[(*itr).first]->IndexCount, 3 * sizeof(int));
             if (actSelfCol == "off"){ //all covers geoms will go to the top-level iCub space
                 model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCub, model_TriData[(*itr).first], 0, 0, 0);
-            } else { //if self-collisions are on, we need to create it in the right collision space - torso / left arm / right arm / legs 
+            } 
+            else { //if self-collisions are on, we need to create it in the right collision space - torso / left arm / right arm / legs 
+                //note: if actSelfCol is on and actCoversCol is off, there still won't be any collisions, but let's keep the implementation of these features modular
                 if ( (*itr).first.compare("torso")==0 || (*itr).first.compare("waist")==0){
                     model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCubTorsoSpace, model_TriData[(*itr).first], 0, 0, 0);
                 }
@@ -3183,9 +3185,8 @@ void ICubSim::initCovers(ResourceFinder& finder)
                             dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(neck0_geom)[0]-dBodyGetPosition(torso[3])[0],dGeomGetPosition(neck0_geom)[1]-dBodyGetPosition(torso[3])[1],dGeomGetPosition(neck0_geom)[2]-dBodyGetPosition(torso[3])[2]);
                         }
                         // rotation is already fine - same as torso[3] 
-                    }
-                    //printf("The coordinates of the trimesh torso geom (after setting offset) are: ");
-                    //printPositionOfGeom(model_ThreeD_obj[(*itr).first].geom); 
+                      }
+                   
                 }
                 else if ((*itr).first.compare("waist")==0){
                     dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "waist cover"; 
@@ -3241,9 +3242,10 @@ void ICubSim::initCovers(ResourceFinder& finder)
                             dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,-0.01,0.5*fabs(jP_leftArm[7][2] - jP_leftArm[6][2]),0.0);
                             // the -0.01 on the x is to shift the mesh slightly into the palm, such that we get the touch there - otherwise it seems to be hidden by the geom 
                             //note the coordinate axes where the shift occurs may be somewhat arbitrary - depending on the orientation of the mesh in the source file
-                   }
+                        }
+                    } //left palm
                } //left arm
-               else if ((*itr).first.compare("upperRightArm")==0 || (*itr).first.compare("lowerRightArm")==0 || (*itr).first.compare("rightPalm")==0){
+                else if ((*itr).first.compare("upperRightArm")==0 || (*itr).first.compare("lowerRightArm")==0 || (*itr).first.compare("rightPalm")==0){
                     if((*itr).first.compare("upperRightArm")==0){
                         dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper right arm cover";     
                         if (actRArm == "off"){
@@ -3284,92 +3286,90 @@ void ICubSim::initCovers(ResourceFinder& finder)
                             //note the coordinate axes where the shift occurs are somewhat arbitrary - depending on the orientation of the mesh in the source file
                         }
                     }
-            }
-            else if ((*itr).first.compare("upperLeftLeg")==0 || (*itr).first.compare("lowerLeftLeg")==0 || (*itr).first.compare("leftFoot")==0 || (*itr).first.compare("upperRightLeg")==0 || (*itr).first.compare("lowerRightLeg")==0 || (*itr).first.compare("rightFoot")==0){
-                if ((*itr).first.compare("upperLeftLeg")==0){
-                    dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper left leg cover";     
-                    if (actLegs == "off"){
-                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
-                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg6_geom)[0],dGeomGetOffsetPosition(l_leg6_geom)[1],dGeomGetOffsetPosition(l_leg6_geom)[2]);
-                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(l_leg5_geom));   
+                } //right arm
+                else if ((*itr).first.compare("upperLeftLeg")==0 || (*itr).first.compare("lowerLeftLeg")==0 || (*itr).first.compare("leftFoot")==0 || (*itr).first.compare("upperRightLeg")==0 || (*itr).first.compare("lowerRightLeg")==0 || (*itr).first.compare("rightFoot")==0){
+                    if ((*itr).first.compare("upperLeftLeg")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper left leg cover";     
+                        if (actLegs == "off"){
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                            dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg6_geom)[0],dGeomGetOffsetPosition(l_leg6_geom)[1],dGeomGetOffsetPosition(l_leg6_geom)[2]);
+                            dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(l_leg5_geom));   
+                        }
+                        else{ // actLegs == "on"
+                            dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[3]);
+                            dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(leftLeg_4_2)[0],dGeomGetPosition(leftLeg_4_2)[1],dGeomGetPosition(leftLeg_4_2)[2]);
+                            dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(leftLeg_3_2));   
+                        }
                     }
-                    else{ // actLegs == "on"
-                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[3]);
-                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(leftLeg_4_2)[0],dGeomGetPosition(leftLeg_4_2)[1],dGeomGetPosition(leftLeg_4_2)[2]);
-                        dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(leftLeg_3_2));   
+                    else if ((*itr).first.compare("lowerLeftLeg")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower left leg cover"; 
+                        if (actLegs == "off"){
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg3_geom)[0],dGeomGetOffsetPosition(l_leg3_geom)[1],dGeomGetOffsetPosition(l_leg3_geom)[2]);
+                                dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(l_leg3_geom));  
+                        }
+                        else{ // actLegs == "on"
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[2]);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(leftLeg_2_2)[0],dGeomGetOffsetPosition(leftLeg_2_2)[1],dGeomGetOffsetPosition(leftLeg_2_2)[2]);
+                                dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(leftLeg_2_2));   
+                        }
+                   }
+                    else if ((*itr).first.compare("leftFoot")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "left foot cover"; 
+                        if (actLegs == "off"){
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg1_geom)[0],dGeomGetOffsetPosition(l_leg1_geom)[1],dGeomGetOffsetPosition(l_leg1_geom)[2]);
+                        } 
+                        else{ // actLegs == "on"
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[0]);
+                                dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(leftLeg[1])[0],dBodyGetPosition(leftLeg[1])[1],dBodyGetPosition(leftLeg[1])[2]);
+                        }                   
                     }
-               }
-               else if ((*itr).first.compare("lowerLeftLeg")==0){
-                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower left leg cover"; 
-                   if (actLegs == "off"){
-                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
-                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg3_geom)[0],dGeomGetOffsetPosition(l_leg3_geom)[1],dGeomGetOffsetPosition(l_leg3_geom)[2]);
-                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(l_leg3_geom));  
-                   }
-                   else{ // actLegs == "on"
-                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[2]);
-                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(leftLeg_2_2)[0],dGeomGetOffsetPosition(leftLeg_2_2)[1],dGeomGetOffsetPosition(leftLeg_2_2)[2]);
-                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(leftLeg_2_2));   
-                   }
-               }
-               else if ((*itr).first.compare("leftFoot")==0){
-                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "left foot cover"; 
-                   if (actLegs == "off"){
-                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
-                        dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(l_leg1_geom)[0],dGeomGetOffsetPosition(l_leg1_geom)[1],dGeomGetOffsetPosition(l_leg1_geom)[2]);
-                   } 
-                   else{ // actLegs == "on"
-                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,leftLeg[0]);
-                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(leftLeg[1])[0],dBodyGetPosition(leftLeg[1])[1],dBodyGetPosition(leftLeg[1])[2]);
-                   }                   
-               }
-               else if ((*itr).first.compare("upperRightLeg")==0){
-                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper right leg cover"; 
-                   if (actLegs == "off"){
-                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
-                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg6_geom)[0],dGeomGetOffsetPosition(r_leg6_geom)[1],dGeomGetOffsetPosition(r_leg6_geom)[2]);
-                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(r_leg5_geom));   
-                   }
-                   else{ // actLegs == "on"
-                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[3]);
-                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(rightLeg_4_2)[0],dGeomGetPosition(rightLeg_4_2)[1],dGeomGetPosition(rightLeg_4_2)[2]);
-                        dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(rightLeg_3_2)); 
-                   }                   
-               }
-               else if ((*itr).first.compare("lowerRightLeg")==0){
-                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower right leg cover"; 
-                   if (actLegs == "off"){
-                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
-                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg3_geom)[0],dGeomGetOffsetPosition(r_leg3_geom)[1],dGeomGetOffsetPosition(r_leg3_geom)[2]);
-                         dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(r_leg3_geom));  
-                   }
-                   else{ // actLegs == "on"
-                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[2]);
-                        dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(rightLeg_2_2)[0],dGeomGetOffsetPosition(rightLeg_2_2)[1],dGeomGetOffsetPosition(rightLeg_2_2)[2]);
-                        dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(rightLeg_2_2));   
-                   }                   
-               }
-               else if ((*itr).first.compare("rightFoot")==0){
-                   dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "right foot cover"; 
-                   if (actLegs == "off"){
-                         dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
-                         dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg1_geom)[0],dGeomGetOffsetPosition(r_leg1_geom)[1],dGeomGetOffsetPosition(r_leg1_geom)[2]);
-                        // no offset rotation of r_leg1_geom w.r.t. legs dBodyID     
-                   }
-                   else{ // actLegs == "on"
-                        dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[0]);
-                        dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(rightLeg[1])[0],dBodyGetPosition(rightLeg[1])[1],dBodyGetPosition(rightLeg[1])[2]);
-                   }
-               }
-         } 
-		 else{ 
-	 	   printf("ERROR: ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
-         }
-       }  //  if(actSelfCol=="on")
-	   //otherwise we don't create placeable geoms for the covers 
-           
-        } //else - trimesh exists
-    }
+                    else if ((*itr).first.compare("upperRightLeg")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "upper right leg cover"; 
+                        if (actLegs == "off"){
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg6_geom)[0],dGeomGetOffsetPosition(r_leg6_geom)[1],dGeomGetOffsetPosition(r_leg6_geom)[2]);
+                                dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(r_leg5_geom));   
+                        }
+                        else{ // actLegs == "on"
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[3]);
+                                dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetPosition(rightLeg_4_2)[0],dGeomGetPosition(rightLeg_4_2)[1],dGeomGetPosition(rightLeg_4_2)[2]);
+                                dGeomSetOffsetWorldRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetRotation(rightLeg_3_2)); 
+                        }                   
+                    }
+                    else if ((*itr).first.compare("lowerRightLeg")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "lower right leg cover"; 
+                        if (actLegs == "off"){
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg3_geom)[0],dGeomGetOffsetPosition(r_leg3_geom)[1],dGeomGetOffsetPosition(r_leg3_geom)[2]);
+                                dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(r_leg3_geom));  
+                        }
+                        else{ // actLegs == "on"
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[2]);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(rightLeg_2_2)[0],dGeomGetOffsetPosition(rightLeg_2_2)[1],dGeomGetOffsetPosition(rightLeg_2_2)[2]);
+                                dGeomSetOffsetRotation(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetRotation(rightLeg_2_2));   
+                        }                   
+                    }
+                    else if ((*itr).first.compare("rightFoot")==0){
+                        dGeomNames[model_ThreeD_obj[(*itr).first].geom] = "right foot cover"; 
+                        if (actLegs == "off"){
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,legs);
+                                dGeomSetOffsetPosition(model_ThreeD_obj[(*itr).first].geom,dGeomGetOffsetPosition(r_leg1_geom)[0],dGeomGetOffsetPosition(r_leg1_geom)[1],dGeomGetOffsetPosition(r_leg1_geom)[2]);
+                                // no offset rotation of r_leg1_geom w.r.t. legs dBodyID     
+                        }
+                        else{ // actLegs == "on"
+                                dGeomSetBody(model_ThreeD_obj[(*itr).first].geom,rightLeg[0]);
+                                dGeomSetOffsetWorldPosition(model_ThreeD_obj[(*itr).first].geom,dBodyGetPosition(rightLeg[1])[0],dBodyGetPosition(rightLeg[1])[1],dBodyGetPosition(rightLeg[1])[2]);
+                        }
+                    }
+                } //leg 
+                else{ 
+                    printf("ERROR: ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
+                }
+             }  //if(actCoversCol=="on") - otherwise, no need to do anything, the covers will be just drawn as eye candy in draw()
+       } //else - trimesh exists
+    } //for all covers
     modelTextureIndex++;
     modelTexture[0] = modelTextureIndex;
     //the reference object
