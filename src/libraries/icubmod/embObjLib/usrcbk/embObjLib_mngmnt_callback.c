@@ -103,6 +103,16 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
     printf("%s\n", str);
     fflush(stdout);
+
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_mn_appl_status() has received an unexpected message\n");
+            return;
+        }
+    }
+
 }
 
 

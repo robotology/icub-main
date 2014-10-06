@@ -340,6 +340,26 @@ TheEthManager::TheEthManager()
     starttime = yarp::os::Time::now();
 }
 
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+ethStatistics* TheEthManager::getEthStatistics(void)
+{
+    return ethStats;
+}
+#endif
+
+EthSender* TheEthManager::getEthSender(void)
+{
+    return sender;
+}
+
+
+EthReceiver* TheEthManager::getEthReceiver(void)
+{
+    return receiver;
+}
+
+
 double TheEthManager::getStartTime(void)
 {
     return starttime;
@@ -567,7 +587,7 @@ bool TheEthManager::close()
 
 void TheEthManager::flush()
 {
-    #warning --> see when this function is called and think about removing delay of 1 second
+    //#warning --> marco.accame: see when this function is called and think about removing delay of 1 second
     //here sleep is essential in order to let sender thread send gotoconfig command.
     yarp::os::Time::delay(1);
 }
@@ -612,6 +632,11 @@ void EthSender::run()
     uint16_t      numofrops = 0;
     ethResRIt     riterator, _rBegin, _rEnd;
 
+// acemor-03oct   
+#if defined(WIP_UNIFIED_STATS)
+ethStatistics* ethstats = ethManager->getEthStatistics();
+#endif
+
 #ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
     // For statistic purpose
 
@@ -645,15 +670,8 @@ void EthSender::run()
         in teoria senza crashare. Al più salvarsi il puntatore alla rbegin sotto mutex prima di iniziare il ciclo,
         giusto per evitare che venga aggiunto un elemento in concomitanza con la lettura dell rbegin stesso.
         Siccome gli elementi vengono aggiunti solamente in coda alla lista, questa iterazione a ritroso non
-        dovrebbe avere altri problemi e quindi safe anche senza ilmutex che prende TUTTO il ciclo.
-
-      std::list<int> mylist;
-    for (int i=1; i<=5; ++i) mylist.push_back(i);
-
-    std::cout << "mylist backwards:";
-    for (std::list<int>::reverse_iterator rit=mylist.rbegin(); rit!=mylist.rend(); ++rit)
-    std::cout << ' ' << *rit;
-  */
+        dovrebbe avere altri problemi e quindi safe anche senza il mutex che prende TUTTO il ciclo.
+    */
 
     ethManager->managerMutex.wait();
     _rBegin = ethResList->rbegin();
@@ -676,19 +694,26 @@ void EthSender::run()
         // This uses directly the pointer of the transceiver
         bool transmitthepacket = ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send, &numofrops);
 
-//#ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
-//        if((NULL != p_sendData))
-//#else
-//        if((numofrops > 0) && (NULL != p_sendData) && (bytes_to_send > 0))
-//#endif
         if(true == transmitthepacket)
         {
             ACE_INET_Addr addr = ethRes->getRemoteAddress();
             int ret = ethManager->send(p_sendData, (size_t)bytes_to_send, addr);
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+            ethstats->tickTX(ethRes, bytes_to_send, numofrops);
+#endif
         }
 
     }
     //ethManager->managerMutex.post();
+
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+    if(true == ethstats->isReportTime())
+    {
+        ethstats->report(this, ethManager->getEthReceiver());
+    }
+#endif
 }
 
 
@@ -883,7 +908,7 @@ void EthReceiver::run()
             continue;  // i go to recv a new pkt and wait someone to stop me
         }
 
-        // at every loop we take pointers to the ethresources list. we do so because it may change in time as a new device is added
+        // at every loop we get pointers of the ethresources list. we do so because it may change in time as a new device is added
         // we use reverse iterators.
         ethManager->managerMutex.wait();
         _rBegin = ethResList->rbegin();
@@ -1302,6 +1327,94 @@ void EthReceiver::run()
     return;
 }
 
+#endif
+
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+
+
+
+// -------------------------------------------------------------------\\
+//            ethStatistics
+// -------------------------------------------------------------------\\
+
+// marco.accame on 03 oct 2014:
+// this class is just a coordinator of functionalities offered by other objects.
+// its aim is to coordinate the gathering of statistics of tx and rx.
+
+ethStatistics::ethStatistics(double period)
+{
+    reportPeriod        = period;
+    timeofLastReport    = yarp::os::Time::now();
+    lock                = new Semaphore(1);
+}
+
+
+ethStatistics::~ethStatistics()
+{
+    delete lock;
+}
+
+
+bool ethStatistics::tickTX(ethResources* res, int pktsize, int numofrops)
+{
+
+
+    return true;
+}
+
+bool ethStatistics::tickRX(ethResources* res, int pktsize, int numofrops)
+{
+
+
+    return true;
+}
+
+
+bool ethStatistics::isReportTime(void)
+{
+    double timenow = yarp::os::Time::now();
+
+    if((timenow - timeofLastReport) > reportPeriod)
+    {
+        return true;
+    }
+}
+
+
+bool ethStatistics::report(EthSender* sender, EthReceiver* receiver)
+{
+    double timenow = yarp::os::Time::now();
+
+    timeofLastReport = timenow;
+
+
+
+    // compute stats of all ethresources and print and reset.
+
+    // 1. sender ...
+    double avPeriod, stdPeriod;
+    double avThTime, stdTime;
+
+    sender->getEstUsed(avThTime, stdTime);
+    sender->getEstPeriod(avPeriod, stdPeriod);
+
+    unsigned int it = sender->getIterations();
+
+    char string[128] = {0};
+    snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
+                            it,
+                            avPeriod, stdPeriod,
+                            avThTime, stdTime);
+    yDebug() << string;
+
+    sender->resetStat();
+
+    // 2. receiver: one each all the ethresources.
+
+
+    return true;
+}
 #endif
 
 

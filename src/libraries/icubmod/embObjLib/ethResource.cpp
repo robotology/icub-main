@@ -35,6 +35,10 @@ ethResources::ethResources()
     lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
     infoPkts                    = new infoOfRecvPkts();
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+    inforx                      = new infoOfRecvPkts();
+#endif
     networkQuerySem             = new Semaphore(0);
     isbusyNQsem                 = new Semaphore(1);
     iswaitingNQsem              = new Semaphore(0);
@@ -59,6 +63,10 @@ ethResources::~ethResources()
     // marco.accame on 11sept14: in here we must surely deinit/delete what we have created/initted in teh constructor and in open() or init()
 
     delete infoPkts;
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+    delete inforx;
+#endif
     delete networkQuerySem;
     delete isbusyNQsem;
     delete iswaitingNQsem;
@@ -78,10 +86,18 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     if(cfgtotal.findGroup("GENERAL").find("verbose").asBool())
     {
         infoPkts->_verbose = true;
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+        inforx->_verbose = true;
+#endif
     }
     else
     {
         infoPkts->_verbose = false;
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+        inforx->_verbose = false;
+#endif
     }
 
 
@@ -106,6 +122,10 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     transMutex.post();
 
     infoPkts->setBoardNum(boardNum);
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+    inforx->setBoardNum(boardNum);
+#endif
 
     return ret;
 }
@@ -226,7 +246,25 @@ bool ethResources::goToConfig(void)
         return false;
     }
 
-#warning -> marco.accame on 03 sept 2014: i would ask back the board if it has gone to config state. it is important. however, the ems must update its status. does current application do it?
+
+    // marco.accame: thi code is correct and verifies that the board goes to config. however, it requires FW version >= 1.45, thus so far i keep it commented out 
+    // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
+ #if 0
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
+    eOmn_appl_status_t status = {0};
+    status.currstate = applstate_config;
+    status.runmode = applrunMode__default;
+    memset(&status.filler06, 0, sizeof(status.filler06));
+
+    if(true == verifyRemoteValue(id32, &status, sizeof(status)))
+    {
+        yWarning() << "VERIFIED that BOARD" << get_protBRDnumber()+1 << "goes to config";
+    }
+    else
+    {
+        yError() << "DID NOT VERIFY that BOARD" << get_protBRDnumber()+1 << "goes to config";
+    }
+#endif
 
     isInRunningMode = false;
     return true;
@@ -245,7 +283,24 @@ bool ethResources::goToRun(void)
         return false;
     }
 
-#warning -> marco.accame on 03 sept 2014: i would ask back the board if it has gone to running state. it is important. however, the ems must update its status. does current application do it?
+    // marco.accame: thi code is correct and verifies that the board goes to run. however, it requires FW version >= 1.45, thus so far i keep it commented out 
+    // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
+#if 0 
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
+    eOmn_appl_status_t status = {0};
+    status.currstate = applstate_running;
+    status.runmode = applrunMode__default;
+    memset(&status.filler06, 0, sizeof(status.filler06));
+
+    if(true == verifyRemoteValue(id32, &status, sizeof(status)))
+    {
+        yWarning() << "VERIFIED that BOARD" << get_protBRDnumber()+1 << "goes to run";
+    }
+    else
+    {
+        yError() << "DID NOT VERIFY that BOARD" << get_protBRDnumber()+1 << "goes to run";
+    }
+#endif
 
     isInRunningMode = true;
     return true;
@@ -1686,7 +1741,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     long long diff;
 
     double timenow = yarp::os::Time::now();
-    bool local_verbose = true; //_verbose;
+    bool local_verbose = _verbose;
 
 
     if(initted)

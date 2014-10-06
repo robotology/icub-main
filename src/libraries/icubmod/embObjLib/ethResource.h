@@ -151,6 +151,10 @@ private:
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     infoOfRecvPkts    *infoPkts;
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+    infoOfRecvPkts    *inforx;
+#endif
 
     yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
     yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
