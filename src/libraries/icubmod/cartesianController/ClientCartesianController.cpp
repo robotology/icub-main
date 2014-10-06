@@ -113,7 +113,6 @@ bool ClientCartesianController::open(Searchable &config)
     portRpc.open((local+"/rpc:o").c_str());
 
     bool ok=true;
-
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
     if (ok)
     {

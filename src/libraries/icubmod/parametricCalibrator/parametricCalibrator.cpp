@@ -670,10 +670,14 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
         return false;
     }
 
-    int timeout = 0;
+    if(skipCalibration)
+    {
+        yWarning() << deviceName << "skipCalibration flag is on!! Faking park!!";
+        return true;
+    }
 
-    int * currentControlModes = new int[nj];
-
+    int*  currentControlModes = new int  [nj];
+    bool* cannotPark          = new bool [nj];
     bool res = iControlMode->getControlModes(currentControlModes);
     if(!res)
     {
@@ -682,58 +686,57 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 
     for(int i=0; i<nj; i++)
     {
-        if(currentControlModes[i] != VOCAB_CM_IDLE 
-           /* && currentControlModes[i] != VOCAB_HW_FAULT */)
+        if(currentControlModes[i] != VOCAB_CM_IDLE &&
+           currentControlModes[i] != VOCAB_CM_HW_FAULT)
         {
             iControlMode->setControlMode(i,VOCAB_CM_POSITION);
+            cannotPark[i] = false;
+        }
+        else if (currentControlModes[i] == VOCAB_CM_IDLE)
+        {
+            yError() << deviceName << ", joint " << i << ": is idle, skipping park";
+            cannotPark[i] = true;
+        }
+        else if (currentControlModes[i] == VOCAB_CM_HW_FAULT)
+        {
+            yError() << deviceName << ", joint " << i << ": has an hardware fault, skipping park";
+            cannotPark[i] = true;
         }
     }
 
     iPosition->setRefSpeeds(homeVel);
-    iPosition->positionMove(homePos);     // all joints together????
-    //TODO fix checkMotionDone in such a way that does not depend on timing!
+    iPosition->positionMove(homePos);
     Time::delay(0.01);
     
-    if(skipCalibration)
-    {
-        yWarning() << deviceName << "skipCalibration flag is on!! Faking park!!";
-        return true;
-    }
-
     if (wait)
     {
-        yDebug() << deviceName.c_str() << ": Moving to park positions";
-        bool done=false;
-        while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
-        {
-            iPosition->checkMotionDone(&done);
-            Time::delay(1);
-            timeout++;
-        }
-        if(!done)
-        {   // In case of error do another loop trying to detect the error!!
-            for(int j=0; j < nj; j++)
-            {
-                if (iPosition->checkMotionDone(j, &done))
-                {
-                    if (!done)
-                        yError() << deviceName << ", joint " << j << ": not in position after timeout";
-                    // else means that axes get to the position right after the timeout.... do nothing here
-                }
-                else	// if the CALL to checkMotionDone fails for timeout
-                    yError() << deviceName << ", joint " << j << ": did not answer during park";
-            }
-        }
+       int timeout = 0; //this variable is shared between all joints
+       for(int i=0; i < nj; i++)
+       {
+          if (cannotPark[i] ==false)
+          {
+             yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << i;
+             bool done=false;
+             iPosition->checkMotionDone(i, &done);
+             while ( (!done) && (timeout<PARK_TIMEOUT) && (!abortParking) )
+             {
+               Time::delay(1);
+               timeout++;
+               iPosition->checkMotionDone(i, &done);
+             }
+             if (!done)
+             {
+                 yError() << deviceName << ", joint " << i << ": not in position after a timeout of" << PARK_TIMEOUT <<" seconds";
+             }
+          }
+       }
     }
 
-    yDebug() << "Park was " << (abortParking ? "aborted" : "done");
-    yError() << "PARKING-timeout "<< deviceName.c_str() << " : "<< timeout;
+    yDebug() << "Park " << (abortParking ? "aborted" : "completed");
     for(int j=0; j < nj; j++)
     {
         iControlMode->setControlMode(j,VOCAB_CM_IDLE);
     }
-// iCubInterface is already shutting down here... so even if errors occour, what else can I do?
-
     return true;
 }
 

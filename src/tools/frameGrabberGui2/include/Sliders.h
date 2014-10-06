@@ -44,39 +44,39 @@ class DC1394SliderBase
 {
 public:
     virtual ~DC1394SliderBase(){}
-	static int GetHeight(){ return m_Height; }
-	virtual void Refresh()=0;
-	virtual void Propagate()=0;
+    static int GetHeight(){ return m_Height; }
+    virtual void Refresh()=0;
+    virtual void Propagate()=0;
 protected:
-	static int m_Height;
-	bool m_bInactive;
+    static int m_Height;
+    bool m_bInactive;
     int m_nInternalChange;
 };
 
 class DC1394Slider : public DC1394SliderBase
 {
 public:
-	//DC1394Slider(){}
+    //DC1394Slider(){}
     virtual ~DC1394Slider();
-	DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,FrameGrabberGUIControl2 *fg);
-	
-	void Refresh();
-	void Propagate();
+    DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,FrameGrabberGUIControl2 *fg);
+    
+    void Refresh();
+    void Propagate();
 
-	void slider_handler();
-	void onepush_handler();
-	void auto_handler();
-	void pwr_handler();
-	void set_value(double val);
+    void slider_handler();
+    void onepush_handler();
+    void auto_handler();
+    void pwr_handler();
+    void set_value(double val);
 
 protected:
-	double m_old_value,m_new_value;
-	FrameGrabberGUIControl2 *pFG;
-	dc1394feature_id_t m_Feature;
-	Gtk::CheckButton* pPwr;
-	Gtk::RadioButton *pRBa,*pRBm;
-	Gtk::HScale m_Slider;
-	Gtk::Button m_OnePush;
+    double m_old_value,m_new_value;
+    FrameGrabberGUIControl2 *pFG;
+    dc1394feature_id_t m_Feature;
+    Gtk::CheckButton* pPwr;
+    Gtk::RadioButton *pRBa,*pRBm;
+    Gtk::HScale m_Slider;
+    Gtk::Button m_OnePush;
     Glib::ustring m_Name;
 };
 
@@ -84,24 +84,24 @@ class DC1394SliderWB : public DC1394SliderBase
 {
 public:
     virtual ~DC1394SliderWB();
-	DC1394SliderWB(Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg);
+    DC1394SliderWB(Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg);
 
-	void Refresh();
-	void Propagate();
-	
-	void slider_handler();
-	void onepush_handler();
-	void automan_handler();
-	void pwr_handler();
-	void set_value(double blue,double red);
+    void Refresh();
+    void Propagate();
+    
+    void slider_handler();
+    void onepush_handler();
+    void automan_handler();
+    void pwr_handler();
+    void set_value(double blue,double red);
 
 protected:
-	double m_old_red,m_new_red,m_old_blu,m_new_blu;
-	yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
-	Gtk::CheckButton* pPwr;
-	Gtk::RadioButton *pRBa,*pRBm;
-	Gtk::HScale m_Red,m_Blue;
-	Gtk::Button m_OnePush;
+    double m_old_red,m_new_red,m_old_blu,m_new_blu;
+    yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
+    Gtk::CheckButton* pPwr;
+    Gtk::RadioButton *pRBa,*pRBm;
+    Gtk::HScale m_Red,m_Blue;
+    Gtk::Button m_OnePush;
 };
 
 #endif

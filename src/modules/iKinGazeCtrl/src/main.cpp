@@ -161,9 +161,6 @@ Factors</a>.
   rotation. To turn off the OCR just set the \e gain equal to
   0.0 (as per default).
  
---simulation
-- Simulate the presence of the robot. 
- 
 --ping_robot_tmo \e tmo 
 - The parameter \e tmo is the timeout (in seconds) to allow to
   start-up the robot before connecting to it.
@@ -190,6 +187,9 @@ Factors</a>.
 --headV2 
 - When this options is specified then the kinematic structure of
   the hardware v2 of the head is referred.
+ 
+--verbose
+- Enable some output print-out.
  
 --tweakFile \e file 
 - The parameter \e file specifies the file name (located in 
@@ -963,7 +963,6 @@ public:
         double minAbsVel;
         bool   saccadesOn;
         bool   neckPosCtrlOn;
-        bool   Robotable;        
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -985,12 +984,12 @@ public:
         neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
         counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
-        Robotable=!rf.check("simulation");
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
         commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
+        commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
 
         // minAbsVel is given in absolute form
@@ -1022,60 +1021,52 @@ public:
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
         string localTorsoName=commData.localStemName+"/"+torsoName;        
 
-        if (Robotable)
+        Property optTorso("(device remote_controlboard)");
+        optTorso.put("remote",remoteTorsoName.c_str());
+        optTorso.put("local",localTorsoName.c_str());
+        optTorso.put("part",torsoName.c_str());
+
+        Property optHead("(device remote_controlboard)");
+        optHead.put("remote",remoteHeadName.c_str());
+        optHead.put("local",localHeadName.c_str());
+        optHead.put("part",headName.c_str());
+        // mixed position/velocity control entails
+        // to send two packets per control slot
+        optHead.put("writeStrict","on");
+
+        if (torsoName!="disabled")
         {
-            Property optTorso("(device remote_controlboard)");
-            optTorso.put("remote",remoteTorsoName.c_str());
-            optTorso.put("local",localTorsoName.c_str());
-            optTorso.put("part",torsoName.c_str());
+            drvTorso=(ping_robot_tmo>0.0)?
+                     waitPart(optTorso,ping_robot_tmo):
+                     new PolyDriver(optTorso);
 
-            Property optHead("(device remote_controlboard)");
-            optHead.put("remote",remoteHeadName.c_str());
-            optHead.put("local",localHeadName.c_str());
-            optHead.put("part",headName.c_str());
-            // mixed position/velocity control entails
-            // to send two packets per control slot
-            optHead.put("writeStrict","on");
-
-            if (torsoName!="disabled")
+            if (!drvTorso->isValid())
             {
-                drvTorso=(ping_robot_tmo>0.0)?
-                         waitPart(optTorso,ping_robot_tmo):
-                         new PolyDriver(optTorso);
+                printf("Torso device driver not available!\n");
+                printf("Perhaps only the head is running; trying to continue ...\n");
 
-                if (!drvTorso->isValid())
-                {
-                    printf("Torso device driver not available!\n");
-                    printf("Perhaps only the head is running; trying to continue ...\n");
-
-                    delete drvTorso;
-                    drvTorso=NULL;
-                }
-            }
-            else
-            {
-                printf("Torso device disabled!\n");
-                drvTorso=NULL;
-            }
-
-            drvHead=(ping_robot_tmo>0.0)?
-                    waitPart(optHead,ping_robot_tmo):
-                    new PolyDriver(optHead);
-
-            if (!drvHead->isValid())
-            {
-                printf("Head device driver not available!\n");
-
-                delete drvHead;
                 delete drvTorso;
-                drvTorso=drvHead=NULL;
-                return false;
+                drvTorso=NULL;
             }
         }
         else
         {
-            printf("Controller running in simulation mode\n");
+            printf("Torso device disabled!\n");
+            drvTorso=NULL;
+        }
+
+        drvHead=(ping_robot_tmo>0.0)?
+                waitPart(optHead,ping_robot_tmo):
+                new PolyDriver(optHead);
+
+        if (!drvHead->isValid())
+        {
+            printf("Head device driver not available!\n");
+
+            delete drvHead;
+            delete drvTorso;
             drvTorso=drvHead=NULL;
+            return false;
         }
 
         // create and start threads

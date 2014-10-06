@@ -71,6 +71,7 @@ protected:
     Stamp txInfo_x;
     Stamp txInfo_q;
     Stamp txInfo_pose;
+    Stamp txInfo_event;
 
     Mutex mutexRun;
     Mutex mutexChain;
@@ -80,7 +81,6 @@ protected:
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
     bool ctrlInhibited;
-    bool Robotable;
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;

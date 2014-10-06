@@ -222,7 +222,7 @@ Vector iKinCtrl::checkVelocity(const Vector &_qdot, double _Ts)
     Vector newq        =q+checked_qdot*_Ts;
 
     for (unsigned int i=0; i<dim; i++)
-        if (newq[i]<chain(i).getMin() || newq[i]>chain(i).getMax())
+        if ((newq[i]<chain(i).getMin()) || (newq[i]>chain(i).getMax()))
             checked_qdot[i]=0.0;
 
     return checked_qdot;
@@ -865,8 +865,7 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
 
         computeWeight();
 
-        _qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
-        qdot=checkVelocity(_qdot,Ts);
+        qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));        
         xdot=J*qdot;
         q=chain.setAng(I->integrate(qdot));
         x=chain.EndEffPose();

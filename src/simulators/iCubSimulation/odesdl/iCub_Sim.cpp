@@ -455,7 +455,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
         for (int x = 0; x < 6; x++){
             if (boolean){
                 resultLeft = odeinit._iCub->checkTouchSensor( indicesLeft[x] );
-                resultRight = odeinit._iCub->checkTouchSensor( indicesLeft[x] );
+                resultRight = odeinit._iCub->checkTouchSensor( indicesRight[x] );
             }
             else{
                 resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( indicesLeft[x] );

@@ -1,0 +1,23 @@
+<application>
+<name>iCubStartup part 2</name>
+
+        <dependencies>
+           <port>/icub/head/rpc:i</port>
+           <port>/iKinGazeCtrl/rpc</port>
+        </dependencies>
+   
+        <module>
+                <name>wholeBodyDynamics</name>
+                <parameters>--headV2 --autoconnect</parameters>
+                <node>cortex1</node>
+                <tag>wholeBodyDynamicsTag</tag>
+        </module>
+
+        <module>
+                <name>gravityCompensator</name>
+                <parameters>--headV2</parameters>
+                <node>cortex1</node>
+                <tag>gravityCompensatorTag</tag>
+        </module>
+
+</application>

@@ -61,7 +61,6 @@ CartesianCtrlRpcProcessor::CartesianCtrlRpcProcessor(ServerCartesianController *
 bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
 {
     Bottle cmd, reply;
-
     if (!cmd.read(connection))
         return false;
 
@@ -3471,6 +3470,8 @@ void ServerCartesianController::notifyEvent(const string &event,
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
 
+        eventInfo.update(time);
+        portEvent.setEnvelope(eventInfo);
         portEvent.writeStrict();
     }
 
