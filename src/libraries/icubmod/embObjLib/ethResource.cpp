@@ -1696,7 +1696,7 @@ void infoOfRecvPkts::setBoardNum(int boardnum)
 }
 
 void infoOfRecvPkts::printStatistics(void)
-{
+{   
     yDebug() << "  (STATS-RX)-> BOARD " << board << ":" << receivedPackets << "ropframes have been received by EthReceiver() in this period";
 
     if(0 == receivedPackets)
@@ -1733,7 +1733,8 @@ void infoOfRecvPkts::clearStatistics(void)
     currPeriodPktLost = 0;
     initted = false;   
     count = 0;
-    timeoflastreport = yarp::os::Time::now();;
+    timeoflastreport = yarp::os::Time::now();
+    receivedPackets = 0;
 }
 
 
@@ -1828,6 +1829,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     last_ageOfFrame = curr_ageOfFrame;
     last_recvPktTime = reckPktTime;
     count++;
+    receivedPackets++;
 
     // i evaluate a possible report
     if(true == evalreport)

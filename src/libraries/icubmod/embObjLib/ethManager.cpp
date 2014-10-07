@@ -971,10 +971,13 @@ void EthReceiver::run()
 
 #if 1
         double currTime = yarp::os::Time::now();
+        double delta = currTime - statLastTime;
 
-        if( (currTime - statLastTime) > statPrintInterval )
+        if( (delta) > statPrintInterval )
         {
             statLastTime = currTime;
+
+            yDebug() << "  (STATS-XX): new report for the past" << delta << "seconds";
 
             EthSender* ethSender = ethManager->getEthSender();
             ethSender->printTXstatistics();
