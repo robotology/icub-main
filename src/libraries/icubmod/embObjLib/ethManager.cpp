@@ -625,6 +625,48 @@ bool EthSender::threadInit()
     return true;
 }
 
+void EthSender::evalPrintTXstatistics(void)
+{
+#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+    // For statistic purpose
+
+    unsigned int it=getIterations();
+    if(it == ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_NUMBEROF_CYCLES)
+    {
+        printTXstatistics();
+    }
+#endif
+}
+
+void EthSender::printTXstatistics(void)
+{
+#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+    // For statistic purpose
+
+    unsigned int it=getIterations();
+
+    double avPeriod, stdPeriod;
+    double avThTime, stdTime;
+
+    getEstUsed(avThTime, stdTime);
+    getEstPeriod(avPeriod, stdPeriod);
+
+    char string[128] = {0};
+    snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
+                            it,
+                            avPeriod, stdPeriod,
+                            avThTime, stdTime);
+    yDebug() << string;
+
+//        printf("EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
+//                it,
+//                avPeriod, stdPeriod,
+//                avThTime, stdTime);
+    resetStat();
+
+#endif
+}
+
 void EthSender::run()
 {
     ethResources  *ethRes;
@@ -637,32 +679,7 @@ void EthSender::run()
 ethStatistics* ethstats = ethManager->getEthStatistics();
 #endif
 
-#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-    // For statistic purpose
-
-    unsigned int it=getIterations();
-    if(it == ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_NUMBEROF_CYCLES)
-    {
-        double avPeriod, stdPeriod;
-        double avThTime, stdTime;
-
-        getEstUsed(avThTime, stdTime);
-        getEstPeriod(avPeriod, stdPeriod);
-
-        char string[128] = {0};
-        snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
-                                it,
-                                avPeriod, stdPeriod,
-                                avThTime, stdTime);
-        yDebug() << string;
-
-//        printf("EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
-//                it,
-//                avPeriod, stdPeriod,
-//                avThTime, stdTime);
-        resetStat();
-    }
-#endif
+    //EthSender::evalPrintTXstatistics();
 
     /*
         Usare un reverse iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
@@ -959,7 +976,11 @@ void EthReceiver::run()
         {
             statLastTime = currTime;
 
-            // now for every ethresource i print the stats ... but only if it is running
+            EthSender* ethSender = ethManager->getEthSender();
+            ethSender->printTXstatistics();
+
+            // now for every ethresource i print the stats ... but only if it is running.
+            // by running stats for all boards at a given time, i understand if a board does not tx anymore
             riterator = _rBegin;
             while(riterator != _rEnd)
             {

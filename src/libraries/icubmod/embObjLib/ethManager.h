@@ -303,6 +303,8 @@ public:
     EthSender();
     bool config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager);
     bool threadInit();
+    void evalPrintTXstatistics(void);
+    void printTXstatistics(void);
 };
 
 // -------------------------------------------------------------------\\

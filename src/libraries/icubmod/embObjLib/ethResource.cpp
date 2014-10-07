@@ -171,8 +171,7 @@ int ethResources::getRXpacketCapacity()
 
 bool ethResources::printRXstatistics(void)
 {
-    infoPkts->printStatistics();
-    infoPkts->clearStatistics();
+    infoPkts->forceReport();
 }
 
 
@@ -1624,7 +1623,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
         }
 
 
-        // muest release allocated buffer
+        // must release allocated buffer
         free(datainside);
 
         // return result
@@ -1655,6 +1654,7 @@ infoOfRecvPkts::infoOfRecvPkts()
     last_ageOfFrame = 0;
     last_recvPktTime = 0.0;
 
+    receivedPackets = 0;
     totPktLost = 0;
     currPeriodPktLost = 0;
     stat_ageOfFrame = new StatExt();
@@ -1697,20 +1697,30 @@ void infoOfRecvPkts::setBoardNum(int boardnum)
 
 void infoOfRecvPkts::printStatistics(void)
 {
-    if(0 != currPeriodPktLost)
+    yDebug() << "  (STATS-RX)-> BOARD " << board << ":" << receivedPackets << "ropframes have been received by EthReceiver() in this period";
+
+    if(0 == receivedPackets)
     {
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " has ropframe losses in this period:" << currPeriodPktLost << "---------------------";
+        yDebug() << "  (STATS-RX)-> BOARD " << board << "DID NOT SEND ROPFRAMES in this period\n";
+    }
+    else if(0 != currPeriodPktLost)
+    {
+        yDebug() << "  (STATS-RX)-> BOARD " << board << "has ropframe losses in this period:" << currPeriodPktLost << "---------------------";
     }
     else
     {
         yDebug() << "  (STATS-RX)-> BOARD " << board << " does not have ropframe losses in this period";
     }
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " curr ropframe losses = " << currPeriodPktLost<< "   tot ropframe lost = " << totPktLost;
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " inter-ropframe gap (as written by remote board)[holes are discarded]: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " gap between processed ropframes [holes are discarded]: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " duration of holes in rx ropframes: avg=" << stat_lostPktgap->mean()*1000 << "ms std=" << stat_lostPktgap->deviation()*1000 << "ms min=" << stat_lostPktgap->getMin()*1000 << "ms max=" << stat_lostPktgap->getMax()*1000 << "ms on " << stat_lostPktgap->count() << "values";
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe process time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values";
-    yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe size time: avg=" << stat_pktSize->mean() << "bytes std=" << stat_pktSize->deviation() << "min=" << stat_pktSize->getMin() << "max=" << stat_pktSize->getMax() << " on " << stat_pktSize->count() << "values\n";
+
+    if(0 != receivedPackets)
+    {
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " curr ropframe losses = " << currPeriodPktLost<< "   tot ropframe lost = " << totPktLost;
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " inter-ropframe gap (as written by remote board)[holes are discarded]: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " gap between processed ropframes [holes are discarded]: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " duration of holes in rx ropframes: avg=" << stat_lostPktgap->mean()*1000 << "ms std=" << stat_lostPktgap->deviation()*1000 << "ms min=" << stat_lostPktgap->getMin()*1000 << "ms max=" << stat_lostPktgap->getMax()*1000 << "ms on " << stat_lostPktgap->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe process time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe size time: avg=" << stat_pktSize->mean() << "bytes std=" << stat_pktSize->deviation() << "min=" << stat_pktSize->getMin() << "max=" << stat_pktSize->getMax() << " on " << stat_pktSize->count() << "values\n";
+    }
 }
 
 void infoOfRecvPkts::clearStatistics(void)
@@ -1721,7 +1731,9 @@ void infoOfRecvPkts::clearStatistics(void)
     stat_precessPktTime->clear();
     stat_pktSize->clear();
     currPeriodPktLost = 0;
-    initted = false;
+    initted = false;   
+    count = 0;
+    timeoflastreport = yarp::os::Time::now();;
 }
 
 
@@ -1820,17 +1832,35 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     // i evaluate a possible report
     if(true == evalreport)
     {
-    //    if(count == max_count)
-        if((timenow - timeoflastreport) > reportperiod)
-        {
-            printStatistics();
-            clearStatistics();
-            count = 0;
-            timeoflastreport = timenow;
-        }
+        evalReport();
+    }
+}
+
+
+void infoOfRecvPkts::evalReport(void)
+{
+    double timenow = yarp::os::Time::now();
+
+    if((timenow - timeoflastreport) > reportperiod)
+    {
+        printStatistics();
+        clearStatistics();
     }
 
 }
+
+void infoOfRecvPkts::forceReport(void)
+{
+    double timenow = yarp::os::Time::now();
+
+//    if((timenow - timeoflastreport) > reportperiod)
+    {
+        printStatistics();
+        clearStatistics();
+    }
+
+}
+
 
 
 // eof

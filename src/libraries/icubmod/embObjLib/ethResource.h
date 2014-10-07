@@ -91,29 +91,30 @@ private:
     static const double DEFAULT_TIMEOUT_STAT  = 0.010; // 100 ms expessed in sec
 
 private:
-    int         board;              // the number of ems board with range [1, TheEthManager::maxBoards]
+    int             board;              // the number of ems board with range [1, TheEthManager::maxBoards]
 public:
-    bool          initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
-    bool          isInError;        //is true if an error occur. it is used to avoid to print error every cicle
-    int           count;
-    int           max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
-    double        timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
+    bool            initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
+    bool            isInError;        //is true if an error occur. it is used to avoid to print error every cicle
+    int             count;
+    int             max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
+    double          timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
 
-    double        reportperiod;
-    double        timeoflastreport;
+    double          reportperiod;
+    double          timeoflastreport;
 
-    uint64_t      last_seqNum;      //last seqNum rec
-    uint64_t      last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
-    double        last_recvPktTime; //time of last recv pkt
+    long            receivedPackets;
+    uint64_t        last_seqNum;      //last seqNum rec
+    uint64_t        last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
+    double          last_recvPktTime; //time of last recv pkt
 
-    int           totPktLost;       //total pkt lost from start up
-    int           currPeriodPktLost; // total pkt lost during thsi period
-    StatExt       *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
-    StatExt       *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
-    StatExt       *stat_lostPktgap;
-    StatExt       *stat_precessPktTime; //values are stored in sec
-    StatExt       *stat_pktSize; // rx pkt size
-    bool          _verbose;
+    int             totPktLost;       //total pkt lost from start up
+    int             currPeriodPktLost; // total pkt lost during thsi period
+    StatExt         *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
+    StatExt         *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
+    StatExt         *stat_lostPktgap;
+    StatExt         *stat_precessPktTime; //values are stored in sec
+    StatExt         *stat_pktSize; // rx pkt size
+    bool            _verbose;
 
     infoOfRecvPkts();
     ~infoOfRecvPkts();
@@ -129,6 +130,10 @@ public:
      *    @param    processPktTime   time needed to process this packet (expressed in seconds)
      */
     void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport = false);
+
+    void evalReport(void);
+
+    void forceReport(void);
 
     void setBoardNum(int board);
 };
