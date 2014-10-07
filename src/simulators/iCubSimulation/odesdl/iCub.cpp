@@ -4156,7 +4156,6 @@ ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 }
 
 //Auxiliary function to print info 
-// Matej Hoffmann, 10.6.2013
 void ICubSim::printPositionOfGeom(dGeomID geomID)
 {
     const dReal * pos = dGeomGetPosition(geomID);

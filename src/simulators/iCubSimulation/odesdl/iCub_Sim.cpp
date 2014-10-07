@@ -98,13 +98,20 @@ static int cameraSizeWidth;
 static int cameraSizeHeight;
 
 
-// # of touch sensors
-#define N_TOUCH_SENSORS 12
-// allocate feedback structs as a static array. We don't allocate feedback structs 
-// at every simulationstep since memory allocation at every step would degrade simulation performance.
-static dJointFeedback touchSensorFeedbacks[MAX_CONTACTS * N_TOUCH_SENSORS];
+/* For every collision detected by ODE, contact joints (up to MAX_CONTACTS per collison) are created and a feedback structs may be associated with them - that will carry information about the contact.
+ * The number of collisions and contact joints may vary, but we allocate these as a static array for performance issues.
+ * (Allocating feedback structs at every simulation step would degrade simulation performance).
+ * If the MAX_DJOINT_FEEDBACKSTRUCTS was exceeded, contacts will still be saved for the purposes of whole_body_skin_emul,
+ * but the forces send to skinEvents will not be available.
+*/
+#define MAX_DJOINT_FEEDBACKSTRUCTS 500
 
+static dJointFeedback touchSensorFeedbacks[MAX_DJOINT_FEEDBACKSTRUCTS]; 
 static int nFeedbackStructs=0;
+
+static bool START_SELF_COLLISION_DETECTION = false; //we want to set this trigger on only after the robot is in in home pos -
+ //it's initial configuration is with arms inside the thighs 
+
 
 void OdeSdlSimulation::draw() {
     OdeInit& odeinit = OdeInit::get();
@@ -307,26 +314,128 @@ void OdeSdlSimulation::process_events(void) {
 }
 
 void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
+
+    const double CONTACT_HEIGHT_TRESHOLD_METERS = 0.1; //for debugging or skin emulation purposes, assuming the robot is in contact with a flat ground (typically standing), 
+    //the contacts generated between the robot and the ground that are always present can be ignored
+    
     OdeInit& odeinit = OdeInit::get();
 
     assert(o1);
     assert(o2);
-    if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
-        // colliding a space with something
-        dSpaceCollide2(o1,o2,data,&nearCallback);
-        // Note we do not want to test intersections within a space,
-        // only between spaces.
-        return;
+     
+    dSpaceID space1,space2;
+    dSpaceID superSpace1,superSpace2;
+    std::string geom1className("");
+    std::string geom2ClassName("");
+    std::string geom1name("");
+    std::string geom2name("");
+    bool geom1isiCubPart = false;
+    bool geom2isiCubPart = false;
+    bool geom1isTorsoOrArm = false;
+    bool geom2isTorsoOrArm = false;
+    int subLevel1;
+    //determine the indentation level for the printouts based on the sublevel in the hiearchy of spaces
+    string indentString("");
+    std::map<dGeomID,string>::iterator geom1namesIt;
+    std::map<dGeomID,string>::iterator geom2namesIt;
+    
+    if (dGeomIsSpace(o1)){
+       space1 = (dSpaceID)o1;
+    } else {
+       space1 = dGeomGetSpace(o1);
+       indentString = indentString + " --- "; //extra indentation level because it is a geom in that space
     }
-    int i;
-    // if (o1->body && o2->body) return;
-
-    // exit without doing anything if the two bodies are connected by a joint
+    subLevel1 = dSpaceGetSublevel(space1);
+    for (int i=1;i<=subLevel1;i++){ //start from i=1, for sublevel==0 we don't add any indentation
+      indentString = indentString + " --- ";
+    }
+     
+    if (MY_VERBOSITY > 2) printf("%s nearCallback()\n",indentString.c_str());
+   
+    if (dGeomIsSpace(o1)){
+        space1 = (dSpaceID)o1;
+        if (MY_VERBOSITY > 2){
+          printf("%s Object nr. 1: %s, sublevel: %d, contained within: %s, nr. geoms: %d. \n",indentString.c_str(),odeinit._iCub->dSpaceNames[space1].c_str(),dSpaceGetSublevel(space1),odeinit._iCub->dSpaceNames[dGeomGetSpace(o1)].c_str(),dSpaceGetNumGeoms(space1));
+        }
+    }
+    else{ //it's a geom
+        getGeomClassName(dGeomGetClass(o1),geom1className);
+        superSpace1 = dGeomGetSpace(o1);
+        geom1namesIt = odeinit._iCub->dGeomNames.find(o1);
+        if (geom1namesIt != odeinit._iCub->dGeomNames.end()){
+           geom1name = geom1namesIt->second;   
+           if (MY_VERBOSITY > 2) printf("%s Object nr. 1: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
+        }
+        else{
+           if (MY_VERBOSITY > 2) printf("%s Object nr. 1: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o1,geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
+        }
+    }
+ 
+    if (dGeomIsSpace(o2)){
+        space2 = (dSpaceID)o2;
+        if (MY_VERBOSITY > 2){
+               printf("%s Object nr. 2: %s, sublevel: %d, contained within: %s, nr. geoms: %d. \n",indentString.c_str(),odeinit._iCub->dSpaceNames[space2].c_str(),dSpaceGetSublevel(space2),odeinit._iCub->dSpaceNames[dGeomGetSpace(o2)].c_str(),dSpaceGetNumGeoms(space2));
+        }
+    } else {
+        getGeomClassName(dGeomGetClass(o2),geom2ClassName);
+        superSpace2 = dGeomGetSpace(o2);
+        geom2namesIt = odeinit._iCub->dGeomNames.find(o2);
+        if (geom2namesIt != odeinit._iCub->dGeomNames.end()){
+           geom2name = geom2namesIt->second;
+           if (MY_VERBOSITY > 2) printf("%s Object nr. 2: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
+        }
+        else{
+           if (MY_VERBOSITY > 2) printf("%s Object nr. 2: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o2,geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
+        }
+    }
+    
+    // if at least one of the geoms is a space, we need to go deeper -> recursive calls 
+    if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
+      if (dGeomIsSpace(o1) && dGeomIsSpace(o2)){ //if both are spaces, we exclude special combinations from the checking
+          if (((space1 == odeinit._iCub->iCubHeadSpace) && (space2 == odeinit._iCub->iCubTorsoSpace)) || ((space1 == odeinit._iCub->iCubTorsoSpace) && (space2 == odeinit._iCub->iCubHeadSpace))){
+              if (MY_VERBOSITY > 2) printf("%s Ignoring head vs. torso collision space checking.\n",indentString.c_str()); 
+                //these are unnecessary geoms to check, moreover 2 of these were colliding while not connected by a joint
+          }
+          else if (((space1 == odeinit._iCub->iCubLegsSpace) && (space2 == odeinit._iCub->iCubTorsoSpace)) || ((space1 == odeinit._iCub->iCubTorsoSpace) && (space2 == odeinit._iCub->iCubLegsSpace))){
+             if (MY_VERBOSITY > 2) printf("%s Ignoring legs vs. torso collision space checking.\n",indentString.c_str()); 
+            //these are unnecessary geoms to check - it always check collisions of geoms connected by a joint
+          }
+          else{
+            dSpaceCollide2(o1,o2,data,&nearCallback);
+          }
+       }
+       else{
+           dSpaceCollide2(o1,o2,data,&nearCallback);
+       }
+       //}
+      //if (dGeomIsSpace(o2)){
+	//  dSpaceCollide2(o2,o1,data,&nearCallback); //start the recursion from the other end
+      //}
+      return;      
+    }  
+    /* Note we do not want to test intersections within a space,
+    * only between spaces. Therefore, we do not call  dSpaceCollide ((dSpaceID)o1, data, &nearCallback) and the same for o2 */
+	
+    /* if we made it up to here, it means we have two geoms (not spaces) o1, o2 from two different spaces and we should handle their collision */
+     
     dBodyID b1 = dGeomGetBody(o1);
     dBodyID b2 = dGeomGetBody(o2);
-    if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)) return;
-
+    if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)){
+      if (MY_VERBOSITY > 2) printf("%s Collision ignored: the bodies of o1 and o2 are connected by a joint.\n",indentString.c_str());
+      return;
+    }
+    // list of self-collisions to ignore
+    if (selfCollisionOnIgnoreList(geom1name,geom2name)){
+       if (MY_VERBOSITY > 2){
+           printf("%s geom: %s (class: %s, contained within %s) AND geom: %s (class: %s, contained within %s).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str());
+           printf("%s Collision ignored (ignore list).\n",indentString.c_str());
+       }
+       return;
+    }
+       
+    if (MY_VERBOSITY > 2) printf("%s Collision candidate. Preparing contact joints.\n",indentString.c_str());
     dContact contact[MAX_CONTACTS];   // up to MAX_CONTACTS contacts per box-box
+    int i;
     for (i=0; i<MAX_CONTACTS; i++) {
         contact[i].surface.mode = dContactSlip1| dContactSlip2| dContactBounce | dContactSoftCFM;
         contact[i].surface.mu = dInfinity;
@@ -337,66 +446,115 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         contact[i].surface.slip2 = (dReal)0.000001;
         contact[i].surface.soft_cfm = 0.0001;
     }
-    if (int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,
-                             sizeof(dContact))) {
+    int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,sizeof(dContact)); 
+    if (numc > 0){          
+        if (MY_VERBOSITY > 2) printf("%s Collision suspect confirmed. There are %d contacts - creating joints.\n",indentString.c_str(),numc);
         dMatrix3 RI;
         dRSetIdentity (RI);
+        if(contact[0].geom.pos[1]>CONTACT_HEIGHT_TRESHOLD_METERS){ //non-foot contact
+            if (MY_VERBOSITY > 1){
+               printf("%s   ****** non-ground COLLISION, %d contacts - creating joints************************************************************\n",indentString.c_str(),numc);
+               printf("%s geom: %s (%s, contained within %s) AND geom: %s (%s, contained within %s).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str());
+            }
+        }
         for (i=0; i<numc; i++) {
+            if (MY_VERBOSITY > 2) printf("%s	Contact joint nr. %d (index:%d): at (%f,%f,%f), depth: %f \n",indentString.c_str(),i+1,i,contact[i].geom.pos[0],contact[i].geom.pos[1],contact[i].geom.pos[2],contact[i].geom.depth);
             dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,contact+i);
             dJointAttach (c,b1,b2);
             // if (show_contacts) dsDrawBox (contact[i].geom.pos,RI,ss);
             // check if the bodies are touch sensitive.
-            bool b1isTouchSensitive = isBodyTouchSensitive (b1);
-            bool b2isTouchSensitive = isBodyTouchSensitive (b2); 
-            // if any of the bodies are touch sensitive...
-            if (b1isTouchSensitive || b2isTouchSensitive) {
-                // ... add a feedback structure to the contact joint.
-                dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
-                nFeedbackStructs++;
+            if (odeinit._iCub->actSkinEmul == "off"){ //this is the old implementation - hands (fingers and palm) are checked for touch
+                bool b1isTouchSensitive = isBodyTouchSensitive (b1);
+                bool b2isTouchSensitive = isBodyTouchSensitive (b2); 
+                // if any of the bodies are touch sensitive...
+                if (b1isTouchSensitive || b2isTouchSensitive) {
+                    // ... add a feedback structure to the contact joint.
+                    if (MY_VERBOSITY > 2) printf("%s	Adding tactile feedback for emulating finger/palm skin to this one (ODE joint feedback counter: %d).\n",indentString.c_str(),nFeedbackStructs);
+                    dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
+                    nFeedbackStructs++;
+                }
             }
-            //fprintf(stdout,"colllliiiissssiiiiooon: %d %d\n", dGeomGetClass (o1), dGeomGetClass (o2));
-        }
+            else { //whole_body_skin_emul ~ actSkinEmul is on
+            /* here we treat all bodies belonging to the icub as touch sensitive
+            * we want to know if the geom is part of the iCub - that is its superSpace is one of the iCub subspaces*/ 
+
+                if ((superSpace1 == odeinit._iCub->iCubHeadSpace) ||  (superSpace1 == odeinit._iCub->iCubLegsSpace)){ 
+                    geom1isiCubPart = true;
+                }
+                else if ((superSpace1==odeinit._iCub->iCubTorsoSpace) || (superSpace1==odeinit._iCub->iCubLeftArmSpace) || (superSpace1== odeinit._iCub->iCubRightArmSpace)){
+                    geom1isiCubPart = true;
+                    geom1isTorsoOrArm = true;
+                }
+                // || (superSpace1 == iCub){ - this should never happen here - in the self-collision mode, the iCub space contains only subspaces - no geoms directly
+                
+                if ((superSpace2 == odeinit._iCub->iCubHeadSpace) ||  (superSpace2 == odeinit._iCub->iCubLegsSpace)){ 
+                    geom2isiCubPart = true;
+                }
+                else if ((superSpace2==odeinit._iCub->iCubTorsoSpace) || (superSpace2==odeinit._iCub->iCubLeftArmSpace) || (superSpace2== odeinit._iCub->iCubRightArmSpace)){
+                    geom2isiCubPart = true;
+                    geom2isTorsoOrArm = true;
+                }
+        
+                // if (geom1isiCubPart || geom2isiCubPart){ //we don't have the legs and head implemented yet - these don't have skin in the real robot - but legs will -> should do that
+                if ( geom1isTorsoOrArm || geom2isTorsoOrArm){
+                    if (MY_VERBOSITY > 2) printf("%s	Adding tactile feedback for whole-body skinContact to this contact (ODE joint feedback counter: %d).\n",indentString.c_str(),nFeedbackStructs);
+                    if (nFeedbackStructs >= MAX_DJOINT_FEEDBACKSTRUCTS){
+                        printf("Warning: out of contact joint feedback structures for ODE (exceeded %d) - some contact joints will not have info about forces stored\n.",MAX_DJOINT_FEEDBACKSTRUCTS); 
+                    }
+                    else{
+                        dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
+                        nFeedbackStructs++;	
+                    }
+                    OdeInit::contactOnSkin_t contactOnSkin, contactOnSkin2;
+                    if (geom1isiCubPart){
+                        contactOnSkin.body_geom_space_id = superSpace1;
+                        contactOnSkin.body_geom_id = o1; 
+                        contactOnSkin.body_index = 1;
+                        contactOnSkin.contact_geom = contact[i].geom;
+                        contactOnSkin.contact_joint = c; 
+                        odeinit.listOfSkinContactInfos.push_back(contactOnSkin);
+                    }
+                    if (geom2isiCubPart){
+                        contactOnSkin2.body_geom_space_id = superSpace2;
+                        contactOnSkin2.body_geom_id = o2; 
+                        contactOnSkin2.body_index = 2;
+                        contactOnSkin2.contact_geom = contact[i].geom;
+                        contactOnSkin2.contact_joint = c; 
+                        odeinit.listOfSkinContactInfos.push_back(contactOnSkin2);
+                    }
+                } 
+                else {
+                    if (MY_VERBOSITY > 2) printf("%s Ignoring skin contact - so far only arms and torso are implemented.\n",indentString.c_str());
+                }
+            }   //whole_body_skin_emul ~ actSkinEmul is on
+            if (MY_VERBOSITY > 2) printf("\n");
+        } // for numc - contacts
+    } // if (numc > 0)
+    else{
+       if (MY_VERBOSITY > 2) printf("%s Collision suspect NOT confirmed. There were %d contacts.\n",indentString.c_str(),numc);
     }
 }
-/*static void nearCallback (void *data, dGeomID o1, dGeomID o2){
-  assert(o1);
-  assert(o2);
-  if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
-  // colliding a space with something
-  dSpaceCollide2(o1,o2,data,&nearCallback);
-  // Note we do not want to test intersections within a space,
-  // only between spaces.
-  return;
-  }
-  int i;
-  // exit without doing anything if the two bodies are connected by a joint
-  dBodyID b1 = dGeomGetBody(o1);
-  dBodyID b2 = dGeomGetBody(o2);
-  if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)) {printf("testing space %p %p\n", b1,b1); return;}
 
-  const int N = 5;
-  dContact contact[N];   // up to MAX_CONTACTS
-  for (i=0; i<N; i++) {
-  contact[i].surface.mode = 0;//dContactSlip1| dContactSlip2| dContactApprox1;
-  contact[i].surface.mu = dInfinity;
-  //contact[i].surface.mu2 = 0;
-  //contact[i].surface.slip1 = (dReal)0.0001;
-  //contact[i].surface.slip2 = (dReal)0.0001;
-  //contact[i].surface.soft_cfm = 0.1;
-  }
-  if (int numc = dCollide (o1,o2,5,&contact[0].geom,
-  sizeof(dContact))) {
-  /*dMatrix3 RI;
-  dRSetIdentity (RI);
-  for (i=0; i<numc; i++) {
-  dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,contact+i);
-  dJointAttach (c,b1,b2);
-  //dsSetColor (1.0,0.0,0.0); dsDrawBox (contact[i].geom.pos,RI,ss);
-  }
-  }
-  }
-*/
 
+bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geom2_string)
+{
+  if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true; 
+  }
+  if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true; 
+  }
+
+  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true; 
+  }
+  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true; 
+  }
+  
+  return false;  
+} 
+ 
 // returns true if the body with the bodyID is a touch-sensitive body, returns false otherwise.
 bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
     OdeInit& odeinit = OdeInit::get();
@@ -442,8 +600,9 @@ bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
     return false;
 }
 
-// this is a function to mimic the sensor data from the physical icub fingetip/palm sensors
-void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean) { 
+// this is a function to mimic the sensor data from the physical icub fingertip/palm sensors
+//but the palm cover is not being checked here 
+void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean) { 
     OdeInit& odeinit = OdeInit::get();
     reportLeft.clear();
     reportRight.clear();
@@ -462,7 +621,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued( indicesRight[x] );
             }
 
-            if (x < 5){
+            if (x < 5){ //five fingers 
                 for (int i = 0; i < 12; i++){
                     reportLeft.addDouble(resultLeft * 255);
                     reportRight.addDouble(resultRight * 255);
@@ -475,6 +634,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
                         reportRight.addDouble(0.0);
                     }
                 }
+                //these are palm taxels
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(resultLeft * 255);
@@ -852,7 +1012,20 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
 
     odeinit.mutex.wait();
     nFeedbackStructs=0;
-    dSpaceCollide(odeinit.space,0,&nearCallback);
+    
+    if (MY_VERBOSITY > 2) printf("\n ***info code collision detection ***\n"); 
+    if (MY_VERBOSITY > 2) printf("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit.space,0,&nearCallback): will test iCub space against the rest of the world (e.g. ground).\n");
+    dSpaceCollide(odeinit.space,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
+    if (odeinit._iCub->actSelfCol == "on"){
+           if (START_SELF_COLLISION_DETECTION){ 
+                if (MY_VERBOSITY > 2){
+                    printf("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback): will test iCub subspaces against each other.\n");
+                }
+                dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
+        }
+    }
+    if (MY_VERBOSITY > 2) printf("***END OF info code collision detection ***\n"); 
+    
     dWorldStep(odeinit.world, dstep);
     // do 1 TIMESTEP in controllers (ok to run at same rate as ODE: 1 iteration takes about 300 times less computation time than dWorldStep)
     for (int ipart = 0; ipart<MAX_PART; ipart++) {
@@ -863,22 +1036,48 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     odeinit.sync = true;
     odeinit.mutex.post();
 
-    if ( robot_streamer->shouldSendTouchLeft() || robot_streamer->shouldSendTouchRight() ) {
-        Bottle reportLeft;
-        Bottle reportRight;
-        bool boolean = true;
-        if (odeinit._iCub->actPressure == "on")
-            boolean = false;
+    if (odeinit._iCub->actSkinEmul == "off"){
+        if ( robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ) {
+            Bottle reportLeft;
+            Bottle reportRight;
+            bool boolean = true;
+            if (odeinit._iCub->actPressure == "on"){
+                boolean = false;
+            }    
+            inspectHandTouch_icubSensors(reportLeft, reportRight, boolean);//inspectBodyTouch_continuousValued(report);
             
-        inspectBodyTouch_icubSensors(reportLeft, reportRight, boolean);//inspectBodyTouch_continuousValued(report);
-        
-        if ( robot_streamer->shouldSendTouchLeft() )
-                robot_streamer->sendTouchLeft( reportLeft );
+            if ( robot_streamer->shouldSendTouchLeftHand() )
+                    robot_streamer->sendTouchLeftHand( reportLeft );
 
-        if ( robot_streamer->shouldSendTouchRight() )
-            robot_streamer->sendTouchRight( reportRight );
+            if ( robot_streamer->shouldSendTouchRightHand() )
+                robot_streamer->sendTouchRightHand( reportRight );
+        }
     }
-
+    else{ // actSkinEmul == "on"
+        if(robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ||
+            robot_streamer->shouldSendTouchLeftArm() || robot_streamer->shouldSendTouchLeftForearm() || 
+            robot_streamer->shouldSendTouchRightArm() || robot_streamer->shouldSendTouchRightForearm() || 
+            robot_streamer->shouldSendTouchTorso()){
+            //these are emulating the skin in the covers on the iCub body. For the moment, whole skin part will be activated if it was touched 
+            inspectWholeBodyContactsAndSendTouch(); 
+        }
+        if(robot_streamer->shouldSendSkinEvents()){ //note that these are generated here for any body parts - not only those that have tactile sensors in the real robot
+        // the contacts can be visualized using the icubGui (not skinGui) 
+            skinContactList mySkinContactList;
+            if (! odeinit.listOfSkinContactInfos.empty()){
+               if ((odeinit._iCub->actHead=="off") || (odeinit._iCub->actTorso=="off") || (odeinit._iCub->actLArm=="off") || (odeinit._iCub->actRArm=="off")){
+                    mySkinContactList.clear();
+                    printf("Warning: With self-collisions on but head/torso/left_arm/right_arm off, the skinContactList can't be created.\n");
+               }
+               else{
+                  processWholeBodyCollisions(mySkinContactList);   
+               }
+            }
+            robot_streamer->sendSkinEvents(mySkinContactList); //we send even if empty
+        }
+        odeinit.listOfSkinContactInfos.clear();
+    }
+    
     dJointGroupEmpty (odeinit.contactgroup);
 
     if (robot_streamer->shouldSendInertial()) {
@@ -937,6 +1136,7 @@ void OdeSdlSimulation::sighandler(int sig) {
 }
 
 void OdeSdlSimulation::simLoop(int h,int w) {
+    fprintf(stdout, "***** OdeSdlSimulation::simLoop \n");
     OdeInit& odeinit = OdeInit::get();
 
     SDL_Init(SDL_INIT_TIMER | SDL_GL_ACCELERATED_VISUAL);
@@ -974,9 +1174,21 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     long prevTime = (long) clock();
     long timeLeft;
     
-    if (odeinit._iCub->actStartHomePos == "on")
+    if (odeinit._iCub->actStartHomePos == "on"){
         odeinit.sendHomePos();
-
+    }
+    if (odeinit._iCub->actSelfCol == "on") {
+       if (odeinit._iCub->actStartHomePos == "on"){
+           Time::delay(2.0); //we want to set this trigger on only after the robot is in home pos -
+            //it's initial configuration is with arms inside the thighs - generating many self-collisions
+           START_SELF_COLLISION_DETECTION = true;
+       }
+       else{
+           fprintf(stdout, "Warning: the robot is not starting from HomePos and self-collision mode is on. The initial posture is already self-colliding.\n");
+           START_SELF_COLLISION_DETECTION = true;
+       }
+    }
+    
     while(!odeinit.stop) {
         /* Process incoming events. */
         process_events();
@@ -1208,4 +1420,390 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     delete[] buf;
     return true;
+}
+
+
+
+void OdeSdlSimulation::processWholeBodyCollisions(skinContactList& skin_contact_list)
+{
+    
+      SkinPart skinPart;             // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
+      BodyPart bodyPart;             // id of the body part
+      bool skinCoverFlag;
+      unsigned int linkNum;          // number of the link
+      Vector geoCenter_SIM_FoR_forHomo(4,0.0), normal_SIM_FoR_forHomo(4,0.0);
+      Vector force_SIM_FoR_forHomo(4,0.0), moment_SIM_FoR_forHomo(4,0.0);
+      Vector v1(4,0.0); //auxilliary vector
+      Vector geoCenter_link_FoR(3,0.0), normal_link_FoR(3,0.0);
+      Vector force_link_FoR(3,0.0), moment_link_FoR(3,0.0);
+      double forceOnBody_magnitude; 
+      double left_arm_encoders[16], right_arm_encoders[16], torso_encoders[3], head_encoders[6];
+      Vector left_arm_for_iKin(10,0.0), right_arm_for_iKin(10,0.0), inertial_for_iKin(6,0.0);
+      Matrix T_root_to_link = yarp::math::zeros(4,4);
+      Matrix T_link_to_root = yarp::math::zeros(4,4);
+      std::vector<unsigned int> taxel_list;  
+     
+      taxel_list.push_back(1); // we will always emulate one activated "taxel" per contact joint - say taxel "1"
+      OdeInit& odeinit = OdeInit::get();
+      odeinit._controls[PART_ARM_LEFT]->getEncodersRaw(left_arm_encoders); //! do not use the BODY_PART enums from skinDynLib to index here - in the simulator the order of "controls[]" is different
+      odeinit._controls[PART_ARM_RIGHT]->getEncodersRaw(right_arm_encoders);
+      odeinit._controls[PART_TORSO]->getEncodersRaw(torso_encoders);
+      odeinit._controls[PART_HEAD]->getEncodersRaw(head_encoders); //first three are probably neck joints, then the eyes
+      
+      for (int j=0;j<TORSO_DOF;j++){
+        left_arm_for_iKin(j)=torso_encoders[j]; //first 3 joints - 0 to 2 - in iKin arm are torso joints
+        right_arm_for_iKin(j)=torso_encoders[j];
+        inertial_for_iKin(j)=torso_encoders[j];
+      }
+      for (int l=0;l<7;l++){
+        left_arm_for_iKin(l+TORSO_DOF) = left_arm_encoders[l]; // then we put seven arm joints (we ignore the rest of the encoders up to 16 - these are fingers)
+        right_arm_for_iKin(l+TORSO_DOF) = right_arm_encoders[l]; 
+      }
+      for (int m=0;m<3;m++){
+          inertial_for_iKin(m+TORSO_DOF) = head_encoders[m]; //we put the second three - the neck joints and ignore the rest of head_encoders (the eyes)
+      }
+      
+      odeinit._iCub->iKinLeftArm.setAng(left_arm_for_iKin);
+      odeinit._iCub->iKinRightArm.setAng(right_arm_for_iKin);
+      odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
+
+      if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions:There were %lu iCub self-collisions to process. \n", odeinit.listOfSkinContactInfos.size());
+      for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
+        geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
+        normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
+        force_SIM_FoR_forHomo.zero(); force_SIM_FoR_forHomo(3)=1.0; 
+        moment_SIM_FoR_forHomo.zero(); moment_SIM_FoR_forHomo(3)=1.0;
+        geoCenter_link_FoR.zero();normal_link_FoR.zero();
+        moment_link_FoR.zero();force_link_FoR.zero();
+        forceOnBody_magnitude=0.0;
+        skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
+        T_root_to_link.zero(); T_link_to_root.zero();
+        
+        odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,skinCoverFlag);
+        for (int i=0;i<3;i++){
+            geoCenter_SIM_FoR_forHomo(i)= (*it).contact_geom.pos[i]; //in global (i.e. simulator) coordinates
+            normal_SIM_FoR_forHomo(i) = (*it).contact_geom.normal[i];
+        }
+        dJointFeedback * fb = dJointGetFeedback ((*it).contact_joint);
+        if (fb==NULL){
+            printf("Warning:OdeSdlSimulation::processWholeBodyCollisions: This joint (at %d skin part) has no feedback structure defined - contact force not available: setting to -1.\n",skinPart); 
+            forceOnBody_magnitude = -1;
+        }
+        else{
+        //printf("OdeSdlSimulation::processWholeBodyCollisions: joint feedback structure:\n.");
+        //printf("f1 force vector in simulator FoR: %f %f %f \n",fb->f1[0],fb->f1[1],fb->f1[2]); // assuming it is global ODE FoR ~ simulator FoR
+        //printf("f2 force vector: %f %f %f \n",fb->f2[0],fb->f2[1],fb->f2[2]);
+        //f2 force vector has same magnitude but opposite direction than f1
+            for(int k=0;k<3;k++){
+                if((*it).body_index == 1){
+                    force_SIM_FoR_forHomo(k)=fb->f1[k];
+                    moment_SIM_FoR_forHomo(k)=fb->t1[k];
+                }
+                else if((*it).body_index == 2){
+                    force_SIM_FoR_forHomo(k)=fb->f2[k];
+                    moment_SIM_FoR_forHomo(k)=fb->t2[k];
+                }
+                else{
+                    printf("ERROR:OdeSdlSimulation::processWholeBodyCollisions: unexpected body_index for colliding body: %d.\n",(*it).body_index);
+                }
+            }
+            forceOnBody_magnitude=sqrt(force_SIM_FoR_forHomo(0)*force_SIM_FoR_forHomo(0) + force_SIM_FoR_forHomo(1)*force_SIM_FoR_forHomo(1) 
+                + force_SIM_FoR_forHomo(2)*force_SIM_FoR_forHomo(2)); 
+        }
+
+        //Let's do all the transformations
+        //Assuming, dJointFeedback and contact_geom data from ODE are in global ODE frame; the contact_geom.pos is the position; the contact_geom.normal and the dJointFeedback
+        // vectors (f1, m1) are originating from the global origin, i.e. they need to be translated to contact_geom.pos;
+        //see the post in ode-users group "dJointFeedback and dContactGeom reference frame", 6.12.2013local FoR of the contact point; 
+                
+        switch(bodyPart){
+        case LEFT_ARM:
+            T_root_to_link = odeinit._iCub->iKinLeftArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
+            //e.g. skinPart LEFT_UPPER_ARM gives link number 2, which means we ask iKin for getH(2+3), which gives us  FoR 6 - at the first elbow joint, which is the FoR for the upper arm 
+            break;
+        case RIGHT_ARM:
+            T_root_to_link = odeinit._iCub->iKinRightArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
+            break;
+        case TORSO:
+            T_root_to_link = odeinit._iCub->iKinInertialSensor.getH(SkinPart_2_LinkNum[skinPart].linkNum); 
+            // SkinPart_2_LinkNum[SKIN_FRONT_TORSO].linkNum  is 2, this should give us the FoR 3 - the first neck joint which is the expected torso FoR
+            //- check " SKIN torso 2" in iCub/main/app/iCubGui/skeleton.ini
+            //- importantly, this needs to be the iKinInertialSensor, not the iKin Arm; 
+            break;
+        default:
+            if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions: FoR transforms to BODY PART %d not implemented yet\n",bodyPart);
+            continue;
+        }
+        T_link_to_root = SE3inv(T_root_to_link);
+            
+        v1.zero();		
+        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo; //first transform to robot coordinates, then transform to local FoR of respective body part
+        geoCenter_link_FoR = v1.subVector(0,2); //strip the last one away
+            
+        v1.zero();
+        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * normal_SIM_FoR_forHomo; 
+        normal_link_FoR = v1.subVector(0,2);
+        
+        v1.zero();
+        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * force_SIM_FoR_forHomo;
+        force_link_FoR = v1.subVector(0,2); 
+        
+        v1.zero();
+        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * moment_SIM_FoR_forHomo;
+        moment_link_FoR = v1.subVector(0,2); 
+        
+        //Note that the normal, force, and moment are just carrying the orientation (and apart from the normal also magnitude) - they will still need to be translated to the 
+        //appropariate CoP / geoCenter to make the arrow to the taxel
+        //Note also the dJointFeedback force vector does not necessarily point along the normal at the contact point (which points into the colliding body) - as is a sum of the 
+        //forces along the normal and frictional forces perpendicular to the normal
+        //alternatively, I could just take the magnitude from the force and send the normal as the direction
+        
+        //printf("Contact coordinates in ODE / SIM FoR: %s\n",geoCenter_SIM_FoR_forHomo.subVector(0,2).toString().c_str());
+        Vector temp_v4(4,0.0);
+        temp_v4 =  (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo;
+        //printf("Contact coordinates in robot root FoR: %s\n",temp_v4.subVector(0,2).toString().c_str());
+        //printf("Left arm for iKin:\n %s \n",left_arm_for_iKin.toString().c_str());
+        //printf("Rototranslation matrix root to link:\n %s\n",T_root_to_link.toString().c_str());
+        //printf("Contact coordinates in link FoR: %s\n",geoCenter_link_FoR.toString().c_str());
+        /*for (int l=0;l<2;l++){
+        geoCenter_link_FoR(l)=0.0;
+        force_link_FoR(l)=1.0;
+        normal_link_FoR(l)=1.0;
+        moment_link_FoR(l)=1.0;
+        } */
+        //forceOnBody_magnitude=10.0;
+        
+        skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
+        //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
+        //(which is supposed to come from the dynamic estimation, and as geoCenter - from skin; Similarly, we derive the pressure directly from the force vector from ODE.
+        if (MY_VERBOSITY > 0) printf("Creating skin contact as follows: %s.\n",c.toString().c_str());
+        skin_contact_list.push_back(c);
+   } // odeinit.listOfSkinContactInfos - iterator
+}
+
+void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
+{
+    
+    std::map<SkinPart,bool> skinPartsTouched;
+    SkinPart skinPart;  // id of the part of the skin - from skinDynLib/common.h 
+    BodyPart bodyPart;             // id of the body part
+    bool skinCoverFlag = false;
+    bool left_hand_notCover_touched = false;
+    bool right_hand_notCover_touched = false;
+    OdeInit& odeinit = OdeInit::get();
+    
+    skinPartsTouched[SKIN_LEFT_FOREARM]=false; skinPartsTouched[SKIN_LEFT_UPPER_ARM]=false;
+    skinPartsTouched[SKIN_RIGHT_FOREARM]=false; skinPartsTouched[SKIN_RIGHT_FOREARM]=false;
+    skinPartsTouched[SKIN_FRONT_TORSO]=false;
+   
+    for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
+        skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
+        odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,skinCoverFlag);
+        //We emulate the skin of the iCub - covers + fingertips;  the rest of the geoms will only be processed by the skinEvents
+        if(skinCoverFlag){ 
+            //if it was a cover that was touched, we will emulate the skin there - this includes the palm cover
+            skinPartsTouched[skinPart]=true; //if the skinPart comes back as UNKNOWN, this is fine, we set it to true 
+        }
+        else if(skinPart == SKIN_LEFT_HAND) {
+           left_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
+        }   
+        else if(skinPart == SKIN_RIGHT_HAND) {
+           right_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
+        }   
+    }
+    
+     //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
+     // the palm cover replaces sensing in the palm body
+     if(robot_streamer->shouldSendTouchLeftHand()){
+        Bottle bottleLeftHand;
+        if (left_hand_notCover_touched ||  skinPartsTouched[SKIN_LEFT_HAND]){ 
+            if (left_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
+                int bodyIndicesLeft[5] = {24, 25, 26, 27, 30};
+                double resultLeft=0;
+                for (int x = 0; x < 5; x++){
+                        if (odeinit._iCub->actLHand == "on"){ 
+                            resultLeft = odeinit._iCub->checkTouchSensor(bodyIndicesLeft[x]);
+                        }
+                        else{
+                            resultLeft = odeinit._iCub->checkTouchSensor(odeinit._iCub->l_hand);
+                        } 
+                        //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
+                        for (int i = 0; i < 12; i++){
+                            bottleLeftHand.addDouble(resultLeft * 255);
+                        }
+                }
+            }
+            else{ //we fill the fingertip positions with 0s
+                for (int i = 0; i < 60; i++){
+                    bottleLeftHand.addDouble(0.0);
+                }
+            }
+            //now filling up the bottle - the port output: 61-96 zeros; 
+            for (int y = 0; y<36; y++){            //positions 61-96
+                    bottleLeftHand.addDouble(0.0);
+            }
+            if(skinPartsTouched[SKIN_LEFT_HAND]){ //palm cover
+            //97-144 palm taxels (inside these, 107, 119, 131, and 139 are thermal pads ~ 0s); 
+                for (int y = 0; y<48; y++){ 
+                    bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                }
+            }
+            else{
+                for (int y = 0; y<48; y++){ 
+                    bottleLeftHand.addDouble(0.0); //we ignore the thermal pad positions which should be 0s for now
+                }
+            }
+            //filling the rest: 145-192 zeros. 
+            for (int y = 0; y<48; y++){ 
+                bottleLeftHand.addDouble(0.0);
+            }
+      }
+      else{
+           bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);
+      }
+      robot_streamer->sendTouchLeftHand(bottleLeftHand);
+    }
+    
+     //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
+     // the palm cover replaces sensing in the palm body
+     if(robot_streamer->shouldSendTouchRightHand()){
+        Bottle bottleRightHand;
+        if (right_hand_notCover_touched ||  skinPartsTouched[SKIN_RIGHT_HAND]){ 
+            if (right_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
+                int bodyIndicesRight[5] = {43, 44, 45, 46, 49};
+                double resultRight=0;
+                for (int x = 0; x < 5; x++){
+                        if (odeinit._iCub->actRHand == "on"){ 
+                            resultRight = odeinit._iCub->checkTouchSensor(bodyIndicesRight[x]);
+                        }
+                        else{
+                            resultRight = odeinit._iCub->checkTouchSensor(odeinit._iCub->r_hand);
+                        } 
+                        //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
+                        for (int i = 0; i < 12; i++){
+                            bottleRightHand.addDouble(resultRight * 255);
+                        }
+                }
+            }
+            else{ //we fill the fingertip positions with 0s
+                for (int i = 0; i < 60; i++){
+                    bottleRightHand.addDouble(0.0);
+                }
+            }
+            //now filling up the bottle - the port output: 61-96 zeros; 
+            for (int y = 0; y<36; y++){            //positions 61-96
+                    bottleRightHand.addDouble(0.0);
+            }
+            if(skinPartsTouched[SKIN_RIGHT_HAND]){ //palm cover
+            //97-144 palm taxels (inside these, 107, 119, 131, and 139 are thermal pads ~ 0s); 
+                for (int y = 0; y<48; y++){ 
+                    bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                }
+            }
+            else{
+                for (int y = 0; y<48; y++){ 
+                    bottleRightHand.addDouble(0.0); //we ignore the thermal pad positions which should be 0s for now
+                }
+            }
+            //filling the rest: 145-192 zeros. 
+            for (int y = 0; y<48; y++){ 
+                bottleRightHand.addDouble(0.0);
+            }
+      }
+      else{
+           bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
+      }
+     // printf("bottleRightHand: %s \n",bottleRightHand.toString().c_str());  
+     robot_streamer->sendTouchRightHand(bottleRightHand);
+    }
+     
+    if(robot_streamer->shouldSendTouchLeftArm()){
+        Bottle bottleLeftArm;
+        if (skinPartsTouched[SKIN_LEFT_UPPER_ARM]){
+            bottleLeftArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
+        }
+        else{
+            bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
+        }
+        robot_streamer->sendTouchLeftArm(bottleLeftArm);
+    }
+    if(robot_streamer->shouldSendTouchLeftForearm()){
+        Bottle bottleLeftForearm;
+        if(skinPartsTouched[SKIN_LEFT_FOREARM]){
+            bottleLeftForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
+          //  printf("bottleLeftForearm: %s \n",bottleLeftForearm.toString().c_str());
+        }
+        else{
+            bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
+        }
+        robot_streamer->sendTouchLeftForearm(bottleLeftForearm);
+    }
+    if(robot_streamer->shouldSendTouchRightArm()){
+        Bottle bottleRightArm;
+        if (skinPartsTouched[SKIN_RIGHT_UPPER_ARM]){
+            bottleRightArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
+        }
+        else{
+            bottleRightArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
+        }
+        robot_streamer->sendTouchRightArm(bottleRightArm);
+    }
+    if(robot_streamer->shouldSendTouchRightForearm()){
+        Bottle bottleRightForearm;
+        if(skinPartsTouched[SKIN_RIGHT_FOREARM]){
+            bottleRightForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
+        }
+        else{
+             bottleRightForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
+        }
+        robot_streamer->sendTouchRightForearm(bottleRightForearm);
+    }
+    if(robot_streamer->shouldSendTouchTorso()){
+        Bottle bottleTorso;
+        if(skinPartsTouched[SKIN_FRONT_TORSO]){
+            bottleTorso = Bottle(odeinit._iCub->fullSkinActivationTorso);
+        }
+        else{
+              bottleTorso = Bottle(odeinit._iCub->emptySkinActivationTorso);
+        }
+        robot_streamer->sendTouchTorso(bottleTorso);
+    }   
+}
+     
+
+//Auxiliary function to print class of geom - according to section 9.5 of ODE manual
+std::string OdeSdlSimulation::getGeomClassName(const int geom_class,std::string & s)
+{
+  switch(geom_class){
+      case 0: 
+        s = "sphere";
+        break;
+      case 1: 
+        s = "box";
+        break;
+      case 2: 
+        s = "capsule";
+        break;
+      case 3: 
+        s = "cylinder";
+        break;
+      case 4: 
+        s = "plane";
+        break;  
+      case 8: 
+        s= "triangle mesh";
+        break;  
+      case 10:
+      case 11:  
+        s = "simple space";
+        break;  
+      case 12:  
+        s="hash space";
+        break;  
+      default: 
+        s ="unknown type";
+        break;
+    } 
+  return s;
+ 
 }

@@ -39,6 +39,8 @@
 
 #include "RobotConfig.h"
 
+#include <list>
+
 using namespace std;
 using namespace yarp::dev;
 
@@ -68,6 +70,17 @@ public:
     bool verbose;
     string name;
     iCubSimulationControl **_controls;
+    
+    //for whole_body_skin_emul
+    struct contactOnSkin_t {
+        dGeomID body_geom_id;
+        dSpaceID body_geom_space_id;
+        int body_index; //if there are two iCub bodies colliding, they share the same contact geom and joint - but we need to know that they are two different 
+        dContactGeom contact_geom;
+        dJointID contact_joint;
+    };
+    list<contactOnSkin_t> listOfSkinContactInfos;
+  
 
     void setName( string module ){
         name = module;
@@ -86,6 +99,10 @@ public:
     static OdeInit& get();
 
     static void destroy();
+    
+    static void printGeomClassAndNr(int geom_class, int geom_nr);
+    static void printInfoOnSpace(dSpaceID my_space,const std::string & my_space_name);
+    
 
 private:
     OdeInit(RobotConfig *config);

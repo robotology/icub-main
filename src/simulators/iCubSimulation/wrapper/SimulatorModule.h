@@ -39,6 +39,7 @@
 // wouldn't be better to have this in conditional compilation?
 #include <iCub/RC_DIST_FB_logpolar_mapper.h>
 #endif
+#include "iCub/skinDynLib/skinContactList.h"
 
 class SimulatorModule : public yarp::os::PortReader, public RobotStreamer
 {
@@ -60,15 +61,32 @@ public:
 
     virtual void sendVision();
 
-    virtual void sendTouchLeft(yarp::os::Bottle& report);
-    virtual void sendTouchRight(yarp::os::Bottle& report);
+    virtual void sendTouchLeftHand(yarp::os::Bottle& report);
+    virtual void sendTouchRightHand(yarp::os::Bottle& report);
 
-    virtual bool shouldSendTouchLeft();
-    virtual bool shouldSendTouchRight();
+    virtual bool shouldSendTouchLeftHand();
+    virtual bool shouldSendTouchRightHand();
 
     virtual void sendInertial(yarp::os::Bottle& report);
     virtual bool shouldSendInertial();
-
+    
+    // whole_body_skin_emul
+    virtual void sendSkinEvents(iCub::skinDynLib::skinContactList& skinContactListReport);
+    virtual bool shouldSendSkinEvents();
+        
+    virtual void sendTouchLeftArm(yarp::os::Bottle& report);
+    virtual void sendTouchRightArm(yarp::os::Bottle& report);
+    virtual bool shouldSendTouchLeftArm();
+    virtual bool shouldSendTouchRightArm();
+       
+    virtual void sendTouchLeftForearm(yarp::os::Bottle& report);
+    virtual void sendTouchRightForearm(yarp::os::Bottle& report);
+    virtual bool shouldSendTouchLeftForearm();
+    virtual bool shouldSendTouchRightForearm();
+       
+    virtual void sendTouchTorso(yarp::os::Bottle& report);
+    virtual bool shouldSendTouchTorso();
+    
 private:
 
 #ifndef OMIT_LOGPOLAR
@@ -103,12 +121,15 @@ private:
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide;
 
 #ifndef OMIT_LOGPOLAR
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeftFov, portLeftLog, portRightFov, portRightLog ;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeftFov, portLeftLog, portRightFov, portRightLog;
 #endif
     yarp::os::Port cmdPort;
-    yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftPort, tactileRightPort, tactilePort, inertialPort;
+    yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftHandPort, tactileRightHandPort, inertialPort; //Matej - renamed tactileLeftPort to tactileLeftHandPort, same for right, deleted tactilePort
     yarp::os::BufferedPort<yarp::os::Bottle> trqLeftLegPort, trqRightLegPort, trqLeftArmPort, trqRightArmPort, trqTorsoPort;
-    yarp::os::Port tactileLeftPortrpc, tactileRightPortrpc;
+    yarp::os::Port tactileLeftHandPortrpc, tactileRightHandPortrpc;
+    //whole_body_skin_emul
+    yarp::os::BufferedPort<iCub::skinDynLib::skinContactList> skinEventsPort;  
+    yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftArmPort, tactileRightArmPort, tactileLeftForearmPort, tactileRightForearmPort, tactileTorsoPort;
 
     int _argc;
     char **_argv;

@@ -304,8 +304,8 @@ public:
     void draw();
     
     void getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart,BodyPart& bodyPart, bool& skinCoverFlag);
-    void printPositionOfGeom(dGeomID geomID);
-    void printPositionOfBody(dBodyID bodyID);
+    static void printPositionOfGeom(dGeomID geomID);
+    static void printPositionOfBody(dBodyID bodyID);
 
     private:
     //int inc;
