@@ -75,13 +75,14 @@ public:
     enum { EMBSK_SIZE_INFO = 128 };
     enum { SPECIAL_TRIANGLE_CFG_MAX_NUM = 20 };
 
+    bool            opened;
+
 protected:
 
     TheEthManager   *ethManager;
     PolyDriver      resource;
     ethResources    *res;
     FEAT_ID         _fId;
-    bool            initted;
     Semaphore       mutex;
     //int             totalCardsNum;
     //std::vector<SkinPatchInfo> patchInfoList;
@@ -133,7 +134,8 @@ public:
 
     virtual bool    fillData(void *data, eOprotID32_t id32);
     virtual void    setId(FEAT_ID &id);
-    bool            isInitted(void);
+
+    bool            isOpened();
 
 };
 

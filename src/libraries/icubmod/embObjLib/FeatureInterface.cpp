@@ -60,7 +60,7 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32)
     EmbObjSkin *tmp = (EmbObjSkin *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
 
     if(NULL == tmp)
-    {
+    {   // the ethmanager does not know this object yet
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         if(0 == (error%1000) )
@@ -69,8 +69,12 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32)
         error++;
         return fakestdbool_false;
     }
+    else if(false == tmp->isOpened())
+    {   // the ethmanager has the object, but the device was not fully opened yet. cannot use it
+        return fakestdbool_false;
+    }
     else
-    {
+    {   // the object exists and is completed: it can be used
         skin = dynamic_cast<IiCubFeature *>(tmp);
         if(NULL != skin)
         {
@@ -88,9 +92,9 @@ fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32)
     return fakestdbool_true;
 }
 
-void *get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep)
+void* get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep)
 {
-    void *h = NULL;
+    void* h = NULL;
     h = _interface2ethManager->getHandle(boardnum, ep);
     return h;
 }
@@ -99,21 +103,19 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOprotID32_t id32)
 {
     IiCubFeature *iAnalog;
 
-    // if the following is required ... include "EoAnalogSensors.h"
-    // eOas_arrayofupto12bytes_t *debug_tmp = (eOas_arrayofupto12bytes_t *) as_array;
-    
     // specie di view grezza, usare dynamic cast?
     embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
 
     if(NULL == tmp)
-    {
-//        printf( "/************************************\\\n"
-//                "            Parte non trovata!!!\n       "
-//                "\\***********************************/\n ");
+    {   // the ethmanager does not know this object yet
+        return fakestdbool_false;
+    }
+    else if(false == tmp->isOpened())
+    {   // the ethmanager has the object, but the obiect was not full initted yet. cannot use it
         return fakestdbool_false;
     }
     else
-    {
+    {   // the object exists and is completed: it can be used
         iAnalog = dynamic_cast<IiCubFeature *>(tmp);
         iAnalog->fillData(as_array, id32);
     }
@@ -125,6 +127,17 @@ fakestdbool_t MCmutex_post(void *p, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
     embObjMotionControl *handler = (embObjMotionControl *) p;
+
+    if(NULL == handler)
+    {
+        return fakestdbool_false;
+    }
+    else if(false == handler->isOpened())
+    {   // it can be that the object is already created but its open() not yet completed. it is in open() that we allocate requestQueue ....
+        return fakestdbool_false;
+    }
+
+
     int threadId;
     eoThreadFifo *fuffy = handler->requestQueue->getFifo(prognum);
 

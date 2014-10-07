@@ -95,11 +95,12 @@ public:
     };
 
     enum AnalogSensorType
-        {
-            AS_NONE = 0,
-            AS_MAIS = 1,
-            AS_STRAIN = 2,
-        };
+    {
+        AS_NONE = 0,
+        AS_MAIS = 1,
+        AS_STRAIN = 2,
+    };
+
 
 private:
 
@@ -107,6 +108,8 @@ private:
     TheEthManager       *ethManager;
     ethResources        *res;
     FEAT_ID             _fId;
+
+    bool opened;
 
 
     //! debug messages
@@ -147,9 +150,10 @@ public:
 //     bool handleAnalog(void *);
     
     // An open function yarp factory compatible
-//     bool open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualSensor);
     bool open(yarp::os::Searchable &config);
     bool close();
+
+    bool isOpened();
 
     // IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);

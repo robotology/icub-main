@@ -47,7 +47,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
 {
     res         = NULL;
     ethManager  = NULL;
-    initted     = false;
+    opened     = false;
     sensorsNum  = 0;
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
@@ -685,7 +685,14 @@ bool EmbObjSkin::init()
         }
     }
 
+    opened = true;
+
     return true;
+}
+
+bool EmbObjSkin::isOpened()
+{
+    return opened;
 }
 
 bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)

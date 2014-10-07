@@ -402,7 +402,7 @@ embObjMotionControl::embObjMotionControl() :
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
-    initted       = 0;
+    opened        = 0;
     _pids         = NULL;
     _tpids        = NULL;
     res           = NULL;
@@ -460,6 +460,11 @@ embObjMotionControl::embObjMotionControl() :
 embObjMotionControl::~embObjMotionControl()
 {
     dealloc();
+}
+
+bool embObjMotionControl::isOpened()
+{
+    return opened;
 }
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
@@ -750,7 +755,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
     }
 
-    initted = true;
 
     if(false == res->goToRun())
     {
@@ -762,8 +766,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yWarning() << "(OK)-> embObjMotionControl::open() correctly activated control loop of BOARD" << _fId.boardNum;
     }
 
-//    yError() << "STOP WITH FOREVER LOOP inside embObjMotionControl::open()";
-//    for(;;);
+
+    opened = true;
 
     return true;
 }
@@ -1539,9 +1543,8 @@ void embObjMotionControl::refreshEncoderTimeStamp(int joint)
     static long int count = 0;
     count++;
 
-    // for this initted flag only one 
-    if(initted)
-    {
+    if(true == isOpened())
+    {   // do it only if we already have opened the device
         _mutex.wait();
         _encodersStamp[joint] = Time::now();
         _mutex.post();
@@ -2737,8 +2740,6 @@ bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
     _mutex.wait();
     for(int i=0; i<_njoints; i++)
         stamps[i] = _encodersStamp[i];
-
-    double tmp =  _encodersStamp[0];
     _mutex.post();
 
     return ret;

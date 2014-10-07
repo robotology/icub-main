@@ -222,7 +222,7 @@ private:
 
     int           tot_packet_recv, errors;
 
-    bool initted;
+    bool opened;
 
     yarp::os::Semaphore     _mutex;
     FEAT_ID                 _fId;
@@ -387,6 +387,8 @@ public:
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
+
+    bool isOpened();
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);

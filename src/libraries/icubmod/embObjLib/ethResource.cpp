@@ -282,7 +282,7 @@ bool ethResources::goToRun(void)
         return false;
     }
 
-    // marco.accame: thi code is correct and verifies that the board goes to run. however, it requires FW version >= 1.45, thus so far i keep it commented out 
+    // marco.accame: the code is correct and verifies that the board goes to run. however, it requires FW version >= 1.45, thus so far i keep it commented out
     // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
 #if 0 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);

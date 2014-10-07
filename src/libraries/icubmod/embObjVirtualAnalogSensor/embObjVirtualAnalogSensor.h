@@ -53,10 +53,13 @@ private:
     bool            _verbose;
     VAS_status      _status;
 
+    bool opened;
+
     // Read useful data from config and check for correctness
     bool fromConfig(yarp::os::Searchable &config);
 
 public:
+
 
     embObjVirtualAnalogSensor();
     ~embObjVirtualAnalogSensor();
@@ -64,6 +67,8 @@ public:
     // An open function yarp factory compatible
     bool open(yarp::os::Searchable &config);
     bool close();
+
+    bool isOpened();
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);

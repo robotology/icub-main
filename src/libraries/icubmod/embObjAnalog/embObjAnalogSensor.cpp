@@ -177,6 +177,8 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
     counterTimeout=0;
 
     status=IAnalogSensor::AS_OK;
+
+    opened = false;
 }
 
 embObjAnalogSensor::~embObjAnalogSensor()
@@ -185,6 +187,11 @@ embObjAnalogSensor::~embObjAnalogSensor()
         delete data;
     if (!scaleFactor)
         delete scaleFactor;
+}
+
+bool embObjAnalogSensor::isOpened()
+{
+    return opened;
 }
 
 bool embObjAnalogSensor::open(yarp::os::Searchable &config)
@@ -302,6 +309,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         yError() << "embObjAnalogSensor::open() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
         return false;
     }
+    else
     {
         yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNum << " has same protocol version for analogsensors as robotInterface";
     }
@@ -375,6 +383,8 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNum;
     }
+
+    opened = true;
 
     return true;
 }
@@ -659,8 +669,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         }
     }
 
-    return true;
-  
+    return true;  
 }
 
 
@@ -849,9 +858,6 @@ bool embObjAnalogSensor::fillData(void *as_array_raw, eOprotID32_t id32)
 
 
 
-
-
-#undef as_array_raw_DBG
 bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 {
     // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
@@ -861,18 +867,17 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
     
     mutex.wait();
     
-#ifdef as_array_raw_DBG
-    printf("\nembObj Analog Sensor fill_as_data\n");
-#endif
-
     EOarray *array = (EOarray*)as_array_raw;
     
     uint8_t msg[2];
     double *_buffer = data->getBuffer();
 
-#ifdef as_array_raw_DBG
-     printf("_useCalibration: %d\n", _useCalibration);
-#endif   
+    if(NULL == _buffer)
+    {
+        mutex.post();
+        return false;
+    }
+
   
     for(int k=0; k<_channels; k++)
     {
@@ -881,34 +886,15 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
         // Got from canBusMotionControl
         _buffer[k]= (short)( ( (((unsigned short)(msg[1]))<<8)+msg[0]) - (unsigned short) (0x8000) );
 
-#ifdef as_array_raw_DBG 
-        // use it for test
-        uint16_t testAAA = 0;
-        uint16_t testBBB = 0;
-        int16_t testCCC = 0;
-        testAAA = msg[1];
-        testBBB = testAAA << 8;
-        testCCC = (int16_t) (testBBB + msg[0]);
-
-//        if (k==4)
-//        {
-//        printf("0x%04X(%X %X) vs 0x%04X\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
-//        printf("%d(%d %d) vs %d\n\n", (int16_t)_buffer[k], (uint8_t)msg[0], (uint8_t)msg[1], (uint16_t)testCCC);
-//        }
-#endif
-
         if (_useCalibration == 1)
         {
             _buffer[k]=_buffer[k]*scaleFactor[k]/float(0x8000);
         }
     }
     
-#ifdef as_array_raw_DBG    
-     printf("\n");
-#endif
      
     mutex.post();
-    return AS_OK;
+    return true;
 }
 
 
@@ -933,6 +919,12 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     mutex.wait();
     double *_buffer = data->getBuffer();
 
+    if(NULL == _buffer)
+    {
+        mutex.post();
+        return false;
+    }
+
     //NOTE: here i suppose that size of array is equal to num of channel or to 0 if sensor did not sent something
     //this is an agreement with firmware.
     for(int k=0; k<size; k++)
@@ -941,9 +933,9 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
         // Get the kth element of the array
         _buffer[k] = (double)val;
     }
-    mutex.post();
 
-    return AS_OK;
+    mutex.post();
+    return true;
 }
 
 

@@ -147,7 +147,7 @@ bool embObjVirtualAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         }
     }
     return true;
-};
+}
 
 
 embObjVirtualAnalogSensor::embObjVirtualAnalogSensor()
@@ -158,11 +158,17 @@ embObjVirtualAnalogSensor::embObjVirtualAnalogSensor()
     _channels       = 0;
     _verbose        = false;
     _status         = VAS_OK;
+    opened          =  false;
 }
 
 embObjVirtualAnalogSensor::~embObjVirtualAnalogSensor()
 {
 
+}
+
+bool embObjVirtualAnalogSensor::isOpened()
+{
+    return opened;
 }
 
 bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
@@ -273,6 +279,9 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 //    }
 
     yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNum << "instantiated correctly";
+
+    opened = true;
+
     return true;
 }
 
