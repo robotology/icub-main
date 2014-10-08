@@ -962,7 +962,7 @@ void EthReceiver::run()
                     }
                     else
                     {
-                        ethRes->processRXpacket(incoming_msg_data, incoming_msg_size);
+                        ethRes->processRXpacket(incoming_msg_data, incoming_msg_size, true);
                     }
 
                     break;  // ok ... exit loop as i have found the correct ethresource
@@ -979,29 +979,33 @@ void EthReceiver::run()
 
 
 #if 1
-        double currTime = yarp::os::Time::now();
-        double delta = currTime - statLastTime;
 
-        if( (delta) > statPrintInterval )
+        if(statPrintInterval > 0)
         {
-            statLastTime = currTime;
+            double currTime = yarp::os::Time::now();
+            double delta = currTime - statLastTime;
 
-            yDebug() << "  (STATS-XX): new report for the past" << delta << "seconds";
-
-            EthSender* ethSender = ethManager->getEthSender();
-            ethSender->printTXstatistics();
-
-            // now for every ethresource i print the stats ... but only if it is running.
-            // by running stats for all boards at a given time, i understand if a board does not tx anymore
-            riterator = _rBegin;
-            while(riterator != _rEnd)
+            if( (delta) > statPrintInterval )
             {
-                ethRes = (*riterator);
-                if(ethRes->isRunning())
+                statLastTime = currTime;
+
+                yDebug() << "  (STATS-XX): new report for the past" << delta << "seconds";
+
+                EthSender* ethSender = ethManager->getEthSender();
+                ethSender->printTXstatistics();
+
+                // now for every ethresource i print the stats ... but only if it is running.
+                // by running stats for all boards at a given time, i understand if a board does not tx anymore
+                riterator = _rBegin;
+                while(riterator != _rEnd)
                 {
-                    ethRes->printRXstatistics();
+                    ethRes = (*riterator);
+                    if(ethRes->isRunning())
+                    {
+                        ethRes->printRXstatistics();
+                    }
+                    riterator++;
                 }
-                riterator++;
             }
         }
 

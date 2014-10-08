@@ -212,7 +212,7 @@ public:
 
     bool            canProcessRXpacket(uint64_t *data, uint16_t size);
 
-    void            processRXpacket(uint64_t *data, uint16_t size);
+    void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
 
 
     /*!   @fn       goToRun(void);

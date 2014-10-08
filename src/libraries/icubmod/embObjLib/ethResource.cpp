@@ -203,7 +203,7 @@ bool ethResources::canProcessRXpacket(uint64_t *data, uint16_t size)
     return true;
 }
 
-void ethResources::processRXpacket(uint64_t *data, uint16_t size)
+void ethResources::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
 {
     // at first we copy data into an internal buffer. in future we may avoid doing that.
     // marco.accame on 11 sept 14: so far, hostTransceiver::onMsgReception() has not used the ethResources::RXpacket buffer.
@@ -222,7 +222,10 @@ void ethResources::processRXpacket(uint64_t *data, uint16_t size)
 
     if(isInRunningMode)
     {
-        infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing), false);
+        if(true == collectStatistics)
+        {
+            infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing), false);
+        }
     }
 }
 

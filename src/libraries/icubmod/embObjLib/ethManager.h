@@ -326,6 +326,8 @@ private:
     uint64_t                        seqnumList[TheEthManager::maxBoards];
     bool                            recFirstPkt[TheEthManager::maxBoards];
 
+    double                          statPrintInterval;
+
 
 #ifdef ETHRECEIVER_STATISTICS_ON
     StatExt                         *stat;
