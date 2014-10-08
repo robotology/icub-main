@@ -1660,6 +1660,7 @@ infoOfRecvPkts::infoOfRecvPkts()
     stat_ageOfFrame = new StatExt();
     stat_periodPkt = new StatExt();
     stat_lostPktgap = new StatExt();
+    stat_printstatPktgap = new StatExt();
     stat_precessPktTime = new StatExt();
     stat_pktSize = new StatExt();
 
@@ -1676,7 +1677,10 @@ infoOfRecvPkts::infoOfRecvPkts()
         timeout = (double)(NetType::toInt(statistcs_timeout))/1000; // because timeout is in sec
     }
 
-    yTrace() << "Initialized with timeout " << timeout << "sec and count_rec_pkt " << max_count;
+    justprinted = true;
+
+
+    //yTrace() << "Initialized with timeout " << timeout << "sec and count_rec_pkt " << max_count;
 
 }
 
@@ -1686,6 +1690,7 @@ infoOfRecvPkts::~infoOfRecvPkts()
     delete stat_ageOfFrame;
     delete stat_periodPkt;
     delete stat_lostPktgap;
+    delete stat_printstatPktgap;
     delete stat_precessPktTime;
     delete stat_pktSize;
 }
@@ -1718,9 +1723,11 @@ void infoOfRecvPkts::printStatistics(void)
         yDebug() << "  (STATS-RX)-> BOARD " << board << " inter-ropframe gap (as written by remote board)[holes are discarded]: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
         yDebug() << "  (STATS-RX)-> BOARD " << board << " gap between processed ropframes [holes are discarded]: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
         yDebug() << "  (STATS-RX)-> BOARD " << board << " duration of holes in rx ropframes: avg=" << stat_lostPktgap->mean()*1000 << "ms std=" << stat_lostPktgap->deviation()*1000 << "ms min=" << stat_lostPktgap->getMin()*1000 << "ms max=" << stat_lostPktgap->getMax()*1000 << "ms on " << stat_lostPktgap->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << board << " gap between two ropframe w/ a print stat in between: avg=" << stat_printstatPktgap->mean()*1000 << "ms std=" << stat_printstatPktgap->deviation()*1000 << "ms min=" << stat_printstatPktgap->getMin()*1000 << "ms max=" << stat_printstatPktgap->getMax()*1000 << "ms on " << stat_printstatPktgap->count() << "values";
         yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe process time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values";
         yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe size time: avg=" << stat_pktSize->mean() << "bytes std=" << stat_pktSize->deviation() << "min=" << stat_pktSize->getMin() << "max=" << stat_pktSize->getMax() << " on " << stat_pktSize->count() << "values\n";
     }
+
 }
 
 void infoOfRecvPkts::clearStatistics(void)
@@ -1728,13 +1735,16 @@ void infoOfRecvPkts::clearStatistics(void)
     stat_ageOfFrame->clear();
     stat_periodPkt->clear();
     stat_lostPktgap->clear();
+    stat_printstatPktgap->clear();
     stat_precessPktTime->clear();
     stat_pktSize->clear();
     currPeriodPktLost = 0;
-    initted = false;   
+    // initted = false;
     count = 0;
     timeoflastreport = yarp::os::Time::now();
     receivedPackets = 0;
+
+    justprinted = true;
 }
 
 
@@ -1765,7 +1775,8 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
 
     if(initted)
     {
-        //1) check seq num
+        // (1) check sequence number
+
         if(curr_seqNum != last_seqNum+1)
         {
 
@@ -1779,14 +1790,16 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
                 //i lost some pkts
                 num_lost_pkts = curr_seqNum - last_seqNum -1;
             }
-            currPeriodPktLost+= num_lost_pkts;
-            totPktLost+= num_lost_pkts;
+            currPeriodPktLost += num_lost_pkts;
+            totPktLost += num_lost_pkts;
 
             if(local_verbose)
                 yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << board << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
-        //2) check ageOfPkt
+
+        // (2) check age of ropframe
+
         diff = (curr_ageOfFrame - last_ageOfFrame);
         diff_ageofframe_ms = (double)(diff) / 1000.0; // age of frame is expressed in msec but in floating point
         if( diff_ageofframe_ms > (timeout*1000))
@@ -1795,7 +1808,14 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
                 yError() << "Board " << board << ": EMS time (ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
         }
 
-        //3) check rec time
+        if(0 == num_lost_pkts)
+        {   // i add the delta only if we had no packet loss. in this way i measure the exact statistics of emission time from the remote board.
+            stat_ageOfFrame->add(diff_ageofframe_ms);
+        }
+
+
+        // (3) check receive time inside calling thread
+
         curr_periodPkt = reckPktTime - last_recvPktTime;
         if(curr_periodPkt > timeout)
         {
@@ -1803,28 +1823,40 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
                 yError() << "Board " << board << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
         }
 
-        if(0 == num_lost_pkts)
-        {   // i add the delta only if we had no packet loss. in this way i measure the exact statistics of emission time from the remote board.
-            stat_ageOfFrame->add(diff_ageofframe_ms);
-        }
-        if(0 == num_lost_pkts)
-        {
-            stat_periodPkt->add(curr_periodPkt);
+
+        if(false == justprinted)
+        {   // dont count this in statistics because in previous interval we have printed and i dont want it.
+            if(0 == num_lost_pkts)
+            {
+                stat_periodPkt->add(curr_periodPkt);
+            }
+            else
+            {
+                stat_lostPktgap->add(curr_periodPkt);
+            }
         }
         else
         {
-            stat_lostPktgap->add(curr_periodPkt);
+            justprinted = false;
+            stat_printstatPktgap->add(curr_periodPkt);
         }
+
+        // (4) add process time as passed in argument
+
         stat_precessPktTime->add(processPktTime);
+
+        // (5) add packet size as apassed in argument
+
         stat_pktSize->add(size);
     }
     else
     {
-        initted = true; //i rec fisrt pkt
+        initted = true; // i have received first ever packet
         isInError = false;
     }
 
-    //aggiorno i dati;
+    // i update some static data
+
     last_seqNum = curr_seqNum;
     last_ageOfFrame = curr_ageOfFrame;
     last_recvPktTime = reckPktTime;
@@ -1832,6 +1864,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
     receivedPackets++;
 
     // i evaluate a possible report
+
     if(true == evalreport)
     {
         evalReport();

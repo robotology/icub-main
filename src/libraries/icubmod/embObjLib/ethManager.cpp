@@ -751,6 +751,16 @@ EthReceiver::EthReceiver()
     count=0;
     isFirst=true;
 #endif
+
+    ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
+    if (tmp != "")
+    {
+        statPrintInterval = (double)NetType::toInt(tmp);
+    }
+    else
+    {
+        statPrintInterval = 30.0;
+    }
 }
 
 void EthReceiver::onStop()
@@ -908,7 +918,6 @@ void EthReceiver::run()
     ethResRIt riterator;
     ethResRIt _rBegin, _rEnd;
     double statLastTime = yarp::os::Time::now();
-    const double statPrintInterval = 30.0;
 
 
     ACE_Time_Value recvTimeOut;
