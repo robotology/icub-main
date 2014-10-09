@@ -135,12 +135,12 @@
  * <li> getCurrents
  * <li> getTorques
  *
- * \code
- *
  * To dump only specific data you can use the --dataToDump option
- * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)" --dataToDump "(data1...dataN)"
  *
+ * \code
+ * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)" --dataToDump "(data1...dataN)"
  * \endcode
+ *
  * and the example is:
  * \code
  *
