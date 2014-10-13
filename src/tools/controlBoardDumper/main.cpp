@@ -76,14 +76,16 @@
  *
  * joints       (i1 i2 i3...iN)  //indexes of the joints to be read [default: (0 1)]
  *
- * dataToDump   (data1...dataN)  //type of data to be collected [default: all possible data]
+ * dataToDump   (data1...dataN)  //type of data to be collected [default: all possible data, except debug interface (getRotorxxx)]
+ *
+ * dataToDumpAll                 // will dump all data, including the debug interface (getRotorxxx)
  *
  * logToFile                     //if present, this options creates a log file for each data port
  *
  * \endcode
  * 
  * If no such file can be found, the application is started
- * with the default paramters. The first parameter ('robot' with 
+ * with the default parameters. The first parameter ('robot' with
  * default value 'icub') specifies the robot name. The second 
  * parameter ('part' with default 'head') specifies the used part.
  * The third parameter ('rate' with default '500') specifies the
@@ -98,9 +100,9 @@
  * <li> getOutputs              (voltage (PWM) given to the motor)
  * <li> getCurrents             (current given to the motor)
  * <li> getTorques              (joint torques, if available)
- * <li> getRotorPositions       (hires rotor position, if available)
- * <li> getRotorSpeeds          (hires rotor velocity, if available)
- * <li> getRotorAccelerations   (hires rotor acceleration, if available) 
+ * <li> getRotorPositions       (hires rotor position, if debug interface is available)
+ * <li> getRotorSpeeds          (hires rotor velocity, if debug interface is available)
+ * <li> getRotorAccelerations   (hires rotor acceleration, if debug interface is available)
  * </ul>
  * Other data can be easily added by modyfing the classes in the 
  * file genericControlBoardDumper.cpp which contains a class named
@@ -108,32 +110,67 @@
  * a thread controlBoardDumper which does not depend on the specific
  * interface (e.g. IPositionControl) or function (e.g. getEncoders).
  *
- * The module can also be executed from a command line with the following
- * format:
+ * Please note that for dumping the getRototxxx data the debugInterface is required. This means the robot must instantiate the
+ * debugInterfaceWrapper in order to have remote access to those data.
+ *
+ * The module can also be executed from a command line with the following format:
  * \code
  *
- * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)" --dataToDump "(data1...dataN)"
+ * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)"
  *
  * \endcode
+ * for example:
+ * \code
+ *
+ * controlBoardDumper --robot icub --part head --rate 20 --joints "(0 1 2)"
+ * \endcode
+ *
+ * In this case all the following standard data will be dumped:
+ * <li> getEncoders
+ * <li> getEncoderSpeeds
+ * <li> getEncoderAccelerations
+ * <li> getPositionErrors
+ * <li> getTorqueErrors
+ * <li> getOutputs
+ * <li> getCurrents
+ * <li> getTorques
+ *
+ * To dump only specific data you can use the --dataToDump option
+ *
+ * \code
+ * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)" --dataToDump "(data1...dataN)"
+ * \endcode
+ *
  * and the example is:
  * \code
  *
  * controlBoardDumper --robot icub --part head --rate 20 --joints "(0 1 2)" --dataToDump "(getCurrents getOutputs)"
  *
  * \endcode
-
+ *
+ * To dump all the data, including the debug ones, you can use the dataToDumpAll option
+ * controlBoardDumper --robot r --part p --rate r --joints "(i1 i2 i3...iN)" --dataToDumpAll
+ *
+ * \endcode
+ * and the example is:
+ * \code
+ *
+ * controlBoardDumper --robot icub --part head --rate 20 --joints "(0 1 2)" --dataToDumpAll
+ *
+ * \endcode
+ *
  * \section portsa_sec Ports Accessed
- * For each part initalized (e.g. right_arm):
+ * For each part initalized (e.g. head):
  * <ul>
- * <li> /icub/right_arm/rpc:i 
- * <li> /icub/right_arm/command:i
- * <li> /icub/right_arm/state:i
+ * <li> /icub/head/rpc:i
+ * <li> /icub/head/command:i
+ * <li> /icub/head/state:i
  * </ul>
  *
  * \section portsc_sec Ports Created
- * For each part initalized (e.g. right_arm):
+ * For each part initalized (e.g. head):
  * <ul>
- * <li> /robot/controlBoardDumper/part/data e.g. /icub/controlBoardDumper/right_arm/getEncoders
+ * <li> /robot/controlBoardDumper/part/data e.g. /icub/controlBoardDumper/head/getEncoders
  * </ul>
  *
  * \author Francesco Nori
@@ -153,7 +190,9 @@
 
 YARP_DECLARE_DEVICES(icubmod)
 
-#define NUMBER_OF_AVAILABLE_DATA_TO_DUMP 12
+#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 9
+#define NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP 3
+
 
 //
 void getRate(Property p, int &r)
@@ -244,13 +283,15 @@ int getNumberDataToDump(Property p, int &n)
     return 1;
 }
 
-int getDataToDump(Property p, ConstString *listOfData, int n)
+int getDataToDump(Property p, ConstString *listOfData, int n, bool *needDebug)
 {
 
-    ConstString availableDataToDump[NUMBER_OF_AVAILABLE_DATA_TO_DUMP];
+    ConstString availableDataToDump[NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP];
+    ConstString availableDebugDataToDump[NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP];
 
     int j;
 
+    // standard
     availableDataToDump[0] = ConstString("getEncoders");
     availableDataToDump[1] = ConstString("getEncoderSpeeds");
     availableDataToDump[2] = ConstString("getEncoderAccelerations");
@@ -259,32 +300,46 @@ int getDataToDump(Property p, ConstString *listOfData, int n)
     availableDataToDump[5] = ConstString("getCurrents");
     availableDataToDump[6] = ConstString("getTorques");
     availableDataToDump[7] = ConstString("getTorqueErrors");
-    availableDataToDump[8]  = ConstString("getRotorPositions");
-    availableDataToDump[9]  = ConstString("getRotorSpeeds");
-    availableDataToDump[10] = ConstString("getRotorAccelerations");
-    availableDataToDump[11] = ConstString("getPidReferences");
+    availableDataToDump[8] = ConstString("getPidReferences");
+
+    // debug
+    availableDebugDataToDump[0] = ConstString("getRotorPositions");
+    availableDebugDataToDump[1] = ConstString("getRotorSpeeds");
+    availableDebugDataToDump[2] = ConstString("getRotorAccelerations");
 
     if (!p.check("dataToDump"))
-        {
-            fprintf(stderr, "Missing option 'dataToDump' in given config file\n");
-            return 0;
-        }
+    {
+        fprintf(stderr, "Missing option 'dataToDump' in given config file\n");
+        return 0;
+    }
+
     Value& list = p.find("dataToDump");
     Bottle *pList = list.asList();
 
     for (int i = 0; i < n; i++)
     {
         listOfData[i] = pList->get(i).toString();
-    for(j = 0; j< NUMBER_OF_AVAILABLE_DATA_TO_DUMP; j++)
-    {
-        if(listOfData[i] == (availableDataToDump[j]))
+        // check if the requested data is a standard one
+        for(j = 0; j< NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP; j++)
+        {
+            if(listOfData[i] == (availableDataToDump[j]))
                 break;
-    }
-    if(j == NUMBER_OF_AVAILABLE_DATA_TO_DUMP)
-    {
-        fprintf(stderr, "Illegal values for 'dataToDump': %s does not exist!\n",listOfData[i].c_str());
-        return 0;
-    }    
+        }
+        // check if the requested data is a debug one
+        for(j = 0; j< NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP; j++)
+        {
+            if(listOfData[i] == (availableDebugDataToDump[j]))
+            {
+                *needDebug = true;
+                break;
+            }
+        }
+        // if not found
+        if(j == (NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP + NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP))
+        {
+            fprintf(stderr, "Illegal values for 'dataToDump': %s does not exist!\n",listOfData[i].c_str());
+            return 0;
+        }
     }
    return 1;
 }
@@ -303,6 +358,7 @@ private:
 
     PolyDriver ddBoard;
     PolyDriver ddDebug;
+    bool useDebugClient;
 
     //get the joints to be dumped
     int rate;
@@ -339,7 +395,7 @@ private:
     GetRotorAcceleration myGetRotorAccs;
 
 public:
-    DumpModule() 
+    DumpModule() : useDebugClient(false)
     { 
         istmp=0;
         ienc=0;
@@ -374,7 +430,6 @@ public:
 
         //get the joints to be dumped
         getRate(options, rate);
-        fprintf(stderr, "Selected rate is: %d\n", rate);
 
         if (getNumberUsedJoints(options, nJoints) == 0)
             return false;
@@ -388,12 +443,19 @@ public:
             return false;
 
         dataToDump = new ConstString[nData];
-        if (getDataToDump(options, dataToDump, nData) == 0)
+        if (getDataToDump(options, dataToDump, nData, &useDebugClient) == 0)
             return false;        
 
+
+        // Printing configuration to the user
+        fprintf(stderr, "\nRunning with the following configuration:\n");
+        fprintf(stderr, "Selected rate is: %d\n", rate);
+        fprintf(stderr, "Data selected to be dumped are:\n");
         for (int i = 0; i < nData; i++)
-            fprintf(stderr, "%s \n", dataToDump[i].c_str());
+            fprintf(stderr, "\t%s \n", dataToDump[i].c_str());
             
+        fprintf(stderr, "\n");
+
         //if (!fileOptions.check("d"))
         //    {
         //        fprintf(stderr, "Missing option 'd' in given config file\n");
@@ -426,22 +488,41 @@ public:
         remoteDebugPortName = remotePortName + "/debug";
         ddDebugOptions.put("remote", remoteDebugPortName.c_str());
     
-        fprintf(stderr, "%s", ddBoardOptions.toString().c_str());    
         // create a device 
         ddBoard.open(ddBoardOptions);
         if (!ddBoard.isValid()) {
-            printf("Device not available.  Here are the known devices:\n");
-            printf("%s", Drivers::factory().toString().c_str());
+            printf("Device not available.\n");
             Network::fini();
             return false;
         }
 
-        ddDebug.open(ddDebugOptions);
-        if (!ddDebug.isValid()) {
-            printf("Debug Interface is mandatary to run this module.  Here are the known devices:\n");
-            printf("%s", Drivers::factory().toString().c_str());
-            Network::fini();
-            return false;
+        if (useDebugClient )
+        {
+            ddDebug.open(ddDebugOptions);
+            if (!ddDebug.isValid())
+            {
+                printf("\n------------------- ERROR: -------------------\n");
+                printf("Debug Interface is mandatory to run this module with the '--dataToDumpAll' option or to dump any of the getRotorxxx data.\n");
+                printf("Please Verify the following 2 conditions are satisfied:\n\n");
+                printf("1) Check 'debugInterfaceClient' is available using 'yarpdev --list' command\n");
+//                printf("%s", Drivers::factory().toString().c_str());
+
+                std::string deviceList, myDev;
+                deviceList.clear();
+                deviceList.append(Drivers::factory().toString().c_str());
+                myDev = "debugInterfaceClient";
+                if(deviceList.find(myDev) != std::string::npos)
+                    printf("\t--> Seems OK\n");
+                else
+                    printf("\t--> Seems NOT OK. The device was not found, please activate the compilation using the corrisponding CMake flag.\n");
+
+                printf("\n2) Check if the robot has the 'debugInterfaceWrapper' device up and running. \n You should see from 'yarp name list' output, a port called\n");
+                printf("\t/robotName/part_name/debug/rpc:i\n If not, fix the robot configuration files to instantiate the 'debugInterfaceWrapper' device.\n");
+                printf("\nQuickFix: If you set the --dataToDumpAll and do not need the advanced debug feature (getRotorxxx) just remove this option. See help for more information.\n");
+                printf("------------- END ERROR MESSAGE ---------------\n\n");
+                Network::fini();
+                return false;
+            }
         }
 
         bool logToFile = false;
@@ -625,8 +706,7 @@ public:
                         }
                         else
                         {
-                            printf("Debug Interface not available.  Here are the known devices:\n");
-                            printf("%s", Drivers::factory().toString().c_str());
+                            printf("\n\nERROR: Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
                             Network::fini();
                             return false;
                         }
@@ -652,8 +732,7 @@ public:
                         }
                         else
                         {
-                            printf("Debug Interface not available.  Here are the known devices:\n");
-                            printf("%s", Drivers::factory().toString().c_str());
+                            printf("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
                             Network::fini();
                             return false;
                         }
@@ -679,8 +758,7 @@ public:
                         }
                         else
                         {
-                            printf("Debug Interface not available.  Here are the known devices:\n");
-                            printf("%s", Drivers::factory().toString().c_str());
+                            printf("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
                             Network::fini();
                             return false;
                         }
@@ -727,7 +805,7 @@ int main(int argc, char *argv[])
     Network::init();
     ResourceFinder rf;
 
-    rf.setVerbose(true);
+    rf.setVerbose(false);
     rf.setDefaultContext("controlBoardDumper");
     rf.setDefaultConfigFile("controlBoardDumper.ini");
 
@@ -763,9 +841,11 @@ int main(int argc, char *argv[])
     }
     if (p.check("help"))
     {
-        printf ("controlBoardDumper usage:\n");
-        printf ("1) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDump \"(xxx)\"\n");
-        printf (" where xxx can be one of the following:\n");
+        printf ("\ncontrolBoardDumper usage:\n");
+        printf ("1) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" \n");
+        printf ("   All data from the controlBoarWrapper will be dumped, except for advanced debugInterface (default).\n");
+        printf ("\n2) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDump \"(xxx xxx)\"\n");
+        printf (" where xxx can be uset to select one (or more) from the following:\n");
         printf (" getEncoders             (joint position)\n");
         printf (" getEncoderSpeeds        (joint velocity)\n");
         printf (" getEncoderAccelerations (joint acceleration)\n");
@@ -774,15 +854,16 @@ int main(int argc, char *argv[])
         printf (" getOutputs              (voltage (PWM) given to the motor)\n");
         printf (" getCurrents             (current given to the motor)\n");
         printf (" getTorques              (joint torques, if available)\n");
-        printf (" getRotorPositions       (hi-res rotor position, if available)\n");
-        printf (" getRotorSpeeds          (hi-res rotor velocity, if available)\n");
-        printf (" getRotorAccelerations   (hi-res rotor acceleration, if available)\n");
-        printf ("\n2) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDumpAll\n");
+        printf (" getRotorPositions       (hi-res rotor position, if debug interface is available)\n");
+        printf (" getRotorSpeeds          (hi-res rotor velocity, if debug interface is available)\n");
+        printf (" getRotorAccelerations   (hi-res rotor acceleration, if debug interface is available)\n");
+        printf ("\n3) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDumpAll\n");
+        printf ("   All data from the controlBoarWrapper will be dumped, including data from the debugInterface (getRotorxxx).\n");
+        printf ("\n --logToFile can be used to create log files storing the data\n\n");
 
         return 0;
     }
 
-    fprintf(stderr, "Current configuration is: %s\n", p.toString().c_str());
     if (mod.open(p))
         return mod.runModule();
     else 

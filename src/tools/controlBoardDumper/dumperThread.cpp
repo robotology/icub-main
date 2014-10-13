@@ -42,7 +42,8 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     ok &= board_d->view(amp);
     ok &= board_d->view(lim);
     ok &= board_d->view(trq);
-    ok &= debug_d->view(idbg);
+    if(debug_d->isValid())
+        ok &= debug_d->view(idbg);
 
     if (!ok)
     printf("Problems acquiring interfaces\n");
@@ -134,7 +135,8 @@ void boardDumperThread::threadRelease()
     //Arm_dd->close();
     Time::delay(.1);
     fprintf(stderr, "Closing ports \n");
-    port->close();
+    if(port)
+        port->close();
 
     if (logFile)
     {

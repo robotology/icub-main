@@ -1563,11 +1563,11 @@ bool iKinLimb::toLinksProperties(Property &options)
 
         Bottle &alpha=link.addList();
         alpha.addString("alpha");
-        alpha.addDouble((*this)[i].getAlpha());
+        alpha.addDouble(CTRL_RAD2DEG*(*this)[i].getAlpha());
 
         Bottle &offset=link.addList();
         offset.addString("offset");
-        offset.addDouble((*this)[i].getOffset());
+        offset.addDouble(CTRL_RAD2DEG*(*this)[i].getOffset());
 
         Bottle &min=link.addList();
         min.addString("min");
