@@ -136,7 +136,8 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
         sec =  msec = usec = 0;
     }
 
-    snprintf(str, sizeof(str), "MANAGEMENT-info: sign = 0x%x, time = %04ds+%03dms+%03dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+    //snprintf(str, sizeof(str), "[INFO]-> mn-info: sign = 0x%x, time = %04ds+%03dms+%03dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
 
     printf("%s\n", str);
     fflush(stdout);
