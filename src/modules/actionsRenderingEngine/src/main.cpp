@@ -298,6 +298,11 @@ library, we also have:
     -[elbow] "left"|"right"|"both" <height> <weight>: to change
      elbow parameters.
  
+ - \e /<modName>/wbd:rpc to be connected to \e
+   /wholeBodyDynamics/rpc:i in order to allow for resetting
+   force offsets in the computation of internal dynamics of the
+   robot.
+ 
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
 within the configuration file. 
