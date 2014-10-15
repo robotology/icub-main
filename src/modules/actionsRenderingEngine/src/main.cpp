@@ -279,6 +279,11 @@ Assume that the robot interface is operative and the
 Aside from the internal ports created by \ref ActionPrimitives 
 library, we also have: 
  
+- \e /<modName>/wbd:rpc to be connected to \e
+  /wholeBodyDynamics/rpc:i in order to allow for resetting
+  force offsets in the computation of internal dynamics of the
+  robot.
+ 
 - \e /<modName>/cmd:io receives a bottle containing commands 
   whose formats are specified in the previous section. The port 
   replies as soon as the current action has been completed.
@@ -297,7 +302,7 @@ library, we also have:
     -[reinstate]: if the module was interrupted reinstate it.\n
     -[elbow] "left"|"right"|"both" <height> <weight>: to change
      elbow parameters.
- 
+
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
 within the configuration file. 

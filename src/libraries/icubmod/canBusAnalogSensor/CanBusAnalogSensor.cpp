@@ -27,6 +27,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     correct &= config.check("format");
     correct &= config.check("period");
     correct &= config.check("channels");
+    correct &= config.check("physDevice");
     
     if (!correct)
     {
