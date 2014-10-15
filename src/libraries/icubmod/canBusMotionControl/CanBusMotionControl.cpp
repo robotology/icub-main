@@ -5475,7 +5475,7 @@ bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
 
 bool CanBusMotionControl::stopRaw(int j)
 {
-    bool ret=velocityMoveRaw(j, 0);
+    bool ret = true;
     ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     return ret;
 }
@@ -5484,16 +5484,13 @@ bool CanBusMotionControl::stopRaw()
 {
     CanBusResources& r = RES(system_resources);
     const int n=r.getJoints();
+    bool ret = true;
 
-    double *tmp = new double [n];
-    memset(tmp, 0, sizeof(double)*n);
-    bool ret=velocityMoveRaw(tmp);
     for (int j=0; j<n; j++)
     {
        ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     }
     
-    delete [] tmp;
     return ret;
 }
 
