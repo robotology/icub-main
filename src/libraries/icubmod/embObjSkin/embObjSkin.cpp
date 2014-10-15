@@ -401,8 +401,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
-
 
     if(false == res->verifyBoard(groupProtocol))
     {
@@ -425,7 +423,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     //        return false;
     //    }
 
-#endif
 
     if(!this->fromConfig(config))
     {
@@ -516,15 +513,6 @@ int EmbObjSkin::getChannels()
 
 int EmbObjSkin::calibrateSensor()
 {
-//#warning "create a ROP to start/initialize the MTB, if needed"
-
-//	int 							j=0;
-//	eOmc_joint_config_t				a;
-//	uint16_t						sizze;
-//
-//	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_leftlowerarm, 0x00, skinNVindex_sconfig__sigmode);
-//	res->load_occasional_rop(eo_ropcode_set, endpoint_sk_emsboard_leftlowerarm, nvid);
-
     return true;
 }
 

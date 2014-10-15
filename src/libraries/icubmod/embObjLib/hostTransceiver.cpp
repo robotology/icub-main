@@ -968,7 +968,6 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;    
 
-//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
 
     if(false == fillRemoteProperties(cfgtransceiver))
     {
@@ -988,8 +987,6 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     hosttxrxcfg.sizes.maxnumberofregularrops        = 0;
 
 
-//#endif//_WIP_CHECK_PROTOCOL_VERSION_
-
 
     // the nvsetcfg of the board ...
     hosttxrxcfg.nvsetdevcfg             = getNVset_DEVcfg(cfgprotocol);
@@ -999,7 +996,6 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
         return(false);
     }
 
-//#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
     // the one of pc104
     localTransceiverProperties.listeningPort               = hosttxrxcfg.remoteboardipv4port;
     localTransceiverProperties.destinationPort             = hosttxrxcfg.remoteboardipv4port;
@@ -1010,9 +1006,6 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     localTransceiverProperties.maxsizeROPframeOccasionals  = hosttxrxcfg.sizes.capacityofropframeoccasionals;
     localTransceiverProperties.maxsizeROP                  = hosttxrxcfg.sizes.capacityofrop;
     localTransceiverProperties.maxnumberRegularROPs        = hosttxrxcfg.sizes.maxnumberofregularrops;
-//#endif//_WIP_CHECK_PROTOCOL_VERSION_
-
-
 
 
     // other configurable parameters for eOhosttransceiver_cfg_t
@@ -1032,9 +1025,6 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
 {
     //in here i give values to remoteTransceiverProperties from XML file
 
-//#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-//    return true;
-//#else
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
 
     if(cfgtransceiver.isNull())
@@ -1103,7 +1093,6 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
 
     return(true);
 
-//#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol)

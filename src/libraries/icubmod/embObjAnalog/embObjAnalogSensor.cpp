@@ -292,8 +292,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
-
     if(false == res->verifyBoard(groupProtocol))
     {
         yError() << "embObjAnalogSensor::open() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
@@ -329,7 +327,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 //        return false;
 //    }
 
-#endif
 
     data = new AnalogData(_channels, _channels+1);
     scaleFactor = new double[_channels];
@@ -341,12 +338,10 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         scaleFactor[i]=1;
     }
-    // Tell EMS to go into config state, otherwise something doesn't work correctly.
-//#warning "go to config message before getting strain fullscale... investigate more
 
 
 //#warning --> marco.accame on 04sept14: both embObjAnalogSensors and embObjMotionControl initialises the mais board. but potentially w/ different params (mc uses: datarate = 10 and mode = eoas_maismode_txdatacontinuously).
-//     res->goToConfig();
+
     switch(_as_type)
     {
         case AS_MAIS:
@@ -521,7 +516,9 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #endif
 }
 
-#warning --> marco.accame: it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<>
+#warning --> marco.accame: review function embObjAnalogSensor::getFullscaleValues() as in comment below
+// it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<> and unblock a mutex
+// current implementation relies on a wait of 1 sec and check of non-zero length of an array: smart but not the rigth way to do it.
 bool embObjAnalogSensor::getFullscaleValues()
 {
     // marco.accame on 11 apr 2014:

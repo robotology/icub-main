@@ -20,9 +20,6 @@ typedef uint8_t fakestdbool_t;
 
 extern void eo_receiver_callback_incaseoferror_in_sequencenumberReceived(uint64_t rec_seqnum, uint64_t expected_seqnum);
 
-#ifdef WIN32
-//	#pragma warning(disable:4355)
-#endif
 
 #include "EoCommon.h"
 #include "EoProtocol.h"
@@ -72,31 +69,6 @@ typedef struct
     char                name[FEAT_SIZE_INFO];
 } FEAT_ID;
 
-
-#ifdef _SETPOINT_TEST_
-
-#include "EoMeasures.h"     // to see: eOmeas_position_t
-
-typedef enum
-{
-    proccessed_all_rec_pkt              = 0,
-    reached_cfgmaxnumofRXpackets        = 1,
-    error_in_reception                  = 2,
-    rx_phase_finished                   = 3
-} exit_rx_phase_contitions_t;
-
-typedef struct
-{
-    eOabstime_t             time;               // 8B
-    eOmeas_position_t       setpoint;           // 4B
-    uint8_t                 numofrecpkt;        // num of pkt(ropframe) received
-    uint8_t                 numofprocesspkt;    // num of pkt (ropframe) processed
-    int8_t                  exit_cond;
-    uint8_t                 diff_packets;
-} setpoint_test_data_t;
-
-void check_received_debug_data(FEAT_ID *id, int jointNum, setpoint_test_data_t *test_data_ptr);
-#endif
 
 void initCallback(void *p);
 

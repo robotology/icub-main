@@ -67,15 +67,9 @@
 
 // others
 #include "Debug.h"              // iCub debug class include
-//#include "debugFunctions.h"   // marco.accame: removed as it seems not used.
 
 
 
-#ifdef _STATS_DEBUG_FOR_CYCLE_TIME_
-// Statistic debug
-#warning --> marco.accame: now ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_ is used instead of _STATS_DEBUG_FOR_CYCLE_TIME_ and is locally defined
-//#include "testStats.h"
-#endif
 
 // -- defines
 
@@ -88,7 +82,7 @@
 
 
 #if 0
-// Actually there should be no need to include this class into yarp::dev namespace.
+// marco.accame: actually there should be no need to include this class into yarp::dev namespace.
 namespace yarp {
     namespace dev {
         class TheEthManager;

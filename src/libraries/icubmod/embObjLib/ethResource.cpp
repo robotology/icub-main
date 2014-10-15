@@ -452,9 +452,6 @@ bool ethResources::stopNetworkQuerySession(Semaphore* sem)
 
 bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 {
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    return true;
-#else
     if(verifiedBoardTransceiver)
     {
         return(true);
@@ -504,7 +501,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     memcpy(&boardCommStatus, &brdstatus, sizeof(boardCommStatus));
 
 
-#warning --> marco.accame: prendi la variabile mnprotocolversion e verifica se possiamo andare avanti
+    #warning --> marco.accame: inside ethResources::verifyBoardTransceiver() in the future you shall use variable mnprotocolversion
     // now i must verify that there is the same mn protocol version
     const eoprot_version_t * brdversionMN = pc104versionMN; // at the moment we cannot get it from remote board
     //const eoprot_version_t * brdversionMN = &brdstatus.mnprotocolversion;
@@ -642,16 +639,11 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
 
     return(true);
-
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 
 bool ethResources::cleanBoardBehaviour(void)
 {
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    return true;
-#else
     if(cleanedBoardBehaviour)
     {
         return(true);
@@ -678,16 +670,11 @@ bool ethResources::cleanBoardBehaviour(void)
 
     return(true);
 
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 
 bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
 {
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    return true;
-#else
-
     if((uint8_t)ep >= eoprot_endpoints_numberof)
     {
         yError() << "ethResources::verifyEPprotocol() called with wrong ep = " << ep << ": cannot proceed any further";
@@ -835,7 +822,6 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     return(true);
 
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 bool ethResources::isEPmanaged(eOprot_endpoint_t ep)
@@ -851,31 +837,25 @@ bool ethResources::isEPmanaged(eOprot_endpoint_t ep)
 
 bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
 {
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    return(true);
-#else
     if((true == verifyBoardPresence(protconfig)) && (true == verifyBoardTransceiver(protconfig)) && (true == cleanBoardBehaviour()))
     {
         return(true);
     }
 
     return(false);
-#endif
 }
 
 bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 {
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    return true;
-#else
     if(verifiedBoardPresence)
     {
         return(true);
     }
 
-    // we ask the remote board a variable whcih is surely supported. best thing to do is asking the mn-protocol-version.
+    // we ask the remote board a variable which is surely supported. best thing to do is asking the mn-protocol-version.
     // however, at 03 sept 2014 there is not a single variable to contain this, thus ... ask the eoprot_tag_mn_comm_status variable.
-#warning --> marco.accame: in verifyBoardPresence() change from using eoprot_tag_mn_comm_status into eoprot_tag_mn_comm_status_mnprotocolversion
+
+    #warning --> marco.accame: inside ethResources::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
 
     const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a godd time to wait
     const int retries = 120;         // the number of retries depends on the above timeout and on link-up time of the EMS.
@@ -948,15 +928,11 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
     return(verifiedBoardPresence);
 
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 
 bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber)
 {
-#if !defined(_WIP_CHECK_PROTOCOL_VERSION_)
-    return true;
-#else
     if(false == verifyEPprotocol(protconfig, ep))
     {
         yError() << "ethResources::verifyENTITYnumber() cannot even verify protocol in BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
@@ -1095,7 +1071,6 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
     // yDebug() << "ethResources::verifyENTITYnumber(): PC104 uses =" << numofentities_prot << " entities and remote board has" << numofentities_brd;
 
     return(true);
-#endif//_WIP_CHECK_PROTOCOL_VERSION_
 }
 
 

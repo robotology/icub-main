@@ -56,7 +56,7 @@ void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
     out->max_output = (double) in->limitonoutput;
     out->offset = (double) in->offset;
     out->scale = (double) in->scale;
-#warning --> marco.accame: once protocol version of mc gets 1.1 and has stiction value .... change code in here
+    #warning --> marco.accame: inside embObjMotionControl::copyPid_eo2iCub() when protocol version of mc gets 1.1 and has stiction value .... change code in here
     out->setStictionValues(0, 0);
     out->setKff(0);
 }
@@ -657,7 +657,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-#if defined(_WIP_CHECK_PROTOCOL_VERSION_)
 
     if(false == res->verifyBoard(groupProtocol))
     {
@@ -701,7 +700,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 //    }
 
 
-#endif
 
 
     NVnumber = res->getNVnumber(_fId.ep);
@@ -1977,8 +1975,9 @@ bool embObjMotionControl::doneRaw(int axis)
     // thus: al least for the first call after a calibration command on that joint we should keep the delay. Moreover: a delay of 1 sec is 
     // in parametricCalibrator::checkCalibrateJointEnded() just before calling doneRaw().
 
-    Time::delay(0.1);   // EO_WARNING()
-#warning --> marco.accame: review this thing about removing delay of 100 ms in embObjMotionControl::doneRaw()
+    Time::delay(0.1);
+
+    #warning --> marco.accame: embObjMotionControl::doneRaw() uses delay of 100ms to wait for something ... review this thing.
 
     res->readBufferedValue(protid, (uint8_t*) &status, &size);
     type = (eOmc_controlmode_t) status.controlmodestatus;
