@@ -39,6 +39,18 @@ yarp::os::Semaphore TheEthManager::managerMutex = 1;
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
+bool TheEthManager::lock()
+{
+    managerMutex.wait();
+    return true;
+}
+
+bool TheEthManager::unlock()
+{
+    managerMutex.post();
+    return true;
+}
+
 ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request)
 {
     yTrace() << request->boardNum;
@@ -71,8 +83,8 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
 
     ethResources *newRes = NULL;
 
-    // Grab the mutex
-    managerMutex.wait();
+
+    lock(); // lock so that we can use EMS_list in exclusive way
 
     int justCreated = false;
     ethResIt iterator = EMS_list.begin();
@@ -88,7 +100,7 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
         iterator++;
     }
 
-    managerMutex.post();
+    unlock(); // must unlock now. because ethResources::open() need to use the receiver which uses the lock() to get the EMS_list
 
     if(NULL == newRes)
     {
@@ -107,8 +119,8 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
         justCreated = true;
     }
 
-    // If this point is reached everything must be ok... i.e. newRes != NULL.
-    managerMutex.wait();
+
+    lock(); // lock because i use the EMS_list and i call addLUTelement
 
     // the push_back has to be done only once for EMS
     if(justCreated)
@@ -118,7 +130,8 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     newRes->registerFeature(request);
     addLUTelement(request);
 
-    managerMutex.post();
+    unlock();
+
     return newRes;
 }
 
@@ -138,20 +151,26 @@ int TheEthManager::releaseResource(FEAT_ID resource)
 
     if(false == emsAlreadyClosed)
     {
+        lock();
         ethResIt it = EMS_list.begin();
-        while(it != EMS_list.end())
+        ethResIt itend = EMS_list.end();
+        unlock();
+
+        while(it != itend)
         {
             tmpEthRes = (*it);
             tmpEthRes->goToConfig();
             tmpEthRes->clearRegulars();
             it++;
         }
-        //before stopping threads, flush all pkts not yet sent.
+        // before stopping threads, flush all pkts not yet sent.
         flush();
         emsAlreadyClosed = true;
     }
     stopThreads();
-    managerMutex.wait();
+
+    
+    lock();
 
     removeLUTelement(resource);
 
@@ -196,7 +215,8 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     if( (EMS_list.size() == 0 ) || (boards_map.size() == 0 ) )
         ret = -1;
 
-    managerMutex.post();
+    unlock();
+
     return ret;
 }
 
@@ -228,11 +248,11 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
              * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
              * element is already present preventing the map to be corrected.
              */
-        void * ret = boards_map.at(key).handle;
+            void * ret = boards_map.at(key).handle;
         }
         catch (const std::out_of_range& errMsg)
         {
-                yError() << "Error after  LUT insertion!!!";
+            yError() << "Error after  LUT insertion!!!";
         }
 }
 
@@ -271,7 +291,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
 
 void *TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 {
-//     managerMutex.wait();
+//     lock(); // marco.accame: found already commented. see why
     void * ret = NULL;
     static int _error = 0;
     std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
@@ -293,7 +313,7 @@ void *TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 
         _error++;
     }
-//     managerMutex.post();
+//     unlock(); // marco.accame: found already commented. see why
     return ret;
 }
 
@@ -303,9 +323,9 @@ FEAT_ID TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t
     FEAT_ID ret_val;
     std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
-//     managerMutex.wait();  // il thread che chiama questa funz ha già preso questo mutex in ethReceiver::run ... // nn più vero dopo le ultime ottimizzazioni
+//     lock();      // marco.accame: found already commented. see why
     ret_val = boards_map.at(key);
-//     managerMutex.post();
+//     unlock();    // marco.accame: found already commented. see why
     return ret_val;
 }
 
@@ -365,6 +385,14 @@ double TheEthManager::getStartTime(void)
     return starttime;
 }
 
+bool TheEthManager::getEMSlistRiterators(ethResRIt& rbegin, ethResRIt& rend)
+{   // marco.accame: added this function so that we can keep lock()/unlock() private
+    lock();
+    rbegin = EMS_list.rbegin();
+    rend = EMS_list.rend();
+    unlock();
+}
+
 void TheEthManager::initEOYsystem(void)
 {
     // marco.accame: in here we init the embOBJ system for YARP.
@@ -380,13 +408,8 @@ void TheEthManager::initEOYsystem(void)
 bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
 {
     yTrace();
-    managerMutex.wait();
+    lock();
 
-//     if(NULL == handle)
-//     {
-//         yError() << "Called createSocket while EthManager is not instantiated";
-//         handle = TheEthManager::instance();
-//     }
 
     if(!UDP_initted)
     {
@@ -409,8 +432,6 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
             sender = new EthSender();
             receiver = new EthReceiver();
 
-            //managerMutex.post();
-
             sender->config(UDP_socket, this);
             receiver->config(UDP_socket, this);
             /* Start the threads sending to and receiving messages from the boards.
@@ -421,7 +442,6 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
             ret1 = sender->start();
             ret2 = receiver->start();
 
-            //managerMutex.wait();
             if(!ret1 || !ret2)
             {
                 yError() << "EthManager: issue while starting threads for UDP communication with EMSs";
@@ -441,7 +461,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
         }
     }
 
-    managerMutex.post();
+    unlock();
     return UDP_initted;
 }
 
@@ -449,16 +469,16 @@ bool TheEthManager::isInitted(void)
 {
     yTrace();
     bool ret;
-    managerMutex.wait();
+    lock();
     ret = UDP_initted;
-    managerMutex.post();
+    unlock();
     return ret;
 }
 
 TheEthManager *TheEthManager::instance()
 {
     yTrace();
-    managerMutex.wait();
+    managerMutex.wait();    // marco.accame: in here we dont use this->lock() because if object does not already exists, the function does not exists. i can use the static semaphore instead
     if (NULL == handle)
     {
         yTrace() << "Calling EthManager Constructor";
@@ -512,7 +532,7 @@ TheEthManager::~TheEthManager()
         UDP_initted = false;
     }
 
-    managerMutex.wait();
+    lock();
     // Destroy all EMS boards
     if(EMS_list.size() != 0)
     {
@@ -534,12 +554,12 @@ TheEthManager::~TheEthManager()
             removeLUTelement(mIt->second);
         }
     }
-    managerMutex.post();
+    unlock();
 }
 
 int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
 {
-    ssize_t ret = UDP_socket->send(data,len,remote_addr);
+    ssize_t ret = UDP_socket->send(data, len, remote_addr);
     return ret;
 }
 
@@ -547,7 +567,7 @@ ethResources* TheEthManager::GetEthResource(FEAT_boardnumber_t boardnum)
 {
     ethResources *res = NULL;
 
-    managerMutex.wait();
+    lock();
 
     ethResIt iterator = EMS_list.begin();
 
@@ -565,7 +585,7 @@ ethResources* TheEthManager::GetEthResource(FEAT_boardnumber_t boardnum)
     }
 
 
-    managerMutex.post();
+    unlock();
 
     return(res);
 }
@@ -587,10 +607,11 @@ bool TheEthManager::close()
 
 void TheEthManager::flush()
 {
-    //#warning --> marco.accame: see when this function is called and think about removing delay of 1 second
-    //here sleep is essential in order to let sender thread send gotoconfig command.
+    //#warning --> marco.accame: TODO think about how removing delay of 1 second
+    // here sleep is essential in order to let sender thread send gotoconfig command.
     yarp::os::Time::delay(1);
 }
+
 
 EthSender::EthSender() : RateThread(1)
 {
@@ -602,7 +623,6 @@ bool EthSender::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     yTrace();
     send_socket = pSocket;
     ethManager  = _ethManager;
-    ethResList  = &(_ethManager->EMS_list);
 
     return true;
 }
@@ -679,7 +699,6 @@ void EthSender::run()
 ethStatistics* ethstats = ethManager->getEthStatistics();
 #endif
 
-    //EthSender::evalPrintTXstatistics();
 
     /*
         Usare un reverse iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
@@ -690,10 +709,7 @@ ethStatistics* ethstats = ethManager->getEthStatistics();
         dovrebbe avere altri problemi e quindi safe anche senza il mutex che prende TUTTO il ciclo.
     */
 
-    ethManager->managerMutex.wait();
-    _rBegin = ethResList->rbegin();
-    _rEnd = ethResList->rend();
-    ethManager->managerMutex.post();
+    ethManager->getEMSlistRiterators(_rBegin, _rEnd);
 
     for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
     {
@@ -722,7 +738,7 @@ ethStatistics* ethstats = ethManager->getEthStatistics();
         }
 
     }
-    //ethManager->managerMutex.post();
+
 
 // acemor-03oct
 #if defined(WIP_UNIFIED_STATS)
@@ -767,7 +783,7 @@ void EthReceiver::onStop()
 {
     uint8_t tmp;
     ethManager->send( &tmp, 1, ethManager->local_addr);
-};
+}
 
 EthReceiver::~EthReceiver()
 {
@@ -784,7 +800,6 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     yTrace();
     recv_socket = pSocket;
     ethManager  = _ethManager;
-    ethResList  = &(_ethManager->EMS_list);
 
     ACE_HANDLE sockfd = pSocket->get_handle();
     int retval;
@@ -936,10 +951,8 @@ void EthReceiver::run()
 
         // at every loop we get pointers of the ethresources list. we do so because it may change in time as a new device is added
         // we use reverse iterators.
-        ethManager->managerMutex.wait();
-        _rBegin = ethResList->rbegin();
-        _rEnd = ethResList->rend();
-        ethManager->managerMutex.post();
+
+        ethManager->getEMSlistRiterators(_rBegin, _rEnd);
 
 
         if(incoming_msg_size > 0)
@@ -978,8 +991,7 @@ void EthReceiver::run()
         // now before repeating the loop we evaluate if a print of stats is required.
 
 
-#if 1
-
+        // now i evaluate if we have to print the statistics
         if(statPrintInterval > 0)
         {
             double currTime = yarp::os::Time::now();
@@ -1008,26 +1020,6 @@ void EthReceiver::run()
                 }
             }
         }
-
-#else
-
-
-
-
-        // 1. old mode:  i check if all boards are alive.
-        riterator = _rBegin;
-        double curr_time = yarp::os::Time::now();
-
-        while(riterator != _rEnd)
-        {
-            ethRes = (*riterator);
-            if(ethRes->isRunning())
-            {
-                ethRes->checkIsAlive(curr_time);
-            }
-            riterator++;
-        }
-#endif
 
     }   // end of while(!isStopping())
 
@@ -1087,12 +1079,9 @@ void EthReceiver::run()
         before_mutex = yarp::os::Time::now();
 #endif
         // take pointers to ems board list
-        ethManager->managerMutex.wait();
         // new, reverse iterator
         ethResRIt    riterator, _rBegin, _rEnd;
-        _rBegin = ethResList->rbegin();
-        _rEnd = ethResList->rend();
-        ethManager->managerMutex.post();
+        ethManager->getEMSlistRiterators(_rBegin, _rEnd);
 
 
 #ifdef ETHRECEIVER_STATISTICS_ON
@@ -1266,12 +1255,9 @@ void EthReceiver::run()
             return;
         }
 
-        ethManager->managerMutex.wait();
         // new, reverse iterator
         ethResRIt    riterator, _rBegin, _rEnd;
-        _rBegin = ethResList->rbegin();
-        _rEnd = ethResList->rend();
-        ethManager->managerMutex.post();
+        ethManager->getEMSlistRiterators(_rBegin, _rEnd);
 
         if( incoming_msg_size > 60000)
         {

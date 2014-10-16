@@ -39,6 +39,7 @@ ethResources::ethResources()
 #if defined(WIP_UNIFIED_STATS)
     inforx                      = new infoOfRecvPkts();
 #endif
+    objLock                     = new Semaphore(1);
     networkQuerySem             = new Semaphore(0);
     isbusyNQsem                 = new Semaphore(1);
     iswaitingNQsem              = new Semaphore(0);
@@ -67,18 +68,30 @@ ethResources::~ethResources()
 #if defined(WIP_UNIFIED_STATS)
     delete inforx;
 #endif
+    delete objLock;
     delete networkQuerySem;
     delete isbusyNQsem;
     delete iswaitingNQsem;
 }
 
+bool ethResources::lock()
+{
+    objLock->wait();
+    return true;
+}
+
+bool ethResources::unlock()
+{
+    objLock->post();
+    return true;
+}
 
 bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request)
 {
     // Get the pointer to the actual Singleton ethManager
     ethManager = TheEthManager::instance();
 
-    transMutex.wait();
+    lock();
 
     // Fill 'info' field with human friendly string
     snprintf(info, sizeof(info), "ethResources - referred to EMS: %s:%d", request.EMSipAddr.string, request.EMSipAddr.port);
@@ -105,7 +118,7 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     eOipv4addr_t eo_locIp = eo_common_ipv4addr(request.PC104ipAddr.ip1, request.PC104ipAddr.ip2, request.PC104ipAddr.ip3, request.PC104ipAddr.ip4);
     eOipv4addr_t eo_remIp = eo_common_ipv4addr(request.EMSipAddr.ip1, request.EMSipAddr.ip2, request.EMSipAddr.ip3, request.EMSipAddr.ip4);
     const uint16_t packetRXcapacity = ethResources::maxRXpacketsize; // for safety i use the maximum size ... however, i could read the xml file and set this number equal to max tx size of teh ems ...
-    if(!init(cfgtransceiver, cfgprotocol, eo_locIp, eo_remIp, request.EMSipAddr.port, packetRXcapacity, request.boardNum))
+    if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, eo_locIp, eo_remIp, request.EMSipAddr.port, packetRXcapacity, request.boardNum))
     {
         ret = false;
         yError() << "cannot init transceiver... maybe wrong board number... check log and config file.";
@@ -119,13 +132,16 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     ACE_UINT32 hostip = (request.EMSipAddr.ip1 << 24) | (request.EMSipAddr.ip2 << 16) | (request.EMSipAddr.ip3 << 8) | (request.EMSipAddr.ip4);
     ACE_INET_Addr myIP((u_short)request.EMSipAddr.port, hostip);
     remote_dev = myIP;
-    transMutex.post();
+
 
     infoPkts->setBoardNum(boardNum);
 // acemor-03oct
 #if defined(WIP_UNIFIED_STATS)
     inforx->setBoardNum(boardNum);
 #endif
+
+
+    unlock();
 
     return ret;
 }
@@ -139,28 +155,26 @@ bool ethResources::close()
 bool ethResources::registerFeature(FEAT_ID *request)
 {
     yTrace() << request->boardNum;
-    transMutex.wait();
+    lock();
     how_many_features++;
-    transMutex.post();
+    unlock();
     return true;
 }
 
 int ethResources::deregisterFeature(FEAT_ID request)
 {
     yTrace() << request.boardNum;
-    transMutex.wait();
+    lock();
     how_many_features--;
     int ret = how_many_features;
-    transMutex.post();
+    unlock();
     return ret;
 }
 
 
 bool ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
 {
-    transMutex.wait();
-    bool res = getTransmit(pack, size, numofrops);
-    transMutex.post();
+    bool res = hostTransceiver::getTransmit(pack, size, numofrops);
     return res;
 }
 

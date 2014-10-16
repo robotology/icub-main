@@ -88,7 +88,7 @@ public:
     hostTransceiver();
     ~hostTransceiver();
 
-    yarp::os::Semaphore   transMutex;
+
 
     bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
@@ -135,6 +135,17 @@ protected:
     bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
 private:
+
+
+    bool lock_transceiver();
+    bool unlock_transceiver();
+    yarp::os::Semaphore *htmtx;
+
+
+    bool lock_nvs();
+    bool unlock_nvs();
+    yarp::os::Semaphore *nvmtx;
+
 
     bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
     bool addGetMessage__(eOprotID32_t protid, uint32_t signature);

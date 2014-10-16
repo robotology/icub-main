@@ -170,6 +170,8 @@ private:
     ~TheEthManager();
 public:
 
+    bool getEMSlistRiterators(ethResRIt& begin, ethResRIt& end);
+
     double getStartTime(void);
 
     void initEOYsystem(void);
@@ -251,6 +253,9 @@ private:
      */
     bool createSocket(ACE_INET_Addr local_addr);
 
+    bool lock();
+    bool unlock();
+
 public:
     /*! @fn     int send(void *data, size_t len, ACE_INET_Addr remote_addr);
      *  @brief  Send a message to the EMSs
@@ -284,7 +289,6 @@ private:
     uint8_t                       *p_sendData;
     TheEthManager                 *ethManager;
     ACE_SOCK_Dgram                *send_socket;
-    std::list<ethResources *>     *ethResList;
     void run();
 
 #ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
@@ -316,7 +320,6 @@ private:
     uint64_t                        recvBuffer[ethResources::maxRXpacketsize/8];
     ACE_SOCK_Dgram                  *recv_socket;
     TheEthManager                   *ethManager;
-    std::list<ethResources *>       *ethResList;
     uint64_t                        seqnumList[TheEthManager::maxBoards];
     bool                            recFirstPkt[TheEthManager::maxBoards];
 

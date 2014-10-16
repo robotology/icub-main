@@ -52,7 +52,37 @@ using namespace std;
 
 
 
-hostTransceiver::hostTransceiver() : transMutex(1)
+bool hostTransceiver::lock_transceiver()
+{
+    htmtx->wait();
+
+    return true;
+}
+
+bool hostTransceiver::unlock_transceiver()
+{
+    htmtx->post();
+
+    return true;
+}
+
+
+bool hostTransceiver::lock_nvs()
+{
+    nvmtx->wait();
+
+    return true;
+}
+
+bool hostTransceiver::unlock_nvs()
+{
+    nvmtx->post();
+
+    return true;
+}
+
+
+hostTransceiver::hostTransceiver()
 {
     yTrace();
 
@@ -69,10 +99,15 @@ hostTransceiver::hostTransceiver() : transMutex(1)
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     memset(&localTransceiverProperties, 0, sizeof(localTransceiverProperties));
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
+    htmtx = new Semaphore(1);
+    nvmtx = new Semaphore(1);
 }
 
 hostTransceiver::~hostTransceiver()
-{
+{    
+    delete htmtx;
+    delete nvmtx;
+
     // marco.accame on 11sept14: TODO: must provide a deallocator for EOpacket, EOhostTransceiver, EOprotocolConfigurator, ... what else ?
 //    eo_hosttransceiver_Delete(hosttxrx);
 //    eo_packet_Delete(p_RxPkt);
@@ -166,20 +201,24 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
         return false;
     }  
     
-    transMutex.wait();
+    lock_nvs();
+    eOresult_t eores = eo_nv_Set(nv, dat, forceset, upd);
+    unlock_nvs();
+
     bool ret = true;
-    if(eores_OK != eo_nv_Set(nv, dat, forceset, upd))
+    if(eores_OK != eores)
     {
         yError() << "hostTransceiver::nvSetData(): error while setting NV data w/ eo_nv_Set()\n";
         ret = false;
     }
-    transMutex.post();
+
     return ret;
 }
 
 // if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
 bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
+    eOresult_t eores = eores_NOK_generic;
 
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
@@ -209,19 +248,19 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
             return false;
         }
 
-        transMutex.wait();
+        lock_nvs();
+        eores = eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo);
+        unlock_nvs();
 
         // marco.accame on 09 apr 2014:
         // we write data into 
-        if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+        if(eores_OK != eores)
         {
             // the nv is not writeable
             yError() << "hostTransceiver::addSetMessage__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
-            transMutex.post();
             return false;
         }
         
-        transMutex.post();
     }
 
     eOropdescriptor_t ropdesc = {0};
@@ -241,15 +280,16 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
 
     for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
     {
-        transMutex.wait();
-        if(eores_OK != eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc))
+        lock_transceiver();
+        eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
+        unlock_transceiver();
+
+        if(eores_OK != eores)
         {
             char nvinfo[128];
             eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
             yWarning() << "(!!)-> hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
-
-            transMutex.post();
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
         else
@@ -261,7 +301,7 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
                 yWarning() << "(OK)-> hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() succesful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;                
             }
-            transMutex.post();
+
             ret = true;
         }
     }
@@ -293,6 +333,8 @@ bool hostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* d
 
 bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 {
+    eOresult_t eores = eores_NOK_generic;
+
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
         yError() << "hostTransceiver::addGetMessage__() called w/ invalid protid: protboard = " << protboardnumber <<
@@ -317,14 +359,16 @@ bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 
     for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
     {
-        transMutex.wait();
-        if(eores_OK != eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc))
+        lock_transceiver();
+        eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
+        unlock_transceiver();
+
+        if(eores_OK != eores)
         {
             char nvinfo[128];
             eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
             yWarning() << "(!!)-> hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
-            transMutex.post();
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
         else
@@ -336,7 +380,6 @@ bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
                               ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
 
             }
-            transMutex.post();
             ret = true;
         }
     }
@@ -390,9 +433,9 @@ bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
         return false;
     }
     // protection on reading data by yarp
-    transMutex.wait();
+    lock_nvs();
     bool ret = getNVvalue(nv_ptr, data, size);
-    transMutex.post();
+    unlock_nvs();
 
     return true;
 }
@@ -430,9 +473,9 @@ bool hostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t
         return false;
     }
     // protection on reading data by yarp
-    transMutex.wait();
+    lock_nvs();
     ret = (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? true : false;
-    transMutex.post();
+    unlock_nvs();
     return true;
 }
 
@@ -454,9 +497,6 @@ void hostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
     uint64_t txtime;
     uint16_t capacityrxpkt = 0;
 
-    // protezione per la scrittura dei dati all'interno della memoria del transceiver, su ricezione di un rop.
-    // il mutex e' unico per tutto il transceiver
-    //transMutex.wait();
     eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
     if(size > capacityrxpkt)
     {
@@ -466,8 +506,16 @@ void hostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
 
     eo_packet_Payload_Set(p_RxPkt, (uint8_t*)data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
+
+    // the transceiver can receive and transmit in parallel because reception manipulates memory passed externally
+    // and the two operation do not use internal memory shared between the two
+    // that iis true unless there is a say<> required upon a received ask<>. in suc a case the receiver must put the answer inside a data
+    // structure read by the transmitter. but the host transceiver does not accept ask<>, thus it is not our case.
+
+    // actually: it could be a good thing to protect the nvs as the receiver writes them
+    //lock_transceiver(); // can be removed for optimisation
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
-    //transMutex.post();
+    //unlock_transceiver(); // can be removed for optimisation
 }
 
 
@@ -479,6 +527,9 @@ void hostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
  */
 bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops)
 {
+    // marco.accame on 14oct14: as long as this function is called by one thread only, it is possible to limit the protection to
+    //                          only one function: eo_transceiver_outpacket_Prepare().
+
     if((NULL == data) || (NULL == size) || (NULL == numofrops))
     {
         yError() << "eo HostTransceiver::getTransmit() called with NULL data or zero size or zero numofrops";
@@ -495,10 +546,13 @@ bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     *numofrops = 0;
 
 
-     uint16_t tmpnumofrops = 0;
+    uint16_t tmpnumofrops = 0;
 
-
+    // it must be protected vs concurrent use of other threads attempting to put rops inside the transceiver.
+    lock_transceiver();
     res = eo_transceiver_outpacket_Prepare(pc104txrx, &tmpnumofrops);
+    unlock_transceiver();
+
 #ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
     if((eores_OK != res))
 #else
@@ -507,7 +561,10 @@ bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     {
         return false;
     }
+
+    // this function does not use data used by concurrent threads, thus it can be left un-protected.
     res = eo_transceiver_outpacket_Get(pc104txrx, &ptrpkt);
+
     if(eores_OK != res)
     {
         return false;
@@ -549,9 +606,9 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
         yError() << "hostTransceiver::getNVvalue() called w/ NULL nv value: protboard = " << protboardnumber;
         return false;
     }
-//     transMutex.wait();
+//     lock_nvs(); 
     (eores_OK == eo_nv_Get(nv, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
-//     _mutex.post();
+//     unlock_nvs();
 
     if(false == ret)
     {
