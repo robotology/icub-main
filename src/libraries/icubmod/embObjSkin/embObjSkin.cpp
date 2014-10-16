@@ -432,11 +432,17 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     // resize data vector with number of triangles found in config file
     sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
-    data.resize(sensorsNum);
-    int ttt = data.size();
-    for (int i=0; i < ttt; i++)
-        data[i]=(double)255;
 
+    mutex.wait();
+
+    this->data.resize(sensorsNum);
+    int ttt = this->data.size();
+    for (int i=0; i < ttt; i++)
+    {
+        this->data[i]=(double)255;
+    }
+
+    mutex.post();
 
     if(!init())
         return false;
@@ -495,7 +501,7 @@ void EmbObjSkin::setId(FEAT_ID &id)
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
     mutex.wait();
-    out=data;  //old - this needs the running thread
+    out = this->data;  //old - this needs the running thread
     mutex.post();
 
     return yarp::dev::IAnalogSensor::AS_OK;
@@ -524,7 +530,9 @@ int EmbObjSkin::calibrateChannel(int ch, double v)
 
 int EmbObjSkin::calibrateSensor(const yarp::sig::Vector& v)
 {
-    //data=v;
+    //mutex.wait();
+    //this->data=v;
+    //mutex.post;
     return 0;
 }
 
@@ -683,13 +691,15 @@ bool EmbObjSkin::isOpened()
     return opened;
 }
 
-bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
+bool EmbObjSkin::fillData(void *data, eOprotID32_t id32)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;
-    EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
+    //EOarray_of_10canframes 	*arrayofcanframes = (EOarray_of_10canframes*) data;
     static int error = 0;
     int p;
+    EOarray* arrayof = (EOarray*)data;
+    uint8_t sizeofarray = eo_array_Size(arrayof);
 
     eOprotIndex_t indexpatch = eoprot_ID2index(id32);
 
@@ -706,9 +716,11 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
 
    // yError() << "received data from " << patchInfoList[p].idPatch << "port";
 
-    for(i=0; i<sk_array->head.size; i++)
+    //for(i=0; i<arrayofcanframes->head.size; i++)
+    for(i=0; i<sizeofarray; i++)
     {
-        eOutil_canframe_t *canframe;
+        eOutil_canframe_t *canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
+
         //uint8_t  j; 
         uint8_t mtbId =255; //unknown mtb card addr
         uint8_t  cardAddr, valid = 0;
@@ -720,7 +732,8 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
             skinClass = ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR;
 
 
-        canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
+        //canframe = (eOutil_canframe_t*) &arrayofcanframes->data[i*sizeof(eOutil_canframe_t)];
+        //canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
 
         valid = (((canframe->id & 0x0F00) >> 8) == skinClass) ? 1 : 0;
 
@@ -751,12 +764,14 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
 
             int index=16*12*mtbId + triangle*12;
 
-            //yError() << "skin fill data: mtbid" << mtbId<< " triangle " << triangle << "  msgtype" << msgtype;
+            // marco.accame: added lock to avoid cincurrent access to this->data. i lock at triangle resolution ...
+            mutex.wait();
+
             if (msgtype)
             {
                 for(int k=0; k<5; k++)
                 {
-                    data[index+k+7]=canframe->data[k+1];
+                    this->data[index+k+7]=canframe->data[k+1];
                     // yError() << "fill data " << data[index+k+7];
                 }
             }
@@ -768,6 +783,9 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
                     // yError() << "fill data " << data[index+k];
                 }
             }
+
+            mutex.post();
+
         }
         else if(canframe->id == 0x100)
         {
@@ -777,7 +795,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
         else
         {
             if(error == 0)
-                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
+                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframe->id << " len="<<canframe->size << "canframe.data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
             error++;
             if (error == 10000)
                 error = 0;

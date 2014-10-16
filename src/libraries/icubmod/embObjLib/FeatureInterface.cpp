@@ -45,40 +45,43 @@ fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
     return fakestdbool_false;
 }
 
-fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32)
-{
+fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcanframes)
+{   // was: //findAndFill
+
     // new with table, data stored in eoSkin;
     // specie di view grezza, usare dynamic cast?
     static int error = 0;
     static int notYetInitted = 0;
-    IiCubFeature *skin;
-    EmbObjSkin *tmp = (EmbObjSkin *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
+    EmbObjSkin *skin = (EmbObjSkin *)(_interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32)));
 
-    if(NULL == tmp)
+    if(NULL == skin)
     {   // the ethmanager does not know this object yet
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         if(0 == (error%1000) )
-            yError() << "Got a message from BOARD" << id->boardNum << "with ID:" << nvinfo << "but no class was instatiated for it";
+            yWarning() << "(!!)-> feat_manage_skin_data() received a request from BOARD" << boardnum << "with ID:" << nvinfo << "but no class was jet instatiated for it";
 
         error++;
         return fakestdbool_false;
     }
-    else if(false == tmp->isOpened())
+    else if(false == skin->isOpened())
     {   // the ethmanager has the object, but the device was not fully opened yet. cannot use it
         return fakestdbool_false;
     }
     else
     {   // the object exists and is completed: it can be used
-        skin = dynamic_cast<IiCubFeature *>(tmp);
-        if(NULL != skin)
+        IiCubFeature * icubfeatureI = dynamic_cast<IiCubFeature *>(skin);
+        if(NULL != icubfeatureI)
         {
-            skin->fillData((void *)sk_array, id32);
+            icubfeatureI->fillData((void *)arrayofcanframes, id32);
         }
         else
         {
+            char nvinfo[128];
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+
             if(0 == (notYetInitted%1000))
-                yWarning() << "Got a SKIN message with EP "<< id->ep << "board number " << id->boardNum << " not yet initialized";
+                yWarning() << "(!!)-> feat_manage_skin_data() received a request from BOARD" << boardnum << "with ID:" << nvinfo << "but ..................";
 
             notYetInitted++;
             return fakestdbool_false;

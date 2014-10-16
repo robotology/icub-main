@@ -73,7 +73,9 @@ typedef struct
 void initCallback(void *p);
 
 fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum);
-fakestdbool_t findAndFill(FEAT_ID *id, void *sk_array, eOprotID32_t id32);
+
+fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcanframes);
+
 fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOprotID32_t id32);
 
 // requires boardnum in range [1, max] as used by cpp objects
