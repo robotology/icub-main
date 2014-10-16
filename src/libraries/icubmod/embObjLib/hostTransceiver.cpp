@@ -10,7 +10,7 @@
 // - macros
 // --------------------------------------------------------------------------------------------------------------------
 
-
+#undef HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ using namespace std;
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
 
+#include "EOYmutex.h"
 #include "EOYtheSystem.h"
 #include "EOtheErrorManager.h"
 #include "EoCommon.h"
@@ -54,30 +55,34 @@ using namespace std;
 
 bool hostTransceiver::lock_transceiver()
 {
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     htmtx->wait();
-
+#endif
     return true;
 }
 
 bool hostTransceiver::unlock_transceiver()
 {
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     htmtx->post();
-
+#endif
     return true;
 }
 
 
 bool hostTransceiver::lock_nvs()
 {
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     nvmtx->wait();
-
+#endif
     return true;
 }
 
 bool hostTransceiver::unlock_nvs()
 {
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     nvmtx->post();
-
+#endif
     return true;
 }
 
@@ -99,14 +104,18 @@ hostTransceiver::hostTransceiver()
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     memset(&localTransceiverProperties, 0, sizeof(localTransceiverProperties));
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     htmtx = new Semaphore(1);
     nvmtx = new Semaphore(1);
+#endif
 }
 
 hostTransceiver::~hostTransceiver()
-{    
+{
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     delete htmtx;
     delete nvmtx;
+#endif
 
     // marco.accame on 11sept14: TODO: must provide a deallocator for EOpacket, EOhostTransceiver, EOprotocolConfigurator, ... what else ?
 //    eo_hosttransceiver_Delete(hosttxrx);
@@ -1020,7 +1029,8 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
 
     // marco.accame on 10 apr 2014:
     // eo_hosttransceiver_cfg_default contains the EOK_HOSTTRANSCEIVER_* values which are good for reception of a suitable EOframe
-    // hovever, in future it would be fine to be able loading the fields inside eOhosttransceiver_cfg_t from an xml file
+    // in here we init hosttxrxcfg with these default values. however, later on we shall change them properly according to what is in the xml file
+    // which is copied into variable remoteTransceiverProperties.
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;    
@@ -1032,9 +1042,12 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     }
 
     // we build the hosttransceiver so that:
-    // 1. it can send a packet which can always be received by the board (max tx size = max rx size of board)
-    // 2. it has the same maxsize of rop
+    // 1. it can send a packet which can always be received by the board (max tx size = max rx size of remote board)
+    // 2. it has the same maxsize of rop as remote board
     // 3. it has no regulars, no space for replies, and maximum space for occasionals.
+    // the properties of remote board are inside remoteTransceiverProperties and are taken from the xml file.
+    // after the transceiver is built and communication can happen, we shall verify if remoteTransceiverProperties has the same values
+    // of what is read from remote board. see funtion ethResources::verifyBoardTransceiver().
 
     hosttxrxcfg.sizes.capacityoftxpacket            = remoteTransceiverProperties.maxsizeRXpacket;
     hosttxrxcfg.sizes.capacityofrop                 = remoteTransceiverProperties.maxsizeROP;
@@ -1073,6 +1086,17 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     // marco.accame on 29 apr 2014: so that the EOreceiver calls this funtion in case of error in sequence number
     hosttxrxcfg.extfn.onerrorseqnumber = cpp_protocol_callback_incaseoferror_in_sequencenumberReceived;
 
+
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    hosttxrxcfg.mutex_fn_new = NULL;
+    hosttxrxcfg.transprotection = eo_trans_protection_none;
+    hosttxrxcfg.nvsetprotection = eo_nvset_protection_none;
+#else
+    // mutex protection inside transceiver
+    hosttxrxcfg.mutex_fn_new = (eov_mutex_fn_mutexderived_new) eoy_mutex_New;
+    hosttxrxcfg.transprotection = eo_trans_protection_enabled; // eo_trans_protection_none
+    hosttxrxcfg.nvsetprotection = eo_nvset_protection_one_per_endpoint; // eo_nvset_protection_one_per_object // eo_nvset_protection_none
+#endif
 
     return(true);
 }

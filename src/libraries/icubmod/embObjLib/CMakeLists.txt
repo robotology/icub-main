@@ -133,6 +133,7 @@ set(CORE_FOLDER_SOURCE      ${CORE_FOLDER}/EOarray.c
                             ${CORE_FOLDER}/EOvector.c
                             ${CORE_FOLDER}/EOpacket.c
                             ${CORE_YEE}/EOYtheSystem.c
+                            ${CORE_YEE}/EOYmutex.c
                             )
 
 set(CORE_VEE_SOURCE         ${CORE_FOLDER}/EOVmutex.c
