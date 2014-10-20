@@ -234,7 +234,7 @@ public:
      *  @param  ep  The desired EndPoint
      *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
      */
-    void *getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
+    void * getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
 
     /*! @fn     FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
      *  @brief  Get the struct of FEAT_ID type with useful information about the class handling the desired EndPoint.

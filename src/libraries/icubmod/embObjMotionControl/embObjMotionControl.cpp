@@ -1536,6 +1536,29 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
     return requestQueue->threadPool->getThreadTable(req.threadId);
 }
 
+
+bool embObjMotionControl::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
+{
+    // use this function to update the values cached in the class using data received by the remote boards via the network callbacks
+    // in embObjMotionControl it is updated only the timestamp of the encoders, thuus i dont used rxdata
+    int joint = eoprot_ID2index(id32);
+
+    rxdata = rxdata;
+
+
+    // for the case of id32 which contains an encoder value .... we refresh the timestamp of that encoder
+
+    if(true == isOpened())
+    {   // do it only if we already have opened the device
+        _mutex.wait();
+        _encodersStamp[joint] = timestamp;
+        _mutex.post();
+    }
+
+    return true;
+}
+
+
 void embObjMotionControl::refreshEncoderTimeStamp(int joint)
 {
     static long int count = 0;

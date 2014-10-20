@@ -441,12 +441,12 @@ bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
         yError() << "readBufferedValue: Unable to get pointer to desired NV with: " << nvinfo;
         return false;
     }
-    // protection on reading data by yarp
-    lock_nvs();
-    bool ret = getNVvalue(nv_ptr, data, size);
-    unlock_nvs();
 
-    return true;
+    // marco.accame: protection is inside getNVvalue() member function  
+    bool ret = getNVvalue(nv_ptr, data, size);
+ 
+
+    return ret;
 }
 
 
@@ -615,9 +615,9 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
         yError() << "hostTransceiver::getNVvalue() called w/ NULL nv value: protboard = " << protboardnumber;
         return false;
     }
-//     lock_nvs(); 
+    lock_nvs(); 
     (eores_OK == eo_nv_Get(nv, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
-//     unlock_nvs();
+    unlock_nvs();
 
     if(false == ret)
     {

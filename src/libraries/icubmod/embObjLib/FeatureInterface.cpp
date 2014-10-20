@@ -33,29 +33,64 @@ void initCallback(void *p)
     }
 }
 
-fakestdbool_t addEncoderTimeStamp(FEAT_ID *id, int jointNum)
+fakestdbool_t addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
-    embObjMotionControl *tmp = (embObjMotionControl *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
-    if(tmp != NULL)
+    void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(p);
+    embObjMotionControl *mc = static_cast<embObjMotionControl *>(p);
+
+    if(mc == NULL)
     {
-        tmp->refreshEncoderTimeStamp(jointNum);
-        return fakestdbool_true;
+        return fakestdbool_false;
+    }
+    else if(false == mc->isOpened())
+    {
+        return fakestdbool_false;
+    }
+    else
+    {
+        int jointNum = eoprot_ID2index(id32);
+        mc->refreshEncoderTimeStamp(jointNum);
     }
 
-    return fakestdbool_false;
+    return fakestdbool_true;
+}
+
+
+fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void* rxdata)
+{
+    void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //IiCubFeature * icubfeatureI = static_cast<IiCubFeature *>(p);
+    // marco.accame: does not work if we start from a void* ... getHandle() should return a IiCubFeature*
+    // embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(icubfeatureI);
+    embObjMotionControl *mc = static_cast<embObjMotionControl *>(p);
+
+    if(mc == NULL)
+    {
+        return fakestdbool_false;
+    }
+    else if(false == mc->isOpened())
+    {
+        return fakestdbool_false;
+    }
+    else
+    {
+        mc->fillData(id32, yarp::os::Time::now(), rxdata);
+    }
+
+    return fakestdbool_true;
 }
 
 fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcanframes)
-{   // was: //findAndFill
-
-    // new with table, data stored in eoSkin;
-    // specie di view grezza, usare dynamic cast?
+{   
     static int error = 0;
-    static int notYetInitted = 0;
-    EmbObjSkin *skin = (EmbObjSkin *)(_interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32)));
+    void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //IiCubFeature * icubfeatureI = static_cast<IiCubFeature *>(p);
+    // marco.accame: does not work if we start from a void* ... getHandle() should return a IiCubFeature*
+    EmbObjSkin *skin = static_cast<EmbObjSkin *>(p);
 
     if(NULL == skin)
-    {   // the ethmanager does not know this object yet
+    {   // the ethmanager does not know this object yet or the dynamic cast failed because it is not an embObjSkin
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         if(0 == (error%1000) )
@@ -70,23 +105,9 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
     }
     else
     {   // the object exists and is completed: it can be used
-        IiCubFeature * icubfeatureI = dynamic_cast<IiCubFeature *>(skin);
-        if(NULL != icubfeatureI)
-        {
-            icubfeatureI->fillData((void *)arrayofcanframes, id32);
-        }
-        else
-        {
-            char nvinfo[128];
-            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-
-            if(0 == (notYetInitted%1000))
-                yWarning() << "(!!)-> feat_manage_skin_data() received a request from BOARD" << boardnum << "with ID:" << nvinfo << "but ..................";
-
-            notYetInitted++;
-            return fakestdbool_false;
-        }
+        skin->fillData(id32, yarp::os::Time::now(), (void *)arrayofcanframes);
     }
+
     return fakestdbool_true;
 }
 
@@ -97,25 +118,24 @@ void* get_MChandler_fromEP(uint8_t boardnum, eOprotEndpoint_t ep)
     return h;
 }
 
-fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOprotID32_t id32)
+fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *as_array)
 {
-    IiCubFeature *iAnalog;
+    void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //IiCubFeature *icubfeatureI = static_cast<IiCubFeature *>(p);
+    //embObjAnalogSensor *sensor = dynamic_cast<embObjAnalogSensor *>(icubfeatureI);
+    embObjAnalogSensor *sensor = static_cast<embObjAnalogSensor *>(p);
 
-    // specie di view grezza, usare dynamic cast?
-    embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
-
-    if(NULL == tmp)
-    {   // the ethmanager does not know this object yet
+    if(NULL == sensor)
+    {   // the ethmanager does not know this object yet or the dynamic cast failed because it is not an embObjAnalogSensor
         return fakestdbool_false;
     }
-    else if(false == tmp->isOpened())
+    else if(false == sensor->isOpened())
     {   // the ethmanager has the object, but the obiect was not full initted yet. cannot use it
         return fakestdbool_false;
     }
     else
     {   // the object exists and is completed: it can be used
-        iAnalog = dynamic_cast<IiCubFeature *>(tmp);
-        iAnalog->fillData(as_array, id32);
+        sensor->fillData(id32, yarp::os::Time::now(), as_array);
     }
 
     return fakestdbool_true;
@@ -124,7 +144,7 @@ fakestdbool_t handle_AS_data(FEAT_ID *id, void *as_array, eOprotID32_t id32)
 fakestdbool_t MCmutex_post(void *p, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
-    embObjMotionControl *handler = (embObjMotionControl *) p;
+    embObjMotionControl *handler = static_cast<embObjMotionControl *>(p);
 
     if(NULL == handler)
     {

@@ -289,7 +289,7 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     return ret;
 }
 
-void *TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
+void * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 {
 //     lock(); // marco.accame: found already commented. see why
     void * ret = NULL;

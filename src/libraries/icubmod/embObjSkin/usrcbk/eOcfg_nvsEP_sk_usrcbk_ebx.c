@@ -65,7 +65,12 @@
 extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     //EOarray_of_10canframes *arrayofcanframes = (EOarray_of_10canframes *)rd->data;
-    feat_manage_skin_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+    EOarray* arrayof = (EOarray*)rd->data;
+    uint8_t sizeofarray = eo_array_Size(arrayof);
+    if(0 != sizeofarray)
+    {
+        feat_manage_skin_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)arrayof);
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------

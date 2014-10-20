@@ -23,10 +23,12 @@
 
 
 // specific to this device driver.
-#include "FeatureInterface_hid.h"         // Interface with embObj world (callback)
 #include <embObjVirtualAnalogSensor.h>
 #include <ethManager.h>
 #include <Debug.h>
+
+#include <yarp/dev/ControlBoardInterfacesImpl.h>
+#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "EoProtocol.h"
 #include "EoMotionControl.h"
@@ -169,6 +171,11 @@ embObjVirtualAnalogSensor::~embObjVirtualAnalogSensor()
 bool embObjVirtualAnalogSensor::isOpened()
 {
     return opened;
+}
+
+bool embObjVirtualAnalogSensor::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
+{
+    return true;
 }
 
 bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)

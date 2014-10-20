@@ -153,8 +153,6 @@ public:
     bool open(yarp::os::Searchable &config);
     bool close();
 
-    bool isOpened();
-
     // IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
@@ -215,7 +213,9 @@ public:
     
     // embObj interface
     bool init();
-    virtual bool fillData(void *as_array, eOprotID32_t id32);
+
+    virtual bool isOpened();
+    virtual bool fillData(eOnvID32_t id32, double timestamp, void* rxdata);
 };
 
 

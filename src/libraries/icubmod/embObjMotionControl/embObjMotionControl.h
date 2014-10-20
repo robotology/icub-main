@@ -78,7 +78,7 @@ using namespace std;
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
 // #include "IRobotInterface.h"
-// #include "FeatureInterface_hid.h"   // uncomment to see IiCubFeature (used by some devices such as analogsensors and skin so that feture-interface can pass data)
+#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
 #include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
 
@@ -211,7 +211,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IOpenLoopControlRaw,
     public ImplementOpenLoopControl,
     public IDebugInterfaceRaw,
-    public ImplementDebugInterface
+    public ImplementDebugInterface,
+    public IiCubFeature
 {
 
 public:
@@ -388,7 +389,8 @@ public:
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
 
-    bool isOpened();
+    virtual bool isOpened();
+    virtual bool fillData(eOnvID32_t id32, double timestamp, void *rxdata);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);

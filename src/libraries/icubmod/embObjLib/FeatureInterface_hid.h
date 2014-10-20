@@ -11,7 +11,6 @@
 #include <ace/ACE.h>
 #include <yarp/sig/Vector.h>
 #include "FeatureInterface.h"
-#include "embObjMotionControl.h"
 
 using namespace yarp::sig;
 
@@ -21,10 +20,9 @@ class IiCubFeature
 {
     public:
         virtual ~IiCubFeature() {};
-//         virtual void setId(FEAT_ID &id) { };
-// None of the following is a "MUST" because each module need just one of them
-        virtual bool fillData(void *data, eOnvID32_t id32 )  =0;         //skin data
-//         virtual bool fill_AS_data(void *as_array) =0;   // analogSensor data
+
+        virtual bool isOpened() = 0;
+        virtual bool fillData(eOnvID32_t id32, double timestamp, void *rxdata) = 0;
 };
 
 

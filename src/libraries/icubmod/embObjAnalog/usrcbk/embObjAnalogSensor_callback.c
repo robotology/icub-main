@@ -112,11 +112,12 @@ extern void eoprot_fun_UPDT_as_mais_config_mode(const EOnv* nv, const eOropdescr
 
 static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    FEAT_ID id;
-    id.type = f_type;
-    id.ep = eo_nv_GetEP8(nv);
-    id.boardNum =  nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
-    handle_AS_data(&id, rd->data, rd->id32);
+    EOarray* arrayof = (EOarray*)rd->data;
+    uint8_t sizeofarray = eo_array_Size(arrayof);
+    if(0 != sizeofarray)
+    {
+        feat_manage_analogsensors_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)arrayof);
+    }
 }
 
 // eof

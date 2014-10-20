@@ -691,14 +691,14 @@ bool EmbObjSkin::isOpened()
     return opened;
 }
 
-bool EmbObjSkin::fillData(void *data, eOprotID32_t id32)
+bool EmbObjSkin::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;
-    //EOarray_of_10canframes 	*arrayofcanframes = (EOarray_of_10canframes*) data;
+    //EOarray_of_10canframes 	*arrayofcanframes = (EOarray_of_10canframes*) rxdata;
     static int error = 0;
     int p;
-    EOarray* arrayof = (EOarray*)data;
+    EOarray* arrayof = (EOarray*)rxdata;
     uint8_t sizeofarray = eo_array_Size(arrayof);
 
     eOprotIndex_t indexpatch = eoprot_ID2index(id32);

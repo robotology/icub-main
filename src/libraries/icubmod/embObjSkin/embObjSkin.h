@@ -132,10 +132,11 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    fillData(void *data, eOprotID32_t id32);
+
     virtual void    setId(FEAT_ID &id);
 
-    bool            isOpened();
+    virtual bool    isOpened();
+    virtual bool    fillData(eOnvID32_t id32, double timestamp, void *rxdata);
 
 };
 

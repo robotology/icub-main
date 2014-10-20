@@ -757,7 +757,7 @@ int embObjAnalogSensor::read(yarp::sig::Vector &out)
       }
 
       // errors are not handled for now... it'll always be OK!!
-       if (status!=IAnalogSensor::AS_OK)
+      if (status!=IAnalogSensor::AS_OK)
       {
           switch (status)
           {
@@ -827,20 +827,21 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-bool embObjAnalogSensor::fillData(void *as_array_raw, eOprotID32_t id32)
+bool embObjAnalogSensor::fillData(eOnvID32_t id32, double timestamp, void* rxdata)
 {
     bool ret;
 
+#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain.
     switch(_as_type)
     {
         case AS_MAIS:
         {
-            ret = fillDatOfMais(as_array_raw);
+            ret = fillDatOfMais(rxdata);
         } break;
         
         case AS_STRAIN:
         {
-            ret = fillDatOfStrain(as_array_raw);
+            ret = fillDatOfStrain(rxdata);
         } break;
         
         default:
@@ -861,16 +862,22 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
     // eoprot_fun_UPDT_as_strain_status_calibratedvalues() or eoprot_fun_UPDT_as_strain_status_uncalibratedvalues() 
     // the void* parameter inside this function is a eOas_arrayofupto12bytes_t*   
     // and can be treated as a EOarray
-    
-    mutex.wait();
-    
     EOarray *array = (EOarray*)as_array_raw;
-    
-    uint8_t msg[2];
-    double *_buffer = data->getBuffer();
+    uint8_t size = eo_array_Size(array);
+    uint8_t itemsize = eo_array_ItemSize(array); // marco.accame: must be 2, as the code after uses this convention
+    if(0 == size)
+    {
+        return false;
+    }
+
+    // lock data
+    mutex.wait();
+
+    double *_buffer = this->data->getBuffer();
 
     if(NULL == _buffer)
     {
+        // unlock data
         mutex.post();
         return false;
     }
@@ -879,18 +886,26 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
     for(int k=0; k<_channels; k++)
     {
         // Get the kth element of the array as a 2 bytes msg
-        memcpy(msg, (char*) eo_array_At(array, k), 2);
-        // Got from canBusMotionControl
-        _buffer[k]= (short)( ( (((unsigned short)(msg[1]))<<8)+msg[0]) - (unsigned short) (0x8000) );
-
-        if (_useCalibration == 1)
+        char* tmp = (char*) eo_array_At(array, k);
+        // marco.accame: i am nervous about iterating for _channels instead of size of array.... 
+        //               thus i add a protection. if k goes beyond size of array, eo_array_At() returns NULL.
+        if(NULL != tmp)
         {
-            _buffer[k]=_buffer[k]*scaleFactor[k]/float(0x8000);
+            uint8_t msg[2] = {0};
+            memcpy(msg, tmp, 2);
+            // Got from canBusMotionControl
+            _buffer[k]= (short)( ( (((unsigned short)(msg[1]))<<8)+msg[0]) - (unsigned short) (0x8000) );
+
+            if (_useCalibration == 1)
+            {
+                _buffer[k]=_buffer[k]*scaleFactor[k]/float(0x8000);
+            }
         }
     }
-    
      
+    // unlock data
     mutex.post();
+
     return true;
 }
 
@@ -914,7 +929,8 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     }
 
     mutex.wait();
-    double *_buffer = data->getBuffer();
+
+    double *_buffer = this->data->getBuffer();
 
     if(NULL == _buffer)
     {
@@ -932,6 +948,7 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     }
 
     mutex.post();
+
     return true;
 }
 
