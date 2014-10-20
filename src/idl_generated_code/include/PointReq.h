@@ -67,13 +67,21 @@ public:
   
 private:
   bool write_result(yarp::os::idl::WireWriter& writer);
+  bool nested_write_result(yarp::os::idl::WireWriter& writer);
   bool write_x(yarp::os::idl::WireWriter& writer);
+  bool nested_write_x(yarp::os::idl::WireWriter& writer);
   bool write_y(yarp::os::idl::WireWriter& writer);
+  bool nested_write_y(yarp::os::idl::WireWriter& writer);
   bool write_z(yarp::os::idl::WireWriter& writer);
+  bool nested_write_z(yarp::os::idl::WireWriter& writer);
   bool read_result(yarp::os::idl::WireReader& reader);
+  bool nested_read_result(yarp::os::idl::WireReader& reader);
   bool read_x(yarp::os::idl::WireReader& reader);
+  bool nested_read_x(yarp::os::idl::WireReader& reader);
   bool read_y(yarp::os::idl::WireReader& reader);
+  bool nested_read_y(yarp::os::idl::WireReader& reader);
   bool read_z(yarp::os::idl::WireReader& reader);
+  bool nested_read_z(yarp::os::idl::WireReader& reader);
 
 public:
   
@@ -82,44 +90,74 @@ public:
   // if you want to serialize this class without nesting, use this helper
   typedef yarp::os::idl::Unwrapped<PointReq > unwrapped;
   
-  class Editor : public yarp::os::Portable {
+  class Editor : public yarp::os::Wire, public yarp::os::PortWriter {
   public:
     
-    bool edit(PointReq& obj, bool dirty = true) {
-      this->obj = &obj;
-      dirty_flags(dirty);
+    Editor() {
+      group = 0;
+      obj_owned = true;
+      obj = new PointReq;
+      dirty_flags(false);
+      yarp().setOwner(*this);
     }
     
-    virtual ~Editor() {}
+    Editor(PointReq& obj) {
+      group = 0;
+      obj_owned = false;
+      edit(obj,false);
+      yarp().setOwner(*this);
+    }
+    
+    bool edit(PointReq& obj, bool dirty = true) {
+      if (obj_owned) delete this->obj;
+      this->obj = &obj;
+      obj_owned = false;
+      dirty_flags(dirty);
+      return true;
+    }
+    
+    virtual ~Editor() {
+    if (obj_owned) delete obj;
+    }
     
     bool isValid() const {
       return obj!=0/*NULL*/;
     }
     
-    PointReq *obj;
+    PointReq& state() { return *obj; }
     
+    void begin() { group++; }
+    
+    void end() {
+      group--;
+      if (group==0&&is_dirty) communicate();
+    }
     void set_result(const std::string& result) {
       will_set_result();
       obj->result = result;
       mark_dirty_result();
+      communicate();
       did_set_result();
     }
     void set_x(const double x) {
       will_set_x();
       obj->x = x;
       mark_dirty_x();
+      communicate();
       did_set_x();
     }
     void set_y(const double y) {
       will_set_y();
       obj->y = y;
       mark_dirty_y();
+      communicate();
       did_set_y();
     }
     void set_z(const double z) {
       will_set_z();
       obj->z = z;
       mark_dirty_z();
+      communicate();
       did_set_z();
     }
     const std::string& get_result() {
@@ -148,6 +186,18 @@ public:
     bool read(yarp::os::ConnectionReader& connection);
     bool write(yarp::os::ConnectionWriter& connection);
   private:
+    
+    PointReq *obj;
+    
+    bool obj_owned;
+    int group;
+    
+    void communicate() {
+      if (yarp().canWrite()) {
+        yarp().write(*this);
+        clean();
+      }
+    }
     void mark_dirty() {
       is_dirty = true;
     }

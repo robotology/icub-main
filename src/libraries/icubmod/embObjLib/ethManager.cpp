@@ -687,11 +687,11 @@ bool EthSender::threadInit()
 #ifdef ICUB_USE_REALTIME_LINUX
     /**
      * Make it realtime (works on both RT and Standard linux kernels)
-     * - increase the priority upto the system IRQ's priorities (< 50)
+     * - increase the priority upto the system IRQ's priorities (50) and less than the receiver thread
      * - set the scheduler to FIFO
      */
     struct sched_param thread_param;
-    thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2; // = 49
+    thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2 - 1; // = 48
     pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
 #endif //ICUB_USE_REALTIME_LINUX
 
@@ -823,7 +823,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
     ACE_HANDLE sockfd = pSocket->get_handle();
     int retval;
-    int32_t mysize = 102400; //100kb note:actually kernel uses memory with size doblem of mysize
+    int32_t mysize = 1024*1024; //1Mb note:actually kernel uses memory with size doblem of mysize
                             //with this size i'm sure ems pkts are not lost
     int len = sizeof(mysize);
 

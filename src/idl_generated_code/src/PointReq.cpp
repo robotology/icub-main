@@ -10,7 +10,21 @@ bool PointReq::read_result(yarp::os::idl::WireReader& reader) {
   }
   return true;
 }
+bool PointReq::nested_read_result(yarp::os::idl::WireReader& reader) {
+  if (!reader.readString(result)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
 bool PointReq::read_x(yarp::os::idl::WireReader& reader) {
+  if (!reader.readDouble(x)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+bool PointReq::nested_read_x(yarp::os::idl::WireReader& reader) {
   if (!reader.readDouble(x)) {
     reader.fail();
     return false;
@@ -24,7 +38,21 @@ bool PointReq::read_y(yarp::os::idl::WireReader& reader) {
   }
   return true;
 }
+bool PointReq::nested_read_y(yarp::os::idl::WireReader& reader) {
+  if (!reader.readDouble(y)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
 bool PointReq::read_z(yarp::os::idl::WireReader& reader) {
+  if (!reader.readDouble(z)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+bool PointReq::nested_read_z(yarp::os::idl::WireReader& reader) {
   if (!reader.readDouble(z)) {
     reader.fail();
     return false;
@@ -49,7 +77,15 @@ bool PointReq::write_result(yarp::os::idl::WireWriter& writer) {
   if (!writer.writeString(result)) return false;
   return true;
 }
+bool PointReq::nested_write_result(yarp::os::idl::WireWriter& writer) {
+  if (!writer.writeString(result)) return false;
+  return true;
+}
 bool PointReq::write_x(yarp::os::idl::WireWriter& writer) {
+  if (!writer.writeDouble(x)) return false;
+  return true;
+}
+bool PointReq::nested_write_x(yarp::os::idl::WireWriter& writer) {
   if (!writer.writeDouble(x)) return false;
   return true;
 }
@@ -57,7 +93,15 @@ bool PointReq::write_y(yarp::os::idl::WireWriter& writer) {
   if (!writer.writeDouble(y)) return false;
   return true;
 }
+bool PointReq::nested_write_y(yarp::os::idl::WireWriter& writer) {
+  if (!writer.writeDouble(y)) return false;
+  return true;
+}
 bool PointReq::write_z(yarp::os::idl::WireWriter& writer) {
+  if (!writer.writeDouble(z)) return false;
+  return true;
+}
+bool PointReq::nested_write_z(yarp::os::idl::WireWriter& writer) {
   if (!writer.writeDouble(z)) return false;
   return true;
 }
@@ -83,25 +127,25 @@ bool PointReq::Editor::write(yarp::os::ConnectionWriter& connection) {
     if (!writer.writeListHeader(3)) return false;
     if (!writer.writeString("set")) return false;
     if (!writer.writeString("result")) return false;
-    if (!obj->write_result(writer)) return false;
+    if (!obj->nested_write_result(writer)) return false;
   }
   if (is_dirty_x) {
     if (!writer.writeListHeader(3)) return false;
     if (!writer.writeString("set")) return false;
     if (!writer.writeString("x")) return false;
-    if (!obj->write_x(writer)) return false;
+    if (!obj->nested_write_x(writer)) return false;
   }
   if (is_dirty_y) {
     if (!writer.writeListHeader(3)) return false;
     if (!writer.writeString("set")) return false;
     if (!writer.writeString("y")) return false;
-    if (!obj->write_y(writer)) return false;
+    if (!obj->nested_write_y(writer)) return false;
   }
   if (is_dirty_z) {
     if (!writer.writeListHeader(3)) return false;
     if (!writer.writeString("set")) return false;
     if (!writer.writeString("z")) return false;
-    if (!obj->write_z(writer)) return false;
+    if (!obj->nested_write_z(writer)) return false;
   }
   return !writer.isError();
 }
@@ -166,19 +210,19 @@ bool PointReq::Editor::read(yarp::os::ConnectionReader& connection) {
     // inefficient code follows, bug paulfitz to improve it
     if (key == "result") {
       will_set_result();
-      if (!obj->read_result(reader)) return false;
+      if (!obj->nested_read_result(reader)) return false;
       did_set_result();
     } else if (key == "x") {
       will_set_x();
-      if (!obj->read_x(reader)) return false;
+      if (!obj->nested_read_x(reader)) return false;
       did_set_x();
     } else if (key == "y") {
       will_set_y();
-      if (!obj->read_y(reader)) return false;
+      if (!obj->nested_read_y(reader)) return false;
       did_set_y();
     } else if (key == "z") {
       will_set_z();
-      if (!obj->read_z(reader)) return false;
+      if (!obj->nested_read_z(reader)) return false;
       did_set_z();
     } else {
       // would be useful to have a fallback here

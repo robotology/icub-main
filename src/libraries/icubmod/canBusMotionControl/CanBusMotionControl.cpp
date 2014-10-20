@@ -3517,37 +3517,37 @@ void CanBusMotionControl:: run()
     // ControlMode
 bool CanBusMotionControl::setPositionModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setPositionModeRaw\n");
+    yWarning() << " calling DEPRECATED setPositionModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_POSITION);
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setOpenLoopModeRaw\n");
+    yWarning() << " calling DEPRECATED setOpenLoopModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_OPENLOOP);
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setVelocityModeRaw\n");
+    yWarning() << " calling DEPRECATED setVelocityModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_VELOCITY);
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setTorqueModeRaw\n");
+    yWarning() << " calling DEPRECATED setTorqueModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_TORQUE);
 }
 
 bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setImpedancePositionModeRaw\n");
+    yWarning() << " calling DEPRECATED setImpedancePositionModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_POS);
 }
 
 bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setImpedanceVelocityModeRaw\n");
+    yWarning() << " calling DEPRECATED setImpedanceVelocityModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_VEL);
 }
 
@@ -3780,23 +3780,6 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
 
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
 
-    #if CAN_PROTOCOL_MINOR == 1
-    if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
-    {
-        disablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-        disableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-    }
-    else
-    {
-        enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-        enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-    }
-    #endif
-
     int v = from_modevocab_to_modeint(mode);
     if (v==VOCAB_CM_UNKNOWN) return false;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
@@ -3812,7 +3795,9 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     bool ret = true;
     for (int i=0;i<n_joints; i++)
     {
-        ret = ret && setControlModeRaw(joints[i],modes[i]);
+        int v = from_modevocab_to_modeint(modes[i]);
+        if (v==VOCAB_CM_UNKNOWN) ret = false;
+        _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
     }
     yarp::os::Time::delay(0.010);
     return ret;
@@ -3825,22 +3810,6 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 
     for (int i = 0; i < r.getJoints(); i++)
     {
-        #if CAN_PROTOCOL_MINOR == 1
-        if (modes[i] == VOCAB_CM_IDLE || modes[i] == VOCAB_CM_FORCE_IDLE)
-        {
-            disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-            disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-        }
-        else
-        {
-            enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-            enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-        }
-        #endif
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
@@ -4408,17 +4377,16 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
             yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            yarp::os::Time::delay(0.001);
+            #endif
         }
-    #endif
 
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(ref));
 }
@@ -4939,6 +4907,7 @@ bool CanBusMotionControl::resetTorquePidRaw(int j)
 
 bool CanBusMotionControl::enablePidRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED enablePidRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5075,6 +5044,7 @@ bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 
 bool CanBusMotionControl::disablePidRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED disablePidRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5151,7 +5121,6 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-#ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_POSITION &&
@@ -5160,10 +5129,10 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IDLE)
     {
         yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         setControlModeRaw(axis,VOCAB_CM_POSITION);
-        yarp::os::Time::delay(0.001);
+        #endif
     }
-#endif
 
     _mutex.wait();
 
@@ -5506,7 +5475,7 @@ bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
 
 bool CanBusMotionControl::stopRaw(int j)
 {
-    bool ret=velocityMoveRaw(j, 0);
+    bool ret = true;
     ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     return ret;
 }
@@ -5515,16 +5484,13 @@ bool CanBusMotionControl::stopRaw()
 {
     CanBusResources& r = RES(system_resources);
     const int n=r.getJoints();
+    bool ret = true;
 
-    double *tmp = new double [n];
-    memset(tmp, 0, sizeof(double)*n);
-    bool ret=velocityMoveRaw(tmp);
     for (int j=0; j<n; j++)
     {
        ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     }
     
-    delete [] tmp;
     return ret;
 }
 
@@ -5535,7 +5501,6 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
 
-#ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_VELOCITY &&
@@ -5544,10 +5509,10 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IDLE)
     {
         yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         setControlModeRaw(axis,VOCAB_CM_VELOCITY);
-        yarp::os::Time::delay(0.001);
+        #endif
     }
-#endif
 
     _mutex.wait();
 
@@ -5740,6 +5705,7 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
 
 bool CanBusMotionControl::disableAmpRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED disableAmpRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5748,6 +5714,7 @@ bool CanBusMotionControl::disableAmpRaw(int axis)
 
 bool CanBusMotionControl::enableAmpRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED enableAmpRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -6071,17 +6038,16 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
 
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
             yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            yarp::os::Time::delay(0.001);
+            #endif
         }
-    #endif
 
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
