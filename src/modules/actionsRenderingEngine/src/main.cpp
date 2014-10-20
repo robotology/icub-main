@@ -1314,6 +1314,7 @@ public:
                         if (!check(command,"still"))
                         {
                             motorThr->setGazeIdle();
+                            motorThr->goUp(command,0.1);
                             motorThr->goHome(command);
                         }
 
