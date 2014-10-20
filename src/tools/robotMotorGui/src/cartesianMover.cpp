@@ -49,7 +49,7 @@ bool cartesianMover::display_cartesian_pose(cartesianMover *cm)
 
     ICartesianControl *icrt = cm->crt;
     GtkEntry **entry = (GtkEntry **) cm->currPosArray;
-    GtkWidget **sliderPosArray = (GtkWidget **) cm->slider1;
+    GtkWidget **sliderPosArray = (GtkWidget **) cm->sliderArray;
 
     //fprintf(stderr, "Trying to get the cartesian position...");
     Vector x;
@@ -133,7 +133,7 @@ void cartesianMover::position_slider_changed(GtkRange *range, cartesianMover *cm
 {
 
     ICartesianControl *icrt = cm->crt;
-    GtkWidget **sliderPosArray = (GtkWidget **) cm->slider1;
+    GtkWidget **sliderPosArray = (GtkWidget **) cm->sliderArray;
     GtkWidget *sliderVel      = (GtkWidget *) cm->sliderVelocity;
   
     int sliderIndex;
@@ -263,10 +263,10 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
             *entry_id = -1;
 
             frame_slider1 = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
-            slider1    = new GtkWidget* [NUMBER_OF_CARTESIAN_COORDINATES];
+            sliderArray    = new GtkWidget* [NUMBER_OF_CARTESIAN_COORDINATES];
             currPosArray = new GtkWidget* [NUMBER_OF_CARTESIAN_COORDINATES];
 
-            //fprintf(stderr, "slider1 has address 0x%x\n", (unsigned int) slider1);
+            //fprintf(stderr, "sliderArray has address 0x%x\n", (unsigned int) sliderArray);
 
             GtkWidget *top_hbox 		 = NULL;
             GtkWidget *bottom_hbox		 = NULL;
@@ -393,19 +393,19 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
                     //fprintf(stderr, "Initializing sliders %d \n",k);
                     if (min<max)
                         {
-                            slider1[k]	  =  gtk_hscale_new_with_range(min, max, 1);
+                            sliderArray[k]	  =  gtk_hscale_new_with_range(min, max, 1);
                             if (k<3)
-                                gtk_scale_set_digits((GtkScale*) slider1[k],2);
+                                gtk_scale_set_digits((GtkScale*) sliderArray[k],2);
                             else
-                                gtk_scale_set_digits((GtkScale*) slider1[k],1);
+                                gtk_scale_set_digits((GtkScale*) sliderArray[k],1);
                         }
                     else
                         {
-                            slider1[k]    =  gtk_hscale_new_with_range(1, 2, 1);
+                            sliderArray[k]    =  gtk_hscale_new_with_range(1, 2, 1);
                             if (k<3)
-                                gtk_scale_set_digits((GtkScale*) slider1[k],2);
+                                gtk_scale_set_digits((GtkScale*) sliderArray[k],2);
                             else
-                                gtk_scale_set_digits((GtkScale*) slider1[k],1);
+                                gtk_scale_set_digits((GtkScale*) sliderArray[k],1);
                         }
                     currPosArray[k]   =  gtk_entry_new();
 
@@ -418,7 +418,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
                     //Positions
                     //fprintf(stderr, "Positioning buttons %d \n", k);
                     gtk_fixed_put	(GTK_FIXED(invArray[k]), frame_slider1[k],  60, 10    );
-                    gtk_fixed_put	(GTK_FIXED(invArray[k]), slider1[k],    65, 20    );
+                    gtk_fixed_put	(GTK_FIXED(invArray[k]), sliderArray[k],    65, 20    );
                     gtk_fixed_put	(GTK_FIXED(invArray[k]), currPosArray[k],   95, 70);
 	  
                     int buttonDist= 24;
@@ -429,7 +429,7 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
                     //Dimensions
                     //fprintf(stderr, "Dimensioning buttons %d \n", k);
                     gtk_widget_set_size_request 	(frame_slider1[k], 110, 50);
-                    gtk_widget_set_size_request 	(slider1[k], 90, 40);
+                    gtk_widget_set_size_request 	(sliderArray[k], 90, 40);
                     gtk_widget_set_size_request 	(currPosArray[k], 70, 20);
                     gtk_widget_set_size_request 	(homeArray[k], 50, 25);
                     gtk_widget_set_size_request 	(framesArray[k], width, height);
@@ -438,13 +438,13 @@ cartesianMover::cartesianMover(GtkWidget *vbox_d, PolyDriver *partDd_d, char *pa
                      * Positions commands
                      */
                     //fprintf(stderr, "Assinging callback %d \n", k);
-                    gtk_range_set_update_policy 	((GtkRange *) (slider1[k]), GTK_UPDATE_DISCONTINUOUS);
+                    gtk_range_set_update_policy 	((GtkRange *) (sliderArray[k]), GTK_UPDATE_DISCONTINUOUS);
                     if (k<3)
-                        gtk_range_set_value 			((GtkRange *) (slider1[k]),  x(k));
+                        gtk_range_set_value 			((GtkRange *) (sliderArray[k]),  x(k));
                     if (k>=3 && k <= 5)
-                        gtk_range_set_value 			((GtkRange *) (slider1[k]),  eu(k-3) * 180/M_PI);
+                        gtk_range_set_value 			((GtkRange *) (sliderArray[k]),  eu(k-3) * 180/M_PI);
 	  
-                    g_signal_connect (slider1[k], "value-changed", G_CALLBACK(position_slider_changed), this);
+                    g_signal_connect (sliderArray[k], "value-changed", G_CALLBACK(position_slider_changed), this);
 
 
                 }

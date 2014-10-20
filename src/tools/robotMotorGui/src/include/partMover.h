@@ -83,8 +83,8 @@ class partMover{
   int        COPY_SEQUENCE;
   double       COPY_TIMING;
 
-  GtkWidget **slider2;
-  GtkWidget **slider1;
+  GtkWidget **sliderVelArray;
+  GtkWidget **sliderArray;
   GtkWidget **currPosArray;
   GtkWidget **currTrqArray;
   GtkWidget **currSpeedArray;

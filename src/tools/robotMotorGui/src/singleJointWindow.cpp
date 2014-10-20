@@ -195,7 +195,7 @@ void partMover::run_click(GtkButton *button, gtkClassData* currentClassData)
   IAmplifierControl *iamp = currentPart->amp;
   IPidControl *ipid = currentPart->pid;
   IControlMode2 *ictrl = currentPart->ctrlmode2;
-  GtkWidget **sliderAry = currentPart->slider1;
+  GtkWidget **sliderAry = currentPart->sliderArray;
      
   double posJoint;
     
@@ -296,7 +296,7 @@ bool partMover::entry_update(partMover *currentPart)
   GtkEntry    **inEntry   = (GtkEntry **)  currentPart->inPosArray;
   GtkWidget **colorback   = (GtkWidget **) currentPart->frameColorBack;
 
-  GtkWidget **sliderAry = currentPart->slider1;
+  GtkWidget **sliderAry = currentPart->sliderArray;
   bool *POS_UPDATE = currentPart->CURRENT_POS_UPDATE;
 
   char buffer[40] = {'i', 'n', 'i', 't'};
@@ -396,10 +396,6 @@ bool partMover::entry_update(partMover *currentPart)
               pColor=&color_yellow;
                 strcat(frame_title," (IDLE)");
                 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_POSITION:
@@ -408,8 +404,6 @@ bool partMover::entry_update(partMover *currentPart)
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Position:");
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Velocity:");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), true);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_POSITION_DIRECT:
@@ -418,8 +412,6 @@ bool partMover::entry_update(partMover *currentPart)
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Position:");
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_MIXED:
@@ -428,18 +420,12 @@ bool partMover::entry_update(partMover *currentPart)
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Position:");
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Velocity");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), true);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_VELOCITY:
               pColor=&color_blue;
               strcat(frame_title," (VELOCITY)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_TORQUE:
@@ -447,39 +433,25 @@ bool partMover::entry_update(partMover *currentPart)
               strcat(frame_title," (TORQUE)");
                 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Torque:");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
+              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Torque2:");
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
               break;
           case VOCAB_CM_IMPEDANCE_POS:
               pColor=&color_indaco;
               strcat(frame_title," (IMPEDANCE POS)");
                 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Position:");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Velocity:");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), true);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
             case VOCAB_CM_IMPEDANCE_VEL:
               pColor=&color_indaco;
               strcat(frame_title," (IMPEDANCE VEL)");
                 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"Position:");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"Velocity:");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), true);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_OPENLOOP:
               pColor=&color_white;
               strcat(frame_title," (OPENLOOP)");
                 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"PWM");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), true);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_HW_FAULT:
@@ -488,48 +460,30 @@ bool partMover::entry_update(partMover *currentPart)
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
               break;
          case VOCAB_CM_CALIBRATING:
               pColor=&color_grey;
               strcat(frame_title," (CALIBRATING)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
          case VOCAB_CM_CALIB_DONE:
               pColor=&color_grey;
               strcat(frame_title," (CALIB DONE)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_NOT_CONFIGURED:
               pColor=&color_grey;
               strcat(frame_title," (NOT CONFIGURED)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           case VOCAB_CM_CONFIGURED:
               pColor=&color_grey;
               strcat(frame_title," (CONFIGURED)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
           default:
@@ -537,10 +491,6 @@ bool partMover::entry_update(partMover *currentPart)
               pColor=&color_grey;
               strcat(frame_title," (UNKNOWN)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
-              gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider1[k]), false);
-              gtk_widget_set_sensitive  (GTK_WIDGET(currentPart->slider2[k]), false);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
       }
@@ -598,7 +548,7 @@ void partMover::sliderVel_release(GtkRange *range, gtkClassData* currentClassDat
   int * joint = currentClassData->indexPointer;
   IPositionControl *ipos = currentPart->pos;
   IPositionDirect  *iDir = currentPart->iDir;
-  GtkWidget **sliderAry = currentPart->slider1;
+  GtkWidget **sliderAry = currentPart->sliderArray;
   IControlMode     *iCtrl = currentPart->ctrlmode2;
   int mode;
 
@@ -606,11 +556,7 @@ void partMover::sliderVel_release(GtkRange *range, gtkClassData* currentClassDat
   double posit = gtk_range_get_value((GtkRange *) sliderAry[*joint]);
   ipos->setRefSpeed(*joint, val);
   iCtrl->getControlMode(*joint, &mode);
-
-  if( ( mode == VOCAB_CM_POSITION) || (mode == VOCAB_CM_MIXED) )
-  {
   ipos->positionMove(*joint, posit);
-  }
   return;
 }
 
@@ -626,12 +572,9 @@ void partMover::slider_release(GtkRange *range, gtkClassData* currentClassData)
   int * joint = currentClassData->indexPointer;
   bool *POS_UPDATE = currentPart->CURRENT_POS_UPDATE;
   IPositionControl *ipos = currentPart->pos;
-  ITorqueControl   *itrq = currentPart->trq;
-  IOpenLoopControl *iopl = currentPart->opl;
-  IVelocityControl *ivel = currentPart->iVel;
   IPidControl      *ipid = currentPart->pid;
   IPositionDirect  *iDir = currentPart->iDir;
-  GtkWidget **sliderVel = currentPart->slider2;
+  GtkWidget **sliderVel = currentPart->sliderVelArray;
 
   double val = gtk_range_get_value(range);
   double valVel = gtk_range_get_value((GtkRange *)sliderVel[*joint]);
@@ -665,16 +608,6 @@ void partMover::slider_release(GtkRange *range, gtkClassData* currentClassData)
              fprintf(stderr, "You cannot send direct position commands without using --direct option!");
          }
 
-      }
-      else if ( mode == VOCAB_CM_TORQUE)
-      {
-          val=0;
-          itrq->setRefTorque(*joint,val);
-      }
-      else if ( mode == VOCAB_CM_OPENLOOP)
-      {
-          val=0;
-          iopl->setRefOutput(*joint,val);
       }
       else
       {

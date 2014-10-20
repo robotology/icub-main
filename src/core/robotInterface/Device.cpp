@@ -138,15 +138,15 @@ std::ostringstream& operator<<(std::ostringstream &oss, const RobotInterface::De
     oss << ")";
     return oss;
 }
-/*
-LogStream::Debug operator<<(LogStream::Debug dbg, const RobotInterface::Device &t)
+
+DebugStream::Debug operator<<(DebugStream::Debug dbg, const RobotInterface::Device &t)
 {
     std::ostringstream oss;
     oss << t;
     dbg << oss.str();
     return dbg;
 }
-*/
+
 RobotInterface::Device::Device() :
     mPriv(new Private(this))
 {

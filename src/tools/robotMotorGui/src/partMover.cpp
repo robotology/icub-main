@@ -158,8 +158,8 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
       *entry_id = -1;
       timeout_seqeunce_rate = new guint32 [0];
 
-      slider1 = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
-      slider2 = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
+      sliderArray    = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
+      sliderVelArray = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
       currPosArray = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
 	  currTrqArray = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
 	  currSpeedArray = new GtkWidget* [MAX_NUMBER_OF_JOINTS];
@@ -235,8 +235,8 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 
       for (k = 0; k<MAX_NUMBER_OF_JOINTS; k++)
       {
-          slider2[k]=0;
-          slider1[k]=0;
+          sliderVelArray[k]=0;
+          sliderArray[k]=0;
           currPosArray[k]=0;
           currTrqArray[k]=0;
           currSpeedArray[k]=0;
@@ -275,9 +275,9 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 
 	  //fprintf(stderr, "Initializing sliders %d \n",k);
 	  if (min<max)
-	    slider1[k]	  =  gtk_hscale_new_with_range(min, max, 1);
+	    sliderArray[k]	  =  gtk_hscale_new_with_range(min, max, 1);
 	  else
-	    slider1[k]    =  gtk_hscale_new_with_range(1, 2, 1);
+	    sliderArray[k]    =  gtk_hscale_new_with_range(1, 2, 1);
 	  currPosArray[k]   =  gtk_entry_new();
 	  currTrqArray[k]   =  gtk_entry_new();
 	  currSpeedArray[k]   =  gtk_entry_new();
@@ -286,7 +286,7 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 	  currSpeedArrayLbl[k]  =  gtk_label_new("deg/s");
 	  inPosArray[k]     = gtk_entry_new();
 
-	  slider2[k] =  gtk_hscale_new_with_range(1, 100, 1);
+	  sliderVelArray[k] =  gtk_hscale_new_with_range(1, 100, 1);
 
 	  //fprintf(stderr, "Initializing the buttons %d \n", k);
 	  disableArray[k]   = gtk_button_new_with_mnemonic ("Idle");
@@ -308,8 +308,8 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 	  int sliderOffsetY = 16;
 	  int sliderOffsetX = 10;
 	  gtk_fixed_put	(GTK_FIXED(invArray[k]), frame_slider1[k],  60+sliderOffsetX, 10+sliderOffsetY    );
-	  gtk_fixed_put	(GTK_FIXED(invArray[k]), slider1[k],    65+sliderOffsetX, 20+sliderOffsetY   );
-	  gtk_fixed_put	(GTK_FIXED(invArray[k]), slider2[k], 65+sliderOffsetX, 20+50+sliderOffsetY );
+	  gtk_fixed_put	(GTK_FIXED(invArray[k]), sliderArray[k],    65+sliderOffsetX, 20+sliderOffsetY   );
+	  gtk_fixed_put	(GTK_FIXED(invArray[k]), sliderVelArray[k], 65+sliderOffsetX, 20+50+sliderOffsetY );
 	  gtk_fixed_put	(GTK_FIXED(invArray[k]), currPosArray[k],   95+sliderOffsetX, 15+100+sliderOffsetY);
 	  gtk_fixed_put	(GTK_FIXED(invArray[k]), currTrqArray[k],   95+sliderOffsetX, 35+100+sliderOffsetY);
 	  gtk_fixed_put	(GTK_FIXED(invArray[k]), currPosArrayLbl[k],   145+sliderOffsetX, 15+103+sliderOffsetY);
@@ -336,7 +336,7 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 	  //fprintf(stderr, "Dimensioning buttons %d \n", k);
 	  gtk_widget_set_size_request 	(frame_slider1[k], 110, 50);
 	  gtk_widget_set_size_request   (frameColorBack[k], width, height);
-	  gtk_widget_set_size_request 	(slider1[k], 90, 40);
+	  gtk_widget_set_size_request 	(sliderArray[k], 90, 40);
 	  gtk_widget_set_size_request 	(currPosArray[k], 50, 20);
 	  gtk_widget_set_size_request 	(currTrqArray[k], 50, 20);
 	  gtk_widget_set_size_request 	(currSpeedArray[k], 50, 20);
@@ -347,21 +347,21 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 	  gtk_widget_set_size_request 	(enableArray[k], 50, 25);
   	  gtk_widget_set_size_request 	(pidArray[k], 50, 25);
 	  gtk_widget_set_size_request 	(frame_slider2[k], 110, 50);
-	  gtk_widget_set_size_request 	(slider2[k], 90, 40);
+	  gtk_widget_set_size_request 	(sliderVelArray[k], 90, 40);
 	  gtk_widget_set_size_request 	(framesArray[k], width, height);
 			
 	  //Positions commands update
 	  //fprintf(stderr, "Assinging callback %d \n", k);
-	  gtk_range_set_update_policy 	((GtkRange *) (slider1[k]), GTK_UPDATE_DISCONTINUOUS);
-	  gtk_range_set_value 			((GtkRange *) (slider1[k]),  positions[k]);
-	  //g_signal_connect (slider1[k], "value-changed", G_CALLBACK(slider_release), index+k );
+	  gtk_range_set_update_policy 	((GtkRange *) (sliderArray[k]), GTK_UPDATE_DISCONTINUOUS);
+	  gtk_range_set_value 			((GtkRange *) (sliderArray[k]),  positions[k]);
+	  //g_signal_connect (sliderArray[k], "value-changed", G_CALLBACK(slider_release), index+k );
 
 	  gtkClassData *myClassData = new gtkClassData;
 	  myClassData->indexPointer = index+k;
 	  myClassData->partPointer = this;
-	  g_signal_connect (slider1[k], "value-changed", G_CALLBACK(this->slider_release), myClassData);
-	  g_signal_connect (slider1[k], "focus-in-event", G_CALLBACK(this->slider_pick), myClassData);
-	  g_signal_connect (slider1[k], "focus-out-event", G_CALLBACK(this->slider_unpick), myClassData);
+	  g_signal_connect (sliderArray[k], "value-changed", G_CALLBACK(this->slider_release), myClassData);
+	  g_signal_connect (sliderArray[k], "focus-in-event", G_CALLBACK(this->slider_pick), myClassData);
+	  g_signal_connect (sliderArray[k], "focus-out-event", G_CALLBACK(this->slider_unpick), myClassData);
 
 	  //Positions dispay update
 	  gtkClassData *myClassData1 = new gtkClassData;
@@ -374,9 +374,9 @@ partMover::partMover(GtkWidget *vbox_d, PolyDriver *partDd_d, PolyDriver *debugD
 	  gtk_editable_set_editable ((GtkEditable*) inPosArray[k], FALSE);
 
 	  //Velocity commands update
-	  gtk_range_set_update_policy 	((GtkRange *) (slider2[k]), GTK_UPDATE_DISCONTINUOUS);
-	  gtk_range_set_value 			((GtkRange *) (slider2[k]), ARM_VELOCITY[k]);
-	  g_signal_connect (slider2[k], "value-changed", G_CALLBACK (sliderVel_release), myClassData1);
+	  gtk_range_set_update_policy 	((GtkRange *) (sliderVelArray[k]), GTK_UPDATE_DISCONTINUOUS);
+	  gtk_range_set_value 			((GtkRange *) (sliderVelArray[k]), ARM_VELOCITY[k]);
+	  g_signal_connect (sliderVelArray[k], "value-changed", G_CALLBACK (sliderVel_release), myClassData1);
 	  //Run updatedisable_entry
 	  g_signal_connect (homeArray[k], "clicked", G_CALLBACK (home_click), myClassData1);
 	  g_signal_connect (disableArray[k], "clicked", G_CALLBACK (dis_click), myClassData1);

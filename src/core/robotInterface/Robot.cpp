@@ -343,15 +343,15 @@ bool RobotInterface::Robot::Private::custom(const RobotInterface::Device &device
     YFIXME_NOTIMPLEMENTED("custom action")
     return true;
 }
-/*
-LogStream::Debug operator<<(LogStream::Debug dbg, const RobotInterface::Robot &t)
+
+DebugStream::Debug operator<<(DebugStream::Debug dbg, const RobotInterface::Robot &t)
 {
     std::ostringstream oss;
     oss << t;
     dbg << oss.str();
     return dbg;
 }
-*/
+
 RobotInterface::Robot::Robot() :
     mPriv(new Private(this))
 {
