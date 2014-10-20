@@ -58,7 +58,7 @@
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/skinContactList.h"
 
-#define MY_VERBOSITY 0
+#define MY_VERBOSITY 3
 
 extern Semaphore ODE_access;
 

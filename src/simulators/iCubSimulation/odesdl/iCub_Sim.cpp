@@ -545,7 +545,7 @@ bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geo
       return true; 
   }
 
-  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[4]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[4]")==0) ) ){
       return true; 
   }
   if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
